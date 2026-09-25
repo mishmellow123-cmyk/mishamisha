@@ -77,7 +77,9 @@ def make_profile(x0, x1, n, base, amp, scale, seed, octaves=6, ridged=0.0, gain=
             xx = X[i0:i1 + 1]
             r = np.abs(xx - x) / w
             if kind == 'conifer':
-                prof = np.clip(1 - r, 0, 1) ** 0.9
+                # narrow spire with a hint of tiers
+                prof = np.clip(1 - r, 0, 1) ** 1.25
+                prof *= 1.0 + 0.10 * np.sin((xx - x) / w * 9.0 + x) * (r > 0.2)
             else:  # broadleaf: rounded crown
                 prof = np.sqrt(np.clip(1 - r * r, 0, 1)) * 0.8 + 0.2 * np.clip(1 - r, 0, 1)
             h[i0:i1 + 1] = np.maximum(h[i0:i1 + 1], base_h - 0.15 * hh + hh * prof)

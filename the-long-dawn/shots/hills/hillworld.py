@@ -21,13 +21,13 @@ CREST_TOP_X = 3.3          # x of the hilltop (figures stand around here)
 LAYERS = [
     # a dark forested ridge close below us
     dict(z=480.0, base=-58.0, amp=16.0, scale=210.0, ridged=0.0,
-         trees=(0.10, 9.0, 19.0, 0.32, 'conifer', 140.0), alb=1.0, fog_el=7.0, mist=0.7, ms=1 / 300., rim=0.08),
+         trees=(0.40, 8.0, 17.0, 0.30, 'conifer', 160.0), alb=1.0, fog_el=7.0, mist=0.7, ms=1 / 300., rim=0.08),
     # rounded hills with scattered broadleaf trees
     dict(z=1150.0, base=-86.0, amp=30.0, scale=380.0, ridged=0.0,
-         trees=(0.03, 10.0, 17.0, 0.55, 'broad', 260.0), alb=0.85, fog_el=6.0, mist=1.0, ms=1 / 700., rim=0.10),
+         trees=(0.10, 9.0, 15.0, 0.55, 'broad', 260.0), alb=0.85, fog_el=6.0, mist=1.0, ms=1 / 700., rim=0.10),
     # smooth long hill
     dict(z=2300.0, base=-96.0, amp=48.0, scale=820.0, ridged=0.0,
-         trees=(0.012, 12.0, 20.0, 0.32, 'conifer', 420.0), alb=0.7, fog_el=4.5, mist=1.0, ms=1 / 1100., rim=0.12),
+         trees=(0.06, 11.0, 18.0, 0.32, 'conifer', 380.0), alb=0.7, fog_el=4.5, mist=1.0, ms=1 / 1100., rim=0.12),
     # ridge with rocky knolls
     dict(z=4300.0, base=-80.0, amp=95.0, scale=900.0, ridged=0.35,
          trees=None, alb=0.6, fog_el=3.5, mist=0.9, ms=1 / 1800., rim=0.12),
@@ -66,9 +66,9 @@ def crest_profile(X, seed=5):
     """Hilltop the figures stand on, as seen from the camera (height above camera eye)."""
     X = np.asarray(X, np.float64)
     d = X - CREST_TOP_X
-    top = 0.34
-    left = top - 0.050 * d ** 2 - 0.006 * np.maximum(0, -d) ** 3
-    right = top - 0.016 * d ** 2
+    top = 0.30
+    left = top - 0.026 * d ** 2 - 0.0022 * np.maximum(0, -d) ** 3
+    right = top - 0.012 * d ** 2
     h = np.where(d < 0, left, right)
     h += 0.045 * fbm1_np(X / 1.1 + 4.0, 5, 2.0, 0.5, seed)
     h += 0.012 * fbm1_np(X / 0.17 + 1.0, 3, 2.0, 0.5, seed + 1)
@@ -101,21 +101,21 @@ FOG = np.array([1.0 / 15000.0, 1.0 / 2200.0, -150.0, 45.0, 0.65, math.radians(2.
                 30.0, 1.0 / 40.0], np.float64)
 
 RING = dict(lat=57.0, radius=2.6, view_az=VIEW_AZ, shadow_theta=25.0, shadow_width=22.0,
-            shadow_floor=0.03, nodes=30, node_gain=1.6, color=np.array([1.0, 0.90, 0.78]))
+            shadow_floor=0.03, nodes=30, node_gain=1.6, color=np.array([1.0, 0.90, 0.78]) * 0.75)
 
 
 def sky_intro():
     return Sky(
         sun=(27.0, -6.0),
-        zenith=np.array([0.0016, 0.0030, 0.030]),
-        horizon=np.array([0.022, 0.040, 0.125]),
-        amber=np.array([1.25, 0.52, 0.14]),
-        rose=np.array([0.26, 0.085, 0.12]),
-        violet=np.array([0.050, 0.036, 0.100]),
-        base_fall=0.17, amber_fall=0.022, rose_fall=0.060, violet_fall=0.22, az_pow=2.6,
-        moon=(-17.0, 6.8), moon_radius_deg=0.9, moon_gain=3.4, moon_aureole=0.006,
-        earthshine=0.045, city_gain=1.1, moon_phase=128.0, moon_pa=-22.0,
-        mw=0.0, star_gain=1.0, star_thresh=2.2, n_stars=14000,
+        zenith=np.array([0.0012, 0.0030, 0.032]),
+        horizon=np.array([0.016, 0.036, 0.120]),
+        amber=np.array([1.50, 0.62, 0.13]),
+        rose=np.array([0.20, 0.060, 0.080]),
+        violet=np.array([0.034, 0.026, 0.085]),
+        base_fall=0.17, amber_fall=0.026, rose_fall=0.070, violet_fall=0.24, az_pow=2.8,
+        moon=(-17.0, 6.8), moon_radius_deg=1.0, moon_gain=3.4, moon_aureole=0.006,
+        earthshine=0.045, city_gain=1.1, moon_phase=132.0, moon_pa=-22.0,
+        mw=0.0, star_gain=7.0, star_thresh=30.0, n_stars=14000,
         ring=dict(RING), seed=1)
 
 
@@ -128,7 +128,7 @@ def sky_coda():
         rose=np.array([0.10, 0.035, 0.06]),
         violet=np.array([0.030, 0.024, 0.075]),
         base_fall=0.16, amber_fall=0.020, rose_fall=0.055, violet_fall=0.20, az_pow=2.4,
-        moon=(-17.0, 5.6), moon_radius_deg=0.9, moon_gain=3.6, moon_aureole=0.008,
-        earthshine=0.06, city_gain=1.6, moon_phase=128.0, moon_pa=-22.0,
-        mw=0.9, mw_pole=dir_from_az_el(-120.0, 20.0), star_gain=1.35, star_thresh=1.4, n_stars=18000,
+        moon=(-17.0, 5.6), moon_radius_deg=1.0, moon_gain=3.6, moon_aureole=0.008,
+        earthshine=0.06, city_gain=1.6, moon_phase=132.0, moon_pa=-22.0,
+        mw=0.9, mw_pole=dir_from_az_el(-120.0, 20.0), star_gain=7.0, star_thresh=8.0, n_stars=18000,
         ring=dict(RING, shadow_floor=0.025, node_gain=1.9), seed=1)
