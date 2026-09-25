@@ -5,3 +5,6 @@ music/cache/
 **/__pycache__/
 *.pyc
 edit/cache/
+music/out/*.wav
+out/draft*.mp4
+out/stills/
