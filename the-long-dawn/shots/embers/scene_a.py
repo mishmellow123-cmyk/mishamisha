@@ -49,7 +49,7 @@ class Embers:
         dirs /= np.linalg.norm(dirs, axis=1, keepdims=True)
         self.v = dirs * sp[:, None]
         self.T0 = r.uniform(0.62, 0.95, n)
-        self.E0 = r.lognormal(0.0, 0.5, n) * 3.2
+        self.E0 = r.lognormal(0.0, 0.5, n) * 14.0
         self.life = r.uniform(40, 110, n)                     # in warped frames
         self.flk = r.uniform(0.15, 0.5, n)
         self.ph = r.uniform(0, 2 * np.pi, n)
@@ -57,10 +57,12 @@ class Embers:
         self.rw = r.uniform(0.006, 0.02, n)
 
     def pos(self, t):
-        s = warp(t)
+        s = warp(t)                       # scalar or per-particle array
         age = np.maximum(s - self.sb, 0.0)
         p = self.p0 + self.v * age[:, None] + np.array([0, 0.0012, 0]) * (age ** 2)[:, None]
-        w = vnoise(p * 1.0, 0.33, (0.0, -0.02 * s, 0.013 * s), 2)
+        s_arr = np.broadcast_to(s, age.shape)
+        q = p + np.stack([0 * s_arr, -0.02 * s_arr, 0.013 * s_arr], 1) / 0.33
+        w = vnoise(q, 0.33, (0.0, 0.0, 0.0), 2)
         p = p + w * (self.wamp * np.minimum(age / 25.0, 1.0))[:, None]
         return p, age
 
@@ -71,7 +73,7 @@ class Embers:
         p0, _ = self.pos(ctx.t0)
         p1, age = self.pos(ctx.t1)
         alive = (t >= self.tb) & (age < self.life)
-        x = age / self.life
+        x = np.clip(age / self.life, 0, 1)
         temp = self.T0 * (1 - 0.55 * x)
         fl = 1 + self.flk * np.sin(0.9 * t + self.ph) * np.sin(0.37 * t + 2 * self.ph)
         e = self.E0 * np.clip((t - self.tb) / 3.0, 0, 1) * (1 - x) ** 1.5 * fl
@@ -187,12 +189,14 @@ class Glyphs:
     # centre of each glyph before the spiral
     def centre_pre(self, t):
         n = self.n
-        u = ease_out(clamp01((t - self.arr) / self.arr_len), 3.0)
+        ta = np.broadcast_to(np.asarray(t, np.float64), (n,))
+        u = ease_out(clamp01((ta - self.arr) / self.arr_len), 3.0)
         c = self.home + self.din * (1 - u)[:, None]
         # ember-born: follow ember path (time-warped, slowing)
-        pe, _ = self.eb.pos(t)
+        pe, _ = self.eb.pos(ta[self.ie])
         c[self.ie] = pe
-        w = vnoise(self.home, 0.21, (0.004 * t, 0.006 * t, -0.003 * t), 2)
+        q = self.home + np.stack([0.004 * ta, 0.006 * ta, -0.003 * ta], 1) / 0.21
+        w = vnoise(q, 0.21, (0.0, 0.0, 0.0), 2)
         c = c + w * self.wamp[:, None] * 1.3
         return c
 
@@ -223,13 +227,8 @@ class Glyphs:
 
     def centre_pre_frozen(self):
         if self._frozen is None:
-            fz = np.empty((self.n, 3))
-            # evaluate each glyph's pre-spiral centre at its own spiral start (grouped by rounded time)
-            tsr = np.round(self.sp_start * 2) / 2
-            for tv in np.unique(tsr):
-                m = tsr == tv
-                fz[m] = self.centre_pre(tv)[m]
-            self._frozen = fz
+            # each glyph's pre-spiral centre at its own spiral start time
+            self._frozen = self.centre_pre(self.sp_start)
         return self._frozen
 
     def points(self, t, campos):
@@ -274,7 +273,7 @@ class Glyphs:
         heat = u ** 1.4
         absorb = 1 - smoothstep(0.93, 0.995, u)
         eg = self.E * tw * fade_arr * (1 + 5.0 * heat) * absorb
-        eg *= 26.0 * self.s ** 2 / 0.04 ** 1.0 * 0.04      # total glyph energy ~ area
+        eg *= 4200.0 * self.s ** 2                        # total glyph energy ~ area (seen at z=10)
         eg[self.hero] *= 1.6
         T = lerp(self.T, 1.0, heat)
         # ember-born glyphs keep ember heat as they open

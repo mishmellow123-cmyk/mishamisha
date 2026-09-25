@@ -256,6 +256,7 @@ def splat_points(P0, P1, RW, E, COL, cam0, cam1, prm, B0, B1, B2, B3, profile):
     escale = prm[12]
     rmax = prm[13]
     maxsub = int(prm[14])
+    zref = prm[15]
     f0 = cam0[12]
     f1 = cam1[12]
     cx = cam0[13]
@@ -308,6 +309,8 @@ def splat_points(P0, P1, RW, E, COL, cam0, cam1, prm, B0, B1, B2, B3, profile):
             if uM + r + 2 < 0 or vM + r + 2 < 0 or um - r - 2 > Wf or vm - r - 2 > Hf:
                 continue
             e *= escale
+            if zref > 0.0:
+                e *= (zref / z) * (zref / z)
             if z < 2.0 * near:
                 e *= (z - near) / near
             if z > fog0:
@@ -518,7 +521,7 @@ class Frame:
         self.set(focus=10.0, aperture=0.0)
 
     def set(self, focus=10.0, aperture=0.0, rmin=0.72, bokeh_pow=0.55, bokeh_cap=5.0,
-            near=0.15, fog_start=1e9, fog_len=1e9, band=None, rmax=None, maxsub=96):
+            near=0.15, fog_start=1e9, fog_len=1e9, band=None, rmax=None, maxsub=96, zref=10.0):
         p = self.prm
         p[0] = focus
         p[1] = aperture
@@ -539,6 +542,7 @@ class Frame:
         p[12] = self.scale * self.scale
         p[13] = (rmax if rmax is not None else 110.0) * self.scale
         p[14] = maxsub
+        p[15] = zref
 
     def splat(self, P0, P1, RW, E, COL, cam0, cam1, profile=0):
         if len(E) == 0:

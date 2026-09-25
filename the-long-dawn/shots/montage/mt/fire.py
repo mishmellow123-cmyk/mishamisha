@@ -68,49 +68,48 @@ def flicker(t, seed=0, amt=1.0):
 
 # ---------------------------------------------------------------------- flame ---
 
-@njit(parallel=True, fastmath=True)
+@njit(parallel=True, fastmath=True, cache=True)
 def _flame(img, depth, bx, by, ppm, zf, Hf, Rb, lean, t, seed, I, x0, x1, y0, y1, zbias, detail, alpha_mul):
-    rise = 1.6 * math.sqrt(max(Hf, 0.05)) + 0.8
-    hs = max(Hf, 0.05) / 2.6          # spatial scale normaliser
+    """Flame field in normalised coords q=(X/Rb, Y/Hf): a teardrop distance eroded by noise that is
+    advected upward; erosion grows with height so the top breaks into tongues."""
+    rise = 1.5 * math.sqrt(max(Hf, 0.05)) + 0.6          # m/s
+    ar = Hf / Rb
     for py in prange(y0, y1):
         for px in range(x0, x1):
             if depth[py, px] < zf - zbias:
                 continue
             X = (px + 0.5 - bx) / ppm
             Y = (by - (py + 0.5)) / ppm
-            v = Y / Hf
-            if v < -0.12 or v > 1.75:
+            qy = Y / Hf
+            if qy < -0.1 or qy > 1.6:
                 continue
-            vc = max(v, 0.0)
-            xc = lean * vc * vc + 0.10 * Rb * math.sin(2.3 * t + 2.0 * vc + seed) * vc
-            Xl = X - xc
-            q1 = fbm3(Xl * 1.3 / hs, (Y - rise * t) * 0.9 / hs, t * 0.55 + seed, 3.0, seed)
-            q2 = fbm3(Xl * 1.3 / hs + 5.2, (Y - rise * t) * 0.9 / hs + 1.3, t * 0.55 + 3.1 + seed, 3.0, seed + 11)
-            Xw = Xl + 0.55 * Rb * q1 * (0.15 + vc)
-            Yw = Y + 0.35 * Hf * q2 * (0.1 + 0.6 * vc)
-            vw = Yw / Hf
-            if vw < 0.0:
-                wv = Rb
-            elif vw < 1.0:
-                wv = Rb * (1.0 - vw) ** 0.72 + 0.02 * Rb
-            else:
-                wv = 0.02 * Rb
-            e = 1.0 - abs(Xw) / wv
-            n = fbm3(Xw * 2.6 / hs, (Yw - 1.35 * rise * t) * 1.25 / hs, t * 0.9 + seed * 2.0, detail, seed + 29)
-            F = e * 1.05 + n * (0.45 + 0.75 * vc) - 0.55 * vc * vc
-            # fade the bottom edge (fuel bed) and top
-            F *= smoothstep(-0.12, 0.02, v)
+            qyc = max(qy, 0.0)
+            # sway / lean of the column (whole flame bends with wind, top more)
+            xc = lean * qyc * qyc + 0.12 * Rb * math.sin(1.9 * t + 1.6 * qyc + seed) * qyc
+            qx = (X - xc) / Rb
+            # large-scale warp (billowing), advected upward
+            w1 = fbm3(qx * 0.9, (Y - rise * t) / Rb * 0.45, t * 0.35 + seed, 3.0, seed)
+            qxw = qx + 0.55 * w1 * (0.2 + 1.1 * qyc)
+            # teardrop: narrows with height
+            sx = qxw * (1.0 + 1.9 * qyc * qyc)
+            sy = (qy - 0.30) / 0.62
+            r = math.sqrt(sx * sx * 0.55 + sy * sy)
+            # detail noise, stretched vertically, advected upward faster than the warp
+            n = fbm3(qxw * 1.6, (Y - 1.25 * rise * t) / Rb * 0.9, t * 0.7 + 3.0 * seed, detail, seed + 29)
+            n = 0.5 + 0.5 * n
+            F = 1.0 - r - (1.0 - n) * (0.18 + 1.05 * qyc) + 0.25
+            F *= smoothstep(-0.1, 0.03, qy)
             if F <= 0.0:
                 continue
-            core = math.exp(-(X / (0.55 * Rb)) ** 2) * math.exp(-((v - 0.18) / 0.28) ** 2)
-            T = min(F * 1.15, 1.0)
-            T = T ** 1.1
-            Tc = min(T + 0.25 * core * T, 1.0)
-            r, g, b = bb(Tc)
-            e_int = I * (Tc ** 2.6) * alpha_mul
-            img[py, px, 0] += r * e_int
-            img[py, px, 1] += g * e_int
-            img[py, px, 2] += b * e_int
+            T = min(F * 1.55, 1.0)
+            # hot core low in the flame
+            core = math.exp(-(qx * 1.3) ** 2) * math.exp(-((qy - 0.2) / 0.3) ** 2)
+            T = min(T * (0.82 + 0.3 * core), 1.0)
+            r_, g_, b_ = bb(T)
+            e_int = I * T ** 4.0 * alpha_mul
+            img[py, px, 0] += r_ * e_int
+            img[py, px, 1] += g_ * e_int
+            img[py, px, 2] += b_ * e_int
 
 
 def flame(img, depth, cam, base_world, Hf, Rb, t, seed=0, I=14.0, lean=0.0, zbias=0.5, detail=4.0,
