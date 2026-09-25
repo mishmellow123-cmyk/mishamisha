@@ -118,7 +118,7 @@ def sky_intro():
         base_fall=0.15, amber_fall=0.026, rose_fall=0.042, violet_fall=0.22, az_pow=30.0,
         moon=(-17.0, 6.8), moon_radius_deg=1.0, moon_gain=3.4, moon_aureole=0.006,
         earthshine=0.045, city_gain=1.1, moon_phase=132.0, moon_pa=-22.0,
-        mw=0.0, star_gain=12.0, star_thresh=2.5, n_stars=14000,
+        mw=0.0, star_gain=30.0, star_thresh=3.0, n_stars=14000,
         planets=[(-8.5, 9.6, 14.0, (1.0, 0.97, 0.9))],
         ring=dict(RING), seed=1)
 
@@ -134,6 +134,6 @@ def sky_coda():
         base_fall=0.16, amber_fall=0.024, rose_fall=0.050, violet_fall=0.20, az_pow=30.0,
         moon=(-17.0, 5.6), moon_radius_deg=1.0, moon_gain=3.6, moon_aureole=0.008,
         earthshine=0.06, city_gain=1.6, moon_phase=132.0, moon_pa=-22.0,
-        mw=0.9, mw_pole=dir_from_az_el(-120.0, 20.0), star_gain=12.0, star_thresh=0.8, n_stars=18000,
+        mw=0.9, mw_pole=dir_from_az_el(-120.0, 20.0), star_gain=30.0, star_thresh=1.0, n_stars=18000,
         planets=[(-9.5, 7.2, 14.0, (1.0, 0.97, 0.9))],
         ring=dict(RING, shadow_floor=0.025, node_gain=1.9), seed=1)

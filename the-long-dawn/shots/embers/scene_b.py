@@ -173,7 +173,7 @@ class MindFire:
         col = C_CORE * (1 - c1) + C_ICE * c1
         col = col * (1 - c2) + gold * c2
         fl = 1 + 0.35 * np.sin(0.7 * t + self.fl)
-        e = self.E * fl * (2.2 - 1.3 * d) * 5.0 * pw
+        e = self.E * fl * (2.2 - 1.3 * d) * 0.9 * pw
         e *= 1.0 + 0.6 * m          # ring is thinner: keep it bright
         ctx.fr.splat(P0, P1, 0.004, e, col, ctx.cam0, ctx.cam1)
         # --- core
@@ -181,7 +181,7 @@ class MindFire:
         if m < 1:
             Pc0 = C0 + self.warp(cj, crown_morph(ctx.t0), R0, ctx.t0)
             Pc1 = C1 + self.warp(cj, crown_morph(ctx.t1), R1, ctx.t1)
-            ec = np.full(self.k, 22.0 * pw * (1 - 0.5 * m))
+            ec = np.full(self.k, 4.0 * pw * (1 - 0.5 * m))
             ctx.fr.splat(Pc0, Pc1, 0.003, ec, C_CORE, ctx.cam0, ctx.cam1)
         # --- tongues: rise from the upper surface, cool to gold/orange
         kk0 = (self.tph + self.tv * (ctx.t0 - IGN)) % 1.0
@@ -195,7 +195,7 @@ class MindFire:
             return p + w * (0.08 + 0.2 * kk)[:, None]
         T0 = C0 + self.warp(tongue(kk0, ctx.t0), crown_morph(ctx.t0), R0, ctx.t0)
         T1 = C1 + self.warp(tongue(kk1, ctx.t1), crown_morph(ctx.t1), R1, ctx.t1)
-        et = self.tE * (1 - kk1) ** 2 * smoothstep(0.0, 0.08, kk1) * 7.0 * pw * wrap_ok
+        et = self.tE * (1 - kk1) ** 2 * smoothstep(0.0, 0.08, kk1) * 2.2 * pw * wrap_ok
         tcol = look.blackbody(0.88 - 0.4 * kk1)
         tcol = tcol * (1 - 0.35 * red) + C_RED * 0.35 * red * np.ones_like(tcol)
         ctx.fr.splat(T0, T1, 0.004, et, tcol, ctx.cam0, ctx.cam1)
@@ -210,7 +210,7 @@ class MindFire:
             sp = np.where(self.pdir[self.fm, j] > 0, sp, L - sp)
             pulse += np.exp(-((s - sp) / 0.035) ** 2)
         base = 0.55 + 0.35 * (self.fdep == 0)
-        ef = (base + 9.0 * pulse) * vis * 3.2 * pw
+        ef = (base + 10.0 * pulse) * vis * 1.3 * pw
         fcol = C_ICE * (1 - np.minimum(pulse, 1))[:, None] + C_CORE * np.minimum(pulse, 1)[:, None]
         F0 = C0 + self.warp(self.fp, crown_morph(ctx.t0), R0, ctx.t0)
         F1 = C1 + self.warp(self.fp, crown_morph(ctx.t1), R1, ctx.t1)
@@ -218,7 +218,7 @@ class MindFire:
         # --- glow (volumetric halo around the fire)
         H = np.array([C1, C1, C1 + [0, 0.4, 0]])
         rr = np.array([1.2, 3.0, 7.0]) * (1 + 1.5 * m)
-        eh = np.array([2500.0, 2200.0, 1600.0]) * pw * smoothstep(IGN, IGN + 6, t)
+        eh = np.array([500.0, 500.0, 420.0]) * pw * smoothstep(IGN, IGN + 6, t)
         hc = np.array([C_CORE, C_ICE * 0.6 + C_GOLD * 0.4, C_GOLD * (1 - red) + C_RED * red])
         ctx.fr.splat(H, H, rr, eh, hc, ctx.cam0, ctx.cam1, profile=1)
 
@@ -261,7 +261,7 @@ class Crown:
         P0, _ = self.pts(ctx.t0)
         P1, k = self.pts(ctx.t1)
         red = redness(t)
-        e = self.E * (1 - k) ** 1.5 * 9.0 * smoothstep(0.35, 0.9, m) * fire_power(t)
+        e = self.E * (1 - k) ** 1.5 * 3.0 * smoothstep(0.35, 0.9, m) * fire_power(t)
         col = look.blackbody(0.95 - 0.35 * k)
         col = col * (1 - 0.4 * red) + C_RED * 0.4 * red
         ctx.fr.splat(P0, P1, 0.004, e, col, ctx.cam0, ctx.cam1)
@@ -373,16 +373,16 @@ class Towers:
             e_base = np.where(kind == 1, 1.0, 0.45) * (0.5 + 0.5 * rnd)
             e_base *= 0.35 + 0.65 * smoothstep(0.0, 14.0, yl)
             fl = 1 + 0.25 * np.sin(0.45 * t + self.flk[i][vis])
-            Tb = 0.36 + 0.1 * rnd
+            Tb = 0.4 + 0.14 * rnd
             cb = look.blackbody(Tb)
             cb = cb * (1 - 0.6 * red) + (C_RED * 0.7 + C_CRIMSON * 0.3) * 0.6 * red
-            e_base = e_base * fl * 1.6
+            e_base = e_base * fl * 2.6
             # fire light (inner faces)
             L = light_pos - P1
             dL = np.linalg.norm(L, axis=1)
             lam = np.maximum((nw * L).sum(1) / np.maximum(dL, 1e-6), 0.0)
             lam = np.where(kind == 1, 0.35 + 0.65 * lam, lam)
-            e_lit = light_pow * lam / (1 + (dL / 12.0) ** 2) * 3.2
+            e_lit = light_pow * lam / (1 + (dL / 12.0) ** 2) * 0.9
             # emergence front: hot line where the tower leaves the ground
             front = np.exp(-yl / 0.6) * 5.0 * (1 - smoothstep(610, 650, t) * 0.7)
             # windows
@@ -520,12 +520,12 @@ class Smoke:
 
     def __init__(self, seed=88):
         r = rng(seed)
-        n = 2600
+        n = 5000
         self.n = n
         a = r.uniform(0, 2 * np.pi, n)
         rr = 2.0 + 34.0 * r.random(n) ** 0.7
         self.p = np.stack([rr * np.cos(a), r.uniform(GROUND, 30.0, n), rr * np.sin(a)], 1)
-        self.rw = r.uniform(1.4, 3.6, n)
+        self.rw = r.uniform(3.0, 7.0, n)
         self.vy = r.uniform(0.004, 0.02, n)
         self.E = r.lognormal(0, 0.5, n)
 
@@ -539,12 +539,13 @@ class Smoke:
         w = vnoise(p * 0.1 + np.array([0, 0, 0.004 * t]), 0.3, (0, 0, 0), 1)
         p = p + w * 3.0
         d = np.linalg.norm(p - light_pos, axis=1)
-        lit = light_pow * 140.0 / (1 + (d / 6.0) ** 2)
+        lit = light_pow * 30.0 / (1 + (d / 7.0) ** 2)
         red = redness(t)
-        amb = 18.0 * red * np.exp(-np.maximum(p[:, 1] - GROUND, 0) / 25.0)
-        colE = light_col[None, :] * lit[:, None] + (C_CRIMSON * 0.7 + C_RED * 0.3)[None, :] * amb[:, None]
+        amb = 9.0 * red * np.exp(-np.maximum(p[:, 1] - GROUND, 0) / 25.0)
+        warm = light_col * 0.4 + look.blackbody(0.6) * 0.6
+        colE = warm[None, :] * lit[:, None] + (C_CRIMSON * 0.7 + C_RED * 0.3)[None, :] * amb[:, None]
         colE *= self.E[:, None]
-        ctx.fr.splat(p, p, self.rw, np.ones(self.n), colE, ctx.cam0, ctx.cam1, profile=1)
+        ctx.fr.splat(p, p, self.rw, np.ones(self.n), colE, ctx.cam0, ctx.cam1, profile=1, zref=0.0)
 
 
 class Dust:
@@ -570,9 +571,9 @@ class Dust:
             q = self.p + np.array([0, 0.01, 0]) * (tq - IGN)
             return q + vnoise(self.p * 0.05 + np.array([0.003 * tq, 0, 0]), 0.5, (0, 0, 0), 1) * 1.5
         red = redness(t)
-        e = self.E * 1.3 * (0.6 + 0.4 * np.sin(0.1 * t + self.ph))
+        e = self.E * 0.5 * (0.6 + 0.4 * np.sin(0.1 * t + self.ph))
         col = look.blackbody(self.T) * (1 - 0.5 * red) + C_RED * 0.5 * red
-        ctx.fr.splat(pts(ctx.t0), pts(ctx.t1), 0.01, e, col, ctx.cam0, ctx.cam1)
+        ctx.fr.splat(pts(ctx.t0), pts(ctx.t1), 0.01, e, col, ctx.cam0, ctx.cam1, zref=0.0)
 
 
 class Vortex:
@@ -636,15 +637,15 @@ def _polar(r, a, y):
 
 CAM_B = [  # (frame, radius, azimuth offset, height, target y)
     (480, 13.9, 0.43, 7.2, -1.35),
-    (500, 10.6, 0.14, 2.8, 0.1),
-    (520, 9.6, -0.22, 1.7, 0.5),
-    (556, 15.0, -0.12, 3.2, 1.8),
-    (596, 29.0, -0.03, 6.0, 4.0),
-    (640, 37.0, 0.00, 7.5, 5.8),
-    (720, 31.0, 0.07, 19.0, 17.0),
-    (800, 28.0, 0.14, 38.0, 33.0),
-    (840, 52.0, 0.24, 62.0, 40.0),
-    (880, 84.0, 0.30, 86.0, 44.0),
+    (500, 15.5, 0.16, 3.4, -1.2),
+    (520, 16.5, -0.18, 3.6, -1.0),
+    (556, 22.0, -0.12, 6.0, 0.4),
+    (596, 31.0, -0.04, 12.0, 2.6),
+    (640, 39.0, 0.00, 18.0, 3.2),
+    (720, 33.0, 0.07, 25.0, 15.0),
+    (800, 30.0, 0.14, 42.0, 31.0),
+    (840, 54.0, 0.24, 64.0, 39.0),
+    (880, 86.0, 0.30, 88.0, 43.0),
 ]
 
 

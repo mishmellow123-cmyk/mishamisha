@@ -544,8 +544,16 @@ class Frame:
         p[14] = maxsub
         p[15] = zref
 
-    def splat(self, P0, P1, RW, E, COL, cam0, cam1, profile=0):
+    def splat(self, P0, P1, RW, E, COL, cam0, cam1, profile=0, zref=None):
         if len(E) == 0:
+            return
+        if zref is not None:
+            keep = self.prm[15]
+            self.prm[15] = zref
+            try:
+                self.splat(P0, P1, RW, E, COL, cam0, cam1, profile)
+            finally:
+                self.prm[15] = keep
             return
         P0 = np.ascontiguousarray(P0, np.float32)
         P1 = np.ascontiguousarray(P1, np.float32)

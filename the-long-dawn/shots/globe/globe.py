@@ -834,25 +834,28 @@ def splat_segments(img, x0, y0, x1, y1, c0, c1, w0, w1):
 
 
 @njit(cache=True, fastmath=True)
-def splat_polyline(img, xs, ys, cols, sig, starts):
-    """Draw polylines with per-vertex colour/width. Joint double-counting is avoided by
-    splatting each segment only over its half-open parameter range [0,1)."""
+def splat_polyline(img, xs, ys, cols, sig, starts, ok):
+    """Draw polylines with per-vertex colour (peak radiance) and gaussian sigma (px).
+    A segment is drawn only if both its vertices have ok != 0. Joints are owned half-open so
+    they are not double counted."""
     H = img.shape[0]
     W = img.shape[1]
     for k in range(starts.shape[0] - 1):
         a = starts[k]
         b = starts[k + 1]
         for i in range(a, b - 1):
+            if ok[i] == 0 or ok[i + 1] == 0:
+                continue
             ax = xs[i]
             ay = ys[i]
             bx = xs[i + 1]
             by = ys[i + 1]
-            if not (math.isfinite(ax) and math.isfinite(bx)):
-                continue
             s0 = sig[i]
             s1 = sig[i + 1]
             sw = max(s0, s1)
             rad = 3.0 * sw + 1.0
+            if abs(ax) > 1e5 or abs(bx) > 1e5 or abs(ay) > 1e5 or abs(by) > 1e5:
+                continue
             minx = int(math.floor(min(ax, bx) - rad))
             maxx = int(math.ceil(max(ax, bx) + rad))
             miny = int(math.floor(min(ay, by) - rad))
@@ -864,7 +867,8 @@ def splat_polyline(img, xs, ys, cols, sig, starts):
             ex = bx - ax
             ey = by - ay
             l2 = ex * ex + ey * ey
-            last = i == b - 2
+            first = (i == a) or ok[i - 1] == 0
+            last = (i == b - 2) or ok[i + 2] == 0
             for yy in range(max(miny, 0), min(maxy + 1, H)):
                 for xx in range(max(minx, 0), min(maxx + 1, W)):
                     qx = xx + 0.5 - ax
@@ -873,8 +877,7 @@ def splat_polyline(img, xs, ys, cols, sig, starts):
                         t = (qx * ex + qy * ey) / l2
                     else:
                         t = 0.0
-                    # half-open ownership of the joint region
-                    if t < 0.0 and i > a:
+                    if t < 0.0 and not first:
                         continue
                     if t >= 1.0 and not last:
                         continue
