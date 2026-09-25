@@ -582,7 +582,7 @@ class Hearths:
     """DAWN: small warm lights blooming into places that were dark (every hearth answered).
     Sampled on land where the night lights are faint, spreading out from the web's beacons."""
 
-    def __init__(self, web, t_start=2272.0, t_end=2465.0, n=26000, seed=21):
+    def __init__(self, web, t_start=2272.0, t_end=2465.0, n=24000, seed=22):
         import cv2
         rng = np.random.default_rng(seed)
         cache = os.path.join(ROOT, 'renders', 'globe', 'cache')
@@ -606,19 +606,28 @@ class Hearths:
         w = (mask > 0.9) * dark * habitable * np.cos(np.radians(lat_c))[:, None]
         w[np.abs(lat_c) > 66] = 0
         p = w.ravel() / w.sum()
-        idx = rng.choice(len(p), size=n, p=p)
+        nc = n // 5
+        idx = rng.choice(len(p), size=nc, p=p)
         yy, xx = np.divmod(idx, 2048)
-        la = 90.0 - (yy + rng.random(n)) / 1024 * 180.0
-        lo = (xx + rng.random(n)) / 2048 * 360.0 - 180.0
-        P = ll2v(la, lo)
+        la = 90.0 - (yy + rng.random(nc)) / 1024 * 180.0
+        lo = (xx + rng.random(nc)) / 2048 * 360.0 - 180.0
+        C = ll2v(la, lo)
+        # villages: a few lights around each centre, spread 5-25 km
+        m = 1 + rng.poisson(4.0, nc)
+        cid = np.repeat(np.arange(nc), m)
+        n = len(cid)
+        spread = rng.uniform(5.0, 25.0, nc)[cid] / R_KM
+        off = rng.normal(0, 1, (n, 3)) * spread[:, None]
+        P = C[cid] + off
+        P /= np.linalg.norm(P, axis=1)[:, None]
         # spread outward from the nearest beacon, modulated by a smooth field (waves of light)
         tree = cKDTree(web.P)
-        dist, _ = tree.query(P)
+        dist, _ = tree.query(C)
         dkm = dist * R_KM
-        field = np.sin(P @ np.array([7.0, 3.0, 5.0])) * 0.5 + np.sin(P @ np.array([-4.0, 9.0, 2.0])) * 0.5
-        s = np.clip(0.55 * np.clip(dkm / 330.0, 0, 1) + 0.25 * (field * 0.5 + 0.5) + 0.2 * rng.random(n), 0, 1)
-        self.tb = t_start + (t_end - t_start) * s
-        self.e = rng.lognormal(0, 0.5, n)
+        field = np.sin(C @ np.array([7.0, 3.0, 5.0])) * 0.5 + np.sin(C @ np.array([-4.0, 9.0, 2.0])) * 0.5
+        s = np.clip(0.55 * np.clip(dkm / 330.0, 0, 1) + 0.25 * (field * 0.5 + 0.5) + 0.2 * rng.random(nc), 0, 1)
+        self.tb = (t_start + (t_end - t_start) * s)[cid] + rng.uniform(0.0, 7.0, n)
+        self.e = rng.lognormal(0, 0.6, n) * 0.8
         self.P = P
         np.savez(path, P=self.P, tb=self.tb, e=self.e)
 

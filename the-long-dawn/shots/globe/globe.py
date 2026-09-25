@@ -330,8 +330,17 @@ def fbm(x, y, z, f0, octaves, lod):
 def cloud_density(x, y, z, clouds, cp, lod):
     """Cloud opacity at a unit-sphere point: low-frequency coverage map + procedural detail."""
     lat, lon = ll_of(x, y, z)
-    u, v = tex_uv(lat, lon, clouds.shape[1], clouds.shape[0])
+    lat2 = lat + cp[16]
+    lon2 = lon + cp[15]
+    if lon2 > math.pi:
+        lon2 -= 2 * math.pi
+    u, v = tex_uv(lat2, lon2, clouds.shape[1], clouds.shape[0])
     base = bilin1(clouds, u, v)
+    # optional fair-weather cumulus field (broken cloud everywhere, thinning with the big systems)
+    if cp[17] > 0.0:
+        cu = fbm(x + 3.1, y - 1.7, z + 0.9, 60.0, 5, lod)
+        cu = min(1.0, max(0.0, (cu - 0.52) / 0.12))
+        base = max(base, cu * cp[17])
     if base * cp[1] + 0.5 * cp[2] - cp[3] <= 0.0:
         return 0.0
     wx = fbm(x, y, z, cp[4], 3, lod) - 0.5
@@ -936,7 +945,7 @@ class World:
     def default_cp(X=2.5):
         return np.array([95.0, 1.35, 0.95, 0.12, 22.0, 0.035, 0.95,
                          9.0 * X / R_KM, 0.55, 0.035, 0.9, 0.16,
-                         0.30, 0.55, 1.0], np.float64)
+                         0.30, 0.55, 1.0, 0.0, 0.0, 0.0], np.float64)
 
     def stars(self):
         if self._stars is None:
@@ -1076,8 +1085,9 @@ def sun_glare(W, H, sx, sy, core, spikes_amt, flash=0.0, rot_deg=11.0, tint=(1.0
     hot = np.asarray((1.0, 0.96, 0.9), np.float32)
     if core > 0:
         g_hot = core * (1.4 * np.exp(-r / 6.0) + 0.55 * np.exp(-r / 22.0))
-        g_warm = core * (0.16 / (1.0 + (r / 60.0) ** 2) + 0.035 / (1.0 + (r / 220.0) ** 2) ** 1.5)
-        img += g_hot[..., None] * hot + g_warm[..., None] * tint
+        g_warm = core * 0.14 / (1.0 + (r / 55.0) ** 2)
+        g_far = core * 0.02 / (1.0 + (r / 200.0) ** 2) ** 1.5
+        img += g_hot[..., None] * hot + g_warm[..., None] * tint + g_far[..., None] * np.asarray((0.85, 0.9, 1.0), np.float32)
     if flash > 0:
         g = flash * (2.4 * np.exp(-r / 26.0) + 0.5 / (1.0 + (r / 90.0) ** 2) + 0.03 / (1.0 + (r / 300.0) ** 2))
         img += g[..., None] * np.asarray((1.0, 0.93, 0.82), np.float32)

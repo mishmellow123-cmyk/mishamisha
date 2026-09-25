@@ -185,8 +185,8 @@ class Dawn:
         p['sun_el'] = spline(t, [(2200, -1.6), (2232, -0.75), (2240, -self.SUN_R + 0.02), (2250, -0.02),
                                  (2266, 0.32), (2300, 0.75), (2400, 1.7), (2495, 2.4)])
         # the lighting sun leads the disk so the terminator can visibly race toward us
-        p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2256, 1.0), (2280, 5.0), (2310, 11.0),
-                               (2360, 19.0), (2420, 26.0), (2495, 32.0)])
+        p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2252, 1.5), (2270, 6.0), (2300, 13.0),
+                               (2350, 21.0), (2420, 28.0), (2495, 34.0)])
         p['sun_az'] = -1.5
         return p
 
@@ -228,9 +228,13 @@ class Dawn:
         cam, p = self.camera(t, W, H)
         Sd, Sl = self.suns(p)
         Emoon = np.array([0.337, 0.456, 0.69]) * 0.6
-        Esun = np.array([1.0, 0.96, 0.90]) * 16.0
-        img, cov, tv = G.render_planet(wd, cam, at, Sl, Esun, Sd, 40.0, self.moon, Emoon)
-        img += G.render_lights(wd, cam, at, Sl, gain=0.5e-7)
+        Esun = np.array([1.0, 0.91, 0.76]) * 17.0
+        cp = World.default_cp(at.X)
+        cp[15] = math.radians(-16.0)        # this morning's weather: the African cloud mass sits
+        cp[16] = math.radians(-2.0)         # where the terminator sweeps
+        cp[17] = 0.55                       # broken fair-weather cloud everywhere
+        img, cov, tv = G.render_planet(wd, cam, at, Sl, Esun, Sd, 40.0, self.moon, Emoon, cp=cp)
+        img += G.render_lights(wd, cam, at, Sl, gain=0.5e-7, cp=cp)
         star_k = 1.0 - ramp(t, 2236, 2262) * 0.85
         img += G.render_stars(wd, cam, at, gain=0.9 * star_k)
         calm = self.calm(t, H)
