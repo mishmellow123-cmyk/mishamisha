@@ -11,7 +11,7 @@ from sky import sky_rad
 
 class Ridge:
     def __init__(self, z, x0, x1, heights, albedo, fog_mul=1.0, rim=0.0, mist=1.0, tex=0.0, name='',
-                 fog_el=0.035, mist_scale=0.0, seed=0.0):
+                 fog_el=0.035, mist_scale=0.0, seed=0.0, snow=0.0):
         self.z = float(z)
         self.x0 = float(x0)
         self.x1 = float(x1)
@@ -26,6 +26,7 @@ class Ridge:
         self.fog_el = fog_el
         self.mist_scale = mist_scale
         self.seed = seed
+        self.snow = snow
         self.snow = snow
 
     def height(self, X):
@@ -108,6 +109,7 @@ def pack_ridges(ridges):
         meta[i, 12] = r.fog_el
         meta[i, 13] = r.mist_scale
         meta[i, 14] = r.seed
+        meta[i, 15] = r.snow
         meta[i, 15] = r.snow
         hs.append(r.h)
         off += len(r.h)

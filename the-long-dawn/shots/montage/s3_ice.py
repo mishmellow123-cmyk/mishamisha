@@ -38,12 +38,12 @@ def _lod(scale, fp, lo, hi):
 @njit(fastmath=True)
 def h_land(x, z, fp):
     # shore: slopes from the camera down to the waterline ~z=45
-    h = 0.35 - 0.0012 * z * z - 0.002 * max(z - 30.0, 0.0) ** 2 * 6.0
+    h = 0.35 - 0.00045 * z * z - 0.01 * max(z - 42.0, 0.0) ** 2
     o = _lod(3.0, fp, 1.0, 5.0)
     h += 0.12 * fbm2(x * 0.3, z * 0.3, o, 3)
     # promontory on the left carrying the figure + beacon
-    px = (x + 7.0) / 9.0
-    pz = (z - 26.0) / 9.0
+    px = (x + 7.0) / 5.5
+    pz = (z - 25.0) / 6.0
     q = px * px + pz * pz
     if q < 1.6:
         hp = 3.3 * math.exp(-q * q * 1.6)
@@ -61,14 +61,14 @@ def h_land(x, z, fp):
         if hg > h:
             h = hg
     # mountains behind
-    if z > 1500.0:
+    if z > 3000.0:
         o4 = _lod(1600.0, fp, 1.0, 10.0)
-        r = ridged2(x / 1700.0 + 0.2, z / 1700.0 + 3.1, o4, 21)
-        hm = -300.0 + 1500.0 * r ** 1.5 * smoothstep(1500.0, 3200.0, z)
+        r = ridged2(x / 1900.0 + 0.2, z / 1900.0 + 3.1, o4, 21)
+        hm = -250.0 + 780.0 * r ** 1.7 * smoothstep(3000.0, 6000.0, z)
         if hm > h:
             h = hm
     # ice floes on the fjord
-    if z > 48.0 and z < 600.0:
+    if z > 70.0 and z < 600.0:
         fl = fbm2(x / 9.0, z / 9.0, 3.0, 11)
         if fl > 0.38:
             hf = WATER + 0.25 * smoothstep(0.38, 0.45, fl)
@@ -119,7 +119,7 @@ def shade(C, D, P, S, A, t, LT, Lm, Im, amb, aur_amb, fogp, out, dep):
                 # water: rippled mirror of the sky (aurora), plus fire glints
                 n1 = gnoise2(x * 0.9 + t * 0.6, z * 2.2, 31)
                 n2 = gnoise2(x * 0.9 + 5.0, z * 2.2 - t * 0.5, 32)
-                amp = 0.05 * (1.0 - smoothstep(0.02, 0.6, fp)) + 0.012
+                amp = 0.035 * (1.0 - smoothstep(0.005, 0.05, fp)) + 0.006
                 nx = amp * n1
                 nz = amp * n2 - 0.01
                 ny = 1.0
@@ -132,7 +132,7 @@ def shade(C, D, P, S, A, t, LT, Lm, Im, amb, aur_amb, fogp, out, dep):
                 ry = abs(dy - 2.0 * dn * ny)
                 rz = dz - 2.0 * dn * nz
                 r, g, b = sky_all(x, WATER, z, rx, ry, rz, S, A, t)
-                fres = 0.03 + 0.97 * (1.0 - max(-dn, 0.0)) ** 5
+                fres = (0.03 + 0.97 * (1.0 - max(-dn, 0.0)) ** 5) * 0.6
                 cr = r * fres + 0.002
                 cg = g * fres + 0.003
                 cb = b * fres + 0.005
@@ -160,7 +160,7 @@ def shade(C, D, P, S, A, t, LT, Lm, Im, amb, aur_amb, fogp, out, dep):
                 ag = 0.86 - 0.12 * steep
                 ab = 0.98
                 if z > 600.0 and steep > 0.5:
-                    fl = 0.75 + 0.25 * gnoise2(x * 0.6, 0.0, 41)
+                    fl = 0.8 + 0.2 * gnoise2(x * 0.07, h0 * 0.04, 41) + 0.08 * gnoise2(x * 0.3, h0 * 0.1, 42)
                     ar *= fl
                     ag *= fl
                 ndl = nx * mx + ny * my + nz * mz
@@ -250,7 +250,7 @@ def render(frame, scale=0.5, ss=1.5):
     aur_amb = np.array([0.006, 0.030, 0.014])
     S = SK.sky_params(zenith='#060A1A', horizon='#1D2A50', moon_dir=MOON_DIR, halo_I=0.0, halo2_I=0.0,
                       horizon_glow=0.25)
-    A = np.array([1200.0, 5200.0, 1.0 / 2600.0, 7.0, 0.32, 1.0, 0.0, -2600.0, 36.0, 7.0])
+    A = np.array([1200.0, 5200.0, 1.0 / 2600.0, 7.0, 1.8, 1.0, 0.0, -1800.0, 56.0, 6.0])
     fogc = CM.lin('#1D2A50') * 0.9
     fogp = np.array([1.0 / 9000.0, fogc[0], fogc[1], fogc[2]])
     out = np.zeros((cami.H, cami.W, 3), np.float32)

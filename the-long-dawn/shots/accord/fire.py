@@ -12,7 +12,7 @@ import math
 import numpy as np
 from numba import njit, prange
 
-from nbcore import FM, clamp, sstep, mix, tex3, vnoise2, fbm2
+from nbcore import FM, clamp, sstep, mix, tex3, vnoise2, fbm2, grid_sample
 
 # fire params
 FP_T, FP_I, FP_SCALE, FP_H, FP_SWIRL, FP_Z0, FP_WHITE, FP_R0, FP_RISE, FP_SPREAD = range(10)
@@ -359,11 +359,7 @@ def mist_layers(img, cam, layers, nl, T, irr_c, ig_x0, ig_cell, warm):
                 if a <= 0.0:
                     continue
                 # colour: moonlit + warm glow of torch rivers below
-                w = 0.0
-                u = (px - ig_x0) / ig_cell
-                v = (py - ig_x0) / ig_cell
-                if u > 0 and v > 0 and u < irr_c.shape[1] - 1 and v < irr_c.shape[0] - 1:
-                    w = irr_c[int(v), int(u)]
+                w = grid_sample(irr_c, ig_x0, ig_x0, ig_cell, px, py)
                 mr = 0.020 + warm * w * 1.0
                 mg = 0.026 + warm * w * 0.45
                 mb = 0.040 + warm * w * 0.12

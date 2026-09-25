@@ -20,7 +20,9 @@ python3 shots/globe/render.py --finalize                      # preview.mp4 + co
 ```
 
 Every frame is a pure function of its global frame number (no state between frames), so any
-range can be re-rendered in isolation or split across processes.
+range can be re-rendered in isolation or split across processes. Render time at 1920×804 with
+2 numba threads on the shared, loaded machine: about 5.5 s/frame for THE WORLD ANSWERS and
+about 8.5 s/frame for DAWN, plus about 20 s of JIT/cache warm-up per process.
 
 ## What is in the files
 
@@ -35,18 +37,20 @@ range can be re-rendered in isolation or split across processes.
   precomputed transmittance LUT, with a non-uniform march and the Earth's shadow; the shell is
   thickened (X = 2.0 / 2.6) with optical depth kept, so the band reads at 1920 px. There is a
   moonlit rim gain on grazing rays and a hairline airglow integrated over its exact shell
-  crossings. The surface has a land-relief normal map, GGX ocean glint, a Fresnel sky
-  reflection, moonlight with a faint moon glint on water, and a twilight skylight near the
+  crossings. The surface has a land-relief normal map, GGX ocean glint, a Fresnel blue-sky
+  reflection on the sea, moonlight with a faint moon glint on water, and a twilight skylight near the
   terminator. Clouds use the map as low-frequency coverage only; the shapes come from two-scale
-  domain-warped fbm with a soft opacity ramp, plus streaky cirrus. Cloud tops are lit at their
+  domain-warped fbm with a soft opacity ramp. A fine-scale erosion feathers thin cloud into
+  wisps while thick cores stay whole, and there are streaky cirrus veils. Cloud tops are lit at their
   own height (so they stay lit past the ground terminator), get relief shading from the density
   gradient in raking light, and cast shadows. Night lights, stars and all fire are splatted in
   screen space (resolution independent). The file also holds the sun lens layer (core, halo,
   16 diffraction spikes with chromatic tips, a burst flash) and `finish_frame()`.
-* `web.py`: the golden web. Nodes are the Himalayan origin, about 430 curated heights, deserts,
+* `web.py`: the golden web. Nodes are the Himalayan origin, about 420 curated heights, deserts,
   ice, karst, islands and coasts on every continent (`places.py`), plus distance-thinned
   cities and relief-weighted hill beacons. A seeded spread simulation runs over a spherical
-  Delaunay graph: each new light throws 2–3 arcs outward with angular diversity, designated
+  Delaunay graph: each new light throws 2–3 arcs outward with angular diversity (the first
+  three generations travel 2.2×, 1.5× and 1.2× slower, for weight while big on screen); designated
   ocean leaps sail over the limb, "late answers" fill gaps, and sparse cross-links close loops.
   Arcs are great circles lifted by a sin profile (7% of length for hops, 15% for leaps).
   Threads are thin and cool from white-gold to amber after the fire passes; they are brighter
@@ -59,8 +63,9 @@ range can be re-rendered in isolation or split across processes.
 ## Beats (global frames)
 
 THE WORLD ANSWERS: the first beacon already burns in the Himalaya at 1752; it flares at **1760**
-(choir) and throws its first three arcs; the web grows exponentially (arc landings per 10
-frames: 1, 5, 8, 19, 28 … 60+) and by ~1890 the visible night side of Asia is laced, with
+(choir) and throws its first three arcs, which land heavily around 1778–1790. The web then
+grows exponentially (arc landings per 10 frames from 1760: 0, 1, 3, 4, 9, 15, 17, 26, 36 …
+40–58), and by ~1890 the visible night side of Asia is laced, with
 leaps over the limb toward the Americas, Alaska and the Indian Ocean islands. The camera is a
 slow, eased pull-back and rise from 2,300 to 8,200 km, drifting west.
 
@@ -81,7 +86,7 @@ web and hearths at 50%, and the sun's spikes masked out of it.
   The cheat lets the light flood the world while the sun stays near the limb and frame centre.
   The sun's apparent elevation above the limb is scripted relative to the camera (it crests
   exactly at 2240).
-* **Weather (DAWN):** the cloud field is shifted 16° west / 2° south and cleared near the sunrise,
+* **Weather (DAWN):** the cloud field is shifted 16° west / 2° south and thinned within 17° of the sunrise,
   so the African cloud mass sits where the terminator sweeps and land and sea read by the
   sunrise. It is artistic weather, not a specific date.
 * **Atmosphere thickness** is exaggerated (see above), and the airglow is placed a little higher

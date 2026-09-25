@@ -177,6 +177,7 @@ def walker_state(t):
     pos = np.zeros((W.shape[0], 2))
     posp = np.zeros((W.shape[0], 2))
     head = np.zeros(W.shape[0])
+    hidden = np.zeros(W.shape[0], bool)
     for k in range(W.shape[0]):
         pi = int(W[k, 0])
         p = paths[pi]
@@ -184,6 +185,8 @@ def walker_state(t):
         for (dd, out) in ((D, 0), (Dp, 1)):
             s = W[k, 1] + W[k, 2] * dd
             if s < 0:
+                if out == 0:
+                    hidden[k] = True
                 s = 0.0
             if s <= L[-1]:
                 x = np.interp(s, L, p[:, 0])
@@ -211,6 +214,8 @@ def walker_state(t):
                 pos[k] = (x, y)
             else:
                 posp[k] = (x, y)
+    pos[hidden] = 1e5
+    posp[hidden] = 1e5
     # standing crowd
     st = _P['stand']
     sw = 0.03 * np.stack([np.sin(t * 0.05 + _P['stand_ph']), np.cos(t * 0.04 + _P['stand_ph'])], -1)
@@ -267,7 +272,7 @@ def irradiance(t):
     igf = np.zeros((Nf, Nf), np.float32)
     fl = 1.0 + 0.1 * np.sin(t * 1.7 + np.arange(torch.shape[0]))
     P = torch[:, :2].copy()
-    I = 1.3
+    I = 0.30
     _splat_irr(igc, -IGC_R, IGC_CELL, P, P.shape[0], I, 1.95, 7.0)
     near = np.nonzero((np.abs(P[:, 0]) < IGF_R + 6) & (np.abs(P[:, 1]) < IGF_R + 6))[0]
     Pn = P[near].copy()
@@ -305,7 +310,7 @@ def draw(rgb, depth, cam, t, scale, band):
         FI.dark_sprites(rgb, depth, cam, Q, n)
         # torch flames with time-lapse trails
         fl = 0.85 + 0.15 * np.sin(t * 2.3 + np.arange(n) * 1.7)
-        col = (0.55 * FIRE_HOT + 0.45 * FIRE_CORE)[None, :] * (26.0 * fl)[:, None]
+        col = (0.55 * FIRE_HOT + 0.45 * FIRE_CORE)[None, :] * (20.0 * fl)[:, None]
         S = np.zeros((n, 11))
         S[:, 0:3] = torchp
         S[:, 3:6] = torch
@@ -317,7 +322,7 @@ def draw(rgb, depth, cam, t, scale, band):
         Hs = np.zeros((n, 8))
         Hs[:, 0:3] = torch
         Hs[:, 3] = 0.9
-        Hs[:, 4:7] = FIRE_MID[None, :] * 0.25
+        Hs[:, 4:7] = FIRE_MID[None, :] * 0.035
         FI.splat_blobs(rgb, depth, cam, Hs, n, 0.3, band)
     if cam[2] > 40.0:
         igc = irradiance(t)[0]

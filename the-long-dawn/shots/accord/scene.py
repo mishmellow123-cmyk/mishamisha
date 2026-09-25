@@ -120,8 +120,8 @@ def project(cam, P):
 
 def exposure(t):
     e = 5.0
-    e += (2.4 - 5.0) * smooth(ramp(t, 1968, 1996))
-    e += (1.0 - 2.4) * ease_out(ramp(t, 1999.5, 2006), 2.0)
+    e += (1.7 - 5.0) * smooth(ramp(t, 1955, 1990))
+    e += (1.0 - 1.7) * ease_out(ramp(t, 1998.5, 2004), 2.0)
     return e
 
 
@@ -134,7 +134,7 @@ FIG_HS = np.array([1.00, 0.95, 1.05, 0.97, 1.02, 0.93, 1.06, 0.99, 0.96, 1.03, 0
 FIG_WS = np.array([1.00, 0.96, 1.07, 0.95, 1.02, 1.05, 1.00, 0.97, 1.04, 0.99, 0.94, 1.03])
 FIG_TYPE = np.array([0, 1, 2, 0, 3, 0, 4, 1, 0, 2, 0, 1])
 FIG_SIDE = np.array([-1, -1, 1, -1, -1, 1, -1, -1, -1, 1, -1, -1], np.float64)
-_CLOTH = 0.55 * np.array([
+_CLOTH = 0.36 * np.array([
     [0.035, 0.040, 0.075],   # indigo
     [0.085, 0.028, 0.026],   # oxblood
     [0.055, 0.058, 0.032],   # olive
@@ -324,7 +324,7 @@ def hearth_intensity(t):
         return pre
     a = t - IGNITE
     base = 0.7 + 0.3 * ease_out(ramp(t, IGNITE, IGNITE + 12), 2.0)
-    flash = 1.0 + 1.8 * math.exp(-a / 2.2)
+    flash = 1.0 + 0.9 * math.exp(-a / 2.0)
     flick = 1.0 + 0.07 * math.sin(t * 1.37) + 0.05 * math.sin(t * 2.71 + 1.3) + 0.04 * math.sin(t * 0.61)
     flare = math.exp(math.log(55.0) * smooth(ramp(t, FLARE_T0, FLARE_T1)) ** 1.6)
     flare *= 1.0 + 0.5 * ramp(t, FLARE_T1, 2250)
@@ -340,7 +340,7 @@ def torch_lights(t, Fa):
             continue
         tip, _, tor = torch_tip_world(i, t)
         fl = 1.0 + 0.12 * math.sin(t * 1.9 + 3.1 * i) + 0.08 * math.sin(t * 3.3 + i)
-        I = 0.95 * lit * fl
+        I = 0.6 * lit * fl
         L.append([tip[0], tip[1], tip[2] + 0.15, I * FIRE_HOT[0], I * FIRE_HOT[1], I * FIRE_HOT[2]])
         # ribbon: light travelling toward the hearth
         rp = ribbon_progress(i, t)
@@ -430,7 +430,7 @@ def params(t, scale=1.0):
     PR[SH.P_EMT] = 2.6 * (1 + 1.5 * flare)
     PR[SH.P_EMHOT] = 10.0
     PR[SH.P_SHIM] = 0.16
-    PR[SH.P_SHEEN] = 1.1
+    PR[SH.P_SHEEN] = 1.5
     PR[SH.P_TEXR] = tm.TEX_R
     return PR
 

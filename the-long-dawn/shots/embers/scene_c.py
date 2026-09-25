@@ -212,6 +212,14 @@ def _ry(a):
     return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
 
 
+def _xf(p, R):
+    """p @ R.T without BLAS (elementwise; much faster for (N,3) x (3,3))"""
+    x, y, z = p[:, 0], p[:, 1], p[:, 2]
+    return np.stack([R[0, 0] * x + R[0, 1] * y + R[0, 2] * z,
+                     R[1, 0] * x + R[1, 1] * y + R[1, 2] * z,
+                     R[2, 0] * x + R[2, 1] * y + R[2, 2] * z], 1)
+
+
 class HandRig:
     """Anatomical point-sampled hand: palm with thenar/hypothenar pads and knuckle ridge,
     4 fingers x 3 tapered phalanges with joint bulges, 3-segment opposing thumb, wrist, forearm.
@@ -347,8 +355,8 @@ class HandRig:
                 ID.append(np.full(len(jp), 1 + fi))
                 R = R @ _rx(flex[f][k])
                 cp, cn, ck = self.caps[f][k]
-                P.append(cp @ R.T + p0)
-                N.append(cn @ R.T)
+                P.append(_xf(cp, R) + p0)
+                N.append(_xf(cn, R))
                 KN.append(ck * 0.5)
                 ID.append(np.full(len(cp), 1 + fi))
                 p0 = p0 + R @ np.array([0, lens[k], 0])
@@ -374,8 +382,8 @@ class HandRig:
             if k > 0:
                 R = R @ _rx(bend)
             cp, cn, ck = self.thumb[k]
-            P.append(cp @ R.T + p0)
-            N.append(cn @ R.T)
+            P.append(_xf(cp, R) + p0)
+            N.append(_xf(cn, R))
             KN.append(ck)
             ID.append(np.full(len(cp), 5))
             p0 = p0 + R @ np.array([0, self.tl[k], 0])
@@ -452,7 +460,7 @@ class Hand:
         flex, spread, th = hand_pose_at(t)
         p, n, pid, kn = self.rig.pose(flex, spread, th)
         R, W = hand_transform(t)
-        return (p * HAND_L) @ R.T + W, n @ R.T, pid, kn
+        return _xf(p * HAND_L, R) + W, _xf(n, R), pid, kn
 
     def emit(self, ctx, fr_hand, fr_cov):
         t = ctx.t
@@ -508,10 +516,10 @@ class Hand:
         ages = self.s_age * 14.0
         tb = t - ages
         Ps = np.empty((self.ns, 3))
-        for b0 in range(0, 15, 3):
-            m = (ages >= b0) & (ages < b0 + 3)
+        for b0 in range(0, 15, 5):
+            m = (ages >= b0) & (ages < b0 + 5)
             if m.any():
-                Pb, _, _, _ = self.world(t - (b0 + 1.5))
+                Pb, _, _, _ = self.world(t - (b0 + 2.5))
                 Ps[m] = Pb[self.s_idx[m]] + self.s_off[m]
         drift = self.s_v * ages[:, None] * 0.35
         S1 = Ps + drift

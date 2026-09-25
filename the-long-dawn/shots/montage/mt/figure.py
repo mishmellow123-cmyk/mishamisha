@@ -80,6 +80,29 @@ class Drawing:
     def array(self):
         return np.array(self.rows, np.float64) if self.rows else np.zeros((0, NCOL))
 
+    def rotate(self, ang, pivot=(0.0, 0.0)):
+        """Rotate every primitive by ang (radians, counter-clockwise) about pivot."""
+        c, s_ = math.cos(ang), math.sin(ang)
+        px, py = pivot
+
+        def R(x, y):
+            x -= px
+            y -= py
+            return px + c * x - s_ * y, py + s_ * x + c * y
+        for r in self.rows:
+            t = int(r[0])
+            if t == ELLIPSE:
+                r[1], r[2] = R(r[1], r[2])
+                r[5] += ang
+            elif t == TRI:
+                r[1], r[2] = R(r[1], r[2])
+                r[3], r[4] = R(r[3], r[4])
+                r[5], r[6] = R(r[5], r[6])
+            else:
+                r[1], r[2] = R(r[1], r[2])
+                r[3], r[4] = R(r[3], r[4])
+        return self
+
     def bounds(self):
         A = self.array()
         xs, ys = [], []

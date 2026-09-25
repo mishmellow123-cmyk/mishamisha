@@ -191,10 +191,10 @@ def render_frame(t, scale=1.0, aa=True, mb=True):
         FI.splat_blobs(rgb, depth, cam, B, B.shape[0], 0.3, band)
     walkers_draw(rgb, depth, cam, t, scale, band)
     if mb:
-        camA = SC.camera(t - 0.25, scale)
-        camB = SC.camera(t + 0.25, scale)
+        camA = SC.camera(t - 0.2, scale)
+        camB = SC.camera(t + 0.2, scale)
         out = np.empty_like(rgb)
-        FI.motion_blur(rgb, out, depth, cam, camA, camB, 24, 160.0 * scale)
+        FI.motion_blur(rgb, out, depth, cam, camA, camB, 20, 70.0 * scale)
         rgb = out
     E = PT.embers(t, cam[2])
     if E.shape[0]:

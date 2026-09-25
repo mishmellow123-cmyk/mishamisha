@@ -127,7 +127,7 @@ def torch_flames(t):
         # the flame leans toward the hearth as the ribbon starts
         radial = -tip[:2] / (np.linalg.norm(tip[:2]) + 1e-9)
         lean = np.array([radial[0], radial[1], 0.0]) * (0.4 + 1.6 * rp)
-        B += _flame_blobs(tip, lean, t, 1.3 * i, 14.0 * lit, scale=1.0 - 0.3 * rp, gold=0.5 * rp)
+        B += _flame_blobs(tip, lean, t, 1.3 * i, 6.0 * lit, scale=0.8 - 0.25 * rp, gold=0.5 * rp)
     return B
 
 
@@ -145,10 +145,10 @@ def ribbons(t):
             p = SC.ribbon_point(i, t, u)
             flow = 0.55 + 0.45 * math.sin(2 * math.pi * (u * 5.0 - t * 0.33) + i)
             tipfade = min(1.0, (rp - u) / 0.08 + 0.2)
-            rad = 0.05 + 0.03 * math.sin(3 * u + t * 0.5 + i) ** 2
+            rad = 0.03 + 0.018 * math.sin(3 * u + t * 0.5 + i) ** 2
             g = min(1.0, u * 1.3)
             c = (1 - g) * (0.5 * FIRE_HOT + 0.5 * FIRE_CORE) + g * (0.6 * GOLD + 0.4 * PALE)
-            I = 9.0 * lit * flow * tipfade
+            I = 3.2 * lit * flow * tipfade
             B.append([p[0], p[1], p[2], rad, *(c * I), 0.0])
     # merge core at the hearth, building as ribbons arrive
     arrived = sum(SC.ribbon_progress(i, t) >= 0.98 for i in range(SC.NFIG))
@@ -157,8 +157,8 @@ def ribbons(t):
         core = (arrived / SC.NFIG) ** 2 * smooth(ramp(t, 1990, SC.IGNITE)) * (1 - smooth(ramp(t, SC.IGNITE, SC.IGNITE + 3)))
     if core > 0:
         p = SC.HEARTH_TARGET
-        B.append([p[0], p[1], p[2], 0.10 + 0.20 * core, *((0.5 * GOLD + 0.5 * PALE) * 30 * core), 0.0])
-        B.append([p[0], p[1], p[2], 0.45 + 0.4 * core, *(GOLD * 2.0 * core), 0.0])
+        B.append([p[0], p[1], p[2], 0.08 + 0.14 * core, *((0.5 * GOLD + 0.5 * PALE) * 14 * core), 0.0])
+        B.append([p[0], p[1], p[2], 0.40 + 0.3 * core, *(GOLD * 0.5 * core), 0.0])
     return B
 
 
@@ -169,5 +169,5 @@ def ignition_flash(t):
     a = t - SC.IGNITE
     k = math.exp(-a / 2.5)
     p = np.array([0.0, 0.0, 1.3])
-    return [[p[0], p[1], p[2], 0.35 + 0.25 * a, *(PALE * 40 * k), 0.0],
-            [p[0], p[1], p[2], 1.4 + 0.3 * a, *(GOLD * 2.5 * k), 0.0]]
+    return [[p[0], p[1], p[2], 0.30 + 0.12 * a, *(PALE * 9 * k), 0.0],
+            [p[0], p[1], p[2], 1.2 + 0.2 * a, *(GOLD * 0.45 * k), 0.0]]

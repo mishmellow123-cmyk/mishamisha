@@ -565,7 +565,7 @@ class Walls:
         N = k * per
         self.N = N
         self.w = np.repeat(np.arange(k), per)
-        self.ang = towers.ang + np.pi / k
+        self.ang = towers.ang + np.pi / k + 0.16      # offset so no wall is seen exactly edge-on
         self.u = r.random(N)
         self.ph = r.random(N)
         self.v = r.uniform(0.004, 0.012, N)

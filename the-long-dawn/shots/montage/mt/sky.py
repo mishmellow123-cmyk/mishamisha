@@ -225,7 +225,7 @@ def aurora_ray(ox, oy, oz, dx, dy, dz, A, t):
     b = 0.0
     dt = (t1 - t0) / n
     # jitter start to hide banding
-    jit = h01(int(dx * 91731.0), int(dy * 51137.0), 3) * dt
+    jit = 0.5 * dt
     for k in range(n):
         tt = t0 + jit + dt * k
         px = ox + dx * tt + A[6]
