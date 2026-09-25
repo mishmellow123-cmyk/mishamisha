@@ -250,13 +250,18 @@ class Intro:
         # smoke from the torch (thin, dark, lit near the flame)
         smoke_rgb = np.zeros_like(img)
         smoke_a = np.zeros(img.shape[:2], np.float32)
-        draw_smoke(smoke_rgb, smoke_a, cam, tfl + np.array([0, 0.22, 0]), t, wind, flick)
-        over(img, smoke_rgb, smoke_a)
+        sm = 1.0 - smoothstep(250, 272, f)
+        if sm > 0:
+            draw_smoke(smoke_rgb, smoke_a, cam, tfl + np.array([0, 0.22, 0]), t, wind, flick)
+            over(img, smoke_rgb * sm, smoke_a * sm)
         # torch flame
         fa = np.zeros(img.shape[:2], np.float32)
         lean = 0.10 + 0.16 * wind
         fire.draw_flame(img, fa, cam, tfl + np.array([0.0, -0.035, 0.0]), 0.30 * (0.95 + 0.08 * flick),
                         0.050, lean, t, 1.7, 7.5 * flick, fire.TORCH_STYLE)
+        # veiling glow around the flame (strong when close, carries the hand-off to EMBERS)
+        near = smoothstep(240, 300, f)
+        fire.add_glow(img, cam, tfl + np.array([0, 0.12, 0]), 0.10 + 0.05 * near, (0.10 + 0.55 * near) * flick)
         # embers
         P, V, T, S, K = self.embers.snap[f]
         ap = 0.0 if focus is None else 0.016 * cam.f

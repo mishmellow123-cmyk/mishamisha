@@ -184,7 +184,7 @@ def render_frame(t, scale=1.0, aa=True, mb=True):
         rgb *= g.astype(np.float32)
     rgb = heat_haze(rgb, t, cam, scale)
     FP = fire_params(t)
-    FI.fire_volume(Wd, Hd, cam, FP, R['noise3'], depth, rgb, 36)
+    FI.fire_volume(Wd, Hd, cam, FP, R['noise3'], depth, rgb, 28)
     blobs = PT.torch_flames(t) + PT.ribbons(t) + PT.ignition_flash(t)
     if blobs:
         B = np.array(blobs, np.float64)
@@ -199,7 +199,7 @@ def render_frame(t, scale=1.0, aa=True, mb=True):
     E = PT.embers(t, cam[2])
     if E.shape[0]:
         zf = cam[2] - 0.62
-        FI.splat_streaks(rgb, depth, cam, E, E.shape[0], 0.028, zf, band, 90.0 * scale)
+        FI.splat_streaks(rgb, depth, cam, E, E.shape[0], 0.028, zf, band, 45.0 * scale)
     return rgb, dict(depth=depth, oid=oid, cam=cam, PR=PR, Fa=Fa)
 
 

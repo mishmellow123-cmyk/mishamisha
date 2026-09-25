@@ -37,7 +37,7 @@ def finish(score, sfx, events):
     G = 10 ** ((TARGET_LUFS - lufs(pre)) / 20)
     for it in range(4):
         x = pre * G
-        comp = MX.glue_comp_gain(x, thresh_db=-17.0, ratio=1.7, attack=0.04, release=0.4)
+        comp = MX.glue_comp_gain(x, thresh_db=-16.0, ratio=1.5, attack=0.04, release=0.4)
         y = x * comp[:, None]
         lim = MX.tp_limiter_gain(y, ceiling_db=CEIL_DB, lookahead=0.006, release=0.15)
         mixd = y * lim[:, None]

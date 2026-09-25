@@ -16,31 +16,32 @@ def _ember_table():
         return _E
     rng = np.random.default_rng(424242)
     spawns = []
-    # burst at ignition
-    nb = 900
+    nb = 240                                   # burst at ignition
     spawns.append(np.column_stack([SC.IGNITE + rng.uniform(0, 3.0, nb) ** 1.5, np.ones(nb)]))
-    # steady stream
-    ts = np.arange(SC.IGNITE, 2262.0, 1.0 / 26.0)
-    spawns.append(np.column_stack([ts + rng.uniform(0, 1 / 26.0, ts.size), np.zeros(ts.size)]))
-    # flare burst
-    nf = 1400
-    spawns.append(np.column_stack([SC.FLARE_T0 + rng.uniform(0, 1, nf) ** 0.7 * 26.0, 2 * np.ones(nf)]))
+    ts = np.arange(SC.IGNITE, 2262.0, 1.0 / 5.0)   # steady ~5 per frame
+    spawns.append(np.column_stack([ts + rng.uniform(0, 0.2, ts.size), np.zeros(ts.size)]))
+    nf = 420                                   # flare burst
+    spawns.append(np.column_stack([SC.FLARE_T0 + rng.uniform(0, 1, nf) ** 0.7 * 22.0, 2 * np.ones(nf)]))
     sp = np.concatenate(spawns, 0)
     n = sp.shape[0]
     kind = sp[:, 1]
     E = dict(t0=sp[:, 0], kind=kind)
-    E['life'] = np.where(kind == 1, rng.uniform(30, 80, n), rng.uniform(34, 84, n))
-    E['r0'] = 0.42 * np.sqrt(rng.random(n))
+    lens = rng.random(n) < 1.0 / 70.0          # a handful drift slowly up to the lens
+    E['lens'] = lens
+    E['life'] = np.where(lens, rng.uniform(70, 110, n), rng.uniform(26, 70, n))
+    E['r0'] = 0.38 * np.sqrt(rng.random(n))
     E['phi0'] = rng.uniform(0, 2 * np.pi, n)
-    E['z0'] = 0.75 + 0.6 * rng.random(n)
-    E['v0'] = np.where(kind == 1, rng.uniform(3.0, 8.5, n), np.where(kind == 2, rng.uniform(3.0, 9.0, n),
-                                                                      rng.uniform(1.4, 4.4, n)))
-    E['vr'] = np.where(kind == 1, rng.uniform(0.3, 1.6, n), rng.uniform(0.1, 0.8, n))
-    E['om'] = rng.uniform(0.6, 2.1, n)
-    E['b0'] = rng.uniform(0.4, 1.0, n) ** 2 * np.where(kind == 1, 1.6, 1.0)
-    E['size'] = rng.uniform(0.004, 0.011, n)
+    E['z0'] = 0.75 + 0.5 * rng.random(n)
+    E['v0'] = np.where(kind == 1, rng.uniform(2.5, 6.0, n), rng.uniform(1.1, 3.0, n))
+    E['v0'] = np.where(lens, rng.uniform(2.4, 3.2, n), E['v0'])
+    E['vt'] = np.where(lens, 1.6, 0.55)
+    E['vr'] = np.where(kind == 1, rng.uniform(0.15, 0.8, n), rng.uniform(0.04, 0.35, n))
+    E['om'] = rng.uniform(0.3, 1.1, n)
+    E['b0'] = rng.uniform(0.35, 1.0, n) ** 2 * np.where(kind == 1, 1.4, 1.0)
+    E['size'] = 0.0011 * (1.0 + 2.4 * rng.random(n) ** 6)
+    E['size'] = np.where(lens, 0.0035, E['size'])
     E['ph'] = rng.uniform(0, 2 * np.pi, n)
-    E['wob'] = rng.uniform(0.02, 0.10, n)
+    E['wob'] = rng.uniform(0.01, 0.05, n)
     E['hue'] = rng.random(n)
     _E = E
     return E
@@ -50,9 +51,9 @@ def ember_pos(E, idx, t):
     """World positions (n,3) of embers idx at time t (frames). age in seconds."""
     a = (t - E['t0'][idx]) / 24.0
     tau = 0.55
-    vt = 0.8
+    vt = E['vt'][idx]
     z = E['z0'][idx] + vt * a + (E['v0'][idx] - vt) * tau * (1 - np.exp(-a / tau))
-    r = E['r0'][idx] + E['vr'][idx] * a + 0.15 * a * a
+    r = E['r0'][idx] + E['vr'][idx] * a + 0.04 * a * a
     phi = E['phi0'][idx] + E['om'][idx] * a
     w = E['wob'][idx]
     x = r * np.cos(phi) + w * np.sin(7.1 * a + E['ph'][idx])
@@ -75,10 +76,12 @@ def embers(t, cam_z, shutter=0.5):
     u = (t - E['t0'][idx]) / E['life'][idx]
     fade = (1 - u) ** 1.4 * np.clip(u * 12, 0, 1)
     fl = 0.7 + 0.3 * np.sin(t * 0.9 + E['ph'][idx] * 5)
-    b = 26.0 * E['b0'][idx] * fade * fl
-    # colour: hot gold -> deep amber as they cool
-    hue = np.clip(E['hue'][idx] * 0.5 + u * 0.7, 0, 1)[:, None]
-    col = (1 - hue) * (0.5 * GOLD + 0.5 * PALE) + hue * (0.6 * AMBER + 0.4 * FIRE_MID)
+    b = 16.0 * E['b0'][idx] * fade * fl
+    # colour cools with age and height: pale gold -> amber -> deep ember red
+    hue = np.clip(E['hue'][idx] * 0.35 + u * 0.8 + 0.08 * (pb[:, 2] - 1.0), 0, 1.3)[:, None]
+    deep = np.array([0.55, 0.06, 0.01])
+    col = np.where(hue < 0.65, (1 - hue / 0.65) * (0.5 * GOLD + 0.5 * PALE) + (hue / 0.65) * AMBER,
+                   (1 - np.clip((hue - 0.65) / 0.65, 0, 1)) * AMBER + np.clip((hue - 0.65) / 0.65, 0, 1) * deep)
     fl2 = SC.smooth(SC.ramp(t, SC.FLARE_T0, SC.FLARE_T1))
     col = col * (1 - fl2 * 0.5) + fl2 * 0.5 * np.array([1.0, 0.9, 0.75])
     out = np.zeros((idx.size, 11))

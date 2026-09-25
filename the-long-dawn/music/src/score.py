@@ -25,6 +25,15 @@ from dsl import Part, gb, fb, m
 
 PARTS = {}
 
+# Breaths: short windows of near-silence (every part AND the hall reverb are
+# ducked to -45 dB) right before a downbeat, exempting only the listed parts
+# (the reversed cymbal rushing in).  (start_beat, end_beat, exempt)
+BREATHS = [
+    (fb(640) - 0.24, fb(640), {"revcym"}),     # RACE drums: 200 ms breath
+    (fb(1037), fb(1040), {"revcym"}),          # the suck before the IMPACT
+    (fb(2240) - 0.33, fb(2240), {"revcym"}),   # CLIMAX: 275 ms breath
+]
+
 
 def part(name, inst, **kw):
     if name not in PARTS:
@@ -100,6 +109,8 @@ def setup():
     # choir (synth) - behind the orchestra, wide
     part("choir", "choir", kind="synth", bus="choir", pan=0.0, width=1.0, depth=0.7, send=0.5,
          params=dict(vowel="a", voices=8, spread=0.85, breath=0.05))
+    part("choir_w", "choir", kind="synth", bus="choir", pan=0.0, width=1.0, depth=0.6, send=0.45,
+         params=dict(vowel="a", voices=8, spread=1.0, breath=0.04))
     part("choir_oo", "choir", kind="synth", bus="choir", pan=0.0, width=1.0, depth=0.75, send=0.55,
          params=dict(vowel="u", voices=7, spread=0.8, breath=0.07, atk=0.6))
     # synth / fx (score side)
@@ -354,7 +365,7 @@ def race():
         t = r0 + beat
         bar_pos = beat % 4
         storm = beat >= 8
-        big = 0.95 if bar_pos == 0 else 0.82
+        big = 1.0 if beat == 0 else (0.95 if bar_pos == 0 else 0.82)
         # the surge: odaiko + giant drum + bass drum, locked (sync)
         taiko.n(60, t, 1, big, drum="o", sync=True)
         giant.n(60, t, 1, 0.8 + 0.1 * (bar_pos == 0), sync=True)
@@ -376,7 +387,7 @@ def race():
                 tenh.n(60, t + k / 6, 1 / 6, 0.5 + 0.08 * k)
                 ten.n(60, t + k / 6, 1 / 6, 0.55 + 0.07 * k)
     # timpani on the D pedal
-    for beat in range(16):
+    for beat in range(1, 16):
         t = r0 + beat
         if beat < 8 and beat % 2 == 1:
             continue
@@ -384,8 +395,10 @@ def race():
     # the clock: 16ths, dry, time pressure
     for k in range(64):
         P("tick").n(60, r0 + k * 0.25, 0.25, 0.22 + 0.25 * k / 64 + (0.08 if k % 4 == 0 else 0))
-    # crashes: entrance and storm
-    P("cym").n(60, r0, 4, 0.7, sync=True)
+    # crashes: entrance and storm; a big first hit on the entrance
+    P("cym").n(60, r0, 4, 0.92, sync=True)
+    P("impact").n(60, r0, 2, 0.7, sync=True, size=1.0, crack=0.6)
+    P("timp").n("D2", r0, 1, 1.0, sync=True)
     P("crash").n(60, gb(11, 1), 4, 0.85, sync=True)
     P("swell").n(60, gb(11, 1), 1, 0.65, sync=True)
     P("gong").n(60, gb(11, 1), 4, 0.55, sync=True)
@@ -429,7 +442,7 @@ def race():
     hold("hns", ["G3", "Bb3", "Eb4"], gb(10, 1), gb(11, 1) - 0.05)
     hold("tuba", ["D2"], gb(10, 1), gb(11, 1) - 0.05)
     for pn in ("tbn", "hns", "tuba"):
-        P(pn).d((gb(9, 1), 0.82), (gb(10, 1), 0.82), (gb(10, 1.4), 0.45), (gb(10, 4.8), 0.85),
+        P(pn).d((gb(9, 1), 0.98), (gb(9, 1.8), 0.82), (gb(10, 1), 0.82), (gb(10, 1.4), 0.45), (gb(10, 4.8), 0.85),
                 (gb(11, 1), 0.9))
     # bar 11: higher, trumpets join
     for pn, root in (("tpt", "D4"), ("hns", "D3"), ("tbn", "D3"), ("tuba", "D2")):
@@ -827,20 +840,20 @@ def accord():
     # swells at each oath (choir + strings), overall crescendo
     ch.d((O[0] - 0.05, 0.35), (O[0] + 0.15, 0.62), (O[0] + 1.6, 0.46),
          (O[1] + 0.15, 0.68), (O[1] + 1.6, 0.52), (O[2] + 0.15, 0.74), (O[2] + 1.6, 0.6),
-         (O[3] + 0.15, 0.8), (O[3] + 1.6, 0.68), (ring0, 0.72), (dawn - 0.1, 0.95))
+         (O[3] + 0.15, 0.8), (O[3] + 1.6, 0.68), (ring0, 0.7), (dawn - 0.1, 0.8))
     for pn, base in (("vln1", 0.5), ("vln2", 0.46), ("vla", 0.46), ("vc", 0.5), ("cb", 0.52),
                      ("svln", 0.4)):
         P(pn).d((O[0], base + 0.1), (O[0] + 1.5, base), (O[1], base + 0.14), (O[1] + 1.5, base + 0.04),
                 (O[2], base + 0.18), (O[2] + 1.5, base + 0.1), (O[3], base + 0.24),
-                (O[3] + 1.5, base + 0.16), (ring0, base + 0.2), (dawn - 0.1, min(1.0, base + 0.42)))
+                (O[3] + 1.5, base + 0.16), (ring0, base + 0.2), (dawn - 0.1, min(1.0, base + 0.3)))
     for pn in ("tbn", "tuba", "hns"):
         P(pn).d((O[0], 0.42), (O[1], 0.5), (O[2], 0.58), (O[3], 0.66), (ring0, 0.66),
-                (dawn - 0.1, 0.92))
+                (dawn - 0.1, 0.8))
     op = P("organ_ped")
     op.n("D2", O[0], O[1] - O[0] + 0.05)
     op.n("C2", O[1], O[2] - O[1] + 0.05)
     op.n("A2", O[2], dawn - O[2] + 0.02)
-    op.d((O[0], 0.35), (O[2], 0.45), (ring0, 0.5), (dawn - 0.1, 0.8))
+    op.d((O[0], 0.35), (O[2], 0.45), (ring0, 0.5), (dawn - 0.1, 0.68))
 
     # bar 28: A major (sus4 -> 3), the "together" ring sweep, roll into the dawn
     cb.n("A1", ring0, dawn - ring0 + 0.02, legato=True)
@@ -865,10 +878,10 @@ def accord():
     P("hns").n("E4", ring0, dawn - ring0 - 0.02)
     P("tpt").n("A4", ring0 + 1, dawn - ring0 - 1 - 0.02)
     P("tpt").n("E5", ring0 + 1, dawn - ring0 - 1 - 0.02)
-    P("tpt").d((ring0 + 1, 0.3), (dawn - 0.1, 0.85))
+    P("tpt").d((ring0 + 1, 0.3), (dawn - 0.1, 0.72))
     P("vln_tr").n("A5", ring0, dawn - ring0 + 0.02)
     P("vln_tr").n("E5", ring0, dawn - ring0 + 0.02)
-    P("vln_tr").d((ring0, 0.3), (dawn - 0.05, 0.85))
+    P("vln_tr").d((ring0, 0.3), (dawn - 0.05, 0.75))
     # ring sweep: harp glissando rising, panned L->R, + shimmering bells
     sc = ["A3", "B3", "C#4", "E4", "F#4", "A4", "B4", "C#5", "E5", "F#5", "A5", "B5", "C#6", "E6",
           "F#6", "A6", "B6", "C#7", "E7"]
@@ -882,9 +895,9 @@ def accord():
         P("glass").n(["A6", "E6", "C#7", "E6"][k % 4], t, 0.25, 0.18 + 0.01 * k, pan=0.6 * np.sin(k))
     # timpani roll + snare roll + cymbal swell + reverse cymbal -> 2240
     P("timp_roll").n("A2", ring0, dawn - ring0 - 0.01, rel=0.03)
-    P("timp_roll").d((ring0, 0.3), (dawn - 0.05, 0.95))
+    P("timp_roll").d((ring0, 0.3), (dawn - 0.05, 0.85))
     P("snare_roll").n(60, gb(28, 2), dawn - gb(28, 2) - 0.01, 0.9, kind="sus", rel=0.03)
-    P("snare_roll").d((gb(28, 2), 0.15), (dawn - 0.05, 0.9))
+    P("snare_roll").d((gb(28, 2), 0.15), (dawn - 0.05, 0.8))
     P("swell").n(60, dawn, 1, 0.8, sync=True)
     P("revcym").n(60, dawn - 2.0, 2.0, 0.7)
     P("riser").n(60, fb(2200), dawn - fb(2200), 0.45, f0=400, f1=10000, curve=2.0)
@@ -902,9 +915,9 @@ def dawn():
     P("gong").n(60, d0, 8, 0.7, sync=True)
     P("timp").n("D2", d0, 2, 1.0, sync=True)
     P("timp").n("A2", d0 + 0.02, 2, 0.8)
-    P("bdrum").n(60, d0, 4, 0.95, sync=True)
-    P("giant").n(60, d0, 2, 0.7, sync=True)
-    P("impact").n(60, d0, 2, 0.5, sync=True, size=1.1, crack=0.2)
+    P("bdrum").n(60, d0, 4, 1.0, sync=True)
+    P("giant").n(60, d0, 2, 0.85, sync=True)
+    P("impact").n(60, d0, 2, 0.8, sync=True, size=1.2, crack=0.3)
     # timpani pulse under the theme
     for t, p, v in [(d0 + 2, "A2", 0.55), (d0 + 3, "D2", 0.6), (b30, "D2", 0.75),
                     (b30 + 2, "A2", 0.6), (b31, "G2", 0.75), (b31 + 2, "D2", 0.62)]:
@@ -913,13 +926,13 @@ def dawn():
     # melody (the theme): trumpets, violins 8va, horns 8vb, solo violin top
     mel_t = "D4:1 A4:1 D5:2 | D5:1 C#5:.5 B4:.5 F#4:2 | G4:.5 A4:.5 B4:1 D5:1 Bb4:1.1"
     P("tpt").line(mel_t, d0)
-    P("tpt").d((d0, 0.95), (b30, 0.86), (b31, 0.8), (b31 + 2, 0.72), (b32, 0.35))
+    P("tpt").d((d0, 1.0), (d0 + 1.5, 0.92), (b30, 0.86), (b31, 0.8), (b31 + 2, 0.72), (b32, 0.35))
     P("vln1").line("D5:1 A5:1 D6:2 | D6:1 C#6:.5 B5:.5 F#5:2 | G5:.5 A5:.5 B5:1 D6:1 Bb5:1", d0)
     P("vln1").n("A5", b32, 2.0, legato=True)
     P("svln").line("D6:1 A6:1 D7:2 | D7:1 C#7:.5 B6:.5 F#6:2 | G6:.5 A6:.5 B6:1 D7:1 Bb6:1", d0)
     P("svln").d((d0, 0.55), (b31, 0.5), (b32, 0.2))
     P("hns").line("D3:1 A3:1 D4:2 | D4:1 C#4:.5 B3:.5 F#3:2 | G3:.5 A3:.5 B3:1 D4:1 Bb3:1.1", d0)
-    P("hns").d((d0, 0.95), (b30, 0.88), (b31, 0.8), (b31 + 2, 0.7), (b32, 0.3))
+    P("hns").d((d0, 1.0), (d0 + 1.5, 0.93), (b30, 0.88), (b31, 0.8), (b31 + 2, 0.7), (b32, 0.3))
     P("tpt").n("A4", b32, 1.2, legato=True)
     P("hns").n("A3", b32, 1.4, legato=True)
     # choir: harmony pad (aah), top voice bright
@@ -935,6 +948,10 @@ def dawn():
     for t, d, ps in chords:
         for p in ps:
             ch.n(p, t, d + 0.05, sync=(t == d0))
+    for t, d, ps in chords[:3]:
+        for p in ps:
+            P("choir_w").n(p, t, d + 0.05, sync=(t == d0))
+    P("choir_w").d((d0, 1.0), (d0 + 2, 0.85), (b30 + 2, 0.72), (b31, 0.2))
     ch.d((d0, 1.0), (d0 + 1.5, 0.9), (b30, 0.88), (b31, 0.84), (b31 + 2, 0.72), (b32, 0.3),
          (b32 + 2, 0.12))
     # organ: full, D pedal
@@ -948,7 +965,7 @@ def dawn():
     for t, d, p in [(d0, 4, "D2"), (b30, 2, "B1"), (b30 + 2, 2, "F#2"), (b31, 2, "G2"),
                     (b31 + 2, 2, "Bb1"), (b32, 2.0, "D2")]:
         op.n(p, t, d + 0.03, sync=(t == d0))
-    op.d((d0, 0.85), (b31 + 2, 0.7), (b32, 0.3), (b32 + 2, 0.1))
+    op.d((d0, 1.0), (d0 + 2, 0.85), (b31 + 2, 0.7), (b32, 0.3), (b32 + 2, 0.1))
     # strings: bass + harmony
     cb, vc, vla, vln2 = P("cb"), P("vc"), P("vla"), P("vln2")
     bass = [(d0, 4, "D2", ["D3", "A3"]), (b30, 2, "B1", ["B2", "F#3"]), (b30 + 2, 2, "F#1", ["F#2", "A3"]),
@@ -976,8 +993,8 @@ def dawn():
         for p in ps:
             tb.n(p, t, d + 0.03, sync=(t == d0))
         tu.n(tub, t, d + 0.03, sync=(t == d0))
-    tb.d((d0, 0.8), (b31 + 2, 0.66), (b32, 0.3))
-    tu.d((d0, 0.8), (b31 + 2, 0.66), (b32, 0.3))
+    tb.d((d0, 1.0), (d0 + 1.5, 0.84), (b31 + 2, 0.66), (b32, 0.3))
+    tu.d((d0, 1.0), (d0 + 1.5, 0.84), (b31 + 2, 0.66), (b32, 0.3))
     # harp arpeggios (light), glock doubling of the call
     for i, p in enumerate(["D3", "A3", "D4", "F#4", "A4", "D5", "F#5", "A5", "D6"]):
         P("harp").n(p, d0 + i * 0.08, 3, 0.5)
@@ -1073,7 +1090,7 @@ FADERS = {
     "snare": +4.5, "snare_roll": +2.2, "cym": +6.8, "crash": +9.9, "swell": +1.8, "swell_s": +3.6,
     "gong": +4.3, "glock": +9.0, "tubular": +16.6, "triangle": +11.0, "piano": +11.3, "organ": -7.9,
     "organ_ped": -3.0, "choir": -20.8, "choir_oo": -17.1, "glass": -10.1, "celesta": -8.3, "taiko": -13.1,
-    "tick": +2.7, "riser": -7.0, "shepard": -5.8, "revcym": +8.2, "impact": -2.5, "subdrop": -6.1,
+    "choir_w": -23.5, "tick": +2.7, "riser": -7.0, "shepard": -5.8, "revcym": +8.2, "impact": -2.5, "subdrop": -6.1,
     "braam": -9.5, "sub": +0.9, "bell": -6.0,
 }
 

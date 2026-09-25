@@ -100,12 +100,35 @@ def load_stem(name):
     return np.load(os.path.join(PARTS_DIR, name + ".npy"), mmap_mode="r")
 
 
+def breath_env(n, windows, exclude=None):
+    """-45 dB duck over each window: 30 ms cosine fade down, 5 ms ramp up
+    ending exactly on the downbeat."""
+    from dsl import BEAT_N
+    D = np.ones(n, np.float32)
+    floor = 10 ** (-45 / 20)
+    for b0, b1, exempt in windows:
+        if exclude is not None and exclude in exempt:
+            continue
+        i0, i1 = int(round(b0 * BEAT_N)), int(round(b1 * BEAT_N))
+        fd, fu = int(0.03 * SR), int(0.005 * SR)
+        seg = np.full(i1 - i0, floor, np.float32)
+        seg[:fd] = floor + (1 - floor) * np.cos(np.linspace(0, np.pi / 2, fd)) ** 2
+        seg[-fu:] = floor + (1 - floor) * np.sin(np.linspace(0, np.pi / 2, fu)) ** 2
+        D[i0:i1] = np.minimum(D[i0:i1], seg)
+    return D
+
+
 def mix_score(parts, ir):
+    import score
     dry = np.zeros((RENDER_N, 2), np.float32)
     send = np.zeros((RENDER_N, 2), np.float32)
     report = []
+    breaths = getattr(score, "BREATHS", [])
+    D_all = breath_env(RENDER_N, breaths)
     for name, p in parts.items():
         y = np.array(load_stem(name), dtype=np.float32)
+        if breaths:
+            y *= breath_env(RENDER_N, breaths, exclude=name)[:, None]
         g = 10 ** ((p.gain_db + BUS_GAIN.get(p.bus, 0.0)) / 20)
         y = MX.pan_width(y * g, p.pan, p.width)
         y = MX.depth_eq(y, p.depth)
@@ -113,6 +136,8 @@ def mix_score(parts, ir):
         send += y * p.send
         report.append((name, 20 * np.log10(np.sqrt((y ** 2).mean()) + 1e-12)))
     wet = MX.convolve_stereo(send, ir)
+    if breaths:
+        wet *= D_all[:, None]          # the hall tail is ducked too: a real breath
     out = dry + wet
     out = MX.highpass(out, 22.0)
     return out, report

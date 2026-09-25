@@ -12,35 +12,31 @@ import scene_c as C
 
 class Timeline:
     def __init__(self):
-        self.embers = A.Embers()
-        self.glow = A.TorchGlow()
-        self.glyphs = A.Glyphs()
-        self.point = A.ThePoint(self.glyphs)
-        self.fire = B.MindFire()
-        self.crown = B.Crown()
-        self.fsparks = B.FireSparks()
-        self.shock = B.Shockwave()
-        self.towers = B.Towers()
-        self.sparks = B.Sparks(self.towers)
-        self.walls = B.Walls(self.towers)
-        self.smoke = B.Smoke()
-        self.dust = B.Dust()
-        self.vortex = B.Vortex(self.fire)
-        self._globe = None
-        self._hand = None
+        self._cache = {}
         self.ember = C.LastEmber()
 
-    @property
-    def globe(self):
-        if self._globe is None:
-            self._globe = C.Globe()
-        return self._globe
+    def _get(self, name, make):
+        if name not in self._cache:
+            self._cache[name] = make()
+        return self._cache[name]
 
-    @property
-    def hand(self):
-        if self._hand is None:
-            self._hand = C.Hand()
-        return self._hand
+    # lazily built elements (each render worker only builds what its frame range needs)
+    embers = property(lambda s: s._get('embers', A.Embers))
+    glow = property(lambda s: s._get('glow', A.TorchGlow))
+    glyphs = property(lambda s: s._get('glyphs', A.Glyphs))
+    point = property(lambda s: s._get('point', lambda: A.ThePoint(s.glyphs)))
+    fire = property(lambda s: s._get('fire', B.MindFire))
+    crown = property(lambda s: s._get('crown', B.Crown))
+    fsparks = property(lambda s: s._get('fsparks', B.FireSparks))
+    shock = property(lambda s: s._get('shock', B.Shockwave))
+    towers = property(lambda s: s._get('towers', B.Towers))
+    sparks = property(lambda s: s._get('sparks', lambda: B.Sparks(s.towers)))
+    walls = property(lambda s: s._get('walls', lambda: B.Walls(s.towers)))
+    smoke = property(lambda s: s._get('smoke', B.Smoke))
+    dust = property(lambda s: s._get('dust', B.Dust))
+    vortex = property(lambda s: s._get('vortex', lambda: B.Vortex(s.fire)))
+    globe = property(lambda s: s._get('globe', C.Globe))
+    hand = property(lambda s: s._get('hand', C.Hand))
 
     # ---------------------------------------------------------------- camera
     def camera(self, t):

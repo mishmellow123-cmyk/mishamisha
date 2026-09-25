@@ -441,3 +441,18 @@ def render_smoke(rgb, alpha, cam, bx, by, bz, t, seed, h_max, w0, grow, drift, r
             rgb[j, i, 1] = rgb[j, i, 1] * ao + cg * a
             rgb[j, i, 2] = rgb[j, i, 2] * ao + cb * a
             alpha[j, i] = alpha[j, i] * ao + a
+
+
+def add_glow(img, cam, pos, radius_m, inten, col=(1.0, 0.55, 0.22)):
+    """Veiling glow around a bright source (air/smoke scattering + lens glare). Works even
+    when the source is just outside the frame."""
+    sx, sy, z = cam.project(np.asarray(pos, np.float64))
+    if z <= 0.02:
+        return
+    rpx = cam.f * radius_m / z
+    H, W = img.shape[:2]
+    ys = (np.arange(H, dtype=np.float32) + 0.5 - sy)[:, None]
+    xs = (np.arange(W, dtype=np.float32) + 0.5 - sx)[None, :]
+    d2 = (xs * xs + ys * ys) / (rpx * rpx)
+    g = inten / (1.0 + d2) ** 1.5
+    img += g[..., None] * np.asarray(col, np.float32)

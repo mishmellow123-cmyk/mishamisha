@@ -26,6 +26,7 @@ class Ridge:
         self.fog_el = fog_el
         self.mist_scale = mist_scale
         self.seed = seed
+        self.snow = snow
 
     def height(self, X):
         return np.interp(X, np.linspace(self.x0, self.x1, len(self.h)), self.h)
@@ -107,6 +108,7 @@ def pack_ridges(ridges):
         meta[i, 12] = r.fog_el
         meta[i, 13] = r.mist_scale
         meta[i, 14] = r.seed
+        meta[i, 15] = r.snow
         hs.append(r.h)
         off += len(r.h)
     return rs, meta, np.concatenate(hs)
@@ -178,6 +180,33 @@ def render_ridges(out_rgb, out_a, depth, cam, meta, hs, sp, fog, lights, light_o
                 cr = meta[li, 5] * amb
                 cg = meta[li, 6] * amb
                 cb = meta[li, 7] * amb
+                if meta[li, 15] > 0.0:
+                    # moonlit snow face: lit where the smoothed ridge rises toward +x
+                    # (flank faces the moon on the left), couloir streaks down the fall line
+                    Dd = 45.0 * meta[li, 2]
+                    ul = (X - Dd - meta[li, 1]) / meta[li, 2]
+                    ur = (X + Dd - meta[li, 1]) / meta[li, 2]
+                    kl = min(max(int(ul), 0), n - 1)
+                    kr = min(max(int(ur), 0), n - 1)
+                    sl = (hs[off + kr] - hs[off + kl]) / (2.0 * Dd)
+                    lit = 0.35 + 1.6 * sl * fog[12]
+                    if lit < 0.0:
+                        lit = 0.0
+                    if lit > 1.0:
+                        lit = 1.0
+                    sc = 1.0 / (0.004 * tt + 0.3)
+                    st = fbm2(X * sc * 0.9 + meta[li, 14], (Y + 0.35 * below) * sc * 0.22, 4, 2.0, 0.55)
+                    snowv = 0.55 + 0.9 * st
+                    if snowv < 0.08:
+                        snowv = 0.08
+                    if snowv > 1.0:
+                        snowv = 1.0
+                    lit *= 0.35 + 0.65 * snowv
+                    lit *= 0.55 + 0.45 * math.exp(-below / (0.5 * pix * 60.0 + 0.4 * (tt * 0.02)))
+                    sn = meta[li, 15]
+                    cr += sn * (fog[9] * lit + 0.10 * fog[9] * snowv)
+                    cg += sn * (fog[10] * lit + 0.10 * fog[10] * snowv)
+                    cb += sn * (fog[11] * lit + 0.10 * fog[11] * snowv)
                 # crest rim (sky light grazing the crest)
                 rim = meta[li, 9] * math.exp(-below / (fog[6] * pix))
                 cr += rim * fr

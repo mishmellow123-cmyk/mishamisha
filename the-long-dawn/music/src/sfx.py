@@ -313,10 +313,10 @@ def events(rng):
     add("torch_close_intro", 0, crackle(rng, s(352), rate=10, level=0.7, breath=0.55), -27)
     add("ember_whoosh", 290, whoosh(rng, s(56), f0=200, f1=5500, peak=0.8, q=0.8, pan0=-0.2, pan1=0.2), -24)
     add("ignition_whoomp", 480, roar(rng, 2.2, lead=0.5, size=1.2, sustain=0.1, bright=1.4), -21, lead=12)
-    storm = roar(rng, s(240), lead=0, size=2.0, sustain=0.9, bright=0.6)
+    storm = roar(rng, s(237), lead=0, size=2.0, sustain=0.9, bright=0.6)
     tt = np.linspace(0, 1, len(storm))
     storm *= (0.15 + 0.85 * tt ** 1.6)[:, None]
-    storm[-int(0.012 * SR):] *= np.linspace(1, 0, int(0.012 * SR))[:, None]   # dead cut at 1040
+    storm[-int(0.012 * SR):] *= np.linspace(1, 0, int(0.012 * SR))[:, None]   # dead cut at 1037 (suck)
     add("storm_roar", 800, storm, -20)
     add("summit_wind", 1200, wind(rng, s(252), strength=0.8, howl=0.6, hiss=0.45, cut=900,
                                   gust_rate=0.4), -19)

@@ -219,3 +219,82 @@ def robed(arm=0.0, lean=0.0, tail_pts=None, hem_pts=None, sleeve_pts=None, turn=
         d.chain(tail_pts, 0.045, 0.02, k=0.04, mat=1)
     return d, dict(hand=hand, torch_head=t1, head=hc, neck=neck, tail_anchor=hc - side * 0.08 + up * 0.02,
                    hem_anchor=np.array([-0.30, 0.10]))
+
+
+# ------------------------------------------------------- torch-bearer (generic) ---
+
+def torch_person(style='parka', arm=0.0, lean=0.0, tail_pts=None, crouch=0.0):
+    """Three-quarter view facing right (+x), torch in the right hand.
+    style: 'parka' (fur-ruffed hood, bulky), 'hoodie' (young person, slim), 'sailor' (oilskins,
+    sou'wester). arm: 0 torch held up/ready, 1 torch thrust forward-down into the fire (right).
+    Returns (drawing, pts)."""
+    d = Drawing()
+    d.new_group()
+    up = rot(np.array([0.0, 1.0]), -lean)
+    side = rot(np.array([1.0, 0.0]), -lean)
+    bulky = {'parka': 1.25, 'hoodie': 0.92, 'sailor': 1.12}[style]
+    hip = np.array([0.0, 0.92 - 0.12 * crouch])
+    chest = hip + up * 0.42
+    neck = hip + up * 0.58
+    # legs
+    for sgn, fx in ((-1, -0.12), (1, 0.14)):
+        hp = hip + np.array([0.06 * sgn, 0.0])
+        ak = np.array([fx + 0.05 * crouch * sgn, 0.08])
+        kn = 0.5 * (hp + ak) + np.array([0.04 + 0.08 * crouch, 0.02])
+        r0 = 0.085 * bulky if style != 'hoodie' else 0.07
+        d.capsule(hp, kn, r0, r0 * 0.8, k=0.04)
+        d.capsule(kn, ak, r0 * 0.8, r0 * 0.7, k=0.03)
+        d.ellipse(ak + np.array([0.05, -0.03]), 0.1 if style != 'hoodie' else 0.085, 0.055, k=0.02)
+    # torso / coat
+    if style == 'parka':
+        d.trap((0.0, 0.42), chest + up * 0.05, 0.27, 0.22, rnd=0.05, k=0.07)
+        d.ellipse(chest + up * 0.02, 0.24, 0.16, ang=-lean, k=0.07)
+    elif style == 'sailor':
+        d.trap((0.0, 0.50), chest + up * 0.04, 0.24, 0.20, rnd=0.04, k=0.06, mat=3)
+        d.ellipse(chest, 0.21, 0.14, ang=-lean, k=0.06, mat=3)
+    else:
+        d.trap(hip - up * 0.05, chest + up * 0.05, 0.17, 0.18, rnd=0.035, k=0.05, mat=9)
+        d.ellipse(chest, 0.18, 0.12, ang=-lean, k=0.05, mat=9)
+    # rear arm
+    shL = chest + up * 0.05 - side * 0.13
+    eL, wL = limb(shL, -0.2 + 0.4 * arm, 0.28, 0.5, 0.26)
+    r = 0.075 * bulky
+    d.capsule(shL, eL, r, r * 0.85, k=0.05)
+    d.capsule(eL, wL, r * 0.85, r * 0.7, k=0.04)
+    # torch arm
+    shR = chest + up * 0.07 + side * 0.13
+    a0 = (2.0, 0.55)       # torch held up and forward, ready
+    a1 = (1.30, 0.22)      # thrust forward-down
+    aR1 = a0[0] + (a1[0] - a0[0]) * arm
+    aR2 = a0[1] + (a1[1] - a0[1]) * arm
+    eR, wR = limb(shR, aR1, 0.29, aR2, 0.27)
+    d.capsule(shR, eR, r, r * 0.85, k=0.05)
+    d.capsule(eR, wR, r * 0.85, r * 0.7, k=0.04)
+    fdir = (wR - eR) / (np.linalg.norm(wR - eR) + 1e-9)
+    hand = wR + fdir * 0.05
+    d.ellipse(hand, 0.05 * bulky, 0.045 * bulky, k=0.02, mat=2 if style == 'hoodie' else 0)
+    tdir = lerp(np.array([0.25, 1.0]), rot(fdir, -0.4), min(max(arm, 0.0), 1.0))
+    tdir = tdir / (np.linalg.norm(tdir) + 1e-9)
+    t1 = hand + tdir * 0.5
+    d.capsule(hand - tdir * 0.08, t1, 0.017, 0.02, mat=4)
+    d.ellipse(t1, 0.03, 0.045, ang=math.atan2(tdir[1], tdir[0]) - math.pi / 2, mat=8)
+    # head
+    hc = neck + up * 0.14 + side * 0.03
+    if style == 'parka':
+        # hood with a thick fur ruff framing the face (catches the firelight)
+        d.ellipse(hc + up * 0.01 - side * 0.02, 0.15, 0.16, ang=-lean, k=0.04)
+        d.ellipse(hc + side * 0.07, 0.075, 0.13, ang=-lean + 0.15, k=0.02, mat=1, fuzz=0.022, ff=38.0)
+    elif style == 'sailor':
+        d.ellipse(hc, 0.1, 0.12, ang=-lean, k=0.03, mat=2)
+        # sou'wester: crown + wide brim, longer at the back
+        d.ellipse(hc + up * 0.07, 0.115, 0.08, ang=-lean, k=0.02, mat=3)
+        d.capsule(hc + up * 0.02 + side * 0.13, hc + up * 0.0 - side * 0.19, 0.022, 0.03, k=0.02, mat=3)
+        d.ellipse(hc - up * 0.07 + side * 0.06, 0.06, 0.05, k=0.03, mat=6, fuzz=0.008, ff=80)   # beard
+    else:
+        # hood up
+        d.ellipse(hc - side * 0.02, 0.12, 0.135, ang=-lean, k=0.03, mat=9)
+        d.ellipse(hc + side * 0.075 - up * 0.01, 0.05, 0.085, k=0.01, mat=2)   # face in the opening
+        d.capsule(neck - side * 0.1, hc - side * 0.1 + up * 0.03, 0.05, 0.04, k=0.03, mat=9)
+    if tail_pts is not None and len(tail_pts) > 1:
+        d.chain(tail_pts, 0.04, 0.02, k=0.04, mat=1)
+    return d, dict(hand=hand, torch_head=t1, head=hc)
