@@ -151,7 +151,8 @@ def _bonfire(img, depth, bx, by, ppm, zf, Hf, Rb, lean, t, seed, I, x0, x1, y0, 
                 continue
             # --- temperature: hot white-yellow core low, orange body, dark red broken tips
             core = math.exp(-(X / (0.62 * Rb)) ** 2) * math.exp(-((v - 0.1) / 0.24) ** 2)
-            T = min(F * 1.6, 1.0) ** 0.75 * (0.75 - 0.33 * min(vc, 1.2)) + 0.3 * core * min(F * 4.0, 1.0)
+            Tb = 1.0 - math.exp(-F * 2.2)
+            T = Tb * (0.68 - 0.30 * min(vc, 1.2)) + 0.30 * core * min(F * 4.0, 1.0)
             # internal brightness flicker (patches brighten/darken over time)
             fl = fbm3(X / Rb * 1.2, (Y - rise * t) / Rb * 0.6, t * 3.0 + seed, 2.0, seed + 41)
             T *= 0.9 + 0.22 * fl
@@ -302,7 +303,7 @@ class Sparks:
 
     def __init__(self, seed, origin, t_ign, t_end, burst=260, rate=45.0, ember_rate=10.0, speed=(2.0, 6.0),
                  burst_speed=(5.0, 13.0), spread=0.45, life=(0.5, 1.6), ember_life=(2.0, 4.0),
-                 wind=(0.8, 0.0, 0.0), buoy=5.5, updraft_h=2.5, drag=1.3, radius=0.45, I=5.0, turb=1.6,
+                 wind=(0.8, 0.0, 0.0), buoy=5.5, updraft_h=2.5, drag=1.3, radius=0.45, I=30.0, turb=1.6,
                  curl=1.4):
         rng = np.random.default_rng(seed)
         nb = int(burst)

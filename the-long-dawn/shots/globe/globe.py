@@ -368,6 +368,54 @@ def phase_m(nu, g):
 
 
 @njit(cache=True, fastmath=True)
+def airglow(ox, oy, oz, dx, dy, dz, t_max, p):
+    """Emission of the thin airglow shells, integrated over the exact ray/shell crossings."""
+    rc = 1.0 + 0.5 * (p[15] + p[24])
+    half = 0.5 * (p[15] - p[24]) + 4.5 * p[16]
+    r_out = rc + half
+    r_in = rc - half
+    to0, to1 = ray_sphere(ox, oy, oz, dx, dy, dz, r_out)
+    if to1 <= 0.0:
+        return 0.0, 0.0, 0.0
+    ti0, ti1 = ray_sphere(ox, oy, oz, dx, dy, dz, r_in)
+    g0 = 0.0
+    g1 = 0.0
+    g2 = 0.0
+    for seg in range(2):
+        if ti1 > 0.0 and ti0 > -1.0 and (ti0 != -1.0 or ti1 != -1.0):
+            if seg == 0:
+                a = max(to0, 0.0)
+                b = ti0
+            else:
+                a = max(ti1, 0.0)
+                b = to1
+        else:
+            if seg == 1:
+                break
+            a = max(to0, 0.0)
+            b = to1
+        b = min(b, t_max)
+        if b <= a:
+            continue
+        n = 24
+        dt = (b - a) / n
+        for i in range(n):
+            t = a + (i + 0.5) * dt
+            x = ox + dx * t
+            y = oy + dy * t
+            z = oz + dz * t
+            h = math.sqrt(x * x + y * y + z * z) - 1.0
+            q = (h - p[15]) / p[16]
+            q2 = (h - p[24]) / (2.5 * p[16])
+            eg = math.exp(-q * q) * dt
+            ew = math.exp(-q2 * q2) * dt
+            g0 += eg * p[17] + ew * p[21]
+            g1 += eg * p[18] + ew * p[22]
+            g2 += eg * p[19] + ew * p[23]
+    return g0, g1, g2
+
+
+@njit(cache=True, fastmath=True)
 def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon, p, lut,
               albedo, srgb_lut, mask, clouds, normal, cp, sp):
     """Radiance along one camera ray (excluding splatted lights/stars/web).
@@ -392,6 +440,7 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
         else:
             t_low = min(max(-bb, t_start), t_end)
         nseg = int(sp[0]) if hit else int(sp[1])
+        pw = 2.0 if hit else 1.5
         nuS = dx * S[0] + dy * S[1] + dz * S[2]
         nuM = dx * M[0] + dy * M[1] + dz * M[2]
         g = p[13]
@@ -410,7 +459,6 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
             wr = min(1.0, max(0.0, 1.0 - cv_ / 0.4))
             wr = wr * wr * wr
         rim = 1.0 + (p[20] - 1.0) * wr
-        glow_on = p[17] + p[18] + p[19] + p[21] > 0.0
         for half in range(2):
             if half == 0:
                 span = t_low - t_start
@@ -425,13 +473,13 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
                 um = (i + 0.5) / n
                 if half == 0:
                     # dense toward t_low (the end of this half)
-                    s0 = t_start + span * (1.0 - (1.0 - u0) * (1.0 - u0))
-                    s1 = t_start + span * (1.0 - (1.0 - u1) * (1.0 - u1))
-                    t = t_start + span * (1.0 - (1.0 - um) * (1.0 - um))
+                    s0 = t_start + span * (1.0 - math.pow(1.0 - u0, pw))
+                    s1 = t_start + span * (1.0 - math.pow(1.0 - u1, pw))
+                    t = t_start + span * (1.0 - math.pow(1.0 - um, pw))
                 else:
-                    s0 = t_low + span * u0 * u0
-                    s1 = t_low + span * u1 * u1
-                    t = t_low + span * um * um
+                    s0 = t_low + span * math.pow(u0, pw)
+                    s1 = t_low + span * math.pow(u1, pw)
+                    t = t_low + span * math.pow(um, pw)
                 ds = s1 - s0
                 x = ox + dx * t
                 y = oy + dy * t
@@ -464,20 +512,17 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
                     L0 += tv0 * Q0 * (p[3] * sr2 + sm2) * ds * E_moon[0]
                     L1 += tv1 * Q1 * (p[4] * sr2 + sm2) * ds * E_moon[1]
                     L2 += tv2 * Q2 * (p[5] * sr2 + sm2) * ds * E_moon[2]
-                if glow_on:
-                    q = (h - p[15]) / p[16]
-                    eg = math.exp(-q * q) * ds
-                    q2 = (h - p[24]) / (2.5 * p[16])
-                    ew = math.exp(-q2 * q2) * ds
-                    L0 += tv0 * (eg * p[17] + ew * p[21])
-                    L1 += tv1 * (eg * p[18] + ew * p[22])
-                    L2 += tv2 * (eg * p[19] + ew * p[23])
                 tau0 += e0 * ds
                 tau1 += e1 * ds
                 tau2 += e2 * ds
     tr0 = math.exp(-tau0)
     tr1 = math.exp(-tau1)
     tr2 = math.exp(-tau2)
+    if p[17] + p[18] + p[19] + p[21] > 0.0:
+        a0_, a1_, a2_ = airglow(ox, oy, oz, dx, dy, dz, te0 if hit else 1e30, p)
+        L0 += a0_
+        L1 += a1_
+        L2 += a2_
     if hit:
         x = ox + dx * te0
         y = oy + dy * te0

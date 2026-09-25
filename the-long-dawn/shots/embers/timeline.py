@@ -18,9 +18,10 @@ class Timeline:
             pos, tgt = A.cam_a(t)
             # focus: near hero glyphs early, the spiral centre later
             fd = float(np.linalg.norm(tgt - pos))
-            focus = lerp(lerp(7.0, A.HERO_FOCUS, float(smoothstep(318, 336, t))), np.linalg.norm(pos),
+            # rack: the ember column (~8) while embers become letters, then the passing heroes
+            focus = lerp(lerp(8.0, A.HERO_FOCUS, float(smoothstep(338, 350, t))), np.linalg.norm(pos),
                          float(smoothstep(398, 432, t)))
-            ap = lerp(0.12, 0.05, float(smoothstep(392, 440, t)))
+            ap = lerp(0.065, 0.04, float(smoothstep(392, 440, t)))
             return Camera(pos, tgt, hfov=A.HFOV_A(t),
                           focus=focus, aperture=ap)
         return Camera((0, 0, 10), (0, 0, 0))
@@ -28,7 +29,7 @@ class Timeline:
     def render_opts(self, f):
         if f < 484:
             fs = float(lerp(16.0, 45.0, smoothstep(405, 430, f)))
-            return dict(bokeh_pow=0.3, bokeh_cap=2.0, fog_start=fs, fog_len=22.0)
+            return dict(bokeh_pow=0.3, bokeh_cap=2.0, fog_start=fs, fog_len=22.0, near=0.45)
         return dict(bokeh_pow=0.45, bokeh_cap=3.0)
 
     def emit(self, ctx):
