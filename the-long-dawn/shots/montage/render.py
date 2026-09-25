@@ -67,6 +67,7 @@ def main():
     ap.add_argument('--scale', type=float, default=0.5)
     ap.add_argument('--out', default=None)
     ap.add_argument('--procs', type=int, default=1)
+    ap.add_argument('--threads', type=int, default=2)
     ap.add_argument('--sheet', action='store_true')
     ap.add_argument('--cols', type=int, default=4)
     a = ap.parse_args()
@@ -87,7 +88,7 @@ def main():
         frames = list(range(s, e + 1, a.step))
     t0 = time.time()
     if a.procs <= 1:
-        times = work((frames, a.scale, out, 2))
+        times = work((frames, a.scale, out, a.threads))
     else:
         import multiprocessing as mp
         chunks = [frames[i::a.procs] for i in range(a.procs)]

@@ -34,7 +34,7 @@ def _layer_towers(k, z, rng):
     spacing = max(z * 0.11, 9.0)
     xs = np.arange(-span, span, spacing) + rng.random(int(np.ceil(2 * span / spacing)) + 1)[:len(np.arange(-span, span, spacing))] * spacing * 0.8
     n = len(xs)
-    w = spacing * (0.22 + 0.22 * rng.random(n))
+    w = spacing * (0.15 + 0.17 * rng.random(n))
     top = MIST_Y + (22 + 70 * rng.random(n) ** 0.8) * (0.7 + 0.5 * min(z / 1200.0, 1.0))
     if z == HERO_Z:
         # the hero tower (beacon) + two companions; keep the rest of this layer at the frame edges
@@ -161,7 +161,7 @@ def render(frame, scale=0.5):
             E = fire_I * 1.6 / d2 * np.clip((Y - (HERO_TOP - 14)) / 14, 0, 1)
             col += (F.FIRE_LIGHT * 0.06)[None, None, :] * E[..., None]
         # aerial perspective + mist swallowing the tower feet
-        Ta = math.exp(-z / 900.0)
+        Ta = math.exp(-z / 620.0)
         mist = np.clip((MIST_Y + 10.0 - Y) / 26.0, 0, 1) ** 1.1
         mist_n = 0.75 + 0.25 * np.sin(X * 0.02 + t * 0.1 + k) * np.sin(X * 0.007 - t * 0.05)
         col = col * Ta + haze_col[None, None, :] * (1 - Ta)
