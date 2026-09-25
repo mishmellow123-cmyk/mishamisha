@@ -67,6 +67,9 @@ def render_frame(f, scale=1.0, outdir=OUT, save=True, verbose=True):
     sc.emit(ctx)
     hdr = fr.resolve()
     hdr = sc.post(ctx, hdr)
+    if not np.isfinite(hdr).all():
+        print(f'warning: non-finite values in frame {f}', flush=True)
+        hdr = np.nan_to_num(hdr, nan=0.0, posinf=0.0, neginf=0.0)
     fin = sc.finish_opts(f)
     img = look.finish(hdr, **fin)
     if save:

@@ -56,7 +56,7 @@ class Timeline:
 
     def light(self, t):
         red = B.redness(t)
-        col = (look.hexrgb(look.PALETTE['mind_gold']) * 0.6 + look.hexrgb(look.PALETTE['mind_ice']) * 0.4)
+        col = (look.hexrgb(look.PALETTE['mind_gold']) * 0.8 + look.hexrgb(look.PALETTE['mind_ice']) * 0.2)
         col = col * (1 - 0.5 * red) + look.hexrgb(look.PALETTE['race_red']) * 0.5 * red
         return B.crown_centre(t), col, 60.0 * B.fire_power(t)
 

@@ -28,7 +28,7 @@ NOTO_CJK = '/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc'
 
 # ------------------------------------------------------------------ layout ---
 TEX_N = 4096
-TEX_R = 2.60                      # texture covers [-TEX_R, TEX_R]^2 metres
+TEX_R = 3.62                      # texture covers [-TEX_R, TEX_R]^2 metres
 TEXEL = 2 * TEX_R / TEX_N         # ~1.25 mm
 
 OATH_CAP = 0.150                  # cap height (m)
@@ -46,10 +46,11 @@ OATH_THETA = [math.pi / 2 - k * math.pi / 2 for k in range(4)]
 BAND_IN = OATH_R_IN - 0.085       # carved border rings of the oath band
 BAND_OUT = OATH_R_OUT + OATH_CAP + 0.085
 
-TOG_R = (2.03, 2.255)             # baselines of the two "together" rows (inner, outer)
-TOG_XH = 0.080                    # target Latin x-height (m); other scripts matched by eye
-TOG_BORDER = (1.945, 2.445)
-TABLE_R = 2.56
+TOG_R = (2.845, 3.150)            # baselines of the two "together" rows (inner, outer) - on the floor band
+TOG_XH = 0.104                    # target Latin x-height (m); other scripts matched by eye
+TOG_BORDER = (2.735, 3.415)
+TABLE_R = 1.97
+FLOOR_BAND = (2.66, 3.49)        # smooth stone ring set in the floor
 
 HEARTH_R = 0.50
 RAY_R = (0.70, 1.16)              # 12 carved sun-rays around the hearth
@@ -252,6 +253,7 @@ def together_layout():
         widths = np.array([strips[i][2] * TEXEL for i in idxs])      # metres of ink
         circ = 2 * np.pi * rb
         gap = (circ - widths.sum()) / len(idxs)
+        print(f'together row {row}: r={rb} ink {widths.sum():.2f} m of {circ:.2f} m (fill {widths.sum()/circ:.2f})')
         # first word centred on the top (theta=pi/2) for outer row; inner row staggered half a slot
         s = 0.0 if row == 1 else 0.5 * (widths[0] + gap)
         pos = []
@@ -290,7 +292,7 @@ def build(verbose=True):
         pad = (sd.shape[1] - ink_w) / 2
         # centre of ink = pad + ink_w/2 (word_strip centres ink between pads)
         ucen = sd.shape[1] / 2
-        place_on_arc(sd, base, ucen, rb, th, rb - 0.09, rb + 0.19, sd_tog)
+        place_on_arc(sd, base, ucen, rb, th, rb - 0.12, rb + 0.25, sd_tog)
     if verbose:
         print('together placed', flush=True)
 
@@ -333,15 +335,6 @@ def build(verbose=True):
         endcap = np.minimum(rho - RAY_R[0], RAY_R[1] - rho)
         sd_ray = np.minimum(inside, endcap)
         sd_orn = np.maximum(sd_orn, sd_ray / t)
-    # 12 short hour ticks outside the together band (where the emissaries stand)
-    for k in range(12):
-        th = np.pi / 2 + k * np.pi / 6 + np.pi / 12
-        dth = (theta - th + np.pi) % (2 * np.pi) - np.pi
-        dist_t = np.abs(dth) * rho
-        inside = 0.006 - dist_t
-        endcap = np.minimum(rho - 2.47, 2.53 - rho)
-        sd_orn = np.maximum(sd_orn, np.minimum(inside, endcap) / t)
-
     def depth_from(sd):
         d = np.clip(sd * t * WALL_TAN, 0, None)
         # soft cap (rounded groove bottom)
@@ -371,7 +364,7 @@ def mip_pyramid(tex, min_size=16):
 
 def load(rebuild=False):
     os.makedirs(CACHE, exist_ok=True)
-    path = os.path.join(CACHE, 'textmaps_v4.npz')
+    path = os.path.join(CACHE, 'textmaps_v5.npz')
     if os.path.exists(path) and not rebuild:
         z = np.load(path)
         return z['flat'], z['offs'], z['sizes'], z['tog_layout']

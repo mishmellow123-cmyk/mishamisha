@@ -7,10 +7,10 @@ from numba import njit
 from nbcore import FM, clamp, sstep, smin, sd_ellipsoid, sd_capsule, sd_capsule_r
 
 # ------------------------------------------------------------ constants ---
-TABLE_R = 2.56
-TABLE_Z = 0.80
-DAIS_R = 5.20
-DAIS_Z = 0.12
+TABLE_R = 1.97
+TABLE_Z = 0.62
+DAIS_R = 6.30
+DAIS_Z = 0.10
 BOWL_R = 0.50
 LIP_R = 0.64
 BOWL_D = 0.17

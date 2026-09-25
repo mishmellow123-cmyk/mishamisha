@@ -48,7 +48,7 @@ def crown_tilt(t):
     tau = 0.38 * crown_morph(t) * (1 - smoothstep(740, 820, t))
     a = ALPHA_C
     axis = np.array([math.sin(a), 0.0, -math.cos(a)])
-    c, s_ = math.cos(-tau), math.sin(-tau)
+    c, s_ = math.cos(tau), math.sin(tau)
     x, y, z = axis
     C = 1 - c
     return np.array([[c + x * x * C, x * y * C - z * s_, x * z * C + y * s_],
@@ -149,8 +149,8 @@ class MindFire:
         x, y, z = p[:, 0], p[:, 1], p[:, 2]
         rho = np.sqrt(x * x + z * z)
         phi = np.arctan2(z, x)
-        Rr = 4.0 + 0.6 * smoothstep(640, 800, t)
-        rho2 = lerp(rho * R, Rr + (rho - 0.45) * 0.62 * 1.4, m)
+        Rr = 5.0 + 0.6 * smoothstep(640, 800, t)
+        rho2 = lerp(rho * R, Rr + (rho - 0.45) * 0.62 * 1.5, m)
         y2 = lerp(y * R, y * 0.4 * 1.4, m)
         phi2 = phi + m * 0.012 * (t - 562)
         return np.stack([rho2 * np.cos(phi2), y2, rho2 * np.sin(phi2)], 1)
@@ -263,7 +263,7 @@ class FireSparks:
         k = (self.ph + self.v * (t - IGN)) % 1.0
         h = 1.6 * R + k * 14.0
         spread = 0.25 + 2.2 * k
-        Rr = 4.0 * m
+        Rr = 5.0 * m
         x = (Rr + self.sp[:, 0] * spread * 0.4) * np.cos(self.a) * m + self.sp[:, 0] * spread * (1 - m)
         z = (Rr + self.sp[:, 0] * spread * 0.4) * np.sin(self.a) * m + self.sp[:, 1] * spread * (1 - m)
         y = h * (1 - 0.8 * m) + m * (1.0 + k * 9.0)
@@ -303,7 +303,7 @@ class Crown:
     def pts(self, t):
         m = crown_morph(t)
         C = crown_centre(t)
-        Rr = 4.0 + 0.6 * smoothstep(640, 800, t)
+        Rr = 5.0 + 0.6 * smoothstep(640, 800, t)
         rot = m * 0.012 * (t - 562)
         k = (self.ph + self.sp * t) % 1.0          # particles stream up each tine
         a = 2 * np.pi * self.tine / self.nt + rot
@@ -374,7 +374,8 @@ class Towers:
         self.ang = 2 * np.pi * np.arange(k) / k + TOWER_ANG0
         self.rad = 18.0 + r.uniform(-1.2, 1.2, k)
         self.t_rise = 520 + np.array([0, 9, 4, 14, 6, 11, 2, 8], float)
-        self.h_rise = np.array([36.0, 31.0, 39.0, 33.0, 40.0, 32.0, 37.0, 38.0])
+        # near the camera (k=0,1) tall and looming; the far side lower so the crown floats clear
+        self.h_rise = np.array([40.0, 38.0, 35.0, 27.0, 28.5, 26.0, 27.5, 36.0])
         # surge amounts per beat (leap-frogging race)
         J = r.uniform(1.4, 2.6, (k, len(BEATS)))
         lead = r.integers(0, k, len(BEATS))
@@ -434,17 +435,18 @@ class Towers:
             # base ember glow: brighter edges, faint surfaces, dim toward the ground
             e_base = np.where(kind == 1, 1.0, 0.55) * (0.5 + 0.5 * rnd)
             e_base *= 0.35 + 0.65 * smoothstep(0.0, 14.0, yl)
-            fl = 1 + 0.25 * np.sin(0.45 * t + self.flk[i][vis])
-            Tb = 0.3 + 0.13 * rnd
+            fk = self.flk[i][vis]
+            fl = 1 + 0.45 * np.sin(1.3 * t + fk) * np.sin(0.37 * t + 2.0 * fk)
+            Tb = 0.27 + 0.13 * rnd
             cb = look.blackbody(Tb)
             cb = cb * (1 - 0.6 * red) + (C_RED * 0.7 + C_CRIMSON * 0.3) * 0.6 * red
-            e_base = e_base * fl * 3.0
+            e_base = e_base * fl * 2.3
             # fire light (inner faces)
             L = light_pos - P1
             dL = np.linalg.norm(L, axis=1)
             lam = np.maximum((nw * L).sum(1) / np.maximum(dL, 1e-6), 0.0)
-            lam = np.where(kind == 1, 0.3 + 0.7 * lam, lam) ** 0.7
-            e_lit = light_pow * lam / (1 + (dL / 16.0) ** 2) * 2.6
+            lam = np.where(kind == 1, 0.1 + 0.9 * lam, lam) ** 0.8
+            e_lit = light_pow * lam / (1 + (dL / 16.0) ** 2) * 1.0
             # emergence front: hot line where the tower leaves the ground
             front = np.exp(-yl / 0.6) * 5.0 * (1 - smoothstep(610, 650, t) * 0.7)
             # windows
@@ -516,12 +518,12 @@ class Sparks:
         idx = np.nonzero(alive)[0]
         P0, _ = self.pts(ctx.t0)
         P1, tau = self.pts(ctx.t1)
-        x = tau[idx] / self.life[idx]
+        x = np.clip(tau[idx] / self.life[idx], 0.0, 1.0)
         e = self.E[idx] * 26.0 * (1 - x) ** 1.3
         red = redness(t)
         col = look.blackbody(np.clip(0.95 - 0.6 * x, 0.2, 1.0))
         col = col * (1 - 0.3 * red) + C_RED * 0.3 * red
-        ctx.fr.splat(P0[idx], P1[idx], 0.005, e, col, ctx.cam0, ctx.cam1)
+        ctx.fr.splat(P0[idx], P1[idx], 0.005, e, col, ctx.cam0, ctx.cam1, zref=28.0)
 
 
 class Walls:
@@ -543,13 +545,13 @@ class Walls:
         self.start = 676 + 14 * r.random(k)
 
     def height(self, t, w):
-        base = 6.0 * ease_out((t - self.start[w]) / 40.0, 2.0)
+        base = 24.0 * ease_out((t - self.start[w]) / 36.0, 2.5)
         grow = 0.0
         for b, tb in enumerate(BEATS):
             if tb >= 680:
                 x = (t - tb - 3.0) / 8.0
                 if x > 0:
-                    grow += 1.9 * float(ease_out_back(x, 1.0))
+                    grow += 1.8 * float(ease_out_back(x, 1.0))
         return base + grow
 
     def pts(self, t):
@@ -571,10 +573,10 @@ class Walls:
         P1, k, H = self.pts(ctx.t1)
         on = t >= self.start[self.w]
         crest = np.exp(-((1 - k) / 0.04) ** 2) * 2.0
-        e = self.E * (0.35 + 0.65 * (1 - k) ** 0.6 + crest) * 3.0 * on
+        e = self.E * (0.35 + 0.65 * (1 - k) ** 0.6 + crest) * 2.6 * on
         e *= smoothstep(0, 10, t - self.start[self.w])
         col = C_RED * (1 - k)[:, None] + C_CRIMSON * k[:, None]
-        ctx.fr.splat(P0, P1, 0.006, e, col, ctx.cam0, ctx.cam1)
+        ctx.fr.splat(P0, P1, 0.006, e, col, ctx.cam0, ctx.cam1, zref=30.0)
 
 
 class Smoke:
@@ -684,8 +686,8 @@ class Vortex:
         col += C_CRIMSON * smoothstep(0.6, 1.0, x)[:, None]
         # instability: travelling brightness waves + flicker
         wave = 0.6 + 0.4 * np.sin(0.5 * rr - 0.45 * t + self.ph * 0.3)
-        e = self.E * wave * (3.0 + 10.0 * np.exp(-rr / 8.0)) * 1.6 * g
-        ctx.fr.splat(P0, P1, 0.02, e, col, ctx.cam0, ctx.cam1)
+        e = self.E * wave * (2.0 + 8.0 * np.exp(-rr / 8.0)) * 1.4 * g
+        ctx.fr.splat(P0, P1, 0.02, e, col, ctx.cam0, ctx.cam1, zref=60.0)
 
 
 # ------------------------------------------------------------- camera ---
@@ -701,14 +703,15 @@ CAM_B = [  # (frame, radius, azimuth offset, height, target y)
     (480, 13.9, 0.43, 7.2, -1.35),
     (500, 14.5, 0.16, 2.4, -0.9),
     (520, 15.5, -0.08, 2.2, -0.6),
-    (548, 17.5, -0.05, 2.6, 0.2),
-    (580, 21.0, -0.02, 8.0, 6.5),
-    (610, 26.0, 0.00, 15.5, 14.0),
-    (640, 30.0, 0.00, 21.5, 19.3),
-    (720, 29.0, 0.03, 33.0, 27.5),
-    (800, 27.0, 0.06, 51.0, 39.0),
-    (840, 52.0, 0.12, 72.0, 46.0),
-    (880, 86.0, 0.18, 96.0, 48.0),
+    (548, 18.0, -0.05, 2.6, 0.2),
+    (580, 23.0, -0.02, 8.0, 6.5),
+    (610, 30.0, 0.00, 15.5, 14.0),
+    (640, 36.0, 0.00, 21.5, 19.0),
+    (700, 33.0, 0.02, 25.0, 26.0),
+    (760, 31.0, 0.04, 31.0, 33.0),
+    (800, 31.0, 0.06, 37.0, 38.5),
+    (840, 56.0, 0.10, 63.0, 43.0),
+    (880, 92.0, 0.14, 96.0, 45.0),
 ]
 
 

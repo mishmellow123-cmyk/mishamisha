@@ -67,9 +67,9 @@ def ease_out(x, p=3.0):
 
 # ================================================================= camera ===
 _H_KEYS = [(1900, 700.0), (1912, 640.0), (1926, 575.0), (1940, 400.0), (1953, 205.0), (1964, 96.0),
-           (1974, 44.0), (1983, 24.5), (1991, 17.2), (1998, 13.6), (2003, 11.2), (2008, 9.45),
-           (2014, 8.75), (2040, 8.62), (2080, 8.52), (2120, 8.45), (2136, 8.5), (2149, 10.8),
-           (2162, 13.3), (2190, 13.05), (2222, 12.8), (2234, 10.6), (2247, 7.6), (2260, 6.0)]
+           (1974, 46.0), (1983, 27.0), (1991, 19.0), (1998, 15.6), (2002, 13.6), (2006, 11.0),
+           (2011, 9.2), (2016, 8.6), (2040, 8.5), (2080, 8.42), (2120, 8.38), (2136, 8.45),
+           (2149, 12.5), (2162, 17.8), (2190, 18.4), (2220, 18.0), (2233, 14.0), (2247, 9.0), (2260, 7.0)]
 _logh = PchipInterpolator([k[0] for k in _H_KEYS], np.log([k[1] for k in _H_KEYS]))
 
 
@@ -88,8 +88,8 @@ def cam_psi(t):
 
 def cam_cy(t):
     """Principal point row (full-res px): hearth position on screen (lens shift)."""
-    cy = 380.0
-    cy += (505.0 - 380.0) * smoother(ramp(t, 1992, 2011))
+    cy = 340.0
+    cy += (505.0 - 340.0) * smoother(ramp(t, 1994, 2012))
     cy += (402.0 - 505.0) * smoother(ramp(t, 2138, 2163))
     return cy
 
@@ -129,7 +129,7 @@ def exposure(t):
 NFIG = 12
 _rng = np.random.default_rng(20250925)
 FIG_ANG = np.radians(90.0 + 15.0 + 30.0 * np.arange(NFIG)) + np.radians(_rng.uniform(-2.5, 2.5, NFIG))
-FIG_R = 2.93 + _rng.uniform(-0.04, 0.05, NFIG)
+FIG_R = 2.30 + _rng.uniform(-0.03, 0.04, NFIG)
 FIG_HS = np.array([1.00, 0.95, 1.05, 0.97, 1.02, 0.93, 1.06, 0.99, 0.96, 1.03, 0.98, 1.01])
 FIG_WS = np.array([1.00, 0.96, 1.07, 0.95, 1.02, 1.05, 1.00, 0.97, 1.04, 0.99, 0.94, 1.03])
 FIG_TYPE = np.array([0, 1, 2, 0, 3, 0, 4, 1, 0, 2, 0, 1])
@@ -154,7 +154,7 @@ FIG_EXT = 1984.0 + _rng.uniform(0, 6, NFIG)
 HOLDOUT = 7
 FIG_EXT[HOLDOUT] = 1991.5          # the last one hesitates, joins just in time
 FIG_RAISE[HOLDOUT] = 1986.0
-FIG_WITHDRAW = 2005.0 + _rng.uniform(0, 8, NFIG)
+FIG_WITHDRAW = 2001.0 + _rng.uniform(0, 4, NFIG)
 FIG_BREATH_PH = _rng.uniform(0, 2 * np.pi, NFIG)
 
 
@@ -184,13 +184,13 @@ def fig_pose(i, t):
     tor_rest = np.array([0.12, side * 0.04, 1.0])
     hand_up = np.array([0.30, side * 0.26, 1.28 * hs])
     tor_up = np.array([0.45, -side * 0.05, 1.0])
-    hand_ext = np.array([0.64, side * 0.10, 1.27 * hs])
+    hand_ext = np.array([0.60, side * 0.10, 1.20 * hs])
     tor_ext = np.array([1.0, -side * 0.10, 0.52])
     hand_wd = np.array([0.20, side * 0.29, 1.08 * hs])
     tor_wd = np.array([0.30, side * 0.05, 1.0])
     u_raise = smoother(ramp(t, FIG_RAISE[i], FIG_RAISE[i] + 9))
     u_ext = smoother(ramp(t, FIG_EXT[i], FIG_EXT[i] + 9))
-    u_wd = smoother(ramp(t, FIG_WITHDRAW[i], FIG_WITHDRAW[i] + 16))
+    u_wd = smoother(ramp(t, FIG_WITHDRAW[i], FIG_WITHDRAW[i] + 11))
     hand = _lerp(hand_rest, hand_up, u_raise)
     tor = _lerp(tor_rest, tor_up, u_raise)
     hand = _lerp(hand, hand_ext, u_ext)
@@ -244,7 +244,7 @@ def figures(t):
         Fa[i, G.F_TX:G.F_TZ + 1] = tor
         Fa[i, G.F_EX:G.F_EZ + 1] = E
         Fa[i, G.F_BOW] = 0.0
-        Fa[i, G.F_TLIT] = 0.9 * (1.0 - smooth(ramp(t, IGNITE + 4, IGNITE + 60)))
+        Fa[i, G.F_TLIT] = 0.25 * (1.0 - smooth(ramp(t, IGNITE + 2, IGNITE + 40)))
         Fa[i, G.F_BREATH] = 0.006 * math.sin(2 * math.pi * t / 96.0 + FIG_BREATH_PH[i])
         # AABB (world) from key local points
         hs, ws = FIG_HS[i], FIG_WS[i]
@@ -272,7 +272,7 @@ def stones():
     base = np.linspace(0, 2 * np.pi, NSTONE, endpoint=False) + 0.09
     for j in range(NSTONE):
         a = base[j] + rng.uniform(-0.05, 0.05)
-        r = 10.0 + rng.uniform(-0.35, 0.35)
+        r = 7.6 + rng.uniform(-0.3, 0.3)
         x, y = r * math.cos(a), r * math.sin(a)
         yaw = a + math.pi / 2 + rng.uniform(-0.15, 0.15)
         hx = rng.uniform(0.42, 0.70)
@@ -363,7 +363,7 @@ def ribbon_progress(i, t):
     return smoother(ramp(t, t0, min(t0 + 9.0, IGNITE - 1.0)))
 
 
-HEARTH_TARGET = np.array([0.0, 0.0, 1.22])
+HEARTH_TARGET = np.array([0.0, 0.0, 1.0])
 
 
 def ribbon_ctrl(i, t):

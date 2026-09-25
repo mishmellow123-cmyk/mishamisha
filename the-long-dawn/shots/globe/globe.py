@@ -1060,46 +1060,53 @@ def render_stars(world, cam, atmo, gain, sigma=0.55):
 
 # ------------------------------------------------------------------ post ---
 
-def sun_glare(W, H, sx, sy, intensity, f, spikes=6, spike_len=0.9, rot_deg=12.0, tint=(1.0, 0.86, 0.66),
-              halo=1.0, ghosts=0.0, spike_gain=1.0):
-    """Explicit lens response to the sun: veiling glare, diffraction spikes, faint ghosts.
-    intensity = visible sun fraction * brightness scale. Returns HDR image."""
+def sun_glare(W, H, sx, sy, core, spikes_amt, flash=0.0, rot_deg=11.0, tint=(1.0, 0.88, 0.70),
+              n_spikes=16, spike_len=1.0, ghosts=0.0):
+    """Lens response to the sun (HDR, additive), sized for a 1920-wide frame and scaled to W.
+    core: brightness of the halo; spikes_amt: diffraction spike brightness (0 while the disk is
+    hidden); flash: extra wide bloom for the burst (decays over a few frames)."""
     img = np.zeros((H, W, 3), np.float32)
-    if intensity <= 0:
-        return img
+    k = W / 1920.0
     y, x = np.mgrid[0:H, 0:W].astype(np.float32)
-    dx = x + 0.5 - sx
-    dy = y + 0.5 - sy
+    dx = (x + 0.5 - sx) / k
+    dy = (y + 0.5 - sy) / k
     r = np.sqrt(dx * dx + dy * dy) + 1e-3
-    rn = r / f                                   # radians-ish
     tint = np.asarray(tint, np.float32)
-    # veiling glare: sharp core + broad skirt
-    g = halo * (0.9 / (1.0 + (rn / 0.004) ** 2) + 0.08 / (1.0 + (rn / 0.03) ** 2) ** 1.2
-                + 0.012 / (1.0 + (rn / 0.15) ** 2))
-    img += (g * intensity)[..., None] * tint
-    # diffraction spikes (aperture blades): thin angular lobes, chromatic toward the tips
-    th = np.arctan2(dy, dx)
-    acc = np.zeros((H, W), np.float32)
-    for i in range(spikes):
-        a = math.radians(rot_deg) + i * 2 * math.pi / spikes
-        dth = np.angle(np.exp(1j * (th - a)))
-        width = 0.0022 * f / np.maximum(r, 1.0) + 0.0016      # angular width shrinks with r
-        lobe = np.exp(-0.5 * (dth / width) ** 2)
-        fall = 1.0 / (1.0 + (rn / (0.01 * spike_len)) ** 1.35)
-        fall *= np.exp(-rn / (0.35 * spike_len))
-        acc += lobe * fall * (1.0 if i % 2 == 0 else 0.55)
-    sp = (acc * intensity * 0.55 * spike_gain)[..., None]
-    chrom = np.stack([1.0 + 0.10 * np.clip(rn / 0.2, 0, 1), np.ones_like(rn), 1.0 - 0.25 * np.clip(rn / 0.2, 0, 1)], -1)
-    img += sp * tint * chrom
+    hot = np.asarray((1.0, 0.96, 0.9), np.float32)
+    if core > 0:
+        g_hot = core * (1.4 * np.exp(-r / 6.0) + 0.55 * np.exp(-r / 22.0))
+        g_warm = core * (0.16 / (1.0 + (r / 60.0) ** 2) + 0.035 / (1.0 + (r / 220.0) ** 2) ** 1.5)
+        img += g_hot[..., None] * hot + g_warm[..., None] * tint
+    if flash > 0:
+        g = flash * (2.2 * np.exp(-r / 30.0) + 0.9 / (1.0 + (r / 120.0) ** 2) + 0.12 / (1.0 + (r / 420.0) ** 2))
+        img += g[..., None] * np.asarray((1.0, 0.93, 0.82), np.float32)
+    if spikes_amt > 0:
+        th = np.arctan2(dy, dx)
+        acc = np.zeros((H, W), np.float32)
+        rng = np.random.default_rng(3)
+        for i in range(n_spikes):
+            a = math.radians(rot_deg) + i * 2 * math.pi / n_spikes
+            main = i % 2 == 0
+            L = (300.0 if main else 120.0) * spike_len * rng.uniform(0.8, 1.2)
+            amp = (1.0 if main else 0.45) * rng.uniform(0.75, 1.1)
+            dth = np.angle(np.exp(1j * (th - a)))
+            wpx = 0.9 + r * 0.004                       # spike half-width in px, widening slowly
+            lobe = np.exp(-0.5 * (dth * r / wpx) ** 2)
+            fall = np.exp(-r / L) / (1.0 + r / 25.0)
+            acc += amp * lobe * fall
+        sp = (acc * spikes_amt)[..., None]
+        fr = np.clip(r / 260.0, 0, 1)[..., None]
+        chrom = np.concatenate([1.0 + 0.15 * fr, 1.0 - 0.02 * fr, 1.0 - 0.35 * fr], -1)
+        img += sp * tint * chrom
     if ghosts > 0:
         cx, cy = W / 2.0, H / 2.0
-        for k, (t, rad, col) in enumerate([(-0.45, 0.018, (0.6, 0.8, 1.0)), (-0.85, 0.035, (1.0, 0.7, 0.4)),
-                                           (-1.25, 0.06, (0.5, 1.0, 0.7)), (0.35, 0.012, (1.0, 0.8, 0.5))]):
-            gx = cx + (sx - cx) * t
-            gy = cy + (sy - cy) * t
-            rr = np.sqrt((x - gx) ** 2 + (y - gy) ** 2) / f
-            disc = np.clip((rad - rr) / (0.15 * rad), 0, 1) * (0.5 + 0.5 * np.clip(rr / rad, 0, 1) ** 4)
-            img += (disc * ghosts * intensity * 0.002)[..., None] * np.asarray(col, np.float32)
+        for (t_, rad, col) in [(-0.35, 14.0, (0.55, 0.75, 1.0)), (-0.7, 30.0, (1.0, 0.75, 0.45)),
+                               (-1.1, 55.0, (0.6, 1.0, 0.75)), (0.3, 9.0, (1.0, 0.85, 0.6))]:
+            gx = cx + (sx - cx) * t_
+            gy = cy + (sy - cy) * t_
+            rr = np.sqrt((x - gx) ** 2 + (y - gy) ** 2) / k
+            d = np.clip((rad - rr) / 3.0, 0, 1) * (0.35 + 0.65 * np.clip(rr / rad, 0, 1) ** 3)
+            img += (d * ghosts)[..., None] * np.asarray(col, np.float32)
     return img
 
 

@@ -234,16 +234,18 @@ class Dawn:
         star_k = 1.0 - ramp(t, 2236, 2262) * 0.85
         img += G.render_stars(wd, cam, at, gain=0.9 * star_k)
         calm = self.calm(t, H)
-        web().draw(img, cam, 2600.0, t_anim=t, gain=0.9, scale=scale, calm=calm, sun=Sl, sparks=False)
+        web().draw(img, cam, 2600.0, t_anim=t, gain=0.9, scale=scale, calm=calm, sun=Sl, sparks=False,
+                   ground_only=True)
         hearths().draw(img, cam, t, sun=Sl, gain=1.0, calm=calm, scale=scale)
-        # sun glare
+        # the sun through the lens
         sp, z = cam.project(cam.pos[None, :] + Sd[None, :] * 50.0)
         sx, sy = sp[0]
         frac = seg_frac(p['sun_el'], self.SUN_R)
-        burst = math.exp(-max(t - 2240.0, 0.0) / 9.0) * (1.0 if t >= 2240 else 0.0)
-        pre = math.exp((p['sun_el'] + self.SUN_R) / 0.25) if p['sun_el'] < -self.SUN_R else 1.0
-        inten = 22.0 * (frac ** 0.5) * (1.0 + 2.5 * burst) + 3.0 * pre * (1 - frac)
-        glare = G.sun_glare(W, H, sx, sy, inten, cam.f, spikes=6)
+        burst = math.exp(-max(t - 2240.0, 0.0) / 7.0) if t >= 2240 else 0.0
+        pre = ramp(t, 2226.0, 2240.0)
+        core = 9.0 * frac ** 0.6 + 1.2 * pre * (1.0 - frac)
+        spikes = 5.0 * frac ** 0.5 * (1.0 + 1.2 * burst)
+        glare = G.sun_glare(W, H, sx, sy, core, spikes, flash=6.0 * burst * min(1.0, frac * 6.0 + 0.3))
         return img, glare, cam, p, (sx, sy, frac, burst)
 
     def exposure(self, t):
@@ -252,9 +254,9 @@ class Dawn:
     def render(self, t, scale=1.0):
         img, glare, cam, p, sun = self.render_hdr(t, scale)
         sb = sun[3]
-        return G.finish_frame(img, sun_layer=glare, exposure=self.exposure(t), bloom_strength=0.08,
-                              bloom_threshold=0.8, streak_strength=0.05 + 0.08 * sb, streak_threshold=2.0,
-                              streak_length=0.45, vignette_amount=0.22)
+        return G.finish_frame(img, sun_layer=glare, exposure=self.exposure(t), bloom_strength=0.07,
+                              bloom_threshold=0.9, streak_strength=0.035 + 0.06 * sb, streak_threshold=3.0,
+                              streak_length=0.5, vignette_amount=0.22)
 
 
 SHOTS = {'answers': Answers(), 'dawn': Dawn()}

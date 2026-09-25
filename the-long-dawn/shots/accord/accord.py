@@ -15,6 +15,31 @@ os.environ.setdefault('NUMBA_NUM_THREADS', '2')
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
+
+def _invalidate_numba_cache():
+    """numba's on-disk cache does not track cross-module dependencies: wipe it whenever
+    any source file in this folder changes."""
+    import glob
+    import hashlib
+    hsh = hashlib.sha1()
+    for p in sorted(glob.glob(os.path.join(HERE, '*.py'))):
+        with open(p, 'rb') as fh:
+            hsh.update(fh.read())
+    stamp = os.path.join(HERE, '__pycache__', 'src.sha1')
+    os.makedirs(os.path.dirname(stamp), exist_ok=True)
+    old = open(stamp).read() if os.path.exists(stamp) else ''
+    if old != hsh.hexdigest():
+        for f in glob.glob(os.path.join(HERE, '__pycache__', '*.nb[ic]')):
+            try:
+                os.remove(f)
+            except OSError:
+                pass
+        with open(stamp, 'w') as fh:
+            fh.write(hsh.hexdigest())
+
+
+_invalidate_numba_cache()
+
 import numpy as np  # noqa: E402
 
 import scene as SC  # noqa: E402

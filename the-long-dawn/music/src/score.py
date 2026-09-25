@@ -1062,9 +1062,28 @@ def coda():
     P("glass").n("F#6", tf + 1.6, 2, 0.1, pan=-0.4)
 
 
+# Mixing faders (dB), set from calibrate.py measurements against role targets
+# (each part's loud-moment level); kept fixed so the balance is reproducible.
+FADERS = {
+    "vln1": +2.1, "vln2": -1.1, "vla": -0.2, "vc": +0.3, "cb": +0.5, "svln": -2.8,
+    "vln1_sp": +3.4, "vln2_sp": +2.4, "vla_sp": +2.1, "vc_sp": +1.4, "cb_sp": +1.4, "vln_tr": -0.6,
+    "vc_tr": +5.8, "harp": +2.1, "gliss": -0.8, "fl": +9.6, "fl2": +3.6, "cl": +5.2,
+    "hn_solo": +3.4, "hns": -0.8, "tpt": +0.5, "tbn": -2.8, "tuba": -0.4, "tpt_st": +0.1,
+    "timp": +6.7, "timp_roll": +1.0, "bdrum": +7.5, "giant": +7.7, "tenor": +0.5, "tenor_hi": -0.2,
+    "snare": +4.5, "snare_roll": +2.2, "cym": +6.8, "crash": +9.9, "swell": +1.8, "swell_s": +3.6,
+    "gong": +4.3, "glock": +9.0, "tubular": +16.6, "triangle": +11.0, "piano": +11.3, "organ": -7.9,
+    "organ_ped": -3.0, "choir": -20.8, "choir_oo": -17.1, "glass": -10.1, "celesta": -8.3, "taiko": -13.1,
+    "tick": +2.7, "riser": -7.0, "shepard": -5.8, "revcym": +8.2, "impact": -2.5, "subdrop": -6.1,
+    "braam": -9.5, "sub": +0.9, "bell": -6.0,
+}
+
+
 def build():
     PARTS.clear()
     setup()
+    for k, v in FADERS.items():
+        if k in PARTS:
+            PARTS[k].gain_db = v
     intro()
     kindling()
     race()

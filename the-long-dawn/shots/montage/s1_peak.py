@@ -83,23 +83,34 @@ def h_near(x, z, fp):
 
 @njit(fastmath=True)
 def h_far(x, z, fp):
-    s = 4200.0
+    s = 3400.0
     o = _lod(s, fp, 1.0, 11.0)
-    r = ridged2(x / s + 0.31, z / s - 1.73, o, 21)
-    h = -1650.0 + 1800.0 * r ** 1.55
+    # domain warp so ridges wander, and a massif envelope so peaks cluster with open cloud between
+    wx = fbm2(x / 7000.0 + 5.1, z / 7000.0, 3.0, 61)
+    wz = fbm2(x / 7000.0 - 2.3, z / 7000.0 + 1.9, 3.0, 62)
+    r = ridged2(x / s + 0.31 + 0.55 * wx, z / s - 1.73 + 0.55 * wz, o, 21)
+    m = fbm2(x / 11000.0 + 0.7, z / 11000.0 - 0.4, 3.0, 63)
+    env = smoothstep(-0.35, 0.35, m)
+    az = math.atan2(x - CAM0[0], z - CAM0[2])
+    dd = math.sqrt((x - CAM0[0]) ** 2 + (z - CAM0[2]) ** 2)
+    corridor = math.exp(-((az + 0.045) / 0.075) ** 2) * (1.0 - smoothstep(16000.0, 26000.0, dd))
+    prom = (1.0 - 0.55 * corridor) * (0.55 + 0.45 * env)
+    h = -1800.0 + 2100.0 * prom * r ** 1.45
     dxb = x - XB
     dzb = z - ZB
-    h += (HB + 250.0) * math.exp(-(dxb * dxb + dzb * dzb) / (2.0 * 2400.0 * 2400.0))
+    h += (HB + 450.0) * math.exp(-(dxb * dxb + dzb * dzb) / (2.0 * 2600.0 * 2600.0))
     return h
 
 
 @njit(fastmath=True)
 def h_cloud(x, z, fp, t):
-    o = _lod(700.0, fp, 1.0, 6.0)
-    n = fbm2(x / 900.0 + t * 0.004, z / 900.0, o, 33)
-    o2 = _lod(180.0, fp, 1.0, 5.0)
-    m = fbm2(x / 180.0 - t * 0.006, z / 180.0, o2, 34)
-    return CLOUD_Y + 38.0 * n + 9.0 * m
+    o = _lod(2200.0, fp, 1.0, 6.0)
+    n = fbm2(x / 2400.0 + t * 0.003, z / 2400.0, o, 33)
+    o2 = _lod(500.0, fp, 1.0, 5.0)
+    m = fbm2(x / 520.0 - t * 0.006, z / 520.0, o2, 34)
+    o3 = _lod(120.0, fp, 0.0, 4.0)
+    q = fbm2(x / 120.0, z / 120.0 + t * 0.01, o3, 35)
+    return CLOUD_Y + 150.0 * n + 55.0 * (1.0 - abs(m)) + 10.0 * q
 
 
 @njit(fastmath=True)
@@ -180,13 +191,19 @@ def shade(C, D, P, S, LT, Lm, Im, amb, fogp, out, dep):
             if surf == 2:
                 # cloud sea: soft wrap lighting + forward scatter toward the moon
                 cosv = -(dx * mx + dy * my + dz * mz)
-                fwd = 1.0 + 2.2 * max(-cosv, 0.0) ** 6
-                wrap = max((ndl + 0.6) / 1.6, 0.0)
-                cr = 0.75 * (Im * Lm[3] * wrap * fwd + amb[0] * 1.2)
-                cg = 0.75 * (Im * Lm[4] * wrap * fwd + amb[1] * 1.2)
-                cb = 0.75 * (Im * Lm[5] * wrap * fwd + amb[2] * 1.2)
-                # darker in the troughs
-                trough = smoothstep(CLOUD_Y - 60.0, CLOUD_Y + 30.0, h0)
+                fwd = 1.0 + 1.6 * max(-cosv, 0.0) ** 4
+                wrap = max((ndl + 0.8) / 1.8, 0.0)
+                cr = 0.9 * (Im * Lm[3] * wrap * fwd + amb[0] * 1.5)
+                cg = 0.9 * (Im * Lm[4] * wrap * fwd + amb[1] * 1.5)
+                cb = 0.9 * (Im * Lm[5] * wrap * fwd + amb[2] * 1.5)
+                # peaks cast long moon shadows across the cloud sea
+                shc = T.soft_shadow(hshadow, P, x, h0 - curv + 5.0, z, mx, my, mz, 40.0, 12000.0, 16, 6.0, fp)
+                shc = 0.35 + 0.65 * shc
+                cr *= shc
+                cg *= shc
+                cb *= shc
+                # darker in the troughs, brighter billow tops
+                trough = smoothstep(CLOUD_Y - 120.0, CLOUD_Y + 110.0, h0)
                 cr *= 0.45 + 0.55 * trough
                 cg *= 0.45 + 0.55 * trough
                 cb *= 0.45 + 0.55 * trough
@@ -194,10 +211,16 @@ def shade(C, D, P, S, LT, Lm, Im, amb, fogp, out, dep):
                 # snow / rock
                 if surf == 0:
                     sn = gnoise2(x * 0.8, z * 0.8, 71) * 0.12 + gnoise2(x * 3.1, z * 3.1, 72) * 0.05
-                    snow = smoothstep(0.55, 0.78, ny + sn)
+                    snow = smoothstep(0.45, 0.70, ny + sn)
                 else:
-                    sn = gnoise2(x / 90.0, z / 90.0, 73) * 0.15
-                    snow = smoothstep(0.50, 0.72, ny + sn)
+                    es = max(fp * 6.0, 45.0)
+                    hsx = h_far(x + es, z, fp * 4.0)
+                    hsz = h_far(x, z + es, fp * 4.0)
+                    nsx = -(hsx - h0)
+                    nsz = -(hsz - h0)
+                    nsy = 1.0 / math.sqrt(nsx * nsx / (es * es) + nsz * nsz / (es * es) + 1.0)
+                    sn = gnoise2(x / 380.0, z / 380.0, 73) * 0.18 + gnoise2(x / 95.0, z / 95.0, 74) * 0.06
+                    snow = smoothstep(0.38, 0.58, nsy + sn)
                 ar = 0.055 + (0.80 - 0.055) * snow
                 ag = 0.056 + (0.86 - 0.056) * snow
                 ab = 0.062 + (0.98 - 0.062) * snow
@@ -359,13 +382,13 @@ def render(frame, scale=0.5, ss=1.5):
     LT = np.array(LT, np.float64)
 
     moon_col = CM.lin('#9DB4D9')
-    Im = 0.16
+    Im = 0.55
     Lm = np.r_[MOON_DIR, moon_col]
     amb = CM.lin('#27335E') * 0.35
     S = SK.sky_params(zenith='#070B1C', horizon='#2A3866', moon_dir=MOON_DIR, moon_radius_deg=0.8,
                       halo_I=0.025, halo_w=0.22, halo2_I=0.012, halo2_w=0.7, horizon_glow=0.25, gain=1.0)
-    fogc = CM.lin('#3B4F78') * 0.34
-    fogp = np.array([5.0e-5, 1 / 1500.0, 3.0e-4, 1 / 60.0, 1.5, fogc[0], fogc[1], fogc[2]])
+    fogc = CM.lin('#2E3D66') * 0.95
+    fogp = np.array([5.0e-5, 1 / 1500.0, 2.2e-4, 1 / 140.0, 1.5, fogc[0], fogc[1], fogc[2]])
     out = np.zeros((cami.H, cami.W, 3), np.float32)
     dep = np.zeros((cami.H, cami.W), np.float32)
     shade(C, D, P, S, LT, Lm, Im, amb, fogp, out, dep)
@@ -431,7 +454,7 @@ _SP = None
 def _stars():
     global _ST
     if _ST is None:
-        _ST = SK.make_stars(9000, 101, lum_scale=0.5)
+        _ST = SK.make_stars(14000, 101, lum_scale=7.0)
     return _ST
 
 

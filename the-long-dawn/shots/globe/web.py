@@ -325,7 +325,7 @@ class Web:
         return np.maximum(s, lo), I * k
 
     def draw(self, img, cam, t, gain=1.0, trail=1.0, head=1.0, node=1.0, scale=1.0,
-             calm=None, sparks=True, t_anim=None, glow=1.0, sun=None, day_keep=0.2):
+             calm=None, sparks=True, t_anim=None, glow=1.0, sun=None, day_keep=0.2, ground_only=False):
         """Additively draw the web at state time t into img (HDR, linear). t_anim drives the
         flicker/flow (defaults to t). calm: optional function(py array) -> multiplier."""
         pal = palette()
@@ -346,6 +346,8 @@ class Web:
             X = self.arc_points(k, u)
             uv, z = cam.project(X)
             vis = G.visible(cam.pos, X) & (z > 1e-3)
+            if ground_only:
+                vis &= self._over_disk(cam, X)
             L = self.len_km[k]
             age = t - self.ta[k]
             # now and then a soft pulse of light runs along a settled thread (it is alive)
@@ -551,6 +553,15 @@ class Web:
         sg, I = self._px(np.full(3 * n, 0.55), I, scale)
         st = np.arange(0, 3 * n + 1, 3, dtype=np.int64)
         G.splat_polyline(img, xs, ys, I[:, None] * col[None, :], sg, st, np.ones(3 * n, np.uint8))
+
+    @staticmethod
+    def _over_disk(cam, X):
+        """True where the point is seen against the Earth's disk (not against the sky)."""
+        D = X - cam.pos[None, :]
+        d = D / np.linalg.norm(D, axis=1)[:, None]
+        b = d @ cam.pos
+        c = cam.pos @ cam.pos - 1.0
+        return (b * b - c > 0) & (b < 0)
 
     @staticmethod
     def dayfade(Pn, sun, keep):
