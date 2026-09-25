@@ -18,7 +18,8 @@ class Timeline:
             pos, tgt = A.cam_a(t)
             # focus: near hero glyphs early, the spiral centre later
             fd = float(np.linalg.norm(tgt - pos))
-            focus = lerp(5.0, np.linalg.norm(pos), float(smoothstep(392, 430, t)))
+            focus = lerp(lerp(6.5, 5.0, float(smoothstep(345, 372, t))), np.linalg.norm(pos),
+                         float(smoothstep(392, 430, t)))
             ap = lerp(0.12, 0.05, float(smoothstep(392, 440, t)))
             return Camera(pos, tgt, hfov=float(lerp(50, 46, smoothstep(300, 480, t))),
                           focus=focus, aperture=ap)
@@ -26,7 +27,8 @@ class Timeline:
 
     def render_opts(self, f):
         if f < 484:
-            return dict(bokeh_pow=0.45, bokeh_cap=3.0, fog_start=16.0, fog_len=22.0)
+            fs = float(lerp(16.0, 45.0, smoothstep(405, 430, f)))
+            return dict(bokeh_pow=0.45, bokeh_cap=3.0, fog_start=fs, fog_len=22.0)
         return dict(bokeh_pow=0.45, bokeh_cap=3.0)
 
     def emit(self, ctx):
@@ -38,6 +40,16 @@ class Timeline:
             self.point.emit(ctx)
 
     def post(self, ctx, hdr):
+        f = ctx.t
+        if f < 336:
+            # warm light of the torch flame just below frame (continuity with INTRO)
+            k = float(1 - smoothstep(300, 336, f))
+            H, W = hdr.shape[:2]
+            y, x = np.mgrid[0:H, 0:W].astype(np.float32)
+            x = (x - W * 0.5) / (W * 0.30)
+            y = (y - H * 1.08) / (H * 0.42)
+            g = np.exp(-(x * x + y * y))[..., None]
+            hdr += g * np.array([1.0, 0.42, 0.10], np.float32) * (0.9 * k)
         return hdr
 
     def finish_opts(self, f):

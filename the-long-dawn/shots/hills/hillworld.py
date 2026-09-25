@@ -58,11 +58,11 @@ FOG = np.array([1.0 / 26000.0, 1.0 / 2600.0, -175.0, 55.0, 0.55, math.radians(2.
 def sky_intro():
     return Sky(
         sun=(-16.0, -6.0),
-        zenith=C('night_zenith', 1.6),
-        horizon=C('night_horizon', 1.25),
-        amber=C('dusk_amber', 1.35),
-        rose=C('dusk_rose', 0.55),
-        violet=C('dusk_violet', 0.42),
+        zenith=np.array([0.0020, 0.0036, 0.030]),
+        horizon=np.array([0.040, 0.058, 0.175]),
+        amber=np.array([0.80, 0.34, 0.095]),
+        rose=np.array([0.30, 0.11, 0.17]),
+        violet=np.array([0.10, 0.072, 0.19]),
         base_fall=0.20, amber_fall=0.032, rose_fall=0.085, violet_fall=0.28, az_pow=2.2,
         moon=(-27.0, 10.5), moon_radius_deg=0.75, moon_gain=2.2, moon_aureole=0.010,
         earthshine=0.045, city_gain=0.9,
@@ -75,11 +75,11 @@ def sky_intro():
 def sky_coda():
     return Sky(
         sun=(-10.0, -13.0),
-        zenith=C('night_zenith', 1.05),
-        horizon=C('night_horizon', 0.85),
-        amber=C('dusk_amber', 0.35),
-        rose=C('dusk_rose', 0.22),
-        violet=C('dusk_violet', 0.30),
+        zenith=np.array([0.0012, 0.0022, 0.020]),
+        horizon=np.array([0.026, 0.040, 0.125]),
+        amber=np.array([0.20, 0.085, 0.03]),
+        rose=np.array([0.10, 0.04, 0.07]),
+        violet=np.array([0.05, 0.04, 0.11]),
         base_fall=0.18, amber_fall=0.03, rose_fall=0.07, violet_fall=0.25, az_pow=2.0,
         moon=(-25.0, 8.0), moon_radius_deg=0.75, moon_gain=2.4, moon_aureole=0.012,
         earthshine=0.06, city_gain=1.4,

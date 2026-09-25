@@ -209,7 +209,7 @@ def sky_rad(dx, dy, dz, sp):
         r += a * sp[28]
         g += a * sp[29]
         b += a * sp[30]
-    gg = sp[41]
+    gg = sp[38]
     return r * gg, g * gg, b * gg
 
 

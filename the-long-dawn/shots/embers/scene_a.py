@@ -15,7 +15,7 @@ C_ICE = look.hexrgb(look.PALETTE['mind_ice'])
 C_GOLD = look.hexrgb(look.PALETTE['mind_gold'])
 C_EMBER = look.hexrgb(look.PALETTE['ember'])
 
-EMITTER = np.array([0.0, -4.2, 2.2])
+EMITTER = np.array([0.0, -1.3, 2.4])
 
 
 def _warp_table():
@@ -44,7 +44,7 @@ class Embers:
         a = r.uniform(0, 2 * np.pi, n)
         rad = 0.5 * np.sqrt(r.random(n))
         self.p0 = EMITTER + np.stack([rad * np.cos(a), r.normal(0, 0.1, n), rad * np.sin(a)], 1)
-        sp = r.uniform(0.13, 0.26, n)                        # units / frame (warped time)
+        sp = r.uniform(0.16, 0.34, n)                        # units / frame (warped time)
         dirs = np.stack([r.normal(0, 0.42, n), np.ones(n), r.normal(0.3, 0.3, n)], 1)
         dirs /= np.linalg.norm(dirs, axis=1, keepdims=True)
         self.v = dirs * sp[:, None]
@@ -159,7 +159,7 @@ class Glyphs:
         self.t_open[ie] = r.uniform(320.0, 342.0, n_ember)
         self.is_ember = np.zeros(n, bool)
         self.is_ember[ie] = True
-        s[ie] = r.lognormal(np.log(0.1), 0.25, n_ember)
+        s[ie] = r.lognormal(np.log(0.15), 0.2, n_ember)
         # ---- look
         self.T = r.uniform(0.5, 0.82, n)
         self.T[:nh] = r.uniform(0.62, 0.8, nh)
@@ -249,7 +249,7 @@ class Glyphs:
         op = self.is_ember
         g = clamp01((t - self.t_open[op]) / 12.0)
         sc[op] *= ease_out(g, 2.0) * 0.98 + 0.02
-        sc *= np.maximum((1 - u) ** 0.9, 0.025)
+        sc *= np.maximum((1 - u) ** 1.7, 0.02)
         # billboard basis toward camera with tilt/tumble
         fwd = campos[None, :] - c
         fwd /= np.maximum(np.linalg.norm(fwd, axis=1, keepdims=True), 1e-6)
@@ -283,7 +283,8 @@ class Glyphs:
         tw = 1 + self.tw_a * np.sin(self.tw_f * t * 6.28 / 6 + self.tw_p)
         heat = smoothstep(0.55, 1.0, u)
         absorb = 1 - smoothstep(0.9, 0.99, u)
-        eg = self.E * tw * fade_arr * (1 + 1.6 * heat) * absorb
+        shrink = np.maximum((1 - u) ** 1.7, 0.02)
+        eg = self.E * tw * fade_arr * (1 + 2.5 * heat) * absorb * (0.25 + 0.75 * shrink)
         eg *= 3000.0 * self.s ** 2                        # total glyph energy ~ area (seen at z=10)
         eg[self.hero] *= 1.6
         T = lerp(self.T, 0.97, heat)

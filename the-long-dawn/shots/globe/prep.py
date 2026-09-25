@@ -179,7 +179,8 @@ def build_lights():
     yy, xx = np.divmod(idx, W)
     lon = (xx + rng.random(N)) / W * 360.0 - 180.0
     lat = 90.0 - (yy + rng.random(N)) / H * 180.0
-    e = np.full(N, 1.0, np.float32)
+    e = rng.lognormal(0, 0.7, N).astype(np.float32)
+    e /= e.mean()
     tint = rng.random(N).astype(np.float32)          # 0 = sodium, 1 = pale white
     # city cores from populated places
     d = json.load(open(os.path.join(ASSETS, 'data', 'ne_10m_populated_places_simple.geojson')))
@@ -194,29 +195,32 @@ def build_lights():
     clon, clat, cpop = map(np.asarray, (clon, clat, cpop))
     cl_lon, cl_lat, cl_e, cl_t = [], [], [], []
     for lo_, la_, pp in zip(clon, clat, cpop):
-        n = int(6 + np.sqrt(pp) / 6)
-        sig_km = 1.5 + 0.010 * np.sqrt(pp)
-        # radial sprawl: gaussian core + a few arms
-        r = np.abs(rng.normal(0, sig_km, n)) * (0.4 + rng.random(n))
+        n = int(8 + np.sqrt(pp) / 2.5)
+        sig_km = 2.0 + 0.012 * np.sqrt(pp)
+        # organic sprawl: a soft core, arms along a few radial roads, scattered suburbs
+        r = np.abs(rng.normal(0, sig_km, n)) * (0.3 + 1.2 * rng.random(n))
         arms = rng.integers(3, 7)
         base = rng.random() * 2 * np.pi
-        ang = np.where(rng.random(n) < 0.45,
-                       base + (rng.integers(0, arms, n) * 2 * np.pi / arms) + rng.normal(0, 0.12, n),
+        onarm = rng.random(n) < 0.5
+        ang = np.where(onarm,
+                       base + (rng.integers(0, arms, n) * 2 * np.pi / arms) + rng.normal(0, 0.07, n),
                        rng.random(n) * 2 * np.pi)
+        r = np.where(onarm, r * 1.8, r)
         dx = r * np.cos(ang) / (111.2 * max(np.cos(np.radians(la_)), 0.15))
         dy = r * np.sin(ang) / 111.2
         cl_lon.append(lo_ + dx)
         cl_lat.append(la_ + dy)
-        ee = np.exp(-r / (sig_km * 1.2))
-        ee = ee / ee.sum() * (pp ** 0.82)
+        ee = 0.35 + np.exp(-r / (sig_km * 0.8))
+        ee = ee * rng.lognormal(0, 0.6, n)
+        ee = ee / ee.sum() * (pp ** 0.80)
         cl_e.append(ee)
         cl_t.append(rng.random(n))
     cl_lon = np.concatenate(cl_lon)
     cl_lat = np.concatenate(cl_lat)
     cl_e = np.concatenate(cl_e)
     cl_t = np.concatenate(cl_t)
-    # balance: city cores carry ~45% of the texture energy
-    cl_e = cl_e / cl_e.sum() * (0.45 * N)
+    # balance: city cores carry ~30% of the texture energy
+    cl_e = cl_e / cl_e.sum() * (0.30 * N)
     lon = np.concatenate([lon, cl_lon])
     lat = np.concatenate([lat, cl_lat])
     e = np.concatenate([e, cl_e.astype(np.float32)])
