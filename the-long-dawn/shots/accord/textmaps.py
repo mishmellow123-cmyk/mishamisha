@@ -371,7 +371,7 @@ def mip_pyramid(tex, min_size=16):
 
 def load(rebuild=False):
     os.makedirs(CACHE, exist_ok=True)
-    path = os.path.join(CACHE, 'textmaps_v3.npz')
+    path = os.path.join(CACHE, 'textmaps_v4.npz')
     if os.path.exists(path) and not rebuild:
         z = np.load(path)
         return z['flat'], z['offs'], z['sizes'], z['tog_layout']

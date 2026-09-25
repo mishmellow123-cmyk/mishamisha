@@ -58,6 +58,7 @@ class Sky:
         # ring
         self.ring = kw.get('ring', None)       # dict or None
         self.seed = kw.get('seed', 1)
+        self.planets = kw.get('planets', [])   # list of (daz, el, energy, (r,g,b))
 
         self.sun_dir = dir_from_az_el(self.sun_az, self.sun_el)
         self.moon_dir = dir_from_az_el(*self.moon) if self.moon is not None else None
@@ -452,6 +453,12 @@ def render_full_sky(cam, sky, t, star_sig=0.6, mw_col=None, ring_gain=1.0):
                  float(sky.star_thresh), max(0.3, star_sig * cam.scale), cam.scale ** 2, 0.35)
     moon = np.zeros_like(img)
     cov = draw_moon(moon, cam, sky, t=t, escale=cam.scale ** 2)
+    for (pa_, pe_, pen, pcol) in sky.planets:
+        d = dir_from_az_el(pa_, pe_)
+        px, py, z = cam.project(cam.pos + d * 1e6)
+        if z > 0:
+            e = pen * cam.scale ** 2
+            splat_gauss(stars, float(px), float(py), max(0.3, 0.7 * cam.scale), e * pcol[0], e * pcol[1], e * pcol[2])
     img += stars * (1.0 - cov[..., None]) + moon
     draw_ring(img, cam, sky, gain=ring_gain, t=t)
     return img

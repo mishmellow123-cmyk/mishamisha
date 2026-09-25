@@ -36,14 +36,14 @@ LAYERS = [
     dict(z=8200.0, top=-1.0, amp=0.8, scale=2100.0, ridged=0.15,
          trees=None, alb=0.5, fog_el=2.5, mist=0.8, ms=1 / 3000., rim=0.10),
     # long gentle ridge
-    dict(z=15500.0, top=-0.25, amp=0.7, scale=3600.0, ridged=0.3,
+    dict(z=15500.0, top=-0.25, amp=0.7, scale=3600.0, ridged=0.3, fm=0.8,
          trees=None, alb=0.4, fog_el=1.8, mist=0.6, ms=1 / 5000., rim=0.08),
     # distant jagged range
-    dict(z=31000.0, top=0.9, amp=1.3, scale=4200.0, ridged=0.9,
-         trees=None, alb=0.3, fog_el=1.2, mist=0.3, ms=0.0, rim=0.06),
+    dict(z=31000.0, top=0.9, amp=1.3, scale=4200.0, ridged=0.9, fm=0.42,
+         trees=None, alb=0.45, fog_el=1.5, mist=0.3, ms=0.0, rim=0.06),
     # farthest peaks
-    dict(z=56000.0, top=1.9, amp=1.5, scale=7000.0, ridged=0.95,
-         trees=None, alb=0.25, fog_el=0.9, mist=0.2, ms=0.0, rim=0.05),
+    dict(z=56000.0, top=1.9, amp=1.5, scale=7000.0, ridged=0.95, fm=0.30,
+         trees=None, alb=0.45, fog_el=1.2, mist=0.2, ms=0.0, rim=0.05),
 ]
 
 
@@ -59,7 +59,7 @@ def build_ridges(seed=3):
         h = make_profile(x0, x1, n, base - drop - 0.35 * amp, amp, L['scale'], seed * 31 + i * 7,
                          octaves=8, ridged=L['ridged'], trees=L['trees'])
         albedo = np.array([0.020, 0.024, 0.046]) * L['alb']
-        ridges.append(Ridge(z, x0, x1, h, albedo, fog_mul=1.0, rim=L['rim'], mist=L['mist'],
+        ridges.append(Ridge(z, x0, x1, h, albedo, fog_mul=L.get('fm', 1.0), rim=L['rim'], mist=L['mist'],
                             tex=0.3 if i < 3 else 0.12, name=f'L{i}',
                             fog_el=math.radians(L['fog_el']), mist_scale=L['ms'], seed=11.3 * i + 2.0))
     return ridges
@@ -110,15 +110,16 @@ RING = dict(lat=57.0, radius=2.6, view_az=VIEW_AZ, shadow_theta=25.0, shadow_wid
 def sky_intro():
     return Sky(
         sun=(27.0, -6.0),
-        zenith=np.array([0.0012, 0.0030, 0.032]),
-        horizon=np.array([0.016, 0.036, 0.120]),
-        amber=np.array([1.50, 0.62, 0.13]),
-        rose=np.array([0.20, 0.060, 0.080]),
-        violet=np.array([0.034, 0.026, 0.085]),
-        base_fall=0.17, amber_fall=0.026, rose_fall=0.070, violet_fall=0.24, az_pow=2.8,
+        zenith=np.array([0.0010, 0.0028, 0.030]),
+        horizon=np.array([0.012, 0.030, 0.105]),
+        amber=np.array([1.60, 0.66, 0.14]),
+        rose=np.array([0.17, 0.050, 0.060]),
+        violet=np.array([0.020, 0.020, 0.070]),
+        base_fall=0.15, amber_fall=0.034, rose_fall=0.050, violet_fall=0.22, az_pow=3.0,
         moon=(-17.0, 6.8), moon_radius_deg=1.0, moon_gain=3.4, moon_aureole=0.006,
         earthshine=0.045, city_gain=1.1, moon_phase=132.0, moon_pa=-22.0,
-        mw=0.0, star_gain=7.0, star_thresh=30.0, n_stars=14000,
+        mw=0.0, star_gain=7.0, star_thresh=2.5, n_stars=14000,
+        planets=[(-8.5, 9.6, 14.0, (1.0, 0.97, 0.9))],
         ring=dict(RING), seed=1)
 
 
@@ -133,5 +134,6 @@ def sky_coda():
         base_fall=0.16, amber_fall=0.020, rose_fall=0.055, violet_fall=0.20, az_pow=2.4,
         moon=(-17.0, 5.6), moon_radius_deg=1.0, moon_gain=3.6, moon_aureole=0.008,
         earthshine=0.06, city_gain=1.6, moon_phase=132.0, moon_pa=-22.0,
-        mw=0.9, mw_pole=dir_from_az_el(-120.0, 20.0), star_gain=7.0, star_thresh=8.0, n_stars=18000,
+        mw=0.9, mw_pole=dir_from_az_el(-120.0, 20.0), star_gain=7.0, star_thresh=0.8, n_stars=18000,
+        planets=[(-9.5, 7.2, 14.0, (1.0, 0.97, 0.9))],
         ring=dict(RING, shadow_floor=0.025, node_gain=1.9), seed=1)
