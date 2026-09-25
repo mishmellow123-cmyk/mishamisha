@@ -24,7 +24,7 @@ class Timeline:
         self.walls = B.Walls(self.towers)
         self.smoke = B.Smoke()
         self.dust = B.Dust()
-        self.vortex = B.Vortex()
+        self.vortex = B.Vortex(self.fire)
 
     # ---------------------------------------------------------------- camera
     def camera(self, t):
@@ -41,7 +41,8 @@ class Timeline:
             focus = float(np.linalg.norm(C - pos))
             hf = float(lerp(46.0, 44.0, smoothstep(480, 520, t)))
             hf = float(lerp(hf, 56.0, smoothstep(540, 620, t)))
-            hf = float(lerp(hf, 60.0, smoothstep(800, 870, t)))
+            hf = float(lerp(hf, 66.0, smoothstep(640, 700, t)))
+            hf = float(lerp(hf, 78.0, smoothstep(800, 850, t)))
             ap = float(lerp(0.06, 0.12, smoothstep(520, 600, t)))
             return Camera(pos, tgt, hfov=hf, focus=focus, aperture=ap)
         return Camera((0, 0, 10), (0, 0, 0))
@@ -57,7 +58,7 @@ class Timeline:
     def light(self, t):
         red = B.redness(t)
         col = (look.hexrgb(look.PALETTE['mind_gold']) * 0.8 + look.hexrgb(look.PALETTE['mind_ice']) * 0.2)
-        col = col * (1 - 0.5 * red) + look.hexrgb(look.PALETTE['race_red']) * 0.5 * red
+        col = col * (1 - 0.8 * red) + look.hexrgb(look.PALETTE['race_red']) * 0.8 * red
         return B.crown_centre(t), col, 60.0 * B.fire_power(t)
 
     def emit(self, ctx):

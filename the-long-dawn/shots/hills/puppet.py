@@ -249,7 +249,7 @@ def shade_group(D, N, LX, LY, ppm, alb, lights, nl, amb_top, amb_bot, bevel, she
     h = D.shape[0]
     w = D.shape[1]
     rw_sharp = max(0.0035, 1.3 / ppm)
-    rw_soft = 0.03
+    rw_soft = max(0.010, 3.0 / ppm)
     for j in range(h):
         for i in range(w):
             d = D[j, i]

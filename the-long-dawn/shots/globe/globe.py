@@ -606,7 +606,8 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
     tg = 0.0
     tb = 0.0
     if el_s > -0.14:
-        q = math.exp(el_s / 0.035) if el_s < 0 else 1.0
+        # warm glow of the twilight sky: strongest with the sun at the horizon, gone by ~8 deg
+        q = math.exp(el_s / 0.035) if el_s < 0 else math.exp(-el_s / 0.05)
         tw = q * cp[9]
         w = min(1.0, max(0.0, -el_s / 0.06))
         tr = (1.0 - w) * 1.0 + w * 0.28

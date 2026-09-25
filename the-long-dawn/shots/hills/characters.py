@@ -29,6 +29,29 @@ WOOD = np.array([0.045, 0.030, 0.020])
 TORCH_WOOD = np.array([0.09, 0.052, 0.028])
 
 
+MAT = {
+    'coat': dict(albedo=(0.004, 0.004, 0.006), bevel=0.04, sheen=0.9, soft=0.10, sky_rim=0.30, tint=(1.0, 0.82, 0.66)),
+    'skin': dict(albedo=(0.012, 0.007, 0.005), bevel=0.02, sheen=1.1, soft=0.16, sky_rim=0.15, tint=(1.0, 0.70, 0.52)),
+    'scarf': dict(albedo=(0.16, 0.0075, 0.0065), bevel=0.02, sheen=0.9, soft=0.18, sky_rim=0.08, tint=(1.0, 0.16, 0.10)),
+    'hair_grey': dict(albedo=(0.030, 0.030, 0.033), bevel=0.02, sheen=1.7, soft=0.18, sky_rim=0.55, tint=(1.0, 0.94, 0.88)),
+    'hair_dark': dict(albedo=(0.006, 0.005, 0.004), bevel=0.015, sheen=1.3, soft=0.12, sky_rim=0.30, tint=(1.0, 0.72, 0.50)),
+    'wool': dict(albedo=(0.020, 0.015, 0.010), bevel=0.03, sheen=1.4, soft=0.22, sky_rim=0.45, tint=(1.0, 0.86, 0.66)),
+    'boot': dict(albedo=(0.003, 0.003, 0.003), bevel=0.03, sheen=0.7, soft=0.06, sky_rim=0.2, tint=(1.0, 0.8, 0.6)),
+    'stone': dict(albedo=(0.022, 0.021, 0.019), bevel=0.03, sheen=0.55, soft=0.10, sky_rim=0.35, tint=(1.0, 0.85, 0.7)),
+    'stone2': dict(albedo=(0.014, 0.013, 0.012), bevel=0.03, sheen=0.55, soft=0.10, sky_rim=0.35, tint=(1.0, 0.85, 0.7)),
+    'iron': dict(albedo=(0.010, 0.009, 0.009), bevel=0.012, sheen=1.1, soft=0.05, sky_rim=0.35, tint=(1.0, 0.8, 0.6)),
+    'wood': dict(albedo=(0.016, 0.011, 0.008), bevel=0.02, sheen=0.6, soft=0.10, sky_rim=0.25, tint=(1.0, 0.75, 0.5)),
+    'torch': dict(albedo=(0.030, 0.018, 0.010), bevel=0.010, sheen=0.9, soft=0.10, sky_rim=0.15, tint=(1.0, 0.8, 0.6)),
+    'tool': dict(albedo=(0.012, 0.012, 0.013), bevel=0.008, sheen=1.3, soft=0.05, sky_rim=0.1, tint=(1.0, 0.95, 0.9)),
+}
+
+
+def G(name, mat, **kw):
+    d = dict(MAT[mat])
+    d.update(kw)
+    return Group(name, **d)
+
+
 def dirv(th):
     t = math.radians(th)
     return np.array([-math.sin(t), math.cos(t)])
@@ -123,12 +146,12 @@ def ribbon(g, pts, width, t, seed=0.0, fringe=True, taper_end=0.8):
         d /= (np.linalg.norm(d) + 1e-9)
         nrm = np.array([-d[1], d[0]])
         wend = radii[-1]
-        for k in range(5):
-            off = (k - 2) / 2.0 * wend * 0.85
-            wig = 0.012 * fnoise1(t * 3 + k * 1.3, seed + 5, 1)
+        for k in range(7):
+            off = (k - 3) / 3.0 * wend * 0.9
+            wig = 0.010 * fnoise1(t * 3 + k * 1.3, seed + 5, 1)
             a = pts[-1] + nrm * off
-            b = a + d * (0.055 + 0.01 * (k % 2)) + nrm * (off * 0.25 + wig)
-            g.cone(a, b, 0.0045, 0.0025, k=0.004)
+            b = a + d * (0.060 + 0.012 * ((k * 5) % 3)) + nrm * (off * 0.2 + wig)
+            g.cone(a, b, 0.0032, 0.0016, k=0.003)
 
 
 # ------------------------------------------------------------------ ELDER ---
@@ -142,14 +165,11 @@ ELDER_DEFAULT = dict(x=0.0, hip_y=0.82, lumbar=6.0, thorax=30.0, neck=40.0, head
 
 
 def hand_fist(g, H, d_ang, size=1.0, k=0.006):
-    """Curled hand: palm + knuckle bumps + thumb, oriented along dirv(d_ang)."""
+    """Mitten silhouette: rounded mitt along dirv(d_ang) + a hint of thumb."""
     d = dirv(d_ang)
     nrm = np.array([-d[1], d[0]])
-    g.ellipse(H, 0.030 * size, 0.040 * size, rot=d_ang, k=k)
-    for q in range(4):
-        base = H + d * 0.028 * size + nrm * (q - 1.5) * 0.013 * size
-        g.ellipse(base - nrm * 0.006 * size, 0.0105 * size, 0.012 * size, rot=d_ang, k=k)
-    g.cone(H - nrm * 0.024 * size, H - nrm * 0.030 * size + d * 0.028 * size, 0.010 * size, 0.008 * size, k=k)
+    g.cone(H - d * 0.012 * size, H + d * 0.030 * size, 0.030 * size, 0.024 * size, k=k)
+    g.ellipse(H - nrm * 0.022 * size + d * 0.004 * size, 0.012 * size, 0.018 * size, rot=d_ang + 25, k=k * 1.5)
 
 
 def elder(pose, t, scarf_pts=None, facing=-1, wisps=None):
@@ -163,15 +183,15 @@ def elder(pose, t, scarf_pts=None, facing=-1, wisps=None):
     P2 = P1 + dirv(tht) * 0.24
     P3 = P2 + dirv(thn) * 0.06
     head_c = P3 + rot(np.array([-0.014, 0.068]), thh)
-    body = Group('elder_body', COAT_ELDER, k=0.03, bevel=0.045, sheen=1.3, sky_rim=0.30)
-    farg = Group('elder_far', COAT_ELDER, k=0.02, bevel=0.04, sheen=1.3, sky_rim=0.25)
-    near = Group('elder_near', COAT_ELDER, k=0.02, bevel=0.04, sheen=1.3, sky_rim=0.25)
-    skin = Group('elder_skin', SKIN, k=0.006, bevel=0.025, sheen=0.9, sky_rim=0.10)
-    hair = Group('elder_hair', HAIR_GREY, k=0.010, bevel=0.02, sheen=1.6, sky_rim=0.45)
-    wrap = Group('elder_scarfwrap', SCARF, k=0.02, bevel=0.035, sheen=0.9, sky_rim=0.15)
-    tail = Group('elder_scarftail', SCARF, k=0.010, bevel=0.015, sheen=0.9, sky_rim=0.15, translucent=0.5)
-    legs = Group('elder_legs', BOOT, k=0.015, bevel=0.03, sheen=0.8)
-    torch_g = Group('torch', TORCH_WOOD, k=0.004, bevel=0.010, sheen=0.6, sky_rim=0.1)
+    body = G('elder_body', 'coat', k=0.03)
+    farg = G('elder_far', 'coat', k=0.02)
+    near = G('elder_near', 'coat', k=0.02)
+    skin = G('elder_skin', 'skin', k=0.006)
+    hair = G('elder_hair', 'hair_grey', k=0.010)
+    wrap = G('elder_scarfwrap', 'scarf', k=0.02)
+    tail = G('elder_scarftail', 'scarf', k=0.008, translucent=0.35)
+    legs = G('elder_legs', 'boot', k=0.015)
+    torch_g = G('torch', 'torch', k=0.004)
     b = lambda th: backv(th)
     f = lambda th: -backv(th)
     # ---- legs (visible below the hem)
@@ -246,7 +266,7 @@ def elder(pose, t, scarf_pts=None, facing=-1, wisps=None):
     wrap.cone(dr0, dr0 + np.array([-0.015 + hw * 0.3, -0.16]), 0.036, 0.028)
     scarf_anchor = P2 + b(tht) * 0.070 + dirv(thn) * 0.04
     if scarf_pts is not None:
-        ribbon(tail, scarf_pts, 0.18, t, seed=3.0)
+        ribbon(tail, scarf_pts, 0.105, t, seed=3.0)
     groups = [tail, farg, torch_g, legs, body, hair, skin, wrap, near]
     anchors = dict(torch_top=torch_top, scarf_anchor=scarf_anchor, hand_near=Hn, hand_far=Hf,
                    head_center=head_c, face_front=head_c + rot(np.array([-0.10, -0.03]), thh),
@@ -272,12 +292,12 @@ def child(pose, t, facing=-1):
     p = dict(CHILD_DEFAULT)
     p.update(pose)
     x0 = p['x']
-    body = Group('child_body', COAT_CHILD, k=0.03, bevel=0.045, sheen=1.3, sky_rim=0.30)
-    farg = Group('child_far', COAT_CHILD, k=0.02, bevel=0.035, sheen=1.3, sky_rim=0.25)
-    near = Group('child_near', COAT_CHILD, k=0.02, bevel=0.035, sheen=1.3, sky_rim=0.25)
-    skin = Group('child_skin', SKIN_CHILD, k=0.006, bevel=0.025, sheen=0.9, sky_rim=0.1)
-    hat = Group('child_hat', WOOL_HAT, k=0.012, bevel=0.03, sheen=1.8, sky_rim=0.45)
-    legs = Group('child_legs', BOOT, k=0.02, bevel=0.03, sheen=0.8)
+    body = G('child_body', 'coat', k=0.03)
+    farg = G('child_far', 'coat', k=0.02)
+    near = G('child_near', 'coat', k=0.02)
+    skin = G('child_skin', 'skin', k=0.006)
+    hat = G('child_hat', 'wool', k=0.012)
+    legs = G('child_legs', 'boot', k=0.02)
     lean = p['lean']
     P0 = np.array([x0, p['hip_y']])
     P1 = P0 + dirv(lean) * 0.13
@@ -365,15 +385,15 @@ def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1):
     P2 = P1 + dirv(tht) * 0.27
     P3 = P2 + dirv(thn) * 0.085
     head_c = P3 + rot(np.array([-0.010, 0.072]), thh)
-    body = Group('yw_body', PARKA, k=0.03, bevel=0.045, sheen=1.3, sky_rim=0.30)
-    farg = Group('yw_far', PARKA, k=0.02, bevel=0.04, sheen=1.3, sky_rim=0.25)
-    near = Group('yw_near', PARKA, k=0.02, bevel=0.04, sheen=1.3, sky_rim=0.25)
-    skin = Group('yw_skin', SKIN, k=0.006, bevel=0.025, sheen=0.9, sky_rim=0.1)
-    hair = Group('yw_hair', HAIR_DARK, k=0.010, bevel=0.015, sheen=1.6, sky_rim=0.4, translucent=0.25)
-    wrap = Group('yw_scarfwrap', SCARF, k=0.02, bevel=0.035, sheen=0.9, sky_rim=0.15)
-    tail = Group('yw_scarftail', SCARF, k=0.010, bevel=0.015, sheen=0.9, sky_rim=0.15, translucent=0.5)
-    legs = Group('yw_legs', BOOT, k=0.02, bevel=0.035, sheen=0.9)
-    tools = Group('yw_tools', IRON, k=0.003, bevel=0.008, sheen=1.2, sky_rim=0.1, per_prim=True)
+    body = G('yw_body', 'coat', k=0.03)
+    farg = G('yw_far', 'coat', k=0.02)
+    near = G('yw_near', 'coat', k=0.02)
+    skin = G('yw_skin', 'skin', k=0.006)
+    hair = G('yw_hair', 'hair_dark', k=0.010, translucent=0.15)
+    wrap = G('yw_scarfwrap', 'scarf', k=0.02)
+    tail = G('yw_scarftail', 'scarf', k=0.008, translucent=0.35)
+    legs = G('yw_legs', 'boot', k=0.02)
+    tools = G('yw_tools', 'tool', k=0.003, per_prim=True)
     b = lambda th: backv(th)
     f = lambda th: -backv(th)
     feet = []
@@ -451,7 +471,7 @@ def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1):
     wrap.cone(dr0, dr0 + np.array([-0.02 + hw * 0.3, -0.17]), 0.038, 0.030)
     scarf_anchor = P2 + b(tht) * 0.075 + dirv(thn) * 0.045
     if scarf_pts is not None:
-        ribbon(tail, scarf_pts, 0.18, t, seed=3.0)
+        ribbon(tail, scarf_pts, 0.105, t, seed=3.0)
     groups = [tail, farg, legs, body, hair, skin, wrap, near, tools]
     anchors = dict(scarf_anchor=scarf_anchor, hand_near=Hn, hand_far=Hf, head_center=head_c,
                    mouth=head_c + rot(np.array([-0.092, -0.054]), thh), neck=P2,
@@ -511,13 +531,13 @@ class Cairn:
                               y_ + rng.uniform(-0.05, 0.05), 0.035))
 
     def groups(self, x=0.0, snow=0.0, burn=0.0):
-        st = Group('cairn', STONE, k=0.006, bevel=0.03, sheen=0.5, sky_rim=0.45, per_prim=True)
-        st2 = Group('cairn2', STONE * 0.6, k=0.006, bevel=0.03, sheen=0.5, sky_rim=0.45, per_prim=True)
+        st = G('cairn', 'stone', k=0.006, per_prim=True)
+        st2 = G('cairn2', 'stone2', k=0.006, per_prim=True)
         for q, (cx, cy, rx, ry, r) in enumerate(self.stones):
             g = st if (q * 7) % 3 else st2
             g.box((x + cx, cy), rx * 0.84, ry * 0.70, rot=r * 0.6, rnd=min(rx, ry) * 0.42, k=0.006)
         # basket stand
-        iron = Group('basket', IRON, k=0.006, bevel=0.012, sheen=0.8, sky_rim=0.4)
+        iron = G('basket', 'iron', k=0.006)
         iron.box((x, self.top + 0.005), 0.17, 0.02, rnd=0.006)
         yb, yt = self.bk_bot, self.bk_top
         for a in self.bars:
@@ -528,8 +548,7 @@ class Cairn:
         # finials on the rim
         for a in (-1, -0.5, 0, 0.5, 1):
             iron.cone((x + a * self.bk_rt, yt), (x + a * self.bk_rt * 1.04, yt + 0.045), 0.007, 0.004, k=0.003)
-        wood = Group('wood', WOOD, k=0.004, bevel=0.02, sheen=0.4, sky_rim=0.3, per_prim=True,
-                     emissive=None)
+        wood = G('wood', 'wood', k=0.004, per_prim=True)
         for (xb, yb_, xt, yt_, r) in self.logs:
             wood.cone((x + xb, yb_), (x + xt, yt_), r, r * 0.85, k=0.004)
         return [wood, st, st2, iron]
@@ -542,7 +561,7 @@ class Cairn:
 
 def torch_alone(base, top_dir, length=0.55, t=0.0):
     """A torch held by someone else (e.g. the child's hands)."""
-    g = Group('torch', TORCH_WOOD, k=0.004, bevel=0.012, sheen=0.5, sky_rim=0.2)
+    g = G('torch', 'torch', k=0.004)
     d = np.asarray(top_dir, np.float64)
     d = d / np.linalg.norm(d)
     tb = np.asarray(base, np.float64)

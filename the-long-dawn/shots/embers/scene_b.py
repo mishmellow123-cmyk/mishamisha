@@ -24,12 +24,20 @@ BEATS = [640 + 20 * k for k in range(16)]          # 640 .. 940
 # ------------------------------------------------------------ timelines ---
 
 def redness(t):
-    """0 -> 1 palette bleed toward crimson during the race."""
-    return float(smoothstep(648, 800, t))
+    """0 -> 1 palette bleed toward crimson during the race (decisive by ~780)."""
+    return float(smoothstep(646, 780, t))
+
+
+def beat_pulse(t):
+    """1 on each race beat, decaying fast (for brightness pulses)."""
+    if t < 640 or t >= 960:
+        return 0.0
+    x = (t - 640) % 20.0
+    return math.exp(-x / 3.0)
 
 
 def crown_centre(t):
-    y = 20.0 * smootherstep(548, 634, t) + 34.0 * ease_in_out((t - 640) / 300.0)
+    y = 20.0 * smootherstep(548, 634, t) + 28.0 * smoothstep(640, 820, t) + 6.0 * smoothstep(820, 900, t)
     return np.array([0.0, float(y), 0.0])
 
 
@@ -45,7 +53,7 @@ def crown_morph(t):
 
 def crown_tilt(t):
     """Rotation (3x3) tilting the crown's axis toward the camera (hero angle for a floating ring)."""
-    tau = 0.38 * crown_morph(t) * (1 - smoothstep(740, 820, t))
+    tau = 0.38 * crown_morph(t) * (1 - smoothstep(800, 836, t))
     a = ALPHA_C
     axis = np.array([math.sin(a), 0.0, -math.cos(a)])
     c, s_ = math.cos(tau), math.sin(tau)
@@ -63,6 +71,7 @@ def fire_power(t):
     p = 1.0 + 3.0 * math.exp(-(t - IGN) / 8.0)
     p *= 1 + 0.12 * math.sin(2 * math.pi * (t - IGN) / 80.0 - math.pi / 2)
     p *= 1 + 0.5 * smoothstep(640, 900, t)
+    p *= 1 + 0.45 * beat_pulse(t)
     return p
 
 
@@ -377,10 +386,12 @@ class Towers:
         # near the camera (k=0,1) tall and looming; the far side lower so the crown floats clear
         self.h_rise = np.array([40.0, 38.0, 35.0, 27.0, 28.5, 26.0, 27.5, 36.0])
         # surge amounts per beat (leap-frogging race)
-        J = r.uniform(1.4, 2.6, (k, len(BEATS)))
-        lead = r.integers(0, k, len(BEATS))
+        J = r.uniform(1.6, 2.8, (k, len(BEATS)))
+        lead = r.permutation(np.tile(np.arange(k), 2))[:len(BEATS)]
         for b, l in enumerate(lead):
-            J[l, b] += r.uniform(1.5, 2.5)
+            J[l, b] += r.uniform(3.0, 4.5)
+        # the far side (shorter at 640) races harder to catch up
+        J[3:7] *= 1.25
         self.J = J
         self.dly = r.uniform(0, 2.5, k)
         # per-point attributes
@@ -393,9 +404,9 @@ class Towers:
     def height(self, i, t):
         h = self.h_rise[i] * float(ease_out((t - self.t_rise[i]) / 80.0, 2.6))
         for b, tb in enumerate(BEATS):
-            x = (t - tb - self.dly[i]) / 6.0
+            x = (t - tb - self.dly[i]) / 5.0
             if x > 0:
-                h += self.J[i, b] * float(ease_out_back(x, 1.3))
+                h += self.J[i, b] * float(ease_out_back(x, 1.6))
         return h
 
     def base(self, i):
@@ -439,14 +450,15 @@ class Towers:
             fl = 1 + 0.45 * np.sin(1.3 * t + fk) * np.sin(0.37 * t + 2.0 * fk)
             Tb = 0.27 + 0.13 * rnd
             cb = look.blackbody(Tb)
-            cb = cb * (1 - 0.6 * red) + (C_RED * 0.7 + C_CRIMSON * 0.3) * 0.6 * red
-            e_base = e_base * fl * 2.3
+            cb = cb * (1 - 0.85 * red) + (C_RED * 0.6 + C_CRIMSON * 0.4) * 0.85 * red
+            bp = beat_pulse(t - self.dly[i])
+            e_base = e_base * fl * 2.3 * (1 + 1.6 * bp) * (1 + 0.5 * smoothstep(640, 880, t))
             # fire light (inner faces)
             L = light_pos - P1
             dL = np.linalg.norm(L, axis=1)
             lam = np.maximum((nw * L).sum(1) / np.maximum(dL, 1e-6), 0.0)
             lam = np.where(kind == 1, 0.1 + 0.9 * lam, lam) ** 0.8
-            e_lit = light_pow * lam / (1 + (dL / 16.0) ** 2) * 1.0
+            e_lit = light_pow * lam / (1 + (dL / 16.0) ** 2) * (1.0 - 0.35 * red)
             # emergence front: hot line where the tower leaves the ground
             front = np.exp(-yl / 0.6) * 5.0 * (1 - smoothstep(610, 650, t) * 0.7)
             # windows
@@ -467,7 +479,7 @@ class Sparks:
         r = rng(seed)
         self.tw = towers
         rows = []
-        per = 420
+        per = 700
         for b, tb in enumerate(BEATS):
             for i in range(towers.k):
                 n = per
@@ -482,6 +494,7 @@ class Sparks:
         self.bi = np.repeat(np.repeat(np.arange(nb), k), per)
         self.tb = np.array(BEATS, float)[self.bi] + towers.dly[self.ti] + r.uniform(0, 3.5, N)
         self.u = r.random(N)                     # height fraction within the top of the tower
+        self.base_spark = r.random(N) < 0.22       # some burst from the base where the tower leaves the ground
         self.a = r.uniform(0, 2 * np.pi, N)
         up = r.uniform(0.12, 0.5, N)
         out = r.uniform(0.02, 0.2, N)
@@ -500,6 +513,19 @@ class Sparks:
             P[m, 0] = base[0] + rr * np.cos(self.a[m])
             P[m, 2] = base[2] + rr * np.sin(self.a[m])
             P[m, 1] = tops - 8.0 * self.u[m] ** 2
+        bs = self.base_spark
+        rr2 = 2.0 + 3.0 * r.random(N)
+        for i in range(k):
+            m = (self.ti == i) & bs
+            base = towers.base(i)
+            P[m, 0] = base[0] + rr2[m] * np.cos(self.a[m])
+            P[m, 2] = base[2] + rr2[m] * np.sin(self.a[m])
+            P[m, 1] = GROUND + 0.3
+        self.v[bs, 1] *= 0.6
+        self.v[bs, 0] *= 2.5
+        self.v[bs, 2] *= 2.5
+        # later beats: more energetic
+        self.E *= 1 + 0.12 * self.bi
         self.p0 = P
 
     def pts(self, t):
@@ -519,7 +545,7 @@ class Sparks:
         P0, _ = self.pts(ctx.t0)
         P1, tau = self.pts(ctx.t1)
         x = np.clip(tau[idx] / self.life[idx], 0.0, 1.0)
-        e = self.E[idx] * 26.0 * (1 - x) ** 1.3
+        e = self.E[idx] * 34.0 * (1 - x) ** 1.3
         red = redness(t)
         col = look.blackbody(np.clip(0.95 - 0.6 * x, 0.2, 1.0))
         col = col * (1 - 0.3 * red) + C_RED * 0.3 * red
@@ -532,7 +558,7 @@ class Walls:
     def __init__(self, towers, seed=77):
         r = rng(seed)
         k = towers.k
-        per = 16000
+        per = 22000
         N = k * per
         self.N = N
         self.w = np.repeat(np.arange(k), per)
@@ -542,21 +568,21 @@ class Walls:
         self.v = r.uniform(0.004, 0.012, N)
         self.off = r.normal(0, 1, N)
         self.E = r.lognormal(0, 0.5, N)
-        self.start = 676 + 14 * r.random(k)
+        self.start = 658 + 14 * r.random(k)
 
     def height(self, t, w):
-        base = 24.0 * ease_out((t - self.start[w]) / 36.0, 2.5)
+        base = 37.0 * ease_out((t - self.start[w]) / 30.0, 2.5)
         grow = 0.0
         for b, tb in enumerate(BEATS):
             if tb >= 680:
-                x = (t - tb - 3.0) / 8.0
+                x = (t - tb - 3.0) / 6.0
                 if x > 0:
-                    grow += 1.8 * float(ease_out_back(x, 1.0))
+                    grow += 3.0 * float(ease_out_back(x, 1.3))
         return base + grow
 
     def pts(self, t):
         a = self.ang[self.w]
-        rr = 4.0 + 19.0 * self.u
+        rr = 5.0 + 16.0 * self.u
         H = np.array([self.height(t, i) for i in range(len(self.ang))])[self.w]
         k = (self.ph + self.v * t) % 1.0
         y = GROUND + k * H
@@ -567,13 +593,13 @@ class Walls:
 
     def emit(self, ctx):
         t = ctx.t
-        if t < 676 or t >= 1040:
+        if t < 658 or t >= 1040:
             return
         P0, _, _ = self.pts(ctx.t0)
         P1, k, H = self.pts(ctx.t1)
         on = t >= self.start[self.w]
         crest = np.exp(-((1 - k) / 0.04) ** 2) * 2.0
-        e = self.E * (0.35 + 0.65 * (1 - k) ** 0.6 + crest) * 2.6 * on
+        e = self.E * (0.35 + 0.65 * (1 - k) ** 0.6 + crest) * 2.8 * on * (1 + 0.8 * beat_pulse(t - 3))
         e *= smoothstep(0, 10, t - self.start[self.w])
         col = C_RED * (1 - k)[:, None] + C_CRIMSON * k[:, None]
         ctx.fr.splat(P0, P1, 0.006, e, col, ctx.cam0, ctx.cam1, zref=30.0)
@@ -642,33 +668,53 @@ class Dust:
 
 
 class Vortex:
-    """800-960: the crown balloons into a vast unstable vortex."""
+    """800-960: the crown balloons into a vast unstable vortex (the fire outgrows the hands that fed it)."""
 
-    def __init__(self, seed=111):
+    def __init__(self, fire, seed=111):
         r = rng(seed)
-        n = 260000
+        n = 380000
         self.n = n
-        self.rf = 3.5 + 75.0 * r.random(n) ** 1.3
+        self.rf = 4.0 + 86.0 * r.random(n) ** 1.25
         narm = 4
-        self.arm = r.integers(0, narm, n) * 2 * np.pi / narm + r.normal(0, 0.22, n)
+        self.arm = r.integers(0, narm, n) * 2 * np.pi / narm + r.normal(0, 0.2, n)
         self.h = r.normal(0, 1, n)
         self.E = r.lognormal(0, 0.6, n)
         self.ph = r.uniform(0, 2 * np.pi, n)
         self.jit = r.normal(0, 1, (n, 3))
+        # neural filaments grown to storm scale (flattened into the disc)
+        self.fp = fire.fp.copy()
+        self.fs, self.fm, self.fdep = fire.fs, fire.fm, fire.fdep
+        self.nroot = fire.nroot
+        self.pv = r.uniform(0.02, 0.035, (self.nroot, 3))
+        self.pp = r.uniform(0, 10, (self.nroot, 3))
+        self.flick = r.uniform(0, 2 * np.pi, self.nroot)
 
     def grow(self, t):
-        return float(smootherstep(796, 872, t))
+        return float(smootherstep(798, 866, t))
+
+    def spin(self, rr, t):
+        om = 0.9 * (rr / 10.0) ** -1.1
+        return om * max(t - 800.0, 0.0) * 0.1
 
     def pts(self, t, C):
         g = self.grow(t)
-        rr = 3.5 + (self.rf - 3.5) * g ** 0.8
-        om = 0.9 * (rr / 10.0) ** -1.1
-        th = self.arm - 1.2 * np.log(rr / 10.0) + om * (t - 800) * 0.12
-        funnel = -9.0 * g * np.exp(-rr / 14.0)
-        thick = (0.4 + 0.06 * rr) * self.h
+        rr = 4.0 + (self.rf - 4.0) * g ** 0.8
+        th = self.arm - 1.25 * np.log(rr / 10.0) + self.spin(rr, t)
+        funnel = -8.0 * g * np.exp(-rr / 11.0)
+        thick = (0.4 + 0.05 * rr) * self.h
         P = np.stack([rr * np.cos(th), funnel + thick, rr * np.sin(th)], 1)
         P += self.jit * (0.3 + 0.03 * rr)[:, None]
         return C + P, rr
+
+    def fil_pts(self, t, C):
+        g = self.grow(t)
+        R = 3.0 + 52.0 * g
+        q = self.fp
+        rho = np.sqrt(q[:, 0] ** 2 + q[:, 2] ** 2) + 1e-6
+        rr = np.sqrt(rho ** 2 + q[:, 1] ** 2) * R
+        ang = np.arctan2(q[:, 2], q[:, 0]) + self.spin(rr, t) * 0.8
+        y = q[:, 1] * 4.0 - 8.0 * g * np.exp(-rr / 11.0)
+        return C + np.stack([rr * np.cos(ang), y, rr * np.sin(ang)], 1)
 
     def emit(self, ctx):
         t = ctx.t
@@ -678,16 +724,28 @@ class Vortex:
         C0, C1 = crown_centre(ctx.t0), crown_centre(ctx.t1)
         P0, _ = self.pts(ctx.t0, C0)
         P1, rr = self.pts(ctx.t1, C1)
-        x = clamp01((rr - 3.5) / 70.0)
-        col = C_CORE * (1 - smoothstep(0.0, 0.08, x))[:, None]
-        col += C_GOLD * (smoothstep(0.0, 0.08, x) * (1 - smoothstep(0.08, 0.3, x)))[:, None]
-        col += look.blackbody(0.55) * (smoothstep(0.08, 0.3, x) * (1 - smoothstep(0.3, 0.6, x)))[:, None]
-        col += C_RED * (smoothstep(0.3, 0.6, x) * (1 - smoothstep(0.6, 1.0, x)))[:, None]
-        col += C_CRIMSON * smoothstep(0.6, 1.0, x)[:, None]
-        # instability: travelling brightness waves + flicker
-        wave = 0.6 + 0.4 * np.sin(0.5 * rr - 0.45 * t + self.ph * 0.3)
-        e = self.E * wave * (2.0 + 8.0 * np.exp(-rr / 8.0)) * 1.4 * g
+        x = clamp01((rr - 4.0) / 80.0)
+        col = C_CORE * (1 - smoothstep(0.0, 0.06, x))[:, None]
+        col += C_GOLD * (smoothstep(0.0, 0.06, x) * (1 - smoothstep(0.06, 0.25, x)))[:, None]
+        col += look.blackbody(0.55) * (smoothstep(0.06, 0.25, x) * (1 - smoothstep(0.25, 0.5, x)))[:, None]
+        col += C_RED * (smoothstep(0.25, 0.5, x) * (1 - smoothstep(0.5, 0.9, x)))[:, None]
+        col += C_CRIMSON * smoothstep(0.5, 0.9, x)[:, None]
+        # instability: travelling brightness waves, beat surges, flicker
+        wave = 0.55 + 0.45 * np.sin(0.45 * rr - 0.5 * t + self.ph * 0.3)
+        surge = 1 + 0.6 * beat_pulse(t)
+        e = self.E * wave * (1.6 + 3.5 * np.exp(-rr / 9.0)) * 1.3 * g * surge
         ctx.fr.splat(P0, P1, 0.02, e, col, ctx.cam0, ctx.cam1, zref=60.0)
+        # the thinking filaments stretched across the storm, pulses racing out along them
+        F0 = self.fil_pts(ctx.t0, C0)
+        F1 = self.fil_pts(ctx.t1, C1)
+        pulse = np.zeros(len(self.fs))
+        for j in range(3):
+            sp = ((t - 800) * self.pv[self.fm, j] + self.pp[self.fm, j]) % 1.8
+            pulse += np.exp(-((self.fs - sp) / 0.05) ** 2)
+        fl = 0.5 + 0.5 * np.sin(1.7 * t + self.flick[self.fm]) * np.sin(0.63 * t + 2 * self.flick[self.fm])
+        ef = (0.25 + 5.0 * pulse) * fl * 22.0 * g * (self.fdep <= 2)
+        fcol = C_ICE * 0.6 + C_CORE * 0.4
+        ctx.fr.splat(F0, F1, 0.03, ef, fcol, ctx.cam0, ctx.cam1, zref=60.0)
 
 
 # ------------------------------------------------------------- camera ---
@@ -707,11 +765,11 @@ CAM_B = [  # (frame, radius, azimuth offset, height, target y)
     (580, 23.0, -0.02, 8.0, 6.5),
     (610, 30.0, 0.00, 15.5, 14.0),
     (640, 36.0, 0.00, 21.5, 19.0),
-    (700, 33.0, 0.02, 25.0, 26.0),
-    (760, 31.0, 0.04, 31.0, 33.0),
-    (800, 31.0, 0.06, 37.0, 38.5),
-    (840, 56.0, 0.10, 63.0, 43.0),
-    (880, 92.0, 0.14, 96.0, 45.0),
+    (700, 35.0, -0.06, 23.0, 25.0),
+    (760, 34.0, -0.14, 33.0, 36.5),
+    (800, 34.0, -0.2, 40.0, 44.0),
+    (840, 50.0, -0.22, 30.0, 49.0),
+    (880, 60.0, -0.24, 26.0, 52.0),
 ]
 
 
@@ -726,6 +784,6 @@ def cam_b(t):
     for tb in BEATS:
         x = t - tb
         if 0 <= x < 14:
-            amp = 0.22 * math.exp(-x / 3.5) * (0.5 + 0.5 * smoothstep(640, 800, t))
+            amp = 0.4 * math.exp(-x / 3.0) * (0.6 + 0.4 * smoothstep(640, 800, t))
             sh += amp * np.array([math.sin(2.1 * x + tb), math.sin(2.9 * x + 0.5 * tb), 0.0])
     return pos + sh * 0.5, tgt + sh
