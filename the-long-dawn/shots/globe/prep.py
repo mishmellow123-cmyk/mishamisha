@@ -122,8 +122,8 @@ def build_albedo():
     land = bmu * a + land * (1 - a)
     # ocean: deep navy with a faint memory of the shelves; keep sea ice from BM
     Y = bmu @ np.array([0.2126, 0.7152, 0.0722], np.float32)
-    deep = np.array([0.0055, 0.0125, 0.030], np.float32)
-    shelf = np.array([0.012, 0.030, 0.045], np.float32)
+    deep = np.array([0.0045, 0.0140, 0.044], np.float32)
+    shelf = np.array([0.010, 0.034, 0.060], np.float32)
     s = np.clip((Y - 0.035) / 0.08, 0, 1)[..., None] * 0.6
     ocean = deep * (1 - s) + shelf * s
     ice = np.clip((Y - 0.25) / 0.25, 0, 1)[..., None]

@@ -395,8 +395,6 @@ def render(img, depth, cam, drawing, feet_world, lights_world, amb=(0.01, 0.012,
             row[1] = d[0] * cam.right[0] + d[2] * cam.right[2]
             row[2] = d[1]
             row[3] = -(d[0] * cam.fwd[0] + d[2] * cam.fwd[2])
-        if flipx:
-            row[1] = -row[1]
         row[4:7] = lw['col']
         row[7] = lw['I']
         row[8] = lw.get('r0', 0.3)

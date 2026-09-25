@@ -7,6 +7,7 @@ import look
 from core import Camera, smoothstep, lerp
 import scene_a as A
 import scene_b as B
+import scene_c as C
 
 
 class Timeline:
@@ -25,6 +26,21 @@ class Timeline:
         self.smoke = B.Smoke()
         self.dust = B.Dust()
         self.vortex = B.Vortex(self.fire)
+        self._globe = None
+        self._hand = None
+        self.ember = C.LastEmber()
+
+    @property
+    def globe(self):
+        if self._globe is None:
+            self._globe = C.Globe()
+        return self._globe
+
+    @property
+    def hand(self):
+        if self._hand is None:
+            self._hand = C.Hand()
+        return self._hand
 
     # ---------------------------------------------------------------- camera
     def camera(self, t):
@@ -37,15 +53,23 @@ class Timeline:
             return Camera(pos, tgt, hfov=A.HFOV_A(t), focus=focus, aperture=ap)
         if t < 880:
             pos, tgt = B.cam_b(t)
-            C = B.crown_centre(t)
-            focus = float(np.linalg.norm(C - pos))
+            Cc = B.crown_centre(t)
+            focus = float(np.linalg.norm(Cc - pos))
             hf = float(lerp(46.0, 44.0, smoothstep(480, 520, t)))
             hf = float(lerp(hf, 56.0, smoothstep(540, 620, t)))
             hf = float(lerp(hf, 66.0, smoothstep(640, 700, t)))
             hf = float(lerp(hf, 78.0, smoothstep(800, 850, t)))
             ap = float(lerp(0.06, 0.12, smoothstep(520, 600, t)))
             return Camera(pos, tgt, hfov=hf, focus=focus, aperture=ap)
-        return Camera((0, 0, 10), (0, 0, 0))
+        if t < 960:
+            pos, tgt = C.cam_globe(t)
+            return Camera(pos, tgt, hfov=40.0, focus=float(np.linalg.norm(pos)) - 0.8, aperture=0.004)
+        if t < 1040:
+            pos, tgt = C.cam_grasp(t)
+            Cc = B.crown_centre(960.0)
+            return Camera(pos, tgt, hfov=48.0, focus=float(np.linalg.norm(Cc - pos)), aperture=0.5)
+        pos, tgt = C.cam_silence(t)
+        return Camera(pos, tgt, hfov=50.0, focus=6.0, aperture=0.03)
 
     def render_opts(self, f):
         if f < 480:
@@ -53,7 +77,11 @@ class Timeline:
             return dict(bokeh_pow=0.3, bokeh_cap=2.0, fog_start=fs, fog_len=22.0, near=0.45)
         if f < 880:
             return dict(bokeh_pow=0.3, bokeh_cap=2.0, fog_start=45.0, fog_len=70.0, near=0.3)
-        return dict(bokeh_pow=0.3, bokeh_cap=2.0)
+        if f < 960:
+            return dict(bokeh_pow=0.2, bokeh_cap=1.5, zref=3.3, near=0.05)
+        if f < 1040:
+            return dict(bokeh_pow=0.3, bokeh_cap=2.0, fog_start=160.0, fog_len=160.0, near=1.0)
+        return dict(bokeh_pow=0.0, bokeh_cap=1.0, near=0.05)
 
     def light(self, t):
         red = B.redness(t)
@@ -68,7 +96,7 @@ class Timeline:
             self.embers.emit(ctx)
             self.glyphs.emit(ctx)
             self.point.emit(ctx)
-        if 480 <= t < 880:
+        if 480 <= t < 880 or 960 <= t < 1040:
             lp, lc, lpw = self.light(t)
             self.dust.emit(ctx)
             self.smoke.emit(ctx, lp, lc, lpw)
@@ -80,18 +108,33 @@ class Timeline:
             self.crown.emit(ctx)
             self.fsparks.emit(ctx)
             self.shock.emit(ctx)
+        if 880 <= t < 960:
+            self.globe.emit(ctx)
+        if 960 <= t < 1040:
+            self.hand.emit(ctx)
+        if t >= 1040:
+            self.ember.emit(ctx)
 
     def post(self, ctx, hdr):
         f = ctx.t
+        H, W = hdr.shape[:2]
         if f < 336:
             # warm light of the torch flame just below frame (continuity with INTRO)
             k = float(1 - smoothstep(300, 336, f))
-            H, W = hdr.shape[:2]
             y, x = np.mgrid[0:H, 0:W].astype(np.float32)
             x = (x - W * 0.5) / (W * 0.30)
             y = (y - H * 1.08) / (H * 0.42)
             g = np.exp(-(x * x + y * y))[..., None]
             hdr += g * np.array([1.0, 0.42, 0.10], np.float32) * (0.9 * k)
+        if 1033 <= f < 1040:
+            # white-red flash as the fingers close
+            k = float(smoothstep(1033.5, 1039.5, f)) ** 1.5
+            u, v, z = ctx.cam.project(B.crown_centre(960.0)[None, :], W, H)
+            y, x = np.mgrid[0:H, 0:W].astype(np.float32)
+            d2 = ((x - u[0]) ** 2 + (y - v[0]) ** 2) / (W * W)
+            red = np.exp(-d2 / 0.09)[..., None] * np.array([3.0, 0.35, 0.12], np.float32)
+            white = np.exp(-d2 / 0.012)[..., None] * np.array([6.0, 5.5, 5.0], np.float32)
+            hdr += (red + white) * (6.0 * k) + np.array([0.9, 0.12, 0.05], np.float32) * (2.5 * k)
         return hdr
 
     def finish_opts(self, f):
@@ -101,5 +144,11 @@ class Timeline:
         bloom = 0.12
         if f >= 480:
             bloom = 0.15
+        if 880 <= f < 960:
+            bloom = 0.14
+        if f >= 1040:
+            bloom = 0.1
+        if 1030 <= f < 1040:
+            streak = 0.06
         return dict(exposure=1.0, bloom_strength=bloom, bloom_threshold=0.7,
                     streak_strength=streak, vignette_amount=0.25)

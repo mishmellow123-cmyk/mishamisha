@@ -20,15 +20,41 @@ from sky import render_full_sky
 FPS = 24.0
 CREST_Z = hw.CREST_Z
 
-_RIDGES = None
+_FAR = None
+_CREST = None
 
 
-def ridges():
-    global _RIDGES
-    if _RIDGES is None:
-        rs = hw.build_ridges() + [hw.crest_ridge()]
-        _RIDGES = pack_ridges(rs)
-    return _RIDGES
+def ridges_split():
+    """(far packed, crest packed): far = the 8 landscape layers, crest = our hilltop."""
+    global _FAR, _CREST
+    if _FAR is None:
+        _FAR = pack_ridges(hw.build_ridges())
+        _CREST = pack_ridges([hw.crest_ridge()])
+    return _FAR, _CREST
+
+
+def render_far(cam, sky, f, lights):
+    rs, meta, hs = ridges_split()[0]
+    t = f / FPS
+    img_shape = (cam.H, cam.W)
+    rgbp = np.zeros(img_shape + (3,), np.float32)
+    a = np.zeros(img_shape, np.float32)
+    dep = np.full(img_shape, 1e9, np.float32)
+    render_ridges(rgbp, a, dep, cam.params(), meta, hs, sky.packed(), hw.FOG, lights, np.zeros(1), 1.0, t)
+    return rgbp, a, dep
+
+
+def render_crest(cam, sky, f, pool):
+    """Our hilltop card. pool: list of (x, y, z, radius, r, g, b, 'crest') lights."""
+    rs, meta, hs = ridges_split()[1]
+    t = f / FPS
+    L = np.array([[p[0], p[1], p[2], p[3], p[4], p[5], p[6], 0] for p in pool], np.float64).reshape(-1, 8)
+    img_shape = (cam.H, cam.W)
+    rgbp = np.zeros(img_shape + (3,), np.float32)
+    a = np.zeros(img_shape, np.float32)
+    dep = np.full(img_shape, 1e9, np.float32)
+    render_ridges(rgbp, a, dep, cam.params(), meta, hs, sky.packed(), hw.FOG, L, np.zeros(1), 1.0, t)
+    return rgbp, a, dep
 
 
 def ground_y(x):
@@ -175,25 +201,19 @@ class HillScene:
         self.grass = Grass(-3.0, 9.0, seed=seed)
         self.cairn = ch.Cairn()
 
-    def background(self, cam, sky, f, beacons, extra_lights=()):
-        """sky + ridges + distant beacons. Returns (img, depth)."""
+    def background(self, cam, sky, f, beacons, crest=True, pool=()):
+        """sky + far ridges + distant beacons (+ crest). Returns (img, depth)."""
         t = f / FPS
         img = render_full_sky(cam, sky, t)
-        rs, meta, hs = ridges()
-        layer_of = {i: len(rs) - 1 - (len(rs) - 1 - i) for i in range(len(rs))}
-        # rs sorted far->near; build map from hw layer index (0 near .. 7 far) to packed index
+        rs = ridges_split()[0][0]
         name_to_idx = {r.name: k for k, r in enumerate(rs)}
         lmap = {i: name_to_idx[f'L{i}'] for i in range(len(hw.LAYERS))}
-        lmap['crest'] = name_to_idx['crest']
         lights = beacon_lights(beacons, f, lmap)
-        if len(extra_lights):
-            ex = np.array([[l[0], l[1], l[2], l[3], l[4], l[5], l[6], lmap[l[7]]] for l in extra_lights], np.float64)
-            lights = np.concatenate([lights, ex], 0)
-        rgbp = np.zeros_like(img)
-        a = np.zeros(img.shape[:2], np.float32)
-        dep = np.full(img.shape[:2], 1e9, np.float32)
-        render_ridges(rgbp, a, dep, cam.params(), meta, hs, sky.packed(), hw.FOG, lights,
-                      np.zeros(1), 1.0, t)
+        rgbp, a, dep = render_far(cam, sky, f, lights)
         over(img, rgbp, a)
+        if crest:
+            cr, ca, cd = render_crest(cam, sky, f, pool)
+            over(img, cr, ca)
+            dep = np.minimum(dep, cd)
         draw_beacons(img, dep, cam, beacons, f)
         return img, dep

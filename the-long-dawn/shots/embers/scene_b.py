@@ -55,6 +55,9 @@ def crown_tilt(t):
     """Rotation (3x3) tilting the crown's axis toward the camera (hero angle for a floating ring)."""
     tau = 0.38 * crown_morph(t) * (1 - smoothstep(800, 836, t))
     a = ALPHA_C
+    if t >= 960:
+        tau = 0.42
+        a = ALPHA_C - 1.35
     axis = np.array([math.sin(a), 0.0, -math.cos(a)])
     c, s_ = math.cos(tau), math.sin(tau)
     x, y, z = axis
@@ -732,7 +735,7 @@ class Vortex:
         col += C_CRIMSON * smoothstep(0.5, 0.9, x)[:, None]
         # instability: travelling brightness waves, beat surges, flicker
         wave = 0.55 + 0.45 * np.sin(0.45 * rr - 0.5 * t + self.ph * 0.3)
-        surge = 1 + 0.6 * beat_pulse(t)
+        surge = (1 + 0.6 * beat_pulse(t)) * (1 - 0.6 * smoothstep(956, 972, t))
         e = self.E * wave * (1.6 + 3.5 * np.exp(-rr / 9.0)) * 1.3 * g * surge
         ctx.fr.splat(P0, P1, 0.02, e, col, ctx.cam0, ctx.cam1, zref=60.0)
         # the thinking filaments stretched across the storm, pulses racing out along them
@@ -743,7 +746,7 @@ class Vortex:
             sp = ((t - 800) * self.pv[self.fm, j] + self.pp[self.fm, j]) % 1.8
             pulse += np.exp(-((self.fs - sp) / 0.05) ** 2)
         fl = 0.5 + 0.5 * np.sin(1.7 * t + self.flick[self.fm]) * np.sin(0.63 * t + 2 * self.flick[self.fm])
-        ef = (0.25 + 5.0 * pulse) * fl * 22.0 * g * (self.fdep <= 2)
+        ef = (0.25 + 5.0 * pulse) * fl * 22.0 * g * (self.fdep <= 2) * (1 - 0.6 * smoothstep(956, 972, t))
         fcol = C_ICE * 0.6 + C_CORE * 0.4
         ctx.fr.splat(F0, F1, 0.03, ef, fcol, ctx.cam0, ctx.cam1, zref=60.0)
 

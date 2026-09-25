@@ -328,7 +328,8 @@ def fbm(x, y, z, f0, octaves, lod):
 
 @njit(cache=True, fastmath=True)
 def cloud_density(x, y, z, clouds, cp, lod):
-    """Cloud opacity at a unit-sphere point: low-frequency coverage map + procedural detail."""
+    """Cloud opacity at a unit-sphere point. The cloud map is only low-frequency coverage; the
+    shapes come from two-scale domain-warped fbm with a soft opacity ramp, plus streaky cirrus."""
     lat, lon = ll_of(x, y, z)
     lat2 = lat + cp[16]
     lon2 = lon + cp[15]
@@ -336,20 +337,42 @@ def cloud_density(x, y, z, clouds, cp, lod):
         lon2 -= 2 * math.pi
     u, v = tex_uv(lat2, lon2, clouds.shape[1], clouds.shape[0])
     base = bilin1(clouds, u, v)
-    # optional fair-weather cumulus field (broken cloud everywhere, thinning with the big systems)
-    if cp[17] > 0.0:
-        cu = fbm(x + 3.1, y - 1.7, z + 0.9, 60.0, 5, lod)
-        cu = min(1.0, max(0.0, (cu - 0.52) / 0.12))
-        base = max(base, cu * cp[17])
-    if base * cp[1] + 0.5 * cp[2] - cp[3] <= 0.0:
+    # an optional clearing (DAWN: land and ocean read near the sunrise)
+    if cp[22] > 0.0:
+        cc = x * cp[18] + y * cp[19] + z * cp[20]
+        if cc > cp[21]:
+            k = min(1.0, (cc - cp[21]) / (1.0 - cp[21]) * 3.0)
+            base *= 1.0 - cp[22] * k
+    cov = base * cp[1] - cp[3]
+    if cov + 0.35 * cp[2] <= 0.0 and cp[17] <= 0.0:
         return 0.0
-    wx = fbm(x, y, z, cp[4], 3, lod) - 0.5
-    wy = fbm(y + 5.2, z, x, cp[4], 3, lod) - 0.5
+    # large swirl warp + small feathering warp
+    wf = cp[4]
+    w1 = fbm(x, y, z, wf, 3, lod) - 0.5
+    w2 = fbm(y + 5.2, z - 1.3, x + 2.7, wf, 3, lod) - 0.5
+    w3 = fbm(z - 3.1, x + 4.4, y - 0.6, wf, 3, lod) - 0.5
     ws = cp[5]
-    det = fbm(x + ws * wx, y + ws * wy, z - ws * wx, cp[0], 6, lod)
-    c = base * cp[1] + (det - 0.5) * cp[2] - cp[3]
-    c = min(1.0, max(0.0, c))
-    return c * c * (3.0 - 2.0 * c) * cp[6]
+    qx = x + ws * w1
+    qy = y + ws * w2
+    qz = z + ws * w3
+    f2 = cp[0] * 0.5
+    e1 = fbm(qx + 11.0, qy, qz, f2, 2, lod) - 0.5
+    e2 = fbm(qy, qz - 7.0, qx, f2, 2, lod) - 0.5
+    qx += ws * 0.18 * e1
+    qy += ws * 0.18 * e2
+    det = fbm(qx, qy, qz, cp[0], 7, lod)
+    vv = (det - 0.5) * cp[2] + cov
+    c = 0.0
+    if vv > 0.0:
+        s = min(1.0, vv / cp[24])
+        c = s * s * (3.0 - 2.0 * s) * cp[6]
+    if cp[17] > 0.0:
+        # cirrus: streaks stretched east-west, a thin veil
+        ci = fbm(qx * 0.7, qy * 0.7, qz * 2.6, cp[0] * 0.35, 5, lod)
+        ci = min(1.0, max(0.0, (ci - 0.54) / 0.16))
+        ci = ci * ci * cp[17] * (0.35 + 0.65 * min(1.0, base * 1.5 + 0.2))
+        c = 1.0 - (1.0 - c) * (1.0 - ci)
+    return c
 
 
 # --------------------------------------------------------------- kernel ---
@@ -656,6 +679,12 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
         g0 += spec * E_sun[0] * Tg0
         g1 += spec * E_sun[1] * Tg1
         g2 += spec * E_sun[2] * Tg2
+        # the blue of the day sky reflected by the sea (Fresnel), fading through twilight
+        Fv = 0.02 + 0.98 * math.pow(1.0 - ndv, 5.0)
+        skyk = water * Fv * min(1.0, max(0.0, (muS + 0.05) / 0.25)) * cp[9] * 1.4
+        g0 += skyk * E_sun[0] * 0.25
+        g1 += skyk * E_sun[1] * 0.50
+        g2 += skyk * E_sun[2] * 1.00
     # moonlight
     Tm0 = 0.0
     Tm1 = 0.0
@@ -691,6 +720,21 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
         rc = 1.0 + cp[7]
         Tc0, Tc1, Tc2 = trans_lookup(lut, p, rc, muS)
         wrap = max(0.0, (muS + 0.18) / 1.18)
+        if cp[23] > 0.0 and muS > -0.12 and Tc1 > 1e-4:
+            # relief: treat opacity as cloud-top height; raking light lights the sun-facing
+            # flanks and leaves the far sides in shadow
+            eps = max(lod * 2.0, 0.0012)
+            ca = cloud_density(x + ex * eps, y + ey * eps, z, clouds, cp, lod)
+            cb = cloud_density(x + nx_ * eps, y + ny_ * eps, z + nz_ * eps, clouds, cp, lod)
+            gx = (ca - c) / eps * cp[23]
+            gy = (cb - c) / eps * cp[23]
+            Cx = x - gx * ex - gy * nx_
+            Cy = y - gx * ey - gy * ny_
+            Cz = z - gy * nz_
+            cl_ = math.sqrt(Cx * Cx + Cy * Cy + Cz * Cz)
+            ndc = (Cx * S[0] + Cy * S[1] + Cz * S[2]) / cl_
+            rel = max(0.0, (ndc + 0.25) / 1.25) / max((muS + 0.25) / 1.25, 0.05)
+            wrap *= min(2.5, 0.35 + 0.65 * rel)
         vs = dx * S[0] + dy * S[1] + dz * S[2]
         fwd = 1.0 + 0.8 * max(0.0, vs) ** 8
         calb = 0.85
@@ -943,9 +987,14 @@ class World:
     #                night_land, night_cloud, moon_glint]
     @staticmethod
     def default_cp(X=2.5):
-        return np.array([95.0, 1.35, 0.95, 0.12, 22.0, 0.035, 0.95,
-                         9.0 * X / R_KM, 0.55, 0.035, 0.9, 0.16,
-                         0.30, 0.55, 1.0, 0.0, 0.0, 0.0], np.float64)
+        cp = np.zeros(26, np.float64)
+        cp[0:15] = [70.0, 1.25, 2.1, 0.42, 9.0, 0.05, 0.95,
+                    9.0 * X / R_KM, 0.6, 0.035, 0.9, 0.16,
+                    0.30, 0.55, 1.0]
+        cp[17] = 0.35          # cirrus
+        cp[23] = 0.0           # cloud relief (on for DAWN)
+        cp[24] = 0.45          # soft coverage->opacity ramp
+        return cp
 
     def stars(self):
         if self._stars is None:

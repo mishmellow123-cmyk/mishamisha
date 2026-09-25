@@ -232,6 +232,11 @@ class Dawn:
         cp = World.default_cp(at.X)
         cp[15] = math.radians(-16.0)        # this morning's weather: the African cloud mass sits
         cp[16] = math.radians(-2.0)         # where the terminator sweeps
+        cp[23] = 0.012                      # cloud-top relief in the raking light
+        clear = normalize(vec_ll(6.0, 50.0))  # a clearer sky near the sunrise: land and sea read
+        cp[18:21] = clear
+        cp[21] = math.cos(math.radians(14.0))
+        cp[22] = 0.7
         img, cov, tv = G.render_planet(wd, cam, at, Sl, Esun, Sd, 40.0, self.moon, Emoon, cp=cp)
         img += G.render_lights(wd, cam, at, Sl, gain=0.5e-7, cp=cp)
         star_k = 1.0 - ramp(t, 2236, 2262) * 0.85
