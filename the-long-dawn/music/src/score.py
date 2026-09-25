@@ -163,15 +163,15 @@ def rr16(pn, pitches, b0, b1, vels, step=0.25, **kw):
 def intro():
     # low warm D drone (re-bowed with overlaps), from silence
     cb, vc = P("cb"), P("vc")
-    for b0, b1 in [(gb(1, 1), gb(3, 1.3)), (gb(3, 1), gb(5, 1.3)), (gb(5, 1), gb(7, 1.4))]:
+    for b0, b1 in [(gb(1, 1), gb(3, 1.3)), (gb(3, 1), gb(5, 1.3)), (gb(5, 1), gb(7, 1.1))]:
         cb.n("D2", b0, b1 - b0)
         vc.n("D2", b0 + 0.1, b1 - b0 - 0.1)
-        vc.n("A2", b0 + 0.25, b1 - b0 - 0.25)
+        vc.n("A2", b0 + 0.25, min(b1, gb(6, 3.05)) - b0 - 0.25)
     cb.d((0, 0.05), (gb(1, 3), 0.22), (gb(2, 1), 0.28), (gb(5, 1), 0.3), (gb(6, 1), 0.34),
          (gb(6, 4.5), 0.62), (gb(7, 1), 0.66))
     vc.d((0, 0.04), (gb(1, 3), 0.2), (gb(2, 1), 0.25), (gb(5, 1), 0.28), (gb(6, 1), 0.3),
          (gb(6, 4.5), 0.6), (gb(7, 1), 0.62))
-    P("sub").n("D1", gb(1, 1), 26, kw_atk := None) if False else P("sub").n("D1", gb(1, 1), gb(7, 1) - gb(1, 1), atk=3.0, rel=2.0)
+    P("sub").n("D1", gb(1, 1), gb(7, 1) - gb(1, 1), atk=3.0, rel=2.0)
     P("sub").d((0, 0.05), (gb(2, 1), 0.2), (gb(6, 1), 0.22), (gb(7, 1), 0.3), (gb(8, 1), 0.1))
 
     # soft string pad: Dm - Bb/D - F/D(=Dm7) - C/D
@@ -411,8 +411,6 @@ def race():
     vt.d((gb(11, 1), 0.5), (gb(12, 4.9), 0.95))
 
     # corrupted call (D - Ab - D) in low brass: the call turned into an alarm
-    for pn, root in (("hns", "D3"), ("tbn", "D3"), ("tuba", "D2")):
-        call(pn, root, gb(9, 1), rhythm=(1, 1, 2), vel=0.85, tritone=True) if False else None
     def ccall(pn, root, b0, v):
         r = m(root)
         P(pn).n(r, b0, 0.95, v)
@@ -454,7 +452,7 @@ def race():
     P("shepard").n(60, g0, cut - g0, 0.75, oct_per_s=0.55, base=50.0)
     P("revcym").n(60, cut - 3.0, 3.0, 0.9)
     P("riser").n(60, gb(12, 3), cut - gb(12, 3), 0.8, f0=150, f1=12000, curve=2.2)
-    hold("tbn", ["D3", "Ab3"], g0, cut - g0 + g0 - 0.02)
+    hold("tbn", ["D3", "Ab3"], g0, cut - 0.02)
     hold("hns", ["A3", "Eb4"], g0, cut - 0.02)
     hold("tpt", ["D5", "Eb5"], g0, cut - 0.02)
     hold("tuba", ["D2"], g0, cut - 0.02)
@@ -521,14 +519,13 @@ def first_beacon():
     roar = fb(1360)    # the beacon roars
     # breathing low pad in the dark
     cb.n("D2", gb(16, 1.4), fb(1340) - gb(16, 1.4) + 0.05)
-    vc.n("D3", gb(16, 2.5), k - gb(16, 2.5) + 0.02)
+    vc.n("D3", gb(16, 2.5), fb(1340) - gb(16, 2.5) + 0.05)
     cb.d((gb(16, 1.4), 0.08), (gb(16, 3), 0.17), (gb(17, 1), 0.12), (k, 0.2), (fb(1340), 0.3),
          (roar, 0.55), (gb(18, 3), 0.5), (gb(19, 1), 0.5))
     vc.d((gb(16, 2.5), 0.07), (gb(17, 1), 0.14), (k, 0.2), (fb(1340), 0.34), (roar, 0.52),
          (gb(19, 1), 0.5))
     # 1318: a soft Bb chord blooms over the D pedal (Bb/D)
-    vc.n("F3", k, fb(1360) - k + 0.05, legato=False)
-    vc.n("D3", k, fb(1340) - k + 0.05, legato=True)
+    vc.n("F3", k, roar - k + 0.05)
     vla.n("Bb3", k, roar - k + 0.05)
     vln2.n("D4", k, roar - k + 0.05)
     vln2.n("F4", k, roar - k + 0.05)
@@ -596,7 +593,8 @@ def beacons():
         if i == 0:
             continue  # bar 19 b1-2 held from the roar (F)
         cb.n(b1, t, t_end - t + 0.05, legato=True)
-        vc.n(b2, t, t_end - t + 0.05, legato=True)
+        if i < 4:
+            vc.n(b2, t, t_end - t + 0.05, legato=True)
     cb.d((gb(19, 1), 0.5), (gb(21, 1), 0.6), (gb(22, 4.9), 0.78))
     vc.d((gb(19, 1), 0.5), (gb(21, 1), 0.6), (gb(22, 4.9), 0.78))
     # 8th-note ostinato (vln2 + vla, spiccato), accents on beats
@@ -631,7 +629,6 @@ def beacons():
             first = False
     for t in I:
         P("bdrum").n(60, t, 2, 0.5, sync=True)
-        P("suscym_hit") if False else None
     # snare building from bar 21, roll into the globe
     for k in range(int((I[5] - gb(21, 1)) * 2)):
         t = gb(21, 1) + k * 0.5
@@ -655,12 +652,14 @@ def beacons():
         P("celesta").n(p, I[2] + [0, 1, 2][j], 1, 0.35)
     # 1650 karst jungle: cellos (the call at its original pitch)
     call("vc", "D3", I[3], last=1.6)
+    vc.n("F2", I[5], end - I[5] + 0.05)
+    vc.n("C3", I[5], end - I[5] + 0.05)
     # 1690 city: trombones
     call("tbn", "C3", I[4], last=2.0)
     P("tbn").d((I[4], 0.72), (I[4] + 2, 0.8), (end, 0.7))
     # 1730 sea: high violins (section + solo violin on top)
-    call("vln1", "F5", I[5], last=2.6)
-    call("svln", "F5", I[5], last=2.6)
+    call("vln1", "F5", I[5], last=5.5)
+    call("svln", "F5", I[5], last=5.5)
     P("svln").d((I[5], 0.6), (end + 1, 0.8))
     # upper strings: sustained chord support under the stretto
     sup = [(gb(19, 1), ["A4", "C5"], ["F5"]), (I[0], ["A4", "C5"], ["F5"]),
@@ -694,7 +693,7 @@ def globe():
     ch.d((g0 - 0.2, 0.3), (g0 + 0.3, 0.62), (gb(23, 3), 0.66), (gb(24, 3), 0.8), (gb(24, 4.5), 0.72),
          (gb(25, 1), 0.3))
     op = P("organ_ped")
-    op.n("F1", g0, 8.1, sync=True)
+    op.n("F2", g0, 8.1, sync=True)
     op.d((g0, 0.55), (gb(24, 3), 0.7), (gb(25, 1), 0.35))
     org = P("organ")
     for p in ["F3", "A3", "C4"]:
@@ -723,9 +722,11 @@ def globe():
     vln2.n("D5", gb(24, 1), 2.05, legato=True)
     vln2.n("E4", gb(24, 3), 2.1, legato=True)
     vln2.n("C5", gb(24, 3), 2.1, legato=True)
-    vln1.n("A5", g0 + 0.5, 3.55, legato=True)
-    vln1.n("Bb5", gb(24, 1), 2.05, legato=True)
-    vln1.n("C6", gb(24, 3), 2.1, legato=True)
+    vln1.n("E6", gb(24, 3), 2.1, legato=True)
+    P("svln").n("E6", gb(24, 3), 2.1, legato=True)
+    vln2.n("A5", g0 + 0.5, 3.55)
+    vln2.n("Bb5", gb(24, 1), 2.05, legato=True)
+    vln2.n("C6", gb(24, 3), 2.1, legato=True)
     for pn in ("cb", "vc", "vla", "vln2", "vln1"):
         P(pn).d((g0, 0.62), (gb(24, 3), 0.72), (gb(24, 4.6), 0.55), (gb(25, 1), 0.3))
     P("cym").n(60, g0, 4, 0.55, sync=True)
@@ -807,13 +808,12 @@ def accord():
         for p in tbs:
             P("tbn").n(p, t, t1 - t + 0.05)
         P("tuba").n(tu, t, t1 - t + 0.05)
-        for p in ["F3", "A3"] if i < 2 else ["C#4", "E4"] if False else []:
-            pass
         P("hns").n(m(top) - 24 if m(top) - 24 >= 50 else m(top) - 12, t, t1 - t + 0.05)
         P("bell").n(bellp, t, 4, 0.55 + 0.08 * i, sync=True)
         tp.n(tim, t, 2, 0.62 + 0.1 * i, sync=True)
         P("bdrum").n(60, t, 2, 0.45 + 0.08 * i, sync=True)
-        P("suscym_" if False else "triangle").n(60, t, 2, 0.2 + 0.05 * i) if i >= 2 else None
+        if i >= 2:
+            P("triangle").n(60, t, 2, 0.2 + 0.05 * i)
         # heartbeat 8ths between oaths
         for k in range(1, int((t1 - t) * 2)):
             tp.n(tim, t + k * 0.5, 0.5, 0.3 + 0.08 * i + 0.02 * k)
@@ -832,7 +832,7 @@ def accord():
     op = P("organ_ped")
     op.n("D2", O[0], O[1] - O[0] + 0.05)
     op.n("C2", O[1], O[2] - O[1] + 0.05)
-    op.n("A1", O[2], dawn - O[2] + 0.02)
+    op.n("A2", O[2], dawn - O[2] + 0.02)
     op.d((O[0], 0.35), (O[2], 0.45), (ring0, 0.5), (dawn - 0.1, 0.8))
 
     # bar 28: A major (sus4 -> 3), the "together" ring sweep, roll into the dawn
@@ -899,10 +899,8 @@ def dawn():
     P("giant").n(60, d0, 2, 0.7, sync=True)
     P("impact").n(60, d0, 2, 0.5, sync=True, size=1.1, crack=0.2)
     # timpani pulse under the theme
-    for k in range(1, 12):
-        tp_note = ["D2", "A2"][k % 2] if k < 4 else (["B1", "F#2"] if False else None)
     for t, p, v in [(d0 + 2, "A2", 0.55), (d0 + 3, "D2", 0.6), (b30, "D2", 0.75),
-                    (b30 + 2, "F#2" if False else "A2", 0.6), (b31, "G2", 0.75), (b31 + 2, "D2", 0.62)]:
+                    (b30 + 2, "A2", 0.6), (b31, "G2", 0.75), (b31 + 2, "D2", 0.62)]:
         P("timp").n(p, t, 1, v)
 
     # melody (the theme): trumpets, violins 8va, horns 8vb, solo violin top
@@ -910,11 +908,13 @@ def dawn():
     P("tpt").line(mel_t, d0)
     P("tpt").d((d0, 0.95), (b30, 0.86), (b31, 0.8), (b31 + 2, 0.72), (b32, 0.35))
     P("vln1").line("D5:1 A5:1 D6:2 | D6:1 C#6:.5 B5:.5 F#5:2 | G5:.5 A5:.5 B5:1 D6:1 Bb5:1", d0)
-    P("vln1").n("A5", b32, 3.0, legato=True)
+    P("vln1").n("A5", b32, 2.0, legato=True)
     P("svln").line("D6:1 A6:1 D7:2 | D7:1 C#7:.5 B6:.5 F#6:2 | G6:.5 A6:.5 B6:1 D7:1 Bb6:1", d0)
     P("svln").d((d0, 0.55), (b31, 0.5), (b32, 0.2))
     P("hns").line("D3:1 A3:1 D4:2 | D4:1 C#4:.5 B3:.5 F#3:2 | G3:.5 A3:.5 B3:1 D4:1 Bb3:1.1", d0)
     P("hns").d((d0, 0.95), (b30, 0.88), (b31, 0.8), (b31 + 2, 0.7), (b32, 0.3))
+    P("tpt").n("A4", b32, 1.2, legato=True)
+    P("hns").n("A3", b32, 1.4, legato=True)
     # choir: harmony pad (aah), top voice bright
     ch = P("choir")
     chords = [
@@ -923,7 +923,7 @@ def dawn():
         (b30 + 2, 2, ["F#2", "A3", "D4", "F#4", "A4", "D5", "A5"]),
         (b31, 2, ["G2", "B3", "D4", "G4", "B4", "D5", "G5"]),
         (b31 + 2, 2, ["Bb2", "G3", "D4", "G4", "Bb4", "D5", "G5"]),
-        (b32, 3, ["D3", "A3", "D4", "F#4", "A4", "D5"]),
+        (b32, 2, ["D3", "A3", "D4", "F#4", "A4", "D5"]),
     ]
     for t, d, ps in chords:
         for p in ps:
@@ -938,21 +938,21 @@ def dawn():
         for p in ps:
             org.n(p, t, d + 0.03, sync=(t == d0))
     org.d((d0, 0.8), (b31 + 2, 0.6), (b32, 0.25), (b32 + 2, 0.1))
-    for t, d, p in [(d0, 4, "D1"), (b30, 2, "B0"), (b30 + 2, 2, "F#1"), (b31, 2, "G1"),
-                    (b31 + 2, 2, "Bb1"), (b32, 2.5, "D1")]:
+    for t, d, p in [(d0, 4, "D2"), (b30, 2, "B1"), (b30 + 2, 2, "F#2"), (b31, 2, "G2"),
+                    (b31 + 2, 2, "Bb1"), (b32, 2.0, "D2")]:
         op.n(p, t, d + 0.03, sync=(t == d0))
     op.d((d0, 0.85), (b31 + 2, 0.7), (b32, 0.3), (b32 + 2, 0.1))
     # strings: bass + harmony
     cb, vc, vla, vln2 = P("cb"), P("vc"), P("vla"), P("vln2")
     bass = [(d0, 4, "D2", ["D3", "A3"]), (b30, 2, "B1", ["B2", "F#3"]), (b30 + 2, 2, "F#1", ["F#2", "A3"]),
-            (b31, 2, "G1", ["G2", "D3"]), (b31 + 2, 2, "Bb1", ["Bb2", "G3"]), (b32, 4, "D2", ["D3", "A3"])]
+            (b31, 2, "G1", ["G2", "D3"]), (b31 + 2, 2, "Bb1", ["Bb2", "G3"]), (b32, 2, "D2", ["D3", "A3"])]
     for i, (t, d, b, vcs) in enumerate(bass):
         cb.n(b, t, d + 0.05, legato=i > 0, sync=(i == 0))
         for p in vcs:
             vc.n(p, t, d + 0.05, legato=i > 0, sync=(i == 0))
     vl = [(d0, 4, ["F#4", "A4"], ["A4", "D5"]), (b30, 2, ["F#4", "B4"], ["B4", "D5"]),
           (b30 + 2, 2, ["F#4", "A4"], ["A4", "D5"]), (b31, 2, ["G4", "B4"], ["B4", "D5"]),
-          (b31 + 2, 2, ["G4", "Bb4"], ["Bb4", "D5"]), (b32, 4, ["F#4", "A4"], ["A4", "D5"])]
+          (b31 + 2, 2, ["G4", "Bb4"], ["Bb4", "D5"]), (b32, 2, ["F#4", "A4"], ["A4", "D5"])]
     for i, (t, d, vas, v2s) in enumerate(vl):
         for p in vas:
             vla.n(p, t, d + 0.05, legato=i > 0, sync=(i == 0))
@@ -960,7 +960,7 @@ def dawn():
             vln2.n(p, t, d + 0.05, legato=i > 0, sync=(i == 0))
     for pn, top in (("cb", 0.95), ("vc", 0.95), ("vla", 0.9), ("vln2", 0.9), ("vln1", 0.95)):
         P(pn).d((d0, top), (b30, top - 0.05), (b31, top - 0.08), (b31 + 2, top - 0.2),
-                (b32, 0.34), (b32 + 1.5, 0.22), (b32 + 3, 0.12))
+                (b32, 0.3), (b32 + 1.0, 0.2), (b32 + 2.0, 0.1))
     # trombones + tuba: warm chords, contrary motion to the bass
     tb, tu = P("tbn"), P("tuba")
     for t, d, ps, tub in [(d0, 4, ["F#3", "A3", "D4"], "D2"), (b30, 2, ["F#3", "B3", "D4"], "B1"),
@@ -994,8 +994,6 @@ def coda():
          (fb(2600), 0.28), (fb(2640), 0.2))
     # soft string pad under the call, thinning to nothing at the question
     vc, vla, cb = P("vc"), P("vla"), P("cb")
-    vla.n("F#4", c0, 1.8)
-    P("vln2").n("A4", c0, 1.8)
     # (bar 32 downbeat chord comes from the DAWN block; it decays here)
     # low pedal ppp returns with the answer
     cb.n("D2", fb(2584), fb(2640) - fb(2584) + 0.05)

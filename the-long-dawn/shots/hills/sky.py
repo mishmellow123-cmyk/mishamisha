@@ -200,11 +200,16 @@ def sky_rad(dx, dy, dz, sp):
     sz = sp[2]
     sn = math.sqrt(sx * sx + sz * sz) + 1e-9
     caz = (hx * sx + hz * sz) / (hn * sn)
-    w = (0.5 + 0.5 * caz) ** sp[22]
+    ang = math.acos(max(-1.0, min(1.0, caz)))
+    # azimuthal widths (radians): amber tight, rose wider, violet wide
+    sa = sp[22] * 0.0175
+    wa = math.exp(-(ang / sa) ** 2)
+    wr = math.exp(-(ang / (sa * 1.9)) ** 2)
+    wv = 0.30 + 0.70 * math.exp(-(ang / (sa * 3.2)) ** 2)
     eb = math.exp(-h / sp[18])
-    ea = math.exp(-h / sp[19]) * w * w
-    er = math.exp(-h / sp[20]) * w
-    ev = math.exp(-h / sp[21]) * (0.35 + 0.65 * w)
+    ea = math.exp(-h / sp[19]) * wa
+    er = math.exp(-h / sp[20]) * wr
+    ev = math.exp(-h / sp[21]) * wv
     r = sp[3] + (sp[6] - sp[3]) * eb + sp[9] * ea + sp[12] * er + sp[15] * ev
     g = sp[4] + (sp[7] - sp[4]) * eb + sp[10] * ea + sp[13] * er + sp[16] * ev
     b = sp[5] + (sp[8] - sp[5]) * eb + sp[11] * ea + sp[14] * er + sp[17] * ev

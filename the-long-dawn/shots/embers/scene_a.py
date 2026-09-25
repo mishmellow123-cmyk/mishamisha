@@ -308,7 +308,7 @@ class Glyphs:
 
     def emit(self, ctx):
         t = ctx.t
-        if t < 300 or t > 486:
+        if t < 300 or t >= 480.5:
             return
         P0, _, _ = self.points(ctx.t0, ctx.cam0.pos)
         P1, u, sc = self.points(ctx.t1, ctx.cam1.pos)
@@ -363,7 +363,7 @@ class ThePoint:
 
     def emit(self, ctx):
         t = ctx.t
-        if t < 404 or t >= 484:
+        if t < 404 or t >= 480.5:
             return
         lv = self.level(t)
         breath = 1 - 0.25 * smoothstep(471, 479, t) + 0.6 * smoothstep(478.5, 480.0, t)
