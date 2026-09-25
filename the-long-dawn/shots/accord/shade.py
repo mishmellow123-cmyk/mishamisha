@@ -477,9 +477,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs
         n1 = fbm2(px * 3.2, py * 3.2, 41, 4, 2.1, 0.5, fp * 3.2)
         sp = fbm2(px * 70.0, py * 70.0, 42, 3, 2.3, 0.6, fp * 70.0)
         g = 1.0 + 0.55 * n1 + 0.5 * sp
-        ar = 0.105 * g
+        ar = 0.100 * g
         ag = 0.094 * g
-        ab = 0.080 * g
+        ab = 0.088 * g
         lich = sstep(1.70, 1.93, r) * sstep(0.02, 0.2, fbm2(px * 3.0, py * 3.0, 43, 4, 2.0, 0.5, fp * 3.0))
         ar = mix(ar, 0.085, lich * 0.6)
         ag = mix(ag, 0.098, lich * 0.6)

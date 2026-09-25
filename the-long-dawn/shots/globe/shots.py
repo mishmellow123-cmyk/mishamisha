@@ -182,8 +182,8 @@ class Dawn:
             heading=lerp(80.0, 77.0, s), limb=lerp(0.43, 0.40, s), fov=lerp(58.0, 61.0, s),
         )
         # sun elevation above the limb (deg): crest at 2240 exactly
-        p['sun_el'] = spline(t, [(2200, -1.6), (2232, -0.75), (2240, -self.SUN_R + 0.02), (2250, -0.02),
-                                 (2266, 0.32), (2300, 0.75), (2400, 1.7), (2495, 2.4)])
+        p['sun_el'] = spline(t, [(2200, -1.6), (2232, -0.72), (2239, -self.SUN_R - 0.01), (2240, -0.19),
+                                 (2250, 0.0), (2266, 0.32), (2300, 0.75), (2400, 1.7), (2495, 2.4)])
         # the lighting sun leads the disk so the terminator can visibly race toward us
         p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2252, 1.5), (2270, 6.0), (2300, 12.0),
                                (2350, 17.5), (2420, 22.0), (2495, 26.0)])
@@ -251,12 +251,12 @@ class Dawn:
         frac = seg_frac(p['sun_el'], self.SUN_R)
         burst = math.exp(-max(t - 2240.0, 0.0) / 5.0) if t >= 2240 else 0.0
         pre = ramp(t, 2226.0, 2240.0)
-        core = 7.0 * frac ** 0.6 + 1.0 * pre * (1.0 - frac)
+        core = 7.0 * frac ** 0.6 + 2.5 * pre * (1.0 - frac)
         settle = 1.0 - 0.45 * ramp(t, 2262.0, 2300.0)
         spikes = 3.6 * frac ** 0.5 * (1.0 + 1.0 * burst) * settle
         slen = 1.0 - 0.4 * ramp(t, 2255.0, 2290.0)
         mask = (470.0, 560.0, 0.85 * max(ramp(t, 2255, 2268), 0.0))
-        glare = G.sun_glare(W, H, sx, sy, core, spikes, flash=5.0 * burst * min(1.0, frac * 6.0 + 0.3),
+        glare = G.sun_glare(W, H, sx, sy, core, spikes, flash=5.0 * burst,
                             spike_len=slen, spike_mask_y=mask)
         return img, glare, cam, p, (sx, sy, frac, burst)
 

@@ -134,7 +134,8 @@ def fire_params(t):
     FP[FI.FP_SWIRL] = 1.8
     FP[FI.FP_Z0] = 0.47
     FP[FI.FP_WHITE] = SC.smooth(SC.ramp(t, SC.FLARE_T0 + 3, SC.FLARE_T1 + 2))
-    FP[FI.FP_R0] = 0.46
+    FP[FI.FP_R0] = 0.40
+    FP[FI.FP_SPREAD] = 0.85
     FP[FI.FP_RISE] = 3.2
     return FP
 

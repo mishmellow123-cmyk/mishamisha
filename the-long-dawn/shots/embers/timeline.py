@@ -67,7 +67,7 @@ class Timeline:
         if t < 1040:
             pos, tgt = C.cam_grasp(t)
             Cc = B.crown_centre(960.0)
-            return Camera(pos, tgt, hfov=74.0, focus=float(np.linalg.norm(Cc - pos)), aperture=0.25)
+            return Camera(pos, tgt, hfov=62.0, focus=float(np.linalg.norm(Cc - pos)), aperture=0.25)
         pos, tgt = C.cam_silence(t)
         return Camera(pos, tgt, hfov=50.0, focus=6.0, aperture=0.03)
 
@@ -135,7 +135,7 @@ class Timeline:
             import cv2
             cov = ctx.fr_cov.resolve()[..., 0]
             cov = cv2.GaussianBlur(cov, (0, 0), 1.5 * ctx.scale + 0.5)
-            alpha = 1.0 - np.exp(-cov * 1.4)
+            alpha = 1.0 - np.exp(-cov * 1.2)
             hdr = hdr * (1.0 - 0.93 * alpha[..., None]) + ctx.fr_hand.resolve()
         if 1035 <= f < 1040:
             # white-red flash as the fingers close (1036-1039)

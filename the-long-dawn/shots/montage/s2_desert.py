@@ -24,7 +24,7 @@ HORIZON_Y0 = 548.0
 MOON_DIR = np.array([0.86, 0.33, -0.40])
 MOON_DIR = MOON_DIR / np.linalg.norm(MOON_DIR)
 WIND = -1.0    # toward -x (over the crest, into the slip face)
-YAW = 7.0
+YAW = 0.0
 
 
 @njit(inline='always', fastmath=True)
@@ -33,14 +33,45 @@ def _lod(scale, fp, lo, hi):
     return min(max(o, lo), hi)
 
 
+# hero crest, designed in image space: control points (z, x, H) chosen so the crest enters lower-left,
+# climbs diagonally to the summit (figure) a third in from the right, then falls away to the right.
+# Camera eye is at y = EYE; crest heights below the eye near the camera (we see the slip face), above
+# it at the summit (the figure stands against the sky).
+EYE = 7.0
+_CZ = np.array([-60.0, -20.0, 0.0, 10.0, 20.0, 40.0, 60.0, 75.0, 90.0, 140.0, 250.0, 500.0])
+_CX = np.array([2.0, -0.4, -1.4, -3.3, -4.3, -1.5, 9.5, 15.0, 21.0, 30.0, 40.0, 60.0])
+_CH = np.array([5.0, 5.2, 5.3, 5.0, 5.5, 8.6, 14.2, 14.4, 12.0, 7.5, 5.0, 4.0])
+
+
+def _table():
+    from scipy.interpolate import PchipInterpolator
+    zz = np.arange(-60.0, 500.01, 0.25)
+    fx = PchipInterpolator(_CZ, _CX)
+    fh = PchipInterpolator(_CZ, _CH)
+    return np.stack([fx(zz), fx.derivative()(zz), fh(zz)], 1).astype(np.float64)
+
+
+CREST = _table()
+
+
 @njit(inline='always', fastmath=True)
+def crest_at(z):
+    u = (z + 60.0) * 4.0
+    if u < 0.0:
+        u = 0.0
+    n = CREST.shape[0] - 1
+    if u > n - 1e-6:
+        u = n - 1e-6
+    k = int(u)
+    f = u - k
+    x = CREST[k, 0] * (1 - f) + CREST[k + 1, 0] * f
+    dx = CREST[k, 1] * (1 - f) + CREST[k + 1, 1] * f
+    h = CREST[k, 2] * (1 - f) + CREST[k + 1, 2] * f
+    return x, dx, h
+
+
 def crest_x(z):
-    return -9.0 + 0.35 * z + 3.0 * math.sin(z / 15.0)
-
-
-@njit(inline='always', fastmath=True)
-def crest_h(z):
-    return 6.0 + 8.5 * smoothstep(0.0, 62.0, z) - 5.0 * smoothstep(75.0, 150.0, z) + 3.0 * smoothstep(-40.0, -5.0, -z) * 0.0
+    return crest_at(z)[0]
 
 
 @njit(fastmath=True)
@@ -56,7 +87,7 @@ def h_field(x, z, fp):
     cell = math.floor(u)
     s = u - cell
     ci = int(cell)
-    amp = 7.0 * (0.72 + 0.35 * h01(ci, 7, 5) + 0.3 * fbm2(zr / 260.0, cell * 1.7, 3.0, 6))
+    amp = 9.0 * (0.72 + 0.35 * h01(ci, 7, 5) + 0.3 * fbm2(zr / 260.0, cell * 1.7, 3.0, 6))
     c = 0.74 + 0.06 * fbm2(zr / 120.0, cell * 3.1, 2.0, 8)
     if s < c:
         q = s / c
@@ -70,11 +101,9 @@ def h_field(x, z, fp):
 @njit(fastmath=True)
 def h_dune(x, z, fp):
     # hero dune: sharp sinuous crest; windward (lit) face toward +x, slip face toward -x
-    xc = crest_x(z)
-    dxc = 0.35 + 0.2 * math.cos(z / 15.0)
+    xc, dxc, H = crest_at(z)
     cosa = 1.0 / math.sqrt(1.0 + dxc * dxc)
     w = (x - xc) * cosa
-    H = crest_h(z)
     if w >= 0.0:
         u = w / (3.4 * H)
         hh = H * max(1.0 - u, 0.0) ** 1.7
@@ -134,7 +163,7 @@ def shade(C, D, P, S, G, LT, Lm, Im, amb, fogp, mw_I, out, dep):
                 nx *= inv
                 ny *= inv
                 nz *= inv
-            ar, ag, ab = 0.44, 0.37, 0.29
+            ar, ag, ab = 0.46, 0.43, 0.40
             ndl = nx * mx + ny * my + nz * mz
             shd = 1.0
             if ndl > 0.0:
@@ -182,10 +211,10 @@ def placement():
         # summit sits right on the crest; the beacon just before it, a touch lower
         bz = FIG_Z - 2.2
         bx = crest_x(bz)
-        cx0 = crest_x(CAM_Z) + 2.2
+        cx0 = crest_x(CAM_Z) + 1.4
         _PL = dict(feet=np.array([fx + 0.15, h_dune(fx + 0.15, FIG_Z, 0.01), FIG_Z]),
                    cairn=np.array([bx + 0.1, h_dune(bx + 0.1, bz, 0.01), bz]),
-                   cam=np.array([cx0, h_dune(cx0, CAM_Z, 0.01) + 1.7, CAM_Z]))
+                   cam=np.array([cx0, EYE, CAM_Z]))
     return _PL
 
 
@@ -259,11 +288,11 @@ def render(frame, scale=0.5, ss=1.5):
 
     LT = [[torch_w[0], torch_w[1] + 0.12, torch_w[2], *F.FIRE_LIGHT, torch_I, 0.2]]
     if fire_I > 0:
-        LT.append([fire_base[0], fire_base[1] + 0.7, fire_base[2], *F.FIRE_LIGHT, fire_I, 0.5])
+        LT.append([fire_base[0], fire_base[1] + 0.7, fire_base[2], *F.FIRE_LIGHT, fire_I * 2.2, 0.5])
     LT = np.array(LT, np.float64)
 
     moon_col = CM.lin('#9DB4D9')
-    Im = 0.55
+    Im = 0.75
     Lm = np.r_[MOON_DIR, moon_col]
     amb = CM.lin('#27335E') * 0.30
     S = SK.sky_params(zenith='#070B1C', horizon='#27335E', moon_dir=MOON_DIR, halo_I=0.02, halo_w=0.35,
@@ -273,7 +302,7 @@ def render(frame, scale=0.5, ss=1.5):
     fogp = np.array([1.0 / 14000.0, 0.8, fogc[0], fogc[1], fogc[2]])
     out = np.zeros((cami.H, cami.W, 3), np.float32)
     dep = np.zeros((cami.H, cami.W), np.float32)
-    shade(C, D, P, S, G, LT, Lm, Im, amb, fogp, 0.030, out, dep)
+    shade(C, D, P, S, G, LT, Lm, Im, amb, fogp, 0.05, out, dep)
     img = CM.downsample(out, W, H)
     depth = CM.depth_down(dep, W, H)
     skymask = CM.downsample((dep > 1e8).astype(np.float32), W, H)
@@ -319,8 +348,8 @@ def _galaxy():
             az = math.radians(az) + yaw
             el = math.radians(el)
             return np.array([math.sin(az) * math.cos(el), math.sin(el), math.cos(az) * math.cos(el)])
-        A = d(4.0, 3.0)
-        B = d(-40.0, 62.0)
+        A = d(16.0, 0.0)
+        B = d(-30.0, 64.0)
         g = np.cross(A, B)
         g /= np.linalg.norm(g)
         _G = np.r_[g, A, 0.16, 5.0]

@@ -15,7 +15,7 @@ from numba import njit, prange
 from nbcore import FM, clamp, sstep, mix, tex3, vnoise2, fbm2
 
 # fire params
-FP_T, FP_I, FP_SCALE, FP_H, FP_SWIRL, FP_Z0, FP_WHITE, FP_R0, FP_RISE = range(9)
+FP_T, FP_I, FP_SCALE, FP_H, FP_SWIRL, FP_Z0, FP_WHITE, FP_R0, FP_RISE, FP_SPREAD = range(10)
 FP_N = 12
 
 
@@ -38,33 +38,34 @@ def gold_ramp(t):
 
 @njit(**FM)
 def fire_density(x, y, z, FP, n3):
-    """Flame tongues: vertically stretched, domain-warped turbulence thresholded into thin sheets,
-    swirling as they rise; plus a compact white-hot base inside the basin."""
+    """Flame tongues seen from above: vertically stretched, domain-warped turbulence thresholded
+    into thin sheets that fan outward and swirl as they rise (petals), with a compact hot base."""
     s = FP[FP_SCALE]
     H = FP[FP_H] * s
     z0 = FP[FP_Z0]
     zr = (z - z0) / H
     if zr <= 0.0 or zr >= 1.0:
         return 0.0, 0.0
+    k = 1.0 + FP[FP_SPREAD] * zr ** 1.15
     r = math.sqrt(x * x + y * y)
-    w = FP[FP_R0] * s * (1.0 - 0.45 * zr ** 0.7) + 0.03
-    shape = math.exp(-(r / w) ** 2)
-    if shape < 0.01:
+    rb = r / k
+    w = FP[FP_R0] * s + 0.02
+    shape = math.exp(-(rb / w) ** 2)
+    if shape < 0.008:
         return 0.0, 0.0
     Ts = FP[FP_T] / 24.0
-    ang = FP[FP_SWIRL] * zr ** 1.3 + 0.45 * Ts
+    ang = FP[FP_SWIRL] * zr ** 1.2 + 0.40 * Ts
     ca = math.cos(ang)
     sa = math.sin(ang)
-    xr = x * ca - y * sa
-    yr = x * sa + y * ca
-    sc = 17.0 / max(s, 0.3) ** 0.5
+    xb = (x * ca - y * sa) / k
+    yb = (x * sa + y * ca) / k
+    sc = 16.0 / max(s, 0.3) ** 0.5
     rise = FP[FP_RISE] * Ts
-    # domain warp (low octave) for curling tongues
-    wx = tex3(n3, xr * sc * 0.35 + 5.0, yr * sc * 0.35, (z - rise * 0.6) * sc * 0.18) - 0.5
-    wy = tex3(n3, xr * sc * 0.35, yr * sc * 0.35 + 9.0, (z - rise * 0.6) * sc * 0.18 + 4.0) - 0.5
-    nx = (xr + wx * 0.22) * sc
-    ny = (yr + wy * 0.22) * sc
-    nz = (z - rise) * sc * 0.30
+    wx = tex3(n3, xb * sc * 0.35 + 5.0, yb * sc * 0.35, (z - rise * 0.6) * sc * 0.16) - 0.5
+    wy = tex3(n3, xb * sc * 0.35, yb * sc * 0.35 + 9.0, (z - rise * 0.6) * sc * 0.16 + 4.0) - 0.5
+    nx = (xb + wx * 0.20) * sc
+    ny = (yb + wy * 0.20) * sc
+    nz = (z - rise) * sc * 0.28
     n = 0.0
     amp = 0.5
     tot = 0.0
@@ -76,14 +77,13 @@ def fire_density(x, y, z, FP, n3):
         ny *= 2.11
         nz *= 1.9
     n /= tot
-    th = 0.47 + 0.16 * zr + 0.30 * (1.0 - shape)
-    d = sstep(th - 0.012, th + 0.05, n) * sstep(0.0, 0.04, zr) * (1.0 - zr) ** 0.8
-    # compact hot base inside the basin
-    base = math.exp(-(r / (0.36 * s + 0.02)) ** 2) * math.exp(-zr / 0.08)
+    th = 0.46 + 0.14 * zr + 0.30 * (1.0 - shape)
+    d = sstep(th - 0.012, th + 0.05, n) * sstep(0.0, 0.04, zr) * (1.0 - zr) ** 0.9
+    base = math.exp(-(r / (0.34 * s + 0.02)) ** 2) * math.exp(-zr / 0.07)
     d = max(d, base * 0.9)
     if d <= 0.0:
         return 0.0, 0.0
-    temp = clamp((n - th) * 5.0 + 0.62 * (1.0 - zr) ** 2 + 0.25 * shape - 0.18 + base * 0.6, 0.0, 1.0)
+    temp = clamp((n - th) * 4.0 + 0.72 * (1.0 - zr) ** 2.2 + 0.18 * shape - 0.22 + base * 0.7, 0.0, 1.0)
     return d, temp
 
 
@@ -99,7 +99,7 @@ def fire_volume(Wd, Hd, cam, FP, n3, depth, out, nsteps):
     s = FP[FP_SCALE]
     if s <= 0.0 or FP[FP_I] <= 0.0:
         return
-    Rb = FP[FP_R0] * s * 1.25 + 0.12
+    Rb = (FP[FP_R0] * s * 1.25 + 0.1) * (1.0 + FP[FP_SPREAD] * 0.8)
     z0 = FP[FP_Z0]
     z1 = z0 + FP[FP_H] * s
     I = FP[FP_I]

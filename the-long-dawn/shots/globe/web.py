@@ -52,7 +52,7 @@ class Web:
         self.speed = speed_km
         self.rng = np.random.default_rng(seed)
         self.near_c = ll2v(14.0, 80.0)          # near side of THE WORLD ANSWERS' final view
-        path = os.path.join(ROOT, 'renders', 'globe', 'cache', f'web_{seed}_{int(t0)}_{int(speed_km)}.npz')
+        path = os.path.join(ROOT, 'renders', 'globe', 'cache', f'web2_{seed}_{int(t0)}_{int(speed_km)}.npz')
         if cache and os.path.exists(path):
             d = np.load(path)
             self.P = d['P']
@@ -162,6 +162,9 @@ class Web:
         t_ign[origin] = self.t0
         claimed[origin] = True
         heap = [(self.t0, origin)]
+        gen = np.zeros(n, np.int64)
+        # the first generations are the biggest on screen: they travel slower, with weight
+        slow = {1: 2.4, 2: 1.7, 3: 1.3}
         # the first beacon throws three arcs at once (the choir)
         while heap:
             t, i = heapq.heappop(heap)
@@ -202,10 +205,13 @@ class Web:
                     if len(chosen) >= k:
                         break
                 for m, j in enumerate(chosen):
-                    tl = t + delay + m * rng.uniform(1.0, 3.0)
-                    ta = tl + self._travel(gc_km(P[i], P[j]))
+                    g = gen[i] + 1
+                    sm = slow.get(int(g), 1.0)
+                    tl = t + (delay + m * rng.uniform(1.0, 3.0)) * sm
+                    ta = tl + self._travel(gc_km(P[i], P[j])) * sm
                     claimed[j] = True
                     parent[j] = i
+                    gen[j] = g
                     t_ign[j] = ta
                     arcs.append((i, j, tl, ta, 0))
                     heapq.heappush(heap, (ta, j))
@@ -216,6 +222,7 @@ class Web:
                 ta = tl + self._travel(gc_km(P[i], P[j]), leap=True)
                 claimed[j] = True
                 parent[j] = i
+                gen[j] = gen[i] + 1
                 t_ign[j] = ta
                 arcs.append((i, j, tl, ta, 1))
                 heapq.heappush(heap, (ta, j))
@@ -244,6 +251,7 @@ class Web:
                 ta = tl + self._travel(dkm)
                 claimed[j] = True
                 parent[j] = i2
+                gen[j] = gen[i2] + 1
                 t_ign[j] = ta
                 arcs.append((i2, j, tl, ta, 2))
                 heapq.heappush(heap, (ta, j))
