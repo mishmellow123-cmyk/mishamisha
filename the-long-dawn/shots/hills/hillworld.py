@@ -87,7 +87,7 @@ def crest_ridge(seed=5):
         r = np.abs(X - xr) / w
         bump = np.sqrt(np.clip(1 - r ** 2, 0, 1)) * hh * (1 + 0.15 * np.sin(X * 40 + xr))
         base = np.interp(xr, X, h)
-        h = np.maximum(h, base - 0.05 + bump)
+        h = np.where(r < 1, np.maximum(h, base - 0.05 + bump), h)
     albedo = np.array([0.010, 0.010, 0.015])
     return Ridge(z, x0, x1, h, albedo, fog_mul=0.0, rim=0.0, mist=0.0, tex=0.0, name='crest',
                  fog_el=math.radians(6.0), mist_scale=0.0)
@@ -100,7 +100,7 @@ def crest_height(x):
 FOG = np.array([1.0 / 15000.0, 1.0 / 2200.0, -150.0, 45.0, 0.65, math.radians(2.0), 0.9,
                 30.0, 1.0 / 40.0], np.float64)
 
-RING = dict(lat=57.0, radius=2.6, view_az=VIEW_AZ, shadow_theta=42.0, shadow_width=24.0,
+RING = dict(lat=57.0, radius=2.6, view_az=VIEW_AZ, shadow_theta=25.0, shadow_width=22.0,
             shadow_floor=0.03, nodes=30, node_gain=1.6, color=np.array([1.0, 0.90, 0.78]))
 
 

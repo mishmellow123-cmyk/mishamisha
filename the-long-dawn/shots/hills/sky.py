@@ -169,7 +169,7 @@ class Sky:
             ts = r.get('shadow_theta', 60.0) * DEG
             tw = r.get('shadow_width', 18.0) * DEG
             dth = np.abs((th - ts + math.pi) % (2 * math.pi) - math.pi)
-            lit = np.clip((dth - tw) / (0.6 * tw), 0, 1)
+            lit = np.clip((dth - tw) / (0.3 * tw), 0, 1)
             lit = lit * lit * (3 - 2 * lit)
             lit = r.get('shadow_floor', 0.06) + (1 - r.get('shadow_floor', 0.06)) * lit
             # station nodes
@@ -177,6 +177,9 @@ class Sky:
             for k in range(r.get('nodes', 24)):
                 c = -math.pi + (k + 0.37) * 2 * math.pi / r.get('nodes', 24)
                 node += np.exp(-(((th - c + math.pi) % (2 * math.pi) - math.pi) / 0.0025) ** 2)
+            # brighter toward the sunset side (forward scattering / sun-facing)
+            cs = dirs @ self.sun_dir
+            lit = lit * (0.25 + 0.75 * ((1 + cs) / 2) ** 3)
             self._ring = (dirs, lit, node, th)
         return self._ring
 
