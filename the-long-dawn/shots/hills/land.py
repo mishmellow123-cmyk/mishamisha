@@ -67,13 +67,14 @@ def make_profile(x0, x1, n, base, amp, scale, seed, octaves=6, ridged=0.0, gain=
         tx = tx[patch > 0.05]
         th = rng.uniform(hmin, hmax, len(tx))
         dxs = (x1 - x0) / (n - 1)
+        ground = h.copy()
         for x, hh in zip(tx, th):
             w = hh * wfrac
             i0 = max(0, int((x - w - x0) / dxs))
             i1 = min(n - 1, int((x + w - x0) / dxs) + 1)
             if i1 <= i0:
                 continue
-            base_h = np.interp(x, X, h)
+            base_h = np.interp(x, X, ground)
             xx = X[i0:i1 + 1]
             r = np.abs(xx - x) / w
             if kind == 'conifer':

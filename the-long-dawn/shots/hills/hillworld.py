@@ -17,31 +17,32 @@ VIEW_AZ = 197.0
 CREST_Z = 14.0
 CREST_TOP_X = 3.3          # x of the hilltop (figures stand around here)
 
-# per layer: z, base, amp, feature scale, ridged, trees, albedo gain, fog_el(deg), mist, mist_scale, rim
+# Each layer is specified by the apparent angle of its crest line (degrees, from the
+# camera eye at y=0) so the stack spreads evenly between our crest and the horizon.
 LAYERS = [
     # a dark forested ridge close below us
-    dict(z=480.0, base=-58.0, amp=16.0, scale=210.0, ridged=0.0,
-         trees=(0.40, 8.0, 17.0, 0.30, 'conifer', 160.0), alb=1.0, fog_el=7.0, mist=0.7, ms=1 / 300., rim=0.08),
+    dict(z=480.0, top=-5.4, amp=0.9, scale=230.0, ridged=0.0,
+         trees=(0.45, 7.0, 13.0, 0.30, 'conifer', 160.0), alb=1.0, fog_el=7.0, mist=0.7, ms=1 / 300., rim=0.08),
     # rounded hills with scattered broadleaf trees
-    dict(z=1150.0, base=-86.0, amp=30.0, scale=380.0, ridged=0.0,
+    dict(z=1150.0, top=-4.0, amp=0.8, scale=420.0, ridged=0.0,
          trees=(0.10, 9.0, 15.0, 0.55, 'broad', 260.0), alb=0.85, fog_el=6.0, mist=1.0, ms=1 / 700., rim=0.10),
-    # smooth long hill
-    dict(z=2300.0, base=-96.0, amp=48.0, scale=820.0, ridged=0.0,
+    # smooth long hill with a conifer fringe
+    dict(z=2300.0, top=-2.7, amp=0.8, scale=820.0, ridged=0.0,
          trees=(0.06, 11.0, 18.0, 0.32, 'conifer', 380.0), alb=0.7, fog_el=4.5, mist=1.0, ms=1 / 1100., rim=0.12),
     # ridge with rocky knolls
-    dict(z=4300.0, base=-80.0, amp=95.0, scale=900.0, ridged=0.35,
+    dict(z=4300.0, top=-1.8, amp=0.9, scale=900.0, ridged=0.35,
          trees=None, alb=0.6, fog_el=3.5, mist=0.9, ms=1 / 1800., rim=0.12),
     # rolling
-    dict(z=8200.0, base=-30.0, amp=150.0, scale=2100.0, ridged=0.15,
+    dict(z=8200.0, top=-1.0, amp=0.8, scale=2100.0, ridged=0.15,
          trees=None, alb=0.5, fog_el=2.5, mist=0.8, ms=1 / 3000., rim=0.10),
     # long gentle ridge
-    dict(z=15500.0, base=120.0, amp=260.0, scale=3600.0, ridged=0.3,
+    dict(z=15500.0, top=-0.25, amp=0.7, scale=3600.0, ridged=0.3,
          trees=None, alb=0.4, fog_el=1.8, mist=0.6, ms=1 / 5000., rim=0.08),
     # distant jagged range
-    dict(z=31000.0, base=820.0, amp=780.0, scale=4200.0, ridged=0.9,
+    dict(z=31000.0, top=0.9, amp=1.3, scale=4200.0, ridged=0.9,
          trees=None, alb=0.3, fog_el=1.2, mist=0.3, ms=0.0, rim=0.06),
     # farthest peaks
-    dict(z=56000.0, base=1650.0, amp=1300.0, scale=7000.0, ridged=0.95,
+    dict(z=56000.0, top=1.9, amp=1.5, scale=7000.0, ridged=0.95,
          trees=None, alb=0.25, fog_el=0.9, mist=0.2, ms=0.0, rim=0.05),
 ]
 
@@ -53,7 +54,9 @@ def build_ridges(seed=3):
         x0, x1 = -1.05 * z - 300, 1.05 * z + 300
         n = int(min(20000, max(3000, (x1 - x0) / (z / 3600.0))))
         drop = z * z / (2 * R_EARTH)
-        h = make_profile(x0, x1, n, L['base'] - drop, L['amp'], L['scale'], seed * 31 + i * 7,
+        base = z * math.tan(math.radians(L['top'])) + drop
+        amp = z * math.tan(math.radians(L['amp']))
+        h = make_profile(x0, x1, n, base - drop - 0.35 * amp, amp, L['scale'], seed * 31 + i * 7,
                          octaves=8, ridged=L['ridged'], trees=L['trees'])
         albedo = np.array([0.020, 0.024, 0.046]) * L['alb']
         ridges.append(Ridge(z, x0, x1, h, albedo, fog_mul=1.0, rim=L['rim'], mist=L['mist'],
@@ -66,9 +69,9 @@ def crest_profile(X, seed=5):
     """Hilltop the figures stand on, as seen from the camera (height above camera eye)."""
     X = np.asarray(X, np.float64)
     d = X - CREST_TOP_X
-    top = 0.30
-    left = top - 0.026 * d ** 2 - 0.0022 * np.maximum(0, -d) ** 3
-    right = top - 0.012 * d ** 2
+    top = -0.60
+    left = top - 0.020 * d ** 2 - 0.0016 * np.maximum(0, -d) ** 3
+    right = top - 0.010 * d ** 2
     h = np.where(d < 0, left, right)
     h += 0.045 * fbm1_np(X / 1.1 + 4.0, 5, 2.0, 0.5, seed)
     h += 0.012 * fbm1_np(X / 0.17 + 1.0, 3, 2.0, 0.5, seed + 1)
@@ -97,7 +100,7 @@ def crest_height(x):
     return float(crest_profile(np.array([x]))[0])
 
 
-FOG = np.array([1.0 / 15000.0, 1.0 / 2200.0, -150.0, 45.0, 0.65, math.radians(2.0), 0.9,
+FOG = np.array([1.0 / 15000.0, 1.0 / 2200.0, -190.0, 50.0, 0.65, math.radians(2.0), 0.9,
                 30.0, 1.0 / 40.0], np.float64)
 
 RING = dict(lat=57.0, radius=2.6, view_az=VIEW_AZ, shadow_theta=25.0, shadow_width=22.0,

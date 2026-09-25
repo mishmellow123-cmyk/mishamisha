@@ -28,14 +28,14 @@ NOTO_CJK = '/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc'
 
 # ------------------------------------------------------------------ layout ---
 TEX_N = 4096
-TEX_R = 2.56                      # texture covers [-TEX_R, TEX_R]^2 metres
+TEX_R = 2.60                      # texture covers [-TEX_R, TEX_R]^2 metres
 TEXEL = 2 * TEX_R / TEX_N         # ~1.25 mm
 
 OATH_CAP = 0.150                  # cap height (m)
-OATH_R_IN = 1.36                  # baseline radius of 2nd line (inner)
+OATH_R_IN = 1.40                  # baseline radius of 2nd line (inner)
 OATH_LEAD = 1.50 * OATH_CAP       # baseline to baseline
 OATH_R_OUT = OATH_R_IN + OATH_LEAD
-OATH_TRACK = 0.05                 # extra tracking, in cap heights per char
+OATH_TRACK = 0.035                # extra tracking, in cap heights per char
 OATHS = [('NO SINGLE HAND', 'SHALL HOLD IT'),
          ('NO FASTER THAN', 'WE CAN SEE'),
          ('NO FORGE', 'IN THE DARK'),
@@ -46,10 +46,10 @@ OATH_THETA = [math.pi / 2 - k * math.pi / 2 for k in range(4)]
 BAND_IN = OATH_R_IN - 0.085       # carved border rings of the oath band
 BAND_OUT = OATH_R_OUT + OATH_CAP + 0.085
 
-TOG_R = (1.99, 2.215)             # baselines of the two "together" rows (inner, outer)
+TOG_R = (2.03, 2.255)             # baselines of the two "together" rows (inner, outer)
 TOG_XH = 0.080                    # target Latin x-height (m); other scripts matched by eye
-TOG_BORDER = (1.905, 2.405)
-TABLE_R = 2.52
+TOG_BORDER = (1.945, 2.445)
+TABLE_R = 2.56
 
 HEARTH_R = 0.50
 RAY_R = (0.70, 1.16)              # 12 carved sun-rays around the hearth
@@ -339,7 +339,7 @@ def build(verbose=True):
         dth = (theta - th + np.pi) % (2 * np.pi) - np.pi
         dist_t = np.abs(dth) * rho
         inside = 0.006 - dist_t
-        endcap = np.minimum(rho - 2.425, 2.49 - rho)
+        endcap = np.minimum(rho - 2.47, 2.53 - rho)
         sd_orn = np.maximum(sd_orn, np.minimum(inside, endcap) / t)
 
     def depth_from(sd):
