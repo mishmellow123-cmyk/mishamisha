@@ -45,6 +45,8 @@ class Sky:
         self.moon_aureole = kw.get('moon_aureole', 0.02)
         self.earthshine = kw.get('earthshine', 0.02)
         self.city_gain = kw.get('city_gain', 1.0)
+        self.moon_phase = kw.get('moon_phase', 140.0)   # phase angle (deg): 180 = new, 0 = full
+        self.moon_pa = kw.get('moon_pa', -35.0)         # screen angle of bright limb (deg, 0=right, 90=up)
         # milky way
         self.mw = kw.get('mw', 0.0)
         self.mw_pole = kw.get('mw_pole', dir_from_az_el(-60.0, 30.0))
@@ -116,21 +118,22 @@ class Sky:
             rng = np.random.default_rng(77 + self.seed)
             pts = []
             # clusters along "coasts" of maria + scattered settlements
-            centers = rng.normal(size=(11, 3))
-            centers[:, 2] = -np.abs(centers[:, 2]) - 0.6   # near side (moon-fixed -z faces Earth)
-            centers /= np.linalg.norm(centers, axis=1, keepdims=True)
-            for c in centers:
-                k = rng.integers(3, 9)
-                t = rng.normal(size=3)
-                t -= t.dot(c) * c
-                t /= np.linalg.norm(t)
+            # two bright clusters + a few strings of settlements + scattered pinpricks,
+            # all on the part of the disc that stays in earthshine (away from the lit limb)
+            centers = [(-0.35, 0.30, 11, 0.06), (-0.05, -0.30, 8, 0.05), (-0.55, -0.15, 5, 0.04),
+                       (0.10, 0.45, 5, 0.035), (-0.30, -0.55, 4, 0.03)]
+            for cx_, cy_, k, spread in centers:
                 for j in range(k):
-                    p = c + t * (j - k / 2) * 0.035 + rng.normal(0, 0.018, 3)
-                    pts.append(p / np.linalg.norm(p))
-            for j in range(26):
-                p = rng.normal(size=3)
-                p[2] = -abs(p[2]) - 0.3
-                pts.append(p / np.linalg.norm(p))
+                    x = cx_ + rng.normal(0, spread)
+                    y = cy_ + rng.normal(0, spread * 0.8)
+                    r2 = x * x + y * y
+                    if r2 < 0.92:
+                        pts.append([x, y, -math.sqrt(1 - r2)])
+            for j in range(18):
+                x, y = rng.uniform(-0.85, 0.35), rng.uniform(-0.8, 0.8)
+                r2 = x * x + y * y
+                if r2 < 0.9:
+                    pts.append([x, y, -math.sqrt(1 - r2)])
             pts = np.array(pts)
             b = 0.35 + rng.random(len(pts)) ** 2 * 1.3
             self._cities = (pts, b)
@@ -334,17 +337,16 @@ def render_moon(out, cov, cam, mdir, rad, sdir, gain, earthshine, e1, e2, seed):
             ny = a1 * e1[1] + a2 * e2[1] - z * mdir[1]
             nz = a1 * e1[2] + a2 * e2[2] - z * mdir[2]
             mu = nx * sdir[0] + ny * sdir[1] + nz * sdir[2]
-            mu0 = z
-            # Lommel-Seeliger-ish (flat looking disc), soft terminator
+            # lambert with a slightly softened terminator
             lit = 0.0
-            if mu > -0.02:
-                mm = max(mu, 0.0)
-                lit = mm / (mm + mu0 + 1e-3) * 2.0 * min(1.0, (mu + 0.02) / 0.06)
+            if mu > -0.03:
+                q = min(1.0, (mu + 0.03) / 0.09)
+                lit = (max(mu, 0.0) ** 0.75) * q * q * (3 - 2 * q) + 0.02 * q
             # albedo: maria
             n = fbm3(a1 * 1.7 + seed, a2 * 1.7, z * 1.7, 5, 2.0, 0.55)
             n2 = fbm3(a1 * 6.0 - seed, a2 * 6.0, z * 6.0 + 2.0, 3, 2.0, 0.5)
-            alb = 0.55 + 0.45 * math.tanh(3.0 * (n + 0.05)) * 0.5 + 0.12 * n2
-            es = earthshine * (0.35 + 0.65 * z) * alb
+            alb = 0.62 + 0.30 * math.tanh(3.0 * (n + 0.05)) + 0.10 * n2
+            es = earthshine * (0.55 + 0.45 * z) * alb
             v = (lit * alb * gain + es) * c
             out[j, i, 0] += v * 1.0
             out[j, i, 1] += v * 0.97
@@ -364,14 +366,18 @@ def draw_moon(img, cam, sky, t=0.0, escale=1.0, star_mask=None):
     e1 /= np.linalg.norm(e1)
     e2 = np.cross(m, e1)
     rad = sky.moon_radius_deg * DEG
-    render_moon(img, cov, cam.params(), m.astype(np.float64), rad, sky.sun_dir.astype(np.float64),
+    al = sky.moon_phase * DEG
+    pa = sky.moon_pa * DEG
+    sm = math.cos(al) * (-m) + math.sin(al) * (math.cos(pa) * e1 + math.sin(pa) * e2)
+    sm /= np.linalg.norm(sm)
+    render_moon(img, cov, cam.params(), m.astype(np.float64), rad, sm.astype(np.float64),
                 float(sky.moon_gain), float(sky.earthshine), e1, e2, float(sky.seed) * 3.3)
     # city lights on the night side
     pts, b = sky.cities()
     # moon-fixed frame: x=e1, y=e2, z=m (so -z faces the observer)
     P = pts[:, 0:1] * e1 + pts[:, 1:2] * e2 + pts[:, 2:3] * m
     vis_side = -(P @ m)              # >0 on the visible hemisphere
-    mu = P @ sky.sun_dir
+    mu = P @ sm
     camp = cam.params()
     sx, sy, _ = None, None, None
     for k in range(len(pts)):

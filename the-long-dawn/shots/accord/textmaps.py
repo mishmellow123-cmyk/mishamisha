@@ -71,18 +71,18 @@ TOGETHER = [
     ('разом', _nf('NotoSerif-SemiBold.ttf'), 1.0, None, 'uk'),
     ('razem', _nf('NotoSerif-SemiBold.ttf'), 1.0, None, 'pl'),
     ('μαζί', _nf('NotoSerif-SemiBold.ttf'), 1.0, None, 'el'),
-    ('一起', (NOTO_CJK, 2), 0.80, None, 'zh'),
-    ('共に', (NOTO_CJK, 0), 0.80, None, 'ja'),
-    ('함께', (NOTO_CJK, 1), 0.80, None, 'ko'),
-    ('معًا', _nf('NotoNaskhArabic-SemiBold.ttf'), 1.05, 'rtl', 'ar'),
-    ('ביחד', _nf('NotoSerifHebrew-SemiBold.ttf'), 1.0, 'rtl', 'he'),
-    ('با هم', _nf('NotoNaskhArabic-SemiBold.ttf'), 1.05, 'rtl', 'fa'),
+    ('一起', (NOTO_CJK, 2), 0.90, None, 'zh'),
+    ('共に', (NOTO_CJK, 0), 0.90, None, 'ja'),
+    ('함께', (NOTO_CJK, 1), 0.90, None, 'ko'),
+    ('معًا', _nf('NotoNaskhArabic-SemiBold.ttf'), 1.12, 'rtl', 'ar'),
+    ('ביחד', _nf('NotoSerifHebrew-SemiBold.ttf'), 0.88, 'rtl', 'he'),
+    ('با هم', _nf('NotoNaskhArabic-SemiBold.ttf'), 1.12, 'rtl', 'fa'),
     ('एक साथ', _nf('NotoSerifDevanagari-SemiBold.ttf'), 0.95, None, 'hi'),
     ('ایک ساتھ', _nf('NotoNastaliqUrdu-Bold.ttf'), 0.82, 'rtl', 'ur'),
     ('একসাথে', _nf('NotoSerifBengali-SemiBold.ttf'), 0.95, None, 'bn'),
     ('ਇਕੱਠੇ', _nf('NotoSerifGurmukhi-SemiBold.ttf'), 0.95, None, 'pa'),
     ('ஒன்றாக', _nf('NotoSerifTamil-SemiBold.ttf'), 0.85, None, 'ta'),
-    ('ด้วยกัน', _nf('NotoSerifThai-SemiBold.ttf'), 1.0, None, 'th'),
+    ('ด้วยกัน', _nf('NotoSerifThai-SemiBold.ttf'), 0.88, None, 'th'),
     ('cùng nhau', _nf('NotoSerif-SemiBold.ttf'), 1.0, None, 'vi'),
     ('bersama', _nf('NotoSerif-SemiBold.ttf'), 1.0, None, 'id'),
     ('pamoja', _nf('NotoSerif-SemiBold.ttf'), 1.0, None, 'sw'),
@@ -208,8 +208,13 @@ def place_on_arc(sd_strip, base_row, u_center, r_base, theta_c, rmin, rmax, out_
     ys, xs = np.nonzero(sel)
     u = (u_center + dth[ys, xs] * r_base / TEXEL).astype(np.float32)
     v = (base_row - (sub_rho[ys, xs] - r_base) / TEXEL).astype(np.float32)
-    vals = cv2.remap(sd_strip, u.reshape(1, -1), v.reshape(1, -1), cv2.INTER_LINEAR,
-                     borderMode=cv2.BORDER_CONSTANT, borderValue=-1e3)[0]
+    n = u.size
+    cols = 4096
+    npad = (-n) % cols
+    up = np.concatenate([u, np.zeros(npad, np.float32)]).reshape(-1, cols)
+    vp = np.concatenate([v, np.zeros(npad, np.float32)]).reshape(-1, cols)
+    vals = cv2.remap(sd_strip, up, vp, cv2.INTER_LINEAR,
+                     borderMode=cv2.BORDER_CONSTANT, borderValue=-1e3).reshape(-1)[:n]
     tgt = out_sd[ri:rf, ri:rf]
     cur = tgt[ys, xs]
     tgt[ys, xs] = np.maximum(cur, vals)

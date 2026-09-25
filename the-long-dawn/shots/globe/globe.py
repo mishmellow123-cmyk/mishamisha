@@ -400,6 +400,16 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
         prM = phase_r(nuM)
         pmM = phase_m(nuM, g) * p[6]
         moon_on = E_moon[0] + E_moon[1] + E_moon[2] > 0.0
+        # rim gain: full for rays that miss the ground, ramping in for grazing ground rays
+        wr = 1.0
+        if hit:
+            hx_ = ox + dx * te0
+            hy_ = oy + dy * te0
+            hz_ = oz + dz * te0
+            cv_ = -(hx_ * dx + hy_ * dy + hz_ * dz)
+            wr = min(1.0, max(0.0, 1.0 - cv_ / 0.4))
+            wr = wr * wr * wr
+        rim = 1.0 + (p[20] - 1.0) * wr
         glow_on = p[17] + p[18] + p[19] + p[21] > 0.0
         for half in range(2):
             if half == 0:
@@ -449,8 +459,8 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
                 if moon_on:
                     muM = (x * M[0] + y * M[1] + z * M[2]) / r
                     Q0, Q1, Q2 = trans_lookup(lut, p, r, muM)
-                    sr2 = rr * prM * p[20]
-                    sm2 = rm * pmM * p[20]
+                    sr2 = rr * prM * rim
+                    sm2 = rm * pmM * rim
                     L0 += tv0 * Q0 * (p[3] * sr2 + sm2) * ds * E_moon[0]
                     L1 += tv1 * Q1 * (p[4] * sr2 + sm2) * ds * E_moon[1]
                     L2 += tv2 * Q2 * (p[5] * sr2 + sm2) * ds * E_moon[2]

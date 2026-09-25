@@ -10,7 +10,8 @@ from sky import sky_rad
 
 
 class Ridge:
-    def __init__(self, z, x0, x1, heights, albedo, fog_mul=1.0, rim=0.0, mist=1.0, tex=0.0, name=''):
+    def __init__(self, z, x0, x1, heights, albedo, fog_mul=1.0, rim=0.0, mist=1.0, tex=0.0, name='',
+                 fog_el=0.035, mist_scale=0.0, seed=0.0):
         self.z = float(z)
         self.x0 = float(x0)
         self.x1 = float(x1)
@@ -22,6 +23,9 @@ class Ridge:
         self.mist = mist
         self.tex = tex
         self.name = name
+        self.fog_el = fog_el
+        self.mist_scale = mist_scale
+        self.seed = seed
 
     def height(self, X):
         return np.interp(X, np.linspace(self.x0, self.x1, len(self.h)), self.h)
@@ -97,6 +101,9 @@ def pack_ridges(ridges):
         meta[i, 9] = r.rim
         meta[i, 10] = r.mist
         meta[i, 11] = r.tex
+        meta[i, 12] = r.fog_el
+        meta[i, 13] = r.mist_scale
+        meta[i, 14] = r.seed
         hs.append(r.h)
         off += len(r.h)
     return rs, meta, np.concatenate(hs)
@@ -121,13 +128,19 @@ def render_ridges(out_rgb, out_a, depth, cam, meta, hs, sp, fog, lights, light_o
             accb = 0.0
             A = 0.0
             dep = 1e9
-            # fog colour: sky near horizon along this azimuth
             hx = dx
             hz = dz
             hn = math.sqrt(hx * hx + hz * hz) + 1e-9
-            el_f = fog[5]
-            fr, fg, fb = sky_rad(hx / hn * math.cos(el_f), math.sin(el_f), hz / hn * math.cos(el_f), sp)
+            last_el = -1.0
+            fr = 0.0
+            fg = 0.0
+            fb = 0.0
             for li in range(nl - 1, -1, -1):      # nearest first
+                # fog colour: sky near the horizon along this azimuth (per-layer elevation)
+                el_f = meta[li, 12]
+                if el_f != last_el:
+                    fr, fg, fb = sky_rad(hx / hn * math.cos(el_f), math.sin(el_f), hz / hn * math.cos(el_f), sp)
+                    last_el = el_f
                 Z = meta[li, 0]
                 if dz <= 1e-6:
                     continue
@@ -182,6 +195,9 @@ def render_ridges(out_rgb, out_a, depth, cam, meta, hs, sp, fog, lights, light_o
                         cb += lights[q, 6] * w
                 # aerial perspective + valley mist
                 me = math.exp(-max(0.0, Y - fog[2]) / fog[3])
+                if meta[li, 13] > 0:
+                    mn = fbm2(X * meta[li, 13] + meta[li, 14], 0.37 * meta[li, 14] + tt * 0.0001 + t * 0.002, 3, 2.0, 0.5)
+                    me *= max(0.0, 0.55 + 1.5 * mn)
                 sig = fog[0] + fog[1] * me
                 fa = 1.0 - math.exp(-tt * sig * meta[li, 8])
                 mistb = 1.0 + fog[4] * meta[li, 10] * me
