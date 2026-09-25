@@ -323,7 +323,7 @@ def events(rng):
     for i, f in enumerate([1236, 1262, 1290]):
         add(f"flint_strike_{i + 1}", f, flint(rng, 1.0 + 0.15 * i), -15 - (i == 0) * 1.5,
             pan=-0.12)
-    add("kindling_catch", 1318, _kindle(rng), -19, lead=6)
+    add("kindling_catch", 1318, _kindle(rng), -19, lead=12)
     add("beacon_roar", 1360, roar(rng, s(84), lead=0.5, size=1.5, sustain=0.55, bright=1.0), -16, lead=12)
     # montage ignitions (varied) + location ambiences
     sizes = [1.3, 1.0, 0.9, 1.1, 1.0, 1.2]
@@ -368,14 +368,15 @@ def events(rng):
 
 
 def _kindle(rng):
-    lead = int(6 * FR)
+    lead = int(12 * FR)
     n = lead + int(2.2 * SR)
     y = np.zeros((n, 2), np.float32)
     cr = crackle(rng, n / SR, rate=35, level=0.8, breath=0.0)
     ramp = np.clip((np.arange(n) - lead * 0.5) / (lead * 0.5), 0, 1) ** 2
     y += cr * ramp[:, None]
     w = whoosh(rng, 0.9, f0=120, f1=900, peak=0.35, q=0.6)
-    y[lead - int(0.3 * SR): lead - int(0.3 * SR) + len(w)] += w * 0.9
+    w0 = lead - int(0.315 * SR)
+    y[w0:w0 + len(w)] += w[: n - w0] * 0.9
     b = crackle(rng, 1.8, rate=14, level=0.2, breath=0.6)
     y[lead:lead + len(b)] += b
     return fade(y, 0.05, 0.3)

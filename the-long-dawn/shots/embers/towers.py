@@ -349,8 +349,61 @@ def pod_tower(seed=6):
     return b.done()
 
 
-BUILDERS = [needle_spire, ziggurat, lattice_mast, ringed_cylinder, twisted, pagoda, pod_tower]
-NAMES = ['needle spire', 'ziggurat', 'lattice mast', 'ringed cylinder', 'twisted prism', 'pagoda', 'pod tower']
+def blade(seed=7):
+    """A tall curved sail/blade: lens-shaped section that narrows and leans to a sharp tip."""
+    b = B(seed)
+    top = HMAX
+    n = 60
+
+    def sect(y):
+        u = np.clip(y / top, 0, 1)
+        L = 3.4 * (1 - u ** 1.6) + 0.05          # half-length of the lens section
+        th = 0.55 * (1 - u) + 0.04                 # half-thickness
+        lean = 2.2 * u ** 2.2                      # tip leans
+        return L, th, lean
+    ys = np.linspace(0, top, 700)
+    for side in (-1, 1):
+        # leading / trailing edges (dense lines)
+        L, th, lean = sect(ys)
+        x = side * L + lean
+        pts = np.stack([x, ys, np.zeros_like(ys)], 1)
+        k = int(top * 45 * DENS_L)
+        idx = b.r.integers(0, len(pts) - 1, k)
+        uu = b.r.random(k)[:, None]
+        b.add(pts[idx] * (1 - uu) + pts[idx + 1] * uu + b.r.normal(0, 0.015, (k, 3)), 1)
+    # faces (both sides of the lens)
+    m = int(top * 7 * 2 * 2.4 * DENS_S)
+    y = b.r.uniform(0, top, m)
+    L, th, lean = sect(y)
+    s = b.r.uniform(-1, 1, m)
+    side = np.where(b.r.random(m) < 0.5, -1.0, 1.0)
+    x = s * L + lean
+    z = side * th * np.sqrt(np.maximum(1 - s * s, 0))
+    nrm = np.stack([np.zeros(m), np.zeros(m), side], 1)
+    b.add(np.stack([x, y, z], 1), 0, nrm)
+    # floor lines across the faces
+    for yy in np.arange(1.0, top - 2.0, 1.6):
+        L, th, lean = sect(np.array([yy]))
+        s = b.r.uniform(-1, 1, 70)
+        side = np.where(b.r.random(70) < 0.5, -1.0, 1.0)
+        x = s * L[0] + lean[0]
+        z = side * th[0] * np.sqrt(np.maximum(1 - s * s, 0))
+        b.add(np.stack([x, np.full(70, yy), z], 1), 0, np.stack([np.zeros(70), np.zeros(70), side], 1))
+    # windows
+    for yy in np.arange(1.2, top - 4.0, 0.8):
+        L, th, lean = sect(np.array([yy]))
+        for k in range(8):
+            if b.r.random() < 0.5:
+                s = -0.85 + 1.7 * (k + 0.5) / 8
+                sd = 1.0 if b.r.random() < 0.5 else -1.0
+                b.add(np.array([[s * L[0] + lean[0], yy, sd * (th[0] * np.sqrt(1 - s * s) + 0.03)]]), 2,
+                      np.array([[0, 0, sd]]))
+    return b.done()
+
+
+BUILDERS = [needle_spire, ziggurat, lattice_mast, ringed_cylinder, twisted, pagoda, pod_tower, blade]
+NAMES = ['needle spire', 'ziggurat', 'lattice mast', 'ringed cylinder', 'twisted prism', 'pagoda', 'pod tower',
+         'blade']
 
 
 def build_all():

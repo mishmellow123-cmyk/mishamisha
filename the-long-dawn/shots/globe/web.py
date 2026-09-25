@@ -325,7 +325,7 @@ class Web:
         return np.maximum(s, lo), I * k
 
     def draw(self, img, cam, t, gain=1.0, trail=1.0, head=1.0, node=1.0, scale=1.0,
-             calm=None, sparks=True, t_anim=None, glow=1.0):
+             calm=None, sparks=True, t_anim=None, glow=1.0, sun=None, day_keep=0.2):
         """Additively draw the web at state time t into img (HDR, linear). t_anim drives the
         flicker/flow (defaults to t). calm: optional function(py array) -> multiplier."""
         pal = palette()
@@ -385,6 +385,8 @@ class Web:
             w = np.clip(0.5 * near, 0.42, 1.0) * (0.8 + 0.45 * lf) * (1.3 if leap else 1.0)
             if calm is not None:
                 I = I * calm(uv[:, 1])
+            if sun is not None:
+                I = I * self.dayfade(X / rX[:, None], sun, day_keep)
             cool = 0.0 if age < 0 else min(1.0, age / 70.0)
             cools.append(np.full(len(u), cool))
             xs.append(uv[:, 0])
@@ -422,7 +424,7 @@ class Web:
                 self._spot(img, uv, pk * 0.1 * glow, 3.0, pal['gold'], scale)
         if spark_segs:
             self._sparks(img, cam, t, spark_segs, gain, calm, scale)
-        self._nodes_draw(img, cam, t, gain * node, calm, ta_, scale, glow)
+        self._nodes_draw(img, cam, t, gain * node, calm, ta_, scale, glow, sun, day_keep)
 
     def _spot(self, img, uv, peak, sigma_full, col, scale):
         """Gaussian spots with given PEAK radiance and full-res sigma."""
@@ -486,7 +488,7 @@ class Web:
         st = np.arange(0, len(xs) + 1, 2, dtype=np.int64)
         G.splat_polyline(img, xs, ys, np.outer(I, col), sg, st, np.ones(len(xs), np.uint8))
 
-    def _nodes_draw(self, img, cam, t, gain, calm, ta_, scale, glow=1.0):
+    def _nodes_draw(self, img, cam, t, gain, calm, ta_, scale, glow=1.0, sun=None, day_keep=0.2):
         pal = palette()
         lit = np.where(self.t_ign <= t)[0]
         if len(lit) == 0:
@@ -514,6 +516,8 @@ class Web:
         wl = np.clip((cosv + 0.02) / 0.32, 0, 1)
         dimf = (0.6 + 0.4 * np.clip(near, 0, 1)) * (0.3 + 0.7 * wl * wl * (3 - 2 * wl))
         mul = np.ones(len(lit)) if calm is None else calm(uv[:, 1])
+        if sun is not None:
+            mul = mul * self.dayfade(self.P[lit], sun, day_keep)
         core = (22.0 * base * fl + 60.0 * flash) * gain * dimf * mul
         halo = (1.8 * base * fl + 6.0 * flash2) * gain * dimf * mul * glow
         fire = pal['amber'] * 0.6 + pal['deep'] * 0.4
@@ -548,8 +552,91 @@ class Web:
         st = np.arange(0, 3 * n + 1, 3, dtype=np.int64)
         G.splat_polyline(img, xs, ys, I[:, None] * col[None, :], sg, st, np.ones(3 * n, np.uint8))
 
+    @staticmethod
+    def dayfade(Pn, sun, keep):
+        """Fire reads less in daylight: 1 at night, `keep` in full sun."""
+        el = np.arcsin(np.clip(Pn @ np.asarray(sun), -1, 1))
+        d = np.clip((el + 0.02) / 0.14, 0, 1)
+        d = d * d * (3 - 2 * d)
+        return 1.0 - (1.0 - keep) * d
+
     def summary(self):
         ti = self.t_ign
         fin = np.isfinite(ti)
         return dict(nodes=len(ti), lit=int(fin.sum()), arcs=len(self.arcs),
                     t_pct=np.percentile(ti[fin], [10, 25, 50, 75, 90, 100]).round(1).tolist())
+
+
+class Hearths:
+    """DAWN: small warm lights blooming into places that were dark (every hearth answered).
+    Sampled on land where the night lights are faint, spreading out from the web's beacons."""
+
+    def __init__(self, web, t_start=2272.0, t_end=2465.0, n=26000, seed=21):
+        import cv2
+        rng = np.random.default_rng(seed)
+        cache = os.path.join(ROOT, 'renders', 'globe', 'cache')
+        path = os.path.join(cache, f'hearths_{seed}_{n}.npz')
+        if os.path.exists(path):
+            d = np.load(path)
+            self.P, self.tb, self.e = d['P'], d['tb'], d['e']
+            return
+        mask = cv2.imread(os.path.join(cache, 'land_mask_8k.png'), cv2.IMREAD_GRAYSCALE)
+        mask = cv2.resize(mask, (2048, 1024), interpolation=cv2.INTER_AREA).astype(np.float64) / 255.0
+        lw = np.load(os.path.join(cache, 'lights_w4k.npy')).astype(np.float32)
+        lw = cv2.resize(cv2.GaussianBlur(lw, (0, 0), 3), (2048, 1024), interpolation=cv2.INTER_AREA)
+        alb = cv2.imread(os.path.join(cache, 'albedo_8k.png'))
+        alb = cv2.resize(alb, (2048, 1024), interpolation=cv2.INTER_AREA).astype(np.float64) / 255.0
+        bright = alb.mean(2)
+        green = alb[..., 1] - 0.5 * (alb[..., 0] + alb[..., 2])
+        dark = np.exp(-lw / 0.02)
+        habitable = np.clip(1.0 - (bright - 0.45) / 0.2, 0, 1)            # not ice, not bright sand
+        habitable *= 0.35 + 0.65 * np.clip(0.5 + green * 8.0, 0, 1)        # greener land, more hearths
+        lat_c = 90.0 - (np.arange(1024) + 0.5) / 1024 * 180.0
+        w = (mask > 0.9) * dark * habitable * np.cos(np.radians(lat_c))[:, None]
+        w[np.abs(lat_c) > 66] = 0
+        p = w.ravel() / w.sum()
+        idx = rng.choice(len(p), size=n, p=p)
+        yy, xx = np.divmod(idx, 2048)
+        la = 90.0 - (yy + rng.random(n)) / 1024 * 180.0
+        lo = (xx + rng.random(n)) / 2048 * 360.0 - 180.0
+        P = ll2v(la, lo)
+        # spread outward from the nearest beacon, modulated by a smooth field (waves of light)
+        tree = cKDTree(web.P)
+        dist, _ = tree.query(P)
+        dkm = dist * R_KM
+        field = np.sin(P @ np.array([7.0, 3.0, 5.0])) * 0.5 + np.sin(P @ np.array([-4.0, 9.0, 2.0])) * 0.5
+        s = np.clip(0.55 * np.clip(dkm / 330.0, 0, 1) + 0.25 * (field * 0.5 + 0.5) + 0.2 * rng.random(n), 0, 1)
+        self.tb = t_start + (t_end - t_start) * s
+        self.e = rng.lognormal(0, 0.5, n)
+        self.P = P
+        np.savez(path, P=self.P, tb=self.tb, e=self.e)
+
+    def draw(self, img, cam, t, sun=None, gain=1.0, calm=None, scale=1.0):
+        pal = palette()
+        m = self.tb <= t
+        if not m.any():
+            return
+        P = self.P[m] * (1.0 + 0.5 / R_KM)
+        age = t - self.tb[m]
+        e = self.e[m]
+        uv, z = cam.project(P)
+        vis = G.visible(cam.pos, P) & (z > 1e-3)
+        V = cam.pos[None, :] - P
+        cosv = np.sum(P * V, 1) / (np.linalg.norm(P, axis=1) * np.linalg.norm(V, axis=1))
+        vis &= cosv > 0.03
+        if not vis.any():
+            return
+        uv, P, age, e, cosv = uv[vis], P[vis], age[vis], e[vis], cosv[vis]
+        grow = np.clip(age / 6.0, 0, 1)
+        flash = np.exp(-age / 5.0)
+        fl = 1.0 + 0.2 * np.sin(t * 0.9 + e * 17.0)
+        pk = (2.4 * grow * fl + 7.0 * flash * grow) * e * gain * (0.4 + 0.6 * np.clip(cosv / 0.3, 0, 1))
+        if sun is not None:
+            pk *= Web.dayfade(P / np.linalg.norm(P, axis=1)[:, None], sun, 0.05)
+        if calm is not None:
+            pk *= calm(uv[:, 1])
+        s = 0.7 * scale
+        k = 1.0 if s >= 0.5 else (s / 0.5) ** 2
+        s = max(s, 0.5)
+        E = pk * k * 2 * np.pi * s * s
+        G.splat_points(img, uv[:, 0].copy(), uv[:, 1].copy(), np.outer(E, pal['hearth']), np.full(len(uv), s))

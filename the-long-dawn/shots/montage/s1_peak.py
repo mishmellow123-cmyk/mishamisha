@@ -21,15 +21,25 @@ START, END, IGN = 1440, 1519, 1480
 FIRST = 1447                       # the far light appears
 R_EARTH = 6.371e6
 
-# first-beacon massif (world metres); summit height solved at import
-XB, ZB = -5600.0, 29800.0
+# first-beacon massif: placed so its summit light lands at screen (LIGHT_SX, ~LIGHT_SY) of the
+# opening camera (full-res pixels), BEACON_D metres away
+LIGHT_SX, LIGHT_SY, BEACON_D = 430.0, 297.0, 32000.0
+HFOV = 36.0
+F_FULL = 960.0 / math.tan(math.radians(HFOV / 2))
+HORIZON_Y0 = 300.0
+CAM0 = np.array([0.35, 2.50, 0.0])
+_bx = (LIGHT_SX - 960.0) / F_FULL
+XB = CAM0[0] + BEACON_D * _bx / math.sqrt(1 + _bx * _bx)
+ZB = CAM0[2] + BEACON_D / math.sqrt(1 + _bx * _bx)
+HB = CAM0[1] + BEACON_D * (HORIZON_Y0 - LIGHT_SY) / F_FULL + BEACON_D ** 2 / (2 * 6.371e6)
 
-FEET = np.array([-0.95, 0.0, 12.0])
-CAIRN = np.array([0.42, 0.0, 12.55])
+FEET = np.array([-1.1, 0.0, 16.0])
+CAIRN = np.array([0.35, 0.0, 16.6])
 WIND = 1.0                         # wind blows toward +x
 
-MOON_DIR = np.array([-0.52, 0.40, 0.75])
+MOON_DIR = np.array([-0.80, 0.36, 0.48])
 MOON_DIR = MOON_DIR / np.linalg.norm(MOON_DIR)
+CLOUD_Y = -650.0
 
 
 @njit(inline='always', fastmath=True)
@@ -40,39 +50,32 @@ def _lod(scale, fp, lo, hi):
 
 @njit(fastmath=True)
 def h_near(x, z, fp):
-    lip = 16.8 + 1.4 * gnoise2(x * 0.07, 0.37, 11)
+    """Summit: a rocky, snow-dusted shoulder ending in a lip ~2.5 m beyond the figure."""
+    lip = 18.7 + 1.3 * gnoise2(x * 0.09, 0.37, 11) + 0.02 * x * x * 0.1
     dz = z - lip
     h = 0.0
     if dz > 0.0:
-        h -= 0.55 * dz * dz + 1.2 * dz
+        h -= 0.6 * dz * dz + 2.2 * dz
     ax = abs(x + 0.4)
-    if ax > 8.0:
-        h -= 0.05 * (ax - 8.0) ** 2
-    # gentle rise behind the camera so we stand on the summit too
-    if z < 4.0:
-        h += 0.02 * (4.0 - z) ** 2 * 0.0
-    # rocks break through more away from the standing area
-    ddx = x + 0.3
-    ddz = z - 12.3
-    dstand = math.sqrt(ddx * ddx * 0.6 + ddz * ddz)
-    amp = 0.25 + 0.95 * smoothstep(2.2, 7.0, dstand)
-    o = _lod(6.0, fp, 1.0, 7.0)
-    r = ridged2(x * 0.23 + 3.1, z * 0.23 - 1.7, o, 5)
-    h += (r - 0.42) * amp * 1.4
+    if ax > 6.0:
+        h -= 0.06 * (ax - 6.0) ** 2
+    ddx = x + 0.4
+    ddz = z - 16.3
+    dstand = math.sqrt(ddx * ddx * 0.45 + ddz * ddz)
+    amp = 0.10 + 0.8 * smoothstep(2.0, 6.0, dstand)
+    o = _lod(5.0, fp, 1.0, 7.0)
+    r = ridged2(x * 0.25 + 3.1, z * 0.25 - 1.7, o, 5)
+    h += (r - 0.45) * amp * 1.3
     o2 = _lod(1.2, fp, 1.0, 6.0)
-    h += 0.07 * fbm2(x * 0.9, z * 0.9, o2, 9)
-    # flatten the standing area (figure + cairn)
-    flat = smoothstep(2.6, 1.2, dstand)
-    h = h * (1.0 - flat) + (0.02 * fbm2(x * 1.3, z * 1.3, o2, 9)) * flat
-    # boulders
-    for bx, bz, br, bh in ((-5.2, 14.2, 1.5, 1.25), (5.4, 14.8, 1.1, 0.8), (-2.8, 17.0, 0.9, 0.55),
-                           (7.8, 11.5, 1.6, 1.1), (-8.5, 12.0, 2.0, 1.5)):
+    h += 0.05 * fbm2(x * 0.6, z * 1.0, o2, 9)
+    h += 0.2 * math.exp(-((z - lip + 1.0) / 1.3) ** 2)
+    for bx, bz, br, bh in ((-4.6, 15.2, 1.5, 1.0), (5.0, 16.4, 1.3, 0.9), (-2.9, 18.4, 0.8, 0.45),
+                           (3.0, 18.9, 0.7, 0.35), (-7.0, 17.0, 2.0, 1.4)):
         qx = x - bx
         qz = z - bz
         q = (qx * qx + qz * qz) / (br * br)
         if q < 1.0:
-            hb = bh * math.sqrt(1.0 - q) * (1.0 + 0.25 * gnoise2(x * 1.7, z * 1.7, 13))
-            hb += h * 0.3
+            hb = bh * math.sqrt(1.0 - q) * (1.0 + 0.3 * gnoise2(x * 1.7, z * 1.7, 13)) + h * 0.3
             if hb > h:
                 h = hb
     return h
@@ -80,23 +83,23 @@ def h_near(x, z, fp):
 
 @njit(fastmath=True)
 def h_far(x, z, fp):
-    s = 5400.0
+    s = 4200.0
     o = _lod(s, fp, 1.0, 11.0)
     r = ridged2(x / s + 0.31, z / s - 1.73, o, 21)
-    h = -2350.0 + 2150.0 * r ** 1.25
+    h = -1650.0 + 1800.0 * r ** 1.55
     dxb = x - XB
     dzb = z - ZB
-    h += 1650.0 * math.exp(-(dxb * dxb + dzb * dzb) / (2.0 * 2600.0 * 2600.0))
+    h += (HB + 250.0) * math.exp(-(dxb * dxb + dzb * dzb) / (2.0 * 2400.0 * 2400.0))
     return h
 
 
 @njit(fastmath=True)
 def h_cloud(x, z, fp, t):
-    o = _lod(900.0, fp, 1.0, 6.0)
-    n = fbm2(x / 1100.0 + t * 0.003, z / 1100.0, o, 33)
-    o2 = _lod(260.0, fp, 1.0, 5.0)
-    m = fbm2(x / 260.0 - t * 0.004, z / 260.0, o2, 34)
-    return -1700.0 + 95.0 * n + 22.0 * m
+    o = _lod(700.0, fp, 1.0, 6.0)
+    n = fbm2(x / 900.0 + t * 0.004, z / 900.0, o, 33)
+    o2 = _lod(180.0, fp, 1.0, 5.0)
+    m = fbm2(x / 180.0 - t * 0.006, z / 180.0, o2, 34)
+    return CLOUD_Y + 38.0 * n + 9.0 * m
 
 
 @njit(fastmath=True)
@@ -183,7 +186,7 @@ def shade(C, D, P, S, LT, Lm, Im, amb, fogp, out, dep):
                 cg = 0.75 * (Im * Lm[4] * wrap * fwd + amb[1] * 1.2)
                 cb = 0.75 * (Im * Lm[5] * wrap * fwd + amb[2] * 1.2)
                 # darker in the troughs
-                trough = smoothstep(-1790.0, -1640.0, h0)
+                trough = smoothstep(CLOUD_Y - 60.0, CLOUD_Y + 30.0, h0)
                 cr *= 0.45 + 0.55 * trough
                 cg *= 0.45 + 0.55 * trough
                 cb *= 0.45 + 0.55 * trough
@@ -236,8 +239,8 @@ def shade(C, D, P, S, LT, Lm, Im, amb, fogp, out, dep):
             # atmosphere: aerial perspective + low mist over the cloud sea
             yc = C[1]
             yh = h0 - curv
-            tau = T.height_fog_tau(dist, yc + 2400.0, yh + 2400.0, fogp[0], fogp[1])
-            tau += T.height_fog_tau(dist, yc + 1700.0, yh + 1700.0, fogp[2], fogp[3])
+            tau = T.height_fog_tau(dist, yc, yh, fogp[0], fogp[1])
+            tau += T.height_fog_tau(dist, yc - CLOUD_Y, yh - CLOUD_Y, fogp[2], fogp[3])
             tr = math.exp(-tau)
             cosv = dx * mx + dy * my + dz * mz
             ph = 1.0 + fogp[4] * max(cosv, 0.0) ** 4
@@ -276,12 +279,13 @@ def summit():
 def camera(frame, W=1920, H=804):
     t = CM.ftime(frame)
     ti = CM.ftime(IGN)
-    push = keys(frame, [(START, 0.0), (IGN - 2, 1.15), (END, 0.85)], ease=smoother)
-    tilt = keys(frame, [(START, 0.55), (IGN, 0.55), (IGN + 30, 2.6), (END, 2.9)], ease=smoother)
+    tilt0 = math.degrees(math.atan((HORIZON_Y0 - 402.0) / F_FULL))
+    push = keys(frame, [(START, 0.0), (IGN - 2, 1.15), (END, 0.9)], ease=smoother)
+    tilt = keys(frame, [(START, tilt0), (IGN, tilt0), (IGN + 30, tilt0 + 2.2), (END, tilt0 + 2.5)], ease=smoother)
     k = kick(t, ti, amp=1.0, freq=6.0, decay=6.0)
-    yaw = -0.35 + 0.10 * k * 0.6
-    pos = (0.35, 1.28 + 0.012 * k, push)
-    return Cam(pos, yaw, tilt + 0.10 * k, 42.0, W, H)
+    yaw = 0.06 * k
+    pos = (CAM0[0], CAM0[1] + 0.012 * k, CAM0[2] + push)
+    return Cam(pos, yaw, tilt + 0.10 * k, HFOV, W, H)
 
 
 def pose(frame):
@@ -360,8 +364,8 @@ def render(frame, scale=0.5, ss=1.5):
     amb = CM.lin('#27335E') * 0.35
     S = SK.sky_params(zenith='#070B1C', horizon='#2A3866', moon_dir=MOON_DIR, moon_radius_deg=0.8,
                       halo_I=0.025, halo_w=0.22, halo2_I=0.012, halo2_w=0.7, horizon_glow=0.25, gain=1.0)
-    fogc = CM.lin('#3B4F78') * 0.30
-    fogp = np.array([2.2e-5, 1 / 900.0, 4.0e-4, 1 / 45.0, 2.0, fogc[0], fogc[1], fogc[2]])
+    fogc = CM.lin('#3B4F78') * 0.34
+    fogp = np.array([5.0e-5, 1 / 1500.0, 3.0e-4, 1 / 60.0, 1.5, fogc[0], fogc[1], fogc[2]])
     out = np.zeros((cami.H, cami.W, 3), np.float32)
     dep = np.zeros((cami.H, cami.W), np.float32)
     shade(C, D, P, S, LT, Lm, Im, amb, fogp, out, dep)
@@ -381,8 +385,9 @@ def render(frame, scale=0.5, ss=1.5):
         e = (flare + over) * F.flicker(t, 11, 1.4)
         sx, sy, z = cam.project(summit())
         s1 = scale
-        F.glow(img, depth, sx, sy, 0.9 * s1 + 0.4, 5.5 * e * s1 * s1, z=z, zbias=500.0)
-        F.halo(img, depth, sx, sy, 16 * s1, 0.012 * e, z=z, zbias=500.0)
+        F.glow(img, depth, sx, sy, 0.9 * s1 + 0.45, 14.0 * e * s1 * s1, z=z, zbias=500.0)
+        F.halo(img, depth, sx, sy, 14 * s1, 0.03 * e, z=z, zbias=500.0)
+        F.halo(img, depth, sx, sy, 60 * s1, 0.006 * e, z=z, zbias=500.0)
 
     # --- torch glow in the air (behind the figure; the body occludes its centre)
     sx, sy, z = cam.project(torch_w)
@@ -405,7 +410,8 @@ def render(frame, scale=0.5, ss=1.5):
     if size > 0:
         # smoke, heat shimmer, flame
         sm = _smoke()
-        sm.render(img, depth, cam, t, fire_base + np.array([0, 0.9, 0]), 1.3 * light * fl)
+        sm.render(img, depth, cam, t, fire_base + np.array([0, 0.9, 0]), 0.55 * light * fl, albedo=0.22,
+                  amb=(0.004, 0.005, 0.009))
         F.shimmer(img, cam, fire_base, 2.2 * size, rb, t, amp_px=1.4 * scale)
         F.flame(img, depth, cam, fire_base, 2.25 * size, rb, t, seed=2, I=26.0 * inten, lean=0.35 * WIND * size,
                 zbias=0.4)

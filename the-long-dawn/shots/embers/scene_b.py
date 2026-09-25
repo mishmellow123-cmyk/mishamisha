@@ -29,7 +29,7 @@ def redness(t):
 
 
 def crown_centre(t):
-    y = 10.0 * smootherstep(552, 632, t) + 38.0 * ease_in_out((t - 640) / 300.0)
+    y = 20.0 * smootherstep(548, 634, t) + 34.0 * ease_in_out((t - 640) / 300.0)
     return np.array([0.0, float(y), 0.0])
 
 
@@ -41,6 +41,19 @@ def fire_radius(t):
 
 def crown_morph(t):
     return float(smootherstep(562, 628, t))
+
+
+def crown_tilt(t):
+    """Rotation (3x3) tilting the crown's axis toward the camera (hero angle for a floating ring)."""
+    tau = 0.38 * crown_morph(t) * (1 - smoothstep(740, 820, t))
+    a = ALPHA_C
+    axis = np.array([math.sin(a), 0.0, -math.cos(a)])
+    c, s_ = math.cos(-tau), math.sin(-tau)
+    x, y, z = axis
+    C = 1 - c
+    return np.array([[c + x * x * C, x * y * C - z * s_, x * z * C + y * s_],
+                     [y * x * C + z * s_, c + y * y * C, y * z * C - x * s_],
+                     [z * x * C - y * s_, z * y * C + x * s_, c + z * z * C]])
 
 
 def fire_power(t):
@@ -167,8 +180,8 @@ class MindFire:
         # --- flow particles
         q0 = self.flow_pts(ctx.t0)
         q1 = self.flow_pts(ctx.t1)
-        P0 = C0 + self.warp(q0, crown_morph(ctx.t0), R0, ctx.t0)
-        P1 = C1 + self.warp(q1, crown_morph(ctx.t1), R1, ctx.t1)
+        P0 = C0 + self.warp(q0, crown_morph(ctx.t0), R0, ctx.t0) @ crown_tilt(ctx.t0).T
+        P1 = C1 + self.warp(q1, crown_morph(ctx.t1), R1, ctx.t1) @ crown_tilt(ctx.t1).T
         d = np.linalg.norm(q1, axis=1)
         c1 = smoothstep(0.08, 0.42, d)[:, None]
         c2 = smoothstep(0.5, 0.95, d)[:, None]
@@ -182,8 +195,8 @@ class MindFire:
         # --- core
         cj = self.cd * 0.2 + 0.01 * np.sin(np.array([31.0, 47.0, 53.0]) * t)
         if m < 1:
-            Pc0 = C0 + self.warp(cj, crown_morph(ctx.t0), R0, ctx.t0)
-            Pc1 = C1 + self.warp(cj, crown_morph(ctx.t1), R1, ctx.t1)
+            Pc0 = C0 + self.warp(cj, crown_morph(ctx.t0), R0, ctx.t0) @ crown_tilt(ctx.t0).T
+            Pc1 = C1 + self.warp(cj, crown_morph(ctx.t1), R1, ctx.t1) @ crown_tilt(ctx.t1).T
             ec = np.full(self.k, 1.8 * pw * (1 - 0.5 * m))
             ctx.fr.splat(Pc0, Pc1, 0.003, ec, C_CORE, ctx.cam0, ctx.cam1)
         # --- tongues: rise from the upper surface, cool to gold/orange
@@ -194,13 +207,14 @@ class MindFire:
         def tongue(kk, tq):
             base = self.td * 0.92
             base = base * np.array([1.0, 1.3, 1.0])
-            conv = 1 - 0.55 * kk * (1 - crown_morph(tq))
+            conv = 1 - 0.8 * kk * (1 - crown_morph(tq))
             base = base * np.stack([conv, np.ones_like(conv), conv], 1)
-            p = base + np.array([0, 1.0, 0]) * ((2.0 + 0.6 * crown_morph(tq)) * kk ** 1.35)[:, None]
+            hgt = (0.9 + 1.9 * np.clip(self.td[:, 1], 0, 1)) * (1 - crown_morph(tq)) + 2.6 * crown_morph(tq)
+            p = base + np.array([0, 1.0, 0]) * (hgt * kk ** 1.35)[:, None]
             w = vnoise(p + np.array([0, -0.06 * (tq - IGN), 0]), 2.0, (0, 0, 0), 2)
             return p + w * (0.06 + 0.3 * kk)[:, None]
-        T0 = C0 + self.warp(tongue(kk0, ctx.t0), crown_morph(ctx.t0), R0, ctx.t0)
-        T1 = C1 + self.warp(tongue(kk1, ctx.t1), crown_morph(ctx.t1), R1, ctx.t1)
+        T0 = C0 + self.warp(tongue(kk0, ctx.t0), crown_morph(ctx.t0), R0, ctx.t0) @ crown_tilt(ctx.t0).T
+        T1 = C1 + self.warp(tongue(kk1, ctx.t1), crown_morph(ctx.t1), R1, ctx.t1) @ crown_tilt(ctx.t1).T
         et = self.tE * (1 - kk1) ** 1.6 * smoothstep(0.0, 0.08, kk1) * 2.4 * pw * wrap_ok
         tcol = look.blackbody(0.9 - 0.45 * kk1)
         tcol = tcol * (1 - 0.35 * red) + C_RED * 0.35 * red * np.ones_like(tcol)
@@ -218,8 +232,8 @@ class MindFire:
         base = 0.55 + 0.35 * (self.fdep == 0)
         ef = (base + 10.0 * pulse) * vis * 1.3 * pw
         fcol = C_ICE * (1 - np.minimum(pulse, 1))[:, None] + C_CORE * np.minimum(pulse, 1)[:, None]
-        F0 = C0 + self.warp(self.fp, crown_morph(ctx.t0), R0, ctx.t0)
-        F1 = C1 + self.warp(self.fp, crown_morph(ctx.t1), R1, ctx.t1)
+        F0 = C0 + self.warp(self.fp, crown_morph(ctx.t0), R0, ctx.t0) @ crown_tilt(ctx.t0).T
+        F1 = C1 + self.warp(self.fp, crown_morph(ctx.t1), R1, ctx.t1) @ crown_tilt(ctx.t1).T
         ctx.fr.splat(F0, F1, 0.002, ef, fcol, ctx.cam0, ctx.cam1)
         # --- glow (volumetric halo around the fire)
         H = np.array([C1, C1, C1 + [0, 0.4, 0]])
@@ -253,7 +267,7 @@ class FireSparks:
         x = (Rr + self.sp[:, 0] * spread * 0.4) * np.cos(self.a) * m + self.sp[:, 0] * spread * (1 - m)
         z = (Rr + self.sp[:, 0] * spread * 0.4) * np.sin(self.a) * m + self.sp[:, 1] * spread * (1 - m)
         y = h * (1 - 0.8 * m) + m * (1.0 + k * 9.0)
-        P = C + np.stack([x, y, z], 1)
+        P = C + np.stack([x, y, z], 1) @ crown_tilt(t).T
         w = vnoise(P * 0.3 + np.array([0, -0.03 * t, 0]), 0.6, (0, 0, 0), 1)
         return P + w * (0.3 + 1.2 * k)[:, None], k
 
@@ -299,7 +313,7 @@ class Crown:
         x = (Rr + self.v[:, 0] * w * 0.5)
         z = self.v[:, 1] * w
         P = np.stack([x * np.cos(a) - z * np.sin(a), y + 0.25, x * np.sin(a) + z * np.cos(a)], 1)
-        return C + P, k
+        return C + P @ crown_tilt(t).T, k
 
     def emit(self, ctx):
         t = ctx.t
@@ -358,9 +372,9 @@ class Towers:
         k = len(self.T)
         self.k = k
         self.ang = 2 * np.pi * np.arange(k) / k + TOWER_ANG0
-        self.rad = 18.0 + r.uniform(-1.5, 1.5, k)
-        self.t_rise = 520 + np.array([0, 9, 4, 14, 6, 11, 2], float)
-        self.h_rise = np.array([19.0, 16.0, 21.0, 18.0, 22.0, 17.0, 20.0])
+        self.rad = 18.0 + r.uniform(-1.2, 1.2, k)
+        self.t_rise = 520 + np.array([0, 9, 4, 14, 6, 11, 2, 8], float)
+        self.h_rise = np.array([36.0, 31.0, 39.0, 33.0, 40.0, 32.0, 37.0, 38.0])
         # surge amounts per beat (leap-frogging race)
         J = r.uniform(1.4, 2.6, (k, len(BEATS)))
         lead = r.integers(0, k, len(BEATS))
@@ -376,7 +390,7 @@ class Towers:
         self.rot = [(-a + np.pi) for a in self.ang]
 
     def height(self, i, t):
-        h = self.h_rise[i] * float(ease_out((t - self.t_rise[i]) / 70.0, 3.0))
+        h = self.h_rise[i] * float(ease_out((t - self.t_rise[i]) / 80.0, 2.6))
         for b, tb in enumerate(BEATS):
             x = (t - tb - self.dly[i]) / 6.0
             if x > 0:
@@ -421,10 +435,10 @@ class Towers:
             e_base = np.where(kind == 1, 1.0, 0.55) * (0.5 + 0.5 * rnd)
             e_base *= 0.35 + 0.65 * smoothstep(0.0, 14.0, yl)
             fl = 1 + 0.25 * np.sin(0.45 * t + self.flk[i][vis])
-            Tb = 0.4 + 0.14 * rnd
+            Tb = 0.3 + 0.13 * rnd
             cb = look.blackbody(Tb)
             cb = cb * (1 - 0.6 * red) + (C_RED * 0.7 + C_CRIMSON * 0.3) * 0.6 * red
-            e_base = e_base * fl * 3.2
+            e_base = e_base * fl * 3.0
             # fire light (inner faces)
             L = light_pos - P1
             dL = np.linalg.norm(L, axis=1)
@@ -676,7 +690,7 @@ class Vortex:
 
 # ------------------------------------------------------------- camera ---
 
-ALPHA_C = TOWER_ANG0 + 0.27          # camera azimuth: beside tower 0; a gap sits behind the crown
+ALPHA_C = TOWER_ANG0 + np.pi / 8 + 0.05   # camera azimuth: in a gap; the opposite gap is behind the crown
 
 
 def _polar(r, a, y):
@@ -685,15 +699,16 @@ def _polar(r, a, y):
 
 CAM_B = [  # (frame, radius, azimuth offset, height, target y)
     (480, 13.9, 0.43, 7.2, -1.35),
-    (500, 14.5, 0.16, 2.6, 0.2),
-    (520, 16.0, -0.14, 2.8, 0.4),
-    (556, 20.0, -0.1, 6.0, 2.8),
-    (596, 25.0, -0.03, 12.5, 7.0),
-    (640, 27.0, 0.00, 16.0, 8.8),
-    (720, 29.0, 0.06, 25.0, 17.0),
-    (800, 28.0, 0.12, 42.0, 31.0),
-    (840, 54.0, 0.22, 64.0, 39.0),
-    (880, 86.0, 0.28, 88.0, 43.0),
+    (500, 14.5, 0.16, 2.4, -0.9),
+    (520, 15.5, -0.08, 2.2, -0.6),
+    (548, 17.5, -0.05, 2.6, 0.2),
+    (580, 21.0, -0.02, 8.0, 6.5),
+    (610, 26.0, 0.00, 15.5, 14.0),
+    (640, 30.0, 0.00, 21.5, 19.3),
+    (720, 29.0, 0.03, 33.0, 27.5),
+    (800, 27.0, 0.06, 51.0, 39.0),
+    (840, 52.0, 0.12, 72.0, 46.0),
+    (880, 86.0, 0.18, 96.0, 48.0),
 ]
 
 

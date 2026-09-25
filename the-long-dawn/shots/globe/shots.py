@@ -13,7 +13,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import globe as G  # noqa: E402
 from globe import Atmosphere, Camera, World, normalize, vec_ll  # noqa: E402
-from web import Web, ll2v  # noqa: E402
+from web import Hearths, Web, ll2v  # noqa: E402
 
 import look  # noqa: E402  (path set by globe)
 
@@ -139,4 +139,122 @@ class Answers:
                               vignette_amount=0.22)
 
 
-SHOTS = {'answers': Answers()}
+
+# ================================================================ DAWN ===
+
+_HEARTHS = None
+
+
+def hearths():
+    global _HEARTHS
+    if _HEARTHS is None:
+        _HEARTHS = Hearths(web())
+    return _HEARTHS
+
+
+def rig_frame(lat, lon, heading):
+    """Local horizontal heading direction and up vector at (lat, lon)."""
+    e, n, u = G.enu(lat, lon)
+    hd = math.radians(heading)
+    return math.sin(hd) * e + math.cos(hd) * n, u
+
+
+def seg_frac(h, r):
+    """Visible fraction of a disk of radius r whose centre is h above a straight horizon."""
+    if h >= r:
+        return 1.0
+    if h <= -r:
+        return 0.0
+    return (r * r * math.acos(-h / r) + h * math.sqrt(r * r - h * h)) / (math.pi * r * r)
+
+
+class Dawn:
+    name = 'dawn'
+    first, last = 2232, 2495
+    moon = normalize(vec_ll(-10, -20))
+    SUN_R = 0.2665
+
+    def params(self, t):
+        s = smoother((t - 2232.0) / (2495.0 - 2232.0))
+        p = dict(
+            lat=lerp(-2.0, -4.5, s), lon=lerp(12.0, 9.0, s),
+            alt=math.exp(lerp(math.log(2400.0), math.log(4300.0), s)),
+            heading=lerp(80.0, 77.0, s), limb=lerp(0.43, 0.40, s), fov=lerp(58.0, 61.0, s),
+        )
+        # sun elevation above the limb (deg): crest at 2240 exactly
+        p['sun_el'] = spline(t, [(2200, -1.6), (2232, -0.75), (2240, -self.SUN_R + 0.02), (2250, -0.02),
+                                 (2266, 0.32), (2300, 0.75), (2400, 1.7), (2495, 2.4)])
+        # the lighting sun leads the disk so the terminator can visibly race toward us
+        p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2262, 1.2), (2300, 4.0), (2380, 9.0),
+                               (2495, 14.0)])
+        p['sun_az'] = -1.5
+        return p
+
+    def camera(self, t, W, H):
+        p = self.params(t)
+        return cam_rig(p['lat'], p['lon'], p['alt'], p['heading'], p['limb'], p['fov'], W, H), p
+
+    def suns(self, p):
+        d = 1.0 + p['alt'] / G.R_KM
+        dip = math.degrees(math.acos(1.0 / d))
+        hz, up = rig_frame(p['lat'], p['lon'], p['heading'])
+        az = math.radians(p['sun_az'])
+        side = np.cross(up, hz)
+        hz2 = math.cos(az) * hz + math.sin(az) * side
+
+        def at(el):
+            a = math.radians(dip - el)
+            return normalize(math.cos(a) * hz2 - math.sin(a) * up)
+        return at(p['sun_el']), at(p['sun_el'] + p['lead'])
+
+    def calm(self, t, H):
+        # text windows 2270-2345 and 2352-2440: keep y 560..700 (of 804) calm
+        k = max(ramp(t, 2262, 2272) * (1 - ramp(t, 2343, 2350)), ramp(t, 2350, 2356) * (1 - ramp(t, 2438, 2446)))
+        if k <= 0:
+            return None
+        y0, y1 = 545.0 / 804 * H, 715.0 / 804 * H
+        soft = 30.0 / 804 * H
+
+        def f(y):
+            a = np.clip((y - (y0 - soft)) / soft, 0, 1) * np.clip(((y1 + soft) - y) / soft, 0, 1)
+            return 1.0 - 0.5 * k * a
+        return f
+
+    def render_hdr(self, t, scale=1.0):
+        W, H = int(round(1920 * scale)), int(round(804 * scale))
+        wd = world()
+        at = atmo('dawn', X=2.6, mie_scale=4.0, g=0.82, airglow=1.5, rim=2.5, airglow_h_km=135,
+                  airglow_warm=0.08, airglow_w_km=1.6)
+        cam, p = self.camera(t, W, H)
+        Sd, Sl = self.suns(p)
+        Emoon = np.array([0.337, 0.456, 0.69]) * 0.6
+        Esun = np.array([1.0, 0.96, 0.90]) * 16.0
+        img, cov, tv = G.render_planet(wd, cam, at, Sl, Esun, Sd, 250.0, self.moon, Emoon)
+        img += G.render_lights(wd, cam, at, Sl, gain=0.5e-7)
+        star_k = 1.0 - ramp(t, 2236, 2262) * 0.85
+        img += G.render_stars(wd, cam, at, gain=0.9 * star_k)
+        calm = self.calm(t, H)
+        web().draw(img, cam, 2600.0, t_anim=t, gain=0.9, scale=scale, calm=calm, sun=Sl, sparks=False)
+        hearths().draw(img, cam, t, sun=Sl, gain=1.0, calm=calm, scale=scale)
+        # sun glare
+        sp, z = cam.project(cam.pos[None, :] + Sd[None, :] * 50.0)
+        sx, sy = sp[0]
+        frac = seg_frac(p['sun_el'], self.SUN_R)
+        burst = math.exp(-max(t - 2240.0, 0.0) / 9.0) * (1.0 if t >= 2240 else 0.0)
+        pre = math.exp((p['sun_el'] + self.SUN_R) / 0.25) if p['sun_el'] < -self.SUN_R else 1.0
+        inten = 22.0 * (frac ** 0.5) * (1.0 + 2.5 * burst) + 3.0 * pre * (1 - frac)
+        glare = G.sun_glare(W, H, sx, sy, inten, cam.f, spikes=6)
+        return img, glare, cam, p, (sx, sy, frac, burst)
+
+    def exposure(self, t):
+        return spline(t, [(2200, 1.3), (2238, 1.3), (2244, 1.15), (2270, 0.9), (2495, 0.85)])
+
+    def render(self, t, scale=1.0):
+        img, glare, cam, p, sun = self.render_hdr(t, scale)
+        sb = sun[3]
+        return G.finish_frame(img, sun_layer=glare, exposure=self.exposure(t), bloom_strength=0.08,
+                              bloom_threshold=0.8, streak_strength=0.05 + 0.08 * sb, streak_threshold=2.0,
+                              streak_length=0.45, vignette_amount=0.22)
+
+
+SHOTS = {'answers': Answers(), 'dawn': Dawn()}
