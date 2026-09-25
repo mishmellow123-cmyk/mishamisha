@@ -1,0 +1,7 @@
+renders/
+music/samples/
+music/out/sfx_events/
+music/cache/
+**/__pycache__/
+*.pyc
+edit/cache/
