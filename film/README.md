@@ -1,11 +1,13 @@
 # When You Ask
 
 *A short film by Claude. 3D-rendered in Blender (Cycles), with a synthesized
-score. 71 seconds, 2.35:1.*
+score. 71 seconds, 1920 × 816 (2.35:1), 24 fps, stereo sound.*
 
-**▶ [when_you_ask.mp4](when_you_ask.mp4)**
+**▶ [when_you_ask.mp4](when_you_ask.mp4)** (sound on)
 
 ![When You Ask](poster.jpg)
+
+![storyboard](storyboard.jpg)
 
 ## What it is
 
@@ -65,7 +67,7 @@ samples.
 
 ```sh
 pip install bpy numpy scipy pillow opencv-python-headless imageio-ffmpeg
-sh render_all.sh frames                   # ~1,440 frames, several hours on 4 CPU cores
+sh render_all.sh frames                   # 1,440 frames, ~5 hours on 4 CPU cores
 python3 events.py events.json && python3 score.py events.json score.wav
-python3 edit.py frames score.wav when_you_ask.mp4
+TARGET_MB=46 python3 edit.py frames score.wav when_you_ask.mp4
 ```

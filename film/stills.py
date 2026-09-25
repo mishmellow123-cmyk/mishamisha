@@ -1,7 +1,10 @@
 """Render stills of the world: python3 stills.py OUTDIR "t,x,y,z,tx,ty,tz,lens" ..."""
-import os, sys, time
-import numpy as np
+import os
+import sys
+import time
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import bpy  # noqa: E402
 import common as C  # noqa: E402
 import world as Wd  # noqa: E402
 
@@ -19,7 +22,6 @@ for i, (t, x, y, z, tx, ty, tz, lens) in enumerate(views):
     cam.data.lens = lens
     world.update(t, cam)
     C.set_clocks(t)
-    import bpy
     bpy.context.scene.render.filepath = os.path.join(out, f"{i:02d}_t{t:05.1f}.exr")
     t1 = time.time()
     bpy.ops.render.render(write_still=True)

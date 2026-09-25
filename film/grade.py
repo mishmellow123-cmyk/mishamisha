@@ -17,6 +17,7 @@ import numpy as np  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont  # noqa: E402
 
 OUT_W, OUT_H = 1920, 816
+GRAIN = float(os.environ.get("GRAIN", "0.005"))
 FONT = "/usr/share/fonts/truetype/freefont/FreeSerifItalic.ttf"
 FONT_UPRIGHT = "/usr/share/fonts/truetype/freefont/FreeSerif.ttf"
 
@@ -87,7 +88,7 @@ def grade(lin, frame_index, exposure=1.0, fade=1.0):
     rng = np.random.default_rng(10007 + frame_index)
     g = rng.standard_normal((OUT_H // 2, OUT_W // 2)).astype(np.float32)
     g = cv2.resize(g, (OUT_W, OUT_H), interpolation=cv2.INTER_LINEAR)
-    x = x + (0.012 * (0.4 + 0.6 * np.sqrt(np.clip(lum, 0, 1))) * g)[..., None]
+    x = x + (GRAIN * (0.4 + 0.6 * np.sqrt(np.clip(lum, 0, 1))) * g)[..., None]
     return (np.clip(x, 0, 1) * 255 + 0.5).astype(np.uint8)
 
 

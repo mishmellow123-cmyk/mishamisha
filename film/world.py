@@ -621,7 +621,7 @@ class World:
         for b in self.tree.walk():
             if b.parent is None:
                 continue
-            size = (0.30 if b.chosen else 0.17) * (1.0 if b.depth < 4 else 0.9)
+            size = (0.40 if b.chosen else 0.17) * (1.0 if b.depth < 4 else 0.9)
             ob = C.text(b.word, FONT_ITALIC, size, mat, name=f"tw_{b.word}_{id(b) % 997}")
             j = int(len(b.curve) * (0.55 if b.kids else 0.75))
             side = nrm(np.cross(b.T[j], np.array([0.2, -0.9, 0.3])))
@@ -661,6 +661,9 @@ class World:
                 # the unsaid words fade once the sentence is said
                 a *= float(1 - 0.55 * smoothstep(T_ANSWER + 4, T_ANSWER + 9, t))
                 a *= float(1 - smoothstep(0.0, 4.0, coda))
+            # a word right in front of the lens would fill the frame: let it go
+            near = float(np.linalg.norm(np.asarray(cam.location) - wd["anchor"]))
+            a *= float(smoothstep(1.4, 3.2, near))
             ob.hide_render = a <= 0.002
             ob.location = tuple(wd["anchor"])
             ob.rotation_euler = rot

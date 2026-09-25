@@ -74,13 +74,14 @@ def cam_branching(t, w):
 
 
 def cam_answer(t, w):
+    """A slow crane outside the crown, rising with the answer's light."""
     e = max(w.answer_at(t), 0.0)
     here = w.path_point(e)
-    ahead = w.path_point(e + 1.5)
     f = C.ease_io((t - 29.2) / 8.4, 1.1)
-    az = 200.0 + 75.0 * f
-    loc = here + np.array([5.0 * math.cos(math.radians(az)), 5.0 * math.sin(math.radians(az)), 0.9])
-    return loc, lerp(here, ahead, 0.4), 32.0, 0.0
+    az = -62.0 + 34.0 * f
+    loc = orbit(10.5, az, here[2] + 1.3, center=(0.5, -0.5, 0.0))
+    tgt = here + np.array([0.0, 0.0, 0.35])
+    return loc, tgt, 32.0, 0.0
 
 
 D_TOP = np.array([0.69, 0.92, 3.98]) / np.linalg.norm([0.69, 0.92, 3.98]) * 3.8

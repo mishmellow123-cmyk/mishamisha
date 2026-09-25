@@ -4,10 +4,14 @@ Assemble the film: grade every rendered frame, cut the shots together, add
 the closing titles, and mux the score.
 
 usage: python3 edit.py FRAMES_DIR SCORE.wav OUT.mp4 [t0 t1]
+
+With TARGET_MB set, a near-lossless master is written first and then
+encoded in two passes to that size, so the bits go where the detail is.
 """
 import os
 import subprocess
 import sys
+import tempfile
 import time
 
 import numpy as np
@@ -16,9 +20,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import grade as G  # noqa: E402
 
 FPS = 24
-FRAMES, SCORE, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
-T0 = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
-T1 = float(sys.argv[5]) if len(sys.argv) > 5 else 71.0
 
 SHOTS = [  # name, start, end (seconds on the world's timeline), exposure
     ("01_question", 0.0, 4.6, 1.0),
@@ -44,12 +45,12 @@ def smooth(x):
     return x * x * (3 - 2 * x)
 
 
-def picture(i):
+def picture(i, frames_dir):
     t = i / FPS
     if t < END_OF_PICTURE:
         for name, s0, s1, exposure in SHOTS:
             if s0 <= t < s1:
-                path = os.path.join(FRAMES, name, f"{int(round(t * FPS)):05d}.exr")
+                path = os.path.join(frames_dir, name, f"{int(round(t * FPS)):05d}.exr")
                 if not os.path.exists(path):
                     return np.zeros((G.OUT_H, G.OUT_W, 3), np.uint8)
                 fade = smooth((END_OF_PICTURE - t) / 1.6) * smooth((t + 0.3) / 0.6)
@@ -61,25 +62,48 @@ def picture(i):
     return G.title_frame([], 0.0, i)
 
 
+def two_pass(ff, src, out, seconds, target_mb, audio_kbps=192):
+    video_kbps = int(target_mb * 8192 / seconds - audio_kbps)
+    log = os.path.join(tempfile.gettempdir(), "x264_2pass")
+    common = ["-c:v", "libx264", "-preset", "slow", "-tune", "film", "-b:v", f"{video_kbps}k",
+              "-pix_fmt", "yuv420p", "-passlogfile", log]
+    subprocess.run([ff, "-y", "-loglevel", "error", "-i", src, *common, "-pass", "1", "-an", "-f", "mp4",
+                    os.devnull], check=True)
+    subprocess.run([ff, "-y", "-loglevel", "error", "-i", src, *common, "-pass", "2",
+                    "-c:a", "aac", "-b:a", f"{audio_kbps}k", "-movflags", "+faststart", out], check=True)
+
+
 def main():
     import imageio_ffmpeg
+    frames_dir, score, out = sys.argv[1], sys.argv[2], sys.argv[3]
+    t0 = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0
+    t1 = float(sys.argv[5]) if len(sys.argv) > 5 else 71.0
+    target_mb = float(os.environ.get("TARGET_MB", "0"))
+    final_out = out
+    if target_mb:
+        out = tempfile.mkstemp(suffix=".mp4")[1]
+        os.environ["CRF"] = "12"
     ff = imageio_ffmpeg.get_ffmpeg_exe()
-    i0, i1 = int(T0 * FPS), int(T1 * FPS)
+    i0, i1 = int(t0 * FPS), int(t1 * FPS)
     cmd = [ff, "-y", "-loglevel", "error",
            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{G.OUT_W}x{G.OUT_H}", "-r", str(FPS), "-i", "-",
-           "-ss", f"{T0:.3f}", "-t", f"{T1 - T0:.3f}", "-i", SCORE,
+           "-ss", f"{t0:.3f}", "-t", f"{t1 - t0:.3f}", "-i", score,
            "-map", "0:v", "-map", "1:a",
-           "-c:v", "libx264", "-preset", "slow", "-crf", "16", "-tune", "film", "-pix_fmt", "yuv420p",
-           "-c:a", "aac", "-b:a", "256k", "-shortest", "-movflags", "+faststart", OUT]
+           "-c:v", "libx264", "-preset", "slow", "-crf", os.environ.get("CRF", "23"), "-tune", "film",
+           "-pix_fmt", "yuv420p",
+           "-c:a", "aac", "-b:a", "256k", "-shortest", "-movflags", "+faststart", out]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     t_start = time.time()
     for i in range(i0, i1):
-        p.stdin.write(picture(i).tobytes())
+        p.stdin.write(picture(i, frames_dir).tobytes())
         if (i - i0) % 120 == 0:
             print(f"frame {i} ({time.time() - t_start:.0f}s)", flush=True)
     p.stdin.close()
     p.wait()
-    print("wrote", OUT)
+    if target_mb:
+        two_pass(ff, out, final_out, t1 - t0, target_mb)
+        os.remove(out)
+    print("wrote", final_out)
 
 
 if __name__ == "__main__":
