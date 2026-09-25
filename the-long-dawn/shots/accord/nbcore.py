@@ -4,7 +4,7 @@ import math
 import numpy as np
 from numba import njit
 
-FM = dict(fastmath=True, cache=True)
+FM = dict(fastmath=True, cache=True, error_model='numpy')
 
 
 @njit(inline='always', **FM)
@@ -62,7 +62,7 @@ def fbm2(x, y, seed, octaves, lac, gain, fp):
     norm = 0.0
     for o in range(octaves):
         wl = 1.0 / freq
-        w = sstep(1.0 * fp, 3.0 * fp, wl)
+        w = 1.0 if fp <= 0.0 else sstep(1.0 * fp, 3.0 * fp, wl)
         if w <= 0.0:
             break
         s += amp * w * (vnoise2(x * freq + o * 17.3, y * freq - o * 9.7, seed + o) - 0.5)
