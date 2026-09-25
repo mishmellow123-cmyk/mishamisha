@@ -11,6 +11,7 @@ with notes, a dynamics curve (0..1, like CC1/expression) and mix settings.
 """
 import math
 import re
+import zlib
 
 SR = 48000
 BPM = 72
@@ -105,7 +106,7 @@ class Part:
         self.send = send
         self.depth = depth
         self.humanize_ms = humanize_ms
-        self.seed = seed if seed is not None else (abs(hash(name)) % 10000)
+        self.seed = seed if seed is not None else (zlib.crc32(name.encode()) % 100000)
         self.params = params or {}
         self.notes = []
         self.dyn = []          # [(beat, level)] piecewise, smooth

@@ -47,6 +47,9 @@ from scene import look  # noqa: E402
 import textmaps as tm  # noqa: E402
 import shade as SH  # noqa: E402
 import nbcore  # noqa: E402
+import cv2  # noqa: E402
+import fire as FI  # noqa: E402
+import particles as PT  # noqa: E402
 
 OUT = os.path.join(SC.ROOT, 'renders', 'accord')
 TESTS = os.path.join(OUT, 'tests')
@@ -121,9 +124,89 @@ def walker_irradiance(t):
         return z, z, (-500.0, 250.0, -40.0, 20.0)
 
 
-def render_frame(t, scale=1.0, aa=True, parts=('surf',)):
+def fire_params(t):
+    FP = np.zeros(FI.FP_N, np.float64)
+    FP[FI.FP_T] = t
+    hi = SC.hearth_intensity(t)
+    FP[FI.FP_I] = 30.0 * hi
+    FP[FI.FP_SCALE] = SC.fire_scale(t)
+    FP[FI.FP_H] = 2.3
+    FP[FI.FP_SWIRL] = 2.4
+    FP[FI.FP_Z0] = 0.47
+    FP[FI.FP_WHITE] = SC.smooth(SC.ramp(t, SC.FLARE_T0 + 3, SC.FLARE_T1 + 2))
+    FP[FI.FP_R0] = 0.50
+    FP[FI.FP_RISE] = 2.4
+    return FP
+
+
+def heat_haze(img, t, cam, scale):
+    """Screen-space shimmer of whatever is seen through the hot air above the hearth."""
+    if SC.fire_scale(t) <= 0.0:
+        return img
+    Hd, Wd = img.shape[:2]
+    (cx, cy), zc = SC.project(cam, np.array([0.0, 0.0, 1.3]))
+    rad = cam[12] * 1.25 * SC.fire_scale(t) / zc
+    rng = np.random.default_rng(int(t * 7) % 100000)
+    k = 24
+    ph = t * 0.35
+    yy, xx = np.mgrid[0:Hd, 0:Wd].astype(np.float32)
+    rr = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2) / max(rad, 1.0)
+    fall = np.clip(1.0 - rr, 0, 1) ** 1.5
+    if fall.max() <= 0:
+        return img
+    # smooth animated noise from sines (cheap, coherent)
+    amp = 2.2 * scale
+    dx = amp * fall * (np.sin(xx * 0.045 / scale + ph * 3.1) * np.cos(yy * 0.037 / scale - ph * 2.3)
+                       + 0.5 * np.sin((xx + yy) * 0.09 / scale + ph * 4.7))
+    dy = amp * fall * (np.cos(xx * 0.041 / scale - ph * 2.7) * np.sin(yy * 0.052 / scale + ph * 3.3)
+                       + 0.5 * np.cos((xx - yy) * 0.08 / scale - ph * 5.1))
+    return cv2.remap(img, xx + dx, yy + dy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def text_band(t, scale):
+    """Screen band (y0,y1,amount) kept calm while edit text T12 is up (1922-1998)."""
+    amt = 0.55 * SC.smooth(SC.ramp(t, 1914, 1922)) * (1 - SC.smooth(SC.ramp(t, 1996, 2001)))
+    return np.array([560.0 * scale, 700.0 * scale, amt])
+
+
+def render_frame(t, scale=1.0, aa=True, mb=True):
+    R = resources()
     rgb, depth, oid, cam, PR, Fa = render_surfaces(t, scale, aa)
+    Hd, Wd = depth.shape
+    band = text_band(t, scale)
+    # subtle grad on the lower band while T12 is up
+    if band[2] > 0:
+        yy = np.arange(Hd, dtype=np.float32)[:, None, None]
+        g = 1 - 0.18 * band[2] / 0.55 * np.clip((yy - band[0] + 40 * scale) / (40 * scale), 0, 1) * \
+            np.clip((band[1] + 40 * scale - yy) / (40 * scale), 0, 1)
+        rgb *= g.astype(np.float32)
+    rgb = heat_haze(rgb, t, cam, scale)
+    FP = fire_params(t)
+    FI.fire_volume(Wd, Hd, cam, FP, R['noise3'], depth, rgb, 44)
+    blobs = PT.torch_flames(t) + PT.ribbons(t) + PT.ignition_flash(t)
+    if blobs:
+        B = np.array(blobs, np.float64)
+        FI.splat_blobs(rgb, depth, cam, B, B.shape[0], 0.3, band)
+    walkers_draw(rgb, depth, cam, t, scale, band)
+    if mb:
+        camA = SC.camera(t - 0.25, scale)
+        camB = SC.camera(t + 0.25, scale)
+        out = np.empty_like(rgb)
+        FI.motion_blur(rgb, out, depth, cam, camA, camB, 24, 160.0 * scale)
+        rgb = out
+    E = PT.embers(t, cam[2])
+    if E.shape[0]:
+        zf = cam[2] - 0.62
+        FI.splat_streaks(rgb, depth, cam, E, E.shape[0], 0.028, zf, band, 90.0 * scale)
     return rgb, dict(depth=depth, oid=oid, cam=cam, PR=PR, Fa=Fa)
+
+
+def walkers_draw(rgb, depth, cam, t, scale, band):
+    try:
+        import plain
+    except Exception:
+        return
+    plain.draw(rgb, depth, cam, t, scale, band)
 
 
 def finish(hdr, t):

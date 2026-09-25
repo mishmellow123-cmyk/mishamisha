@@ -87,11 +87,11 @@ def smooth_rand(rng, n, rate, ch=1):
     pts = rng.normal(0, 1, (k, ch))
     x = np.stack([np.interp(np.linspace(0, k - 1, n), np.arange(k), pts[:, c]) for c in range(ch)], 1)
     # smooth further (cubic-ish)
-    w = max(1, int(SR / rate / 4))
+    w = max(1, min(int(SR / rate / 4), n // 4))
     if w > 1:
         ker = np.hanning(w * 2 + 1)
         ker /= ker.sum()
-        x = np.stack([np.convolve(x[:, c], ker, mode="same") for c in range(ch)], 1)
+        x = np.stack([np.convolve(x[:, c], ker, mode="same")[:n] for c in range(ch)], 1)
     return x.astype(np.float32)
 
 

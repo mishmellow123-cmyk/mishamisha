@@ -162,3 +162,60 @@ def body_basic(d, hip, lean, sw, legs, arms, head_r=(0.095, 0.115), neck_len=0.1
         d.capsule(sh, el, arm_r[0], arm_r[1], k=k, mat=mat)
         d.capsule(el, wr, arm_r[1], arm_r[2], k=k, mat=mat)
     return up
+
+
+# ------------------------------------------------------------------ desert robe ---
+
+def robed(arm=0.0, lean=0.0, tail_pts=None, hem_pts=None, sleeve_pts=None, turn=0.35):
+    """Tall figure in a long robe and head-wrap with a trailing cloth tail. Three-quarter view
+    facing right (+x). arm: 0 torch raised high, 0.6 lowering, 1 torch in the basket (right).
+    Returns (drawing, pts)."""
+    d = Drawing()
+    d.new_group()
+    up = rot(np.array([0.0, 1.0]), -lean)
+    side = rot(np.array([1.0, 0.0]), -lean)
+    hip = np.array([0.0, 0.95])
+    chest = hip + up * 0.42
+    neck = hip + up * 0.60
+    # robe: long, falls to the ankles, flares; the hem trails downwind (-x)
+    d.trap((-0.03, 0.03), chest + up * 0.02, 0.30, 0.19, rnd=0.03, k=0.06, fuzz=0.01, ff=16.0)
+    if hem_pts is not None and len(hem_pts) > 1:
+        d.chain(hem_pts, 0.07, 0.03, k=0.08)
+    # feet peeking out
+    d.ellipse((0.12, 0.03), 0.09, 0.035, k=0.02)
+    d.ellipse((-0.10, 0.03), 0.08, 0.035, k=0.02)
+    # shoulders + mantle
+    d.ellipse(chest + up * 0.07, 0.21, 0.11, ang=-lean, k=0.06)
+    # left arm (rear) hangs, partly hidden
+    shL = chest + up * 0.06 - side * 0.16
+    eL, wL = limb(shL, -0.15, 0.29, 0.25, 0.26)
+    d.capsule(shL, eL, 0.075, 0.065, k=0.05)
+    d.capsule(eL, wL, 0.065, 0.055, k=0.04)
+    # right arm: holds the torch high, then lowers it into the basket
+    shR = chest + up * 0.07 + side * 0.15
+    a_hi = (2.75, 0.15)     # nearly straight up
+    a_lo = (1.25, 0.25)     # forward-down into the basket
+    aR1 = a_hi[0] + (a_lo[0] - a_hi[0]) * arm
+    aR2 = a_hi[1] + (a_lo[1] - a_hi[1]) * arm
+    eR, wR = limb(shR, aR1, 0.29, aR2, 0.27)
+    d.capsule(shR, eR, 0.07, 0.06, k=0.05)
+    d.capsule(eR, wR, 0.06, 0.05, k=0.04)
+    if sleeve_pts is not None and len(sleeve_pts) > 1:
+        d.chain(sleeve_pts, 0.05, 0.02, k=0.06)
+    fdir = (wR - eR) / (np.linalg.norm(wR - eR) + 1e-9)
+    hand = wR + fdir * 0.05
+    d.ellipse(hand, 0.045, 0.045, k=0.02, mat=2)
+    tdir = lerp(np.array([0.1, 1.0]), rot(fdir, -0.35), min(max((arm - 0.3) / 0.7, 0.0), 1.0))
+    tdir = tdir / (np.linalg.norm(tdir) + 1e-9)
+    t1 = hand + tdir * 0.5
+    d.capsule(hand - tdir * 0.08, t1, 0.017, 0.02, mat=4)
+    d.ellipse(t1, 0.03, 0.045, ang=math.atan2(tdir[1], tdir[0]) - math.pi / 2, mat=8)
+    # head + wrap (a bulky turban with the veil across the face) and the trailing tail
+    d.capsule(neck - up * 0.03, neck + up * 0.07, 0.07, 0.065, k=0.03)
+    hc = neck + up * 0.15 + side * 0.02
+    d.ellipse(hc, 0.11, 0.125, ang=-lean, k=0.02)
+    d.ellipse(hc + up * 0.06 - side * 0.01, 0.125, 0.085, ang=-lean + 0.1, k=0.03, mat=1, fuzz=0.004, ff=60)
+    if tail_pts is not None and len(tail_pts) > 1:
+        d.chain(tail_pts, 0.045, 0.02, k=0.04, mat=1)
+    return d, dict(hand=hand, torch_head=t1, head=hc, neck=neck, tail_anchor=hc - side * 0.08 + up * 0.02,
+                   hem_anchor=np.array([-0.30, 0.10]))

@@ -121,7 +121,7 @@ def project(cam, P):
 def exposure(t):
     e = 5.0
     e += (2.4 - 5.0) * smooth(ramp(t, 1968, 1996))
-    e += (1.0 - 2.4) * smooth(ramp(t, 1999, 2012))
+    e += (1.0 - 2.4) * ease_out(ramp(t, 1999.5, 2006), 2.0)
     return e
 
 

@@ -71,6 +71,28 @@ def rot(v, th):
     return np.stack([v[..., 0] * c - v[..., 1] * s, v[..., 0] * s + v[..., 1] * c], -1)
 
 
+def ang_of(v):
+    """dirv angle of a vector"""
+    return math.degrees(math.atan2(-v[0], v[1]))
+
+
+def ik2(S, T, L1, L2, bend=1.0):
+    """Two-bone IK in the dirv angle convention. Returns (upper, lower) angles putting
+    the wrist at T (clamped to reach). bend=+1/-1 chooses the elbow side."""
+    S = np.asarray(S, np.float64)
+    T = np.asarray(T, np.float64)
+    d = T - S
+    dist = float(np.linalg.norm(d))
+    dist = min(max(dist, abs(L1 - L2) + 1e-4), L1 + L2 - 1e-4)
+    base = ang_of(d)
+    c = (L1 * L1 + dist * dist - L2 * L2) / (2 * L1 * dist)
+    a = math.degrees(math.acos(max(-1.0, min(1.0, c))))
+    ua = base + bend * a
+    E = S + dirv(ua) * L1
+    fa = ang_of(T - E)
+    return ua, fa
+
+
 def lerp(a, b, t):
     return np.asarray(a) * (1 - t) + np.asarray(b) * t
 
@@ -243,6 +265,15 @@ def elder(pose, t, scarf_pts=None, facing=-1, wisps=None):
         g.cone(E, W, 0.046, 0.040)
         g.ellipse(W, 0.046, 0.034, rot=fa)   # cuff
         return E, W
+    def tgt(key):
+        v = np.asarray(p[key], np.float64).copy()
+        if facing == 1:
+            v[0] = 2 * x0 - v[0]
+        return v
+    if p.get('f_tgt') is not None:
+        p['f_ua'], p['f_fa'] = ik2(S, tgt('f_tgt'), 0.26, 0.225, bend=p.get('f_bend', -1.0))
+    if p.get('n_tgt') is not None:
+        p['n_ua'], p['n_fa'] = ik2(S, tgt('n_tgt'), 0.26, 0.225, bend=p.get('n_bend', -1.0))
     Ef, Wf = arm(farg, p['f_ua'], p['f_fa'])
     En, Wn = arm(near, p['n_ua'], p['n_fa'])
     Hf = Wf + dirv(p['f_h']) * 0.045
@@ -332,7 +363,7 @@ def child(pose, t, facing=-1):
         prof = np.array(CHILD_FACE)
         if depth < 0:
             prof[:, 0] = -prof[:, 0]
-        fp = face_poly(prof, head_c, thh, depth=abs(depth))
+        fp = face_poly(prof, head_c, thh if depth > 0 else -thh, depth=abs(depth))
         skin.poly(fp, r=0.002, k=0.006)
     skin.ellipse(head_c + rot(np.array([-0.045 * depth, -0.028]), thh), 0.046, 0.050, rot=thh)
     # knitted hat: dome + folded cuff + pom-pom on a sprung offset
@@ -353,6 +384,15 @@ def child(pose, t, facing=-1):
         g.cone(S, E, 0.045, 0.040)
         g.cone(E, W, 0.040, 0.036)
         return E, W, W + dirv(fa) * 0.03
+    def tgt(key):
+        v = np.asarray(p[key], np.float64).copy()
+        if facing == 1:
+            v[0] = 2 * x0 - v[0]
+        return v
+    if p.get('f_tgt') is not None:
+        p['f_ua'], p['f_fa'] = ik2(S, tgt('f_tgt'), 0.155, 0.14 + 0.03, bend=p.get('f_bend', -1.0))
+    if p.get('n_tgt') is not None:
+        p['n_ua'], p['n_fa'] = ik2(S, tgt('n_tgt'), 0.155, 0.14 + 0.03, bend=p.get('n_bend', -1.0))
     Ef, Wf, Hf = arm(farg, p['f_ua'], p['f_fa'])
     En, Wn, Hn = arm(near, p['n_ua'], p['n_fa'])
     skin.ellipse(Hf, 0.025, 0.029, rot=p['f_fa'])
@@ -446,6 +486,15 @@ def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1):
         g.cone(E, W, 0.049, 0.042)
         g.ellipse(W, 0.047, 0.036, rot=fa)
         return E, W
+    def tgt(key):
+        v = np.asarray(p[key], np.float64).copy()
+        if facing == 1:
+            v[0] = 2 * x0 - v[0]
+        return v
+    if p.get('f_tgt') is not None:
+        p['f_ua'], p['f_fa'] = ik2(S, tgt('f_tgt'), 0.28, 0.245, bend=p.get('f_bend', -1.0))
+    if p.get('n_tgt') is not None:
+        p['n_ua'], p['n_fa'] = ik2(S, tgt('n_tgt'), 0.28, 0.245, bend=p.get('n_bend', -1.0))
     Ef, Wf = arm(farg, p['f_ua'], p['f_fa'])
     En, Wn = arm(near, p['n_ua'], p['n_fa'])
     Hf = Wf + dirv(p['f_h']) * 0.045
