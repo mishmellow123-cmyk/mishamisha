@@ -125,6 +125,7 @@ class Part:
         Returns the beat after the last note."""
         t = start
         toks = [x for x in text.replace("|", " ").split() if x]
+        prev_note = False
         for tok in toks:
             p, d = tok.split(":")
             d = eval(d, {}, {})  # allow fractions like 1/3
@@ -133,7 +134,10 @@ class Part:
                 if "!" in p:           # accent marker e.g. D5!:1
                     p = p.replace("!", "")
                     v = min(1.0, (lv(vel) if vel is not None else 0.6) + 0.12)
-                self.n(p, t, d - gap, v, legato=legato, **kw)
+                self.n(p, t, d - gap, v, legato=(legato and prev_note), **kw)
+                prev_note = True
+            else:
+                prev_note = False
             t += d
         return t
 

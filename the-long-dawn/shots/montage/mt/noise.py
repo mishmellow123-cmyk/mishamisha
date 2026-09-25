@@ -24,12 +24,12 @@ def ihash(a):
 
 @njit(inline='always', cache=True)
 def hash2i(i, j, seed):
-    return ihash(i * 73856093 ^ j * 19349663 ^ seed * 83492791)
+    return ihash(i * 73856093 ^ j * 19349663 ^ int(seed) * 83492791)
 
 
 @njit(inline='always', cache=True)
 def hash3i(i, j, k, seed):
-    return ihash(i * 73856093 ^ j * 19349663 ^ k * 83492791 ^ seed * 2654435761)
+    return ihash(i * 73856093 ^ j * 19349663 ^ k * 83492791 ^ int(seed) * 2654435761)
 
 
 @njit(inline='always', cache=True)
