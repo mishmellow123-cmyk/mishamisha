@@ -110,13 +110,12 @@ class Answers:
 
     def camera(self, t, W, H):
         # slow, heavy pull-back and rise; drift west to take in the web's reach
-        k = [(1752, 0.0), (1935, 1.0)]
         s = smoother((t - 1740.0) / (1950.0 - 1740.0))
-        lat = lerp(17.0, 6.0, s)
-        lon = lerp(86.0, 76.0, s)
+        lat = lerp(11.0, 2.0, s)
+        lon = lerp(86.0, 78.0, s)
         alt = math.exp(lerp(math.log(2300.0), math.log(8200.0), s))
-        heading = lerp(4.0, -6.0, s)
-        limb = lerp(0.14, 0.20, s)
+        heading = lerp(3.0, -6.0, s)
+        limb = lerp(0.16, 0.18, s)
         fov = lerp(52.0, 56.0, s)
         return cam_rig(lat, lon, alt, heading, limb, fov, W, H)
 
@@ -131,7 +130,7 @@ class Answers:
         img, cov, tv = G.render_planet(wd, cam, at, self.sun, Esun, self.sun, 0.0, self.moon, Emoon)
         img += G.render_lights(wd, cam, at, self.sun, gain=0.5e-7)
         img += G.render_stars(wd, cam, at, gain=0.9)
-        web().draw(img, cam, t, gain=1.0)
+        web().draw(img, cam, t, gain=1.0, scale=scale)
         return img, cam
 
     def render(self, t, scale=1.0):

@@ -92,7 +92,7 @@ def render_flame(img, cam, bx, by, bz, height, width, lean, t, seed, inten, st, 
             if one < 0.0:
                 one = 0.0
             hw_t = 1.75 * math.sqrt(vv + 0.03) * one ** 0.85
-            hw_b = (1.0 - min(vv, 1.0) ** 1.35) ** 0.8 * (1.0 + 0.12 * w1)
+            hw_b = (1.0 - min(vv, 1.0) ** 0.9) ** 0.75 * (1.0 + 0.12 * w1) * (1.0 + 0.25 * sstep(0.25, 0.0, vv))
             hw = hw_t + (hw_b - hw_t) * sb
             if hw < 1e-3:
                 hw = 1e-3

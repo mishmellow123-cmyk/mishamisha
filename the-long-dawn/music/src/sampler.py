@@ -292,6 +292,27 @@ def regions(pkey):
     return regs
 
 
+# measured tuning corrections (cents) - see check_samples.py / NOTES.md
+_FIX = None
+TIMP_FIX = {"Timpani1": +54, "Timpani2": -78, "Timpani3": -48, "Timpani4": -42, "Timpani5": -60}
+KEY_OFFSET = {"glock": -12}   # glock samples sound an octave above their SFZ keys
+
+
+def pitch_fix(path, pkey):
+    global _FIX
+    if _FIX is None:
+        fp = os.path.join(CACHE, "pitch_fix.json")
+        _FIX = json.load(open(fp)) if os.path.exists(fp) else {}
+    base = os.path.basename(path)
+    for k, v in TIMP_FIX.items():
+        if base.startswith(k + "_"):
+            return v
+    if P[pkey]["kind"] != "sus":
+        return 0.0
+    v = _FIX.get(os.path.relpath(path, VSCO), 0.0)
+    return float(np.clip(v, -45, 45)) if abs(v) >= 15 else 0.0
+
+
 def pick(pkey, pitch):
     """Return (layers, shift_of_each) for a pitch: layers = list of
     (vcenter, [regions for rr]) sorted by velocity."""
@@ -440,7 +461,8 @@ def render_note(pkey, pitch, start_beat, dur_beats, vel, dyn_pts, rr, rng,
     from dsl import dyn_at, BEAT_N
     kw = kw or {}
     p = P[pkey]
-    layers = pick(pkey, pitch)
+    kof = KEY_OFFSET.get(pkey, 0)
+    layers = pick(pkey, pitch + kof)
     centers = [c for c, _ in layers]
     dur_s = dur_beats * BEAT_S
     kind = kw.get("kind", p["kind"])
@@ -497,7 +519,8 @@ def render_note(pkey, pitch, start_beat, dur_beats, vel, dyn_pts, rr, rng,
         if p["kit"]:
             shift = kw.get("tune", 0.0)
         else:
-            shift = (pitch - r["center"]) + r["tune"] / 100.0 + r["transpose"]
+            shift = (pitch + kof - r["center"]) + r["tune"] / 100.0 + r["transpose"] \
+                + pitch_fix(r["path"], pkey) / 100.0
         S = resampled(r["path"], shift * 100 + cents_var)
         y = S["y"]
         if legato:

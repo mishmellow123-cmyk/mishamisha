@@ -127,6 +127,12 @@ def P(n):
     return PARTS[n]
 
 
+def glock_fix():
+    for nt in PARTS["glock"].notes:
+        while nt.pitch < 79:
+            nt.pitch += 12
+
+
 def hold(pn, pitches, b0, b1, vel=None, **kw):
     for p in pitches:
         P(pn).n(p, b0, b1 - b0, vel, **kw)
@@ -1068,4 +1074,5 @@ def build():
     accord()
     dawn()
     coda()
+    glock_fix()
     return {k: v for k, v in PARTS.items() if v.notes}

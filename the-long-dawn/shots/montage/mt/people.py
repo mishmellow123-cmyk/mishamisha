@@ -71,7 +71,7 @@ def shepherd(turn=0.0, arm=0.0, lean=0.0, head_up=0.0, breath=0.0, coat_pts=None
         d.chain(coat_pts, 0.05, 0.02, k=0.06)
     # belly / chest volume in profile
     if T > 0.05:
-        d.ellipse(hip + up * 0.26 + side * (0.10 * T), 0.14 * T + 0.05, 0.26, ang=-lean, k=0.06)
+        d.ellipse(hip + up * 0.28 + side * (0.05 * T), 0.10 * T + 0.06, 0.24, ang=-lean, k=0.06)
     # shawl / blanket over the shoulders (fuzzy fringe)
     d.trap(chest + up * (-0.30) + side * (-0.03 * T), chest + up * 0.08, sw + 0.075, sw + 0.02, rnd=0.04, k=0.05,
            mat=1, fuzz=0.012, ff=55.0)
@@ -86,10 +86,11 @@ def shepherd(turn=0.0, arm=0.0, lean=0.0, head_up=0.0, breath=0.0, coat_pts=None
     d.capsule(shL, eL, 0.072, 0.06, k=0.04)
     d.capsule(eL, wL, 0.06, 0.05, k=0.03)
     d.ellipse(wL + np.array([0.0, -0.04]), 0.045, 0.055, k=0.02, mat=2)
-    # right (torch) arm: low hold -> raised -> thrust forward-right
-    a_low = (0.10, -0.55)       # upper arm swung forward (toward camera-hidden), forearm across
-    a_up = (1.25, 0.55)
-    a_thr = (1.62, 0.02)
+    # right (torch) arm: low hold -> raised -> thrust forward-right into the basket.
+    # angles: (upper arm from straight down, elbow bend relative); +ve swings toward +x.
+    a_low = (0.12, -0.75)       # forearm across the front of the body (hidden from behind)
+    a_up = (1.05, 0.70)         # raised, torch up
+    a_thr = (1.30, 0.28)        # reaching forward-down, elbow slightly bent
     if arm < 0.5:
         u = arm / 0.5
         aR1 = a_low[0] + (a_up[0] - a_low[0]) * u
@@ -98,20 +99,32 @@ def shepherd(turn=0.0, arm=0.0, lean=0.0, head_up=0.0, breath=0.0, coat_pts=None
         u = (arm - 0.5) / 0.5
         aR1 = a_up[0] + (a_thr[0] - a_up[0]) * u
         aR2 = a_up[1] + (a_thr[1] - a_up[1]) * u
-    aR1 -= 0.25 * recoil
-    eR, wR = limb(shR, aR1, 0.29 * (0.75 + 0.25 * T + 0.25 * min(arm, 1.0) * (1 - T)), aR2, 0.27)
-    d.capsule(shR, eR, 0.072, 0.06, k=0.04)
-    d.capsule(eR, wR, 0.06, 0.05, k=0.03)
-    hand = wR + (wR - eR) / (np.linalg.norm(wR - eR) + 1e-9) * 0.05
-    d.ellipse(hand, 0.05, 0.045, k=0.02, mat=2)
-    # torch: stick pointing along forearm, tilted up
+    aR1 -= 0.30 * recoil
+    aR2 += 0.35 * recoil
+    # engaged shoulder: it comes forward and up with the reach
+    eng = min(max(arm - 0.3, 0.0) / 0.7, 1.0)
+    shR = shR + side * (0.05 * eng) + up * (0.03 * eng)
+    upper = 0.29 * (0.72 + 0.28 * max(T, min(arm * 1.4, 1.0)))   # foreshortened while reaching away
+    eR, wR = limb(shR, aR1, upper, aR2, 0.27 * (0.75 + 0.25 * max(T, min(arm * 1.4, 1.0))))
+    d.capsule(shR, eR, 0.074, 0.062, k=0.05)
+    d.capsule(eR, wR, 0.062, 0.05, k=0.04)
     fdir = (wR - eR) / (np.linalg.norm(wR - eR) + 1e-9)
-    tdir = rot(fdir, 0.9 - 0.75 * min(arm, 1.0)) if arm < 0.99 else rot(fdir, 0.15)
-    tdir = tdir / np.linalg.norm(tdir)
-    t0 = hand - tdir * 0.12
-    t1 = hand + tdir * 0.55
+    hand = wR + fdir * 0.05
+    d.ellipse(hand, 0.05, 0.045, k=0.02, mat=2)
+    # torch direction: upright in the low hold, up when raised, forward-down into the basket
+    v_low = np.array([0.12, 1.0])
+    v_up = np.array([0.45, 1.0])
+    v_thr = rot(fdir, -0.42)
+    if arm < 0.5:
+        tdir = lerp(v_low, v_up, arm / 0.5)
+    else:
+        tdir = lerp(v_up / np.linalg.norm(v_up), v_thr, (arm - 0.5) / 0.5)
+    tdir = tdir / (np.linalg.norm(tdir) + 1e-9)
+    fs = 0.42 + 0.58 * max(T, min(arm / 0.5, 1.0))           # foreshortening while pointing away
+    t0 = hand - tdir * 0.10 * fs
+    t1 = hand + tdir * 0.56 * fs
     d.capsule(t0, t1, 0.018, 0.022, mat=4)
-    d.ellipse(t1, 0.035, 0.05, ang=math.atan2(tdir[1], tdir[0]) - math.pi / 2, mat=8)
+    d.ellipse(t1, 0.034, 0.05, ang=math.atan2(tdir[1], tdir[0]) - math.pi / 2, mat=8)
     # --- neck, head, cap
     d.capsule(neck - up * 0.04, neck + up * 0.06, 0.06, 0.055, k=0.03, mat=2)
     hc = neck + up * 0.13 + rot(np.array([0.025 * T, 0.0]), -lean) + np.array([0.0, 0.01 * head_up])

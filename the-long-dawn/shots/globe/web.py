@@ -251,12 +251,13 @@ class Web:
             if (a, b) in conn or not (np.isfinite(t_ign[a]) and np.isfinite(t_ign[b])):
                 continue
             dkm = gc_km(P[a], P[b])
-            if dkm > 1100.0 or rng.random() > 0.35:
+            if dkm > 1000.0 or rng.random() > 0.16:
                 continue
             i, j = (a, b) if t_ign[a] <= t_ign[b] else (b, a)
-            tl = t_ign[j] + rng.uniform(4.0, 30.0)
+            tl = t_ign[j] + rng.uniform(8.0, 50.0)
             ta = tl + self._travel(dkm)
             arcs.append((i, j, tl, ta, 3))
+        t_ign[origin] = self.t0 - 400.0      # the first beacon has burned since FIRST BEACON
         self.t_ign = t_ign
         self.arcs = np.array(arcs, np.float64)
 
@@ -272,13 +273,14 @@ class Web:
         B = self.P[self.aj]
         self.omega = np.arccos(np.clip(np.sum(A * B, 1), -1, 1))
         self.len_km = self.omega * R_KM
-        lift = np.where(self.ak == 1, 0.13, 0.085)
+        lift = np.where(self.ak == 1, 0.13, 0.045)
         self.hmax = np.minimum(self.len_km * lift, 1100.0) / R_KM
-        self.nseg = np.clip((self.len_km / 22.0).astype(int), 10, 220)
+        self.nseg = np.clip((self.len_km / 18.0).astype(int), 10, 260)
         rng = np.random.default_rng(self.seed + 99)
         self.phase = rng.random(len(a)) * 2 * np.pi
         self.nphase = rng.random(len(self.P)) * 2 * np.pi
         self.nfreq = rng.uniform(0.25, 0.6, len(self.P))
+        self.pulses = [(0, self.t0, 1.0)]         # the first beacon flares when the choir enters
 
     def arc_points(self, k, u):
         """World positions on arc k at parameters u (array)."""
@@ -299,18 +301,25 @@ class Web:
         s = np.clip(s, 0, 1)
         return 0.55 * s + 0.45 * s * s * (3 - 2 * s)
 
-    def draw(self, img, cam, t, gain=1.0, trail=1.0, head=1.0, node=1.0, width=1.0,
-             calm=None, sparks=True, dim_far=0.35, t_anim=None):
+    @staticmethod
+    def _px(sig, I, scale):
+        """Scale full-res sigmas to the render scale; keep energy when clamping thin lines."""
+        s = sig * scale
+        lo = 0.45
+        k = np.where(s < lo, s / lo, 1.0)
+        return np.maximum(s, lo), I * k
+
+    def draw(self, img, cam, t, gain=1.0, trail=1.0, head=1.0, node=1.0, scale=1.0,
+             calm=None, sparks=True, t_anim=None, glow=1.0):
         """Additively draw the web at state time t into img (HDR, linear). t_anim drives the
         flicker/flow (defaults to t). calm: optional function(py array) -> multiplier."""
         pal = palette()
         ta_ = t if t_anim is None else t_anim
-        H, W = img.shape[:2]
-        f = cam.f
         active = np.where(self.tl <= t)[0]
-        xs, ys, cols, sig, starts = [], [], [], [], [0]
+        xs, ys, Is, sig, oks, starts = [], [], [], [], [], [0]
         heads = []
         spark_segs = []
+        cnorm = np.linalg.norm(cam.pos)
         for k in active:
             s = (t - self.tl[k]) / max(self.ta[k] - self.tl[k], 1e-6)
             uh = float(self.ease(s))
@@ -323,91 +332,99 @@ class Web:
             uv, z = cam.project(X)
             vis = G.visible(cam.pos, X) & (z > 1e-3)
             L = self.len_km[k]
-            age = t - self.ta[k]              # >0 after arrival
-            # trail brightness: settles after arrival; flowing shimmer along the thread
-            settle = 1.0 if age < 0 else 0.62 + 0.38 * math.exp(-age / 30.0)
-            flow = 1.0 + 0.22 * np.sin(u * L / 90.0 - ta_ * 0.35 + self.phase[k])
-            it = trail * settle * flow * (1.25 if self.ak[k] == 1 else 1.0)
-            # hot head: tapering behind the tip while in flight
+            age = t - self.ta[k]
+            flow = 1.0 + 0.3 * np.sin(u * L / 70.0 - ta_ * 0.45 + self.phase[k])
+            leap = self.ak[k] == 1
             if s < 1.0:
                 back = (uh - u) * L
-                hot = np.exp(-back / 140.0) * 7.0 + np.exp(-back / 30.0) * 10.0
-                heads.append((X[-1], s))
+                hot = 16.0 * np.exp(-back / 22.0) + 4.0 * np.exp(-back / 110.0)
+                warm = 1.6 * np.exp(-back / 420.0)
+                heads.append((X[-1], leap))
+                base = 0.55
             else:
                 hot = 0.0
-            I = (it + head * hot) * gain
+                warm = 1.4 * math.exp(-age / 16.0)
+                root = np.exp(-u * L / 140.0) + np.exp(-(1.0 - u) * L / 140.0)
+                base = 0.55 * (1.0 + 0.9 * root)
+            I = (trail * (base * flow + warm) + head * hot) * gain * (1.3 if leap else 1.0)
             depth = np.maximum(z, 1e-3)
-            near = np.clip(0.9 * (cam.pos @ cam.pos) ** 0.5 / depth, 0.4, 1.6)
-            I = I * (1.0 - dim_far + dim_far * np.clip(near, 0, 1))
-            c = np.outer(I, pal['gold'])
-            w = np.clip(0.75 * near, 0.55, 1.6) * width
+            near = np.clip(0.9 * cnorm / depth, 0.45, 1.5)
+            I = I * (0.7 + 0.3 * np.clip(near, 0, 1))
+            w = np.clip(0.62 * near, 0.5, 1.2) * (1.25 if leap else 1.0)
             if calm is not None:
-                c *= calm(uv[:, 1])[:, None]
-            xx = uv[:, 0].copy()
-            yy = uv[:, 1].copy()
-            xx[~vis] = np.nan
-            xs.append(xx)
-            ys.append(yy)
-            cols.append(c)
+                I = I * calm(uv[:, 1])
+            xs.append(uv[:, 0])
+            ys.append(uv[:, 1])
+            Is.append(I)
             sig.append(w)
-            starts.append(starts[-1] + len(xx))
-            # sparks shed by the head (and briefly after arrival)
+            oks.append(vis.astype(np.uint8))
+            starts.append(starts[-1] + len(u))
             if sparks and (s < 1.0 or age < 18):
                 spark_segs.append((k, uh, s, age))
         if xs:
             xs = np.concatenate(xs)
             ys = np.concatenate(ys)
-            cols = np.concatenate(cols)
+            Is = np.concatenate(Is)
             sig = np.concatenate(sig)
-            # wide soft amber glow under the thin core
-            glow = cols * (pal['amber'] / pal['gold'])[None, :] * 0.10
-            G.splat_polyline(img, xs, ys, glow, sig * 3.2, np.asarray(starts, np.int64))
-            G.splat_polyline(img, xs, ys, cols, sig, np.asarray(starts, np.int64))
-        # heads: white-hot points
+            oks = np.concatenate(oks)
+            st = np.asarray(starts, np.int64)
+            sg, I2 = self._px(sig * 3.4, Is * 0.07 * glow, scale)
+            G.splat_polyline(img, xs, ys, np.outer(I2, pal['amber']), sg, st, oks)
+            sg, I2 = self._px(sig, Is, scale)
+            G.splat_polyline(img, xs, ys, np.outer(I2, pal['gold']), sg, st, oks)
         if heads:
             HP = np.array([h[0] for h in heads])
+            lp = np.array([h[1] for h in heads])
             uv, z = cam.project(HP)
             vis = G.visible(cam.pos, HP) & (z > 1e-3)
-            uv = uv[vis]
-            if len(uv):
-                sgh = 1.1 * width
-                e = np.full(len(uv), 26.0 * head * gain * 2 * np.pi * sgh * sgh)
-                rgb = np.outer(e, pal['pale'])
-                if calm is not None:
-                    rgb *= calm(uv[:, 1])[:, None]
-                G.splat_points(img, uv[:, 0].copy(), uv[:, 1].copy(), rgb, np.full(len(uv), sgh))
+            if vis.any():
+                uv = uv[vis]
+                lp = lp[vis]
+                mul = np.ones(len(uv)) if calm is None else calm(uv[:, 1])
+                pk = (30.0 + 12.0 * lp) * head * gain * mul
+                self._spot(img, uv, pk, 1.0, pal['pale'], scale)
+                self._spot(img, uv, pk * 0.1 * glow, 3.0, pal['gold'], scale)
         if spark_segs:
-            self._sparks(img, cam, t, spark_segs, gain, calm)
-        self._nodes_draw(img, cam, t, gain * node, width, calm, ta_)
+            self._sparks(img, cam, t, spark_segs, gain, calm, scale)
+        self._nodes_draw(img, cam, t, gain * node, calm, ta_, scale, glow)
 
-    def _sparks(self, img, cam, t, segs, gain, calm):
+    def _spot(self, img, uv, peak, sigma_full, col, scale):
+        """Gaussian spots with given PEAK radiance and full-res sigma."""
+        s = sigma_full * scale
+        lo = 0.5
+        k = 1.0 if s >= lo else (s / lo) ** 2
+        s = max(s, lo)
+        e = peak * k * 2 * np.pi * s * s
+        G.splat_points(img, uv[:, 0].copy(), uv[:, 1].copy(), np.outer(e, col), np.full(len(uv), s))
+
+    def _sparks(self, img, cam, t, segs, gain, calm, scale):
         pal = palette()
         X0, X1, E = [], [], []
+        ss = np.linspace(0, 1, 64)
+        ue = self.ease(ss)
         for (k, uh, s, age) in segs:
             L = self.len_km[k]
-            nsp = int(max(4, L / 35.0))
+            nsp = int(max(4, L / 30.0))
             rng = np.random.default_rng(int(k) * 7919 + self.seed)
             us = np.sort(rng.random(nsp))
-            life = rng.uniform(6.0, 16.0, nsp)
-            # the time the head passed u
+            life = rng.uniform(5.0, 14.0, nsp)
             dur = self.ta[k] - self.tl[k]
-            # invert ease approx by sampling
-            ss = np.linspace(0, 1, 64)
-            ue = self.ease(ss)
             tpass = self.tl[k] + np.interp(us, ue, ss) * dur
             a = t - tpass
             m = (a >= 0) & (a < life)
             if not m.any():
                 continue
             us, life, a = us[m], life[m], a[m]
+            rs = rng.normal(0, 1, (nsp, 3))[m]
+            dr = rng.uniform(-0.0014, 0.0004, nsp)[m]
             P0 = self.arc_points(k, us)
-            vel = rng.normal(0, 1, (len(us), 3)) * 0.0009 + P0 * rng.uniform(-0.0012, 0.0003, (len(us), 1))
+            vel = rs * 0.0008 + P0 * dr[:, None]
             p_t = P0 + vel * a[:, None] / 10.0
-            p_prev = P0 + vel * np.maximum(a - 1.2, 0)[:, None] / 10.0
+            p_prev = P0 + vel * np.maximum(a - 1.5, 0)[:, None] / 10.0
             fade = (1.0 - a / life) ** 1.5
             X0.append(p_prev)
             X1.append(p_t)
-            E.append(fade * 3.5)
+            E.append(fade * 4.0)
         if not X0:
             return
         X0 = np.concatenate(X0)
@@ -415,22 +432,25 @@ class Web:
         E = np.concatenate(E) * gain
         uv0, z0 = cam.project(X0)
         uv1, z1 = cam.project(X1)
-        vis = G.visible(cam.pos, X1) & (z1 > 1e-3)
-        c = np.outer(E, pal['gold'] * np.array([1.0, 0.85, 0.6]))
+        vis = G.visible(cam.pos, X1) & (z1 > 1e-3) & (z0 > 1e-3)
+        if not vis.any():
+            return
         if calm is not None:
-            c *= calm(uv1[:, 1])[:, None]
-        xs = np.empty(2 * vis.sum())
-        ys = np.empty(2 * vis.sum())
+            E = E * calm(uv1[:, 1])
+        nv = int(vis.sum())
+        xs = np.empty(2 * nv)
+        ys = np.empty(2 * nv)
         xs[0::2] = uv0[vis, 0]
         xs[1::2] = uv1[vis, 0]
         ys[0::2] = uv0[vis, 1]
         ys[1::2] = uv1[vis, 1]
-        cc = np.repeat(c[vis], 2, axis=0)
-        sg = np.full(len(xs), 0.6)
+        I = np.repeat(E[vis], 2)
+        sg, I = self._px(np.full(len(xs), 0.55), I, scale)
+        col = pal['gold'] * np.array([1.0, 0.8, 0.55])
         st = np.arange(0, len(xs) + 1, 2, dtype=np.int64)
-        G.splat_polyline(img, xs, ys, cc, sg, st)
+        G.splat_polyline(img, xs, ys, np.outer(I, col), sg, st, np.ones(len(xs), np.uint8))
 
-    def _nodes_draw(self, img, cam, t, gain, width, calm, ta_):
+    def _nodes_draw(self, img, cam, t, gain, calm, ta_, scale, glow=1.0):
         pal = palette()
         lit = np.where(self.t_ign <= t)[0]
         if len(lit) == 0:
@@ -439,21 +459,26 @@ class Web:
         uv, z = cam.project(P)
         vis = G.visible(cam.pos, P) & (z > 1e-3)
         lit, uv, z = lit[vis], uv[vis], z[vis]
+        if len(lit) == 0:
+            return
         age = t - self.t_ign[lit]
-        flash = np.exp(-age / 5.0) * 5.0 + np.exp(-age / 22.0) * 1.2
-        fl = 1.0 + 0.13 * np.sin(ta_ * self.nfreq[lit] + self.nphase[lit]) + 0.07 * np.sin(ta_ * 1.7 * self.nfreq[lit] + 2 * self.nphase[lit])
-        base = np.where(self.kind[lit] == 0, 2.2, 1.0)
+        flash = np.exp(-age / 4.0)
+        flash2 = np.exp(-age / 12.0)
+        for (ni, tp, amp) in self.pulses:
+            m = lit == ni
+            if m.any() and t >= tp:
+                flash[m] += amp * 1.6 * math.exp(-(t - tp) / 6.0)
+                flash2[m] += amp * 1.6 * math.exp(-(t - tp) / 18.0)
+        fl = 1.0 + 0.14 * np.sin(ta_ * self.nfreq[lit] + self.nphase[lit]) + 0.08 * np.sin(ta_ * 1.7 * self.nfreq[lit] + 2 * self.nphase[lit])
+        base = np.where(self.kind[lit] == 0, 1.8, 1.0)
         near = np.clip(0.9 * np.linalg.norm(cam.pos) / np.maximum(z, 1e-3), 0.45, 1.5)
-        core = (9.0 * base * fl + 30.0 * flash) * gain * (0.65 + 0.35 * np.clip(near, 0, 1))
-        halo = (0.55 * base * fl + 2.2 * flash) * gain
+        dimf = 0.6 + 0.4 * np.clip(near, 0, 1)
         mul = np.ones(len(lit)) if calm is None else calm(uv[:, 1])
-        rgb_c = np.outer(core * mul, pal['pale'])
-        rgb_h = np.outer(halo * mul, pal['amber'])
-        sc = np.clip(near, 0.6, 1.4) * width
-        G.splat_points(img, uv[:, 0].copy(), uv[:, 1].copy(), rgb_h * (2 * np.pi * (5.0 * sc) ** 2)[:, None],
-                       5.0 * sc)
-        G.splat_points(img, uv[:, 0].copy(), uv[:, 1].copy(), rgb_c * (2 * np.pi * (0.9 * sc) ** 2)[:, None],
-                       0.9 * sc)
+        core = (14.0 * base * fl + 45.0 * flash) * gain * dimf * mul
+        halo = (1.0 * base * fl + 5.0 * flash2) * gain * dimf * mul * glow
+        self._spot(img, uv, halo, 2.6, pal['amber'], scale)
+        self._spot(img, uv, halo * 0.35 * flash2, 7.0, pal['gold'], scale)
+        self._spot(img, uv, core, 0.85, pal['pale'], scale)
 
     def summary(self):
         ti = self.t_ign

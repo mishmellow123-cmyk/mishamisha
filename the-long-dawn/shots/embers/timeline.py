@@ -39,7 +39,7 @@ class Timeline:
             C = B.crown_centre(t)
             focus = float(np.linalg.norm(C - pos))
             hf = float(lerp(46.0, 44.0, smoothstep(480, 520, t)))
-            hf = float(lerp(hf, 52.0, smoothstep(640, 760, t)))
+            hf = float(lerp(hf, 56.0, smoothstep(540, 620, t)))
             hf = float(lerp(hf, 60.0, smoothstep(800, 870, t)))
             ap = float(lerp(0.06, 0.12, smoothstep(520, 600, t)))
             return Camera(pos, tgt, hfov=hf, focus=focus, aperture=ap)
