@@ -82,10 +82,11 @@ class Camera:
 class Atmosphere:
     """Single-scattering Rayleigh/Mie/ozone shell, thickness exaggerated by X (optical depth kept)."""
 
-    def __init__(self, X=2.5, mie_scale=3.0, g=0.80, airglow=0.0, soft_deg=0.45):
+    def __init__(self, X=2.5, mie_scale=3.0, g=0.80, airglow=0.0, soft_deg=0.45, rim=1.0,
+                 airglow_h_km=120.0, airglow_w_km=2.2, airglow_warm=0.25):
         self.X = X
         k = 6.371e6 / X                                        # per metre -> per (R/X)
-        self.params = np.zeros(24, np.float64)
+        self.params = np.zeros(28, np.float64)
         p = self.params
         p[0] = 1.0 + 100.0 * X / R_KM                            # top radius
         p[1] = 8.0 * X / R_KM                                    # Rayleigh scale height
@@ -98,9 +99,12 @@ class Atmosphere:
         p[12] = 15.0 * X / R_KM                                  # ozone half width
         p[13] = g
         p[14] = math.radians(soft_deg)                           # soft terminator (sun disk + refraction)
-        p[15] = 95.0 * X / R_KM                                  # airglow layer
-        p[16] = 6.0 * X / R_KM
-        p[17:20] = np.array([0.35, 1.0, 0.45]) * airglow         # airglow emission (greenish)
+        p[15] = airglow_h_km / R_KM                              # airglow: a hairline above the haze
+        p[16] = airglow_w_km / R_KM
+        p[17:20] = np.array([0.45, 1.0, 0.55]) * airglow         # pale green emission
+        p[20] = rim                                              # extra gain on moonlit scattering (rim)
+        p[21:24] = np.array([1.0, 0.45, 0.12]) * airglow * airglow_warm   # faint warm layer below
+        p[24] = (airglow_h_km - 14.0) / R_KM
         self.lut = build_transmittance(p, 64, 256)
 
     @property
@@ -396,7 +400,7 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
         prM = phase_r(nuM)
         pmM = phase_m(nuM, g) * p[6]
         moon_on = E_moon[0] + E_moon[1] + E_moon[2] > 0.0
-        glow_on = p[17] + p[18] + p[19] > 0.0
+        glow_on = p[17] + p[18] + p[19] + p[21] > 0.0
         for half in range(2):
             if half == 0:
                 span = t_low - t_start
@@ -445,17 +449,19 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
                 if moon_on:
                     muM = (x * M[0] + y * M[1] + z * M[2]) / r
                     Q0, Q1, Q2 = trans_lookup(lut, p, r, muM)
-                    sr2 = rr * prM
-                    sm2 = rm * pmM
+                    sr2 = rr * prM * p[20]
+                    sm2 = rm * pmM * p[20]
                     L0 += tv0 * Q0 * (p[3] * sr2 + sm2) * ds * E_moon[0]
                     L1 += tv1 * Q1 * (p[4] * sr2 + sm2) * ds * E_moon[1]
                     L2 += tv2 * Q2 * (p[5] * sr2 + sm2) * ds * E_moon[2]
                 if glow_on:
                     q = (h - p[15]) / p[16]
                     eg = math.exp(-q * q) * ds
-                    L0 += tv0 * eg * p[17]
-                    L1 += tv1 * eg * p[18]
-                    L2 += tv2 * eg * p[19]
+                    q2 = (h - p[24]) / (2.5 * p[16])
+                    ew = math.exp(-q2 * q2) * ds
+                    L0 += tv0 * (eg * p[17] + ew * p[21])
+                    L1 += tv1 * (eg * p[18] + ew * p[22])
+                    L2 += tv2 * (eg * p[19] + ew * p[23])
                 tau0 += e0 * ds
                 tau1 += e1 * ds
                 tau2 += e2 * ds
@@ -591,10 +597,30 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
     Tm2 = 0.0
     if muM > -0.1:
         Tm0, Tm1, Tm2 = trans_lookup(lut, p, 1.0, muM)
-        ndm = max(0.0, Nx * M[0] + Ny * M[1] + Nz * M[2]) * inv_pi
+        ndm = max(0.0, Nx * M[0] + Ny * M[1] + Nz * M[2]) * inv_pi * cp[12]
         g0 += a0 * E_moon[0] * Tm0 * ndm
         g1 += a1 * E_moon[1] * Tm1 * ndm
         g2 += a2 * E_moon[2] * Tm2 * ndm
+        if water > 0.01 and cp[14] > 0.0:
+            vx = -dx
+            vy = -dy
+            vz = -dz
+            hx = vx + M[0]
+            hy = vy + M[1]
+            hz = vz + M[2]
+            hl = math.sqrt(hx * hx + hy * hy + hz * hz)
+            ndh = max(0.0, (x * hx + y * hy + z * hz) / hl)
+            ndv = max(1e-3, x * vx + y * vy + z * vz)
+            a = 0.35
+            a2_ = a * a
+            dd = ndh * ndh * (a2_ - 1.0) + 1.0
+            D = a2_ / (math.pi * dd * dd)
+            vdh = max(0.0, (vx * hx + vy * hy + vz * hz) / hl)
+            F = 0.02 + 0.98 * math.pow(1.0 - vdh, 5.0)
+            spec = D * F * max(0.0, muM) / (4.0 * ndv + 1e-3) * water * cp[14]
+            g0 += spec * E_moon[0] * Tm0
+            g1 += spec * E_moon[1] * Tm1
+            g2 += spec * E_moon[2] * Tm2
     # cloud layer, lit at cloud-top height (keeps the light past the ground terminator)
     if c > 0.0:
         rc = 1.0 + cp[7]
@@ -604,7 +630,7 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
         fwd = 1.0 + 0.8 * max(0.0, vs) ** 8
         calb = 0.85
         dl = inv_pi * wrap * fwd
-        mm = inv_pi * max(0.0, (muM + 0.1) / 1.1)
+        mm = inv_pi * max(0.0, (muM + 0.1) / 1.1) * cp[13]
         c0 = calb * (E_sun[0] * (Tc0 * dl + tw * tr * 1.3 + day_amb * 0.55) + E_moon[0] * Tm0 * mm)
         c1 = calb * (E_sun[1] * (Tc1 * dl + tw * tg * 1.3 + day_amb * 0.70) + E_moon[1] * Tm1 * mm)
         c2 = calb * (E_sun[2] * (Tc2 * dl + tw * tb * 1.3 + day_amb * 1.00) + E_moon[2] * Tm2 * mm)
@@ -846,10 +872,12 @@ class World:
 
     # cloud params: [f_detail, base_gain, detail_gain, bias, warp_f, warp_strength, opacity,
     #                cloud_height, shadow_strength, twilight_gain, relief, ocean_roughness]
+    #                night_land, night_cloud, moon_glint]
     @staticmethod
     def default_cp(X=2.5):
         return np.array([95.0, 1.35, 0.95, 0.12, 22.0, 0.035, 0.95,
-                         9.0 * X / R_KM, 0.55, 0.035, 0.9, 0.16], np.float64)
+                         9.0 * X / R_KM, 0.55, 0.035, 0.9, 0.16,
+                         0.30, 0.55, 1.0], np.float64)
 
     def stars(self):
         if self._stars is None:

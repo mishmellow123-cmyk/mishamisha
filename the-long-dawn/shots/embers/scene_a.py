@@ -77,7 +77,8 @@ class Embers:
         temp = self.T0 * (1 - 0.55 * x)
         fl = 1 + self.flk * np.sin(0.9 * t + self.ph) * np.sin(0.37 * t + 2 * self.ph)
         e = self.E0 * np.clip((t - self.tb) / 3.0, 0, 1) * (1 - x) ** 0.8 * fl
-        e *= 1 - smoothstep(335, 372, t)          # the embers die away once letters have formed
+        e *= 1 - 0.85 * smoothstep(318, 346, t)    # the embers give way to the letters
+        e *= 1 - smoothstep(346, 372, t)
         e = np.where(alive, e, 0.0)
         col = look.blackbody(temp)
         ctx.fr.splat(p0, p1, self.rw, e, col, ctx.cam0, ctx.cam1)
@@ -103,7 +104,7 @@ class TorchGlow:
 class Glyphs:
     """Thousands of glyphs: born from embers / drifting in; spiral; compress to a point."""
 
-    def __init__(self, n=4200, n_ember=380, seed=3):
+    def __init__(self, n=5200, n_ember=1300, seed=3):
         r = rng(seed)
         A = G.load(os.path.join(CACHE, 'glyphs.npz'))
         self.A = A
@@ -157,14 +158,9 @@ class Glyphs:
             d = fw + sx * tn * rt + sy * tn * upv
             home[i] = pc + d / np.linalg.norm(d) * HERO_FOCUS / np.dot(d / np.linalg.norm(d), fw)
             s[i] = sz
-            # velocity: pass the lens on its own side ~26 frames after the moment
-            pe, te = cam_a(th + 26)
-            fe = (te - pe) / np.linalg.norm(te - pe)
-            re = np.cross(fe, [0, 1.0, 0])
-            re /= np.linalg.norm(re)
-            ue = np.cross(re, fe)
-            goal = pe + np.sign(sx) * 1.7 * re + 1.0 * ue + 0.6 * fe
-            hv.append((goal - home[i]) / 26.0)
+            # velocity (camera-relative at the moment): toward the lens, drifting outward
+            vv = -fw + 0.34 * np.sign(sx) * rt + 0.22 * upv
+            hv.append(vv / np.linalg.norm(vv) * 0.15)
         self.hv = np.array(hv).reshape(-1, 3)
         self.th = np.array([p[1] for p in self.passes], np.float64)
         self.home = home
@@ -188,7 +184,7 @@ class Glyphs:
         self.t_open[ie] = r.uniform(320.0, 342.0, n_ember)
         self.is_ember = np.zeros(n, bool)
         self.is_ember[ie] = True
-        s[ie] = r.lognormal(np.log(0.15), 0.2, n_ember)
+        s[ie] = r.lognormal(np.log(0.17), 0.2, n_ember)
         # ---- look
         self.T = r.uniform(0.5, 0.82, n)
         self.T[:nh] = r.uniform(0.62, 0.8, nh)
@@ -254,18 +250,15 @@ class Glyphs:
             cs = self.centre_pre_frozen()
             q = cs[act]
             rq = np.linalg.norm(q[:, [0, 2]], axis=1)
-            th = np.arctan2(q[:, 2], q[:, 0])
+            thq = np.arctan2(q[:, 2], q[:, 0])
             h = q[:, 1]
             ua = np.minimum(u[act], 0.9995)
             rr = rq * (1 - ua) ** 1.25
-            # pull toward 3 logarithmic arms as the spiral forms (galaxy of writing)
-            tharm = self.arm[act] + 1.1 * np.log(np.maximum(rq, 0.5))
-            dth = np.angle(np.exp(1j * (tharm - th)))
-            th = th + dth * smoothstep(0.0, 0.22, ua)
-            th2 = th + self.sp_k[act] * np.log(1.0 / (1.0 - 0.995 * ua)) + 0.35 * ua
-            hh = h * (1 - smoothstep(0.0, 0.5, ua)) * (1 - ua)
+            tharm = self.arm[act] + SP_PITCH * np.log(np.maximum(rr, 0.03) / 10.0) + sp_omega(t)
+            dth = np.angle(np.exp(1j * (tharm - thq)))
+            th2 = thq + dth * smoothstep(0.0, 0.3, ua)
+            hh = h * (1 - smoothstep(0.0, 0.4, ua)) * (1 - ua)
             sp = np.stack([rr * np.cos(th2), hh, rr * np.sin(th2)], 1)
-            # residual motion fades out
             resid = c[act] - q
             c[act] = sp + resid * (1 - ua)[:, None] ** 2
         return c, u
@@ -339,6 +332,14 @@ class Glyphs:
         self.last_u = u
 
 
+SP_PITCH = -1.5
+
+
+def sp_omega(t):
+    x = max(t - 396.0, 0.0)
+    return 0.02 * x + 0.0009 * x * x
+
+
 class ThePoint:
     """The blinding point that everything compresses into (430..484)."""
 
@@ -398,14 +399,14 @@ CAM_A = [
 HERO_FOCUS = 5.0
 # (text, moment, screen x, screen y (fractions of half-width), em size)
 HERO_PASSES = [
-    ('火', 346, -0.46, 0.22, 0.36),
-    ('\U0001D11E', 353, 0.50, 0.16, 0.36),
-    ('كلمة', 360, -0.12, 0.30, 0.30),
-    ('π', 367, 0.60, 0.30, 0.34),
-    ('ज्ञान', 374, -0.58, 0.10, 0.28),
-    ('A', 381, 0.22, 0.26, 0.34),
-    ('ACGT', 388, -0.30, 0.33, 0.26),
-    ('∞', 395, 0.56, 0.08, 0.34),
+    ('火', 338, -0.42, 0.22, 0.36),
+    ('\U0001D11E', 345, 0.46, 0.14, 0.36),
+    ('كلمة', 352, -0.10, 0.30, 0.30),
+    ('π', 359, 0.58, 0.28, 0.34),
+    ('ज्ञान', 366, -0.56, 0.10, 0.28),
+    ('A', 373, 0.20, 0.24, 0.34),
+    ('ACGT', 380, -0.30, 0.32, 0.26),
+    ('∞', 387, 0.52, 0.08, 0.34),
 ]
 
 
