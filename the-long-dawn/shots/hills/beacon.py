@@ -32,7 +32,7 @@ FIRE_BASE = np.array([0.0, CAIRN.bk_bot + 0.10, 0.0])
 TINDER = np.array([0.20, CAIRN.bk_top - 0.03, -0.02])
 
 MOON = np.array([0.55, 0.70, 0.95]) * 0.55          # moonlight on snow (linear)
-FOG = np.array([1.0 / 42000.0, 1.0 / 2600.0, -2250.0, 120.0, 0.9, math.radians(3.0), 0.9,
+FOG = np.array([1.0 / 60000.0, 1.0 / 900.0, -1500.0, 260.0, 0.6, math.radians(3.0), 0.9,
                 30.0, 1.0 / 60.0, MOON[0], MOON[1], MOON[2], 1.0], np.float64)
 
 
@@ -44,34 +44,49 @@ def summit_profile(X):
     h = -0.025 * X ** 2
     h -= np.where(a > 2.5, 0.55 * (a - 2.5) ** 1.35, 0.0)
     h -= np.where(X > 0, 0.004 * X ** 3, 0.0)
-    h += 0.05 * fbm1_np(X / 0.9 + 3.0, 4, 2.0, 0.5, 71)
+    h += 0.05 * fbm1_np(X / 0.9 + 3.0, 4, 2.0, 0.5, 71) + 0.35 * fbm1_np(X / 9.0 + 1.0, 4, 2.0, 0.5, 72) * (np.abs(X) > 4)
+    return h
+
+
+def peak_profile(x0, x1, n, base, amp, spacing, seed, sharp=1.0):
+    """Himalayan skyline: max of pyramid 'tents' + a little ridged detail."""
+    rng = np.random.default_rng(seed)
+    X = np.linspace(x0, x1, n)
+    h = np.full(n, base - 0.2 * amp)
+    xs = np.arange(x0, x1, spacing) + rng.uniform(0, spacing, int(np.ceil((x1 - x0) / spacing)))
+    for xp in xs:
+        hp = base + amp * rng.uniform(0.25, 1.0) ** 1.4
+        sl = amp / spacing * rng.uniform(0.9, 2.2) * sharp
+        sl_l = sl * rng.uniform(0.7, 1.3)
+        sl_r = sl * rng.uniform(0.7, 1.3)
+        t = np.where(X < xp, hp - sl_l * (xp - X), hp - sl_r * (X - xp))
+        h = np.maximum(h, t)
+    h += 0.04 * amp * fbm1_np(X / (spacing * 0.15) + seed, 5, 2.0, 0.5, seed)
     return h
 
 
 def build_world():
     ridges = []
-    # (z, top angle deg, amp deg, scale, ridged, albedo, mist)
-    L = [(260.0, -16.0, 5.0, 160.0, 0.9, 0.9, 0.2),
-         (700.0, -11.0, 4.0, 380.0, 0.9, 0.8, 0.5),
-         (1600.0, -8.0, 3.2, 700.0, 0.92, 0.7, 0.8),
-         (3600.0, -5.6, 2.4, 1300.0, 0.94, 0.6, 1.0),
-         (8000.0, -4.0, 1.7, 2600.0, 0.95, 0.5, 1.0),
-         (17000.0, -3.1, 1.1, 5000.0, 0.95, 0.45, 0.9),
-         (38000.0, -2.6, 0.75, 9000.0, 0.95, 0.4, 0.6),
-         (80000.0, -2.7, 0.55, 16000.0, 0.95, 0.35, 0.4)]
-    for i, (z, top, amp, sc, rd, al, mist) in enumerate(L):
+    # (z, top angle deg, amp deg, spacing (m), albedo, mist)
+    L = [(900.0, -13.0, 5.5, 520.0, 0.9, 0.3),
+         (2300.0, -8.5, 3.6, 1100.0, 0.8, 0.7),
+         (5200.0, -5.8, 2.6, 2200.0, 0.7, 1.0),
+         (11500.0, -4.1, 1.8, 4200.0, 0.6, 1.0),
+         (25000.0, -3.1, 1.25, 8000.0, 0.5, 0.8),
+         (56000.0, -2.8, 0.85, 15000.0, 0.45, 0.5)]
+    for i, (z, top, amp, sp, al, mist) in enumerate(L):
         x0, x1 = -1.2 * z - 200, 1.2 * z + 200
         n = int(min(20000, max(3000, (x1 - x0) / (z / 3000.0))))
         drop = z * z / (2 * R_EARTH)
-        base = z * math.tan(math.radians(top))
+        base = z * math.tan(math.radians(top)) - drop
         ampm = z * math.tan(math.radians(amp))
-        h = make_profile(x0, x1, n, base - drop - 0.3 * ampm, ampm, sc, 500 + i * 13, octaves=8, ridged=rd)
+        h = peak_profile(x0, x1, n, base - 0.55 * ampm, ampm, 2.4 * ampm, 500 + i * 13, sharp=1.6)
         ridges.append(Ridge(z, x0, x1, h, np.array([0.004, 0.006, 0.012]) * al, fog_mul=1.0, rim=0.05,
                             mist=mist, tex=0.0, name=f'M{i}', fog_el=math.radians(2.0),
-                            mist_scale=1.0 / (0.6 * sc), seed=3.1 * i, snow=1.0))
+                            mist_scale=1.0 / (2.0 * ampm), seed=3.1 * i, snow=1.0))
     X = np.linspace(-60, 60, 12000)
     summit = Ridge(0.02, -60, 60, summit_profile(X), np.array([0.004, 0.006, 0.012]), fog_mul=0.0, rim=0.0,
-                   mist=0.0, tex=0.0, name='summit', fog_el=math.radians(2.0), snow=1.25, seed=9.0)
+                   mist=0.0, tex=0.0, name='summit', fog_el=math.radians(2.0), snow=1.1, seed=9.0)
     return pack_ridges(ridges), pack_ridges([summit])
 
 
@@ -79,8 +94,8 @@ def sky():
     return Sky(sun=(0.0, -40.0), zenith=np.array([0.0005, 0.0010, 0.0065]),
                horizon=np.array([0.010, 0.018, 0.050]), amber=np.zeros(3), rose=np.zeros(3),
                violet=np.array([0.004, 0.006, 0.018]), base_fall=0.30, amber_fall=0.03, rose_fall=0.05,
-               violet_fall=0.3, az_pow=40.0, moon=None, mw=1.6, mw_pole=dir_from_az_el(35.0, 38.0),
-               star_gain=48.0, star_thresh=0.6, n_stars=26000, ring=None, seed=7)
+               violet_fall=0.3, az_pow=40.0, moon=None, mw=1.6, mw_pole=dir_from_az_el(75.0, 40.0),
+               star_gain=110.0, star_thresh=0.5, n_stars=26000, ring=None, seed=7)
 
 
 # --------------------------------------------------------------- animation ---
@@ -149,9 +164,9 @@ def yw_pose(f):
         p[k] = kneel[k] + (stand[k] - kneel[k]) * rise
     p['x'] = x
     p['breath'] = br
-    p['flint'] = rise < 0.5
+    p['flint'] = f < ROAR
     p['hem_wind'] = 0.10
-    if rise < 0.5:
+    if f < ROAR:
         p['f_tgt'] = (0.30 + 0.01 * br, 1.08)
         p['f_bend'] = 1.0
         p['f_h'] = 70.0
@@ -160,27 +175,27 @@ def yw_pose(f):
         p['n_h'] = 110.0
     else:
         # arm raised against the heat, then lowered
-        u = smoothstep(ROAR + 12, ROAR + 40, f)
-        p['n_ua'] = 150.0 + 20.0 * u
-        p['n_fa'] = 40.0 + 120.0 * u
-        p['n_h'] = 40.0 + 120.0 * u
-        p['f_ua'] = 178.0
-        p['f_fa'] = 175.0
+        u = smoothstep(ROAR + 26, ROAR + 60, f)
+        p['n_ua'] = 125.0 + 50.0 * u
+        p['n_fa'] = 28.0 + 145.0 * u
+        p['n_h'] = 20.0 + 150.0 * u
+        p['f_ua'] = 165.0 + 12.0 * u
+        p['f_fa'] = 120.0 + 55.0 * u
     return p
 
 
 def camera(f, scale):
     t = f / FPS
     hand = 0.004 * fnoise1(t * 0.9, 1.0) , 0.003 * fnoise1(t * 0.8, 2.0)
-    c_pos = np.array([0.50 + hand[0], 0.98 + hand[1], -1.30])
-    c_tgt = np.array([0.46, 1.06, 0.0])
-    w_pos = np.array([1.10, 4.3, -21.0])
-    w_tgt = np.array([0.35, -1.3, 40.0])
+    c_pos = np.array([0.42 + hand[0], 0.96 + hand[1], -2.15])
+    c_tgt = np.array([0.40, 1.02, 0.0])
+    w_pos = np.array([1.00, 2.3, -23.0])
+    w_tgt = np.array([0.30, 0.9, 40.0])
     u = smoothstep(ROAR, F1 + 6, f)
     u = 1 - (1 - u) ** 3            # explosive start, long deceleration
     pos = c_pos + (w_pos - c_pos) * u
     tgt = c_tgt + (w_tgt - c_tgt) * (u ** 0.8)
-    hfov = 42.0 + 16.0 * u
+    hfov = 40.0 + 18.0 * u
     cam = Camera(pos, hfov=hfov, scale=scale)
     yaw, pitch = cam.look_at(tgt)
     focus = float(np.linalg.norm(np.array([0.4, 1.0, 0.0]) - pos))
@@ -224,7 +239,7 @@ class FirstBeacon:
         def emit(sim, ff, dt):
             for k, s in enumerate(STRIKES):
                 if s - 0.5 <= ff < s + 0.5:
-                    n = int((35, 60, 110)[k] * dt * FPS * 1.0)
+                    n = int((70, 120, 220)[k] * dt * FPS * 1.0)
                     p = ch.young_woman(yw_pose(s), s / FPS)[1]['flint']
                     pos = np.array([p[0] - 0.01, p[1], -0.01]) + rng.normal(0, 0.004, (n, 3))
                     ang = rng.normal(-2.2, 0.55, n)          # mostly down-left into the basket
@@ -282,7 +297,7 @@ class FirstBeacon:
         lights = np.array(lights, np.float64).reshape(-1, 8)
         # --- sky + range (moonlit world scaled by the reveal)
         sk = self.sky
-        img = render_full_sky(cam, sk, t) * (0.25 + 0.75 * reveal)
+        img = render_full_sky(cam, sk, t, mw_col=np.array([0.80, 0.86, 1.0]) * 0.07) * (0.25 + 0.75 * reveal)
         fog = FOG.copy()
         rs, meta, hs = self.far
         rgbp = np.zeros_like(img)
@@ -294,7 +309,7 @@ class FirstBeacon:
         pool = []
         if lv > 0 and f >= ROAR:
             I = min(lv, 2.5) * flick
-            pool.append([FIRE_BASE[0], 0.0, 0.02, 3.2, 0.10 * I, 0.045 * I, 0.014 * I, 0])
+            pool.append([FIRE_BASE[0], 0.0, 0.02, 1.7, 0.06 * I, 0.026 * I, 0.008 * I, 0])
         elif lv > 0:
             pool.append([TINDER[0], 0.0, 0.02, 0.8, 0.02 * lv, 0.009 * lv, 0.003 * lv, 0])
         rs2, meta2, hs2 = self.summit
@@ -349,6 +364,13 @@ class FirstBeacon:
                                 5.0 + 5.0 * min(1.0, lv - 1.0 + 0.3), fire.BONFIRE_STYLE)
             fire.add_glow(img, cam, (TINDER if f < ROAR else FIRE_BASE + np.array([0, 0.7, 0])),
                           0.12 if f < ROAR else 0.9, (0.05 * lv if f < ROAR else 0.10 * min(lv, 2.5)) * flick)
+        for k, s_ in enumerate(STRIKES):
+            d = f - s_
+            if 0 <= d <= 2 and flint is not None:
+                fx, fy, fz = cam.project(np.array([flint[0], flint[1], -0.02]))
+                e = (60.0 + 40.0 * k) * (1.0, 0.45, 0.15)[d] * cam.scale ** 2
+                splat_gauss(img, float(fx), float(fy), max(0.6, 2.5 * cam.scale), e, e * 0.85, e * 0.6)
+                fire.add_glow(img, cam, np.array([flint[0], flint[1], -0.02]), 0.06, (0.25 + 0.15 * k) * (1.0, 0.45, 0.15)[d])
         if em_e > 0:
             sx, sy, z = cam.project(TINDER)
             e = 6.0 * em_e * cam.scale ** 2
@@ -360,7 +382,7 @@ class FirstBeacon:
         # --- sparks & embers
         P, V, T, S, K = self.sparks.snap[f]
         ap = 0.010 * cam.f * (1 - u)
-        fire.render_sparks(img, cam.params(), P, V, T, S, K, 0.5 / FPS, 1.8 * cam.scale ** 2 * 6.0,
+        fire.render_sparks(img, cam.params(), P, V, T, S, K, 0.5 / FPS, 4.0 * cam.scale ** 2 * 6.0,
                            cam.scale * 1.4, focus, ap, 1.0, 1.4, 0.05)
         # --- spindrift grains
         self._spindrift(img, cam, f, reveal, lv)

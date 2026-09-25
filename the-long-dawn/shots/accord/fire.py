@@ -348,11 +348,13 @@ def mist_layers(img, cam, layers, nl, T, irr_c, ig_x0, ig_cell, warm):
                 if Cz <= zl + 1.0 or dz >= 0.0:
                     continue
                 t = (zl - Cz) / dz
-                px = Cx + dx * t + layers[k, 3] * T
-                py = Cy + dy * t + layers[k, 4] * T
+                px = Cx + dx * t
+                py = Cy + dy * t
                 s = layers[k, 2]
                 fp = t / f / s
-                n = 0.5 + fbm2(px / s, py / s, int(layers[k, 5]), 6, 2.05, 0.55, fp)
+                qx = px + layers[k, 3] * (T - 1912.0)
+                qy = py + layers[k, 4] * (T - 1912.0)
+                n = 0.5 + fbm2(qx / s, qy / s, int(layers[k, 5]), 6, 2.05, 0.55, fp)
                 d = sstep(0.42, 0.85, n)
                 near = sstep(2.0, 45.0, Cz - zl)
                 a = d * layers[k, 1] * near

@@ -191,14 +191,14 @@ def render_ridges(out_rgb, out_a, depth, cam, meta, hs, sp, fog, lights, light_o
                     kl = min(max(int(ul), 0), n - 1)
                     kr = min(max(int(ur), 0), n - 1)
                     sl = (hs[off + kr] - hs[off + kl]) / (2.0 * Dd)
-                    lit = 0.35 + 1.6 * sl * fog[12]
+                    lit = 0.30 + 4.5 * sl * fog[12]
                     if lit < 0.0:
                         lit = 0.0
                     if lit > 1.0:
                         lit = 1.0
                     sc = 1.0 / (0.004 * tt + 0.3)
                     st = fbm2(X * sc * 0.9 + meta[li, 14], (Y + 0.35 * below) * sc * 0.22, 4, 2.0, 0.55)
-                    snowv = 0.55 + 0.9 * st
+                    snowv = 0.86 + 0.30 * st
                     if snowv < 0.08:
                         snowv = 0.08
                     if snowv > 1.0:
@@ -235,9 +235,25 @@ def render_ridges(out_rgb, out_a, depth, cam, meta, hs, sp, fog, lights, light_o
                 sig = fog[0] + fog[1] * me
                 fa = 1.0 - math.exp(-tt * sig * meta[li, 8])
                 mistb = 1.0 + fog[4] * meta[li, 10] * me
-                cr = cr * (1 - fa) + fr * mistb * fa
-                cg = cg * (1 - fa) + fg * mistb * fa
-                cb = cb * (1 - fa) + fb * mistb * fa
+                mr = fr * mistb
+                mg = fg * mistb
+                mb = fb * mistb
+                cr = cr * (1 - fa) + mr * fa
+                cg = cg * (1 - fa) + mg * fa
+                cb = cb * (1 - fa) + mb * fa
+                if meta[li, 15] > 0.0 and meta[li, 10] > 0.0:
+                    # moonlit cloud sea hugging each range: crest crisp, flanks dissolve
+                    rel = 1.0 - math.exp(-below / (0.022 * tt + 1.0))
+                    mm = meta[li, 10] * rel * rel
+                    if meta[li, 13] > 0:
+                        mm *= 0.75 + 0.5 * fbm2(X * meta[li, 13] * 2.0 + 7.0, Y * meta[li, 13] * 4.0 + t * 0.01, 3, 2.0, 0.5)
+                    mm = min(0.95, max(0.0, mm))
+                    kr = fr * 0.6 + fog[9] * 0.32
+                    kg = fg * 0.6 + fog[10] * 0.32
+                    kb = fb * 0.6 + fog[11] * 0.32
+                    cr = cr * (1 - mm) + kr * mm
+                    cg = cg * (1 - mm) + kg * mm
+                    cb = cb * (1 - mm) + kb * mm
                 w = (1.0 - A) * cov
                 accr += w * cr
                 accg += w * cg

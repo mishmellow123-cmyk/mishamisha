@@ -235,6 +235,29 @@ if __name__ == '__main__':
     ap.add_argument('b', nargs='?', type=float)
     ap.add_argument('--scale', type=float, default=0.5)
     ap.add_argument('--tag', default='')
+    ap.add_argument('--worker', default='0/1')
+    ap.add_argument('--force', action='store_true')
     args = ap.parse_args()
     if args.cmd == 'still':
         still(args.a, args.scale, args.tag)
+    elif args.cmd == 'range':
+        cv2.setNumThreads(1)
+        k, n = [int(v) for v in args.worker.split('/')]
+        a, b = int(args.a), int(args.b)
+        scale = args.scale
+        for fr in range(a + k, b + 1, n):
+            p = look.frame_path(OUT, fr)
+            if os.path.exists(p) and not args.force:
+                continue
+            t0 = time.time()
+            hdr, info = render_frame(float(fr), scale)
+            img = finish(hdr, float(fr))
+            if scale != 1.0:
+                img = cv2.resize(img, (SC.W, SC.H), interpolation=cv2.INTER_LINEAR)
+            look.save_png(p, img)
+            print(f'frame {fr} {time.time() - t0:.1f}s', flush=True)
+    elif args.cmd == 'finish':
+        look.preview_mp4(OUT, os.path.join(OUT, 'preview.mp4'), SC.F0, SC.F1 + 1)
+        frames = [1912, 1930, 1950, 1970, 1985, 1994, 1998, 2001, 2006, 2014, 2030, 2044,
+                  2060, 2084, 2110, 2124, 2150, 2170, 2190, 2210, 2226, 2234, 2240, 2247]
+        look.contact_sheet(OUT, frames, os.path.join(OUT, 'contact.png'), cols=4, thumb_w=480)
