@@ -30,19 +30,22 @@ TORCH_WOOD = np.array([0.09, 0.052, 0.028])
 
 
 MAT = {
-    'coat': dict(albedo=(0.004, 0.004, 0.006), bevel=0.04, sheen=0.9, soft=0.10, sky_rim=0.30, tint=(1.0, 0.82, 0.66)),
-    'skin': dict(albedo=(0.012, 0.007, 0.005), bevel=0.02, sheen=1.1, soft=0.16, sky_rim=0.15, tint=(1.0, 0.70, 0.52)),
-    'scarf': dict(albedo=(0.16, 0.0075, 0.0065), bevel=0.02, sheen=0.9, soft=0.18, sky_rim=0.08, tint=(1.0, 0.16, 0.10)),
-    'hair_grey': dict(albedo=(0.030, 0.030, 0.033), bevel=0.02, sheen=1.7, soft=0.18, sky_rim=0.55, tint=(1.0, 0.94, 0.88)),
-    'hair_dark': dict(albedo=(0.006, 0.005, 0.004), bevel=0.015, sheen=1.3, soft=0.12, sky_rim=0.30, tint=(1.0, 0.72, 0.50)),
-    'wool': dict(albedo=(0.020, 0.015, 0.010), bevel=0.03, sheen=1.4, soft=0.22, sky_rim=0.45, tint=(1.0, 0.86, 0.66)),
-    'boot': dict(albedo=(0.003, 0.003, 0.003), bevel=0.03, sheen=0.7, soft=0.06, sky_rim=0.2, tint=(1.0, 0.8, 0.6)),
-    'stone': dict(albedo=(0.022, 0.021, 0.019), bevel=0.03, sheen=0.55, soft=0.10, sky_rim=0.35, tint=(1.0, 0.85, 0.7)),
-    'stone2': dict(albedo=(0.014, 0.013, 0.012), bevel=0.03, sheen=0.55, soft=0.10, sky_rim=0.35, tint=(1.0, 0.85, 0.7)),
-    'iron': dict(albedo=(0.010, 0.009, 0.009), bevel=0.012, sheen=1.1, soft=0.05, sky_rim=0.35, tint=(1.0, 0.8, 0.6)),
-    'wood': dict(albedo=(0.016, 0.011, 0.008), bevel=0.02, sheen=0.6, soft=0.10, sky_rim=0.25, tint=(1.0, 0.75, 0.5)),
-    'torch': dict(albedo=(0.030, 0.018, 0.010), bevel=0.010, sheen=0.9, soft=0.10, sky_rim=0.15, tint=(1.0, 0.8, 0.6)),
-    'tool': dict(albedo=(0.012, 0.012, 0.013), bevel=0.008, sheen=1.3, soft=0.05, sky_rim=0.1, tint=(1.0, 0.95, 0.9)),
+    # near-black silhouettes: only a thin warm rim (sheen) where a light grazes an edge and
+    # a thin sky backlight rim (sky_rim, coloured by the sky behind)
+    'coat': dict(albedo=(0.0012, 0.0012, 0.0016), bevel=0.04, sheen=1.0, soft=0.0, sky_rim=0.9, tint=(1.0, 0.80, 0.62)),
+    'skin': dict(albedo=(0.0015, 0.0012, 0.0012), bevel=0.02, sheen=1.3, soft=0.05, sky_rim=0.9, tint=(1.0, 0.72, 0.52)),
+    'scarf': dict(albedo=(0.14, 0.006, 0.005), bevel=0.02, sheen=0.8, soft=0.10, sky_rim=0.5, tint=(1.0, 0.20, 0.12),
+                  diffuse=0.8),
+    'hair_grey': dict(albedo=(0.004, 0.004, 0.0045), bevel=0.02, sheen=2.2, soft=0.10, sky_rim=1.4, tint=(1.0, 0.95, 0.9)),
+    'hair_dark': dict(albedo=(0.0012, 0.0010, 0.0010), bevel=0.015, sheen=1.2, soft=0.03, sky_rim=1.0, tint=(1.0, 0.72, 0.50)),
+    'wool': dict(albedo=(0.0022, 0.0018, 0.0014), bevel=0.03, sheen=1.3, soft=0.06, sky_rim=1.3, tint=(1.0, 0.86, 0.66)),
+    'boot': dict(albedo=(0.0010, 0.0010, 0.0010), bevel=0.03, sheen=0.8, soft=0.0, sky_rim=0.7, tint=(1.0, 0.8, 0.6)),
+    'stone': dict(albedo=(0.0045, 0.0042, 0.0038), bevel=0.03, sheen=0.9, soft=0.05, sky_rim=0.8, tint=(1.0, 0.85, 0.7)),
+    'stone2': dict(albedo=(0.0030, 0.0028, 0.0026), bevel=0.03, sheen=0.9, soft=0.05, sky_rim=0.8, tint=(1.0, 0.85, 0.7)),
+    'iron': dict(albedo=(0.0015, 0.0014, 0.0014), bevel=0.012, sheen=1.3, soft=0.0, sky_rim=0.9, tint=(1.0, 0.8, 0.6)),
+    'wood': dict(albedo=(0.0030, 0.0022, 0.0016), bevel=0.02, sheen=0.9, soft=0.03, sky_rim=0.7, tint=(1.0, 0.75, 0.5)),
+    'torch': dict(albedo=(0.004, 0.0028, 0.0018), bevel=0.010, sheen=1.2, soft=0.05, sky_rim=0.6, tint=(1.0, 0.8, 0.6)),
+    'tool': dict(albedo=(0.002, 0.002, 0.0022), bevel=0.008, sheen=1.5, soft=0.0, sky_rim=0.5, tint=(1.0, 0.95, 0.9)),
 }
 
 
@@ -159,7 +162,7 @@ def ribbon(g, pts, width, t, seed=0.0, fringe=True, taper_end=0.8):
     for i in range(n):
         s = i / max(1, n - 1)
         tw = fnoise1(s * 3.2 - t * 1.7, seed, 2)
-        w = width * (0.42 + 0.58 * abs(math.cos(1.4 * tw + 0.6)))
+        w = width * (0.30 + 0.70 * abs(math.cos(1.6 * tw + 0.6)))
         w *= 1.0 - (1 - taper_end) * s
         radii.append(0.5 * w)
     g.chain(pts, radii)
@@ -304,7 +307,7 @@ def elder(pose, t, scarf_pts=None, facing=-1, wisps=None, anchors_only=False):
     wrap.cone(dr0, dr0 + np.array([-0.015 + hw * 0.3, -0.16]), 0.036, 0.028)
     scarf_anchor = P2 + b(tht) * 0.070 + dirv(thn) * 0.04
     if scarf_pts is not None:
-        ribbon(tail, scarf_pts, 0.105, t, seed=3.0)
+        ribbon(tail, scarf_pts, 0.088, t, seed=3.0)
     groups = [tail, farg, torch_g, legs, body, hair, skin, wrap, near]
     anchors = dict(torch_top=torch_top, scarf_anchor=scarf_anchor, hand_near=Hn, hand_far=Hf,
                    head_center=head_c, face_front=head_c + rot(np.array([-0.10, -0.03]), thh),
@@ -534,7 +537,7 @@ def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1, anchors_only=
     wrap.cone(dr0, dr0 + np.array([-0.02 + hw * 0.3, -0.17]), 0.038, 0.030)
     scarf_anchor = P2 + b(tht) * 0.075 + dirv(thn) * 0.045
     if scarf_pts is not None:
-        ribbon(tail, scarf_pts, 0.105, t, seed=3.0)
+        ribbon(tail, scarf_pts, 0.088, t, seed=3.0)
     groups = [tail, farg, legs, body, hair, skin, wrap, near, tools]
     anchors = dict(scarf_anchor=scarf_anchor, hand_near=Hn, hand_far=Hf, head_center=head_c,
                    mouth=head_c + rot(np.array([-0.092, -0.054]), thh), neck=P2,

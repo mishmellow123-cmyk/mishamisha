@@ -88,27 +88,30 @@ def camera(f, scale):
         u = smoothstep(0, CUT, f)
         pos = [0.0 - 0.55 * u, 0.0, 0.0 + 1.1 * u]
         return Camera(pos, yaw=math.radians(0.9 * u), pitch=math.radians(1.55), hfov=50, scale=scale), None
-    # shot B: knees-up two-shot from ~5 m, then the push into the flame
+    # shot B: medium two-shot (figures ~55% of frame height), then the push into the
+    # flame that tilts up the ember column (matching EMBERS' "low, tilted up" start)
     tf = torch_world(f)
-    start_pos = np.array([3.34, GC + 0.97, Z - 5.9])
-    start_tgt = np.array([3.52, GC + 1.08, Z])
-    mid_pos = np.array([3.35, GC + 0.99, Z - 5.4])
-    end_pos = np.array([tf[0] - 0.005, tf[1] + 0.13, Z - 0.70])
-    end_tgt = np.array([tf[0], tf[1] + 0.33, Z])
-    a = smoothstep(CUT, 228, f)
+    start_pos = np.array([3.36, GC + 1.00, Z - 6.4])
+    start_tgt = np.array([3.47, GC + 0.98, Z])
+    mid_pos = np.array([3.37, GC + 1.01, Z - 5.95])
+    end_pos = np.array([tf[0] - 0.01, tf[1] - 0.02, Z - 0.58])
+    end_tgt = np.array([tf[0] + 0.01, tf[1] + 0.95, Z + 0.25])
+    a = smoothstep(CUT, 230, f)
     pos = start_pos + (mid_pos - start_pos) * a
-    u = smoothstep(226, 306, f)
-    u = u * u * (1.6 - 0.6 * u)                 # accelerate in, soft landing
+    u = smoothstep(228, 308, f)
+    u = u * u * (1.7 - 0.7 * u)
     pos = pos + (end_pos - pos) * u
-    tgt = start_tgt + (end_tgt - start_tgt) * min(1.0, u * 1.1)
-    # after landing: keep drifting up with the embers
-    drift = smoothstep(300, 359, f)
-    pos = pos + np.array([0.0, 0.12, 0.03]) * drift
+    w = smoothstep(262, 312, f)                 # the tilt-up happens late in the move
+    tgt = start_tgt + (tf + np.array([0.0, 0.12, 0.0]) - start_tgt) * min(1.0, u * 1.15)
+    tgt = tgt + (end_tgt - tgt) * w
+    drift = smoothstep(305, 359, f)
+    pos = pos + np.array([0.0, 0.10, 0.04]) * drift
     tgt = tgt + np.array([0.0, 0.30, 0.0]) * drift
-    cam = Camera(pos, hfov=38, scale=scale)
+    hfov = 50.0 - 6.0 * u
+    cam = Camera(pos, hfov=hfov, scale=scale)
     yaw, pitch = cam.look_at(tgt)
     focus = float(np.linalg.norm(tf + np.array([0, 0.15, 0]) - pos))
-    return Camera(pos, yaw=yaw, pitch=pitch, hfov=38, scale=scale), focus
+    return Camera(pos, yaw=yaw, pitch=pitch, hfov=hfov, scale=scale), focus
 
 
 def torch_world(f):
@@ -139,7 +142,7 @@ class Intro:
         def anchor(ff):
             _, an = ch.elder(elder_pose(ff), ff / FPS, anchors_only=True)
             return an['scarf_anchor']
-        self.scarf = Chain(16, 0.082, anchor, dir0=(1.0, -0.3), drag=8.5, iters=6, damp=0.99)
+        self.scarf = Chain(14, 0.078, anchor, dir0=(1.0, -0.3), drag=8.5, iters=6, damp=0.99)
         self.scarf.simulate(F0, F1, make_wind_fn(1.0, 0.45, 2.0, lift=0.55, flutter=1.4,
                                                   extra=lambda ff: wind_base(ff) - 1.0))
         # grey wisps from the bun
@@ -164,7 +167,7 @@ class Intro:
             return tor[k]
 
         def emitter(sim, ff, dt):
-            rate = 9.0 + 60.0 * smoothstep(236, 290, ff) + 170.0 * smoothstep(270, 315, ff)
+            rate = 10.0 + 70.0 * smoothstep(236, 285, ff) + 200.0 * smoothstep(262, 305, ff)
             n = rng.poisson(rate * dt)
             if n <= 0:
                 return
@@ -175,8 +178,9 @@ class Intro:
             vel = np.stack([rng.normal(0.10, 0.22, n), rng.uniform(0.45, 1.3, n), rng.normal(0, 0.14, n)], 1)
             life = rng.gamma(2.0, 0.8, n) + 0.3
             size = rng.random(n) ** 2.5 * 1.8 + 0.18
-            kind = (rng.random(n) < 0.18).astype(np.int64) * 0 + (rng.random(n) >= 0.18).astype(np.int64)
-            sim.spawn(pos, vel, life, size, kind)
+            kind = (rng.random(n) >= 0.12).astype(np.int64)          # 12% hot sparks, rest embers
+            T0 = np.where(kind == 0, 1.0, rng.uniform(0.62, 0.86, n))
+            sim.spawn(pos, vel, life, size, kind, T0)
 
         def params(ff):
             w = wind_at(ff / FPS, wind_base(ff), 0.5, 1.0)
@@ -212,7 +216,7 @@ class Intro:
         lights = np.array([[tfl[0], tfl[1] + 0.12, Z - 0.05, torch_I[0], torch_I[1], torch_I[2], 0.30, 0.0]])
         amb_top = np.array([0.020, 0.030, 0.070])
         amb_bot = np.array([0.003, 0.003, 0.005])
-        back = np.array([0.20, 0.10, 0.10])
+        back = np.array([0.34, 0.17, 0.15]) if f < CUT else np.array([0.30, 0.15, 0.14])
         items = []
         gy0 = 0.0
         items.append(Figure([0.0, 0.0, Z + 0.02], [self.scene.grass.group(t, wind)]))

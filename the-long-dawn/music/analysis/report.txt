@@ -1,0 +1,57 @@
+length: 5616000 samples = 117.0000 s  (target 5616000 = 117.000 s)
+mix integrated loudness: -16.09 LUFS ; true peak -1.25 dBTP ; sample peak -1.29 dBFS
+score: -16.09 LUFS, TP -1.25 dBTP ; sfx: -37.99 LUFS, TP -17.06 dBTP
+DC offset L/R: +2.97e-07 / -1.19e-06
+stem sum error max: 4.77e-07
+last 50 ms peak: -60.2 dBFS ; first sample: [-1.1920929e-07 -1.1920929e-07]
+click candidates: 0
+
+section            LUFS(int)  ST-max  ST-min   TP(dBTP)  L/R corr  mono-stereo(dB)
+intro              -24.24   -22.8   -31.4    -12.67     0.471        -1.58
+kindling           -17.85   -14.1   -23.6     -4.08     0.346        -1.95
+race               -14.60   -13.7   -15.8     -1.29     0.457        -1.48
+grasp              -14.64   -12.5   -15.9     -2.43     0.364        -1.74
+silence            -16.96   -12.5   -32.5     -1.61     0.461        -1.72
+first_beacon       -17.51   -16.8   -38.2     -4.99     0.369        -1.81
+beacons            -17.26   -15.6   -18.5     -4.10     0.435        -1.47
+globe              -15.41   -15.0   -17.0     -5.30     0.225        -2.05
+accord             -15.15   -11.4   -21.8     -2.11     0.324        -1.81
+dawn               -13.03   -11.4   -17.7     -1.25     0.361        -1.70
+coda               -23.24   -19.3   -28.5     -8.96     0.294        -1.91
+
+frame  time(s)   measured   offset(ms)  source     event
+    0    0.000     0.0007       +0.7  mix        wind + drone from silence [OK]
+   80    3.333     3.4108      +77.5  fl         solo flute theme [soft]
+  320   13.333    13.3333       -0.0  glass      KINDLING shimmer [OK, rise 112 dB]
+  480   20.000    19.9995       -0.5  mix        IGNITION [OK, rise 5 dB]
+  640   26.667    26.6877      +21.0  mix        RACE drums enter [CHECK, rise -8 dB]
+  800   33.333    33.3438      +10.5  mix        storm swell / crash [CHECK, rise -2 dB]
+  960   40.000    40.0295      +29.5  gliss      GRASP riser begins [soft]
+ 1040   43.333    43.3433      +10.0  mix        IMPACT [CHECK, rise 2 dB]
+ 1070   44.583    44.5828       -0.5  piano      piano D4 [OK, rise 104 dB]
+ 1106   46.083    46.0878       +4.5  piano      piano A4 [OK, rise 5 dB]
+ 1144   47.667    47.6712       +4.5  piano      piano D5 [OK, rise 33 dB]
+ 1236   51.500    51.5000       +0.0  sfx        flint strike 1 [OK, rise 30 dB]
+ 1262   52.583    52.5838       +0.5  sfx        flint strike 2 [OK, rise 20 dB]
+ 1290   53.750    53.7170      -33.0  sfx        flint strike 3 [CHECK, rise -1 dB]
+ 1318   54.917    54.9292      +12.5  vla        kindling catches (strings bloom) [soft]
+ 1360   56.667    56.6477      -19.0  mix        beacon ROARS / horn [CHECK, rise 1 dB]
+ 1480   61.667    61.6677       +1.0  timp       ignition 1 (horns) [OK, rise 38 dB]
+ 1540   64.167    64.1692       +2.5  timp       ignition 2 (trumpet) [OK, rise 36 dB]
+ 1600   66.667    66.6767      +10.0  timp       ignition 3 (flute+glock) [CHECK, rise 18 dB]
+ 1650   68.750    68.7355      -14.5  timp       ignition 4 (cellos) [CHECK, rise 1 dB]
+ 1690   70.417    70.4192       +2.5  timp       ignition 5 (trombones) [OK, rise 25 dB]
+ 1730   72.083    72.0848       +1.5  timp       ignition 6 (high violins) [OK, rise 34 dB]
+ 1760   73.333    73.3793      +46.0  mix        globe: choir enters [CHECK, rise 6 dB]
+ 2000   83.333    83.3333       +0.0  bell       Oath I [OK, rise 114 dB]
+ 2040   85.000    84.9715      -28.5  bell       Oath II [CHECK, rise 6 dB]
+ 2080   86.667    86.6372      -29.5  bell       Oath III [CHECK, rise 4 dB]
+ 2120   88.333    88.3568      +23.5  bell       Oath IV [CHECK, rise 7 dB]
+ 2160   90.000    89.9995       -0.5  harp       ring sweep start (harp) [OK, rise 56 dB]
+ 2220   92.500    92.5040       +4.0  harp       ring sweep end (harp) [OK, rise 10 dB]
+ 2240   93.333    93.3183      -15.0  mix        CLIMAX - sun breaks [CHECK, rise -3 dB]
+ 2480  103.333   103.4258      +92.5  fl         coda: solo flute [soft]
+ 2640  110.000   110.0025       +2.5  mix        child's torch lights beacon [OK, rise 4 dB]
+ 2645  110.208   110.2083       +0.0  celesta    answering fire bell 1 [OK, rise 121 dB]
+ 2716  113.167   113.1632       -3.5  celesta    answering fire bell 12 [OK, rise 1 dB]
+ 2720  113.333   113.3323       -1.0  harp       final chord [OK, rise 60 dB]

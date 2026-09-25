@@ -229,8 +229,29 @@ class HandRig:
                                           tip=(k == 2)) for k in range(3)]
         self.tl = (0.20, 0.145, 0.115)
         tr = (0.062, 0.050, 0.043, 0.034)
+        # small spherical joints (knuckles) at every finger joint, sized to the joint radius
+        self.joint = {}
+        for f in FNAMES:
+            rad = FINGERS[f][3]
+            self.joint[f] = [self._sphere(rad[k] * 1.12, int(3200 * dens * (rad[k] / 0.045) ** 2)) for k in range(3)]
+        # tendons on the back of the hand: from each knuckle toward the wrist
+        tp, tn = [], []
+        for f in FNAMES:
+            mx, my = FINGERS[f][0], FINGERS[f][1]
+            k = int(2600 * dens)
+            u = r.random(k)
+            x = mx * (0.45 + 0.55 * u) + r.normal(0, 0.004, k)
+            y = 0.06 + (my - 0.06) * u
+            z = -(0.058 + 0.01 * u) + r.normal(0, 0.002, k)
+            tp.append(np.stack([x, y, z], 1))
+            tn.append(np.tile([0, 0, -1.0], (k, 1)))
+        self.tendons = (np.concatenate(tp), np.concatenate(tn), np.full(sum(len(q) for q in tp), 0.55))
         self.thumb = [self._phalanx(self.tl[k], tr[k], tr[k + 1], int(52000 * dens * self.tl[k] * tr[k] / 0.0092),
                                     tip=(k == 2)) for k in range(3)]
+
+    def _sphere(self, rad, n):
+        d = rand_dirs(self.r, max(n, 100))
+        return d * rad, d, np.full(len(d), 1.0)
 
     def _phalanx(self, L, r0, r1, n, tip=False):
         """capsule-like segment from joint (0,0,0) to (0,L,0): tapered, with bulging joints."""
@@ -309,7 +330,7 @@ class HandRig:
 
     def pose(self, flex, spread, thumb_close):
         P, N, ID, KN = [], [], [], []
-        for part, pid in ((self.palm, 0), (self.fore, 9)):
+        for part, pid in ((self.palm, 0), (self.fore, 9), (self.tendons, 0)):
             P.append(part[0])
             N.append(part[1])
             KN.append(part[2])
@@ -319,13 +340,23 @@ class HandRig:
             R = _rz(-spread[f])
             p0 = np.array([mx, my, 0.0])
             for k in range(3):
+                jp, jn, jk = self.joint[f][k]
+                P.append(jp + p0)
+                N.append(jn)
+                KN.append(jk)
+                ID.append(np.full(len(jp), 1 + fi))
                 R = R @ _rx(flex[f][k])
                 cp, cn, ck = self.caps[f][k]
                 P.append(cp @ R.T + p0)
                 N.append(cn @ R.T)
-                KN.append(ck)
+                KN.append(ck * 0.5)
                 ID.append(np.full(len(cp), 1 + fi))
                 p0 = p0 + R @ np.array([0, lens[k], 0])
+            # fingertip marker (for sparks): last point appended is the tip
+            P.append(p0[None, :])
+            N.append(np.array([[0, 0, -1.0]]))
+            KN.append(np.array([0.0]))
+            ID.append(np.array([20 + fi]))
         # thumb: CMC on the radial side near the wrist; swings from abducted to opposed
         cmc = np.array([-0.1, 0.075, 0.02])
         d_open = np.array([-0.66, 0.62, 0.42])
@@ -353,18 +384,20 @@ class HandRig:
 
 def hand_pose_at(t):
     """rise relaxed (slight curl) -> reach open and spread (~995-1012) -> close 1015-1036 (fist on the crown)."""
-    reach = float(smoothstep(988, 1012, t))
-    close = float(ease_in((t - 1015) / 21.0, 1.7))
+    reach = float(smoothstep(986, 1010, t))
+    # slow at first (1015-1025), decisive 1025-1036
+    close = 0.22 * float(smoothstep(1015, 1025, t)) + 0.78 * float(ease_in((t - 1025) / 11.0, 1.6))
     flex, spread = {}, {}
     rest = (0.3, 0.38, 0.22)
-    openp = (0.1, 0.14, 0.08)
-    closed = {'index': (1.2, 1.55, 0.95), 'middle': (1.25, 1.6, 1.0), 'ring': (1.3, 1.6, 1.0),
-              'little': (1.35, 1.55, 0.95)}
+    openp = (0.2, 0.26, 0.18)
+    closed = {'index': (1.45, 1.7, 1.25), 'middle': (1.5, 1.72, 1.3), 'ring': (1.55, 1.72, 1.3),
+              'little': (1.6, 1.7, 1.25)}
     for fi, f in enumerate(FNAMES):
         # the little finger leads the close slightly, like a real grip
         cf = float(np.clip(close * (1.0 + 0.06 * (fi - 1.5)), 0, 1))
         a = [lerp(rest[k], openp[k], reach) for k in range(3)]
-        a = [lerp(a[k], closed[f][k], cf) for k in range(3)]
+        lag = (0.0, 0.08, 0.16)                      # distal joints lag the proximal
+        a = [lerp(a[k], closed[f][k], float(np.clip((cf - lag[k]) / (1 - lag[k]), 0, 1))) for k in range(3)]
         flex[f] = tuple(a)
         s = lerp(SPREAD_REST[f], SPREAD_OPEN[f], reach)
         spread[f] = lerp(s, SPREAD_REST[f] * 0.2, cf)
@@ -383,22 +416,24 @@ def grasp_dir():
 
 
 def hand_transform(t):
-    """World placement of the hand: rotation (local->world) and wrist position.
-    Back of the hand faces the camera; the crown is beyond the palm (a backlit silhouette)."""
+    """World placement of the hand (rotation local->world, wrist position).
+    Back of the hand faces down/back toward the low camera; the palm opens toward the crown."""
     C = B.crown_centre(960.0)
     dz = grasp_dir()
     up = np.array([0.0, 1.0, 0.0])
     dx = np.cross(up, dz)
     dx /= np.linalg.norm(dx)
     R0 = np.stack([dx, up, dz], 1)
-    rise = float(ease_out((t - 960) / 52.0, 2.0))
-    approach = float(ease_in_out((t - 1004) / 32.0))
-    Wf = C - up * (0.6 * HAND_L) - dz * (0.16 * HAND_L)
-    W0 = Wf + np.array([0.0, -80.0, 0.0]) - dz * 10.0 + dx * 10.0
-    Wm = Wf + np.array([0.0, -20.0, 0.0]) - dz * 6.0 + dx * 3.0
+    rise = float(ease_out((t - 960) / 50.0, 2.0))
+    approach = float(ease_in_out((t - 1002) / 34.0))
+    lean = lerp(-0.3, 0.05, rise) + 0.3 * approach
+    R = R0 @ _rx(lean) @ _rz(lerp(0.16, 0.03, rise))
+    # final: the closed fist's hollow (local ~(0, 0.52, 0.11)) sits on the crown
+    Rf = R0 @ _rx(0.35) @ _rz(0.03)
+    Wf = C - Rf @ (np.array([0.0, 0.52, 0.11]) * HAND_L)
+    W0 = Wf + np.array([0.0, -85.0, 0.0]) - dz * 12.0 + dx * 8.0
+    Wm = Wf + np.array([0.0, -24.0, 0.0]) - dz * 9.0 + dx * 2.0
     W = lerp(lerp(W0, Wm, rise), Wf, approach)
-    lean = lerp(-0.35, -0.1, rise) + 0.2 * approach
-    R = R0 @ _rx(lean) @ _rz(lerp(0.18, 0.02, rise))
     return R, W
 
 
@@ -430,7 +465,12 @@ class Hand:
             rr = rng(5)
             self.rnd = rr.random(npts)
             self.ph = rr.uniform(0, 2 * np.pi, npts)
-            self.s_idx = rr.integers(0, npts, self.ns)
+            tips = np.nonzero(pid >= 20)[0]
+            # sparks shed mostly from the fingertips and knuckles
+            kn_idx = np.nonzero(kn > 0.6)[0]
+            pick = rr.random(self.ns) < 0.55
+            self.s_idx = np.where(pick, rr.choice(tips, self.ns), rr.choice(kn_idx, self.ns))
+            self.s_off = rr.normal(0, 0.02 * HAND_L, (self.ns, 3))
         C = B.crown_centre(960.0)
         L = C - P1
         dL = np.linalg.norm(L, axis=1)
@@ -438,22 +478,23 @@ class Hand:
         vd = ctx.cam.pos - P1
         vd /= np.linalg.norm(vd, axis=1, keepdims=True)
         facing = (N1 * vd).sum(1)
-        rim = np.exp(-np.abs(facing) / 0.2)                     # silhouette edges glow
-        interior = smoothstep(0.15, 0.7, facing)                # the broad faces toward us: darker
-        fl = 1 + 0.5 * np.sin(1.1 * t + self.ph) * np.sin(0.41 * t + 2 * self.ph)
+        rim = np.exp(-np.abs(facing) / 0.18)                    # silhouette edges glow
+        interior = smoothstep(0.2, 0.8, facing)                 # broad faces toward us: darker
+        fl = 1 + 0.55 * np.sin(1.3 * t + self.ph) * np.sin(0.47 * t + 2 * self.ph)
         close = float(smoothstep(1015, 1036, t))
-        near = smoothstep(40.0, 8.0, dL)                        # parts that approach the crown
-        e_body = (0.3 + 0.7 * self.rnd) * fl * 0.5 * (1 - 0.55 * interior)
-        e_edge = rim * (0.9 + 0.6 * self.rnd) * 1.1
-        e_kn = kn * (0.8 + 0.8 * self.rnd) * 1.6 * fl
-        # the crown's cold light rims whatever turns toward it (fingertips from above as they approach)
-        e_cold = lam * (0.2 + 0.8 * rim) * near * (2.2 + 5.0 * close)
-        c_body = C_CRIMSON * 0.55 + C_RED * 0.35 + look.blackbody(0.35) * 0.1
-        c_edge = look.blackbody(0.52)
-        c_kn = look.blackbody(0.62)
+        near = smoothstep(46.0, 10.0, dL)
+        grain = (self.rnd ** 3) * 2.2                            # sparse hot embers in the surface
+        e_body = (0.25 + 0.35 * self.rnd + grain) * fl * 0.55 * (1 - 0.5 * interior)
+        e_edge = rim * (0.5 + 0.7 * self.rnd) * 0.9
+        e_kn = kn * (0.5 + 0.9 * self.rnd) * 1.3 * fl
+        e_cold = lam * (0.35 + 0.65 * rim) * near * (1.6 + 5.0 * close)
+        c_body = C_CRIMSON * 0.5 + C_RED * 0.5
+        c_edge = C_RED * 0.5 + look.blackbody(0.45) * 0.5
+        c_kn = look.blackbody(0.5)
         c_cold = C_ICE * 0.6 + C_CORE * 0.4
         colE = (c_body[None, :] * e_body[:, None] + c_edge[None, :] * e_edge[:, None] +
                 c_kn[None, :] * e_kn[:, None] + c_cold[None, :] * e_cold[:, None])
+        colE[pid >= 20] = 0.0
         R, W = hand_transform(t)
         along = (P1 - W) @ R[:, 1]
         fade = np.where(pid == 9, smoothstep(-1.45 * HAND_L, -0.5 * HAND_L, along), 1.0)
@@ -469,24 +510,24 @@ class Hand:
             m = (ages >= b0) & (ages < b0 + 3)
             if m.any():
                 Pb, _, _, _ = self.world(t - (b0 + 1.5))
-                Ps[m] = Pb[self.s_idx[m]]
+                Ps[m] = Pb[self.s_idx[m]] + self.s_off[m]
         drift = self.s_v * ages[:, None] * 0.35
         S1 = Ps + drift
         S0 = S1 - self.s_v * 0.35 * 0.5
         mov = float(smoothstep(962, 975, t)) * (1 - 0.6 * close)
-        es = self.s_E * (1 - self.s_age) ** 2 * 14.0 * mov
-        ctx.fr.splat(S0, S1, 0.03, es, look.blackbody(0.7 - 0.3 * self.s_age), ctx.cam0, ctx.cam1, zref=60.0)
+        es = self.s_E * (1 - self.s_age) ** 2 * 10.0 * mov
+        ctx.fr.splat(S0, S1, 0.03, es, look.blackbody(0.62 - 0.3 * self.s_age), ctx.cam0, ctx.cam1, zref=60.0)
 
 
 def cam_grasp(t):
-    """Low, looking up at the storm's eye; the hand rises from the bottom edge (slow, huge)."""
+    """Below and behind the hand, looking up at it and the storm's eye (slow, huge)."""
     C = B.crown_centre(960.0)
     u = (t - 960) / 80.0
     push = float(ease_in_out(u))
     a = GRASP_AZ
-    d = lerp(128.0, 112.0, push)
-    pos = np.array([d * math.cos(a), lerp(8.0, 12.0, push), d * math.sin(a)])
-    tgt = C + np.array([0.0, lerp(-26.0, -20.0, push), 0.0])
+    d = lerp(96.0, 86.0, push)
+    pos = np.array([d * math.cos(a), lerp(-18.0, -12.0, push), d * math.sin(a)])
+    tgt = C + np.array([0.0, lerp(-30.0, -18.0, push), 0.0])
     if t > 1004:
         k = (t - 1004) / 32.0
         sh = 0.3 * k * k

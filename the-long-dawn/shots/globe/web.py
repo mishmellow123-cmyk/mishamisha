@@ -46,7 +46,7 @@ def palette():
 
 
 class Web:
-    def __init__(self, seed=5, t0=1760.0, speed_km=200.0, cache=True):
+    def __init__(self, seed=5, t0=1760.0, speed_km=235.0, cache=True):
         self.seed = seed
         self.t0 = t0
         self.speed = speed_km
@@ -164,7 +164,7 @@ class Web:
         heap = [(self.t0, origin)]
         gen = np.zeros(n, np.int64)
         # the first generations are the biggest on screen: they travel slower, with weight
-        slow = {1: 2.4, 2: 1.7, 3: 1.3}
+        slow = {1: 2.2, 2: 1.5, 3: 1.2}
         # the first beacon throws three arcs at once (the choir)
         while heap:
             t, i = heapq.heappop(heap)

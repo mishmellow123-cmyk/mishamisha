@@ -23,7 +23,8 @@ NP = 12  # floats per primitive row
 
 class Group:
     def __init__(self, name, albedo, k=0.02, bevel=0.05, sheen=0.6, rough=1.0, emissive=None,
-                 sky_rim=0.35, translucent=0.0, per_prim=False, tint=(1.0, 0.9, 0.8), soft=0.12):
+                 sky_rim=0.35, translucent=0.0, per_prim=False, tint=(1.0, 0.9, 0.8), soft=0.0,
+                 diffuse=0.0):
         self.name = name
         self.albedo = np.asarray(albedo, np.float64)
         self.k = k
@@ -35,6 +36,7 @@ class Group:
         self.per_prim = per_prim
         self.tint = np.asarray(tint, np.float64)
         self.soft = soft
+        self.diffuse = diffuse
         self.rows = []
         self.verts = []
         self.bbs = []
@@ -242,14 +244,18 @@ def raster_group(D, Dp, LX, LY, rows, verts, ranges):
 
 @nb.njit(cache=True, fastmath=True)
 def shade_group(D, N, LX, LY, ppm, alb, lights, nl, amb_top, amb_bot, bevel, sheen, sky_rim,
-                translucent, emis, back, tint, soft, out_rgb, out_a):
-    """Silhouette shading. lights: (n, 8) [lx, ly, lz, r, g, b, d0, wrap] card-local metres
-    (lz toward camera). Light shows as a sharp rim sliver + a soft glow on the edges that
-    face it; interiors stay dark (albedo * tiny ambient)."""
+                translucent, emis, back, tint, soft, diffuse, out_rgb, out_a):
+    """Backlit-silhouette shading.
+    * interiors: albedo * faint ambient (reads as #05060B-ish)
+    * sky backlight rim: a thin rim of the bright sky colour (`back`) around the outline,
+      strongest on edges facing up/sideways (sky_rim)
+    * light rim: a thin warm rim on edges facing each light (sheen), plus an optional soft
+      band (soft) and lambert (diffuse) for materials that should glow (the scarf).
+    lights: (n, 8) [lx, ly, lz, r, g, b, d0, wrap] card-local metres (lz toward camera)."""
     h = D.shape[0]
     w = D.shape[1]
-    rw_sharp = max(0.0035, 1.3 / ppm)
-    rw_soft = max(0.010, 3.0 / ppm)
+    rw = max(0.0022, 1.0 / ppm)
+    rw_soft = max(0.006, 2.5 / ppm)
     for j in range(h):
         for i in range(w):
             d = D[j, i]
@@ -277,19 +283,19 @@ def shade_group(D, N, LX, LY, ppm, alb, lights, nl, amb_top, amb_bot, bevel, she
             depth = -N[j, i]
             if depth < 0.0:
                 depth = 0.0
+            rs = math.exp(-depth / rw)
+            rsoft = math.exp(-depth / rw_soft)
             e = depth / bevel
             if e > 1.0:
                 e = 1.0
             oe = 1.0 - e
+            nz = math.sqrt(max(0.0, 1.0 - oe * oe)) + 0.05
             nx = gx * oe
             ny = gy * oe
-            nz = math.sqrt(max(0.0, 1.0 - oe * oe)) + 0.05
             nn = math.sqrt(nx * nx + ny * ny + nz * nz)
             nx /= nn
             ny /= nn
             nz /= nn
-            rs = math.exp(-depth / rw_sharp)
-            rsoft = math.exp(-depth / rw_soft)
             x = LX[j, i]
             y = LY[j, i]
             r = 0.0
@@ -304,34 +310,38 @@ def shade_group(D, N, LX, LY, ppm, alb, lights, nl, amb_top, amb_bot, bevel, she
                 vy /= dist
                 vz /= dist
                 att = 1.0 / (1.0 + (dist / lights[q, 6]) ** 2)
-                ndl = nx * vx + ny * vy + nz * vz
-                if ndl < 0.0:
-                    ndl = 0.0
                 pl = math.sqrt(vx * vx + vy * vy) + 1e-6
                 rimd = (gx * vx + gy * vy) / pl
                 if rimd < 0.0:
                     rimd = 0.0
-                rim = sheen * rs * rimd * math.sqrt(rimd) + soft * rsoft * rimd
+                rim = sheen * rs * rimd * rimd + soft * rsoft * rimd
+                lam = 0.0
+                if diffuse > 0.0:
+                    lam = nx * vx + ny * vy + nz * vz
+                    if lam < 0.0:
+                        lam = 0.0
+                    lam *= diffuse
                 tr = 0.0
                 if translucent > 0.0 and vz < 0.0:
                     tr = translucent * (-vz)
                 lr = lights[q, 3] * att
                 lg = lights[q, 4] * att
                 lb = lights[q, 5] * att
-                r += lr * (alb[0] * (ndl + tr) + rim * tint[0])
-                g += lg * (alb[1] * (ndl + tr) + rim * tint[1])
-                b += lb * (alb[2] * (ndl + tr) + rim * tint[2])
+                r += lr * (alb[0] * (lam + tr) + rim * tint[0])
+                g += lg * (alb[1] * (lam + tr) + rim * tint[1])
+                b += lb * (alb[2] * (lam + tr) + rim * tint[2])
             up = 0.5 + 0.5 * ny
             r += alb[0] * (amb_top[0] * up + amb_bot[0] * (1 - up))
             g += alb[1] * (amb_top[1] * up + amb_bot[1] * (1 - up))
             b += alb[2] * (amb_top[2] * up + amb_bot[2] * (1 - up))
-            sr = sky_rim * rs * max(0.0, gy)
-            r += amb_top[0] * sr
-            g += amb_top[1] * sr
-            b += amb_top[2] * sr
-            r += emis[0] + translucent * back[0] * alb[0] * 2.0
-            g += emis[1] + translucent * back[1] * alb[1] * 2.0
-            b += emis[2] + translucent * back[2] * alb[2] * 2.0
+            # sky backlight rim (thin), stronger on upward/sideways edges
+            sr = sky_rim * rs * (0.45 + 0.55 * max(0.0, gy))
+            r += back[0] * sr
+            g += back[1] * sr
+            b += back[2] * sr
+            r += emis[0] + translucent * back[0] * alb[0] * 1.5
+            g += emis[1] + translucent * back[1] * alb[1] * 1.5
+            b += emis[2] + translucent * back[2] * alb[2] * 1.5
             ao = 1.0 - cov
             out_rgb[j, i, 0] = out_rgb[j, i, 0] * ao + r * cov
             out_rgb[j, i, 1] = out_rgb[j, i, 1] * ao + g * cov
@@ -403,7 +413,7 @@ class Figure:
             em = np.zeros(3) if g.emissive is None else np.asarray(g.emissive, np.float64)
             shade_group(D, Dp if g.per_prim else D, LX, LY, ppm, g.albedo, L, len(L), np.asarray(amb_top, np.float64),
                         np.asarray(amb_bot, np.float64), g.bevel, g.sheen, g.sky_rim, g.translucent,
-                        em, np.asarray(back, np.float64), g.tint, g.soft, rgb, alpha)
+                        em, np.asarray(back, np.float64), g.tint, g.soft, g.diffuse, rgb, alpha)
         rgb = rgb.astype(np.float32)
         alpha = alpha.astype(np.float32)
         if blur_px > 0.3:

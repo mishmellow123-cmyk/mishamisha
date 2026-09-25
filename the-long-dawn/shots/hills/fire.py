@@ -294,7 +294,7 @@ class ParticleSim:
         self.K = np.zeros(cap, np.int64)  # kind (0 spark, 1 ember)
         self.snap = {}
 
-    def spawn(self, pos, vel, life, size, kind):
+    def spawn(self, pos, vel, life, size, kind, T0=1.0):
         m = len(pos)
         free = np.nonzero(self.A == 0)[0][:m]
         m = len(free)
@@ -302,7 +302,7 @@ class ParticleSim:
             return
         self.P[free] = pos[:m]
         self.V[free] = vel[:m]
-        self.T[free] = 1.0
+        self.T[free] = T0 if np.isscalar(T0) else np.asarray(T0)[:m]
         self.L[free] = 1.0 / np.maximum(life[:m], 1e-3)
         self.A[free] = 1
         self.S[free] = size[:m]
