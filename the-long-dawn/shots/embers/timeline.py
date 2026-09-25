@@ -18,14 +18,16 @@ class Timeline:
             pos, tgt = A.cam_a(t)
             # focus: near hero glyphs early, the spiral centre later
             fd = float(np.linalg.norm(tgt - pos))
-            focus = lerp(5.5, np.linalg.norm(pos), float(smoothstep(392, 430, t)))
-            ap = lerp(0.16, 0.05, float(smoothstep(392, 440, t)))
+            focus = lerp(5.0, np.linalg.norm(pos), float(smoothstep(392, 430, t)))
+            ap = lerp(0.12, 0.05, float(smoothstep(392, 440, t)))
             return Camera(pos, tgt, hfov=float(lerp(50, 46, smoothstep(300, 480, t))),
                           focus=focus, aperture=ap)
         return Camera((0, 0, 10), (0, 0, 0))
 
     def render_opts(self, f):
-        return dict(bokeh_pow=0.6, bokeh_cap=6.0)
+        if f < 484:
+            return dict(bokeh_pow=0.45, bokeh_cap=3.0, fog_start=16.0, fog_len=22.0)
+        return dict(bokeh_pow=0.45, bokeh_cap=3.0)
 
     def emit(self, ctx):
         t = ctx.t

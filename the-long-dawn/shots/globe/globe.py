@@ -217,9 +217,7 @@ def tex_uv(lat, lon, W, H):
 
 
 @njit(cache=True, fastmath=True, inline='always')
-def bilin1(tex, u, v):
-    H = tex.shape[0]
-    W = tex.shape[1]
+def _taps(u, v, W, H):
     x0 = int(math.floor(u))
     y0 = int(math.floor(v))
     a = u - x0
@@ -228,43 +226,41 @@ def bilin1(tex, u, v):
     x1 = (x0 + 1) % W
     y1 = min(max(y0 + 1, 0), H - 1)
     y0 = min(max(y0, 0), H - 1)
+    return x0, x1, y0, y1, a, b
+
+
+@njit(cache=True, fastmath=True, inline='always')
+def bilin1(tex, u, v):
+    x0, x1, y0, y1, a, b = _taps(u, v, tex.shape[1], tex.shape[0])
     return ((tex[y0, x0] * (1 - a) + tex[y0, x1] * a) * (1 - b)
             + (tex[y1, x0] * (1 - a) + tex[y1, x1] * a) * b)
 
 
 @njit(cache=True, fastmath=True, inline='always')
-def bilin3(tex, u, v, lut, out):
-    """uint8 sRGB texture -> linear rgb via lut."""
-    H = tex.shape[0]
-    W = tex.shape[1]
-    x0 = int(math.floor(u))
-    y0 = int(math.floor(v))
-    a = u - x0
-    b = v - y0
-    x0 = x0 % W
-    x1 = (x0 + 1) % W
-    y1 = min(max(y0 + 1, 0), H - 1)
-    y0 = min(max(y0, 0), H - 1)
-    for c in range(3):
-        out[c] = ((lut[tex[y0, x0, c]] * (1 - a) + lut[tex[y0, x1, c]] * a) * (1 - b)
-                  + (lut[tex[y1, x0, c]] * (1 - a) + lut[tex[y1, x1, c]] * a) * b)
+def bilin3(tex, u, v, lut):
+    """uint8 sRGB texture -> linear rgb tuple via lut."""
+    x0, x1, y0, y1, a, b = _taps(u, v, tex.shape[1], tex.shape[0])
+    w00 = (1 - a) * (1 - b)
+    w10 = a * (1 - b)
+    w01 = (1 - a) * b
+    w11 = a * b
+    r = lut[tex[y0, x0, 0]] * w00 + lut[tex[y0, x1, 0]] * w10 + lut[tex[y1, x0, 0]] * w01 + lut[tex[y1, x1, 0]] * w11
+    g = lut[tex[y0, x0, 1]] * w00 + lut[tex[y0, x1, 1]] * w10 + lut[tex[y1, x0, 1]] * w01 + lut[tex[y1, x1, 1]] * w11
+    bb = lut[tex[y0, x0, 2]] * w00 + lut[tex[y0, x1, 2]] * w10 + lut[tex[y1, x0, 2]] * w01 + lut[tex[y1, x1, 2]] * w11
+    return r, g, bb
 
 
 @njit(cache=True, fastmath=True, inline='always')
-def bilin3f(tex, u, v, out):
-    H = tex.shape[0]
-    W = tex.shape[1]
-    x0 = int(math.floor(u))
-    y0 = int(math.floor(v))
-    a = u - x0
-    b = v - y0
-    x0 = x0 % W
-    x1 = (x0 + 1) % W
-    y1 = min(max(y0 + 1, 0), H - 1)
-    y0 = min(max(y0, 0), H - 1)
-    for c in range(3):
-        out[c] = ((tex[y0, x0, c] * (1 - a) + tex[y0, x1, c] * a) * (1 - b)
-                  + (tex[y1, x0, c] * (1 - a) + tex[y1, x1, c] * a) * b)
+def bilin3f(tex, u, v):
+    x0, x1, y0, y1, a, b = _taps(u, v, tex.shape[1], tex.shape[0])
+    w00 = (1 - a) * (1 - b)
+    w10 = a * (1 - b)
+    w01 = (1 - a) * b
+    w11 = a * b
+    r = tex[y0, x0, 0] * w00 + tex[y0, x1, 0] * w10 + tex[y1, x0, 0] * w01 + tex[y1, x1, 0] * w11
+    g = tex[y0, x0, 1] * w00 + tex[y0, x1, 1] * w10 + tex[y1, x0, 1] * w01 + tex[y1, x1, 1] * w11
+    bb = tex[y0, x0, 2] * w00 + tex[y0, x1, 2] * w10 + tex[y1, x0, 2] * w01 + tex[y1, x1, 2] * w11
+    return r, g, bb
 
 
 # ---------------------------------------------------------------- noise ---
@@ -307,7 +303,7 @@ def vnoise(x, y, z):
 
 @njit(cache=True, fastmath=True)
 def fbm(x, y, z, f0, octaves, lod):
-    """fbm in [0,1]-ish; octaves whose wavelength is below lod (Earth radii) fade out."""
+    """fbm in [0,1]; octaves whose wavelength is below ~3x lod (Earth radii) fade out."""
     s = 0.0
     amp = 0.5
     norm = 0.0
@@ -321,18 +317,19 @@ def fbm(x, y, z, f0, octaves, lod):
         norm += amp * w
         amp *= 0.5
         f *= 2.03
-    if norm <= 0:
-        return 0.5
-    return s / norm * 1.0
+    # missing octaves contribute their mean
+    s += 0.5 * (1.0 - norm) if norm < 1.0 else 0.0
+    return s if norm > 0 else 0.5
 
 
 @njit(cache=True, fastmath=True)
 def cloud_density(x, y, z, clouds, cp, lod):
-    """Cloud opacity at unit-sphere point: low-frequency coverage map + procedural detail."""
+    """Cloud opacity at a unit-sphere point: low-frequency coverage map + procedural detail."""
     lat, lon = ll_of(x, y, z)
     u, v = tex_uv(lat, lon, clouds.shape[1], clouds.shape[0])
     base = bilin1(clouds, u, v)
-    # domain warp for swirl
+    if base * cp[1] + 0.5 * cp[2] - cp[3] <= 0.0:
+        return 0.0
     wx = fbm(x, y, z, cp[4], 3, lod) - 0.5
     wy = fbm(y + 5.2, z, x, cp[4], 3, lod) - 0.5
     ws = cp[5]
@@ -355,74 +352,73 @@ def ray_sphere(ox, oy, oz, dx, dy, dz, r):
     return -b - s, -b + s
 
 
+@njit(cache=True, fastmath=True, inline='always')
+def phase_r(nu):
+    return 3.0 / (16.0 * math.pi) * (1.0 + nu * nu)
+
+
+@njit(cache=True, fastmath=True, inline='always')
+def phase_m(nu, g):
+    g2 = g * g
+    return 3.0 / (8.0 * math.pi) * ((1 - g2) * (1 + nu * nu)) / ((2 + g2) * math.pow(max(1 + g2 - 2 * g * nu, 1e-6), 1.5))
+
+
 @njit(cache=True, fastmath=True)
 def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon, p, lut,
-              albedo, srgb_lut, mask, clouds, normal, cp, sp, out):
-    """Radiance along one camera ray (excluding splatted lights/stars/web). out[0:3]=rgb,
-    out[3]=earth coverage (1 if the ray hits the Earth), out[4] = view transmittance (g)."""
+              albedo, srgb_lut, mask, clouds, normal, cp, sp):
+    """Radiance along one camera ray (excluding splatted lights/stars/web).
+    Returns r, g, b, earth coverage (0/1), view transmittance (green)."""
     ox, oy, oz = C[0], C[1], C[2]
     rt = p[0]
-    out[0] = 0.0
-    out[1] = 0.0
-    out[2] = 0.0
-    out[3] = 0.0
-    out[4] = 1.0
     ta0, ta1 = ray_sphere(ox, oy, oz, dx, dy, dz, rt)
     te0, te1 = ray_sphere(ox, oy, oz, dx, dy, dz, 1.0)
     hit = te0 > 0.0
-    T = np.empty(3)
-    Ts = np.empty(3)
-    ext = np.empty(3)
-    L = np.zeros(3)
-    trans = np.ones(3)
+    L0 = 0.0
+    L1 = 0.0
+    L2 = 0.0
+    tau0 = 0.0
+    tau1 = 0.0
+    tau2 = 0.0
     if ta1 > 0.0:
         t_start = max(ta0, 0.0)
         t_end = te0 if hit else ta1
-        # sample layout: dense toward the lowest point of the ray
+        bb = ox * dx + oy * dy + oz * dz
         if hit:
             t_low = t_end
         else:
-            t_low = min(max(-(ox * dx + oy * dy + oz * dz), t_start), t_end)
-        nseg = int(sp[0])
-        if not hit:
-            nseg = int(sp[1])
-        nu = -(ox * dx + oy * dy + oz * dz)  # unused but keeps numba happy
+            t_low = min(max(-bb, t_start), t_end)
+        nseg = int(sp[0]) if hit else int(sp[1])
         nuS = dx * S[0] + dy * S[1] + dz * S[2]
         nuM = dx * M[0] + dy * M[1] + dz * M[2]
         g = p[13]
-        g2 = g * g
-        prS = 3.0 / (16.0 * math.pi) * (1.0 + nuS * nuS)
-        pmS = 3.0 / (8.0 * math.pi) * ((1 - g2) * (1 + nuS * nuS)) / ((2 + g2) * math.pow(1 + g2 - 2 * g * nuS, 1.5))
-        prM = 3.0 / (16.0 * math.pi) * (1.0 + nuM * nuM)
-        pmM = 3.0 / (8.0 * math.pi) * ((1 - g2) * (1 + nuM * nuM)) / ((2 + g2) * math.pow(1 + g2 - 2 * g * nuM, 1.5))
-        tau0 = 0.0
-        tau1 = 0.0
-        tau2 = 0.0
+        prS = phase_r(nuS)
+        pmS = phase_m(nuS, g) * p[6]
+        prM = phase_r(nuM)
+        pmM = phase_m(nuM, g) * p[6]
         moon_on = E_moon[0] + E_moon[1] + E_moon[2] > 0.0
         glow_on = p[17] + p[18] + p[19] > 0.0
-        # two halves: [t_start, t_low] and [t_low, t_end]
         for half in range(2):
             if half == 0:
-                a0 = t_low
                 span = t_low - t_start
-                sgn = -1.0
             else:
-                a0 = t_low
                 span = t_end - t_low
-                sgn = 1.0
-            if span <= 0.0:
+            if span <= 1e-12:
                 continue
             n = nseg
-            prev = 0.0
             for i in range(n):
+                u0 = i / n
                 u1 = (i + 1.0) / n
-                u0 = i * 1.0 / n
                 um = (i + 0.5) / n
-                s0 = span * u0 * u0
-                s1 = span * u1 * u1
-                sm = span * um * um
+                if half == 0:
+                    # dense toward t_low (the end of this half)
+                    s0 = t_start + span * (1.0 - (1.0 - u0) * (1.0 - u0))
+                    s1 = t_start + span * (1.0 - (1.0 - u1) * (1.0 - u1))
+                    t = t_start + span * (1.0 - (1.0 - um) * (1.0 - um))
+                else:
+                    s0 = t_low + span * u0 * u0
+                    s1 = t_low + span * u1 * u1
+                    t = t_low + span * um * um
                 ds = s1 - s0
-                t = a0 + sgn * sm
                 x = ox + dx * t
                 y = oy + dy * t
                 z = oz + dz * t
@@ -436,42 +432,37 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
                 e0 = p[3] * rr + p[7] * rm + p[8] * ro
                 e1 = p[4] * rr + p[7] * rm + p[9] * ro
                 e2 = p[5] * rr + p[7] * rm + p[10] * ro
-                # transmittance camera->sample: the half nearer the camera is integrated in
-                # reverse order, so accumulate optical depth per half and combine afterwards
-                # (approximate: use accumulated tau of this pass + midpoint)
                 tv0 = math.exp(-(tau0 + 0.5 * e0 * ds))
                 tv1 = math.exp(-(tau1 + 0.5 * e1 * ds))
                 tv2 = math.exp(-(tau2 + 0.5 * e2 * ds))
                 muS = (x * S[0] + y * S[1] + z * S[2]) / r
-                trans_lookup(lut, p, r, muS, Ts)
+                T0, T1, T2 = trans_lookup(lut, p, r, muS)
                 sr = rr * prS
-                sm_ = rm * p[6] * pmS
-                L[0] += tv0 * Ts[0] * (p[3] * sr + sm_) * ds * E_sun[0]
-                L[1] += tv1 * Ts[1] * (p[4] * sr + sm_) * ds * E_sun[1]
-                L[2] += tv2 * Ts[2] * (p[5] * sr + sm_) * ds * E_sun[2]
+                sm_ = rm * pmS
+                L0 += tv0 * T0 * (p[3] * sr + sm_) * ds * E_sun[0]
+                L1 += tv1 * T1 * (p[4] * sr + sm_) * ds * E_sun[1]
+                L2 += tv2 * T2 * (p[5] * sr + sm_) * ds * E_sun[2]
                 if moon_on:
                     muM = (x * M[0] + y * M[1] + z * M[2]) / r
-                    trans_lookup(lut, p, r, muM, T)
+                    Q0, Q1, Q2 = trans_lookup(lut, p, r, muM)
                     sr2 = rr * prM
-                    sm2 = rm * p[6] * pmM
-                    L[0] += tv0 * T[0] * (p[3] * sr2 + sm2) * ds * E_moon[0]
-                    L[1] += tv1 * T[1] * (p[4] * sr2 + sm2) * ds * E_moon[1]
-                    L[2] += tv2 * T[2] * (p[5] * sr2 + sm2) * ds * E_moon[2]
+                    sm2 = rm * pmM
+                    L0 += tv0 * Q0 * (p[3] * sr2 + sm2) * ds * E_moon[0]
+                    L1 += tv1 * Q1 * (p[4] * sr2 + sm2) * ds * E_moon[1]
+                    L2 += tv2 * Q2 * (p[5] * sr2 + sm2) * ds * E_moon[2]
                 if glow_on:
                     q = (h - p[15]) / p[16]
                     eg = math.exp(-q * q) * ds
-                    L[0] += tv0 * eg * p[17]
-                    L[1] += tv1 * eg * p[18]
-                    L[2] += tv2 * eg * p[19]
+                    L0 += tv0 * eg * p[17]
+                    L1 += tv1 * eg * p[18]
+                    L2 += tv2 * eg * p[19]
                 tau0 += e0 * ds
                 tau1 += e1 * ds
                 tau2 += e2 * ds
-        trans[0] = math.exp(-tau0)
-        trans[1] = math.exp(-tau1)
-        trans[2] = math.exp(-tau2)
-    out[4] = trans[1]
+    tr0 = math.exp(-tau0)
+    tr1 = math.exp(-tau1)
+    tr2 = math.exp(-tau2)
     if hit:
-        out[3] = 1.0
         x = ox + dx * te0
         y = oy + dy * te0
         z = oz + dz * te0
@@ -481,39 +472,32 @@ def shade_ray(C, dx, dy, dz, pix_ang, S, E_sun, Sd, sun_rad, sun_ang, M, E_moon,
         z /= rn
         cosv = -(x * dx + y * dy + z * dz)
         lod = te0 * pix_ang / max(cosv, 0.08)
-        shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo, srgb_lut,
-                      mask, clouds, normal, cp, Ts)
-        out[0] = L[0] + trans[0] * Ts[0]
-        out[1] = L[1] + trans[1] * Ts[1]
-        out[2] = L[2] + trans[2] * Ts[2]
-    else:
-        out[0] = L[0]
-        out[1] = L[1]
-        out[2] = L[2]
-        # sun disk
-        cs = dx * Sd[0] + dy * Sd[1] + dz * Sd[2]
-        if cs > math.cos(sun_ang * 1.02):
-            ang = math.acos(min(1.0, cs))
-            rr_ = ang / sun_ang
-            if rr_ < 1.0:
-                ld = 1.0 - 0.6 * (1.0 - math.sqrt(max(0.0, 1.0 - rr_ * rr_)))
-                out[0] += sun_rad * ld * trans[0]
-                out[1] += sun_rad * ld * trans[1]
-                out[2] += sun_rad * ld * trans[2]
+        g0, g1, g2 = shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
+                                   srgb_lut, mask, clouds, normal, cp)
+        return L0 + tr0 * g0, L1 + tr1 * g1, L2 + tr2 * g2, 1.0, tr1
+    # sun disk
+    cs = dx * Sd[0] + dy * Sd[1] + dz * Sd[2]
+    if cs > math.cos(sun_ang * 1.02):
+        ang = math.acos(min(1.0, cs))
+        rr_ = ang / sun_ang
+        if rr_ < 1.0:
+            ld = 1.0 - 0.6 * (1.0 - math.sqrt(max(0.0, 1.0 - rr_ * rr_)))
+            L0 += sun_rad * ld * tr0
+            L1 += sun_rad * ld * tr1
+            L2 += sun_rad * ld * tr2
+    return L0, L1, L2, 0.0, tr1
 
 
 @njit(cache=True, fastmath=True)
 def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo, srgb_lut,
-                  mask, clouds, normal, cp, out):
+                  mask, clouds, normal, cp):
     lat, lon = ll_of(x, y, z)
-    alb = np.empty(3)
     u, v = tex_uv(lat, lon, albedo.shape[1], albedo.shape[0])
-    bilin3(albedo, u, v, srgb_lut, alb)
+    a0, a1, a2 = bilin3(albedo, u, v, srgb_lut)
     land = bilin1(mask, u, v) / 255.0
-    # relief normal (tangent space, +y north)
+    # relief normal (tangent space, +x east, +y north)
     ex = -y
     ey = x
-    ez = 0.0
     el = math.sqrt(ex * ex + ey * ey)
     if el < 1e-9:
         ex, ey, el = 1.0, 0.0, 1.0
@@ -522,29 +506,26 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
     nx_ = -z * ey
     ny_ = z * ex
     nz_ = x * ey - y * ex
-    nm = np.empty(3)
     un, vn = tex_uv(lat, lon, normal.shape[1], normal.shape[0])
-    bilin3f(normal, un, vn, nm)
+    m0, m1, m2 = bilin3f(normal, un, vn)
     ks = cp[10] * land
-    Nx = x + ks * (nm[0] * ex + nm[1] * nx_)
-    Ny = y + ks * (nm[0] * ey + nm[1] * ny_)
-    Nz = z + ks * (nm[1] * nz_)
+    Nx = x + ks * (m0 * ex + m1 * nx_)
+    Ny = y + ks * (m0 * ey + m1 * ny_)
+    Nz = z + ks * (m1 * nz_)
     nl = math.sqrt(Nx * Nx + Ny * Ny + Nz * Nz)
     Nx /= nl
     Ny /= nl
     Nz /= nl
     # procedural albedo detail on land
     if land > 0.01:
-        dn = fbm(x, y, z, 900.0, 4, lod)
-        k = 1.0 + (dn - 0.5) * 0.5 * land
-        alb[0] *= k
-        alb[1] *= k
-        alb[2] *= k
+        dn = fbm(x, y, z, 700.0, 4, lod)
+        k = 1.0 + (dn - 0.5) * 0.6 * land
+        a0 *= k
+        a1 *= k
+        a2 *= k
     muS = x * S[0] + y * S[1] + z * S[2]
     muM = x * M[0] + y * M[1] + z * M[2]
-    Tg = np.empty(3)
-    trans_lookup(lut, p, 1.0, muS, Tg)
-    # clouds + shadows
+    Tg0, Tg1, Tg2 = trans_lookup(lut, p, 1.0, muS)
     c = cloud_density(x, y, z, clouds, cp, lod)
     csh = 0.0
     if muS > -0.02:
@@ -556,32 +537,35 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
         csh = cloud_density(sx / sl, sy / sl, sz / sl, clouds, cp, lod * 2.0)
     shadow = 1.0 - cp[8] * csh
     ndl = max(0.0, Nx * S[0] + Ny * S[1] + Nz * S[2])
-    # soften the lambert near the terminator so the relief catches grazing light
     ndl = ndl * min(1.0, max(0.0, (muS + 0.03) / 0.06))
-    # twilight skylight (multiple scattering stand-in)
+    # twilight skylight (multiple-scattering stand-in): warm at the terminator, then blue
     el_s = math.asin(max(-1.0, min(1.0, muS)))
     tw = 0.0
-    tr, tg, tb = 0.0, 0.0, 0.0
-    if el_s < 0.35:
-        if el_s > -0.12:
-            q = math.exp(el_s / 0.035) if el_s < 0 else 1.0
-            tw = q * cp[9]
-            w = min(1.0, max(0.0, -el_s / 0.06))
-            tr = (1.0 - w) * 1.0 + w * 0.28
-            tg = (1.0 - w) * 0.62 + w * 0.36
-            tb = (1.0 - w) * 0.50 + w * 0.80
+    tr = 0.0
+    tg = 0.0
+    tb = 0.0
+    if el_s > -0.14:
+        q = math.exp(el_s / 0.035) if el_s < 0 else 1.0
+        tw = q * cp[9]
+        w = min(1.0, max(0.0, -el_s / 0.06))
+        tr = (1.0 - w) * 1.0 + w * 0.28
+        tg = (1.0 - w) * 0.62 + w * 0.36
+        tb = (1.0 - w) * 0.50 + w * 0.80
     day_amb = cp[9] * 0.6 * min(1.0, max(0.0, muS * 4.0))
-    ground = np.empty(3)
     inv_pi = 1.0 / math.pi
-    for ch in range(3):
-        tint = (tr, tg, tb)[ch]
-        ground[ch] = alb[ch] * (inv_pi * E_sun[ch] * Tg[ch] * ndl * shadow
-                                + E_sun[ch] * (tw * tint + day_amb * (0.55, 0.7, 1.0)[ch]))
-    # ocean glint
+    dl = inv_pi * ndl * shadow
+    g0 = a0 * E_sun[0] * (Tg0 * dl + tw * tr + day_amb * 0.55)
+    g1 = a1 * E_sun[1] * (Tg1 * dl + tw * tg + day_amb * 0.70)
+    g2 = a2 * E_sun[2] * (Tg2 * dl + tw * tb + day_amb * 1.00)
+    # ocean glint (GGX)
     water = 1.0 - land
     if water > 0.01 and muS > -0.02:
-        vx, vy, vz = -dx, -dy, -dz
-        hx, hy, hz = vx + S[0], vy + S[1], vz + S[2]
+        vx = -dx
+        vy = -dy
+        vz = -dz
+        hx = vx + S[0]
+        hy = vy + S[1]
+        hz = vz + S[2]
         hl = math.sqrt(hx * hx + hy * hy + hz * hz)
         hx /= hl
         hy /= hl
@@ -590,44 +574,44 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
         ndv = max(1e-3, x * vx + y * vy + z * vz)
         ndl2 = max(0.0, muS)
         a = cp[11]
-        a2 = a * a
-        dd = ndh * ndh * (a2 - 1.0) + 1.0
-        D = a2 / (math.pi * dd * dd)
+        a2_ = a * a
+        dd = ndh * ndh * (a2_ - 1.0) + 1.0
+        D = a2_ / (math.pi * dd * dd)
         vdh = max(0.0, vx * hx + vy * hy + vz * hz)
         F = 0.02 + 0.98 * math.pow(1.0 - vdh, 5.0)
         k_ = a * 0.5
         G = (ndl2 / (ndl2 * (1 - k_) + k_)) * (ndv / (ndv * (1 - k_) + k_))
         spec = D * F * G / (4.0 * ndv + 1e-4) * water * shadow
-        for ch in range(3):
-            ground[ch] += spec * E_sun[ch] * Tg[ch]
+        g0 += spec * E_sun[0] * Tg0
+        g1 += spec * E_sun[1] * Tg1
+        g2 += spec * E_sun[2] * Tg2
     # moonlight
-    Tm = np.empty(3)
+    Tm0 = 0.0
+    Tm1 = 0.0
+    Tm2 = 0.0
     if muM > -0.1:
-        trans_lookup(lut, p, 1.0, muM, Tm)
-        ndm = max(0.0, Nx * M[0] + Ny * M[1] + Nz * M[2])
-        for ch in range(3):
-            ground[ch] += alb[ch] * inv_pi * E_moon[ch] * Tm[ch] * ndm
-    else:
-        Tm[0] = 0.0
-        Tm[1] = 0.0
-        Tm[2] = 0.0
-    # cloud layer (lit at cloud-top height so it keeps the light past the ground terminator)
+        Tm0, Tm1, Tm2 = trans_lookup(lut, p, 1.0, muM)
+        ndm = max(0.0, Nx * M[0] + Ny * M[1] + Nz * M[2]) * inv_pi
+        g0 += a0 * E_moon[0] * Tm0 * ndm
+        g1 += a1 * E_moon[1] * Tm1 * ndm
+        g2 += a2 * E_moon[2] * Tm2 * ndm
+    # cloud layer, lit at cloud-top height (keeps the light past the ground terminator)
     if c > 0.0:
         rc = 1.0 + cp[7]
-        Tc = np.empty(3)
-        trans_lookup(lut, p, rc, muS * 0.999 - 0.0, Tc)
+        Tc0, Tc1, Tc2 = trans_lookup(lut, p, rc, muS)
         wrap = max(0.0, (muS + 0.18) / 1.18)
-        # forward scattering silver lining toward the sun
-        vs = -(dx * S[0] + dy * S[1] + dz * S[2])
-        fwd = 1.0 + 0.8 * max(0.0, -vs) ** 8
+        vs = dx * S[0] + dy * S[1] + dz * S[2]
+        fwd = 1.0 + 0.8 * max(0.0, vs) ** 8
         calb = 0.85
-        for ch in range(3):
-            cl = calb * (inv_pi * E_sun[ch] * Tc[ch] * wrap * fwd + E_sun[ch] * (tw * (tr, tg, tb)[ch] * 1.3 + day_amb * (0.55, 0.7, 1.0)[ch]))
-            cl += calb * inv_pi * E_moon[ch] * Tm[ch] * max(0.0, (muM + 0.1) / 1.1)
-            ground[ch] = ground[ch] * (1.0 - c) + cl * c
-    out[0] = ground[0]
-    out[1] = ground[1]
-    out[2] = ground[2]
+        dl = inv_pi * wrap * fwd
+        mm = inv_pi * max(0.0, (muM + 0.1) / 1.1)
+        c0 = calb * (E_sun[0] * (Tc0 * dl + tw * tr * 1.3 + day_amb * 0.55) + E_moon[0] * Tm0 * mm)
+        c1 = calb * (E_sun[1] * (Tc1 * dl + tw * tg * 1.3 + day_amb * 0.70) + E_moon[1] * Tm1 * mm)
+        c2 = calb * (E_sun[2] * (Tc2 * dl + tw * tb * 1.3 + day_amb * 1.00) + E_moon[2] * Tm2 * mm)
+        g0 = g0 * (1.0 - c) + c0 * c
+        g1 = g1 * (1.0 - c) + c1 * c
+        g2 = g2 * (1.0 - c) + c2 * c
+    return g0, g1, g2
 
 
 @njit(parallel=True, cache=True, fastmath=True)
@@ -636,10 +620,9 @@ def render_kernel(img, cov, tview, C, Rm, f, cx, cy, S, E_sun, Sd, sun_rad, sun_
     H = img.shape[0]
     W = img.shape[1]
     pix_ang = 1.0 / f
+    c0 = C[0] * C[0] + C[1] * C[1] + C[2] * C[2]
     for py in prange(H):
-        o = np.empty(5)
         for px in range(W):
-            # primary ray
             vx = (px + 0.5 - cx) / f
             vy = -(py + 0.5 - cy) / f
             dx = Rm[0, 0] * vx + Rm[1, 0] * vy + Rm[2, 0]
@@ -649,17 +632,12 @@ def render_kernel(img, cov, tview, C, Rm, f, cx, cy, S, E_sun, Sd, sun_rad, sun_
             dx /= dl
             dy /= dl
             dz /= dl
-            # does this pixel straddle the limb or the sun disk? -> supersample
             b = C[0] * dx + C[1] * dy + C[2] * dz
-            c0 = C[0] * C[0] + C[1] * C[1] + C[2] * C[2]
             bd = math.sqrt(max(0.0, c0 - b * b))
-            tcl = max(-b, 1e-6)
-            edge = abs(bd - 1.0) < 1.5 * tcl * pix_ang and -b > 0
+            edge = (-b > 0) and abs(bd - 1.0) < 1.5 * (-b) * pix_ang
             cs = dx * Sd[0] + dy * Sd[1] + dz * Sd[2]
             near_sun = cs > math.cos(sun_ang + 2.5 * pix_ang)
-            n = 1
-            if edge or near_sun:
-                n = 4
+            n = 4 if (edge or near_sun) else 1
             r0 = 0.0
             r1 = 0.0
             r2 = 0.0
@@ -667,24 +645,22 @@ def render_kernel(img, cov, tview, C, Rm, f, cx, cy, S, E_sun, Sd, sun_rad, sun_
             tv = 0.0
             for sy in range(n):
                 for sx in range(n):
-                    if n == 1:
-                        ex_, ey_ = 0.5, 0.5
-                    else:
-                        ex_ = (sx + 0.5) / n
-                        ey_ = (sy + 0.5) / n
+                    ex_ = (sx + 0.5) / n
+                    ey_ = (sy + 0.5) / n
                     vx = (px + ex_ - cx) / f
                     vy = -(py + ey_ - cy) / f
                     dx = Rm[0, 0] * vx + Rm[1, 0] * vy + Rm[2, 0]
                     dy = Rm[0, 1] * vx + Rm[1, 1] * vy + Rm[2, 1]
                     dz = Rm[0, 2] * vx + Rm[1, 2] * vy + Rm[2, 2]
                     dl = math.sqrt(dx * dx + dy * dy + dz * dz)
-                    shade_ray(C, dx / dl, dy / dl, dz / dl, pix_ang, S, E_sun, Sd, sun_rad, sun_ang,
-                              M, E_moon, p, lut, albedo, srgb_lut, mask, clouds, normal, cp, sp, o)
-                    r0 += o[0]
-                    r1 += o[1]
-                    r2 += o[2]
-                    cv += o[3]
-                    tv += o[4]
+                    o0, o1, o2, o3, o4 = shade_ray(C, dx / dl, dy / dl, dz / dl, pix_ang, S, E_sun, Sd,
+                                                   sun_rad, sun_ang, M, E_moon, p, lut, albedo, srgb_lut,
+                                                   mask, clouds, normal, cp, sp)
+                    r0 += o0
+                    r1 += o1
+                    r2 += o2
+                    cv += o3
+                    tv += o4
             inv = 1.0 / (n * n)
             img[py, px, 0] = r0 * inv
             img[py, px, 1] = r1 * inv
@@ -941,15 +917,14 @@ def _lights_eval(P, e, tint, C, S, p, lut, clouds, cp, gain, out_rgb, out_ok, lo
         if night <= 0.0:
             out_ok[i] = 0
             continue
-        T = np.empty(3)
-        trans_lookup(lut, p, 1.0, cosv, T)
+        T0, T1, T2 = trans_lookup(lut, p, 1.0, cosv)
         lod = dist * lod_ang / max(cosv, 0.1)
         c = cloud_density(x, y, z, clouds, cp, lod)
         k = e[i] * gain * night * (1.0 - 0.8 * c) * cosv / (dist * dist)
         tt = tint[i]
-        out_rgb[i, 0] = k * T[0] * 1.0
-        out_rgb[i, 1] = k * T[1] * (0.62 + 0.2 * tt)
-        out_rgb[i, 2] = k * T[2] * (0.30 + 0.35 * tt)
+        out_rgb[i, 0] = k * T0
+        out_rgb[i, 1] = k * T1 * (0.62 + 0.2 * tt)
+        out_rgb[i, 2] = k * T2 * (0.30 + 0.35 * tt)
         out_ok[i] = 1
 
 
