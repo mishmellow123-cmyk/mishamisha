@@ -167,18 +167,18 @@ def _skyline(img, depth, cam, t, ssf=2):
         # window aperture (anti-aliased by supersampling + a soft edge)
         win_px = cw * ppm
         soft = max(0.5 / max(win_px, 1e-3), 0.02)
-        ax = np.clip((0.36 - np.abs(fu[None, :] - 0.5)) / soft, 0, 1) * np.clip((0.3 - np.abs(fv - 0.55)) / (soft * cw / fl), 0, 1)
+        ax = np.clip((0.27 - np.abs(fu[None, :] - 0.5)) / soft, 0, 1) * np.clip((0.21 - np.abs(fv - 0.55)) / (soft * cw / fl), 0, 1)
         if win_px < 1.2:
-            ax = ax * 0 + 0.36 * 0.28 * 4   # unresolved: average aperture
+            ax = ax * 0 + 0.27 * 0.21 * 4   # unresolved: average aperture
         wc_cool = np.array([0.75, 0.88, 1.0])
         wc_warm = np.array([1.0, 0.86, 0.66])
         mixw = (tone[None, :] > 0.72).astype(np.float32)[..., None]
         wcol = wc_cool * (1 - mixw) + wc_warm * mixw
         br = (0.35 + 0.65 * ((hsh >> 7) & 255) / 255.0) * lit * ax
         facade = np.array([0.010, 0.012, 0.018])
-        col = facade + wcol * (br * 0.55)[..., None]
+        col = facade + wcol * (br * 0.26)[..., None]
         # haze: farther = lighter, glow rising from the streets
-        Ta = math.exp(-z / 1800.0)
+        Ta = math.exp(-z / 1300.0)
         lowf = np.clip((STREET_Y + 60 - Y) / 60.0, 0, 1)[:, None, None]
         hz = haze * (1 - lowf) + (haze + lowglow * 0.04) * lowf
         col = col * Ta + hz * (1 - Ta)

@@ -9,6 +9,7 @@ Lower third (text 1580-1600, 1620-1639) = smooth snow and dim water.
 """
 import math
 
+import cv2
 import numpy as np
 from numba import njit, prange
 
@@ -95,15 +96,29 @@ def sky_all(ox, oy, oz, dx, dy, dz, S, A, t):
 
 
 @njit(parallel=True, fastmath=True)
-def shade(C, D, P, S, A, t, LT, Lm, Im, amb, aur_amb, fogp, out, dep):
+def aurora_img(C, A, t, out):
+    H, W = out.shape[0], out.shape[1]
+    for j in prange(H):
+        for i in range(W):
+            dx, dy, dz, sl, dxh, dzh = T.ray_of(C, i, j)
+            r, g, b = SK.aurora_ray(C[0], C[1], C[2], dx, dy, dz, A, t)
+            out[j, i, 0] = r
+            out[j, i, 1] = g
+            out[j, i, 2] = b
+
+
+@njit(parallel=True, fastmath=True)
+def shade(C, D, P, S, A, t, LT, Lm, Im, amb, aur_amb, fogp, out, dep, wf, mapx, mapy):
     H, W = D.shape
     mx, my, mz = Lm[0], Lm[1], Lm[2]
     for j in prange(H):
         for i in range(W):
             dx, dy, dz, sl, dxh, dzh = T.ray_of(C, i, j)
             d = D[j, i]
+            wf[j, i] = 0.0
             if d >= 1e29:
-                r, g, b = sky_all(C[0], C[1], C[2], dx, dy, dz, S, A, t)
+                r, g, b = SK.sky_base(dx, dy, dz, S)
+                wf[j, i] = -1.0
                 out[j, i, 0] = r
                 out[j, i, 1] = g
                 out[j, i, 2] = b
@@ -131,8 +146,16 @@ def shade(C, D, P, S, A, t, LT, Lm, Im, amb, aur_amb, fogp, out, dep):
                 rx = dx - 2.0 * dn * nx
                 ry = abs(dy - 2.0 * dn * ny)
                 rz = dz - 2.0 * dn * nz
-                r, g, b = sky_all(x, WATER, z, rx, ry, rz, S, A, t)
+                r, g, b = SK.sky_base(rx, ry, rz, S)
                 fres = (0.03 + 0.97 * (1.0 - max(-dn, 0.0)) ** 5) * 0.6
+                # where the reflected ray lands on the sky image (for the aurora remap)
+                fx_, fz_, rx_, rz_ = C[3], C[4], C[5], C[6]
+                zc = rx * fx_ + rz * fz_
+                xc = rx * rx_ + rz * rz_
+                zc = max(zc, 0.05)
+                mapx[j, i] = C[8] + C[7] * xc / zc
+                mapy[j, i] = C[9] - C[7] * ry / zc
+                wf[j, i] = fres
                 cr = r * fres + 0.002
                 cg = g * fres + 0.003
                 cb = b * fres + 0.005
@@ -250,12 +273,25 @@ def render(frame, scale=0.5, ss=1.5):
     aur_amb = np.array([0.006, 0.030, 0.014])
     S = SK.sky_params(zenith='#060A1A', horizon='#1D2A50', moon_dir=MOON_DIR, halo_I=0.0, halo2_I=0.0,
                       horizon_glow=0.25)
-    A = np.array([1200.0, 5200.0, 1.0 / 2600.0, 7.0, 1.8, 1.0, 0.0, -1800.0, 56.0, 6.0])
+    A = np.array([1200.0, 5200.0, 1.0 / 2600.0, 7.0, 1.8, 1.0, 0.0, -1800.0, 34.0, 6.0])
     fogc = CM.lin('#1D2A50') * 0.9
     fogp = np.array([1.0 / 9000.0, fogc[0], fogc[1], fogc[2]])
     out = np.zeros((cami.H, cami.W, 3), np.float32)
     dep = np.zeros((cami.H, cami.W), np.float32)
-    shade(C, D, P, S, A, t, LT, Lm, Im, amb, aur_amb, fogp, out, dep)
+    wf = np.zeros((cami.H, cami.W), np.float32)
+    mapx = np.zeros((cami.H, cami.W), np.float32)
+    mapy = np.zeros((cami.H, cami.W), np.float32)
+    shade(C, D, P, S, A, t, LT, Lm, Im, amb, aur_amb, fogp, out, dep, wf, mapx, mapy)
+    # aurora: ray-marched at half output resolution (extended upward so reflections can sample it)
+    ah, aw = max(H // 2, 8), max(W // 2, 8)
+    cama = cam.scaled(0.5)
+    aur = np.zeros((cama.H, cama.W, 3), np.float32)
+    aurora_img(cama.params(), A, t, aur)
+    aur_i = cv2.resize(aur, (cami.W, cami.H), interpolation=cv2.INTER_LINEAR)
+    sky = (wf < -0.5).astype(np.float32)[..., None]
+    out += aur_i * sky
+    refl = cv2.remap(aur_i, mapx, mapy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    out += refl * np.clip(wf, 0, None)[..., None]
     img = CM.downsample(out, W, H)
     depth = CM.depth_down(dep, W, H)
     skymask = CM.downsample((dep > 1e8).astype(np.float32), W, H)

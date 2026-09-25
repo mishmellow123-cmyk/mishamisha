@@ -31,11 +31,11 @@ HERO_TOP = 4.0
 def _layer_towers(k, z, rng):
     """Towers of layer k: arrays of (x, half-width, top, bulge-phase)."""
     span = z * 1.4 + 200
-    spacing = max(z * 0.11, 9.0)
+    spacing = max(z * 0.15, 12.0)
     xs = np.arange(-span, span, spacing) + rng.random(int(np.ceil(2 * span / spacing)) + 1)[:len(np.arange(-span, span, spacing))] * spacing * 0.8
     n = len(xs)
-    w = spacing * (0.15 + 0.17 * rng.random(n))
-    top = MIST_Y + (22 + 70 * rng.random(n) ** 0.8) * (0.7 + 0.5 * min(z / 1200.0, 1.0))
+    w = spacing * (0.11 + 0.19 * rng.random(n) ** 1.5)
+    top = MIST_Y + (12 + 95 * rng.random(n) ** 1.3) * (0.7 + 0.5 * min(z / 1200.0, 1.0))
     if z == HERO_Z:
         # the hero tower (beacon) + two companions; keep the rest of this layer at the frame edges
         keep = (np.abs(xs - HERO_X) > 45)
