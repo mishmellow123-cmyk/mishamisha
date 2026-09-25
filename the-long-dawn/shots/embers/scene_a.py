@@ -21,7 +21,7 @@ EMITTER = np.array([0.0, -1.3, 2.4])
 def _warp_table():
     """Global time warp for the embers: s(t) = integral of rate; they slow as they become letters."""
     ts = np.arange(200.0, 520.0, 0.05)
-    rate = 1.0 - 0.9 * smootherstep(308.0, 344.0, ts)
+    rate = 1.0 - 0.82 * smootherstep(308.0, 344.0, ts)
     s = np.concatenate([[0.0], np.cumsum(0.5 * (rate[1:] + rate[:-1]) * 0.05)])
     return ts, s
 
@@ -39,13 +39,13 @@ class Embers:
     def __init__(self, n=9000, seed=1):
         r = rng(seed)
         self.n = n
-        self.tb = r.uniform(236.0, 334.0, n)                  # birth frame
+        self.tb = r.uniform(236.0, 324.0, n)                  # birth frame
         self.sb = warp(self.tb)
         a = r.uniform(0, 2 * np.pi, n)
-        rad = 0.5 * np.sqrt(r.random(n))
+        rad = 0.35 * np.sqrt(r.random(n))
         self.p0 = EMITTER + np.stack([rad * np.cos(a), r.normal(0, 0.1, n), rad * np.sin(a)], 1)
         sp = r.uniform(0.16, 0.34, n)                        # units / frame (warped time)
-        dirs = np.stack([r.normal(0, 0.42, n), np.ones(n), r.normal(0.3, 0.3, n)], 1)
+        dirs = np.stack([r.normal(0, 0.24, n), np.ones(n), r.normal(0.26, 0.2, n)], 1)
         dirs /= np.linalg.norm(dirs, axis=1, keepdims=True)
         self.v = dirs * sp[:, None]
         self.T0 = r.uniform(0.62, 0.95, n)
@@ -53,7 +53,7 @@ class Embers:
         self.life = r.uniform(70, 150, n)                     # in warped frames
         self.flk = r.uniform(0.15, 0.5, n)
         self.ph = r.uniform(0, 2 * np.pi, n)
-        self.wamp = r.uniform(0.25, 0.9, n)
+        self.wamp = r.uniform(0.4, 1.3, n)
         self.rw = r.uniform(0.008, 0.024, n)
 
     def pos(self, t):
@@ -63,7 +63,7 @@ class Embers:
         s_arr = np.broadcast_to(s, age.shape)
         q = p + np.stack([0 * s_arr, -0.02 * s_arr, 0.013 * s_arr], 1) / 0.33
         w = vnoise(q, 0.33, (0.0, 0.0, 0.0), 2)
-        p = p + w * (self.wamp * np.minimum(age / 25.0, 1.0))[:, None]
+        p = p + w * (self.wamp * np.minimum(age / 40.0, 1.0) ** 1.5)[:, None]
         return p, age
 
     def emit(self, ctx):
@@ -91,8 +91,8 @@ class TorchGlow:
         k = 1 - smoothstep(300, 334, t)
         if k <= 0:
             return
-        P = np.array([EMITTER + [0, 0.8, 0], EMITTER + [0, 1.6, 0.2], EMITTER + [0, 0.2, 0]])
-        e = np.array([70000.0, 40000.0, 90000.0]) * k
+        P = np.array([EMITTER + [0, -0.9, 0], EMITTER + [0, -0.2, 0.2], EMITTER + [0, -1.6, 0]])
+        e = np.array([30000.0, 9000.0, 40000.0]) * k
         col = np.array([look.blackbody(0.75), look.blackbody(0.6), look.blackbody(0.85)])
         rw = np.array([2.2, 3.2, 1.2])
         ctx.fr.splat(P, P, rw, e, col, ctx.cam0, ctx.cam1, profile=1)
@@ -121,6 +121,10 @@ class Glyphs:
         nh = 30
         self.proto[:nh] = r.choice(heroes, nh, replace=False)
         self.hero[:nh] = True
+        texts = list(A['text'])
+        self.passes = [p for p in HERO_PASSES if p[0] in texts]
+        for i, p in enumerate(self.passes):
+            self.proto[i] = texts.index(p[0])
         # sizes (em in world units)
         s = r.lognormal(np.log(0.24), 0.3, n)
         s[:nh] = r.uniform(0.3, 0.46, nh)
@@ -141,10 +145,35 @@ class Glyphs:
         hx = r.choice([-1, 1], nh) * r.uniform(0.7, 3.4, nh)
         hy = r.uniform(1.3, 3.6, nh)
         home[:nh] = np.stack([hx, hy, hz], 1)
+        # passes: placed so they are exactly in focus (d = HERO_FOCUS) at their moment
+        hv = []
+        for i, (txt, th, sx, sy, sz) in enumerate(self.passes):
+            pc, tc = cam_a(th)
+            fw = (tc - pc) / np.linalg.norm(tc - pc)
+            rt = np.cross(fw, [0, 1.0, 0])
+            rt /= np.linalg.norm(rt)
+            upv = np.cross(rt, fw)
+            tn = np.tan(np.radians(HFOV_A(th)) / 2)
+            d = fw + sx * tn * rt + sy * tn * upv
+            home[i] = pc + d / np.linalg.norm(d) * HERO_FOCUS / np.dot(d / np.linalg.norm(d), fw)
+            s[i] = sz
+            # velocity: pass the lens on its own side ~26 frames after the moment
+            pe, te = cam_a(th + 26)
+            fe = (te - pe) / np.linalg.norm(te - pe)
+            re = np.cross(fe, [0, 1.0, 0])
+            re /= np.linalg.norm(re)
+            ue = np.cross(re, fe)
+            goal = pe + np.sign(sx) * 1.7 * re + 1.0 * ue + 0.6 * fe
+            hv.append((goal - home[i]) / 26.0)
+        self.hv = np.array(hv).reshape(-1, 3)
+        self.th = np.array([p[1] for p in self.passes], np.float64)
         self.home = home
         # ---- arrival (drift in from all directions)
         self.arr = r.uniform(318.0, 392.0, n)
         self.arr_len = r.uniform(40.0, 80.0, n)
+        for i, p in enumerate(self.passes):
+            self.arr[i] = p[1] - 44.0
+            self.arr_len[i] = 20.0
         self.din = rand_dirs(r, n) * r.uniform(6.0, 16.0, n)[:, None]
         self.din += (home / np.maximum(np.linalg.norm(home, axis=1, keepdims=True), 1e-3)) * 6.0
         # ---- ember-born glyphs: follow ember paths first
@@ -152,7 +181,7 @@ class Glyphs:
         ie = np.arange(nh, nh + n_ember)
         self.ie = ie
         self.eb = Embers(n=n_ember, seed=seed + 100)
-        self.eb.tb = r.uniform(282.0, 318.0, n_ember)
+        self.eb.tb = r.uniform(278.0, 310.0, n_ember)
         self.eb.sb = warp(self.eb.tb)
         self.eb.v *= 1.15
         self.t_open = np.full(n, -1.0)
@@ -167,13 +196,16 @@ class Glyphs:
         self.tw_f = r.uniform(0.05, 0.22, n)
         self.tw_p = r.uniform(0, 2 * np.pi, n)
         self.tw_a = r.uniform(0.1, 0.55, n)
-        self.tilt = r.normal(0, 0.28, (n, 2))
+        self.tilt = r.normal(0, 0.22, (n, 2))
+        self.tilt[:nh] *= 0.4
         self.tumf = r.uniform(0.004, 0.02, (n, 2))
         self.tump = r.uniform(0, 2 * np.pi, (n, 2))
         self.wamp = r.uniform(0.15, 0.6, n)
+        self.wamp[:nh] = 0.08
+        self.din[:len(self.passes)] *= 0.25
         # ---- spiral
         rr = np.linalg.norm(home[:, [0, 2]], axis=1)
-        self.sp_start = 398.0 + 26.0 * clamp01(rr / 30.0) + r.uniform(-4, 4, n)
+        self.sp_start = 396.0 + 12.0 * clamp01(rr / 30.0) + r.uniform(-3, 3, n)
         self.sp_end = 468.0 + r.uniform(-7, 2, n) - 4 * (1 - clamp01(rr / 30.0))
         self.sp_k = r.uniform(1.8, 2.2, n)
         self.arm = r.integers(0, 3, n) * (2 * np.pi / 3) + r.normal(0, 0.18, n)
@@ -205,6 +237,10 @@ class Glyphs:
         q = self.home + np.stack([0.004 * ta, 0.006 * ta, -0.003 * ta], 1) / 0.21
         w = vnoise(q, 0.21, (0.0, 0.0, 0.0), 2)
         c = c + w * self.wamp[:, None] * 1.3
+        npass = len(self.passes)
+        if npass:
+            c[:npass] = self.home[:npass] + self.hv * (ta[:npass] - self.th)[:, None] + \
+                (w[:npass] * 0.06)
         return c
 
     def state(self, t):
@@ -212,7 +248,7 @@ class Glyphs:
         c = self.centre_pre(t)
         # spiral transform
         ts = self.sp_start
-        u = ease_in(clamp01((t - ts) / (self.sp_end - ts)), 2.1)
+        u = ease_in(clamp01((t - ts) / (self.sp_end - ts)), 1.7)
         act = u > 0
         if act.any():
             cs = self.centre_pre_frozen()
@@ -225,9 +261,9 @@ class Glyphs:
             # pull toward 3 logarithmic arms as the spiral forms (galaxy of writing)
             tharm = self.arm[act] + 1.1 * np.log(np.maximum(rq, 0.5))
             dth = np.angle(np.exp(1j * (tharm - th)))
-            th = th + dth * smoothstep(0.0, 0.45, ua)
+            th = th + dth * smoothstep(0.0, 0.22, ua)
             th2 = th + self.sp_k[act] * np.log(1.0 / (1.0 - 0.995 * ua)) + 0.35 * ua
-            hh = h * (1 - ua) ** 2.4
+            hh = h * (1 - smoothstep(0.0, 0.5, ua)) * (1 - ua)
             sp = np.stack([rr * np.cos(th2), hh, rr * np.sin(th2)], 1)
             # residual motion fades out
             resid = c[act] - q
@@ -257,8 +293,10 @@ class Glyphs:
         right = np.cross(up0[None, :], fwd)
         right /= np.maximum(np.linalg.norm(right, axis=1, keepdims=True), 1e-6)
         up = np.cross(fwd, right)
-        a = self.tilt[:, 0] + 0.35 * np.sin(self.tumf[:, 0] * t + self.tump[:, 0]) + 2.2 * u ** 1.5
-        b = self.tilt[:, 1] + 0.5 * np.sin(self.tumf[:, 1] * t + self.tump[:, 1])
+        amp = np.where(self.hero, 0.08, 0.2)
+        a = np.clip(self.tilt[:, 0] + amp * np.sin(self.tumf[:, 0] * t + self.tump[:, 0]), -0.42, 0.42)
+        a = a + 2.2 * u ** 1.5
+        b = np.clip(self.tilt[:, 1] + 1.5 * amp * np.sin(self.tumf[:, 1] * t + self.tump[:, 1]), -0.6, 0.6)
         ca, sa = np.cos(a), np.sin(a)
         r2 = ca[:, None] * right + sa[:, None] * up
         u2 = -sa[:, None] * right + ca[:, None] * up
@@ -284,15 +322,16 @@ class Glyphs:
         heat = smoothstep(0.55, 1.0, u)
         absorb = 1 - smoothstep(0.9, 0.99, u)
         shrink = np.maximum((1 - u) ** 1.7, 0.02)
-        eg = self.E * tw * fade_arr * (1 + 2.5 * heat) * absorb * (0.25 + 0.75 * shrink)
-        eg *= 3000.0 * self.s ** 2                        # total glyph energy ~ area (seen at z=10)
+        eg = self.E * tw * fade_arr * (1 + 1.5 * heat) * absorb * (0.2 + 0.8 * shrink)
+        eg *= 3000.0 * self.s ** 2 * (1 + 0.8 * smoothstep(400, 440, t))  # ~ area (seen at z=10)
         eg[self.hero] *= 1.6
-        T = lerp(self.T, 0.97, heat)
+        T = lerp(self.T, 0.86, heat)
         # ember-born glyphs keep ember heat as they open
         col_g = look.blackbody(T)
         # blend toward the mind palette as they compress
         mind = C_CORE * 0.6 + C_ICE * 0.4
-        col_g = col_g * (1 - heat[:, None] * 0.5) + mind[None, :] * heat[:, None] * 0.5
+        hm = smoothstep(0.8, 1.0, u)[:, None]
+        col_g = col_g * (1 - hm * 0.6) + mind[None, :] * hm * 0.6
         e = eg[gid] * self.pe * (0.75 + 0.5 * self.prand)
         col = col_g[gid]
         rw = sc[gid] * 0.018
@@ -313,12 +352,12 @@ class ThePoint:
     def level(self, t):
         # fraction of glyph energy absorbed by t (smooth, monotone)
         g = self.g
-        u = ease_in(clamp01((t - g.sp_start) / (g.sp_end - g.sp_start)), 2.1)
+        u = ease_in(clamp01((t - g.sp_start) / (g.sp_end - g.sp_start)), 1.7)
         return float(np.mean(smoothstep(0.9, 0.995, u)))
 
     def emit(self, ctx):
         t = ctx.t
-        if t < 420 or t >= 484:
+        if t < 404 or t >= 484:
             return
         lv = self.level(t)
         breath = 1 - 0.25 * smoothstep(471, 479, t) + 0.6 * smoothstep(478.5, 480.0, t)
@@ -329,6 +368,14 @@ class ThePoint:
         e = np.full(self.n, I / self.n)
         col = np.broadcast_to(C_CORE, (self.n, 3))
         ctx.fr.splat(P, P, 0.004, e, col, ctx.cam0, ctx.cam1)
+        # galactic bulge: grows with the mean spiral progress
+        g = self.g
+        um = ease_in(clamp01((t - g.sp_start) / (g.sp_end - g.sp_start)), 1.7).mean()
+        bul = 1 - smoothstep(472, 481, t)
+        Hb = np.zeros((3, 3))
+        ctx.fr.splat(Hb, Hb, np.array([4.0 * (1 - um) + 0.5, 2.0 * (1 - um) + 0.3, 0.8]),
+                     np.array([9000.0, 6000.0, 3000.0]) * um ** 1.5 * bul,
+                     np.array([C_GOLD, look.blackbody(0.8), C_ICE]), ctx.cam0, ctx.cam1, profile=1)
         # halo
         H = np.zeros((2, 3))
         ctx.fr.splat(H, H, np.array([0.3, 1.2]), np.array([1.5, 1.2]) * I,
@@ -338,15 +385,32 @@ class ThePoint:
 # ------------------------------------------------------------------ camera ---
 
 CAM_A = [
-    (300, (0.0, -1.2, 9.0), (0.0, 2.0, 0.0)),
-    (340, (0.2, 0.0, 8.6), (0.0, 2.5, -1.0)),
-    (372, (0.8, 1.2, 7.8), (0.0, 2.1, -2.0)),
-    (400, (1.6, 3.2, 9.8), (0.0, 1.0, -1.0)),
+    (300, (0.0, -1.2, 9.4), (0.0, 2.0, 0.0)),
+    (340, (0.2, 0.2, 8.8), (0.0, 2.6, -1.0)),
+    (372, (0.5, 1.2, 7.4), (0.2, 2.4, -3.0)),
+    (392, (0.9, 2.2, 6.9), (0.2, 1.6, -3.0)),
     (430, (5.0, 14.0, 27.0), (0.0, -1.5, 0.0)),
     (455, (4.0, 10.0, 19.5), (0.0, -1.6, 0.0)),
     (470, (3.1, 7.6, 14.2), (0.0, -1.4, 0.0)),
     (484, (2.9, 7.2, 13.6), (0.0, -1.35, 0.0)),
 ]
+
+HERO_FOCUS = 5.0
+# (text, moment, screen x, screen y (fractions of half-width), em size)
+HERO_PASSES = [
+    ('火', 346, -0.46, 0.22, 0.36),
+    ('\U0001D11E', 353, 0.50, 0.16, 0.36),
+    ('كلمة', 360, -0.12, 0.30, 0.30),
+    ('π', 367, 0.60, 0.30, 0.34),
+    ('ज्ञान', 374, -0.58, 0.10, 0.28),
+    ('A', 381, 0.22, 0.26, 0.34),
+    ('ACGT', 388, -0.30, 0.33, 0.26),
+    ('∞', 395, 0.56, 0.08, 0.34),
+]
+
+
+def HFOV_A(t):
+    return float(lerp(50, 46, smoothstep(300, 480, t)))
 
 
 def cam_a(t):

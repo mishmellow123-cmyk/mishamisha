@@ -201,9 +201,9 @@ def build_lights():
         r = np.abs(rng.normal(0, sig_km, n)) * (0.3 + 1.2 * rng.random(n))
         arms = rng.integers(3, 7)
         base = rng.random() * 2 * np.pi
-        onarm = rng.random(n) < 0.5
+        onarm = rng.random(n) < 0.25
         ang = np.where(onarm,
-                       base + (rng.integers(0, arms, n) * 2 * np.pi / arms) + rng.normal(0, 0.07, n),
+                       base + (rng.integers(0, arms, n) * 2 * np.pi / arms) + rng.normal(0, 0.25, n) + 0.8 * r / (3 * sig_km),
                        rng.random(n) * 2 * np.pi)
         r = np.where(onarm, r * 1.8, r)
         dx = r * np.cos(ang) / (111.2 * max(np.cos(np.radians(la_)), 0.15))
@@ -220,7 +220,7 @@ def build_lights():
     cl_e = np.concatenate(cl_e)
     cl_t = np.concatenate(cl_t)
     # balance: city cores carry ~30% of the texture energy
-    cl_e = cl_e / cl_e.sum() * (0.30 * N)
+    cl_e = cl_e / cl_e.sum() * (0.22 * N)
     lon = np.concatenate([lon, cl_lon])
     lat = np.concatenate([lat, cl_lat])
     e = np.concatenate([e, cl_e.astype(np.float32)])

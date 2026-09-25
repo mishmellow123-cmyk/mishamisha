@@ -153,7 +153,7 @@ def render_ridges(out_rgb, out_a, depth, cam, meta, hs, sp, fog, lights, light_o
                     continue
                 if cov > 1:
                     cov = 1.0
-                below = h - Y                        # metres below the crest
+                below = max(0.0, h - Y)              # metres below the crest
                 # base shading: albedo * sky ambient (brighter near crest, slight texture)
                 amb = ambient * (0.55 + 0.45 * math.exp(-below / (fog[7] + 1e-6)))
                 if meta[li, 11] > 0:
@@ -163,7 +163,7 @@ def render_ridges(out_rgb, out_a, depth, cam, meta, hs, sp, fog, lights, light_o
                 cg = meta[li, 6] * amb
                 cb = meta[li, 7] * amb
                 # crest rim (sky light grazing the crest)
-                rim = meta[li, 9] * math.exp(-below / fog[6])
+                rim = meta[li, 9] * math.exp(-below / (fog[6] * pix))
                 cr += rim * fr
                 cg += rim * fg
                 cb += rim * fb
@@ -181,9 +181,10 @@ def render_ridges(out_rgb, out_a, depth, cam, meta, hs, sp, fog, lights, light_o
                         cg += lights[q, 5] * w
                         cb += lights[q, 6] * w
                 # aerial perspective + valley mist
-                sig = fog[0] + fog[1] * math.exp(-(Y - fog[2]) / fog[3])
+                me = math.exp(-max(0.0, Y - fog[2]) / fog[3])
+                sig = fog[0] + fog[1] * me
                 fa = 1.0 - math.exp(-tt * sig * meta[li, 8])
-                mistb = 1.0 + fog[4] * meta[li, 10] * math.exp(-(Y - fog[2]) / fog[3])
+                mistb = 1.0 + fog[4] * meta[li, 10] * me
                 cr = cr * (1 - fa) + fr * mistb * fa
                 cg = cg * (1 - fa) + fg * mistb * fa
                 cb = cb * (1 - fa) + fb * mistb * fa

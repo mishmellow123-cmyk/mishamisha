@@ -51,22 +51,22 @@ def crest_ridge(seed=5):
     return Ridge(z, x0, x1, h, albedo, fog_mul=0.0, rim=0.05, mist=0.0, tex=0.0, name='crest')
 
 
-FOG = np.array([1.0 / 26000.0, 1.0 / 2600.0, -175.0, 55.0, 0.55, math.radians(2.0), 0.9,
+FOG = np.array([1.0 / 22000.0, 1.0 / 2600.0, -175.0, 55.0, 0.55, math.radians(6.0), 0.9,
                 25.0, 1.0 / 40.0], np.float64)
 
 
 def sky_intro():
     return Sky(
         sun=(-16.0, -6.0),
-        zenith=np.array([0.0020, 0.0036, 0.030]),
-        horizon=np.array([0.040, 0.058, 0.175]),
-        amber=np.array([0.80, 0.34, 0.095]),
-        rose=np.array([0.30, 0.11, 0.17]),
-        violet=np.array([0.10, 0.072, 0.19]),
-        base_fall=0.20, amber_fall=0.032, rose_fall=0.085, violet_fall=0.28, az_pow=2.2,
-        moon=(-27.0, 10.5), moon_radius_deg=0.75, moon_gain=2.2, moon_aureole=0.010,
-        earthshine=0.045, city_gain=0.9,
-        mw=0.0, star_gain=0.9, star_thresh=10.0, n_stars=14000,
+        zenith=np.array([0.0035, 0.0075, 0.045]),
+        horizon=np.array([0.030, 0.052, 0.150]),
+        amber=np.array([1.05, 0.46, 0.13]),
+        rose=np.array([0.20, 0.075, 0.11]),
+        violet=np.array([0.045, 0.035, 0.105]),
+        base_fall=0.20, amber_fall=0.022, rose_fall=0.065, violet_fall=0.30, az_pow=2.2,
+        moon=(-21.0, 9.0), moon_radius_deg=0.72, moon_gain=3.2, moon_aureole=0.008,
+        earthshine=0.012, city_gain=0.8,
+        mw=0.0, star_gain=1.0, star_thresh=3.0, n_stars=14000,
         ring=dict(lat=57.0, radius=3.4, view_az=236.0, shadow_theta=-40.0, shadow_width=14.0,
                   shadow_floor=0.05, nodes=28, node_gain=2.0, color=np.array([1.0, 0.92, 0.80])),
         seed=1)
@@ -81,7 +81,7 @@ def sky_coda():
         rose=np.array([0.10, 0.04, 0.07]),
         violet=np.array([0.05, 0.04, 0.11]),
         base_fall=0.18, amber_fall=0.03, rose_fall=0.07, violet_fall=0.25, az_pow=2.0,
-        moon=(-25.0, 8.0), moon_radius_deg=0.75, moon_gain=2.4, moon_aureole=0.012,
+        moon=(-19.0, 7.5), moon_radius_deg=0.75, moon_gain=2.4, moon_aureole=0.012,
         earthshine=0.06, city_gain=1.4,
         mw=0.9, mw_pole=dir_from_az_el(-150.0, 25.0), star_gain=1.3, star_thresh=5.0, n_stars=16000,
         ring=dict(lat=57.0, radius=3.4, view_az=236.0, shadow_theta=-40.0, shadow_width=14.0,
