@@ -127,11 +127,7 @@ LEAPS = [
     ((-33.96, 18.40), (-46.40, 51.80)),     # Cape -> Crozet
     ((66.50, 170.00), (64.80, -147.70)),    # Chukotka -> Fairbanks (Bering)
     # over the pole: these sail over the northern limb in THE WORLD ANSWERS
-    ((69.00, 94.00), (68.40, -133.70)),     # Putorana -> Mackenzie delta
-    ((73.50, 80.00), (76.50, -68.70)),      # Yamal -> Thule
     ((67.70, 33.70), (64.20, -51.70)),      # Kola -> Nuuk
-    ((71.00, 128.00), (81.00, -40.00)),     # Lena delta -> north Greenland
-    ((61.00, 92.00), (62.50, -114.40)),     # Evenkia -> Great Slave Lake
     # seas inside the frame
     ((19.00, 72.80), (23.60, 58.40)),       # Mumbai -> Muscat (Arabian Sea)
     ((13.00, 80.20), (16.80, 96.20)),       # Chennai -> Yangon (Bay of Bengal)

@@ -41,16 +41,17 @@ def cairn(seed=1, height=1.05, base_w=1.05, top_w=0.70, basket=True, basket_h=0.
     top = y
     fb = top + 0.07
     if logs:
-        # crossed firewood stacked in the basket, a few ends poking above the rim
-        for i in range(6):
+        # a crossed stack of split wood inside the basket; a few ends just poke above the rim
+        for i in range(7):
             d.new_group()
-            a = (rng.random() - 0.5) * 1.4 + (0.9 if i % 2 else -0.9) * 0.6
-            L = basket_w * (0.55 + 0.25 * rng.random())
-            cx = (rng.random() - 0.5) * 0.28
-            cy = top + 0.10 + 0.07 * i
+            side = -1 if i % 2 else 1
+            a = side * (0.35 + 0.35 * rng.random())
+            L = basket_w * (0.42 + 0.18 * rng.random())
+            cx = (rng.random() - 0.5) * 0.22
+            cy = top + 0.08 + 0.045 * i
             dx = math.cos(a) * L / 2
             dy = math.sin(a) * L / 2
-            d.capsule((cx - dx, cy - dy), (cx + dx, cy + dy), 0.045, 0.038, mat=8)
+            d.capsule((cx - dx, cy - dy), (cx + dx, cy + dy), 0.036, 0.03, mat=8)
     front = Drawing()
     if basket:
         r0 = basket_w * 0.24

@@ -51,6 +51,7 @@ class Web:
         self.t0 = t0
         self.speed = speed_km
         self.rng = np.random.default_rng(seed)
+        self.near_c = ll2v(14.0, 80.0)          # near side of THE WORLD ANSWERS' final view
         path = os.path.join(ROOT, 'renders', 'globe', 'cache', f'web_{seed}_{int(t0)}_{int(speed_km)}.npz')
         if cache and os.path.exists(path):
             d = np.load(path)
@@ -112,7 +113,8 @@ class Web:
         lo = (xx + rng.random(len(xx))) / 2048 * 360.0 - 180.0
         for a, b in zip(la, lo):
             v = ll2v(a, b)
-            if gc_km(np.asarray(tree_pts), v[None, :]).min() > 430.0:
+            need = 560.0 if float(v @ self.near_c) > np.cos(np.radians(28)) else 440.0
+            if gc_km(np.asarray(tree_pts), v[None, :]).min() > need:
                 tree_pts.append(v)
                 V.append(v)
                 kind.append(3)
@@ -251,7 +253,9 @@ class Web:
             if (a, b) in conn or not (np.isfinite(t_ign[a]) and np.isfinite(t_ign[b])):
                 continue
             dkm = gc_km(P[a], P[b])
-            if dkm > 1000.0 or rng.random() > 0.16:
+            mid = P[a] + P[b]
+            mid /= np.linalg.norm(mid)
+            if dkm > 1000.0 or rng.random() > 0.12 or float(mid @ self.near_c) > np.cos(np.radians(28)):
                 continue
             i, j = (a, b) if t_ign[a] <= t_ign[b] else (b, a)
             tl = t_ign[j] + rng.uniform(8.0, 50.0)
@@ -273,11 +277,12 @@ class Web:
         B = self.P[self.aj]
         self.omega = np.arccos(np.clip(np.sum(A * B, 1), -1, 1))
         self.len_km = self.omega * R_KM
-        lift = np.where(self.ak == 1, 0.15, 0.045)
+        lift = np.where(self.ak == 1, 0.15, 0.07)
         self.hmax = np.minimum(self.len_km * lift, 1100.0) / R_KM
         self.nseg = np.clip((self.len_km / 18.0).astype(int), 10, 260)
         rng = np.random.default_rng(self.seed + 99)
         self.phase = rng.random(len(a)) * 2 * np.pi
+        self.pper = rng.uniform(55.0, 110.0, len(a))
         self.nphase = rng.random(len(self.P)) * 2 * np.pi
         self.nfreq = rng.uniform(0.25, 0.6, len(self.P))
         self.pulses = [(0, self.t0, 1.0)]         # the first beacon flares when the choir enters
@@ -343,7 +348,14 @@ class Web:
             vis = G.visible(cam.pos, X) & (z > 1e-3)
             L = self.len_km[k]
             age = t - self.ta[k]
-            flow = 1.0 + 0.3 * np.sin(u * L / 70.0 - ta_ * 0.45 + self.phase[k])
+            # now and then a soft pulse of light runs along a settled thread (it is alive)
+            per = self.pper[k]
+            ph = ((ta_ - self.ta[k]) / per + self.phase[k] / (2 * np.pi)) % 1.0
+            run = 22.0 / per
+            pos = ph / run                       # 0..1 while the pulse runs, >1 while resting
+            flow = 1.0
+            if age > 0 and pos <= 1.15:
+                flow = 1.0 + 1.3 * np.exp(-((u - pos) * L / 160.0) ** 2)
             leap = self.ak[k] == 1
             if s < 1.0:
                 back = (uh - u) * L
@@ -368,7 +380,9 @@ class Web:
             wl = wl * wl * (3 - 2 * wl)
             wa = np.clip((alt - 60.0) / 250.0, 0, 1)
             I = I * (0.7 + 0.3 * np.clip(near, 0, 1)) * (0.28 + 0.72 * np.maximum(wl, wa))
-            w = np.clip(0.62 * near, 0.5, 1.2) * (1.3 if leap else 1.0)
+            lf = np.clip(alt / max(self.hmax[k] * R_KM, 1.0), 0, 1)
+            I = I * (0.75 + 0.6 * lf)
+            w = np.clip(0.5 * near, 0.42, 1.0) * (0.8 + 0.45 * lf) * (1.3 if leap else 1.0)
             if calm is not None:
                 I = I * calm(uv[:, 1])
             cool = 0.0 if age < 0 else min(1.0, age / 70.0)
@@ -480,7 +494,7 @@ class Web:
         P = self.P[lit] * (1.0 + 0.6 / R_KM)
         uv, z = cam.project(P)
         vis = G.visible(cam.pos, P) & (z > 1e-3)
-        lit, uv, z = lit[vis], uv[vis], z[vis]
+        lit, uv, z, P = lit[vis], uv[vis], z[vis], P[vis]
         if len(lit) == 0:
             return
         age = t - self.t_ign[lit]
@@ -500,15 +514,39 @@ class Web:
         wl = np.clip((cosv + 0.02) / 0.32, 0, 1)
         dimf = (0.6 + 0.4 * np.clip(near, 0, 1)) * (0.3 + 0.7 * wl * wl * (3 - 2 * wl))
         mul = np.ones(len(lit)) if calm is None else calm(uv[:, 1])
-        core = (14.0 * base * fl + 45.0 * flash) * gain * dimf * mul
-        halo = (1.3 * base * fl + 5.0 * flash2) * gain * dimf * mul * glow
+        core = (22.0 * base * fl + 60.0 * flash) * gain * dimf * mul
+        halo = (1.8 * base * fl + 6.0 * flash2) * gain * dimf * mul * glow
         fire = pal['amber'] * 0.6 + pal['deep'] * 0.4
-        self._spot(img, uv, halo, 3.2, fire, scale)
+        self._spot(img, uv, halo, 3.0, fire, scale)
         self._spot(img, uv, halo * 0.30 * (flash2 + 0.35 * org), 9.0, pal['gold'], scale)
         if org.any():
-            # the first beacon: a wider warm aura so it reads as fire among the city lights
-            self._spot(img, uv[org], halo[org] * 0.45, 18.0, fire, scale)
-        self._spot(img, uv, core, 0.85, pal['pale'], scale)
+            # the first beacon: a warmer, larger fire so it reads as the source among city lights
+            self._spot(img, uv[org], halo[org] * 0.55, 7.0, fire, scale)
+        self._spot(img, uv, core, 0.8, pal['pale'], scale)
+        # small anamorphic glint: every beacon is a light source, not a dot on a diagram
+        gl = core * (0.035 + 0.05 * np.minimum(flash, 1.0))
+        glen = 7.0 + 16.0 * np.minimum(flash2, 1.0) + 8.0 * org
+        self._glint(img, uv, gl, glen, pal['gold'], scale)
+
+    def _glint(self, img, uv, peak, length_full, col, scale):
+        """Thin horizontal streaks centred on uv (peak radiance, half-length in full-res px)."""
+        L = np.asarray(length_full, np.float64) * scale
+        if np.ndim(L) == 0:
+            L = np.full(len(uv), float(L))
+        n = len(uv)
+        xs = np.empty(3 * n)
+        ys = np.empty(3 * n)
+        xs[0::3] = uv[:, 0] - L
+        xs[1::3] = uv[:, 0]
+        xs[2::3] = uv[:, 0] + L
+        ys[0::3] = uv[:, 1]
+        ys[1::3] = uv[:, 1]
+        ys[2::3] = uv[:, 1]
+        I = np.zeros(3 * n)
+        I[1::3] = peak
+        sg, I = self._px(np.full(3 * n, 0.55), I, scale)
+        st = np.arange(0, 3 * n + 1, 3, dtype=np.int64)
+        G.splat_polyline(img, xs, ys, I[:, None] * col[None, :], sg, st, np.ones(3 * n, np.uint8))
 
     def summary(self):
         ti = self.t_ign

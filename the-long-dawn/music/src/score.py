@@ -287,14 +287,14 @@ def kindling():
 
     # chord opens: Bbmaj9(#11)/D  -> breathes (bars 7) -> A7(b9) (bar 8)
     cb = P("cb")
-    cb.n("D2", gb(7, 1), 4.2)
-    vc.n("Bb2", gb(7, 1), 4.2)
-    vla.n("F3", gb(7, 1), 4.2)
-    vla.n("C4", gb(7, 1), 4.2)
-    vln2.n("D4", gb(7, 1), 4.2)
-    vln2.n("E4", gb(7, 1), 4.2)
-    vln1.n("A4", gb(7, 1), 4.2)
-    vln1.n("E5", gb(7, 1), 4.2)
+    cb.n("D2", gb(7, 1), 4.05)
+    vc.n("Bb2", gb(7, 1), 4.05)
+    vla.n("F3", gb(7, 1), 4.05)
+    vla.n("C4", gb(7, 1), 4.05)
+    vln2.n("D4", gb(7, 1), 4.05)
+    vln2.n("E4", gb(7, 1), 4.05)
+    vln1.n("A4", gb(7, 1), 4.05)
+    vln1.n("E5", gb(7, 1), 4.05)
     hn = P("hns")
     hn.n("Bb3", gb(7, 1), 4.1)
     hn.n("D4", gb(7, 1), 4.1)
@@ -493,7 +493,7 @@ def race():
     P("timp").n("D2", I, 4, 1.0, sync=True)
     P("cym").n(60, I, 6, 1.0, sync=True)
     taiko.n(60, I, 1, 1.0, drum="o", sync=True)
-    for pn, ps in (("tbn", ["D2", "Ab2", "D3"]), ("tuba", ["D1"]), ("hns", ["D3", "Ab3"])):
+    for pn, ps in (("tbn", ["D2", "Ab2", "D3"]), ("tuba", ["D2"]), ("hns", ["D3", "Ab3"])):
         for p in ps:
             P(pn).n(p, I, 1.3, 1.0, sync=True)
     P("cb").n("D1", I, 1.3, 1.0, sync=True)
@@ -507,13 +507,14 @@ def race():
 # ---------------------------------------------------------------------------
 def silence():
     pn = P("piano")
-    pn.n("D4", fb(1070), 7, 0.24)
-    pn.n("D3", fb(1070) + 0.02, 7, 0.12)
-    pn.n("A4", fb(1106), 6, 0.21)
-    pn.n("D5", fb(1144), 12, 0.23)
+    damp = fb(1312)
+    pn.n("D4", fb(1070), damp - fb(1070), 0.24)
+    pn.n("D3", fb(1070) + 0.02, damp - fb(1070), 0.12)
+    pn.n("A4", fb(1106), damp - fb(1106), 0.21)
+    pn.n("D5", fb(1144), damp - fb(1144), 0.23)
     # "Together": the low fifth joins the ringing D5
-    pn.n("D2", fb(1172), 10, 0.15)
-    pn.n("A2", fb(1172) + 0.03, 10, 0.13)
+    pn.n("D2", fb(1172), damp - fb(1172), 0.15)
+    pn.n("A2", fb(1172) + 0.03, damp - fb(1172), 0.13)
 
 
 # ---------------------------------------------------------------------------
@@ -543,15 +544,15 @@ def first_beacon():
     cb.n("C2", fb(1340), roar - fb(1340) + 0.05, legato=True)
     vc.n("C3", fb(1340), roar - fb(1340) + 0.05, legato=True)
     # timpani soft roll building into the roar
-    P("timp_roll").n("C2", fb(1322), roar - fb(1322) + 0.02, rel=0.1)
+    P("timp_roll").n("C3", fb(1322), roar - fb(1322) + 0.02, rel=0.1)
     P("timp_roll").d((fb(1322), 0.1), (roar - 0.05, 0.7))
     P("swell_s").n(60, roar, 1, 0.5, sync=True)
     # harp glissando up into the roar (Bb lydian-ish)
     hp = P("harp")
-    gl = ["Bb2", "C3", "D3", "F3", "G3", "Bb3", "C4", "D4", "F4", "G4", "Bb4", "C5", "D5", "F5"]
+    gl = ["C3", "D3", "F3", "G3", "A3", "C4", "D4", "F4", "G4", "A4", "C5", "D5", "F5"]
     t0 = roar - 1.0
     for i, p in enumerate(gl):
-        hp.n(p, t0 + i * (1.0 / len(gl)), 3, 0.28 + 0.02 * i)
+        hp.n(p, t0 + i * (1.0 / len(gl)), 2.0, 0.28 + 0.02 * i, kind="pno", rel=0.9)
     # 1360: F major. The beacon roars; the solo horn sings the call + answer
     P("timp").n("F2", roar, 2, 0.72, sync=True)
     P("bdrum").n(60, roar, 2, 0.55, sync=True)
@@ -790,11 +791,11 @@ def accord():
         ("D2", ["D3", "Bb3"], ["F4", "D4"], ["Bb4", "D5"], "F5",
          ["D3", "Bb3", "D4", "F4", "Bb4", "F5"], ["F3", "Bb3", "D4"], "D2", "Bb3", "D2"),
         ("C2", ["C3", "G3"], ["E4", "G4"], ["C5", "E5"], "G5",
-         ["C3", "G3", "E4", "G4", "C5", "G5"], ["E3", "G3", "C4"], "C2", "C4", "C2"),
+         ["C3", "G3", "E4", "G4", "C5", "G5"], ["E3", "G3", "C4"], "C2", "C4", "C3"),
         ("A1", ["A2", "F3"], ["C4", "F4"], ["C5", "F5"], "A5",
-         ["A2", "C4", "F4", "A4", "C5", "A5"], ["F3", "A3", "C4"], "A1", "F3", "A2"),
+         ["A2", "C4", "F4", "A4", "C5", "A5"], ["C3", "F3", "A3"], "A1", "F3", "A2"),
         ("A1", ["A2", "G3"], ["D4", "G4"], ["D5", "G5"], "B5",
-         ["A2", "D4", "G4", "B4", "D5", "B5"], ["G3", "B3", "D4"], "A1", "G3", "A2"),
+         ["A2", "D4", "G4", "B4", "D5", "B5"], ["D3", "G3", "B3"], "A1", "G3", "A2"),
     ]
     ch = P("choir")
     for i, (bass, vcs, vlas, v2s, top, chs, tbs, tu, bellp, tim) in enumerate(oath_ch):
@@ -857,7 +858,7 @@ def accord():
         ch.n(p, ring0, dawn - ring0 + 0.05)
     ch.n("D5", ring0, 2.0)
     ch.n("C#5", ring0 + 2, dawn - ring0 - 2 + 0.05)
-    for p in ["E3", "A3", "C#4"]:
+    for p in ["C#3", "E3", "A3"]:
         P("tbn").n(p, ring0, dawn - ring0 - 0.02)
     P("tuba").n("A1", ring0, dawn - ring0 - 0.02)
     P("hns").n("A3", ring0, dawn - ring0 - 0.02)
@@ -869,11 +870,11 @@ def accord():
     P("vln_tr").n("E5", ring0, dawn - ring0 + 0.02)
     P("vln_tr").d((ring0, 0.3), (dawn - 0.05, 0.85))
     # ring sweep: harp glissando rising, panned L->R, + shimmering bells
-    sc = ["A2", "B2", "C#3", "E3", "F#3", "A3", "B3", "C#4", "E4", "F#4", "A4", "B4", "C#5", "E5",
-          "F#5", "A5", "B5", "C#6", "E6", "F#6", "A6"]
+    sc = ["A3", "B3", "C#4", "E4", "F#4", "A4", "B4", "C#5", "E5", "F#5", "A5", "B5", "C#6", "E6",
+          "F#6", "A6", "B6", "C#7", "E7"]
     for i, p in enumerate(sc):
         t = ring0 + (ring1 - ring0) * i / (len(sc) - 1)
-        P("harp").n(p, t, 3, 0.36 + 0.015 * i, pan=-0.85 + 1.7 * i / (len(sc) - 1))
+        P("harp").n(p, t, 2.5, 0.36 + 0.015 * i, pan=-0.85 + 1.7 * i / (len(sc) - 1), kind="pno", rel=1.2)
         if i % 2 == 0 and m(p) >= 67:
             P("celesta").n(p, t, 1, 0.3, pan=-0.85 + 1.7 * i / (len(sc) - 1))
     for k in range(12):
@@ -969,9 +970,9 @@ def dawn():
                 (b32, 0.3), (b32 + 1.0, 0.2), (b32 + 2.0, 0.1))
     # trombones + tuba: warm chords, contrary motion to the bass
     tb, tu = P("tbn"), P("tuba")
-    for t, d, ps, tub in [(d0, 4, ["F#3", "A3", "D4"], "D2"), (b30, 2, ["F#3", "B3", "D4"], "B1"),
-                          (b30 + 2, 2, ["F#3", "A3", "D4"], "F#1"), (b31, 2, ["G3", "B3", "D4"], "G1"),
-                          (b31 + 2, 2, ["G3", "Bb3", "D4"], "Bb1")]:
+    for t, d, ps, tub in [(d0, 4, ["D3", "F#3", "A3"], "D2"), (b30, 2, ["D3", "F#3", "B3"], "B1"),
+                          (b30 + 2, 2, ["D3", "F#3", "A3"], "F#1"), (b31, 2, ["D3", "G3", "B3"], "G1"),
+                          (b31 + 2, 2, ["D3", "G3", "Bb3"], "Bb1")]:
         for p in ps:
             tb.n(p, t, d + 0.03, sync=(t == d0))
         tu.n(tub, t, d + 0.03, sync=(t == d0))

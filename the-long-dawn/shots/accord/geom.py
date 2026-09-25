@@ -50,10 +50,10 @@ def sd_fig(px, py, pz, F, i):
     H0 = 1.38 * hs
     t = clamp(z / H0, 0.0, 1.0)
     tt = t ** 0.8
-    a = (0.30 + (0.155 - 0.30) * tt) * ws
-    b = (0.37 + (0.215 - 0.37) * tt) * ws
+    a = (0.25 + (0.145 - 0.25) * tt) * ws
+    b = (0.30 + (0.205 - 0.30) * tt) * ws
     if x < 0.0:
-        a *= 1.0 + 0.35 * (1.0 - t) ** 3
+        a *= 1.0 + 0.30 * (1.0 - t) ** 3
     phi = math.atan2(y / b, x / a)
     om = 1.0 - t
     fold = 1.0 + (0.055 * math.sin(7.0 * phi + seed) + 0.03 * math.sin(13.0 * phi + 2.1 * seed)) * om ** 1.3

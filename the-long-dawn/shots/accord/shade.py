@@ -31,6 +31,7 @@ P_GNDI = 49                    # extra exponent softening of hearth light on gro
 P_TABTXT = 50                  # oath band geometry: r_split
 P_EMHOT = 51
 P_SHIM = 52
+P_GNDK = 53
 P_NPARAM = 64
 
 # oath band radii (must match textmaps)
@@ -132,9 +133,10 @@ def light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, sheen, is_ground, s
         lz /= d
         ndl = nx * lx + ny * ly + nz * lz
         if ndl > 0.0:
+            fall = (d2 + PR[P_FALLD0] ** 2) ** (-0.5 * PR[P_FALLP])
             if is_ground:
                 ndl = ndl ** PR[P_GNDI]
-            fall = (d2 + PR[P_FALLD0] ** 2) ** (-0.5 * PR[P_FALLP])
+                fall *= PR[P_GNDK]
             vis = shadow_occluders(px, py, pz, PR[P_LX], PR[P_LY], PR[P_LZ], PR[P_LRAD],
                                    F, nf, S, ns, skip_fig)
             e = LI * ndl * fall * vis
@@ -277,7 +279,7 @@ def dais_material(x, y, fp):
     circ = 2.0 * math.pi * r / nslab
     dj = min(min(fu, 1.0 - fu) * circ, min(r - r0, r1 - r))
     h = hash2i(int(si), k, 5)
-    joint = 1.0 - sstep(0.004 + fp * 0.5, 0.016 + fp, dj)
+    joint = (1.0 - sstep(0.002 + fp * 0.5, 0.009 + fp, dj)) * 0.75
     n2 = fbm2(x * 4.0, y * 4.0, 31, 4, 2.2, 0.5, fp * 4.0)
     tint = 0.78 + 0.4 * h + 0.35 * n2
     ar = 0.19 * tint
@@ -423,9 +425,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs
                 ab = 0.043 * ash
                 coal = PR[P_COAL]
                 if coal > 0.0:
-                    cn = vnoise2(px * 22.0 + 3.0, py * 22.0 - T * 0.02, 45)
-                    cn2 = vnoise2(px * 9.0 - T * 0.05, py * 9.0, 46)
-                    glow = sstep(0.45, 0.95, cn * 0.6 + cn2 * 0.6) * (1.0 - (r / BOWL_R) ** 2)
+                    cn = 0.5 + fbm2(px * 14.0 + 3.0, py * 14.0 - T * 0.01, 45, 4, 2.1, 0.55, fp * 14.0)
+                    cn2 = 0.5 + fbm2(px * 5.0 - T * 0.03, py * 5.0, 46, 3, 2.0, 0.5, fp * 5.0)
+                    glow = sstep(0.35, 0.85, cn * 0.55 + cn2 * 0.55) * (1.0 - (r / BOWL_R) ** 2)
                     flick = 0.75 + 0.25 * math.sin(T * 0.9 + cn * 20.0)
                     em = coal * glow * flick * 6.0
                     er += em * 1.0

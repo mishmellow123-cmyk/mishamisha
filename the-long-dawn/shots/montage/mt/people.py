@@ -46,11 +46,11 @@ def shepherd(turn=0.0, arm=0.0, lean=0.0, head_up=0.0, breath=0.0, coat_pts=None
     ankR = np.array(lerp((0.13, 0.09), (stride + 0.02, 0.09), T))
     for hp, ak in ((hipL, ankL), (hipR, ankR)):
         kn = 0.5 * (hp + ak) + np.array([0.02 * T, 0.0])
-        d.capsule(hp, kn, 0.085, 0.066, k=0.03)
-        d.capsule(kn, ak, 0.066, 0.052, k=0.02)
-    bl = 0.075 + 0.06 * T
-    d.ellipse(ankL + np.array([0.03 * T, -0.035]), bl, 0.055, k=0.02)
-    d.ellipse(ankR + np.array([0.05 * T, -0.035]), bl, 0.055, k=0.02)
+        d.capsule(hp, kn, 0.095, 0.078, k=0.04)
+        d.capsule(kn, ak, 0.078, 0.066, k=0.03)
+    bl = 0.085 + 0.06 * T
+    d.ellipse(ankL + np.array([0.03 * T, -0.03]), bl, 0.065, k=0.03)
+    d.ellipse(ankR + np.array([0.05 * T, -0.03]), bl, 0.065, k=0.03)
     # --- torso frame (lean rotates about the hips)
     hip = np.array([0.0 + 0.02 * T, 0.92])
     up = rot(np.array([0.0, 1.0]), -lean)
@@ -61,11 +61,11 @@ def shepherd(turn=0.0, arm=0.0, lean=0.0, head_up=0.0, breath=0.0, coat_pts=None
     shL = chest + side * (-sw) + up * 0.06
     shR = chest + side * (sw + 0.03 * T) + up * 0.06
     # coat: long, slightly flared; profile is deeper at the back (shawl) than the front
-    hem_y = 0.40
+    hem_y = 0.33
     cx_off = -0.02 * T
-    hem_w = 0.30 * (1 - T) + 0.23 * T
+    hem_w = 0.33 * (1 - T) + 0.25 * T
     d.trap(np.array([cx_off, hem_y]) + (hip - np.array([0, 0.92])) * 0.2, chest + up * 0.02 + side * (cx_off - 0.02 * T),
-           hem_w, sw + 0.01, rnd=0.035, k=0.05)
+           hem_w, sw + 0.01, rnd=0.035, k=0.05, fuzz=0.010, ff=18.0)
     # coat hem flap (verlet points supplied by the shot), trailing on the windward side
     if coat_pts is not None and len(coat_pts) > 1:
         d.chain(coat_pts, 0.05, 0.02, k=0.06)
