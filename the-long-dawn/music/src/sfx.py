@@ -91,7 +91,7 @@ def smooth_rand(rng, n, rate, ch=1):
     if w > 1:
         ker = np.hanning(w * 2 + 1)
         ker /= ker.sum()
-        x = np.stack([np.convolve(x[:, c], ker, mode="same")[:n] for c in range(ch)], 1)
+        x = np.stack([signal.oaconvolve(x[:, c], ker, mode="same")[:n] for c in range(ch)], 1)
     return x.astype(np.float32)
 
 
