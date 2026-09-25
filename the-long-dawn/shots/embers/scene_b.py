@@ -16,6 +16,7 @@ C_CRIMSON = look.hexrgb(look.PALETTE['race_crimson'])
 C_EMBER = look.hexrgb(look.PALETTE['ember'])
 
 GROUND = -14.0
+TOWER_ANG0 = 0.35
 IGN = 480.0
 BEATS = [640 + 20 * k for k in range(16)]          # 640 .. 940
 
@@ -35,7 +36,7 @@ def crown_centre(t):
 def fire_radius(t):
     grow = float(ease_out_expo((t - IGN) / 22.0, 6.0))
     breath = 1 + 0.07 * math.sin(2 * math.pi * (t - IGN) / 80.0 - math.pi / 2)
-    return 1.7 * grow * breath
+    return 1.3 * grow * breath
 
 
 def crown_morph(t):
@@ -105,10 +106,10 @@ class MindFire:
         self.E = r.lognormal(0, 0.5, n)
         self.fl = r.uniform(0, 2 * np.pi, n)
         # flame tongues (gold edges)
-        m = 26000
+        m = 42000
         self.m = m
         d = rand_dirs(r, m)
-        d[:, 1] = np.abs(d[:, 1]) * 0.9 + 0.1 * d[:, 1]
+        d[:, 1] = np.where(d[:, 1] < -0.45, -d[:, 1], d[:, 1])
         self.td = d / np.linalg.norm(d, axis=1, keepdims=True)
         self.tph = r.random(m)
         self.tv = r.uniform(0.018, 0.04, m)
@@ -135,10 +136,10 @@ class MindFire:
         x, y, z = p[:, 0], p[:, 1], p[:, 2]
         rho = np.sqrt(x * x + z * z)
         phi = np.arctan2(z, x)
-        Rr = 3.2 + 0.6 * smoothstep(640, 800, t)
+        Rr = 4.0 + 0.6 * smoothstep(640, 800, t)
         rho2 = lerp(rho * R, Rr + (rho - 0.45) * 0.62 * 1.4, m)
-        y2 = lerp(y * R, y * 0.45 * 1.4, m)
-        phi2 = phi + m * 0.035 * (t - 562)
+        y2 = lerp(y * R, y * 0.4 * 1.4, m)
+        phi2 = phi + m * 0.012 * (t - 562)
         return np.stack([rho2 * np.cos(phi2), y2, rho2 * np.sin(phi2)], 1)
 
     def flow_pts(self, t):
@@ -146,11 +147,13 @@ class MindFire:
         th = self.th0 - self.om * tt
         rho = self.rc + self.a * np.cos(th)
         y = self.y0 + self.b * np.sin(th)
-        y = np.where(y > 0, y * 1.25, y * 0.9)
+        y = np.where(y > 0, y * 1.55, y * 0.85)
+        rho = rho * (1 - 0.42 * smoothstep(0.0, 1.3, y))          # teardrop: narrow toward the tip
         ph = self.ph0 + self.omp * tt
         p = np.stack([rho * np.cos(ph), y, rho * np.sin(ph)], 1)
-        w = vnoise(p * 1.0 + np.array([0.0, -0.03 * tt, 0.0]), 1.6, (0.0, 0.0, 0.0), 2)
-        return p + w * 0.07
+        w = vnoise(p * 1.0 + np.array([0.0, -0.045 * tt, 0.0]), 1.7, (0.0, 0.0, 0.0), 2)
+        amp = 0.06 + 0.16 * smoothstep(0.0, 1.3, y)
+        return p + w * amp[:, None] + np.array([0, 0.1, 0]) * (smoothstep(0.3, 1.3, y) * w[:, 1] ** 2)[:, None]
 
     def emit(self, ctx):
         t = ctx.t
@@ -189,14 +192,17 @@ class MindFire:
         wrap_ok = kk1 >= kk0
 
         def tongue(kk, tq):
-            base = self.td * (0.9 + 0.12 * kk[:, None])
-            p = base + np.array([0, 1.0, 0]) * ((0.95 + 1.6 * crown_morph(tq)) * kk ** 1.6)[:, None]
-            w = vnoise(p + np.array([0, -0.05 * (tq - IGN), 0]), 2.2, (0, 0, 0), 2)
-            return p + w * (0.08 + 0.2 * kk)[:, None]
+            base = self.td * 0.92
+            base = base * np.array([1.0, 1.3, 1.0])
+            conv = 1 - 0.55 * kk * (1 - crown_morph(tq))
+            base = base * np.stack([conv, np.ones_like(conv), conv], 1)
+            p = base + np.array([0, 1.0, 0]) * ((2.0 + 0.6 * crown_morph(tq)) * kk ** 1.35)[:, None]
+            w = vnoise(p + np.array([0, -0.06 * (tq - IGN), 0]), 2.0, (0, 0, 0), 2)
+            return p + w * (0.06 + 0.3 * kk)[:, None]
         T0 = C0 + self.warp(tongue(kk0, ctx.t0), crown_morph(ctx.t0), R0, ctx.t0)
         T1 = C1 + self.warp(tongue(kk1, ctx.t1), crown_morph(ctx.t1), R1, ctx.t1)
-        et = self.tE * (1 - kk1) ** 2 * smoothstep(0.0, 0.08, kk1) * 2.6 * pw * wrap_ok
-        tcol = look.blackbody(0.88 - 0.4 * kk1)
+        et = self.tE * (1 - kk1) ** 1.6 * smoothstep(0.0, 0.08, kk1) * 2.4 * pw * wrap_ok
+        tcol = look.blackbody(0.9 - 0.45 * kk1)
         tcol = tcol * (1 - 0.35 * red) + C_RED * 0.35 * red * np.ones_like(tcol)
         ctx.fr.splat(T0, T1, 0.004, et, tcol, ctx.cam0, ctx.cam1)
         # --- filaments + pulses
@@ -223,6 +229,48 @@ class MindFire:
         ctx.fr.splat(H, H, rr, eh, hc, ctx.cam0, ctx.cam1, profile=1)
 
 
+class FireSparks:
+    """A column of sparks rising from the thinking fire (and from the ring later)."""
+
+    def __init__(self, seed=34):
+        r = rng(seed)
+        n = 5000
+        self.n = n
+        self.ph = r.random(n)
+        self.v = r.uniform(0.006, 0.014, n)
+        self.a = r.uniform(0, 2 * np.pi, n)
+        self.sp = r.normal(0, 1, (n, 2))
+        self.E = r.lognormal(0, 0.7, n)
+
+    def pts(self, t):
+        C = crown_centre(t)
+        R = fire_radius(t)
+        m = crown_morph(t)
+        k = (self.ph + self.v * (t - IGN)) % 1.0
+        h = 1.6 * R + k * 14.0
+        spread = 0.25 + 2.2 * k
+        Rr = 4.0 * m
+        x = (Rr + self.sp[:, 0] * spread * 0.4) * np.cos(self.a) * m + self.sp[:, 0] * spread * (1 - m)
+        z = (Rr + self.sp[:, 0] * spread * 0.4) * np.sin(self.a) * m + self.sp[:, 1] * spread * (1 - m)
+        y = h * (1 - 0.8 * m) + m * (1.0 + k * 9.0)
+        P = C + np.stack([x, y, z], 1)
+        w = vnoise(P * 0.3 + np.array([0, -0.03 * t, 0]), 0.6, (0, 0, 0), 1)
+        return P + w * (0.3 + 1.2 * k)[:, None], k
+
+    def emit(self, ctx):
+        t = ctx.t
+        if t < IGN + 6 or t >= 960:
+            return
+        P0, k0 = self.pts(ctx.t0)
+        P1, k = self.pts(ctx.t1)
+        ok = k >= k0
+        e = self.E * (1 - k) ** 1.5 * 9.0 * smoothstep(IGN + 6, IGN + 20, t) * ok
+        red = redness(t)
+        col = look.blackbody(0.92 - 0.45 * k)
+        col = col * (1 - 0.4 * red) + C_RED * 0.4 * red
+        ctx.fr.splat(P0, P1, 0.004, e, col, ctx.cam0, ctx.cam1)
+
+
 class Crown:
     """Flame tines of the crown (appear as the fire opens into the ring)."""
 
@@ -241,8 +289,8 @@ class Crown:
     def pts(self, t):
         m = crown_morph(t)
         C = crown_centre(t)
-        Rr = 3.2 + 0.6 * smoothstep(640, 800, t)
-        rot = m * 0.035 * (t - 562)
+        Rr = 4.0 + 0.6 * smoothstep(640, 800, t)
+        rot = m * 0.012 * (t - 562)
         k = (self.ph + self.sp * t) % 1.0          # particles stream up each tine
         a = 2 * np.pi * self.tine / self.nt + rot
         h = (2.1 + 0.3 * np.sin(0.13 * t + self.tine)) * m
@@ -309,7 +357,7 @@ class Towers:
         self.T = TW.build_all()
         k = len(self.T)
         self.k = k
-        self.ang = 2 * np.pi * np.arange(k) / k + 0.35
+        self.ang = 2 * np.pi * np.arange(k) / k + TOWER_ANG0
         self.rad = 18.0 + r.uniform(-1.5, 1.5, k)
         self.t_rise = 520 + np.array([0, 9, 4, 14, 6, 11, 2], float)
         self.h_rise = np.array([19.0, 16.0, 21.0, 18.0, 22.0, 17.0, 20.0])
@@ -370,24 +418,24 @@ class Towers:
             yl = P1[:, 1] - GROUND          # height above ground
             rnd = self.rnd[i][vis]
             # base ember glow: brighter edges, faint surfaces, dim toward the ground
-            e_base = np.where(kind == 1, 1.0, 0.45) * (0.5 + 0.5 * rnd)
+            e_base = np.where(kind == 1, 1.0, 0.55) * (0.5 + 0.5 * rnd)
             e_base *= 0.35 + 0.65 * smoothstep(0.0, 14.0, yl)
             fl = 1 + 0.25 * np.sin(0.45 * t + self.flk[i][vis])
             Tb = 0.4 + 0.14 * rnd
             cb = look.blackbody(Tb)
             cb = cb * (1 - 0.6 * red) + (C_RED * 0.7 + C_CRIMSON * 0.3) * 0.6 * red
-            e_base = e_base * fl * 4.5
+            e_base = e_base * fl * 3.2
             # fire light (inner faces)
             L = light_pos - P1
             dL = np.linalg.norm(L, axis=1)
             lam = np.maximum((nw * L).sum(1) / np.maximum(dL, 1e-6), 0.0)
-            lam = np.where(kind == 1, 0.35 + 0.65 * lam, lam)
-            e_lit = light_pow * lam / (1 + (dL / 14.0) ** 2) * 1.6
+            lam = np.where(kind == 1, 0.3 + 0.7 * lam, lam) ** 0.7
+            e_lit = light_pow * lam / (1 + (dL / 16.0) ** 2) * 2.6
             # emergence front: hot line where the tower leaves the ground
             front = np.exp(-yl / 0.6) * 5.0 * (1 - smoothstep(610, 650, t) * 0.7)
             # windows
             win = (kind == 2) & self.win_on[i][vis]
-            e_win = np.where(win, 9.0 * (0.7 + 0.3 * np.sin(0.2 * t + 7 * rnd)), 0.0)
+            e_win = np.where(win, 26.0 * (0.7 + 0.3 * np.sin(0.2 * t + 7 * rnd)), 0.0)
             wcol = look.blackbody(0.72 - 0.15 * red)
             colE = (cb * e_base[:, None] + light_col[None, :] * e_lit[:, None] +
                     look.blackbody(0.8)[None, :] * front[:, None] + wcol[None, :] * e_win[:, None])
@@ -525,7 +573,7 @@ class Smoke:
         a = r.uniform(0, 2 * np.pi, n)
         rr = 2.0 + 34.0 * r.random(n) ** 0.7
         self.p = np.stack([rr * np.cos(a), r.uniform(GROUND, 30.0, n), rr * np.sin(a)], 1)
-        self.rw = r.uniform(3.0, 7.0, n)
+        self.rw = r.uniform(1.6, 4.2, n)
         self.vy = r.uniform(0.004, 0.02, n)
         self.E = r.lognormal(0, 0.5, n)
 
@@ -539,7 +587,7 @@ class Smoke:
         w = vnoise(p * 0.1 + np.array([0, 0, 0.004 * t]), 0.3, (0, 0, 0), 1)
         p = p + w * 3.0
         d = np.linalg.norm(p - light_pos, axis=1)
-        lit = light_pow * 2.2 / (1 + (d / 5.0) ** 2) ** 1.5
+        lit = light_pow * 5.0 / (1 + (d / 3.2) ** 2) ** 2
         red = redness(t)
         amb = 1.2 * red * np.exp(-np.maximum(p[:, 1] - GROUND, 0) / 25.0)
         warm = light_col * 0.4 + look.blackbody(0.6) * 0.6
@@ -628,8 +676,7 @@ class Vortex:
 
 # ------------------------------------------------------------- camera ---
 
-TOWER_ANG0 = 0.35
-ALPHA_C = TOWER_ANG0 + np.pi / 7 + 0.13          # camera azimuth: in a gap, off the wall line
+ALPHA_C = TOWER_ANG0 + 0.27          # camera azimuth: beside tower 0; a gap sits behind the crown
 
 
 def _polar(r, a, y):
@@ -638,15 +685,15 @@ def _polar(r, a, y):
 
 CAM_B = [  # (frame, radius, azimuth offset, height, target y)
     (480, 13.9, 0.43, 7.2, -1.35),
-    (500, 15.5, 0.16, 3.4, -1.2),
-    (520, 16.5, -0.18, 3.6, -1.0),
-    (556, 21.0, -0.12, 6.0, 1.8),
-    (596, 27.0, -0.04, 12.5, 6.0),
-    (640, 30.0, 0.00, 16.5, 8.6),
-    (720, 31.0, 0.07, 25.0, 17.0),
-    (800, 30.0, 0.14, 42.0, 31.0),
-    (840, 54.0, 0.24, 64.0, 39.0),
-    (880, 86.0, 0.30, 88.0, 43.0),
+    (500, 14.5, 0.16, 2.6, 0.2),
+    (520, 16.0, -0.14, 2.8, 0.4),
+    (556, 20.0, -0.1, 6.0, 2.8),
+    (596, 25.0, -0.03, 12.5, 7.0),
+    (640, 27.0, 0.00, 16.0, 8.8),
+    (720, 29.0, 0.06, 25.0, 17.0),
+    (800, 28.0, 0.12, 42.0, 31.0),
+    (840, 54.0, 0.22, 64.0, 39.0),
+    (880, 86.0, 0.28, 88.0, 43.0),
 ]
 
 

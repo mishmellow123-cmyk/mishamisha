@@ -17,6 +17,7 @@ class Timeline:
         self.point = A.ThePoint(self.glyphs)
         self.fire = B.MindFire()
         self.crown = B.Crown()
+        self.fsparks = B.FireSparks()
         self.shock = B.Shockwave()
         self.towers = B.Towers()
         self.sparks = B.Sparks(self.towers)
@@ -76,6 +77,7 @@ class Timeline:
             self.vortex.emit(ctx)
             self.fire.emit(ctx)
             self.crown.emit(ctx)
+            self.fsparks.emit(ctx)
             self.shock.emit(ctx)
 
     def post(self, ctx, hdr):

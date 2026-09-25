@@ -10,6 +10,8 @@ extends downward to y = 0 so a tower can keep rising out of the ground
 import numpy as np
 
 HMAX = 66.0
+DENS_L = 1.5     # line density multiplier
+DENS_S = 2.4     # surface density multiplier
 
 
 def _radial(p):
@@ -33,6 +35,7 @@ class B:
         self.K.append(np.full(len(p), kind, np.int8))
 
     def line(self, a, b, dens=40.0, kind=1, jit=0.02):
+        dens *= DENS_L
         a, b = np.asarray(a, float), np.asarray(b, float)
         L = np.linalg.norm(b - a)
         n = max(2, int(L * dens))
@@ -56,6 +59,7 @@ class B:
 
     def revolve(self, rfn, y0, y1, dens=6.0, kind=0):
         """random points on surface of revolution r(y)"""
+        dens *= DENS_S
         ys = np.linspace(y0, y1, 64)
         area = np.trapezoid(2 * np.pi * np.maximum(rfn(ys), 0.05), ys)
         n = int(area * dens)
@@ -67,6 +71,7 @@ class B:
         self.add(np.stack([rr * np.cos(a), y, rr * np.sin(a)], 1), kind)
 
     def square_faces(self, hwfn, y0, y1, dens=6.0, kind=0, twist=None):
+        dens *= DENS_S
         ys = np.linspace(y0, y1, 64)
         area = np.trapezoid(8 * hwfn(ys), ys)
         n = int(area * dens)
@@ -90,6 +95,7 @@ class B:
         self.add(p, kind, nrm)
 
     def windows_rev(self, rfn, y0, y1, dy, nphi, frac=0.4, out=0.03):
+        frac = min(1.0, frac * 1.5)
         ys = np.arange(y0, y1, dy)
         for y in ys:
             r = rfn(np.array([y]))[0] + out
@@ -99,6 +105,7 @@ class B:
                     self.add(np.array([[r * np.cos(a), y, r * np.sin(a)]]), 2)
 
     def windows_square(self, hwfn, y0, y1, dy, nper, frac=0.4, twist=None):
+        frac = min(1.0, frac * 1.5)
         ys = np.arange(y0, y1, dy)
         for y in ys:
             hw = hwfn(np.array([y]))[0] + 0.03

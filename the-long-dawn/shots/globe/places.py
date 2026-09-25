@@ -126,4 +126,23 @@ LEAPS = [
     ((-12.20, 96.80), (-1.70, 101.26)),     # Cocos -> Sumatra
     ((-33.96, 18.40), (-46.40, 51.80)),     # Cape -> Crozet
     ((66.50, 170.00), (64.80, -147.70)),    # Chukotka -> Fairbanks (Bering)
+    # over the pole: these sail over the northern limb in THE WORLD ANSWERS
+    ((69.00, 94.00), (68.40, -133.70)),     # Putorana -> Mackenzie delta
+    ((73.50, 80.00), (76.50, -68.70)),      # Yamal -> Thule
+    ((67.70, 33.70), (64.20, -51.70)),      # Kola -> Nuuk
+    ((71.00, 128.00), (81.00, -40.00)),     # Lena delta -> north Greenland
+    ((61.00, 92.00), (62.50, -114.40)),     # Evenkia -> Great Slave Lake
+    # seas inside the frame
+    ((19.00, 72.80), (23.60, 58.40)),       # Mumbai -> Muscat (Arabian Sea)
+    ((13.00, 80.20), (16.80, 96.20)),       # Chennai -> Yangon (Bay of Bengal)
+    ((6.81, 80.50), (5.50, 95.30)),         # Sri Lanka -> Aceh
+    ((22.30, 114.20), (14.60, 121.00)),     # Hong Kong -> Manila
+    ((31.20, 121.50), (33.60, 130.40)),     # Shanghai -> Kyushu
+    ((40.20, 49.80), (40.00, 53.00)),       # Baku -> Turkmenbashi (Caspian)
+    ((41.00, 29.00), (44.70, 34.40)),       # Istanbul -> Crimea (Black Sea)
+    ((31.20, 29.90), (35.20, 24.90)),       # Alexandria -> Crete
+    ((12.80, 45.00), (11.60, 43.10)),       # Aden -> Djibouti
+    ((21.40, 39.80), (19.60, 37.20)),       # Jeddah -> Port Sudan (Red Sea)
+    ((-6.20, 106.80), (-1.30, 116.80)),     # Jakarta -> Borneo
+    ((53.00, 158.60), (43.66, 142.85)),     # Kamchatka -> Hokkaido
 ]

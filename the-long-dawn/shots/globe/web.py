@@ -273,7 +273,7 @@ class Web:
         B = self.P[self.aj]
         self.omega = np.arccos(np.clip(np.sum(A * B, 1), -1, 1))
         self.len_km = self.omega * R_KM
-        lift = np.where(self.ak == 1, 0.13, 0.045)
+        lift = np.where(self.ak == 1, 0.15, 0.045)
         self.hmax = np.minimum(self.len_km * lift, 1100.0) / R_KM
         self.nseg = np.clip((self.len_km / 18.0).astype(int), 10, 260)
         rng = np.random.default_rng(self.seed + 99)
@@ -281,6 +281,16 @@ class Web:
         self.nphase = rng.random(len(self.P)) * 2 * np.pi
         self.nfreq = rng.uniform(0.25, 0.6, len(self.P))
         self.pulses = [(0, self.t0, 1.0)]         # the first beacon flares when the choir enters
+        gen = np.full(len(self.P), 99, np.int64)
+        gen[0] = 0
+        order = np.argsort(self.ta)
+        for k in order:
+            if self.ak[k] in (0, 1, 2):
+                gen[self.aj[k]] = min(gen[self.aj[k]], gen[self.ai[k]] + 1)
+        self.gen = gen
+        g = gen[self.aj].astype(np.float64)
+        self.afac = np.where(self.ak == 3, 0.5, 1.0 / (1.0 + 0.11 * np.maximum(g - 1, 0)))
+        self.afac = np.where(self.ak == 1, 1.6, self.afac)
 
     def arc_points(self, k, u):
         """World positions on arc k at parameters u (array)."""
@@ -316,7 +326,7 @@ class Web:
         pal = palette()
         ta_ = t if t_anim is None else t_anim
         active = np.where(self.tl <= t)[0]
-        xs, ys, Is, sig, oks, starts = [], [], [], [], [], [0]
+        xs, ys, Is, sig, oks, cools, starts = [], [], [], [], [], [], [0]
         heads = []
         spark_segs = []
         cnorm = np.linalg.norm(cam.pos)
@@ -346,13 +356,23 @@ class Web:
                 warm = 1.4 * math.exp(-age / 16.0)
                 root = np.exp(-u * L / 140.0) + np.exp(-(1.0 - u) * L / 140.0)
                 base = 0.55 * (1.0 + 0.9 * root)
-            I = (trail * (base * flow + warm) + head * hot) * gain * (1.3 if leap else 1.0)
+            I = (trail * (base * flow + warm) * self.afac[k] + head * hot * (1.3 if leap else 1.0)) * gain
             depth = np.maximum(z, 1e-3)
             near = np.clip(0.9 * cnorm / depth, 0.45, 1.5)
-            I = I * (0.7 + 0.3 * np.clip(near, 0, 1))
-            w = np.clip(0.62 * near, 0.5, 1.2) * (1.25 if leap else 1.0)
+            # de-crowd the limb: threads seen edge-on near the horizon fade (unless lifted high)
+            rX = np.linalg.norm(X, axis=1)
+            V = cam.pos[None, :] - X
+            cosv = np.sum(X * V, 1) / (rX * np.linalg.norm(V, axis=1))
+            alt = (rX - 1.0) * R_KM
+            wl = np.clip((cosv + 0.02) / 0.32, 0, 1)
+            wl = wl * wl * (3 - 2 * wl)
+            wa = np.clip((alt - 60.0) / 250.0, 0, 1)
+            I = I * (0.7 + 0.3 * np.clip(near, 0, 1)) * (0.28 + 0.72 * np.maximum(wl, wa))
+            w = np.clip(0.62 * near, 0.5, 1.2) * (1.3 if leap else 1.0)
             if calm is not None:
                 I = I * calm(uv[:, 1])
+            cool = 0.0 if age < 0 else min(1.0, age / 70.0)
+            cools.append(np.full(len(u), cool))
             xs.append(uv[:, 0])
             ys.append(uv[:, 1])
             Is.append(I)
@@ -368,10 +388,12 @@ class Web:
             sig = np.concatenate(sig)
             oks = np.concatenate(oks)
             st = np.asarray(starts, np.int64)
+            cools = np.concatenate(cools)[:, None]
+            col = pal['gold'][None, :] * (1 - cools) + pal['deep'][None, :] * cools * 1.35
             sg, I2 = self._px(sig * 3.4, Is * 0.07 * glow, scale)
-            G.splat_polyline(img, xs, ys, np.outer(I2, pal['amber']), sg, st, oks)
+            G.splat_polyline(img, xs, ys, I2[:, None] * pal['amber'][None, :], sg, st, oks)
             sg, I2 = self._px(sig, Is, scale)
-            G.splat_polyline(img, xs, ys, np.outer(I2, pal['gold']), sg, st, oks)
+            G.splat_polyline(img, xs, ys, I2[:, None] * col, sg, st, oks)
         if heads:
             HP = np.array([h[0] for h in heads])
             lp = np.array([h[1] for h in heads])
@@ -470,14 +492,22 @@ class Web:
                 flash[m] += amp * 1.6 * math.exp(-(t - tp) / 6.0)
                 flash2[m] += amp * 1.6 * math.exp(-(t - tp) / 18.0)
         fl = 1.0 + 0.14 * np.sin(ta_ * self.nfreq[lit] + self.nphase[lit]) + 0.08 * np.sin(ta_ * 1.7 * self.nfreq[lit] + 2 * self.nphase[lit])
-        base = np.where(self.kind[lit] == 0, 1.8, 1.0)
+        org = self.kind[lit] == 0
+        base = np.where(org, 2.2, 1.0)
         near = np.clip(0.9 * np.linalg.norm(cam.pos) / np.maximum(z, 1e-3), 0.45, 1.5)
-        dimf = 0.6 + 0.4 * np.clip(near, 0, 1)
+        V = cam.pos[None, :] - P
+        cosv = np.sum(P * V, 1) / (np.linalg.norm(P, axis=1) * np.linalg.norm(V, axis=1))
+        wl = np.clip((cosv + 0.02) / 0.32, 0, 1)
+        dimf = (0.6 + 0.4 * np.clip(near, 0, 1)) * (0.3 + 0.7 * wl * wl * (3 - 2 * wl))
         mul = np.ones(len(lit)) if calm is None else calm(uv[:, 1])
         core = (14.0 * base * fl + 45.0 * flash) * gain * dimf * mul
-        halo = (1.0 * base * fl + 5.0 * flash2) * gain * dimf * mul * glow
-        self._spot(img, uv, halo, 2.6, pal['amber'], scale)
-        self._spot(img, uv, halo * 0.35 * flash2, 7.0, pal['gold'], scale)
+        halo = (1.3 * base * fl + 5.0 * flash2) * gain * dimf * mul * glow
+        fire = pal['amber'] * 0.6 + pal['deep'] * 0.4
+        self._spot(img, uv, halo, 3.2, fire, scale)
+        self._spot(img, uv, halo * 0.30 * (flash2 + 0.35 * org), 9.0, pal['gold'], scale)
+        if org.any():
+            # the first beacon: a wider warm aura so it reads as fire among the city lights
+            self._spot(img, uv[org], halo[org] * 0.45, 18.0, fire, scale)
         self._spot(img, uv, core, 0.85, pal['pale'], scale)
 
     def summary(self):
