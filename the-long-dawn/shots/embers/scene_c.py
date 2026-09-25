@@ -175,10 +175,10 @@ class Globe:
 
 def cam_globe(t):
     u = (t - 880) / 80.0
-    d = lerp(3.9, 3.05, float(ease_in_out(u)))
+    d = lerp(10.2, 8.6, float(ease_in_out(u)))
     a = 0.25 - 0.12 * u
-    pos = np.array([d * math.sin(a), 0.42 + 0.1 * u, d * math.cos(a)])
-    tgt = np.array([0.0, -0.3 + 0.08 * u, 0.0])
+    pos = np.array([d * math.sin(a), 1.2 + 0.2 * u, d * math.cos(a)])
+    tgt = np.array([0.0, -0.18, 0.0])
     return pos, tgt
 
 
@@ -357,20 +357,32 @@ def hand_pose_at(t):
 HAND_L = 80.0
 
 
+def grasp_dir():
+    """horizontal unit vector from the grasp camera toward the crown"""
+    a = GRASP_AZ
+    return -np.array([math.cos(a), 0.0, math.sin(a)])
+
+
+GRASP_AZ = B.ALPHA_C - 0.24
+
+
 def hand_transform(t):
-    """World placement of the hand (rotation + wrist position), relative to the crown centre."""
+    """World placement of the hand: rotation (local->world) and wrist position."""
     C = B.crown_centre(960.0)
-    rise = float(ease_out((t - 960) / 46.0, 2.4))
-    approach = float(ease_in_out((t - 996) / 40.0))
-    # final: palm in front of the crown so the fingers wrap it
-    Wf = C + np.array([0.0, -0.56 * HAND_L, -0.11 * HAND_L])
-    W0 = Wf + np.array([10.0, -95.0, -30.0])
-    Wm = Wf + np.array([4.0, -22.0, -16.0])
+    dz = grasp_dir()                          # palm normal: away from camera, toward the crown
+    up = np.array([0.0, 1.0, 0.0])
+    dx = np.cross(up, dz)
+    dx /= np.linalg.norm(dx)
+    R0 = np.stack([dx, up, dz], 1)            # columns: local X, Y, Z in world
+    rise = float(ease_out((t - 960) / 50.0, 2.2))
+    approach = float(ease_in_out((t - 998) / 38.0))
+    Wf = C - up * (0.55 * HAND_L) - dz * (0.13 * HAND_L)
+    W0 = Wf + np.array([0.0, -100.0, 0.0]) - dz * 22.0 + dx * 14.0
+    Wm = Wf + np.array([0.0, -24.0, 0.0]) - dz * 12.0 + dx * 5.0
     W = lerp(lerp(W0, Wm, rise), Wf, approach)
-    # orientation: fingers lean toward the crown as it reaches
-    lean = lerp(-0.35, 0.12, rise) + 0.1 * approach
-    yaw = lerp(0.25, 0.0, rise)
-    R = _ry(yaw) @ _rx(lean)
+    # the hand leans back as it rises, then tips forward over the crown as it grasps
+    lean = lerp(-0.45, -0.05, rise) + 0.22 * approach
+    R = R0 @ _rx(lean) @ _rz(lerp(0.2, 0.0, rise))
     return R, W
 
 
@@ -385,7 +397,7 @@ class Hand:
         R, W = hand_transform(t)
         return (p * HAND_L) @ R.T + W, n @ R.T, pid
 
-    def emit(self, ctx):
+    def emit(self, ctx, fr_hand, fr_cov):
         t = ctx.t
         if t < 960 or t >= 1040:
             return
@@ -396,42 +408,45 @@ class Hand:
             self.rnd = rr.random(len(P1))
             self.ph = rr.uniform(0, 2 * np.pi, len(P1))
         C = B.crown_centre(960.0)
-        # ember body (deep red), lit rim from the crown (gold/white), back faces dimmer
         L = C - P1
         dL = np.linalg.norm(L, axis=1)
         lam = np.maximum((N1 * L).sum(1) / np.maximum(dL, 1e-6), 0)
         vd = ctx.cam.pos - P1
         vd /= np.linalg.norm(vd, axis=1, keepdims=True)
         facing = (N1 * vd).sum(1)
-        front = 0.25 + 0.75 * smoothstep(-0.2, 0.3, facing)
-        rim = np.exp(-np.abs(facing) / 0.25)                    # silhouette edges glow
-        fl = 1 + 0.4 * np.sin(1.1 * t + self.ph) * np.sin(0.41 * t + 2 * self.ph)
-        close = float(smoothstep(1020, 1036, t))
-        e_body = (0.5 + 0.5 * self.rnd) * fl * 1.5 * front
-        e_rim = rim * 2.0 * (0.4 + 0.6 * self.rnd)
-        e_lit = lam * 520.0 / (1 + (dL / 14.0) ** 2) * (1 + 3 * close)
-        forearm_fade = np.where(pid == 9, smoothstep(-1.2 * HAND_L, -0.2 * HAND_L,
-                                                      ((P1 - hand_transform(t)[1]) @ hand_transform(t)[0][:, 1])), 1.0)
-        cb = C_RED * 0.55 + C_CRIMSON * 0.45
-        colE = (cb[None, :] * e_body[:, None] + look.blackbody(0.55)[None, :] * e_rim[:, None] +
-                (C_GOLD * 0.7 + C_CORE * 0.3)[None, :] * e_lit[:, None])
-        colE *= (forearm_fade * smoothstep(960, 972, t))[:, None]
-        ctx.fr.splat(P0, P1, 0.05, np.ones(len(P1)), colE, ctx.cam0, ctx.cam1, zref=120.0)
+        front = 0.3 + 0.7 * smoothstep(-0.2, 0.3, facing)
+        rim = np.exp(-np.abs(facing) / 0.22)                    # silhouette edges glow (backlit)
+        fl = 1 + 0.45 * np.sin(1.1 * t + self.ph) * np.sin(0.41 * t + 2 * self.ph)
+        close = float(smoothstep(1022, 1036, t))
+        e_body = (0.35 + 0.65 * self.rnd) * fl * 0.55 * front
+        e_rim = rim * (0.8 + 1.4 * close) * (0.4 + 0.6 * self.rnd) * (0.6 + 0.8 * lam)
+        e_lit = lam * 40.0 / (1 + (dL / 12.0) ** 2) * (1 + 3 * close)
+        R, W = hand_transform(t)
+        along = (P1 - W) @ R[:, 1]
+        fade = np.where(pid == 9, smoothstep(-1.1 * HAND_L, -0.15 * HAND_L, along), 1.0)
+        fade = fade * smoothstep(960, 968, t)
+        cb = C_RED * 0.5 + C_CRIMSON * 0.5
+        colE = (cb[None, :] * e_body[:, None] + look.blackbody(0.62)[None, :] * e_rim[:, None] +
+                (C_GOLD * 0.8 + C_CORE * 0.2)[None, :] * e_lit[:, None])
+        colE *= fade[:, None]
+        fr_hand.splat(P0, P1, 0.05, np.ones(len(P1)), colE, ctx.cam0, ctx.cam1, zref=0.0)
+        # coverage (for occlusion of everything behind the hand)
+        cov = fade * 0.9
+        fr_cov.splat(P0, P1, 0.05, cov, np.ones(3), ctx.cam0, ctx.cam1, zref=0.0)
 
 
 def cam_grasp(t):
+    """Back under the storm (as at 880), looking up into the eye; the hand rises into frame."""
     C = B.crown_centre(960.0)
     u = (t - 960) / 80.0
     push = float(ease_in_out(u))
-    a = B.ALPHA_C - 0.2 - 1.15
-    d = lerp(200.0, 165.0, push)
-    pos = C + np.array([d * math.cos(a), lerp(-26.0, -18.0, push), d * math.sin(a)])
-    tgt = C + np.array([0.0, lerp(-24.0, -10.0, push), 0.0])
-    # riser: a slow shake building to the close
-    sh = 0.0
+    a = GRASP_AZ
+    d = lerp(96.0, 78.0, push)
+    pos = np.array([d * math.cos(a), lerp(18.0, 22.0, push), d * math.sin(a)])
+    tgt = C + np.array([0.0, lerp(-12.0, -6.0, push), 0.0])
     if t > 1000:
         k = (t - 1000) / 36.0
-        sh = 0.5 * k * k
+        sh = 0.35 * k * k
         pos = pos + sh * np.array([math.sin(3.1 * t), math.sin(4.3 * t), 0])
     return pos, tgt
 

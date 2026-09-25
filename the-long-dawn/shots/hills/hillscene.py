@@ -187,9 +187,9 @@ def draw_beacons(img, depth, cam, beacons, f):
         else:
             core_e = 1.0
         s = cam.scale
-        e = (14.0 + 5.0 * b.size) * lv * s * s * core_e
-        halo = max(2.0, 3.2 * hpx)
-        he = (2.0 + 0.8 * b.size) * lv * s * s
+        e = (40.0 + 12.0 * b.size) * lv * s * s * core_e
+        halo = max(2.5 * s, 3.2 * hpx)
+        he = (5.0 + 1.5 * b.size) * lv * s * s
         fire.splat_beacon(img, depth, float(sx), float(sy), float(z), max(1.2 * s, hpx), e,
                           halo, he, 1.0, 0.55, 0.20)
 

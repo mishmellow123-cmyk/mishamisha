@@ -67,7 +67,7 @@ class Timeline:
         if t < 1040:
             pos, tgt = C.cam_grasp(t)
             Cc = B.crown_centre(960.0)
-            return Camera(pos, tgt, hfov=48.0, focus=float(np.linalg.norm(Cc - pos)), aperture=0.5)
+            return Camera(pos, tgt, hfov=74.0, focus=float(np.linalg.norm(Cc - pos)), aperture=0.25)
         pos, tgt = C.cam_silence(t)
         return Camera(pos, tgt, hfov=50.0, focus=6.0, aperture=0.03)
 
@@ -78,9 +78,9 @@ class Timeline:
         if f < 880:
             return dict(bokeh_pow=0.3, bokeh_cap=2.0, fog_start=45.0, fog_len=70.0, near=0.3)
         if f < 960:
-            return dict(bokeh_pow=0.2, bokeh_cap=1.5, zref=3.3, near=0.05)
+            return dict(bokeh_pow=0.2, bokeh_cap=1.5, zref=9.0, near=0.05)
         if f < 1040:
-            return dict(bokeh_pow=0.3, bokeh_cap=2.0, fog_start=160.0, fog_len=160.0, near=1.0)
+            return dict(bokeh_pow=0.3, bokeh_cap=2.0, fog_start=45.0, fog_len=70.0, near=1.0)
         return dict(bokeh_pow=0.0, bokeh_cap=1.0, near=0.05)
 
     def light(self, t):
@@ -111,7 +111,12 @@ class Timeline:
         if 880 <= t < 960:
             self.globe.emit(ctx)
         if 960 <= t < 1040:
-            self.hand.emit(ctx)
+            from core import Frame
+            ctx.fr_hand = Frame(ctx.scale)
+            ctx.fr_cov = Frame(ctx.scale)
+            ctx.fr_hand.prm[:] = ctx.fr.prm
+            ctx.fr_cov.prm[:] = ctx.fr.prm
+            self.hand.emit(ctx, ctx.fr_hand, ctx.fr_cov)
         if t >= 1040:
             self.ember.emit(ctx)
 
@@ -126,9 +131,15 @@ class Timeline:
             y = (y - H * 1.08) / (H * 0.42)
             g = np.exp(-(x * x + y * y))[..., None]
             hdr += g * np.array([1.0, 0.42, 0.10], np.float32) * (0.9 * k)
-        if 1033 <= f < 1040:
-            # white-red flash as the fingers close
-            k = float(smoothstep(1033.5, 1039.5, f)) ** 1.5
+        if 960 <= f < 1040 and hasattr(ctx, 'fr_hand'):
+            import cv2
+            cov = ctx.fr_cov.resolve()[..., 0]
+            cov = cv2.GaussianBlur(cov, (0, 0), 1.5 * ctx.scale + 0.5)
+            alpha = 1.0 - np.exp(-cov * 1.4)
+            hdr = hdr * (1.0 - 0.93 * alpha[..., None]) + ctx.fr_hand.resolve()
+        if 1035 <= f < 1040:
+            # white-red flash as the fingers close (1036-1039)
+            k = {1035: 0.03, 1036: 0.14, 1037: 0.38, 1038: 0.7, 1039: 1.0}[int(f)]
             u, v, z = ctx.cam.project(B.crown_centre(960.0)[None, :], W, H)
             y, x = np.mgrid[0:H, 0:W].astype(np.float32)
             d2 = ((x - u[0]) ** 2 + (y - v[0]) ** 2) / (W * W)

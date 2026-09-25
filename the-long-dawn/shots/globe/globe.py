@@ -737,7 +737,7 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
             wrap *= min(2.5, 0.35 + 0.65 * rel)
         vs = dx * S[0] + dy * S[1] + dz * S[2]
         fwd = 1.0 + 0.8 * max(0.0, vs) ** 8
-        calb = 0.85
+        calb = 0.62 + 0.28 * c
         dl = inv_pi * wrap * fwd
         mm = inv_pi * max(0.0, (muM + 0.1) / 1.1) * cp[13]
         c0 = calb * (E_sun[0] * (Tc0 * dl + tw * tr * 1.3 + day_amb * 0.55) + E_moon[0] * Tm0 * mm)
@@ -993,7 +993,7 @@ class World:
                     0.30, 0.55, 1.0]
         cp[17] = 0.35          # cirrus
         cp[23] = 0.0           # cloud relief (on for DAWN)
-        cp[24] = 0.45          # soft coverage->opacity ramp
+        cp[24] = 0.7           # soft coverage->opacity ramp (feathered edges)
         return cp
 
     def stars(self):

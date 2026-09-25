@@ -14,7 +14,7 @@ def fire_only(t, scale=1.0, crop=(560, 0, 800, 804), I=None, extra=None):
     if extra:
         for k, v in extra.items(): FP[k] = v
     t0 = time.time()
-    FI.fire_volume(rgb.shape[1], rgb.shape[0], cam, FP, R['noise3'], depth, rgb, 44)
+    FI.fire_volume(rgb.shape[1], rgb.shape[0], cam, FP, R['noise3'], depth, rgb, 36)
     dt = time.time() - t0
     img = look.finish(rgb, exposure=SC.exposure(t), bloom_strength=0.07, bloom_threshold=0.9, vignette_amount=0.0)
     x0, y0, w, h = [int(v * scale) for v in crop]

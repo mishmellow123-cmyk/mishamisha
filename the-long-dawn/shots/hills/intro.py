@@ -34,7 +34,7 @@ HOLD = np.array([3.385, GC + 0.60])          # world (x, y) of the held hands
 
 def wind_base(f):
     # steady hill wind; a lull during the push-in so the embers rise
-    return 2.3 - 1.5 * smoothstep(235, 300, f)
+    return 2.3 - 1.6 * smoothstep(232, 296, f)
 
 
 # --------------------------------------------------------------- animation ---
@@ -88,24 +88,27 @@ def camera(f, scale):
         u = smoothstep(0, CUT, f)
         pos = [0.0 - 0.55 * u, 0.0, 0.0 + 1.1 * u]
         return Camera(pos, yaw=math.radians(0.9 * u), pitch=math.radians(1.55), hfov=50, scale=scale), None
-    # shot B
-    start_pos = np.array([3.02, GC + 0.93, 11.05])
-    start_tgt = np.array([3.30, GC + 1.05, Z])
-    mid_pos = np.array([3.08, GC + 0.97, 11.30])
+    # shot B: knees-up two-shot from ~5 m, then the push into the flame
     tf = torch_world(f)
-    end_pos = np.array([tf[0] - 0.01, tf[1] + 0.10, Z - 0.62])
-    end_tgt = np.array([tf[0] + 0.01, tf[1] + 0.34, Z + 0.1])
-    a = smoothstep(CUT, 226, f)
+    start_pos = np.array([3.34, GC + 0.97, Z - 5.9])
+    start_tgt = np.array([3.52, GC + 1.08, Z])
+    mid_pos = np.array([3.35, GC + 0.99, Z - 5.4])
+    end_pos = np.array([tf[0] - 0.005, tf[1] + 0.13, Z - 0.70])
+    end_tgt = np.array([tf[0], tf[1] + 0.33, Z])
+    a = smoothstep(CUT, 228, f)
     pos = start_pos + (mid_pos - start_pos) * a
-    tgt = start_tgt.copy()
-    u = smoothstep(222, 352, f)
-    u = u ** 1.6
+    u = smoothstep(226, 306, f)
+    u = u * u * (1.6 - 0.6 * u)                 # accelerate in, soft landing
     pos = pos + (end_pos - pos) * u
-    tgt = tgt + (end_tgt - tgt) * min(1.0, u * 1.25)
-    cam = Camera(pos, scale=scale, hfov=34)
+    tgt = start_tgt + (end_tgt - start_tgt) * min(1.0, u * 1.1)
+    # after landing: keep drifting up with the embers
+    drift = smoothstep(300, 359, f)
+    pos = pos + np.array([0.0, 0.12, 0.03]) * drift
+    tgt = tgt + np.array([0.0, 0.30, 0.0]) * drift
+    cam = Camera(pos, hfov=38, scale=scale)
     yaw, pitch = cam.look_at(tgt)
-    focus = float(np.linalg.norm(tf - pos))
-    return Camera(pos, yaw=yaw, pitch=pitch, hfov=34, scale=scale), focus
+    focus = float(np.linalg.norm(tf + np.array([0, 0.15, 0]) - pos))
+    return Camera(pos, yaw=yaw, pitch=pitch, hfov=38, scale=scale), focus
 
 
 def torch_world(f):
@@ -136,8 +139,8 @@ class Intro:
         def anchor(ff):
             _, an = ch.elder(elder_pose(ff), ff / FPS, anchors_only=True)
             return an['scarf_anchor']
-        self.scarf = Chain(16, 0.085, anchor, dir0=(1.0, -0.4), drag=5.5, iters=6, damp=0.99)
-        self.scarf.simulate(F0, F1, make_wind_fn(1.0, 0.45, 2.0, lift=0.25, flutter=0.9,
+        self.scarf = Chain(16, 0.082, anchor, dir0=(1.0, -0.3), drag=8.5, iters=6, damp=0.99)
+        self.scarf.simulate(F0, F1, make_wind_fn(1.0, 0.45, 2.0, lift=0.55, flutter=1.4,
                                                   extra=lambda ff: wind_base(ff) - 1.0))
         # grey wisps from the bun
         self.wisps = []
@@ -161,15 +164,17 @@ class Intro:
             return tor[k]
 
         def emitter(sim, ff, dt):
-            rate = 9.0 + 26.0 * smoothstep(232, 300, ff) + 30.0 * smoothstep(285, 330, ff)
+            rate = 9.0 + 60.0 * smoothstep(236, 290, ff) + 170.0 * smoothstep(270, 315, ff)
             n = rng.poisson(rate * dt)
             if n <= 0:
                 return
             base = tw(ff)
-            pos = base + np.stack([rng.normal(0, 0.018, n), rng.uniform(0.05, 0.22, n), rng.normal(0, 0.015, n)], 1)
-            vel = np.stack([rng.normal(0.15, 0.25, n), rng.uniform(0.5, 1.4, n), rng.normal(0, 0.15, n)], 1)
+            spread = 1.0 + 1.5 * smoothstep(260, 320, ff)
+            pos = base + np.stack([rng.normal(0, 0.020 * spread, n), rng.uniform(0.06, 0.26, n),
+                                   rng.normal(0, 0.018 * spread, n)], 1)
+            vel = np.stack([rng.normal(0.10, 0.22, n), rng.uniform(0.45, 1.3, n), rng.normal(0, 0.14, n)], 1)
             life = rng.gamma(2.0, 0.8, n) + 0.3
-            size = rng.random(n) ** 3.0 * 1.6 + 0.12
+            size = rng.random(n) ** 2.5 * 1.8 + 0.18
             kind = (rng.random(n) < 0.18).astype(np.int64) * 0 + (rng.random(n) >= 0.18).astype(np.int64)
             sim.spawn(pos, vel, life, size, kind)
 
@@ -189,7 +194,7 @@ class Intro:
         cp, cf = child_pose(f)
         tfl = torch_world(f)
         flick = fire.flicker(t, 1.7, 1.0)
-        torch_I = np.array([5.5, 2.8, 0.95]) * flick
+        torch_I = np.array([3.4, 1.65, 0.55]) * flick
         # background: sky + far ridges + beacons (+ torch glow on the crest ground)
         img, dep = self.scene.background(cam, self.sky, f, self.beacons, crest=False)
         # DOF on the far background during the two-shot/push
@@ -204,7 +209,7 @@ class Intro:
         cr = render_crest(cam, self.sky, f, pool)
         over(img, cr[0], cr[1])
         # grass along the crest
-        lights = np.array([[tfl[0], tfl[1] + 0.12, Z - 0.05, torch_I[0], torch_I[1], torch_I[2], 0.40, 0.0]])
+        lights = np.array([[tfl[0], tfl[1] + 0.12, Z - 0.05, torch_I[0], torch_I[1], torch_I[2], 0.30, 0.0]])
         amb_top = np.array([0.020, 0.030, 0.070])
         amb_bot = np.array([0.003, 0.003, 0.005])
         back = np.array([0.20, 0.10, 0.10])
@@ -244,10 +249,10 @@ class Intro:
         # embers
         P, V, T, S, K = self.embers.snap[f]
         ap = 0.0 if focus is None else 0.016 * cam.f
-        fire.render_sparks(img, cam.params(), P, V, T, S, K, 0.5 / FPS, 0.9 * cam.scale ** 2 * 6.0,
+        fire.render_sparks(img, cam.params(), P, V, T, S, K, 0.35 / FPS, 2.2 * cam.scale ** 2 * 6.0,
                            cam.scale * 1.6, focus if focus else 14.0, ap, 1.0, 1.6, 0.05)
         # exposure: pull down as the flame fills the frame
-        expo = 1.0 - 0.35 * smoothstep(250, 330, f)
+        expo = 1.0 - 0.42 * smoothstep(250, 320, f)
         out = look.finish(img, exposure=expo, bloom_strength=0.085, bloom_threshold=0.9,
                           vignette_amount=0.22)
         return out

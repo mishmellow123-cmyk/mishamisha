@@ -419,7 +419,7 @@ def params(t, scale=1.0):
     PR[SH.P_TG] = smooth(ramp(t, TOG_T0, TOG_T1)) if t >= TOG_T0 else 0.0
     PR[SH.P_TGPHI] = math.radians(cam_psi(TOG_T0))
     PR[SH.P_ORNB] = smoother(ramp(t, 2138, 2158))
-    PR[SH.P_ORNR] = 0.6 * smooth(ramp(t, IGNITE, IGNITE + 10)) + 4.0 * flare
+    PR[SH.P_ORNR] = 0.22 * smooth(ramp(t, IGNITE, IGNITE + 10)) + 4.0 * flare
     PR[SH.P_FL] = flare
     PR[SH.P_COAL] = smooth(ramp(t, IGNITE - 1, IGNITE + 4)) * (1 + 3 * flare)
     PR[SH.P_FALLP] = 2.0

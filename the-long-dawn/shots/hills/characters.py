@@ -553,7 +553,7 @@ def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1, anchors_only=
 class Cairn:
     """Waist-high stone cairn + iron fire basket + stacked wood. Local origin = base centre."""
 
-    def __init__(self, seed=7, height=0.74, base_hw=0.46, top_hw=0.33):
+    def __init__(self, seed=7, height=0.76, base_hw=0.40, top_hw=0.28):
         rng = np.random.default_rng(seed)
         self.height = height
         self.stones = []
@@ -577,21 +577,23 @@ class Cairn:
         # basket geometry
         self.bk_bot = self.top + 0.02
         self.bk_top = self.bk_bot + 0.34
-        self.bk_rb = 0.20
-        self.bk_rt = 0.33
+        self.bk_rb = 0.17
+        self.bk_rt = 0.30
         n = 9
         self.bars = [(-1 + 2 * i / (n - 1)) for i in range(n)]
         self.logs = []
-        for i in range(8):
-            a = -1 + 2 * (i + 0.5) / 8 + rng.uniform(-0.08, 0.08)
-            x_b = a * 0.16
-            x_t = a * 0.26 + rng.uniform(-0.06, 0.06)
-            y_t = self.bk_top + rng.uniform(0.05, 0.20)
-            self.logs.append((x_b, self.bk_bot + 0.04, x_t, y_t, rng.uniform(0.028, 0.045)))
+        # teepee: logs leaning in from the rim, crossing above the centre
+        for i in range(6):
+            side = -1 if i % 2 == 0 else 1
+            x_b = side * rng.uniform(0.10, 0.22)
+            x_t = -side * rng.uniform(0.02, 0.12)
+            y_t = self.bk_top + rng.uniform(0.10, 0.24)
+            self.logs.append((x_b, self.bk_bot + 0.05, x_t, y_t, rng.uniform(0.032, 0.046)))
+        # a few stacked split logs lying across
         for i in range(3):
-            y_ = self.bk_bot + 0.10 + i * 0.08
-            self.logs.append((-0.25 + rng.uniform(-0.03, 0.03), y_, 0.25 + rng.uniform(-0.03, 0.03),
-                              y_ + rng.uniform(-0.05, 0.05), 0.035))
+            y_ = self.bk_bot + 0.09 + i * 0.075
+            self.logs.append((-0.24 + rng.uniform(-0.03, 0.03), y_, 0.24 + rng.uniform(-0.03, 0.03),
+                              y_ + rng.uniform(-0.04, 0.04), 0.038))
 
     def groups(self, x=0.0, snow=0.0, burn=0.0):
         st = G('cairn', 'stone', k=0.006, per_prim=True)

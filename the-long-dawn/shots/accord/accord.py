@@ -128,14 +128,14 @@ def fire_params(t):
     FP = np.zeros(FI.FP_N, np.float64)
     FP[FI.FP_T] = t
     hi = SC.hearth_intensity(t)
-    FP[FI.FP_I] = 30.0 * hi
+    FP[FI.FP_I] = 24.0 * hi
     FP[FI.FP_SCALE] = SC.fire_scale(t)
     FP[FI.FP_H] = 2.3
-    FP[FI.FP_SWIRL] = 2.4
+    FP[FI.FP_SWIRL] = 1.8
     FP[FI.FP_Z0] = 0.47
     FP[FI.FP_WHITE] = SC.smooth(SC.ramp(t, SC.FLARE_T0 + 3, SC.FLARE_T1 + 2))
-    FP[FI.FP_R0] = 0.50
-    FP[FI.FP_RISE] = 2.4
+    FP[FI.FP_R0] = 0.46
+    FP[FI.FP_RISE] = 3.2
     return FP
 
 
@@ -183,7 +183,7 @@ def render_frame(t, scale=1.0, aa=True, mb=True):
         rgb *= g.astype(np.float32)
     rgb = heat_haze(rgb, t, cam, scale)
     FP = fire_params(t)
-    FI.fire_volume(Wd, Hd, cam, FP, R['noise3'], depth, rgb, 44)
+    FI.fire_volume(Wd, Hd, cam, FP, R['noise3'], depth, rgb, 36)
     blobs = PT.torch_flames(t) + PT.ribbons(t) + PT.ignition_flash(t)
     if blobs:
         B = np.array(blobs, np.float64)

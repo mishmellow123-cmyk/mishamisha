@@ -18,12 +18,13 @@ from mt.noise import fbm2, gnoise2, smoothstep, h01
 
 START, END, IGN = 1520, 1579, 1540
 LAM = 78.0
-HFOV = 48.0
+HFOV = 46.0
 F_FULL = 960.0 / math.tan(math.radians(HFOV / 2))
-HORIZON_Y0 = 468.0
-MOON_DIR = np.array([-0.86, 0.34, -0.38])
+HORIZON_Y0 = 548.0
+MOON_DIR = np.array([0.86, 0.33, -0.40])
 MOON_DIR = MOON_DIR / np.linalg.norm(MOON_DIR)
-WIND = 1.0     # toward +x (slip faces face +x)
+WIND = -1.0    # toward -x (over the crest, into the slip face)
+YAW = 7.0
 
 
 @njit(inline='always', fastmath=True)
@@ -32,28 +33,62 @@ def _lod(scale, fp, lo, hi):
     return min(max(o, lo), hi)
 
 
+@njit(inline='always', fastmath=True)
+def crest_x(z):
+    return -9.0 + 0.35 * z + 3.0 * math.sin(z / 15.0)
+
+
+@njit(inline='always', fastmath=True)
+def crest_h(z):
+    return 6.0 + 8.5 * smoothstep(0.0, 62.0, z) - 5.0 * smoothstep(75.0, 150.0, z) + 3.0 * smoothstep(-40.0, -5.0, -z) * 0.0
+
+
 @njit(fastmath=True)
-def h_dune(x, z, fp):
+def h_field(x, z, fp):
+    """Background transverse dune sea (crests roughly parallel to the hero crest)."""
+    ca = 0.94
+    sa = 0.33
+    xr = ca * x - sa * z
+    zr = sa * x + ca * z
     o = _lod(200.0, fp, 1.0, 5.0)
-    wv = 26.0 * fbm2(z / 190.0 + 0.3, x / 900.0, o, 3) + 7.0 * fbm2(z / 55.0, x / 300.0, o - 1.0, 4)
-    u = (x + wv) / LAM
+    wv = 26.0 * fbm2(zr / 190.0 + 0.3, xr / 900.0, o, 3) + 7.0 * fbm2(zr / 55.0, xr / 300.0, o - 1.0, 4)
+    u = (xr + wv) / LAM
     cell = math.floor(u)
     s = u - cell
     ci = int(cell)
-    amp = 11.0 * (0.72 + 0.35 * h01(ci, 7, 5) + 0.3 * fbm2(z / 260.0, cell * 1.7, 3.0, 6))
-    c = 0.74 + 0.06 * fbm2(z / 120.0, cell * 3.1, 2.0, 8)
+    amp = 7.0 * (0.72 + 0.35 * h01(ci, 7, 5) + 0.3 * fbm2(zr / 260.0, cell * 1.7, 3.0, 6))
+    c = 0.74 + 0.06 * fbm2(zr / 120.0, cell * 3.1, 2.0, 8)
     if s < c:
         q = s / c
         p = 1.0 - (1.0 - q) ** 1.55
     else:
         q = (s - c) / (1.0 - c)
         p = (1.0 - q) ** 1.08
-    h = amp * p
-    # draa-scale undulation and small secondary texture
+    return amp * p - 3.0
+
+
+@njit(fastmath=True)
+def h_dune(x, z, fp):
+    # hero dune: sharp sinuous crest; windward (lit) face toward +x, slip face toward -x
+    xc = crest_x(z)
+    dxc = 0.35 + 0.2 * math.cos(z / 15.0)
+    cosa = 1.0 / math.sqrt(1.0 + dxc * dxc)
+    w = (x - xc) * cosa
+    H = crest_h(z)
+    if w >= 0.0:
+        u = w / (3.4 * H)
+        hh = H * max(1.0 - u, 0.0) ** 1.7
+    else:
+        hh = H + w * 0.64
+        # soft foot of the slip face
+        if hh < 0.8:
+            hh = 0.8 * math.exp((hh - 0.8) / 0.8)
+    o = _lod(18.0, fp, 0.0, 3.0)
+    hh += 0.25 * fbm2(x / 16.0, z / 12.0, o, 10) * min(1.0, abs(w) / 3.0)
+    hb = h_field(x, z, fp)
+    h = max(hh, hb)
     o2 = _lod(800.0, fp, 1.0, 4.0)
-    h += 22.0 * fbm2(x / 820.0, z / 820.0, o2, 9)
-    o3 = _lod(18.0, fp, 0.0, 3.0)
-    h += 0.35 * fbm2(x / 18.0, z / 14.0, o3, 10)
+    h += 12.0 * fbm2(x / 820.0, z / 820.0, o2, 9) * smoothstep(60.0, 300.0, math.sqrt(x * x + z * z))
     return h
 
 
@@ -134,14 +169,7 @@ def shade(C, D, P, S, G, LT, Lm, Im, amb, fogp, mw_I, out, dep):
 # ------------------------------------------------------------------ placement ---
 
 CAM_Z = 0.0
-FIG_Z = 44.0
-
-
-def _crest_near(x0, z, span=40.0):
-    xs = np.linspace(x0 - span / 2, x0 + span / 2, 801)
-    hs = np.array([h_dune(x, z, 0.02) for x in xs])
-    k = int(np.argmax(hs))
-    return xs[k], hs[k]
+FIG_Z = 60.0
 
 
 _PL = None
@@ -150,16 +178,14 @@ _PL = None
 def placement():
     global _PL
     if _PL is None:
-        fx, fh = _crest_near(9.0, FIG_Z)
-        # the beacon sits on the crest a little upwind (left) of the figure, slightly nearer
-        bz = FIG_Z - 1.0
-        bx, bh = _crest_near(fx - 1.2, bz, span=6.0)
-        # camera on the lit windward slope of a nearer dune
-        cx0 = 0.0
-        ch = h_dune(cx0, CAM_Z, 0.02)
-        _PL = dict(feet=np.array([fx + 0.2, h_dune(fx + 0.2, FIG_Z, 0.02), FIG_Z]),
-                   cairn=np.array([bx - 1.3, h_dune(bx - 1.3, bz, 0.02), bz]),
-                   cam=np.array([cx0, ch + 3.2, CAM_Z]))
+        fx = crest_x(FIG_Z)
+        # summit sits right on the crest; the beacon just before it, a touch lower
+        bz = FIG_Z - 2.2
+        bx = crest_x(bz)
+        cx0 = crest_x(CAM_Z) + 2.2
+        _PL = dict(feet=np.array([fx + 0.15, h_dune(fx + 0.15, FIG_Z, 0.01), FIG_Z]),
+                   cairn=np.array([bx + 0.1, h_dune(bx + 0.1, bz, 0.01), bz]),
+                   cam=np.array([cx0, h_dune(cx0, CAM_Z, 0.01) + 1.7, CAM_Z]))
     return _PL
 
 
@@ -167,10 +193,10 @@ def camera(frame, W=1920, H=804):
     pl = placement()
     t = CM.ftime(frame)
     tilt0 = math.degrees(math.atan((HORIZON_Y0 - 402.0) / F_FULL))
-    tx = keys(frame, [(START, -0.6), (END, 0.6)], ease=lambda u: u * u * (3 - 2 * u) * 0.35 + u * 0.65)
+    tx = keys(frame, [(START, -0.5), (END, 0.5)], ease=lambda u: u * u * (3 - 2 * u) * 0.35 + u * 0.65)
     k = kick(t, CM.ftime(IGN), amp=1.0, freq=5.0, decay=5.0)
     pos = pl['cam'] + np.array([tx, 0.004 * k, 0.0])
-    yaw = 9.0 + 0.05 * k
+    yaw = YAW + 0.05 * k
     return Cam(pos, yaw, tilt0 + 0.05 * k, HFOV, W, H)
 
 
@@ -287,14 +313,14 @@ _G = None
 def _galaxy():
     global _G
     if _G is None:
-        yaw = math.radians(9.0)
+        yaw = math.radians(YAW)
 
         def d(az, el):
             az = math.radians(az) + yaw
             el = math.radians(el)
             return np.array([math.sin(az) * math.cos(el), math.sin(el), math.cos(az) * math.cos(el)])
-        A = d(-14.0, 2.0)
-        B = d(48.0, 58.0)
+        A = d(4.0, 3.0)
+        B = d(-40.0, 62.0)
         g = np.cross(A, B)
         g /= np.linalg.norm(g)
         _G = np.r_[g, A, 0.16, 5.0]
