@@ -135,7 +135,7 @@ def _bonfire(img, depth, bx, by, ppm, zf, Hf, Rb, lean, t, seed, I, x0, x1, y0, 
                     rb = wk * 0.55 * (1.0 - 0.75 * u) + 1e-4
                     ex = (Xw - xk * 0.5) / rb
                     ey = (Yw - yb) / (rb * 2.4)
-                    blob = (1.0 - math.sqrt(ex * ex + ey * ey)) * (1.0 - u * u)
+                    blob = (1.0 - math.sqrt(ex * ex + ey * ey)) * (1.0 - u * u) * 1.3
                     if blob > dk:
                         dk = blob
                 if dk > 0.0:
@@ -151,7 +151,7 @@ def _bonfire(img, depth, bx, by, ppm, zf, Hf, Rb, lean, t, seed, I, x0, x1, y0, 
                 continue
             # --- temperature: hot white-yellow core low, orange body, dark red broken tips
             core = math.exp(-(X / (0.62 * Rb)) ** 2) * math.exp(-((v - 0.1) / 0.24) ** 2)
-            T = min(F * 1.6, 1.0) ** 0.75 * (0.86 - 0.36 * min(vc, 1.2)) + 0.26 * core * min(F * 4.0, 1.0)
+            T = min(F * 1.6, 1.0) ** 0.75 * (0.75 - 0.33 * min(vc, 1.2)) + 0.3 * core * min(F * 4.0, 1.0)
             # internal brightness flicker (patches brighten/darken over time)
             fl = fbm3(X / Rb * 1.2, (Y - rise * t) / Rb * 0.6, t * 3.0 + seed, 2.0, seed + 41)
             T *= 0.9 + 0.22 * fl
