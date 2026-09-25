@@ -68,12 +68,32 @@ def flicker(t, seed=0, amt=1.0):
 
 # ---------------------------------------------------------------------- flame ---
 
+# tunable flame look (index: meaning)
+FLAME_P = np.array([
+    0.55,   # 0 large warp amplitude
+    1.1,    # 1 warp growth with height
+    1.9,    # 2 taper (narrowing with height)
+    0.33,   # 3 teardrop centre (qy)
+    0.72,   # 4 teardrop vertical radius
+    0.10,   # 5 erosion at base
+    0.95,   # 6 erosion growth with height
+    0.05,   # 7 bias
+    1.25,   # 8 gain F->T
+    0.24,   # 9 hot-core amount
+    4.0,    # 10 emission power
+    2.2,    # 11 detail noise x frequency (per Rb)
+    0.55,   # 12 detail noise y frequency (per Rb)
+    0.78,   # 13 body T scale (before core)
+    0.55,   # 14 x squash in teardrop distance
+])
+
+
 @njit(parallel=True, fastmath=True, cache=True)
-def _flame(img, depth, bx, by, ppm, zf, Hf, Rb, lean, t, seed, I, x0, x1, y0, y1, zbias, detail, alpha_mul):
+def _flame(img, depth, bx, by, ppm, zf, Hf, Rb, lean, t, seed, I, x0, x1, y0, y1, zbias, detail, alpha_mul,
+           FP, debug):
     """Flame field in normalised coords q=(X/Rb, Y/Hf): a teardrop distance eroded by noise that is
     advected upward; erosion grows with height so the top breaks into tongues."""
     rise = 1.5 * math.sqrt(max(Hf, 0.05)) + 0.6          # m/s
-    ar = Hf / Rb
     for py in prange(y0, y1):
         for px in range(x0, x1):
             if depth[py, px] < zf - zbias:
@@ -81,39 +101,39 @@ def _flame(img, depth, bx, by, ppm, zf, Hf, Rb, lean, t, seed, I, x0, x1, y0, y1
             X = (px + 0.5 - bx) / ppm
             Y = (by - (py + 0.5)) / ppm
             qy = Y / Hf
-            if qy < -0.1 or qy > 1.6:
+            if qy < -0.1 or qy > 1.7:
                 continue
             qyc = max(qy, 0.0)
-            # sway / lean of the column (whole flame bends with wind, top more)
             xc = lean * qyc * qyc + 0.12 * Rb * math.sin(1.9 * t + 1.6 * qyc + seed) * qyc
             qx = (X - xc) / Rb
-            # large-scale warp (billowing), advected upward
             w1 = fbm3(qx * 0.9, (Y - rise * t) / Rb * 0.45, t * 0.35 + seed, 3.0, seed)
-            qxw = qx + 0.55 * w1 * (0.2 + 1.1 * qyc)
-            # teardrop: narrows with height
-            sx = qxw * (1.0 + 1.9 * qyc * qyc)
-            sy = (qy - 0.30) / 0.62
-            r = math.sqrt(sx * sx * 0.55 + sy * sy)
-            # detail noise, stretched vertically, advected upward faster than the warp
-            n = fbm3(qxw * 1.6, (Y - 1.25 * rise * t) / Rb * 0.9, t * 0.7 + 3.0 * seed, detail, seed + 29)
+            qxw = qx + FP[0] * w1 * (0.2 + FP[1] * qyc)
+            sx = qxw * (1.0 + FP[2] * qyc * qyc)
+            sy = (qy - FP[3]) / FP[4]
+            r = math.sqrt(sx * sx * FP[14] + sy * sy)
+            n = fbm3(qxw * FP[11], (Y - 1.25 * rise * t) / Rb * FP[12], t * 0.7 + 3.0 * seed, detail, seed + 29)
             n = 0.5 + 0.5 * n
-            F = 1.0 - r - (1.0 - n) * (0.18 + 1.05 * qyc) + 0.25
+            F = 1.0 - r - (1.0 - n) * (FP[5] + FP[6] * qyc) + FP[7]
             F *= smoothstep(-0.1, 0.03, qy)
             if F <= 0.0:
                 continue
-            T = min(F * 1.55, 1.0)
-            # hot core low in the flame
+            T = min(F * FP[8], 1.0) * FP[13]
             core = math.exp(-(qx * 1.3) ** 2) * math.exp(-((qy - 0.2) / 0.3) ** 2)
-            T = min(T * (0.82 + 0.3 * core), 1.0)
+            T = min(T + FP[9] * core * min(F * 3.0, 1.0), 1.0)
+            if debug > 0:
+                img[py, px, 0] += T
+                img[py, px, 1] += T
+                img[py, px, 2] += T
+                continue
             r_, g_, b_ = bb(T)
-            e_int = I * T ** 4.0 * alpha_mul
+            e_int = I * T ** FP[10] * alpha_mul
             img[py, px, 0] += r_ * e_int
             img[py, px, 1] += g_ * e_int
             img[py, px, 2] += b_ * e_int
 
 
 def flame(img, depth, cam, base_world, Hf, Rb, t, seed=0, I=14.0, lean=0.0, zbias=0.5, detail=4.0,
-          alpha=1.0, min_px=1.5):
+          alpha=1.0, min_px=1.5, FP=None, debug=0):
     """Draw a flame whose base centre sits at world point base_world. Hf/Rb in metres."""
     if Hf <= 0.01 or I <= 0:
         return
@@ -134,7 +154,8 @@ def flame(img, depth, cam, base_world, Hf, Rb, t, seed=0, I=14.0, lean=0.0, zbia
     if x1 <= x0 or y1 <= y0:
         return
     _flame(img, depth, float(sx), float(sy), float(ppm), float(z), float(Hf), float(Rb), float(lean), float(t),
-           float(seed), float(I), x0, x1, y0, y1, float(zbias), float(detail), float(alpha))
+           float(seed), float(I), x0, x1, y0, y1, float(zbias), float(detail), float(alpha),
+           FLAME_P if FP is None else FP, int(debug))
 
 
 @njit(fastmath=True)
