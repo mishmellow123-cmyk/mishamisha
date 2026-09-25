@@ -119,9 +119,9 @@ def project(cam, P):
 
 
 def exposure(t):
-    e = 2.3
-    e += (1.55 - 2.3) * smooth(ramp(t, 1975, 1998))
-    e += (1.08 - 1.55) * smooth(ramp(t, 1999, 2012))
+    e = 5.0
+    e += (2.4 - 5.0) * smooth(ramp(t, 1968, 1996))
+    e += (1.0 - 2.4) * smooth(ramp(t, 1999, 2012))
     return e
 
 
@@ -134,7 +134,7 @@ FIG_HS = np.array([1.00, 0.95, 1.05, 0.97, 1.02, 0.93, 1.06, 0.99, 0.96, 1.03, 0
 FIG_WS = np.array([1.00, 0.96, 1.07, 0.95, 1.02, 1.05, 1.00, 0.97, 1.04, 0.99, 0.94, 1.03])
 FIG_TYPE = np.array([0, 1, 2, 0, 3, 0, 4, 1, 0, 2, 0, 1])
 FIG_SIDE = np.array([-1, -1, 1, -1, -1, 1, -1, -1, -1, 1, -1, -1], np.float64)
-_CLOTH = np.array([
+_CLOTH = 0.55 * np.array([
     [0.035, 0.040, 0.075],   # indigo
     [0.085, 0.028, 0.026],   # oxblood
     [0.055, 0.058, 0.032],   # olive
@@ -394,39 +394,44 @@ def params(t, scale=1.0):
     fl = 0.04 * math.sin(t * 1.1) + 0.03 * math.sin(t * 2.3 + 1.0)
     PR[SH.P_LX] = 0.03 * math.sin(t * 0.9)
     PR[SH.P_LY] = 0.03 * math.cos(t * 0.7)
-    PR[SH.P_LZ] = 2.25 + fl
-    PR[SH.P_LRAD] = 0.30 * (1.0 + 0.3 * smooth(ramp(t, FLARE_T0, FLARE_T1)))
-    PR[SH.P_LI] = 7.0 * hearth_intensity(t)
+    flare = smooth(ramp(t, FLARE_T0, FLARE_T1))
+    hi = hearth_intensity(t)
+    PR[SH.P_L1Z] = G.TABLE_Z + 0.55 + 0.5 * fl
+    PR[SH.P_L1RAD] = 0.28
+    PR[SH.P_L1I] = 6.5 * hi
+    PR[SH.P_L2Z] = 2.55 + fl + 0.6 * flare
+    PR[SH.P_L2RAD] = 0.38 * (1.0 + 0.4 * flare)
+    PR[SH.P_L2I] = 5.0 * hi
     lc = 0.62 * GOLD + 0.38 * PALE
     wh = smooth(ramp(t, FLARE_T0 + 4, FLARE_T1 + 4))
     lc = lc * (1 - wh) + np.array([1.0, 0.93, 0.82]) * wh
     PR[SH.P_LCR:SH.P_LCB + 1] = lc
     el, az = math.radians(40.0), math.radians(222.0)
     PR[SH.P_MDX], PR[SH.P_MDY], PR[SH.P_MDZ] = math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)
-    PR[SH.P_MI] = 0.30
+    PR[SH.P_MI] = 0.12
     PR[SH.P_MCR:SH.P_MCB + 1] = MOON
-    PR[SH.P_SKI] = 1.8
+    PR[SH.P_SKI] = 1.2
     PR[SH.P_SKR:SH.P_SKB + 1] = NIGHT_MID
     PR[SH.P_WI] = 1.0
     PR[SH.P_WCR:SH.P_WCB + 1] = FIRE_HOT
     for k in range(4):
         PR[SH.P_OP + k] = oath_progress(k, t)
-    PR[SH.P_TG] = smooth(ramp(t, TOG_T0, TOG_T1)) * 1.0 if t >= TOG_T0 else 0.0
+    PR[SH.P_TG] = smooth(ramp(t, TOG_T0, TOG_T1)) if t >= TOG_T0 else 0.0
     PR[SH.P_TGPHI] = math.radians(cam_psi(TOG_T0))
     PR[SH.P_ORNB] = smoother(ramp(t, 2138, 2158))
-    PR[SH.P_ORNR] = 0.35 * smooth(ramp(t, IGNITE, IGNITE + 10)) + 3.0 * smooth(ramp(t, FLARE_T0 - 2, FLARE_T1))
-    PR[SH.P_ORNT] = 0.8
-    PR[SH.P_FL] = smooth(ramp(t, FLARE_T0, FLARE_T1))
-    PR[SH.P_COAL] = smooth(ramp(t, IGNITE - 1, IGNITE + 4)) * (1 + 3 * PR[SH.P_FL])
+    PR[SH.P_ORNR] = 0.6 * smooth(ramp(t, IGNITE, IGNITE + 10)) + 4.0 * flare
+    PR[SH.P_FL] = flare
+    PR[SH.P_COAL] = smooth(ramp(t, IGNITE - 1, IGNITE + 4)) * (1 + 3 * flare)
     PR[SH.P_FALLP] = 2.0
-    PR[SH.P_FALLD0] = 0.5
-    PR[SH.P_GNDK] = 2.6
-    PR[SH.P_EMO] = 1.55 * (1 + 2.0 * PR[SH.P_FL])
-    PR[SH.P_EMT] = 1.25 * (1 + 2.0 * PR[SH.P_FL])
-    PR[SH.P_EMHOT] = 7.0
+    PR[SH.P_FALLD0] = 0.45
+    PR[SH.P_GNDI] = 0.5
+    PR[SH.P_GNDK] = 2.4
+    PR[SH.P_EMO] = 3.2 * (1 + 1.5 * flare)
+    PR[SH.P_EMT] = 2.6 * (1 + 1.5 * flare)
+    PR[SH.P_EMHOT] = 10.0
     PR[SH.P_SHIM] = 0.16
+    PR[SH.P_SHEEN] = 1.1
     PR[SH.P_TEXR] = tm.TEX_R
-    PR[SH.P_GNDI] = 0.55
     return PR
 
 

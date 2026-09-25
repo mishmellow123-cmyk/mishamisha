@@ -205,8 +205,10 @@ def elder(pose, t, scarf_pts=None, facing=-1, wisps=None):
     S = P2 + dirv(tht + 180) * 0.065
     body.ellipse(S + b(tht) * 0.01, 0.070, 0.058, rot=tht)
     # ---- hair (grey cap + bun), face
-    hair.ellipse(head_c + rot(np.array([0.010, 0.018]), thh), 0.080, 0.086, rot=thh)
-    hair.ellipse(head_c + rot(np.array([0.070, 0.048]), thh), 0.036, 0.034)
+    hair.ellipse(head_c + rot(np.array([0.012, 0.016]), thh), 0.079, 0.086, rot=thh)
+    bun_c = head_c + rot(np.array([0.058, 0.080]), thh)
+    hair.ellipse(bun_c, 0.046, 0.041, rot=thh - 25)
+    hair.ellipse(bun_c + rot(np.array([0.012, 0.022]), thh), 0.026, 0.022, rot=thh - 25)
     if wisps is not None:
         for wp in wisps:
             hair.chain(wp, np.linspace(0.004, 0.0012, len(wp)), k=0.003)
@@ -248,7 +250,7 @@ def elder(pose, t, scarf_pts=None, facing=-1, wisps=None):
     groups = [tail, farg, torch_g, legs, body, hair, skin, wrap, near]
     anchors = dict(torch_top=torch_top, scarf_anchor=scarf_anchor, hand_near=Hn, hand_far=Hf,
                    head_center=head_c, face_front=head_c + rot(np.array([-0.10, -0.03]), thh),
-                   neck=P2, chest=lerp(P1, P2, 0.6), bun=head_c + rot(np.array([0.070, 0.048]), thh))
+                   neck=P2, chest=lerp(P1, P2, 0.6), bun=bun_c)
     if facing == 1:
         mirror_groups(groups, x0)
         for k, v in anchors.items():
@@ -414,8 +416,9 @@ def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1):
     if hair_pts is not None:
         for q, hp_ in enumerate(hair_pts):
             n = len(hp_)
-            r0 = 0.020 if q % 3 == 0 else 0.013
-            hair.chain(hp_, np.linspace(r0, 0.0025, n), k=0.018)
+            r0 = 0.030 if q % 3 == 0 else 0.020
+            rr = r0 * (1 - np.linspace(0, 1, n)) ** 1.3 + 0.0022
+            hair.chain(hp_, rr, k=0.03)
     def arm(g, ua, fa):
         E = S + dirv(ua) * 0.28
         W = E + dirv(fa) * 0.245
@@ -467,23 +470,24 @@ def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1):
 class Cairn:
     """Waist-high stone cairn + iron fire basket + stacked wood. Local origin = base centre."""
 
-    def __init__(self, seed=7, height=0.98, base_hw=0.50, top_hw=0.36):
+    def __init__(self, seed=7, height=0.74, base_hw=0.46, top_hw=0.33):
         rng = np.random.default_rng(seed)
         self.height = height
         self.stones = []
         y = 0.0
         row = 0
         while y < height - 0.04:
-            sh = rng.uniform(0.085, 0.13)
+            sh = rng.uniform(0.07, 0.14)
             hwid = base_hw + (top_hw - base_hw) * (y / height)
             x = -hwid + rng.uniform(-0.03, 0.03) + (0.05 if row % 2 else 0)
             while x < hwid - 0.02:
-                sw = rng.uniform(0.11, 0.21)
+                sw = rng.uniform(0.09, 0.26)
+                hh = sh * rng.uniform(0.75, 1.15)
                 cx = x + sw / 2
                 edge = abs(cx) / hwid
-                self.stones.append((cx, y + sh / 2 + rng.uniform(-0.01, 0.01),
-                                    sw / 2 * 1.08, sh / 2 * (1.12 - 0.15 * edge), rng.uniform(-9, 9)))
-                x += sw * rng.uniform(0.92, 1.0)
+                self.stones.append((cx, y + hh / 2 + rng.uniform(-0.012, 0.012),
+                                    sw / 2 * 1.08, hh / 2 * (1.12 - 0.15 * edge), rng.uniform(-14, 14)))
+                x += sw * rng.uniform(0.88, 1.0)
             y += sh * 0.9
             row += 1
         self.top = y
@@ -511,7 +515,7 @@ class Cairn:
         st2 = Group('cairn2', STONE * 0.6, k=0.006, bevel=0.03, sheen=0.5, sky_rim=0.45, per_prim=True)
         for q, (cx, cy, rx, ry, r) in enumerate(self.stones):
             g = st if (q * 7) % 3 else st2
-            g.box((x + cx, cy), rx * 0.86, ry * 0.72, rot=r * 0.6, rnd=min(rx, ry) * 0.30, k=0.006)
+            g.box((x + cx, cy), rx * 0.84, ry * 0.70, rot=r * 0.6, rnd=min(rx, ry) * 0.42, k=0.006)
         # basket stand
         iron = Group('basket', IRON, k=0.006, bevel=0.012, sheen=0.8, sky_rim=0.4)
         iron.box((x, self.top + 0.005), 0.17, 0.02, rnd=0.006)

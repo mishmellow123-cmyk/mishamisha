@@ -1061,7 +1061,7 @@ def render_stars(world, cam, atmo, gain, sigma=0.55):
 # ------------------------------------------------------------------ post ---
 
 def sun_glare(W, H, sx, sy, core, spikes_amt, flash=0.0, rot_deg=11.0, tint=(1.0, 0.88, 0.70),
-              n_spikes=16, spike_len=1.0, ghosts=0.0):
+              n_spikes=16, spike_len=1.0, ghosts=0.0, spike_mask_y=None):
     """Lens response to the sun (HDR, additive), sized for a 1920-wide frame and scaled to W.
     core: brightness of the halo; spikes_amt: diffraction spike brightness (0 while the disk is
     hidden); flash: extra wide bloom for the burst (decays over a few frames)."""
@@ -1078,7 +1078,7 @@ def sun_glare(W, H, sx, sy, core, spikes_amt, flash=0.0, rot_deg=11.0, tint=(1.0
         g_warm = core * (0.16 / (1.0 + (r / 60.0) ** 2) + 0.035 / (1.0 + (r / 220.0) ** 2) ** 1.5)
         img += g_hot[..., None] * hot + g_warm[..., None] * tint
     if flash > 0:
-        g = flash * (2.2 * np.exp(-r / 30.0) + 0.9 / (1.0 + (r / 120.0) ** 2) + 0.12 / (1.0 + (r / 420.0) ** 2))
+        g = flash * (2.4 * np.exp(-r / 26.0) + 0.5 / (1.0 + (r / 90.0) ** 2) + 0.03 / (1.0 + (r / 300.0) ** 2))
         img += g[..., None] * np.asarray((1.0, 0.93, 0.82), np.float32)
     if spikes_amt > 0:
         th = np.arctan2(dy, dx)
@@ -1094,6 +1094,11 @@ def sun_glare(W, H, sx, sy, core, spikes_amt, flash=0.0, rot_deg=11.0, tint=(1.0
             lobe = np.exp(-0.5 * (dth * r / wpx) ** 2)
             fall = np.exp(-r / L) / (1.0 + r / 25.0)
             acc += amp * lobe * fall
+        if spike_mask_y is not None:
+            y0, y1, amt = spike_mask_y
+            yy = y / k
+            m = np.clip((yy - y0) / max(y1 - y0, 1.0), 0, 1)
+            acc *= 1.0 - amt * m * m * (3 - 2 * m)
         sp = (acc * spikes_amt)[..., None]
         fr = np.clip(r / 260.0, 0, 1)[..., None]
         chrom = np.concatenate([1.0 + 0.15 * fr, 1.0 - 0.02 * fr, 1.0 - 0.35 * fr], -1)
@@ -1112,17 +1117,18 @@ def sun_glare(W, H, sx, sy, core, spikes_amt, flash=0.0, rot_deg=11.0, tint=(1.0
 
 def finish_frame(hdr, sun_layer=None, exposure=1.0, bloom_strength=0.08, bloom_threshold=0.8,
                  streak_strength=0.0, streak_threshold=2.0, streak_length=0.35, streak_tint=(1.0, 0.75, 0.55),
-                 vignette_amount=0.2, lift=0.004, out_scale=1.0):
-    """look.finish(), with the anamorphic streak driven by the sun layer only (so hundreds of
-    golden beacons don't each smear sideways). Same functions, same order as look.finish."""
+                 vignette_amount=0.2, lift=0.004):
+    """look.finish() with the same functions in the same order, except that the sun's lens layer
+    (already a glare) is added after the bloom so it is not bloomed twice, and the anamorphic
+    streak is driven by the sun layer only (so the beacons don't each smear sideways)."""
     x = hdr.astype(np.float32)
-    if sun_layer is not None:
-        x = x + sun_layer
     if bloom_strength > 0:
         x = look.bloom(x, bloom_strength, bloom_threshold)
-    if streak_strength > 0 and sun_layer is not None:
-        s = look.streak(sun_layer, streak_strength, streak_threshold, streak_length, streak_tint) - sun_layer
-        x = x + s
+    if sun_layer is not None:
+        x = x + sun_layer
+        if streak_strength > 0:
+            s = look.streak(sun_layer, streak_strength, streak_threshold, streak_length, streak_tint) - sun_layer
+            x = x + s
     if vignette_amount > 0:
         x = look.vignette(x, vignette_amount)
     x = look.tonemap(x, exposure)

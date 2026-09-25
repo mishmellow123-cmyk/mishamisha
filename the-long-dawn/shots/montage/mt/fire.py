@@ -592,7 +592,7 @@ def _smoke(img, depth, sx, sy, z, rpx, dens, pos, age, seeds, spin, fp, fI, amb,
                     continue
                 nd = fbm3(u * 2.7 - sd, v * 2.7, age[k] * 0.4, 3.0, 23)
                 dd *= 0.55 + 0.9 * max(nd + 0.3, 0.0)
-                a = 1.0 - math.exp(-dd * 1.8)
+                a = 1.0 - math.exp(-dd * 1.1)
                 wy = pos[k, 1] - v0 * rw[k]
                 wx = pos[k, 0] + u0 * rw[k]
                 dx = wx - fp[0]

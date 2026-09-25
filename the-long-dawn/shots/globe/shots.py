@@ -185,8 +185,8 @@ class Dawn:
         p['sun_el'] = spline(t, [(2200, -1.6), (2232, -0.75), (2240, -self.SUN_R + 0.02), (2250, -0.02),
                                  (2266, 0.32), (2300, 0.75), (2400, 1.7), (2495, 2.4)])
         # the lighting sun leads the disk so the terminator can visibly race toward us
-        p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2262, 1.2), (2300, 4.0), (2380, 9.0),
-                               (2495, 14.0)])
+        p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2256, 1.0), (2280, 5.0), (2310, 11.0),
+                               (2360, 19.0), (2420, 26.0), (2495, 32.0)])
         p['sun_az'] = -1.5
         return p
 
@@ -229,7 +229,7 @@ class Dawn:
         Sd, Sl = self.suns(p)
         Emoon = np.array([0.337, 0.456, 0.69]) * 0.6
         Esun = np.array([1.0, 0.96, 0.90]) * 16.0
-        img, cov, tv = G.render_planet(wd, cam, at, Sl, Esun, Sd, 250.0, self.moon, Emoon)
+        img, cov, tv = G.render_planet(wd, cam, at, Sl, Esun, Sd, 40.0, self.moon, Emoon)
         img += G.render_lights(wd, cam, at, Sl, gain=0.5e-7)
         star_k = 1.0 - ramp(t, 2236, 2262) * 0.85
         img += G.render_stars(wd, cam, at, gain=0.9 * star_k)
@@ -241,11 +241,15 @@ class Dawn:
         sp, z = cam.project(cam.pos[None, :] + Sd[None, :] * 50.0)
         sx, sy = sp[0]
         frac = seg_frac(p['sun_el'], self.SUN_R)
-        burst = math.exp(-max(t - 2240.0, 0.0) / 7.0) if t >= 2240 else 0.0
+        burst = math.exp(-max(t - 2240.0, 0.0) / 5.0) if t >= 2240 else 0.0
         pre = ramp(t, 2226.0, 2240.0)
-        core = 9.0 * frac ** 0.6 + 1.2 * pre * (1.0 - frac)
-        spikes = 5.0 * frac ** 0.5 * (1.0 + 1.2 * burst)
-        glare = G.sun_glare(W, H, sx, sy, core, spikes, flash=6.0 * burst * min(1.0, frac * 6.0 + 0.3))
+        core = 7.0 * frac ** 0.6 + 1.0 * pre * (1.0 - frac)
+        settle = 1.0 - 0.45 * ramp(t, 2262.0, 2300.0)
+        spikes = 3.6 * frac ** 0.5 * (1.0 + 1.0 * burst) * settle
+        slen = 1.0 - 0.4 * ramp(t, 2255.0, 2290.0)
+        mask = (470.0, 560.0, 0.85 * max(ramp(t, 2255, 2268), 0.0))
+        glare = G.sun_glare(W, H, sx, sy, core, spikes, flash=5.0 * burst * min(1.0, frac * 6.0 + 0.3),
+                            spike_len=slen, spike_mask_y=mask)
         return img, glare, cam, p, (sx, sy, frac, burst)
 
     def exposure(self, t):

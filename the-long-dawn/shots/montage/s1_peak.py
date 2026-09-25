@@ -414,7 +414,8 @@ def render(frame, scale=0.5, ss=1.5):
 
     # --- torch glow in the air (behind the figure; the body occludes its centre)
     sx, sy, z = cam.project(torch_w)
-    F.halo(img, depth, sx, sy, 60 * scale, 0.05 * torch_I, z=z, zbias=0.5)
+    F.halo(img, depth, sx, sy, 90 * scale, 0.16 * torch_I, z=z, zbias=0.5)
+    F.halo(img, depth, sx, sy, 28 * scale, 0.35 * torch_I, z=z, zbias=0.5)
 
     moon_light = dict(dir=MOON_DIR, col=moon_col, I=Im * 0.7)
     lights = [moon_light, dict(pos=torch_w, col=F.FIRE_LIGHT, I=torch_I * 0.8, r0=0.12)]
@@ -461,8 +462,8 @@ def _stars():
 def _smoke():
     global _SM
     if _SM is None:
-        _SM = F.Smoke(41, CAIRN + np.array([0, 2.3, 0]), CM.ftime(IGN) + 0.1, CM.ftime(END) + 0.1, rate=5.5,
-                      wind=(1.6 * WIND, 0, 0.2), rise=1.4, life=5.0, r0=0.35, growth=0.5, dens=0.9)
+        _SM = F.Smoke(41, CAIRN + np.array([0, 2.4, 0]), CM.ftime(IGN) + 0.15, CM.ftime(END) + 0.1, rate=4.0,
+                      wind=(1.7 * WIND, 0, 0.2), rise=1.5, life=4.5, r0=0.3, growth=0.62, dens=0.38)
     return _SM
 
 

@@ -297,7 +297,7 @@ def _render(img, depth, P, gidx, M, L, amb, fx, fy, ppm, zf, x0, x1, y0, y1, see
                 cr = amb[0] * ar * (0.6 + 0.4 * ny)
                 cg = amb[1] * ag * (0.6 + 0.4 * ny)
                 cb = amb[2] * ab * (0.6 + 0.4 * ny)
-                edge = (1.0 - nz) ** 4
+                edge = (1.0 - nz) ** 2.5
                 for li in range(L.shape[0]):
                     if L[li, 0] < 0.5:
                         lx = L[li, 1] - Xs
@@ -318,7 +318,7 @@ def _render(img, depth, P, gidx, M, L, amb, fx, fy, ppm, zf, x0, x1, y0, y1, see
                     diff = max(ndl, 0.0)
                     # wrap for cloth + rim at grazing edges + halo when the light is behind
                     wrap = max((ndl + 0.35) / 1.35, 0.0)
-                    rim = edge * (wrap + 0.8 * max(-lz, 0.0) ** 0.5) * rim_k
+                    rim = edge * (wrap + 1.4 * max(-lz, 0.0) ** 0.5) * rim_k
                     spec = 0.0
                     if spk > 0.0:
                         hz = lz + 1.0

@@ -46,11 +46,11 @@ OATH_THETA = [math.pi / 2 - k * math.pi / 2 for k in range(4)]
 BAND_IN = OATH_R_IN - 0.085       # carved border rings of the oath band
 BAND_OUT = OATH_R_OUT + OATH_CAP + 0.085
 
-TOG_R = (2.845, 3.150)            # baselines of the two "together" rows (inner, outer) - on the floor band
-TOG_XH = 0.104                    # target Latin x-height (m); other scripts matched by eye
-TOG_BORDER = (2.735, 3.415)
+TOG_R = (2.830, 3.170)            # baselines of the two "together" rows (inner, outer) - on the floor band
+TOG_XH = 0.130                    # target Latin x-height (m); other scripts matched by eye
+TOG_BORDER = (2.700, 3.455)
 TABLE_R = 1.97
-FLOOR_BAND = (2.66, 3.49)        # smooth stone ring set in the floor
+FLOOR_BAND = (2.64, 3.52)        # smooth stone ring set in the floor
 
 HEARTH_R = 0.50
 RAY_R = (0.70, 1.16)              # 12 carved sun-rays around the hearth
@@ -292,7 +292,7 @@ def build(verbose=True):
         pad = (sd.shape[1] - ink_w) / 2
         # centre of ink = pad + ink_w/2 (word_strip centres ink between pads)
         ucen = sd.shape[1] / 2
-        place_on_arc(sd, base, ucen, rb, th, rb - 0.12, rb + 0.25, sd_tog)
+        place_on_arc(sd, base, ucen, rb, th, rb - 0.14, rb + 0.30, sd_tog)
     if verbose:
         print('together placed', flush=True)
 
@@ -364,7 +364,7 @@ def mip_pyramid(tex, min_size=16):
 
 def load(rebuild=False):
     os.makedirs(CACHE, exist_ok=True)
-    path = os.path.join(CACHE, 'textmaps_v5.npz')
+    path = os.path.join(CACHE, 'textmaps_v6.npz')
     if os.path.exists(path) and not rebuild:
         z = np.load(path)
         return z['flat'], z['offs'], z['sizes'], z['tog_layout']
