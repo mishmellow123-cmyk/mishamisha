@@ -160,7 +160,8 @@ def heat_haze(img, t, cam, scale):
                        + 0.5 * np.sin((xx + yy) * 0.09 / scale + ph * 4.7))
     dy = amp * fall * (np.cos(xx * 0.041 / scale - ph * 2.7) * np.sin(yy * 0.052 / scale + ph * 3.3)
                        + 0.5 * np.cos((xx - yy) * 0.08 / scale - ph * 5.1))
-    return cv2.remap(img, xx + dx, yy + dy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    return cv2.remap(img, (xx + dx).astype(np.float32), (yy + dy).astype(np.float32), cv2.INTER_LINEAR,
+                     borderMode=cv2.BORDER_REFLECT)
 
 
 def text_band(t, scale):

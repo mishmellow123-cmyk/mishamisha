@@ -194,7 +194,7 @@ def hand_fist(g, H, d_ang, size=1.0, k=0.006):
     g.ellipse(H - nrm * 0.022 * size + d * 0.004 * size, 0.012 * size, 0.018 * size, rot=d_ang + 25, k=k * 1.5)
 
 
-def elder(pose, t, scarf_pts=None, facing=-1, wisps=None):
+def elder(pose, t, scarf_pts=None, facing=-1, wisps=None, anchors_only=False):
     """Returns (groups, anchors)."""
     p = dict(ELDER_DEFAULT)
     p.update(pose)
@@ -205,6 +205,13 @@ def elder(pose, t, scarf_pts=None, facing=-1, wisps=None):
     P2 = P1 + dirv(tht) * 0.24
     P3 = P2 + dirv(thn) * 0.06
     head_c = P3 + rot(np.array([-0.014, 0.068]), thh)
+    if anchors_only:
+        sa = P2 + backv(tht) * 0.070 + dirv(thn) * 0.04
+        bun = head_c + rot(np.array([0.058, 0.080]), thh)
+        if facing == 1:
+            sa = np.array([2 * x0 - sa[0], sa[1]])
+            bun = np.array([2 * x0 - bun[0], bun[1]])
+        return None, dict(scarf_anchor=sa, bun=bun)
     body = G('elder_body', 'coat', k=0.03)
     farg = G('elder_far', 'coat', k=0.02)
     near = G('elder_near', 'coat', k=0.02)
@@ -415,7 +422,7 @@ YW_DEFAULT = dict(x=0.0, hip_y=0.93, lumbar=2.0, thorax=6.0, neck=12.0, head=4.0
                   flint=False)
 
 
-def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1):
+def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1, anchors_only=False):
     p = dict(YW_DEFAULT)
     p.update(pose)
     x0 = p['x']
@@ -425,6 +432,13 @@ def young_woman(pose, t, scarf_pts=None, hair_pts=None, facing=-1):
     P2 = P1 + dirv(tht) * 0.27
     P3 = P2 + dirv(thn) * 0.085
     head_c = P3 + rot(np.array([-0.010, 0.072]), thh)
+    if anchors_only:
+        sa = P2 + backv(tht) * 0.075 + dirv(thn) * 0.045
+        hr = head_c + rot(np.array([0.055, 0.020]), thh)
+        if facing == 1:
+            sa = np.array([2 * x0 - sa[0], sa[1]])
+            hr = np.array([2 * x0 - hr[0], hr[1]])
+        return None, dict(scarf_anchor=sa, hair_root=hr, head_center=head_c)
     body = G('yw_body', 'coat', k=0.03)
     farg = G('yw_far', 'coat', k=0.02)
     near = G('yw_near', 'coat', k=0.02)
