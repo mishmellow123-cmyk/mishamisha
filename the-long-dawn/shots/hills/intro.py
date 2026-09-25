@@ -34,7 +34,7 @@ HOLD = np.array([3.385, GC + 0.60])          # world (x, y) of the held hands
 
 def wind_base(f):
     # steady hill wind; a lull during the push-in so the embers rise
-    return 2.3 - 1.6 * smoothstep(232, 296, f)
+    return 2.3 - 2.0 * smoothstep(232, 296, f)
 
 
 # --------------------------------------------------------------- animation ---
@@ -94,8 +94,8 @@ def camera(f, scale):
     start_pos = np.array([3.36, GC + 1.00, Z - 6.4])
     start_tgt = np.array([3.47, GC + 0.98, Z])
     mid_pos = np.array([3.37, GC + 1.01, Z - 5.95])
-    end_pos = np.array([tf[0] - 0.01, tf[1] - 0.02, Z - 0.58])
-    end_tgt = np.array([tf[0] + 0.01, tf[1] + 0.95, Z + 0.25])
+    end_pos = np.array([tf[0] - 0.01, tf[1] + 0.02, Z - 0.62])
+    end_tgt = np.array([tf[0] + 0.02, tf[1] + 0.60, Z + 0.10])
     a = smoothstep(CUT, 230, f)
     pos = start_pos + (mid_pos - start_pos) * a
     u = smoothstep(228, 308, f)
@@ -181,6 +181,13 @@ class Intro:
             kind = (rng.random(n) >= 0.12).astype(np.int64)          # 12% hot sparks, rest embers
             T0 = np.where(kind == 0, 1.0, rng.uniform(0.62, 0.86, n))
             sim.spawn(pos, vel, life, size, kind, T0)
+            # the swirl that becomes the legend: many embers lifting off around the flame top
+            m = rng.poisson(900.0 * smoothstep(268, 300, ff) * dt)
+            if m > 0:
+                p2 = base + np.stack([rng.normal(0.0, 0.07, m), rng.uniform(0.15, 0.45, m), rng.normal(0.0, 0.07, m)], 1)
+                v2 = np.stack([rng.normal(0.0, 0.10, m), rng.uniform(0.35, 0.9, m), rng.normal(0.0, 0.10, m)], 1)
+                sim.spawn(p2, v2, rng.gamma(2.2, 0.7, m) + 0.5, rng.random(m) ** 2.5 * 1.5 + 0.2,
+                          np.ones(m, np.int64), rng.uniform(0.55, 0.80, m))
 
         def params(ff):
             w = wind_at(ff / FPS, wind_base(ff), 0.5, 1.0)

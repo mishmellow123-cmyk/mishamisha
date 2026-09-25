@@ -220,7 +220,7 @@ class HandRig:
     def __init__(self, seed=303, dens=1.0):
         self.r = rng(seed)
         r = self.r
-        self.palm = self._palm(int(42000 * dens))
+        self.palm = self._palm(int(110000 * dens))
         self.fore = self._forearm(int(30000 * dens))
         self.caps = {}
         for f in FNAMES:
@@ -233,7 +233,7 @@ class HandRig:
         self.joint = {}
         for f in FNAMES:
             rad = FINGERS[f][3]
-            self.joint[f] = [self._sphere(rad[k] * 1.12, int(3200 * dens * (rad[k] / 0.045) ** 2)) for k in range(3)]
+            self.joint[f] = [self._sphere(rad[k] * 1.06, int(2200 * dens * (rad[k] / 0.045) ** 2)) for k in range(3)]
         # tendons on the back of the hand: from each knuckle toward the wrist
         tp, tn = [], []
         for f in FNAMES:
@@ -251,7 +251,7 @@ class HandRig:
 
     def _sphere(self, rad, n):
         d = rand_dirs(self.r, max(n, 100))
-        return d * rad, d, np.full(len(d), 1.0)
+        return d * rad, d, np.full(len(d), 0.35)
 
     def _phalanx(self, L, r0, r1, n, tip=False):
         """capsule-like segment from joint (0,0,0) to (0,L,0): tapered, with bulging joints."""
@@ -485,7 +485,7 @@ class Hand:
         near = smoothstep(46.0, 10.0, dL)
         grain = (self.rnd ** 3) * 2.2                            # sparse hot embers in the surface
         e_body = (0.25 + 0.35 * self.rnd + grain) * fl * 0.55 * (1 - 0.5 * interior)
-        e_edge = rim * (0.5 + 0.7 * self.rnd) * 0.9
+        e_edge = rim * (0.5 + 0.7 * self.rnd) * 0.45
         e_kn = kn * (0.5 + 0.9 * self.rnd) * 1.3 * fl
         e_cold = lam * (0.35 + 0.65 * rim) * near * (1.6 + 5.0 * close)
         c_body = C_CRIMSON * 0.5 + C_RED * 0.5
@@ -495,6 +495,8 @@ class Hand:
         colE = (c_body[None, :] * e_body[:, None] + c_edge[None, :] * e_edge[:, None] +
                 c_kn[None, :] * e_kn[:, None] + c_cold[None, :] * e_cold[:, None])
         colE[pid >= 20] = 0.0
+        colE[pid == 0] *= 2.6          # palm: broad surface, sampled thinner -> lift it
+        colE[(pid >= 1) & (pid <= 5)] *= 0.7
         R, W = hand_transform(t)
         along = (P1 - W) @ R[:, 1]
         fade = np.where(pid == 9, smoothstep(-1.45 * HAND_L, -0.5 * HAND_L, along), 1.0)

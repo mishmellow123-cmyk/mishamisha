@@ -586,11 +586,11 @@ class Cairn:
         self.bars = [(-1 + 2 * i / (n - 1)) for i in range(n)]
         self.logs = []
         # teepee: logs leaning in from the rim, crossing above the centre
-        for i in range(6):
+        for i in range(7):
             side = -1 if i % 2 == 0 else 1
-            x_b = side * rng.uniform(0.10, 0.22)
-            x_t = -side * rng.uniform(0.02, 0.12)
-            y_t = self.bk_top + rng.uniform(0.10, 0.24)
+            x_b = side * rng.uniform(0.12, 0.24)
+            x_t = side * rng.uniform(-0.02, 0.035)
+            y_t = self.bk_top + rng.uniform(0.08, 0.17)
             self.logs.append((x_b, self.bk_bot + 0.05, x_t, y_t, rng.uniform(0.032, 0.046)))
         # a few stacked split logs lying across
         for i in range(3):

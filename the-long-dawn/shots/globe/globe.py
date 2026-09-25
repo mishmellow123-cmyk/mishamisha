@@ -365,7 +365,11 @@ def cloud_density(x, y, z, clouds, cp, lod):
     c = 0.0
     if vv > 0.0:
         s = min(1.0, vv / cp[24])
-        c = s * s * (3.0 - 2.0 * s) * cp[6]
+        c = s * s * (3.0 - 2.0 * s)
+        # feather: fine-scale erosion eats thin cloud into wisps, thick cores stay whole
+        fine = fbm(qx - 2.3, qy + 6.1, qz + 1.7, cp[0] * 3.2, 3, lod)
+        c *= min(1.0, max(0.0, 0.2 + 0.8 * c + 1.0 * (fine - 0.5)))
+        c *= cp[6]
     if cp[17] > 0.0:
         # cirrus: streaks stretched east-west, a thin veil
         ci = fbm(qx * 0.7, qy * 0.7, qz * 2.6, cp[0] * 0.35, 5, lod)
@@ -681,7 +685,7 @@ def shade_surface(x, y, z, dx, dy, dz, lod, S, E_sun, M, E_moon, p, lut, albedo,
         g2 += spec * E_sun[2] * Tg2
         # the blue of the day sky reflected by the sea (Fresnel), fading through twilight
         Fv = 0.02 + 0.98 * math.pow(1.0 - ndv, 5.0)
-        skyk = water * Fv * min(1.0, max(0.0, (muS + 0.05) / 0.25)) * cp[9] * 1.4
+        skyk = water * Fv * min(1.0, max(0.0, (muS + 0.05) / 0.25)) * cp[9] * 2.6
         g0 += skyk * E_sun[0] * 0.25
         g1 += skyk * E_sun[1] * 0.50
         g2 += skyk * E_sun[2] * 1.00
@@ -993,7 +997,7 @@ class World:
                     0.30, 0.55, 1.0]
         cp[17] = 0.35          # cirrus
         cp[23] = 0.0           # cloud relief (on for DAWN)
-        cp[24] = 0.7           # soft coverage->opacity ramp (feathered edges)
+        cp[24] = 0.9           # soft coverage->opacity ramp (feathered edges)
         return cp
 
     def stars(self):
