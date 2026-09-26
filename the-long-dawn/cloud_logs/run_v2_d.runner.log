@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/user/mishamisha/the-long-dawn/cloud/run_job.py", line 26, in <module>
+    import cv2
+ModuleNotFoundError: No module named 'cv2'
