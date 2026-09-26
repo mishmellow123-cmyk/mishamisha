@@ -31,3 +31,9 @@ Standing producer notes from earlier rounds:
 - "The Tolkien one particularly should lean far more into actual Lord of the Rings references, plot details,
   metaphors etc. throughout." C = the story told through LOTR's own beats, characters, places, objects and
   turns (not just the Ring, the Eye and the beacons as motifs). Loving and knowledgeable, never parody, no long quotes.
+
+## Update 2 (same evening)
+PRODUCER UPDATE (arrived while you work; fold it into your treatment, don't restart):
+1. VISUAL DIVERGENCE: the three cuts should diverge VISUALLY as well as in plot. Efficient reuse of key visuals is fine, but each cut should look and move like its own film.
+2. AMBITION: the producers would love some crazy-cool MOTION DESIGN and/or 3-D sequences that stretch technical creativity. Integrate them where they genuinely serve the story; if they don't fit, don't force them (a standalone piece is fine too).
+3. NORTH STAR (high level only, several degrees of abstraction away, NEVER explicit or granular in the films): the producers' personal ideal outcome is the "AI 2040: Plan A" vision by the AI Futures Project (Kokotajlo, Greenblatt and colleagues; https://ai-2040.com/, fetch it if you like). In short: instead of racing in secret toward something no one can see inside, the world makes the work public; many labs in many countries move together; frontier development is deliberately delayed until it can be understood and verified; compute is watched; a US-China deal that others join holds the line; public and democratic pressure is what turns it; and the outcome is power that stays distributed, effective human control, and shared flourishing. The tone is urgent but pragmatic: sober hope, no triumph, no lone hero. Let that SHAPE your central idea and your turn (it already rhymes with "no forge in the dark" and "no faster than we can see"), translated into myth and image, never into policy talk.
