@@ -2,5 +2,16 @@
   "model": "claude-opus-5-5",
   "env": {
     "CLAUDE_CODE_EFFORT_LEVEL": "max"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(python3 cloud/run_job.py:*)",
+      "Bash(python3 the-long-dawn/cloud/run_job.py:*)",
+      "Bash(python3 the-long-dawn/cloud/verify_session.py)",
+      "Bash(python3 cloud/verify_session.py)",
+      "Bash(mkdir -p cloud_logs)",
+      "Bash(git fetch -q origin claude/long-dawn-v2)",
+      "Bash(git checkout -q -B render-work FETCH_HEAD)"
+    ]
   }
 }
