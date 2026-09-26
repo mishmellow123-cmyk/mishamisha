@@ -76,8 +76,8 @@ python3 cloud/run_job.py cloud/jobs/run_fix.json
 Output: `renders/run_v2/f_01520.png` … (v2 numbering, 1920×804, final look incl. motion blur). `--skip`
 skips frames already on disk, so a block can be resumed. Deterministic apart from the PNG dither.
 
-Cost: ~25–55 s/frame with 4 numba threads on a 4-core cloud box (≈2–3.5 min/frame/core); the near-terrain
-frames (1520–1600) are the heaviest.
+Cost (run_fix final, 4-core cloud box, `--procs 4`): 47.7 min for all 160 frames; per frame on one core a median
+of 79 s for 1520–1599 (the near terrain; max 223 s incl. the first numba compile) and 51 s for 1600–1679.
 
 ---
 
