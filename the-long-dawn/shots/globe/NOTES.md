@@ -1,23 +1,26 @@
 # GLOBE — notes
 
-## RENDER_SPEC (v2 final: THE WORLD ANSWERS + DAWN cut A / cut B)
+## RENDER_SPEC (v3 final, globe_fix: THE WORLD ANSWERS + DAWN cut A / cut B)
 
 Run from `the-long-dawn/`. Every frame is a pure function of its frame number, so ranges can be
 split freely across processes/machines — but render each SHOT entirely on one kind of machine
-(cloud and Mac differ by ~30 dB PSNR).
+(cloud and Mac differ by ~30 dB PSNR). The v3 final frames were rendered on the cloud (job
+`cloud/jobs/globe_fix.json`, branch `claude/render-globe_fix`).
 
 * **Python 3.12 packages:** `pip install numpy==2.5.3 scipy==1.18.1 opencv-python-headless==4.10.0.84 numba==0.67.0`
   (llvmlite 0.49.0 comes with numba). No Blender, no ffmpeg needed for the frames.
 * **Caches** (`renders/globe/cache/`, git-ignored), built by `prep.py` (idempotent, ~1 min):
-  `earth-blue-marble.jpg`, `earth-night.jpg` (fetched with `npm pack three-globe@2.45.2`, so the box
-  needs Node/npm — or copy these two files from the Mac's `renders/globe/cache/`), `land_mask_8k.png`,
-  `albedo_8k.png`, `lights_points.npz`, `lights_w4k.npy`, `maps.npz`.
-* **The fire network is not built on the render box.** It ships in the repo as
-  `shots/globe/data/fires_net_v8_3.npz` (with every random draw the renderer uses), and `fires.py`
-  loads it first, so every machine draws exactly the same fires. (`fires_geo_v1.npz` in the cache is
-  only needed to rebuild the net.)
+  `earth-blue-marble.jpg`, `earth-night.jpg` (copy them from `shots/globe/data/nasa/`),
+  `land_mask_8k.png`, `albedo_8k.png`, `lights_points.npz`, `lights_w4k.npy`, `maps.npz`.
+* **The fires are not built on the render box.** Two tracked files in `shots/globe/data/`:
+  `fires_net_v8_3.npz` (the sites, the chain graph and every random draw) and
+  `fires_hops_v8_3_h1.npz` (v3: the flame-hop schedule derived from it: ignition frames, hop
+  parents, the crest gaps and the summit scatter). `fires.py` loads both first, so every machine
+  draws exactly the same fires. Changing `FireNet.PACE / FIRST / BRANCH / GAPS / SCATTER_KM` needs a
+  `HOPS` bump and `FireNet(...).ship_hops()`; changing the net itself needs a `VERSION` bump and `.ship()`.
 * **Commands:**
   ```
+  mkdir -p renders/globe/cache && cp shots/globe/data/nasa/*.jpg renders/globe/cache/
   python3 shots/globe/prep.py
   export NUMBA_NUM_THREADS=4        # the planet kernel is parallel (or 1 thread x 4 processes)
   # THE WORLD ANSWERS, all cuts (no text in it): 184 frames
@@ -27,17 +30,84 @@ split freely across processes/machines — but render each SHOT entirely on one 
   # splitting: render.py <shot> --frames 2232,2235,2238 [--both] --skip-existing
   ```
 * **Env vars:** only `LONGDAWN_GLOBE_OUT` for ANSWERS (as above). `--both` sets cut A's calm and cut
-  B's no-calm itself (`LONGDAWN_NOCALM` is ignored by it). Defaults are the v2 look:
-  `LONGDAWN_DAWN_CAM=aden`, `LONGDAWN_FIRE_SEED=3`, hearths off (`LONGDAWN_NO_HEARTHS` is moot;
-  `LONGDAWN_HEARTHS=1` would bring them back). Don't set anything else.
+  B's no-calm itself (`LONGDAWN_NOCALM` is ignored by it). Defaults are the v3 look:
+  `LONGDAWN_DAWN_CAM=aden`, `LONGDAWN_FIRE_SEED=3`, hearths off (`LONGDAWN_HEARTHS=1` would bring
+  v1's back). Don't set anything else.
 * **Outputs** (1920x804 PNG, src numbering):
   * `renders/globe_v2/f_01752.png` … `f_01935.png`: THE WORLD ANSWERS (cut B falls through to these)
   * `renders/globe_v2/f_02232.png` … `f_02495.png`: DAWN, cut A (and cut C's fallback), calm 2352–2440
   * `renders/globe_B/f_02232.png` … `f_02495.png`: DAWN, cut B (no calm; identical to A outside 2343–2449)
-  They overwrite the complete pre-polish pass the Mac rendered into the same folders.
-* **Cost:** Mac M2, 1 numba thread per process, 3 processes on the shared machine: ANSWERS ~17
-  s/frame, DAWN ~27 s per A+B pair (~12 s and ~16 s when the Mac was quiet); ~1 min of numba JIT on
-  a fresh machine.
+* **Cost:** cloud box (4 cores), 4 threads: ANSWERS ~4 s/frame, DAWN ~4 s per A+B pair; ~30 s of
+  numba JIT per fresh process. (v2 on the Mac M2, 1 thread x 3 processes: ~17 s and ~27 s.)
+
+## v3 (2026-09-26, globe_fix): flames that hop; a gold dawn
+
+The picture red-team (`review/picture_redteam.md` §11, §14, top-8 #1 and #3) found THE WORLD
+ANSWERS still readable as war (a comet flying off the subcontinent over the Arabian Sea: a launch),
+as the AI itself spreading (short comets forking at every tip: a neural net) and as a corporate
+slide (evenly beaded dotted lines, then an even sprinkle), with no words in cut B to steer it; and
+DAWN's hit frame a grey veil with stars inside the glare, then a static white star over a keynote
+limb. Report: `review/globe_fix_report.md`.
+
+### THE WORLD ANSWERS v3 (`fires.py`)
+* **Nothing flies.** The embers, comets and ocean leaps are gone (no flight of any kind is drawn).
+  The unit of the spread is a fire catching: a watcher sees the fire on the next height and lights
+  his own. A sea crossing is a pause; the far shore simply catches later.
+* **One child per hop** (`FireNet._spread_hops`, derived deterministically from the v8 net and
+  shipped as `fires_hops_v8_3_h1.npz`). Each fire passes the flame to ONE next site: the cheapest
+  neighbour that goes on in the same direction (crest links first), so the spread is lines of fire
+  along ranges, rivers and coasts, not a tree. A fire's other neighbours answer it only after the
+  line has moved on (6–14 frames, less as the spread speeds up): in the shot no two children of a
+  fire ever catch less than 3.5 frames apart (median 7), so there is never a fork at a tip.
+* **The beats are kept.** 1752 the first beacon burns alone · 1760 it flares (the range wash and
+  the spark stream as in v2) · **1766 the first answer** west along the crest, 1771 east, 1777 the
+  Ganges (the old "throws" beat, now three fires catching, no projectiles) · 1766–1800 the two lines
+  run along the Himalaya, a hop every ~7 frames at first · 1800–1840 the Himalaya catches (29/29 crest
+  sites by 1840) · 1840–1900 the acceleration (37–58 visible ignitions per 10 frames) · ~1910 the
+  view is studded; nothing new after 1911. The pace is a clock (`PACE`: cost units per frame,
+  a + b (f−1760)^c) instead of v2's s^0.35 law, whose start was too slow for fires with no flight.
+* **Gaps and scatter.** 30% of the crest sites (beyond the first beacon's own hills, 500 km)
+  stay dark, clustered by a ~300–700 km noise, so the lines break into runs; the lit crest fires
+  stand on summits and passes up to 22 km either side of the crest line. Every continent keeps its
+  fires (coasts, rivers, lonely fires and the remaining crests).
+* **Each fire is a flame, not a dot.** A small standing flame (a 3-vertex tapered stroke along the
+  local vertical as the camera sees it: upright near the limb, foreshortened below; ~2.5–5 px tall
+  at full res, taller when close) with a glow that follows it up (never a round orb) and a faint
+  warm pool; its light still falls on the moonlit land. Brightness spread ~3:1 (the lognormal size
+  ranks each fire; a few great fires go past; lonely fires between the lines dimmer).
+* **Time in every line.** A catching fire flares as a fat, bright burst of flame (~3 frames), burns
+  high and yellow for ~½ s, then settles over ~2 s to a lower, redder fire (55%); the newest fires
+  lead each line. Tended fires also breathe slowly (4–10 s) and flicker (the flame's height with the
+  slow flicker, its light with the fast lick). The first beacon stays the greatest fire all night.
+  The village fires round a beacon join 10–30 frames after it (never at the tip).
+* **Cities** (`shots.CITY_GAIN`, `CITY_COOL`): 1.5 stops under v2 and pale blue-white at the same
+  luminance (`globe.render_lights(cool=)`), so warm means fire only. Also in DAWN.
+
+### DAWN v3 (`shots.Dawn`, `lens.py`)
+* **No stars in the light.** The stars die under the glare as the sun comes (masked by the glare's
+  own brightness) and are gone from 2240 (fade 2234–2240): the exposure belongs to the sun.
+* **A gold flash.** Everything in the lens layer but the disc's own white-hot core is gold
+  (`lens.HOT / GOLD / AMBER`); the flash is a compact, intense gold burst (8, decays over ~9 frames
+  instead of 5, so the edit's white hold clears to gold, then to the sunrise) and its wide veil is
+  small and amber, so space round the sun goes gold, never milky grey. The late anamorphic line
+  fades to 30% after the hit. The morning light itself is warmer (`DAWN_SUN` 1.0, 0.88, 0.70).
+* **The terminator keeps coming.** The lighting lead now runs 0 → 34° (v2: 26°) and keeps moving
+  through the whole shot (~0.12°/frame after 2300), so the day crosses Arabia, the Horn and the Sahel
+  toward us and by 2495 only the nearest land is still in night.
+* **The fires pale one by one.** Every answering fire burns at its young strength (a little
+  brighter: gain 1.8) and pales as the day reaches it, each at its own moment (a per-fire threshold
+  ±3° of sun elevation, a 4° fade: ~1 s each), its light on the land first.
+* Kept: the orbit and the 'aden' framing; the sun breaks the limb at 2240 at (981, 352) for the
+  match-cut; the camera rise; the atmosphere; the weather; cut A's text calm 2343–2449.
+
+### Known weaknesses (v3)
+* At orbital scale the flames are 2.5–5 px: on a phone they read as warm points; the flame shape,
+  the flare and the settling carry it on a big screen and in motion.
+* The Kunlun and Himalaya lines are still lines (they are ranges); the gaps and the brightness
+  spread break them into runs, but on a small thumbnail a run can still look beaded.
+* DAWN is still an orbital sunrise; v3 makes it gold, starless in the glare and moving, with our
+  fires handing over to the day, but the critic's preferred fix (a mountain dawn from the Run's world)
+  is a different department's shot.
 
 ## v2 (2026-09-26): fire, not fibre
 

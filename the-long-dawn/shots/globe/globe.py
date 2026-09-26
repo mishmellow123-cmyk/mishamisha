@@ -1077,7 +1077,9 @@ def _lights_eval(P, e, tint, C, S, p, lut, clouds, cp, gain, out_rgb, out_ok, lo
         out_ok[i] = 1
 
 
-def render_lights(world, cam, atmo, S, gain, cp=None, sigma=0.65):
+def render_lights(world, cam, atmo, S, gain, cp=None, sigma=0.65, cool=0.0):
+    """City lights. cool (0..1) turns their sodium warmth toward a pale blue-white at the same
+    luminance, so that warm means fire only."""
     if cp is None:
         cp = World.default_cp(atmo.X)
     n = len(world.le)
@@ -1085,6 +1087,13 @@ def render_lights(world, cam, atmo, S, gain, cp=None, sigma=0.65):
     ok = np.zeros(n, np.uint8)
     _lights_eval(world.lP, world.le, world.ltint, cam.pos, np.asarray(S, np.float64), atmo.params,
                  atmo.lut, world.clouds, cp, gain * cam.f * cam.f, rgb, ok, 1.0 / cam.f)
+    if cool > 0:
+        tt = world.ltint
+        warm = np.stack([np.ones(n), 0.62 + 0.2 * tt, 0.30 + 0.35 * tt], 1)
+        cold = np.stack([0.80 + 0.08 * tt, 0.88 + 0.05 * tt, np.ones(n)], 1)
+        lum = np.array([0.2126, 0.7152, 0.0722])
+        cold *= ((warm @ lum) / (cold @ lum))[:, None]
+        rgb *= (1.0 - cool) + cool * cold / warm
     sel = ok.astype(bool)
     uv, z = cam.project(world.lP[sel])
     m = (z > 0) & (uv[:, 0] > -3) & (uv[:, 0] < cam.W + 3) & (uv[:, 1] > -3) & (uv[:, 1] < cam.H + 3)

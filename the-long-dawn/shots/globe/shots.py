@@ -19,6 +19,13 @@ from fires import FireNet  # noqa: E402  (v2: fire, not fibre)
 import look  # noqa: E402  (path set by globe)
 import lens as L  # noqa: E402
 
+CITY_GAIN = 0.35         # v3: the city lights 1.5 stops under v2 (0.3e-7 in ANSWERS, 0.4e-7 in DAWN)
+CITY_COOL = 0.85         # ... and pale blue-white, so that warm means fire only
+FLASH = 8.0              # DAWN: the flash as the sun breaks the limb (gold, lens.py) ...
+FLASH_TAU = 9.0          # ... and how long it lingers (frames)
+DAWN_FIRE_GAIN = 1.8
+DAWN_SUN = (1.0, 0.88, 0.70)   # a gold morning (v2: 1.0, 0.94, 0.84)
+
 _WORLD = None
 _WEB = None
 _ATMO = {}
@@ -141,8 +148,9 @@ class Answers:
         Esun = np.array([1.0, 0.97, 0.92]) * 20.0
         img, cov, tv = G.render_planet(wd, cam, at, self.sun, Esun, self.sun, 0.0, self.moon, Emoon)
         planet = img * cov[..., None]
-        # v2: the cities' lights a little lower, so the fires are the protagonists
-        img += G.render_lights(wd, cam, at, self.sun, gain=0.3e-7)
+        # v3: the cities' lights another stop lower and cool (pale blue-white), so that warm means
+        # fire only and the fires are the protagonists
+        img += G.render_lights(wd, cam, at, self.sun, gain=CITY_GAIN * 0.3e-7, cool=CITY_COOL)
         img += G.render_stars(wd, cam, at, gain=0.9)
         fnet().draw(img, cam, t, gain=1.0, scale=scale, planet=planet)
         return img, cam
@@ -214,9 +222,10 @@ class Dawn:
         # sun elevation above the limb (deg): crest at 2240 exactly
         p['sun_el'] = spline(t, [(2200, -1.6), (2232, -0.72), (2239, -self.SUN_R - 0.01), (2240, -0.19),
                                  (2250, 0.0), (2266, 0.32), (2300, 0.75), (2400, 1.7), (2495, 2.4)])
-        # the lighting sun leads the disk so the terminator can visibly race toward us
-        p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2252, 1.5), (2270, 6.0), (2300, 12.0),
-                               (2350, 17.5), (2420, 22.0), (2495, 26.0)])
+        # the lighting sun leads the disk so the terminator can visibly race toward us -- and it
+        # keeps coming through the whole shot (v3), so the day takes the night side fire by fire
+        p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2252, 1.5), (2270, 5.5), (2300, 11.0),
+                               (2350, 18.0), (2400, 24.0), (2450, 29.5), (2495, 34.0)])
         p['sun_az'] = k['az']
         return p
 
@@ -265,7 +274,7 @@ class Dawn:
         cam, p = self.camera(t, W, H)
         Sd, Sl = self.suns(p)
         Emoon = np.array([0.337, 0.456, 0.69]) * 0.6
-        Esun = np.array([1.0, 0.94, 0.84]) * 17.0
+        Esun = np.array(DAWN_SUN) * 17.0
         cp = World.default_cp(at.X)
         cp[15] = math.radians(-16.0)        # this morning's weather: the African cloud mass sits
         cp[16] = math.radians(-2.0)         # where the terminator sweeps
@@ -276,25 +285,32 @@ class Dawn:
         cp[22] = 0.65
         img, cov, tv = G.render_planet(wd, cam, at, Sl, Esun, Sd, 40.0, self.moon, Emoon, cp=cp)
         planet = img * cov[..., None]
-        img += G.render_lights(wd, cam, at, Sl, gain=0.4e-7, cp=cp)
-        star_k = 1.0 - ramp(t, 2236, 2262) * 0.85
-        img += G.render_stars(wd, cam, at, gain=0.9 * star_k)
-        # the sun through the lens: a clean disc glare, a brief round flash as it breaks the limb,
-        # and a thin, restrained anamorphic line
+        img += G.render_lights(wd, cam, at, Sl, gain=CITY_GAIN * 0.4e-7, cp=cp, cool=CITY_COOL)
+        # the sun through the lens: a clean disc glare, a gold flash as it breaks the limb (it
+        # lingers, so the edit's white clears to gold), and a thin, restrained anamorphic line
         sp, z = cam.project(cam.pos[None, :] + Sd[None, :] * 50.0)
         sx, sy = sp[0]
         frac = seg_frac(p['sun_el'], self.SUN_R)
-        burst = math.exp(-max(t - 2240.0, 0.0) / 5.0) if t >= 2240 else 0.0
+        burst = math.exp(-max(t - 2240.0, 0.0) / FLASH_TAU) if t >= 2240 else 0.0
         pre = ramp(t, 2226.0, 2240.0)
         core = 7.0 * frac ** 0.6 + 2.5 * pre * (1.0 - frac)
-        streak = (0.4 + 0.8 * burst) * frac ** 0.5 * (1.0 - 0.35 * ramp(t, 2262.0, 2320.0))
-        glare = L.sun_glare_clean(W, H, sx, sy, core, flash=5.0 * burst, streak=streak)
+        streak = (0.4 + 0.8 * burst) * frac ** 0.5 * (1.0 - 0.7 * ramp(t, 2262.0, 2340.0))
+        glare = L.sun_glare_clean(W, H, sx, sy, core, flash=FLASH * burst, streak=streak)
+        # the stars die under the glare as the sun comes, and are gone once it breaks the limb
+        # (the exposure belongs to the sun now): never a star inside the light
+        star_k = 1.0 - ramp(t, 2234.0, 2240.0)
+        if star_k > 0:
+            stars = G.render_stars(wd, cam, at, gain=0.9 * star_k)
+            img += stars * np.exp(-glare.max(axis=2) / 0.02)[..., None]
         return dict(img=img, planet=planet, glare=glare, cam=cam, p=p, Sl=Sl, sun=(sx, sy, frac, burst))
 
     def fires(self, base, t, scale, calm):
         img = base['img'].copy()
-        fnet().draw(img, base['cam'], 2700.0, t_anim=t, embers=False, sun=base['Sl'], day_keep=0.0,
-                    gain=1.35, scale=scale, calm=calm, planet=base['planet'], light=1.3)
+        # every answering fire burns (at its young strength) and pales as the day reaches it, each
+        # at its own moment
+        fnet().draw(img, base['cam'], 2700.0, t_anim=t, sun=base['Sl'], day_keep=0.0,
+                    gain=DAWN_FIRE_GAIN, scale=scale, calm=calm, planet=base['planet'], light=1.3,
+                    settle=False, pale_jitter=3.0, pale_width=4.0)
         # v1's village hearths blooming into the dark are gone (LONGDAWN_HEARTHS=1 brings them back)
         if os.environ.get('LONGDAWN_HEARTHS') == '1':
             hearths().draw(img, base['cam'], t, sun=base['Sl'], gain=1.0, calm=calm, scale=scale)
