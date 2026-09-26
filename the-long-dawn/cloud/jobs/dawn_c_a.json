@@ -1,0 +1,13 @@
+{
+ "name": "dawn_c_a",
+ "branch": "claude/render-dawn-c-a",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "python3 shots/run/dawn.py --range 2400-2463 --procs 4 --skip"
+ ],
+ "out_dir": "renders/dawn_C",
+ "frames": "2400-2463",
+ "push_every": 300
+}
