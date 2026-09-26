@@ -28,3 +28,6 @@ Standing producer notes from earlier rounds:
   example, in C at ~55 s the first fire lighting "starts super cool but the way the fire initially
   actually lights seems wrong". The person (heroine) "looks a bit weird", which is not a priority if it's
   costly. (Both are being fixed by the HEROINE department.)
+- "The Tolkien one particularly should lean far more into actual Lord of the Rings references, plot details,
+  metaphors etc. throughout." C = the story told through LOTR's own beats, characters, places, objects and
+  turns (not just the Ring, the Eye and the beacons as motifs). Loving and knowledgeable, never parody, no long quotes.
