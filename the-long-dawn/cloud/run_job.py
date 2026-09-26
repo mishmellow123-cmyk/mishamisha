@@ -23,8 +23,6 @@ import subprocess
 import sys
 import time
 
-import cv2
-
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))      # the-long-dawn/
 
 
@@ -86,6 +84,7 @@ def main():
             log('JOB ENDED (setup failed)')
             sys.exit(2)
         log(f'setup ok in {time.time() - t:.0f}s')
+    import cv2                                   # only after setup: a fresh machine gets opencv from the setup step
 
     procs = []
     for i, cmd in enumerate(job['render']):
