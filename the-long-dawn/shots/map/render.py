@@ -432,7 +432,7 @@ class Shot:
         sc = cam.F / z * scale
         up, upl = cam.up2d(P)
         # physical height on the paper, but never smaller on screen than a readable flame
-        floor = 13.0 * scale * np.minimum(size, 2.0) ** 0.8 * (0.4 * catch + 0.6 * body + 1.0 * flare)
+        floor = 19.0 * scale * np.minimum(size, 2.0) ** 0.8 * (0.4 * catch + 0.6 * body + 0.7 * flare)
         hp = np.maximum(hgt * upl * scale, floor)
         mul = np.ones(len(lit)) if hush is None else hush(uv[:, 1])
         W, H = cam.W, cam.H
