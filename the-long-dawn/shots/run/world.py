@@ -365,6 +365,43 @@ def h_cloud(x, z, fp, t):
 
 
 @njit(inline='always', fastmath=True)
+def _billow(x, y, octaves, seed):
+    """fBm of |gradient noise|: rounded tops with sharp creases between them (cloud tops)."""
+    s = 0.0
+    a = 0.5
+    norm = 0.0
+    n = int(octaves)
+    frac = octaves - n
+    for o in range(n + 1):
+        w = a if o < n else a * frac
+        if w <= 0.0:
+            break
+        s += w * abs(gnoise2(x, y, seed + o * 131))
+        norm += a
+        nx = 1.6 * x - 1.2 * y
+        ny = 1.2 * x + 1.6 * y
+        x = nx * 1.015 + 17.13
+        y = ny * 1.015 - 9.71
+        a *= 0.5
+    return s / max(norm, 1e-6)
+
+
+@njit(fastmath=True, cache=True)
+def h_cloud_r(x, z, fp, t, relief):
+    """The Run's cloud sea: s1's layers plus, when relief > 0 (metres), a field of rounded billow tops with
+    creases between them (|noise| fBm from ~560 m down), so the low moon models it into lit domes and
+    shadowed hollows instead of a flat grey floor. relief = 0 is exactly h_cloud (DAWN_C, HEROINE)."""
+    h = h_cloud(x, z, fp, t)
+    if relief > 0.0:
+        o = _lod(640.0, fp, 1.0, 3.0)
+        b = _billow(x / 640.0 - t * 0.004 + 3.3, z / 640.0 + 1.7, o, 38)
+        # the tops swell where the big layer is already high (a sea of cloud heaps up, it does not dimple)
+        m = 0.5 + 0.5 * fbm2(x / 3100.0 + 0.4, z / 3100.0 - 2.2, 2.0, 39)
+        h += relief * (b - 0.30) * (0.55 + 0.9 * m)
+    return h
+
+
+@njit(inline='always', fastmath=True)
 def h_near(x, z, fp):
     if x * x + z * z < NEAR_R * NEAR_R:
         return S1.h_near(x, z, fp)
@@ -381,7 +418,7 @@ def hfun(x, z, fp, P, CR):
     hf = h_rock(x, z, fp, CR)
     if hf > h:
         h = hf
-    hc = h_cloud(x, z, fp, P[2])
+    hc = h_cloud_r(x, z, fp, P[2], P[3])
     if hc > h:
         h = hc
     return h - curv
@@ -504,6 +541,17 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
             dxh /= hl
             dzh /= hl
             d = D[j, i]
+            if d >= 1e29 and Q[17] > 0.0 and dy < 0.0:
+                # below the horizon but nothing hit within dmax: the ray ends in the haze over the far cloud
+                # sea (not in "sky below the horizon", which drew an inverted range along the horizon)
+                cosv = dx * mx + dy * my + dz * mz
+                ph = 1.0 + fogp[4] * max(cosv, 0.0) ** 4
+                out[j, i, 0] = fogp[5] * ph
+                out[j, i, 1] = fogp[6] * ph
+                out[j, i, 2] = fogp[7] * ph
+                zbuf[j, i] = 1e9
+                dist_out[j, i] = 1e9
+                continue
             if d >= 1e29:
                 r, g, b = SK.sky_base(dx, dy, dz, S)
                 mr, mg, mb = SK.moon_disk(dx, dy, dz, S, pix_ang)
@@ -523,7 +571,7 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
             curv = (ddx * ddx + ddz * ddz) / (2.0 * R_EARTH)
             hn = h_near(x, z, fp)
             hf = h_rock(x, z, fp, CR)
-            hc = h_cloud(x, z, fp, P[2])
+            hc = h_cloud_r(x, z, fp, P[2], P[3])
             surf = 0
             if hf > hn:
                 surf = 1
@@ -539,8 +587,12 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                 hz = h_rock(x, z + e, fp, CR)
             else:
                 h0 = hc
-                hx = h_cloud(x + e, z, fp, P[2])
-                hz = h_cloud(x, z + e, fp, P[2])
+                if Q[17] > 0.0:
+                    # cloud is translucent: light diffuses through the small lumps, so shade it by the
+                    # normal of its larger forms (a wide difference) -- soft heaps, not a rough rug
+                    e = max(e, 22.0)
+                hx = h_cloud_r(x + e, z, fp, P[2], P[3])
+                hz = h_cloud_r(x, z + e, fp, P[2], P[3])
             nx = -(hx - h0)
             ny = e
             nz = -(hz - h0)
@@ -554,7 +606,8 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                 # cloud sea: wrap light + forward scatter toward the key light, peak shadows, troughs
                 cosk = dx * mx + dy * my + dz * mz
                 fwd = 1.0 + Q[1] * max(cosk, 0.0) ** Q[2]
-                wrap = max((ndl + 0.8) / 1.8, 0.0)
+                wk = 0.8 if Q[17] <= 0.0 else Q[21]
+                wrap = max((ndl + wk) / (1.0 + wk), 0.0)
                 shc = soft_shadow(P, CR, x, yw + 5.0, z, mx, my, mz, 40.0, 14000.0, 13, 6.0, fp)
                 shc = Q[5] + (1.0 - Q[5]) * shc
                 ca = Q[9]
@@ -566,6 +619,21 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                 cr *= tk
                 cg *= tk
                 cb *= tk
+                if Q[17] > 0.0:
+                    # beacons low over the cloud sea light its tops (soft: the light enters the cloud)
+                    for li in range(LT.shape[0]):
+                        lx = LT[li, 0] - x
+                        ly = LT[li, 1] - yw
+                        lz = LT[li, 2] - z
+                        l2 = lx * lx + ly * ly + lz * lz
+                        if l2 > LT[li, 6] * 4.0e4:
+                            continue
+                        ll = math.sqrt(l2) + 1e-9
+                        ndf = max((nx * lx + ny * ly + nz * lz) / ll + 0.6, 0.0) / 1.6
+                        E = LT[li, 6] * ndf / (l2 + LT[li, 7] * LT[li, 7]) * ca
+                        cr += E * LT[li, 3]
+                        cg += E * LT[li, 4]
+                        cb += E * LT[li, 5]
             else:
                 # snow / rock. Far: exactly s1's rule (45 m-smoothed slope + 380/95 m noise). Near: ledges
                 # hold snow and ribs shed it (fine normal + 3 m slope + the far tendency).
@@ -582,6 +650,49 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                 if surf == 0:
                     sn = gnoise2(x * 0.8, z * 0.8, 71) * 0.12 + gnoise2(x * 3.1, z * 3.1, 72) * 0.05
                     snow = smoothstep(0.45, 0.70, ny + sn)
+                elif Q[17] > 0.0:
+                    # the Run's rule: the mountain's FORM decides. Slope from a smooth central difference at
+                    # the snow scale (the fine relief no longer speckles it), convexity (ridges, shoulders and
+                    # ledges hold snow, gullies and steep faces go bare), and only a little noise, in domains
+                    # sheared by height so nothing streaks down a steep face.
+                    hsx2 = h_rock(x - es, z, fp * 4.0, CR)
+                    hsz2 = h_rock(x, z - es, fp * 4.0, CR)
+                    hsc = h_rock(x, z, fp * 4.0, CR)
+                    gx = (hsx - hsx2) / (2.0 * es)
+                    gz = (hsz - hsz2) / (2.0 * es)
+                    nsy = 1.0 / math.sqrt(gx * gx + gz * gz + 1.0)
+                    conv = -(hsx + hsx2 + hsz + hsz2 - 4.0 * hsc) / (2.0 * es)
+                    conv = min(max(conv, -1.0), 1.0)
+                    xs = x + 0.61 * h0
+                    zs = z - 0.37 * h0
+                    sn = (gnoise2(xs / 380.0, zs / 380.0, 73) * 0.18 + gnoise2(xs / 95.0, zs / 95.0, 74) * 0.06) * Q[22]
+                    snow = smoothstep(0.38 - Q[23], 0.58 - Q[23], nsy + Q[20] * conv + sn)
+                    # nothing holds on a face steeper than ~65 deg, however convex (no bright snow curtains
+                    # down the walls of the towers)
+                    snow *= smoothstep(0.30, 0.46, nsy)
+                    wf = smoothstep(3.0, 0.4, fp)
+                    if wf > 0.0:
+                        em = max(fp * 6.0, 3.0)
+                        hmx = h_rock(x + em, z, fp * 2.0, CR)
+                        hmz = h_rock(x, z + em, fp * 2.0, CR)
+                        hmx2 = h_rock(x - em, z, fp * 2.0, CR)
+                        hmz2 = h_rock(x, z - em, fp * 2.0, CR)
+                        gmx = (hmx - hmx2) / (2.0 * em)
+                        gmz = (hmz - hmz2) / (2.0 * em)
+                        nmy = 1.0 / math.sqrt(gmx * gmx + gmz * gmz + 1.0)
+                        cm = -(hmx + hmx2 + hmz + hmz2 - 4.0 * h0) / (2.0 * em)
+                        cm = min(max(cm, -1.0), 1.0)
+                        sf = gnoise2(xs / 9.0, zs / 9.0, 75) * 0.05 + gnoise2(xs * 0.9, zs * 0.9, 76) * 0.02
+                        sv = 0.16 * ny + 0.38 * nmy + 0.46 * nsy + 0.5 * Q[20] * (conv + cm) + sn * 0.5 + sf
+                        sneat = smoothstep(Q[3] - Q[23], Q[4] - Q[23], sv)
+                        # the steepness cap on a ~12 m slope (the form of a wall, not its ribs: a rib-scale
+                        # cap streaks the faces)
+                        e12 = max(fp * 6.0, 12.0)
+                        g1 = (h_rock(x + e12, z, fp * 3.0, CR) - h_rock(x - e12, z, fp * 3.0, CR)) / (2.0 * e12)
+                        g2 = (h_rock(x, z + e12, fp * 3.0, CR) - h_rock(x, z - e12, fp * 3.0, CR)) / (2.0 * e12)
+                        n12 = 1.0 / math.sqrt(g1 * g1 + g2 * g2 + 1.0)
+                        sneat *= smoothstep(0.30, 0.46, min(n12, nsy))
+                        snow = snow + (sneat - snow) * wf
                 else:
                     sn = gnoise2(x / 380.0, z / 380.0, 73) * 0.18 + gnoise2(x / 95.0, z / 95.0, 74) * 0.06
                     snow = smoothstep(0.38, 0.58, nsy + sn)
@@ -606,11 +717,17 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                     if fp < 0.05:
                         rv *= 0.8 + 0.4 * (0.5 + 0.5 * gnoise2(x * 1.1, z * 1.1 + h0 * 0.8, 83)) * smoothstep(0.05, 0.01, fp) \
                             + 0.4 * (1.0 - smoothstep(0.05, 0.01, fp)) * 0.5
-                # beacon platforms: cleared, dark rock
+                # beacon platforms: cleared, dark rock. A negative radius marks a bare tower instead: its walls
+                # (from 6 m above the row's y to 140 m below) are too steep to hold snow.
                 for pi in range(PL.shape[0]):
                     qx = x - PL[pi, 0]
                     qz = z - PL[pi, 2]
                     qd = math.sqrt(qx * qx + qz * qz)
+                    if PL[pi, 3] < 0.0:
+                        rr = -PL[pi, 3]
+                        if qd < rr and yw < PL[pi, 1] + 6.0 and yw > PL[pi, 1] - 140.0:
+                            snow *= 0.15 + 0.85 * smoothstep(0.6 * rr, rr, qd)
+                        continue
                     if qd < PL[pi, 3] * 1.6 and abs(yw - PL[pi, 1]) < 6.0:
                         snow *= smoothstep(PL[pi, 3] * 0.7, PL[pi, 3] * 1.6,
                                            qd + 0.4 * PL[pi, 3] * gnoise2(x * 1.3, z * 1.3, 91))
@@ -656,10 +773,33 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                         cr += ar * E * LT[li, 3]
                         cg += ag * E * LT[li, 4]
                         cb += ab * E * LT[li, 5]
+                if Q[17] > 0.0:
+                    # the Run: where a mountain meets the sea of cloud, moonlit wisps wrap its foot (the cloud
+                    # tops' own light, torn into streaks that lift with height) instead of a hard waterline
+                    dyc = h0 - hc
+                    if dyc < 65.0:
+                        # layered like real wisps: the noise runs mostly with height (horizontal streaks)
+                        wn = fbm2(x / 110.0 + h0 / 14.0 - P[2] * 0.05, z / 110.0 - h0 / 20.0, 3.0, 93)
+                        mm = (1.0 - smoothstep(0.0, 58.0, dyc)) ** 1.5 * (0.45 + 0.55 * smoothstep(-0.4, 0.4, wn)) * 0.8
+                        if mm > 0.0:
+                            cosk = dx * mx + dy * my + dz * mz
+                            fwd = 1.0 + Q[1] * max(cosk, 0.0) ** Q[2]
+                            wk = Q[21]
+                            wr = (my + wk) / (1.0 + wk)
+                            ca = Q[9]
+                            mr = ca * (Ik * Lk[3] * wr * fwd * 0.8 + amb[0] * Q[13])
+                            mg = ca * (Ik * Lk[4] * wr * fwd * 0.8 + amb[1] * Q[13])
+                            mb = ca * (Ik * Lk[5] * wr * fwd * 0.8 + amb[2] * Q[13])
+                            cr += (mr - cr) * mm
+                            cg += (mg - cg) * mm
+                            cb += (mb - cb) * mm
             # atmosphere: aerial perspective + low mist over the cloud sea
             yc = C[1]
             tau = height_fog_tau(dist, yc, yw, fogp[0], fogp[1])
             tau += height_fog_tau(dist, yc - CLOUD_Y, yw - CLOUD_Y, fogp[2], fogp[3])
+            if Q[18] > 0.0:
+                # the Run: a deeper haze layer over the cloud sea, so each range stands paler than the last
+                tau += height_fog_tau(dist, yc - CLOUD_Y, yw - CLOUD_Y, Q[18], Q[19])
             tr = math.exp(-tau)
             cosv = dx * mx + dy * my + dz * mz
             ph = 1.0 + fogp[4] * max(cosv, 0.0) ** 4
@@ -740,3 +880,22 @@ def night_light():
     Q[13] = 1.5
     Q[16] = 0.10
     return Lk, amb, S, fogp, Q
+
+
+CLOUD_RELIEF = 60.0          # the Run: amplitude (m) of the billowed cloud tops (P[3] of the marcher / shader)
+
+
+def run_light():
+    """night_light() with the Run's look switched on (Q[17..23]); s1's world is night_light() unchanged.
+    For shots that must continue the Run (e.g. the FIRST BEACON reveal plate), use this + CLOUD_RELIEF."""
+    Lk, amb, S, fogp, Q = night_light()
+    Q = Q.copy()
+    Q[17] = 1.0              # misses below the horizon end in haze; firelight on cloud tops; the new snow rule
+    Q[18] = 7.0e-5           # haze layer over the cloud sea: density at the cloud top (1/m) ...
+    Q[19] = 1.0 / 450.0      # ... and 1 / its scale height (m)
+    Q[20] = 0.35             # snow: convexity gain (ridges and ledges hold snow, gullies go bare)
+    Q[21] = 0.35             # cloud: wrap (s1: 0.8) -- the low moon models the billows
+    Q[22] = 1.0 / 3.0        # snow: noise scale vs s1's (the critic: cut the noise terms to a third)
+    Q[23] = 0.06             # snow: threshold shift (a little more snow on steep ground)
+    return Lk, amb, S, fogp, Q
+

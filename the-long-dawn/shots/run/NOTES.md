@@ -23,8 +23,8 @@ python shots/run/s1_v2.py --range 1440-1519 --procs 4 --skip
 Runs shots/montage/s1_peak.py unchanged with fire2's flame (orange→yellow→white, soot absorption), spark ramp
 and glow colour patched in. ~72 s/frame on this Mac with 2 threads at full res (s1's own cost).
 
-## THE BEACON RUN — v2 frames 1520–1679 → `renders/run_v2/` (look FINAL; see the RUN spec further down)
-Local fallback 1660–1679 already rendered here.
+## THE BEACON RUN — v2 frames 1520–1679 → `renders/run_v2/` (run_fix look; see the RUN spec further down)
+Rendered in the cloud by `cloud/jobs/run_fix.json` (branch `claude/render-run_fix`).
 
 ## World settings for HEROINE (to match the FIRST BEACON reveal's far ranges)
 The ranges ARE s1's (`shots/montage/s1_peak.py`); the Run and Dawn only add foothills near the shepherd.
@@ -47,38 +47,37 @@ The ranges ARE s1's (`shots/montage/s1_peak.py`); the Run and Dawn only add foot
   (`np.zeros((0, world.NCR))`) and a camera at her summit — that is s1's world (checked visually against s1 frame
   1500 with `shots/run/test_s1match.py`; since then shade() adds a small bounce fill (Q[16]=0.10) and close-range
   snow detail, both invisible at the reveal's distances).
+* To continue the RUN's look instead (run_fix): `world.run_light()` in place of `night_light()` and
+  `pipe.render_terrain(..., relief=world.CLOUD_RELIEF)` (P[3] of march/shade). It switches on Q[17..23]: haze at
+  the far horizon instead of "sky below the horizon", a deeper haze layer over the cloud sea (7e-5/m, 450 m),
+  billowed cloud tops (60 m) shaded with a tighter wrap (0.35) and a wide normal, wisps at the mountains' feet,
+  firelight on the cloud tops, and the form-driven snow rule. With the defaults (Q[17]=0, relief 0) every
+  function returns exactly what it did before, so DAWN_C and s1 are untouched.
 
 # RUN department (v2) — THE BEACON RUN + DAWN_C
 
 ## RENDER_SPEC — THE BEACON RUN (v2 frames 1520–1679 → `renders/run_v2/f_%05d.png`)
 
-Look is FINAL. Everything the render needs is in `shots/run/` (+ `shots/montage/` toolkit, `lib/look.py`).
-Cached data that MUST be present (committed, not regenerated): `shots/run/summits.npy`, `shots/run/beacons.npy`.
+Look: run_fix (the picture critic's #5, see `review/run_fix_report.md`). Everything the render needs is in
+`shots/run/` (+ `shots/montage/` toolkit, `lib/look.py`). Cached data that MUST be present (committed, not
+regenerated): `shots/run/summits.npy`, `shots/run/beacons.npy` (the 1550 filler the catalogue missed is added in
+code, `beacons.EXTRA`).
 
 Fresh Linux x86 box:
 ```
 python3 -m venv ~/ld && . ~/ld/bin/activate
-pip install numpy numba scipy opencv-python-headless    # tested: py3.12, numpy 2.5.3, numba 0.67.0, cv2 4.10, scipy 1.18.1
+pip install numpy numba scipy opencv-python-headless    # tested: py3.12, numpy 2.4, numba 0.67.0, cv2 4.10, scipy 1.17
 cd the-long-dawn
-# optional warm-up (compiles numba kernels into __pycache__, ~2 min):
-NUMBA_NUM_THREADS=4 python shots/run/render_run.py --frames 1600 --scale 0.25 --out tests/warm --threads 4
-# render a block (N workers x 1 numba thread each; ~400 MB RAM per worker):
-python shots/run/render_run.py --range 1520-1554 --procs 4 --skip
+# the whole shot (N workers x 1 numba thread each; ~400 MB RAM per worker):
+python shots/run/render_run.py --range 1520-1679 --procs 4 --skip
+# or as a cloud job (renders, checks and pushes frames to claude/render-run_fix):
+python3 cloud/run_job.py cloud/jobs/run_fix.json
 ```
 Output: `renders/run_v2/f_01520.png` … (v2 numbering, 1920×804, final look incl. motion blur). `--skip`
 skips frames already on disk, so a block can be resumed. Deterministic apart from the PNG dither.
 
-Split (claimed):
-| frames | where |
-|---|---|
-| 1520–1554 | cloud A |
-| 1555–1589 | cloud B |
-| 1590–1624 | cloud C |
-| 1625–1659 | cloud D |
-| 1660–1679 | LOCAL (this Mac, 3 workers) |
-
-Cost: ~6–7 min/frame single-threaded on this (loaded) Mac at full res; near-terrain frames (1520–1600) are
-the heaviest.
+Cost: ~25–55 s/frame with 4 numba threads on a 4-core cloud box (≈2–3.5 min/frame/core); the near-terrain
+frames (1520–1600) are the heaviest.
 
 ---
 
@@ -95,32 +94,56 @@ cloud sea and `h_near` summit are imported unchanged, same seeds, same moon, sky
 
 `rcam.py`: the column-coherent marcher needs no roll and lens-shift tilt, so each frame renders a lens-shift
 SOURCE camera covering the target frustum and warps it (an exact rotation homography) to the TARGET glider
-camera with true pitch and roll. Fire, smoke, cairns and stars are drawn in source space, so they roll with
-the horizon for free. Then depth-based vector motion blur (McGuire 2012 tile/neighbour-max reconstruction,
-126° shutter) in target space. Sparks are streaked through the moving camera: each shutter sample is
-projected with the camera at that instant.
+camera with true pitch and roll. Stars and the pyre are drawn in source space, so they roll with the horizon for
+free. Then depth-based vector motion blur (McGuire 2012 tile/neighbour-max reconstruction, 126° shutter, 27
+taps) in target space. Sparks are streaked through the moving camera: each shutter sample is projected with the
+camera at that instant; the beacons' flames, glows and catch flares are laid down the same way after the blur
+(over half the shutter path: the eye tracks the fires, and a small flame must keep its shape).
 
-`run.py`: flight dynamics. Speed/heading keys → ground track (PCHIP, no stops at keys); altitude =
-terrain-following upper envelope with limited vertical acceleration + 24 m clearance; then a zoom climb.
-Bank = coordinated-turn bank from the turn rate, rolled in 5 frames ahead through a critically damped
-filter. Operator's look = critically damped follow of heading + a clamped lean toward the pyre.
+`run.py` (run_fix): flight dynamics. Speed/heading keys → ground track (PCHIP, no stops at keys); altitude =
+terrain-following upper envelope with limited vertical acceleration + 24 m clearance and a cruise FLOOR: off the
+lip the glider rides the cliff's updraft at 80–100 m over the valley (no dive), 55–68 m/s instead of 92, then
+settles to eye level with the pyre; after the pass a steady climb to ~330 m. Bank = coordinated-turn bank × 0.13,
+fading to × 0.05 (a stabilised head) once the long lens is on. The look: a world-anchored swing right before the
+pass (half the old pan rate) with a lean toward the pyre; after it, a world-anchored pan with the signal (≤26 px
+per frame) and the pitch holding the cloud-sea horizon at 23.5 % of the frame through the zoom. The lens:
+54° until the pyre has gone, eased in to 42° (1590–1614: the great peak, the 1610/1620 fires and the start of
+1620's chain share a frame), then on in to 29° (1632–1666) to stack the ranges for the last beats.
 
-`beacons.py`: the chain. Beats 1540 (foothill summit, 1 km), 1560 (spine summit, 390 m), 1580 THE PYRE,
-1600 (s1's great pointed peak, 7.4 km, the peak the audience saw on the right in s1), 1620/1640/1660
-(islands 4–9 km, alternating); small far ones between (1570–1670, wide; SFX `run_far_*`); from 1620/1640/1660
-the signal races on as chains of links toward the horizon (25→37 km, each link sooner than the last).
-The heroine's beacon (lit 1360) burns on the horizon where s1 showed it.
+`beacons.py`: the chain. Beats 1540 (foothill summit, 1 km), 1560 (spine summit, 430 m), 1580 THE PYRE,
+1600 (s1's great pointed peak, 7.4 km), 1620/1640/1660 (islands 4–9 km, alternating); fillers between (1550–1670,
+SFX `run_far_*`); from 1620/1660 the signal races on as chains of links toward the horizon (9→38 km, each link
+sooner than the last). The heroine's beacon (lit 1360) burns on the horizon where s1 showed it, drawn with s1's
+own far-light recipe so it is the same light across the cut. Every fire (run_fix):
+* a real bonfire at every size (fire2's tongue model, pyre-style tables; tiny far ones are rendered supersampled
+  and area-filtered, so they keep a hot base and a ragged tip instead of becoming dots), sized from its distance
+  and the lens at its beat so a beat's VISIBLE flame is ~26 px (big fires breathe slower: tongue periods ~Hf^0.35);
+* fillers vary ~2.8:1 in size and in brightness (seeded per fire) and flicker each at its own rate;
+* a 2–3 frame gold catch flare shooting up the flame, and the pool of light on the summit flaring with it;
+* a smoke column (puffs thrown up by the catch, then a slower buoyant column leaning downwind) lit orange from
+  below, moonlit grey-blue on its moon side, fogged by its distance;
+* a warm pool of light on the snow out to ~2 fire-heights (point light, also on the cloud tops);
+* seated on its summit as the renderer draws it: positions snapped to the true local summit, then to the top of
+  the terrain eroded by half a march step (thin needles are skipped by the marcher), and dropped by the Earth's
+  curvature as the terrain is — the catalogue's far fires otherwise floated 10–25 px above their peaks.
 
-`fire2.py`: montage's bonfire with the critic's fix. The ramp is orange → yellow → white with no crimson end,
-because a crimson tip over the blue sky reads magenta. The flame body is also partly opaque (soot), so no sky
-shows through the tips. Air glow is yellow-orange and tight. Distant fires are a warm hot point plus a soft
-orange aura.
+`fire2.py`: montage's bonfire with the critic's fix (orange → yellow → white ramp, no crimson end; the flame body
+partly opaque, soot). run_fix adds the rotated emission+opacity sprite (`flame_sprite`), the shutter-sampled
+compositor (`composite_blur`), `tongues_for` and the `Plume` smoke.
 
-The pyre (`render_run.py`): the pyre is a big cairn with an iron basket on the tower 14 m left of the track.
-It ignites at 1580 at 44 m, with the catch one frame before and the whoosh overshoot peaking at 1585. Six tongues
-are separated by dark gaps and lean in a 6 m/s summit gale. The spark fountain streaks through the moving camera,
-the smoke is lit from below, and a 48-unit point light washes the tower. We pass it at 13 m at ~1592, then
-bank left into a climbing turn toward the moon side of the sky.
+`world.py` (run_fix, opt-in via `run_light()` / `CLOUD_RELIEF`): billowed cloud tops (|noise| fBm from 640 m, 60 m)
+shaded by the normal of their larger forms with a tighter wrap; wisps where the mountains meet the cloud;
+firelight on the cloud tops; a haze layer over the cloud sea (each range paler than the last); the far horizon
+ends in haze; snow by FORM: slope from a smooth central difference at the snow scale + convexity (ridges and
+ledges hold snow, gullies go bare), the noise terms cut to a third and sheared by height, and nothing on walls
+steeper than ~65° (a 12 m-scale slope, so faces do not streak). The pyre tower's walls are bare rock (a
+negative-radius row in the platform table).
+
+The pyre (`render_run.py`): a big cairn with an iron basket on the tower 14 m left of the track. It ignites at 1580
+at 42 m, with the catch one frame before and the whoosh overshoot peaking at 1585. Six tongues are separated by
+dark gaps and lean in a 6 m/s summit gale. The spark fountain streaks through the moving camera, the smoke is lit
+from below, and a 48-unit point light washes the tower. We pass it at 14 m at ~1594 (the camera at eye level from
+~1576), then climb away.
 
 ## DAWN_C (`dawn.py`)
 Same world, the morning after, from where the Run ended (camera ≈ (60, 150→170, 480), yaw −19°, hfov 46°, a slow
@@ -138,7 +161,9 @@ disc), shrinking to ~27 px, always in the upper band (never in the text band 251
 ## Re-render / tests
 ```
 python shots/run/render_run.py --frames 1520,1580,1679 --scale 0.4 --out tests/t --procs 3
-python shots/run/render_run.py --range 1520-1679 --procs 3 --skip        # final
+python shots/run/render_run.py --range 1520-1679 --procs 4 --skip        # final
 python shots/run/plan.py                                                  # top-down plan + camera table
-python shots/run/catalog.py && rm shots/run/beacons.npy                   # ONLY to rebuild the chain
+python shots/run/review_sheet.py --before <old frames> --after renders/run_v2 --out review/run_fix_before_after.jpg
+python shots/run/catalog.py && rm shots/run/beacons.npy                   # ONLY to rebuild the chain (never:
+                                                                          # DAWN_C's smoke and the SFX use it)
 ```

@@ -166,21 +166,23 @@ def render(frame, scale=1.0, ss=1.5, mblur=True):
     W, H = int(round(1920 * scale)), int(round(804 * scale))
     tcam = RN.camera(frame, W, H)
     fr = PI.Frame(tcam, ss)
-    B = BC.place()
+    B = BC.chain()
     extra = [[SHEP_FIRE[0], SHEP_FIRE[1], SHEP_FIRE[2], F.FIRE_LIGHT[0], F.FIRE_LIGHT[1], F.FIRE_LIGHT[2],
               7.5 * F.flicker(frame / FPS, 3), 0.5]]
     pl = pyre_light(frame)
     if pl is not None:
         extra.append(pl)
-    LT = BC.lights(frame, B, extra)
-    light = WD.night_light()
-    PL = BC.platforms(B, extra=[[RN.PYRE_XZ[0], RN.PYRE_XZ[1], RN.PYRE_XZ[2], 3.4]])
-    PI.render_terrain(fr, frame, RN.CR, light, LT, PL=PL)
+    LT = BC.lights(frame, B, extra, cam_pos=tcam.pos)
+    light = WD.run_light()
+    PL = BC.platforms(B, extra=[[RN.PYRE_XZ[0], RN.PYRE_XZ[1], RN.PYRE_XZ[2], 3.4],
+                                [RN.PYRE_XZ[0], RN.PYRE_XZ[1] - 3.0, RN.PYRE_XZ[2], -26.0]])
+    PI.render_terrain(fr, frame, RN.CR, light, LT, PL=PL, relief=WD.CLOUD_RELIEF)
     scam = fr.src
     pxs = PI.src_scale(fr)
     mask = (fr.dist > 1e8).astype(np.float32)
     SK.splat_stars(fr.img, scam, _stars(), mask, t=frame / FPS, gain=ss * ss, scale=pxs)
-    BC.draw_source(fr.img, fr.zb, scam, frame, B, pxs)
+    Lk, amb, S, fogp, Q = light
+    BC.draw_source(fr.img, fr.zb, scam, frame, B, pxs, fogp, WD.MOON_DIR, amb, Q)
     draw_pyre_source(fr.img, fr.zb, scam, frame, pxs, WD.MOON_DIR)
     img, zb, di = PI.to_target(fr)
     # target-space view depth from the Euclidean distance
@@ -190,7 +192,8 @@ def render(frame, scale=1.0, ss=1.5, mblur=True):
     zt[di > 1e8] = 1e9
     if mblur:
         V = RC.velocity(lambda f: RN.camera(f, W, H), frame, tcam, di, shutter=SHUTTER)
-        img = RC.motion_blur(img, V, zt, max_r=int(40 * scale) + 8)
+        img = RC.motion_blur(img, V, zt, max_r=int(40 * scale) + 8, nsamp=27)
+    BC.draw_fx_target(img, zt, frame, W, H, B, fogp, WD.MOON_DIR, amb, Q, shutter=SHUTTER if mblur else 0.0)
     size, _, _ = BC.env(frame, PYRE_IGN)
     if size > 0:
         draw_sparks_target(img, zt, _pyre_sparks(), frame, W, H)
@@ -239,7 +242,7 @@ def main():
         frames = list(range(int(s), int(e) + 1, a.step))
     if a.skip:
         frames = [f for f in frames if not os.path.exists(look.frame_path(out, f))]
-    BC.place()          # build the chain once (cached to beacons.npy) before forking
+    BC.place()          # the chain (beacons.npy, never regenerated here)
     t0 = time.time()
     if a.procs <= 1:
         times = work((frames, a.scale, out, a.threads, a.ss))

@@ -1,16 +1,20 @@
 """THE BEACON RUN (v2 frames 1520-1679, all cuts).
 
-Hard cut from the shepherd's beacon: the camera leaps off his summit and runs low over the foothill
+Hard cut from the shepherd's beacon: the camera leaps off his summit and glides out over the foothill
 range that falls from it (s1's ridged range at a smaller scale, held under s1's summit-lip sight line so
-s1 never saw it), terrain-following like a heavy glider -- over crests, through cols -- while beacons
+s1 never saw it), riding the updraft off the cliff rather than diving into the valley, while beacons
 flare on the beats on summits around and ahead. At 1580 a great pyre on a tower beside the track
-ignites 75 m ahead; we sweep past it at eye level (1600) through its sparks, then pull up and rise to
-reveal the chain racing away across the islands of the cloud sea to the horizon.
+ignites 40 m ahead; we sweep past it at eye level (~1594) through its sparks, then climb away while the
+operator eases in (54 -> 42 degrees) as the great peak catches at 1600, pans with the signal as it leaps to
+1620 and races away, and zooms on in (-> 29 degrees) to stack the ranges for the last beats and the chains
+running to the horizon.
 
 Camera = flight dynamics: horizontal speed / heading keys integrated into a ground track; altitude = a
-terrain-following upper envelope (limited vertical acceleration) + clearance, then a zoom climb; bank from
-the turn rate (coordinated turn, scaled for a camera mount); the operator's look is a lagged (critically
-damped) blend of the flight direction and what he is framing (the pyre).
+terrain-following upper envelope (limited vertical acceleration) + clearance and a cruise floor, then a
+climb; bank from the turn rate (coordinated turn, scaled for a camera mount, stabilised to level once the
+long lens is on); the operator's look is a lagged (critically damped) blend of the flight direction and
+what he is framing: the pyre before the pass, then a world-anchored pan across the beats with the horizon
+held at a fixed screen height through the zoom.
 """
 import math
 import os
@@ -30,15 +34,19 @@ FPS = 24.0
 G = 9.81
 
 # ------------------------------------------------------------------ flight ---
-SPEED = [(1500, 40.0), (1520, 42.0), (1550, 92.0), (1590, 86.0), (1606, 84.0), (1640, 80.0), (1665, 66.0),
-         (1679, 58.0), (1700, 54.0)]                            # horizontal speed (m/s)
-HEADING = [(1500, 8.0), (1522, 8.0), (1552, 28.0), (1581, 28.0), (1626, -10.0), (1679, -19.0), (1700, -20.0)]
+SPEED = [(1500, 40.0), (1520, 42.0), (1540, 55.0), (1560, 60.0), (1580, 67.0), (1594, 68.0), (1606, 58.0),
+         (1626, 47.0), (1650, 41.0), (1679, 37.0), (1700, 35.0)]              # horizontal speed (m/s)
+HEADING = [(1500, 8.0), (1522, 8.0), (1552, 28.0), (1583, 28.0), (1608, 19.0), (1636, 9.0), (1679, 4.0),
+           (1700, 3.0)]
 P0 = np.array([1.5, 3.5, 20.5])          # at START: just over the shepherd's summit lip
 CLEAR = 24.0                             # metres above the terrain envelope under the track
 A_DOWN = 20.0                            # m/s^2 the camera may fall away after a crest
 A_UP = 11.0                              # m/s^2 it may pull up ahead of a crest
-CLIMB0 = 1592.0                          # the zoom climb begins
-CLIMB = [(1592, 0.0), (1604, 16.0), (1618, 44.0), (1652, 44.0), (1668, 30.0), (1679, 22.0), (1700, 18.0)]
+# cruise floor before the pass: off the lip the glider rides the cliff's updraft instead of diving into the
+# valley (80-100 m over the valley floor), then settles to eye level with the pyre
+FLOOR = [(1500, 4.6), (1520, 4.6), (1532, 7.5), (1550, 11.5), (1558, 11.5), (1575, 5.0), (1600, 4.5)]
+CLIMB0 = 1594.0                          # the climb begins (just after the pass)
+VZ = [(1594, 0.0), (1602, 26.0), (1614, 88.0), (1636, 125.0), (1656, 112.0), (1679, 84.0), (1700, 76.0)]
 
 
 _PCH = {}
@@ -94,7 +102,8 @@ def _fly(CRx):
     i0 = int(round((START - 1500.0) / 0.125))
     lip = P0[1] - 0.5 * A_DOWN * np.maximum(t - t[i0], 0.0) ** 2 - 4.0 * np.maximum(t - t[i0], 0.0)
     lip[:i0] = P0[1]
-    y = np.maximum(env, lip)
+    floor = np.array([pch(f, FLOOR) for f in fs])
+    y = np.maximum(np.maximum(env, lip), floor)
     k = np.exp(-0.5 * (np.arange(-24, 25) / 8.0) ** 2)
     k /= k.sum()
     y = np.convolve(np.pad(y, 24, mode='edge'), k, mode='same')[24:-24]
@@ -102,9 +111,7 @@ def _fly(CRx):
     ic = int(round((CLIMB0 - 1500.0) / 0.125))
     yc = y.copy()
     for i in range(ic + 1, len(fs)):
-        s_ = pch(fs[i] - 0.0625, SPEED)
-        g = math.radians(pch(fs[i] - 0.0625, CLIMB))
-        yc[i] = yc[i - 1] + s_ * math.tan(g) * 0.125 / FPS
+        yc[i] = yc[i - 1] + pch(fs[i] - 0.0625, VZ) * 0.125 / FPS
     w = np.array([smoother((f - CLIMB0) / 12.0) for f in fs])
     y = np.maximum(y * (1 - w) + yc * w, np.where(fs >= CLIMB0, yc, y))
     return fs, np.stack([xz[:, 0], y, xz[:, 1]], 1), H
@@ -118,11 +125,16 @@ def path(frame):
     return np.array([np.interp(frame, fs, pos[:, k]) for k in range(3)])
 
 
+# bank = coordinated-turn bank x this factor: a glider feel before the pass, a stabilised (gimbal) head once
+# the long lens is on
+BANK_K = [(1500, 0.13), (1590, 0.13), (1612, 0.05), (1700, 0.05)]
+
+
 def _bank_target(frame):
     h = 0.5
     dpsi = math.radians(heading(frame + h) - heading(frame - h)) / (2 * h / FPS)
     v = pch(frame, SPEED)
-    return 0.22 * math.degrees(math.atan(v * dpsi / G))
+    return pch(frame, BANK_K) * math.degrees(math.atan(v * dpsi / G))
 
 
 _BANK = None
@@ -156,7 +168,7 @@ def _left(frame):
 
 
 # ------------------------------------------------------------------ the set ---
-PYRE_PASS = 1592.0                        # closest approach
+PYRE_PASS = 1594.0                        # closest approach
 PYRE_LAT = 14.0                           # metres to the left of the track at the pass
 PYRE_BELOW = 4.5                          # the pyre summit sits this far below the eye at the pass
 PYRE_RAISE = 0.0                         # extra height given to the chosen summit (narrow)
@@ -171,29 +183,6 @@ def _range(pyre_xz=(0.0, 0.0), boost=0.0):
 def _fwd(frame):
     h = math.radians(heading(frame))
     return np.array([math.sin(h), 0.0, math.cos(h)])
-
-
-def _pick_pyre(CR0):
-    """The most prominent natural summit 20-40 m beside the track around the pass (left preferred), not far
-    below the eye line."""
-    best = None
-    for f in np.arange(1598.0, 1609.0, 2.0):
-        c = path(f)
-        for side in (1.0,):
-            for lat in (14.0, 18.0, 22.0, 26.0, 30.0):
-                q = c + _left(f) * lat * side
-                sm = WD.summit_near(q[0], q[2], CR0, rad=9.0, n=11)
-                ring = np.mean([WD.ground(sm[0] + 16.0 * math.cos(a), sm[2] + 16.0 * math.sin(a), CR0)
-                                for a in np.linspace(0, 2 * math.pi, 9)[:-1]])
-                prom = sm[1] - ring
-                dxz = math.hypot(sm[0] - c[0], sm[2] - c[2])
-                if dxz < 12.0 or dxz > 32.0:
-                    continue
-                score = prom + (10.0 if side > 0 else 0.0) - 0.35 * abs(sm[1] - (c[1] - PYRE_BELOW)) \
-                    - 0.4 * abs(f - PYRE_PASS)
-                if best is None or score > best[0]:
-                    best = (score, sm, f, side, prom)
-    return best
 
 
 def build_set():
@@ -217,21 +206,73 @@ CR, PYRE_XZ, PYRE_INFO = build_set()
 
 
 # ------------------------------------------------------------------ the look ---
-LOOK_YAW = [(1500, 0.0), (1530, -2.0), (1560, -3.0), (1600, -6.0), (1640, -4.0), (1700, -3.0)]
+# before the pass: a steady world-anchored swing right with the turn (half the old peak pan rate, so the
+# first beacons are not smeared), leaning toward the pyre as it comes up (its bearing blended in)
+PRE_YAW = [(1500, 8.0), (1510, 7.35), (1520, 6.7), (1528, 8.6), (1540, 12.6), (1552, 16.3), (1564, 19.6),
+           (1574, 21.8), (1584, 22.8), (1600, 23.0), (1700, 23.0)]
 PYRE_W = [(1500, 0.0), (1562, 0.0), (1578, 0.40), (1586, 0.50), (1608, 0.0), (1700, 0.0)]   # lean toward the pyre
 LOOK_PITCH = [(1500, -6.0), (1520, -6.0), (1540, -7.0), (1565, -4.5), (1585, -2.0), (1600, -1.5), (1625, -4.5),
               (1679, -9.5), (1700, -9.5)]
-HFOV = 54.0
+# after the pass: a world-anchored pan with the signal (each beat lands on its SFX side: 1600 right, 1620
+# left of centre, 1640 right, 1660 just left of centre, the chains racing away on the left)
+WORLD_YAW = [(1500, 9.5), (1588, 9.5), (1596, 6.2), (1604, 1.8), (1614, -3.2), (1624, -7.8), (1634, -11.4),
+             (1644, -14.2), (1654, -16.6), (1666, -18.6), (1679, -20.0), (1700, -21.0)]
+POST_W = [(1500, 0.0), (1588, 0.0), (1600, 1.0), (1700, 1.0)]                   # blend pre -> post look
+PITCH_W = [(1500, 0.0), (1586, 0.0), (1614, 1.0), (1700, 1.0)]                  # the tilt down, unhurried
+HORIZON_Y = 0.235                        # post-pass: the sea-of-cloud horizon held at this fraction of height
+# the lens: 54 degrees until the pyre has gone by; then the operator eases in to 42 (the great peak, the 1620
+# beacon and the start of its chain share one frame: the signal spreading across the range), and once the
+# chain has raced away he zooms on in to 29 degrees, stacking the ranges to the horizon for the last beats.
+# Each stage: a brisk start and a long gentle landing, in log focal length.
+HFOV0, HFOVM, HFOV1 = 54.0, 42.0, 29.0
+ZOOM1 = (1590.0, 1597.0, 1614.0)         # start, peak rate, end
+ZOOM2 = (1632.0, 1642.0, 1666.0)
+
+
+def _f_of(hfov, W=1920):
+    return 0.5 * W / math.tan(math.radians(hfov) * 0.5)
+
+
+_ZOOM = {}
+
+
+def _ramp(frame, z):
+    """0..1: velocity ramps up linearly to the peak, then eases to 0 with a quadratic landing (C1)."""
+    if z not in _ZOOM:
+        a, p, b = z
+        fs = np.linspace(a, b, 2001)
+        v = np.where(fs < p, (fs - a) / (p - a), (1.0 - (fs - p) / (b - p)) ** 2)
+        c = np.concatenate([[0.0], np.cumsum(0.5 * (v[1:] + v[:-1]) * np.diff(fs))])
+        _ZOOM[z] = (fs, c / c[-1])
+    fs, c = _ZOOM[z]
+    return float(np.interp(frame, fs, c))
+
+
+def hfov(frame):
+    f0, fm, f1 = _f_of(HFOV0), _f_of(HFOVM), _f_of(HFOV1)
+    lf = math.log(f0) + math.log(fm / f0) * _ramp(frame, ZOOM1) + math.log(f1 / fm) * _ramp(frame, ZOOM2)
+    return math.degrees(2.0 * math.atan(960.0 / math.exp(lf)))
+
+
+def _horizon_pitch(frame, p):
+    """Pitch that puts the cloud-sea horizon at HORIZON_Y of the frame height for the current lens."""
+    f = _f_of(hfov(frame))
+    dip = math.degrees(math.sqrt(2.0 * max(p[1] - WD.CLOUD_Y, 1.0) / WD.R_EARTH))
+    return -(math.degrees(math.atan((0.5 - HORIZON_Y) * 804.0 / f)) + dip)
 
 
 def _target_look(frame):
-    hd = heading(frame)
     p = path(frame)
     b = math.degrees(math.atan2(PYRE_XZ[0] - p[0], PYRE_XZ[2] - p[2]))
-    rel = (b - hd + 180.0) % 360.0 - 180.0
+    y0 = pch(frame, PRE_YAW)
+    rel = (b - y0 + 180.0) % 360.0 - 180.0
     rel = 34.0 * math.tanh(rel / 34.0)          # never chase it past the frame edge
-    yaw = hd + pch(frame, LOOK_YAW) + pch(frame, PYRE_W) * rel
-    pitch = pch(frame, LOOK_PITCH)
+    yaw_pre = y0 + pch(frame, PYRE_W) * rel
+    pitch_pre = pch(frame, LOOK_PITCH)
+    w = smoother(pch(frame, POST_W))
+    yaw = yaw_pre * (1 - w) + pch(frame, WORLD_YAW) * w
+    wp = smoother(pch(frame, PITCH_W))
+    pitch = pitch_pre * (1 - wp) + _horizon_pitch(frame, p) * wp
     return yaw, pitch
 
 
@@ -271,4 +312,4 @@ def camera(frame, W=1920, H=804):
     pos = path(frame)
     yaw, pitch = look(frame)
     roll = bank(frame)
-    return RC.RCam(pos, yaw, pitch, roll, HFOV, W, H)
+    return RC.RCam(pos, yaw, pitch, roll, hfov(frame), W, H)

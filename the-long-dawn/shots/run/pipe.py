@@ -36,10 +36,10 @@ class Frame:
         self.dist = None
 
 
-def render_terrain(fr, frame, CR, light, LT, dmax=90000.0, PL=None):
+def render_terrain(fr, frame, CR, light, LT, dmax=90000.0, PL=None, relief=0.0):
     scam = fr.src
     C = scam.params()
-    P = np.array([scam.pos[0], scam.pos[2], ftime(frame), 0.0])
+    P = np.array([scam.pos[0], scam.pos[2], ftime(frame), float(relief)])
     D = np.zeros((scam.H, scam.W))
     WD.march(P, CR, C, 0.2, dmax, 0.0035, 0.35, 700.0, 9, D)
     Lk, amb, S, fogp, Q = light
