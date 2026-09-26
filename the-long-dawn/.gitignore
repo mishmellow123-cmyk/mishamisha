@@ -8,3 +8,5 @@ edit/cache/
 music/out/*.wav
 out/draft*.mp4
 out/stills/
+shots/hills/cache/
+out/*_baseline.mp4

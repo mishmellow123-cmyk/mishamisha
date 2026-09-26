@@ -23,8 +23,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 CACHE = os.path.join(ROOT, 'renders', 'accord', 'cache')
 CINZEL = os.path.join(ROOT, 'assets', 'fonts', 'Cinzel.ttf')
-NOTO = '/usr/share/fonts/truetype/noto/'
-NOTO_CJK = '/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc'
+_SYSFONTS = os.environ.get('LONGDAWN_SYSFONTS', '/usr/share/fonts')   # override where Noto lives (e.g. macOS)
+NOTO = _SYSFONTS + '/truetype/noto/'
+NOTO_CJK = _SYSFONTS + '/opentype/noto/NotoSerifCJK-Bold.ttc'
 
 # ------------------------------------------------------------------ layout ---
 TEX_N = 4096

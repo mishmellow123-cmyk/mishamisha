@@ -20,7 +20,8 @@ python3 render.py 960-1039 --scale 0.5 --out ../../renders/embers/tests/x   # ha
 * The only cache is `renders/embers/cache/glyphs.npz` (the glyph atlas). It is rebuilt
   automatically if missing, in about 3 s.
 * Cost per full-res frame on one thread: about 3 s for glyphs, fire, towers and race, about 1 s for the
-  globe, about 7.5 s for the grasp (hand plus occlusion layer) and about 1 s for the silence. The whole
+  globe, about 8–15 s for the grasp (hand surface projection, crust, cracks, rim and occlusion layers; the first grasp
+  frame in a process also builds the hand, about 40–60 s) and about 1 s for the silence. The whole
   900 frames take about 25 min on two workers. Peak RAM is under 0.8 GB per worker.
 
 ## Files
@@ -32,7 +33,7 @@ python3 render.py 960-1039 --scale 0.5 --out ../../renders/embers/tests/x   # ha
 | `scene_a.py` | 300–480: torch embers slowing into letters, the glyph cloud with 8 choreographed hero passes, the spiral "galaxy of writing", the point. |
 | `towers.py` | 8 procedural towers (needle spire, stepped ziggurat, lattice mast, ringed cylinder, twisted prism, pagoda with flared eaves, pod tower, curved blade). |
 | `scene_b.py` | 480–880 and the backdrop for 960–1040. It holds the thinking fire (toroidal flow in a teardrop, gold tongues, spark column, white core, 18-root neural filament tree with travelling pulses), the ignition shockwave, towers with fire lighting and beat surges, sparks, radial red walls, smoke, dust, crown ring with tines, and the vortex (the fire's filaments stretched across the storm). |
-| `scene_c.py` | 880–960 ember globe (Natural Earth 110m land, coastlines, Voronoi plate cracks, fire spill, plates parting, molten seams). 960–1040 hand rig: palm with thenar/hypothenar pads, knuckle ridge and tendons, 4 fingers × 3 tapered phalanges with spherical joints, a 3-segment opposing thumb and a forearm, posed by FK. 1040+ the last ember. |
+| `scene_c.py` | 880–960 ember globe (Natural Earth 110m land, coastlines, Voronoi plate cracks, fire spill, plates parting, molten seams). 960–1040 the hand: ONE closed surface, a signed distance field made of 40 tapered bones in smooth union (carpus, 4 metacarpals fanning to the knuckle line, fingers with knuckle bulges, a thumb whose metacarpal melts into the palm as the thenar mass, radius/ulna/muscle belly), posed by FK. Points ride their bones and are Newton-projected onto the union each frame (numba); a softmin ownership weight (partition of unity over bones) removes doubled layers at joints. Shading: camera-facing points only, cosine-weighted (no limb brightening), near-black crust, a static Worley crack network on the rest-pose skin (coal bed, hottest at the knuckles, heat pulses up the arm, surges as it clenches), burning rim + cold crown rim on their own layer, embers shed off the edges. 1040+ the last ember. |
 | `timeline.py` | the element schedule, cameras, render options and post (torch glow, hand occlusion composite, flash). |
 | `render.py` / `render_all.sh` | driver. |
 
@@ -58,8 +59,10 @@ python3 render.py 960-1039 --scale 0.5 --out ../../renders/embers/tests/x   # ha
 * 880–960: a hard cut on the beat to the ember globe. Cracks of fire spread from five scattered origins
   (deliberately not pointing at any one region), the plates part, and it flares out at 950–959.
 * 960–1040: a hard cut on the downbeat. The colossal ember hand rises from below the storm's eye,
-  back of the hand to camera and backlit, with cold rim light from the crown and sparks shedding. The fingers spread to reach,
-  close slowly from 1015, then decisively from 1025, shut at 1036. A white-red flash ramps over 1036–1039.
+  back of the hand to camera, a dark coal-bed mass with fire in its cracks and burning edges, backlit by the eye, embers
+  streaming up off its edges. The fingers spread to reach, close slowly from 1015, then decisively from 1025, shut at 1036;
+  while it closes the hand turns toward its thumb side so the fingers' curl and the thumb wrapping across them read in
+  3/4 profile (a fist, not a mitten). A white-red flash ramps over 1036–1039.
 * 1040: black. One ember drifts down in the upper middle, dims, gives a last flicker and dies at about 1150,
   leaving a faint wisp. Pure black to 1199. The lower third is never touched.
 
@@ -74,7 +77,10 @@ python3 render.py 960-1039 --scale 0.5 --out ../../renders/embers/tests/x   # ha
 * **Text band:** besides composition, particles in y≈560–700 are softly attenuated (up to 62%)
   during each text window (T3–T8), a screen-space cheat.
 * **Hand occlusion:** additive embers can't hide what's behind them, so the hand is rendered into its own
-  layer and its point coverage builds an alpha that occludes the world behind it. This is what makes it read
-  as a solid backlit silhouette.
+  layer and its point coverage (area-weighted, front faces, no fog) builds an alpha that occludes 98.5% of the
+  world behind it. This is what makes it read as a solid backlit silhouette.
+* **Hand rim light:** rims are splatted into a separate layer and, in post, kept only near the OUTER silhouette
+  (blurred coverage < 1), because a backlight cannot reach the edge of a finger lying in front of the palm. This
+  keeps a curled finger seen end-on from drawing a lit ring.
 * **Inverse-square falloff** on point energy (reference distance per element): distant particles
   dim physically, while extended objects keep their surface brightness.

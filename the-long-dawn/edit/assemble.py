@@ -26,7 +26,7 @@ import titles    # noqa: E402
 cv2.setNumThreads(1)
 W, H = look.W, look.H
 OUT_W, OUT_H = 1920, 1080
-TOTAL = 2808                       # 117.0 s
+TOTAL = titles.END_TAG if titles.TAGLINE else 2808   # 117.0 s of picture (+2 s end card on black)
 BAR_TOP = (OUT_H - H) // 2         # 138
 LINES = titles.story_lines()
 
@@ -65,6 +65,8 @@ def exposure(img, stops):
 # --------------------------------------------------------------- the cut ---
 
 def picture(f):
+    if f >= 2806:                                 # end card: black (text is added on top)
+        return np.zeros((H, W, 3), np.float32)
     if f < 300:
         img = load('hills', f)
     elif f < 340:                                  # push into the torch -> the fire's visions
@@ -168,7 +170,7 @@ def render(out_path, start, end, draft=False, audio=None, workers=2, grain=0.022
                 '-bufsize', str(int(maxrate.rstrip('k')) * 2) + 'k', '-tune', 'grain',
                 '-profile:v', 'high', '-level', '4.1']
     if audio and os.path.exists(audio):
-        cmd += ['-c:a', 'aac', '-b:a', '256k', '-ar', '48000', '-shortest']
+        cmd += ['-af', 'apad', '-c:a', 'aac', '-b:a', '256k', '-ar', '48000', '-shortest']   # pad: picture may outrun the 117 s mix
     cmd += ['-movflags', '+faststart', out_path]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     jobs = [(f, draft, grain) for f in range(start, end)]

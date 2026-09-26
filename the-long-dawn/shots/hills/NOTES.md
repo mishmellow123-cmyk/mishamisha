@@ -41,8 +41,15 @@ because numba's disk cache does not track cross-module inlining.
 * `land.py` + `hillworld.py`: 8 ridge "cards" at real distances (480 m–56 km), each
   defined by the apparent angle of its crest. They have trees, analytic anti-aliased
   edges, aerial perspective, noise-varied valley mist, beacon glow on the hills and a
-  depth buffer. A moonlit-snow shading mode (pyramid peaks, lit and shadow faces, a
-  crest-hugging cloud sea) is used for the Himalaya.
+  depth buffer. (Their moonlit-snow pyramid mode is no longer used; see `peaks.py`.)
+* `peaks.py` (FIRST BEACON only, imported by `beacon.py` alone; `TRUE_PEAKS` flag): a real 3-D
+  moonlit Himalaya. Ridged-multifractal range on a polar grid (azimuth x log-range, so each
+  cell is about a pixel at any distance, octaves prefiltered by footprint), Earth curvature,
+  a cloud-sea top surface that thins where peaks pierce it, precomputed soft moon shadows,
+  snow/rock by slope, exponential height haze toward the sky's horizon colour, and a 10 cm
+  summit grid (flat top for the cairn, serrated rocky arete, calm snow face under T9).
+  Column-coherent per-pixel ray march, 1.3x supersampled at full res. The grids are cached in
+  `shots/hills/cache/beacon_peaks_v7.npz`; delete it after changing a height function.
 * `puppet.py` + `characters.py`: 2-D SDF puppets on camera-facing cards: smooth-union
   capsules, ellipses and polygon profiles, two-bone IK, and verlet scarf, hair and wisps.
   **Backlit-silhouette shading** gives near-black interiors, a thin cool rim from the sky
@@ -97,9 +104,9 @@ because numba's disk cache does not track cross-module inlining.
 * **The orbital ring is placed for the picture, not exact astronomy.** Its sky path is
   physical: an equatorial ring at 2.6 Earth radii seen from 57°N. The Earth-shadow cut is
   placed where it reads in frame.
-* **FIRST BEACON uses 2.5-D cards, as the director allowed.** The mountains are pyramid
-  ridge cards with moonlit and shadowed faces, not a true heightfield. The look is stylised
-  and graphic, like a woodcut.
+* **FIRST BEACON's reveal is now a true heightfield** (`peaks.py`, Sep 2026), replacing the
+  pyramid ridge cards, which read as stage flats. Only 1360-1439 were re-rendered; before 1360
+  the range sits at 3% behind the close-up's defocus, so the join is invisible.
 * **Cairn scale.** The cairn is 0.76 m, with the basket rim at about 1.12 m, so the Child
   can reach it.
 * **Frame edges.** INTRO starts at full exposure; the edit handles the fade-in. The CODA

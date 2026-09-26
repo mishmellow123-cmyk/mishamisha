@@ -110,8 +110,10 @@ class Timeline:
             from core import Frame
             ctx.fr_hand = Frame(ctx.scale)
             ctx.fr_cov = Frame(ctx.scale)
-            ctx.fr_hand.prm[:] = ctx.fr.prm
-            ctx.fr_cov.prm[:] = ctx.fr.prm
+            ctx.fr_rim = Frame(ctx.scale)
+            for fr_ in (ctx.fr_hand, ctx.fr_cov, ctx.fr_rim):
+                fr_.prm[:] = ctx.fr.prm
+                fr_.prm[6] = 1e9      # the hand keeps its own radiance and a solid silhouette: no depth fog
             self.hand.emit(ctx, ctx.fr_hand, ctx.fr_cov)
         if t >= 1040:
             self.ember.emit(ctx)
@@ -132,7 +134,11 @@ class Timeline:
             cov = ctx.fr_cov.resolve()[..., 0]
             cov = cv2.GaussianBlur(cov, (0, 0), 1.5 * ctx.scale + 0.5)
             alpha = 1.0 - np.exp(-cov * 1.2)
-            hdr = hdr * (1.0 - 0.93 * alpha[..., None]) + ctx.fr_hand.resolve()
+            hdr = hdr * (1.0 - 0.985 * alpha[..., None]) + ctx.fr_hand.resolve()
+            # rim light survives only near the outer silhouette (blurred coverage < 1 there)
+            ab = cv2.GaussianBlur(alpha, (0, 0), 7.0 * ctx.scale)
+            outer = np.clip((1.0 - ab) * 2.4, 0.0, 1.0)
+            hdr += ctx.fr_rim.resolve() * (0.18 + 0.82 * outer)[..., None]
         if 1035 <= f < 1040:
             # white-red flash as the fingers close (1036-1039)
             k = {1035: 0.03, 1036: 0.14, 1037: 0.38, 1038: 0.7, 1039: 1.0}[int(f)]

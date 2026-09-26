@@ -1,0 +1,14 @@
+{
+ "race": {
+  "file": "reinforce_race.wav",
+  "frame": 640,
+  "downbeat_index": 12000,
+  "hash": "0d0541d75523a39b"
+ },
+ "dawn": {
+  "file": "reinforce_dawn.wav",
+  "frame": 2240,
+  "downbeat_index": 12000,
+  "hash": "980440dfb38e5e7a"
+ }
+}

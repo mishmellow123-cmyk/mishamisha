@@ -15,8 +15,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from fontTools.ttLib import TTFont, TTCollection
 
-N = '/usr/share/fonts/truetype/noto/'
-NO = '/usr/share/fonts/opentype/noto/'
+_SYSFONTS = os.environ.get('LONGDAWN_SYSFONTS', '/usr/share/fonts')   # override where Noto lives (e.g. macOS)
+N = _SYSFONTS + '/truetype/noto/'
+NO = _SYSFONTS + '/opentype/noto/'
 A = os.path.join(os.path.dirname(__file__), '..', '..', 'assets', 'fonts') + '/'
 
 CJK = (NO + 'NotoSerifCJK-Regular.ttc', 2)      # SC

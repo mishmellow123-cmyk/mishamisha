@@ -1,6 +1,6 @@
 # THE LONG DAWN
 
-*A short film, about two minutes long, made entirely in code.*
+*A short film, just under two minutes long, made entirely in code.*
 
 > *Why do we light the fires?*
 > *To remember the night the whole world answered.*
@@ -95,10 +95,31 @@ locked to one grid: 24 fps and 72 BPM, so one beat is exactly 20 frames.
 * VSCO-2 Community Edition orchestral samples (CC0)
 * Fonts: Cinzel, Cormorant Garamond, EB Garamond (SIL OFL); Noto (SIL OFL)
 
+### Finishing pass
+
+The departments rendered in a 4-core cloud container and handed their frames over as clips
+(`handoff/`); the film was finished in a second session on a laptop, which also fixed the
+weakest moments:
+
+* **GRASP** (960–1039): the ember hand rebuilt as one blended hand of cracked, burning crust
+  that turns and closes into a fist (`shots/embers/scene_c.py`, `timeline.py`).
+* **FIRST BEACON** reveal (1360–1439): a true 3-D range of moonlit peaks instead of ridge
+  cards (`shots/hills/peaks.py`, switched by `TRUE_PEAKS` in `beacon.py`).
+* **ICE** (1580–1639): the aurora rebuilt as three alias-free curtains over a starry sky,
+  with a moonlit massif and a true mirror in the fjord (`shots/montage/s3_ice.py`).
+* **SEA** (1720–1767): the bow flare made the hero light of the shot; the coast beacons
+  re-spaced so the chain reads left to right into the globe (`shots/montage/s6_sea.py`).
+* **Sound** (`edit/mix.py`): restores the score's designed breaths (before 640, 1040 and
+  2240), reinforces the RACE entrance and the DAWN arrival with the score's own instruments,
+  lifts two ignitions the music masked, and masters to −16 LUFS / −1.2 dBTP.
+* **Titles**: story lines at 56 px for phone legibility; the last line, *The Kindling is
+  now.*, stands alone on black after the final chord, so the film runs 119 s.
+
 ### Re-render
 
 ```bash
 # each department: see shots/<dept>/NOTES.md and music/NOTES.md
-python3 edit/mix.py                 # re-mix score + effects, master to -16 LUFS
-python3 edit/assemble.py            # cut, titles, finish, encode -> out/the_long_dawn.mp4
+# (on macOS point LONGDAWN_SYSFONTS at a folder with truetype/noto + opentype/noto)
+python3 edit/mix.py                                          # -> music/out/final_mix.wav
+python3 edit/assemble.py --audio music/out/final_mix.wav     # -> out/the_long_dawn.mp4
 ```

@@ -17,6 +17,7 @@ import fire
 from core import Camera, fbm1_np, fnoise1, look, over, over_region, smoothstep, track, splat_gauss
 from hillscene import make_wind_fn, wind_at
 from land import Ridge, make_profile, pack_ridges, render_ridges
+import peaks
 from puppet import Chain, Figure
 from sky import Sky, dir_from_az_el, render_full_sky
 
@@ -32,6 +33,10 @@ FIRE_BASE = np.array([0.0, CAIRN.bk_bot + 0.10, 0.0])
 TINDER = np.array([0.20, CAIRN.bk_top - 0.03, -0.02])
 
 MOON = np.array([0.55, 0.70, 0.95]) * 0.55          # moonlight on snow (linear)
+# True 3-D moonlit range + rocky summit for the reveal (peaks.py). False = the old pyramid
+# ridge cards + blob summit (land.py). Only this shot uses peaks.py.
+TRUE_PEAKS = True
+
 FOG = np.array([1.0 / 60000.0, 1.0 / 900.0, -1500.0, 260.0, 0.6, math.radians(3.0), 0.9,
                 30.0, 1.0 / 60.0, MOON[0], MOON[1], MOON[2], 1.0], np.float64)
 
@@ -299,27 +304,39 @@ class FirstBeacon:
         sk = self.sky
         img = render_full_sky(cam, sk, t, mw_col=np.array([0.80, 0.86, 1.0]) * 0.07) * (0.25 + 0.75 * reveal)
         fog = FOG.copy()
-        rs, meta, hs = self.far
-        rgbp = np.zeros_like(img)
-        a = np.zeros(img.shape[:2], np.float32)
-        dep = np.full(img.shape[:2], 1e9, np.float32)
-        render_ridges(rgbp, a, dep, cam.params(), meta, hs, sk.packed(), fog, np.zeros((0, 8)), np.zeros(1), 1.0, t)
-        over(img, rgbp * reveal, a)
-        # summit snow (+ warm pool from the fire)
-        pool = []
-        if lv > 0 and f >= ROAR:
-            I = min(lv, 2.5) * flick
-            pool.append([FIRE_BASE[0], 0.0, 0.02, 1.7, 0.06 * I, 0.026 * I, 0.008 * I, 0])
-        elif lv > 0:
-            pool.append([TINDER[0], 0.0, 0.02, 0.8, 0.02 * lv, 0.009 * lv, 0.003 * lv, 0])
-        rs2, meta2, hs2 = self.summit
-        srgb = np.zeros_like(img)
-        sa = np.zeros(img.shape[:2], np.float32)
-        sd = np.full(img.shape[:2], 1e9, np.float32)
-        render_ridges(srgb, sa, sd, cam.params(), meta2, hs2, sk.packed(), fog,
-                      np.array(pool, np.float64).reshape(-1, 8), np.zeros(1), 1.0, t)
-        # the summit keeps a little moonlight even in the close-up (dim), full after reveal
-        over(img, srgb * (0.15 + 0.85 * reveal), sa)
+        if TRUE_PEAKS:
+            # one ray-marched pass: far range + cloud sea (x reveal) and the summit (dim in the
+            # close-up, full after the reveal), with the fire's warm pool on the summit snow
+            fl = []
+            if lv > 0 and f >= ROAR:
+                I = min(lv, 2.5) * flick
+                fl.append([FIRE_BASE[0], FIRE_BASE[1] + 0.45, FIRE_BASE[2] - 0.05, 0.11 * I, 0.047 * I, 0.014 * I, 1.5, 0])
+            elif lv > 0:
+                fl.append([TINDER[0], TINDER[1], TINDER[2] - 0.05, 0.035 * lv, 0.015 * lv, 0.005 * lv, 0.7, 0])
+            trgb, ta = peaks.render(cam, sk.packed(), t, fl, reveal, 0.15 + 0.85 * reveal, ss=(2 if scale < 0.75 else 1.3))
+            over(img, trgb, ta)
+        else:
+            rs, meta, hs = self.far
+            rgbp = np.zeros_like(img)
+            a = np.zeros(img.shape[:2], np.float32)
+            dep = np.full(img.shape[:2], 1e9, np.float32)
+            render_ridges(rgbp, a, dep, cam.params(), meta, hs, sk.packed(), fog, np.zeros((0, 8)), np.zeros(1), 1.0, t)
+            over(img, rgbp * reveal, a)
+            # summit snow (+ warm pool from the fire)
+            pool = []
+            if lv > 0 and f >= ROAR:
+                I = min(lv, 2.5) * flick
+                pool.append([FIRE_BASE[0], 0.0, 0.02, 1.7, 0.06 * I, 0.026 * I, 0.008 * I, 0])
+            elif lv > 0:
+                pool.append([TINDER[0], 0.0, 0.02, 0.8, 0.02 * lv, 0.009 * lv, 0.003 * lv, 0])
+            rs2, meta2, hs2 = self.summit
+            srgb = np.zeros_like(img)
+            sa = np.zeros(img.shape[:2], np.float32)
+            sd = np.full(img.shape[:2], 1e9, np.float32)
+            render_ridges(srgb, sa, sd, cam.params(), meta2, hs2, sk.packed(), fog,
+                          np.array(pool, np.float64).reshape(-1, 8), np.zeros(1), 1.0, t)
+            # the summit keeps a little moonlight even in the close-up (dim), full after reveal
+            over(img, srgb * (0.15 + 0.85 * reveal), sa)
         # DOF on background in the close-up
         coc = 0.012 * cam.f / max(focus, 0.3) * (1 - u) ** 2
         if coc * 0.42 > 0.8:

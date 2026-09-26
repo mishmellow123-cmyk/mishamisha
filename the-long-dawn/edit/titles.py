@@ -24,6 +24,8 @@ CINZEL = os.path.join(FONTS, 'Cinzel.ttf')
 INK = np.array([0.953, 0.925, 0.871], np.float32)       # warm paper white (sRGB)
 GLOW = np.array([1.0, 0.78, 0.52], np.float32)
 TAGLINE = os.environ.get('TAGLINE', '1') == '1'
+STORY_SIZE = int(os.environ.get('STORY_SIZE', '56'))
+END_TAG = 2856                                   # 119.0 s when the tagline card is on
 
 
 @functools.lru_cache(maxsize=64)
@@ -88,11 +90,12 @@ class Line:
 
     def __init__(self, text, t_in, t_out, y=640, x=None, size=50, weight=560, path=ITALIC,
                  tracking=0.02, fade=14, fade_out=12, stagger=10, rise=7, blur=5.0,
-                 opacity=1.0, glow=0.35, anchor='center'):
+                 opacity=1.0, glow=0.35, anchor='center', halo=0.55, halo_max=0.6):
         self.text, self.t_in, self.t_out = text, t_in, t_out
         self.y, self.x, self.size, self.weight, self.path = y, x, size, weight, path
         self.tracking, self.fade, self.fade_out, self.stagger = tracking, fade, fade_out, stagger
         self.rise, self.blur, self.opacity, self.glow, self.anchor = rise, blur, opacity, glow, anchor
+        self.halo, self.halo_max = halo, halo_max          # legibility shadow strength (per line)
 
     def active(self, f):
         return self.t_in - 1 <= f <= self.t_out + self.fade_out
@@ -138,12 +141,12 @@ def composite(img, lines, f):
         HX1, HY1 = min(img.shape[1], X1 + pad), min(img.shape[0], Y1 + pad)
         halo = np.zeros((HY1 - HY0, HX1 - HX0), np.float32)
         halo[Y0 - HY0:Y1 - HY0, X0 - HX0:X1 - HX0] = a
-        halo = cv2.GaussianBlur(halo, (0, 0), 14) * 0.55
+        halo = cv2.GaussianBlur(halo, (0, 0), 14) * ln.halo
         region = img[HY0:HY1, HX0:HX1]
-        region *= (1 - np.clip(halo, 0, 0.6))[..., None]
+        region *= (1 - np.clip(halo, 0, ln.halo_max))[..., None]
         # warm glow (lit letters)
         if ln.glow > 0:
-            g = cv2.GaussianBlur(halo / 0.55, (0, 0), 6) * ln.glow
+            g = cv2.GaussianBlur(halo / ln.halo, (0, 0), 6) * ln.glow
             region += (g[..., None] * GLOW * 0.35)
         # the ink itself (screen-ish over)
         sub = img[Y0:Y1, X0:X1]
@@ -173,30 +176,35 @@ def story_lines():
     """All text in the film (global frames). See BIBLE.md §2."""
     L = []
     y = 648
-    L.append(Line('Why do we light the fires?', 120, 200, y=y))
-    L.append(Line('To remember the night the whole world answered.', 215, 310, y=y))
-    L.append(Line('In the age of the Kindling, we made a new kind of fire.', 340, 440, y=y))
-    L.append(Line('A fire that could think.', 490, 550, y=y))
-    L.append(Line('Whoever held it alone would hold the world.', 565, 635, y=y))
-    L.append(Line('So the kingdoms raced.', 660, 730, y=y))
-    L.append(Line('Each said: if we stop, they win.', 820, 900, y=y))
+    S = STORY_SIZE                     # story-line size (50 in the cloud cut; 56 reads on a phone)
+    L.append(Line('Why do we light the fires?', 120, 200, y=y, size=S))
+    L.append(Line('To remember the night the whole world answered.', 215, 310, y=y, size=S))
+    L.append(Line('In the age of the Kindling, we made a new kind of fire.', 340, 440, y=y, size=S))
+    L.append(Line('A fire that could think.', 490, 550, y=y, size=S))
+    L.append(Line('Whoever held it alone would hold the world.', 565, 635, y=y, size=S))
+    L.append(Line('So the kingdoms raced.', 660, 730, y=y, size=S))
+    L.append(Line('Each said: if we stop, they win.', 820, 900, y=y, size=S))
     # the makers' plea, on black, centred
-    L.append(Line('Then even its makers said:', 1055, 1190, y=350, size=44, opacity=0.8, glow=0.2))
+    L.append(Line('Then even its makers said:', 1055, 1190, y=350, size=48, opacity=0.8, glow=0.2))
     L += row(['Slow us down.', 'All of us.', 'Together.'], [1095, 1125, 1155], 1190, y=432,
-             size=58, weight=600, stagger=6)
-    L.append(Line('And on a cold mountain, someone lit a beacon.', 1370, 1435, y=y))
-    L += row(['Rivals.', 'Strangers.', 'Enemies.'], [1522, 1542, 1562], 1600, y=y, stagger=5)
-    L.append(Line('They answered anyway.', 1622, 1700, y=y))
-    L.append(Line('They agreed on little — but they agreed on this:', 1922, 1998, y=y))
-    L.append(Line('It did not end our differences.', 2270, 2345, y=y))
-    L.append(Line('It ended the race.', 2352, 2440, y=y, weight=600))
-    L.append(Line('Who lit the first one?', 2500, 2570, y=y))
+             size=62, weight=600, stagger=6)
+    # over bright moonlit summit snow: a deeper legibility shadow
+    L.append(Line('And on a cold mountain, someone lit a beacon.', 1370, 1435, y=y, size=S,
+                  halo=0.95, halo_max=0.78))
+    L += row(['Rivals.', 'Strangers.', 'Enemies.'], [1522, 1542, 1562], 1600, y=y, stagger=5, size=S)
+    L.append(Line('They answered anyway.', 1622, 1700, y=y, size=S))
+    L.append(Line('They agreed on little — but they agreed on this:', 1922, 1998, y=y, size=S))
+    L.append(Line('It did not end our differences.', 2270, 2345, y=y, size=S))
+    L.append(Line('It ended the race.', 2352, 2440, y=y, weight=600, size=S))
+    L.append(Line('Who lit the first one?', 2500, 2570, y=y, size=S))
     # title
     if TAGLINE:
-        L.append(Line('THE LONG DAWN', 2662, 2728, y=402, size=92, weight=500, path=CINZEL,
-                      tracking=0.28, fade=30, fade_out=22, stagger=22, rise=0, blur=8, glow=0.6))
-        L.append(Line('The Kindling is now.', 2748, 2790, y=410, size=50, weight=520,
-                      fade=18, fade_out=14, stagger=8, glow=0.3))
+        # title holds over the sky while it fades to black; then the last line stands
+        # alone on black, in the silence after the final chord (the film runs to END_TAG)
+        L.append(Line('THE LONG DAWN', 2662, 2750, y=402, size=92, weight=500, path=CINZEL,
+                      tracking=0.28, fade=30, fade_out=24, stagger=22, rise=0, blur=8, glow=0.6))
+        L.append(Line('The Kindling is now.', 2798, 2838, y=402, size=60, weight=520,
+                      fade=22, fade_out=14, stagger=10, glow=0.25))
     else:
         L.append(Line('THE LONG DAWN', 2668, 2780, y=402, size=92, weight=500, path=CINZEL,
                       tracking=0.28, fade=30, fade_out=26, stagger=22, rise=0, blur=8, glow=0.6))

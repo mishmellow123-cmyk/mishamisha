@@ -8,7 +8,9 @@ import cv2
 import numpy as np
 
 import look
-from core import (clamp01, smoothstep, smootherstep, ease_out, ease_in, ease_in_out, lerp, vnoise,
+from numba import njit, prange
+
+from core import (clamp01, smoothstep, smootherstep, ease_out, ease_in, ease_in_out, lerp, vnoise, snoise,
                   rng, rand_dirs, catmull, Camera)
 import scene_b as B
 
@@ -183,8 +185,19 @@ def cam_globe(t):
 
 
 # ==================================================================== HAND ===
+#
+# One closed organic surface, not a kit of capsules. The hand is a signed distance field: a smooth union of
+# tapered round-cone "bones" posed by forward kinematics (carpus, 4 metacarpals fanning out to the knuckle line,
+# 4 fingers x 3 phalanges with knuckle bulges, a thumb whose metacarpal melts into the palm as the thenar mass,
+# radius + ulna + a muscle belly for the forearm). Surface points are sampled once per bone, ride their bone,
+# and are Newton-projected onto the union surface every frame. A soft ownership weight (a partition of unity
+# over the bones) removes the doubled layers where bones meet, so no joint draws a ring. Only camera-facing
+# points emit, cosine-weighted so that a glowing surface has uniform radiance (no limb brightening): the body
+# is a near-black crust, and the light lives in a static Worley crack network on the skin (a coal bed), in
+# burning rims and knuckles, and in embers shed off the edges. Coverage of the same surface builds the alpha
+# that hides the world behind the hand.
 
-# right hand, local frame (units of hand length L = wrist crease -> middle fingertip):
+# local frame (units of hand length L = wrist crease -> middle fingertip):
 # wrist at origin, fingers +Y, palm faces +Z, back of hand -Z, thumb on -X
 FINGERS = {  # name: (mcp x, mcp y, phalanx lengths, joint radii at mcp/pip/dip/tip)
     'index': (-0.128, 0.455, (0.205, 0.122, 0.090), (0.046, 0.040, 0.035, 0.029)),
@@ -195,6 +208,9 @@ FINGERS = {  # name: (mcp x, mcp y, phalanx lengths, joint radii at mcp/pip/dip/
 FNAMES = ['index', 'middle', 'ring', 'little']
 SPREAD_OPEN = {'index': -0.24, 'middle': -0.06, 'ring': 0.1, 'little': 0.28}
 SPREAD_REST = {'index': -0.07, 'middle': -0.02, 'ring': 0.03, 'little': 0.09}
+FLEN = 1.07                    # a touch longer and gaunter than life: menace
+THUMB_L = (0.20, 0.15, 0.12)
+THUMB_R = (0.064, 0.052, 0.044, 0.030)
 
 
 def _rx(a):
@@ -220,174 +236,335 @@ def _xf(p, R):
                      R[2, 0] * x + R[2, 1] * y + R[2, 2] * z], 1)
 
 
-class HandRig:
-    """Anatomical point-sampled hand: palm with thenar/hypothenar pads and knuckle ridge,
-    4 fingers x 3 tapered phalanges with joint bulges, 3-segment opposing thumb, wrist, forearm.
-    Each part is sampled once in its own frame; pose() applies forward kinematics."""
+def _frame_y(d):
+    """orthonormal frame (columns x, y, z) whose y column is along d"""
+    d = np.asarray(d, np.float64)
+    n = np.linalg.norm(d)
+    if n < 1e-9:
+        return np.eye(3)
+    y = d / n
+    ref = np.array([0.0, 0.0, 1.0]) if abs(y[2]) < 0.9 else np.array([1.0, 0.0, 0.0])
+    x = np.cross(y, ref)
+    x /= np.linalg.norm(x)
+    z = np.cross(x, y)
+    return np.stack([x, y, z], 1)
 
-    def __init__(self, seed=303, dens=1.0):
-        self.r = rng(seed)
-        r = self.r
-        self.palm = self._palm(int(110000 * dens))
-        self.fore = self._forearm(int(30000 * dens))
-        self.caps = {}
-        for f in FNAMES:
-            lens, rad = FINGERS[f][2], FINGERS[f][3]
-            self.caps[f] = [self._phalanx(lens[k], rad[k], rad[k + 1], int(52000 * dens * lens[k] * rad[k] / 0.0092),
-                                          tip=(k == 2)) for k in range(3)]
-        self.tl = (0.20, 0.145, 0.115)
-        tr = (0.062, 0.050, 0.043, 0.034)
-        # small spherical joints (knuckles) at every finger joint, sized to the joint radius
-        self.joint = {}
-        for f in FNAMES:
-            rad = FINGERS[f][3]
-            self.joint[f] = [self._sphere(rad[k] * 1.06, int(2200 * dens * (rad[k] / 0.045) ** 2)) for k in range(3)]
-        # tendons on the back of the hand: from each knuckle toward the wrist
-        tp, tn = [], []
+
+# ------------------------------------------------------------ SDF kernels ---
+
+@njit(fastmath=True, cache=True, inline='always')
+def _cone_d(px, py, pz, j, A, BA, IL2, RA, DR):
+    """distance to a tapered capsule (sphere-swept segment, radius RA..RA+DR) and its outward normal"""
+    qx = px - A[j, 0]
+    qy = py - A[j, 1]
+    qz = pz - A[j, 2]
+    h = (qx * BA[j, 0] + qy * BA[j, 1] + qz * BA[j, 2]) * IL2[j]
+    if h < 0.0:
+        h = 0.0
+    elif h > 1.0:
+        h = 1.0
+    cx = qx - BA[j, 0] * h
+    cy = qy - BA[j, 1] * h
+    cz = qz - BA[j, 2] * h
+    l = math.sqrt(cx * cx + cy * cy + cz * cz) + 1e-12
+    return l - (RA[j] + DR[j] * h), cx / l, cy / l, cz / l
+
+
+@njit(fastmath=True, cache=True)
+def _sdf(px, py, pz, A, BA, IL2, RA, DR, GS, GE, KG, KJ):
+    """smooth union within each group (blend KG[g]), then across groups (blend KJ); returns d, unit gradient"""
+    D = 1e9
+    GX = 0.0
+    GY = 0.0
+    GZ = 1.0
+    for g in range(GS.shape[0]):
+        k = KG[g]
+        d = 1e9
+        gx = 0.0
+        gy = 0.0
+        gz = 1.0
+        for j in range(GS[g], GE[g]):
+            dj, nx, ny, nz = _cone_d(px, py, pz, j, A, BA, IL2, RA, DR)
+            if j == GS[g]:
+                d = dj
+                gx = nx
+                gy = ny
+                gz = nz
+            else:
+                hh = 0.5 + 0.5 * (dj - d) / k
+                if hh < 0.0:
+                    hh = 0.0
+                elif hh > 1.0:
+                    hh = 1.0
+                d = dj + (d - dj) * hh - k * hh * (1.0 - hh)
+                gx = nx + (gx - nx) * hh
+                gy = ny + (gy - ny) * hh
+                gz = nz + (gz - nz) * hh
+        if g == 0:
+            D = d
+            GX = gx
+            GY = gy
+            GZ = gz
+        else:
+            hh = 0.5 + 0.5 * (d - D) / KJ
+            if hh < 0.0:
+                hh = 0.0
+            elif hh > 1.0:
+                hh = 1.0
+            D = d + (D - d) * hh - KJ * hh * (1.0 - hh)
+            GX = gx + (GX - gx) * hh
+            GY = gy + (GY - gy) * hh
+            GZ = gz + (GZ - gz) * hh
+    l = math.sqrt(GX * GX + GY * GY + GZ * GZ) + 1e-12
+    return D, GX / l, GY / l, GZ / l
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def _project(P, OWN, A, BA, IL2, RA, DR, GS, GE, KG, KJ, iters, tau, NRM, D0, WOWN):
+    """Newton-project points onto the union surface (in place); normal at the result; the soft ownership weight
+    of each point's own bone (softmin over all bones' raw distances -> the weights of all bones sum to 1)."""
+    M = A.shape[0]
+    for i in prange(P.shape[0]):
+        px = P[i, 0]
+        py = P[i, 1]
+        pz = P[i, 2]
+        d, gx, gy, gz = _sdf(px, py, pz, A, BA, IL2, RA, DR, GS, GE, KG, KJ)
+        D0[i] = d
+        for it in range(iters):
+            px -= d * gx
+            py -= d * gy
+            pz -= d * gz
+            d, gx, gy, gz = _sdf(px, py, pz, A, BA, IL2, RA, DR, GS, GE, KG, KJ)
+        P[i, 0] = px
+        P[i, 1] = py
+        P[i, 2] = pz
+        NRM[i, 0] = gx
+        NRM[i, 1] = gy
+        NRM[i, 2] = gz
+        j0 = OWN[i]
+        do, _a, _b, _c = _cone_d(px, py, pz, j0, A, BA, IL2, RA, DR)
+        s = 0.0
+        for j in range(M):
+            dj, _a, _b, _c = _cone_d(px, py, pz, j, A, BA, IL2, RA, DR)
+            x = (do - dj) / tau
+            if x > 40.0:
+                x = 40.0
+            if x > -30.0:
+                s += math.exp(x)
+        WOWN[i] = 1.0 / s if s > 0.0 else 0.0
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def _attach(OWN, Q, A, R, out):
+    for i in prange(OWN.shape[0]):
+        j = OWN[i]
+        qx = Q[i, 0]
+        qy = Q[i, 1]
+        qz = Q[i, 2]
+        out[i, 0] = A[j, 0] + R[j, 0, 0] * qx + R[j, 0, 1] * qy + R[j, 0, 2] * qz
+        out[i, 1] = A[j, 1] + R[j, 1, 0] * qx + R[j, 1, 1] * qy + R[j, 1, 2] * qz
+        out[i, 2] = A[j, 2] + R[j, 2, 0] * qx + R[j, 2, 1] * qy + R[j, 2, 2] * qz
+
+
+@njit(fastmath=True, cache=True, inline='always')
+def _hash3(ix, iy, iz, seed):
+    h = (ix * 73856093) ^ (iy * 19349663) ^ (iz * 83492791) ^ (seed * 2654435761)
+    h = h & 0xFFFFFFFF
+    h ^= h >> 16
+    h = (h * 0x7FEB352D) & 0xFFFFFFFF
+    h ^= h >> 15
+    h = (h * 0x846CA68B) & 0xFFFFFFFF
+    h ^= h >> 16
+    return h
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def _worley(P, freq, seed, F1, F2, CID):
+    """3D cellular noise: distance to the nearest and second-nearest feature point (cell units), nearest cell id"""
+    for i in prange(P.shape[0]):
+        x = P[i, 0] * freq
+        y = P[i, 1] * freq
+        z = P[i, 2] * freq
+        ix = int(math.floor(x))
+        iy = int(math.floor(y))
+        iz = int(math.floor(z))
+        f1 = 1e9
+        f2 = 1e9
+        c1 = 0
+        for dx in range(-1, 2):
+            for dy in range(-1, 2):
+                for dz in range(-1, 2):
+                    cx = ix + dx
+                    cy = iy + dy
+                    cz = iz + dz
+                    h1 = _hash3(cx, cy, cz, seed)
+                    h2 = _hash3(cx, cy, cz, seed + 17)
+                    h3 = _hash3(cx, cy, cz, seed + 31)
+                    fx = cx + (h1 & 1023) / 1024.0
+                    fy = cy + (h2 & 1023) / 1024.0
+                    fz = cz + (h3 & 1023) / 1024.0
+                    d2 = (x - fx) ** 2 + (y - fy) ** 2 + (z - fz) ** 2
+                    if d2 < f1:
+                        f2 = f1
+                        f1 = d2
+                        c1 = h1
+                    elif d2 < f2:
+                        f2 = d2
+        F1[i] = math.sqrt(f1)
+        F2[i] = math.sqrt(f2)
+        CID[i] = c1 & 0xFFFF
+
+
+# ------------------------------------------------------------- the rig ---
+
+class HandSkel:
+    """Bone list (tapered capsules) grouped for the smooth union. pose() -> per-bone origin A and frame R
+    (columns x, y, z; y along the bone); static per-bone length, radii and group."""
+    KG = np.array([0.045, 0.014, 0.014, 0.014, 0.014, 0.014])   # palm melts; fingers keep their creases
+    KJ = 0.022
+
+    def __init__(self):
+        spec = []          # (group, name, ra, rb, length) in bone order (grouped, ascending)
+        self.static = {}   # palm bones: fixed (a, b)
+        pal = [
+            ('carpus', (-0.075, 0.045, 0.0), (0.075, 0.05, 0.0), 0.058, 0.055),
+            ('thenar', (-0.07, 0.085, 0.034), (-0.118, 0.205, 0.034), 0.058, 0.044),
+            ('hypothenar', (0.105, 0.1, 0.022), (0.13, 0.34, 0.012), 0.048, 0.04),
+            ('pad0', (-0.06, 0.2, 0.024), (0.08, 0.2, 0.024), 0.058, 0.056),
+            ('pad1', (-0.11, 0.385, 0.02), (0.11, 0.37, 0.02), 0.05, 0.045),
+            ('radius', (-0.05, 0.02, 0.004), (-0.075, -1.25, 0.02), 0.07, 0.1),
+            ('ulna', (0.05, 0.02, 0.0), (0.065, -1.25, 0.02), 0.064, 0.095),
+            ('belly', (0.0, -0.3, -0.02), (0.0, -1.25, -0.03), 0.075, 0.115),
+        ]
         for f in FNAMES:
             mx, my = FINGERS[f][0], FINGERS[f][1]
-            k = int(2600 * dens)
-            u = r.random(k)
-            x = mx * (0.45 + 0.55 * u) + r.normal(0, 0.004, k)
-            y = 0.06 + (my - 0.06) * u
-            z = -(0.058 + 0.01 * u) + r.normal(0, 0.002, k)
-            tp.append(np.stack([x, y, z], 1))
-            tn.append(np.tile([0, 0, -1.0], (k, 1)))
-        self.tendons = (np.concatenate(tp), np.concatenate(tn), np.full(sum(len(q) for q in tp), 0.55))
-        self.thumb = [self._phalanx(self.tl[k], tr[k], tr[k + 1], int(52000 * dens * self.tl[k] * tr[k] / 0.0092),
-                                    tip=(k == 2)) for k in range(3)]
-
-    def _sphere(self, rad, n):
-        d = rand_dirs(self.r, max(n, 100))
-        return d * rad, d, np.full(len(d), 0.35)
-
-    def _phalanx(self, L, r0, r1, n, tip=False):
-        """capsule-like segment from joint (0,0,0) to (0,L,0): tapered, with bulging joints."""
-        r = self.r
-        n = max(n, 200)
-        y = r.uniform(-r0 * 0.6, L + (r1 * 0.95 if tip else r1 * 0.4), n)
-        a = r.uniform(0, 2 * np.pi, n)
-        u = np.clip(y / L, 0, 1)
-        rad = (r0 + (r1 - r0) * u) * (1 + 0.1 * np.exp(-(y / (0.2 * L)) ** 2) - 0.06 * np.sin(np.pi * u))
-        # slightly flattened on the palm side
-        ell = np.stack([np.cos(a), np.sin(a) * np.where(np.sin(a) > 0, 0.86, 1.0)], 1)
-        c0 = y < 0
-        rad = np.where(c0, np.sqrt(np.maximum(r0 ** 2 - y ** 2, 0)), rad)
-        c1 = y > L
-        rad = np.where(c1, np.sqrt(np.maximum(r1 ** 2 - (y - L) ** 2, 0)), rad)
-        p = np.stack([rad * ell[:, 0], y, rad * ell[:, 1]], 1)
-        nrm = np.stack([ell[:, 0], np.zeros(n), ell[:, 1]], 1)
-        nrm[c0, 1] = y[c0] / r0
-        nrm[c1, 1] = (y[c1] - L) / r1
-        nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-6)
-        knuckle = np.exp(-(y / (0.22 * L)) ** 2)          # glow at the proximal joint of each phalanx
-        return p, nrm, knuckle
-
-    def _palm(self, n):
-        r = self.r
-        m = int(n * 0.8)
-        u = r.uniform(-1, 1, m)                 # across (thumb side -1)
-        v = r.uniform(0, 1, m)                  # wrist 0 -> knuckles 1
-        yy = 0.01 + 0.45 * v
-        hw = 0.14 + 0.07 * v ** 0.8             # broader toward the knuckles
-        x = u * hw
-        side = np.where(r.random(m) < 0.5, -1.0, 1.0)      # -1 back of hand, +1 palm
-        th = 0.058 * np.sqrt(np.maximum(1 - np.abs(u) ** 6, 0.05))
-        # pads on the palm side
-        thenar = 0.05 * np.exp(-(((x + 0.11) / 0.07) ** 2 + ((yy - 0.15) / 0.11) ** 2))
-        hypo = 0.03 * np.exp(-(((x - 0.12) / 0.06) ** 2 + ((yy - 0.2) / 0.13) ** 2))
-        pads = 0.02 * np.exp(-((yy - 0.42) / 0.035) ** 2)                 # the fleshy ridge under the fingers
-        cup = -0.018 * (1 - u ** 2) * np.sin(np.pi * v)
-        z_palm = th + thenar + hypo + pads + cup
-        # back of the hand: tendons + knuckle ridge
-        knuckle_ridge = 0.028 * np.exp(-((yy - 0.445) / 0.03) ** 2) * (0.6 + 0.4 * np.cos(u * np.pi * 3.5) ** 2)
-        tendons = 0.006 * np.cos(u * np.pi * 3.5) ** 8 * v
-        z_back = -(th + knuckle_ridge + tendons)
-        z = np.where(side > 0, z_palm, z_back)
-        p = np.stack([x, yy, z], 1)
-        nrm = np.stack([np.zeros(m), np.zeros(m), side], 1)
-        kn = np.where(side < 0, np.exp(-((yy - 0.445) / 0.035) ** 2), 0.0)
-        # rim around the palm edge
-        k = n - m
-        v2 = r.uniform(0, 1, k)
-        yy2 = 0.01 + 0.45 * v2
-        hw2 = 0.14 + 0.07 * v2 ** 0.8
-        sgn = np.where(r.random(k) < 0.5, -1.0, 1.0)
-        ang = r.uniform(-np.pi / 2, np.pi / 2, k)
-        x2 = sgn * (hw2 + 0.045 * np.cos(ang))
-        z2 = 0.058 * np.sin(ang)
-        # thumb-side web is thicker (thenar)
-        x2 = np.where(sgn < 0, x2 - 0.02 * np.exp(-((yy2 - 0.15) / 0.12) ** 2), x2)
-        p2 = np.stack([x2, yy2, z2], 1)
-        n2 = np.stack([sgn * np.cos(ang), np.zeros(k), np.sin(ang)], 1)
-        return (np.concatenate([p, p2]), np.concatenate([nrm, n2]), np.concatenate([kn, np.zeros(k)]))
-
-    def _forearm(self, n):
-        r = self.r
-        y = -r.uniform(0.0, 1.5, n) ** 1.0
-        a = r.uniform(0, 2 * np.pi, n)
-        t = np.clip(-y / 1.5, 0, 1)
-        ax = 0.13 + 0.06 * t ** 0.7            # half-width
-        az = 0.075 + 0.05 * t ** 0.7           # half-depth
-        # wrist narrowing
-        ax = ax * (1 - 0.12 * np.exp(-((y + 0.05) / 0.08) ** 2))
-        p = np.stack([ax * np.cos(a), y, az * np.sin(a)], 1)
-        nrm = np.stack([np.cos(a) / ax, np.zeros(n), np.sin(a) / az], 1)
-        nrm /= np.linalg.norm(nrm, axis=1, keepdims=True)
-        return p, nrm, np.zeros(n)
+            pal.append(('meta_' + f, (mx * 0.42, 0.075, -0.004), (mx, my - 0.008, -0.006), 0.041, 0.049))
+        for name, a, b, ra, rb in pal:
+            a, b = np.array(a, np.float64), np.array(b, np.float64)
+            self.static[name] = (a, b)
+            spec.append((0, name, ra, rb, float(np.linalg.norm(b - a))))
+        spec.append((0, 'thumb0', THUMB_R[0], THUMB_R[1], THUMB_L[0]))
+        for fi, f in enumerate(FNAMES):
+            lens = [FLEN * v for v in FINGERS[f][2]]
+            rad = FINGERS[f][3]
+            g = 1 + fi
+            spec.append((g, f + '_mcp', rad[0] * 1.04, rad[0] * 1.04, 0.0))
+            spec.append((g, f + '_p0', rad[0], rad[1], lens[0]))
+            spec.append((g, f + '_pip', rad[1] * 1.1, rad[1] * 1.1, 0.0))
+            spec.append((g, f + '_p1', rad[1], rad[2], lens[1]))
+            spec.append((g, f + '_dip', rad[2] * 1.07, rad[2] * 1.07, 0.0))
+            spec.append((g, f + '_p2', rad[2], rad[3] * 0.72, lens[2]))
+        spec.append((5, 'thumb1', THUMB_R[1], THUMB_R[2], THUMB_L[1]))
+        spec.append((5, 'thumb_ip', THUMB_R[2] * 1.08, THUMB_R[2] * 1.08, 0.0))
+        spec.append((5, 'thumb2', THUMB_R[2], THUMB_R[3] * 0.8, THUMB_L[2]))
+        self.names = [s[1] for s in spec]
+        self.idx = {n: i for i, n in enumerate(self.names)}
+        self.grp = np.array([s[0] for s in spec], np.int64)
+        self.RA = np.array([s[2] for s in spec], np.float64)
+        self.RB = np.array([s[3] for s in spec], np.float64)
+        self.LEN = np.array([s[4] for s in spec], np.float64)
+        self.DR = self.RB - self.RA
+        ng = int(self.grp.max()) + 1
+        self.GS = np.array([int(np.nonzero(self.grp == g)[0][0]) for g in range(ng)], np.int64)
+        self.GE = np.array([int(np.nonzero(self.grp == g)[0][-1]) + 1 for g in range(ng)], np.int64)
+        self.M = len(spec)
+        self.forearm = np.array([n in ('radius', 'ulna', 'belly') for n in self.names])
 
     def pose(self, flex, spread, thumb_close):
-        P, N, ID, KN = [], [], [], []
-        for part, pid in ((self.palm, 0), (self.fore, 9), (self.tendons, 0)):
-            P.append(part[0])
-            N.append(part[1])
-            KN.append(part[2])
-            ID.append(np.full(len(part[0]), pid))
+        M = self.M
+        A = np.zeros((M, 3))
+        R = np.zeros((M, 3, 3))
+        ix = self.idx
+        for name, (a, b) in self.static.items():
+            j = ix[name]
+            A[j] = a
+            R[j] = _frame_y(b - a)
         for fi, f in enumerate(FNAMES):
-            mx, my, lens, _ = FINGERS[f]
-            R = _rz(-spread[f])
-            p0 = np.array([mx, my, 0.0])
-            for k in range(3):
-                jp, jn, jk = self.joint[f][k]
-                P.append(jp + p0)
-                N.append(jn)
-                KN.append(jk)
-                ID.append(np.full(len(jp), 1 + fi))
-                R = R @ _rx(flex[f][k])
-                cp, cn, ck = self.caps[f][k]
-                P.append(_xf(cp, R) + p0)
-                N.append(_xf(cn, R))
-                KN.append(ck * 0.5)
-                ID.append(np.full(len(cp), 1 + fi))
-                p0 = p0 + R @ np.array([0, lens[k], 0])
-            # fingertip marker (for sparks): last point appended is the tip
-            P.append(p0[None, :])
-            N.append(np.array([[0, 0, -1.0]]))
-            KN.append(np.array([0.0]))
-            ID.append(np.array([20 + fi]))
+            mx, my = FINGERS[f][0], FINGERS[f][1]
+            lens = [FLEN * v for v in FINGERS[f][2]]
+            j = ix[f + '_mcp']
+            A[j] = (mx, my - 0.006, -0.012)
+            R[j] = np.eye(3)
+            Rf = _rz(-spread[f])
+            p0 = np.array([mx, my, -0.002])
+            for k, (bone, node) in enumerate((('_p0', '_pip'), ('_p1', '_dip'), ('_p2', None))):
+                Rf = Rf @ _rx(flex[f][k])
+                j = ix[f + bone]
+                A[j] = p0
+                R[j] = Rf
+                p0 = p0 + Rf[:, 1] * lens[k]
+                if node is not None:
+                    jn = ix[f + node]
+                    A[jn] = p0
+                    R[jn] = Rf
         # thumb: CMC on the radial side near the wrist; swings from abducted to opposed
         cmc = np.array([-0.1, 0.075, 0.02])
         d_open = np.array([-0.66, 0.62, 0.42])
-        d_closed = np.array([0.2, 0.56, 0.8])
+        d_closed = np.array([0.0, 0.75, 0.66])
         d = lerp(d_open, d_closed, thumb_close)
         d /= np.linalg.norm(d)
         y = d
-        x = np.cross(y, np.array([0, 0, 1.0]))
-        x /= np.linalg.norm(x)
-        z = np.cross(x, y)
-        R = np.stack([x, y, z], 1)
+        z = np.array([1.0, 0.0, -0.2])               # flexion carries the tip across the curled fingers
+        z = z - (z @ y) * y
+        z /= np.linalg.norm(z)
+        x = np.cross(y, z)
+        Rt = np.stack([x, y, z], 1)
+        bend = 0.15 + 0.35 * thumb_close
         p0 = cmc
-        bend = 0.18 + 0.6 * thumb_close
-        for k in range(3):
+        for k, name in enumerate(('thumb0', 'thumb1', 'thumb2')):
             if k > 0:
-                R = R @ _rx(bend)
-            cp, cn, ck = self.thumb[k]
-            P.append(_xf(cp, R) + p0)
-            N.append(_xf(cn, R))
-            KN.append(ck)
-            ID.append(np.full(len(cp), 5))
-            p0 = p0 + R @ np.array([0, self.tl[k], 0])
-        return np.concatenate(P), np.concatenate(N), np.concatenate(ID), np.concatenate(KN)
+                Rt = Rt @ _rx(bend)
+            j = ix[name]
+            A[j] = p0
+            R[j] = Rt
+            p0 = p0 + Rt[:, 1] * THUMB_L[k]
+            if k == 1:
+                A[ix['thumb_ip']] = p0
+                R[ix['thumb_ip']] = Rt
+        return A, R
+
+    def kernel_args(self, A, R):
+        BA = R[:, :, 1] * self.LEN[:, None]
+        L2 = self.LEN ** 2
+        IL2 = np.where(L2 > 1e-12, 1.0 / np.maximum(L2, 1e-12), 0.0)
+        return (np.ascontiguousarray(A), np.ascontiguousarray(BA), IL2, self.RA, self.DR,
+                self.GS, self.GE, self.KG, self.KJ)
+
+    def sample(self, r, dens, dens_fore):
+        """points on each bone's own surface (bone-local offsets), ~uniform per area"""
+        OWN, Q, AREA = [], [], []
+        for j in range(self.M):
+            ra, rb, L = self.RA[j], self.RB[j], self.LEN[j]
+            dn = dens_fore if self.forearm[j] else dens
+            tube = math.pi * (ra + rb) * L
+            caps = 2 * math.pi * ra * ra + 2 * math.pi * rb * rb
+            n = max(int((tube + caps) * dn), 60)
+            area = (tube + caps) / n
+            nt = int(round(n * tube / (tube + caps)))
+            nc = n - nt
+            u = r.random(nt)
+            if abs(rb - ra) > 1e-6:            # lateral area density grows with the radius
+                h = (np.sqrt(u * (rb * rb - ra * ra) + ra * ra) - ra) / (rb - ra)
+            else:
+                h = u
+            rr = ra + (rb - ra) * h
+            th = r.uniform(0, 2 * np.pi, nt)
+            qt = np.stack([rr * np.cos(th), h * L, rr * np.sin(th)], 1)
+            dd = rand_dirs(r, nc)
+            end = r.random(nc) < rb * rb / (ra * ra + rb * rb)
+            dd[:, 1] = np.where(end, np.abs(dd[:, 1]), -np.abs(dd[:, 1]))
+            qc = np.where(end[:, None], dd * rb + np.array([0.0, L, 0.0]), dd * ra)
+            OWN.append(np.full(n, j, np.int64))
+            Q.append(np.concatenate([qt, qc]))
+            AREA.append(np.full(n, area))
+        return np.concatenate(OWN), np.concatenate(Q), np.concatenate(AREA)
+
+
+REST_POSE = (
+    {f: (0.12, 0.12, 0.08) for f in FNAMES},
+    dict(SPREAD_REST),
+    0.35,
+)
 
 
 def hand_pose_at(t):
@@ -423,6 +600,11 @@ def grasp_dir():
     return -np.array([math.cos(a), 0.0, math.sin(a)])
 
 
+def hand_yaw(t):
+    """turn about the arm's axis: the back of the hand while it reaches, the thumb side as it grips"""
+    return -0.12 - 0.62 * float(ease_in_out((t - 1004) / 32.0))
+
+
 def hand_transform(t):
     """World placement of the hand (rotation local->world, wrist position).
     Back of the hand faces down/back toward the low camera; the palm opens toward the crown."""
@@ -435,9 +617,9 @@ def hand_transform(t):
     rise = float(ease_out((t - 960) / 50.0, 2.0))
     approach = float(ease_in_out((t - 1002) / 34.0))
     lean = lerp(-0.3, 0.05, rise) + 0.3 * approach
-    R = R0 @ _rx(lean) @ _rz(lerp(0.16, 0.03, rise))
+    R = R0 @ _rx(lean) @ _rz(lerp(0.16, 0.03, rise)) @ _ry(hand_yaw(t))
     # final: the closed fist's hollow (local ~(0, 0.52, 0.11)) sits on the crown
-    Rf = R0 @ _rx(0.35) @ _rz(0.03)
+    Rf = R0 @ _rx(0.35) @ _rz(0.03) @ _ry(hand_yaw(1036.0))
     Wf = C - Rf @ (np.array([0.0, 0.52, 0.11]) * HAND_L)
     W0 = Wf + np.array([0.0, -85.0, 0.0]) - dz * 12.0 + dx * 8.0
     Wm = Wf + np.array([0.0, -24.0, 0.0]) - dz * 9.0 + dx * 2.0
@@ -445,88 +627,243 @@ def hand_transform(t):
     return R, W
 
 
+def _splat_col(fr, P0, P1, RW, colE, ctx):
+    """splat points whose colour carries the energy; dark points are skipped"""
+    E = colE.max(1)
+    m = E > 1e-7
+    if not m.any():
+        return
+    RW = np.broadcast_to(np.asarray(RW, np.float64), (len(E),))
+    fr.splat(P0[m], P1[m], RW[m], E[m], colE[m] / E[m][:, None], ctx.cam0, ctx.cam1, zref=0.0)
+
+
 class Hand:
-    def __init__(self):
-        self.rig = HandRig()
-        self.rnd = None
-        r = rng(8)
-        self.ns = 16000
-        self.s_idx = None
-        self.s_age = r.uniform(0, 1, self.ns)
-        self.s_v = r.normal(0, 1, (self.ns, 3)) * 0.35 + np.array([0, 1.0, 0])
-        self.s_E = r.lognormal(0, 0.6, self.ns)
+    """The colossal hand of embers: a coal-bed crust over one smooth surface (see the section note)."""
 
-    def world(self, t):
+    def __init__(self, dens=110000.0):
+        self.sk = sk = HandSkel()
+        r = rng(303)
+        # uniform population (crust, rims, coverage)
+        self.u_own, self.u_q, self.u_area = sk.sample(r, dens, dens * 0.45)
+        # crack population: dense candidates, kept with probability = crack intensity (importance sampling)
+        c_own, c_q, c_area = sk.sample(r, dens * 5.0, dens * 2.0)
+        A, R = sk.pose(*REST_POSE)
+        args = sk.kernel_args(A, R)
+        rest_u = self._surface(self.u_own, self.u_q, A, R, args)[0]
+        rest_c = self._surface(c_own, c_q, A, R, args)[0]
+        cr, plate = self._cracks(rest_c)
+        keep = r.random(len(cr)) < cr
+        # drop points that stay buried inside other bones in every pose the shot visits
+        keep &= self._exposed(c_own, c_q)
+        self.c_own, self.c_q, self.c_area = c_own[keep], c_q[keep], c_area[keep]
+        self.c_tex = rest_c[keep]
+        self.c_plate = plate[keep]
+        ku = self._exposed(self.u_own, self.u_q)
+        self.u_own, self.u_q, self.u_area = self.u_own[ku], self.u_q[ku], self.u_area[ku]
+        self.u_tex = rest_u[ku]
+        _, self.u_plate = self._cracks(self.u_tex)
+        # knuckles (dorsal points of the MCP, PIP and DIP joints in the rest pose) burn hotter
+        kpts = []
+        for f in FNAMES:
+            for node in ('_mcp', '_pip', '_dip'):
+                j = sk.idx[f + node]
+                kpts.append(A[j] + np.array([0.0, 0.0, -sk.RA[j]]))
+        kpts.append(A[sk.idx['thumb_ip']] + R[sk.idx['thumb_ip']][:, 2] * -sk.RA[sk.idx['thumb_ip']])
+        kpts = np.array(kpts)
+
+        def knuck(P):
+            d2 = ((P[:, None, :] - kpts[None, :, :]) ** 2).sum(-1).min(1)
+            return np.exp(-d2 / 0.034 ** 2)
+        self.u_kn = knuck(self.u_tex)
+        self.c_kn = knuck(self.c_tex)
+        rr = rng(5)
+        self.u_rnd = rr.random(len(self.u_own))
+        self.c_rnd = rr.random(len(self.c_own))
+        self.c_ph = rr.uniform(0, 2 * np.pi, len(self.c_own))
+        # slow heat field along the cracks (some seams roar, some smoulder)
+        self.c_var = 0.5 + 0.5 * np.clip(snoise(self.c_tex, 7.0, (3.1, 0.7, 5.2), 2), -1, 1)
+        self.u_fore = sk.forearm[self.u_own]
+        self.c_fore = sk.forearm[self.c_own]
+        # embers shed off the hand (sources on the crust; they only show where the source is an edge)
+        ns = 14000
+        self.ns = ns
+        self.s_src = rr.integers(0, len(self.u_own), ns)
+        self.s_life = rr.uniform(9.0, 26.0, ns)
+        self.s_ph = rr.random(ns)
+        self.s_v = rr.normal(0, 1, (ns, 3)) * np.array([0.9, 0.5, 0.9]) + np.array([0.0, 1.6, 0.0])
+        self.s_E = rr.lognormal(0, 0.7, ns)
+        print('hand: crust', len(self.u_own), 'cracks', len(self.c_own), 'bones', sk.M)
+
+    # -------------------------------------------------------------- geometry
+    def _surface(self, own, q, A, R, args, iters=5):
+        P = np.empty((len(own), 3))
+        _attach(own, q, A, R, P)
+        N = np.empty_like(P)
+        D0 = np.empty(len(own))
+        W = np.empty(len(own))
+        _project(P, own, *args, iters, 0.0022, N, D0, W)
+        return P, N, W
+
+    def _exposed(self, own, q):
+        wmax = np.zeros(len(own))
+        for pose in (REST_POSE, hand_pose_at(975.0), hand_pose_at(1012.0), hand_pose_at(1028.0),
+                     hand_pose_at(1040.0)):
+            A, R = self.sk.pose(*pose)
+            wmax = np.maximum(wmax, self._surface(own, q, A, R, self.sk.kernel_args(A, R), iters=2)[2])
+        return wmax > 0.02
+
+    def _cracks(self, P):
+        n = len(P)
+        P = P.copy()
+        y = P[:, 1]
+        P[:, 1] = np.where(y > 0.4, 0.4 + (y - 0.4) * 0.38, y)     # cells run along the fingers (bark, not rings)
+        F1, F2, cid = np.empty(n), np.empty(n), np.empty(n, np.int64)
+        _worley(P, 13.0, 11, F1, F2, cid)
+        c1 = 1.0 - smoothstep(0.0, 0.065, F2 - F1)
+        plate = (cid % 997) / 997.0
+        g1, g2, cid2 = np.empty(n), np.empty(n), np.empty(n, np.int64)
+        _worley(P, 31.0, 29, g1, g2, cid2)
+        c2 = 1.0 - smoothstep(0.0, 0.06, g2 - g1)
+        return np.clip(np.maximum(c1, 0.4 * c2 * (0.3 + 0.7 * plate)), 0, 1), plate
+
+    def pose_world(self, t):
         flex, spread, th = hand_pose_at(t)
-        p, n, pid, kn = self.rig.pose(flex, spread, th)
-        R, W = hand_transform(t)
-        return _xf(p * HAND_L, R) + W, _xf(n, R), pid, kn
+        A, R = self.sk.pose(flex, spread, th)
+        Rh, W = hand_transform(t)
+        return A, R, Rh, W
 
+    def raw_world(self, own, q, t):
+        """bone-attached positions (no projection) in world space: cheap, for motion vectors and ember births"""
+        A, R, Rh, W = self.pose_world(t)
+        P = np.empty((len(own), 3))
+        _attach(own, q, A, R, P)
+        return _xf(P * HAND_L, Rh) + W
+
+    def surface_world(self, own, q, t):
+        A, R, Rh, W = self.pose_world(t)
+        args = self.sk.kernel_args(A, R)
+        P, N, Wn = self._surface(own, q, A, R, args)
+        return _xf(P * HAND_L, Rh) + W, _xf(N, Rh), Wn, (Rh, W)
+
+    # -------------------------------------------------------------- render
     def emit(self, ctx, fr_hand, fr_cov):
         t = ctx.t
         if t < 960 or t >= 1040:
             return
-        P0, _, _, _ = self.world(ctx.t0)
-        P1, N1, pid, kn = self.world(ctx.t1)
-        npts = len(P1)
-        if self.rnd is None or len(self.rnd) != npts:
-            rr = rng(5)
-            self.rnd = rr.random(npts)
-            self.ph = rr.uniform(0, 2 * np.pi, npts)
-            tips = np.nonzero(pid >= 20)[0]
-            # sparks shed mostly from the fingertips and knuckles
-            kn_idx = np.nonzero(kn > 0.6)[0]
-            pick = rr.random(self.ns) < 0.55
-            self.s_idx = np.where(pick, rr.choice(tips, self.ns), rr.choice(kn_idx, self.ns))
-            self.s_off = rr.normal(0, 0.02 * HAND_L, (self.ns, 3))
-        C = B.crown_centre(960.0)
-        L = C - P1
-        dL = np.linalg.norm(L, axis=1)
-        lam = np.maximum((N1 * L).sum(1) / np.maximum(dL, 1e-6), 0)
-        vd = ctx.cam.pos - P1
-        vd /= np.linalg.norm(vd, axis=1, keepdims=True)
-        facing = (N1 * vd).sum(1)
-        rim = np.exp(-np.abs(facing) / 0.18)                    # silhouette edges glow
-        interior = smoothstep(0.2, 0.8, facing)                 # broad faces toward us: darker
-        fl = 1 + 0.55 * np.sin(1.3 * t + self.ph) * np.sin(0.47 * t + 2 * self.ph)
+        cam = ctx.cam
+        fpx = cam.f_px(1920)
+        Cc = B.crown_centre(960.0)
+        fade_in = float(smoothstep(960, 963, t))
         close = float(smoothstep(1015, 1036, t))
-        near = smoothstep(46.0, 10.0, dL)
-        grain = (self.rnd ** 3) * 2.2                            # sparse hot embers in the surface
-        e_body = (0.25 + 0.35 * self.rnd + grain) * fl * 0.55 * (1 - 0.5 * interior)
-        e_edge = rim * (0.5 + 0.7 * self.rnd) * 0.45
-        e_kn = kn * (0.5 + 0.9 * self.rnd) * 1.3 * fl
-        e_cold = lam * (0.35 + 0.65 * rim) * near * (1.6 + 5.0 * close)
-        c_body = C_CRIMSON * 0.5 + C_RED * 0.5
-        c_edge = C_RED * 0.5 + look.blackbody(0.45) * 0.5
-        c_kn = look.blackbody(0.5)
-        c_cold = C_ICE * 0.6 + C_CORE * 0.4
-        colE = (c_body[None, :] * e_body[:, None] + c_edge[None, :] * e_edge[:, None] +
-                c_kn[None, :] * e_kn[:, None] + c_cold[None, :] * e_cold[:, None])
-        colE[pid >= 20] = 0.0
-        colE[pid == 0] *= 2.6          # palm: broad surface, sampled thinner -> lift it
-        colE[(pid >= 1) & (pid <= 5)] *= 0.7
-        R, W = hand_transform(t)
-        along = (P1 - W) @ R[:, 1]
-        fade = np.where(pid == 9, smoothstep(-1.45 * HAND_L, -0.5 * HAND_L, along), 1.0)
-        fade = fade * smoothstep(960, 964, t)
-        colE *= fade[:, None]
-        fr_hand.splat(P0, P1, 0.035, np.ones(npts), colE, ctx.cam0, ctx.cam1, zref=0.0)
-        fr_cov.splat(P0, P1, 0.035, fade * 0.8, np.ones(3), ctx.cam0, ctx.cam1, zref=0.0)
-        # sparks shedding from the moving hand (trail: born at the surface in the recent past)
-        ages = self.s_age * 14.0
-        tb = t - ages
-        Ps = np.empty((self.ns, 3))
-        for b0 in range(0, 15, 5):
-            m = (ages >= b0) & (ages < b0 + 5)
+        clench = float(smoothstep(1026, 1036, t))
+        # heat of the hand: it wakes as it rises, roars as it closes
+        heat = 0.75 + 0.25 * float(smoothstep(964, 990, t))
+        surge = 1.4 * close ** 1.5 + 1.2 * clench ** 2
+
+        def view(P, N):
+            V = cam.pos - P
+            dist = np.linalg.norm(V, axis=1)
+            V /= dist[:, None]
+            f = (N * V).sum(1)
+            z = (P - cam.pos) @ cam.R[2]
+            pa = (fpx * HAND_L / np.maximum(z, 1.0)) ** 2
+            return f, pa, dist
+
+        # ---------------- crust: body glow, burning rims, the cold rim of the crown, coverage
+        P, N, Wn, (Rh, Wr) = self.surface_world(self.u_own, self.u_q, t)
+        R0 = self.raw_world(self.u_own, self.u_q, ctx.t0)
+        R1 = self.raw_world(self.u_own, self.u_q, ctx.t1)
+        Rm = self.raw_world(self.u_own, self.u_q, t)
+        P0, P1 = P + (R0 - Rm), P + (R1 - Rm)
+        f, pa, _ = view(P, N)
+        pa = pa * self.u_area                                  # projected px^2 per point
+        front = f > 0.0
+        fp = np.clip(f, 0.0, 1.0)
+        along = (P - Wr) @ Rh[:, 1] / HAND_L                  # position along the arm (0 = wrist)
+        fore_fade = smoothstep(-0.95, 0.0, along)
+        fist_u = 1 + surge * smoothstep(0.1, 0.5, self.u_tex[:, 1])
+        w = Wn * front * fade_in
+        L = Cc - P
+        dL = np.linalg.norm(L, axis=1)
+        lam = np.clip((N * L).sum(1) / np.maximum(dL, 1e-6), 0, 1)
+        near = smoothstep(80.0, 14.0, dL)
+        rimw = 0.5
+        rim = np.clip(1.0 - fp / rimw, 0, 1) ** 2.2
+        rim_c = np.clip(1.0 - fp / 0.4, 0, 1) ** 2
+        fl = 1 + 0.35 * np.sin(1.1 * t + 9 * self.u_rnd) * np.sin(0.37 * t + 23 * self.u_rnd)
+        plate_glow = smoothstep(0.72, 1.0, self.u_plate) * 0.05
+        v_body = (0.018 + plate_glow + 0.06 * self.u_kn) * heat * fl * fist_u
+        v_rim = 3.2 * heat * (0.6 + 0.4 * fl) * fore_fade * (1 + 0.5 * surge)
+        v_cold = lam ** 1.5 * (0.5 + 2.4 * near) * (1 + 0.8 * close)
+        e_scale = pa * fp * w
+        c_body = C_CRIMSON * 0.7 + C_RED * 0.3
+        c_rim = look.blackbody(0.42 + 0.2 * rim) * 0.75 + C_RED * 0.25
+        c_cold = C_ICE * 0.65 + C_CORE * 0.35
+        colB = (c_body[None, :] * (v_body * fore_fade)[:, None]) * e_scale[:, None]
+        # rims go to their own layer: post keeps them at the OUTER silhouette (a backlight cannot reach the
+        # edge of a finger that lies in front of the palm), so a finger seen end-on is never a lit ring
+        colR = (c_rim * (v_rim * rim)[:, None] + c_cold[None, :] * (v_cold * rim_c)[:, None]) * e_scale[:, None]
+        spacing = np.sqrt(self.u_area) * HAND_L
+        _splat_col(fr_hand, P0, P1, spacing * 0.3, colB, ctx)
+        _splat_col(getattr(ctx, 'fr_rim', fr_hand), P0, P1, spacing * 0.3, colR, ctx)
+        cov = pa * fp * Wn * front * 5.0 * fade_in
+        fr_cov.splat(P0, P1, spacing * 0.9, cov, np.ones(3), ctx.cam0, ctx.cam1, zref=0.0)
+
+        # ---------------- cracks: the coal bed (seams of fire in the crust, hottest at the knuckles)
+        Pc, Nc, Wc, _ = self.surface_world(self.c_own, self.c_q, t)
+        Q0 = self.raw_world(self.c_own, self.c_q, ctx.t0)
+        Q1 = self.raw_world(self.c_own, self.c_q, ctx.t1)
+        Qm = self.raw_world(self.c_own, self.c_q, t)
+        fc, pac, _ = view(Pc, Nc)
+        pac = pac * self.c_area
+        fcp = np.clip(fc, 0.0, 1.0)
+        alongc = (Pc - Wr) @ Rh[:, 1] / HAND_L
+        # heat pulses travel up the arm into the fingers
+        wave = 0.5 + 0.5 * np.sin(2 * np.pi * (self.c_tex[:, 1] * 1.3 - (t - 960) / 30.0))
+        flc = 1 + 0.4 * np.sin(1.7 * t + self.c_ph) * np.sin(0.53 * t + 2.3 * self.c_ph)
+        hot = (0.1 + 0.9 * self.c_var ** 2) * (0.55 + 0.45 * wave) * flc * (1 + 3.0 * self.c_kn)
+        hot = hot * (0.55 + 0.45 * smoothstep(0.05, 0.55, self.c_tex[:, 1]))
+        fist_c = smoothstep(0.1, 0.5, self.c_tex[:, 1])
+        v_c = 1.5 * hot * heat * (1 + surge * fist_c) * smoothstep(-1.0, -0.05, alongc)
+        temp = np.clip(0.36 + 0.2 * self.c_var + 0.18 * self.c_kn + (0.16 * close + 0.1 * clench) * fist_c, 0, 0.95)
+        colc = look.blackbody(temp) * (v_c * pac * fcp ** 0.8 * Wc * (fc > 0) * fade_in)[:, None]
+        sp_c = np.sqrt(self.c_area) * HAND_L
+        _splat_col(fr_hand, Pc + (Q0 - Qm), Pc + (Q1 - Qm), sp_c * 0.3, colc, ctx)
+
+        # ---------------- embers shed off the burning edges, streaming up into the storm
+        self.emit_embers(ctx, fr_hand, f, P, N, heat * (1 + 0.5 * surge), fade_in)
+
+    def emit_embers(self, ctx, fr_hand, f_u, P_u, N_u, heat, fade_in):
+        t = ctx.t
+        ns = self.ns
+        life = self.s_life
+        age = ((t - 900.0) / life + self.s_ph) % 1.0 * life          # frames since birth
+        src = self.s_src
+        # birth positions: the hand's surface at the birth time (bucketed by age)
+        B0 = np.empty((ns, 3))
+        edges = np.arange(0.0, 27.0, 4.5)
+        for a0 in edges:
+            m = (age >= a0) & (age < a0 + 4.5)
             if m.any():
-                Pb, _, _, _ = self.world(t - (b0 + 2.5))
-                Ps[m] = Pb[self.s_idx[m]] + self.s_off[m]
-        drift = self.s_v * ages[:, None] * 0.35
-        S1 = Ps + drift
-        S0 = S1 - self.s_v * 0.35 * 0.5
-        mov = float(smoothstep(962, 975, t)) * (1 - 0.6 * close)
-        es = self.s_E * (1 - self.s_age) ** 2 * 10.0 * mov
-        ctx.fr.splat(S0, S1, 0.03, es, look.blackbody(0.62 - 0.3 * self.s_age), ctx.cam0, ctx.cam1, zref=60.0)
+                B0[m] = self.raw_world(self.u_own[src[m]], self.u_q[src[m]], t - (a0 + 2.25))
+        n_src = N_u[src]
+        edge = np.exp(-np.abs(f_u[src]) / 0.3)
+        front = f_u[src] > -0.05
+
+        def pos(a):
+            k = a[:, None]
+            drift = self.s_v * k * 0.35 + np.array([0.0, 1.0, 0.0]) * 0.015 * k ** 2
+            p = B0 + n_src * (0.4 + 0.25 * k) + drift
+            w = vnoise(p * 0.08 + np.array([0.0, -0.05 * t, 0.0]), 1.0, (0, 0, 0), 1)
+            return p + w * (0.15 * k)
+        S0 = pos(np.maximum(age - 0.25, 0))
+        S1 = pos(age + 0.25)
+        u = age / life
+        e = (self.s_E * (1 - u) ** 2 * smoothstep(0.0, 2.0, age) * (0.15 + 2.4 * edge) * 4.0 * heat * fade_in
+             * float(smoothstep(964, 972, t)))
+        col = look.blackbody(np.clip(0.72 - 0.42 * u, 0.2, 1))
+        fr_hand.splat(S0[front], S1[front], 0.03, e[front], col[front], ctx.cam0, ctx.cam1, zref=60.0)
+        ctx.fr.splat(S0[~front], S1[~front], 0.03, e[~front], col[~front], ctx.cam0, ctx.cam1, zref=60.0)
 
 
 def cam_grasp(t):
