@@ -162,8 +162,8 @@ number.
 
 ## Known weaknesses / next passes
 
-* The settled fires are small in the last framing (6–10 px); on a phone they read as warm points, though
-  never as round dots, and each still has a flame shape and flicker.
+* The settled fires are small in the last framing (about 9–15 px tall, flaring to ~25); on a phone they
+  read as warm points, though never as round dots, and each still has a flame shape and flicker.
 * The fold crease at 71°E runs vertically through the left-centre of the last framing.
 * Geography is honest but approximate: peaks come from a relief proxy (normal-map integration),
   forests and lakes from a Blue Marble classification, rivers and India's hills are hand-traced
