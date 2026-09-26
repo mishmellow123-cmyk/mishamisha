@@ -19,3 +19,12 @@ Standing producer notes from earlier rounds:
 - A = allegory: never says "AI", but the mapping to our moment must be unmistakable. B = wordless legend,
   for its own sake. C = explicitly and lovingly The Lord of the Rings (Misha's cut), not generic fantasy.
 - The producers love the ambitious 3-D shots: technically and visually ambitious, but tasteful, never forced.
+
+## Later notes (same evening, after watching cut C too)
+- "I reckon the plots should diverge a bit more. At the moment it feels a bit too much like a repackaging
+  of the same core thing (from the two I've seen)." So A, B and C should be three DISTINCT FILMS with
+  genuinely different plots, sharing the world, look and assets only where that serves them.
+- Visual notes: most visuals are great, but a few have slightly shoddy issues or are a bit weird. For
+  example, in C at ~55 s the first fire lighting "starts super cool but the way the fire initially
+  actually lights seems wrong". The person (heroine) "looks a bit weird", which is not a priority if it's
+  costly. (Both are being fixed by the HEROINE department.)
