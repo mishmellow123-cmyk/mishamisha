@@ -9,6 +9,7 @@ Job file (JSON):
     render      shell commands run CONCURRENTLY (e.g. interleaved frame lists); each gets its own log
     out_dir     output folder relative to the-long-dawn/, e.g. "renders/run_v2"
     frames      frames this job must produce: "1560-1599,1640-1679" (global numbers, files f_%05d.png)
+    outputs     instead of out_dir + frames, several: [{"out_dir": ..., "frames": ...}, ...]
     shape       optional [height, width] every frame must have (default [804, 1920])
     push_every  seconds between batch pushes (default 300)
 
@@ -52,8 +53,9 @@ def git_push(paths, branch, n_total, n_done):
         return True
     for i in range(0, len(paths), 200):                  # keep argv short
         sh('git add -f -- ' + ' '.join(paths[i:i + 200]), check=True)
-    sh(f'git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m '
-       f'"cloud render {os.path.basename(branch)}: {n_done}/{n_total} frames"', check=True)
+    if sh('git diff --cached --quiet').returncode != 0:   # a retry after a failed push has nothing new to commit
+        sh(f'git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m '
+           f'"cloud render {os.path.basename(branch)}: {n_done}/{n_total} frames"', check=True)
     for attempt in range(4):
         r = sh(f'git push -q origin HEAD:{branch}', capture_output=True, text=True)
         if r.returncode == 0:
@@ -65,13 +67,15 @@ def git_push(paths, branch, n_total, n_done):
 
 def main():
     job = json.load(open(sys.argv[1]))
-    name, branch, out_dir = job['name'], job['branch'], job['out_dir']
-    want = frames_of(job['frames'])
+    name, branch = job['name'], job['branch']
+    outs = job.get('outputs') or [{'out_dir': job['out_dir'], 'frames': job['frames']}]
+    want = [(o['out_dir'], f) for o in outs for f in frames_of(o['frames'])]
     shape = tuple(job.get('shape', [804, 1920]))
     push_every = job.get('push_every', 300)
     os.makedirs(os.path.join(HERE, 'cloud_logs'), exist_ok=True)
-    os.makedirs(os.path.join(HERE, out_dir), exist_ok=True)
-    log(f'JOB {name}: {len(want)} frames -> {out_dir}, pushing to {branch}')
+    for o in outs:
+        os.makedirs(os.path.join(HERE, o['out_dir']), exist_ok=True)
+    log(f'JOB {name}: {len(want)} frames -> {", ".join(o["out_dir"] for o in outs)}, pushing to {branch}')
 
     for cmd in job.get('setup', []):
         log(f'setup: {cmd}')
@@ -92,35 +96,43 @@ def main():
     t0 = time.time()
     pushed, bad = set(), set()
     last_push = time.time()
+    push_failures = 0
     while True:
         running = [p for p, _, _ in procs if p.poll() is None]
         ready = []
-        for f in want:
-            if f in pushed or f in bad:
+        for t in want:
+            if t in pushed or t in bad:
                 continue
-            p = os.path.join(HERE, out_dir, f'f_{f:05d}.png')
+            p = os.path.join(HERE, t[0], f'f_{t[1]:05d}.png')
             if os.path.exists(p):
                 im = cv2.imread(p)
                 if im is None or im.shape[:2] != shape:
-                    log(f'ERROR bad frame {f}: {None if im is None else im.shape}; deleted')
+                    log(f'ERROR bad frame {t[0]}/{t[1]}: {None if im is None else im.shape}; deleted')
                     os.remove(p)
-                    bad.add(f)
+                    bad.add(t)
                     continue
-                ready.append(f)
+                ready.append(t)
         done = len(pushed) + len(ready)
         if ready and (time.time() - last_push >= push_every or not running or done == len(want)):
-            paths = [os.path.join(out_dir, f'f_{f:05d}.png') for f in ready]
+            paths = [os.path.join(d, f'f_{f:05d}.png') for d, f in ready]
             if git_push(paths, branch, len(want), done):
                 pushed.update(ready)
+                push_failures = 0
                 el = time.time() - t0
                 log(f'pushed {len(ready)} (total {len(pushed)}/{len(want)}; {el / max(1, len(pushed)):.1f}s/frame wall)')
+            else:
+                push_failures += 1
+                if push_failures >= 3:
+                    log(f'ERROR pushes keep failing; {len(ready)} checked frames are committed locally but NOT pushed')
+                    log(f'JOB ENDED (push failing; pushed {len(pushed)}/{len(want)})')
+                    sys.exit(3)
             last_push = time.time()
         if not running and not ready:
             for p, cmd, lf in procs:
                 lf.close()
                 if p.returncode != 0:
                     log(f'ERROR render exited {p.returncode}: {cmd} (see cloud_logs/{name}_*.log)')
-            missing = [f for f in want if f not in pushed]
+            missing = [f'{d.split("/")[-1]}:{f}' for d, f in want if (d, f) not in pushed]
             if missing:
                 log(f'JOB ENDED (missing {len(missing)}: {missing[:40]}{"..." if len(missing) > 40 else ""})')
                 sys.exit(1)

@@ -1,5 +1,44 @@
 # GLOBE — notes
 
+## RENDER_SPEC (v2 final: THE WORLD ANSWERS + DAWN cut A / cut B)
+
+Run from `the-long-dawn/`. Every frame is a pure function of its frame number, so ranges can be
+split freely across processes/machines — but render each SHOT entirely on one kind of machine
+(cloud and Mac differ by ~30 dB PSNR).
+
+* **Python 3.12 packages:** `pip install numpy==2.5.3 scipy==1.18.1 opencv-python-headless==4.10.0.84 numba==0.67.0`
+  (llvmlite 0.49.0 comes with numba). No Blender, no ffmpeg needed for the frames.
+* **Caches** (`renders/globe/cache/`, git-ignored), built by `prep.py` (idempotent, ~1 min):
+  `earth-blue-marble.jpg`, `earth-night.jpg` (fetched with `npm pack three-globe@2.45.2`, so the box
+  needs Node/npm — or copy these two files from the Mac's `renders/globe/cache/`), `land_mask_8k.png`,
+  `albedo_8k.png`, `lights_points.npz`, `lights_w4k.npy`, `maps.npz`.
+* **The fire network is not built on the render box.** It ships in the repo as
+  `shots/globe/data/fires_net_v8_3.npz` (with every random draw the renderer uses), and `fires.py`
+  loads it first, so every machine draws exactly the same fires. (`fires_geo_v1.npz` in the cache is
+  only needed to rebuild the net.)
+* **Commands:**
+  ```
+  python3 shots/globe/prep.py
+  export NUMBA_NUM_THREADS=4        # the planet kernel is parallel (or 1 thread x 4 processes)
+  # THE WORLD ANSWERS, all cuts (no text in it): 184 frames
+  LONGDAWN_GLOBE_OUT=$PWD/renders/globe_v2 python3 shots/globe/render.py answers 1752 1935
+  # DAWN: one planet render per frame -> cut A (text calm) in globe_v2 AND cut B (no calm) in globe_B: 264 frames
+  python3 shots/globe/render.py dawn 2232 2495 --both
+  # splitting: render.py <shot> --frames 2232,2235,2238 [--both] --skip-existing
+  ```
+* **Env vars:** only `LONGDAWN_GLOBE_OUT` for ANSWERS (as above). `--both` sets cut A's calm and cut
+  B's no-calm itself (`LONGDAWN_NOCALM` is ignored by it). Defaults are the v2 look:
+  `LONGDAWN_DAWN_CAM=aden`, `LONGDAWN_FIRE_SEED=3`, hearths off (`LONGDAWN_NO_HEARTHS` is moot;
+  `LONGDAWN_HEARTHS=1` would bring them back). Don't set anything else.
+* **Outputs** (1920x804 PNG, src numbering):
+  * `renders/globe_v2/f_01752.png` … `f_01935.png`: THE WORLD ANSWERS (cut B falls through to these)
+  * `renders/globe_v2/f_02232.png` … `f_02495.png`: DAWN, cut A (and cut C's fallback), calm 2352–2440
+  * `renders/globe_B/f_02232.png` … `f_02495.png`: DAWN, cut B (no calm; identical to A outside 2343–2449)
+  They overwrite the complete pre-polish pass the Mac rendered into the same folders.
+* **Cost:** Mac M2, 1 numba thread per process, 3 processes on the shared machine: ANSWERS ~17
+  s/frame, DAWN ~27 s per A+B pair (~12 s and ~16 s when the Mac was quiet); ~1 min of numba JIT on
+  a fresh machine.
+
 ## v2 (2026-09-26): fire, not fibre
 
 The critics (review/critic_tone.md B2, critic_framing.md M5 + m9) found the v1 globe's answering
@@ -41,15 +80,18 @@ The v1 frames stay in `renders/globe/`; the stale partial v1 cut-B dawn was move
   (Bhutan Himalaya) and south (the Ganges), and the chains grow back and onward from where they
   land. Travel time s (km-like) maps to frames as f = 1760 + K·s^0.35 (K puts the throws down 34
   frames after 1760): slow and heavy at first, then faster and faster, no seams.
-* **Beats:** 1752 the first beacon burns alone · **1760 it flares** (a burst of light, a warm wash
-  over the range, a slow stream of sparks drifting up; a few fires answer around it 1764–1782) ·
-  1766–1772 the three throws lift off, land 1791–1798 · 1800–1840 fuses burn along the Himalaya ·
+* **Beats:** 1752 the first beacon burns alone · **1760 it flares** (a tight burst of light and a
+  faint veil; its light washes the range, so the cloud tops and snow within ~60–165 km catch it and
+  fade over ~1 s; a slow stream of sparks drifts up on the wind; a few fires answer around it
+  1764–1782) ·
+  1766–1772 the three throws lift off, land 1791–1798 (about 1.2 s of heavy flight) · 1800–1840 fuses burn along the Himalaya ·
   1840–1900 the explosion (40–90 visible ignitions per 10 frames), leaps sail over the limb toward
   the Americas, Alaska and the Indian Ocean islands (1838–1890) · ~1912 the visible night side is
   studded with fire; nothing new after ~1915 (the dissolve starts at 1912).
-* **Embers.** Every link is a travelling ember: a small gold-white head and a short tail that
-  fades both behind the head (≤ 26% of the hop, ≤ 50 km; leaps 420 km) and in time (τ 2.8–6
-  frames); gone within ~1 s of landing, nothing persists. Chain hops are low arcs (3.5% of length),
+* **Embers.** Every link is a travelling ember: a small gold-white head and a short comet tail that
+  falls off steeply behind the head and ends (≤ 22% of the hop, ≤ 40 km; sea crossings 80 km, the
+  throws 32 km, leaps 170 km) and fades in time (τ 2.5–4.5 frames): it never reaches back to the fire
+  it left, and it is gone within ~1 s of landing. Nothing persists. Chain hops are low arcs (3.5% of length),
   sea crossings 8%, the throws 7.5%, leaps 15% (they sail against the stars). A few sparks shed
   from each head.
 * **Fires.** Small flickering flames of uneven size (lognormal, crest bonfires biggest; 6% big
@@ -63,7 +105,8 @@ The v1 frames stay in `renders/globe/`; the stale partial v1 cut-B dawn was move
 * The city lights are a little lower (0.3e-7, was 0.5e-7) so the fires are the protagonists.
 
 ### DAWN v2 (`shots.Dawn`, `lens.py`)
-* **No arcs, no hearths.** Every answering fire burns on the night side (the whole net, lit) and
+* **No arcs, no hearths.** Every answering fire burns on the night side (the whole net, lit, a
+  little brighter than in THE WORLD ANSWERS' end state so they read at this distance) and
   **pales as the terminator reaches it**: from sun elevation −1.5° to +5.5° it dims to nothing and
   its colour goes pale gold; its light on the land goes first. The sun takes over from the beacons.
   (`LONGDAWN_HEARTHS=1` would bring v1's hearths back; `LONGDAWN_NO_HEARTHS` is now moot.)
@@ -89,16 +132,22 @@ The v1 frames stay in `renders/globe/`; the stale partial v1 cut-B dawn was move
 ```
 source ~/.venvs/longdawn/env.sh; export NUMBA_NUM_THREADS=1
 python3 shots/globe/prep.py                                    # v1 caches (idempotent)
-# fires_geo_v1.npz and fires_net_v8_3.npz build themselves in renders/globe/cache (~10 s)
+# the net ships in shots/globe/data/; with it removed it rebuilds in renders/globe/cache (~10 s)
 LONGDAWN_GLOBE_OUT=$PWD/renders/globe_v2 python shots/globe/render.py answers 1752 1935
 python shots/globe/render.py dawn 2232 2495 --both            # A -> globe_v2, B -> globe_B, one planet pass
 # stills: LONGDAWN_GLOBE_TESTS=<dir> python shots/globe/render.py dawn --frames 2240,2400 --scale 0.5 --test
 ```
 Every frame is a pure function of its frame number; split ranges across processes freely
 (`--frames a,b,c --skip-existing`). Changing any constant in `FireNet._build/_spread` needs a
-`VERSION` bump (the net is cached).
+`VERSION` bump and a new shipped file (`FireNet(cache=False)` ... `.ship()`).
 
-RENDER_STATS_PLACEHOLDER
+### Look-dev and the Mac pass
+* Look-dev at half res (key frames 1760–1927, 2240–2460) and a full-sequence motion check at 0.3.
+  Review sheet: `~/mishamisha/_local_logs/review/globe_v2.jpg` (final look, half res; A and B at 2400).
+* A complete full-res pass of both shots was rendered on the Mac before the last polish (compact
+  comet tails, the flare's range wash instead of an orb, brighter DAWN fires); it is in globe_v2 /
+  globe_B as a usable fallback until the final render replaces it. Mean 17.5 s/frame (ANSWERS) and
+  27.2 s per A+B pair (DAWN), 3 processes x 1 thread on the shared, loaded Mac.
 
 ### Known weaknesses (v2)
 * The fires are points of light at orbital scale; what makes them fire is flicker, colour,

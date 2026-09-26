@@ -555,7 +555,7 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                 cosk = dx * mx + dy * my + dz * mz
                 fwd = 1.0 + Q[1] * max(cosk, 0.0) ** Q[2]
                 wrap = max((ndl + 0.8) / 1.8, 0.0)
-                shc = soft_shadow(P, CR, x, yw + 5.0, z, mx, my, mz, 40.0, 14000.0, 18, 6.0, fp)
+                shc = soft_shadow(P, CR, x, yw + 5.0, z, mx, my, mz, 40.0, 14000.0, 13, 6.0, fp)
                 shc = Q[5] + (1.0 - Q[5]) * shc
                 ca = Q[9]
                 cr = ca * (Ik * Lk[3] * wrap * fwd * shc + amb[0] * Q[13])
@@ -621,7 +621,8 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                 shd = 1.0
                 if ndl > 0.0:
                     t0 = max(fp * 1.5, 0.08)
-                    shd = soft_shadow(P, CR, x, yw + max(fp * 1.2, 0.03), z, mx, my, mz, t0, 12000.0, 22,
+                    nst = 20 if dist < 2500.0 else 14
+                    shd = soft_shadow(P, CR, x, yw + max(fp * 1.2, 0.03), z, mx, my, mz, t0, 12000.0, nst,
                                       Q[11], fp)
                 dif = max(ndl, 0.0) * shd
                 skyl = 0.55 + 0.45 * ny

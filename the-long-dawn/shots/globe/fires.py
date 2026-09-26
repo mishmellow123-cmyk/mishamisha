@@ -277,11 +277,17 @@ class FireNet:
     def __init__(self, seed=3, t0=1760.0, cache=True, p=0.35, throw_land=34.0):
         self.seed = seed
         self.t0 = t0
-        path = os.path.join(CACHE, f'fires_net_v{self.VERSION}_{seed}.npz')
-        if cache and os.path.exists(path):
-            d = np.load(path)
+        # the shipped net (tracked in shots/globe/data/) wins, so every machine draws the same fires;
+        # otherwise the net is built and cached in renders/globe/cache/
+        name = f'fires_net_v{self.VERSION}_{seed}.npz'
+        shipped = os.path.join(HERE, 'data', name)
+        path = os.path.join(CACHE, name)
+        self._stored = {}
+        if cache and (os.path.exists(shipped) or os.path.exists(path)):
+            d = np.load(shipped if os.path.exists(shipped) else path)
             for k in d.files:
                 setattr(self, k, d[k])
+                self._stored[k] = d[k]
         else:
             self._build()
             if cache:
@@ -289,6 +295,16 @@ class FireNet:
                          parent=self.parent, fl=self.fl, edges=self.edges)
         self.set_timing(p, throw_land)
         self._prep_draw()
+
+    def ship(self):
+        """Write the net plus every random draw the renderer uses to shots/globe/data/ (tracked)."""
+        os.makedirs(os.path.join(HERE, 'data'), exist_ok=True)
+        out = os.path.join(HERE, 'data', f'fires_net_v{self.VERSION}_{self.seed}.npz')
+        np.savez_compressed(out, P=self.P, kind=self.kind, size=self.size, s_ign=self.s_ign,
+                            parent=self.parent, fl=self.fl, edges=self.edges, sat_par=self.sat_par,
+                            sat_P=self.sat_P, sat_dt=self.sat_dt, sat_szf=self.sat_szf,
+                            Dtemp=self.Dtemp, fq=self.fq, fph=self.fph)
+        return out
 
     # ------------------------------------------------------------ build ---
     def _build(self):
@@ -589,35 +605,43 @@ class FireNet:
 
     # ---------------------------------------------------------- drawing ---
     def _prep_draw(self):
-        rng = np.random.default_rng(self.seed + 77)
         n = len(self.P)
-        # every beacon is a small cluster: the beacon itself plus a few lesser fires lit around it
-        # a moment later (a hill-top and its village), which breaks the string-of-beads regularity
-        lam = np.array([3.0, 1.4, 0.9, 1.1, 0.5, 1.1])[self.kind]
-        nsat = rng.poisson(lam)
-        par = np.repeat(np.arange(n), nsat)
+        if 'sat_par' not in self._stored:
+            rng = np.random.default_rng(self.seed + 77)
+            # every beacon is a small cluster: the beacon itself plus a few lesser fires lit around
+            # it a moment later (a hill-top and its village): no string-of-beads regularity
+            lam = np.array([3.0, 1.4, 0.9, 1.1, 0.5, 1.1])[self.kind]
+            nsat = rng.poisson(lam)
+            par = np.repeat(np.arange(n), nsat)
+            m = len(par)
+            up = self.P[par]
+            e1 = np.cross(up, [0.0, 0.0, 1.0])
+            e1 /= np.linalg.norm(e1, axis=1)[:, None] + 1e-12
+            e2 = np.cross(up, e1)
+            ang = rng.random(m) * 2 * np.pi
+            dist = rng.uniform(6.0, 26.0, m) / R_KM
+            SP = up + (np.cos(ang)[:, None] * e1 + np.sin(ang)[:, None] * e2) * dist[:, None]
+            SP /= np.linalg.norm(SP, axis=1)[:, None]
+            dt = rng.uniform(3.0, 16.0, m)
+            org = par == 0
+            dt[org] = rng.uniform(4.0, 22.0, int(org.sum()))              # they answer the flare
+            szf = rng.uniform(0.15, 0.5, m)
+            N = n + m
+            self.sat_par, self.sat_P, self.sat_dt, self.sat_szf = par, SP, dt, szf
+            self.Dtemp = rng.beta(2.0, 2.0, N)
+            # flicker: three incommensurate breaths per fire (1-4 Hz) plus a small fast lick
+            self.fq = np.stack([rng.uniform(0.22, 0.45, N), rng.uniform(0.5, 0.9, N), rng.uniform(1.4, 2.6, N)], 1)
+            self.fph = rng.random((N, 3)) * 2 * np.pi
+        par = self.sat_par
         m = len(par)
-        up = self.P[par]
-        e1 = np.cross(up, [0.0, 0.0, 1.0])
-        e1 /= np.linalg.norm(e1, axis=1)[:, None] + 1e-12
-        e2 = np.cross(up, e1)
-        ang = rng.random(m) * 2 * np.pi
-        dist = rng.uniform(6.0, 26.0, m) / R_KM
-        SP = up + (np.cos(ang)[:, None] * e1 + np.sin(ang)[:, None] * e2) * dist[:, None]
-        SP /= np.linalg.norm(SP, axis=1)[:, None]
-        st = self.t_ign[par] + rng.uniform(3.0, 16.0, m)
+        st = self.t_ign[par] + self.sat_dt
         org = par == 0
-        st[org] = self.t0 + rng.uniform(4.0, 22.0, int(org.sum()))    # they answer the flare
-        self.DP = np.concatenate([self.P, SP])
+        st[org] = self.t0 + self.sat_dt[org]
+        self.DP = np.concatenate([self.P, self.sat_P])
         self.Dt = np.concatenate([self.t_ign, st])
-        self.Dsz = np.concatenate([self.size, self.size[par] * rng.uniform(0.15, 0.5, m)])
+        self.Dsz = np.concatenate([self.size, self.size[par] * self.sat_szf])
         self.Dkind = np.concatenate([self.kind, self.kind[par]])
         self.Dmain = np.concatenate([np.ones(n, bool), np.zeros(m, bool)])
-        N = n + m
-        self.Dtemp = rng.beta(2.0, 2.0, N)
-        # flicker: three incommensurate breaths per fire (1-4 Hz) plus a small fast lick
-        self.fq = np.stack([rng.uniform(0.22, 0.45, N), rng.uniform(0.5, 0.9, N), rng.uniform(1.4, 2.6, N)], 1)
-        self.fph = rng.random((N, 3)) * 2 * np.pi
         self.famp = np.array([0.2, 0.13, 0.07])
         fl = self.fl
         self.fi = fl[:, 0].astype(np.int64)
@@ -819,12 +843,12 @@ class FireNet:
             if fb > 0.01 and len(om):
                 o = om[0]
                 Lw = np.zeros_like(Lb)
-                rw = (70.0 + 150.0 * fb) * ppk[o] / ds
-                ew = 14.0 * fb * float(dim[o]) * light * 2 * np.pi * rw * rw
+                rw = (55.0 + 110.0 * fb) * ppk[o] / ds
+                ew = 12.0 * fb * float(dim[o]) * light * 2 * np.pi * rw * rw
                 G.splat_points(Lw, uv[o:o + 1, 0] / ds, uv[o:o + 1, 1] / ds,
                                np.ascontiguousarray((ew * (hot * 0.6 + mid * 0.4))[None, :]), np.array([rw]))
                 Lw = cv2.resize(Lw, (W, H), interpolation=cv2.INTER_LINEAR)
-                img += np.minimum(planet, 0.06) * Lw
+                img += np.minimum(planet, 0.04) * Lw
         if sparks:
             mm = self.Dmain[lit]
             self._ignition_sparks(img, cam, t, lit[mm], age[mm], dim[mm], scale)

@@ -294,7 +294,7 @@ class Dawn:
     def fires(self, base, t, scale, calm):
         img = base['img'].copy()
         fnet().draw(img, base['cam'], 2700.0, t_anim=t, embers=False, sun=base['Sl'], day_keep=0.0,
-                    gain=1.1, scale=scale, calm=calm, planet=base['planet'], light=1.0)
+                    gain=1.35, scale=scale, calm=calm, planet=base['planet'], light=1.3)
         # v1's village hearths blooming into the dark are gone (LONGDAWN_HEARTHS=1 brings them back)
         if os.environ.get('LONGDAWN_HEARTHS') == '1':
             hearths().draw(img, base['cam'], t, sun=base['Sl'], gain=1.0, calm=calm, scale=scale)

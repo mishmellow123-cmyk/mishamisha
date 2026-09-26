@@ -315,7 +315,7 @@ def draw_source(img, zb, scam, frame, B, pxs):
             # a distant beacon: a warm hot point with a soft orange aura (a fire, not a lamp)
             F2.glow(img, zb, sx, sy - 0.3 * Hf * ppm, 0.95 * pxs, (6.5 if big else 3.5) * e * pxs * pxs, z=z,
                     zbias=zbias, col=np.array([1.0, 0.62, 0.26]))
-            F2.halo(img, zb, sx, sy - 0.3 * Hf * ppm, 3.2 * pxs, (0.10 if big else 0.06) * e, z=z, zbias=zbias,
+            F2.halo(img, zb, sx, sy - 0.3 * Hf * ppm, 3.4 * pxs, (0.13 if big else 0.08) * e, z=z, zbias=zbias,
                     col=F2.AURA_COL)
             F2.halo(img, zb, sx, sy - 0.3 * Hf * ppm, 11.0 * pxs, (0.012 if big else 0.007) * e, z=z, zbias=zbias,
                     col=F2.AURA_COL)

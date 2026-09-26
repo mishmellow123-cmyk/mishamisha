@@ -1,0 +1,13 @@
+{
+ "name": "run_v2_d",
+ "branch": "claude/render-run-v2-d",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "python3 shots/run/render_run.py --range 1640-1679 --procs 4 --skip"
+ ],
+ "out_dir": "renders/run_v2",
+ "frames": "1640-1679",
+ "push_every": 300
+}
