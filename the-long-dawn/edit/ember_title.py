@@ -68,10 +68,10 @@ F0, F1 = 2800, 2966                      # v2 frames covered (inclusive)
 OUT_DIR = os.path.join(ROOT, 'renders', 'title')
 REVIEW = os.path.join(os.path.dirname(ROOT), '_local_logs', 'review', 'title.jpg')
 TEXT = 'THE LONG DAWN'
-TITLE_Y = 402
+TITLE_Y = 312                            # raised 90 px (M6): clear of the beacon's flame
 
 # --- the choreography (v2 frames) -------------------------------------------------------------
-TA0, TA1 = 2851.0, 2869.0                # mean landing frame of the first / last letter
+TA0, TA1 = 2853.0, 2870.0                # mean landing frame of the first / last letter
 A_SPREAD = 16.0                          # landing spread inside one letter (frames)
 REL0, REL1 = 2927.0, 2938.0              # mean release frame of the first / last letter
 R_SPREAD = 8.0
@@ -79,7 +79,8 @@ END = 2961.0                             # every ember is dark by here
 BIRTH_MIN = 2807.0                       # the first answering fires are alight by here
 SHUT = 0.6                               # shutter (frames) for the streaks
 T0_GRID, T1_GRID, DT = 2776.0, 2970.0, 0.25
-FIRE_GAP = 3.0                           # min frames between two sparks launched by one fire
+FIRE_GAP = 1.0                           # min frames between two title sparks from one fire
+V_IGNITE = 2.6                           # px/frame: a landed ember's fire runs along the stroke
 
 GOLD = look.hexrgb(look.PALETTE['accord_gold'])
 PALE = look.hexrgb(look.PALETTE['accord_pale'])
@@ -346,7 +347,8 @@ def _v_rise(x, y, t, pr, P, OL, OV, OT, adv, CF, cfp):
 def _v_free(x, y, t, pr, P, OL, OV, OT, adv, CF, cfp):
     """Forward-time velocity of a free / released ember.
     pr = [t0 (birth or release), U0, UB, UBT, Gr (start-from-rest time, 0 = none), TS, WD, CC,
-          KX, KY, KT (its own drift, decaying over KT: neighbours part company)]."""
+          KX, KY, KT (its own drift, decaying over KT: neighbours part company),
+          TC (the crane coupling fades over TC frames after t0; 0 = constant)]."""
     age = t - pr[0]
     if age <= 0.0:
         return 0.0, 0.0
@@ -356,10 +358,11 @@ def _v_free(x, y, t, pr, P, OL, OV, OT, adv, CF, cfp):
         g = 1.0 - math.exp(-q * q)
     rise = pr[1] * (1.0 + pr[2] * math.exp(-age / pr[3]))
     kd = math.exp(-age / pr[10])
+    cc = pr[7] if pr[11] <= 0.0 else pr[7] * math.exp(-age / pr[11])
     cx, cy = _curl(x, y, t, P, OL, OV, OT, adv)
     fu, fv = _camflow(x, y, t, CF, cfp)
-    return (g * (pr[5] * cx + pr[6] + pr[8] * kd) + pr[7] * fu,
-            g * (pr[5] * cy - rise + pr[9] * kd) + pr[7] * fv)
+    return (g * (pr[5] * cx + pr[6] + pr[8] * kd) + cc * fu,
+            g * (pr[5] * cy - rise + pr[9] * kd) + cc * fv)
 
 
 @njit(cache=True, fastmath=True)
@@ -589,7 +592,7 @@ def glide_ease(u):
 class Title:
     """Everything that does not change per frame: glyph fields, particles and their paths."""
 
-    def __init__(self, n_letter=750, n_release=2200, n_free=440, n_bokeh=14, seed=2880):
+    def __init__(self, n_letter=225, n_release=2200, n_free=150, n_bokeh=0, seed=2880):
         rng = np.random.default_rng(seed)
         a, stag, mw, mh = titles.render_line(TEXT, titles.CINZEL, 92, 500, 0.28)
         self.mask = a.astype(np.float32)
@@ -615,11 +618,15 @@ class Title:
         xrel = np.arange(mw, dtype=np.float32)[None, :]
         wid = np.array([max(8.0, np.ptp(xs[letter[ys, xs] == k])) for k in range(self.nl)])
         xin = (xrel - cxs[lab]) / wid[lab]
-        # landing frames: letter stagger; inside a letter soft patches, lower parts first
-        nA = _blur_noise(rng, self.mask.shape, 5.0)
-        base = TA0 + (TA1 - TA0) * ln[lab]
-        self.A = (base + A_SPREAD * (0.30 * np.tanh(0.8 * nA) - 0.28 * (yrel - 0.5)
-                                     + 0.18 * xin)).astype(np.float32)
+        # letter embers: targets spread evenly over each letter, landing frames (letter stagger,
+        # lower parts first); the glyph's reveal field follows them: each landing ember ignites
+        # its stroke and the fire runs outward at V_IGNITE px/frame
+        tx, ty, TAe = self._letter_targets(rng, n_letter, ln, yrel, xin)
+        self.l_px, self.l_py = tx, ty
+        self.l_T = np.stack([self.mx0 + tx + rng.uniform(-0.4, 0.4, len(tx)),
+                             self.my0 + ty + rng.uniform(-0.4, 0.4, len(ty))], 1)
+        self.l_TA = TAe + rng.normal(0, 0.3, len(TAe))
+        n_letter = len(tx)
         # release frames: left to right, tops first, patchy
         nR = _blur_noise(rng, self.mask.shape, 6.0)
         self.R = (REL0 + (REL1 - REL0) * ln[lab] + R_SPREAD * (0.32 * np.tanh(0.8 * nR)
@@ -636,11 +643,46 @@ class Title:
         col = col * (1 - 0.25 * c ** 2) + PALE * 0.25 * c ** 2
         self.col = col.astype(np.float32)
         self.inten = (0.74 + 0.26 * self.core).astype(np.float32)
-        self._init_stipple(rng)
         self.used = {}                                     # fire -> launch frames (rate limit)
         self._init_particles(rng, n_letter, n_release, n_free, n_bokeh)
+        # the glyph's reveal: each ember that lands ignites its stroke; the fire runs outward
+        A = np.full(self.mask.shape, np.inf, np.float32)
+        for i in np.nonzero(self.l_src >= 0)[0]:
+            x_, y_, t_ = self.l_px[i], self.l_py[i], self.l_TA[i]
+            x0, x1 = max(0, x_ - 40), min(mw, x_ + 41)
+            y0, y1 = max(0, y_ - 40), min(mh, y_ + 41)
+            gy, gx = np.mgrid[y0:y1, x0:x1]
+            A[y0:y1, x0:x1] = np.minimum(A[y0:y1, x0:x1], t_ + np.hypot(gx - x_, gy - y_) / V_IGNITE)
+        A[~np.isfinite(A)] = float(self.l_TA.max()) + 6.0
+        self.A = A.astype(np.float32)
+        self._init_stipple(rng)
 
     # -------------------------------------------------------------------------------------
+    def _letter_targets(self, rng, n, ln, yrel, xin):
+        """Farthest-point samples on each letter (~n in all, by ink area) and their landing frames."""
+        ink = self.mask > 0.5
+        area = np.array([((self.letter == k) & ink).sum() for k in range(self.nl)], np.float64)
+        nk = np.maximum(3, np.round(n * area / area.sum()).astype(int))
+        TX, TY, TA = [], [], []
+        for k in range(self.nl):
+            ys, xs = np.nonzero((self.letter == k) & ink)
+            pts = np.stack([xs, ys], 1).astype(np.float64)
+            d = np.full(len(pts), np.inf)
+            j = int(rng.integers(len(pts)))
+            sel = []
+            for _ in range(nk[k]):
+                sel.append(j)
+                d = np.minimum(d, ((pts - pts[j]) ** 2).sum(1))
+                j = int(np.argmax(d))
+            sel = np.array(sel)
+            px, py = xs[sel], ys[sel]
+            z = rng.standard_normal(len(sel))
+            TA.append(TA0 + (TA1 - TA0) * ln[k] + A_SPREAD * (0.30 * np.tanh(0.8 * z) - 0.28 * (yrel[py, 0] - 0.5)
+                                                               + 0.18 * xin[py, px]))
+            TX.append(px)
+            TY.append(py)
+        return np.concatenate(TX), np.concatenate(TY), np.concatenate(TA)
+
     def _sample_mask(self, rng, n, lo=0.25):
         w = np.clip(self.mask - lo, 0, None).ravel()
         idx = rng.choice(w.size, size=n, p=w / w.sum())
@@ -671,7 +713,7 @@ class Title:
         if far_only:
             ok &= FIRES[:, 5] != 2
         for j in np.nonzero(ok)[0]:
-            if any(abs(t - u) < FIRE_GAP for u in self.used.get(int(j), ())):
+            if any(abs(t - u) < gap for u in self.used.get(int(j), ())):
                 ok[j] = False
         if x0 is None:
             w = np.where(ok, FIRES[:, 4], 0.0)
@@ -690,101 +732,97 @@ class Title:
         K = int(round((T1_GRID - T0_GRID) / DT)) + 1
         self.K = K
         self.tt = T0_GRID + DT * np.arange(K)
+        tt = self.tt
         CF = _camflow_table()
         cfp = np.array([CF_X[0], CF_X[1] - CF_X[0], CF_Y[0], CF_Y[1] - CF_Y[0], CF_T0, CF_DT], np.float64)
         args = (T0_GRID, DT, _PERM, OCT_L, OCT_V, OCT_T, ADV, CF, cfp)
         self.nL, self.nR, self.nF, self.nB = nL, nR, nF, nB
+        self._fire_table()
 
-        # ---------------- free embers first: they are the sparks visibly rising from the fires
-        tbF = self._free_births(rng, nF)
-        fx = np.zeros(nF)
-        fy = np.zeros(nF)
-        self.f_src = np.zeros(nF, np.int64)          # 0 below frame/hill, 1 far fire, 2 the cairn
-        for i in np.argsort(tbF):
-            t = tbF[i]
-            got = self._take_fire(rng, t, None, None) if rng.random() < 0.85 else None
-            if got is not None:
-                j, sx, sy = got
-                if j == CAIRN:
-                    fx[i], fy[i] = sx + rng.normal(0, 14), sy - rng.uniform(40, 140)
-                    self.f_src[i] = 2
-                else:
-                    fx[i], fy[i] = sx + rng.normal(0, 1.2), sy - rng.uniform(1, 3)
-                    self.f_src[i] = 1
-            else:
-                fx[i], fy[i] = rng.uniform(-60, W + 60), H + rng.uniform(8, 50)
-        PRF = np.stack([tbF, rng.uniform(1.3, 2.8, nF), rng.uniform(0.8, 2.4, nF), rng.uniform(5.0, 12.0, nF),
-                        np.zeros(nF), rng.uniform(0.8, 1.6, nF), rng.uniform(0.3, 1.0, nF),
-                        rng.uniform(0.35, 0.8, nF), np.zeros(nF), np.zeros(nF), np.ones(nF)], 1)
-        Fp = np.zeros((K, nF, 2))
-        _paths(Fp, fx, fy, tbF, PRF, 1, *args)
-        self.f_tb = tbF
-
-        # ---------------- letter embers
-        tx, ty = self._sample_mask(rng, nL, 0.3)
-        TX = self.mx0 + tx + rng.uniform(-0.5, 0.5, nL)
-        TY = self.my0 + ty + rng.uniform(-0.5, 0.5, nL)
-        TA = self.A[ty, tx] + rng.normal(0, 0.6, nL)
-        TR = self.R[ty, tx] + rng.normal(0, 0.6, nL)
-        # hover points: mostly below the target (the embers rise into their places), a few beside it
-        side = rng.random(nL) < 0.10
-        HX = TX + np.where(side, np.clip(rng.normal(0, 140, nL), -300, 300), np.clip(rng.normal(0, 90, nL), -220, 220))
-        HY = TY + np.where(side, rng.normal(0, 40, nL), np.minimum(40 + rng.exponential(70, nL), 300))
-        GG = np.clip(8.0 + np.hypot(HX - TX, HY - TY) / 6.0, 12.0, 32.0)     # gentle approach speeds
-        GG = np.minimum(GG, TA - BIRTH_MIN - 14.0)
+        # ---------------- letter embers: sparks thrown up by a real fire, caught by the title
+        T, TA = self.l_T, self.l_TA
+        TX, TY = T[:, 0], T[:, 1]
+        GG = rng.uniform(11.0, 16.0, nL)                    # the last glide home (the flight is aimed)
         TG = TA - GG
-        DR = rng.uniform(16.0, 44.0, nL)
-        TB = np.minimum(TG - 12.0, np.maximum(TG - DR, BIRTH_MIN + rng.uniform(0, 12, nL)))
-        PRL = np.stack([TG, TB, rng.uniform(2.8, 4.6, nL), rng.uniform(1.0, 2.2, nL), rng.uniform(6.0, 12.0, nL),
-                        rng.uniform(0.5, 1.3, nL), rng.uniform(3.0, 6.0, nL), rng.uniform(0.6, 1.2, nL),
-                        rng.uniform(0.2, 0.7, nL), rng.uniform(0.4, 0.8, nL)], 1)
+        AX = TX + rng.normal(0, 16, nL)                     # aim point at TG: just below the target
+        AY = TY + np.minimum(28.0 + rng.exponential(34.0, nL), 110.0)
+        TB = np.zeros(nL)
+        X0 = np.zeros(nL)
+        Y0 = np.zeros(nL)
+        self.l_src = np.full(nL, -1, np.int64)
+        for i in np.argsort(TG):
+            got = None
+            for D in (34.0, 26.0, 42.0, 20.0, 50.0, 58.0):  # flight time; prefer ~34 frames
+                tb = TG[i] - D * rng.uniform(0.92, 1.08)
+                if tb < BIRTH_MIN:
+                    continue
+                j = self._launch_fire(rng, tb, (AX[i], AY[i]), FIRE_GAP)
+                if j is not None:
+                    got = (j, tb)
+                    break
+            if got is None:                                  # no fire free: this ember is not thrown
+                TB[i] = TG[i] - 40.0
+                X0[i], Y0[i] = AX[i], H + 400.0
+                continue
+            j, TB[i] = got
+            X0[i], Y0[i] = self._spark_origin(rng, j, TB[i])
+            self.l_src[i] = j
+        U0 = rng.uniform(1.6, 2.6, nL)
+        UB = rng.uniform(1.4, 2.6, nL)
+        UBT = rng.uniform(5.0, 9.0, nL)
+        TS = rng.uniform(0.5, 1.0, nL)
+        CC = rng.uniform(0.7, 0.95, nL)
+        TC = rng.uniform(10.0, 18.0, nL)
+        WD = np.zeros(nL)
+        kk = np.ones(nL)
+        KX = rng.normal(0.0, 1.8, nL)                       # each spark leaves the fire its own way
+        KY = -rng.uniform(0.0, 1.8, nL)
+        KT = rng.uniform(3.0, 6.0, nL)
         C = np.zeros((K, nL, 2))
-        _paths(C, HX, HY, TG, PRL, 0, *args)
-        self.l_TA, self.l_TB, self.l_TG, self.l_TR = TA, TB, TG, TR
-        self.l_T = np.stack([TX, TY], 1)
-        # births in open sky: a spark launched by a real fire (rate-limited) or a fade-in from the haze
-        self.l_birth = np.zeros(nL, np.int64)        # 0 hidden, 1 far fire, 2 cairn, 3 haze fade-in
-        tt = self.tt
-        for i in np.argsort(TB):
-            tb = TB[i]
-            kb = (tb - T0_GRID) / DT
-            k0 = int(np.floor(kb))
-            a = kb - k0
-            x0 = C[k0, i, 0] * (1 - a) + C[k0 + 1, i, 0] * a
-            y0 = C[k0, i, 1] * (1 - a) + C[k0 + 1, i, 1] * a
-            if hidden_at(x0, y0, tb):
-                continue
-            got = self._take_fire(rng, tb, x0, y0, far_only=tb < 2852) if rng.random() < 0.55 else None
-            if got is None:
-                self.l_birth[i] = 3
-                continue
-            j, sx, sy = got
-            if j == CAIRN:
-                ox, oy = sx + rng.normal(0, 12) - x0, sy - rng.uniform(40, 120) - y0
-                self.l_birth[i] = 2
-            else:
-                ox, oy = sx + rng.normal(0, 1.2) - x0, sy - rng.uniform(1, 3) - y0
-                self.l_birth[i] = 1
-            B = float(np.clip(0.5 * (TG[i] - tb), 6.0, 16.0))
-            s = 1 - smoothstep(tb, tb + B, tt)
-            s[tt < tb] = 1.0
-            C[:, i, 0] += s * ox
-            C[:, i, 1] += s * oy
-        # glide: a curved blend from the drifting carrier onto the target (zero velocity at both ends)
-        k = np.clip(np.round((TG - T0_GRID) / DT).astype(int), 0, K - 1)
-        H0 = C[k, np.arange(nL)]
-        d0 = self.l_T - H0
+        rise1 = U0 * ((TG - TB) + UB * UBT * (1 - np.exp(-(TG - TB) / UBT)))      # vertical travel at kk = 1
+        kg = np.clip(np.round((TG - T0_GRID) / DT).astype(int), 0, K - 1)
+        for _ in range(3):                                   # aim: arrive at (AX, AY) at TG
+            PRL = np.stack([TB, kk * U0, UB, UBT, np.zeros(nL), TS, WD, CC, KX, KY, KT, TC], 1)
+            _paths(C, X0, Y0, TB, PRL, 1, *args)
+            p = C[kg, np.arange(nL)]
+            kk = np.clip(kk + (p[:, 1] - AY) / np.maximum(rise1, 1.0), 0.45, 2.6)
+            WD = np.clip(WD + (AX - p[:, 0]) / np.maximum(TG - TB, 1.0), -6.0, 6.0)
+        PRL = np.stack([TB, kk * U0, UB, UBT, np.zeros(nL), TS, WD, CC, KX, KY, KT, TC], 1)
+        _paths(C, X0, Y0, TB, PRL, 1, *args)
+        self.l_TB, self.l_TG, self.l_GG = TB, TG, GG
+        # glide: a curved blend from the flight onto the target (zero velocity at both ends)
+        H0 = C[kg, np.arange(nL)]
+        d0 = T - H0
         perp = np.stack([-d0[:, 1], d0[:, 0]], 1)
-        kappa = rng.normal(0, 0.22, nL)
-        u = (tt[:, None] - TG[None, :]) / (TA - TG)[None, :]
-        s = glide_ease(u)
-        Lp = C * (1 - s)[..., None] + self.l_T[None] * s[..., None] + (kappa * np.sin(np.pi * s))[..., None] * perp[None]
-        Lp = np.where((tt[:, None] >= TA[None, :])[..., None], self.l_T[None], Lp)
-        # release: forward from the glyph, starting from rest, lifting and swirling away
+        kappa = rng.normal(0, 0.18, nL)
+        s = glide_ease((tt[:, None] - TG[None, :]) / (TA - TG)[None, :])
+        Lp = C * (1 - s)[..., None] + T[None] * s[..., None] + (kappa * np.sin(np.pi * s))[..., None] * perp[None]
+        Lp = np.where((tt[:, None] >= TA[None, :])[..., None], T[None], Lp)
+        # the loosening: forward from the glyph, starting from rest, lifting and swirling away
+        TR = self.R[np.clip(np.round(TY - self.my0).astype(int), 0, self.mask.shape[0] - 1),
+                    np.clip(np.round(TX - self.mx0).astype(int), 0, self.mask.shape[1] - 1)] + rng.normal(0, 0.6, nL)
+        self.l_TR = TR
         Rp = np.zeros((K, nL, 2))
         _paths(Rp, TX, TY, TR, self._release_params(rng, TR), 1, *args)
         rel = tt[:, None] >= TR[None, :]
         Lp[rel] = Rp[rel]
+
+        # ---------------- free embers: the sparks every answering fire throws up
+        tbF = self._free_births(rng, nF)
+        fx, fy = np.zeros(nF), np.full(nF, H + 400.0)
+        self.f_src = np.full(nF, -1, np.int64)
+        for i in np.argsort(tbF):
+            j = self._launch_fire(rng, tbF[i], None, 2.0)
+            if j is not None:
+                fx[i], fy[i] = self._spark_origin(rng, j, tbF[i])
+                self.f_src[i] = j
+        PRF = np.stack([tbF, rng.uniform(1.2, 2.6, nF), rng.uniform(1.0, 2.6, nF), rng.uniform(4.0, 9.0, nF),
+                        np.zeros(nF), rng.uniform(0.7, 1.4, nF), rng.uniform(0.2, 0.8, nF), rng.uniform(0.6, 0.9, nF),
+                        rng.normal(0.0, 1.4, nF), -rng.uniform(0.0, 1.4, nF), rng.uniform(3.0, 6.0, nF),
+                        rng.uniform(25.0, 40.0, nF)], 1)
+        Fp = np.zeros((K, nF, 2))
+        _paths(Fp, fx, fy, tbF, PRF, 1, *args)
+        self.f_tb = tbF
 
         # ---------------- release-only embers: part of the glyph's light until it loosens
         rx, ry = self._sample_mask(rng, nR, 0.3)
@@ -795,22 +833,13 @@ class Title:
         _paths(Rq, RX, RY, TRr, self._release_params(rng, TRr), 1, *args)
         self.r_TR = TRr
 
-        # ---------------- bokeh (foreground embers, out of focus; they sweep down as we rise)
-        tbB = rng.uniform(2828.0, 2905.0, nB)
-        bx = rng.uniform(60, W - 60, nB)
-        by = rng.uniform(470, 780, nB)
-        PRB = np.stack([tbB, rng.uniform(0.8, 1.6, nB), np.zeros(nB), np.ones(nB), np.zeros(nB),
-                        rng.uniform(0.5, 1.0, nB), rng.uniform(0.2, 0.7, nB), rng.uniform(1.2, 1.6, nB),
-                        np.zeros(nB), np.zeros(nB), np.ones(nB)], 1)
-        Bp = np.zeros((K, nB, 2))
-        _paths(Bp, bx, by, tbB, PRB, 1, *args)
-
-        self.POS = np.concatenate([Lp, Rq, Fp, Bp], 1).astype(np.float32)
-        N = nL + nR + nF + nB
+        self.POS = np.concatenate([Lp, Rq, Fp], 1).astype(np.float32)
+        N = nL + nR + nF
+        self.nB = 0
         o = nL + nR
         self.occ = np.zeros(N, np.int64)
-        self.occ[:nL] = np.where(self.l_birth == 2, 0, 1)
-        self.occ[o:o + nF] = np.where(self.f_src == 2, 0, 1)
+        self.occ[:nL] = np.where(self.l_src == CAIRN, 0, 1)
+        self.occ[o:o + nF] = np.where(self.f_src == CAIRN, 0, 1)
         # per-particle look
         self.temp0 = rng.uniform(0.84, 0.96, N)
         self.cool = rng.uniform(8.0, 16.0, N)
@@ -818,24 +847,68 @@ class Title:
         self.flk_ph = rng.uniform(0, 2 * np.pi, N)
         self.flk_a = rng.uniform(0.05, 0.18, N)
         self.rad = rng.uniform(0.55, 0.85, N)
-        self.coc0 = rng.uniform(0.2, 2.0, N)
-        # letter embers drift out of focus until they glide home (the title racks into focus)
-        self.coc0[:nL] = np.clip(rng.lognormal(np.log(3.2), 0.55, nL), 1.0, 11.0)
+        self.coc0 = rng.uniform(0.2, 1.2, N)
+        soft = rng.random(nL) < 0.33                          # a third drift a little out of focus
+        self.coc0[:nL] = np.where(soft, rng.uniform(1.5, 4.0, nL), rng.uniform(0.2, 1.0, nL))
         area = float(self.mask.sum())
         e_mean = float((self.inten * self.mask).sum() / area)
-        eL = rng.lognormal(0.0, 0.6, nL)
-        self.l_E = 0.28 * e_mean * area / nL * eL / eL.mean()      # the glyph itself carries most of the light
-        self.l_GG = GG
-        # on release the glyph's light goes back into the embers (~75% of it; sparks read brighter)
+        self.l_E = 4.2 * rng.lognormal(0.0, 0.45, nL)
         eR = rng.lognormal(0.0, 0.45, nL + nR)
-        self.e_rel = 0.75 * e_mean * area / (nL + nR) * eR / eR.mean()
+        self.e_rel = 0.75 * e_mean * area / (nL + nR) * eR / eR.mean()     # the glyph's light, given back
         self.r_life = rng.uniform(10.0, 16.0, nL + nR)
-        self.f_life = rng.uniform(30.0, 80.0, nF)
-        self.f_E = rng.lognormal(np.log(2.2), 0.6, nF)
-        self.b_tb = tbB
-        self.b_E = rng.uniform(8.0, 22.0, nB)
-        self.b_coc = rng.uniform(6.0, 12.0, nB)
-        self.b_life = rng.uniform(40.0, 70.0, nB)
+        self.f_life = rng.uniform(26.0, 56.0, nF)
+        self.f_E = rng.lognormal(np.log(1.7), 0.5, nF) * (self.f_src >= 0)
+
+    # ---------------------------------------------------------------------- the fires ---
+    def _fire_table(self):
+        """Screen position / lit / visible of every fire on a half-frame grid."""
+        self.ft = np.arange(BIRTH_MIN - 2.0, 2905.0, 0.5)
+        n = len(self.ft)
+        self.fsx = np.zeros((n, len(FIRES)))
+        self.fsy = np.zeros((n, len(FIRES)))
+        self.fok = np.zeros((n, len(FIRES)), bool)
+        self.fpx = np.zeros((n, len(FIRES)))             # flame height in px
+        for k, t in enumerate(self.ft):
+            sx, sy, lit, vis = fire_screen(t)
+            _, _, z = project(FIRES[:, :3], t)
+            self.fsx[k], self.fsy[k] = sx, sy
+            self.fok[k] = vis & (FIRES[:, 3] <= t - 1.0)
+            self.fpx[k] = crane(t)[2] * FIRES[:, 4] * 1.35 / np.maximum(z, 1.0)
+
+    def _launch_fire(self, rng, t, aim, gap):
+        """A lit, visible fire that has not launched a spark within FIRE_GAP frames of t (for a
+        letter ember: near below its aim point). Returns its index, or None."""
+        k = int(np.clip(np.round((t - self.ft[0]) / 0.5), 0, len(self.ft) - 1))
+        ok = self.fok[k].copy()
+        for j in np.nonzero(ok)[0]:
+            if any(abs(t - u) < FIRE_GAP for u in self.used.get(int(j), ())):
+                ok[j] = False
+        size = np.sqrt(FIRES[:, 4])
+        if aim is None:
+            w = np.where(FIRES[:, 5] == 2, 0.6, 1.0) * size
+        else:
+            dx = self.fsx[k] - aim[0]
+            drop = self.fsy[k] - aim[1]                  # how far below the aim point the fire is
+            w = np.exp(-(dx / 190.0) ** 2) * np.clip((drop - 60.0) / 60.0, 0.0, 1.0) * size
+            w *= np.exp(-(np.maximum(drop - 420.0, 0.0) / 120.0) ** 2)
+        w = np.where(ok, w, 0.0)
+        if w.sum() < 1e-6:
+            return None
+        j = int(rng.choice(len(w), p=w / w.sum()))
+        self.used.setdefault(j, []).append(t)
+        return j
+
+    def _spark_origin(self, rng, j, t):
+        """Where a spark leaves fire j at frame t: out of the upper part of its flame."""
+        k = int(np.clip(np.round((t - self.ft[0]) / 0.5), 0, len(self.ft) - 1))
+        a = (t - self.ft[k]) / 0.5
+        k1 = min(k + 1, len(self.ft) - 1)
+        sx = self.fsx[k, j] * (1 - a) + self.fsx[k1, j] * a
+        sy = self.fsy[k, j] * (1 - a) + self.fsy[k1, j] * a
+        hp = self.fpx[k, j]
+        if FIRES[j, 5] == 2:
+            return sx + rng.normal(0, 10), sy - rng.uniform(50, 120)
+        return sx + rng.normal(0, 0.15 * hp + 0.5), sy - rng.uniform(0.4, 0.9) * hp
 
     def _release_params(self, rng, TR):
         """Loosening: from rest, a quick lift, strong swirl, and each ember's own drift."""
@@ -847,11 +920,11 @@ class Title:
                          m * np.cos(ang), m * np.sin(ang), rng.uniform(10.0, 26.0, n)], 1)
 
     def _free_births(self, rng, n):
-        """Birth frames of the free embers: sparse early, a swell through the gathering, a thin
-        trickle through the hold, none once the letters start to loosen."""
-        ts = np.arange(BIRTH_MIN, 2920.0, 0.5)
-        dens = (smoothstep(BIRTH_MIN, 2830, ts) * (1.0 - 0.8 * smoothstep(2862, 2884, ts)))
-        dens = np.maximum(dens, 1e-4) * (1 - smoothstep(2908, 2920, ts))
+        """Birth frames of the free sparks: they follow the fires catching (2805-2880) and thin
+        out through the hold; none once the letters start to loosen."""
+        ts = np.arange(BIRTH_MIN, 2900.0, 0.5)
+        dens = smoothstep(BIRTH_MIN, 2822, ts) * (1.0 - 0.75 * smoothstep(2866, 2890, ts))
+        dens = np.maximum(dens, 1e-4) * (1 - smoothstep(2892, 2900, ts))
         cdf = np.cumsum(dens)
         cdf /= cdf[-1]
         return np.interp(rng.random(n), cdf, ts)
@@ -877,14 +950,15 @@ class Title:
         # --- letter embers
         ta, tb, tg, tr = self.l_TA, self.l_TB, self.l_TG, self.l_TR
         age = f - tb
-        haze = self.l_birth == 3
-        born = np.where(haze, 0.8 * smoothstep(0.0, 9.0, age), smoothstep(0.0, 2.0, age))
+        fire = self.l_src >= 0
+        born = np.where(fire, smoothstep(0.0, 1.5, age), 0.0)
+        pop = 1.0 + 0.8 * np.exp(-np.maximum(age, 0.0) / 2.5) * fire     # thrown out of the fire, hot
         cooled = np.exp(-np.maximum(age, 0) / self.cool[:nL])
         rk = smoothstep(-4.0, self.l_GG, f - tg)                         # re-kindles as it glides home
-        temp_fl = 0.58 + (self.temp0[:nL] - 0.58) * cooled
+        temp_fl = 0.60 + (self.temp0[:nL] - 0.60) * cooled
         temp_fl = temp_fl * (1 - rk) + 0.775 * rk
-        e_fl = ((0.40 + 0.60 * cooled) * (1 - rk) + rk) * born * (f < ta)
-        hand = (f >= ta) * (1 - smoothstep(ta - 1.0, ta + 3.0, f)) * (f < tr - 3.0)   # melts into the glyph
+        e_fl = ((0.55 + 0.45 * cooled) * (1 - rk) + rk) * born * pop * (f < ta)
+        hand = (f >= ta) * (1 - smoothstep(ta - 1.0, ta + 3.0, f)) * (f < tr - 3.0) * fire   # melts into the glyph
         sg = glide_ease((f - tg) / (ta - tg))
         coc[:nL] = self.coc0[:nL] * (1.0 - sg) ** 1.4 * (f < ta)
         E[:nL] = self.l_E * (e_fl + hand) * (1.0 + 0.12 * coc[:nL])   # a soft disc still reads as bright as a point
@@ -902,22 +976,16 @@ class Title:
         s = slice(nL + nR, nL + nR + nF)
         a = f - self.f_tb
         x = np.clip(a / self.f_life, 0, 1)
-        E[s] = self.f_E * smoothstep(0.0, 2.0, a) * (1 - x) ** 1.3 * (a >= 0) * fl[s] * end
+        E[s] = (self.f_E * smoothstep(0.0, 1.5, a) * (1 - x) ** 1.3 * (a >= 0) * fl[s] * end
+                * (1.0 + 0.8 * np.exp(-np.maximum(a, 0.0) / 2.5)))
         T[s] = self.temp0[s] - 0.5 * x
-        # --- bokeh
-        s = slice(nL + nR + nF, N)
-        a = f - self.b_tb
-        x = np.clip(a / self.b_life, 0, 1)
-        E[s] = self.b_E * np.sin(np.pi * x) ** 1.5 * (a >= 0) * (0.85 + 0.15 * fl[s]) * end
-        T[s] = 0.68 + 0.06 * np.sin(self.flk_ph[s])
-        coc[s] = self.b_coc
         col = look.blackbody(T).astype(np.float64)
         return tail, head, E, col, self.rad, coc
 
     def glyph(self, f):
         """The formed-glyph light in the mask box (mh x mw x 3, linear), or None."""
         A, R = self.A, self.R
-        rev = smoothstep(A - 3.0, A + 2.5, f)
+        rev = smoothstep(A - 1.0, A + 2.5, f)     # lights where its ember lands, then runs
         dis = 1.0 - smoothstep(R - 2.0, R + 3.0, f)
         on = (rev * dis).astype(np.float32)
         if on.max() <= 0:
@@ -1000,8 +1068,8 @@ def soft_clip(x, knee=0.8):
     return np.where(x <= knee, x, knee + s * (1.0 - np.exp(-(x - knee) / s))).astype(np.float32)
 
 
-def frame_path(f):
-    return os.path.join(OUT_DIR, f't_{f:05d}.exr')
+def frame_path(f, out_dir=None):
+    return os.path.join(out_dir or OUT_DIR, f't_{f:05d}.exr')
 
 
 def layer(f):
@@ -1025,47 +1093,68 @@ def composite(img_srgb, f):
     return look.linear_to_srgb(soft_clip(look.srgb_to_linear(img_srgb) + lay))
 
 
-def write(f, img):
-    os.makedirs(OUT_DIR, exist_ok=True)
-    tmp = frame_path(f)[:-4] + '.tmp.exr'
+def write(f, img, out_dir=None):
+    out_dir = out_dir or OUT_DIR
+    os.makedirs(out_dir, exist_ok=True)
+    tmp = frame_path(f, out_dir)[:-4] + '.tmp.exr'
     ok = cv2.imwrite(tmp, np.ascontiguousarray(img[..., ::-1]).astype(np.float32),
                      [cv2.IMWRITE_EXR_TYPE, cv2.IMWRITE_EXR_TYPE_HALF,
                       cv2.IMWRITE_EXR_COMPRESSION, cv2.IMWRITE_EXR_COMPRESSION_ZIP])
     if not ok:
         raise RuntimeError('could not write ' + tmp)
-    os.replace(tmp, frame_path(f))
+    os.replace(tmp, frame_path(f, out_dir))
 
 
-def _work(frames):
+def _work(job):
+    frames, out_dir = job
     cv2.setNumThreads(1)
     t0 = time.time()
     get_title()
     t1 = time.time()
     for f in frames:
-        write(f, render(f))
+        write(f, render(f), out_dir)
     return len(frames), t1 - t0, time.time() - t1
 
 
-def render_range(a, b, workers=2):
+def render_range(a, b, workers=2, out_dir=None):
+    out_dir = out_dir or OUT_DIR
     frames = list(range(a, b + 1))
     t0 = time.time()
     if workers <= 1:
-        n, tp, tr = _work(frames)
+        n, tp, tr = _work((frames, out_dir))
         print(f'{n} frames: setup {tp:.1f}s, render {tr:.1f}s')
     else:
         from multiprocessing import get_context
-        chunks = [frames[i::workers] for i in range(workers)]
+        chunks = [(frames[i::workers], out_dir) for i in range(workers)]
         with get_context('spawn').Pool(workers) as pool:
             for n, tp, tr in pool.imap_unordered(_work, chunks):
                 print(f'  worker: {n} frames, setup {tp:.1f}s, render {tr:.1f}s', flush=True)
-    print(f'rendered {a}-{b} in {time.time() - t0:.1f}s -> {OUT_DIR}')
+    print(f'rendered {a}-{b} in {time.time() - t0:.1f}s -> {out_dir}')
+
+
+def sync_fires():
+    """If the HILLS code changed since the fire positions were extracted, re-extract them (in a
+    subprocess: nothing is written into shots/hills) and return True."""
+    import subprocess
+    import tempfile
+    if FD.hills_hash() == FD.HILLS_HASH:
+        return False
+    print('HILLS code changed since the fires were extracted: re-extracting ...', flush=True)
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1',
+               NUMBA_CACHE_DIR=os.path.join(tempfile.gettempdir(), 'ember_title_nbc'))
+    subprocess.run([sys.executable, os.path.join(ROOT, 'edit', 'ember_title_fires.py'), '--write'],
+                   check=True, env=env)
+    return True
 
 
 # -------------------------------------------------------------------------------- review ---
 
 def plate(f):
     """The real background (CODA, hills src = v2 - 160), display sRGB float32."""
-    p = look.frame_path(os.path.join(ROOT, 'renders', 'hills'), f - 160)
+    for d in ('hills_v2', 'hills'):                   # the edit's layered lookup (no per-cut CODA)
+        p = look.frame_path(os.path.join(ROOT, 'renders', d), f - 160)
+        if os.path.exists(p):
+            break
     img = cv2.imread(p, cv2.IMREAD_COLOR)
     return img[..., ::-1].astype(np.float32) / 255.0
 
@@ -1100,11 +1189,14 @@ def main(argv=None):
     ap.add_argument('--range', nargs=2, type=int, default=[F0, F1])
     ap.add_argument('--workers', type=int, default=2)
     ap.add_argument('--review', action='store_true', help='write the composite review sheet')
+    ap.add_argument('--out', default=None, help='output folder (default renders/title)')
     a = ap.parse_args(argv)
     if a.review:
         print(review())
-    else:
-        render_range(a.range[0], a.range[1], a.workers)
+        return
+    if sync_fires():                                  # fresh fire data: restart so it is loaded
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+    render_range(a.range[0], a.range[1], a.workers, a.out)
 
 
 if __name__ == '__main__':

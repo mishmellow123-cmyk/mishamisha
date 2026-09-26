@@ -33,20 +33,20 @@ WHUMPS = [2645, 2651, 2657, 2663, 2669, 2675, 2682, 2689, 2696, 2703, 2710, 2716
 # Outward: the near ridges first, alternating sides, successive ridgelines later (the crane-up
 # keeps the far ones in frame as the camera rises).
 PLAN = [
-    (2645, 0, 601, 6.2, True),      # the next hill answers first (left of the cairn)
-    (2651, 2, 1673, 8.6, True),     # right: the near ridges there are hidden by our hilltop
-    (2657, 0, 309, 6.0, True),
-    (2663, 1, 843, 7.8, True),
-    (2669, 2, 1416, 8.8, True),
-    (2675, 1, 172, 7.6, True),
-    (2682, 3, 1798, 10.5, True),
-    (2686, 3, 641, 9.5, False),
-    (2689, 2, 506, 8.6, True),
-    (2696, 3, 1338, 10.2, True),
-    (2699, 4, 325, 11.5, False),
-    (2703, 3, 76, 10.0, True),
-    (2710, 4, 1656, 12.0, True),
-    (2716, 4, 829, 12.5, True),
+    (2645, 0, 601, 8.4, True),      # the next hill answers first (left of the cairn)
+    (2651, 2, 1673, 11.6, True),    # right: the near ridges there are hidden by our hilltop
+    (2657, 0, 309, 8.1, True),
+    (2663, 1, 843, 10.5, True),
+    (2669, 2, 1416, 11.9, True),
+    (2675, 1, 172, 10.3, True),
+    (2682, 3, 1798, 14.0, True),
+    (2686, 3, 641, 12.8, False),
+    (2689, 2, 506, 11.6, True),
+    (2696, 3, 1338, 13.8, True),
+    (2699, 4, 325, 15.5, False),
+    (2703, 3, 76, 13.5, True),
+    (2710, 4, 1656, 16.0, True),
+    (2716, 4, 829, 16.5, True),
 ]
 
 
@@ -347,8 +347,8 @@ def draw_fires(img, depth, cam, fires, f, wind=2.0, sky_amb=(0.010, 0.012, 0.030
                 continue
             L = min(1.4, lv)
             smoke_wisp(srgb, sa, depth, camp, b.x, b.y + b.height * 0.45, b.z, t, b.seed * 1.7, hmax,
-                       b.height * 0.30, 0.17, 0.10 * wind, b.height * 0.9, 0.55 * min(1.0, grow_in * 1.5),
-                       0.15 * L, 0.052 * L, 0.012 * L, b.height * 1.6,
+                       b.height * 0.30, 0.17, 0.10 * wind, b.height * 0.9, 0.62 * min(1.0, grow_in * 1.5),
+                       0.22 * L, 0.078 * L, 0.018 * L, b.height * 1.9,
                        sky_amb[0] * 1.5, sky_amb[1] * 1.5, sky_amb[2] * 1.4, x0, y0, x1, y1)
         a3 = sa[..., None]
         img *= (1.0 - a3)
@@ -362,7 +362,7 @@ def draw_fires(img, depth, cam, fires, f, wind=2.0, sky_amb=(0.010, 0.012, 0.030
             wpx = max(0.55 * s, hpx * 0.40)
         inten = 4.2 * min(1.6, lv) * (1.0 + max(0.0, 3.0 * s - hpx) / max(3.0 * s, 1e-3))
         glow_s = max(1.2 * s, 0.85 * hpx)
-        glow_e = 0.50 * min(1.6, lv) * (wpx + 1.0) * (hpx + 2.0 * s) * 0.9
+        glow_e = 0.75 * min(1.6, lv) * (wpx + 1.0) * (hpx + 2.0 * s) * 0.9
         small_flame(img, depth, sx, sy + 0.08 * hpx, z, hpx, wpx, 0.22 + 0.05 * wind, t + b.seed * 7.0,
                     b.seed, inten, glow_e, glow_s)
 

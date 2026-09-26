@@ -2,9 +2,12 @@
 
 FIRES rows: (x, y, z) world metres, ignition frame (v2 numbering), size (hills units), kind
 (0 = answering fire, 1 = festival fire lit during the INTRO, 2 = the child's cairn).
-Extracted once from shots/hills/coda.py (answering_fires, place_beacons, the cairn) so the title
-never imports the hills code at render time. Re-extract (read-only; no .pyc or numba cache is
-written into shots/hills):
+Extracted from shots/hills (coda.Coda()'s wave/old lists + the cairn) so the title never imports
+the hills code at render time. `python edit/ember_title.py` re-extracts automatically when the
+HILLS sources change (HILLS_HASH); by hand (read-only; no .pyc or numba cache lands in shots/hills):
+
+    PYTHONDONTWRITEBYTECODE=1 NUMBA_CACHE_DIR=/tmp/nbc python edit/ember_title_fires.py --write
+
 
     PYTHONDONTWRITEBYTECODE=1 NUMBA_CACHE_DIR=/tmp/nbc python edit/ember_title_fires.py > /tmp/f.txt
     PYTHONDONTWRITEBYTECODE=1 NUMBA_CACHE_DIR=/tmp/nbc python edit/ember_title_fires.py crest > /tmp/c.txt
@@ -12,67 +15,31 @@ written into shots/hills):
 CREST_*: the silhouette of our hilltop (world metres at z = CREST_Z); far sparks are hidden below it.
 """
 
+HILLS_HASH = '15f3bdb2f0c29398'                 # hills_hash() when FIRES/CREST were extracted
+
 FIRES = [
     # x, y, z, f_ign(v2), size, kind  -- generated; see __main__
-    (150.746, -49.755, 480.000, 2805.16, 4.007, 0),
-    (81.273, -50.766, 480.000, 2807.12, 4.428, 0),
-    (27.136, -37.349, 480.000, 2806.46, 3.520, 0),
-    (127.316, -87.463, 1150.000, 2809.59, 4.176, 0),
-    (-94.089, -74.289, 1150.000, 2808.54, 4.153, 0),
-    (-312.938, -85.691, 1150.000, 2810.08, 4.180, 0),
-    (-513.576, -77.751, 1150.000, 2808.28, 3.855, 0),
-    (1075.393, -110.048, 2300.000, 2810.80, 3.582, 0),
-    (455.588, -95.697, 2300.000, 2810.68, 4.335, 0),
-    (98.402, -114.679, 2300.000, 2810.85, 4.630, 0),
-    (-265.813, -99.264, 2300.000, 2811.35, 4.498, 0),
-    (-898.397, -118.326, 2300.000, 2813.12, 4.201, 0),
-    (-1160.377, -120.212, 2300.000, 2813.17, 4.342, 0),
-    (1226.299, -133.961, 4300.000, 2817.18, 3.798, 0),
-    (472.480, -161.479, 4300.000, 2817.28, 4.231, 0),
-    (1453.281, -131.138, 4300.000, 2816.94, 4.569, 0),
-    (241.915, -146.654, 4300.000, 2816.27, 4.357, 0),
-    (-839.235, -162.087, 4300.000, 2818.66, 4.775, 0),
-    (-1579.913, -151.692, 4300.000, 2817.61, 3.735, 0),
-    (-1794.948, -159.842, 4300.000, 2819.17, 3.850, 0),
-    (847.487, -144.263, 8200.000, 2823.57, 4.377, 0),
-    (182.255, -163.911, 8200.000, 2824.84, 4.710, 0),
-    (-799.645, -191.340, 8200.000, 2823.24, 4.489, 0),
-    (3389.946, -184.633, 8200.000, 2824.47, 4.667, 0),
-    (3891.148, -173.920, 8200.000, 2826.25, 3.726, 0),
-    (-2690.542, -148.224, 8200.000, 2825.89, 4.579, 0),
-    (-3635.991, -176.157, 8200.000, 2825.64, 3.827, 0),
-    (-4109.854, -184.273, 8200.000, 2825.23, 3.853, 0),
-    (973.227, -133.769, 15500.000, 2835.96, 4.349, 0),
-    (2023.967, -108.853, 15500.000, 2836.24, 4.936, 0),
-    (3690.511, -70.859, 15500.000, 2836.10, 4.135, 0),
-    (4547.467, -106.075, 15500.000, 2835.48, 4.267, 0),
-    (6041.758, -99.843, 15500.000, 2835.47, 5.256, 0),
-    (-4891.972, -89.067, 15500.000, 2835.49, 4.178, 0),
-    (7437.003, -78.150, 15500.000, 2835.64, 4.614, 0),
-    (-6265.686, -67.394, 15500.000, 2837.52, 4.260, 0),
-    (-7729.832, -68.668, 15500.000, 2835.77, 5.027, 0),
-    (-172.260, 747.230, 31000.000, 2853.55, 5.894, 0),
-    (2876.744, 787.131, 31000.000, 2854.47, 5.877, 0),
-    (-2067.121, 811.425, 31000.000, 2852.62, 5.789, 0),
-    (-3987.821, 582.399, 31000.000, 2854.40, 5.049, 0),
-    (-6270.267, 785.845, 31000.000, 2854.89, 5.391, 0),
-    (9310.658, 803.634, 31000.000, 2854.50, 5.283, 0),
-    (-8027.320, 682.205, 31000.000, 2853.28, 4.928, 0),
-    (-10542.318, 788.826, 31000.000, 2855.76, 5.621, 0),
-    (14090.876, 803.065, 31000.000, 2856.38, 5.610, 0),
-    (6666.934, 2566.811, 56000.000, 2876.13, 6.573, 0),
-    (19954.127, 2558.661, 56000.000, 2878.57, 6.427, 0),
-    (-18522.719, 1947.329, 56000.000, 2878.76, 7.355, 0),
-    (22848.058, 1677.749, 56000.000, 2877.13, 7.021, 0),
-    (26162.077, 2574.078, 56000.000, 2878.53, 6.032, 0),
-    (-28231.394, 2383.241, 56000.000, 2880.04, 6.782, 0),
-    (-3027.714, -144.165, 8200.000, 182.00, 4.000, 1),
-    (-1164.178, -147.928, 4300.000, 240.00, 3.800, 1),
-    (-6015.920, -74.694, 15500.000, 272.00, 5.000, 1),
-    (-128.424, -146.607, 4300.000, 298.00, 3.500, 1),
-    (972.787, -150.907, 8200.000, 356.00, 4.000, 1),
-    (3690.511, -70.859, 15500.000, 398.00, 5.000, 1),
-    (608.303, -108.919, 2300.000, 422.00, 3.000, 1),
+    (-64.205, -46.590, 480.000, 2804.40, 6.353, 0),
+    (885.618, -122.383, 2300.000, 2810.40, 9.002, 0),
+    (-130.344, -47.218, 480.000, 2816.40, 6.022, 0),
+    (-23.163, -84.218, 1150.000, 2822.40, 7.311, 0),
+    (495.205, -104.712, 2300.000, 2828.40, 8.391, 0),
+    (-390.573, -86.620, 1150.000, 2834.40, 7.859, 0),
+    (1926.358, -156.290, 4300.000, 2841.40, 9.857, 0),
+    (-509.514, -162.343, 4300.000, 2845.40, 8.801, 0),
+    (-420.445, -121.459, 2300.000, 2848.40, 8.535, 0),
+    (792.644, -153.054, 4300.000, 2855.40, 10.845, 0),
+    (-1829.386, -185.782, 8200.000, 2858.40, 11.193, 0),
+    (-1663.537, -153.535, 4300.000, 2862.40, 9.613, 0),
+    (2834.068, -173.252, 8200.000, 2869.40, 12.236, 0),
+    (-498.924, -194.983, 8200.000, 2875.40, 11.999, 0),
+    (-3027.714, -144.165, 8200.000, 182.00, 5.037, 1),
+    (-1164.178, -147.928, 4300.000, 240.00, 4.785, 1),
+    (-6015.920, -74.694, 15500.000, 272.00, 6.296, 1),
+    (-128.424, -146.607, 4300.000, 298.00, 4.407, 1),
+    (972.787, -150.907, 8200.000, 356.00, 5.037, 1),
+    (3690.511, -70.859, 15500.000, 398.00, 6.296, 1),
+    (608.303, -108.919, 2300.000, 422.00, 3.778, 1),
     (2.200, 0.312, 14.000, 2800.00, 1.000, 2),
 ]
 
@@ -165,6 +132,23 @@ CREST_H = [
 ]
 
 
+HILLS_SOURCES = ('coda.py', 'fires2.py', 'hillworld.py', 'land.py')
+
+
+def hills_hash():
+    """Fingerprint of the HILLS code the fires come from (to notice when they move)."""
+    import hashlib
+    import os
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    h = hashlib.sha1()
+    for n in HILLS_SOURCES:
+        p = os.path.join(root, 'shots', 'hills', n)
+        if os.path.exists(p):
+            with open(p, 'rb') as fh:
+                h.update(n.encode() + fh.read())
+    return h.hexdigest()[:16]
+
+
 def _extract():
     import os
     import sys
@@ -172,16 +156,10 @@ def _extract():
     sys.path.insert(0, os.path.join(root, 'shots', 'hills'))
     sys.path.insert(0, os.path.join(root, 'lib'))
     import coda  # noqa
-    import hillworld as hw  # noqa
-    rl = hw.build_ridges()
-    wave, _ = coda.answering_fires(rl)
-    specs = [(4, -2700.0, 22, 4.0, 1.1), (3, -1000.0, 80, 3.8, 2.3), (5, -5400.0, 112, 5.0, 3.7),
-             (3, -300.0, 138, 3.5, 4.1), (4, 1300.0, 196, 4.0, 5.3), (5, 4200.0, 238, 5.0, 6.9),
-             (2, 700.0, 262, 3.0, 7.7)]
-    old = coda.place_beacons(specs, rl)
-    rows = [(b.x, b.y, b.z, b.f_ign + 160.0, b.size, 0) for b in wave]
-    rows += [(b.x, b.y, b.z, b.f_ign + 160.0, b.size, 1) for b in old]
-    rows.append((coda.X_CAIRN, coda.GK + coda.HillScene().cairn.bk_bot + 0.10, coda.Z, coda.CATCH + 160.0, 1.0, 2))
+    c = coda.Coda()                                   # whatever HILLS currently lights (v1 or v2)
+    rows = [(b.x, b.y, b.z, b.f_ign + 160.0, b.size, 0) for b in c.wave]
+    rows += [(b.x, b.y, b.z, b.f_ign + 160.0, b.size, 1) for b in c.old]
+    rows.append((coda.X_CAIRN, coda.GK + c.scene.cairn.bk_bot + 0.10, coda.Z, coda.CATCH + 160.0, 1.0, 2))
     return rows
 
 
@@ -198,9 +176,32 @@ def _extract_crest():
     return xs, np.interp(xs, X, r.h), r.z
 
 
+def write_in_place():
+    """Re-extract FIRES and CREST from the HILLS code and rewrite them in this file."""
+    import os
+    import re
+    import textwrap
+    rows = _extract()
+    xs, h, z = _extract_crest()
+    path = os.path.abspath(__file__)
+    src = open(path).read()
+    fires = 'FIRES = [\n    # x, y, z, f_ign(v2), size, kind  -- generated; see __main__\n' + ''.join(
+        '    (%.3f, %.3f, %.3f, %.2f, %.3f, %d),\n' % r for r in rows) + ']'
+    src = re.sub(r'FIRES = \[\n.*?\n\]', lambda m: fires, src, count=1, flags=re.S)
+    vals = ', '.join('%.4f' % v for v in h)
+    crest = ('CREST_Z = %.3f\nCREST_X0, CREST_DX = %.3f, 0.05\nCREST_H = [\n' % (z, xs[0]) +
+             textwrap.fill(vals, width=110, initial_indent='    ', subsequent_indent='    ') + '\n]')
+    src = re.sub(r'CREST_Z = .*?\nCREST_H = \[\n.*?\n\]', lambda m: crest, src, count=1, flags=re.S)
+    src = re.sub(r"HILLS_HASH = '[0-9a-f]*'", "HILLS_HASH = '%s'" % hills_hash(), src, count=1)
+    open(path, 'w').write(src)
+    return len(rows)
+
+
 if __name__ == '__main__':
     import sys
-    if sys.argv[1:] == ['crest']:
+    if sys.argv[1:] == ['--write']:
+        print('fires:', write_in_place(), 'hash:', hills_hash())
+    elif sys.argv[1:] == ['crest']:
         xs, h, z = _extract_crest()
         print('CREST_Z = %.3f' % z)
         print('CREST_X0, CREST_DX = %.3f, 0.05' % xs[0])

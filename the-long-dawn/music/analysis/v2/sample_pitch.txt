@@ -1,0 +1,1254 @@
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_A3_v1_1.wav                      key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_A4_v1_1.wav                      key  81 exp   880.00 Hz  meas   886.12 Hz    +12.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_A5_v1_1.wav                      key  93 exp  1760.00 Hz  meas  1766.11 Hz     +6.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_C3_v1_1.wav                      key  60 exp   261.63 Hz  meas   261.02 Hz     -4.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_C4_v1_1.wav                      key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_C4_v1_2.wav                      key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_C5_v1_1.wav                      key  84 exp  1046.50 Hz  meas  1039.27 Hz    -12.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_C6_v1_1.wav                      key  96 exp  2093.00 Hz  meas  2095.42 Hz     +2.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_E3_v1_1.wav                      key  64 exp   329.63 Hz  meas   328.87 Hz     -4.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_E4_v1_1.wav                      key  76 exp   659.26 Hz  meas   658.49 Hz     -2.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_E4_v1_2.wav                      key  76 exp   659.26 Hz  meas   658.49 Hz     -2.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_E5_v1_1.wav                      key  88 exp  1318.51 Hz  meas  1321.56 Hz     +4.0 c
+flute         Woodwinds/Flute/susvib/LDFlute_susvib_E5_v1_2.wav                      key  88 exp  1318.51 Hz  meas  1321.56 Hz     +4.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_A3_v1_1.wav                        key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_A4_v1_1.wav                        key  81 exp   880.00 Hz  meas   880.00 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_A5_v1_1.wav                        key  93 exp  1760.00 Hz  meas  1760.00 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_C3_v1_1.wav                        key  60 exp   261.63 Hz  meas   261.32 Hz     -2.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_C4_v1_1.wav                        key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_C5_v1_1.wav                        key  84 exp  1046.50 Hz  meas  1046.50 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_C6_v1_1.wav                        key  96 exp  2093.00 Hz  meas  2093.00 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_E3_v1_1.wav                        key  64 exp   329.63 Hz  meas   329.25 Hz     -2.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_E4_v1_1.wav                        key  76 exp   659.26 Hz  meas   659.26 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_E5_v1_1.wav                        key  88 exp  1318.51 Hz  meas  1318.51 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_C5_v2_1.wav                        key  84 exp  1046.50 Hz  meas  1046.50 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_E5_v2_1.wav                        key  88 exp  1318.51 Hz  meas  1318.51 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_A3_v3_1.wav                        key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_A4_v3_1.wav                        key  81 exp   880.00 Hz  meas   880.00 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_A5_v3_1.wav                        key  93 exp  1760.00 Hz  meas  1760.00 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_C3_v3_1.wav                        key  60 exp   261.63 Hz  meas   261.02 Hz     -4.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_C4_v3_1.wav                        key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_E3_v3_1.wav                        key  64 exp   329.63 Hz  meas   329.63 Hz     +0.0 c
+flute_nv      Woodwinds/Flute/susNV/LDFlute_susNV_E4_v3_1.wav                        key  76 exp   659.26 Hz  meas   659.26 Hz     +0.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A3_v1_rr1.wav                        key  69 exp   440.00 Hz  meas   441.02 Hz     +4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A4_v1_rr1.wav                        key  81 exp   880.00 Hz  meas   875.94 Hz     -8.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A5_v1_rr1.wav                        key  93 exp  1760.00 Hz  meas  1762.03 Hz     +2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C4_v1_rr1.wav                        key  72 exp   523.25 Hz  meas   522.65 Hz     -2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C5_v1_rr1.wav                        key  84 exp  1046.50 Hz  meas  1045.29 Hz     -2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C6_v1_rr1.wav                        key  96 exp  2093.00 Hz  meas  2088.17 Hz     -4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E4_v1_rr1.wav                        key  76 exp   659.26 Hz  meas   656.22 Hz     -8.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E5_v1_rr1.wav                        key  88 exp  1318.51 Hz  meas  1310.92 Hz    -10.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A3_v2_rr1.wav                        key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A4_v2_rr1.wav                        key  81 exp   880.00 Hz  meas   873.92 Hz    -12.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A5_v2_rr1.wav                        key  93 exp  1760.00 Hz  meas  1764.07 Hz     +4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C4_v2_rr1.wav                        key  72 exp   523.25 Hz  meas   520.84 Hz     -8.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C5_v2_rr1.wav                        key  84 exp  1046.50 Hz  meas  1048.92 Hz     +4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C6_v2_rr1.wav                        key  96 exp  2093.00 Hz  meas  2093.00 Hz     +0.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E4_v2_rr1.wav                        key  76 exp   659.26 Hz  meas   659.26 Hz     +0.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E5_v2_rr1.wav                        key  88 exp  1318.51 Hz  meas  1309.40 Hz    -12.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A3_v3_rr1.wav                        key  69 exp   440.00 Hz  meas   439.49 Hz     -2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A4_v3_rr1.wav                        key  81 exp   880.00 Hz  meas   891.25 Hz    +22.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A5_v3_rr1.wav                        key  93 exp  1760.00 Hz  meas  1762.03 Hz     +2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C4_v3_rr1.wav                        key  72 exp   523.25 Hz  meas   519.04 Hz    -14.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C5_v3_rr1.wav                        key  84 exp  1046.50 Hz  meas  1048.92 Hz     +4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E4_v3_rr1.wav                        key  76 exp   659.26 Hz  meas   658.49 Hz     -2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E5_v3_rr1.wav                        key  88 exp  1318.51 Hz  meas  1312.43 Hz     -8.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C4_v4_rr1.wav                        key  72 exp   523.25 Hz  meas   521.44 Hz     -6.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A3_v1_rr2.wav                        key  69 exp   440.00 Hz  meas   442.04 Hz     +8.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A4_v1_rr2.wav                        key  81 exp   880.00 Hz  meas   881.02 Hz     +2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A5_v1_rr2.wav                        key  93 exp  1760.00 Hz  meas  1755.94 Hz     -4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C4_v1_rr2.wav                        key  72 exp   523.25 Hz  meas   525.07 Hz     +6.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C5_v1_rr2.wav                        key  84 exp  1046.50 Hz  meas  1044.09 Hz     -4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C6_v1_rr2.wav                        key  96 exp  2093.00 Hz  meas  2083.36 Hz     -8.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E4_v1_rr2.wav                        key  76 exp   659.26 Hz  meas   654.70 Hz    -12.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E5_v1_rr2.wav                        key  88 exp  1318.51 Hz  meas  1315.47 Hz     -4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A3_v2_rr2.wav                        key  69 exp   440.00 Hz  meas   441.02 Hz     +4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A4_v2_rr2.wav                        key  81 exp   880.00 Hz  meas   437.97 Hz  -1208.0 c  <-- CHECK
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A5_v2_rr2.wav                        key  93 exp  1760.00 Hz  meas  1757.97 Hz     -2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C4_v2_rr2.wav                        key  72 exp   523.25 Hz  meas   524.46 Hz     +4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C5_v2_rr2.wav                        key  84 exp  1046.50 Hz  meas  1044.09 Hz     -4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C6_v2_rr2.wav                        key  96 exp  2093.00 Hz  meas  2097.85 Hz     +4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E4_v2_rr2.wav                        key  76 exp   659.26 Hz  meas   659.26 Hz     +0.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E5_v2_rr2.wav                        key  88 exp  1318.51 Hz  meas  1304.87 Hz    -18.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A3_v3_rr2.wav                        key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A4_v3_rr2.wav                        key  81 exp   880.00 Hz  meas   889.20 Hz    +18.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_A5_v3_rr2.wav                        key  93 exp  1760.00 Hz  meas  1764.07 Hz     +4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C4_v3_rr2.wav                        key  72 exp   523.25 Hz  meas   522.04 Hz     -4.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C5_v3_rr2.wav                        key  84 exp  1046.50 Hz  meas  1047.71 Hz     +2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E4_v3_rr2.wav                        key  76 exp   659.26 Hz  meas   658.49 Hz     -2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_E5_v3_rr2.wav                        key  88 exp  1318.51 Hz  meas  1320.03 Hz     +2.0 c
+flute_stac    Woodwinds/Flute/stac/LDFlute_stac_C4_v4_rr2.wav                        key  72 exp   523.25 Hz  meas   515.45 Hz    -26.0 c  <-- CHECK
+horn          Brass/F Horn/sus/MOHorn_sus_A#1_v1_1.wav                               key  46 exp   116.54 Hz  meas   116.95 Hz     +6.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_A0_v1_1.wav                                key  33 exp    55.00 Hz  meas    54.62 Hz    -12.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_A2_v1_1.wav                                key  57 exp   220.00 Hz  meas   218.99 Hz     -8.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_C1_v1_1.wav                                key  36 exp    65.41 Hz  meas    65.18 Hz     -6.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_C3_v1_1.wav                                key  60 exp   261.63 Hz  meas   262.23 Hz     +4.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_D#1_v1_1.wav                               key  39 exp    77.78 Hz  meas    77.60 Hz     -4.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_D2_v1_1.wav                                key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_D4_v1_1.wav                                key  74 exp   587.33 Hz  meas   588.69 Hz     +4.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_F2_v1_1.wav                                key  53 exp   174.61 Hz  meas   174.41 Hz     -2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_F4_v1_1.wav                                key  77 exp   698.46 Hz  meas   698.46 Hz     +0.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_G1_v1_1.wav                                key  43 exp    98.00 Hz  meas    97.77 Hz     -4.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_A#1_v2_1.wav                               key  46 exp   116.54 Hz  meas   116.68 Hz     +2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_A2_v2_1.wav                                key  57 exp   220.00 Hz  meas   220.00 Hz     +0.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_C1_v2_1.wav                                key  36 exp    65.41 Hz  meas    65.33 Hz     -2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_C3_v2_1.wav                                key  60 exp   261.63 Hz  meas   261.02 Hz     -4.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_D#1_v2_1.wav                               key  39 exp    77.78 Hz  meas    77.69 Hz     -2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_D2_v2_1.wav                                key  50 exp   146.83 Hz  meas   146.49 Hz     -4.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_F2_v2_1.wav                                key  53 exp   174.61 Hz  meas   174.41 Hz     -2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_G1_v2_1.wav                                key  43 exp    98.00 Hz  meas    98.11 Hz     +2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_A#1_v3_1.wav                               key  46 exp   116.54 Hz  meas   116.68 Hz     +2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_A2_v3_1.wav                                key  57 exp   220.00 Hz  meas   219.75 Hz     -2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_C1_v3_1.wav                                key  36 exp    65.41 Hz  meas    65.26 Hz     -4.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_C3_v3_1.wav                                key  60 exp   261.63 Hz  meas   261.32 Hz     -2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_D#1_v3_1.wav                               key  39 exp    77.78 Hz  meas    77.78 Hz     +0.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_D2_v3_1.wav                                key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_F2_v3_1.wav                                key  53 exp   174.61 Hz  meas   174.41 Hz     -2.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_G1_v3_1.wav                                key  43 exp    98.00 Hz  meas    98.34 Hz     +6.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_C3_v4_1.wav                                key  60 exp   261.63 Hz  meas   260.72 Hz     -6.0 c
+horn          Brass/F Horn/sus/MOHorn_sus_D2_v4_1.wav                                key  50 exp   146.83 Hz  meas   147.17 Hz     +4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A#1_v1_rr1.wav                           key  46 exp   116.54 Hz  meas   116.81 Hz     +4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A0_v1_rr1.wav                            key  33 exp    55.00 Hz  meas    54.56 Hz    -14.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A2_v1_rr1.wav                            key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C1_v1_rr1.wav                            key  36 exp    65.41 Hz  meas    65.33 Hz     -2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C3_v1_rr1.wav                            key  60 exp   261.63 Hz  meas   263.14 Hz    +10.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D#1_v1_rr1.wav                           key  39 exp    77.78 Hz  meas    78.05 Hz     +6.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D2_v1_rr1.wav                            key  50 exp   146.83 Hz  meas   146.66 Hz     -2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D4_v1_rr1.wav                            key  74 exp   587.33 Hz  meas   584.62 Hz     -8.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F2_v1_rr1.wav                            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F4_v1_rr1.wav                            key  77 exp   698.46 Hz  meas   699.26 Hz     +2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_G1_v1_rr1.wav                            key  43 exp    98.00 Hz  meas    99.25 Hz    +22.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A#1_v2_rr1.wav                           key  46 exp   116.54 Hz  meas   116.81 Hz     +4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A2_v2_rr1.wav                            key  57 exp   220.00 Hz  meas   219.75 Hz     -2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C1_v2_rr1.wav                            key  36 exp    65.41 Hz  meas    64.43 Hz    -26.0 c  <-- CHECK
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C3_v2_rr1.wav                            key  60 exp   261.63 Hz  meas   263.75 Hz    +14.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D#1_v2_rr1.wav                           key  39 exp    77.78 Hz  meas    77.96 Hz     +4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D2_v2_rr1.wav                            key  50 exp   146.83 Hz  meas   147.17 Hz     +4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D4_v2_rr1.wav                            key  74 exp   587.33 Hz  meas   586.65 Hz     -2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F2_v2_rr1.wav                            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F4_v2_rr1.wav                            key  77 exp   698.46 Hz  meas   696.84 Hz     -4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_G1_v2_rr1.wav                            key  43 exp    98.00 Hz  meas    98.34 Hz     +6.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A#1_v3_rr1.wav                           key  46 exp   116.54 Hz  meas   117.35 Hz    +12.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A2_v3_rr1.wav                            key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C3_v3_rr1.wav                            key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D2_v3_rr1.wav                            key  50 exp   146.83 Hz  meas   147.00 Hz     +2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D4_v3_rr1.wav                            key  74 exp   587.33 Hz  meas   587.33 Hz     +0.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F2_v3_rr1.wav                            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F4_v3_rr1.wav                            key  77 exp   698.46 Hz  meas   700.07 Hz     +4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A0_v1_rr2.wav                            key  33 exp    55.00 Hz  meas    55.57 Hz    +18.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A2_v1_rr2.wav                            key  57 exp   220.00 Hz  meas   219.24 Hz     -6.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C1_v1_rr2.wav                            key  36 exp    65.41 Hz  meas    65.56 Hz     +4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C3_v1_rr2.wav                            key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D#1_v1_rr2.wav                           key  39 exp    77.78 Hz  meas    78.32 Hz    +12.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D2_v1_rr2.wav                            key  50 exp   146.83 Hz  meas   147.68 Hz    +10.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D4_v1_rr2.wav                            key  74 exp   587.33 Hz  meas   585.97 Hz     -4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F2_v1_rr2.wav                            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F4_v1_rr2.wav                            key  77 exp   698.46 Hz  meas   700.88 Hz     +6.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_G1_v1_rr2.wav                            key  43 exp    98.00 Hz  meas    98.79 Hz    +14.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A#1_v2_rr2.wav                           key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A2_v2_rr2.wav                            key  57 exp   220.00 Hz  meas   218.99 Hz     -8.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C1_v2_rr2.wav                            key  36 exp    65.41 Hz  meas    64.73 Hz    -18.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C3_v2_rr2.wav                            key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D#1_v2_rr2.wav                           key  39 exp    77.78 Hz  meas    78.05 Hz     +6.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D2_v2_rr2.wav                            key  50 exp   146.83 Hz  meas   146.66 Hz     -2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D4_v2_rr2.wav                            key  74 exp   587.33 Hz  meas   585.30 Hz     -6.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F2_v2_rr2.wav                            key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F4_v2_rr2.wav                            key  77 exp   698.46 Hz  meas   696.84 Hz     -4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_G1_v2_rr2.wav                            key  43 exp    98.00 Hz  meas    97.89 Hz     -2.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A#1_v3_rr2.wav                           key  46 exp   116.54 Hz  meas   116.81 Hz     +4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_A2_v3_rr2.wav                            key  57 exp   220.00 Hz  meas   219.49 Hz     -4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_C3_v3_rr2.wav                            key  60 exp   261.63 Hz  meas   261.02 Hz     -4.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D2_v3_rr2.wav                            key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_D4_v3_rr2.wav                            key  74 exp   587.33 Hz  meas   589.37 Hz     +6.0 c
+horn_stac     Brass/F Horn/stac/MOHorn_stac_F2_v3_rr2.wav                            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_A#3_v1_rr1.wav                     key  70 exp   466.16 Hz  meas   466.16 Hz     +0.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_A2_v1_rr1.wav                      key  57 exp   220.00 Hz  meas   219.75 Hz     -2.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_A4_v1_rr1.wav                      key  81 exp   880.00 Hz  meas   877.97 Hz     -4.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_C3_v1_rr1.wav                      key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_C5_v1_rr1.wav                      key  84 exp  1046.50 Hz  meas  1047.71 Hz     +2.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_D#3_v1_rr1.wav                     key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_D4_v1_rr1.wav                      key  74 exp   587.33 Hz  meas   587.33 Hz     +0.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_F2_v1_rr1.wav                      key  53 exp   174.61 Hz  meas   175.02 Hz     +4.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_F4_v1_rr1.wav                      key  77 exp   698.46 Hz  meas   696.84 Hz     -4.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_G3_v1_rr1.wav                      key  67 exp   392.00 Hz  meas   393.81 Hz     +8.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_A#3_v3_rr1.wav                     key  70 exp   466.16 Hz  meas   466.16 Hz     +0.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_A2_v3_rr1.wav                      key  57 exp   220.00 Hz  meas   219.49 Hz     -4.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_A4_v3_rr1.wav                      key  81 exp   880.00 Hz  meas   880.00 Hz     +0.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_C3_v3_rr1.wav                      key  60 exp   261.63 Hz  meas   261.32 Hz     -2.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_C5_v3_rr1.wav                      key  84 exp  1046.50 Hz  meas  1044.09 Hz     -4.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_D#3_v3_rr1.wav                     key  63 exp   311.13 Hz  meas   310.77 Hz     -2.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_D4_v3_rr1.wav                      key  74 exp   587.33 Hz  meas   588.69 Hz     +4.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_F2_v3_rr1.wav                      key  53 exp   174.61 Hz  meas   174.21 Hz     -4.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_F4_v3_rr1.wav                      key  77 exp   698.46 Hz  meas   696.84 Hz     -4.0 c
+trumpet       Brass/Trumpet/sus/Sum_SHTrumpet_sus_G3_v3_rr1.wav                      key  67 exp   392.00 Hz  meas   392.90 Hz     +4.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A#3_v1_rr1.wav               key  70 exp   466.16 Hz  meas   466.16 Hz     +0.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A2_v1_rr1.wav                key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A4_v1_rr1.wav                key  81 exp   880.00 Hz  meas   881.02 Hz     +2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_C3_v1_rr1.wav                key  60 exp   261.63 Hz  meas   261.93 Hz     +2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_C5_v1_rr1.wav                key  84 exp  1046.50 Hz  meas  1048.92 Hz     +4.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_D#3_v1_rr1.wav               key  63 exp   311.13 Hz  meas   310.41 Hz     -4.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_D4_v1_rr1.wav                key  74 exp   587.33 Hz  meas   589.37 Hz     +6.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F2_v1_rr1.wav                key  53 exp   174.61 Hz  meas   173.41 Hz    -12.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F3_v1_rr1.wav                key  65 exp   349.23 Hz  meas   348.83 Hz     -2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F4_v1_rr1.wav                key  77 exp   698.46 Hz  meas   696.84 Hz     -4.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_G3_v1_rr1.wav                key  67 exp   392.00 Hz  meas   391.54 Hz     -2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A#3_v2_rr1.wav               key  70 exp   466.16 Hz  meas   465.63 Hz     -2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A2_v2_rr1.wav                key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A4_v2_rr1.wav                key  81 exp   880.00 Hz  meas   877.97 Hz     -4.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_C3_v2_rr1.wav                key  60 exp   261.63 Hz  meas   261.32 Hz     -2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_C5_v2_rr1.wav                key  84 exp  1046.50 Hz  meas  1045.29 Hz     -2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_D#3_v2_rr1.wav               key  63 exp   311.13 Hz  meas   311.49 Hz     +2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_D4_v2_rr1.wav                key  74 exp   587.33 Hz  meas   585.97 Hz     -4.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F2_v2_rr1.wav                key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F3_v2_rr1.wav                key  65 exp   349.23 Hz  meas   348.42 Hz     -4.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F4_v2_rr1.wav                key  77 exp   698.46 Hz  meas   699.26 Hz     +2.0 c
+trumpet_vib   Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_G3_v2_rr1.wav                key  67 exp   392.00 Hz  meas   391.54 Hz     -2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A#3_v1_rr1.wav                   key  70 exp   466.16 Hz  meas   466.16 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A2_v1_rr1.wav                    key  57 exp   220.00 Hz  meas   218.48 Hz    -12.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A4_v1_rr1.wav                    key  81 exp   880.00 Hz  meas   877.97 Hz     -4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C3_v1_rr1.wav                    key  60 exp   261.63 Hz  meas   262.23 Hz     +4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C5_v1_rr1.wav                    key  84 exp  1046.50 Hz  meas  1045.29 Hz     -2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D#3_v1_rr1.wav                   key  63 exp   311.13 Hz  meas   308.62 Hz    -14.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D4_v1_rr1.wav                    key  74 exp   587.33 Hz  meas   589.37 Hz     +6.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F2_v1_rr1.wav                    key  53 exp   174.61 Hz  meas   175.63 Hz    +10.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F3_v1_rr1.wav                    key  65 exp   349.23 Hz  meas   350.04 Hz     +4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F4_v1_rr1.wav                    key  77 exp   698.46 Hz  meas   701.69 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_G3_v1_rr1.wav                    key  67 exp   392.00 Hz  meas   392.45 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A#3_v2_rr1.wav                   key  70 exp   466.16 Hz  meas   466.70 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A2_v2_rr1.wav                    key  57 exp   220.00 Hz  meas   220.76 Hz     +6.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A4_v2_rr1.wav                    key  81 exp   880.00 Hz  meas   880.00 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C3_v2_rr1.wav                    key  60 exp   261.63 Hz  meas   264.36 Hz    +18.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C5_v2_rr1.wav                    key  84 exp  1046.50 Hz  meas  1051.35 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D#3_v2_rr1.wav                   key  63 exp   311.13 Hz  meas   310.41 Hz     -4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D4_v2_rr1.wav                    key  74 exp   587.33 Hz  meas   586.65 Hz     -2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F2_v2_rr1.wav                    key  53 exp   174.61 Hz  meas   178.70 Hz    +40.0 c  <-- CHECK
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F3_v2_rr1.wav                    key  65 exp   349.23 Hz  meas   350.44 Hz     +6.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F4_v2_rr1.wav                    key  77 exp   698.46 Hz  meas   701.69 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_G3_v2_rr1.wav                    key  67 exp   392.00 Hz  meas   393.81 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A#3_v3_rr1.wav                   key  70 exp   466.16 Hz  meas   466.16 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A2_v3_rr1.wav                    key  57 exp   220.00 Hz  meas   221.02 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A4_v3_rr1.wav                    key  81 exp   880.00 Hz  meas   887.15 Hz    +14.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C3_v3_rr1.wav                    key  60 exp   261.63 Hz  meas   264.05 Hz    +16.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C5_v3_rr1.wav                    key  84 exp  1046.50 Hz  meas  1051.35 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D#3_v3_rr1.wav                   key  63 exp   311.13 Hz  meas   311.85 Hz     +4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D4_v3_rr1.wav                    key  74 exp   587.33 Hz  meas   590.73 Hz    +10.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F2_v3_rr1.wav                    key  53 exp   174.61 Hz  meas   176.64 Hz    +20.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F3_v3_rr1.wav                    key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F4_v3_rr1.wav                    key  77 exp   698.46 Hz  meas   704.94 Hz    +16.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_G3_v3_rr1.wav                    key  67 exp   392.00 Hz  meas   391.54 Hz     -2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A#3_v1_rr2.wav                   key  70 exp   466.16 Hz  meas   468.32 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A2_v1_rr2.wav                    key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A4_v1_rr2.wav                    key  81 exp   880.00 Hz  meas   882.04 Hz     +4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C3_v1_rr2.wav                    key  60 exp   261.63 Hz  meas   263.14 Hz    +10.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C5_v1_rr2.wav                    key  84 exp  1046.50 Hz  meas  1044.09 Hz     -4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D#3_v1_rr2.wav                   key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D4_v1_rr2.wav                    key  74 exp   587.33 Hz  meas   583.95 Hz    -10.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F2_v1_rr2.wav                    key  53 exp   174.61 Hz  meas   175.42 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F3_v1_rr2.wav                    key  65 exp   349.23 Hz  meas   347.22 Hz    -10.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F4_v1_rr2.wav                    key  77 exp   698.46 Hz  meas   701.69 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_G3_v1_rr2.wav                    key  67 exp   392.00 Hz  meas   392.00 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A#3_v2_rr2.wav                   key  70 exp   466.16 Hz  meas   466.70 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A2_v2_rr2.wav                    key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A4_v2_rr2.wav                    key  81 exp   880.00 Hz  meas   884.08 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C3_v2_rr2.wav                    key  60 exp   261.63 Hz  meas   262.84 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C5_v2_rr2.wav                    key  84 exp  1046.50 Hz  meas  1052.56 Hz    +10.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D#3_v2_rr2.wav                   key  63 exp   311.13 Hz  meas   310.41 Hz     -4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D4_v2_rr2.wav                    key  74 exp   587.33 Hz  meas   588.01 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F2_v2_rr2.wav                    key  53 exp   174.61 Hz  meas   176.85 Hz    +22.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F3_v2_rr2.wav                    key  65 exp   349.23 Hz  meas   348.42 Hz     -4.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F4_v2_rr2.wav                    key  77 exp   698.46 Hz  meas   699.26 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_G3_v2_rr2.wav                    key  67 exp   392.00 Hz  meas   393.36 Hz     +6.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A#3_v3_rr2.wav                   key  70 exp   466.16 Hz  meas   469.41 Hz    +12.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A2_v3_rr2.wav                    key  57 exp   220.00 Hz  meas   220.00 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_A4_v3_rr2.wav                    key  81 exp   880.00 Hz  meas   884.08 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C3_v3_rr2.wav                    key  60 exp   261.63 Hz  meas   262.84 Hz     +8.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_C5_v3_rr2.wav                    key  84 exp  1046.50 Hz  meas  1046.50 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D#3_v3_rr2.wav                   key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_D4_v3_rr2.wav                    key  74 exp   587.33 Hz  meas   588.01 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F2_v3_rr2.wav                    key  53 exp   174.61 Hz  meas   176.03 Hz    +14.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F3_v3_rr2.wav                    key  65 exp   349.23 Hz  meas   349.63 Hz     +2.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_F4_v3_rr2.wav                    key  77 exp   698.46 Hz  meas   702.50 Hz    +10.0 c
+trumpet_stac  Brass/Trumpet/stac/Sum_SHTrumpet_stac_G3_v3_rr2.wav                    key  67 exp   392.00 Hz  meas   393.36 Hz     +6.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_A#0_v1_1.wav                     key  34 exp    58.27 Hz  meas    58.27 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_A#1_v1_1.wav                     key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_C#1_v1_1.wav                     key  37 exp    69.30 Hz  meas    69.30 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_C#3_v1_1.wav                     key  61 exp   277.18 Hz  meas   277.18 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_C3_v1_1.wav                      key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D#1_v1_1.wav                     key  39 exp    77.78 Hz  meas    77.69 Hz     -2.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D#3_v1_1.wav                     key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D2_v1_1.wav                      key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F1_v1_1.wav                      key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F2_v1_1.wav                      key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F3_v1_1.wav                      key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_A#0_v2_1.wav                     key  34 exp    58.27 Hz  meas    58.27 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_A#1_v2_1.wav                     key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_C#1_v2_1.wav                     key  37 exp    69.30 Hz  meas    69.30 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_C#3_v2_1.wav                     key  61 exp   277.18 Hz  meas   277.18 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_C3_v2_1.wav                      key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D#1_v2_1.wav                     key  39 exp    77.78 Hz  meas    77.78 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D#3_v2_1.wav                     key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D2_v2_1.wav                      key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F1_v2_1.wav                      key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F2_v2_1.wav                      key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F3_v2_1.wav                      key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_A#1_v3_1.wav                     key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_C#3_v3_1.wav                     key  61 exp   277.18 Hz  meas   277.18 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_C3_v3_1.wav                      key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D#1_v3_1.wav                     key  39 exp    77.78 Hz  meas    77.78 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D#3_v3_1.wav                     key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_D2_v3_1.wav                      key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F1_v3_1.wav                      key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F2_v3_1.wav                      key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+trombone      Brass/Tenor Trombone/sus/tenortbn_sus_F3_v3_1.wav                      key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#0_v1_rr1.wav                 key  34 exp    58.27 Hz  meas    58.34 Hz     +2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#1_v1_rr1.wav                 key  46 exp   116.54 Hz  meas   116.27 Hz     -4.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#2_v1_rr1.wav                 key  58 exp   233.08 Hz  meas   232.54 Hz     -4.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_D3_v1_rr1.wav                  key  62 exp   293.66 Hz  meas   294.34 Hz     +4.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F1_v1_rr1.wav                  key  41 exp    87.31 Hz  meas    87.61 Hz     +6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F2_v1_rr1.wav                  key  53 exp   174.61 Hz  meas   175.63 Hz    +10.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F3_v1_rr1.wav                  key  65 exp   349.23 Hz  meas   346.42 Hz    -14.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#0_v2_rr1.wav                 key  34 exp    58.27 Hz  meas    58.07 Hz     -6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#1_v2_rr1.wav                 key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#2_v2_rr1.wav                 key  58 exp   233.08 Hz  meas   233.62 Hz     +4.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_D3_v2_rr1.wav                  key  62 exp   293.66 Hz  meas   294.68 Hz     +6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F1_v2_rr1.wav                  key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F2_v2_rr1.wav                  key  53 exp   174.61 Hz  meas   175.02 Hz     +4.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F3_v2_rr1.wav                  key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#0_v3_rr1.wav                 key  34 exp    58.27 Hz  meas    57.87 Hz    -12.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#1_v3_rr1.wav                 key  46 exp   116.54 Hz  meas   116.41 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#2_v3_rr1.wav                 key  58 exp   233.08 Hz  meas   233.08 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_D3_v3_rr1.wav                  key  62 exp   293.66 Hz  meas   294.00 Hz     +2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F1_v3_rr1.wav                  key  41 exp    87.31 Hz  meas    86.90 Hz     -8.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F2_v3_rr1.wav                  key  53 exp   174.61 Hz  meas   175.22 Hz     +6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F3_v3_rr1.wav                  key  65 exp   349.23 Hz  meas   348.83 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#0_v4_rr1.wav                 key  34 exp    58.27 Hz  meas    58.34 Hz     +2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#1_v4_rr1.wav                 key  46 exp   116.54 Hz  meas   116.41 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#2_v4_rr1.wav                 key  58 exp   233.08 Hz  meas   233.08 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_D3_v4_rr1.wav                  key  62 exp   293.66 Hz  meas   293.66 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F1_v4_rr1.wav                  key  41 exp    87.31 Hz  meas    87.61 Hz     +6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F2_v4_rr1.wav                  key  53 exp   174.61 Hz  meas   174.01 Hz     -6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F3_v4_rr1.wav                  key  65 exp   349.23 Hz  meas   348.02 Hz     -6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#0_v1_rr2.wav                 key  34 exp    58.27 Hz  meas    58.07 Hz     -6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#1_v1_rr2.wav                 key  46 exp   116.54 Hz  meas   116.41 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#2_v1_rr2.wav                 key  58 exp   233.08 Hz  meas   234.16 Hz     +8.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_D3_v1_rr2.wav                  key  62 exp   293.66 Hz  meas   294.00 Hz     +2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F1_v1_rr2.wav                  key  41 exp    87.31 Hz  meas    87.21 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F2_v1_rr2.wav                  key  53 exp   174.61 Hz  meas   173.61 Hz    -10.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F3_v1_rr2.wav                  key  65 exp   349.23 Hz  meas   348.83 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#0_v2_rr2.wav                 key  34 exp    58.27 Hz  meas    58.34 Hz     +2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#1_v2_rr2.wav                 key  46 exp   116.54 Hz  meas   116.41 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#2_v2_rr2.wav                 key  58 exp   233.08 Hz  meas   233.08 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_D3_v2_rr2.wav                  key  62 exp   293.66 Hz  meas   293.33 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F1_v2_rr2.wav                  key  41 exp    87.31 Hz  meas    87.00 Hz     -6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F2_v2_rr2.wav                  key  53 exp   174.61 Hz  meas   175.22 Hz     +6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F3_v2_rr2.wav                  key  65 exp   349.23 Hz  meas   348.83 Hz     -2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#0_v3_rr2.wav                 key  34 exp    58.27 Hz  meas    58.41 Hz     +4.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#1_v3_rr2.wav                 key  46 exp   116.54 Hz  meas   116.68 Hz     +2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#2_v3_rr2.wav                 key  58 exp   233.08 Hz  meas   233.08 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_D3_v3_rr2.wav                  key  62 exp   293.66 Hz  meas   293.66 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F1_v3_rr2.wav                  key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F2_v3_rr2.wav                  key  53 exp   174.61 Hz  meas   174.01 Hz     -6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F3_v3_rr2.wav                  key  65 exp   349.23 Hz  meas   348.42 Hz     -4.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#0_v4_rr2.wav                 key  34 exp    58.27 Hz  meas    58.61 Hz    +10.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_A#1_v4_rr2.wav                 key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_D3_v4_rr2.wav                  key  62 exp   293.66 Hz  meas   292.31 Hz     -8.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F1_v4_rr2.wav                  key  41 exp    87.31 Hz  meas    87.61 Hz     +6.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F2_v4_rr2.wav                  key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+trombone_stac Brass/Tenor Trombone/stac/tenortbn_stac_F3_v4_rr2.wav                  key  65 exp   349.23 Hz  meas   347.22 Hz    -10.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#0_v1_rr1_Mid.wav                            key  34 exp    58.27 Hz  meas    58.07 Hz     -6.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#1_v1_rr1_Mid.wav                            key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#2_v1_rr1_Mid.wav                            key  58 exp   233.08 Hz  meas   233.35 Hz     +2.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_D#1_v1_rr1_Mid.wav                            key  39 exp    77.78 Hz  meas    77.69 Hz     -2.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_D2_v1_rr1_Mid.wav                             key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_D3_v1_rr1_Mid.wav                             key  62 exp   293.66 Hz  meas   293.33 Hz     -2.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_F0_v1_rr1_Mid.wav                             key  29 exp    43.65 Hz  meas    43.30 Hz    -14.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_F1_v1_rr1_Mid.wav                             key  41 exp    87.31 Hz  meas    87.21 Hz     -2.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_F2_v1_rr1_Mid.wav                             key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#0_v2_rr1_Mid.wav                            key  34 exp    58.27 Hz  meas    58.14 Hz     -4.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#1_v2_rr1_Mid.wav                            key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#2_v2_rr1_Mid.wav                            key  58 exp   233.08 Hz  meas   233.89 Hz     +6.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_D#1_v2_rr1_Mid.wav                            key  39 exp    77.78 Hz  meas    77.78 Hz     +0.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_D2_v2_rr1_Mid.wav                             key  50 exp   146.83 Hz  meas   146.32 Hz     -6.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_F1_v2_rr1_Mid.wav                             key  41 exp    87.31 Hz  meas    87.41 Hz     +2.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_F2_v2_rr1_Mid.wav                             key  53 exp   174.61 Hz  meas   174.01 Hz     -6.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#0_v3_rr1_Mid.wav                            key  34 exp    58.27 Hz  meas    58.14 Hz     -4.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#1_v3_rr1_Mid.wav                            key  46 exp   116.54 Hz  meas   116.81 Hz     +4.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_A#2_v3_rr1_Mid.wav                            key  58 exp   233.08 Hz  meas   232.81 Hz     -2.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_D#1_v3_rr1_Mid.wav                            key  39 exp    77.78 Hz  meas    78.14 Hz     +8.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_D2_v3_rr1_Mid.wav                             key  50 exp   146.83 Hz  meas   146.66 Hz     -2.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_F1_v3_rr1_Mid.wav                             key  41 exp    87.31 Hz  meas    87.51 Hz     +4.0 c
+tuba          Brass/Tuba/sus/Tuba3_sus_F2_v3_rr1_Mid.wav                             key  53 exp   174.61 Hz  meas   174.21 Hz     -4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#0_v1_rr1_Sum.wav                          key  34 exp    58.27 Hz  meas    58.34 Hz     +2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#1_v1_rr1_Sum.wav                          key  46 exp   116.54 Hz  meas   112.31 Hz    -64.0 c  <-- CHECK
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#2_v1_rr1_Sum.wav                          key  58 exp   233.08 Hz  meas   231.47 Hz    -12.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D#1_v1_rr1_Sum.wav                          key  39 exp    77.78 Hz  meas    77.16 Hz    -14.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D2_v1_rr1_Sum.wav                           key  50 exp   146.83 Hz  meas   144.98 Hz    -22.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D3_v1_rr1_Sum.wav                           key  62 exp   293.66 Hz  meas   294.34 Hz     +4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F1_v1_rr1_Sum.wav                           key  41 exp    87.31 Hz  meas    84.82 Hz    -50.0 c  <-- CHECK
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F2_v1_rr1_Sum.wav                           key  53 exp   174.61 Hz  meas   173.61 Hz    -10.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#0_v2_rr1_Sum.wav                          key  34 exp    58.27 Hz  meas    58.14 Hz     -4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#1_v2_rr1_Sum.wav                          key  46 exp   116.54 Hz  meas   116.00 Hz     -8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#2_v2_rr1_Sum.wav                          key  58 exp   233.08 Hz  meas   232.01 Hz     -8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D#1_v2_rr1_Sum.wav                          key  39 exp    77.78 Hz  meas    77.78 Hz     +0.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D2_v2_rr1_Sum.wav                           key  50 exp   146.83 Hz  meas   146.32 Hz     -6.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D3_v2_rr1_Sum.wav                           key  62 exp   293.66 Hz  meas   293.33 Hz     -2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F1_v2_rr1_Sum.wav                           key  41 exp    87.31 Hz  meas    86.80 Hz    -10.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F2_v2_rr1_Sum.wav                           key  53 exp   174.61 Hz  meas   174.01 Hz     -6.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#0_v1_rr2_Sum.wav                          key  34 exp    58.27 Hz  meas    58.34 Hz     +2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#1_v1_rr2_Sum.wav                          key  46 exp   116.54 Hz  meas   114.14 Hz    -36.0 c  <-- CHECK
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#2_v1_rr2_Sum.wav                          key  58 exp   233.08 Hz  meas   231.74 Hz    -10.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D#1_v1_rr2_Sum.wav                          key  39 exp    77.78 Hz  meas    78.14 Hz     +8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D2_v1_rr2_Sum.wav                           key  50 exp   146.83 Hz  meas   146.66 Hz     -2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D3_v1_rr2_Sum.wav                           key  62 exp   293.66 Hz  meas   295.02 Hz     +8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F1_v1_rr2_Sum.wav                           key  41 exp    87.31 Hz  meas    87.21 Hz     -2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F2_v1_rr2_Sum.wav                           key  53 exp   174.61 Hz  meas   172.81 Hz    -18.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#0_v2_rr2_Sum.wav                          key  34 exp    58.27 Hz  meas    57.73 Hz    -16.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#1_v2_rr2_Sum.wav                          key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#2_v2_rr2_Sum.wav                          key  58 exp   233.08 Hz  meas   232.81 Hz     -2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D#1_v2_rr2_Sum.wav                          key  39 exp    77.78 Hz  meas    77.96 Hz     +4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D2_v2_rr2_Sum.wav                           key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D3_v2_rr2_Sum.wav                           key  62 exp   293.66 Hz  meas   294.68 Hz     +6.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F1_v2_rr2_Sum.wav                           key  41 exp    87.31 Hz  meas    88.42 Hz    +22.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F2_v2_rr2_Sum.wav                           key  53 exp   174.61 Hz  meas   176.85 Hz    +22.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#0_v1_rr3_Sum.wav                          key  34 exp    58.27 Hz  meas    58.20 Hz     -2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#1_v1_rr3_Sum.wav                          key  46 exp   116.54 Hz  meas   114.67 Hz    -28.0 c  <-- CHECK
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#2_v1_rr3_Sum.wav                          key  58 exp   233.08 Hz  meas   232.54 Hz     -4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D#1_v1_rr3_Sum.wav                          key  39 exp    77.78 Hz  meas    78.32 Hz    +12.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D2_v1_rr3_Sum.wav                           key  50 exp   146.83 Hz  meas   145.82 Hz    -12.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D3_v1_rr3_Sum.wav                           key  62 exp   293.66 Hz  meas   294.68 Hz     +6.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F1_v1_rr3_Sum.wav                           key  41 exp    87.31 Hz  meas    86.80 Hz    -10.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F2_v1_rr3_Sum.wav                           key  53 exp   174.61 Hz  meas   172.81 Hz    -18.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#0_v2_rr3_Sum.wav                          key  34 exp    58.27 Hz  meas    55.06 Hz    -98.0 c  <-- CHECK
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#1_v2_rr3_Sum.wav                          key  46 exp   116.54 Hz  meas   116.27 Hz     -4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#2_v2_rr3_Sum.wav                          key  58 exp   233.08 Hz  meas   232.81 Hz     -2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D#1_v2_rr3_Sum.wav                          key  39 exp    77.78 Hz  meas    77.42 Hz     -8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D2_v2_rr3_Sum.wav                           key  50 exp   146.83 Hz  meas   145.82 Hz    -12.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D3_v2_rr3_Sum.wav                           key  62 exp   293.66 Hz  meas   292.65 Hz     -6.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F1_v2_rr3_Sum.wav                           key  41 exp    87.31 Hz  meas    87.51 Hz     +4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F2_v2_rr3_Sum.wav                           key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#0_v1_rr4_Sum.wav                          key  34 exp    58.27 Hz  meas    58.00 Hz     -8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#1_v1_rr4_Sum.wav                          key  46 exp   116.54 Hz  meas   116.27 Hz     -4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#2_v1_rr4_Sum.wav                          key  58 exp   233.08 Hz  meas   232.01 Hz     -8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D#1_v1_rr4_Sum.wav                          key  39 exp    77.78 Hz  meas    77.87 Hz     +2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D2_v1_rr4_Sum.wav                           key  50 exp   146.83 Hz  meas   146.49 Hz     -4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D3_v1_rr4_Sum.wav                           key  62 exp   293.66 Hz  meas   295.02 Hz     +8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F1_v1_rr4_Sum.wav                           key  41 exp    87.31 Hz  meas    86.90 Hz     -8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F2_v1_rr4_Sum.wav                           key  53 exp   174.61 Hz  meas   173.41 Hz    -12.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#0_v2_rr4_Sum.wav                          key  34 exp    58.27 Hz  meas    58.41 Hz     +4.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#1_v2_rr4_Sum.wav                          key  46 exp   116.54 Hz  meas   116.00 Hz     -8.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_A#2_v2_rr4_Sum.wav                          key  58 exp   233.08 Hz  meas   232.28 Hz     -6.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D#1_v2_rr4_Sum.wav                          key  39 exp    77.78 Hz  meas    77.87 Hz     +2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D2_v2_rr4_Sum.wav                           key  50 exp   146.83 Hz  meas   147.00 Hz     +2.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_D3_v2_rr4_Sum.wav                           key  62 exp   293.66 Hz  meas   294.68 Hz     +6.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F1_v2_rr4_Sum.wav                           key  41 exp    87.31 Hz  meas    87.81 Hz    +10.0 c
+tuba_stac     Brass/Tuba/stac/Tuba3_stac_F2_v2_rr4_Sum.wav                           key  53 exp   174.61 Hz  meas   174.01 Hz     -6.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_A2_v1.wav                  key  57 exp   220.00 Hz  meas   220.76 Hz     +6.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_A3_v1.wav                  key  69 exp   440.00 Hz  meas   438.48 Hz     -6.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_B2_v1.wav                  key  59 exp   246.94 Hz  meas   246.09 Hz     -6.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_B4_v1.wav                  key  83 exp   987.77 Hz  meas   988.91 Hz     +2.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_C4_v1.wav                  key  72 exp   523.25 Hz  meas   524.46 Hz     +4.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_D3_v1.wav                  key  62 exp   293.66 Hz  meas   293.66 Hz     +0.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_D5_v1.wav                  key  86 exp  1174.66 Hz  meas  1176.02 Hz     +2.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_E4_v1.wav                  key  76 exp   659.26 Hz  meas   660.78 Hz     +4.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_F#3_v1.wav                 key  66 exp   369.99 Hz  meas   369.57 Hz     -2.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_G2_v1.wav                  key  55 exp   196.00 Hz  meas   195.55 Hz     -4.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_G4_v1.wav                  key  79 exp   783.99 Hz  meas   783.99 Hz     +0.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_A2_v2.wav                  key  57 exp   220.00 Hz  meas   219.24 Hz     -6.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_A3_v2.wav                  key  69 exp   440.00 Hz  meas   441.53 Hz     +6.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_B2_v2.wav                  key  59 exp   246.94 Hz  meas   246.66 Hz     -2.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_B4_v2.wav                  key  83 exp   987.77 Hz  meas   990.05 Hz     +4.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_C4_v2.wav                  key  72 exp   523.25 Hz  meas   524.46 Hz     +4.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_D3_v2.wav                  key  62 exp   293.66 Hz  meas   295.02 Hz     +8.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_D5_v2.wav                  key  86 exp  1174.66 Hz  meas  1178.74 Hz     +6.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_E4_v2.wav                  key  76 exp   659.26 Hz  meas   659.26 Hz     +0.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_F#3_v2.wav                 key  66 exp   369.99 Hz  meas   370.85 Hz     +4.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_G2_v2.wav                  key  55 exp   196.00 Hz  meas   195.55 Hz     -4.0 c
+vln           Strings/Violin Section/susVib/VlnEns_susVib_G4_v2.wav                  key  79 exp   783.99 Hz  meas   782.18 Hz     -4.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_A2_v1_rr1.wav                  key  57 exp   220.00 Hz  meas   220.00 Hz     +0.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_A3_v1_rr1.wav                  key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_B2_v1_rr1.wav                  key  59 exp   246.94 Hz  meas   243.82 Hz    -22.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_B4_v1_rr1.wav                  key  83 exp   987.77 Hz  meas   991.20 Hz     +6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_C4_v1_rr1.wav                  key  72 exp   523.25 Hz  meas   522.65 Hz     -2.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_D3_v1_rr1.wav                  key  62 exp   293.66 Hz  meas   290.29 Hz    -20.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_D5_v1_rr1.wav                  key  86 exp  1174.66 Hz  meas  1173.30 Hz     -2.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_E4_v1_rr1.wav                  key  76 exp   659.26 Hz  meas   659.26 Hz     +0.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_F#3_v1_rr1.wav                 key  66 exp   369.99 Hz  meas   369.57 Hz     -2.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_G2_v1_rr1.wav                  key  55 exp   196.00 Hz  meas   196.68 Hz     +6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_G4_v1_rr1.wav                  key  79 exp   783.99 Hz  meas   783.99 Hz     +0.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_A2_v2_rr1.wav                  key  57 exp   220.00 Hz  meas   219.49 Hz     -4.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_A3_v2_rr1.wav                  key  69 exp   440.00 Hz  meas   440.51 Hz     +2.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_B2_v2_rr1.wav                  key  59 exp   246.94 Hz  meas   244.67 Hz    -16.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_B4_v2_rr1.wav                  key  83 exp   987.77 Hz  meas   985.49 Hz     -4.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_C4_v2_rr1.wav                  key  72 exp   523.25 Hz  meas   520.24 Hz    -10.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_D3_v2_rr1.wav                  key  62 exp   293.66 Hz  meas   292.99 Hz     -4.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_D5_v2_rr1.wav                  key  86 exp  1174.66 Hz  meas  1178.74 Hz     +6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_E4_v2_rr1.wav                  key  76 exp   659.26 Hz  meas   657.73 Hz     -4.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_F#3_v2_rr1.wav                 key  66 exp   369.99 Hz  meas   371.28 Hz     +6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_G2_v2_rr1.wav                  key  55 exp   196.00 Hz  meas   195.55 Hz     -4.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_G4_v2_rr1.wav                  key  79 exp   783.99 Hz  meas   783.09 Hz     -2.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_A2_v1_rr2.wav                  key  57 exp   220.00 Hz  meas   219.75 Hz     -2.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_A3_v1_rr2.wav                  key  69 exp   440.00 Hz  meas   441.02 Hz     +4.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_B2_v1_rr2.wav                  key  59 exp   246.94 Hz  meas   243.82 Hz    -22.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_B4_v1_rr2.wav                  key  83 exp   987.77 Hz  meas   987.77 Hz     +0.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_C4_v1_rr2.wav                  key  72 exp   523.25 Hz  meas   525.67 Hz     +8.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_D3_v1_rr2.wav                  key  62 exp   293.66 Hz  meas   291.30 Hz    -14.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_D5_v1_rr2.wav                  key  86 exp  1174.66 Hz  meas  1176.02 Hz     +2.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_E4_v1_rr2.wav                  key  76 exp   659.26 Hz  meas   656.22 Hz     -8.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_F#3_v1_rr2.wav                 key  66 exp   369.99 Hz  meas   373.43 Hz    +16.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_G2_v1_rr2.wav                  key  55 exp   196.00 Hz  meas   589.37 Hz  +1906.0 c  <-- CHECK
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_G4_v1_rr2.wav                  key  79 exp   783.99 Hz  meas   782.18 Hz     -4.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_A2_v2_rr2.wav                  key  57 exp   220.00 Hz  meas   219.24 Hz     -6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_A3_v2_rr2.wav                  key  69 exp   440.00 Hz  meas   441.53 Hz     +6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_B2_v2_rr2.wav                  key  59 exp   246.94 Hz  meas   244.67 Hz    -16.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_B4_v2_rr2.wav                  key  83 exp   987.77 Hz  meas   999.24 Hz    +20.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_C4_v2_rr2.wav                  key  72 exp   523.25 Hz  meas   525.07 Hz     +6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_D3_v2_rr2.wav                  key  62 exp   293.66 Hz  meas   293.66 Hz     +0.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_D5_v2_rr2.wav                  key  86 exp  1174.66 Hz  meas  1161.17 Hz    -20.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_E4_v2_rr2.wav                  key  76 exp   659.26 Hz  meas   656.97 Hz     -6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_F#3_v2_rr2.wav                 key  66 exp   369.99 Hz  meas   371.28 Hz     +6.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_G2_v2_rr2.wav                  key  55 exp   196.00 Hz  meas   195.09 Hz     -8.0 c
+vln_spic      Strings/Violin Section/Spic/VlnEns_Spic_G4_v2_rr2.wav                  key  79 exp   783.99 Hz  meas   781.28 Hz     -6.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_A2_v1.wav                      key  57 exp   220.00 Hz  meas   218.73 Hz    -10.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_A3_v1.wav                      key  69 exp   440.00 Hz  meas   435.95 Hz    -16.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_B2_v1.wav                      key  59 exp   246.94 Hz  meas   245.52 Hz    -10.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_B4_v1.wav                      key  83 exp   987.77 Hz  meas   986.63 Hz     -2.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_C4_v1.wav                      key  72 exp   523.25 Hz  meas   524.46 Hz     +4.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_D3_v1.wav                      key  62 exp   293.66 Hz  meas   294.34 Hz     +4.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_D5_v1.wav                      key  86 exp  1174.66 Hz  meas  1173.30 Hz     -2.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_E4_v1.wav                      key  76 exp   659.26 Hz  meas   660.02 Hz     +2.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_F#3_v1.wav                     key  66 exp   369.99 Hz  meas   371.28 Hz     +6.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_G2_v1.wav                      key  55 exp   196.00 Hz  meas   196.91 Hz     +8.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_G4_v1.wav                      key  79 exp   783.99 Hz  meas   783.99 Hz     +0.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_A2_v2.wav                      key  57 exp   220.00 Hz  meas   218.99 Hz     -8.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_A3_v2.wav                      key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_B2_v2.wav                      key  59 exp   246.94 Hz  meas   246.09 Hz     -6.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_B4_v2.wav                      key  83 exp   987.77 Hz  meas   992.34 Hz     +8.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_C4_v2.wav                      key  72 exp   523.25 Hz  meas   525.67 Hz     +8.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_D3_v2.wav                      key  62 exp   293.66 Hz  meas   291.64 Hz    -12.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_D5_v2.wav                      key  86 exp  1174.66 Hz  meas  1173.30 Hz     -2.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_E4_v2.wav                      key  76 exp   659.26 Hz  meas   662.31 Hz     +8.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_G2_v2.wav                      key  55 exp   196.00 Hz  meas   194.64 Hz    -12.0 c
+vln_trem      Strings/Violin Section/Trem/VlnEns_Trem_G4_v2.wav                      key  79 exp   783.99 Hz  meas   783.09 Hz     -2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_A2_v1_rr1.wav                  key  57 exp   220.00 Hz  meas   219.24 Hz     -6.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_A3_v1_rr1.wav                  key  69 exp   440.00 Hz  meas   440.51 Hz     +2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_B2_v1_rr1.wav                  key  59 exp   246.94 Hz  meas   246.94 Hz     +0.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_B4_v1_rr1.wav                  key  83 exp   987.77 Hz  meas   983.21 Hz     -8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_C4_v1_rr1.wav                  key  72 exp   523.25 Hz  meas   528.11 Hz    +16.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_D3_v1_rr1.wav                  key  62 exp   293.66 Hz  meas   295.02 Hz     +8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_D5_v1_rr1.wav                  key  86 exp  1174.66 Hz  meas  1176.02 Hz     +2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_E4_v1_rr1.wav                  key  76 exp   659.26 Hz  meas   653.19 Hz    -16.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_F#3_v1_rr1.wav                 key  66 exp   369.99 Hz  meas   366.59 Hz    -16.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_G2_v1_rr1.wav                  key  55 exp   196.00 Hz  meas   196.00 Hz     +0.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_G4_v1_rr1.wav                  key  79 exp   783.99 Hz  meas   780.38 Hz     -8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_A2_v2_rr1.wav                  key  57 exp   220.00 Hz  meas   220.00 Hz     +0.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_A3_v2_rr1.wav                  key  69 exp   440.00 Hz  meas   440.51 Hz     +2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_B2_v2_rr1.wav                  key  59 exp   246.94 Hz  meas   246.66 Hz     -2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_B4_v2_rr1.wav                  key  83 exp   987.77 Hz  meas   986.63 Hz     -2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_C4_v2_rr1.wav                  key  72 exp   523.25 Hz  meas   526.28 Hz    +10.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_D3_v2_rr1.wav                  key  62 exp   293.66 Hz  meas   291.64 Hz    -12.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_D5_v2_rr1.wav                  key  86 exp  1174.66 Hz  meas  1174.66 Hz     +0.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_E4_v2_rr1.wav                  key  76 exp   659.26 Hz  meas   656.22 Hz     -8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_F#3_v2_rr1.wav                 key  66 exp   369.99 Hz  meas   369.14 Hz     -4.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_G2_v2_rr1.wav                  key  55 exp   196.00 Hz  meas   195.77 Hz     -2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_G4_v2_rr1.wav                  key  79 exp   783.99 Hz  meas   785.80 Hz     +4.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_A2_v1_rr2.wav                  key  57 exp   220.00 Hz  meas   219.24 Hz     -6.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_A3_v1_rr2.wav                  key  69 exp   440.00 Hz  meas   438.48 Hz     -6.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_B2_v1_rr2.wav                  key  59 exp   246.94 Hz  meas   245.80 Hz     -8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_B4_v1_rr2.wav                  key  83 exp   987.77 Hz  meas   983.21 Hz     -8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_C4_v1_rr2.wav                  key  72 exp   523.25 Hz  meas   529.94 Hz    +22.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_D3_v1_rr2.wav                  key  62 exp   293.66 Hz  meas   293.33 Hz     -2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_D5_v1_rr2.wav                  key  86 exp  1174.66 Hz  meas  1180.10 Hz     +8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_E4_v1_rr2.wav                  key  76 exp   659.26 Hz  meas   657.73 Hz     -4.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_F#3_v1_rr2.wav                 key  66 exp   369.99 Hz  meas   367.01 Hz    -14.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_G2_v1_rr2.wav                  key  55 exp   196.00 Hz  meas   195.09 Hz     -8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_G4_v1_rr2.wav                  key  79 exp   783.99 Hz  meas   784.90 Hz     +2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_A2_v2_rr2.wav                  key  57 exp   220.00 Hz  meas   219.49 Hz     -4.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_A3_v2_rr2.wav                  key  69 exp   440.00 Hz  meas   440.51 Hz     +2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_B2_v2_rr2.wav                  key  59 exp   246.94 Hz  meas   246.66 Hz     -2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_B4_v2_rr2.wav                  key  83 exp   987.77 Hz  meas   987.77 Hz     +0.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_C4_v2_rr2.wav                  key  72 exp   523.25 Hz  meas   523.86 Hz     +2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_D3_v2_rr2.wav                  key  62 exp   293.66 Hz  meas   292.31 Hz     -8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_D5_v2_rr2.wav                  key  86 exp  1174.66 Hz  meas  1185.57 Hz    +16.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_E4_v2_rr2.wav                  key  76 exp   659.26 Hz  meas   656.22 Hz     -8.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_F#3_v2_rr2.wav                 key  66 exp   369.99 Hz  meas   368.71 Hz     -6.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_G2_v2_rr2.wav                  key  55 exp   196.00 Hz  meas   195.77 Hz     -2.0 c
+vln_pizz      Strings/Violin Section/Pizz/VlnEns_Pizz_G4_v2_rr2.wav                  key  79 exp   783.99 Hz  meas   784.90 Hz     +2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_A3_v1_1.wav               key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_B2_v1_1.wav               key  59 exp   246.94 Hz  meas   246.66 Hz     -2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_B4_v1_1.wav               key  83 exp   987.77 Hz  meas   987.77 Hz     +0.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_C2_v1_1.wav               key  48 exp   130.81 Hz  meas   130.81 Hz     +0.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_C4_v1_1.wav               key  72 exp   523.25 Hz  meas   522.04 Hz     -4.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_D2_v1_1.wav               key  50 exp   146.83 Hz  meas   146.66 Hz     -2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_D3_v1_1.wav               key  62 exp   293.66 Hz  meas   292.99 Hz     -4.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_D5_v1_1.wav               key  86 exp  1174.66 Hz  meas  1171.95 Hz     -4.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_E2_v1_1.wav               key  52 exp   164.81 Hz  meas   164.62 Hz     -2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_E4_v1_1.wav               key  76 exp   659.26 Hz  meas   661.54 Hz     +6.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_F3_v1_1.wav               key  65 exp   349.23 Hz  meas   348.83 Hz     -2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_G2_v1_1.wav               key  55 exp   196.00 Hz  meas   196.00 Hz     +0.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_G4_v1_1.wav               key  79 exp   783.99 Hz  meas   787.62 Hz     +8.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_A3_v2_1.wav               key  69 exp   440.00 Hz  meas   441.53 Hz     +6.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_B2_v2_1.wav               key  59 exp   246.94 Hz  meas   247.23 Hz     +2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_B4_v2_1.wav               key  83 exp   987.77 Hz  meas   985.49 Hz     -4.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_C2_v2_1.wav               key  48 exp   130.81 Hz  meas   130.96 Hz     +2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_C4_v2_1.wav               key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_D2_v2_1.wav               key  50 exp   146.83 Hz  meas   147.00 Hz     +2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_D3_v2_1.wav               key  62 exp   293.66 Hz  meas   291.64 Hz    -12.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_D5_v2_1.wav               key  86 exp  1174.66 Hz  meas  1174.66 Hz     +0.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_E2_v2_1.wav               key  52 exp   164.81 Hz  meas   164.81 Hz     +0.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_E4_v2_1.wav               key  76 exp   659.26 Hz  meas   661.54 Hz     +6.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_F3_v2_1.wav               key  65 exp   349.23 Hz  meas   348.83 Hz     -2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_G2_v2_1.wav               key  55 exp   196.00 Hz  meas   196.22 Hz     +2.0 c
+vla           Strings/Viola Section/susvib/ViolaEns_susvib_G4_v2_1.wav               key  79 exp   783.99 Hz  meas   784.90 Hz     +2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_A3_v1_rr1.wav                   key  69 exp   440.00 Hz  meas   441.02 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_B2_v1_rr1.wav                   key  59 exp   246.94 Hz  meas   247.23 Hz     +2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_B4_v1_rr1.wav                   key  83 exp   987.77 Hz  meas   990.05 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_C2_v1_rr1.wav                   key  48 exp   130.81 Hz  meas   131.42 Hz     +8.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_C4_v1_rr1.wav                   key  72 exp   523.25 Hz  meas   524.46 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_D3_v1_rr1.wav                   key  62 exp   293.66 Hz  meas   294.34 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_D5_v1_rr1.wav                   key  86 exp  1174.66 Hz  meas  1177.38 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_E2_v1_rr1.wav                   key  52 exp   164.81 Hz  meas   163.86 Hz    -10.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_E4_v1_rr1.wav                   key  76 exp   659.26 Hz  meas   655.46 Hz    -10.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_F3_v1_rr1.wav                   key  65 exp   349.23 Hz  meas   350.04 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_G2_v1_rr1.wav                   key  55 exp   196.00 Hz  meas   194.42 Hz    -14.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_G4_v1_rr1.wav                   key  79 exp   783.99 Hz  meas   783.09 Hz     -2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_A3_v2_rr1.wav                   key  69 exp   440.00 Hz  meas   442.04 Hz     +8.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_B2_v2_rr1.wav                   key  59 exp   246.94 Hz  meas   247.23 Hz     +2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_B4_v2_rr1.wav                   key  83 exp   987.77 Hz  meas   990.05 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_C2_v2_rr1.wav                   key  48 exp   130.81 Hz  meas   131.42 Hz     +8.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_C4_v2_rr1.wav                   key  72 exp   523.25 Hz  meas   525.07 Hz     +6.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_D3_v2_rr1.wav                   key  62 exp   293.66 Hz  meas   294.00 Hz     +2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_D5_v2_rr1.wav                   key  86 exp  1174.66 Hz  meas  1165.20 Hz    -14.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_E2_v2_rr1.wav                   key  52 exp   164.81 Hz  meas   163.68 Hz    -12.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_E4_v2_rr1.wav                   key  76 exp   659.26 Hz  meas   663.84 Hz    +12.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_F3_v2_rr1.wav                   key  65 exp   349.23 Hz  meas   350.44 Hz     +6.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_G2_v2_rr1.wav                   key  55 exp   196.00 Hz  meas   196.00 Hz     +0.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_G4_v2_rr1.wav                   key  79 exp   783.99 Hz  meas   789.44 Hz    +12.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_A3_v1_rr2.wav                   key  69 exp   440.00 Hz  meas   439.49 Hz     -2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_B2_v1_rr2.wav                   key  59 exp   246.94 Hz  meas   247.80 Hz     +6.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_B4_v1_rr2.wav                   key  83 exp   987.77 Hz  meas   994.64 Hz    +12.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_C2_v1_rr2.wav                   key  48 exp   130.81 Hz  meas   130.81 Hz     +0.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_C4_v1_rr2.wav                   key  72 exp   523.25 Hz  meas   523.86 Hz     +2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_D3_v1_rr2.wav                   key  62 exp   293.66 Hz  meas   293.66 Hz     +0.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_D5_v1_rr2.wav                   key  86 exp  1174.66 Hz  meas  1181.46 Hz    +10.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_E2_v1_rr2.wav                   key  52 exp   164.81 Hz  meas   162.73 Hz    -22.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_E4_v1_rr2.wav                   key  76 exp   659.26 Hz  meas   656.97 Hz     -6.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_F3_v1_rr2.wav                   key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_G2_v1_rr2.wav                   key  55 exp   196.00 Hz  meas   195.09 Hz     -8.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_G4_v1_rr2.wav                   key  79 exp   783.99 Hz  meas   784.90 Hz     +2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_A3_v2_rr2.wav                   key  69 exp   440.00 Hz  meas   440.51 Hz     +2.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_B2_v2_rr2.wav                   key  59 exp   246.94 Hz  meas   246.37 Hz     -4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_B4_v2_rr2.wav                   key  83 exp   987.77 Hz  meas   993.49 Hz    +10.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_C2_v2_rr2.wav                   key  48 exp   130.81 Hz  meas   131.12 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_C4_v2_rr2.wav                   key  72 exp   523.25 Hz  meas   525.07 Hz     +6.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_D3_v2_rr2.wav                   key  62 exp   293.66 Hz  meas   292.99 Hz     -4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_D5_v2_rr2.wav                   key  86 exp  1174.66 Hz  meas  1170.60 Hz     -6.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_E2_v2_rr2.wav                   key  52 exp   164.81 Hz  meas   163.11 Hz    -18.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_E4_v2_rr2.wav                   key  76 exp   659.26 Hz  meas   660.78 Hz     +4.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_F3_v2_rr2.wav                   key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_G2_v2_rr2.wav                   key  55 exp   196.00 Hz  meas   194.87 Hz    -10.0 c
+vla_spic      Strings/Viola Section/spic/Violas_spic_G4_v2_rr2.wav                   key  79 exp   783.99 Hz  meas   781.28 Hz     -6.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_A3_v1_rr1.wav                   key  69 exp   440.00 Hz  meas   437.47 Hz    -10.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_B2_v1_rr1.wav                   key  59 exp   246.94 Hz  meas   246.37 Hz     -4.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_B4_v1_rr1.wav                   key  83 exp   987.77 Hz  meas   987.77 Hz     +0.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_C2_v1_rr1.wav                   key  48 exp   130.81 Hz  meas   130.06 Hz    -10.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_C4_v1_rr1.wav                   key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_D3_v1_rr1.wav                   key  62 exp   293.66 Hz  meas   291.30 Hz    -14.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_D5_v1_rr1.wav                   key  86 exp  1174.66 Hz  meas  1184.20 Hz    +14.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_E2_v1_rr1.wav                   key  52 exp   164.81 Hz  meas   167.11 Hz    +24.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_E4_v1_rr1.wav                   key  76 exp   659.26 Hz  meas   663.07 Hz    +10.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_F3_v1_rr1.wav                   key  65 exp   349.23 Hz  meas   347.22 Hz    -10.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_G2_v1_rr1.wav                   key  55 exp   196.00 Hz  meas   388.84 Hz  +1186.0 c  <-- CHECK
+vla_trem      Strings/Viola Section/trem/Violas_trem_G4_v1_rr1.wav                   key  79 exp   783.99 Hz  meas   777.68 Hz    -14.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_A3_v2_rr1.wav                   key  69 exp   440.00 Hz  meas   441.02 Hz     +4.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_B2_v2_rr1.wav                   key  59 exp   246.94 Hz  meas   247.51 Hz     +4.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_B4_v2_rr1.wav                   key  83 exp   987.77 Hz  meas   987.77 Hz     +0.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_C2_v2_rr1.wav                   key  48 exp   130.81 Hz  meas   129.31 Hz    -20.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_C4_v2_rr1.wav                   key  72 exp   523.25 Hz  meas   520.84 Hz     -8.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_D3_v2_rr1.wav                   key  62 exp   293.66 Hz  meas   292.65 Hz     -6.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_D5_v2_rr1.wav                   key  86 exp  1174.66 Hz  meas  1171.95 Hz     -4.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_E2_v2_rr1.wav                   key  52 exp   164.81 Hz  meas   164.43 Hz     -4.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_E4_v2_rr1.wav                   key  76 exp   659.26 Hz  meas   660.78 Hz     +4.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_F3_v2_rr1.wav                   key  65 exp   349.23 Hz  meas   350.85 Hz     +8.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_G2_v2_rr1.wav                   key  55 exp   196.00 Hz  meas   195.55 Hz     -4.0 c
+vla_trem      Strings/Viola Section/trem/Violas_trem_G4_v2_rr1.wav                   key  79 exp   783.99 Hz  meas   789.44 Hz    +12.0 c
+vc            Strings/Cello Section/susvib/susvib_A2_v1_1.wav                        key  57 exp   220.00 Hz  meas   220.00 Hz     +0.0 c
+vc            Strings/Cello Section/susvib/susvib_B1_v1_1.wav                        key  47 exp   123.47 Hz  meas   123.61 Hz     +2.0 c
+vc            Strings/Cello Section/susvib/susvib_B3_v1_1.wav                        key  71 exp   493.88 Hz  meas   492.74 Hz     -4.0 c
+vc            Strings/Cello Section/susvib/susvib_C1_v1_1.wav                        key  36 exp    65.41 Hz  meas    65.26 Hz     -4.0 c
+vc            Strings/Cello Section/susvib/susvib_C3_v1_1.wav                        key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+vc            Strings/Cello Section/susvib/susvib_D2_v1_1.wav                        key  50 exp   146.83 Hz  meas   147.34 Hz     +6.0 c
+vc            Strings/Cello Section/susvib/susvib_D4_v1_1.wav                        key  74 exp   587.33 Hz  meas   585.97 Hz     -4.0 c
+vc            Strings/Cello Section/susvib/susvib_E1_v1_1.wav                        key  40 exp    82.41 Hz  meas    81.93 Hz    -10.0 c
+vc            Strings/Cello Section/susvib/susvib_E1_v1_2.wav                        key  40 exp    82.41 Hz  meas    82.12 Hz     -6.0 c
+vc            Strings/Cello Section/susvib/susvib_E3_v1_1.wav                        key  64 exp   329.63 Hz  meas   328.11 Hz     -8.0 c
+vc            Strings/Cello Section/susvib/susvib_F2_v1_1.wav                        key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+vc            Strings/Cello Section/susvib/susvib_F4_v1_1.wav                        key  77 exp   698.46 Hz  meas   701.69 Hz     +8.0 c
+vc            Strings/Cello Section/susvib/susvib_G1_v1_1.wav                        key  43 exp    98.00 Hz  meas    97.89 Hz     -2.0 c
+vc            Strings/Cello Section/susvib/susvib_G3_v1_1.wav                        key  67 exp   392.00 Hz  meas   392.00 Hz     +0.0 c
+vc            Strings/Cello Section/susvib/susvib_A2_v3_1.wav                        key  57 exp   220.00 Hz  meas   219.75 Hz     -2.0 c
+vc            Strings/Cello Section/susvib/susvib_B1_v3_1.wav                        key  47 exp   123.47 Hz  meas   123.76 Hz     +4.0 c
+vc            Strings/Cello Section/susvib/susvib_B3_v3_1.wav                        key  71 exp   493.88 Hz  meas   493.31 Hz     -2.0 c
+vc            Strings/Cello Section/susvib/susvib_C1_v3_1.wav                        key  36 exp    65.41 Hz  meas    65.33 Hz     -2.0 c
+vc            Strings/Cello Section/susvib/susvib_C3_v3_1.wav                        key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+vc            Strings/Cello Section/susvib/susvib_D2_v3_1.wav                        key  50 exp   146.83 Hz  meas   146.66 Hz     -2.0 c
+vc            Strings/Cello Section/susvib/susvib_D4_v3_1.wav                        key  74 exp   587.33 Hz  meas   585.97 Hz     -4.0 c
+vc            Strings/Cello Section/susvib/susvib_E1_v3_1.wav                        key  40 exp    82.41 Hz  meas    81.93 Hz    -10.0 c
+vc            Strings/Cello Section/susvib/susvib_E3_v3_1.wav                        key  64 exp   329.63 Hz  meas   332.30 Hz    +14.0 c
+vc            Strings/Cello Section/susvib/susvib_F2_v3_1.wav                        key  53 exp   174.61 Hz  meas   174.01 Hz     -6.0 c
+vc            Strings/Cello Section/susvib/susvib_F4_v3_1.wav                        key  77 exp   698.46 Hz  meas   697.65 Hz     -2.0 c
+vc            Strings/Cello Section/susvib/susvib_G1_v3_1.wav                        key  43 exp    98.00 Hz  meas    98.00 Hz     +0.0 c
+vc            Strings/Cello Section/susvib/susvib_G3_v3_1.wav                        key  67 exp   392.00 Hz  meas   392.45 Hz     +2.0 c
+vc_spic       Strings/Cello Section/spic/spic_A2_v1_RR1.wav                          key  57 exp   220.00 Hz  meas   220.76 Hz     +6.0 c
+vc_spic       Strings/Cello Section/spic/spic_B1_v1_RR1.wav                          key  47 exp   123.47 Hz  meas   123.04 Hz     -6.0 c
+vc_spic       Strings/Cello Section/spic/spic_B3_v1_RR1.wav                          key  71 exp   493.88 Hz  meas   493.31 Hz     -2.0 c
+vc_spic       Strings/Cello Section/spic/spic_C1_v1_RR1.wav                          key  36 exp    65.41 Hz  meas    65.56 Hz     +4.0 c
+vc_spic       Strings/Cello Section/spic/spic_C3_v1_RR1.wav                          key  60 exp   261.63 Hz  meas   263.14 Hz    +10.0 c
+vc_spic       Strings/Cello Section/spic/spic_D2_v1_RR1.wav                          key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+vc_spic       Strings/Cello Section/spic/spic_D4_v1_RR1.wav                          key  74 exp   587.33 Hz  meas   583.27 Hz    -12.0 c
+vc_spic       Strings/Cello Section/spic/spic_E1_v1_RR1.wav                          key  40 exp    82.41 Hz  meas    83.17 Hz    +16.0 c
+vc_spic       Strings/Cello Section/spic/spic_E3_v1_RR1.wav                          key  64 exp   329.63 Hz  meas   331.15 Hz     +8.0 c
+vc_spic       Strings/Cello Section/spic/spic_F2_v1_RR1.wav                          key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+vc_spic       Strings/Cello Section/spic/spic_F4_v1_RR1.wav                          key  77 exp   698.46 Hz  meas   701.69 Hz     +8.0 c
+vc_spic       Strings/Cello Section/spic/spic_G1_v1_RR1.wav                          key  43 exp    98.00 Hz  meas    98.57 Hz    +10.0 c
+vc_spic       Strings/Cello Section/spic/spic_G3_v1_RR1.wav                          key  67 exp   392.00 Hz  meas   389.74 Hz    -10.0 c
+vc_spic       Strings/Cello Section/spic/spic_A2_v2_RR1.wav                          key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+vc_spic       Strings/Cello Section/spic/spic_B1_v2_RR1.wav                          key  47 exp   123.47 Hz  meas   123.90 Hz     +6.0 c
+vc_spic       Strings/Cello Section/spic/spic_B3_v2_RR1.wav                          key  71 exp   493.88 Hz  meas   492.74 Hz     -4.0 c
+vc_spic       Strings/Cello Section/spic/spic_C1_v2_RR1.wav                          key  36 exp    65.41 Hz  meas    65.63 Hz     +6.0 c
+vc_spic       Strings/Cello Section/spic/spic_C3_v2_RR1.wav                          key  60 exp   261.63 Hz  meas   265.28 Hz    +24.0 c
+vc_spic       Strings/Cello Section/spic/spic_D2_v2_RR1.wav                          key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+vc_spic       Strings/Cello Section/spic/spic_D4_v2_RR1.wav                          key  74 exp   587.33 Hz  meas   590.73 Hz    +10.0 c
+vc_spic       Strings/Cello Section/spic/spic_E1_v2_RR1.wav                          key  40 exp    82.41 Hz  meas    82.03 Hz     -8.0 c
+vc_spic       Strings/Cello Section/spic/spic_E3_v2_RR1.wav                          key  64 exp   329.63 Hz  meas   328.49 Hz     -6.0 c
+vc_spic       Strings/Cello Section/spic/spic_F2_v2_RR1.wav                          key  53 exp   174.61 Hz  meas   175.02 Hz     +4.0 c
+vc_spic       Strings/Cello Section/spic/spic_F4_v2_RR1.wav                          key  77 exp   698.46 Hz  meas   700.88 Hz     +6.0 c
+vc_spic       Strings/Cello Section/spic/spic_G1_v2_RR1.wav                          key  43 exp    98.00 Hz  meas    97.77 Hz     -4.0 c
+vc_spic       Strings/Cello Section/spic/spic_G3_v2_RR1.wav                          key  67 exp   392.00 Hz  meas   388.39 Hz    -16.0 c
+vc_spic       Strings/Cello Section/spic/spic_A2_v1_RR2.wav                          key  57 exp   220.00 Hz  meas   219.75 Hz     -2.0 c
+vc_spic       Strings/Cello Section/spic/spic_B1_v1_RR2.wav                          key  47 exp   123.47 Hz  meas   123.90 Hz     +6.0 c
+vc_spic       Strings/Cello Section/spic/spic_B3_v1_RR2.wav                          key  71 exp   493.88 Hz  meas   492.17 Hz     -6.0 c
+vc_spic       Strings/Cello Section/spic/spic_C1_v1_RR2.wav                          key  36 exp    65.41 Hz  meas    65.41 Hz     +0.0 c
+vc_spic       Strings/Cello Section/spic/spic_C3_v1_RR2.wav                          key  60 exp   261.63 Hz  meas   262.53 Hz     +6.0 c
+vc_spic       Strings/Cello Section/spic/spic_D2_v1_RR2.wav                          key  50 exp   146.83 Hz  meas   146.16 Hz     -8.0 c
+vc_spic       Strings/Cello Section/spic/spic_D4_v1_RR2.wav                          key  74 exp   587.33 Hz  meas   587.33 Hz     +0.0 c
+vc_spic       Strings/Cello Section/spic/spic_E1_v1_RR2.wav                          key  40 exp    82.41 Hz  meas    82.50 Hz     +2.0 c
+vc_spic       Strings/Cello Section/spic/spic_E3_v1_RR2.wav                          key  64 exp   329.63 Hz  meas   330.39 Hz     +4.0 c
+vc_spic       Strings/Cello Section/spic/spic_F2_v1_RR2.wav                          key  53 exp   174.61 Hz  meas   175.42 Hz     +8.0 c
+vc_spic       Strings/Cello Section/spic/spic_F4_v1_RR2.wav                          key  77 exp   698.46 Hz  meas   694.43 Hz    -10.0 c
+vc_spic       Strings/Cello Section/spic/spic_G1_v1_RR2.wav                          key  43 exp    98.00 Hz  meas    97.89 Hz     -2.0 c
+vc_spic       Strings/Cello Section/spic/spic_G3_v1_RR2.wav                          key  67 exp   392.00 Hz  meas   391.54 Hz     -2.0 c
+vc_spic       Strings/Cello Section/spic/spic_A2_v2_RR2.wav                          key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+vc_spic       Strings/Cello Section/spic/spic_B1_v2_RR2.wav                          key  47 exp   123.47 Hz  meas   123.47 Hz     +0.0 c
+vc_spic       Strings/Cello Section/spic/spic_B3_v2_RR2.wav                          key  71 exp   493.88 Hz  meas   491.61 Hz     -8.0 c
+vc_spic       Strings/Cello Section/spic/spic_C1_v2_RR2.wav                          key  36 exp    65.41 Hz  meas    65.18 Hz     -6.0 c
+vc_spic       Strings/Cello Section/spic/spic_C3_v2_RR2.wav                          key  60 exp   261.63 Hz  meas   263.75 Hz    +14.0 c
+vc_spic       Strings/Cello Section/spic/spic_D2_v2_RR2.wav                          key  50 exp   146.83 Hz  meas   147.00 Hz     +2.0 c
+vc_spic       Strings/Cello Section/spic/spic_D4_v2_RR2.wav                          key  74 exp   587.33 Hz  meas   583.95 Hz    -10.0 c
+vc_spic       Strings/Cello Section/spic/spic_E1_v2_RR2.wav                          key  40 exp    82.41 Hz  meas    83.17 Hz    +16.0 c
+vc_spic       Strings/Cello Section/spic/spic_E3_v2_RR2.wav                          key  64 exp   329.63 Hz  meas   330.01 Hz     +2.0 c
+vc_spic       Strings/Cello Section/spic/spic_F2_v2_RR2.wav                          key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+vc_spic       Strings/Cello Section/spic/spic_F4_v2_RR2.wav                          key  77 exp   698.46 Hz  meas   697.65 Hz     -2.0 c
+vc_spic       Strings/Cello Section/spic/spic_G1_v2_RR2.wav                          key  43 exp    98.00 Hz  meas    98.11 Hz     +2.0 c
+vc_spic       Strings/Cello Section/spic/spic_G3_v2_RR2.wav                          key  67 exp   392.00 Hz  meas   389.29 Hz    -12.0 c
+vc_trem       Strings/Cello Section/trem/trem_A2_v1_1.wav                            key  57 exp   220.00 Hz  meas   221.79 Hz    +14.0 c
+vc_trem       Strings/Cello Section/trem/trem_B1_v1_1.wav                            key  47 exp   123.47 Hz  meas   123.33 Hz     -2.0 c
+vc_trem       Strings/Cello Section/trem/trem_B3_v1_1.wav                            key  71 exp   493.88 Hz  meas   490.47 Hz    -12.0 c
+vc_trem       Strings/Cello Section/trem/trem_C3_v1_1.wav                            key  60 exp   261.63 Hz  meas   260.42 Hz     -8.0 c
+vc_trem       Strings/Cello Section/trem/trem_D2_v1_1.wav                            key  50 exp   146.83 Hz  meas   145.82 Hz    -12.0 c
+vc_trem       Strings/Cello Section/trem/trem_D4_v1_1.wav                            key  74 exp   587.33 Hz  meas   589.37 Hz     +6.0 c
+vc_trem       Strings/Cello Section/trem/trem_E1_v1_1.wav                            key  40 exp    82.41 Hz  meas   158.28 Hz  +1130.0 c  <-- CHECK
+vc_trem       Strings/Cello Section/trem/trem_E3_v1_1.wav                            key  64 exp   329.63 Hz  meas   331.15 Hz     +8.0 c
+vc_trem       Strings/Cello Section/trem/trem_F2_v1_1.wav                            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+vc_trem       Strings/Cello Section/trem/trem_F4_v1_1.wav                            key  77 exp   698.46 Hz  meas   696.84 Hz     -4.0 c
+vc_trem       Strings/Cello Section/trem/trem_G1_v1_1.wav                            key  43 exp    98.00 Hz  meas    96.99 Hz    -18.0 c
+vc_trem       Strings/Cello Section/trem/trem_G3_v1_1.wav                            key  67 exp   392.00 Hz  meas   390.19 Hz     -8.0 c
+vc_trem       Strings/Cello Section/trem/trem_A2_v2_1.wav                            key  57 exp   220.00 Hz  meas   221.02 Hz     +8.0 c
+vc_trem       Strings/Cello Section/trem/trem_B2_v2_1.wav                            key  59 exp   246.94 Hz  meas   126.50 Hz  -1158.0 c  <-- CHECK
+vc_trem       Strings/Cello Section/trem/trem_B3_v2_1.wav                            key  71 exp   493.88 Hz  meas   501.36 Hz    +26.0 c  <-- CHECK
+vc_trem       Strings/Cello Section/trem/trem_C1_v2_1.wav                            key  36 exp    65.41 Hz  meas    65.33 Hz     -2.0 c
+vc_trem       Strings/Cello Section/trem/trem_C3_v2_1.wav                            key  60 exp   261.63 Hz  meas   261.02 Hz     -4.0 c
+vc_trem       Strings/Cello Section/trem/trem_D2_v2_1.wav                            key  50 exp   146.83 Hz  meas   144.98 Hz    -22.0 c
+vc_trem       Strings/Cello Section/trem/trem_D4_v2_1.wav                            key  74 exp   587.33 Hz  meas   574.58 Hz    -38.0 c  <-- CHECK
+vc_trem       Strings/Cello Section/trem/trem_E1_v2_1.wav                            key  40 exp    82.41 Hz  meas    81.84 Hz    -12.0 c
+vc_trem       Strings/Cello Section/trem/trem_E3_v2_1.wav                            key  64 exp   329.63 Hz  meas   329.25 Hz     -2.0 c
+vc_trem       Strings/Cello Section/trem/trem_F2_v2_1.wav                            key  53 exp   174.61 Hz  meas   176.85 Hz    +22.0 c
+vc_trem       Strings/Cello Section/trem/trem_F4_v2_1.wav                            key  77 exp   698.46 Hz  meas   700.07 Hz     +4.0 c
+vc_trem       Strings/Cello Section/trem/trem_G1_v2_1.wav                            key  43 exp    98.00 Hz  meas    99.14 Hz    +20.0 c
+vc_trem       Strings/Cello Section/trem/trem_G3_v2_1.wav                            key  67 exp   392.00 Hz  meas   388.39 Hz    -16.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_A2_v1_RR1.wav                        key  57 exp   220.00 Hz  meas   221.02 Hz     +8.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_B1_v1_RR1.wav                        key  47 exp   123.47 Hz  meas   123.04 Hz     -6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_B3_v1_RR1.wav                        key  71 exp   493.88 Hz  meas   493.31 Hz     -2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_C1_v1_RR1.wav                        key  36 exp    65.41 Hz  meas    65.48 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_C3_v1_RR1.wav                        key  60 exp   261.63 Hz  meas   262.53 Hz     +6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_D2_v1_RR1.wav                        key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_D4_v1_RR1.wav                        key  74 exp   587.33 Hz  meas   146.49 Hz  -2404.0 c  <-- CHECK
+vc_pizz       Strings/Cello Section/pizzT/pizzT_E1_v1_RR1.wav                        key  40 exp    82.41 Hz  meas    82.03 Hz     -8.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_E3_v1_RR1.wav                        key  64 exp   329.63 Hz  meas   328.49 Hz     -6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_F2_v1_RR1.wav                        key  53 exp   174.61 Hz  meas   175.22 Hz     +6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_F4_v1_RR1.wav                        key  77 exp   698.46 Hz  meas   709.84 Hz    +28.0 c  <-- CHECK
+vc_pizz       Strings/Cello Section/pizzT/pizzT_G1_v1_RR1.wav                        key  43 exp    98.00 Hz  meas    98.00 Hz     +0.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_G3_v1_RR1.wav                        key  67 exp   392.00 Hz  meas   390.64 Hz     -6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_A2_v2_RR1.wav                        key  57 exp   220.00 Hz  meas   221.02 Hz     +8.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_B1_v2_RR1.wav                        key  47 exp   123.47 Hz  meas   123.04 Hz     -6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_B3_v2_RR1.wav                        key  71 exp   493.88 Hz  meas   494.45 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_C1_v2_RR1.wav                        key  36 exp    65.41 Hz  meas    65.48 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_C3_v2_RR1.wav                        key  60 exp   261.63 Hz  meas   261.02 Hz     -4.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_D2_v2_RR1.wav                        key  50 exp   146.83 Hz  meas   147.34 Hz     +6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_D4_v2_RR1.wav                        key  74 exp   587.33 Hz  meas   589.37 Hz     +6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_E1_v2_RR1.wav                        key  40 exp    82.41 Hz  meas    82.12 Hz     -6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_E3_v2_RR1.wav                        key  64 exp   329.63 Hz  meas   330.77 Hz     +6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_F2_v2_RR1.wav                        key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_F4_v2_RR1.wav                        key  77 exp   698.46 Hz  meas   350.44 Hz  -1194.0 c  <-- CHECK
+vc_pizz       Strings/Cello Section/pizzT/pizzT_G1_v2_RR1.wav                        key  43 exp    98.00 Hz  meas    97.89 Hz     -2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_G3_v2_RR1.wav                        key  67 exp   392.00 Hz  meas   393.36 Hz     +6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_A2_v1_RR2.wav                        key  57 exp   220.00 Hz  meas   220.76 Hz     +6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_B1_v1_RR2.wav                        key  47 exp   123.47 Hz  meas   123.61 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_B3_v1_RR2.wav                        key  71 exp   493.88 Hz  meas   492.74 Hz     -4.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_C1_v1_RR2.wav                        key  36 exp    65.41 Hz  meas    65.48 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_C3_v1_RR2.wav                        key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_D2_v1_RR2.wav                        key  50 exp   146.83 Hz  meas   147.00 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_D4_v1_RR2.wav                        key  74 exp   587.33 Hz  meas   146.49 Hz  -2404.0 c  <-- CHECK
+vc_pizz       Strings/Cello Section/pizzT/pizzT_E1_v1_RR2.wav                        key  40 exp    82.41 Hz  meas    82.41 Hz     +0.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_E3_v1_RR2.wav                        key  64 exp   329.63 Hz  meas   329.25 Hz     -2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_F2_v1_RR2.wav                        key  53 exp   174.61 Hz  meas   175.42 Hz     +8.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_F4_v1_RR2.wav                        key  77 exp   698.46 Hz  meas   704.13 Hz    +14.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_G1_v1_RR2.wav                        key  43 exp    98.00 Hz  meas    97.66 Hz     -6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_G3_v1_RR2.wav                        key  67 exp   392.00 Hz  meas   391.54 Hz     -2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_A2_v2_RR2.wav                        key  57 exp   220.00 Hz  meas   220.51 Hz     +4.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_B1_v2_RR2.wav                        key  47 exp   123.47 Hz  meas   123.04 Hz     -6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_B3_v2_RR2.wav                        key  71 exp   493.88 Hz  meas   494.45 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_C1_v2_RR2.wav                        key  36 exp    65.41 Hz  meas    65.41 Hz     +0.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_C3_v2_RR2.wav                        key  60 exp   261.63 Hz  meas   263.14 Hz    +10.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_D2_v2_RR2.wav                        key  50 exp   146.83 Hz  meas   147.34 Hz     +6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_D4_v2_RR2.wav                        key  74 exp   587.33 Hz  meas   591.41 Hz    +12.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_E1_v2_RR2.wav                        key  40 exp    82.41 Hz  meas    82.50 Hz     +2.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_E3_v2_RR2.wav                        key  64 exp   329.63 Hz  meas   328.87 Hz     -4.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_F2_v2_RR2.wav                        key  53 exp   174.61 Hz  meas   175.63 Hz    +10.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_F4_v2_RR2.wav                        key  77 exp   698.46 Hz  meas   702.50 Hz    +10.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_G1_v2_RR2.wav                        key  43 exp    98.00 Hz  meas    97.66 Hz     -6.0 c
+vc_pizz       Strings/Cello Section/pizzT/pizzT_G3_v2_RR2.wav                        key  67 exp   392.00 Hz  meas   392.45 Hz     +2.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_A#0_v1_rr1.wav           key  34 exp    58.27 Hz  meas    58.27 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_A1_v1_rr1.wav            key  45 exp   110.00 Hz  meas   110.00 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_B2_v1_rr1.wav            key  59 exp   246.94 Hz  meas   246.66 Hz     -2.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_C#2_v1_rr1.wav           key  49 exp   138.59 Hz  meas   138.59 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_C1_v1_rr1.wav            key  36 exp    65.41 Hz  meas    65.41 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_D1_v1_rr1.wav            key  38 exp    73.42 Hz  meas    73.50 Hz     +2.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_E1_v1_rr1.wav            key  40 exp    82.41 Hz  meas    82.41 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_E2_v1_rr1.wav            key  52 exp   164.81 Hz  meas   164.81 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_F#0_v1_rr1.wav           key  30 exp    46.25 Hz  meas    46.25 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_F#1_v1_rr1.wav           key  42 exp    92.50 Hz  meas    92.39 Hz     -2.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_G#1_v1_rr1.wav           key  44 exp   103.83 Hz  meas   103.83 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_G#2_v1_rr1.wav           key  56 exp   207.65 Hz  meas   207.89 Hz     +2.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_G0_v1_rr1.wav            key  31 exp    49.00 Hz  meas    48.89 Hz     -4.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_A#0_v3_rr1.wav           key  34 exp    58.27 Hz  meas    58.27 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_A1_v3_rr1.wav            key  45 exp   110.00 Hz  meas   110.00 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_B2_v3_rr1.wav            key  59 exp   246.94 Hz  meas   247.23 Hz     +2.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_C#2_v3_rr1.wav           key  49 exp   138.59 Hz  meas   138.59 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_C1_v3_rr1.wav            key  36 exp    65.41 Hz  meas    65.41 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_D1_v3_rr1.wav            key  38 exp    73.42 Hz  meas    73.42 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_E1_v3_rr1.wav            key  40 exp    82.41 Hz  meas    82.41 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_E2_v3_rr1.wav            key  52 exp   164.81 Hz  meas   164.62 Hz     -2.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_F#0_v3_rr1.wav           key  30 exp    46.25 Hz  meas    46.25 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_F#1_v3_rr1.wav           key  42 exp    92.50 Hz  meas    92.50 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_G#1_v3_rr1.wav           key  44 exp   103.83 Hz  meas   103.83 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_G#2_v3_rr1.wav           key  56 exp   207.65 Hz  meas   207.65 Hz     +0.0 c
+cb            Strings/Solo Contrabass/SusVib/BKCtbss_SusVib_G0_v3_rr1.wav            key  31 exp    49.00 Hz  meas    49.00 Hz     +0.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_A#0_v1_rr1.wav               key  34 exp    58.27 Hz  meas    58.61 Hz    +10.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_A1_v1_rr1.wav                key  45 exp   110.00 Hz  meas   111.54 Hz    +24.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_B2_v1_rr1.wav                key  59 exp   246.94 Hz  meas   243.82 Hz    -22.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_C#2_v1_rr1.wav               key  49 exp   138.59 Hz  meas   140.04 Hz    +18.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_C1_v1_rr1.wav                key  36 exp    65.41 Hz  meas    65.63 Hz     +6.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_D1_v1_rr1.wav                key  38 exp    73.42 Hz  meas    73.25 Hz     -4.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E0_v1_rr1.wav                key  28 exp    41.20 Hz  meas    41.16 Hz     -2.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E1_v1_rr1.wav                key  40 exp    82.41 Hz  meas    81.93 Hz    -10.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E2_v1_rr1.wav                key  52 exp   164.81 Hz  meas   165.77 Hz    +10.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#0_v1_rr1.wav               key  30 exp    46.25 Hz  meas    45.67 Hz    -22.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#1_v1_rr1.wav               key  42 exp    92.50 Hz  meas    91.86 Hz    -12.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_G#1_v1_rr1.wav               key  44 exp   103.83 Hz  meas   103.11 Hz    -12.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_G#2_v1_rr1.wav               key  56 exp   207.65 Hz  meas   207.89 Hz     +2.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_G0_v1_rr1.wav                key  31 exp    49.00 Hz  meas    49.11 Hz     +4.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_A#0_v3_rr1.wav               key  34 exp    58.27 Hz  meas    58.47 Hz     +6.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_C1_v3_rr1.wav                key  36 exp    65.41 Hz  meas    64.95 Hz    -12.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_D1_v3_rr1.wav                key  38 exp    73.42 Hz  meas    72.74 Hz    -16.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E0_v3_rr1.wav                key  28 exp    41.20 Hz  meas    41.25 Hz     +2.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E1_v3_rr1.wav                key  40 exp    82.41 Hz  meas    82.41 Hz     +0.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#0_v3_rr1.wav               key  30 exp    46.25 Hz  meas    46.14 Hz     -4.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_G0_v3_rr1.wav                key  31 exp    49.00 Hz  meas    49.28 Hz    +10.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_A#0_v1_rr2.wav               key  34 exp    58.27 Hz  meas    58.81 Hz    +16.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_A1_v1_rr2.wav                key  45 exp   110.00 Hz  meas   111.79 Hz    +28.0 c  <-- CHECK
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_B2_v1_rr2.wav                key  59 exp   246.94 Hz  meas   248.95 Hz    +14.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_C#2_v1_rr2.wav               key  49 exp   138.59 Hz  meas   139.39 Hz    +10.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_C1_v1_rr2.wav                key  36 exp    65.41 Hz  meas    65.71 Hz     +8.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_D1_v1_rr2.wav                key  38 exp    73.42 Hz  meas    73.25 Hz     -4.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E0_v1_rr2.wav                key  28 exp    41.20 Hz  meas    41.20 Hz     +0.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E1_v1_rr2.wav                key  40 exp    82.41 Hz  meas    82.79 Hz     +8.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E2_v1_rr2.wav                key  52 exp   164.81 Hz  meas   166.54 Hz    +18.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#0_v1_rr2.wav               key  30 exp    46.25 Hz  meas    46.14 Hz     -4.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#1_v1_rr2.wav               key  42 exp    92.50 Hz  meas    92.07 Hz     -8.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_G#1_v1_rr2.wav               key  44 exp   103.83 Hz  meas   103.23 Hz    -10.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_G#2_v1_rr2.wav               key  56 exp   207.65 Hz  meas   207.89 Hz     +2.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_G0_v1_rr2.wav                key  31 exp    49.00 Hz  meas    49.17 Hz     +6.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_A#0_v3_rr2.wav               key  34 exp    58.27 Hz  meas    58.34 Hz     +2.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_C1_v3_rr2.wav                key  36 exp    65.41 Hz  meas    65.63 Hz     +6.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_D1_v3_rr2.wav                key  38 exp    73.42 Hz  meas    72.49 Hz    -22.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E0_v3_rr2.wav                key  28 exp    41.20 Hz  meas    41.20 Hz     +0.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_E1_v3_rr2.wav                key  40 exp    82.41 Hz  meas    82.60 Hz     +4.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_F#0_v3_rr2.wav               key  30 exp    46.25 Hz  meas    46.25 Hz     +0.0 c
+cb_spic       Strings/Solo Contrabass/Spic/BKCtbss_Spic_G0_v3_rr2.wav                key  31 exp    49.00 Hz  meas    49.40 Hz    +14.0 c
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_B2_v1_rr1.wav                key  59 exp   246.94 Hz  meas   249.81 Hz    +20.0 c
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_C1_v1_rr1.wav                key  36 exp    65.41 Hz  meas    66.86 Hz    +38.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_E0_v1_rr1.wav                key  28 exp    41.20 Hz  meas    37.09 Hz   -182.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_E1_v1_rr1.wav                key  40 exp    82.41 Hz  meas    81.93 Hz    -10.0 c
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_E2_v1_rr1.wav                key  52 exp   164.81 Hz  meas   161.80 Hz    -32.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_G#1_v1_rr1.wav               key  44 exp   103.83 Hz  meas   100.99 Hz    -48.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_G#2_v1_rr1.wav               key  56 exp   207.65 Hz  meas    48.94 Hz  -2502.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_G0_v1_rr1.wav                key  31 exp    49.00 Hz  meas   100.87 Hz  +1250.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_B2_v2_rr1.wav                key  59 exp   246.94 Hz  meas   248.09 Hz     +8.0 c
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_C1_v2_rr1.wav                key  36 exp    65.41 Hz  meas    67.17 Hz    +46.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_E0_v2_rr1.wav                key  28 exp    41.20 Hz  meas    57.60 Hz   +580.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_E1_v2_rr1.wav                key  40 exp    82.41 Hz  meas    34.33 Hz  -1516.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_E2_v2_rr1.wav                key  52 exp   164.81 Hz  meas   159.20 Hz    -60.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_G#1_v2_rr1.wav               key  44 exp   103.83 Hz  meas   101.81 Hz    -34.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_G#2_v2_rr1.wav               key  56 exp   207.65 Hz  meas   196.68 Hz    -94.0 c  <-- CHECK
+cb_trem       Strings/Solo Contrabass/Trem/BKCtbss_Trem_G0_v2_rr1.wav                key  31 exp    49.00 Hz  meas    50.03 Hz    +36.0 c  <-- CHECK
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_A#0_v1_rr1.wav               key  34 exp    58.27 Hz  meas    58.41 Hz     +4.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_A1_v1_rr1.wav                key  45 exp   110.00 Hz  meas   112.70 Hz    +42.0 c  <-- CHECK
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_B2_v1_rr1.wav                key  59 exp   246.94 Hz  meas   245.24 Hz    -12.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_C#2_v1_rr1.wav               key  49 exp   138.59 Hz  meas   139.07 Hz     +6.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_C1_v1_rr1.wav                key  36 exp    65.41 Hz  meas    65.41 Hz     +0.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_D1_v1_rr1.wav                key  38 exp    73.42 Hz  meas    73.67 Hz     +6.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E0_v1_rr1.wav                key  28 exp    41.20 Hz  meas    41.20 Hz     +0.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E1_v1_rr1.wav                key  40 exp    82.41 Hz  meas    82.12 Hz     -6.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E2_v1_rr1.wav                key  52 exp   164.81 Hz  meas   165.00 Hz     +2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_F#0_v1_rr1.wav               key  30 exp    46.25 Hz  meas    46.04 Hz     -8.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_F#1_v1_rr1.wav               key  42 exp    92.50 Hz  meas    92.39 Hz     -2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_G#1_v1_rr1.wav               key  44 exp   103.83 Hz  meas   101.45 Hz    -40.0 c  <-- CHECK
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_G#2_v1_rr1.wav               key  56 exp   207.65 Hz  meas   207.41 Hz     -2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_G0_v1_rr1.wav                key  31 exp    49.00 Hz  meas    48.72 Hz    -10.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_A#0_v3_rr1.wav               key  34 exp    58.27 Hz  meas    58.47 Hz     +6.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_C1_v3_rr1.wav                key  36 exp    65.41 Hz  meas    65.26 Hz     -4.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E0_v3_rr1.wav                key  28 exp    41.20 Hz  meas    41.16 Hz     -2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E1_v3_rr1.wav                key  40 exp    82.41 Hz  meas    82.60 Hz     +4.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_F#0_v3_rr1.wav               key  30 exp    46.25 Hz  meas    46.30 Hz     +2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_G0_v3_rr1.wav                key  31 exp    49.00 Hz  meas    49.00 Hz     +0.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_A#0_v1_rr2.wav               key  34 exp    58.27 Hz  meas    58.41 Hz     +4.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_A1_v1_rr2.wav                key  45 exp   110.00 Hz  meas   112.05 Hz    +32.0 c  <-- CHECK
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_B2_v1_rr2.wav                key  59 exp   246.94 Hz  meas   246.94 Hz     +0.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_C#2_v1_rr2.wav               key  49 exp   138.59 Hz  meas   139.23 Hz     +8.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_C1_v1_rr2.wav                key  36 exp    65.41 Hz  meas    65.03 Hz    -10.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_D1_v1_rr2.wav                key  38 exp    73.42 Hz  meas    73.50 Hz     +2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E0_v1_rr2.wav                key  28 exp    41.20 Hz  meas    41.16 Hz     -2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E1_v1_rr2.wav                key  40 exp    82.41 Hz  meas    82.88 Hz    +10.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E2_v1_rr2.wav                key  52 exp   164.81 Hz  meas   164.81 Hz     +0.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_F#0_v1_rr2.wav               key  30 exp    46.25 Hz  meas    46.04 Hz     -8.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_F#1_v1_rr2.wav               key  42 exp    92.50 Hz  meas    92.18 Hz     -6.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_G#1_v1_rr2.wav               key  44 exp   103.83 Hz  meas   104.55 Hz    +12.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_G#2_v1_rr2.wav               key  56 exp   207.65 Hz  meas   207.41 Hz     -2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_G0_v1_rr2.wav                key  31 exp    49.00 Hz  meas    48.72 Hz    -10.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_A#0_v3_rr2.wav               key  34 exp    58.27 Hz  meas    58.54 Hz     +8.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_C1_v3_rr2.wav                key  36 exp    65.41 Hz  meas    65.48 Hz     +2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E0_v3_rr2.wav                key  28 exp    41.20 Hz  meas    41.16 Hz     -2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_E1_v3_rr2.wav                key  40 exp    82.41 Hz  meas    82.41 Hz     +0.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_F#0_v3_rr2.wav               key  30 exp    46.25 Hz  meas    46.30 Hz     +2.0 c
+cb_pizz       Strings/Solo Contrabass/Pizz/BKCtbss_Pizz_G0_v3_rr2.wav                key  31 exp    49.00 Hz  meas    49.00 Hz     +0.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_A3_p.wav                    key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_A4_p.wav                    key  69 exp   440.00 Hz  meas   438.98 Hz     -4.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_A5_p.wav                    key  81 exp   880.00 Hz  meas   876.96 Hz     -6.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_A6_p.wav                    key  93 exp  1760.00 Hz  meas  1755.94 Hz     -4.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_C4_p.wav                    key  60 exp   258.62 Hz  meas   264.97 Hz    +42.0 c  <-- CHECK
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_C5_p.wav                    key  72 exp   523.25 Hz  meas   522.65 Hz     -2.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_C6_p.wav                    key  84 exp  1046.50 Hz  meas  1040.47 Hz    -10.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_C7_p.wav                    key  96 exp  2093.00 Hz  meas  2100.27 Hz     +6.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_E4_p.wav                    key  64 exp   329.63 Hz  meas   330.77 Hz     +6.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_E5_p.wav                    key  76 exp   659.26 Hz  meas   660.78 Hz     +4.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_E6_p.wav                    key  88 exp  1318.51 Hz  meas  1327.68 Hz    +12.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_G3_p.wav                    key  55 exp   196.00 Hz  meas   195.77 Hz     -2.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_G4_p.wav                    key  67 exp   392.00 Hz  meas   389.29 Hz    -12.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_G5_p.wav                    key  79 exp   783.99 Hz  meas   784.90 Hz     +2.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_G6_p.wav                    key  91 exp  1567.98 Hz  meas  1566.17 Hz     -2.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_A3_f.wav                    key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_A4_f.wav                    key  69 exp   440.00 Hz  meas   443.57 Hz    +14.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_A5_f.wav                    key  81 exp   880.00 Hz  meas   876.96 Hz     -6.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_A6_f.wav                    key  93 exp  1760.00 Hz  meas  1776.34 Hz    +16.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_C4_f.wav                    key  60 exp   261.63 Hz  meas   260.42 Hz     -8.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_C5_f.wav                    key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_C6_f.wav                    key  84 exp  1046.50 Hz  meas  1034.48 Hz    -20.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_C7_f.wav                    key  96 exp  2093.00 Hz  meas  2083.36 Hz     -8.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_E4_f.wav                    key  64 exp   329.63 Hz  meas   330.39 Hz     +4.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_E5_f.wav                    key  76 exp   659.26 Hz  meas   669.23 Hz    +26.0 c  <-- CHECK
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_E6_f.wav                    key  88 exp  1318.51 Hz  meas  1313.95 Hz     -6.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_G3_f.wav                    key  55 exp   196.00 Hz  meas   195.55 Hz     -4.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_G4_f.wav                    key  67 exp   392.00 Hz  meas   780.38 Hz  +1192.0 c  <-- CHECK
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_G5_f.wav                    key  79 exp   783.99 Hz  meas   783.09 Hz     -2.0 c
+svln          Strings/Solo Violin/Arco Vib/LLVln_ArcoVib_G6_f.wav                    key  91 exp  1567.98 Hz  meas  1530.40 Hz    -42.0 c  <-- CHECK
+harp          Strings/Harp/KSHarp_G1_mp.wav                                          key  31 exp    49.00 Hz  meas    48.27 Hz    -26.0 c  <-- CHECK
+harp          Strings/Harp/KSHarp_A2_mf.wav                                          key  45 exp   110.00 Hz  meas   109.75 Hz     -4.0 c
+harp          Strings/Harp/KSHarp_A4_mf.wav                                          key  69 exp   440.00 Hz  meas   437.47 Hz    -10.0 c
+harp          Strings/Harp/KSHarp_A6_mf.wav                                          key  93 exp  1760.00 Hz  meas  1739.78 Hz    -20.0 c
+harp          Strings/Harp/KSHarp_B1_mf.wav                                          key  35 exp    61.74 Hz  meas    61.17 Hz    -16.0 c
+harp          Strings/Harp/KSHarp_B3_mf.wav                                          key  59 exp   246.94 Hz  meas   245.24 Hz    -12.0 c
+harp          Strings/Harp/KSHarp_B5_mf.wav                                          key  83 exp   987.77 Hz  meas   983.21 Hz     -8.0 c
+harp          Strings/Harp/KSHarp_B6_mf.wav                                          key  95 exp  1975.53 Hz  meas  1964.15 Hz    -10.0 c
+harp          Strings/Harp/KSHarp_C3_mf.wav                                          key  48 exp   130.81 Hz  meas   130.66 Hz     -2.0 c
+harp          Strings/Harp/KSHarp_C5_mf.wav                                          key  72 exp   523.25 Hz  meas   519.64 Hz    -12.0 c
+harp          Strings/Harp/KSHarp_D2_mf.wav                                          key  38 exp    73.42 Hz  meas   219.75 Hz  +1898.0 c  <-- CHECK
+harp          Strings/Harp/KSHarp_D4_mf.wav                                          key  62 exp   293.66 Hz  meas   291.64 Hz    -12.0 c
+harp          Strings/Harp/KSHarp_D6_mf.wav                                          key  86 exp  1174.66 Hz  meas  1169.24 Hz     -8.0 c
+harp          Strings/Harp/KSHarp_E3_mf.wav                                          key  52 exp   164.81 Hz  meas   164.43 Hz     -4.0 c
+harp          Strings/Harp/KSHarp_E5_mf.wav                                          key  76 exp   659.26 Hz  meas   654.70 Hz    -12.0 c
+harp          Strings/Harp/KSHarp_F2_mf.wav                                          key  41 exp    87.31 Hz  meas    86.90 Hz     -8.0 c
+harp          Strings/Harp/KSHarp_F4_mf.wav                                          key  65 exp   349.23 Hz  meas   348.83 Hz     -2.0 c
+harp          Strings/Harp/KSHarp_F6_mf.wav                                          key  89 exp  1396.91 Hz  meas  1392.08 Hz     -6.0 c
+harp          Strings/Harp/KSHarp_G3_mf.wav                                          key  55 exp   196.00 Hz  meas   195.09 Hz     -8.0 c
+harp          Strings/Harp/KSHarp_G5_mf.wav                                          key  79 exp   783.99 Hz  meas   781.28 Hz     -6.0 c
+harp          Strings/Harp/KSHarp_D7_f.wav                                           key  98 exp  2349.32 Hz  meas  2338.49 Hz     -8.0 c
+harp          Strings/Harp/KSHarp_E1_f.wav                                           key  28 exp    41.20 Hz  meas    40.68 Hz    -22.0 c
+harp          Strings/Harp/KSHarp_F7_f.wav                                           key 101 exp  2793.83 Hz  meas  2745.83 Hz    -30.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn1_rr1_000.wav                             key  21 exp    27.50 Hz  meas    27.63 Hz     +8.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_002.wav                             key  25 exp    34.65 Hz  meas    34.65 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_004.wav                             key  29 exp    43.65 Hz  meas    43.81 Hz     +6.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_006.wav                             key  33 exp    55.00 Hz  meas    54.87 Hz     -4.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_008.wav                             key  37 exp    69.30 Hz  meas    68.90 Hz    -10.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_010.wav                             key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_012.wav                             key  45 exp   110.00 Hz  meas   109.49 Hz     -8.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_014.wav                             key  49 exp   138.59 Hz  meas   138.59 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_016.wav                             key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_018.wav                             key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_020.wav                             key  61 exp   277.18 Hz  meas   277.82 Hz     +4.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_022.wav                             key  65 exp   349.23 Hz  meas   349.63 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_024.wav                             key  69 exp   440.00 Hz  meas   440.51 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_026.wav                             key  73 exp   554.37 Hz  meas   555.65 Hz     +4.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_028.wav                             key  77 exp   698.46 Hz  meas   700.07 Hz     +4.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_030.wav                             key  81 exp   880.00 Hz  meas   883.06 Hz     +6.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_032.wav                             key  85 exp  1108.73 Hz  meas  1116.44 Hz    +12.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_034.wav                             key  89 exp  1396.91 Hz  meas  1408.26 Hz    +14.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_036.wav                             key  93 exp  1760.00 Hz  meas  1774.29 Hz    +14.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_038.wav                             key  97 exp  2217.46 Hz  meas  2232.88 Hz    +12.0 c
+piano         Keys/Upright Piano/Player_dyn1_rr1_040.wav                             key 101 exp  2793.83 Hz  meas  2842.66 Hz    +30.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn1_rr1_042.wav                             key 105 exp  3520.00 Hz  meas  3610.61 Hz    +44.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn1_rr1_044.wav                             key 108 exp  4186.01 Hz  meas  4348.67 Hz    +66.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn2_rr1_000.wav                             key  21 exp    27.50 Hz  meas    27.66 Hz    +10.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_002.wav                             key  25 exp    34.65 Hz  meas    34.65 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_004.wav                             key  29 exp    43.65 Hz  meas    43.81 Hz     +6.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_006.wav                             key  33 exp    55.00 Hz  meas    54.87 Hz     -4.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_008.wav                             key  37 exp    69.30 Hz  meas    68.98 Hz     -8.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_010.wav                             key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_012.wav                             key  45 exp   110.00 Hz  meas   109.62 Hz     -6.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_014.wav                             key  49 exp   138.59 Hz  meas   138.59 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_016.wav                             key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_018.wav                             key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_020.wav                             key  61 exp   277.18 Hz  meas   277.50 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_022.wav                             key  65 exp   349.23 Hz  meas   349.63 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_024.wav                             key  69 exp   440.00 Hz  meas   440.51 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_026.wav                             key  73 exp   554.37 Hz  meas   555.65 Hz     +4.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_028.wav                             key  77 exp   698.46 Hz  meas   700.07 Hz     +4.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_030.wav                             key  81 exp   880.00 Hz  meas   883.06 Hz     +6.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_032.wav                             key  85 exp  1108.73 Hz  meas  1115.15 Hz    +10.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_034.wav                             key  89 exp  1396.91 Hz  meas  1408.26 Hz    +14.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_036.wav                             key  93 exp  1760.00 Hz  meas  1774.29 Hz    +14.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_038.wav                             key  97 exp  2217.46 Hz  meas  2232.88 Hz    +12.0 c
+piano         Keys/Upright Piano/Player_dyn2_rr1_040.wav                             key 101 exp  2793.83 Hz  meas  2842.66 Hz    +30.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn2_rr1_042.wav                             key 105 exp  3520.00 Hz  meas  3598.12 Hz    +38.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn2_rr1_044.wav                             key 108 exp  4186.01 Hz  meas  4333.63 Hz    +60.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn3_rr1_000.wav                             key  21 exp    27.50 Hz  meas    27.66 Hz    +10.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_002.wav                             key  25 exp    34.65 Hz  meas    34.69 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_004.wav                             key  29 exp    43.65 Hz  meas    43.86 Hz     +8.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_006.wav                             key  33 exp    55.00 Hz  meas    54.87 Hz     -4.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_008.wav                             key  37 exp    69.30 Hz  meas    68.98 Hz     -8.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_010.wav                             key  41 exp    87.31 Hz  meas    87.41 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_012.wav                             key  45 exp   110.00 Hz  meas   109.75 Hz     -4.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_014.wav                             key  49 exp   138.59 Hz  meas   138.59 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_016.wav                             key  53 exp   174.61 Hz  meas   174.61 Hz     +0.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_018.wav                             key  57 exp   220.00 Hz  meas   220.25 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_020.wav                             key  61 exp   277.18 Hz  meas   277.82 Hz     +4.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_022.wav                             key  65 exp   349.23 Hz  meas   350.04 Hz     +4.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_024.wav                             key  69 exp   440.00 Hz  meas   440.51 Hz     +2.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_026.wav                             key  73 exp   554.37 Hz  meas   556.29 Hz     +6.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_028.wav                             key  77 exp   698.46 Hz  meas   700.07 Hz     +4.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_030.wav                             key  81 exp   880.00 Hz  meas   883.06 Hz     +6.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_032.wav                             key  85 exp  1108.73 Hz  meas  1116.44 Hz    +12.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_034.wav                             key  89 exp  1396.91 Hz  meas  1408.26 Hz    +14.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_036.wav                             key  93 exp  1760.00 Hz  meas  1774.29 Hz    +14.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_038.wav                             key  97 exp  2217.46 Hz  meas  2232.88 Hz    +12.0 c
+piano         Keys/Upright Piano/Player_dyn3_rr1_040.wav                             key 101 exp  2793.83 Hz  meas  2842.66 Hz    +30.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn3_rr1_042.wav                             key 105 exp  3520.00 Hz  meas  3598.12 Hz    +38.0 c  <-- CHECK
+piano         Keys/Upright Piano/Player_dyn3_rr1_044.wav                             key 108 exp  4186.01 Hz  meas  4348.67 Hz    +66.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_01.wav                                   key  36 exp    65.41 Hz  meas    65.63 Hz     +6.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_04.wav                                   key  39 exp    77.78 Hz  meas    78.23 Hz    +10.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_07.wav                                   key  42 exp    92.50 Hz  meas    92.61 Hz     +2.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_10.wav                                   key  45 exp   110.00 Hz  meas   110.13 Hz     +2.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_13.wav                                   key  48 exp   130.81 Hz  meas   130.96 Hz     +2.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_16.wav                                   key  51 exp   155.56 Hz  meas   156.10 Hz     +6.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_19.wav                                   key  54 exp   185.00 Hz  meas   185.21 Hz     +2.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_22.wav                                   key  57 exp   220.00 Hz  meas   219.75 Hz     -2.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_25.wav                                   key  60 exp   261.63 Hz  meas   261.32 Hz     -2.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_28.wav                                   key  63 exp   311.13 Hz  meas   155.56 Hz  -1200.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_31.wav                                   key  66 exp   369.99 Hz  meas   185.00 Hz  -1200.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_34.wav                                   key  69 exp   440.00 Hz  meas   439.49 Hz     -2.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_37.wav                                   key  72 exp   523.25 Hz  meas   261.32 Hz  -1202.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_40.wav                                   key  75 exp   622.25 Hz  meas   621.54 Hz     -2.0 c
+organ         Keys/Organ/Loud/Rode_Man3Open_43.wav                                   key  78 exp   739.99 Hz  meas   369.99 Hz  -1200.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_46.wav                                   key  81 exp   880.00 Hz  meas   440.51 Hz  -1198.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_49.wav                                   key  84 exp  1046.50 Hz  meas   523.25 Hz  -1200.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_52.wav                                   key  87 exp  1244.51 Hz  meas   621.54 Hz  -1202.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_55.wav                                   key  90 exp  1479.98 Hz  meas   739.99 Hz  -1200.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_58.wav                                   key  93 exp  1760.00 Hz  meas   878.98 Hz  -1202.0 c  <-- CHECK
+organ         Keys/Organ/Loud/Rode_Man3Open_61.wav                                   key  96 exp  2093.00 Hz  meas  2088.17 Hz     -4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_122_rr1.wav                             key  36 exp    65.41 Hz  meas    65.10 Hz     -8.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_125_rr1.wav                             key  39 exp    77.78 Hz  meas   233.62 Hz  +1904.0 c  <-- CHECK
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_128_rr1.wav                             key  42 exp    92.50 Hz  meas    92.29 Hz     -4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_131_rr1.wav                             key  45 exp   110.00 Hz  meas   110.00 Hz     +0.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_134_rr1.wav                             key  48 exp   130.81 Hz  meas   130.81 Hz     +0.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_137_rr1.wav                             key  51 exp   155.56 Hz  meas   155.74 Hz     +2.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_140_rr1.wav                             key  54 exp   185.00 Hz  meas   185.43 Hz     +4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_143_rr1.wav                             key  57 exp   220.00 Hz  meas   220.51 Hz     +4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_146_rr1.wav                             key  60 exp   261.63 Hz  meas   261.93 Hz     +2.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_149_rr1.wav                             key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_152_rr1.wav                             key  66 exp   369.99 Hz  meas   369.99 Hz     +0.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_155_rr1.wav                             key  69 exp   440.00 Hz  meas   438.98 Hz     -4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_158_rr1.wav                             key  72 exp   523.25 Hz  meas   522.04 Hz     -4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_161_rr1.wav                             key  75 exp   622.25 Hz  meas   620.82 Hz     -4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_164_rr1.wav                             key  78 exp   739.99 Hz  meas   739.99 Hz     +0.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_167_rr1.wav                             key  81 exp   880.00 Hz  meas   880.00 Hz     +0.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_170_rr1.wav                             key  84 exp  1046.50 Hz  meas  1044.09 Hz     -4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_173_rr1.wav                             key  87 exp  1244.51 Hz  meas  1238.77 Hz     -8.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_176_rr1.wav                             key  90 exp  1479.98 Hz  meas  1476.56 Hz     -4.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_179_rr1.wav                             key  93 exp  1760.00 Hz  meas  1757.97 Hz     -2.0 c
+organ_q       Keys/Organ/Quiet/NT5_Man3Quiet_182_rr1.wav                             key  96 exp  2093.00 Hz  meas  2090.59 Hz     -2.0 c
+organ_ped     Keys/Organ/Loud/Rode_Pedal_01.wav                                      key  36 exp    65.41 Hz  meas    32.70 Hz  -1200.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_04.wav                                      key  39 exp    77.78 Hz  meas    38.85 Hz  -1202.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_07.wav                                      key  42 exp    92.50 Hz  meas    46.30 Hz  -1198.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_10.wav                                      key  45 exp   110.00 Hz  meas    54.87 Hz  -1204.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_13.wav                                      key  48 exp   130.81 Hz  meas    65.33 Hz  -1202.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_16.wav                                      key  51 exp   155.56 Hz  meas    77.69 Hz  -1202.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_19.wav                                      key  54 exp   185.00 Hz  meas    92.61 Hz  -1198.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_22.wav                                      key  57 exp   220.00 Hz  meas    54.81 Hz  -2406.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_25.wav                                      key  60 exp   261.63 Hz  meas   130.51 Hz  -1204.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_28.wav                                      key  63 exp   311.13 Hz  meas   155.20 Hz  -1204.0 c  <-- CHECK
+organ_ped     Keys/Organ/Loud/Rode_Pedal_31.wav                                      key  66 exp   369.99 Hz  meas    92.18 Hz  -2406.0 c  <-- CHECK
+glock         Percussion/Glock/glock_medium_C5.wav                                   key  72 exp   523.25 Hz  meas  1053.78 Hz  +1212.0 c  <-- CHECK
+glock         Percussion/Glock/glock_medium_C6.wav                                   key  84 exp  1046.50 Hz  meas  2112.44 Hz  +1216.0 c  <-- CHECK
+glock         Percussion/Glock/glock_medium_C7.wav                                   key  96 exp  2093.00 Hz  meas  4244.44 Hz  +1224.0 c  <-- CHECK
+glock         Percussion/Glock/glock_medium_G4.wav                                   key  67 exp   392.00 Hz  meas   787.62 Hz  +1208.0 c  <-- CHECK
+glock         Percussion/Glock/glock_medium_G5.wav                                   key  79 exp   783.99 Hz  meas  1578.89 Hz  +1212.0 c  <-- CHECK
+glock         Percussion/Glock/glock_medium_G6.wav                                   key  91 exp  1567.98 Hz  meas  3165.08 Hz  +1216.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani1_Hit_v1_rr1_Sum.wav                         key  42 exp    92.50 Hz  meas    89.66 Hz    -54.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani2_Hit_v1_rr1_Sum.wav                         key  46 exp   116.54 Hz  meas    60.26 Hz  -1142.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani3_Hit_v1_rr1_Sum.wav                         key  49 exp   138.59 Hz  meas   142.49 Hz    +48.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani4_Hit_v1_rr1_Sum.wav                         key  52 exp   164.81 Hz  meas   168.86 Hz    +42.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani5_Hit_v1_rr1_Sum.wav                         key  54 exp   185.00 Hz  meas    47.77 Hz  -2344.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani1_Hit_v3_rr1_Sum.wav                         key  42 exp    92.50 Hz  meas    89.87 Hz    -50.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani2_Hit_v3_rr1_Sum.wav                         key  46 exp   116.54 Hz  meas    60.40 Hz  -1138.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani3_Hit_v3_rr1_Sum.wav                         key  49 exp   138.59 Hz  meas    70.75 Hz  -1164.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani4_Hit_v3_rr1_Sum.wav                         key  52 exp   164.81 Hz  meas   246.37 Hz   +696.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani5_Hit_v3_rr1_Sum.wav                         key  54 exp   185.00 Hz  meas    94.33 Hz  -1166.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani2_Hit_v4_rr1_Sum.wav                         key  46 exp   116.54 Hz  meas    60.60 Hz  -1132.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani3_Hit_v4_rr1_Sum.wav                         key  49 exp   138.59 Hz  meas    71.08 Hz  -1156.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani4_Hit_v4_rr1_Sum.wav                         key  52 exp   164.81 Hz  meas   170.04 Hz    +54.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani5_Hit_v4_rr1_Sum.wav                         key  54 exp   185.00 Hz  meas   282.68 Hz   +734.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani1_Hit_v1_rr2_Sum.wav                         key  42 exp    92.50 Hz  meas    89.66 Hz    -54.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani2_Hit_v1_rr2_Sum.wav                         key  46 exp   116.54 Hz  meas    60.33 Hz  -1140.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani3_Hit_v1_rr2_Sum.wav                         key  49 exp   138.59 Hz  meas    70.83 Hz  -1162.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani4_Hit_v1_rr2_Sum.wav                         key  52 exp   164.81 Hz  meas    81.93 Hz  -1210.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani5_Hit_v1_rr2_Sum.wav                         key  54 exp   185.00 Hz  meas    57.87 Hz  -2012.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani1_Hit_v3_rr2_Sum.wav                         key  42 exp    92.50 Hz  meas    45.67 Hz  -1222.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani2_Hit_v3_rr2_Sum.wav                         key  46 exp   116.54 Hz  meas    60.33 Hz  -1140.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani3_Hit_v3_rr2_Sum.wav                         key  49 exp   138.59 Hz  meas    70.67 Hz  -1166.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani4_Hit_v3_rr2_Sum.wav                         key  52 exp   164.81 Hz  meas   169.06 Hz    +44.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani5_Hit_v3_rr2_Sum.wav                         key  54 exp   185.00 Hz  meas   282.68 Hz   +734.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani2_Hit_v4_rr2_Sum.wav                         key  46 exp   116.54 Hz  meas    60.67 Hz  -1130.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani3_Hit_v4_rr2_Sum.wav                         key  49 exp   138.59 Hz  meas    71.00 Hz  -1158.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani4_Hit_v4_rr2_Sum.wav                         key  52 exp   164.81 Hz  meas   248.95 Hz   +714.0 c  <-- CHECK
+timp          Percussion/Timpani/Timpani5_Hit_v4_rr2_Sum.wav                         key  54 exp   185.00 Hz  meas   283.66 Hz   +740.0 c  <-- CHECK
+timp_roll     Percussion/Timpani/Rolls/Timpani1_Roll_v3_rr1_Sum.wav                  key  42 exp    92.50 Hz  meas    45.67 Hz  -1222.0 c  <-- CHECK
+timp_roll     Percussion/Timpani/Rolls/Timpani2_Roll_v3_rr1_Sum.wav                  key  46 exp   116.54 Hz  meas   128.57 Hz   +170.0 c  <-- CHECK
+timp_roll     Percussion/Timpani/Rolls/Timpani3_Roll_v3_rr1_Sum.wav                  key  49 exp   138.59 Hz  meas   134.34 Hz    -54.0 c  <-- CHECK
+timp_roll     Percussion/Timpani/Rolls/Timpani4_Roll_v3_rr1_Sum.wav                  key  52 exp   164.81 Hz  meas    41.59 Hz  -2384.0 c  <-- CHECK
+timp_roll     Percussion/Timpani/Rolls/Timpani5_Roll_v3_rr1_Sum.wav                  key  54 exp   185.00 Hz  meas    67.71 Hz  -1740.0 c  <-- CHECK
+timp_roll     Percussion/Timpani/Rolls/Timpani5_Roll_v4_rr1_Sum.wav                  key  54 exp   185.00 Hz  meas   186.93 Hz    +18.0 c
+timp_roll     Percussion/Timpani/Rolls/Timpani1_Roll_v5_rr1_Sum.wav                  key  42 exp    92.50 Hz  meas    91.97 Hz    -10.0 c
+timp_roll     Percussion/Timpani/Rolls/Timpani2_Roll_v5_rr1_Sum.wav                  key  46 exp   116.54 Hz  meas   120.23 Hz    +54.0 c  <-- CHECK
+timp_roll     Percussion/Timpani/Rolls/Timpani3_Roll_v5_rr1_Sum.wav                  key  49 exp   138.59 Hz  meas    73.50 Hz  -1098.0 c  <-- CHECK
+timp_roll     Percussion/Timpani/Rolls/Timpani4_Roll_v5_rr1_Sum.wav                  key  52 exp   164.81 Hz  meas   170.04 Hz    +54.0 c  <-- CHECK
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_A#2_v1_Main.wav                            key  58 exp   233.08 Hz  meas   233.35 Hz     +2.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_A#3_v1_Main.wav                            key  70 exp   466.16 Hz  meas   466.16 Hz     +0.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_A#4_v1_Main.wav                            key  82 exp   932.33 Hz  meas   931.25 Hz     -2.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_D3_v1_Main.wav                             key  62 exp   293.66 Hz  meas   293.33 Hz     -2.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_D4_v1_Main.wav                             key  74 exp   587.33 Hz  meas   588.01 Hz     +2.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_D5_v1_Main.wav                             key  86 exp  1174.66 Hz  meas  1171.95 Hz     -4.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_F3_v1_Main.wav                             key  65 exp   349.23 Hz  meas   348.83 Hz     -2.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_F4_v1_Main.wav                             key  77 exp   698.46 Hz  meas   698.46 Hz     +0.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_F5_v1_Main.wav                             key  89 exp  1396.91 Hz  meas  1396.91 Hz     +0.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_A#2_v3_Main.wav                            key  58 exp   233.08 Hz  meas   233.62 Hz     +4.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_A#3_v3_Main.wav                            key  70 exp   466.16 Hz  meas   466.16 Hz     +0.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_A#4_v3_Main.wav                            key  82 exp   932.33 Hz  meas   937.73 Hz    +10.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_D3_v3_Main.wav                             key  62 exp   293.66 Hz  meas   293.66 Hz     +0.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_D4_v3_Main.wav                             key  74 exp   587.33 Hz  meas   587.33 Hz     +0.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_D5_v3_Main.wav                             key  86 exp  1174.66 Hz  meas  1167.89 Hz    -10.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_F3_v3_Main.wav                             key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_F4_v3_Main.wav                             key  77 exp   698.46 Hz  meas  1400.14 Hz  +1204.0 c  <-- CHECK
+oboe          Woodwinds/Oboe/Vib/Oboe_Vib_F5_v3_Main.wav                             key  89 exp  1396.91 Hz  meas  1393.69 Hz     -4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#2_v1_rr1_sum.wav           key  58 exp   233.08 Hz  meas   233.89 Hz     +6.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#3_v1_rr1_sum.wav           key  70 exp   466.16 Hz  meas   467.24 Hz     +4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#4_v1_rr1_sum.wav           key  82 exp   932.33 Hz  meas   935.56 Hz     +6.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D2_v1_rr1_sum.wav            key  50 exp   146.83 Hz  meas   146.83 Hz     +0.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D3_v1_rr1_sum.wav            key  62 exp   293.66 Hz  meas   294.34 Hz     +4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D4_v1_rr1_sum.wav            key  74 exp   587.33 Hz  meas   588.69 Hz     +4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D5_v1_rr1_sum.wav            key  86 exp  1174.66 Hz  meas  1176.02 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F#5_v1_rr1_sum.wav           key  89 exp  1396.91 Hz  meas  1396.91 Hz     +0.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F2_v1_rr1_sum.wav            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F3_v1_rr1_sum.wav            key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F4_v1_rr1_sum.wav            key  77 exp   698.46 Hz  meas   699.26 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#2_v2_rr1_sum.wav           key  58 exp   233.08 Hz  meas   233.08 Hz     +0.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#3_v2_rr1_sum.wav           key  70 exp   466.16 Hz  meas   466.70 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#4_v2_rr1_sum.wav           key  82 exp   932.33 Hz  meas   934.48 Hz     +4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D2_v2_rr1_sum.wav            key  50 exp   146.83 Hz  meas   147.17 Hz     +4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D3_v2_rr1_sum.wav            key  62 exp   293.66 Hz  meas   294.00 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D4_v2_rr1_sum.wav            key  74 exp   587.33 Hz  meas   588.01 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D5_v2_rr1_sum.wav            key  86 exp  1174.66 Hz  meas  1178.74 Hz     +6.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F#5_v2_rr1_sum.wav           key  89 exp  1396.91 Hz  meas  1398.53 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F2_v2_rr1_sum.wav            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F3_v2_rr1_sum.wav            key  65 exp   349.23 Hz  meas   350.04 Hz     +4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F4_v2_rr1_sum.wav            key  77 exp   698.46 Hz  meas   700.07 Hz     +4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#2_v3_rr1_sum.wav           key  58 exp   233.08 Hz  meas   233.35 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#3_v3_rr1_sum.wav           key  70 exp   466.16 Hz  meas   466.70 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_A#4_v3_rr1_sum.wav           key  82 exp   932.33 Hz  meas   933.41 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D2_v3_rr1_sum.wav            key  50 exp   146.83 Hz  meas   147.17 Hz     +4.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D3_v3_rr1_sum.wav            key  62 exp   293.66 Hz  meas   294.00 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D4_v3_rr1_sum.wav            key  74 exp   587.33 Hz  meas   588.01 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_D5_v3_rr1_sum.wav            key  86 exp  1174.66 Hz  meas  1174.66 Hz     +0.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F#5_v3_rr1_sum.wav           key  89 exp  1396.91 Hz  meas  1395.30 Hz     -2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F2_v3_rr1_sum.wav            key  53 exp   174.61 Hz  meas   174.82 Hz     +2.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F3_v3_rr1_sum.wav            key  65 exp   349.23 Hz  meas   349.23 Hz     +0.0 c
+clarinet      Woodwinds/Clarinet/susLong/DCClar_susLong_F4_v3_rr1_sum.wav            key  77 exp   698.46 Hz  meas   699.26 Hz     +2.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_A#0_v1_1.wav                           key  34 exp    58.27 Hz  meas    58.27 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_A#1_v1_1.wav                           key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_A1_v1_1.wav                            key  45 exp   110.00 Hz  meas   110.00 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_A3_v1_1.wav                            key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_C#1_v1_1.wav                           key  37 exp    69.30 Hz  meas    69.30 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_C2_v1_1.wav                            key  48 exp   130.81 Hz  meas   130.81 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_C3_v1_1.wav                            key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_C4_v1_1.wav                            key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_D#3_v1_1.wav                           key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_F1_v1_1.wav                            key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_G#3_v1_1.wav                           key  68 exp   415.30 Hz  meas   415.30 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_G2_v1_1.wav                            key  55 exp   196.00 Hz  meas   196.00 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_A#0_v2_1.wav                           key  34 exp    58.27 Hz  meas   174.82 Hz  +1902.0 c  <-- CHECK
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_A#1_v2_1.wav                           key  46 exp   116.54 Hz  meas   116.54 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_A1_v2_1.wav                            key  45 exp   110.00 Hz  meas   110.00 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_A3_v2_1.wav                            key  69 exp   440.00 Hz  meas   440.00 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_C#1_v2_1.wav                           key  37 exp    69.30 Hz  meas    69.30 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_C2_v2_1.wav                            key  48 exp   130.81 Hz  meas   130.81 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_C3_v2_1.wav                            key  60 exp   261.63 Hz  meas   261.63 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_C4_v2_1.wav                            key  72 exp   523.25 Hz  meas   523.25 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_D#3_v2_1.wav                           key  63 exp   311.13 Hz  meas   311.13 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_D#4_v2_1.wav                           key  75 exp   622.25 Hz  meas   622.25 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_F1_v2_1.wav                            key  41 exp    87.31 Hz  meas    87.31 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_G#3_v2_1.wav                           key  68 exp   415.30 Hz  meas   415.30 Hz     +0.0 c
+bassoon       Woodwinds/Bassoon/sus/PSBassoon_G2_v2_1.wav                            key  55 exp   196.00 Hz  meas   196.00 Hz     +0.0 c
+tubular       Percussion/TB_hit_F5_v3_rr1.wav                                        key  77 exp   698.46 Hz  meas   865.88 Hz   +372.0 c  <-- CHECK
+tubular       Percussion/TB_hit_C4_v4_rr1.wav                                        key  60 exp   261.63 Hz  meas   775.88 Hz  +1882.0 c  <-- CHECK
+tubular       Percussion/TB_hit_C5_v4_rr1.wav                                        key  72 exp   523.25 Hz  meas  1051.35 Hz  +1208.0 c  <-- CHECK
+tubular       Percussion/TB_hit_G4_v4_rr1.wav                                        key  67 exp   392.00 Hz  meas  1582.54 Hz  +2416.0 c  <-- CHECK
+
+121 regions flagged

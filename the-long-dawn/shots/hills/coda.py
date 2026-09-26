@@ -340,7 +340,7 @@ class Coda:
             if f < CATCH:
                 return 0.10 + 0.05 * (f - (CATCH - 1))
             tr = (f - CATCH) / FPS + 0.025
-            return 0.12 + 1.15 * fire.ignition(tr, overshoot=0.75, rise=0.22, settle=0.8)
+            return 0.12 + 1.60 * fire.ignition(tr, overshoot=0.75, rise=0.22, settle=0.8)
         if f < CATCH:
             return 0.0
         tr = (f - CATCH) / FPS
@@ -443,10 +443,10 @@ class Coda:
                 over(img, srgb, sa)
         fa = np.zeros(img.shape[:2], np.float32)
         if cl > 0:
-            g2 = min(cl, 1.8)
+            g2 = min(cl, 2.6 if V2 else 1.8)          # v2: the whoosh's overshoot is not clipped
             fire.draw_flame(img, fa, cam, fire_base, 0.35 + 0.80 * g2, 0.30, 0.12 + 0.15 * wind, t, 2.9,
                             4.5 + 4.0 * min(1.0, cl), fire.BONFIRE_STYLE)
-            fire.add_glow(img, cam, fire_base + np.array([0, 0.6, 0]), 0.8, 0.06 * min(cl, 1.6) * cflick)
+            fire.add_glow(img, cam, fire_base + np.array([0, 0.6, 0]), 0.8, 0.06 * min(cl, 2.2 if V2 else 1.6) * cflick)
             if V2:
                 # the iron cage stands dark against its own fire
                 r = sil.Silhouette([0.0, GK, Z + 0.01], self.cairn2.basket_groups(x=X_CAIRN, only_iron=True)).render(

@@ -201,23 +201,42 @@ def write_mesh(path, V, Q, M):
         f.write(np.ascontiguousarray(M, np.float32).tobytes())
 
 
-def tree_points(V, Q, veg, up, rng, dens_crown=0.5, dens_ledge=0.08, zmin=-1e9, max_n=4000):
-    """Where trees grow: crown vertices (dense), ledge/crack vertices (sparse). Returns rows of
-    (x, y, z, yaw, scale, tilt_x, tilt_y, variant)."""
-    out = []
+def tree_points(V, Q, veg, up, rng, dens_crown=0.5, dens_ledge=0.08, zmin=-1e9, max_n=4000, r_crown=1.7,
+                r_ledge=2.6):
+    """Where trees grow, with natural spacing (dart throwing on a 3-D grid): crowns (min spacing
+    r_crown), ledges / cracks (r_ledge, sparser). Rows: (x, y, z, yaw, scale, tilt_x, tilt_y, variant)."""
     cand = np.nonzero(((veg > 0.95) | ((up > 0.35) & (veg > 0.2)) | (veg > 0.55)) & (V[:, 2] > zmin))[0]
+    rng.shuffle(cand)
+    cell = min(r_crown, r_ledge)
+    grid = {}
+    out = []
     for vi in cand:
         crown = veg[vi] > 0.95
-        p = dens_crown if crown else dens_ledge * (0.5 + up[vi])
-        if rng.random() > p:
+        p = dens_crown if crown else dens_ledge * (0.5 + max(up[vi], 0.0))
+        if rng.random() > p * 20:
             continue
-        x, y, z = V[vi]
-        s = rng.uniform(0.6, 1.25) * (1.0 if crown else 0.8)
-        if crown:
-            tx, ty = rng.normal(0, 0.08, 2)
-        else:
-            # clinging: lean outward from the pillar axis, then up
-            tx, ty = rng.normal(0, 0.25, 2)
+        x, y, z = (float(c) for c in V[vi])
+        r = r_crown if crown else r_ledge
+        key = (int(x // cell), int(y // cell), int(z // cell))
+        ok = True
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    for (qx, qy, qz) in grid.get((key[0] + dx, key[1] + dy, key[2] + dz), ()):
+                        if (qx - x) ** 2 + (qy - y) ** 2 + (qz - z) ** 2 < r * r:
+                            ok = False
+                            break
+                    if not ok:
+                        break
+                if not ok:
+                    break
+            if not ok:
+                break
+        if not ok:
+            continue
+        grid.setdefault(key, []).append((x, y, z))
+        s = rng.uniform(0.7, 1.35) * (1.1 if crown else 0.8)
+        tx, ty = rng.normal(0, 0.08 if crown else 0.25, 2)
         out.append((x, y, z - 0.2, rng.uniform(0, 6.283), s, tx, ty, int(rng.integers(0, 6))))
         if len(out) >= max_n:
             break

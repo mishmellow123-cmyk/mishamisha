@@ -283,6 +283,31 @@ def grids():
     return g
 
 
+def summit_grids():
+    """(S, M): just her 10 cm summit grid - all the summit_only path needs. Taken from the full cache
+    when present, else baked alone (seconds; the far polar grids are not needed, e.g. on a fresh box)."""
+    if 'sm' not in _CACHE:
+        if 'g' in _CACHE:
+            _CACHE['sm'] = _CACHE['g'][3:5]
+        else:
+            full = os.path.join(CACHE_DIR, f'beacon_peaks_v{VERSION}.npz')
+            path = os.path.join(CACHE_DIR, 'beacon_summit.npz')
+            src = full if os.path.exists(full) else path
+            if os.path.exists(src):
+                d = np.load(src)
+                _CACHE['sm'] = (d['S'], d['M'])
+            else:
+                S = np.zeros((SNZ, SNX), np.float32)
+                M = np.zeros((SNZ, SNX), np.float32)
+                _build_summit(S, M)
+                os.makedirs(CACHE_DIR, exist_ok=True)
+                tmp = path + f'.{os.getpid()}.tmp.npz'
+                np.savez(tmp, S=S, M=M)
+                os.replace(tmp, path)
+                _CACHE['sm'] = (S, M)
+    return _CACHE['sm']
+
+
 # ------------------------------------------------------------------ render ---
 
 @nb.njit(cache=True, fastmath=True, inline='always')
@@ -578,11 +603,23 @@ PARAMS = np.array([
 ], np.float64)
 
 
-def render(cam, sky_packed, t, lights, far_gain, summit_gain, ss=2, params=None):
-    """Premultiplied rgb + alpha at cam resolution."""
+_EMPTY = {}
+
+
+def render(cam, sky_packed, t, lights, far_gain, summit_gain, ss=2, params=None, summit_only=False):
+    """Premultiplied rgb + alpha at cam resolution. summit_only: just her 10 cm summit grid (the far
+    ranges and cloud sea come from elsewhere, e.g. the shepherd's world in beacon.py)."""
     from core import Camera
-    H, C, SH, S, M = grids()
-    big = Camera(cam.pos, yaw=cam.yaw, pitch=cam.pitch, roll=cam.roll, f=cam.f_full, scale=cam.scale * ss)
+    if summit_only:
+        if 'g' not in _EMPTY:
+            _EMPTY['g'] = (np.full((4, 4), -1e9, np.float32), np.full((4, 4), -1e9, np.float32),
+                           np.ones((4, 4), np.float32))
+        H, C, SH = _EMPTY['g']
+        S, M = summit_grids()
+    else:
+        H, C, SH, S, M = grids()
+    big = Camera(cam.pos, yaw=cam.yaw, pitch=cam.pitch, roll=cam.roll, f=cam.f_full, scale=cam.scale * ss,
+                 shift_x=(cam.cx - cam.W / 2) / cam.scale, shift_y=(cam.cy - cam.H / 2) / cam.scale)
     out = np.zeros((big.H, big.W, 3), np.float32)
     al = np.zeros((big.H, big.W), np.float32)
     render_terrain(out, al, big.params(), H, C, SH, S, M, sky_packed,

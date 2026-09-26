@@ -96,38 +96,51 @@ class Globe:
         oncoast = lookup(edge, Q) > 0
         self.coast = Q[oncoast][:60000]
         self.ocean = P[~onland][:26000]
-        # plates: Voronoi on the sphere (v2: the designed layout; the v1 draw is kept for the random stream)
+        # plates (v2, third pass: globe_layout.py): irregular shields holding every flashpoint region whole, shards
+        # toward the rim, seams that wander and branch; the v1 draws are kept for the random stream
+        import globe_layout as GL
         _ = rand_dirs(r, 16)
-        self.seeds = ll2v(np.array([p[0] for p in GLOBE_SEEDS]), np.array([p[1] for p in GLOBE_SEEDS]))
-        # cracks: points near Voronoi edges (jagged with noise); chunked (memory)
         C = rand_dirs(r, 1600000)
-        # cells merge into fewer, irregular plates (28 equal cells read as a football): only seams between plates crack
-        self.group = np.array(GLOBE_GROUPS if groups is None else groups, np.int64)
-        crack = np.zeros(len(C), bool)
-        for c0 in range(0, len(C), 200000):
-            Cc = C[c0:c0 + 200000]
-            Cj = Cc + vnoise(Cc * 3.0, 1.0, (0, 0, 0), 2) * 0.075
-            Cj /= np.linalg.norm(Cj, axis=1, keepdims=True)
-            dd = Cj @ self.seeds.T
-            i2 = np.argpartition(-dd, 1, axis=1)[:, :2]
-            a_ = np.take_along_axis(dd, i2, 1)
-            d1, d2 = np.arccos(np.clip(a_.max(1), -1, 1)), np.arccos(np.clip(a_.min(1), -1, 1))
-            crack[c0:c0 + 200000] = ((d2 - d1) < 0.018) & (self.group[i2[:, 0]] != self.group[i2[:, 1]])
+        lab, lab2, gap, fis = GL.evaluate(C, chunk=100000)
+        # every seam its own character: hairline to wide open, faint to roaring (v1: all alike)
+        pr_all = GL.seam_pair(lab, lab2)
+        up0, inv0 = np.unique(pr_all, return_inverse=True)
+        rw = np.random.default_rng(405)
+        width = rw.uniform(0.45, 1.35, len(up0))
+        self._pair_hot = dict(zip(up0.tolist(), rw.uniform(0.35, 1.3, len(up0)).tolist()))
+        main = gap < 2 * GL.SEAM_W * width[inv0]
+        crack = main | fis
         self.crack = C[crack]
-        g = self.group
-        self.gdir = np.array([self.seeds[g == k].sum(0) for k in range(g.max() + 1)])
-        self.gdir /= np.linalg.norm(self.gdir, axis=1, keepdims=True)
-        # crack activation (v2): the fire starts in the high Arctic and runs outward, reaching every continent at
-        # about the same time; a slow noise makes the front ragged
+        self.c_main = main[crack]
+        self.c_gap = gap[crack]
+        pair = GL.seam_pair(lab, lab2)[crack]
+        # each plate moves out along its own centroid; shards fly further than the shields, and all at their own time
+        npl = GL.NP
+        cnt = np.bincount(lab, minlength=npl).astype(float)
+        cen = np.zeros((npl, 3))
+        np.add.at(cen, lab, C)
+        cen /= np.maximum(np.linalg.norm(cen, axis=1, keepdims=True), 1e-9)
+        self.gdir = cen
+        rr_ = np.random.default_rng(404)
+        area = cnt / cnt.sum()
+        big = np.clip(area / 0.03, 0, 1)                                   # 1 for the shields
+        self.sp_t0 = rr_.uniform(916.0, 934.0, npl)
+        self.sp_mag = (0.11 - 0.06 * big) * rr_.uniform(0.85, 1.15, npl)
+        # crack activation: the fire starts in the high Arctic and runs outward, reaching every continent at about
+        # the same time; each seam segment has its own delay, and the fissures grow out of their seam after it
         _ = rand_dirs(r, 5)
         origins = ll2v(np.array([84.0, 84.0, 84.0]), np.array([0.0, 120.0, 240.0]))
         dg = np.degrees(np.arccos(np.clip(self.crack @ origins.T, -1, 1)).min(axis=1))
-        self.t_act = (883.0 + 0.52 * dg + 4.0 * snoise(self.crack, 2.5, (1.0, 2.0, 3.0), 2)
-                      + r.uniform(-3, 3, len(self.crack)))
-        self.cell = {}
-        for name in ('land', 'coast', 'ocean', 'crack'):
-            pts = getattr(self, name)
-            self.cell[name] = self.group[np.argmax(pts @ self.seeds.T, axis=1)]
+        up, inv = np.unique(pair, return_inverse=True)
+        delay = rr_.uniform(-4.0, 18.0, len(up))[inv]
+        self.c_hot = np.array([self._pair_hot.get(int(p_), 1.0) for p_ in up])[inv]
+        grow = np.where(self.c_main, 0.0, 3.0 + 1.6 * (self.c_gap - 2 * GL.SEAM_W))
+        self.t_act = (881.0 + 0.5 * dg + delay + grow + 3.0 * snoise(self.crack, 2.5, (1.0, 2.0, 3.0), 2)
+                      + r.uniform(-2, 2, len(self.crack)))
+        self.cell = {'crack': lab[crack]}
+        self.c_lab2 = lab2[crack]
+        for name in ('land', 'coast', 'ocean'):
+            self.cell[name] = GL.evaluate(getattr(self, name), chunk=100000)[0]
         # fire spilling out of the cracks
         n = 60000
         self.sp_i = r.integers(0, len(self.crack), n)
@@ -168,12 +181,20 @@ class Globe:
         return Globe._M @ Ry
 
     def split(self, t):
-        return 0.075 * float(ease_in_out((t - 922) / 30.0))
+        """per plate: each opens on its own time (v1: all at once)"""
+        return self.sp_mag * ease_in_out((t - self.sp_t0) / 26.0)
 
     def world(self, name, t, radius=1.0):
         pts = getattr(self, name)
+        c = self.cell[name]
         sp = self.split(t)
-        off = self.gdir[self.cell[name]] * sp
+        off = self.gdir[c] * sp[c][:, None]
+        if name == 'crack':
+            # a seam's fire stays in the middle of the opening rift (riding with one plate it would outline every
+            # plate twice, like the stitched panels of a ball); fissures ride their own plate
+            c2 = self.c_lab2
+            mid = 0.5 * (off + self.gdir[c2] * sp[c2][:, None])
+            off = np.where(self.c_main[:, None], mid, off)
         return (pts * radius + off) @ self.rot(t).T
 
     def emit(self, ctx):
@@ -212,14 +233,18 @@ class Globe:
         P0 = self.world('crack', ctx.t0)
         P1 = self.world('crack', ctx.t1)
         f = facing(P1)
-        e = (2.6 * act + 9.0 * front) * f * (1 + 2.5 * flare)
+        # the fissures branching off the seams are finer and dimmer, and taper toward their dead ends
+        fis_k = np.where(self.c_main, 1.0, 0.5 * np.clip(1.15 - (self.c_gap - 1.0) / 9.0, 0.25, 1.0)) * self.c_hot
+        e = (2.6 * act + 9.0 * front) * f * (1 + 2.5 * flare) * fis_k
         col = look.blackbody(np.clip(0.62 + 0.35 * front + 0.2 * heat, 0, 1))
         ctx.fr.splat(P0, P1, 0.0015, e, col, ctx.cam0, ctx.cam1)
-        sp = self.split(t)
-        if sp > 0.002:
-            Pc = (self.crack * 0.965) @ self.rot(t).T
+        spl = self.split(t)[self.cell['crack']]
+        on = (spl > 0.002) & self.c_main
+        if on.any():
+            # the molten core showing through where each plate has begun to part
+            Pc = (self.crack[on] * 0.965) @ self.rot(t).T
             fc = facing(Pc)
-            ec = act * fc * 6.0 * (sp / 0.075) * (1 + 3 * flare)
+            ec = act[on] * fc * 6.0 * (spl[on] / 0.075) * (1 + 3 * flare)
             ctx.fr.splat(Pc, Pc, 0.002, ec, look.blackbody(0.9), ctx.cam0, ctx.cam1)
         # fire spilling out of the cracks, rising off the surface
         i = self.sp_i
@@ -231,7 +256,8 @@ class Globe:
             p = base * (1.0 + 0.2 * k[:, None] ** 1.2)
             w = vnoise(p * 4.0 + np.array([0, 0.02 * tq, 0]), 1.0, (0, 0, 0), 1)
             p = p + w * (0.02 + 0.05 * k)[:, None]
-            off = self.gdir[self.cell['crack'][i]] * self.split(tq)
+            c_ = self.cell['crack'][i]
+            off = self.gdir[c_] * self.split(tq)[c_][:, None]
             return (p + off) @ self.rot(tq).T, k
         S0, k0 = spill(ctx.t0)
         S1, k1 = spill(ctx.t1)

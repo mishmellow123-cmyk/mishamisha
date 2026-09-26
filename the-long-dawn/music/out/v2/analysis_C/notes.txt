@@ -1,0 +1,176 @@
+
+  60.0  16.1.0  [D             ] D2 A2 D3 D4 A4 D5
+  60.5  16.1.5  [D             ] D2 A2 D3 D4 A4 D5
+  61.0  16.2.0  [D             ] D2 A2 D3 D4 A4 D5
+  61.5  16.2.5  [D             ] D2 A2 D3 D4 A4 D5
+  62.0  16.3.0  [D             ] D2 A2 D3 D4 A4 D5
+  62.5  16.3.5  [D             ] D2 A2 D3 D4 A4 D5
+  63.0  16.4.0  [D             ] D2 A2 D3 D4 A4 D5
+  63.5  16.4.5  [D             ] D2 A2 D3 D4 A4 D5
+  64.0  17.1.0  [D             ] D2 A2 D3 D4 A4 D5
+  64.5  17.1.5  [D             ] D2 A2 D3 D4 A4 D5
+  65.0  17.2.0  [D             ] D2 A2 D3 D4 A4 D5
+  65.5  17.2.5  [D             ] D2 A2 D3 D4 A4 D5
+  66.0  17.3.0  [Bb/D          ] D2 D3 F3 Bb3 D4 F4
+  66.5  17.3.5  [Bb/D          ] D2 D3 F3 Bb3 D4 F4
+  67.0  17.4.0  [?             ] D2 A2 D3 G3 C4 E4 G4
+  67.5  17.4.5  [?             ] D2 A2 D3 G3 C4 E4 G4
+  68.0  18.1.0  [Dm            ] D2 D3 A3 D4 F4 A4 D5 F5 A5
+  68.5  18.1.5  [Dm            ] D2 D3 A3 D4 F4 A4 D5 F5 A5
+  69.0  18.2.0  [Dm            ] D2 D3 A3 F4 A4 D5 F5 A5
+  69.5  18.2.5  [Dm            ] D2 D3 A3 F4 A4 D5 F5 A5
+  70.0  18.3.0  [Bb            ] Bb1 Bb2 D3 F3 D4 F4 Bb4 D5 F5
+  70.5  18.3.5  [Bb            ] Bb1 Bb2 D3 F3 D4 F4 Bb4 D5 F5
+  71.0  18.4.0  [Bb            ] Bb1 Bb2 D3 F3 D4 F4 Bb4 D5 F5
+  71.5  18.4.5  [Bb            ] Bb1 Bb2 D3 F3 D4 F4 Bb4 D5 F5
+  72.0  19.1.0  [Gm            ] G1 G2 D3 Bb3 D4 G4 Bb4 D5
+  72.5  19.1.5  [Gm            ] G1 G2 D3 Bb3 D4 G4 Bb4 D5
+  73.0  19.2.0  [Gm            ] G1 G2 D3 Bb3 D4 G4 Bb4 D5
+  73.5  19.2.5  [Gm            ] G1 G2 D3 Bb3 D4 G4 Bb4 D5
+  74.0  19.3.0  [A             ] A1 A2 C#3 E3 A3 C#4 E4 A4 C#5 E5
+  74.5  19.3.5  [A             ] A1 A2 C#3 E3 A3 C#4 E4 A4 C#5 E5
+  75.0  19.4.0  [A7            ] A1 A2 C#3 E3 A3 C#4 E4 G4 A4 C#5 E5
+  75.5  19.4.5  [A7            ] A1 A2 C#3 E3 C#4 E4 G4 A4 C#5 E5
+  76.0  20.1.0  [Dm            ] D1 D2 A2 D3 F3 D4 F4 A4 D5 F5
+  76.5  20.1.5  [Dm            ] D1 D2 A2 D3 F3 F4 A4 F5 A5
+  77.0  20.2.0  [Dm            ] D1 D2 A2 D3 F3 D4 F4 A4 D5 F5
+  77.5  20.2.5  [Dm            ] D1 D2 A2 D3 F3 F4 A4 F5 A5
+  78.0  20.3.0  [F6            ] F1 F2 A2 C3 F3 F4 A4 D5 F5 A5
+  78.5  20.3.5  [F6            ] F1 F2 A2 C3 F3 A4 C5 D5 A5 C6
+  79.0  20.4.0  [Gm            ] G1 G2 Bb2 D3 G3 D4 Bb4 D5 Bb5
+  79.5  20.4.5  [Gm            ] G1 G2 Bb2 D3 G3 D4 Bb4 Bb5
+  80.0  21.1.0  [Bb6           ] Bb1 Bb2 D3 F3 Bb3 D4 G4 D5 D6
+  80.5  21.1.5  [Bb6           ] Bb1 Bb2 D3 F3 Bb3 G4 Bb4 D5 Bb5 D6
+  81.0  21.2.0  [C             ] C2 C3 E3 G3 C4 E4 E5 E6
+  81.5  21.2.5  [C             ] C2 C3 E3 G3 C4 G4 C5 E5 C6 E6
+  82.0  21.3.0  [Dm7           ] D2 D3 F3 A3 D4 C5 D5 D6
+  82.5  21.3.5  [Dm7           ] D2 D3 F3 A3 D4 A4 C5 D5 A5 D6
+  83.0  21.4.0  [A             ] A1 A2 C#3 E3 A3 E4 E5 E6
+  83.5  21.4.5  [A             ] A1 A2 C#3 E3 A3 E4 C#5 E5 C#6 E6
+  84.0  22.1.0  [Dm            ] D2 D3 A3 D4 F4 A4 D5 F5
+  84.5  22.1.5  [Dm            ] D2 D3 A3 D4 F4 A4 D5 F5
+  85.0  22.2.0  [F             ] F1 F2 A2 C3 F3 C4 F4 A4 C5 F5
+  85.5  22.2.5  [F             ] F1 F2 A2 C3 F3 C4 F4 A4 C5 F5
+  86.0  22.3.0  [F6            ] F1 F2 A2 C3 F3 C4 F4 A4 C5 D5 F5
+  86.5  22.3.5  [F6            ] F1 F2 A2 C3 F3 C4 F4 A4 C5 D5 F5
+  87.0  22.4.0  [F6            ] F1 F2 A2 C3 F3 C4 F4 A4 C5 D5 F5
+  87.5  22.4.5  [F6            ] F1 F2 A2 C3 F3 C4 F4 A4 C5 D5 F5
+  88.0  23.1.0  [C             ] C2 G2 C3 E3 G3 C4 E4 G4 C5 E5 G5
+  88.5  23.1.5  [C             ] C2 G2 C3 E3 G3 E4 G4 C5 E5 G5
+  89.0  23.2.0  [C             ] C2 G2 C3 E3 G3 E4 G4 C5 E5 G5
+  89.5  23.2.5  [C             ] C2 G2 C3 E3 G3 E4 G4 C5 E5 G5
+  90.0  23.3.0  [C             ] C2 G2 C3 E3 G3 E4 G4 C5 E5 G5
+  90.5  23.3.5  [Bb            ] Bb1 Bb2 D3 F3 Bb3 D4 F4 Bb4 D5 F5
+  91.0  23.4.0  [Bb            ] Bb1 Bb2 D3 F3 D4 F4 Bb4 D5 F5
+  91.5  23.4.5  [Bb            ] Bb1 Bb2 D3 F3 D4 F4 Bb4 D5 F5
+  92.0  24.1.0  [Bb            ] Bb1 Bb2 D3 F3 D4 F4 Bb4 D5 F5
+  92.5  24.1.5  [Gm            ] G1 G2 Bb2 D3 G3 Bb3 D4 G4 Bb4 G5
+  93.0  24.2.0  [Gm            ] G1 G2 Bb2 D3 G3 Bb3 D4 G4 Bb4 G5
+  93.5  24.2.5  [Gm            ] G1 G2 Bb2 D3 G3 Bb3 D4 G4 Bb4 G5
+  94.0  24.3.0  [Gm            ] G1 G2 Bb2 D3 G3 Bb3 D4 G4 Bb4 G5
+  94.5  24.3.5  [C7            ] C2 Bb2 C3 E3 G3 C4 E4 G4 Bb4 C5 E5
+  95.0  24.4.0  [C7            ] C2 Bb2 C3 E3 G3 E4 G4 Bb4 C5 E5
+  95.5  24.4.5  [C7            ] C2 Bb2 C3 E3 G3 E4 G4 Bb4 C5 E5
+  96.0  25.1.0  [F             ] F1 F2 C3 A3 C4 F4 A4 F5
+  96.5  25.1.5  [F             ] F1 F2 C3 F3 A3 C4 F4 A4 F5
+  97.0  25.2.0  [F             ] F1 F2 C3 F3 A3 C4 F4 A4 C5 C6
+  97.5  25.2.5  [Fadd9         ] F1 F2 C3 F3 A3 C4 F4 G4 A4 C5 C6
+  98.0  25.3.0  [Fadd9         ] F1 F2 C3 F3 A3 C4 F4 G4 A4 C5 F5 F6
+  98.5  25.3.5  [Fadd9         ] F1 F2 C3 F3 A3 C4 F4 G4 A4 C5 F5 F6
+  99.0  25.4.0  [Fadd9         ] F1 F2 C3 F3 A3 C4 F4 G4 A4 C5 F5 F6
+  99.5  25.4.5  [Fadd9         ] F1 F2 C3 F3 A3 C4 F4 G4 A4 C5 F5 F6
+ 100.0  26.1.0  [Bbmaj9        ] Bb1 Bb2 F3 D4 F4 A4 C5 F5 F6
+ 100.5  26.1.5  [Bbmaj9        ] Bb1 F2 Bb2 F3 D4 F4 A4 C5 F5 F6
+ 101.0  26.2.0  [Bbmaj9#11     ] Bb1 F2 Bb2 D3 F3 D4 F4 A4 C5 E5 E6
+ 101.5  26.2.5  [Bbmaj9        ] Bb1 F2 Bb2 D3 F3 C4 D4 F4 A4 C5 D5 D6
+ 102.0  26.3.0  [Bbmaj9        ] Bb1 F2 Bb2 D3 F3 C4 D4 F4 A4 C5 A5
+ 102.5  26.3.5  [Bbmaj9        ] Bb1 F2 Bb2 D3 F3 C4 D4 F4 A4 C5 A5
+ 103.0  26.4.0  [?             ] Bb1 F2 Bb2 D3 F3 C4 D4 F4 A4 C5 G5 A5
+ 103.5  26.4.5  [?             ] Bb1 F2 Bb2 D3 F3 C4 D4 F4 A4 C5 G5 A5
+ 104.0  27.1.0  [Dm            ] D2 D3 A3 F4 A4 F5 A5
+ 104.5  27.1.5  [Dm            ] D2 D3 A3 D4 F4 F5
+ 105.0  27.2.0  [Dm            ] D2 D3 A3 D4 F4 F5
+ 105.5  27.2.5  [Dm            ] D2 D3 A3 D4 F4 F5
+ 106.0  27.3.0  [Dm            ] D2 D3 A3 F4 A4
+ 106.5  27.3.5  [Dm            ] D2 D3 A3 F4 A4
+ 107.0  27.4.0  [Dm            ] D2 D3 A3 F4 A4
+ 107.5  27.4.5  [Dm            ] D2 D3 A3 F4 D5
+ 108.0  28.1.0  [Dm            ] D2 D3 F3 A3 F4 A4 D5
+ 108.5  28.1.5  [Dm            ] D2 D3 F3 A3 F4 A4 D5
+ 109.0  28.2.0  [Dm            ] D2 D3 F3 A3 F4 A4 D5
+ 109.5  28.2.5  [Dm            ] D2 D3 F3 A3 F4 A4 D5
+ 110.0  28.3.0  [Dm            ] D2 D3 F3 A3 F4 A4 D5
+ 110.5  28.3.5  [Dm            ] D2 D3 F3 A3 F4 A4 D5
+ 111.0  28.4.0  [Dm            ] D2 D3 F3 A3 F4 A4 D5
+ 111.5  28.4.5  [Bb/D          ] D2 D3 F3 Bb3 F4 Bb4 D5
+ 112.0  29.1.0  [Bb/D          ] D2 D3 F3 Bb3 F4 Bb4 D5
+ 112.5  29.1.5  [Bb/D          ] D2 D3 F3 Bb3 F4 Bb4 D5
+ 113.0  29.2.0  [Bb/D          ] D2 D3 F3 Bb3 F4 Bb4 D5
+ 113.5  29.2.5  [Bb/D          ] D2 D3 F3 Bb3 F4 Bb4 D5
+ 114.0  29.3.0  [Bb/D          ] D2 D3 F3 Bb3 F4 Bb4 D5
+ 114.5  29.3.5  [Gm/D          ] D2 D3 G3 Bb3 G4 Bb4 D5
+ 115.0  29.4.0  [Gm/D          ] D2 D3 G3 Bb3 D4 G4 Bb4 D5
+ 115.5  29.4.5  [Gm/D          ] D2 D3 G3 Bb3 D4 G4 Bb4 D5
+ 116.0  30.1.0  [Bb            ] Bb1 Bb2 D3 F3 Bb3 D4 F4 Bb4 F5 Bb5
+ 116.5  30.1.5  [Bb            ] Bb1 Bb2 D3 F3 Bb3 D4 F4 Bb4 F5 Bb5
+ 117.0  30.2.0  [Bb            ] Bb1 Bb2 D3 F3 Bb3 D4 F4 Bb4 F5 Bb5
+ 117.5  30.2.5  [Bb            ] Bb1 Bb2 D3 F3 Bb3 D4 F4 Bb4 F5 Bb5
+ 118.0  30.3.0  [Asus4         ] A1 A2 D3 E3 A3 D4 E4 A4 D5 E5 A5
+ 118.5  30.3.5  [Asus4         ] A1 A2 D3 E3 A3 D4 E4 A4 D5 E5 A5
+ 119.0  30.4.0  [A             ] A1 A2 C#3 E3 A3 C#4 E4 A4 C#5 E5 A5
+ 119.5  30.4.5  [A             ] A1 A2 C#3 E3 A3 C#4 E4 A4 C#5 E5 A5
+ 120.0  31.1.0  [D             ] D2 D3 F#3 A3 D4 F#4 D5 A5 D6
+ 120.5  31.1.5  [D             ] D2 A2 D3 F#3 A3 D4 F#4 A4 D5 A5 D6
+ 121.0  31.2.0  [D             ] D2 A2 D3 F#3 A3 D4 F#4 A4 A5 D6
+ 121.5  31.2.5  [D             ] D2 A2 D3 F#3 A3 D4 F#4 A4 A5 D6
+ 122.0  31.3.0  [D             ] D2 A2 D3 F#3 A3 D4 F#4 A4 D5 A5 D6
+ 122.5  31.3.5  [D             ] D2 A2 D3 F#3 A3 D4 F#4 A4 D5 A5 D6
+ 123.0  31.4.0  [D             ] D2 A2 D3 F#3 A3 D4 F#4 A4 D5 A5 D6
+ 123.5  31.4.5  [D             ] D2 A2 D3 F#3 A3 D4 F#4 A4 D5 A5 D6
+ 124.0  32.1.0  [Bm            ] B1 D2 B2 D3 F#3 B3 D4 F#4 D5 F#5 B5 D6
+ 124.5  32.1.5  [Bm            ] B1 D2 F#2 B2 D3 F#3 B3 D4 F#4 D5 F#5 B5 D6
+ 125.0  32.2.0  [?             ] B1 F#2 B2 D3 F#3 B3 D4 E4 F#4 C#5 F#5 B5 C#6
+ 125.5  32.2.5  [Em9/B         ] B1 F#2 B2 D3 F#3 B3 D4 E4 F#4 B4 F#5 B5
+ 126.0  32.3.0  [Gmaj7         ] G1 G2 D3 G3 B3 D4 F#4 B4 F#5 B5 D6
+ 126.5  32.3.5  [Gmaj7         ] G1 G2 D3 G3 B3 D4 F#4 B4 F#5 B5 D6
+ 127.0  32.4.0  [A             ] A1 A2 C#3 E3 A3 C#4 E4 A4 A5
+ 127.5  32.4.5  [A             ] A1 A2 C#3 E3 A3 C#4 E4 A4 A5
+ 128.0  33.1.0  [Em7           ] E1 E2 B2 E3 G3 B3 D4 G4 B4 B5
+ 128.5  33.1.5  [Em7           ] E1 E2 B2 E3 G3 B3 D4 G4 B4 B5
+ 129.0  33.2.0  [A7sus4        ] A1 A2 D3 E3 A3 D4 E4 G4 A4 A5
+ 129.5  33.2.5  [A7sus4        ] A1 A2 D3 E3 G3 A3 D4 E4 G4 A4 A5
+ 130.0  33.3.0  [D             ] D2 D3 F#3 A3 D4 F#4 F#5
+ 130.5  33.3.5  [D             ] D2 A2 D3 F#3 A3 D4 F#4 F#5
+ 131.0  33.4.0  [D             ] D2 A2 D3 F#3 A3 D4 F#4 D5
+ 131.5  33.4.5  [D             ] D2 A2 D3 F#3 A3 D4 F#4 D5
+ 132.0  34.1.0  [D             ] D2 A2 D3 F#3 A3 D4 F#4 D5
+ 132.5  34.1.5  [D             ] D2 A2 D3 F#3 A3 D4 F#4 D5
+ 133.0  34.2.0  [D             ] D2 D3 F#3 A3 D4 F#4
+ 133.5  34.2.5  [D             ] D2 D3 F#3 A3 D4 F#4
+ 134.0  34.3.0  [A             ] A3 A4
+ 134.5  34.3.5  [A             ] A3 A4
+ 135.0  34.4.0  [A             ] A4
+ 135.5  34.4.5  [D             ] D5
+ 136.0  35.1.0  [D             ] D5
+ 136.5  35.1.5  [D             ] D5
+ 137.0  35.2.0  [D             ] D5
+ 137.5  35.2.5  [C#            ] C#5
+ 138.0  35.3.0  [C#            ] C#5
+ 138.5  35.3.5  [B             ] B4
+ 139.0  35.4.0  [F#            ] F#4
+ 139.5  35.4.5  [F#            ] F#4
+ 140.0  36.1.0  [Gmaj7/D       ] D2 D3 G3 B3 D4 F#4 B4 D5
+ 140.5  36.1.5  [Gmaj7/D       ] D2 D3 G3 B3 D4 F#4 B4 D5
+ 141.0  36.2.0  [Gadd9/D       ] D2 D3 G3 B3 D4 A4 B4 D5
+ 141.5  36.2.5  [Gadd9/D       ] D2 D3 G3 A3 B3 D4 B4 D5
+ 142.0  36.3.0  [Em7/D         ] D2 D3 G3 B3 D4 E4 B4 D5
+ 142.5  36.3.5  [Gadd9/D       ] D2 D3 G3 B3 D4 A4 B4 D5
+ 143.0  36.4.0  [Gadd9/D       ] D2 D3 G3 A3 B3 D4 A4 B4 D5
+ 143.5  36.4.5  [Em7/D         ] D2 D3 G3 B3 D4 E4 B4 D5
+ 144.0  37.1.0  [Dadd9         ] D2 D3 A3 F#4 A4 D5 E5 A5
+ 144.5  37.1.5  [Dadd9         ] D2 D3 A3 F#4 A4 D5 E5 A5
+ 145.0  37.2.0  [Dadd9         ] D2 D3 A3 F#4 A4 D5 E5 A5
+ 145.5  37.2.5  [Dadd9         ] D2 D3 A3 F#4 A4 D5 E5 A5
+ 146.0  37.3.0  [Dadd9         ] D2 D3 A3 F#4 A4 D5 E5 A5 E6
+ 146.5  37.3.5  [Dadd9         ] D2 D3 A3 F#4 A4 D5 E5 A5 E6
+ 147.0  37.4.0  [Dadd9         ] D2 D3 A3 F#4 A4 E5

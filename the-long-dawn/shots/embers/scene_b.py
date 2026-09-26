@@ -461,6 +461,7 @@ class FireSparks:
         self.a = r.uniform(0, 2 * np.pi, n)
         self.sp = r.normal(0, 1, (n, 2))
         self.E = r.lognormal(0, 0.7, n)
+        self.flame_sub = rng(seed + 500).random(n) < 0.04   # v2: while it is a flame only a few sparks lift off
 
     def pts(self, t):
         C = crown_centre(t)
@@ -478,10 +479,11 @@ class FireSparks:
             # v2: from the three tongue tips, a thin drifting plume (v1's column read as the bulb's cord)
             kt = (np.arange(self.n) % 3)
             tip, _ = tongue_axis(kt, np.full(self.n, 0.97), t, fw)
-            spr = 0.15 + 1.6 * k
+            spr = 0.2 + 0.9 * k
             xf = tip[:, 0] * R + self.sp[:, 0] * spr
             zf = tip[:, 2] * R + self.sp[:, 1] * spr
-            yf = tip[:, 1] * R + k * 6.5
+            yf = tip[:, 1] * R + k * 2.2                    # a few sparks lift off the tips and die (the old column
+                                                             # climbed out of the frame and read as the bulb's neck)
             x = lerp(x, xf, fw)
             y = lerp(y, yf, fw)
             z = lerp(z, zf, fw)
@@ -497,7 +499,8 @@ class FireSparks:
         P1, k = self.pts(ctx.t1)
         ok = k >= k0
         e = self.E * (1 - k) ** 1.5 * 9.0 * smoothstep(IGN + 6, IGN + 20, t) * ok * storm_fade(t)
-        e = e * (1.0 - 0.7 * flame_w(t))
+        fw = flame_w(t)
+        e = e * np.where(self.flame_sub, 1.0, 1.0 - fw) * (1.0 - fw * smoothstep(0.35, 0.8, k))
         red = redness(t)
         col = look.blackbody(0.92 - 0.45 * k)
         col = col * (1 - 0.4 * red) + C_RED * 0.4 * red

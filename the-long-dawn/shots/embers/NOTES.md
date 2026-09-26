@@ -1,3 +1,26 @@
+# EMBERS v2 — third pass (director: the globe read as a football), 2026-09-26
+
+Re-rendered: embers_v2 486-627, 880-959 · embers_B 486-627, 880-959 · embers_C 562-627, 880-959.
+
+* **Globe plates (880-959, all cuts): irregular, not a football** (`globe_layout.py`, replaces the 28 near-equal
+  Voronoi cells of the second pass). A few big continental shields (unions of weighted cells: Europe-to-the-Gulf,
+  East Asia and the western Pacific rim, South Asia and the Himalaya, North America, Siberia and the Arctic, Bering)
+  each hold a flashpoint region WHOLE; many small shards toward the rim (oceans, Sahara, Arabian Sea, Pacific):
+  equivalent radii 3-31 deg (~10x). Additively weighted Voronoi (curved seams between unequal plates) on a
+  3-octave domain-warped sphere (seams wander), plus a finer fissure network that branches off the main seams and
+  dies out before any listed site. Every flashpoint / capital / hub adds a smooth pull to the plate holding it, so
+  no seam comes within its margin: `python globe_layout.py` reports 0 hard violations (all margins 4-8 deg as
+  before); soft margins met except Chengdu, Karachi, Bangkok (<= 1 deg short, at the rim). Border check: no seam
+  traces a land border except where two big shields meet in Central Asia and at the rim in West Africa / Indochina.
+* **Staggered opening:** every seam has its own width, heat and start (-4..+18 frames on top of the Arctic-outward
+  front), fissures grow out of their seam after it, and each plate parts on its own clock (916-934 start, shards
+  further than shields); the seam's fire stays mid-rift (it no longer outlines both plates like ball panels).
+  Timing kept: cut in 880, fire reaches every continent at about the same time, flare-out 950-959.
+* Render log (third pass): 670 frames, ~1.5-2.5 s/frame (globe ~2-5 s), 0 errors; B/C globe frames equal v2's to
+  the dither (mean |diff| 0.45/255). Sheet: _local_logs/review/embers_globe.jpg (v1 | 2nd pass | now at 916/932/946).
+* **Flame sparks (486-627, all cuts; optional note):** while it is a flame only 4% of the spark column shows,
+  lifting ~1-2 units off the tongue tips and dying (the column used to climb out of the frame above the tip).
+
 # EMBERS v2 — second pass (framing & tone reviews, 2026-09-26)
 
 Re-rendered (src numbering): embers_v2 316-830, 866-959 · embers_B 331-449, 481-747, 791-959 · embers_C 562-959.
@@ -24,6 +47,16 @@ Re-rendered (src numbering): embers_v2 316-830, 866-959 · embers_B 331-449, 481
   their own script). The v1 field is drawn exactly as before (same stream, same choreography, same hero passes)
   and only those instances change; the v2 atlas (renders/embers_v2/cache/glyphs_v2.npz) is the v1 atlas minus
   the removed items, with identical point sets.
+* Render log (second pass; 2 procs, other departments rendering alongside, so times ran long):
+
+| frames | n | median | total |
+|---|---|---|---|
+| A 316-830,866-959 | 609 | 4.3 s | 69 min |
+| B 331-449,481-747 | 386 | 4.3 s | 47 min |
+| B 791-959 | 169 | 2.5 s | 11 min |
+| C 562-596 | 35 | 4.4 s | 3 min |
+| C 597-959 | 363 | 5.0 s | 30 min |
+
 * **Text band (render.py TEXT, per cut).** A: 340-440, 490-565, 580-648, 668-738, 800-866 · C: 340-440, 490-565,
   628-695, 705-770, 780-834 · B: none. (Lines on black 1060-1186 sit mid-frame; silence frames unaffected.)
 

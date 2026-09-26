@@ -352,9 +352,9 @@ def shade_stones(SD, SID, DC, U, DEP, LX, LY, ppm, pnorm, palb, pseed, lights, n
                 # twilight sky on grey stone (faces + the upward arrises catch it): the courses stay
                 # faintly legible even when the fire is far
                 up = 0.5 + 0.5 * ny
-                r = ar * amb_top[0] * (1.2 + 3.4 * up)
-                g = ag * amb_top[1] * (1.2 + 3.4 * up)
-                b = ab * amb_top[2] * (1.2 + 3.4 * up)
+                r = ar * amb_top[0] * (1.8 + 5.0 * up)
+                g = ag * amb_top[1] * (1.8 + 5.0 * up)
+                b = ab * amb_top[2] * (1.8 + 5.0 * up)
                 for q in range(nl):
                     vx = lights[q, 0] - x
                     vy = lights[q, 1] - y

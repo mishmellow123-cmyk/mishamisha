@@ -1,0 +1,78 @@
+THE LONG DAWN v2 - score AB - analysis
+
+length: 5936000 samples = 123.6667 s (target 5936000 = 123.6667 s) [OK]
+format: 48000 Hz, 2 ch, PCM_24
+final_AB: -16.04 LUFS integrated ; true peak -1.30 dBTP ; sample peak -1.31 dBFS
+score_AB: -16.20 LUFS, TP -1.27 dBTP ; sfx_AB: -25.54 LUFS, TP -4.75 dBTP
+stem sum error max |score + sfx - final|: 4.77e-07
+DC offset L/R: -4.02e-06 / -2.31e-06
+first sample [-1.1920929e-07  0.0000000e+00] ; first 10 ms peak -55.5 dBFS ; last 50 ms peak -81.5 dBFS
+click candidates in the score stem: 0
+sharp transients in the SFX stem (designed flint sparks etc.): 10
+
+BREATHS (every part + the hall + the SFX ducked to -45 dB; the designed exempt part - the
+reversed cymbal rushing into the RACE - keeps playing).  Depth must be >= 30 dB.
+  mix of all non-exempt parts + hall (pre-master)    26.467-  26.667s  before  -13.6  inside  -60.8  after   -3.3 dB  depth  47.3 dB [OK]  (exempt: revcym)
+  mix of all non-exempt parts + hall (pre-master)    43.208-  43.333s  before   -9.3  inside  -64.7  after   -6.3 dB  depth  55.4 dB [OK]  (exempt: revcym)
+  mix of all non-exempt parts + hall (pre-master)    99.725- 100.000s  before  -12.5  inside  -67.2  after  -23.4 dB  depth  54.7 dB [OK]
+  score  breath   99.725- 100.000s (frame  2400.0)  before  -14.9  inside  -69.3  after  -25.4 dBFS  depth  54.4 dB  [OK]
+  final  breath   99.725- 100.000s (frame  2400.0)  before  -14.8  inside  -52.7  after  -25.4 dBFS  depth  37.9 dB  [OK]
+  -> breaths ALL PRESENT
+
+section          frames      LUFS(int)  ST-max  ST-min  TP(dBTP)  L/R corr  mono-stereo(dB)
+intro               0-320      -23.62   -22.1   -31.0   -12.03     0.484        -1.54
+kindling          320-640      -17.03   -12.7   -22.8    -3.07     0.353        -1.94
+race              640-960      -13.42   -12.7   -15.0    -1.30     0.440        -1.54
+grasp             960-1040     -13.57   -11.5   -14.9    -1.30     0.366        -1.74
+silence          1040-1200     -15.74   -11.5   -31.7    -1.30     0.460        -1.75
+first_beacon     1200-1440     -18.05   -16.7   -37.9    -5.60     0.503        -1.35
+far_peak         1440-1520     -15.95   -15.1   -17.5    -3.36     0.419        -1.53
+beacon_run       1520-1680     -14.37   -13.8   -15.2    -1.33     0.352        -1.53
+montage          1680-1920     -16.27   -14.8   -17.2    -4.06     0.432        -1.43
+world_answers    1920-2080     -15.53   -14.7   -19.7    -3.96     0.261        -2.12
+accord           2080-2400     -17.05   -12.8   -24.8    -1.92     0.356        -1.72
+dawn             2400-2624     -15.79   -13.5   -20.4    -3.24     0.364        -1.81
+coda             2624-2968     -25.17   -21.6   -31.6   -10.70     0.503        -1.27
+
+SYNC (onset detector: 2 ms dB-slope; OK = within +-10 ms; 'soft' = slow-attack entries)
+frame  time(s)   measured  offset(ms)  source           event
+    0    0.000     0.0014      +1.4   final            wind + drone from silence [OK]
+  320   13.333    13.3333      -0.0   glass            KINDLING shimmer [OK, rise 109 dB]
+  480   20.000    20.0085      +8.5   final            IGNITION [OK, rise 4 dB]
+  640   26.667    26.6647      -2.0   final            RACE drums enter (after the breath) [OK, rise 15 dB]
+  800   33.333    33.3443     +11.0   final            storm swell / crash [CHECK, rise 7 dB]
+ 1040   43.333    43.3293      -4.0   final            IMPACT (after the suck) [OK, rise 44 dB]
+ 1236   51.500    51.5010      +1.0   sfx              flint strike 1 [OK, rise 12 dB]
+ 1262   52.583    52.5838      +0.5   sfx              flint strike 2 [OK, rise 18 dB]
+ 1290   53.750    53.7505      +0.5   sfx              flint strike 3 [OK, rise 22 dB]
+ 1318   54.917    54.9272     +10.5   sfx              kindling catches (sfx, a soft catch) [soft]
+ 1318   54.917    54.9182      +1.5   ab_vla           kindling catches (strings bloom) [OK]
+ 1360   56.667    56.6702      +3.5   sfx              beacon ROARS (sfx roar) [OK, rise 7 dB]
+ 1480   61.667    61.6667      +0.0   sfx              the shepherd's beacon (sfx) [OK, rise 8 dB]
+ 1520   63.333    63.3158     -17.5   ab_hn1           the near horn's call [soft]
+ 1540   64.167    64.1667      +0.0   sfx              run beacon 1 (sfx whoomp) [OK, rise 13 dB]
+ 1560   65.000    65.0000      +0.0   sfx              run beacon 2 (sfx whoomp) [OK, rise 11 dB]
+ 1580   65.833    65.8333      +0.0   sfx              run beacon 3 (sfx whoomp) [OK, rise 12 dB]
+ 1600   66.667    66.6667      +0.0   sfx              run beacon 4 (sfx whoomp) [OK, rise 11 dB]
+ 1620   67.500    67.5000      +0.0   sfx              run beacon 5 (sfx whoomp) [OK, rise 12 dB]
+ 1640   68.333    68.3333      +0.0   sfx              run beacon 6 (sfx whoomp) [OK, rise 10 dB]
+ 1660   69.167    69.1612      -5.5   sfx              run beacon 7 (sfx whoomp) [OK, rise 6 dB]
+ 1560   65.000    64.9795     -20.5   ab_hnfar         the far horn answers [soft]
+ 1700   70.833    70.8368      +3.5   sfx              desert ignition (sfx) [OK, rise 8 dB]
+ 1760   73.333    73.3333      +0.0   sfx              ice ignition (sfx) [OK, rise 9 dB]
+ 1810   75.417    75.4197      +3.0   sfx              karst ignition (sfx) [OK, rise 6 dB]
+ 1850   77.083    77.0833      +0.0   sfx              city ignition (sfx) [OK, rise 8 dB]
+ 1890   78.750    78.7500      +0.0   sfx              sea ignition (sfx) [OK, rise 5 dB]
+ 1920   80.000    80.0000      +0.0   ab_morph         the world answers: the glass arpeggio [OK, rise 109 dB]
+ 1920   80.000    80.0000      +0.0   ab_piano         the web begins (piano) [OK, rise 84 dB]
+ 2160   90.000    90.0000      +0.0   ab_pnoarp        flames merge: the lock (piano) [OK, rise 78 dB]
+ 2400  100.000    99.9950      -5.0   final            CLIMAX: the bloom out of the silence (final) [OK, rise 38 dB]
+ 2400  100.000   100.0000      +0.0   ab_piano         the thinking cycle glowing (piano) [OK, rise 73 dB]
+ 2480  103.333   103.2778     -55.5   ab_vcm           the call, late, on the cellos [soft]
+ 2652  110.500   110.4995      -0.5   ab_piano         coda: piano D4 [OK, rise 77 dB]
+ 2726  113.583   113.5878      +4.5   ab_piano         coda: piano D5 (the question hangs) [OK, rise 28 dB]
+ 2756  114.833   114.8358      +2.5   sfx              flint echo 1 (the hand-over) [OK, rise 9 dB]
+ 2768  115.333   115.3353      +2.0   sfx              flint echo 2 [OK, rise 8 dB]
+ 2780  115.833   115.8393      +6.0   ab_piano         flint echo 3 + the torch in the child's hands (piano F#4) [OK, rise 15 dB]
+ 2800  116.667   116.6667      +0.0   sfx              beacon catch (sfx) [OK, rise 11 dB]
+ 2880  120.000   120.0045      +4.5   ab_piano         final chord (piano) [OK, rise 23 dB]
