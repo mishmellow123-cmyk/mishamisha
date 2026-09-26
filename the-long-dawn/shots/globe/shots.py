@@ -13,9 +13,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import globe as G  # noqa: E402
 from globe import Atmosphere, Camera, World, normalize, vec_ll  # noqa: E402
-from web import Hearths, Web, ll2v  # noqa: E402
+from web import Hearths, Web, ll2v  # noqa: E402  (v1 web; kept for reference)
+from fires import FireNet  # noqa: E402  (v2: fire, not fibre)
 
 import look  # noqa: E402  (path set by globe)
+import lens as L  # noqa: E402
 
 _WORLD = None
 _WEB = None
@@ -34,6 +36,16 @@ def web():
     if _WEB is None:
         _WEB = Web(seed=5)
     return _WEB
+
+
+_FNET = None
+
+
+def fnet():
+    global _FNET
+    if _FNET is None:
+        _FNET = FireNet(seed=int(os.environ.get('LONGDAWN_FIRE_SEED', '3')))
+    return _FNET
 
 
 def atmo(key, **kw):
@@ -128,9 +140,11 @@ class Answers:
         Emoon = np.array([0.337, 0.456, 0.69]) * 0.8
         Esun = np.array([1.0, 0.97, 0.92]) * 20.0
         img, cov, tv = G.render_planet(wd, cam, at, self.sun, Esun, self.sun, 0.0, self.moon, Emoon)
-        img += G.render_lights(wd, cam, at, self.sun, gain=0.5e-7)
+        planet = img * cov[..., None]
+        # v2: the cities' lights a little lower, so the fires are the protagonists
+        img += G.render_lights(wd, cam, at, self.sun, gain=0.3e-7)
         img += G.render_stars(wd, cam, at, gain=0.9)
-        web().draw(img, cam, t, gain=1.0, scale=scale)
+        fnet().draw(img, cam, t, gain=1.0, scale=scale, planet=planet)
         return img, cam
 
     def render(self, t, scale=1.0):
@@ -169,17 +183,33 @@ def seg_frac(h, r):
 
 
 class Dawn:
+    """DAWN v2: no web, no hearths. The answering fires burn across the night side and pale as the
+    terminator reaches them (the sun takes over from the beacons). The sun is a clean glare with a
+    restrained anamorphic streak."""
     name = 'dawn'
     first, last = 2232, 2495
     moon = normalize(vec_ll(-10, -20))
     SUN_R = 0.2665
+    # camera framings (start, end) -- see NOTES.md; 'v1' is the delivered v1 framing
+    CAMS = {
+        'v1': dict(lat=(-2.0, -4.5), lon=(12.0, 9.0), alt=(2400.0, 4300.0), heading=(80.0, 77.0),
+                   limb=(0.43, 0.40), fov=(58.0, 61.0), az=-1.5, clear=(6.0, 50.0)),
+        'aden': dict(lat=(5.0, 3.0), lon=(14.0, 11.5), alt=(2700.0, 5200.0), heading=(72.0, 70.0),
+                     limb=(0.43, 0.40), fov=(58.0, 61.0), az=-1.0, clear=(12.0, 52.0)),
+        'three': dict(lat=(13.0, 11.0), lon=(10.0, 7.0), alt=(3400.0, 6200.0), heading=(84.0, 81.0),
+                      limb=(0.43, 0.40), fov=(58.0, 61.0), az=-2.0, clear=(14.0, 52.0)),
+    }
+
+    def cam_keys(self):
+        return self.CAMS[os.environ.get('LONGDAWN_DAWN_CAM', 'aden')]
 
     def params(self, t):
         s = smoother((t - 2232.0) / (2495.0 - 2232.0))
+        k = self.cam_keys()
         p = dict(
-            lat=lerp(-2.0, -4.5, s), lon=lerp(12.0, 9.0, s),
-            alt=math.exp(lerp(math.log(2400.0), math.log(4300.0), s)),
-            heading=lerp(80.0, 77.0, s), limb=lerp(0.43, 0.40, s), fov=lerp(58.0, 61.0, s),
+            lat=lerp(*k['lat'], s), lon=lerp(*k['lon'], s),
+            alt=math.exp(lerp(math.log(k['alt'][0]), math.log(k['alt'][1]), s)),
+            heading=lerp(*k['heading'], s), limb=lerp(*k['limb'], s), fov=lerp(*k['fov'], s),
         )
         # sun elevation above the limb (deg): crest at 2240 exactly
         p['sun_el'] = spline(t, [(2200, -1.6), (2232, -0.72), (2239, -self.SUN_R - 0.01), (2240, -0.19),
@@ -187,7 +217,7 @@ class Dawn:
         # the lighting sun leads the disk so the terminator can visibly race toward us
         p['lead'] = spline(t, [(2200, 0.0), (2240, 0.0), (2252, 1.5), (2270, 6.0), (2300, 12.0),
                                (2350, 17.5), (2420, 22.0), (2495, 26.0)])
-        p['sun_az'] = -1.5
+        p['sun_az'] = k['az']
         return p
 
     def camera(self, t, W, H):
@@ -207,9 +237,15 @@ class Dawn:
             return normalize(math.cos(a) * hz2 - math.sin(a) * up)
         return at(p['sun_el']), at(p['sun_el'] + p['lead'])
 
-    def calm(self, t, H):
-        # text windows 2270-2345 and 2352-2440: keep y 560..700 (of 804) calm
-        k = max(ramp(t, 2262, 2272) * (1 - ramp(t, 2343, 2350)), ramp(t, 2350, 2356) * (1 - ramp(t, 2438, 2446)))
+    @staticmethod
+    def calm(t, H, nocalm=None):
+        """Cut A's line "In time, the race was over." (v2 2512-2600 = src 2352-2440): keep the band
+        y 545..715 (of 804) calm -- the fires there at half strength. None for the wordless cut."""
+        if nocalm is None:
+            nocalm = os.environ.get('LONGDAWN_NOCALM') == '1'
+        if nocalm:
+            return None
+        k = ramp(t, 2343, 2353) * (1 - ramp(t, 2439, 2449))
         if k <= 0:
             return None
         y0, y1 = 545.0 / 804 * H, 715.0 / 804 * H
@@ -220,7 +256,8 @@ class Dawn:
             return 1.0 - 0.5 * k * a
         return f
 
-    def render_hdr(self, t, scale=1.0):
+    def render_base(self, t, scale=1.0):
+        """Everything that does not depend on the text calm: planet, city lights, stars, the sun."""
         W, H = int(round(1920 * scale)), int(round(804 * scale))
         wd = world()
         at = atmo('dawn', X=2.6, mie_scale=4.0, g=0.82, airglow=1.5, rim=2.5, airglow_h_km=135,
@@ -233,42 +270,57 @@ class Dawn:
         cp[15] = math.radians(-16.0)        # this morning's weather: the African cloud mass sits
         cp[16] = math.radians(-2.0)         # where the terminator sweeps
         cp[23] = 0.012                      # cloud-top relief in the raking light
-        clear = normalize(vec_ll(6.0, 50.0))  # a clearer sky near the sunrise: land and sea read
+        clear = normalize(vec_ll(*self.cam_keys()['clear']))   # a clearer sky near the sunrise
         cp[18:21] = clear
         cp[21] = math.cos(math.radians(17.0))
         cp[22] = 0.65
         img, cov, tv = G.render_planet(wd, cam, at, Sl, Esun, Sd, 40.0, self.moon, Emoon, cp=cp)
-        img += G.render_lights(wd, cam, at, Sl, gain=0.5e-7, cp=cp)
+        planet = img * cov[..., None]
+        img += G.render_lights(wd, cam, at, Sl, gain=0.4e-7, cp=cp)
         star_k = 1.0 - ramp(t, 2236, 2262) * 0.85
         img += G.render_stars(wd, cam, at, gain=0.9 * star_k)
-        calm = self.calm(t, H)
-        web().draw(img, cam, 2600.0, t_anim=t, gain=0.9, scale=scale, calm=calm, sun=Sl, sparks=False,
-                   ground_only=True)
-        hearths().draw(img, cam, t, sun=Sl, gain=1.0, calm=calm, scale=scale)
-        # the sun through the lens
+        # the sun through the lens: a clean disc glare, a brief round flash as it breaks the limb,
+        # and a thin, restrained anamorphic line
         sp, z = cam.project(cam.pos[None, :] + Sd[None, :] * 50.0)
         sx, sy = sp[0]
         frac = seg_frac(p['sun_el'], self.SUN_R)
         burst = math.exp(-max(t - 2240.0, 0.0) / 5.0) if t >= 2240 else 0.0
         pre = ramp(t, 2226.0, 2240.0)
         core = 7.0 * frac ** 0.6 + 2.5 * pre * (1.0 - frac)
-        settle = 1.0 - 0.45 * ramp(t, 2262.0, 2300.0)
-        spikes = 3.6 * frac ** 0.5 * (1.0 + 1.0 * burst) * settle
-        slen = 1.0 - 0.4 * ramp(t, 2255.0, 2290.0)
-        mask = (470.0, 560.0, 0.85 * max(ramp(t, 2255, 2268), 0.0))
-        glare = G.sun_glare(W, H, sx, sy, core, spikes, flash=5.0 * burst,
-                            spike_len=slen, spike_mask_y=mask)
-        return img, glare, cam, p, (sx, sy, frac, burst)
+        streak = (0.4 + 0.8 * burst) * frac ** 0.5 * (1.0 - 0.35 * ramp(t, 2262.0, 2320.0))
+        glare = L.sun_glare_clean(W, H, sx, sy, core, flash=5.0 * burst, streak=streak)
+        return dict(img=img, planet=planet, glare=glare, cam=cam, p=p, Sl=Sl, sun=(sx, sy, frac, burst))
+
+    def fires(self, base, t, scale, calm):
+        img = base['img'].copy()
+        fnet().draw(img, base['cam'], 2700.0, t_anim=t, embers=False, sun=base['Sl'], day_keep=0.0,
+                    gain=1.1, scale=scale, calm=calm, planet=base['planet'], light=1.0)
+        # v1's village hearths blooming into the dark are gone (LONGDAWN_HEARTHS=1 brings them back)
+        if os.environ.get('LONGDAWN_HEARTHS') == '1':
+            hearths().draw(img, base['cam'], t, sun=base['Sl'], gain=1.0, calm=calm, scale=scale)
+        return img
 
     def exposure(self, t):
         return spline(t, [(2200, 1.3), (2238, 1.3), (2244, 1.15), (2270, 0.9), (2495, 0.85)])
 
-    def render(self, t, scale=1.0):
-        img, glare, cam, p, sun = self.render_hdr(t, scale)
-        sb = sun[3]
-        return G.finish_frame(img, sun_layer=glare, exposure=self.exposure(t), bloom_strength=0.07,
-                              bloom_threshold=0.9, streak_strength=0.035 + 0.06 * sb, streak_threshold=3.0,
-                              streak_length=0.5, vignette_amount=0.22)
+    def finish(self, img, base, t):
+        return G.finish_frame(img, sun_layer=base['glare'], exposure=self.exposure(t), bloom_strength=0.07,
+                              bloom_threshold=0.9, streak_strength=0.0, vignette_amount=0.22)
+
+    def render(self, t, scale=1.0, nocalm=None):
+        base = self.render_base(t, scale)
+        H = base['img'].shape[0]
+        img = self.fires(base, t, scale, self.calm(t, H, nocalm))
+        return self.finish(img, base, t)
+
+    def render_both(self, t, scale=1.0):
+        """(cut A with the text calm, cut B without) from one render of the planet."""
+        base = self.render_base(t, scale)
+        H = base['img'].shape[0]
+        ca = self.calm(t, H, nocalm=False)
+        a = self.finish(self.fires(base, t, scale, ca), base, t)
+        b = a if ca is None else self.finish(self.fires(base, t, scale, None), base, t)
+        return a, b
 
 
 SHOTS = {'answers': Answers(), 'dawn': Dawn()}

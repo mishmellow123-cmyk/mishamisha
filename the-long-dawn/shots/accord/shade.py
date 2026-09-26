@@ -8,9 +8,12 @@ from nbcore import FM, clamp, sstep, mix, vnoise2, fbm2, hash2i, tex_sample, gri
 from geom import (TABLE_R, TABLE_Z, DAIS_R, DAIS_Z, BOWL_R, LIP_R, sd_fig, sd_stone, ray_aabb,
                   trace_fig, trace_stone, normal_fig, normal_stone, trace_bowl, bowl_height,
                   shadow_occluders, shadow_dir,
-                  F_BB, F_R, F_G, F_B, F_TLIT, F_X, F_Y, S_BB, S_ALB, S_X, S_Y, S_SEED)
-from textmaps import (OATH_R_IN, OATH_R_OUT, OATH_CAP, MAX_DEPTH, TOG_R, TOG_BORDER, BAND_IN, BAND_OUT,
-                      RAY_R, FLOOR_BAND)
+                  F_BB, F_R, F_G, F_B, F_R2, F_G2, F_B2, F_SKIN, F_TLIT, F_X, F_Y, F_SEED,
+                  F_WEAVE, F_SHEENK,
+                  S_BB, S_ALB, S_X, S_Y, S_SEED,
+                  M_CLOTH, M_TORCH, M_SKIN, M_SHADOW, M_CLOTH2, M_HAIR, M_FUR)
+from textmaps import (OATH_R_IN, OATH_R_OUT, OATH_CAP, MAX_DEPTH, BAND_IN, BAND_OUT, RAY_R, FLOOR_BAND,
+                      FRIEZE_BORDER, FRIEZE_BASE, MEDAL_THETA0, STATION_FIRE, BRAID_R)
 
 # ------------------------------------------------------------- param idx ---
 P_T = 0
@@ -35,7 +38,17 @@ P_IGC_X0, P_IGC_CELL, P_IGF_X0, P_IGF_CELL = 48, 49, 50, 51
 P_GNDI, P_GNDK = 52, 53
 P_SHIM = 54
 P_SHEEN = 55
-P_NPARAM = 64
+P_FIGK = 56                    # hearth light on the figures (flare compression: they stay dark silhouettes)
+P_FIGRIM = 57                  # extra firelit rim on the figures
+P_INNER = 58                   # variant B: inner band kindling progress 0..1 (<0 not started)
+P_VAR = 59                     # 0 = inscribed (A, C), 1 = wordless ornament (B)
+P_RING = 60                    # variant C: the Ring lies in the hearth
+P_RGLOW = 61                   # variant C: glow of the Ring's inscription
+P_ST0 = 64                     # 64..75 variant B: frame at which each emissary's station fire kindles
+P_L3Z, P_L3I = 76, 77          # the upper flames: a high, soft fill that lights only the emissaries' hoods
+P_CROWD = 78                   # the crowd's torches outside the stones: a warm back-rim on the emissaries
+P_NPARAM = 80
+B_SPREAD = 40.0                # variant B: frames for the braid's light to run from a station to the midpoint
 
 R_SPLIT = 0.5 * (OATH_R_IN + OATH_CAP + OATH_R_OUT)
 BAND_LO = BAND_IN - 0.06
@@ -149,6 +162,18 @@ def light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, sheen, is_ground, s
     if PR[P_L2I] > 0.0:
         e += hearth_term(px, py, pz, nx, ny, nz, vx, vy, vz, PR[P_L2Z], PR[P_L2RAD], PR[P_L2I],
                          is_ground, sheen, skip_fig, PR, F, nf, S, ns)
+    if skip_fig >= 0:
+        if PR[P_L3I] > 0.0:
+            # the tall fire's upper tongues light the hoods and shoulders from above (unshadowed)
+            lx = PR[P_LX] - px
+            ly = PR[P_LY] - py
+            lzz = PR[P_L3Z] - pz
+            d2 = lx * lx + ly * ly + lzz * lzz
+            d = math.sqrt(d2)
+            ndl = (nx * lx + ny * ly + nz * lzz) / d
+            if ndl > 0.0:
+                e += PR[P_L3I] * ndl / (d2 + 0.2)
+        e *= PR[P_FIGK]
     er += e * PR[P_LCR]
     eg += e * PR[P_LCG]
     eb += e * PR[P_LCB]
@@ -169,6 +194,8 @@ def light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, sheen, is_ground, s
         if sheen > 0.0:
             nv = abs(nx * vx + ny * vy + nz * vz)
             f += sheen * 0.6 * (1.0 - nv) ** 2.5 * max(ndl + 0.3, 0.0) / (d2 + 0.12)
+        if skip_fig >= 0:
+            f *= 0.5          # a torch held at arm's length does not flood its own bearer
         er += f * TL[k, 3]
         eg += f * TL[k, 4]
         eb += f * TL[k, 5]
@@ -327,21 +354,217 @@ def carve(px, py, fp, PR, tflat, toffs, tsizes, buf, tmp, res):
 
 
 @njit(**FM)
-def tog_emission(th, cov_t, depth_n, PR):
-    if cov_t <= 0.001 or PR[P_TG] <= 0.0:
+def frieze_fire(r, th, depth_n, PR):
+    """Firelight in the outer frieze's carved grooves at polar (r, th): the fire runs clockwise round
+    the ring (2160-2220), each carved fire catching from its root to its tips. Returns (lit, heat):
+    lit 0..1 once the fire has passed, heat 1 right behind the head, falling to embers behind it."""
+    p = PR[P_TG]
+    if p <= 0.0:
         return 0.0, 0.0
-    sweep = PR[P_TG] * 2.0 * math.pi
-    a = (PR[P_TGPHI] - th) % (2.0 * math.pi)
-    lit = sstep(a - 0.03, a + 0.03, sweep)
-    hot = math.exp(-((sweep - a) / 0.10) ** 2) if PR[P_TG] < 1.0 else 0.0
-    cool = math.exp(-max(sweep - a, 0.0) / 0.8) if lit > 0.0 else 0.0
-    pool = 0.55 + 0.45 * clamp(depth_n * 1.6, 0.0, 1.0)
-    return cov_t * lit * pool * (1.0 + 0.8 * cool), cov_t * hot
+    a = ((PR[P_TGPHI] - th) % (2.0 * math.pi)) / (2.0 * math.pi)
+    ur = clamp((r - FRIEZE_BASE) / 0.5, 0.0, 1.0)
+    thr = 0.93 * a + 0.05 * ur + 0.012 * (1.0 - depth_n)
+    age = p - thr
+    lit = sstep(-0.010, 0.006, age)
+    heat = math.exp(-max(age, 0.0) / 0.07) * lit
+    return lit, heat
+
+
+@njit(**FM)
+def braid_lit(r, th, depth_n, PR):
+    """(lit, hot) of variant B's inner band: each station fire kindles as its emissary reaches over
+    it with a torch; after the merge the light runs along the braid from every station to its
+    neighbours until the ring is one."""
+    T = PR[P_T]
+    step = 2.0 * math.pi / 12.0
+    a = ((th - MEDAL_THETA0) % (2.0 * math.pi)) / step
+    k = int(math.floor(a + 0.5))
+    dth = abs(a - k) * step
+    k = k % 12
+    Tk = PR[P_ST0 + k]
+    if r > STATION_FIRE[0] - 0.01 and dth * r < 0.125:
+        ur = clamp((r - STATION_FIRE[0]) / STATION_FIRE[1], 0.0, 1.0)
+        thr = Tk + 7.0 * ur + 1.5 * (1.0 - depth_n)
+    else:
+        ur = clamp((r - BRAID_R - 0.07) / 0.17, 0.0, 1.0)
+        thr = max(Tk, 1999.0) + 5.0 + dth / (0.5 * step) * B_SPREAD + 4.0 * ur + 1.0 * (1.0 - depth_n)
+    lit = sstep(thr - 0.8, thr + 0.8, T)
+    heat = math.exp(-max(T - thr, 0.0) / 16.0) * lit
+    return lit, heat
+
+
+# ------------------------------------------------------------ the Ring (C) ---
+
+@njit(**FM)
+def ring_local(px, py, pz, RP):
+    x = px - RP[1]
+    y = py - RP[2]
+    z = pz - RP[3]
+    return (RP[4] * x + RP[5] * y + RP[6] * z, RP[7] * x + RP[8] * y + RP[9] * z,
+            RP[10] * x + RP[11] * y + RP[12] * z)
+
+
+@njit(**FM)
+def ring_sdf(px, py, pz, RP):
+    lx, ly, lz = ring_local(px, py, pz, RP)
+    rho = math.sqrt(lx * lx + ly * ly)
+    # a heavy band: rounded rectangular section, the outer face gently domed
+    zz = lz / RP[15]
+    dome = 0.0035 * max(1.0 - zz * zz, 0.0) if rho > RP[13] else 0.0
+    qx = abs(rho - RP[13]) - (RP[14] + dome) + RP[16]
+    qz = abs(lz) - RP[15] + RP[16]
+    mx = max(qx, 0.0)
+    mz = max(qz, 0.0)
+    return math.sqrt(mx * mx + mz * mz) + min(max(qx, qz), 0.0) - RP[16]
+
+
+@njit(**FM)
+def ring_trace(ox, oy, oz, dx, dy, dz, RP, tmax):
+    cx = ox - RP[1]
+    cy = oy - RP[2]
+    cz = oz - RP[3]
+    b = cx * dx + cy * dy + cz * dz
+    c = cx * cx + cy * cy + cz * cz - RP[17] * RP[17]
+    disc = b * b - c
+    if disc <= 0.0:
+        return -1.0
+    sq = math.sqrt(disc)
+    t = max(-b - sq, 0.0)
+    t1 = min(-b + sq, tmax)
+    for it in range(80):
+        if t > t1:
+            break
+        d = ring_sdf(ox + dx * t, oy + dy * t, oz + dz * t, RP)
+        if d < 0.00025:
+            return t
+        t += d * 0.9
+    return -1.0
+
+
+@njit(**FM)
+def strip_sample(rtex, rsz, u, v, lod):
+    """Bilinear sample of the inscription mip chain; u wraps (0..1 around the band), v in 0..1."""
+    nl = rsz.shape[0]
+    l = int(min(max(lod, 0.0), nl - 1.0))
+    off = 0
+    for i in range(l):
+        off += rsz[i, 0] * rsz[i, 1]
+    h = rsz[l, 0]
+    w = rsz[l, 1]
+    x = (u % 1.0) * w - 0.5
+    y = v * h - 0.5
+    if y < 0.0 or y > h - 1.0:
+        return 0.0
+    ix = int(math.floor(x))
+    iy = int(math.floor(y))
+    fx = x - ix
+    fy = y - iy
+    x0 = ix % w
+    x1 = (ix + 1) % w
+    y1 = min(iy + 1, h - 1)
+    a = rtex[off + iy * w + x0] * (1 - fx) + rtex[off + iy * w + x1] * fx
+    b = rtex[off + y1 * w + x0] * (1 - fx) + rtex[off + y1 * w + x1] * fx
+    return a * (1 - fy) + b * fy
+
+
+@njit(**FM)
+def shade_ring(px, py, pz, vx, vy, vz, fp, PR, TL, RP, rtex, rsz):
+    """Gold band catching the firelight; the invented inscription glows in its faces."""
+    h = 0.0006
+    nx = ring_sdf(px + h, py, pz, RP) - ring_sdf(px - h, py, pz, RP)
+    ny = ring_sdf(px, py + h, pz, RP) - ring_sdf(px, py - h, pz, RP)
+    nz = ring_sdf(px, py, pz + h, RP) - ring_sdf(px, py, pz - h, RP)
+    l = math.sqrt(nx * nx + ny * ny + nz * nz) + 1e-12
+    nx /= l
+    ny /= l
+    nz /= l
+    f0r, f0g, f0b = 1.0, 0.766, 0.336            # gold
+    ndv = max(nx * vx + ny * vy + nz * vz, 0.0)
+    fres = (1.0 - ndv) ** 5
+    fr = f0r + (1.0 - f0r) * fres
+    fg = f0g + (1.0 - f0g) * fres
+    fb = f0b + (1.0 - f0b) * fres
+    # the fire above it is its sky: reflections that look up into the flames are bright
+    rx = 2.0 * ndv * nx - vx
+    ry = 2.0 * ndv * ny - vy
+    rz = 2.0 * ndv * nz - vz
+    hi = PR[P_L1I] / 6.5
+    up = sstep(-0.1, 0.8, rz)
+    side = sstep(-0.75, -0.1, rz) * (1.0 - up)
+    # lying in the fire: flames above, glowing coals and tongues all round, grey ash below
+    env = hi * (1.25 * up * (0.55 + 0.45 * math.exp(-(rx * rx + ry * ry) * 1.5)) + 0.75 * side) + 0.004 * (1.0 - up)
+    er = env * PR[P_LCR]
+    eg = env * PR[P_LCG]
+    eb = env * PR[P_LCB]
+    # sharp highlights from the hearth lights and the torches
+    for k in range(2):
+        lz = PR[P_L1Z] if k == 0 else PR[P_L2Z]
+        I = PR[P_L1I] if k == 0 else PR[P_L2I]
+        if I <= 0.0:
+            continue
+        lx = PR[P_LX] - px
+        ly = PR[P_LY] - py
+        lzz = lz - pz
+        dl = math.sqrt(lx * lx + ly * ly + lzz * lzz)
+        lx /= dl
+        ly /= dl
+        lzz /= dl
+        hx = lx + vx
+        hy = ly + vy
+        hz = lzz + vz
+        hl = math.sqrt(hx * hx + hy * hy + hz * hz) + 1e-9
+        ndh = max((nx * hx + ny * hy + nz * hz) / hl, 0.0)
+        s = I * 0.08 * ndh ** 90 * 12.0 / (dl * dl + 0.2)
+        er += s * PR[P_LCR]
+        eg += s * PR[P_LCG]
+        eb += s * PR[P_LCB]
+    nt = int(PR[P_NT])
+    for k in range(nt):
+        lx = TL[k, 0] - px
+        ly = TL[k, 1] - py
+        lzz = TL[k, 2] - pz
+        dl = math.sqrt(lx * lx + ly * ly + lzz * lzz)
+        lx /= dl
+        ly /= dl
+        lzz /= dl
+        hx = lx + vx
+        hy = ly + vy
+        hz = lzz + vz
+        hl = math.sqrt(hx * hx + hy * hy + hz * hz) + 1e-9
+        ndh = max((nx * hx + ny * hy + nz * hz) / hl, 0.0)
+        s = 2.2 * ndh ** 60 / (dl * dl + 0.1)
+        er += s * TL[k, 3]
+        eg += s * TL[k, 4]
+        eb += s * TL[k, 5]
+    cr = er * fr
+    cg = eg * fg
+    cb = eb * fb
+    # the inscription, on the outer and inner faces
+    g = PR[P_RGLOW]
+    if g > 0.0:
+        lx, ly, lz = ring_local(px, py, pz, RP)
+        rho = math.sqrt(lx * lx + ly * ly) + 1e-9
+        # normal in ring space: radial part says outer (+) or inner (-) face
+        mx = RP[4] * nx + RP[5] * ny + RP[6] * nz
+        my = RP[7] * nx + RP[8] * ny + RP[9] * nz
+        radial = (mx * lx + my * ly) / rho
+        if abs(radial) > 0.45:
+            phi = math.atan2(ly, lx) / (2.0 * math.pi)
+            u = phi if radial > 0.0 else 0.37 - phi
+            v = 0.5 - lz / (2.0 * RP[15])
+            texel = RP[18] / rsz[0, 1]
+            lod = math.log2(max(fp / texel, 1.0))
+            c = strip_sample(rtex, rsz, u, v, lod) * sstep(0.45, 0.8, abs(radial))
+            e = c * g * 30.0
+            cr += e * 1.0
+            cg += e * 0.36
+            cb += e * 0.06
+    return cr, cg, cb
 
 
 @njit(**FM)
 def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs, tsizes,
-                 pgc, pgf, igc, igf, OANG, buf, tmp, res):
+                 pgc, pgf, igc, igf, OANG, RP, rtex, rsz, buf, tmp, res):
     """Trace + shade one ray. Returns (r,g,b, t, id)."""
     tbest = 1e30
     idb = -1
@@ -394,6 +617,11 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs
         if th > 0.0 and th < tbest:
             tbest = th
             idb = 100 + j
+    if RP[0] > 0.0:
+        tr = ring_trace(ox, oy, oz, dx, dy, dz, RP, tbest)
+        if tr > 0.0 and tr < tbest:
+            tbest = tr
+            idb = 3
     if idb < 0:
         return 0.0, 0.0, 0.0, 1e6, -1
 
@@ -457,20 +685,30 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs
         ao *= 0.5 + 0.5 * sstep(TABLE_R, TABLE_R + 0.3, r)
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.0, True, -1,
                               PR, TL, F, nf, S, ns, igc, igf, ao)
-        if inband:
-            lit, hot = tog_emission(th, cov_t, depth_n, PR)
-            em = lit * PR[P_EMT]
-            ehh = hot * PR[P_EMHOT] * 0.7
-            er += em * GOLD[0] + ehh * PALE[0]
-            eg += em * GOLD[1] + ehh * PALE[1]
-            eb += em * GOLD[2] + ehh * PALE[2]
-            if cov_n > 0.001 and PR[P_TG] > 0.0:
+        if inband and PR[P_TG] > 0.0:
+            lit, heat = frieze_fire(r, th, depth_n, PR)
+            if lit > 0.0:
+                # embers in the grooves: mottled, flickering slowly, hot orange just behind the running
+                # fire, settling to a dim deep orange - never a flat fill, never near the hearth's light
+                crk = 0.45 + 1.1 * vnoise2(th * 140.0 + T * 0.07, r * 55.0, 71) * vnoise2(th * 37.0 - T * 0.03, r * 19.0, 72)
+                pool = 0.35 + 0.65 * clamp(depth_n * 1.6, 0.0, 1.0)
+                k = cov_t * lit * pool * crk * PR[P_EMT] * (0.30 + 1.10 * heat)
+                er += k * 1.00
+                eg += k * (0.24 + 0.22 * heat)
+                eb += k * (0.035 + 0.05 * heat)
+                # a faint glow on the stone round the lit grooves
+                tex_sample(tflat, toffs, tsizes, PR[P_TEXR], px, py, 4.4, tmp, buf)
+                s = tmp[2] * lit * PR[P_EMT] * (0.35 + 0.8 * heat) * 0.7
+                er += ar * s * 1.0
+                eg += ag * s * 0.40
+                eb += ab * s * 0.10
+            if cov_n > 0.001:
                 sweep = PR[P_TG] * 2.0 * math.pi
                 a = (PR[P_TGPHI] - th) % (2.0 * math.pi)
-                e = sstep(a - 0.05, a + 0.05, sweep) * 0.6 * cov_n * PR[P_EMT]
-                er += e * GOLD[0]
-                eg += e * GOLD[1]
-                eb += e * GOLD[2]
+                e = sstep(a - 0.05, a + 0.05, sweep) * 0.30 * cov_n * PR[P_EMT]
+                er += e * 1.0
+                eg += e * 0.30
+                eb += e * 0.05
     elif idb == 2:
         r = math.sqrt(px * px + py * py)
         th = math.atan2(py, px)
@@ -511,6 +749,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs
                     cn = 0.5 + fbm2(px * 14.0 + 3.0, py * 14.0 - T * 0.01, 45, 4, 2.1, 0.55, fp * 14.0)
                     cn2 = 0.5 + fbm2(px * 5.0 - T * 0.03, py * 5.0, 46, 3, 2.0, 0.5, fp * 5.0)
                     glow = sstep(0.35, 0.85, cn * 0.55 + cn2 * 0.55) * (1.0 - (r / BOWL_R) ** 2)
+                    if RP[0] > 0.0:
+                        # the Ring lies on a bed of grey ash; the coals glow round it
+                        glow *= 0.18 + 0.82 * sstep(0.21, 0.34, math.sqrt((px - RP[1]) ** 2 + (py - RP[2]) ** 2))
                     flick = 0.75 + 0.25 * math.sin(T * 0.9 + cn * 20.0)
                     em = coal * glow * flick * 5.0
                     er += em * 1.0
@@ -539,25 +780,47 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs
         nz /= l
         spill = 0.0
         if r > BAND_LO and r < BAND_HI:
-            ls = oath_lit_s(r, th, PR, OANG)
+            if PR[P_VAR] < 0.5:
+                ls = oath_lit_s(r, th, PR, OANG)
+            else:
+                ls, hs_ = braid_lit(r, th, 0.5, PR)
+                ls = ls * (0.30 + 0.9 * hs_)
             if ls > 0.0:
                 tex_sample(tflat, toffs, tsizes, PR[P_TEXR], px, py, 4.6, tmp, buf)
                 spill = tmp[1] * ls
         ao = 1.0 - 0.4 * depth_n
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.0, False, -1,
                               PR, TL, F, nf, S, ns, igc, igf, ao)
+        # the wordless band (B) has far more lit area than the letters: keep it gold, below the hearth
+        kin = 1.0 if PR[P_VAR] < 0.5 else 0.62
         if spill > 0.0:
-            s = spill * PR[P_EMO] * 1.3
-            cr += ar * s * GOLD[0]
-            cg += ag * s * GOLD[1]
-            cb += ab * s * GOLD[2]
-        if cov_o > 0.001:
+            s = spill * PR[P_EMO] * 1.3 * kin
+            if PR[P_VAR] < 0.5:
+                cr += ar * s * GOLD[0]
+                cg += ag * s * GOLD[1]
+                cb += ab * s * GOLD[2]
+            else:
+                cr += ar * s * 1.0
+                cg += ag * s * 0.40
+                cb += ab * s * 0.10
+        if cov_o > 0.001 and PR[P_VAR] >= 0.5:
+            # B: firelight in the carved braid and station fires - embers, hot where the fire has just
+            # caught, settling to a dim, mottled deep orange (no flat gold, never near the hearth)
+            lit, heat = braid_lit(r, th, depth_n, PR)
+            if lit > 0.0:
+                crk = 0.45 + 1.1 * vnoise2(th * 90.0 + T * 0.07, r * 60.0, 73) * vnoise2(th * 29.0 - T * 0.03, r * 21.0, 74)
+                pool = 0.35 + 0.65 * clamp(depth_n * 1.4, 0.0, 1.0)
+                k = cov_o * lit * pool * crk * PR[P_EMO] * 0.42 * (0.32 + 1.25 * heat)
+                er += k * 1.00
+                eg += k * (0.24 + 0.26 * heat)
+                eb += k * (0.035 + 0.06 * heat)
+        if cov_o > 0.001 and PR[P_VAR] < 0.5:
             lit, hot = oath_emission(r, th, depth_n, PR, OANG)
             if lit > 0.0 or hot > 0.0:
                 pool = 0.45 + 0.55 * clamp(depth_n * 1.4, 0.0, 1.0)
                 shim = 1.0 + PR[P_SHIM] * (vnoise2(th * 60.0 + T * 0.13, r * 40.0, 49) - 0.5)
-                em = cov_o * lit * pool * PR[P_EMO] * shim
-                ehh = cov_o * hot * PR[P_EMHOT]
+                em = cov_o * lit * pool * PR[P_EMO] * shim * kin
+                ehh = cov_o * hot * PR[P_EMHOT] * (1.0 if PR[P_VAR] < 0.5 else 0.5)
                 er += em * GOLD[0] + ehh * PALE[0]
                 eg += em * GOLD[1] + ehh * PALE[1]
                 eb += em * GOLD[2] + ehh * PALE[2]
@@ -573,6 +836,8 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs
                 er += em * GOLD[0]
                 eg += em * GOLD[1]
                 eb += em * GOLD[2]
+    elif idb == 3:
+        cr, cg, cb = shade_ring(px, py, pz, vx, vy, vz, fp, PR, TL, RP, rtex, rsz)
     elif idb >= 100:
         j = idb - 100
         h = max(0.002, fp * 0.5)
@@ -598,50 +863,106 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, TL, F, nf, S, ns, tflat, toffs
         i = idb - 10
         h = max(0.0015, fp * 0.5)
         nx, ny, nz = normal_fig(px, py, pz, F, i, h)
-        ar = F[i, F_R]
-        ag = F[i, F_G]
-        ab = F[i, F_B]
         sheen = PR[P_SHEEN]
-        if mat == 1:
-            ar = 0.03
-            ag = 0.024
-            ab = 0.02
+        seed = F[i, F_SEED]
+        if mat == M_CLOTH or mat == M_CLOTH2:
+            if mat == M_CLOTH:
+                ar = F[i, F_R]
+                ag = F[i, F_G]
+                ab = F[i, F_B]
+            else:
+                ar = F[i, F_R2]
+                ag = F[i, F_G2]
+                ab = F[i, F_B2]
+            # wool: each emissary's own weave (coarse slub .. fine twill) + wear; dusty hem
+            wf = 38.0 * F[i, F_WEAVE]
+            wv = 1.0 + (0.14 + 0.10 * F[i, F_WEAVE]) * fbm2(px * wf + pz * 9.0 + seed, py * wf - pz * 7.0, 55, 3,
+                                                             2.2, 0.5, fp * wf)
+            sheen *= F[i, F_SHEENK]
+            dust = sstep(0.35, 0.05, pz - DAIS_Z)
+            ar = ar * wv * (1.0 + 0.9 * dust) + 0.004 * dust
+            ag = ag * wv * (1.0 + 0.8 * dust) + 0.0035 * dust
+            ab = ab * wv * (1.0 + 0.6 * dust) + 0.003 * dust
+        elif mat == M_TORCH:
+            ar = 0.0065           # charred black
+            ag = 0.0055
+            ab = 0.0050
             sheen = 0.0
             if F[i, F_TLIT] > 0.0:
                 c = F[i, F_TLIT] * sstep(0.3, 0.9, vnoise2(px * 80.0, py * 80.0 + pz * 50.0, 53))
                 er += 2.0 * c
                 eg += 0.5 * c
                 eb += 0.06 * c
-        elif mat == 2:
-            ar = 0.10
-            ag = 0.066
-            ab = 0.046
-            sheen *= 0.3
-        elif mat == 3:
-            ar *= 0.15
-            ag *= 0.15
-            ab *= 0.15
-            sheen *= 0.2
-        elif mat == 4:
-            ar = 0.16
-            ag = 0.125
-            ab = 0.08
-        elif mat == 5:
-            ar = 0.02
-            ag = 0.017
-            ab = 0.014
-        cn = 1.0 + 0.25 * fbm2(px * 30.0 + pz * 7.0, py * 30.0 - pz * 5.0, 55, 3, 2.2, 0.5, fp * 30.0)
-        ar *= cn
-        ag *= cn
-        ab *= cn
+        elif mat == M_SKIN:
+            k = F[i, F_SKIN]
+            ar = 0.020 + 0.050 * k
+            ag = 0.012 + 0.030 * k
+            ab = 0.008 + 0.020 * k
+            sheen *= 0.25
+        elif mat == M_SHADOW:
+            ar = 0.004
+            ag = 0.0035
+            ab = 0.0035
+            sheen = 0.0
+        elif mat == M_HAIR:
+            ar = 0.012
+            ag = 0.010
+            ab = 0.009
+            sheen *= 0.7
+        else:   # fur: tufted, lighter tips
+            tuft = 0.5 + fbm2(px * 60.0 + seed, py * 60.0 + pz * 40.0, 56, 3, 2.3, 0.6, fp * 60.0)
+            ar = F[i, F_R2] * (0.7 + 0.9 * tuft)
+            ag = F[i, F_G2] * (0.7 + 0.9 * tuft)
+            ab = F[i, F_B2] * (0.7 + 0.9 * tuft)
+            sheen *= 1.8
+        # SDF ambient occlusion: folds, the hood's rim, under the arms
+        occ = 0.0
+        for k in range(3):
+            dd = 0.012 + 0.03 * k
+            sd_, m_ = sd_fig(px + nx * dd, py + ny * dd, pz + nz * dd, F, i)
+            occ += (dd - sd_) / dd * (0.5 ** k)
+        ao = clamp(1.0 - 0.55 * occ, 0.25, 1.0)
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, sheen, False, i,
-                              PR, TL, F, nf, S, ns, igc, igf, 1.0)
+                              PR, TL, F, nf, S, ns, igc, igf, ao)
+        if mat == M_CLOTH or mat == M_CLOTH2:
+            # wool/velvet: the faces turned to us sink dark, the turning edges hold the light
+            vel = 0.45 + 0.55 * (1.0 - abs(nx * vx + ny * vy + nz * vz)) ** 0.8
+            cr *= vel
+            cg *= vel
+            cb *= vel
+        # the crowd's thousand torches, standing outside the stones, rim the emissaries from behind
+        if PR[P_CROWD] > 0.0:
+            rq = math.sqrt(px * px + py * py) + 1e-9
+            ox_ = px / rq
+            oy_ = py / rq
+            ol = math.sqrt(1.0 + 0.18 * 0.18)
+            ndo = (nx * ox_ + ny * oy_ + nz * 0.18) / ol
+            if ndo > -0.25:
+                nv = abs(nx * vx + ny * vy + nz * vz)
+                k = PR[P_CROWD] * (max(ndo, 0.0) * 0.35 + 2.6 * (1.0 - nv) ** 2 * sstep(-0.25, 0.5, ndo)) * ao
+                cr += ar * k * 1.00
+                cg += ag * k * 0.56
+                cb += ab * k * 0.16
+        # firelit rim: a warm edge on the silhouette facing the hearth (kept in the fire's colour,
+        # so the cloth never washes out to pastel at the flare)
+        if PR[P_FIGRIM] > 0.0 and mat != M_SHADOW:
+            lx = PR[P_LX] - px
+            ly = PR[P_LY] - py
+            lz = PR[P_L2Z] - pz
+            ll = math.sqrt(lx * lx + ly * ly + lz * lz)
+            ndl = (nx * lx + ny * ly + nz * lz) / ll
+            nv = abs(nx * vx + ny * vy + nz * vz)
+            rim = sstep(0.0, 0.6, ndl) * (1.0 - nv) ** 3.0 * ao
+            e = PR[P_FIGRIM] * rim
+            er += e * GOLD[0]
+            eg += e * GOLD[1] * 0.85
+            eb += e * GOLD[2] * 0.6
     return cr + er, cg + eg, cb + eb, tbest, idb
 
 
 @njit(parallel=True, **FM)
 def render_surfaces(Wd, Hd, cam, PR, TL, F, nf, S, ns, tflat, toffs, tsizes, pgc, pgf, igc, igf, OANG,
-                    rgb, depth, oid, aa_pass, mask, nsub):
+                    RP, rtex, rsz, rgb, depth, oid, aa_pass, mask, nsub):
     Cx, Cy, Cz = cam[0], cam[1], cam[2]
     Rx, Ry, Rz = cam[3], cam[4], cam[5]
     Ux, Uy, Uz = cam[6], cam[7], cam[8]
@@ -678,7 +999,8 @@ def render_surfaces(Wd, Hd, cam, PR, TL, F, nf, S, ns, tflat, toffs, tsizes, pgc
                 dy /= l
                 dz /= l
                 r, g, b, t, i = shade_sample(Cx, Cy, Cz, dx, dy, dz, pix, PR, TL, F, nf, S, ns,
-                                             tflat, toffs, tsizes, pgc, pgf, igc, igf, OANG, buf, tmp, res)
+                                             tflat, toffs, tsizes, pgc, pgf, igc, igf, OANG, RP, rtex, rsz,
+                                             buf, tmp, res)
                 ar += r
                 ag += g
                 ab += b

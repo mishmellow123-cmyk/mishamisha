@@ -1,5 +1,121 @@
 # GLOBE — notes
 
+## v2 (2026-09-26): fire, not fibre
+
+The critics (review/critic_tone.md B2, critic_framing.md M5 + m9) found the v1 globe's answering
+world ending as a uniform lattice of nodes and great-circle arcs (the "connected planet" of
+telecom/"global AI" films), the same mesh printed over the sunlit Earth at the climax under an
+8-ray starburst, and village "hearths" blooming across dark Africa under the resolution line.
+v2 replaces the web with fires and cleans up the dawn.
+
+| shot | frames (src) | cut A | cut B |
+|------|--------------|-------|-------|
+| THE WORLD ANSWERS | 1752–1935 (edit plays 1760–1927) | `renders/globe_v2/` | same frames (no text there; B falls through to globe_v2) |
+| DAWN | 2232–2495 (edit plays 2240–2495) | `renders/globe_v2/` (text calm 2352–2440) | `renders/globe_B/` (no calm) |
+
+The v1 frames stay in `renders/globe/`; the stale partial v1 cut-B dawn was moved to
+`renders/globe_B_stale_backup/`. v1's `shots.py`, `render.py` and NOTES are in `v1_backup/`.
+
+### THE WORLD ANSWERS v2 (`fires.py`)
+* **Where the fires are.** Beacon sites sit where people have always lit signal fires:
+  * **range crests** — a Hessian ridge measure of an elevation proxy (Frankot–Chellappa
+    integration of the relief normal map, the MAP department's method), non-maximum suppressed to
+    thin crest lines and kept by hysteresis (Himalaya, Karakoram, Hindu Kush, Kunlun, Tian Shan,
+    Zagros, Elburz, Caucasus, Ethiopian highlands, Andes, Rockies, Scandinavian range…), ~70–150 km
+    apart;
+  * **the great rivers** (79 hand-traced courses, copied from MAP into `rivers.py`), ~150–320 km;
+  * **coasts** (Natural Earth 50m, no Antarctica / high Arctic), ~210–470 km;
+  * **lonely fires** over open land (desert, steppe, forest; uniform over land, not weighted by
+    night lights), ~340–500 km; islands and the ocean-leap landfalls.
+  Spacing is noise-modulated (clusters and gaps), crest/river fires are nudged off the exact line,
+  and every beacon gets 0–3 lesser fires 6–26 km around it, lit 3–16 frames later (a hill-top and
+  its village) — so nothing reads as a string of beads or a dot map. 1414 beacons + 1470 lesser
+  fires worldwide; ~450 beacons in view at the end.
+* **How the fire spreads.** A chain graph: crest links (only where the connecting line runs along
+  the crest), consecutive river and coast links, at most two line-of-sight links per site (short
+  sea crossings allowed), the designated ocean leaps (`places.LEAPS`). Each watcher throws to at
+  most 2–3 unlit neighbours (cheapest first: crest 0.72×, river 0.9×, coast 0.95×, line of sight
+  1.3–1.6× per km), one after another; a site nobody threw to is answered late by a lit neighbour.
+  So the fire runs as long chains along ranges, rivers and coasts, branching now and then.
+  **The first beacon throws far**: three heavy embers 450–550 km west (Annapurna massif), east
+  (Bhutan Himalaya) and south (the Ganges), and the chains grow back and onward from where they
+  land. Travel time s (km-like) maps to frames as f = 1760 + K·s^0.35 (K puts the throws down 34
+  frames after 1760): slow and heavy at first, then faster and faster, no seams.
+* **Beats:** 1752 the first beacon burns alone · **1760 it flares** (a burst of light, a warm wash
+  over the range, a slow stream of sparks drifting up; a few fires answer around it 1764–1782) ·
+  1766–1772 the three throws lift off, land 1791–1798 · 1800–1840 fuses burn along the Himalaya ·
+  1840–1900 the explosion (40–90 visible ignitions per 10 frames), leaps sail over the limb toward
+  the Americas, Alaska and the Indian Ocean islands (1838–1890) · ~1912 the visible night side is
+  studded with fire; nothing new after ~1915 (the dissolve starts at 1912).
+* **Embers.** Every link is a travelling ember: a small gold-white head and a short tail that
+  fades both behind the head (≤ 26% of the hop, ≤ 50 km; leaps 420 km) and in time (τ 2.8–6
+  frames); gone within ~1 s of landing, nothing persists. Chain hops are low arcs (3.5% of length),
+  sea crossings 8%, the throws 7.5%, leaps 15% (they sail against the stars). A few sparks shed
+  from each head.
+* **Fires.** Small flickering flames of uneven size (lognormal, crest bonfires biggest; 6% big
+  bonfires), each with its own colour temperature; the flicker (three incommensurate 1–4 Hz
+  breaths + a lick) also moves the colour (brighter = yellower). A catching fire flares (a
+  2.6-frame flash) and builds to its steady size over ~10 frames; the bigger ones throw a few
+  sparks. Near the limb they dim and redden through the long air.
+* **Firelight on the land.** Each fire lights ~16–35 km around it in a screen-space light buffer
+  (1/4 res) multiplied into the moonlit surface render (capped), so snow, rock and cloud catch the
+  light and the dark sea does not; the first beacon's flare washes the range.
+* The city lights are a little lower (0.3e-7, was 0.5e-7) so the fires are the protagonists.
+
+### DAWN v2 (`shots.Dawn`, `lens.py`)
+* **No arcs, no hearths.** Every answering fire burns on the night side (the whole net, lit) and
+  **pales as the terminator reaches it**: from sun elevation −1.5° to +5.5° it dims to nothing and
+  its colour goes pale gold; its light on the land goes first. The sun takes over from the beacons.
+  (`LONGDAWN_HEARTHS=1` would bring v1's hearths back; `LONGDAWN_NO_HEARTHS` is now moot.)
+* **Lens.** The 16-spike diffraction starburst is gone: a clean disc glare (hot core, soft halo,
+  wide veil), a round flash as the sun breaks the limb (decays in ~5 frames; the edit adds its own
+  white flash over 2240–2254), and a thin, restrained anamorphic line (σ 1.25 px, ±~240 px
+  falloff, fading after 2262). `look.streak` is no longer used.
+* **Framing ('aden').** The camera moved north and a little higher (over the Sahel, 2,700 →
+  5,200 km, heading 72° → 70°): the sun now breaks the limb over the Arabian Sea **in the notch
+  between Arabia and the Horn**, so the first light falls on Asia and Africa at once (the Gulf of
+  Aden catches the glint, the Red Sea runs down from it), with Iran, the Caspian and the Black Sea
+  on the far-left limb and East Africa on the right: several continents share the light, no single
+  region receives it. The sun's screen position at 2240 is (981, 352) (v1: 993, 352), so the
+  match-cut from the hearth's flare still lands. `LONGDAWN_DAWN_CAM=v1` restores the v1 camera.
+* Kept: the sun crest at 2240, the terminator sweep (lighting sun leads the disc by up to 26°),
+  the camera rise, the atmosphere band, the weather.
+* **Text calm (cut A only):** "In time, the race was over." (v2 2512–2600 = src 2352–2440): the
+  band y 545–715 keeps its fires at half strength (ramps 2343–2353 / 2439–2449). The v1 window
+  2270–2345 is gone (no text there any more). Cut B (`globe_B`) has no calm; outside the window
+  A and B are identical.
+
+### Re-render (v2)
+```
+source ~/.venvs/longdawn/env.sh; export NUMBA_NUM_THREADS=1
+python3 shots/globe/prep.py                                    # v1 caches (idempotent)
+# fires_geo_v1.npz and fires_net_v8_3.npz build themselves in renders/globe/cache (~10 s)
+LONGDAWN_GLOBE_OUT=$PWD/renders/globe_v2 python shots/globe/render.py answers 1752 1935
+python shots/globe/render.py dawn 2232 2495 --both            # A -> globe_v2, B -> globe_B, one planet pass
+# stills: LONGDAWN_GLOBE_TESTS=<dir> python shots/globe/render.py dawn --frames 2240,2400 --scale 0.5 --test
+```
+Every frame is a pure function of its frame number; split ranges across processes freely
+(`--frames a,b,c --skip-existing`). Changing any constant in `FireNet._build/_spread` needs a
+`VERSION` bump (the net is cached).
+
+RENDER_STATS_PLACEHOLDER
+
+### Known weaknesses (v2)
+* The fires are points of light at orbital scale; what makes them fire is flicker, colour,
+  unevenness and the light they throw — watch the playback for whether the flicker reads.
+* In the middle of the spread (1840–1890) a fire that throws two embers still makes a brief "V"
+  of two short comets; siblings leave one after another to soften it.
+* The crest detector finds big ranges well but misses escarpments (Western Ghats, Great Dividing
+  Range, the Urals are weak); coasts and rivers carry those regions.
+* DAWN's night side (Sahel, Sudan) is sparser than Asia's end state: it is desert and savanna with
+  crest, river and lonely fires only (by design not weighted by night lights).
+* The sunrise over the curve of the Earth is still the classic orbital sunrise (m9); v2 removes the
+  mesh and the starburst that made it a keynote slide, and shares the light across continents.
+
+---
+
+## v1 (delivered 2026-09-25; frames in renders/globe/)
+
 Two planetary shots rendered by one CPU ray tracer (numba, 2 threads).
 
 | shot | frames delivered | cut | file |

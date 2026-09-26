@@ -1,8 +1,10 @@
 """EMBERS renderer driver.
 
 usage:
-  python render.py FRAMES [--scale 0.5] [--out DIR]
+  python render.py FRAMES [--cut A|B|C] [--scale 0.5] [--out DIR]
 FRAMES: "300-1199" (inclusive), "300,340,480", or "300-400:10" (step)
+--cut: A (default) -> renders/embers_v2, B -> renders/embers_B (no text band), C -> renders/embers_C (Tolkien).
+The delivered v1 frames in renders/embers are never written by default.
 """
 import argparse
 import os
@@ -19,17 +21,28 @@ import numpy as np  # noqa: E402
 import look  # noqa: E402
 from core import Frame, Camera, smoothstep, window  # noqa: E402
 
-OUT = os.path.join(ROOT, 'renders', 'embers')
+OUT_V1 = os.path.join(ROOT, 'renders', 'embers')
+OUTS = {'A': os.path.join(ROOT, 'renders', 'embers_v2'), 'B': os.path.join(ROOT, 'renders', 'embers_B'),
+        'C': os.path.join(ROOT, 'renders', 'embers_C')}
 
 # shots: [start, end) -- the shutter never straddles a cut
 SHOTS = [(300, 880), (880, 960), (960, 1040), (1040, 1200)]
 
-TEXT = [(340, 440), (490, 550), (565, 635), (660, 730), (820, 900), (1055, 1195)]
+# text windows (v2 frames = src frames here) per cut, from the edit's current titles (director, framing review).
+# The band y~560-700 is calmed during these. Lines on black (1060-1186) sit mid-frame; kept for completeness.
+TEXT = {
+    'A': [(340, 440), (490, 565), (580, 648), (668, 738), (800, 866), (1060, 1186)],
+    'B': [],
+    'C': [(340, 440), (490, 565), (628, 695), (705, 770), (780, 834), (1060, 1186)],
+}
 
 
 def band_k(t):
+    import variant
+    if not variant.text_band():
+        return 0.0
     k = 0.0
-    for a, b in TEXT:
+    for a, b in TEXT[variant.CUT]:
         k = max(k, float(window(t, a, b, 10, 10)))
     return 0.62 * k
 
@@ -49,7 +62,7 @@ def scene():
     return _scene
 
 
-def render_frame(f, scale=1.0, outdir=OUT, save=True, verbose=True):
+def render_frame(f, scale=1.0, outdir=None, save=True, verbose=True):
     sc = scene()
     t_start = time.time()
     s0, s1 = [s for s in SHOTS if s[0] <= f < s[1]][0]
@@ -73,6 +86,9 @@ def render_frame(f, scale=1.0, outdir=OUT, save=True, verbose=True):
     fin = sc.finish_opts(f)
     img = look.finish(hdr, **fin)
     if save:
+        import variant
+        outdir = outdir or OUTS[variant.CUT]
+        assert os.path.abspath(outdir) != os.path.abspath(OUT_V1), 'refusing to overwrite the delivered v1 frames'
         look.save_png(look.frame_path(outdir, f), img)
     if verbose:
         print(f'frame {f} scale {scale} {time.time() - t_start:.2f}s', flush=True)
@@ -98,8 +114,12 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('frames')
     ap.add_argument('--scale', type=float, default=1.0)
-    ap.add_argument('--out', default=OUT)
+    ap.add_argument('--cut', default='A', choices=['A', 'B', 'C'])
+    ap.add_argument('--out', default=None)
     a = ap.parse_args()
-    os.makedirs(a.out, exist_ok=True)
+    import variant
+    variant.set_cut(a.cut)
+    out = a.out or OUTS[a.cut]
+    os.makedirs(out, exist_ok=True)
     for f in parse_frames(a.frames):
-        render_frame(f, a.scale, a.out)
+        render_frame(f, a.scale, out)

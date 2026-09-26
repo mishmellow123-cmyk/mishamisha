@@ -12,7 +12,7 @@ from scene import smooth, ramp, FIRE_HOT, FIRE_CORE, FIRE_MID
 import fire as FI
 from nbcore import FM
 
-CACHE = os.path.join(SC.ROOT, 'renders', 'accord', 'cache')
+CACHE = os.path.join(SC.ROOT, 'renders', 'accord_cache')
 PGC_R, PGC_CELL = 560.0, 0.5        # coarse path mask: +-560 m @ 0.5 m
 PGF_R, PGF_CELL = 40.0, 0.04        # fine path mask: +-40 m @ 4 cm
 IGC_R, IGC_CELL = 560.0, 2.0        # coarse walker irradiance
@@ -286,9 +286,9 @@ def irradiance(t):
 
 MIST = np.array([
     # z, opacity, scale, drift_x, drift_y, seed
-    [270.0, 0.55, 150.0, 0.05, 0.02, 71],
-    [150.0, 0.45, 95.0, -0.04, 0.03, 72],
-    [70.0, 0.35, 60.0, 0.03, -0.02, 73],
+    [270.0, 0.46, 150.0, 0.05, 0.02, 71],
+    [150.0, 0.38, 95.0, -0.04, 0.03, 72],
+    [70.0, 0.30, 60.0, 0.03, -0.02, 73],
 ], np.float64)
 
 

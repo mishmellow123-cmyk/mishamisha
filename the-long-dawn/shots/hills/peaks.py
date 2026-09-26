@@ -23,18 +23,36 @@ import numpy as np
 from core import CACHE_DIR, fbm2, perlin2
 from sky import sky_rad
 
-VERSION = 7
+# v2 (Sep 2026): S1_WORLD puts her summit in the SHEPHERD'S world (montage s1, also used by the
+# Beacon Run): the far ranges and the cloud sea are baked from s1_peak.h_far / h_cloud around the
+# top of the first-beacon massif (s1's own XB/ZB massif), with s1's moon. Only the 10 cm summit
+# grid below is ours. False = the v7 ranges.
+S1_WORLD = True
+VERSION = 8 if S1_WORLD else 7
 R_EARTH = 6371000.0
-_AZ, _EL = math.radians(-112.0), math.radians(23.0)
-MOON_L = np.array([math.sin(_AZ) * math.cos(_EL), math.sin(_EL), math.cos(_AZ) * math.cos(_EL)])
+if S1_WORLD:
+    import sys as _sys
+    _MONT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'montage'))
+    if _MONT not in _sys.path:
+        _sys.path.append(_MONT)
+    import s1_peak as _S1
+    _SUM = _S1.summit()                       # (x, top + 4 m, z) of her massif in s1's world
+    OFFX, OFFY, OFFZ = float(_SUM[0]), float(_SUM[1]) - 4.0, float(_SUM[2])
+    MOON_L = np.asarray(_S1.MOON_DIR, np.float64) / np.linalg.norm(_S1.MOON_DIR)
+    S1_CLOUD_T = 60.0                         # the cloud sea is baked at one moment (s1 drifts very slowly)
+else:
+    OFFX, OFFY, OFFZ = 0.0, 0.0, 0.0
+    S1_CLOUD_T = 0.0
+    _AZ, _EL = math.radians(-112.0), math.radians(23.0)
+    MOON_L = np.array([math.sin(_AZ) * math.cos(_EL), math.sin(_EL), math.cos(_AZ) * math.cos(_EL)])
 
 TH0, TH1, NTH = math.radians(-44.0), math.radians(44.0), 4096
-R0, R1, NR = 110.0, 170000.0, 2048
+R0, R1, NR = 110.0, 170000.0, (4096 if S1_WORLD else 2048)
 DTH = (TH1 - TH0) / (NTH - 1)
 LR0 = math.log(R0)
 DLR = (math.log(R1) - LR0) / (NR - 1)
 SX0, SZ0, SD, SNX, SNZ = -70.0, -60.0, 0.1, 1401, 1201
-CLOUD_Y = -2150.0
+CLOUD_Y = (-650.0 - OFFY) if S1_WORLD else -2150.0
 SHN = 2           # shadow grid decimation
 
 
@@ -64,6 +82,19 @@ def _ridged(x, z, octf):
         k = amp if o < nfull else amp * (frac if frac > 1e-3 else 1.0)
         res += s * k
     return res
+
+
+@nb.njit(fastmath=True)
+def far_height_s1(x, z, foot):
+    r = math.sqrt(x * x + z * z)
+    h = _S1.h_far(x + OFFX, z + OFFZ, foot) - OFFY
+    # keep clear of our own 10 cm summit grid (she stands on the highest point)
+    return h - 60.0 * (1.0 - _sst(70.0, 160.0, r))
+
+
+@nb.njit(fastmath=True)
+def cloud_height_s1(x, z, foot):
+    return _S1.h_cloud(x + OFFX, z + OFFZ, foot, S1_CLOUD_T) - OFFY
 
 
 @nb.njit(cache=True, fastmath=True)
@@ -96,7 +127,7 @@ def cloud_height(x, z, foot):
     return CLOUD_Y + 170.0 * n + 55.0 * m
 
 
-@nb.njit(cache=True, fastmath=True)
+@nb.njit(fastmath=True)
 def _build_polar(H, C):
     for j in range(NR):
         r = math.exp(LR0 + DLR * j)
@@ -105,9 +136,15 @@ def _build_polar(H, C):
             th = TH0 + DTH * i
             x = r * math.sin(th)
             z = r * math.cos(th)
-            H[j, i] = far_height(x, z, foot)
+            if S1_WORLD:
+                H[j, i] = far_height_s1(x, z, foot)
+            else:
+                H[j, i] = far_height(x, z, foot)
             if (i % 2 == 0) and (j % 2 == 0):
-                C[j // 2, i // 2] = cloud_height(x, z, foot * 2.0)
+                if S1_WORLD:
+                    C[j // 2, i // 2] = cloud_height_s1(x, z, foot * 2.0)
+                else:
+                    C[j // 2, i // 2] = cloud_height(x, z, foot * 2.0)
 
 
 @nb.njit(cache=True, fastmath=True, inline='always')
@@ -526,7 +563,7 @@ def render_terrain(out, alpha, cam, H, C, SH, S, M, sp, P, lights, gains, t):
 PARAMS = np.array([
     1.0 / 110000.0,      # 0 fog sigma floor
     1.0 / 6000.0,        # 1 haze sigma at y0
-    -2250.0,             # 2 y0 (just above the cloud sea)
+    (-650.0 - 100.0 - OFFY) if S1_WORLD else -2250.0,   # 2 y0 (just above the cloud sea)
     900.0,               # 3 haze scale height
     0.95,                # 4 moon intensity
     0.55, 0.70, 0.95,    # 5-7 moonlight colour (#9DB4D9-ish, linear)

@@ -29,4 +29,4 @@ if __name__ == '__main__':
         print(t, 'fire', round(dt, 2), 's', 'max', im.max())
         tiles.append(im)
     out = np.hstack(tiles)
-    look.save_png('renders/accord/tests/fire_test.png', out)
+    look.save_png(os.path.join(A.out_dir(), 'tests', 'fire_test.png'), out)

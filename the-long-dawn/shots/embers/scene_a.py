@@ -8,7 +8,8 @@ from core import (clamp01, smoothstep, smootherstep, ease_out, ease_in, lerp, vn
                   rng, rand_dirs, catmull)
 import glyphs as G
 
-CACHE = os.path.join(os.path.dirname(__file__), '..', '..', 'renders', 'embers', 'cache')
+CACHE = os.path.join(os.path.dirname(__file__), '..', '..', 'renders', 'embers', 'cache')          # v1 (read only)
+CACHE_V2 = os.path.join(os.path.dirname(__file__), '..', '..', 'renders', 'embers_v2', 'cache')
 
 C_CORE = look.hexrgb(look.PALETTE['mind_core'])
 C_ICE = look.hexrgb(look.PALETTE['mind_ice'])
@@ -106,26 +107,32 @@ class Glyphs:
 
     def __init__(self, n=5200, n_ember=1300, seed=3):
         r = rng(seed)
-        A = G.load(os.path.join(CACHE, 'glyphs.npz'))
+        # v2: the field is drawn exactly as in v1 (same random stream, same choreography), then the glyphs the
+        # critics flagged (whole English words, GATTACA, most DNA strings) are swapped for letters of their script
+        A, A1, m12 = G.load_v2(os.path.join(CACHE_V2, 'glyphs_v2.npz'), os.path.join(CACHE, 'glyphs.npz'))
         self.A = A
-        ng = len(A['off'])
-        catw = np.array([G.CAT_W.get(G.CATS[c], 1.0) for c in A['cat']], np.float64)
+        Asel = A1 if A1 is not None else A
+        catw_d = G.CAT_W_V1 if A1 is not None else G.CAT_W
+        ng = len(Asel['off'])
+        catw = np.array([catw_d.get(G.CATS[c], 1.0) for c in Asel['cat']], np.float64)
         # per-category normalisation so each category's total weight = CAT_W
-        cat_count = np.bincount(A['cat'], minlength=len(G.CATS)).astype(np.float64)
-        pw = catw / cat_count[A['cat']]
+        cat_count = np.bincount(Asel['cat'], minlength=len(G.CATS)).astype(np.float64)
+        pw = catw / cat_count[Asel['cat']]
         pw /= pw.sum()
         self.n = n
         self.proto = r.choice(ng, size=n, p=pw)
         self.hero = np.zeros(n, bool)
         # hero instances: pick from hero-flagged prototypes, placed near the camera path
-        heroes = np.nonzero(A['hero'])[0]
+        heroes = np.nonzero(Asel['hero'])[0]
         nh = 30
         self.proto[:nh] = r.choice(heroes, nh, replace=False)
         self.hero[:nh] = True
-        texts = list(A['text'])
+        texts = list(Asel['text'])
         self.passes = [p for p in HERO_PASSES if p[0] in texts]
         for i, p in enumerate(self.passes):
             self.proto[i] = texts.index(p[0])
+        if A1 is not None:
+            self.proto = self._swap(self.proto, A1, A, m12, len(self.passes), seed)
         # sizes (em in world units)
         s = r.lognormal(np.log(0.24), 0.3, n)
         s[:nh] = r.uniform(0.3, 0.46, nh)
@@ -225,6 +232,30 @@ class Glyphs:
         self.pe = (1.0 / npt)[gid]                       # energy share per point
         self.prand = r.random(len(gid))
         print('glyphs: instances', n, 'points', len(gid))
+
+    def _swap(self, p1, A1, A, m12, npass, seed):
+        """map v1 prototypes to the v2 atlas; removed ones (and most random 'ACGT's) become letters of their script"""
+        rr = rng(seed + 777)
+        t1 = np.array([str(x) for x in A1['text']])
+        p2 = m12[p1].copy()
+        cat2 = A['cat']
+        text2 = np.array([str(x) for x in A['text']])
+        single = np.array([len(x) == 1 for x in text2])
+        hero2 = np.nonzero(A['hero'])[0]
+        swap = p2 < 0
+        acgt = np.isin(t1[p1], ['ACGT', 'AUG']) & (np.arange(len(p1)) >= npass)
+        swap |= acgt & (rr.random(len(p1)) > G.ACGT_KEEP)
+        n_sw = 0
+        for i in np.nonzero(swap)[0]:
+            if self.hero[i]:
+                p2[i] = hero2[rr.integers(0, len(hero2))]
+            else:
+                c = A1['cat'][p1[i]]
+                pool = np.nonzero((cat2 == c) & single)[0]
+                p2[i] = pool[rr.integers(0, len(pool))]
+            n_sw += 1
+        print('glyphs: swapped', n_sw, 'instances (removed words / thinned DNA strings)')
+        return p2
 
     # centre of each glyph before the spiral
     def centre_pre(self, t):

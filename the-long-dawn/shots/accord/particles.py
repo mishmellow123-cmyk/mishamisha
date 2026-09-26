@@ -164,10 +164,65 @@ def ribbons(t):
 
 def ignition_flash(t):
     """Big soft bloom blob at the moment of merging."""
-    if t < SC.IGNITE or t > SC.IGNITE + 10:
+    if t < SC.IGNITE or t > SC.IGNITE + 16:
         return []
     a = t - SC.IGNITE
-    k = math.exp(-a / 2.5)
+    k = math.exp(-a / 2.5) * (1.0 - smooth(ramp(a, 6.0, 16.0)))   # tapers to nothing (no pop at 2011)
     p = np.array([0.0, 0.0, 1.3])
     return [[p[0], p[1], p[2], 0.30 + 0.12 * a, *(PALE * 9 * k), 0.0],
             [p[0], p[1], p[2], 1.2 + 0.2 * a, *(GOLD * 0.45 * k), 0.0]]
+
+
+# ------------------------------------------------------- the running fire ---
+
+def frieze_tongues(t):
+    """Short flame tongues running round the outer frieze at the head of the sweep (2160-2220):
+    each a tapered, S-curved tongue blown forward along the run, orange at the root, red at the tip,
+    dying down behind the head. Returns streak segments for splat_streaks (n, 11)."""
+    p = smooth(ramp(t, SC.TOG_T0, SC.TOG_T1)) if t >= SC.TOG_T0 else 0.0
+    if p <= 0.0:
+        return np.zeros((0, 11))
+    import textmaps as tm
+    phi0 = math.radians(SC.cam_psi(SC.TOG_T0))
+    head = min(p / 0.93, 1.0)
+    rng_step = 0.95 / 360.0
+    segs = []
+    nseg = 7
+    for k in range(80):
+        u = head - k * rng_step
+        if u < 0.0:
+            break
+        idx = int(round(u / rng_step))
+        h1 = (idx * 0.7548776662) % 1.0            # per-site constants (low-discrepancy)
+        h2 = (idx * 0.5698402910) % 1.0
+        h3 = (idx * 0.3141592653 + 0.5) % 1.0
+        u_site = u + (h1 - 0.5) * 0.6 * rng_step
+        age = p - 0.93 * u_site
+        f = min(1.0, max(0.0, (age + 0.003) / 0.008)) * math.exp(-max(age, 0.0) / 0.05)
+        if p >= 1.0:
+            f *= math.exp(-(t - SC.TOG_T1) / 4.0)
+        f *= 0.55 + 0.45 * math.sin(t * 1.9 + 6.28 * h2) ** 2      # tongues dance (flames may be fast)
+        if f < 0.05 or h3 < 0.18:
+            continue
+        th = phi0 - 2 * math.pi * u_site
+        rr = tm.FRIEZE_BASE + 0.05 + 0.34 * h2
+        B = np.array([rr * math.cos(th), rr * math.sin(th), 0.105])
+        T = np.array([math.sin(th), -math.cos(th), 0.0])            # the run's direction (clockwise)
+        O = np.array([math.cos(th), math.sin(th), 0.0])
+        Z = np.array([0.0, 0.0, 1.0])
+        H = (0.10 + 0.16 * h1) * (0.4 + 0.6 * f)                   # tongue height (m)
+        w0 = 0.020 + 0.010 * h3
+        ph = t * 0.9 + 6.28 * h1
+        pts = []
+        for j in range(nseg + 1):
+            a = j / nseg
+            wob = 0.035 * math.sin(3.4 * a + ph) * a
+            pts.append(B + H * (a * 0.95 * Z + (0.85 * a + 0.35 * a * a) * T) + (wob + 0.06 * a * a * H) * O)
+        for j in range(nseg):
+            a = (j + 0.5) / nseg
+            col = np.array([1.0, 0.50 - 0.34 * a, 0.10 - 0.08 * a])
+            I = f * (2.6 - 1.7 * a)
+            segs.append([*pts[j], *pts[j + 1], w0 * (1.0 - 0.85 * a) + 0.003, *(col * I), 0.0])
+    if not segs:
+        return np.zeros((0, 11))
+    return np.array(segs, np.float64)

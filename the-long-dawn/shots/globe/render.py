@@ -24,8 +24,8 @@ os.environ.setdefault('NUMBA_NUM_THREADS', '2')
 
 import look  # noqa: E402
 
-OUT = os.path.join(ROOT, 'renders', 'globe')
-TESTS = os.path.join(OUT, 'tests')
+OUT = os.environ.get('LONGDAWN_GLOBE_OUT') or os.path.join(ROOT, 'renders', 'globe')   # e.g. renders/globe_B
+TESTS = os.environ.get('LONGDAWN_GLOBE_TESTS') or os.path.join(OUT, 'tests')
 RANGES = {'answers': (1752, 1935), 'dawn': (2232, 2495)}
 
 
@@ -61,6 +61,9 @@ def main():
     ap.add_argument('--frames', default='')
     ap.add_argument('--skip-existing', action='store_true')
     ap.add_argument('--finalize', action='store_true')
+    ap.add_argument('--both', action='store_true',
+                    help='dawn only: one planet render -> cut A (text calm) in renders/globe_v2 and '
+                         'cut B (no calm) in renders/globe_B')
     a = ap.parse_args()
     if a.finalize:
         finalize()
@@ -71,6 +74,19 @@ def main():
         frames = [int(x) for x in a.frames.split(',')]
     else:
         frames = list(range(a.start, a.end + 1, a.step))
+    if a.both:
+        outA = os.path.join(ROOT, 'renders', 'globe_v2')
+        outB = os.path.join(ROOT, 'renders', 'globe_B')
+        for fr in frames:
+            pa, pb = look.frame_path(outA, fr), look.frame_path(outB, fr)
+            if a.skip_existing and os.path.exists(pa) and os.path.exists(pb):
+                continue
+            t0 = time.time()
+            ia, ib = shot.render_both(float(fr), a.scale)
+            look.save_png(pa, ia)
+            look.save_png(pb, ib)
+            print(f'{a.shot} {fr} {time.time() - t0:.1f}s -> globe_v2 + globe_B', flush=True)
+        return
     os.makedirs(TESTS, exist_ok=True)
     for fr in frames:
         if a.test:

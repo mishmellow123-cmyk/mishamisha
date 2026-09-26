@@ -1,15 +1,20 @@
-"""Assemble THE LONG DAWN.
+"""Assemble THE LONG DAWN (v2: three cuts from one picture — see BIBLE_V2.md).
 
-EDL (global frames) -> transitions in linear light -> titles -> one unified
-finish (grade, grain) -> 2.39:1 letterbox in 1920x1080 -> ffmpeg with the mix.
+EDL (v2 frames) -> per-cut layered frame lookup -> transitions in linear light -> titles
+-> one unified finish (grade, grain) -> 2.39:1 letterbox in 1920x1080 -> ffmpeg with the mix.
 
-    python3 edit/assemble.py                 # full master
-    python3 edit/assemble.py --draft         # fast half-res check
-    python3 edit/assemble.py --range 1200 1500 --draft
-    python3 edit/assemble.py --stills 150,480,1400,2250,2700
+    python3 edit/assemble.py --cut A                 # full master of cut A (Allegory)
+    python3 edit/assemble.py --cut B --draft         # fast half-res check of cut B (Legend)
+    python3 edit/assemble.py --cut C --range 1500 1700 --draft
+    python3 edit/assemble.py --cut C --stills 480,1600,2000,2410
+
+Frame lookup for department X in cut K: renders/X_K -> renders/X_v2 -> renders/X. Existing
+departments keep their ORIGINAL (src) frame numbers; the EDL maps v2 frames onto them. The v1
+edit is kept as edit/assemble_v1.py.
 """
 import argparse
 import os
+os.environ.setdefault('OPENCV_IO_ENABLE_OPENEXR', '1')   # the ember title layer is EXR
 import subprocess
 import sys
 from multiprocessing import Pool
@@ -22,13 +27,22 @@ sys.path.insert(0, os.path.join(ROOT, 'lib'))
 sys.path.insert(0, os.path.join(ROOT, 'edit'))
 import look      # noqa: E402
 import titles    # noqa: E402
+import ember_title  # noqa: E402  (THE LONG DAWN formed from embers, v2 2800-2966)
 
 cv2.setNumThreads(1)
 W, H = look.W, look.H
 OUT_W, OUT_H = 1920, 1080
-TOTAL = titles.END_TAG if titles.TAGLINE else 2808   # 117.0 s of picture (+2 s end card on black)
+TOTAL = 2968                       # v2: 123.667 s (the Beacon Run adds 160 frames at 1520)
+SHIFT = 160                        # everything after the Beacon Run sits 160 frames later than v1
 BAR_TOP = (OUT_H - H) // 2         # 138
-LINES = titles.story_lines()
+CUT = os.environ.get('LONGDAWN_CUT', 'A').upper()
+LINES = titles.story_lines(CUT)
+
+
+def set_cut(cut):
+    global CUT, LINES
+    CUT = cut.upper()
+    LINES = titles.story_lines(CUT)
 
 
 def smooth(x):
@@ -36,12 +50,25 @@ def smooth(x):
     return x * x * (3 - 2 * x)
 
 
+def _path(dept, f):
+    for d in (f'{dept}_{CUT}', f'{dept}_v2', dept):
+        p = look.frame_path(os.path.join(ROOT, 'renders', d), f)
+        if os.path.exists(p):
+            return p
+    return None
+
+
+STRICT = os.environ.get('LONGDAWN_STRICT', '1') == '1'   # masters: a missing/corrupt frame is an error
+
+
 def load(dept, f):
-    p = look.frame_path(os.path.join(ROOT, 'renders', dept), f)
-    img = cv2.imread(p, cv2.IMREAD_COLOR) if os.path.exists(p) else None
+    p = _path(dept, f)
+    img = cv2.imread(p, cv2.IMREAD_COLOR) if p else None
+    if img is None and STRICT:
+        raise FileNotFoundError(f'frame missing or unreadable: {dept}_{CUT} src {f} ({p})')
     if img is None:
         ph = np.full((H, W, 3), 38, np.uint8)
-        cv2.putText(ph, f'MISSING {dept} {f}', (60, H // 2), cv2.FONT_HERSHEY_SIMPLEX, 2.0,
+        cv2.putText(ph, f'MISSING {dept}_{CUT} {f}', (60, H // 2), cv2.FONT_HERSHEY_SIMPLEX, 2.0,
                     (90, 90, 90), 3, cv2.LINE_AA)
         img = ph
     if img.shape[:2] != (H, W):
@@ -62,40 +89,70 @@ def exposure(img, stops):
     return look.linear_to_srgb(lin(img) * (2.0 ** stops))
 
 
+_YY, _XX = np.mgrid[0:H, 0:W].astype(np.float32)
+_HEARTH_D = np.sqrt((_XX - W / 2) ** 2 + (_YY - H / 2) ** 2)   # the hearth sits at frame centre at the flare
+
+
+def hearth_burst(img, t):
+    """Light bursting outward from the hearth: a white core whose edge races to the frame corners;
+    reaches full white at t=1 (v2 2399) instead of bleaching the whole picture uniformly."""
+    t = float(np.clip(t, 0.0, 1.0))
+    radius = 120.0 + 1500.0 * t ** 1.6
+    edge = np.clip((radius - _HEARTH_D) / (60.0 + 260.0 * t), 0.0, 1.0)
+    a = np.clip(edge * (0.35 + 0.65 * t) + t ** 4, 0.0, 1.0)[..., None]
+    return look.linear_to_srgb(lin(img) * (1 - a) + a)
+
+
 # --------------------------------------------------------------- the cut ---
 
+def world(f):
+    """THE WORLD ANSWERS (v2 1920-2087): the globe (src = f-160), or cut C's map (v2 numbering)."""
+    return load('map', f) if CUT == 'C' else load('globe', f - SHIFT)
+
+
+def dawn(f):
+    """DAWN (v2 2400-2655): sunrise over Earth (src = f-160), or cut C's dawn in the east
+    (falls back to the orbital sunrise until cut C's own dawn is rendered)."""
+    if CUT == 'C' and _path('dawn', f):
+        return load('dawn', f)
+    return load('globe', f - SHIFT)
+
+
 def picture(f):
-    if f >= 2806:                                 # end card: black (text is added on top)
-        return np.zeros((H, W, 3), np.float32)
     if f < 300:
         img = load('hills', f)
     elif f < 340:                                  # push into the torch -> the fire's visions
         img = mix(load('hills', f), load('embers', f), smooth((f - 300) / 40))
     elif f < 1200:
         img = load('embers', f)
-    elif f < 1440:
+    elif f < 1440:                                 # FIRST BEACON
         img = load('hills', f)
-    elif f < 1760:
+    elif f < 1520:                                 # the shepherd answers
         img = load('montage', f)
-    elif f < 1912:
-        img = load('globe', f)
-    elif f < 1928:                                 # globe -> the plain of torches
-        img = mix(load('globe', f), load('accord', f), smooth((f - 1912) / 16))
-    elif f < 2240:
-        img = load('accord', f)
-        if f >= 2228:                              # hearth flare builds to white
-            img = exposure(img, 2.2 * smooth((f - 2228) / 12))
-    elif f < 2464:
-        img = load('globe', f)
-        if f < 2254:                               # ...and the sun is born out of it
-            img = exposure(img, 2.2 * (1 - smooth((f - 2240) / 14)))
-    elif f < 2496:                                 # dawn over the world -> back to the hill
-        img = mix(load('globe', f), load('hills', f), smooth((f - 2464) / 32))
-    else:
-        img = load('hills', f)
+    elif f < 1680:                                 # THE BEACON RUN (new, v2 numbering)
+        img = load('run', f)
+    elif f < 1920:                                 # desert, ice, karst, city, sea
+        img = load('montage', f - SHIFT)
+    elif f < 2072:                                 # THE WORLD ANSWERS
+        img = world(f)
+    elif f < 2088:                                 # -> the plain of torches
+        img = mix(world(f), load('accord', f - SHIFT), smooth((f - 2072) / 16))
+    elif f < 2400:                                 # THE ACCORD
+        img = load('accord', f - SHIFT)
+        if f >= 2384:                              # the hearth's light bursts outward to white
+            img = hearth_burst(img, (f - 2384) / 15.0)
+    elif f < 2624:                                 # DAWN
+        img = dawn(f)
+        if f < 2418:                               # held white through the hit, then the sun is born out of it
+            w = 1.0 - smooth((f - 2402) / 16)
+            img = look.linear_to_srgb(lin(img) * (1 - w) + w)
+    elif f < 2656:                                 # dawn -> back to the hill
+        img = mix(dawn(f), load('hills', f - SHIFT), smooth((f - 2624) / 32))
+    else:                                          # CODA
+        img = load('hills', f - SHIFT)
 
-    fade_in = smooth((f - 8) / 56)                 # from black
-    fade_out = smooth((2805 - f) / 50)             # to black
+    fade_in = smooth((f - (76 if CUT == 'A' else 8)) / 56)   # from black (cut A holds black for its opening card)
+    fade_out = smooth((TOTAL - 3 - f) / 50)        # to black
     k = fade_in * fade_out
     if k < 1:
         img = look.linear_to_srgb(lin(img) * k)
@@ -139,6 +196,7 @@ def finish(img, f, grain=0.022):
 
 def frame(f, draft=False, grain=0.022):
     img = picture(f)
+    img = ember_title.composite(img, f)          # additive linear light, soft-clipped
     img = titles.composite(img, LINES, f)
     img = finish(img, f, 0.0 if draft else grain)
     out = np.zeros((OUT_H, OUT_W, 3), np.float32)
@@ -194,17 +252,22 @@ def stills(frames, out_dir):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
+    ap.add_argument('--cut', default=CUT, choices=['A', 'B', 'C', 'a', 'b', 'c'])
     ap.add_argument('--draft', action='store_true')
     ap.add_argument('--range', nargs=2, type=int, default=[0, TOTAL])
     ap.add_argument('--out', default=None)
-    ap.add_argument('--audio', default=os.path.join(ROOT, 'music', 'out', 'mix.wav'))
+    ap.add_argument('--audio', default=None, help='default: music/out/v2/final_AB.wav (A, B) or final_C.wav (C)')
     ap.add_argument('--workers', type=int, default=2)
     ap.add_argument('--grain', type=float, default=0.022)
     ap.add_argument('--stills', default=None)
     a = ap.parse_args()
+    set_cut(a.cut)
+    os.environ['LONGDAWN_CUT'] = CUT               # worker processes re-import this module
+    if a.audio is None:
+        a.audio = os.path.join(ROOT, 'music', 'out', 'v2', 'final_C.wav' if CUT == 'C' else 'final_AB.wav')
     if a.stills:
-        stills([int(x) for x in a.stills.split(',')], os.path.join(ROOT, 'out', 'stills'))
+        stills([int(x) for x in a.stills.split(',')], os.path.join(ROOT, 'out', 'stills', CUT))
         sys.exit()
-    out = a.out or os.path.join(ROOT, 'out', 'draft.mp4' if a.draft else 'the_long_dawn.mp4')
+    out = a.out or os.path.join(ROOT, 'out', f'draft_{CUT}.mp4' if a.draft else f'the_long_dawn_{CUT}.mp4')
     os.makedirs(os.path.dirname(out), exist_ok=True)
     render(out, a.range[0], a.range[1], a.draft, a.audio, a.workers, a.grain)

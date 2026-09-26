@@ -16,6 +16,7 @@ from nbcore import FM, clamp, sstep, mix, tex3, vnoise2, fbm2, grid_sample
 
 # fire params
 FP_T, FP_I, FP_SCALE, FP_H, FP_SWIRL, FP_Z0, FP_WHITE, FP_R0, FP_RISE, FP_SPREAD = range(10)
+FP_HOLLOW = 10          # variant C: the hot core opens so the Ring lies visible among the flames
 FP_N = 12
 
 
@@ -80,10 +81,17 @@ def fire_density(x, y, z, FP, n3):
     th = 0.46 + 0.14 * zr + 0.30 * (1.0 - shape)
     d = sstep(th - 0.012, th + 0.05, n) * sstep(0.0, 0.04, zr) * (1.0 - zr) ** 0.9
     base = math.exp(-(r / (0.34 * s + 0.02)) ** 2) * math.exp(-zr / 0.07)
+    hol = FP[FP_HOLLOW]
+    core = 0.0
+    if hol > 0.0:
+        core = hol * math.exp(-(r / 0.28) ** 2) * (1.0 - 0.15 * zr)
+        base *= 1.0 - 0.92 * hol
+        d *= 1.0 - 0.93 * core
     d = max(d, base * 0.9)
     if d <= 0.0:
         return 0.0, 0.0
-    temp = clamp((n - th) * 4.0 + 0.72 * (1.0 - zr) ** 2.2 + 0.18 * shape - 0.22 + base * 0.7, 0.0, 1.0)
+    temp = clamp((n - th) * 4.0 + 0.72 * (1.0 - zr) ** 2.2 + 0.18 * shape - 0.22 + base * 0.7 - 0.45 * core,
+                 0.0, 1.0)
     return d, temp
 
 
@@ -356,7 +364,7 @@ def mist_layers(img, cam, layers, nl, T, irr_c, ig_x0, ig_cell, warm):
                 qy = py + layers[k, 4] * (T - 1912.0)
                 n = 0.5 + fbm2(qx / s, qy / s, int(layers[k, 5]), 6, 2.05, 0.55, fp)
                 d = sstep(0.42, 0.85, n)
-                near = sstep(2.0, 45.0, Cz - zl)
+                near = sstep(0.04 * zl, 0.95 * zl, Cz - zl)   # the camera dissolves through the layer
                 a = d * layers[k, 1] * near
                 if a <= 0.0:
                     continue

@@ -51,8 +51,41 @@ def lookup(mask, p):
     return mask[y, x]
 
 
+# v2 (framing review): v1 framed East Asia and parted its plates along a seam past Japan, Taiwan and the Philippines.
+# Now the world is seen from above the Arctic, every continent on the rim together, turning; the fire starts in the
+# high Arctic (no one's) and reaches every continent at once; the plates are laid out (globe_plates.py) so that no
+# seam runs along or through any real flashpoint, strait or border, or through a capital or AI hub.
+GLOBE_SEEDS = [(43.92, 115.42), (42.91, 84.42), (47.85, 36.19), (19.26, -15.71), (68.84, -67.97), (9.34, -67.68), (7.62, 1.05), (11.09, -43.35), (48.23, -56.11), (8.67, -136.92), (62.98, 105.24), (6.04, -171.20), (58.62, -156.96), (29.98, -167.58), (32.62, -125.47), (5.19, 21.64), (11.48, 54.70), (3.22, 74.37), (8.01, -102.37), (-30.00, -160.00), (-51.63, -120.00), (-38.26, -80.00), (-59.89, -40.00), (-46.52, 0.00), (-33.15, 40.00), (-54.78, 80.00), (-41.41, 120.00), (-63.04, 160.00)]
+# the cells merged into plates (only seams between plates crack); see globe_plates.py
+GLOBE_GROUPS = [0, 0, 1, 1, 1, 2, 3, 4, 2, 5, 6, 7, 8, 7, 5, 3, 3, 9, 2, 10, 5, 2, 5, 11, 3, 12, 9, 10]
+POLE_TILT = math.radians(8.0)        # we look down from about 82 N
+LON_NEAR = math.radians(-20.0)       # meridian nearest the lens at mid-shot (it turns eastward through the shot)
+GLOBE_SPIN = 0.006                   # rad / frame (~27 degrees over the shot)
+
+
+def ll2v(lat, lon):
+    lat, lon = np.radians(lat), np.radians(lon)
+    return np.stack([np.cos(lat) * np.cos(lon), np.sin(lat), -np.cos(lat) * np.sin(lon)], -1)
+
+
+def globe_basis():
+    pos, _ = cam_globe(920.0)
+    F = pos / np.linalg.norm(pos)
+    Y = np.array([0.0, 1.0, 0.0])
+    U = Y - (Y @ F) * F
+    U /= np.linalg.norm(U)
+    n_w = math.cos(POLE_TILT) * F + math.sin(POLE_TILT) * U
+    e_b = F - (F @ n_w) * n_w
+    e_b /= np.linalg.norm(e_b)
+    a1 = np.array([math.cos(LON_NEAR), 0.0, -math.sin(LON_NEAR)])
+    a2 = np.array([0.0, 1.0, 0.0])
+    W = np.stack([e_b, n_w, np.cross(e_b, n_w)], 1)
+    Aa = np.stack([a1, a2, np.cross(a1, a2)], 1)
+    return W @ Aa.T
+
+
 class Globe:
-    def __init__(self, seed=202):
+    def __init__(self, seed=202, groups=None):
         r = rng(seed)
         mask = land_mask()
         edge = cv2.morphologyEx(mask, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8))
@@ -63,24 +96,38 @@ class Globe:
         oncoast = lookup(edge, Q) > 0
         self.coast = Q[oncoast][:60000]
         self.ocean = P[~onland][:26000]
-        # plates: Voronoi on the sphere
-        self.seeds = rand_dirs(r, 16)
-        # cracks: points near Voronoi edges (jagged with noise)
+        # plates: Voronoi on the sphere (v2: the designed layout; the v1 draw is kept for the random stream)
+        _ = rand_dirs(r, 16)
+        self.seeds = ll2v(np.array([p[0] for p in GLOBE_SEEDS]), np.array([p[1] for p in GLOBE_SEEDS]))
+        # cracks: points near Voronoi edges (jagged with noise); chunked (memory)
         C = rand_dirs(r, 1600000)
-        Cj = C + vnoise(C * 3.0, 1.0, (0, 0, 0), 2) * 0.06
-        Cj /= np.linalg.norm(Cj, axis=1, keepdims=True)
-        d = np.arccos(np.clip(Cj @ self.seeds.T, -1, 1))
-        ds = np.sort(d, axis=1)
-        crack = (ds[:, 1] - ds[:, 0]) < 0.018
+        # cells merge into fewer, irregular plates (28 equal cells read as a football): only seams between plates crack
+        self.group = np.array(GLOBE_GROUPS if groups is None else groups, np.int64)
+        crack = np.zeros(len(C), bool)
+        for c0 in range(0, len(C), 200000):
+            Cc = C[c0:c0 + 200000]
+            Cj = Cc + vnoise(Cc * 3.0, 1.0, (0, 0, 0), 2) * 0.075
+            Cj /= np.linalg.norm(Cj, axis=1, keepdims=True)
+            dd = Cj @ self.seeds.T
+            i2 = np.argpartition(-dd, 1, axis=1)[:, :2]
+            a_ = np.take_along_axis(dd, i2, 1)
+            d1, d2 = np.arccos(np.clip(a_.max(1), -1, 1)), np.arccos(np.clip(a_.min(1), -1, 1))
+            crack[c0:c0 + 200000] = ((d2 - d1) < 0.018) & (self.group[i2[:, 0]] != self.group[i2[:, 1]])
         self.crack = C[crack]
-        # crack activation: spreads from several origins (the race is everywhere)
-        origins = rand_dirs(r, 5)
-        dg = np.arccos(np.clip(self.crack @ origins.T, -1, 1)).min(axis=1)
-        self.t_act = 882.0 + 52.0 * dg / np.pi * 2.2 + r.uniform(-3, 3, len(self.crack))
+        g = self.group
+        self.gdir = np.array([self.seeds[g == k].sum(0) for k in range(g.max() + 1)])
+        self.gdir /= np.linalg.norm(self.gdir, axis=1, keepdims=True)
+        # crack activation (v2): the fire starts in the high Arctic and runs outward, reaching every continent at
+        # about the same time; a slow noise makes the front ragged
+        _ = rand_dirs(r, 5)
+        origins = ll2v(np.array([84.0, 84.0, 84.0]), np.array([0.0, 120.0, 240.0]))
+        dg = np.degrees(np.arccos(np.clip(self.crack @ origins.T, -1, 1)).min(axis=1))
+        self.t_act = (883.0 + 0.52 * dg + 4.0 * snoise(self.crack, 2.5, (1.0, 2.0, 3.0), 2)
+                      + r.uniform(-3, 3, len(self.crack)))
         self.cell = {}
         for name in ('land', 'coast', 'ocean', 'crack'):
             pts = getattr(self, name)
-            self.cell[name] = np.argmax(pts @ self.seeds.T, axis=1)
+            self.cell[name] = self.group[np.argmax(pts @ self.seeds.T, axis=1)]
         # fire spilling out of the cracks
         n = 60000
         self.sp_i = r.integers(0, len(self.crack), n)
@@ -90,12 +137,35 @@ class Globe:
         self.rnd = {k: r.random(len(getattr(self, k))) for k in ('land', 'coast', 'ocean', 'crack')}
         print('globe: land', len(self.land), 'coast', len(self.coast), 'crack', len(self.crack))
 
+    def _groups(self, n, target=13, seed=5):
+        """agglomerate neighbouring Voronoi cells into irregular plates of 1-4 cells"""
+        r = np.random.default_rng(seed)
+        P = rand_dirs(r, 60000)
+        dd = P @ self.seeds.T
+        i2 = np.argsort(-dd, axis=1)[:, :2]
+        adj = set(map(tuple, np.sort(i2, axis=1)))
+        g = np.arange(n)
+        size = np.ones(n, int)
+        pairs = sorted(adj)
+        while len(set(g)) > target:
+            a, b = pairs[r.integers(0, len(pairs))]
+            ga, gb = g[a], g[b]
+            if ga == gb or size[ga] + size[gb] > 4:
+                continue
+            g[g == gb] = ga
+            size[ga] += size[gb]
+        _, g = np.unique(g, return_inverse=True)
+        return g
+
+    _M = None
+
     def rot(self, t):
-        a = 2.3 + 0.0045 * (t - 880)
-        tilt = math.radians(20)
+        """v2: seen from above the Arctic (every continent on the rim), turning eastward"""
+        if Globe._M is None:
+            Globe._M = globe_basis()
+        a = GLOBE_SPIN * (t - 920.0)
         Ry = np.array([[math.cos(a), 0, math.sin(a)], [0, 1, 0], [-math.sin(a), 0, math.cos(a)]])
-        Rx = np.array([[1, 0, 0], [0, math.cos(tilt), -math.sin(tilt)], [0, math.sin(tilt), math.cos(tilt)]])
-        return Rx @ Ry
+        return Globe._M @ Ry
 
     def split(self, t):
         return 0.075 * float(ease_in_out((t - 922) / 30.0))
@@ -103,7 +173,7 @@ class Globe:
     def world(self, name, t, radius=1.0):
         pts = getattr(self, name)
         sp = self.split(t)
-        off = self.seeds[self.cell[name]] * sp
+        off = self.gdir[self.cell[name]] * sp
         return (pts * radius + off) @ self.rot(t).T
 
     def emit(self, ctx):
@@ -161,7 +231,7 @@ class Globe:
             p = base * (1.0 + 0.2 * k[:, None] ** 1.2)
             w = vnoise(p * 4.0 + np.array([0, 0.02 * tq, 0]), 1.0, (0, 0, 0), 1)
             p = p + w * (0.02 + 0.05 * k)[:, None]
-            off = self.seeds[self.cell['crack'][i]] * self.split(tq)
+            off = self.gdir[self.cell['crack'][i]] * self.split(tq)
             return (p + off) @ self.rot(tq).T, k
         S0, k0 = spill(ctx.t0)
         S1, k1 = spill(ctx.t1)

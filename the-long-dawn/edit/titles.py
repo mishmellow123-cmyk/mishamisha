@@ -172,40 +172,54 @@ def row(phrases, t_ins, t_out, y, gap=0.9, **kw):
 
 # ------------------------------------------------------------ the script ---
 
-def story_lines():
-    """All text in the film (global frames). See BIBLE.md §2."""
+def _title(L):
+    L.append(Line('THE LONG DAWN', 2828, 2940, y=402, size=92, weight=500, path=CINZEL,
+                  tracking=0.28, fade=30, fade_out=26, stagger=22, rise=0, blur=8, glow=0.6))
+
+
+def story_lines(cut='A'):
+    """All text in the film (v2 frames), per cut. See BIBLE_V2.md §2.
+
+    A (Allegory): the mapping to our moment made explicit, never saying "AI".
+    B (Legend): wordless -- the title only.
+    C (Tolkien): the story told openly through The Lord of the Rings.
+    """
+    cut = (cut or 'A').upper()
     L = []
     y = 648
-    S = STORY_SIZE                     # story-line size (50 in the cloud cut; 56 reads on a phone)
-    L.append(Line('Why do we light the fires?', 120, 200, y=y, size=S))
-    L.append(Line('To remember the night the whole world answered.', 215, 310, y=y, size=S))
-    L.append(Line('In the age of the Kindling, we made a new kind of fire.', 340, 440, y=y, size=S))
-    L.append(Line('A fire that could think.', 490, 550, y=y, size=S))
-    L.append(Line('Whoever held it alone would hold the world.', 565, 635, y=y, size=S))
-    L.append(Line('So the kingdoms raced.', 660, 730, y=y, size=S))
-    L.append(Line('Each said: if we stop, they win.', 820, 900, y=y, size=S))
-    # the makers' plea, on black, centred
-    L.append(Line('Then even its makers said:', 1055, 1190, y=350, size=48, opacity=0.8, glow=0.2))
-    L += row(['Slow us down.', 'All of us.', 'Together.'], [1095, 1125, 1155], 1190, y=432,
-             size=62, weight=600, stagger=6)
-    # over bright moonlit summit snow: a deeper legibility shadow
-    L.append(Line('And on a cold mountain, someone lit a beacon.', 1370, 1435, y=y, size=S,
-                  halo=0.95, halo_max=0.78))
-    L += row(['Rivals.', 'Strangers.', 'Enemies.'], [1522, 1542, 1562], 1600, y=y, stagger=5, size=S)
-    L.append(Line('They answered anyway.', 1622, 1700, y=y, size=S))
-    L.append(Line('They agreed on little — but they agreed on this:', 1922, 1998, y=y, size=S))
-    L.append(Line('It did not end our differences.', 2270, 2345, y=y, size=S))
-    L.append(Line('It ended the race.', 2352, 2440, y=y, weight=600, size=S))
-    L.append(Line('Who lit the first one?', 2500, 2570, y=y, size=S))
-    # title
-    if TAGLINE:
-        # title holds over the sky while it fades to black; then the last line stands
-        # alone on black, in the silence after the final chord (the film runs to END_TAG)
-        L.append(Line('THE LONG DAWN', 2662, 2750, y=402, size=92, weight=500, path=CINZEL,
-                      tracking=0.28, fade=30, fade_out=24, stagger=22, rise=0, blur=8, glow=0.6))
-        L.append(Line('The Kindling is now.', 2798, 2838, y=402, size=60, weight=520,
-                      fade=22, fade_out=14, stagger=10, glow=0.25))
-    else:
-        L.append(Line('THE LONG DAWN', 2668, 2780, y=402, size=92, weight=500, path=CINZEL,
-                      tracking=0.28, fade=30, fade_out=26, stagger=22, rise=0, blur=8, glow=0.6))
+    S = STORY_SIZE
+    snow = dict(halo=0.95, halo_max=0.78)     # over the bright moonlit summit snow (1370-1435)
+    black = dict(size=S + 2, glow=0.25)        # lines alone on black
+    if cut == 'A':
+        L.append(Line('A story they might tell of us, a lifetime from now.', 4, 104, y=402, size=50,
+                      opacity=0.92, glow=0.2, fade=20, fade_out=16))
+        L.append(Line('Why do we light the fires?', 140, 212, y=y, size=S))
+        L.append(Line('To remember how close we came.', 226, 312, y=y, size=S))
+        L.append(Line('We taught a new kind of fire to read everything we had ever written.', 340, 440,
+                      y=y, size=S))
+        L.append(Line('And it began to think. No one could see how.', 490, 565, y=y, size=S))
+        L.append(Line('Whoever held it alone would hold the world.', 580, 648, y=y, size=S))
+        L.append(Line('The companies raced for it, then the countries.', 668, 738, y=y, size=S))
+        L.append(Line('Each said: if not us, someone worse.', 800, 866, y=y, size=S))
+        L.append(Line('Many in the race said it should slow.', 1060, 1186, y=372, **black))
+        L.append(Line('None would slow alone.', 1104, 1186, y=440, **black))
+        L.append(Line('So someone else lit a beacon.', 1370, 1426, y=y, size=S, **snow))
+        L.append(Line('In time, the race was over.', 2512, 2600, y=y, size=S))
+        L.append(Line('Who lit the first one?', 2660, 2730, y=y, size=S))
+    elif cut == 'C':
+        L.append(Line('Why do we light the fires?', 120, 200, y=y, size=S))
+        L.append(Line('For the night the beacons were lit.', 215, 310, y=y, size=S))
+        L.append(Line('From every word we had ever written, we forged a new power.', 340, 440, y=y, size=S))
+        L.append(Line('A fire that could think, with a will of its own.', 490, 565, y=y, size=S))
+        L.append(Line('One Ring to rule them all.', 628, 695, y=y, size=S))
+        L.append(Line('And every kingdom and every guild wanted it.', 705, 770, y=y, size=S))
+        L.append(Line('Each said: if not us, our enemies.', 780, 834, y=y, size=S))
+        L.append(Line('In the old story, the Ring was unmade in the fire that forged it.', 1060, 1186,
+                      y=372, **black))
+        L.append(Line('This fire could not be unmade.', 1112, 1186, y=440, **black))
+        L.append(Line('And on a cold mountain, someone lit a beacon.', 1370, 1426, y=y, size=S, **snow))
+        L.append(Line('And all the peoples answered.', 1960, 2040, y=y, size=S))
+        L.append(Line('The Ring was unmade in a fire everyone had lit.', 2512, 2600, y=y, size=S))
+        L.append(Line('Who lit the first one?', 2660, 2730, y=y, size=S))
+    # cut B is wordless; the title itself is the ember layer (edit/ember_title.py), composited in assemble
     return L

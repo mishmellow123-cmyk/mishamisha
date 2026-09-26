@@ -27,9 +27,8 @@ CJK_KR = (NO + 'NotoSerifCJK-Regular.ttc', 1)
 # (category, font, index, items, heroes)
 SETS = [
     ('latin', A + 'EBGaramond.ttf', 0,
-     list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') + list('&ÆßñçøłéŒ?') +
-     ['Word', 'fire', 'light', 'dream', 'mind', 'We'],
-     ['A', 'R', 'g', 'Q', '&', 'Word', 'fire', 'light']),
+     list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') + list('&ÆßñçøłéŒ?'),
+     ['A', 'R', 'g', 'Q', '&']),
     ('greek', N + 'NotoSerif-Regular.ttf', 0,
      list('ΑΒΓΔΘΛΞΠΣΦΨΩαβγδεζηθλμξπσφψω') + ['λόγος', 'πῦρ', 'φῶς'],
      ['Ω', 'λόγος', 'Σ', 'φῶς', 'ψ']),
@@ -69,8 +68,8 @@ SETS = [
      ['\U0001D11E', '\U0001D160', '\U0001D122']),
     ('music2', N + 'NotoMusic-Regular.ttf', 0, list('♩♪♫♬♭♮♯'), ['♫', '♪']),
     ('dna', N + 'NotoSansMono-Bold.ttf', 0,
-     list('ATGC') + ['ATCG', 'GATTACA', 'ACGT', 'TTAGGG', 'AUG', 'CGCG'],
-     ['GATTACA', 'ATCG']),
+     list('ATGC') + ['ACGT', 'AUG'],
+     []),
     ('code', N + 'NotoSansMono-Regular.ttf', 0,
      ['{ }', '</>', 'if', 'for', '=>', '0x2A', 'while(1)', 'return', 'λx.x', '01101', '#include',
       'print()', 'def', 'fn()', ';', '!=', '&&', '[ ]', '//', '::', '1', '0'],
@@ -104,6 +103,13 @@ SETS = [
     ('syriac', N + 'NotoSansSyriac-Regular.ttf', 0, list('ܐܒܓܕ'), []),
 ]
 CATS = [s[0] for s in SETS]
+
+# v2 (critic note m3): no whole English words and no GATTACA in the field, and far fewer DNA strings. The items
+# below were in the v1 atlas; the v1 field (its choreography is approved) is drawn exactly as before and only these
+# instances are swapped for letters of the same script (scene_a.Glyphs), so nothing else moves.
+REMOVED = {('latin', 'Word'), ('latin', 'fire'), ('latin', 'light'), ('latin', 'dream'), ('latin', 'mind'),
+           ('latin', 'We'), ('dna', 'GATTACA'), ('dna', 'ATCG'), ('dna', 'TTAGGG'), ('dna', 'CGCG')}
+ACGT_KEEP = 0.25        # share of the random 'ACGT' / 'AUG' instances kept (the hero pass always stays)
 # relative frequency of each category among glyph instances
 CAT_W = {'latin': 12, 'greek': 6, 'cyrillic': 6, 'arabic': 9, 'hebrew': 5, 'devanagari': 7,
          'cjk': 11, 'kana': 3, 'hangul': 5, 'geez': 4, 'tamil': 4, 'math': 6, 'formula': 2, 'music': 3,
@@ -111,6 +117,9 @@ CAT_W = {'latin': 12, 'greek': 6, 'cyrillic': 6, 'arabic': 9, 'hebrew': 5, 'deva
          'phoenician': 1, 'linearb': 1, 'georgian': 1.5, 'armenian': 1.5, 'thai': 1.5,
          'bengali': 1.5, 'tibetan': 1, 'cherokee': 1, 'syllabics': 1, 'tifinagh': 1,
          'khmer': 1, 'sinhala': 1, 'gujarati': 1, 'telugu': 1, 'myanmar': 1, 'yi': 1, 'syriac': 1}
+
+CAT_W_V1 = dict(CAT_W)  # the weights the v1 field was drawn with
+CAT_W['dna'] = 2        # (only used if the v1 atlas is unavailable and the field is drawn afresh)
 
 PX = 128          # render size (px per em)
 KMAX_CHAR = 1000
@@ -201,6 +210,33 @@ def load(cache):
             print('glyphs: dropped (no coverage):', d)
     z = np.load(cache)
     return {k: z[k] for k in z.files}
+
+
+def load_v2(cache_v2, cache_v1):
+    """The v2 atlas = the v1 atlas minus REMOVED, with identical point sets for every glyph kept.
+    Returns (A2, A1, m12) where m12 maps v1 indices to v2 (-1: removed). Without the v1 cache: (A2, None, None)."""
+    if not os.path.exists(cache_v1):
+        return load(cache_v2), None, None
+    A1 = load(cache_v1)
+    keep = np.array([(CATS[c], str(t)) not in REMOVED for c, t in zip(A1['cat'], A1['text'])])
+    m12 = np.full(len(keep), -1, np.int64)
+    m12[keep] = np.arange(keep.sum())
+    if not os.path.exists(cache_v2):
+        os.makedirs(os.path.dirname(cache_v2), exist_ok=True)
+        pts, off, o = [], [], 0
+        for i in np.nonzero(keep)[0]:
+            a, k = int(A1['off'][i]), int(A1['cnt'][i])
+            pts.append(A1['pts'][a:a + k])
+            off.append(o)
+            o += k
+        np.savez_compressed(cache_v2, pts=np.concatenate(pts), off=np.array(off), cnt=A1['cnt'][keep],
+                            size=A1['size'][keep], cat=A1['cat'][keep], hero=A1['hero'][keep] & keep[keep],
+                            text=A1['text'][keep])
+    A2 = load(cache_v2)
+    # hero flags follow the v2 SETS lists
+    herolist = {(s_[0], h) for s_ in SETS for h in s_[4]}
+    A2['hero'] = np.array([(CATS[c], str(t)) in herolist for c, t in zip(A2['cat'], A2['text'])])
+    return A2, A1, m12
 
 
 if __name__ == '__main__':

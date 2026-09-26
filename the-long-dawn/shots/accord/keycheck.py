@@ -20,4 +20,4 @@ cols = 4
 while len(tiles) % cols:
     tiles.append(np.zeros_like(tiles[0]))
 rows = [np.hstack(tiles[i:i + cols]) for i in range(0, len(tiles), cols)]
-cv2.imwrite('renders/accord/tests/keys.png', np.vstack(rows))
+os.makedirs(os.path.join(A.out_dir(), 'tests'), exist_ok=True); cv2.imwrite(os.path.join(A.out_dir(), 'tests', 'keys.png'), np.vstack(rows))

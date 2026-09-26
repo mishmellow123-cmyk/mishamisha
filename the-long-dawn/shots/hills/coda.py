@@ -14,16 +14,23 @@ import os
 
 import numpy as np
 
+import cairn2
 import characters as ch
+import figures2 as f2
 import fire
+import fires2
+import silhouette as sil
 import hillworld as hw
 from core import Camera, fnoise1, look, over, over_region, smoothstep, track, splat_gauss, RENDER_DIR
 from hillscene import (FPS, HillScene, ground_y, make_wind_fn, place_beacons, wind_at, render_crest, Beacon)
 from intro import blur_big, draw_smoke
 from puppet import Chain, Figure
-from sky import dir_from_az_el
+from sky import dir_from_az_el, render_full_sky
 
 F0, F1 = 2460, 2807
+# v2 (Sep 2026, CODA dept): merged-silhouette Elder + Child (figures2.py, silhouette.py), cloth
+# scarf, dry-stone cairn, distinct answering fires. False = the v1 puppets (for comparison).
+V2 = True
 CUT = 2628
 CATCH = 2640
 Z = hw.CREST_Z
@@ -139,7 +146,7 @@ def torch_world(f):
     """(flame base world pos, holder) ."""
     XE, XC = xs(f)
     if f < CUT and smoothstep(2610, 2618, f) <= 0:
-        _, an = ch.elder(elder_pose(f), f / FPS)
+        _, an = (f2.elder2 if V2 else ch.elder)(elder_pose(f), f / FPS)
         tt = an['torch_top']
         return np.array([tt[0], tt[1] + ground_y(XE), Z]), 'elder'
     g, d = child_torch_grip(f)
@@ -169,7 +176,21 @@ def camera(f, scale):
 
 # ------------------------------------------------------------ answering fires ---
 
+FESTIVAL = [(4, -2700.0, 22, 4.0, 1.1), (3, -1000.0, 80, 3.8, 2.3), (5, -5400.0, 112, 5.0, 3.7),
+            (3, -300.0, 138, 3.5, 4.1), (4, 1300.0, 196, 4.0, 5.3), (5, 4200.0, 238, 5.0, 6.9),
+            (2, 700.0, 262, 3.0, 7.7)]          # the festival fires lit in the INTRO (layer, x, frame, size, seed)
+
+
 def answering_fires(rl):
+    """(fires, info) of the answering-fire wave. v2: distinct fires on visible ridgelines, one
+    per SFX whump (fires2.PLAN); v1: ~50 splats."""
+    if V2:
+        fest = fires2.festival_fires(FESTIVAL, rl)
+        return fires2.answering_fires_v2(rl, lambda ff: camera(ff, 1.0)[0], avoid=fest)
+    return answering_fires_v1(rl)
+
+
+def answering_fires_v1(rl):
     rng = np.random.default_rng(2645)
     per = [(0, 3), (1, 4), (2, 6), (3, 7), (4, 8), (5, 9), (6, 9), (7, 6)]
     cands = []
@@ -212,10 +233,31 @@ class Coda:
                  (3, -300.0, 138, 3.5, 4.1), (4, 1300.0, 196, 4.0, 5.3), (5, 4200.0, 238, 5.0, 6.9),
                  (2, 700.0, 262, 3.0, 7.7)]
         self.old = place_beacons(specs, rl)          # the festival fires lit during the INTRO
+        if V2:
+            self.old = fires2.festival_fires(specs, rl)
         self.wave, self.wave_info = answering_fires(rl)
+        self.cairn2 = cairn2.DryStoneCairn(seed=7) if V2 else None
         self._sim = False
 
-    def export_fires(self):
+    def export_fires(self, out_dir=None):
+        if V2:
+            out_dir = out_dir or os.path.join(os.path.dirname(RENDER_DIR), 'hills_v2')
+            os.makedirs(out_dir, exist_ok=True)
+            path = os.path.join(out_dir, 'coda_fires.json')
+            fb = np.array([X_CAIRN, GK + self.scene.cairn.bk_bot + 0.10, Z])
+            fest = [dict(frame=int(b.frame), layer=int(b.layer), x_m=round(b.x, 1), y_m=round(b.y, 1), z_m=round(b.z),
+                         flame_height_m=round(b.height, 2)) for b in self.old]
+            with open(path, 'w') as fh:
+                json.dump(dict(
+                    note=('CODA v2 answering fires. frame = SRC ignition (the whoomp peaks 2-6 frames later); '
+                          'frame_v2 = frame + 160 = the SFX answering_fire_NN whump frames (sfx_v2.py). '
+                          'World metres (x right, y up, z forward; camera = coda.camera). pan = screen x at '
+                          'ignition, -1 left .. +1 right (the SFX pans alternate differently; re-pan to match '
+                          'if wanted). festival = the INTRO fires, still burning.'),
+                    beacon_catch=CATCH, beacon_catch_v2=CATCH + 160,
+                    beacon_fire_base_m=[round(float(v), 3) for v in fb],
+                    fires=sorted(self.wave_info, key=lambda d: d['frame']), festival=fest), fh, indent=1)
+            return path
         path = os.path.join(RENDER_DIR, 'coda_fires.json')
         with open(path, 'w') as fh:
             json.dump(dict(note='CODA answering fires (global frames). voiced = the first 18 in order, '
@@ -226,16 +268,22 @@ class Coda:
     def simulate(self):
         if self._sim:
             return
+        elder_fn = f2.elder2 if V2 else ch.elder
+
         def anchor(ff):
-            _, an = ch.elder(elder_pose(ff), ff / FPS, anchors_only=True)
+            _, an = elder_fn(elder_pose(ff), ff / FPS, anchors_only=True)
             return an['scarf_anchor']
-        self.scarf = Chain(14, 0.078, anchor, dir0=(1.0, -0.3), drag=8.5, iters=6, damp=0.99)
+        if V2:
+            # a longer, finer chain: the tail is cloth (tapering, twisting, rippling), ~1.05 m
+            self.scarf = Chain(20, 0.053, anchor, dir0=(1.0, -0.3), drag=8.0, iters=8, damp=0.99)
+        else:
+            self.scarf = Chain(14, 0.078, anchor, dir0=(1.0, -0.3), drag=8.5, iters=6, damp=0.99)
         self.scarf.simulate(F0, F1, make_wind_fn(1.0, 0.45, 7.0, lift=0.55, flutter=1.5,
                                                  extra=lambda ff: wind_base(ff) - 1.0 + 0.0))
         self.wisps = []
         for k in range(3):
             def a2(ff, k=k):
-                _, an = ch.elder(elder_pose(ff), ff / FPS, anchors_only=True)
+                _, an = elder_fn(elder_pose(ff), ff / FPS, anchors_only=True)
                 return an['bun'] + np.array([0.01 * k, -0.012 * k])
             c = Chain(5, 0.022 + 0.004 * k, a2, dir0=(1.0, 0.2), drag=8.0, iters=4, damp=0.97, grav=3.0)
             c.simulate(F0, F1, make_wind_fn(1.0, 0.6, 30.0 + k, lift=0.3, flutter=1.4,
@@ -264,7 +312,10 @@ class Coda:
                           np.where(kind == 0, 1.0, rng.uniform(0.6, 0.85, n)))
             if ff >= CATCH:
                 lv = self.cairn_level(ff)
-                rate = 20.0 + 60.0 * min(1.5, lv) + 200.0 * smoothstep(CATCH + 4, CATCH + 8, ff) * (1 - smoothstep(CATCH + 12, CATCH + 30, ff))
+                if V2:       # the burst rides the whoosh ON the catch frame
+                    rate = 20.0 + 60.0 * min(1.5, lv) + 220.0 * smoothstep(CATCH - 0.5, CATCH + 1.5, ff) * (1 - smoothstep(CATCH + 6, CATCH + 24, ff))
+                else:
+                    rate = 20.0 + 60.0 * min(1.5, lv) + 200.0 * smoothstep(CATCH + 4, CATCH + 8, ff) * (1 - smoothstep(CATCH + 12, CATCH + 30, ff))
                 m = rng.poisson(rate * dt)
                 if m > 0:
                     pos = base_fire + np.stack([rng.normal(0, 0.14, m), rng.uniform(0.1, 0.8, m), rng.normal(0, 0.08, m)], 1)
@@ -281,6 +332,15 @@ class Coda:
         self._sim = True
 
     def cairn_level(self, f):
+        if V2:
+            # the kindling catches one frame before the hit (the torch has been in the basket
+            # since 2638), and the flame WHOOSHES up with overshoot ON 2640 (the music's hit)
+            if f < CATCH - 1:
+                return 0.0
+            if f < CATCH:
+                return 0.10 + 0.05 * (f - (CATCH - 1))
+            tr = (f - CATCH) / FPS + 0.025
+            return 0.12 + 1.15 * fire.ignition(tr, overshoot=0.75, rise=0.22, settle=0.8)
         if f < CATCH:
             return 0.0
         tr = (f - CATCH) / FPS
@@ -304,7 +364,11 @@ class Coda:
         cairn = self.scene.cairn
         fire_base = np.array([X_CAIRN, GK + cairn.bk_bot + 0.10, Z])
         beacons = self.old + self.wave
-        img, dep = self.scene.background(cam, self.sky, f, beacons, crest=False)
+        if V2:
+            img, dep = fires2.background_v2(self.scene, cam, self.sky, f, beacons, render_full_sky)
+            fires2.draw_fires(img, dep, cam, beacons, f, wind=wind_at(t, wind_base(f), 0.5, 1.0))
+        else:
+            img, dep = self.scene.background(cam, self.sky, f, beacons, crest=False)
         # ship lights (slow), after the crane starts
         self._ships(img, cam, f)
         if focus is not None:
@@ -316,6 +380,8 @@ class Coda:
             I = min(cl, 1.6) * cflick
             pool.append((X_CAIRN, GK, Z, 2.4, 0.14 * I, 0.06 * I, 0.018 * I, 'crest'))
         cr = render_crest(cam, self.sky, f, pool)
+        if V2:
+            fires2.crest_texture(cr[0], cr[1], cam.params(), float(Z))
         over(img, cr[0], cr[1])
         lights = [[tfl[0], tfl[1] + 0.12, Z - 0.05, tI[0], tI[1], tI[2], 0.30, 0.0]]
         if cl > 0:
@@ -326,14 +392,28 @@ class Coda:
         back = np.array([0.16, 0.10, 0.14]) if f < CUT else np.array([0.12, 0.08, 0.12])
         items = [Figure([0.0, 0.0, Z + 0.02], [self.scene.grass.group(t, wind)]),
                  Figure([0.0, GK, Z + 0.01], cairn.groups(x=X_CAIRN))]
-        eg, ea = ch.elder(ep, t, scarf_pts=self.scarf.at(f), wisps=[w.at(f) for w in self.wisps])
-        items.append(Figure([0.0, GE, Z], eg))
-        cg, ca = ch.child(cp, t, facing=cf)
-        if holder == 'child':
-            g, d = child_torch_grip(f)
-            tg, _ = ch.torch_alone(g - d * 0.16, d, length=TORCH_LEN, t=t)
-            cg = [tg] + cg if cf == -1 else cg + [tg]
-        items.append(Figure([0.0, GC, Z - 0.01], cg))
+        if V2:
+            r = items[0].render(cam, lights, amb_top, np.zeros(3), back=back)
+            if r is not None:
+                over_region(img, *r)
+            r = self.cairn2.render(cam, [X_CAIRN, GK, Z + 0.01], lights, amb_top, bg=img)
+            if r is not None:
+                over_region(img, *r)
+            r = sil.Silhouette([0.0, GK, Z + 0.01], self.cairn2.basket_groups(x=X_CAIRN)).render(
+                cam, lights, amb_top, np.zeros(3), bg=img, t=t)
+            if r is not None:
+                over_region(img, *r)
+            self._figures_v2(img, cam, f, t, ep, cp, cf, holder, lights, amb_top, GE, GC)
+            items = []
+        else:
+            eg, ea = ch.elder(ep, t, scarf_pts=self.scarf.at(f), wisps=[w.at(f) for w in self.wisps])
+            items.append(Figure([0.0, GE, Z], eg))
+            cg, ca = ch.child(cp, t, facing=cf)
+            if holder == 'child':
+                g, d = child_torch_grip(f)
+                tg, _ = ch.torch_alone(g - d * 0.16, d, length=TORCH_LEN, t=t)
+                cg = [tg] + cg if cf == -1 else cg + [tg]
+            items.append(Figure([0.0, GC, Z - 0.01], cg))
         blur_fig = 0.0
         for it in items:
             r = it.render(cam, lights, amb_top, np.zeros(3), back=back, blur_px=blur_fig)
@@ -349,10 +429,17 @@ class Coda:
             sx, sy, z = cam.project(pts)
             if np.all(z > 0.05):
                 I = min(cl, 1.6) * cflick
-                fire.render_smoke(srgb, sa, cam.params(), float(b[0]), float(b[1]), float(b[2]), t, 2.3, 5.0,
-                                  0.2, 0.28, 0.5 * wind, 0.8, 0.5 * smoothstep(CATCH, CATCH + 20, f),
-                                  0.25 * I, 0.09 * I, 0.025 * I, 0.8, 0.004, 0.005, 0.010,
-                                  int(min(sx)) - 20, int(min(sy)) - 20, int(max(sx)) + 20, int(max(sy)) + 20)
+                if V2:
+                    fires2.smoke_wisp(srgb, sa, np.full(img.shape[:2], 1e9, np.float32), cam.params(),
+                                      float(b[0]), float(b[1]), float(b[2]), t, 2.3, 5.5,
+                                      0.22, 0.26, 0.42 * wind, 0.9, 0.42 * smoothstep(CATCH, CATCH + 20, f),
+                                      0.25 * I, 0.09 * I, 0.025 * I, 0.8, 0.004, 0.005, 0.010,
+                                      int(min(sx)) - 20, int(min(sy)) - 20, int(max(sx)) + 20, int(max(sy)) + 20)
+                else:
+                    fire.render_smoke(srgb, sa, cam.params(), float(b[0]), float(b[1]), float(b[2]), t, 2.3, 5.0,
+                                      0.2, 0.28, 0.5 * wind, 0.8, 0.5 * smoothstep(CATCH, CATCH + 20, f),
+                                      0.25 * I, 0.09 * I, 0.025 * I, 0.8, 0.004, 0.005, 0.010,
+                                      int(min(sx)) - 20, int(min(sy)) - 20, int(max(sx)) + 20, int(max(sy)) + 20)
                 over(img, srgb, sa)
         fa = np.zeros(img.shape[:2], np.float32)
         if cl > 0:
@@ -360,6 +447,13 @@ class Coda:
             fire.draw_flame(img, fa, cam, fire_base, 0.35 + 0.80 * g2, 0.30, 0.12 + 0.15 * wind, t, 2.9,
                             4.5 + 4.0 * min(1.0, cl), fire.BONFIRE_STYLE)
             fire.add_glow(img, cam, fire_base + np.array([0, 0.6, 0]), 0.8, 0.06 * min(cl, 1.6) * cflick)
+            if V2:
+                # the iron cage stands dark against its own fire
+                r = sil.Silhouette([0.0, GK, Z + 0.01], self.cairn2.basket_groups(x=X_CAIRN, only_iron=True)).render(
+                    cam, lights, amb_top, np.zeros(3), bg=img, t=t)
+                if r is not None:
+                    y0, x0, rgb, a = r
+                    over_region(img, y0, x0, rgb * 0.72, a * 0.72)
         # torch flame
         lean = 0.10 + 0.16 * wind
         fire.draw_flame(img, fa, cam, tfl + np.array([0.0, -0.035, 0.0]), 0.30 * (0.95 + 0.08 * flick),
@@ -370,6 +464,20 @@ class Coda:
                            cam.scale * 1.5, focus if focus else 10.0, 0.0, 1.0, 1.5, 0.05)
         out = look.finish(img, exposure=1.0, bloom_strength=0.085, bloom_threshold=0.9, vignette_amount=0.24)
         return out
+
+    def _figures_v2(self, img, cam, f, t, ep, cp, cf, holder, lights, amb_top, GE, GC):
+        """The Elder and the Child as ONE merged silhouette (rims only on the outer contour)."""
+        eg, ea = f2.elder2(ep, t, scarf_pts=self.scarf.at(f), wisps=[w.at(f) for w in self.wisps])
+        cg, ca = f2.child2(cp, t, facing=cf)
+        if holder == 'child':
+            g, d = child_torch_grip(f)
+            tgs, _ = f2.torch_alone2(g - d * 0.16, d, length=TORCH_LEN, t=t)
+            cg = tgs + cg if cf == -1 else cg + tgs
+        f2.translate(cg, 0.0, GC - GE)
+        fig = sil.Silhouette([0.0, GE, Z], eg + cg)
+        r = fig.render(cam, lights, amb_top, np.zeros(3), bg=img, t=t)
+        if r is not None:
+            over_region(img, *r)
 
     def _ships(self, img, cam, f):
         # a few slow lights crossing the sky (future traffic), steady with a soft blink on one

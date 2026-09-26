@@ -31,11 +31,15 @@ class Timeline:
     shock = property(lambda s: s._get('shock', B.Shockwave))
     towers = property(lambda s: s._get('towers', B.Towers))
     sparks = property(lambda s: s._get('sparks', lambda: B.Sparks(s.towers)))
+    tembers = property(lambda s: s._get('tembers', lambda: B.TowerEmbers(s.towers)))
+    tsmoke = property(lambda s: s._get('tsmoke', lambda: B.TowerSmoke(s.towers)))
     walls = property(lambda s: s._get('walls', lambda: B.Walls(s.towers)))
     smoke = property(lambda s: s._get('smoke', B.Smoke))
     dust = property(lambda s: s._get('dust', B.Dust))
     vortex = property(lambda s: s._get('vortex', lambda: B.Vortex(s.fire)))
     globe = property(lambda s: s._get('globe', C.Globe))
+    ring = property(lambda s: s._get('ring', lambda: __import__('tolkien').Ring()))
+    eye = property(lambda s: s._get('eye', lambda: __import__('tolkien').Eye()))
     hand = property(lambda s: s._get('hand', C.Hand))
 
     # ---------------------------------------------------------------- camera
@@ -51,7 +55,7 @@ class Timeline:
             pos, tgt = B.cam_b(t)
             Cc = B.crown_centre(t)
             focus = float(np.linalg.norm(Cc - pos))
-            hf = float(lerp(46.0, 44.0, smoothstep(480, 520, t)))
+            hf = float(lerp(46.0, 52.0, smoothstep(480, 505, t)))    # v2: wider while it is a flame (v1: 44)
             hf = float(lerp(hf, 56.0, smoothstep(540, 620, t)))
             hf = float(lerp(hf, 66.0, smoothstep(640, 700, t)))
             hf = float(lerp(hf, 78.0, smoothstep(800, 850, t)))
@@ -94,9 +98,12 @@ class Timeline:
             self.point.emit(ctx)
         if 480 <= t < 880 or 960 <= t < 1040:
             lp, lc, lpw = self.light(t)
+            self.towers.prepare(ctx)        # v2: solid towers -> occluder for everything splatted after this
             self.dust.emit(ctx)
             self.smoke.emit(ctx, lp, lc, lpw)
             self.towers.emit(ctx, lp, lc, lpw)
+            self.tembers.emit(ctx)
+            self.tsmoke.emit(ctx, lp, lc, lpw)
             self.walls.emit(ctx)
             self.sparks.emit(ctx)
             self.vortex.emit(ctx)
@@ -104,6 +111,12 @@ class Timeline:
             self.crown.emit(ctx)
             self.fsparks.emit(ctx)
             self.shock.emit(ctx)
+            import variant
+            if variant.tolkien():                      # cut C: the Ring (race + storm, and in the grasp), the Eye
+                if 560 <= t < 880 or 960 <= t < 1040:
+                    self.ring.emit(ctx)
+                if 830 <= t < 880:
+                    self.eye.emit(ctx)
         if 880 <= t < 960:
             self.globe.emit(ctx)
         if 960 <= t < 1040:
@@ -121,6 +134,10 @@ class Timeline:
     def post(self, ctx, hdr):
         f = ctx.t
         H, W = hdr.shape[:2]
+        if 830 <= f < 880 and hasattr(ctx, 'fr_eye'):
+            # cut C: the slit of darkness, then the Eye's own fire on top
+            import tolkien
+            hdr = tolkien.Eye.darkness(ctx, hdr) + ctx.fr_eye.resolve()
         if f < 336:
             # warm light of the torch flame just below frame (continuity with INTRO)
             k = float(1 - smoothstep(300, 336, f))

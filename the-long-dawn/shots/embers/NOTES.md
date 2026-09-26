@@ -1,3 +1,110 @@
+# EMBERS v2 — second pass (framing & tone reviews, 2026-09-26)
+
+Re-rendered (src numbering): embers_v2 316-830, 866-959 · embers_B 331-449, 481-747, 791-959 · embers_C 562-959.
+(embers_v2 831-865 and every folder's 960-1039 are unchanged; B/C fall back to v2 wherever they would be identical.)
+
+* **Globe (880-959, all cuts; framing review / tone M5).** v1 framed East Asia and parted along a seam past Japan,
+  Taiwan and the Philippines. Now: seen from ~82 N, every continent on the rim together, turning eastward ~27 deg;
+  the fire starts in the high Arctic and reaches every continent at about the same time; the plates are laid out by
+  `globe_plates.py` (Voronoi seeds optimised against real geography: no seam within 4-8 deg of the first island
+  chain, the Taiwan Strait, Korea, Kashmir/the Himalaya, Ukraine/the Baltic, the Levant/Suez/Gulf/Hormuz, the
+  Bering Strait; soft margins from capitals/AI hubs; seams kept off land borders and dense population), then merged
+  into 13 irregular plates (`GLOBE_GROUPS`; 28 equal cells read as a football), a grouping in which the fracture
+  crosses every continent. Viewers see coastlines, not borders, so the test was: no seam along a coast or strait and
+  none cutting off a peninsula or island. Timing unchanged (cut in 880, flare-out 950-959).
+* **The thinking fire (480-628, all cuts; M2).** No longer a hanging bulb: a compact flame (base -0.8R, tip +2.3R)
+  whose white core sits up in the body, a cool dim base, three asymmetric licking tongues (`FLAME_TONGUES`),
+  filaments rising into the tongues (none coiled at the base), glow drawn up the flame, sparks from the tongue
+  tips. Camera ~15% further back 490-548 and a wider lens (46->52 deg, v1 44) so the tip is always in frame and
+  the flame sits above the caption. All weighted by (1 - crown_morph): the crown / Ring and race are unchanged.
+* **The crown (A and B, 564-830; m7).** Thirteen irregular licking tongues (uneven spacing, heights 0.9-3.9,
+  own flicker, sway, a lick wave running up each, bent tips) over a low fringe of flame, not nine equal triangles.
+* **Glyphs (316-480, all cuts; m3).** No whole English words ('Word', 'fire', 'light', 'dream', 'mind', 'We'),
+  no GATTACA/ATCG/TTAGGG/CGCG, and 3/4 of the random ACGT/AUG strings gone (157 instances swapped for letters of
+  their own script). The v1 field is drawn exactly as before (same stream, same choreography, same hero passes)
+  and only those instances change; the v2 atlas (renders/embers_v2/cache/glyphs_v2.npz) is the v1 atlas minus
+  the removed items, with identical point sets.
+* **Text band (render.py TEXT, per cut).** A: 340-440, 490-565, 580-648, 668-738, 800-866 · C: 340-440, 490-565,
+  628-695, 705-770, 780-834 · B: none. (Lines on black 1060-1186 sit mid-frame; silence frames unaffected.)
+
+# EMBERS v2 (BIBLE_V2 §4) — what changed and how to re-render
+
+Outputs (src numbering; the edit falls back embers_<cut> -> embers_v2 -> embers):
+* `renders/embers_v2/`  cut A (and the base for C): 520-879 (towers of embers + the vortex fix) and 960-1039 (the
+  grasp re-rendered because the solid towers change its backdrop; the hand's code is untouched). Text band ON.
+* `renders/embers_B/`   cut B (wordless): every frame whose look depended on the text-band attenuation, re-rendered
+  without it: 331-449, 481-644, 651-739, 811-909 (towers/vortex frames in there are v2). The silence (1046-1199)
+  is unaffected by the band (the last ember stays above it) and falls back.
+* `renders/embers_C/`   cut C (Tolkien): 562-879 and 960-1039 (the Ring, the Eye, the grasp on the Ring). Band ON.
+
+Render: `python render.py <frames> --cut A|B|C [--scale 0.5 --out DIR]` (default outputs above; it refuses to write
+renders/embers, the delivered v1). v1 source is kept in `_v1_src/`. Review sheets: `python review_sheets.py`.
+
+## 1. Towers made of embers (all cuts) — towers2.py, scene_b.Towers
+* v1 drew points along box edges (CAD wireframes, transparent). v2 builds each of the eight designs as a solid
+  ember surface: a glowing-coal CRUST (slow ash/heat patches streaked upward), fire in the JOINTS (importance-
+  sampled masonry courses for the needle spire, ziggurat and drum tower; a mullion grid for the twisted prism,
+  pagoda, pod tower and blade; plus a few large fissures), BURNING EDGES (tier lips, eaves, ribs), WINDOWS of fire
+  (a third lit, most smouldering, a few roaring; unlit ones are dark openings), rims, heat at the base and a
+  base-to-top gradient so the tops recede into the dark, SMOKE rolling off the tops (TowerSmoke) and EMBERS shed
+  off the edges (TowerEmbers). Every surge (v1 motion, unchanged) sends a heat wave up the tower; palette bleeds
+  to crimson as before.
+* Occlusion (core.py): the crust feeds an occluder pass (depth / coverage / id pyramid at half res, linear alpha
+  from defocused coverage); every splat is depth-tested per pixel against it, a tower's own points with a larger
+  same-id bias. The towers are opaque masses: they hide the walls, smoke, crown and storm behind them.
+* Level of detail by distance; gaussian splats for the towers (soft defocus, no bokeh "glitter").
+* Bodies extend to local y=-26 (towers surge above HMAX from ~840; in v1 their bases lifted off the ground).
+
+## 2. The vortex (all cuts) — scene_b.vortex_tilt / crown_tilt / STORM_LIFT
+* The storm's disc turns its underside to the lens as it grows (held at ~38 deg from the first frame of growth),
+  so it reads as a maelstrom at every frame (v1: nearly edge-on 805-825, a flat bright smear).
+* The crown ring keeps turning its face toward the lens (798-842) instead of flattening through edge-on; its
+  tines, tongues and spark column are drawn into the storm (802-830).
+* Because the towers are solid now, the storm climbs 16 units clear of their crowns (804-852, t<880 only) and the
+  camera tilts up to follow (CAM_B 840/880 targets); the funnel's throat sits on the ring.
+
+## 3. Cut B — `--cut B` sets the text-band attenuation to zero (variant.py).
+
+## 4. Cut C — tolkien.py, inscription.py
+* The Ring: the thinking fire is forged into a plain heavy gold band (a white-hot front runs round the circle
+  596-622; the metal cools through orange to gold); fine lines of fire burn up out of it (616-642) as an
+  inscription outside and in, in an ORIGINAL invented script (inscription.py: crozier stems, flame loops, spirals,
+  moon crescents, looped crosses; broad-nib calligraphy; no real text, and deliberately unlike Tengwar, Latin,
+  Arabic or any living script). Gold ember-light with a polished highlight; turns slowly; stays gold while the
+  world goes crimson. No crown tines in C.
+* The Eye (836-879): the Ring faces the lens and burns from gold to a ring of fire (flames lick off it); inside,
+  an iris of flame fibres drawn slowly inward to a vertical slit of real darkness (post mask: light behind the
+  slit is removed, the storm's glare behind the iris dimmed), rimmed with white heat; the slit narrows a little
+  and holds. The storm's white core turns to fire around it.
+* The grasp (960-1039): the Ring, small and bright, hangs in the storm's eye (C only: the funnel throat is moved
+  onto crown_centre(960), where the fist closes); the hand's own occlusion hides it as the fingers close, its gold
+  light leaking round them.
+* Grasp backdrop (all cuts): the ring of towers is rotated rigidly by 0.64 rad for the grasp shot (after the hard
+  cut, invisible) so a gap between two slender towers lies in front of the storm's eye; towers dimmed x0.6.
+
+## Render log (this Mac, M2, one thread per process, two processes, alongside other departments)
+| folder | frames | median / frame | total CPU |
+|---|---|---|---|
+| embers_v2 | 520-879 (360) | 3.6 s | 26.5 min |
+| embers_v2 | 960-1039 (80) | 8.6 s | 12.8 min |
+| embers_B | 331-449, 481-644, 651-739, 811-909 (471) | 3.4 s | 40.2 min |
+| embers_C | 562-879 (318) | 4.3 s | 25.9 min |
+| embers_C | 960-1039 (80) | 7.8 s | 12.1 min |
+First frame of a process: +20-100 s (numba compile, tower build ~8 s, hand build). Peak RSS ~0.8 GB.
+Checks: B's silence frames equal A's to the dither (max 2/255); local renders match the cloud-rendered v1 at the
+seams to noise level (mean |diff| ~2/255, well under frame-to-frame motion).
+
+## Known weaknesses (v2)
+* Tower crusts are point-splatted: at full res their ember grain is fine texture, but at a distance (and in the
+  LOD tail) they read softer and slightly noisy; the occluder is half-res, so tower silhouettes against the
+  bright storm have a soft, faintly stepped edge.
+* In the grasp (all cuts) the storm's eye is framed by two tower silhouettes (hard dark verticals at its sides,
+  960-1000) — the price of solid towers; the rotation was chosen to keep the eye's centre clear.
+* Cut C: the inscription reads as writing while the Ring is near and turned (620-720); later it is fine flecks
+  of fire. The Ring slides ~5 units into the hollow of the grip 1004-1018 (hidden by the fingers for most of it).
+
+----------------------------------------------------------------------------------------------------------------
+
 # EMBERS: notes (global frames 300–1199)
 
 The legend told in the fire. Everything is a particle in true 3D space, seen

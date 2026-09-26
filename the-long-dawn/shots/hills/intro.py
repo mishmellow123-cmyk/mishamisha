@@ -11,8 +11,12 @@ import math
 import cv2
 import numpy as np
 
+import cairn2
 import characters as ch
+import figures2 as f2
 import fire
+import fires2
+import silhouette as sil
 import hillworld as hw
 from core import Camera, fnoise1, look, over, over_region, smoothstep, track
 from hillscene import (FPS, HillScene, ground_y, make_wind_fn, place_beacons, wind_at,
@@ -21,6 +25,9 @@ from puppet import Chain, Figure
 from sky import render_full_sky
 
 F0, F1 = 0, 359
+# v2 (Sep 2026, CODA dept): the same merged-silhouette Elder + Child, dry-stone cairn and distinct
+# festival fires as the CODA (see coda.py / NOTES.md). False = the v1 puppets.
+V2 = True
 CUT = 160
 Z = hw.CREST_Z
 X_ELDER = 3.62
@@ -116,7 +123,7 @@ def camera(f, scale):
 
 def torch_world(f):
     """World position of the torch flame base for frame f."""
-    _, an = ch.elder(elder_pose(f), f / FPS)
+    _, an = (f2.elder2 if V2 else ch.elder)(elder_pose(f), f / FPS)
     tt = an['torch_top']
     return np.array([tt[0], tt[1] + GE, Z])
 
@@ -132,6 +139,9 @@ class Intro:
                  (3, -300.0, 138, 3.5, 4.1), (4, 1300.0, 196, 4.0, 5.3), (5, 4200.0, 238, 5.0, 6.9),
                  (2, 700.0, 262, 3.0, 7.7)]
         self.beacons = place_beacons(specs, rl)
+        if V2:
+            self.beacons = fires2.festival_fires(specs, rl)
+            self.cairn2 = cairn2.DryStoneCairn(seed=7)
         self._sim_done = False
 
     # --- simulations (deterministic, run once per process)
@@ -139,17 +149,22 @@ class Intro:
         if self._sim_done:
             return
         # scarf tail: local coords of the Elder card (origin y = GE)
+        elder_fn = f2.elder2 if V2 else ch.elder
+
         def anchor(ff):
-            _, an = ch.elder(elder_pose(ff), ff / FPS, anchors_only=True)
+            _, an = elder_fn(elder_pose(ff), ff / FPS, anchors_only=True)
             return an['scarf_anchor']
-        self.scarf = Chain(14, 0.078, anchor, dir0=(1.0, -0.3), drag=8.5, iters=6, damp=0.99)
+        if V2:
+            self.scarf = Chain(20, 0.053, anchor, dir0=(1.0, -0.3), drag=8.0, iters=8, damp=0.99)
+        else:
+            self.scarf = Chain(14, 0.078, anchor, dir0=(1.0, -0.3), drag=8.5, iters=6, damp=0.99)
         self.scarf.simulate(F0, F1, make_wind_fn(1.0, 0.45, 2.0, lift=0.55, flutter=1.4,
                                                   extra=lambda ff: wind_base(ff) - 1.0))
         # grey wisps from the bun
         self.wisps = []
         for k in range(3):
             def a2(ff, k=k):
-                _, an = ch.elder(elder_pose(ff), ff / FPS, anchors_only=True)
+                _, an = elder_fn(elder_pose(ff), ff / FPS, anchors_only=True)
                 return an['bun'] + np.array([0.01 * k, -0.012 * k])
             c = Chain(5, 0.022 + 0.004 * k, a2, dir0=(1.0, 0.2), drag=8.0, iters=4, damp=0.97, grav=3.0)
             c.simulate(F0, F1, make_wind_fn(1.0, 0.6, 10.0 + k, lift=0.3, flutter=1.4,
@@ -207,7 +222,11 @@ class Intro:
         flick = fire.flicker(t, 1.7, 1.0)
         torch_I = np.array([3.4, 1.65, 0.55]) * flick
         # background: sky + far ridges + beacons (+ torch glow on the crest ground)
-        img, dep = self.scene.background(cam, self.sky, f, self.beacons, crest=False)
+        if V2:
+            img, dep = fires2.background_v2(self.scene, cam, self.sky, f, self.beacons, render_full_sky)
+            fires2.draw_fires(img, dep, cam, self.beacons, f, wind=wind_at(t, wind_base(f), 0.5, 1.0))
+        else:
+            img, dep = self.scene.background(cam, self.sky, f, self.beacons, crest=False)
         # DOF on the far background during the two-shot/push
         if focus is not None:
             A = 0.016 * cam.f          # aperture (px*m)
@@ -218,6 +237,8 @@ class Intro:
         # crest (ground under the figures) with the torch pool
         pool = [(tfl[0], ground_y(tfl[0]), Z, 1.1, 0.07 * flick, 0.032 * flick, 0.010 * flick, 'crest')]
         cr = render_crest(cam, self.sky, f, pool)
+        if V2:
+            fires2.crest_texture(cr[0], cr[1], cam.params(), float(Z))
         over(img, cr[0], cr[1])
         # grass along the crest
         lights = np.array([[tfl[0], tfl[1] + 0.12, Z - 0.05, torch_I[0], torch_I[1], torch_I[2], 0.30, 0.0]])
@@ -241,9 +262,33 @@ class Intro:
             A = 0.016 * cam.f
             dz = abs(1.0 / max(Z - cam.pos[2], 0.2) - 1.0 / max(focus, 0.2))
             blur_fig = A * dz * 0.42
+        bpx = blur_fig if blur_fig > 0.6 else 0.0
+        if V2:
+            r = items[0].render(cam, lights, amb_top, amb_bot, back=back, blur_px=bpx)
+            if r is not None:
+                over_region(img, *r)
+            r = self.cairn2.render(cam, [X_CAIRN, GK, Z + 0.01], lights, amb_top, bg=img)
+            if r is not None:
+                y0, x0, rgb, a = r
+                if bpx > 0.3:
+                    rgb = cv2.GaussianBlur(rgb, (0, 0), bpx)
+                    a = cv2.GaussianBlur(a, (0, 0), bpx)
+                over_region(img, y0, x0, rgb, a)
+            r = sil.Silhouette([0.0, GK, Z + 0.01], self.cairn2.basket_groups(x=X_CAIRN)).render(
+                cam, lights, amb_top, amb_bot, bg=img, blur_px=bpx, t=t)
+            if r is not None:
+                over_region(img, *r)
+            eg, ea = f2.elder2(ep_s, t, scarf_pts=scarf, wisps=wisps)
+            cg, ca = f2.child2(cp, t, facing=cf)
+            f2.translate(cg, 0.0, GC - GE)
+            r = sil.Silhouette([0.0, GE, Z], eg + cg).render(cam, lights, amb_top, amb_bot, bg=img,
+                                                            blur_px=bpx, t=t)
+            if r is not None:
+                over_region(img, *r)
+            items = []
         for it in items:
             loc = lights.copy()
-            r = it.render(cam, loc, amb_top, amb_bot, back=back, blur_px=blur_fig if blur_fig > 0.6 else 0.0)
+            r = it.render(cam, loc, amb_top, amb_bot, back=back, blur_px=bpx)
             if r is not None:
                 y0, x0, rgb, a = r
                 over_region(img, y0, x0, rgb, a)
