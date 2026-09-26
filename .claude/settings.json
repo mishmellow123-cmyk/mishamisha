@@ -4,6 +4,7 @@
     "CLAUDE_CODE_EFFORT_LEVEL": "max"
   },
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(python3 cloud/run_job.py:*)",
       "Bash(python3 the-long-dawn/cloud/run_job.py:*)",
