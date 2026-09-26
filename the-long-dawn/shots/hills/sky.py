@@ -406,10 +406,18 @@ def draw_moon(img, cam, sky, t=0.0, escale=1.0, star_mask=None):
 
 
 def draw_ring(img, cam, sky, gain=1.0, width=0.75, t=0.0):
-    """Thin luminous ring polyline (energy per pixel length ~ gain)."""
+    """Thin luminous ring polyline (energy per pixel length ~ gain). Optional ring['fade'] = (t0, t1) s:
+    fades out between t0 and t1 and is not drawn from t1 on (t0 == t1: gone from t1, e.g. at a cut)."""
     rp = sky.ring_path()
     if rp is None:
         return
+    fd = sky.ring.get('fade')
+    if fd is not None:
+        if t >= fd[1]:
+            return
+        if t > fd[0]:
+            u = (t - fd[0]) / (fd[1] - fd[0])
+            gain *= 1.0 - u * u * (3.0 - 2.0 * u)
     dirs, lit, node, th = rp
     sx, sy, z = cam.project(cam.pos + dirs * 1e7)
     ok = (z > 0) & (dirs[:, 1] > -0.03)

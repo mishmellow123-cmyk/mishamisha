@@ -120,7 +120,9 @@ def sky_intro():
         earthshine=0.045, city_gain=1.1, moon_phase=132.0, moon_pa=-22.0,
         mw=0.0, star_gain=30.0, star_thresh=3.0, n_stars=14000,
         planets=[(-8.5, 9.6, 14.0, (1.0, 0.97, 0.9))],
-        ring=dict(RING), seed=1)
+        # the push into the torch (src 256-272) washes the faint ring out before it would cross the
+        # sparks rising from the flame (276-290)
+        ring=dict(RING, fade=(256.0 / 24.0, 272.0 / 24.0)), seed=1)
 
 
 def sky_coda():
@@ -136,4 +138,6 @@ def sky_coda():
         earthshine=0.06, city_gain=1.6, moon_phase=132.0, moon_pa=-22.0,
         mw=0.9, mw_pole=dir_from_az_el(-120.0, 20.0), star_gain=30.0, star_thresh=1.0, n_stars=18000,
         planets=[(-9.5, 7.2, 14.0, (1.0, 0.97, 0.9))],
-        ring=dict(RING, shadow_floor=0.025, node_gain=1.9), seed=1)
+        # no ring from the cut to the WIDE (src 2628): there it ran through the beacon flame (2636-2700)
+        # and, in the crane-up, through the title band (2696-2740)
+        ring=dict(RING, shadow_floor=0.025, node_gain=1.9, fade=(2627.5 / 24.0, 2627.5 / 24.0)), seed=1)

@@ -136,6 +136,104 @@ def ember_env(f):
     return base * (1.0 + 1.3 * puff)
 
 
+# ---- v2 ignition (producer note: the fire "initially lights wrong") -----------------------------------
+# The ember and the first flame now live IN fuel: a nest of dry grass resting on the top split log at the
+# basket's upper right (TINDER is in its upper part), tucked under a lean-to of kindling against the teepee.
+# The ember is a cluster of glowing fibres with a thread of smoke (not a floating orb); the flame takes in
+# the nest from nothing (no pop), wavers, then climbs the kindling - flamelets catch along it - into the
+# teepee, and blooms toward the roar. flame_level() (her light, the sparks' RNG stream) is unchanged.
+IG_MAIN = np.array([[1318.0, 0.0], [1319.0, 0.007], [1320.5, 0.017], [1322.5, 0.032], [1324.5, 0.019],
+                    [1326.5, 0.027], [1330.0, 0.048], [1335.0, 0.082], [1340.0, 0.120], [1348.0, 0.180],
+                    [1359.0, 0.245]])
+# flamelets along the kindling into the teepee: base (x, y), seed, lean, (frame, height) keys
+IG_FLAMELETS = (((0.172, 1.140), 7.3, -0.40, ((1330.0, 0.0), (1334.0, 0.026), (1340.0, 0.048), (1350.0, 0.075),
+                                              (1359.0, 0.100))),
+                ((0.128, 1.158), 8.9, -0.30, ((1337.0, 0.0), (1342.0, 0.030), (1350.0, 0.068), (1359.0, 0.110))))
+# glowing fibres of the ember (offsets from TINDER in m, weight)
+IG_EMBER = np.array([[-0.006, 0.000, 0.30], [-0.014, -0.004, 0.16], [0.001, -0.006, 0.14], [-0.010, 0.005, 0.12],
+                     [0.005, 0.002, 0.10], [-0.019, 0.001, 0.10], [-0.003, -0.010, 0.08]])
+KINDLING = (((0.245, 1.098), (0.085, 1.205), 0.0065), ((0.180, 1.100), (0.078, 1.178), 0.0055),
+            ((0.222, 1.105), (0.150, 1.232), 0.0050), ((0.140, 1.097), (0.262, 1.112), 0.0060))
+_IG = {}
+
+
+def _pchip(keys, f):
+    from scipy.interpolate import PchipInterpolator
+    k = id(keys)
+    if k not in _IG:
+        kk = np.asarray(keys, np.float64)
+        _IG[k] = PchipInterpolator(kk[:, 0], kk[:, 1], extrapolate=False)
+    kk = np.asarray(keys, np.float64)
+    if f <= kk[0, 0]:
+        return 0.0
+    if f >= kk[-1, 0]:
+        return float(kk[-1, 1])
+    return float(_IG[k](f))
+
+
+def ig_flames(f):
+    """[(base xyz, height, half-width, lean, seed, intensity factor)] of the pre-roar flame, or []."""
+    if not HEROINE_V2 or f < CATCH or f >= ROAR:
+        return []
+    take = smoothstep(CATCH, CATCH + 2.5, f)            # the first tongue fades in, never pops
+    h = _pchip(IG_MAIN, f) * (1.0 + 0.10 * fnoise1(f / FPS * 3.0, 41.0, 2))
+    c = smoothstep(1336, 1358, f)                        # the main flame climbs the kindling
+    out = []
+    if h > 0.002:
+        out.append((np.array([0.200 - 0.035 * c, TINDER[1] - 0.012 + 0.018 * c, TINDER[2]]), h, 0.008 + 0.30 * h,
+                    0.35 - 0.55 * c, 4.4, take))
+    for (bx, by), seed, lean, keys in IG_FLAMELETS:
+        hk = _pchip(keys, f)
+        if hk > 0.002:
+            hk *= 1.0 + 0.12 * fnoise1(f / FPS * 3.3, seed, 2)
+            out.append((np.array([bx, by, TINDER[2]]), hk, 0.006 + 0.30 * hk, lean, seed,
+                        smoothstep(keys[0][0], keys[0][0] + 2.0, f)))
+    return out
+
+
+def ig_tip(f):
+    """Top of the pre-roar flame (where its sparks leave)."""
+    fl = ig_flames(f)
+    if not fl:
+        return TINDER + np.array([0.0, 0.02, 0.0])
+    b, h = fl[0][0], fl[0][1]
+    return b + np.array([0.0, 0.8 * h, 0.0])
+
+
+def tinder_groups():
+    """The tinder nest (fine dry grass) on the top split log + a lean-to of kindling against the teepee."""
+    if 'groups' not in _IG:
+        rng = np.random.default_rng(1318)
+        kin = ch.G('kindling', 'wood', k=0.002, per_prim=True, bevel=0.008)
+        for a, b, r in KINDLING:
+            kin.cone(a, b, r, r * 0.8, k=0.002)
+        # a twisted bundle of dry grass: strands wrapped round an oval core, a few stalk ends poking out
+        nest = ch.G('tinder', 'wood', k=0.0015, per_prim=True, albedo=(0.030, 0.022, 0.012), bevel=0.004,
+                    sheen=0.25, soft=0.03, diffuse=0.7)
+        c = np.array([0.200, 1.121])
+        R = np.array([0.042, 0.021])
+        nest.ellipse((c[0], c[1] - 0.003), 0.034, 0.015, k=0.006)
+        for i in range(30):
+            ph0 = rng.uniform(0.0, 2.0 * math.pi)
+            span = rng.uniform(1.2, 2.6) * (1.0 if rng.random() < 0.5 else -1.0)
+            rr = rng.uniform(0.55, 1.0)
+            r = rng.uniform(0.0011, 0.0018)
+            pts = []
+            for k in range(6):
+                ph = ph0 + span * k / 5.0
+                rk = rr * (1.0 + 0.10 * math.sin(3.0 * ph + i))
+                pts.append(c + R * rk * np.array([math.cos(ph), math.sin(ph)]) + rng.normal(0.0, 0.0012, 2))
+            nest.chain(pts, np.linspace(r, r * 0.6, len(pts)), k=0.001)
+        for i in range(8):
+            side = 1.0 if i % 2 else -1.0
+            a = c + np.array([side * R[0] * rng.uniform(0.6, 0.9), R[1] * rng.uniform(-0.5, 0.6)])
+            b = a + np.array([side * rng.uniform(0.014, 0.032), rng.uniform(-0.004, 0.010)])
+            m = 0.5 * (a + b) + np.array([0.0, rng.uniform(0.0, 0.004)])
+            nest.chain([a, m, b], [0.0011, 0.0008, 0.0004], k=0.001)
+        _IG['groups'] = [kin, nest]
+    return _IG['groups']
+
+
 def flame_level(f):
     """0 before the catch; small flame 1318-1359; roar after 1360."""
     if f < CATCH:
@@ -434,7 +532,6 @@ def camera(f, scale):
 # close-up goes black and the reveal gets a rock spire behind the fire.
 KEEP = (60.0, 70.0, 160.0)
 CLOSE_SKY = (0.45, 5.0)        # close-up s1 sky gain, x (1 + k cos^4) toward the moon (before the reveal)
-CLOSE_LAND = 1.0               # close-up s1 ranges + cloud sea gain
 _WORLD = {}
 
 
@@ -563,8 +660,7 @@ def world_layer(cam, f, t, reveal):
     cth = np.maximum((dx * md[0] + dy * md[1] + dz * md[2]) / np.sqrt(dx * dx + dy * dy + dz * dz), 0.0)
     cs = CLOSE_SKY[0] * (1.0 + CLOSE_SKY[1] * cth ** 4)
     sg = (0.25 + 0.75 * reveal) * (cs + (1.0 - cs) * ramp)
-    lg = reveal * (CLOSE_LAND + (1.0 - CLOSE_LAND) * ramp)
-    g = (skym * sg + (1.0 - skym) * lg) / 1.05      # our finish exposes at 1.05
+    g = (skym * sg + (1.0 - skym) * reveal) / 1.05      # our finish exposes at 1.05
     return (img * g[..., None]).astype(np.float32)
 
 
@@ -644,7 +740,7 @@ class FirstBeacon:
                 rate = 6.0 + 26.0 * max(0.0, lv - 1.0) + 90.0 * smoothstep(ROAR, ROAR + 4, ff) * (1 - smoothstep(ROAR + 10, ROAR + 30, ff))
                 n = rng.poisson(rate * dt)
                 if n > 0:
-                    base = FIRE_BASE if ff >= ROAR else TINDER
+                    base = FIRE_BASE if ff >= ROAR else (ig_tip(ff) - np.array([0.0, 0.1, 0.0]) if HEROINE_V2 else TINDER)
                     spread = 0.20 if ff >= ROAR else 0.03
                     pos = base + np.stack([rng.normal(0, spread, n), rng.uniform(0.1, 0.6 if ff >= ROAR else 0.1, n),
                                            rng.normal(0, spread * 0.5, n)], 1)
@@ -768,6 +864,7 @@ class FirstBeacon:
         amb_top = np.array([0.010, 0.016, 0.040]) * reveal
         back = np.array([0.03, 0.05, 0.12]) * (0.3 + 0.7 * reveal)
         occ = None
+        iron_a = None
         if HEROINE_V2:
             # CODA's dry-stone courses; the iron basket and its wood stay exactly as accepted (the
             # merged-silhouette basket breaks into fragments at close-up size)
@@ -776,10 +873,23 @@ class FirstBeacon:
             r = CAIRN2.render(cam, [0, 0, 0], lst, amb_top, bg=img)
             if r is not None:
                 over_region(img, *r)
-            r = Figure([0.0, 0.0, 0.0], [g for g in CAIRN.groups(x=0.0) if g.name in ('wood', 'basket')]).render(
-                cam, lights, amb_top, np.zeros(3), back=back)
+            grp = [g for g in CAIRN.groups(x=0.0) if g.name in ('wood', 'basket')]
+            if f < ROAR:                       # the tinder bundle and kindling go up in the roar
+                grp = grp[:1] + tinder_groups() + grp[1:]
+            r = Figure([0.0, 0.0, 0.0], grp).render(cam, lights, amb_top, np.zeros(3), back=back)
             if r is not None:
                 over_region(img, *r)
+            self._tinder_smoke(img, cam, f, t, em_e, lv)
+            if f < ROAR:
+                # the ember and the first flames burn inside the basket: its bars and rim are in front of them
+                ri = Figure([0.0, 0.0, 0.0], grp[-1:]).render(cam, lights, amb_top, np.zeros(3), back=back)
+                if ri is not None:
+                    iron_a = np.zeros(img.shape[:2], np.float32)
+                    y0, x0, al = ri[0], ri[1], ri[3]
+                    ya, xa = max(0, y0), max(0, x0)
+                    yb, xb = min(iron_a.shape[0], y0 + al.shape[0]), min(iron_a.shape[1], x0 + al.shape[1])
+                    if yb > ya and xb > xa:
+                        iron_a[ya:yb, xa:xb] = al[ya - y0:yb - y0, xa - x0:xb - x0]
             her = self._heroine(f, t, cam, scale, lv, flick, st_e, em_e, flint, reveal)
             ya = dict(mouth=hero_anchors(f)['mouth'])
             occ = np.zeros(img.shape[:2], np.float32)
@@ -805,7 +915,11 @@ class FirstBeacon:
         fa = np.zeros(img.shape[:2], np.float32)
         if lv > 0:
             fimg = np.zeros_like(img) if occ is not None else img
-            if f < ROAR:
+            if f < ROAR and HEROINE_V2:
+                for b, h, w, lean, seed, k in ig_flames(f):
+                    fire.draw_flame(fimg, fa, cam, b, h, w, lean, t, seed, 6.5 * flick * (0.6 + 0.4 * lv) * k,
+                                    fire.TORCH_STYLE)
+            elif f < ROAR:
                 h = 0.05 + 0.20 * lv
                 fire.draw_flame(fimg, fa, cam, TINDER + np.array([0.0, -0.01, 0.0]), h, 0.028 + 0.05 * lv, 0.45,
                                 t, 4.4, 6.5 * flick * (0.6 + 0.4 * lv), fire.TORCH_STYLE)
@@ -814,8 +928,17 @@ class FirstBeacon:
                 fire.draw_flame(fimg, fa, cam, FIRE_BASE, 0.55 + 0.75 * grow, 0.31, 0.55, t, 2.9,
                                 5.0 + 5.0 * min(1.0, lv - 1.0 + 0.3), fire.BONFIRE_STYLE)
             if occ is not None:
-                img += fimg * (1.0 - occ[..., None])
-            fire.add_glow(img, cam, (TINDER if f < ROAR else FIRE_BASE + np.array([0, 0.7, 0])),
+                vis = 1.0 - occ
+                if iron_a is not None and f < ROAR:
+                    vis = vis * (1.0 - iron_a)
+                img += fimg * vis[..., None]
+            gc = TINDER
+            if f < ROAR and HEROINE_V2:
+                fl = ig_flames(f)
+                if fl:
+                    wsum = sum(x[1] for x in fl)
+                    gc = sum(x[0] * x[1] for x in fl) / wsum + np.array([0.0, 0.35 * fl[0][1], 0.0])
+            fire.add_glow(img, cam, (gc if f < ROAR else FIRE_BASE + np.array([0, 0.7, 0])),
                           0.12 if f < ROAR else 0.9, (0.05 * lv if f < ROAR else 0.10 * min(lv, 2.5)) * flick)
         for k, s_ in enumerate(STRIKES):
             d = f - s_
@@ -824,7 +947,21 @@ class FirstBeacon:
                 e = (60.0 + 40.0 * k) * (1.0, 0.45, 0.15)[d] * cam.scale ** 2
                 splat_gauss(img, float(fx), float(fy), max(0.6, 2.5 * cam.scale), e, e * 0.85, e * 0.6)
                 fire.add_glow(img, cam, np.array([flint[0], flint[1], -0.02]), 0.06, (0.25 + 0.15 * k) * (1.0, 0.45, 0.15)[d])
-        if em_e > 0:
+        if em_e > 0 and HEROINE_V2:
+            eimg = np.zeros_like(img) if occ is not None else img
+            for q, (ox, oy, wq) in enumerate(IG_EMBER):
+                sx, sy, z = cam.project(TINDER + np.array([ox, oy, -0.004]))
+                fl_q = 1.0 + 0.35 * math.sin(t * (7.0 + 1.3 * q) + 2.1 * q)
+                e = 55.0 * em_e * wq * fl_q * cam.scale ** 2
+                splat_gauss(eimg, float(sx), float(sy), max(0.45, 1.1 * cam.scale), e, e * 0.33, e * 0.05)
+            if occ is not None:
+                vis = 1.0 - occ
+                if iron_a is not None:
+                    vis = vis * (1.0 - iron_a)
+                img += eimg * vis[..., None]
+            fire.add_glow(img, cam, TINDER + np.array([-0.006, 0.0, 0.0]), 0.015, 0.03 * em_e)
+            fire.add_glow(img, cam, TINDER, 0.06, 0.003 * em_e)
+        elif em_e > 0:
             sx, sy, z = cam.project(TINDER)
             e = 6.0 * em_e * cam.scale ** 2
             eimg = np.zeros_like(img) if occ is not None else img
@@ -889,6 +1026,28 @@ class FirstBeacon:
                 hero.lashes(cam, F, pose.get('expr'), L, env)]
         return hero.draw_fine(res, cam, sets)
 
+    def _tinder_smoke(self, img, cam, f, t, em_e, lv):
+        """A thread of smoke from the smouldering tinder (after strike 3 until the flame is well alight),
+        lit warm at its root by the ember / first flame."""
+        if not HEROINE_V2:
+            return
+        sm = smoothstep(STRIKES[2] + 1, STRIKES[2] + 6, f) * (1.0 - smoothstep(CATCH + 4, CATCH + 16, f))
+        if sm <= 0.01:
+            return
+        b = TINDER + np.array([0.0, 0.004, 0.0])
+        pts = np.array([b + np.array([-0.08, -0.03, 0.0]), b + np.array([0.16, 0.36, 0.0])])
+        sx, sy, z = cam.project(pts)
+        if np.any(z <= 0.05):
+            return
+        rgb = np.zeros_like(img)
+        a = np.zeros(img.shape[:2], np.float32)
+        glow = em_e + 0.6 * lv
+        fire.render_smoke(rgb, a, cam.params(), float(b[0]), float(b[1]), float(b[2]), t - 54.0, 4.2,
+                          0.32, 0.004, 0.10, 0.18, 0.30, 0.20 * sm,
+                          0.050 * glow, 0.018 * glow, 0.004 * glow, 0.035, 0.004, 0.005, 0.008,
+                          int(min(sx)) - 8, int(min(sy)) - 8, int(max(sx)) + 8, int(max(sy)) + 8)
+        over(img, rgb, a)
+
     def _breath2(self, img, cam, f, lv, em_e, st_e, flint):
         """Breath fog. Each exhale leaves the lips as a thin plume that scatters whatever light
         reaches it (strike flash, ember, flame, fire); while she blows, it jets down to the
@@ -900,7 +1059,7 @@ class FirstBeacon:
         elif lv > 0:
             srcs.append((FIRE_BASE + np.array([0, 0.55, 0]), 0.75 * min(lv, 2.5), np.array([1.0, 0.45, 0.13])))
         if em_e > 0:
-            srcs.append((TINDER, 0.070 * em_e, np.array([1.0, 0.33, 0.07])))
+            srcs.append((TINDER, (0.05 if HEROINE_V2 else 0.070) * em_e, np.array([1.0, 0.33, 0.07])))
         if st_e > 0.01:
             srcs.append((flint, 0.075 * st_e, np.array([1.0, 0.8, 0.56])))
         if not srcs:
@@ -929,6 +1088,9 @@ class FirstBeacon:
                     pos = mouth + d * (1 - (1 - k) ** 2) + np.array([0.0, 0.05, 0.0]) * max(0.0, a_ - 0.16)
                     rad_m = 0.010 + 0.030 * min(a_, 0.5)
                     dens = 0.10 * math.exp(-a_ / 0.35)
+                    if HEROINE_V2:
+                        # the fog evaporates in the hot air over the ember (no lit ball of breath at the tinder)
+                        dens *= smoothstep(0.025, 0.075, float(np.linalg.norm(pos - TINDER)))
                 else:
                     v0 = fwd * 0.55 + np.array([0.0, -0.08, 0.0])
                     pos = mouth + v0 * (1 - math.exp(-a_ / 0.25)) * 0.25 \

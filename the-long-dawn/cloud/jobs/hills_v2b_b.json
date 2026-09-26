@@ -1,0 +1,14 @@
+{
+ "name": "hills_v2b_b",
+ "branch": "claude/render-hills-v2b-b",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "python3 shots/hills/render.py --shot beacon --frames 1320-1439 --step 2 --workers 2 --out renders/hills_v2 --skip-existing",
+  "python3 shots/hills/render.py --shot beacon --frames 1321-1439 --step 2 --workers 2 --out renders/hills_v2 --skip-existing"
+ ],
+ "out_dir": "renders/hills_v2",
+ "frames": "1320-1439",
+ "push_every": 300
+}

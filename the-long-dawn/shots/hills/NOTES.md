@@ -1,59 +1,115 @@
-# >>> HANDOFF - HEROINE lane, follow-ups: terrain match + dry-stone cairn (2026-09-26, for the next agent) <<<
+# >>> HEROINE-2 (2026-09-26): FIRST BEACON v2b (s1 world, dry-stone courses, ignition) + RING fix - both LANDED <<<
 
-**Accepted take (do not lose):** `renders/hills_v2/f_01200..01439.png`, rendered at full res before these follow-ups
-(240 frames, 52 min, 2 workers). hills_v2 also holds CODA's INTRO (0-359) and CODA (2460-2807) frames. Those are
-not ours; never touch them. Re-render into a staging folder, check it, then move the complete 240 into hills_v2.
+**LANDED 2026-09-26 18:4x (director accepted v2b).** Full-res FIRST BEACON src 1200-1439 rendered locally (240 frames,
+27.5 min, 2 workers, log `~/mishamisha/_local_logs/heroine_lookdev/stage_hv2_render.log`), verified (all 240 decode at
+1920x804; every-20th sheet; the catch 1316-1354 at 1:1) and swapped into `renders/hills_v2` in one batch. The old
+accepted take is backed up in `renders/hills/tests/hv2_accepted/`. Review sheet rebuilt from full res:
+`before_after_v2b.py hills_v2 <out> --before hills/tests/hv2_accepted --ring hills/tests/ring_old`. RENDER_SPEC 1 and
+`cloud/jobs/hills_v2b_{a,b}.json` are no longer needed (keep as a recipe). Nothing is running.
+* **P1 ignition (producer note): DONE in code**, verified at half res frame by frame (1312-1331) and full res
+  (1314, 1346); before/after in the review sheet (`hv2_final2` half-res after-set). Details under "What changed".
+* **P2 CODA/INTRO ring hairline: DONE and LANDED** in `renders/hills_v2` (218 frames; old ones in
+  `renders/hills/tests/ring_old/`). See "ORBITAL RING FIX" below.
+* **P3 "the person looks a bit weird": checked, nothing changed** (no anatomy/silhouette glitch in a 1204-1390
+  sheet; see "Remaining weaknesses").
+* Files touched (uncommitted; the director commits): `shots/hills/{beacon,peaks,heroine,sky,hillworld}.py`, this NOTES.md,
+  `cloud/jobs/hills_v2b_{a,b}.json`; tools/sheets in `~/mishamisha/_local_logs/` (heroine_lookdev, review).
 
-**(1) Done so far (code written, NOT yet reviewed; first half-res test = `renders/hills/tests/hv2_g/`
-1230,1290,1340,1372,1400,1439)**
-* Camera (beacon.py `camera()`, v2 branch): same path/targets/hfov as the accepted take, but returned in
-  s1's model: yaw + lens-shift tilt (`pitch=0, shift_y=f_full*tan(pitch)`). Reason: the RUN world marcher
-  (`shots/run/world.py`) is column-coherent and needs a lens-shift camera. A pitched camera differs by up to
-  ~5-7 px at the frame edges, too much to composite layers. Framing changes by ~1-5 px at the edges (verticals
-  now truly vertical). CHECK this against the accepted frames. If the director wants zero change, the
-  alternative is a per-pixel world render in the pitched camera (more code).
-* Background (beacon.py `s1_world()`, `world_layer()`): sky, far ranges, cloud sea, fog and moon come from
-  `world.py` (`march` + `shade` + `night_light`, empty crag table) in s1 coordinates (camera + `peaks.OFFX/OFFY/
-  OFFZ` = `s1_peak.summit()` = (-5450, 282, 31997)). Stars = `SK.make_stars(14000, 101, lum_scale=7)`. Scaled
-  by the eye adaptation `reveal` (sky 0.25+0.75*reveal, land reveal) and /1.05 for our finish exposure.
-  Quarter resolution while f < ROAR+4 (the close-up's depth of field blurs it), full res after.
-* Her summit (peaks.py): `render(..., summit_only=True)` draws only our 10 cm summit grid (the far grids are
-  replaced by empty ones), composited OVER the world layer. `render()` now passes the camera's lens shift.
-  (peaks.py `S1_WORLD`/v8 grids remain for the non-summit-only path. v7 backup:
-  `~/mishamisha/_local_logs/heroine_lookdev/peaks_v7_backup.py`.)
-* Cairn: CODA's drop-in. `CAIRN2 = cairn2.DryStoneCairn(seed=11)` (same top/bk_bot/bk_top, so fire,
-  tinder and sparks do not move) draws the stones; `silhouette.Silhouette([0,0,0], CAIRN2.basket_groups(x=0.0))`
-  draws the basket and wood, both with the existing (n,8) `lights`. CODA also redraws the iron bars OVER their
-  beacon flame (a dark cage). Not done here; consider it only if the flame washes out the new bars.
-* Smoke: `fire.render_smoke(..., t - 58.3, ...)` in v2. The shared function streaks horizontally when
-  t*rise is large (confirmed in the accepted frames above the fire, 1370+). A constant time offset is only a
-  phase shift of the billows. CHECK the streaks are gone.
-* Scarf: heroine.py `M_SCARF` albedo set back to (0.29, 0.022, 0.019) = exactly the Elder's wool in
-  CODA's figures2.py. The accepted take used palette scarf_red (0.341, 0.011, 0.011), so the next render
-  aligns her with the Elder, as the picture critic asked.
+**State.** Code final; v2b is in `renders/hills_v2/f_01200..01439` (old take: `renders/hills/tests/hv2_accepted/`). Review sheet: `~/mishamisha/_local_logs/review/heroine_v2b.jpg`
+(tool `_local_logs/heroine_lookdev/before_after_v2b.py hills/tests/hv2_final2 <out> --ring hills/tests/ring_old`).
+Final after-set: `renders/hills/tests/hv2_final2` (half res; 1372 + 1439 full res). Earlier tests: `hv2_h`, `hv2_i`
+(half res), `hv2_j_full` (full res; before the close-up grade and the ignition). Pre-review code (the hv2_g state):
+`_local_logs/heroine_lookdev/{beacon,peaks}_hv2g_backup.py`, before the ignition `beacon_before_ignition.py`;
+old notes `NOTES_before_heroine2.md`.
 
-**(2) Next steps**
-1. Review hv2_g against the accepted frames:
-   `python ~/mishamisha/_local_logs/sheet.py hills/tests/hv2_g 1230,1290,1340,1372,1400,1439 /tmp/g.jpg --cols 3`
-   and `sheet.py hills_v2 <same frames>`. Look at: framing unchanged; the ranges read as s1/Run (compare
-   `renders/montage/f_01460.png` and `renders/run/f_01600.png`); close-up darkness (the v2 dark-adaptation floor
-   0.17 -> 0.04 in `render()`; the world layer's brightness may need a gain so cut B is faint but not empty
-   before 1318); the new cairn's lighting under strike/flame/roar; no smoke streaks; no seam at her summit
-   edge against s1's peak.
-2. Tune if needed (world gain; the cairn2 `rim_k`/`rim_max`). Test at half res (`--scale 0.5 --out
-   renders/hills/tests/hv2_h`), send the director a sheet.
-3. Full res into staging, then swap:
-   `python shots/hills/render.py --shot beacon --frames 1200-1439 --workers 2 --out renders/hills/tests/stage_hv2
-   --skip-existing` (about 45-60 min; a strike frame is ~90 s), check, then move the 240 files into
-   renders/hills_v2 (back up the accepted set first, e.g. `renders/hills/tests/hv2_accepted/`).
-4. Before/after sheet: `python ~/mishamisha/_local_logs/heroine_lookdev/before_after.py
-   1240,1262,1290,1320,1340,1362,1372,1390 ~/mishamisha/_local_logs/review/heroine_v2.jpg hills_v2`
-   (v1 = renders/hills vs hills_v2).
+**What hv2_g got wrong (found in review)**
+* s1's summit crest is ~2 m above her camera in the close-up and a 15 m rock fin stands 10 m from the beacon:
+  the camera sat INSIDE s1's rock (black close-up: 1230 was an empty screen) and the fin rose as a black
+  spire behind the fire in the reveal (1372-1439).
+* s1's lens-shift camera moved the frame edges by up to 5 px (close-up) and 15.5 px (pull-back corners).
+* CODA's merged-silhouette basket broke into lit fragments at close-up size; the dry-stone courses read as
+  pale boards under the strike and the roar.
+
+**What changed vs the accepted take** (all under `HEROINE_V2` in beacon.py)
+* **Camera = the accepted pitched camera.** `world_layer` renders the shepherd's world on a lens-shift canvas
+  (32 px margin) from the same eye point and resamples it ray-exactly into our camera (a rotation about the eye
+  is a homography); stars are splatted directly in our camera (`_splat_stars`, s1's field + splat). Framing
+  change: 0 (phase correlation vs accepted < 0.15 px on her and the dome = content only).
+* **Background = the shepherd's world** (`shots/run/world.py`: sky, ranges, cloud sea, fog, moon) with the accepted
+  v8 grid's keep-clear rule (`KEEP`: s1 rock -60 m within 70 m of her summit, easing out by 160 m). world.py is
+  not edited: `_world_keep_module()` writes a patched copy to `shots/hills/cache/world_keep.py` (gitignored,
+  regenerated on any box; raises if world.py's two patched lines change).
+* **Close-up grade** (`CLOSE_SKY`, eased out over the reveal, which ends exactly at s1's exposure): s1's sky is
+  brighter than the accepted close-up's; x0.45, rising x(1 + 5 cos^4) toward the moon (behind the basket).
+  Matches the accepted background within ~1-4 levels: the basket reads faintly before the catch and her
+  streaming hair stays quiet (at s1's level the locks read as bare twigs against the sky).
+* **Cairn:** CODA's dry-stone courses (`CAIRN2.render`); iron basket + wood exactly as accepted (puppet `Figure`
+  with the old 'wood' + 'basket' groups). `STONE_SHADE` = 0.3 of the strike/ember/flame/fire light reaches the
+  courses (the basket floor and the wood shade them).
+* **Ignition (producer note: "the way the fire initially lights seems wrong").** The accepted catch was a lit
+  breath-fog ball floating at the top rail, then a 5 cm torch flame popping in mid-air ~10 cm clear of any wood,
+  drawn over the bars. Now: a twisted bundle of dry grass rests on the top split log at TINDER (`tinder_groups`,
+  drawn with the basket from 1200 until the roar at 1360) under a lean-to of kindling against the teepee (`KINDLING`).
+  The ember is a cluster of glowing fibres in the bundle (`IG_EMBER`) with a thread of smoke (`_tinder_smoke`);
+  her breath jet stays lit but its fog evaporates within ~5 cm of the ember (no lit ball). The flame
+  (`ig_flames`, PCHIP keys `IG_MAIN`) fades in from nothing in the bundle at 1318-1320, wavers (1324-1326),
+  grows between the bars, rises above the rim ~1338 and climbs the kindling (two flamelets, `IG_FLAMELETS`,
+  from 1330/1337) toward the teepee; the bars and rim occlude the pre-roar flame and ember (they burn inside
+  the basket). Sparks leave from the flame's tip. `flame_level()` (her light, the spark RNG stream), the timing,
+  the roar at 1360, her pose and the camera are unchanged. Tests: `renders/hills/tests/ig_a..ig_g` (half res),
+  `ig_full2` (full res 1314/1346); final after-set `hv2_final2`.
+* **Smoke:** `t - 58.3` phase: the accepted frames' horizontal streaks above the fire (1370+) are gone.
+* **Scarf:** the Elder's wool (0.29, 0.022, 0.019) in heroine.py; fringe, tail and animation unchanged.
+* `peaks.render(summit_only=True)` only needs her summit grid: `peaks.summit_grids()` (bakes in 1.4 s on a fresh
+  box, bit-identical to the v8 cache's S/M), so the 114 MB far-grid cache is not needed anywhere.
+
+**RENDER_SPEC 1 - FIRST BEACON v2b: src 1200-1439 -> `renders/hills_v2/f_%05d.png` (240 frames)**
+* Commit first: `shots/hills/{beacon,peaks,heroine,cairn2}.py` (cairn2.py = CODA's working copy, as rendered
+  since 14:52 and as the stones were checked) + `cloud/jobs/hills_v2b_{a,b}.json`. No data files: the caches
+  regenerate. Needs the committed `shots/run/world.py`, `shots/montage/{s1_peak,common}.py` + `mt/*`, `lib/look.py`.
+* Box: `python3 -m pip install numba numpy scipy opencv-python-headless` (the jobs' setup line does it; beacon.py
+  now needs scipy for the ignition keys).
+* `python3 cloud/run_job.py cloud/jobs/hills_v2b_a.json` (1200-1319) and `.../hills_v2b_b.json` (1320-1439), one box
+  each; each job runs two render.py processes (even/odd frames, 2 workers each = 4 cores). By hand, from
+  the-long-dawn/: `python3 shots/hills/render.py --shot beacon --frames 1200-1439 --workers 2 --out renders/hills_v2
+  --skip-existing` (render.py caps at 2 workers per process; use `--step 2` on 1200-/1201- to fill 4 cores).
+* Cost: ~45-90 s/frame/core (3x3-supersampled heroine; the reveal's full-res world adds ~20 s); the first frame of
+  each process compiles numba (~1-2 min). About 30-45 min per box.
+* Landing: back up the accepted 240 (e.g. `renders/hills/tests/hv2_accepted/`), then replace all 240 at once (the
+  edit must never mix takes). Never touch hills_v2's INTRO/CODA frames.
+
+**ORBITAL RING FIX - DONE, landed in `renders/hills_v2` (INTRO src 257-294 + CODA src 2628-2807, 218 frames)**
+* Red-team: the ring hairline ran through the CODA beacon flame (2636-2700) and, in the crane-up, through the
+  title band (2696-2740; "DAWN" at v2 2880). In the INTRO it crossed the sparks rising from the torch during the
+  push into the flame (276-290). Fix in the sky code only: `sky.draw_ring` honours an optional
+  `ring['fade'] = (t0, t1)` (s); `hillworld.sky_coda` removes the ring at the cut to the WIDE (2627.5/24 s) and
+  `sky_intro` fades it out over 256-272 as the torch fills the frame. C1 (2460-2627), INTRO 0-256 and 295+
+  are unchanged (the ring is not drawable after 294); FIRST BEACON has no ring.
+* Rendered locally (full res, 1 worker, ~20 min), verified (every frame decodes; the only differences from
+  the old frames are the ring band: ~6k px per CODA frame, a 9-20 px blurred band in the INTRO push; C1 and
+  INTRO 257 identical to +-2 dither), then swapped in as one batch. Old frames: `renders/hills/tests/ring_old/`.
+* Commit with it: `shots/hills/{sky,hillworld}.py` (+ CODA's working copies `{coda,figures2,fires2,cairn2}.py`,
+  which rendered the delivered INTRO/CODA frames at 14:52 and these). Re-render if ever needed:
+  `python3 shots/hills/render.py --shot intro --frames 257-294 --workers 2 --out renders/hills_v2` and
+  `--shot coda --frames 2628-2807`.
+
+**Remaining weaknesses (not blocking)**
+* Close-up background: s1's navy is bluer than the accepted grey-blue (brightness matched, hue is s1's).
+* Reveal: the accepted's bright snow slope in the lower-right corner (1400-1439) is now dark moonlit rock ridges
+  (s1's snow rule); no milky-way band (s1 has none).
+* Her streaming hair locks read as branching twigs against a bright sky: keep the close-up sky dark.
+* "The person looks a bit weird" (producer, low priority): no anatomy or silhouette glitch found in a sheet
+  of 1204-1390. The likely causes are the dark hair mass beside her cheek (reads as a shadow patch in 1262/1345),
+  the long scarf tail as a dark band in the pre-strike silhouette (1204-1280) and the twig-like locks; all
+  are protected look elements (scarf, hair), so nothing was changed.
+* The dry-stone courses are a flat 2-D card with per-face shading (tuned by CODA for distance); fine at 0.3 light
+  from 1.5 m and beyond, but they would not survive a closer camera.
 
 **(3) Files / functions**
-* Ours: `beacon.py` (`HEROINE_V2`, `camera`, `s1_world`, `world_layer`, `yw2_pose` + keyposes `V2_KEYS`,
-  `_heroine` light rig, `_breath2`, render compositing, `CAIRN2`), `peaks.py` (`render(summit_only)`,
-  `S1_WORLD`), `heroine.py` (rig, sculpt, materials, strands), `heroine_sdf.py` (the tracer).
+* Ours: `beacon.py` (`HEROINE_V2`, `camera`, `KEEP`, `CLOSE_SKY`, `_world_keep_module`, `s1_world`, `world_layer`,
+  `_splat_stars`, `STONE_SHADE`, `yw2_pose` + `V2_KEYS`, `_heroine` light rig, `_breath2`, compositing, `CAIRN2`),
+  `peaks.py` (`render(summit_only)`, `summit_grids`, `S1_WORLD`), `heroine.py`, `heroine_sdf.py`; ring: `sky.py`
+  (`draw_ring` fade), `hillworld.py` (`sky_intro`/`sky_coda` ring dicts).
 * Read-only (other departments): `shots/run/world.py`, `shots/montage/s1_peak.py` + `mt/*`, `cairn2.py` and
   `silhouette.py` (CODA), `characters.py`/`coda.py`/`intro.py` (CODA: do NOT edit).
 * Tools: `~/mishamisha/_local_logs/heroine_lookdev/` (t_shot.py heroine-only at a frame; t_debug.py; sheets).
@@ -65,7 +121,8 @@ not ours; never touch them. Re-render into a staging folder, check it, then move
   the turn to the far range at the end.
 * The scarf: the Elder's wool, the same fringe (9 tassels) and the long tapered tail.
 * Composition of the close-up (basket left, hands centre, face right) and her size in the reveal (~50 px).
-* Max 2 worker processes, no git writes, never touch CODA's hills_v2 frames.
+* The camera: the accepted pitched camera (never s1's lens-shift model for our layers).
+* Max 2 worker processes, no git writes; hills_v2's INTRO/CODA frames are CODA's (the ring fix is landed).
 
 **(5) Taste bar**
 * Controlled darkness: fire is the only saturated warm light. She is carved out of the dark by it; the moon
