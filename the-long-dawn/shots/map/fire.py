@@ -158,11 +158,12 @@ def _ramp(T):
 
 
 @njit(cache=True)
-def flame(img, bx, by, h, ux, uy, t, seed, gain, wide):
+def flame(img, bx, by, h, ux, uy, t, seed, gain, wide, cool=0.0):
     """A small living flame standing at screen (bx, by): height h px, up direction (ux, uy) (unit,
-    screen coords), time t (frames), brightness gain; wide scales the girth. The body is a warped
-    teardrop whose upper part breaks into licking tongues; colour runs from a yellow heart through
-    orange to a red, fraying tip."""
+    screen coords), time t (frames), brightness gain; wide scales the girth; cool (0..1) lowers its
+    temperature (a fire that has burned down is redder). The body is a warped teardrop whose upper
+    part breaks into licking tongues; colour runs from a yellow heart through orange to a red,
+    fraying tip."""
     H, W = img.shape[0], img.shape[1]
     if h < 0.3:
         return
@@ -213,7 +214,7 @@ def flame(img, bx, by, h, ux, uy, t, seed, gain, wide):
             # a yellow heart low in the body; orange flanks; a red, fraying top
             hc = min(max(core / 0.75, 0.0), 1.0)
             heart = hc * hc * (3.0 - 2.0 * hc) * math.exp(-((vv - 0.3) / 0.34) ** 2)
-            T = 0.16 + 0.66 * heart + 0.2 * core * (1.0 - vv) - 0.2 * vv
+            T = 0.16 + 0.66 * heart + 0.2 * core * (1.0 - vv) - 0.2 * vv - 0.22 * cool
             if v < 0.0:
                 T *= 1.0 + 1.5 * v          # the root of the flame is a little cooler
             r_, g_, b_ = _ramp(T)

@@ -1,0 +1,21 @@
+{
+ "name": "map_fix",
+ "branch": "claude/render-map_fix",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "mkdir -p renders/globe/cache && (test -f renders/globe/cache/earth-blue-marble.jpg || cp shots/globe/data/nasa/earth-blue-marble.jpg renders/globe/cache/)",
+  "cd shots/map && python3 geo.py && python3 features.py",
+  "cd shots/map && (test -f ../../renders/map_C/cache/relief_4.npy || NUMBA_NUM_THREADS=1 python3 -c \"import bake; bake.pyramid('full', 48.0, workers=4)\")",
+  "cd shots/map && python3 -c \"import relay; print(relay.Relay().summary())\"",
+  "cd shots/map && NUMBA_NUM_THREADS=1 python3 render.py --frames 2000 --scale 0.25 --out ../../cloud_logs/map_fix_warmup"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=1 python3 shots/map/render.py --frames 1920,1924,1928,1932,1936,1940,1944,1948,1952,1956,1960,1964,1968,1972,1976,1980,1984,1988,1992,1996,2000,2004,2008,2012,2016,2020,2024,2028,2032,2036,2040,2044,2048,2052,2056,2060,2064,2068,2072,2076,2080,2084",
+  "NUMBA_NUM_THREADS=1 python3 shots/map/render.py --frames 1921,1925,1929,1933,1937,1941,1945,1949,1953,1957,1961,1965,1969,1973,1977,1981,1985,1989,1993,1997,2001,2005,2009,2013,2017,2021,2025,2029,2033,2037,2041,2045,2049,2053,2057,2061,2065,2069,2073,2077,2081,2085",
+  "NUMBA_NUM_THREADS=1 python3 shots/map/render.py --frames 1922,1926,1930,1934,1938,1942,1946,1950,1954,1958,1962,1966,1970,1974,1978,1982,1986,1990,1994,1998,2002,2006,2010,2014,2018,2022,2026,2030,2034,2038,2042,2046,2050,2054,2058,2062,2066,2070,2074,2078,2082,2086",
+  "NUMBA_NUM_THREADS=1 python3 shots/map/render.py --frames 1923,1927,1931,1935,1939,1943,1947,1951,1955,1959,1963,1967,1971,1975,1979,1983,1987,1991,1995,1999,2003,2007,2011,2015,2019,2023,2027,2031,2035,2039,2043,2047,2051,2055,2059,2063,2067,2071,2075,2079,2083,2087"
+ ],
+ "out_dir": "renders/map_C",
+ "frames": "1920-2087",
+ "push_every": 300
+}

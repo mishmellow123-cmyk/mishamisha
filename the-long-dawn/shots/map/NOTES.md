@@ -1,27 +1,49 @@
 # MAP (cut C) — THE WORLD ANSWERS, told on a map
 
-## Revision 2 (2026-09-26): fire, not fibre — per critic_tone.md §B2 / critic_framing.md m8, m9
+## Revision 3 (2026-09-26): hill by hill — per review/picture_redteam.md §12 and TOP 8 #1
 
-The ending no longer becomes a network diagram:
-* **No new edges after 2010** (`answer.T_CUT`), and no loop-closing cross-links at all
-  (`MapWeb.cut`): the burn up to 2010 is a branching tree out of the Himalaya (411 threads,
-  412 beacons), not a Delaunay lattice.
-* **Burnt threads fade to scorch:** the hot front cools to embers that die away (τ≈38 frames);
-  no sustained glow, no travelling pulses. What is left is brown scorch trails in the paper.
-* **The peoples answer as fire** (`answer.py`): 631 beacons catch in chains along the
-  inked ranges (a flame on the summit of a drawn peak), down the great rivers, on headlands
-  and on a few hills, following a minimum spanning tree that prefers same-kind neighbours, so fire
-  runs along a ridge or a shore like a line of signal fires. No lines are drawn. The answer
-  starts on every continent at once from 2011 (spontaneous seeds everywhere, plus catches from
-  the burnt web where it touches), so no region is visibly last (m8). All lit by ~2057.
-* **End state:** flames of varying size (peaks biggest, sized by the drawn peak; river and
-  shore fires smaller) with a screen-size floor so they still read as flames at the wide
-  framing. Relay beacons of the first half that don't stand on a height, shore or river burn
-  down to dull embers. The scorch trails remain between the older fires. The compass rose is
-  kept.
-* **Caption window** is now 1960–2040 ("And all the peoples answered."): the fire and fire-light
-  in the lower-third band are hushed from 1950 to ~2050 (no stripe; soft edges).
-* The previous delivery is kept in `renders/map_C_prev_v1/`.
+The spread read as neurons (forked dendrite tips), missiles (comets over the sea) and a dot-density
+world map. Now the unit of the spread is a flame, and the shot ends regional:
+* **A relay of single flames** (`relay.py`, replaces `webmap.py` + `answer.py`): every fire lights ONE
+  fire further along its line, on the summit of a drawn peak or the crown of a drawn hill, at an
+  irregular distance (hops of 1.6–5.4 map degrees, so peaks are skipped and gaps vary). Nothing is
+  drawn between fires: no threads, no fronts, no forked tips, no dots.
+* **Lines along the real ranges**, each leaving the frame: west (Himalaya, Karakoram, Hindu Kush, Elburz,
+  Anatolia), east (Hengduan, Qinling, Taihang, Korea, Japan), south (across the plain to the Eastern
+  Ghats and Sri Lanka), the Western Ghats and Aravalli, Myanmar, Indochina, south China, the Tian Shan
+  and Altai, Mongolia, Pakistan–Makran–Oman–Yemen–the Horn, the Zagros, the Caucasus, the Levant. Each
+  line keeps to a corridor (±1.8°) around its hand-placed range polyline, so it reads as a line.
+* **Branches are never forks:** a second line leaves an older fire only after that fire's own line has
+  passed on two hops, and no fire except the first beacon passes the fire on more than twice
+  (checked: 0 forks at a tip). The first beacon's three answers keep the old first landings
+  (1946 west, 1951 east, 1954 south).
+* **No flight over water** (`LEAPS` removed with `webmap.py`): a strait (Hormuz, Bab-el-Mandeb, Palk,
+  Tsushima) is crossed by a pause and then a fire on the far shore.
+* **The newest fires flare, the older ones settle:** a fire catches over ~2.5 frames, flares (taller,
+  brighter, its light thrown wide on the paper) for ~6 frames, then burns down over ~24 frames to its
+  own resting level, lower and redder (`fire.flame(..., cool)`). Across the settled fires brightness
+  spans ~2.5:1 (p90/p10; ~4:1 extremes); the flaring ones stand above that.
+* **Pace:** a line hops every ~6 frames once under way (slow and heavy first); eastern lines run a
+  little slower and western a little faster, so the fire reaches every edge of the last framing at
+  about the same time (catches in the left/right thirds of the frame: 7/8 over 2020–40, 9/7 over
+  2040–60, 6/3 after 2060). No region is visibly last.
+* **Regional end:** the camera cranes only from 42 to ~79 map degrees wide (was 42 → 372) and ends
+  over the Himalaya, Iran, Arabia's south coast, India, Myanmar and western China, with the lines of fire
+  running off every edge. At ~24 px per map degree the peak glyphs, their hatching and the flames stay
+  legible. It keeps drifting back very slowly to the end (no hold, no push-in).
+* **Grade:** the hearth burns down further (to 17% by ~2060) and the moonlit fill rises (×4.4), so at
+  the end the unlit paper is a neutral moonlit grey and the only warm light is fire.
+* **Light fix:** `LightGrid.irradiance` divided by an extra `cell²/(2πσ²)`, which made every fire's
+  light pool ~1000× too weak and camera-dependent. It is now power per cell / cell area. The first
+  beacon's pool is still its analytic flare light (`big`, +10% for its old grid share), so 1920–1945 is
+  unchanged (mean difference 0.6/255 at 1920).
+* **Hand-traced hill country** (`features.HILL_RANGES`): the relief proxy drew almost nothing in India,
+  which would have left a whole people dark. 52 hill marks are set along the Western and Eastern Ghats,
+  Vindhya, Satpura, Aravalli, Chota Nagpur, Sri Lanka's highlands and the Sulaiman/Kirthar, placed last
+  with their own seed (every other mark is exactly where it was; 15 trees under them are dropped).
+  **The sheet must be re-baked** (`bake.py pyramid`) after this change.
+* The rev-2 delivery (whole-world web + answer) is superseded; keep it as `renders/map_C_prev_v2/` if
+  wanted.
 
 
 v2 frames **1920–2087**, 1920×804 → `renders/map_C/f_%05d.png` (v2 numbering; the edit dissolves
@@ -29,21 +51,21 @@ to ACCORD over 2072–2087). Cut C only.
 
 Our real Earth drawn as a hand-inked map in the Tolkien tradition, lying on a table in a dark room
 lit by a hearth. At 1920 a small flame on the high Himalaya flares, lighting the inked peaks around
-it; threads of fire leave it slowly, then faster and faster, burning across the parchment. Each
-thread is a white-gold front with a licking flame that cools to granular embers and leaves a
-scorched brown line. Every beacon it reaches catches as a small flame with its own pool of light.
-Sparks leap the oceans above the paper and leave dotted sea-routes of embers. The camera starts
-low and close over the Himalaya with a shallow, table-top depth of field. It cranes up and back,
-slides west and tilts down until the whole sheet is in frame (border, compass rose, the table's
-edge). As the world is laced with light, the hearth burns down, so at the end the continents glow
-by their own fire and the light gathers to the centre of frame for the dissolve.
+it. After a held breath a summit to the west answers (1946), then one to the east, then a hill across
+the plain to the south; from each, the fire passes on hill by hill along the drawn ranges, one flame at
+a time, each catching with a flare and then settling to a steady, redder burn. The camera starts low
+and close over the Himalaya with a shallow, table-top depth of field and cranes gently up and back
+over the region, never further: the lines of fire run off the frame on every side. As the land fills
+with fires the hearth burns down, so at the end the moonlit sheet is warm only where fire stands, and
+the light gathers to the centre of frame for the dissolve.
 
 ## Re-render
 
 ```
 cd shots/map; source ~/.venvs/longdawn/env.sh; export NUMBA_NUM_THREADS=2
-python geo.py; python features.py; python webmap.py        # caches (idempotent, ~1 min)
-python bake.py pyramid full 48                               # the sheet: ~20-25 min, 2 procs
+python geo.py; python features.py                           # caches (idempotent, ~1 min)
+python bake.py pyramid full 48                               # the sheet: ~20-25 min, 2 procs (6 min with 4)
+python relay.py                                              # the relay's timing summary (cached on first render)
 python render.py 1920 2003 --tag full &  python render.py 2004 2087 --tag full
 python render.py --frames 1920,1960,2000,2040,2080 --scale 0.5 --test --tag full   # stills
 ```
@@ -82,39 +104,28 @@ number.
   field, the outer ones broken); ink composition (ragged edges from the paper tooth, pen
   pressure, wear on the folds); and the tiled bake of the mip pyramid plus a low-res relief map.
 * `ink.py`, `noise.py` — numba anti-aliased variable-width capsule strokes; gradient-noise fBm.
-* `webmap.py` — the web, adapted from GLOBE's `web.py`:
-  * 797 beacons: Everest, GLOBE's curated heights, Natural Earth cities (≥200k, thinned) and
-    relief-weighted hill fillers. 1027 threads. The graph is a planar Delaunay graph that never
-    crosses the seam, and short straits are allowed.
-  * 29 designated ocean **leaps** (Atlantic narrows, Iceland–Greenland, Ireland–Newfoundland,
-    Canaries–Caribbean, Java–Darwin, Sydney–Auckland, SF–Hawaii, Santiago–Easter–Tahiti, the
-    Indian Ocean islands…).
-  * Same seeded spread as GLOBE (2–3 children per beacon, angular diversity, late answers,
-    cross-links), but run in travel time and remapped to frames by frame = 1920 + k·s^p (p≈0.39).
-    So the first generation is slow and heavy and the rest accelerates with no seams:
-    * threads leave the first beacon at 1926.5, 1937 and 1943 and land at 1946, 1951 and 1954;
-    * half the world is lit by ~2011;
-    * the Atlantic is crossed ~2015–2030;
-    * 99% is lit by 2052 and the last beacon at ~2055.
+* `relay.py` — the relay (rev 3): sites are the summits of the drawn peaks and the crowns of the drawn
+  hills; `ROUTES` are the great lines (parent line, branch point, waypoints along the ranges); an event
+  simulation passes the fire on one hop at a time (`hop_delay`, `PACE`, straits, long looks across
+  plateaus and deserts), with a few short side lines up to nearby peaks. Cached as `relay_5.npz`
+  (delete it after changing the sites or the routes).
 * `fire.py` — numba screen-space fire: Gaussian-profile lines (max within a polyline, additive
-  between polylines), points, and a procedural **living flame**. The flame is a warped teardrop
-  whose top frays into licking tongues, with a yellow heart, orange flanks and a red tip; it
-  animates per frame.
+  between polylines; now only the spark streaks), points, and a procedural **living flame**. The flame
+  is a warped teardrop whose top frays into licking tongues, with a yellow heart, orange flanks and a
+  red tip; it animates per frame; `cool` lowers its temperature for a fire that has burned down.
 * `render.py` — the shot:
   * **Camera:** a perspective camera over the table plane, sampled through its homography from
     the mip pyramid (per-pixel trilinear LOD). Keys run from 42 map-degrees wide at 46° tilt over
-    Everest to 368 wide at 13° over the sheet's centre.
+    Everest to ~79 wide at 30° over (lon 75°E, lat 26°N), heading −7° → −3°.
   * **Light:** a flickering hearth pool composed in frame (from the upper left early, gathering
-    to centre at the end), raking over the paper relief, plus a cool moonlit fill. Fire light
-    from every flame and fresh thread is splatted in a map-space grid and spread by a
-    sum-of-Gaussians "light pool" kernel. The first beacon has its own flare light.
-  * **Threads:** each has a fire front with a small flame and sparks; embers that are uneven
-    along the line and breathe; now and then a pulse of light runs along a settled thread;
-    scorch plus a singed halo are multiplied into the paper.
-  * **Leaps:** comet sparks arc above the paper, light the sea beneath them, and leave dotted
-    ember routes that scorch.
-  * **Other:** ignition flashes and spark bursts; a steady spark stream and the flare's
-    fountain from the first beacon; tilt-shift DoF while the camera is low (to ~1990).
+    to centre at the end, burning down to 17%), raking over the paper relief, plus a cool moonlit fill
+    that rises as the hearth dies. Each fire's light is splatted in a map-space grid and spread by a
+    sum-of-Gaussians "light pool" kernel (wide while it flares, small once settled; the pools grow a
+    little as the camera pulls back). The first beacon has its own flare light and soft glow.
+  * **Fires:** every lit fire is a living flame on its summit (physical height, with a screen-size
+    floor so it still reads as a flame in the wide), a light pool and a singe under it; a burst of
+    spark streaks as it catches; the first beacon's steady spark stream and the flare's fountain.
+  * **Other:** tilt-shift DoF while the camera is low (to ~1990).
   * **Finish:** `look.finish` (exposure 1.5, bloom 0.075, vignette 0.3 rising to 0.55 for the
     dissolve).
 
@@ -124,45 +135,38 @@ number.
 |---|---|
 | 1920 | cut in: close over the Himalaya, a small flame burning on the high peaks |
 | 1920–1923 | the flare: the flame leaps up, its light floods the peaks, a fountain of sparks |
-| 1926–1954 | the first three threads creep out (launch 1926.5 / 1937 / 1943), heavy and slow |
-| 1960–2040 | text window: the lower-third band is hushed (fire and fire-light ×0.3, soft edges) |
-| 1960–2010 | the web explodes across Asia, into Europe, Arabia, Africa and Indonesia; the camera cranes up and slides west |
-| 2010 | the last threads are launched; after this no new lines — burns cool to scorch |
-| 2011–2057 | the peoples answer: chains of beacons along the ranges, rivers and coasts of every continent |
-| 2040–2055 | the last beacons; the whole sheet in frame; the hearth burns down |
-| 2057–2087 | fire on every range and shore, scorch trails between the older fires; light gathers to centre, vignette deepens (dissolve to ACCORD 2072–2087) |
+| 1946 / 1951 / 1954 | the first answers: a summit to the west, one to the east, then a hill across the plain to the south |
+| 1960–2040 | text window ("And hill by hill, the peoples answered."): the lower-third band is hushed (fire and fire-light ×0.3, soft edges) |
+| 1960–2020 | lines of fire run along the Himalaya, Karakoram, Hindu Kush, Tian Shan, Hengduan, the Ghats and Myanmar; the camera cranes gently up and back |
+| 2020–2087 | the frontier reaches Iran, Oman, Yemen, the Caucasus, Mongolia, China and Indochina and runs off every edge; the fires behind it settle; the hearth burns down and the paper turns moonlit |
+| 2072–2087 | dissolve to ACCORD: the light gathers to the centre, the vignette deepens |
 
 ## Deviations / choices
 
-* **No text in frame** (none on the map either). The text band is hushed only during 1935–2040.
-* The web is on a flat sheet, so it is not GLOBE's spherical graph. Seam-crossing Pacific leaps
-  were replaced by leaps reached from the Americas and Australia (SF→Hawaii, Santiago→Easter→
-  Tahiti, Brisbane→New Caledonia→Fiji, Manila→Guam).
+* **No text in frame** (none on the map either). The text band is hushed only during 1950–2050.
+* **Nothing between the fires.** The critic suggested a brown scorch line behind each hop; it was left
+  out on purpose: visible trails would show the relay's branching topology and bring the dendrite
+  reading back. The chain is carried by the order of the catches along each range.
 * The hearth light is composed in frame rather than fixed in the room, so every framing has a
   pool and falloff. It dims through the second half so that at the end the map is lit by its
   own fires.
 * Antarctica is outside the map (south of 60°S); the zebra border marks 5° steps of the map's
   own latitude scale.
 
-## Delivery (2026-09-26)
+## Delivery (rev 3, 2026-09-26)
 
-* 168 frames `renders/map_C/f_01920.png` … `f_02087.png` (1920×804, `look.finish` + `save_png`).
-* Render: mean **3.9 s/frame** (rev 2) at full res (2 processes × 1 numba thread on the shared machine);
-  sheet bake 963 s (91 tiles, 2 procs). Peak RSS ~0.6 GB per render process.
-* Review sheet: `~/mishamisha/_local_logs/review/map_C.jpg` (16 frames). Test stills from
-  development: `~/mishamisha/_local_logs/review/map_tests/`.
-* The dissolve was previewed in linear light against ACCORD src 1912–1927 (v1 frames as a
-  stand-in for `accord_C`): the lace of beacons melts into the torch rivers converging on the ring.
+* 168 frames `renders/map_C/f_01920.png` … `f_02087.png` (1920×804, `look.finish` + `save_png`), rendered
+  in the cloud by `cloud/jobs/map_fix.json` and pushed to `claude/render-map_fix`.
+* Render: ~1 s/frame at full res here (4 processes × 1 numba thread); sheet bake ~6 min with 4 workers.
+* Review: `review/map_fix_before_after.jpg`, report `review/map_fix_report.md`.
 
 ## Known weaknesses / next passes
 
-* At the whole-sheet framing (2045→) the ink reads mostly as tone and the web as points joined by
-  lines — handsome, but closer to a "network" than the close-ups. Larger, flame-shaped beacons
-  there, or a gentle push-in during 2060–2087, would keep it more hand-made.
-* The flare peak (~1922–1926) briefly blooms the first flame toward white.
-* The parchment is essentially one warm hue; firelight vs moonlit fill gives only mild colour
-  separation.
+* The settled fires are small in the last framing (6–10 px); on a phone they read as warm points, though
+  never as round dots, and each still has a flame shape and flicker.
+* The fold crease at 71°E runs vertically through the left-centre of the last framing.
 * Geography is honest but approximate: peaks come from a relief proxy (normal-map integration),
-  forests and lakes from a Blue Marble classification, and rivers are hand-traced waypoints (~1°).
-* Motion was checked on stills and short frame runs, not on playback; watch the preview for
-  flicker in the finest hatching during the fast part of the crane (1985–2030).
+  forests and lakes from a Blue Marble classification, rivers and India's hills are hand-traced
+  waypoints (~1°).
+* Motion was checked on stills and short frame runs, not on playback; watch the preview for the
+  cadence of the catches during the line (1960–2040) and for flicker in the finest hatching.
