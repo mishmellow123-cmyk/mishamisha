@@ -131,8 +131,20 @@ def _band_from_start(b_start):
     return np.r_[n, c, b_start[6:8]]
 
 
-BAND = _band_from_start(np.array([-0.244, 0.697, -0.674, 0.962, 0.087, -0.258, 0.13, 117.0]))
+def _band_world(az_c, el_c, az_2, el_2, width=0.13, seed=117.0):
+    """A band with its galactic centre at (az_c, el_c) passing through (az_2, el_2) at the vigil's start."""
+    def dv(az, el):
+        a, e = math.radians(az), math.radians(el)
+        return np.array([math.cos(e) * math.sin(a), math.sin(e), math.cos(e) * math.cos(a)])
+    c = dv(az_c, el_c)
+    n = np.cross(c, dv(az_2, el_2))
+    n /= np.linalg.norm(n)
+    return _band_from_start(np.r_[n, c, width, seed])
+
+
+BAND = _band_world(120.0, 3.0, 70.0, 40.0)     # the reveal's last wide: rising from the horizon right of her summit
 BAND_GAIN = 0.10
+STAR_GAIN = 1.6             # the low sky of a locked frame reads empty at the catalogue's own gain
 
 _STARS = None
 
@@ -145,16 +157,19 @@ def star_cat():
     return _STARS
 
 
-def draw_sky(img, G, scam, mask, f, clear, ss):
-    """The stars (points, a half-frame shutter) and the Milky Way, wheeling about the pole."""
+def draw_sky(img, G, scam, mask, f, clear, ss, th=None, band_gain=None):
+    """The stars (points, a half-frame shutter) and the Milky Way, wheeling about the pole. th: a frozen sky angle
+    (the reveal is real time); band_gain: override BAND_GAIN."""
     st = star_cat()
     t = f / FPS
     scale = scam.f / (0.5 * 1920 / math.tan(math.radians(22.0)))
-    for th in np.linspace(theta(f), theta(f + 0.5), 3):
-        Rk = KP._rotmat(KP.POLE, th)
-        SK.splat_stars(img, scam, dict(st, dir=st['dir'] @ Rk.T), mask, t=t, gain=ss * ss * clear / 3.0,
+    ths = np.linspace(theta(f), theta(f + 0.5), 3) if th is None else [th]
+    for tk in ths:
+        Rk = KP._rotmat(KP.POLE, tk)
+        SK.splat_stars(img, scam, dict(st, dir=st['dir'] @ Rk.T), mask, t=t, gain=ss * ss * clear * STAR_GAIN / len(ths),
                        scale=scale)
-    BW.add_band(G, sky_rot(f), BAND, BAND_GAIN, clear, img)
+    BW.add_band(G, KP._rotmat(KP.POLE, theta(f) if th is None else th), BAND,
+                BAND_GAIN if band_gain is None else band_gain, clear, img)
 
 
 def fire_level(f):
@@ -176,10 +191,45 @@ def fire_level(f):
     return lv
 
 
+# ------------------------------------------------------------------ the travellers' way ---
+V_PATH_AZ = 80.0
+_VPATH = None
+
+
+def vpath():
+    """The travellers' way (vigil only; the NE ridge stays her climb): from the summit's east lip (6 m out) down
+    the ENE slope, winding, to the cloud sea ~2 km off. Returns (points, arc length)."""
+    global _VPATH
+    if _VPATH is None:
+        p = BS.TOP + BS.dirxz(V_PATH_AZ) * 6.0
+        pts = [BS.on_ground(p)]
+        s = 0.0
+        while s < 2100.0:
+            ds = 6.0 if s < 200.0 else 15.0
+            az = V_PATH_AZ + 11.0 * math.sin(s / 240.0) + 4.0 * math.sin(s / 71.0 + 1.3)
+            p = p + BS.dirxz(az) * ds
+            s += ds
+            q = BS.on_ground(p)
+            if q[1] < BW.CLOUD_Y + 20.0:
+                break
+            pts.append(q)
+        P = np.array(pts)
+        _VPATH = (P, np.r_[0.0, np.cumsum(np.linalg.norm(np.diff(P, axis=0), axis=1))])
+    return _VPATH
+
+
+def vpath_at(s):
+    P, S = vpath()
+    s = min(max(s, 0.0), S[-1])
+    k = min(max(int(np.searchsorted(S, s) - 1), 0), len(S) - 2)
+    u = (s - S[k]) / max(S[k + 1] - S[k], 1e-6)
+    return P[k] + (P[k + 1] - P[k]) * u
+
+
 # ------------------------------------------------------------------ the frame ---
 # the locked frame (defaults: bset's vigil camera, which is also the hand-back crane's first frame); --cam
 # overrides it for look-dev (bear, dist, up, yaw, pitch, hfov: bearing camera->top, metres out, metres above the top)
-VCAM = dict(bear=BS.CAM_BEAR, dist=BS.CAM_DIST, up=BS.CAM_UP, yaw=BS.YAW, pitch=BS.PITCH, hfov=BS.HFOV)
+VCAM = dict(bear=BS.CAM_BEAR, dist=BS.CAM_DIST, up=BS.CAM_UP, yaw=BS.CAM_YAW, pitch=BS.PITCH, hfov=BS.HFOV)
 _VK = ('bear', 'dist', 'up', 'yaw', 'pitch', 'hfov')
 
 
@@ -189,7 +239,7 @@ def camera(W=1920, H=804):
 
 
 def cam_key():
-    if all(abs(VCAM[k] - getattr(BS, n)) < 1e-9 for k, n in zip(_VK, ('CAM_BEAR', 'CAM_DIST', 'CAM_UP', 'YAW',
+    if all(abs(VCAM[k] - getattr(BS, n)) < 1e-9 for k, n in zip(_VK, ('CAM_BEAR', 'CAM_DIST', 'CAM_UP', 'CAM_YAW',
                                                                        'PITCH', 'HFOV'))):
         return 'bs'
     return 'c' + '_'.join(f'{VCAM[k]:g}' for k in _VK)
@@ -200,6 +250,7 @@ class Vigil:
         self.scale, self.ss = scale, ss
         self.W, self.H = int(round(1920 * scale)), int(round(804 * scale))
         self.tc = camera(self.W, self.H)
+        self.cam_yaw = VCAM['yaw']
         self.fr = PI.Frame(self.tc, ss)
         scam = self.fr.src
         self.P = np.array([scam.pos[0], scam.pos[2], 0.0, 0.0])
@@ -504,10 +555,10 @@ class Vigil:
         if f < arrive:
             s = 14.0 * (1.0 - (f - F_CHILD_IN) / float(arrive - F_CHILD_IN - 50))
             if s > 0.0:
-                p = BS.path_at(s) + BS.RIGHT * 0.55
+                p = vpath_at(s) + BS.dirxz(self.cam_yaw + 90.0) * 0.55
             else:
                 u = min((f - (arrive - 50)) / 50.0, 1.0)
-                p = BS.LIP + (cp - BS.LIP) * u
+                p = vpath_at(0.0) + (cp - vpath_at(0.0)) * u
             d, _ = BS.person2('walk', age=0.0, shawl=False, staff=False, child=True, walk=(f / 16.0) % 1.0)
         elif f < F_SIT:
             u = min((f - arrive) / 30.0, 1.0)
@@ -531,8 +582,8 @@ class Vigil:
              dict(build=0.95, hood=1, pack=2, coat=0.6, cloak=14),
              dict(build=0.15, hood=0, pack=1, coat=0.6, cloak=0),
              dict(build=0.70, hood=2, pack=0, coat=0.6, cloak=14)]
-    TRIPS = [(bar(36), 1), (bar(38), 3), (bar(40, 3), 2), (bar(42), 3), (bar(43, 2), 2), (bar(44, 2), 3),
-             (bar(45, 2), 2), (bar(46), 1)]            # the last is the child's parent
+    TRIPS = [(bar(36), 1), (bar(38), 2), (bar(40, 3), 2), (bar(42), 2), (bar(43, 2), 2), (bar(44, 2), 2),
+             (bar(45, 2), 1), (bar(46), 1)]            # the last is the child's parent
 
     def travellers(self, img, zb, scam, f, t, lights, amb):
         ss = self.ss
@@ -546,26 +597,32 @@ class Vigil:
                 s0 = t0 + m * 24
                 if f < s0:
                     continue
-                side_off = BS.RIGHT * (0.45 * m - 0.2)
+                rs = BS.dirxz(self.cam_yaw + 90.0)          # screen-right on the ground
+                side_off = rs * (0.45 * m - 0.2)
+                lip = vpath_at(0.0)
+                tgt = BS.on_ground(BS.BEACON + rs * (1.0 + 0.55 * m) + BS.dirxz(self.cam_yaw) * 0.5)
                 if f < s0 + UP:                               # the last 14 m of the climb, unlit
                     u = (f - s0) / float(UP)
-                    p = BS.path_at(14.0 * (1.0 - u)) + side_off
+                    p = vpath_at(14.0 * (1.0 - u)) + side_off
                     lit = False
                     walk = (f - s0) / 22.0
                     pose = 'walk'
                 elif f < s0 + UP + AT:                        # to the basket; the torch takes
                     u = (f - s0 - UP) / float(AT)
-                    tgt = BS.on_ground(BS.BEACON + BS.RIGHT * (0.95 + 0.45 * m) + BS.FWD * 0.35)
-                    p = BS.on_ground(BS.LIP + (tgt - BS.LIP) * min(u * 2.0, 1.0))
+                    p = BS.on_ground(lip + (tgt - lip) * min(u * 2.0, 1.0))
                     lit = u > 0.55
                     walk = (f - s0) / 22.0 if u < 0.5 else 0.0
                     pose = 'walk' if u < 0.5 else 'stand'
-                else:                                         # home: walking, then a light going down the ridge
+                else:                                         # home: back over the lip, then a light going down
                     g = f - s0 - UP - AT
-                    s = 0.12 * g + 0.0045 * g * g
-                    if s > 1300.0:
-                        continue
-                    p = BS.path_at(s) + side_off * 0.6
+                    if g < 30:
+                        p = BS.on_ground(tgt + (lip - tgt) * (g / 30.0))
+                    else:
+                        gg = g - 30
+                        s = 0.10 * gg + 0.0040 * gg * gg
+                        if s > vpath()[1][-1] - 5.0:
+                            continue
+                        p = vpath_at(s) + side_off * 0.6
                     lit = True
                     walk = g / 22.0
                     pose = 'walk'

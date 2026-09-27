@@ -1,12 +1,14 @@
-"""B5 . THE ROAR . THE REVEAL (R2-B) on B's own landform: frames 1360-1519 of cut B (bars 18-19).
+"""B5 . THE ROAR . THE REVEAL (R2-B) on B's own landform: frames 1360-1519 of cut B (bars 18-19); the edit cuts in
+from H1-B's roar at 1372.
 
-On the roar (bar 18 b1, the cut out of H1-B's hands and tinder) we are close behind her, a dark hooded shape against
-the fire as it roars up; the camera pulls back and rises (fast, then settling) until she is a few pixels beside a
-single warm point on her rounded summit, above a moonlit silver cloud sea, the far ranges in layers and the Milky Way
-over them. No red anywhere but her shawl and the fire. Nothing answers yet.
-Per-frame G-buffer (the camera moves): bworld.build with one moon channel.
+A held beat on the roar (her dark shape by the fire as it roars up and settles, a slight drift back), then from the
+cello's CALL (bar 18 b3) one long pull back and up in log distance (20 m -> 700 m) that settles on the last wide by
+bar 19 b3.5: moonlit silver, her summit low left with the fire a single warm point, the cloud sea to the horizon
+with its rock islands, and the Milky Way rising from the horizon right of her summit. No red anywhere but her shawl
+and the fire. Nothing answers yet. The sky is the vigil's own (frozen here: this is real time), so the vigil's
+first frame (1520) continues it. Per-frame G-buffer (bworld.build with one moon channel).
 
-  python shots/run/reveal.py --frames 1360,1400,1460,1519 --scale 0.25
+  python shots/run/reveal.py --frames 1372,1400,1440,1480,1519 --scale 0.25
   python shots/run/reveal.py --range 1360-1519 --scale 1.0 --ss 1.5 --out renders/reveal_B --procs 4 --skip
 """
 import math
@@ -37,36 +39,44 @@ CR = BW.CR_B
 FPS = 24.0
 TESTS = os.path.join(CM.ROOT, 'renders', 'run_b_tests')
 F0, F1 = 1360, 1520
+BAND_GAIN = 0.16             # the Milky Way over her summit (director: stronger)
 
 HER = BS.STAND
 _fd = BS.BEACON - HER
 FACE_AZ = math.degrees(math.atan2(_fd[0], _fd[2]))        # she faces the fire
 BACK_AZ = FACE_AZ + 180.0
+F_HOLD, F_SETTLE = 1398, 1506        # the pull starts on the cello's CALL (bar 18 b3 = 1400), settles by bar 19 b3.5
+START = dict(dist=20.0, up=2.5, hfov=44.0, uv=(0.55, 0.60))
+END = dict(az=282.0, dist=700.0, up=45.0, hfov=50.0, uv=(0.40, 0.80))
 
 
-def _ease_out(u):
+def _smoother(u):
     u = min(max(u, 0.0), 1.0)
-    return 1.0 - (1.0 - u) ** 3
+    return u * u * u * (u * (6.0 * u - 15.0) + 10.0)
+
+
+def pull(frame):
+    """0 at the roar .. 1 on the wide: a slight drift through the held beat, then the long pull."""
+    drift = 0.04 * min(max((frame - F0) / float(F_HOLD - F0), 0.0), 1.0)
+    return drift + (1.0 - drift) * _smoother((frame - F_HOLD) / float(F_SETTLE - F_HOLD))
 
 
 def camera(frame, W, H):
-    u = _ease_out((frame - F0) / float(F1 - 1 - F0))
-    # start: 7 m behind her at eye height; end: 650 m out (WNW of the top) and 70 m above it, so the summit sits
-    # low in the frame against a wide silver cloud sea (level with the top it read as a dark mound on a plain)
-    p0 = HER + BS.dirxz(BACK_AZ) * 7.0 + np.array([0.0, 1.5, 0.0])
-    p1 = BS.TOP + BS.dirxz(BACK_AZ - 4.0) * 650.0 + np.array([0.0, 70.0, 0.0])
-    # a curved path: out first, then up
-    pos = p0 + (p1 - p0) * np.array([u, u ** 1.3, u])
-    tgt0 = BS.BEACON + np.array([0.0, 0.9, 0.0])
-    tgt1 = BS.TOP + np.array([0.0, 1.0, 0.0])
-    tgt = tgt0 + (tgt1 - tgt0) * u
-    hfov = 46.0 - 4.0 * u
+    s = pull(frame)
+    dist = START['dist'] * (END['dist'] / START['dist']) ** s
+    daz = (END['az'] - BACK_AZ + 540.0) % 360.0 - 180.0
+    az = BACK_AZ + daz * s
+    up = START['up'] + (END['up'] - START['up']) * s ** 1.3
+    piv = BS.BEACON + (BS.TOP - BS.BEACON) * s
+    pos = piv + BS.dirxz(az) * dist + np.array([0.0, up, 0.0])
+    tgt = (BS.BEACON + np.array([0.0, 0.9, 0.0])) * (1.0 - s) + (BS.TOP + np.array([0.0, 1.0, 0.0])) * s
+    hfov = START['hfov'] + (END['hfov'] - START['hfov']) * s
+    su = START['uv'][0] + (END['uv'][0] - START['uv'][0]) * s
+    sv = START['uv'][1] + (END['uv'][1] - START['uv'][1]) * s
     d = tgt - pos
     bear = math.degrees(math.atan2(d[0], d[2]))
     el = math.degrees(math.atan2(d[1], math.hypot(d[0], d[2])))
     fpx = 0.5 * W / math.tan(math.radians(hfov) * 0.5)
-    # the target sits a little right of centre and low (the sky and the band get the room)
-    su, sv = 0.5 + 0.08 * u, 0.55 + 0.10 * u
     yaw = bear - math.degrees(math.atan((su - 0.5) * W / fpx))
     pitch = el + math.degrees(math.atan((sv - 0.5) * H / fpx))
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
@@ -86,7 +96,7 @@ class Reveal:
         scam = fr.src
         P = np.array([scam.pos[0], scam.pos[2], t, 0.0])
         G = BW.build(scam, P, CR, None, dmax=180000.0, moons=[self.moon], mk=10.0)
-        LP, SN, amb, fogp = BS.night_params(self.moon, 1.0 / scam.f)
+        LP, SN, amb, fogp = BS.night_params(self.moon, 1.0 / scam.f, horizon_match=True)
         LP[32], LP[33], LP[34] = 0, 0, 0.0
         roar = math.exp(-((f - F0 - 4) / 14.0) ** 2)
         lv = 1.05 + 0.9 * roar
@@ -99,9 +109,7 @@ class Reveal:
         dist = G[..., BW.G_DIST].astype(np.float32)
         zb = dist.copy()
         sky = (dist > 1e8).astype(np.float32)
-        ang = VG.sky_angle(VG.F0) - math.radians(VG.STAR_DEG / (VG.F1 - VG.F0)) * (VG.F0 - f)
-        BW.add_band(G, KP._rotmat(KP.POLE, ang), VG.BAND, 0.14, 1.0, img)      # stronger (director)
-        KP.draw_stars(img, scam, sky, ang - 0.0008, ang, 1.6 * self.ss * self.ss, K=3)
+        VG.draw_sky(img, G, scam, sky, f, 1.0, self.ss, th=VG.theta(VG.F0), band_gain=BAND_GAIN)
         # the summit: the cairn, the beacon roaring up, her
         md = self.moon
         lights = [dict(pos=BS.BEACON + np.array([0, 1.3, 0]), col=F.FIRE_LIGHT, I=1.8 * lv * F.flicker(t, 3), r0=0.5),
@@ -126,7 +134,7 @@ class Reveal:
                     col=np.array([1.0, 0.50, 0.18]))
         FG.render(img, zb, scam, front, BS.BEACON, lights, amb=amb_f, mats=BS.M, t=t, write_depth=False, zbias=0.3)
         # her: weight back from the roar, then standing, looking at her fire
-        d, _ = BS.person('look', age=0.85, shawl=True, staff=True, wind=0.5)
+        d, _ = BS.person2('look', age=0.9, shawl=True, staff=True, wind=0.5)
         if f < F0 + 30:
             d.rotate(-0.10 * math.exp(-((f - F0 - 6) / 12.0) ** 2), pivot=(0.0, 0.0))
         FG.render(img, zb, scam, d, HER, lights, amb=amb_f, mats=BS.M, t=t, write_depth=False, zbias=0.3)

@@ -21,13 +21,17 @@ from mt import figure as FG  # noqa: E402
 CR = BW.CR_B
 TOP = np.array([BW.TX, BW.TOP_Y, BW.TZ])
 
-# the vigil's locked camera: SSW of the top, a little above the shelf, looking NNE over the cloud bay
-CAM_BEAR = 20.0                   # bearing camera -> top (deg)
-CAM_DIST = 44.0
-CAM_UP = 1.5
-YAW = 31.0
-PITCH = -1.2
-HFOV = 40.0
+# the vigil's locked camera (= the hand-back crane's first frame): WSW of the top, 6 m above it, looking ENE over
+# the cloud sea and its rock islands (RUN-B2, 27 Sep; it was SSW looking NNE: half the frame a bare snow dome).
+# The SET axes YAW / FWD / RIGHT stay frozen at 31 deg: shelf_pt() builds the basket, her places and the cairn from
+# them, and the hand-back's staging depends on those.
+CAM_BEAR = 62.0                   # bearing camera -> top (deg)
+CAM_DIST = 55.0
+CAM_UP = 6.0
+CAM_YAW = 70.0
+PITCH = -3.0
+HFOV = 36.0
+YAW = 31.0                        # the set axes (frozen; not the camera's yaw)
 
 
 def dirxz(az):
@@ -63,7 +67,7 @@ LIP = shelf_pt(3.8, 3.0)             # the NE lip: where the path leaves the sum
 
 
 def camera(W=1920, H=804):
-    return RC.RCam(CAM_POS, YAW, PITCH, 0.0, HFOV, W, H)
+    return RC.RCam(CAM_POS, CAM_YAW, PITCH, 0.0, HFOV, W, H)
 
 
 # ------------------------------------------------------------------ the NE path ---
