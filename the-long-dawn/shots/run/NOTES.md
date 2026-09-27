@@ -551,6 +551,11 @@ every range where the cairn/plinth/her figure read: climb_b 640-879, reveal_b 13
 handback_b_{crane_a,crane_b,night,dawn_a,dawn_b} 3840-5199 (the join stays identical: all use the same bprops/bset).
 If cheap after that: RUN-B2's nitpicks (summit_snow on for vigil + hand-back together; the shawl passing in one
 frame; the Milky Way's cloudy texture; the flat fog veil).
+**B14 TITLE plate (new scope, b69706b):** handback_b.py frames 5200-5439 (render_title): 5199's settled frame lifts
+6.8 deg into the dawn sky (eased over 76 f, then +0.45 deg drift), one tall source G-buffer (hbt_G_...) warped per
+frame; sun continues the hand-back's final rate (seamless at 5199/5200); high_cloud() = cirrus at 7.5 km lit gold
+near the sun. Job cloud/jobs/dawntitle_b.json -> renders/dawntitle_B. Cairn not in frame (the push-in excludes it).
+Farm test farm_title_t1 (5200/5276/5340/5439) queued. Then JOB READY.
 
 # >>> RUN-B-3 STATE AT PAUSE (27 Sep ~21:15Z, account usage ends; RESUME ~23:30Z) <<<
 **Lane:** RUN-B-3 = THE HAND-BACK (3840-5199) + DUSK v2. RUN-B2 (agent adab49d5d24d90ffb) owns THE VIGIL + THE REVEAL.
