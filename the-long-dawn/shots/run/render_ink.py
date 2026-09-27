@@ -316,9 +316,8 @@ def load_cache(p):
 
 def work(args):
     shot_name, frames, scale, ss, threads, skip = args
-    os.environ['NUMBA_NUM_THREADS'] = str(threads)
-    import numba
-    numba.set_num_threads(threads)
+    import numba                        # (set NUMBA_NUM_THREADS in the shell; it cannot change once numba runs)
+    numba.set_num_threads(max(1, min(threads, numba.config.NUMBA_NUM_THREADS)))
     cv2.setNumThreads(1)
     shot = Shot(shot_name)
     for f in frames:

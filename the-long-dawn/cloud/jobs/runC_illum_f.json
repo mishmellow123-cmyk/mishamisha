@@ -1,0 +1,15 @@
+{
+ "name": "runC_illum_f",
+ "branch": "claude/render-runC-illum-f",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "NUMBA_NUM_THREADS=4 python3 shots/run/ink_final.py --shot illum --frames 2398 --scale 0.25 --threads 4 --out warm"
+ ],
+ "render": [
+  "python3 shots/run/ink_final.py --shot illum --range 2798-2877 --procs 2 --threads 2 --skip"
+ ],
+ "out_dir": "renders/runC_illum",
+ "frames": "2798-2877",
+ "push_every": 300,
+ "ship": "jpg"
+}

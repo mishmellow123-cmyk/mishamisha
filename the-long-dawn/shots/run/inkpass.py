@@ -133,7 +133,7 @@ def _wnoise(x, z, mpx, Lpx, seed, oa, ob):
 
 
 @njit(inline='always', fastmath=True)
-def _lines(phi, gx, gy, x, z, mpx, T, kpx, sp, seed, wmul, gapk):
+def _lines(phi, gx, gy, x, z, mpx, T, kpx, sp, seed, wmul, gapk, shift):
     """Coverage of one iso-line family at this pixel. phi: the field; (gx, gy): its screen gradient (field units
     per ss px); T: the family's tone; sp: the densest spacing (1920-px)."""
     g = math.sqrt(gx * gx + gy * gy)
@@ -142,7 +142,7 @@ def _lines(phi, gx, gy, x, z, mpx, T, kpx, sp, seed, wmul, gapk):
     lam = math.log2(max(sp * kpx * g / H0, 1.0))
     L = int(math.floor(lam))
     dh = H0 * 2.0 ** L
-    q = phi / dh
+    q = phi / dh + shift                            # shift: 0, or the boiling control's re-deal of positions
     k = int(math.floor(q + 0.5))
     dpx = abs(q - k) * dh / g                       # distance to the nearest line of level L (ss px)
     M = L + (8 if k == 0 else _ctz(k))              # the line's birth level
@@ -198,6 +198,7 @@ def xhatch(A, T, G, hs, prm, out):
     kap = prm[10]
     fx = prm[11]
     fz = prm[12]
+    shf = 0.0 if so == 0 else 0.3 + 0.4 * ((so * 0.6180339887) % 1.0)     # the control moves every line
     for j in prange(H):
         for i in range(W):
             out[j, i, 0] = 0.0
@@ -219,14 +220,14 @@ def xhatch(A, T, G, hs, prm, out):
             ph1 = h - kap * chi
             T1 = Tt if Tt < prm[13] else prm[13] + 0.25 * (Tt - prm[13])     # contours stop densifying at mid-tone
             out[j, i, 0] = _lines(ph1, gx - kap * G[j, i, 4], gy - kap * G[j, i, 5], x, z, mpx, T1, kpx, sp1,
-                                  11 + so, 1.0, 1.0)
+                                  11 + so, 1.0, 1.0, shf)
             if Tt > t2:
                 psi = x * rx + z * rz
                 ph = h * cb - psi * sb
                 qx = gx * cb - G[j, i, 2] * sb
                 qy = gy * cb - G[j, i, 3] * sb
                 T2 = (Tt - t2) / (1.0 - t2) * 1.15
-                out[j, i, 1] = _lines(ph, qx, qy, x, z, mpx, T2, kpx, sp2, 29 + so, 0.70, 0.8)
+                out[j, i, 1] = _lines(ph, qx, qy, x, z, mpx, T2, kpx, sp2, 29 + so, 0.70, 0.8, shf)
 
 
 @njit(parallel=True, fastmath=True, cache=True)
@@ -763,7 +764,7 @@ def fire_soft(A, B, frame, campos):
 def compose(R, prm=None, B=None, plate=None, CR=None):
     A = R['A']
     H, W = A.shape[:2]
-    kpx = W / 1920.0
+    kpx = R.get('kpx', W / 1920.0)            # (a crop at production scale passes its true kpx)
     cam = cam_vec(R['cam'])
     t = R['cam']['t']
     fire_st = np.clip(fire_soft(A, B, R['frame'], np.asarray(R['cam']['pos'], np.float64)) / 0.5, 0, 1)        # the fires' light, steady and smooth
