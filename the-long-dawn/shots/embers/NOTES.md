@@ -1,7 +1,32 @@
+# >>> EMBERS-2 (A only; C is EMBERS-C's) -- STATE 27 Sep ~19:25Z: the EDGE/BRINK pass, look-dev on the FARM <<<
+* Scope: A's shots only (EMBERS-C owns c3.py, scene_c.py, tolkien.py). Tests: farm.py <job> --test K --frames ...
+  (renders/_farmtest/<job>/); the Mac lab (scratchpad e4/labsrv.py) is retired.
+* A7 THE EDGE (1840-2467, CUT at 1840 and at 2468 in render.SHOTS_V3): `_cam_edge` = one steady orbit, r 27, y -9
+  (5 above the rim), az 2.93 -> 3.25 rel ALPHA_C (the widest gap, forges 4|5 framing), hf 88, SHIFT LENS
+  (`lens_fall`, fall 0.3: towers stay upright; looking down splayed them outward). Opens level on the fire over the
+  intact ground and tilts down with the falling plates (1848-1904). BRINK part 1 (2400-2467): tilt up with the
+  updraft (fall -0.15, rise), back down to the rim as it gives way at 2440 (shake).
+* A8 crown hero (2468-2639): `_cam_crown`, close on tower 7's crown (hf 50) against the glare; it breaks on 2480,
+  tips into the pit; the camera tracks it (FallingCrown.centre), goes over the lip through the 6|7 gap at 2520 and
+  down into the glare; white on 2640 (post).
+* Crater look: terraced strata lit from below (`w_strata`, LAYER_H 3.2), broad molten veins, WALL_RAMP (dark lip,
+  blazing 6-10 below), pit haze (1400 soft blobs, AIR_E), few pit embers (fade above the lip). GoldRuns overlay
+  replaces the crust gold (A3Sched.gold_overlay). near_fade: embers/sparks within ~16 of the lens fade.
+* Fire: a3 fire_centre settles to y -7 over 1846-1930 (+5 at the brink).
+
 # >>> EMBERS-A2 (split off A, 27 Sep ~18:50Z): A3 GLYPHS, A4 THE POINT, A9 THE DEAD VALLEY, A10 THE EMBER,
 # A16 TOWERS IN THE LIGHT, A17 THE FIRE, SEEN (+ A16/A17 in the _alt_codedtowers ALT). EMBERS-2 keeps A7/A8 (edge.py).
-# Owner files: glyphs3.py (A3/A4), aftermath.py (A9/A10), turn.py (A16/A17), new modules only; a3.py/render.py/
-# scene_b.py hooks in small noted commits. <<<
+# Owner files: glyphs3.py (A3/A4), aftermath.py (A9/A10), new modules only; a3.py/render.py hooks in small noted
+# commits. SCOPE (director, ~19:45Z): A16/A17 now belong to EMBERS-A3; EMBERS-A2 keeps A3/A4 (+ A9/A10, done). <<<
+## EMBERS-A2 PROGRESS
+* A9/A10 APPROVED (director ~19:45Z) and launched: cloud/jobs/embers_A3_a9a10.json (2640-3119), farm --nodes 1.
+  Code: aftermath.py (6bd5fe2). Check stills: review/embers_A3_check/a2/. The ember rests at px (960, 548); RUN-A-L
+  (A11 X2) and EDIT are told to carry it on from there.
+* For EMBERS-A3 (A16/A17): a3._mine() routes every frame >= T_LIGHT (4400) to turn.py, which is only a STUB that
+  replays the old edge.py path (edge.camera / cam_light, RidgeFires, SmallLights, _shutter, _back_light). Take
+  turn.py over (it is yours now) or point _mine() elsewhere.
+* A3/A4 (glyphs3.py): the letters load assets/glyphs/atlas_v3.npz (committed; farm.py skips apt-get and its image
+  has no Noto, so no fonts are needed). Look-dev in progress in the lab (scratchpad ea2/lab.py, light work only).
 ## STATE AT HANDOFF (EMBERS-A2 takes over, 27 Sep ~18:55Z)
 * Renders: renders/embers_A3 has only A5+A6 (1040-1839, approved); NOTHING exists for my ranges (560-1039,
   2640-3119, 4400-4879). The EDL (edit/NOTES_v3.md) expects all of them in renders/embers_A3, A cut numbering.
