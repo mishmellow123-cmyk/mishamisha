@@ -1,0 +1,729 @@
+{
+ "cut": "B",
+ "title": "THE KEEPER",
+ "bpm": 72,
+ "bars": 68,
+ "fps": 24,
+ "frames": 5440,
+ "sections": [
+  {
+   "id": "B1",
+   "name": "DUSK",
+   "bar_start": 1,
+   "bar_end": 8,
+   "t0": 0.0,
+   "t1": 26.667,
+   "f0": 0,
+   "f1": 640
+  },
+  {
+   "id": "B2",
+   "name": "THE CLIMB",
+   "bar_start": 9,
+   "bar_end": 11,
+   "t0": 26.667,
+   "t1": 36.667,
+   "f0": 640,
+   "f1": 880
+  },
+  {
+   "id": "B3",
+   "name": "THE DEAD EMBER",
+   "bar_start": 12,
+   "bar_end": 14,
+   "t0": 36.667,
+   "t1": 46.667,
+   "f0": 880,
+   "f1": 1120
+  },
+  {
+   "id": "B4",
+   "name": "THE FIRST FIRE",
+   "bar_start": 15,
+   "bar_end": 17,
+   "t0": 46.667,
+   "t1": 56.667,
+   "f0": 1120,
+   "f1": 1360
+  },
+  {
+   "id": "B5",
+   "name": "THE ROAR · THE REVEAL",
+   "bar_start": 18,
+   "bar_end": 19,
+   "t0": 56.667,
+   "t1": 63.333,
+   "f0": 1360,
+   "f1": 1520
+  },
+  {
+   "id": "B6",
+   "name": "THE FIRST NIGHT",
+   "bar_start": 20,
+   "bar_end": 25,
+   "t0": 63.333,
+   "t1": 83.333,
+   "f0": 1520,
+   "f1": 2000
+  },
+  {
+   "id": "B7",
+   "name": "THE LIFETIME I · NOTHING ANSWERS",
+   "bar_start": 26,
+   "bar_end": 31,
+   "t0": 83.333,
+   "t1": 103.333,
+   "f0": 2000,
+   "f1": 2480
+  },
+  {
+   "id": "B8",
+   "name": "THE FAR PEAK · THE CHILD WHO POINTS",
+   "bar_start": 32,
+   "bar_end": 33,
+   "t0": 103.333,
+   "t1": 110.0,
+   "f0": 2480,
+   "f1": 2640
+  },
+  {
+   "id": "B9",
+   "name": "THE LIFETIME II · THE FIRST ANSWERS",
+   "bar_start": 34,
+   "bar_end": 39,
+   "t0": 110.0,
+   "t1": 130.0,
+   "f0": 2640,
+   "f1": 3120
+  },
+  {
+   "id": "B10",
+   "name": "THE FAR PEAK · HIS OWN FIRE",
+   "bar_start": 40,
+   "bar_end": 41,
+   "t0": 130.0,
+   "t1": 136.667,
+   "f0": 3120,
+   "f1": 3280
+  },
+  {
+   "id": "B11",
+   "name": "THE LIFETIME III · THE WORLD COMES",
+   "bar_start": 42,
+   "bar_end": 45,
+   "t0": 136.667,
+   "t1": 150.0,
+   "f0": 3280,
+   "f1": 3600
+  },
+  {
+   "id": "B12",
+   "name": "THE SIXTIETH NIGHT",
+   "bar_start": 46,
+   "bar_end": 48,
+   "t0": 150.0,
+   "t1": 160.0,
+   "f0": 3600,
+   "f1": 3840
+  },
+  {
+   "id": "B13",
+   "name": "THE HAND-BACK",
+   "bar_start": 49,
+   "bar_end": 65,
+   "t0": 160.0,
+   "t1": 216.667,
+   "f0": 3840,
+   "f1": 5200
+  },
+  {
+   "id": "B14",
+   "name": "TITLE",
+   "bar_start": 66,
+   "bar_end": 68,
+   "t0": 216.667,
+   "t1": 226.667,
+   "f0": 5200,
+   "f1": 5440
+  }
+ ],
+ "sync": [
+  {
+   "id": "wind",
+   "bar": 1,
+   "beat": 1.0,
+   "t": 0.0,
+   "f": 0,
+   "what": "wind; a low D in the strings"
+  },
+  {
+   "id": "peak_1",
+   "bar": 2,
+   "beat": 1.0,
+   "t": 3.333,
+   "f": 80,
+   "what": "a lower peak loses the light; the cello steps down"
+  },
+  {
+   "id": "peak_2",
+   "bar": 3,
+   "beat": 1.0,
+   "t": 6.667,
+   "f": 160,
+   "what": "a peak goes dark; the cello steps down"
+  },
+  {
+   "id": "peak_3",
+   "bar": 4,
+   "beat": 1.0,
+   "t": 10.0,
+   "f": 240,
+   "what": "a peak goes dark; the cello steps down"
+  },
+  {
+   "id": "peak_4",
+   "bar": 5,
+   "beat": 1.0,
+   "t": 13.333,
+   "f": 320,
+   "what": "a peak goes dark; the cello steps down"
+  },
+  {
+   "id": "peak_5",
+   "bar": 6,
+   "beat": 1.0,
+   "t": 16.667,
+   "f": 400,
+   "what": "a peak goes dark; the cello steps down"
+  },
+  {
+   "id": "peak_6",
+   "bar": 7,
+   "beat": 1.0,
+   "t": 20.0,
+   "f": 480,
+   "what": "a higher peak goes dark; the cello steps down"
+  },
+  {
+   "id": "last_red",
+   "bar": 8,
+   "beat": 3.0,
+   "t": 25.0,
+   "f": 600,
+   "what": "the last red point, on her summit, goes out (25.0 s); the cello's last step"
+  },
+  {
+   "id": "climb",
+   "bar": 9,
+   "beat": 1.0,
+   "t": 26.667,
+   "f": 640,
+   "what": "THE CLIMB: the wide, blue night"
+  },
+  {
+   "id": "climb_close",
+   "bar": 11,
+   "beat": 1.0,
+   "t": 33.333,
+   "f": 800,
+   "what": "closer, from behind: the scarf and the pot"
+  },
+  {
+   "id": "summit",
+   "bar": 12,
+   "beat": 1.0,
+   "t": 36.667,
+   "f": 880,
+   "what": "the summit cairn; she kneels"
+  },
+  {
+   "id": "lid",
+   "bar": 12,
+   "beat": 3.0,
+   "t": 38.333,
+   "f": 920,
+   "what": "the lid's small knock"
+  },
+  {
+   "id": "blow_ember",
+   "bar": 13,
+   "beat": 2.0,
+   "t": 40.833,
+   "f": 980,
+   "what": "she blows; the ember greys under her breath"
+  },
+  {
+   "id": "ember_last",
+   "bar": 14,
+   "beat": 4.0,
+   "t": 45.833,
+   "f": 1100,
+   "what": "the ember's last red point"
+  },
+  {
+   "id": "strike1",
+   "bar": 15,
+   "beat": 1.0,
+   "t": 46.667,
+   "f": 1120,
+   "what": "match cut: flint strike 1 (H1 master +0)"
+  },
+  {
+   "id": "strike2",
+   "bar": 15,
+   "beat": 2.45,
+   "t": 47.875,
+   "f": 1149,
+   "what": "flint strike 2 (+29)"
+  },
+  {
+   "id": "strike3",
+   "bar": 15,
+   "beat": 3.9,
+   "t": 49.083,
+   "f": 1178,
+   "what": "flint strike 3: the tinder takes (+58)"
+  },
+  {
+   "id": "blow",
+   "bar": 16,
+   "beat": 1.2,
+   "t": 50.167,
+   "f": 1204,
+   "what": "the long blow (+84 to +180)"
+  },
+  {
+   "id": "catch",
+   "bar": 17,
+   "beat": 2.8,
+   "t": 54.833,
+   "f": 1316,
+   "what": "the catch (+196); a low D enters"
+  },
+  {
+   "id": "roar",
+   "bar": 18,
+   "beat": 1.0,
+   "t": 56.667,
+   "f": 1360,
+   "what": "the ROAR (+240); the reveal, silver"
+  },
+  {
+   "id": "call_cello",
+   "bar": 18,
+   "beat": 3.0,
+   "t": 58.333,
+   "f": 1400,
+   "what": "the CALL on the solo cello, unaccompanied"
+  },
+  {
+   "id": "night_1",
+   "bar": 20,
+   "beat": 1.0,
+   "t": 63.333,
+   "f": 1520,
+   "what": "THE FIRST NIGHT: call 1, then a bar of silence"
+  },
+  {
+   "id": "call_2",
+   "bar": 22,
+   "beat": 1.0,
+   "t": 70.0,
+   "f": 1680,
+   "what": "call 2, then a bar of silence"
+  },
+  {
+   "id": "call_3",
+   "bar": 24,
+   "beat": 1.0,
+   "t": 76.667,
+   "f": 1840,
+   "what": "call 3, then a bar of silence; the sky greys to a cold dawn"
+  },
+  {
+   "id": "stone_1",
+   "bar": 25,
+   "beat": 3.0,
+   "t": 81.667,
+   "f": 1960,
+   "what": "the first stone's knock"
+  },
+  {
+   "id": "year_2",
+   "bar": 26,
+   "beat": 1.0,
+   "t": 83.333,
+   "f": 2000,
+   "what": "year 2 (STORM): chaconne variation 1; strikes swallowed by the storm"
+  },
+  {
+   "id": "stone_2",
+   "bar": 27,
+   "beat": 3.0,
+   "t": 88.333,
+   "f": 2120,
+   "what": "the stone's knock"
+  },
+  {
+   "id": "year_3",
+   "bar": 28,
+   "beat": 1.0,
+   "t": 90.0,
+   "f": 2160,
+   "what": "year 3 (CLEAR): variation 2, a degree lower"
+  },
+  {
+   "id": "stone_3",
+   "bar": 29,
+   "beat": 3.0,
+   "t": 95.0,
+   "f": 2280,
+   "what": "the stone's knock"
+  },
+  {
+   "id": "year_5",
+   "bar": 30,
+   "beat": 1.0,
+   "t": 96.667,
+   "f": 2320,
+   "what": "year 5 (FOG): variation 3, a degree lower"
+  },
+  {
+   "id": "stone_5",
+   "bar": 31,
+   "beat": 3.0,
+   "t": 101.667,
+   "f": 2440,
+   "what": "the stone's knock"
+  },
+  {
+   "id": "far_peak_1",
+   "bar": 32,
+   "beat": 1.0,
+   "t": 103.333,
+   "f": 2480,
+   "what": "cutaway: THE FAR PEAK; one high harmonic"
+  },
+  {
+   "id": "child_points",
+   "bar": 33,
+   "beat": 1.0,
+   "t": 106.667,
+   "f": 2560,
+   "what": "the child points at her light"
+  },
+  {
+   "id": "year_8",
+   "bar": 34,
+   "beat": 1.0,
+   "t": 110.0,
+   "f": 2640,
+   "what": "year 8 (CLEAR): variation 4; the bass turns and begins to climb"
+  },
+  {
+   "id": "first_answer",
+   "bar": 35,
+   "beat": 1.0,
+   "t": 113.333,
+   "f": 2720,
+   "what": "a pinprick answers on the far horizon; the ANSWER heard for the first time (far horn)"
+  },
+  {
+   "id": "stone_8",
+   "bar": 35,
+   "beat": 3.0,
+   "t": 115.0,
+   "f": 2760,
+   "what": "the stone's knock"
+  },
+  {
+   "id": "year_12",
+   "bar": 36,
+   "beat": 1.0,
+   "t": 116.667,
+   "f": 2800,
+   "what": "year 12 (STORM): variation 5; a traveller climbs in"
+  },
+  {
+   "id": "traveller",
+   "bar": 37,
+   "beat": 1.0,
+   "t": 120.0,
+   "f": 2880,
+   "what": "the traveller takes flame and carries it down"
+  },
+  {
+   "id": "stone_12",
+   "bar": 37,
+   "beat": 3.0,
+   "t": 121.667,
+   "f": 2920,
+   "what": "the stone's knock"
+  },
+  {
+   "id": "year_20",
+   "bar": 38,
+   "beat": 1.0,
+   "t": 123.333,
+   "f": 2960,
+   "what": "year 20 (CLEAR): variation 6; three travellers"
+  },
+  {
+   "id": "village_lights",
+   "bar": 39,
+   "beat": 1.0,
+   "t": 126.667,
+   "f": 3040,
+   "what": "the first village lights under the cloud sea"
+  },
+  {
+   "id": "stone_20",
+   "bar": 39,
+   "beat": 3.0,
+   "t": 128.333,
+   "f": 3080,
+   "what": "the stone's knock"
+  },
+  {
+   "id": "far_peak_2",
+   "bar": 40,
+   "beat": 1.0,
+   "t": 130.0,
+   "f": 3120,
+   "what": "cutaway: THE FAR PEAK, years later"
+  },
+  {
+   "id": "his_fire",
+   "bar": 41,
+   "beat": 1.0,
+   "t": 133.333,
+   "f": 3200,
+   "what": "the grown child lights his own beacon; the answer, nearer"
+  },
+  {
+   "id": "year_30",
+   "bar": 42,
+   "beat": 1.0,
+   "t": 136.667,
+   "f": 3280,
+   "what": "year 30 (CLEAR): variation 7; call and answer in dialogue"
+  },
+  {
+   "id": "stone_30",
+   "bar": 43,
+   "beat": 3.0,
+   "t": 141.667,
+   "f": 3400,
+   "what": "the stone's knock"
+  },
+  {
+   "id": "year_45",
+   "bar": 44,
+   "beat": 1.0,
+   "t": 143.333,
+   "f": 3440,
+   "what": "year 45 (FOG): variation 8; she sits, the young carry the flame down"
+  },
+  {
+   "id": "stone_45",
+   "bar": 45,
+   "beat": 3.0,
+   "t": 148.333,
+   "f": 3560,
+   "what": "the stone's knock"
+  },
+  {
+   "id": "year_60",
+   "bar": 46,
+   "beat": 1.0,
+   "t": 150.0,
+   "f": 3600,
+   "what": "THE SIXTIETH NIGHT: she and a small child climb in; the bass arrives in D major"
+  },
+  {
+   "id": "y60_strikes",
+   "bar": 47,
+   "beat": 1.0,
+   "t": 153.333,
+   "f": 3680,
+   "what": "she lights the beacon: three slow strikes"
+  },
+  {
+   "id": "y60_sits",
+   "bar": 48,
+   "beat": 1.0,
+   "t": 156.667,
+   "f": 3760,
+   "what": "she sits; the child against her"
+  },
+  {
+   "id": "crane",
+   "bar": 49,
+   "beat": 1.0,
+   "t": 160.0,
+   "f": 3840,
+   "what": "THE HAND-BACK: the camera leaves the locked frame and rises; horns near and far"
+  },
+  {
+   "id": "range_alight",
+   "bar": 52,
+   "beat": 1.0,
+   "t": 170.0,
+   "f": 4080,
+   "what": "the whole range alight to the curve of the world; the crane settles"
+  },
+  {
+   "id": "east_greys",
+   "bar": 53,
+   "beat": 1.0,
+   "t": 173.333,
+   "f": 4160,
+   "what": "the east greys; the child asleep in her scarf; a held chord"
+  },
+  {
+   "id": "breath",
+   "bar": 53,
+   "beat": 4.65,
+   "t": 176.375,
+   "f": 4233,
+   "what": "275 ms of silence"
+  },
+  {
+   "id": "sunrise",
+   "bar": 54,
+   "beat": 1.0,
+   "t": 176.667,
+   "f": 4240,
+   "what": "the sun breaks the far skyline; a bloom out of silence on D add9"
+  },
+  {
+   "id": "call_late",
+   "bar": 54,
+   "beat": 3.0,
+   "t": 178.333,
+   "f": 4280,
+   "what": "the CALL, late, on her cello"
+  },
+  {
+   "id": "pale_1",
+   "bar": 55,
+   "beat": 1.0,
+   "t": 180.0,
+   "f": 4320,
+   "what": "far beacon 1 pales; its horn answers, then falls silent"
+  },
+  {
+   "id": "pale_2",
+   "bar": 56,
+   "beat": 1.0,
+   "t": 183.333,
+   "f": 4400,
+   "what": "far beacon 2 pales; its horn answers, then falls silent"
+  },
+  {
+   "id": "pale_3",
+   "bar": 57,
+   "beat": 1.0,
+   "t": 186.667,
+   "f": 4480,
+   "what": "far beacon 3 pales; its horn answers, then falls silent"
+  },
+  {
+   "id": "pale_4",
+   "bar": 58,
+   "beat": 1.0,
+   "t": 190.0,
+   "f": 4560,
+   "what": "far beacon 4 pales; its horn answers, then falls silent"
+  },
+  {
+   "id": "pale_5",
+   "bar": 59,
+   "beat": 1.0,
+   "t": 193.333,
+   "f": 4640,
+   "what": "far beacon 5 pales; its horn answers, then falls silent"
+  },
+  {
+   "id": "pale_6",
+   "bar": 60,
+   "beat": 1.0,
+   "t": 196.667,
+   "f": 4720,
+   "what": "far beacon 6 pales; its horn answers, then falls silent"
+  },
+  {
+   "id": "her_light",
+   "bar": 61,
+   "beat": 1.0,
+   "t": 200.0,
+   "f": 4800,
+   "what": "the light reaches her summit; her beacon pales last"
+  },
+  {
+   "id": "hands_open",
+   "bar": 61,
+   "beat": 3.0,
+   "t": 201.667,
+   "f": 4840,
+   "what": "she opens her hands to the sun"
+  },
+  {
+   "id": "home_phrase",
+   "bar": 62,
+   "beat": 1.0,
+   "t": 203.333,
+   "f": 4880,
+   "what": "her cello alone: the phrase that comes home"
+  },
+  {
+   "id": "child_sun",
+   "bar": 63,
+   "beat": 1.0,
+   "t": 206.667,
+   "f": 4960,
+   "what": "the sun reaches the child and the scarf"
+  },
+  {
+   "id": "shoulder",
+   "bar": 63,
+   "beat": 3.0,
+   "t": 208.333,
+   "f": 5000,
+   "what": "she touches the child's shoulder"
+  },
+  {
+   "id": "child_wakes",
+   "bar": 64,
+   "beat": 1.0,
+   "t": 210.0,
+   "f": 5040,
+   "what": "the child wakes and looks at the sun; the home phrase arrives"
+  },
+  {
+   "id": "birdsong",
+   "bar": 65,
+   "beat": 1.0,
+   "t": 213.333,
+   "f": 5120,
+   "what": "the first birdsong in the film"
+  },
+  {
+   "id": "title",
+   "bar": 66,
+   "beat": 1.0,
+   "t": 216.667,
+   "f": 5200,
+   "what": "TITLE; the last chord resolves to D major, into birdsong"
+  }
+ ],
+ "text": [
+  {
+   "id": "title",
+   "line": "THE LONG DAWN",
+   "f_in": 5220,
+   "f_out": 5400
+  }
+ ],
+ "conventions": "24 fps, 72 BPM, 4/4: beat = 20 frames, bar = 80 frames. Frames count from 0 on this cut's own timeline. Sections are half-open [f0, f1): f1 is the next section's f0; t = f / 24. bar and beat are 1-based; a fractional beat is a frame between beats (beat = 1 + (f mod 80) / 20). Text f_in is the first frame of the fade-in or write-on, f_out the first frame after the fade-out. Generated from the same source as BIBLE_V3.md '# REVISION 1 · LOCKED BEAT SHEETS'; change both or neither."
+}

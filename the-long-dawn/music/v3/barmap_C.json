@@ -1,0 +1,1035 @@
+{
+ "cut": "C",
+ "title": "THE LAST PAGES",
+ "bpm": 72,
+ "bars": 90,
+ "fps": 24,
+ "frames": 7200,
+ "sections": [
+  {
+   "id": "C1",
+   "name": "BLACK · THE HEARTH",
+   "bar_start": 1,
+   "bar_end": 1,
+   "t0": 0.0,
+   "t1": 3.333,
+   "f0": 0,
+   "f1": 80
+  },
+  {
+   "id": "C2",
+   "name": "THE RED BOOK",
+   "bar_start": 2,
+   "bar_end": 4,
+   "t0": 3.333,
+   "t1": 13.333,
+   "f0": 80,
+   "f1": 320
+  },
+  {
+   "id": "C3",
+   "name": "INK PAGE · THE MOUNTAIN",
+   "bar_start": 5,
+   "bar_end": 7,
+   "t0": 13.333,
+   "t1": 23.333,
+   "f0": 320,
+   "f1": 560
+  },
+  {
+   "id": "C4",
+   "name": "LETTERS TO FIRE",
+   "bar_start": 8,
+   "bar_end": 11,
+   "t0": 23.333,
+   "t1": 36.667,
+   "f0": 560,
+   "f1": 880
+  },
+  {
+   "id": "C5",
+   "name": "THE FIRE, ALONE",
+   "bar_start": 12,
+   "bar_end": 13,
+   "t0": 36.667,
+   "t1": 43.333,
+   "f0": 880,
+   "f1": 1040
+  },
+  {
+   "id": "C6",
+   "name": "THE FORGING",
+   "bar_start": 14,
+   "bar_end": 18,
+   "t0": 43.333,
+   "t1": 60.0,
+   "f0": 1040,
+   "f1": 1440
+  },
+  {
+   "id": "C7",
+   "name": "THE RACE UNDER THE RING",
+   "bar_start": 19,
+   "bar_end": 21,
+   "t0": 60.0,
+   "t1": 70.0,
+   "f0": 1440,
+   "f1": 1680
+  },
+  {
+   "id": "C8",
+   "name": "INK PAGE · THE DEEP",
+   "bar_start": 22,
+   "bar_end": 24,
+   "t0": 70.0,
+   "t1": 80.0,
+   "f0": 1680,
+   "f1": 1920
+  },
+  {
+   "id": "C9",
+   "name": "THE EYE ONTO NOTHING",
+   "bar_start": 25,
+   "bar_end": 26,
+   "t0": 80.0,
+   "t1": 86.667,
+   "f0": 1920,
+   "f1": 2080
+  },
+  {
+   "id": "C10",
+   "name": "THE MIRROR",
+   "bar_start": 27,
+   "bar_end": 29,
+   "t0": 86.667,
+   "t1": 96.667,
+   "f0": 2080,
+   "f1": 2320
+  },
+  {
+   "id": "C11",
+   "name": "THE GRASP THAT CANNOT HOLD",
+   "bar_start": 30,
+   "bar_end": 31,
+   "t0": 96.667,
+   "t1": 103.333,
+   "f0": 2320,
+   "f1": 2480
+  },
+  {
+   "id": "C12",
+   "name": "BLACK · THE OLD LAW",
+   "bar_start": 32,
+   "bar_end": 34,
+   "t0": 103.333,
+   "t1": 113.333,
+   "f0": 2480,
+   "f1": 2720
+  },
+  {
+   "id": "C13",
+   "name": "THE RING FALLS",
+   "bar_start": 35,
+   "bar_end": 37,
+   "t0": 113.333,
+   "t1": 123.333,
+   "f0": 2720,
+   "f1": 2960
+  },
+  {
+   "id": "C14",
+   "name": "FLINT, AND THE FIND",
+   "bar_start": 38,
+   "bar_end": 42,
+   "t0": 123.333,
+   "t1": 140.0,
+   "f0": 2960,
+   "f1": 3360
+  },
+  {
+   "id": "C15",
+   "name": "THE FIRE TEST",
+   "bar_start": 43,
+   "bar_end": 45,
+   "t0": 140.0,
+   "t1": 150.0,
+   "f0": 3360,
+   "f1": 3600
+  },
+  {
+   "id": "C16",
+   "name": "THE REVEAL",
+   "bar_start": 46,
+   "bar_end": 48,
+   "t0": 150.0,
+   "t1": 160.0,
+   "f0": 3600,
+   "f1": 3840
+  },
+  {
+   "id": "C17",
+   "name": "THE LIVING INK RUN",
+   "bar_start": 49,
+   "bar_end": 52,
+   "t0": 160.0,
+   "t1": 173.333,
+   "f0": 3840,
+   "f1": 4160
+  },
+  {
+   "id": "C18",
+   "name": "THE MAP ANSWERS · THE ROAD",
+   "bar_start": 53,
+   "bar_end": 56,
+   "t0": 173.333,
+   "t1": 186.667,
+   "f0": 4160,
+   "f1": 4480
+  },
+  {
+   "id": "C19",
+   "name": "THE COUNCIL",
+   "bar_start": 57,
+   "bar_end": 60,
+   "t0": 186.667,
+   "t1": 200.0,
+   "f0": 4480,
+   "f1": 4800
+  },
+  {
+   "id": "C20",
+   "name": "BRING OUT THE RING",
+   "bar_start": 61,
+   "bar_end": 64,
+   "t0": 200.0,
+   "t1": 213.333,
+   "f0": 4800,
+   "f1": 5120
+  },
+  {
+   "id": "C21",
+   "name": "THE BEARER",
+   "bar_start": 65,
+   "bar_end": 67,
+   "t0": 213.333,
+   "t1": 223.333,
+   "f0": 5120,
+   "f1": 5360
+  },
+  {
+   "id": "C22",
+   "name": "THE UNMAKING",
+   "bar_start": 68,
+   "bar_end": 69,
+   "t0": 223.333,
+   "t1": 230.0,
+   "f0": 5360,
+   "f1": 5520
+  },
+  {
+   "id": "C23",
+   "name": "THE EYE FALLS",
+   "bar_start": 70,
+   "bar_end": 71,
+   "t0": 230.0,
+   "t1": 236.667,
+   "f0": 5520,
+   "f1": 5680
+  },
+  {
+   "id": "C24",
+   "name": "THE ILLUMINATION",
+   "bar_start": 72,
+   "bar_end": 77,
+   "t0": 236.667,
+   "t1": 256.667,
+   "f0": 5680,
+   "f1": 6160
+  },
+  {
+   "id": "C25",
+   "name": "THE YEAR OF PLENTY",
+   "bar_start": 78,
+   "bar_end": 80,
+   "t0": 256.667,
+   "t1": 266.667,
+   "f0": 6160,
+   "f1": 6400
+  },
+  {
+   "id": "C26",
+   "name": "THE HAVENS",
+   "bar_start": 81,
+   "bar_end": 84,
+   "t0": 266.667,
+   "t1": 280.0,
+   "f0": 6400,
+   "f1": 6720
+  },
+  {
+   "id": "C27",
+   "name": "THE LAST PAGES",
+   "bar_start": 85,
+   "bar_end": 87,
+   "t0": 280.0,
+   "t1": 290.0,
+   "f0": 6720,
+   "f1": 6960
+  },
+  {
+   "id": "C28",
+   "name": "TITLE",
+   "bar_start": 88,
+   "bar_end": 90,
+   "t0": 290.0,
+   "t1": 300.0,
+   "f0": 6960,
+   "f1": 7200
+  }
+ ],
+ "sync": [
+  {
+   "id": "hearth",
+   "bar": 1,
+   "beat": 1.0,
+   "t": 0.0,
+   "f": 0,
+   "what": "a hearth crackles close by"
+  },
+  {
+   "id": "page_turn_0",
+   "bar": 1,
+   "beat": 3.0,
+   "t": 1.667,
+   "f": 40,
+   "what": "a heavy page turns"
+  },
+  {
+   "id": "book",
+   "bar": 2,
+   "beat": 1.0,
+   "t": 3.333,
+   "f": 80,
+   "what": "THE RED BOOK; the cor anglais CALL (doubled, on a pad)"
+  },
+  {
+   "id": "blank_sheaf",
+   "bar": 4,
+   "beat": 1.0,
+   "t": 10.0,
+   "f": 240,
+   "what": "the drift reaches the sheaf of blank pages"
+  },
+  {
+   "id": "riffle",
+   "bar": 5,
+   "beat": 1.0,
+   "t": 13.333,
+   "f": 320,
+   "what": "the leaves riffle back to an early page; the pen begins"
+  },
+  {
+   "id": "ring_motif",
+   "bar": 5,
+   "beat": 3.0,
+   "t": 15.0,
+   "f": 360,
+   "what": "the pen draws the ring; the RING motif enters on stopped horns"
+  },
+  {
+   "id": "page_turn",
+   "bar": 8,
+   "beat": 1.0,
+   "t": 23.333,
+   "f": 560,
+   "what": "the page turns to a leaf of script; the hearth sinks low"
+  },
+  {
+   "id": "letters_glow",
+   "bar": 9,
+   "beat": 4.0,
+   "t": 29.167,
+   "f": 700,
+   "what": "the ink letters begin to glow"
+  },
+  {
+   "id": "letters_lift",
+   "bar": 10,
+   "beat": 1.0,
+   "t": 30.0,
+   "f": 720,
+   "what": "the letters lift off the page as sparks; the glass arpeggio under harp"
+  },
+  {
+   "id": "fire_catches",
+   "bar": 11,
+   "beat": 1.0,
+   "t": 33.333,
+   "f": 800,
+   "what": "the fire catches at the page's heart"
+  },
+  {
+   "id": "burn_through",
+   "bar": 11,
+   "beat": 3.0,
+   "t": 35.0,
+   "f": 840,
+   "what": "the page burns open onto black: chamber to orchestra, never a hit"
+  },
+  {
+   "id": "fire_alone",
+   "bar": 12,
+   "beat": 1.0,
+   "t": 36.667,
+   "f": 880,
+   "what": "THE FIRE, ALONE: its chord blooms once; one warm line"
+  },
+  {
+   "id": "towers_rise",
+   "bar": 14,
+   "beat": 1.0,
+   "t": 43.333,
+   "f": 1040,
+   "what": "the forge-towers of every realm rise"
+  },
+  {
+   "id": "anvil",
+   "bar": 16,
+   "beat": 1.0,
+   "t": 50.0,
+   "f": 1200,
+   "what": "first anvil stroke: the light beaten into a band"
+  },
+  {
+   "id": "inscription",
+   "bar": 17,
+   "beat": 3.0,
+   "t": 55.0,
+   "f": 1320,
+   "what": "the inscription burns up out of the metal"
+  },
+  {
+   "id": "ring_rises",
+   "bar": 18,
+   "beat": 1.0,
+   "t": 56.667,
+   "f": 1360,
+   "what": "the Ring rises above the towers"
+  },
+  {
+   "id": "hush",
+   "bar": 19,
+   "beat": 1.0,
+   "t": 60.0,
+   "f": 1440,
+   "what": "the hush: the Ring hangs; the first gold falls slowly"
+  },
+  {
+   "id": "breath_race",
+   "bar": 20,
+   "beat": 2.75,
+   "t": 64.792,
+   "f": 1555,
+   "what": "200 ms breath"
+  },
+  {
+   "id": "race",
+   "bar": 20,
+   "beat": 3.0,
+   "t": 65.0,
+   "f": 1560,
+   "what": "THE RACE: surges on every beat; timpani, taiko, glass glitter"
+  },
+  {
+   "id": "deep",
+   "bar": 22,
+   "beat": 1.0,
+   "t": 70.0,
+   "f": 1680,
+   "what": "swept to parchment: THE DEEP; the anvil tick in quarters"
+  },
+  {
+   "id": "tick_8",
+   "bar": 23,
+   "beat": 1.0,
+   "t": 73.333,
+   "f": 1760,
+   "what": "the tick divides to eighths"
+  },
+  {
+   "id": "tick_16",
+   "bar": 24,
+   "beat": 1.0,
+   "t": 76.667,
+   "f": 1840,
+   "what": "the tick divides to sixteenths"
+  },
+  {
+   "id": "eye_burn",
+   "bar": 25,
+   "beat": 1.0,
+   "t": 80.0,
+   "f": 1920,
+   "what": "the glow burns through into the storm: THE EYE; tam-tam swell"
+  },
+  {
+   "id": "slit_nothing",
+   "bar": 26,
+   "beat": 1.0,
+   "t": 83.333,
+   "f": 2000,
+   "what": "the slit opens onto nothing: C's loudest moment"
+  },
+  {
+   "id": "mirror",
+   "bar": 27,
+   "beat": 1.0,
+   "t": 86.667,
+   "f": 2080,
+   "what": "THE MIRROR: one high held tone"
+  },
+  {
+   "id": "drop",
+   "bar": 28,
+   "beat": 3.0,
+   "t": 91.667,
+   "f": 2200,
+   "what": "a drop: a golden dawn for one breath (to 2248)"
+  },
+  {
+   "id": "claw",
+   "bar": 30,
+   "beat": 1.0,
+   "t": 96.667,
+   "f": 2320,
+   "what": "THE GRASP: the claw descends; the riser"
+  },
+  {
+   "id": "claw_closes",
+   "bar": 30,
+   "beat": 3.0,
+   "t": 98.333,
+   "f": 2360,
+   "what": "the claw closes on the Ring: the suck"
+  },
+  {
+   "id": "crust_cracks",
+   "bar": 31,
+   "beat": 1.0,
+   "t": 100.0,
+   "f": 2400,
+   "what": "the crust glows from inside and cracks"
+  },
+  {
+   "id": "slip",
+   "bar": 31,
+   "beat": 3.0,
+   "t": 101.667,
+   "f": 2440,
+   "what": "the band slips through the fingers; no IMPACT: a glass tone falls away"
+  },
+  {
+   "id": "black",
+   "bar": 32,
+   "beat": 1.0,
+   "t": 103.333,
+   "f": 2480,
+   "what": "black: silence, harp harmonics, the Ring loop alone"
+  },
+  {
+   "id": "cock",
+   "bar": 34,
+   "beat": 4.0,
+   "t": 112.5,
+   "f": 2700,
+   "what": "far away and soft, under the harp: a cock crows once"
+  },
+  {
+   "id": "ring_falls",
+   "bar": 35,
+   "beat": 1.0,
+   "t": 113.333,
+   "f": 2720,
+   "what": "THE RING FALLS: a glint tumbles; the glass tone takes up its fall"
+  },
+  {
+   "id": "falling_star",
+   "bar": 36,
+   "beat": 3.0,
+   "t": 118.333,
+   "f": 2840,
+   "what": "over the ink range: a falling star"
+  },
+  {
+   "id": "snow",
+   "bar": 37,
+   "beat": 2.0,
+   "t": 120.833,
+   "f": 2900,
+   "what": "the Ring strikes the snow: flash, hiss, steam"
+  },
+  {
+   "id": "strike1",
+   "bar": 38,
+   "beat": 2.0,
+   "t": 124.167,
+   "f": 2980,
+   "what": "flint strike 1"
+  },
+  {
+   "id": "strike2",
+   "bar": 38,
+   "beat": 3.45,
+   "t": 125.375,
+   "f": 3009,
+   "what": "flint strike 2: its spark shows the band"
+  },
+  {
+   "id": "hand_closes",
+   "bar": 39,
+   "beat": 2.0,
+   "t": 127.5,
+   "f": 3060,
+   "what": "her gloved hand closes on the band"
+  },
+  {
+   "id": "vision",
+   "bar": 39,
+   "beat": 3.5,
+   "t": 128.75,
+   "f": 3090,
+   "what": "she opens it: the vision on the band (to 3138); the Ring motif ppp in the violas"
+  },
+  {
+   "id": "fist",
+   "bar": 40,
+   "beat": 2.0,
+   "t": 130.833,
+   "f": 3140,
+   "what": "she closes her fist: silence"
+  },
+  {
+   "id": "strike3",
+   "bar": 40,
+   "beat": 3.9,
+   "t": 132.417,
+   "f": 3178,
+   "what": "flint strike 3: the tinder takes (H1 master +58; 182 f to the roar)"
+  },
+  {
+   "id": "blow",
+   "bar": 41,
+   "beat": 1.2,
+   "t": 133.5,
+   "f": 3204,
+   "what": "the long blow (to 3300)"
+  },
+  {
+   "id": "catch",
+   "bar": 42,
+   "beat": 2.8,
+   "t": 138.167,
+   "f": 3316,
+   "what": "the kindling catches"
+  },
+  {
+   "id": "roar",
+   "bar": 43,
+   "beat": 1.0,
+   "t": 140.0,
+   "f": 3360,
+   "what": "the ROAR; a lone horn cries the CALL"
+  },
+  {
+   "id": "steel",
+   "bar": 43,
+   "beat": 3.0,
+   "t": 141.667,
+   "f": 3400,
+   "what": "the Ring on the tip of her steel, in the fire; the tick of cold metal"
+  },
+  {
+   "id": "steel_tips",
+   "bar": 44,
+   "beat": 3.0,
+   "t": 145.0,
+   "f": 3480,
+   "what": "the steel tips; the Ring does not fall"
+  },
+  {
+   "id": "fist_again",
+   "bar": 45,
+   "beat": 3.0,
+   "t": 148.333,
+   "f": 3560,
+   "what": "she draws it out and closes her fist on it again"
+  },
+  {
+   "id": "reveal",
+   "bar": 46,
+   "beat": 1.0,
+   "t": 150.0,
+   "f": 3600,
+   "what": "THE REVEAL, in ink: the call echoes off the ranges"
+  },
+  {
+   "id": "run",
+   "bar": 49,
+   "beat": 1.0,
+   "t": 160.0,
+   "f": 3840,
+   "what": "THE LIVING INK RUN: driving strings in 3+3+2, timpani"
+  },
+  {
+   "id": "beacon_1",
+   "bar": 49,
+   "beat": 3.0,
+   "t": 161.667,
+   "f": 3880,
+   "what": "beacon 1: horn call"
+  },
+  {
+   "id": "beacon_2",
+   "bar": 50,
+   "beat": 1.0,
+   "t": 163.333,
+   "f": 3920,
+   "what": "beacon 2: the ANSWER heard for the first time"
+  },
+  {
+   "id": "beacon_3",
+   "bar": 50,
+   "beat": 3.0,
+   "t": 165.0,
+   "f": 3960,
+   "what": "beacon 3: horn call"
+  },
+  {
+   "id": "beacon_4",
+   "bar": 51,
+   "beat": 1.0,
+   "t": 166.667,
+   "f": 4000,
+   "what": "beacon 4"
+  },
+  {
+   "id": "beacon_5",
+   "bar": 51,
+   "beat": 3.0,
+   "t": 168.333,
+   "f": 4040,
+   "what": "beacon 5: horn call"
+  },
+  {
+   "id": "beacon_6",
+   "bar": 52,
+   "beat": 1.0,
+   "t": 170.0,
+   "f": 4080,
+   "what": "beacon 6"
+  },
+  {
+   "id": "beacon_7",
+   "bar": 52,
+   "beat": 3.0,
+   "t": 171.667,
+   "f": 4120,
+   "what": "beacon 7: horn call"
+  },
+  {
+   "id": "map",
+   "bar": 53,
+   "beat": 1.0,
+   "t": 173.333,
+   "f": 4160,
+   "what": "burn-through onto the map; wonder in F major"
+  },
+  {
+   "id": "road_arrives",
+   "bar": 56,
+   "beat": 3.0,
+   "t": 185.0,
+   "f": 4440,
+   "what": "the dotted route reaches the drawn ring of stones"
+  },
+  {
+   "id": "council",
+   "bar": 57,
+   "beat": 1.0,
+   "t": 186.667,
+   "f": 4480,
+   "what": "THE COUNCIL: a clarinet intones the call; the chorale in half notes"
+  },
+  {
+   "id": "ring_set",
+   "bar": 61,
+   "beat": 3.0,
+   "t": 201.667,
+   "f": 4840,
+   "what": "she sets the Ring on the stone"
+  },
+  {
+   "id": "gilded_hand",
+   "bar": 64,
+   "beat": 1.0,
+   "t": 210.0,
+   "f": 5040,
+   "what": "the orbit finds the gilded, ember-scarred hand among the torches"
+  },
+  {
+   "id": "torches_down",
+   "bar": 65,
+   "beat": 1.0,
+   "t": 213.333,
+   "f": 5120,
+   "what": "the torches come down together"
+  },
+  {
+   "id": "hand_on_ring",
+   "bar": 65,
+   "beat": 3.0,
+   "t": 215.0,
+   "f": 5160,
+   "what": "her hand goes back to the Ring and closes on it"
+  },
+  {
+   "id": "fire_rises",
+   "bar": 66,
+   "beat": 1.0,
+   "t": 216.667,
+   "f": 5200,
+   "what": "the fire everyone lit rises around her fist; the Ring motif, tremolo"
+  },
+  {
+   "id": "white_heart",
+   "bar": 68,
+   "beat": 1.0,
+   "t": 223.333,
+   "f": 5360,
+   "what": "the white heart: her fingers are forced open"
+  },
+  {
+   "id": "letters_flare",
+   "bar": 68,
+   "beat": 4.0,
+   "t": 225.833,
+   "f": 5420,
+   "what": "the Ring's letters flare once"
+  },
+  {
+   "id": "breath_cadence",
+   "bar": 68,
+   "beat": 4.65,
+   "t": 226.375,
+   "f": 5433,
+   "what": "275 ms breath"
+  },
+  {
+   "id": "unmade",
+   "bar": 69,
+   "beat": 1.0,
+   "t": 226.667,
+   "f": 5440,
+   "what": "the letters go out: the Ring loop cadences into D, once"
+  },
+  {
+   "id": "eye_falls",
+   "bar": 70,
+   "beat": 1.0,
+   "t": 230.0,
+   "f": 5520,
+   "what": "THE EYE FALLS: a long unwinding"
+  },
+  {
+   "id": "breath_dawn",
+   "bar": 71,
+   "beat": 4.65,
+   "t": 236.375,
+   "f": 5673,
+   "what": "275 ms breath"
+  },
+  {
+   "id": "sunrise",
+   "bar": 72,
+   "beat": 1.0,
+   "t": 236.667,
+   "f": 5680,
+   "what": "THE ILLUMINATION: the sun breaks; a timpani roll begins in the light"
+  },
+  {
+   "id": "home",
+   "bar": 76,
+   "beat": 1.0,
+   "t": 250.0,
+   "f": 6000,
+   "what": "the line settles home (B-A-F#-D)"
+  },
+  {
+   "id": "plenty",
+   "bar": 78,
+   "beat": 1.0,
+   "t": 256.667,
+   "f": 6160,
+   "what": "THE YEAR OF PLENTY: the hymn"
+  },
+  {
+   "id": "havens",
+   "bar": 81,
+   "beat": 1.0,
+   "t": 266.667,
+   "f": 6400,
+   "what": "THE HAVENS: the elegy"
+  },
+  {
+   "id": "coast_1",
+   "bar": 81,
+   "beat": 3.0,
+   "t": 268.333,
+   "f": 6440,
+   "what": "coast fire 1; a distant horn answers"
+  },
+  {
+   "id": "coast_2",
+   "bar": 82,
+   "beat": 3.0,
+   "t": 271.667,
+   "f": 6520,
+   "what": "coast fire 2; the horn answers, softer"
+  },
+  {
+   "id": "coast_3",
+   "bar": 83,
+   "beat": 3.0,
+   "t": 275.0,
+   "f": 6600,
+   "what": "coast fire 3; the horn answers, softer still"
+  },
+  {
+   "id": "ship_west",
+   "bar": 84,
+   "beat": 1.0,
+   "t": 276.667,
+   "f": 6640,
+   "what": "the ship slides west, off the page"
+  },
+  {
+   "id": "blank",
+   "bar": 85,
+   "beat": 1.0,
+   "t": 280.0,
+   "f": 6720,
+   "what": "the page turns: blank"
+  },
+  {
+   "id": "blank_2",
+   "bar": 85,
+   "beat": 3.0,
+   "t": 281.667,
+   "f": 6760,
+   "what": "and the next"
+  },
+  {
+   "id": "title",
+   "bar": 88,
+   "beat": 1.0,
+   "t": 290.0,
+   "f": 6960,
+   "what": "TITLE: fire-letters on the blank page"
+  },
+  {
+   "id": "plagal",
+   "bar": 90,
+   "beat": 1.0,
+   "t": 296.667,
+   "f": 7120,
+   "what": "the plagal close, G/D to D"
+  }
+ ],
+ "text": [
+  {
+   "id": "T1",
+   "line": "In the old story, a Dark Lord forges the Ring in secret.",
+   "f_in": 400,
+   "f_out": 540
+  },
+  {
+   "id": "T2",
+   "line": "Ours was kindled from every tale we had ever told.",
+   "f_in": 580,
+   "f_out": 716
+  },
+  {
+   "id": "T5a",
+   "line": "In ours, there was no Dark Lord.",
+   "f_in": 920,
+   "f_out": 1030
+  },
+  {
+   "id": "T5b",
+   "line": "Only the smiths of every realm, each racing to be first.",
+   "f_in": 1056,
+   "f_out": 1190
+  },
+  {
+   "id": "T6",
+   "line": "Each said: better us than our enemies.",
+   "f_in": 1446,
+   "f_out": 1550
+  },
+  {
+   "id": "T7",
+   "line": "They delved deeper every year, for every stroke paid.",
+   "f_in": 1710,
+   "f_out": 1850
+  },
+  {
+   "id": "T8a",
+   "line": "In the old story, the Ring is unmade in the fire that forged it.",
+   "f_in": 2500,
+   "f_out": 2680
+  },
+  {
+   "id": "T8b",
+   "line": "Ours was forged at every forge at once.",
+   "f_in": 2590,
+   "f_out": 2680
+  },
+  {
+   "id": "T9",
+   "line": "She called for aid.",
+   "f_in": 3640,
+   "f_out": 3760
+  },
+  {
+   "id": "T10",
+   "line": "And hill by hill, the peoples answered.",
+   "f_in": 4190,
+   "f_out": 4320
+  },
+  {
+   "id": "T11",
+   "line": "Even the wise could not see all ends.",
+   "f_in": 4900,
+   "f_out": 5030
+  },
+  {
+   "id": "T12",
+   "line": "The one who carried it could not let it go.",
+   "f_in": 5130,
+   "f_out": 5260
+  },
+  {
+   "id": "T14",
+   "line": "The last pages were left for us.",
+   "f_in": 6790,
+   "f_out": 6930
+  },
+  {
+   "id": "title",
+   "line": "THE LONG DAWN",
+   "f_in": 6980,
+   "f_out": 7160
+  }
+ ],
+ "conventions": "24 fps, 72 BPM, 4/4: beat = 20 frames, bar = 80 frames. Frames count from 0 on this cut's own timeline. Sections are half-open [f0, f1): f1 is the next section's f0; t = f / 24. bar and beat are 1-based; a fractional beat is a frame between beats (beat = 1 + (f mod 80) / 20). Text f_in is the first frame of the fade-in or write-on, f_out the first frame after the fade-out. Generated from the same source as BIBLE_V3.md '# REVISION 1 · LOCKED BEAT SHEETS'; change both or neither."
+}
