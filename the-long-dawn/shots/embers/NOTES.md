@@ -1,3 +1,42 @@
+# >>> EMBERS-C3 (27 Sep ~20:35Z, took over from EMBERS-C): E15 LETTERS TO FIRE, E5-C THE FORGING, E11 THE RACE, and the
+# canonical Ring (ringsolid.py) + gold flame (cflame.py). EMBERS-C2 owns E12 / E8-C / E13a (c2.py etc.). <<<
+## STATE AT HANDOFF (EMBERS-C3, 27 Sep ~21:15Z; the account idles ~21:25Z-23:30Z). READ THIS FIRST.
+**APPROVED + RENDERING (main launched them ~20:52Z, --nodes 3; log _local_logs/jobs/embers_C3_forging_race_farm.log):**
+* `cloud/jobs/embers_C3_race.json` E11 THE RACE, C 1440-1679 (240 f) -> renders/embers_C3. Code 71d3247. Camera outside the circle
+  (r 49-57, height 18-20), the Ring hanging over a legible ring of crenellated crowns; hush 1440-1559 with slow drips (half
+  gravity); from 1560 gold spills LEVEL off the rim in solved parabolas (streams of 7 drops per window, c3.GoldRain), red walls
+  crown-high (c3.WallsC; the two walls edge-on on the lens axis stay down), towers surge. Director: "works; no radial streaks".
+  DO NOT push anything that changes 1440-1679 output while it renders (all C3 changes since are gated to t < 1440).
+* `cloud/jobs/embers_C3_forging.json` E5-C, C 1040-1439 (400 f). Code 71d3247 (band edge-on/orange, Ring rises centred through
+  1380, clears the crowns 1410-1430). Director: "1410/1430 lovely".
+**MUST-FIX in flight (pre-approved partial re-render, no JOB READY needed):** the forges' faces in the close-ups (1250-1300, 1380)
+  carried a regular grid (seams + window cells) = office towers / server racks. FIX pushed 870d18f: C3Sched.masonry (irregular
+  ashlar: uneven courses, joints staggered per course, a tone per stone, darker joints), seam_k 0, shutter 0 (throats still burn),
+  all x ashlar_k(t) = 1 before 1420, blended to the race's look by 1440 (1440+ byte-identical). scene_b hooks (small, noted):
+  `SCHED.seam_k(i)` (seams) and `SCHED.masonry(i, pl, t)` (crust tone + window-cell kill).
+  TEST: farm request 0927-165318-embersC3forging-83518 -> renders/_farmtest/embers_C3_forging_ashlar/ (f 1262, 1380).
+  NEXT: look at both (four gates; is the grid gone? stones not a checkerboard?), then relaunch yourself:
+  `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/embers_C3_forging.json --frames 1040-1439 --nodes 3`
+  (director said 1040-1345; 1346-1439 must be included: 1380 is on the must-fix list and the look must not pop at 1346).
+  If the stones read wrong: tune c3.C3Sched.masonry (course 0.5-1.15, widths 1.0-2.3, tone 0.7-1.2, joint 0.6) and re-test.
+**E15 (C 700-1039, additive layer over MAP-L's page -> renders/embers_C3_e15): code pushed 870d18f, NOT yet seen rendered.**
+* Sparks: e15.Draught rebuilt. A geodesic cost field (Dijkstra, 1 mm grid over the page) with three asymmetric channels
+  (Draught.CH: head-left, right margin, foot-left) that join ONE trunk (T0 (9.5, 11.2) cm) drawn DOWN into the heart; a wall
+  round the heart open only along the trunk. Every word's sparks = one thin stream (tributary), quickening toward the heart;
+  words within 2.4 cm of the heart just flare and go out. Preview (paths only): _local_logs/review/embers_C/ (e15s3 idea: 764-794
+  a bundled current down the trunk). Director's two E15 fixes: this is fix 1.
+* Fix 2 (C5 letters legible): E15.letters_mask: one 3-letter word of MAP's book hand, DARK ink cut into the flame's gold body
+  (x 0.88) with a hot rim, 20 % of the flame's height wide, at 43 % height, rising, 882-972, burning away from below.
+* Text dims (EDIT): e15.TEXT (700-716 T2 tail, 920-1030 T5a) applies to sparks AND flame (band_rows): unchanged, still there.
+* TEST: farm request 0927-165319-embersC3e15-83520 -> renders/_farmtest/embers_C3_e15/ (752 764 772 780 788 905 925 945).
+  NEXT: review over black AND composited over MAP's page (renders/_farmtest/map_v3_book/book_C 728/900 + matte; EDIT's comp:
+  out = book + (1 - matte) * black + e15); then JOB READY embers_C3_e15 (340 f, ~2.8 s/f) with check stills.
+**Nitpicks (cheap re-renders later):** race 1600-1625 a soft out-of-focus warm blob at the left edge (a drop landing in far
+  tower 8's window near the lens? cap GoldRain landing flares by distance); 1575 the stream burst is a bit spidery.
+**Tools:** framing preview without tower geometry: `python ~/mishamisha/_local_logs/review/embers_C/wire.py OUT.jpg f1 f2 ...`
+  (towers as boxes, the Ring, the flame; seconds, no RAM). Sheets: `sh.py` there. Check stills: the-long-dawn/review/embers_C3_check/.
+**Old job** cloud/jobs/embers_C3_forge.json (1040-1679 in one) is superseded by the two split jobs: don't launch it.
+
 # >>> EMBERS-C2 (split off EMBERS-C, 27 Sep ~19:15Z): C9 E12 THE EYE ONTO NOTHING (1920-2079), C11 E8-C THE GRASP
 # THAT CANNOT HOLD (2320-2479), C13a E13a THE RING FALLS (2720-2839). EMBERS-C keeps E15, E5-C, E11 + the Ring/flame. <<<
 ## STATE AT HANDOFF (EMBERS-C2 -> next agent, 27 Sep ~20:15Z). Read this first.
