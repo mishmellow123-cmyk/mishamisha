@@ -48,7 +48,10 @@ python3 the-long-dawn/cloud/farm.py status | cancel <request> | stop-idle | shut
 
 - **Both tokens expire 2026-10-04.** Re-vend p1 through the givemeanode connector (vend_workspace_token, workspace `long-dawn-farm`, ttl 168) on the davidgringras account. That connector dropped in this session.
 - **Tickets.** tkt-jqtbh asks to raise the endpoint cap from 16 to 48, which would lift the 15-per-pool limit. tkt-36kp5 reports cpu-8 creates failing on "carve slot occupied" instead of queuing.
-- **MONTAGE meltc** fails in its own Blender code ("object of type 'float' has no len()"). render.py exits 0 when Blender exits 1.
+- **MONTAGE driver failure reporting (27 Sep handoff fix):** the earlier meltc failure exposed a common-driver bug:
+  `render.py` could return 0 after Blender or post-processing failed. The driver now returns nonzero for either
+  failure and for incomplete posted frames; `melt_local.py` retains its additional output-existence check.
+  This fixes reporting, not shot code or visual quality. Farm image decoding/dimension checks remain independent.
 - **Measured.**
 
   | Node | Work | Speed |

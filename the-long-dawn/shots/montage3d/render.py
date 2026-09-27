@@ -197,24 +197,29 @@ def main():
         cmd = [BLENDER, '-b', '--factory-startup', '-noaudio', '-P', os.path.join(HERE, 'bl_main.py'), '--', job_path]
     log_path = os.path.join(cache, f'blender_{tag}.log')
     t1 = time.time()
-    done = []
+    done = threading.Event()
     scene = {}
     pending = []
+    posted = set()
+    post_errors = []
     lock = threading.Lock()
 
     def poster():
         while True:
             with lock:
                 item = pending.pop(0) if pending else None
+                finished = item is None and done.is_set()
+            if finished:
+                return
             if item is None:
-                if done and done[-1] == 'END':
-                    return
                 time.sleep(0.5)
                 continue
             try:
                 post_frame(shot, item, exr_dir, out_dir, scene, a.keep_exr)
+                posted.add(item)
                 print(f'  posted {item}', flush=True)
-            except Exception as e:
+            except BaseException as e:  # a worker's SystemExit must also reach the driver's failure check
+                post_errors.append(item)
                 import traceback
                 traceback.print_exc()
                 print('POST FAILED', item, e, flush=True)
@@ -222,32 +227,55 @@ def main():
     th = threading.Thread(target=poster, daemon=True)
     with open(log_path, 'w') as log:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        if not os.environ.get('MT3D_BLENDER'):
-            with open(LOCK, 'w') as fh:
-                fh.write(str(proc.pid))
         started = False
-        for line in proc.stdout:
-            log.write(line)
-            if line.startswith(('BUILD', 'FRAME', 'DONE', 'Traceback', 'Error', 'ERROR')) or 'Error' in line:
-                print(line.rstrip(), flush=True)
-            if line.startswith('FRAME'):
-                scene.setdefault('_secs', {})[line.split()[1]] = float(line.split()[2].rstrip('s'))
-                if not started:
-                    with open(os.path.join(exr_dir, 'scene.json')) as fh:
-                        scene.update(json.load(fh))
-                    th.start()
-                    started = True
-                with lock:
-                    pending.append(int(line.split()[1]))
-        proc.wait()
-    try:
-        os.remove(LOCK)
-    except Exception:
-        pass
-    done.append('END')
-    if started:
-        th.join()
+        owns_lock = False
+        try:
+            if not os.environ.get('MT3D_BLENDER'):
+                with open(LOCK, 'w') as fh:
+                    fh.write(str(proc.pid))
+                owns_lock = True
+            for line in proc.stdout:
+                log.write(line)
+                if line.startswith(('BUILD', 'FRAME', 'DONE', 'Traceback', 'Error', 'ERROR')) or 'Error' in line:
+                    print(line.rstrip(), flush=True)
+                if line.startswith('FRAME'):
+                    scene.setdefault('_secs', {})[line.split()[1]] = float(line.split()[2].rstrip('s'))
+                    if not started:
+                        with open(os.path.join(exr_dir, 'scene.json')) as fh:
+                            scene.update(json.load(fh))
+                        th.start()
+                        started = True
+                    with lock:
+                        pending.append(int(line.split()[1]))
+            proc.wait()
+        except BaseException:
+            # A bad frame notification or scene file must not leave Blender running after this driver exits.
+            if proc.poll() is None:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait()
+            raise
+        finally:
+            proc.stdout.close()
+            with lock:
+                done.set()
+            if started:
+                th.join()
+            if owns_lock:
+                try:
+                    os.remove(LOCK)
+                except OSError:
+                    pass
     print(f'blender {time.time() - t1:.1f}s total, exit {proc.returncode}; log {log_path}', flush=True)
+    missing = sorted(set(frames) - posted)
+    unexpected = sorted(posted - set(frames))
+    if proc.returncode != 0 or post_errors or missing or unexpected:
+        print(f'RENDER FAILED: Blender exit {proc.returncode}; post failures {post_errors}; '
+              f'missing frames {missing}; unexpected frames {unexpected}; log {log_path}', flush=True)
+        raise SystemExit(1)
     if not a.final and len(frames) > 1:
         sheet = os.path.join(out_dir, 'sheet.jpg')
         make_sheet(out_dir, frames, sheet)

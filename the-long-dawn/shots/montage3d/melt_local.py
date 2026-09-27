@@ -1,6 +1,6 @@
 """MONTAGE-MELT's render driver: render.py with its own lock file (a melt test never blocks, or is blocked by,
-MONTAGE-3D-4's Ring renders) that EXITS NON-ZERO when a requested frame was not written (render.py itself exits 0
-when Blender fails, so the farm would see a silent success). Used locally and by cloud/jobs/meltC.json.
+MONTAGE-3D-4's Ring renders), plus an output-existence check. The common driver now propagates Blender and
+post-processing failures and requires every requested frame to be posted. Used locally and by cloud/jobs/meltC.json.
 
   python3 ~/mishamisha/_local_logs/renderq.py -- python3 melt_local.py meltc --frames 5420 --scale 0.25 --out t_m0
 """

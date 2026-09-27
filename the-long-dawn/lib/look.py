@@ -179,8 +179,16 @@ def save_png(path, srgb01):
     out = np.clip(np.round((srgb01 + d) * 255.0), 0, 255).astype(np.uint8)
     # atomic: write a temp file then rename, so no reader ever sees a half-written frame
     tmp = f'{path}.{os.getpid()}.tmp.png'
-    cv2.imwrite(tmp, out[..., ::-1], [cv2.IMWRITE_PNG_COMPRESSION, 3])
-    os.replace(tmp, path)
+    try:
+        if not cv2.imwrite(tmp, out[..., ::-1], [cv2.IMWRITE_PNG_COMPRESSION, 3]):
+            raise OSError(f'PNG encoding failed for {path}')
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass  # keep the original write/replace error if cleanup also fails
+        raise
 
 
 def frame_path(shot_dir, frame):
