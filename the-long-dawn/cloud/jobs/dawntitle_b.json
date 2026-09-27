@@ -1,0 +1,15 @@
+{
+ "name": "dawntitle_b",
+ "branch": "claude/render-dawntitle-b",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "NUMBA_NUM_THREADS=8 python3 shots/run/handback_b.py --frames 5200 --scale 1.0 --ss 1.5 --out /tmp/title_warm"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=1 python3 shots/run/handback_b.py --range 5200-5439 --scale 1.0 --ss 1.5 --out renders/dawntitle_B --procs 8 --skip"
+ ],
+ "out_dir": "renders/dawntitle_B",
+ "frames": "5200-5439",
+ "push_every": 300,
+ "ship": "jpg"
+}
