@@ -159,6 +159,8 @@ IG_FLAMELETS = (((0.172, 1.140), 7.3, -0.40, ((1330.0, 0.0), (1334.0, 0.026), (1
 # glowing fibres of the ember (offsets from TINDER in m, weight)
 IG_EMBER = np.array([[-0.006, 0.000, 0.30], [-0.014, -0.004, 0.16], [0.001, -0.006, 0.14], [-0.010, 0.005, 0.12],
                      [0.005, 0.002, 0.10], [-0.019, 0.001, 0.10], [-0.003, -0.010, 0.08]])
+IG_CLIMB = (1336, 1358)          # the main flame climbs the kindling over these frames
+IG_MAIN_V2, IG_FLAMELETS_V2 = IG_MAIN, IG_FLAMELETS
 KINDLING = (((0.245, 1.098), (0.085, 1.205), 0.0065), ((0.180, 1.100), (0.078, 1.178), 0.0055),
             ((0.222, 1.105), (0.150, 1.232), 0.0050), ((0.140, 1.097), (0.262, 1.112), 0.0060))
 _IG = {}
@@ -184,7 +186,7 @@ def ig_flames(f):
         return []
     take = smoothstep(CATCH, CATCH + 2.5, f)            # the first tongue fades in, never pops
     h = _pchip(IG_MAIN, f) * (1.0 + 0.10 * fnoise1(f / FPS * 3.0, 41.0, 2))
-    c = smoothstep(1336, 1358, f)                        # the main flame climbs the kindling
+    c = smoothstep(IG_CLIMB[0], IG_CLIMB[1], f)          # the main flame climbs the kindling
     out = []
     if h > 0.002:
         out.append((np.array([0.200 - 0.035 * c, TINDER[1] - 0.012 + 0.018 * c, TINDER[2]]), h, 0.008 + 0.30 * h,
@@ -377,9 +379,46 @@ V2_KEYS = [(1200, READY, 'smooth'), (1222, KNEEL, 'smooth'), (1293, KNEEL, 'smoo
            (1439, STAND, 'smooth')]
 BLOWS = ((1297, 1307), (1309, 1318))
 BLINKS = (1209, 1247, 1273, 1334, 1351, 1402, 1427)
+V2_KEYS_V2, BLINKS_V2 = list(V2_KEYS), BLINKS
 # exhales: (onset frame, duration s, kind) - lit only by what light is about (strikes, ember, flame)
 BREATHS = ((1212, 1.6, 'out'), (1252, 1.7, 'out'), (1281, 1.5, 'out'), (1297, 0.55, 'blow'), (1309, 0.50, 'blow'),
            (1320, 1.8, 'out'), (1339, 1.7, 'out'), (1352, 1.4, 'out'))
+BREATHS_V2 = BREATHS
+SMOKE_T0 = 58.3                  # time origin (s) of the beacon smoke's pattern (keeps it clear of the streak bug)
+TINDER_SMOKE_T0 = 54.0           # and of the tinder's thread of smoke
+
+
+def use_master_timing():
+    """BIBLE_V3 LOCKED SHEETS: the flint take's one master timing for every cut, counted from strike 1 (src 1236):
+    strike 2 at +29, strike 3 at +58 (the tinder takes the spark), a long blow +84..+180 (three breaths), the catch at
+    +196, the roar at +240 on a downbeat; the pull-back after it is the accepted one (80 frames). Rebinds this module's
+    timing constants (call before FirstBeacon()); everything keyed on them follows. Poses after the catch are the
+    accepted ones, stretched 42 -> 44 frames to the roar and shifted +116 after it. The take becomes src 1200-1555."""
+    global F1, STRIKES, CATCH, ROAR, IG_MAIN, IG_FLAMELETS, IG_CLIMB, V2_KEYS, BLOWS, BLINKS, BREATHS, SMOKE_T0
+    global TINDER_SMOKE_T0
+    s1 = 1236
+    STRIKES = (s1, s1 + 29, s1 + 58)
+    CATCH, ROAR = s1 + 196, s1 + 240
+    F1 = ROAR + 79
+
+    def post(fo):                      # an accepted post-catch frame -> the master timing
+        return CATCH + (fo - 1318.0) * (ROAR - CATCH) / 42.0 if fo < 1360 else fo + (ROAR - 1360)
+    IG_MAIN = np.array([[post(a), b] for a, b in IG_MAIN_V2])
+    IG_FLAMELETS = tuple((xy, seed, lean, tuple((post(a), b) for a, b in keys))
+                         for xy, seed, lean, keys in IG_FLAMELETS_V2)
+    IG_CLIMB = (post(1336), post(1358))
+    V2_KEYS = [(1200, READY, 'smooth'), (1222, KNEEL, 'smooth'), (STRIKES[2] + 16, KNEEL, 'smooth'),
+               (STRIKES[2] + 24, BLOW, 'io'), (CATCH, BLOW, 'smooth')] + \
+              [(int(round(post(fo))), pose, ease) for fo, pose, ease in V2_KEYS_V2 if fo > 1318]
+    BLOWS = ((s1 + 84, s1 + 110), (s1 + 116, s1 + 144), (s1 + 150, s1 + 180))
+    BLINKS = (1209, s1 + 12, STRIKES[1] + 12, STRIKES[2] + 9, s1 + 113, s1 + 147) + \
+        tuple(int(round(post(b))) for b in BLINKS_V2 if b > 1318)
+    BREATHS = ((1212, 1.6, 'out'), (1252, 1.7, 'out'), (1281, 1.5, 'out'), (STRIKES[2] + 6, 0.8, 'out'),
+               (BLOWS[0][0], 1.05, 'blow'), (BLOWS[1][0], 1.15, 'blow'), (BLOWS[2][0], 1.25, 'blow')) + \
+        tuple((int(round(post(fo))), d, k) for fo, d, k in BREATHS_V2 if fo >= 1320)
+    SMOKE_T0 = 58.3 + (ROAR - 1360) / FPS
+    TINDER_SMOKE_T0 = 54.0 + (STRIKES[2] - 1290) / FPS
+    _HA.clear()
 
 
 def _mixp(a, b, u):
@@ -862,7 +901,7 @@ class FirstBeacon:
             if np.all(z > 0.05):
                 I = min(lv, 2.5) * flick
                 fire.render_smoke(sm_rgb, sm_a, cam.params(), float(b[0]), float(b[1]), float(b[2]),
-                                  (t - 58.3) if HEROINE_V2 else t, 1.7,
+                                  (t - SMOKE_T0) if HEROINE_V2 else t, 1.7,
                                   7.0, 0.25, 0.30, 0.9, 0.9, 0.55 * smoothstep(ROAR, ROAR + 12, f),
                                   0.30 * I, 0.11 * I, 0.03 * I, 0.9, 0.004, 0.005, 0.009,
                                   int(min(sx)) - 20, int(min(sy)) - 20, int(max(sx)) + 20, int(max(sy)) + 20)
@@ -1059,7 +1098,7 @@ class FirstBeacon:
         rgb = np.zeros_like(img)
         a = np.zeros(img.shape[:2], np.float32)
         glow = em_e + 0.6 * lv
-        fire.render_smoke(rgb, a, cam.params(), float(b[0]), float(b[1]), float(b[2]), t - 54.0, 4.2,
+        fire.render_smoke(rgb, a, cam.params(), float(b[0]), float(b[1]), float(b[2]), t - TINDER_SMOKE_T0, 4.2,
                           0.32, 0.004, 0.10, 0.18, 0.30, 0.20 * sm,
                           0.050 * glow, 0.018 * glow, 0.004 * glow, 0.035, 0.004, 0.005, 0.008,
                           int(min(sx)) - 8, int(min(sy)) - 8, int(max(sx)) + 8, int(max(sy)) + 8)
