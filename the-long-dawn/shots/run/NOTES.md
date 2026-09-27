@@ -34,6 +34,8 @@
   final `nighta.CLOUD` values (its cloud-sea knob grid on the farm), set them in `nighta.CLOUD`, commit, push, then
   `farm.py the-long-dawn/cloud/jobs/reveal_a_1.json --nodes 1` again (delete `renders/reveal_A` first, or the `--skip`
   keeps the old frames). reveal_a.py already blends CLOUD + f0 in over 3680-3728 (never q18, the snow's domain).
+  The re-render also carries nighta 2913ad7 (the far haze without the glow's shadow rays: they fell as vertical slabs
+  under the horizon); the running final started 20:38Z on the older kit.
 * **A15 R16 THE WATCHERS: look-dev v2 on the farm** (`watchers_a_look`, 3 frames -> `renders/_farmtest/watchers_a_look`);
   the final job `watchers_a_1` (160 frames) is written and pushed, NOT approved. v1 failed at 1:1 (the lit ledge read as
   clay, the flame floated over a clip-art wood teepee, the lighter stood beside the fire). v2: the seventh fire on a
