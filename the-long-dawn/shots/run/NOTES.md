@@ -7,6 +7,32 @@
   seated, unroped bearers round the set-down lantern, all turned to the east (no lit faces); a valley revealed through the
   thinning cloud sea with thin grey-blue hearth columns; the rose only from bar 75 b1. A20: the same take continues 6240-6479.
 * **Nothing rendered yet, no job ready.** `farm.py` is not in the repo yet (jobs will be cut to <= 45 min when it lands).
+* **~15:45Z.** Committed + pushed: 46153c1 (crossing look pass 1 + cloth sdfppl), b8964e7 (worker NUMBA fix + world.py
+  ADDITIVE: `hole_row`/`cloud_thin`/`h_cloud_cr` (col 12 = -5 rows, read only when they LEAD the table), Q[19] snow
+  line -> fields and woods, fogp[8] caps the low mist below the cloud top), 297446f (`bh_probe.py`: top-down map +
+  cloudless view of the valley east of the shoulder). `bluehour.py` REWRITTEN (not yet committed): 640 frames
+  (A19 + A20), ~42 seated people (`sdfppl.seated`, six poses), two-pass valley (cloudless sub-window pass under a
+  thinning cloud), river + hearth smoke + hearth glows, rose only from bar 75 b1, camera lift for the title in A20.
+  Farm tests queued: `crossing_a_lookdev` (6 half-res stills) and `bluehour_a_probe` (valley placement: set VY,
+  V_FWD0/1, V_HALFW, CAM_YAW0/1 in bluehour.py from it).
+
+## RUN-A3 STATE AT HANDOFF (split off RUN-A-L 27 Sep ~19:15Z: A13 R2-A THE REVEAL, A15 R16 THE WATCHERS)
+* **Owns:** `reveal_a.py` (A13, cut 3680-3799 -> `renders/reveal_A`), `watchers_a.py` (A15, cut 4240-4399 ->
+  `renders/watchers_A`), and their farm jobs `reveal_a_*`, `watchers_a_*`. Uses `sdfppl.py` read-only (figure requests go
+  to RUN-A2 through this block), `world.py` additive-only, `falsedawn.py`'s glow model read-only (RUN-A-L's).
+* **Nothing rendered, no job ready.** Found: H1's take ends at src 1555 (= cut 3679) with the camera AT REST 46 m behind
+  her, 5 m up, looking north, hfov 66; she stands right of the basket facing away, ~55 px tall. The landed
+  `h1_v3h5` 1476-1555 predate HEROINE-L's roar2 re-polish (job `h1_v3_roar2` will overwrite them).
+* **A13 plan.** The reveal CONTINUES H1's take with H1's own renderer (`shots/hills/beacon.py`, imported read-only and
+  configured exactly as render.py's `beacon_v3_roar2`; src = cut - 2124, so 3680-3799 = src 1556-1675), the take's
+  simulations extended past 1555, and two runtime hooks (never editing beacon.py): the camera (H1's own up to 1555, then a
+  slow crane back, up and left from rest) and the world layer (H1's, plus the A night: dozens of summit fires catching
+  together, the cold glow at az -30 breathing once a bar, dull red patches under the cloud sea on the beat). It ends on her
+  small silhouette (>= 40 px) turned toward the far horizon, the glow beyond the ranges. Source-hash guards fail loudly if
+  beacon.py's camera or world layer change under it.
+* **A15 needs from RUN-A-L (A14 BEACON RUN):** the seventh fire's world position, A14's last camera (cut 4239) and the light
+  state (moon or not, glow intensity, under-glow table). R16 starts from R3's last position (the shot delta), so its
+  first frame matches A14's last.
 
 ## SPLIT (director approved ~19:05Z): two agents in this department
 * **RUN-A-L:** A2 FALSE DAWN (`falsedawn.py`), A11 X2 (`stars_a.py`, new), A13 R2-A REVEAL, A14 BEACON RUN and A15
