@@ -69,12 +69,18 @@ def ter_k(u):
 
 
 # ------------------------------------------------------------------ the ember (EMBERS edge.LivingEmber, cut A) ---
-# Position per the director (EMBERS-A2's rest point); look fitted to EMBERS' A10 frame 3119 through the same finish
+# Position: EMBERS' measured centroid at 3119, eased to the director's rest point; look fitted to that frame through the same finish
 # (their black-section finish = this shot's FINISH): an HDR core 8.08 (sigma 1.0 px) + a halo 0.26 exp(-r / 10.0 px),
 # blackbody(temp) and blackbody(temp - 0.1), at their life lv = 0.84. Scaled per frame by EMBERS' flicker.
-EMB_X = float(os.environ.get('X2_EMB_X', '960.0'))
-EMB_Y = float(os.environ.get('X2_EMB_Y', '548.0'))
+EMB_X0, EMB_Y0 = 958.6, 547.5                   # EMBERS' final A10 frame 3119 (measured centroid, embers_A3)
+EMB_X1, EMB_Y1 = 960.0, 548.0                   # the director's rest point, reached over two bars (1.4 px: unseen)
 LV_FIT = 0.84
+
+
+def ember_pos(t):
+    u = min(max((t - FR0) / 160.0, 0.0), 1.0)
+    e = u * u * (3 - 2 * u)
+    return EMB_X0 + (EMB_X1 - EMB_X0) * e, EMB_Y0 + (EMB_Y1 - EMB_Y0) * e
 
 
 def ember_life(t):
@@ -87,7 +93,8 @@ def ember_life(t):
 def add_ember(img, t):
     H, W = img.shape[:2]
     s = W / 1920.0
-    ex, ey = EMB_X * s, EMB_Y * s
+    ex, ey = ember_pos(t)
+    ex, ey = ex * s, ey * s                      # continuous pixel coords (pixel i spans [i, i+1))
     lv = ember_life(t)
     k = lv / LV_FIT
     temp = 0.47 + 0.3 * lv

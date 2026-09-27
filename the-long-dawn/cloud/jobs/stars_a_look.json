@@ -5,12 +5,10 @@
   "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
  ],
  "render": [
-  "python3 shots/run/stars_a.py --frames 3130,3200,3280,3359 --procs 4",
-  "X2_YAW=90 X2_PITCH=14 python3 shots/run/stars_a.py --frames 3357",
-  "X2_YAW=135 X2_PITCH=12 python3 shots/run/stars_a.py --frames 3358"
+  "python3 shots/run/stars_a.py --frames 3120,3200,3280,3359 --procs 4 --threads 2"
  ],
  "out_dir": "renders/stars_A",
- "frames": "3130,3200,3280,3357,3358,3359",
+ "frames": "3120,3200,3280,3359",
  "push_every": 120,
  "ship": "jpg"
 }
