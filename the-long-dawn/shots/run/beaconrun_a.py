@@ -149,7 +149,7 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     NA.glow_pass(fr.img, fr.dist, kill, C, NA.glow_gp(f), skl[0], skl[1], skl[2], NA.HAZE_K, NA.HAZE_D)
     pxs = PI.src_scale(fr)
     SK.splat_stars(fr.img, scam, stars(), kill, t=t, gain=ss * ss, scale=pxs)
-    NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs)
+    NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD)     # each dimmed by the air in front
     img, zb, di = PI.to_target(fr)
     if mblur and _cam_env() is None:
         v, u = np.mgrid[0:H, 0:W].astype(np.float64)
