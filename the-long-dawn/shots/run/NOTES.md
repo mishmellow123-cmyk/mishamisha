@@ -524,6 +524,8 @@ jobs never change under the director. dusk.py already has v2 WIP (fog 1.15e-4, w
   the five hand-back jobs (`python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/handback_b_{dawn_a,dawn_b,night,crane_a,crane_b}.json --nodes 3`).
   DUSK v2: job cloud/jobs/dusk_b2.json (out renders/dusk_B2) written; baseline test (v2 WIP on b15, frames
   0/320/575/600) queued on the farm -> renders/_farmtest/dusk_b2 (log _local_logs/runB/farm_dusk2_t1.log).
+* 20:55Z: JOIN A/B PASSED (RUN-B2: its 3839 vs my 3840, sky 0.5/255 mean, everything else matches; its fixes 2f86c1a).
+  All five hand-back jobs are clear; told the director.
 
 # >>> RUN-B STATE AT HANDOFF 3 (new agent RUN-B-3, 27 Sep ~19:10Z) <<<
 **Inherited:** PAUSE 2 state below (DUSK v1 done in renders/dusk_B; hand-back/vigil/reveal coded and tested; jobs
