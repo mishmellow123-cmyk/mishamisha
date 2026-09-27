@@ -15,6 +15,24 @@
   `EDIT_Q=1` (set for their children), so a caller cannot bypass the queue and nothing nests.
 - **Delivery chain (NEW, `edit/deliver.py` + `edit/deliver.sh`):** see "## Delivery chain" below. First test: B's
   master, queued 18:45Z behind three other lanes' jobs.
+- **X3 EMBER TITLES (director ~20:25Z; A20 6240-6479, B14 5200-5439):** `edit/ember_title_v3.py` plays the v2
+  engine (`edit/ember_title.py`, unchanged) in a v3 scene (`edit/title_scene.py`): static camera, no occluders,
+  sparks thrown by the fires found in the plate's first frame (stand-in fires until it lands), titles.py's v3
+  type (Cinzel 92/500/0.28 at y 360), the engine's clock mapped from v3 frames by a PCHIP curve (A: letters land
+  ~6300-6330, hold, crumble ~6405-6437, dark before the fade at 6456; B: land ~5260-5290, hold, fade into the
+  light 5340-5400, never crumble). Layers: `renders/title_{A,B}/f_*.exr` (linear, additive, half float),
+  rendered beside the old set and swapped whole, skipped when inputs are unchanged (`meta.json`). The edit
+  composites linear_to_srgb(soft_clip(srgb_to_linear(picture) + layer)) and drops titles.py's title while the
+  layer plays. Until the plates land (RUN-A2 `bluehour_A`; RUN-B-3 `handback_B`/`dawntitle_B`) the picture is a
+  STAND-IN SKY, an EDIT proxy: A = blue hour over serrated knife-edge ranges with watch-fires, paling to rose;
+  B = dusk_B's first frame (B's massifs in alpenglow) growing into dawn light. `title_v3.sh` runs on the
+  watcher's path before the animatics whenever A or B changes.
+- **PREVIEWS (standing request, ~20:25Z):** `edit/previews.py` (`previews.sh`, on the watcher's path after the
+  masters): every continuous, fully rendered stretch >= 25 s, cut frame-exactly from the film's master with its
+  sound into `~/Downloads/The Long Dawn v3 - PREVIEWS/<film>_bars<a>-<b>_<what>.mp4` + README.txt; only from a
+  master built from the current renders; re-exported when it grows or improves. The watcher exits 3 on a new
+  file so EDIT can send the director one line. Qualifying now: B bars 1-8 dusk; A bars 14-23 promise-to-giants;
+  A bars 34-46 valley-to-roar (once A's master has A9/A10).
 - **20:21Z: the watcher runs CONTINUOUSLY** (`bash edit/refresh_watch.sh`, log `_local_logs/animatic/watch_<HHMM>.log`,
   each step's full output in `edit/cache/refresh_watch.run.all`): every settled change refreshes the animatics,
   the kit and the masters for the cuts that changed, then it keeps watching. It exits (waking EDIT) only on a
