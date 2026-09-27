@@ -1,3 +1,20 @@
+# >>> MAP-L STATE (27 Sep ~15:20 local): book pass pushed, awaiting farm check stills <<<
+* DONE in code and pushed (1f5d629, job a190472), previewed only as flat 2-D rasters (local renders frozen):
+  - C4-C5 PAGE ONLY (contract with EMBERS-C, 600592b): `letters_at` passes fire=None, keeps the fire's light
+    (`fire_lights`); Kindling timings/seeds and `cam_letters` unchanged; `--with-fire` for tests.
+  - C28 title burn-on in book space (`titleburn.py`): 6980 in, cools to ink, sinks back by 7160. EDIT to drop its C
+    title overlay (asked via main).
+  - The illuminated initial (`redbook.initial`, glyph 'wc', 2.5 cm, vermilion ground + ink diaper + gold bezants,
+    gilt frame, ivy vine) + the rubricated opening words (`redbook.rubricate`). New RUBRIC layer = texture ch 6
+    (book.NCH 7; vermilion mix in the shader).
+  - C25 Plenty crown: leaf sprays + gilt racemes (pages.Plenty.build); lighter field stipple.
+  - C26 Havens: roundel = her bound hand raising a clay lamp (pages.Havens._roundel; lamp_flame moved); the tower
+    is a round crenellated watch-tower.
+* NEXT: farm --test 12 on map_v3_book (asked main for the go) -> review (gate questions, crops) -> fixes ->
+  JOB READY map_v3_book (2,472 frames). Open polish: C22 fallback flames read as paper cut-outs; the Mountain's
+  cone (judge in the render).
+* Flat preview tools (scratch, not in repo): windowed pen.raster of a plate/page; see MAP-L transcript.
+
 # >>> STATE AT HANDOFF (MAP-L takes over, 27 Sep ~18:45Z local; MAP-v3's cloud session is unreachable) <<<
 * Imported from `claude/v3-map` (bfe5d4e) by explicit path onto `claude/long-dawn-v2` (f3aa4ee): all of shots/map's
   book/page/X1/road/ring-page engines, both held jobs and EMBERS' `review/v3/x1_letters.json`. Review sheets are in
