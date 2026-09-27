@@ -21,7 +21,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', 'embers'))
 from noise import wobble1d  # noqa: E402
 
-INK, PENCIL, GILT, FIRE = 0, 1, 2, 3
+INK, PENCIL, GILT, FIRE, RUBRIC = 0, 1, 2, 3, 4      # RUBRIC: the rubricator's vermilion (MAP-L)
 
 
 # ================================================================ strokes ===

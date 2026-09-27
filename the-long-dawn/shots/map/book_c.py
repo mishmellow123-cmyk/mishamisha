@@ -4,7 +4,8 @@
     C3      THE MOUNTAIN       320-560    the leaves riffle back; the pen draws the fire, the ring (bar 5 b3), the mountain
     C4+C5   LETTERS TO FIRE    560-1040   the turn, the hearth sinks, glow 9b4, lift 10b1, fire 11b1, burn 11b3, the fire alone
     C8+C9   THE DEEP           1680-1992  swept to parchment; the pen follows the vein; the red glow burns through (C9)
-    C25-28  THE LAST PAGES     6160-7200  plenty; the Havens (coast fires 81b3 82b3 83b3, west 84b1); blank; the next; title
+    C25-28  THE LAST PAGES     6160-7200  plenty; the Havens (coast fires 81b3 82b3 83b3, west 84b1); blank; the next;
+                                          C28 the title burns on (6980), cools to ink, sinks back by 7160
 
     python book_c.py frames --frames 80-319 --out renders/book_C        # delivery (matte to renders/book_C_matte)
     python book_c.py frames --frames 700,760,840 --scale 0.5 --out DIR  # tests
@@ -15,7 +16,8 @@ out = rgb + (1 - matte) * next shot. C4-C5 (560-1040) is PAGE ONLY (director, ag
 glow and each stroke flares and goes out on its locked timing, the page is lit by the fire (point lights), the page
 burns and opens; the sparks, the ember and the flame are EMBERS-C's (renders/embers_C3_e15, added by EDIT; seeds
 from `Kindling` / `export`). `--with-fire` draws MAP's own fire for tests. Text lines are EDIT's (T1 is written in
-the Mountain's caption band, T7 on the Deep, T14 on the first healed blank page, the title on the last).
+the Mountain's caption band, T7 on the Deep, T14 on the first healed blank page). The TITLE is not: C28 burns THE
+LONG DAWN into the last blank recto here (titleburn.py; 6980-7160), so EDIT draws no title over C.
 """
 import argparse
 import json
@@ -644,6 +646,7 @@ class Book3:
         return cam
 
     # C25-C28 THE LAST PAGES (6160-7200)
+    TITLE = (6980, 7160)                                     # C28: the title's text-table frames (titleburn.py)
     TURNS = ((10.0, 1.4), (23.333, 1.35), (25.0, 1.35))     # the Havens (81 b1); blank (85 b1); the next (85 b3)
     COAST = (11.667, 15.0, 18.333)                           # 81 b3, 82 b3, 83 b3
     STERN = 19.3
@@ -656,6 +659,14 @@ class Book3:
             ep.fire_t = [self.COAST[0], self.COAST[1], self.COAST[2], 18.9 + 0.4]
             return ep
         return self.once('last_pages', mk)
+
+    def title(self):
+        """C28: THE LONG DAWN burned into the blank recto (fire-letters cooling to ink; sunk back by 7160)."""
+        def mk():
+            import titleburn
+            a0 = SHOTS['last_pages'][0]
+            return titleburn.TitleBurn((self.TITLE[0] - a0) / FPS, (self.TITLE[1] - a0) / FPS)
+        return self.once('title', mk)
 
     def havens_tex(self, ep, t):
         tx = B.PageTex(PG.PW, PG.PH, ep.hv_ppc)
@@ -707,12 +718,20 @@ class Book3:
                         if g[i] > 0.01:
                             wp = bk.page_to_world('L', np.array([fx]), np.array([fy - 0.3]))[0]
                             xl.append([wp[0], wp[1], wp[2] + 0.6, 0.35 * g[i], 0.12 * g[i], 0.03 * g[i]])
+        # C28: the title burns onto the blank recto
+        a0 = SHOTS['last_pages'][0]
+        tb = None
+        if (self.TITLE[0] - a0) / FPS - 0.05 <= t < (self.TITLE[1] - a0) / FPS + 0.05:
+            tb = self.title()
+            tR = tb.texture(t)
+            xl += tb.lights(t, bk)
         burnL = BURN.edge_params('L', 0.9, self.HEAL[1], seed=21, start=self.HEAL[0])
         burnR = BURN.edge_params('R', 0.9, self.HEAL[1], seed=22, start=self.HEAL[0])
         cam = self.cam_last_pages(bk, t)
         L = self.light((-55, 50, 30), 1.9, t, seed=5, amt=0.12, col=(1.0, 0.52, 0.24), radius=10)
-        return self.finish_layer(bk, cam, L, tL, tR, t, xl=(np.array(xl) if xl else None), leaf=leaf, burnL=burnL,
-                                 burnR=burnR)
+        fire = tb.sparks(t, bk, cam, self.W, self.H) if tb is not None else None
+        return self.finish_layer(bk, cam, L, tL, tR, t, fire=fire, xl=(np.array(xl) if xl else None), leaf=leaf,
+                                 burnL=burnL, burnR=burnR)
 
     def cam_last_pages(self, bk, t):
         pl = bk.page_to_world('R', np.array([10.5]), np.array([11.0]))[0]

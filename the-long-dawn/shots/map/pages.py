@@ -10,6 +10,7 @@ The drawings' own light comes from the upper left, like the hearth that lights t
 """
 import math
 
+import cv2
 import numpy as np
 
 import pen
@@ -1051,55 +1052,145 @@ class Plenty:
         frame_rules(S, self.box, self.seed + 1, layer=lay)
         _window(S, k, *T(0.0, 0.05), overlap=0.3)
 
-        # the tree: a young trunk with a flared foot, forking into a vase of limbs; foliage in clusters at the
-        # twigs, each cluster occluding what is behind it (limbs are drawn only where no leaves cover them)
+        # the tree (MAP-L redraw): a young mallorn, silver-barked, with long leaves and golden flowers. A trunk
+        # with a flared foot forks into a vase of limbs; the limbs branch to drooping twigs; the twigs carry long
+        # pointed leaves, drawn back to front (each hides what is behind it), the shaded ones ribbed and hatched;
+        # racemes of golden flowers hang from the twig ends, thickest on the lit side. Sky shows between the limbs.
         k = len(S)
         tx, ty, th = self.tx, self.ty, self.th
-        # the crown is one big leafy volume (an ovoid lit from the upper left) built of clusters; a few windows
-        # of sky inside it let the limbs show
         cc = np.array([tx + 0.25, ty - 0.64 * th])
         R = np.array([0.31 * th, 0.27 * th])
-        wins = [cc + np.array([-0.45, 0.55]) * R, cc + np.array([0.4, 0.35]) * R, cc + np.array([0.05, 0.75]) * R]
-        clusters = []
-        tries = 0
-        while len(clusters) < 70 and tries < 4000:
-            tries += 1
-            a_ = rng.uniform(0, 2 * np.pi)
-            r_ = math.sqrt(rng.random()) ** 0.7
-            p_ = cc + R * np.array([r_ * math.cos(a_), r_ * math.sin(a_)])
-            # the ovoid is flatter below
-            if p_[1] > cc[1] + 0.55 * R[1] * (1 - 0.6 * abs(math.cos(a_))):
-                continue
-            if any(np.hypot(*(p_ - w_)) < 0.55 for w_ in wins):
-                continue
-            rc = rng.uniform(0.3, 0.62) * (1.0 - 0.25 * r_)
-            clusters.append((p_[0], p_[1], rc, rng.random() + 0.6 * (p_[1] - cc[1]) / R[1]))
-        clusters.sort(key=lambda q: q[3])                      # back to front
-        clusters = [(x, y, r) for x, y, r, z in clusters]
-        # limbs: curved, forking, reaching into the crown
-        segs = []
         fork = np.array([tx + 0.1, ty - 0.3 * th])
+        segs, tips = [], []
 
-        def limb(p, target, w, depth):
-            mid = 0.5 * (p + target) + rng.normal(0, 0.25, 2) + np.array([0, -0.2])
-            c = catmull([p, mid, target], 10)
-            segs.append((c, w))
-            if depth > 0:
-                for q in range(2):
-                    t2 = target + np.array([rng.uniform(-1.0, 1.0), rng.uniform(-1.3, -0.4)]) * (0.6 + 0.3 * depth)
-                    limb(target, t2, w * 0.6, depth - 1)
-        for m in range(4):
-            tgt = cc + np.array([(m - 1.5) * 0.42, rng.uniform(0.0, 0.35)]) * R
-            limb(fork, tgt, 0.075, 2)
-        cxs = np.array([q[0] for q in clusters])
-        cys = np.array([q[1] for q in clusters])
-        crs = np.array([q[2] for q in clusters])
+        def rot(d, a):
+            ca, sa = math.cos(a), math.sin(a)
+            return np.array([ca * d[0] - sa * d[1], sa * d[0] + ca * d[1]])
+
+        def ovo(p):
+            q = (p - cc) / R
+            return q[0] ** 2 + q[1] ** 2 * (1.0 if q[1] < 0 else 1.45)
+
+        def grow(p, d, Ln, w, depth):
+            n = 9
+            pts = [p.copy()]
+            q, dd = p.copy(), d / np.linalg.norm(d)
+            bend = rng.normal(0, 0.32) / n
+            inside0 = ovo(p) < 1.0
+            for i in range(n):
+                ang = bend
+                if depth == 0:                       # twigs droop toward their ends
+                    ang += 0.07 * np.sign(dd[0] + 1e-6) * (i / n)
+                dd = rot(dd, ang)
+                if depth <= 1:
+                    dd = dd + np.array([0.0, 0.035 * (i / n)])
+                    dd = dd / np.linalg.norm(dd)
+                q2 = q + dd * Ln / n
+                if depth <= 2 and ovo(q2) > 0.92 and (inside0 or i > 2):    # branches end inside the crown
+                    break
+                q = q2
+                pts.append(q.copy())
+            P = np.array(pts)
+            if len(P) < 3:
+                return
+            n = len(P) - 1
+            segs.append((P, w))
+            if depth == 0:
+                tips.append((P, dd))
+                return
+            if depth == 1:
+                tips.append((P[n // 2:], dd))
+            sg = rng.choice([-1, 1])
+            if depth >= 2:
+                kids = [(0.45, sg * rng.uniform(0.5, 0.85)), (0.75, -sg * rng.uniform(0.4, 0.7)), (1.0, rng.normal(0, 0.15))]
+            else:
+                kids = [(0.6, sg * rng.uniform(0.5, 0.8)), (1.0, rng.normal(0, 0.15))]
+            for frac, a in kids:
+                i = int(round(frac * n))
+                grow(P[i], rot(dd if frac >= 1.0 else (P[min(i + 1, n)] - P[max(i - 1, 0)]), a), Ln * rng.uniform(0.55, 0.7),
+                     w * 0.62, depth - 1)
+        for a in (-0.56, -0.19, 0.17, 0.52):
+            d0 = rot(np.array([0.0, -1.0]), a + rng.normal(0, 0.06))
+            # the limb's length: 60% of the way from the fork to where its line leaves the crown's ovoid (the fork
+            # sits below the crown, so march out along the ray and take the far exit)
+            ts_ = np.linspace(0.0, 9.0, 361)
+            ins = np.array([ovo(fork + d0 * tt) < 1.0 for tt in ts_])
+            exit_ = ts_[np.nonzero(ins)[0][-1]] if ins.any() else 0.5 * R[1]
+            grow(fork, d0, 0.62 * exit_, 0.068, 3)
+
+        # the leaves: sprays of long pointed leaves, each spray on its own short twig, filling the crown's ovoid
+        # (irregular edge, flatter below) except for a few windows of sky where the limbs show
+        wins = [cc + np.array([-0.42, 0.42]) * R, cc + np.array([0.38, 0.28]) * R, cc + np.array([0.02, 0.62]) * R,
+                cc + np.array([-0.15, -0.2]) * R]
+        wr = [0.42, 0.36, 0.34, 0.26]
+        clumps = []
+        tries = 0
+        while len(clumps) < 78 and tries < 6000:
+            tries += 1
+            ang_ = rng.uniform(0, 2 * np.pi)
+            rr_ = math.sqrt(rng.random())
+            edge = 1.0 + 0.1 * math.sin(3 * ang_ + 1.0) + 0.06 * math.sin(7 * ang_)
+            p_ = cc + R * edge * np.array([rr_ * math.cos(ang_), rr_ * math.sin(ang_)])
+            if p_[1] > cc[1] + 0.62 * R[1] * (1 - 0.5 * abs(math.cos(ang_))):
+                continue
+            if any(np.hypot(*(p_ - w_)) < r_ for w_, r_ in zip(wins, wr)):
+                continue
+            if any(np.hypot(*(p_ - q_[0])) < 0.34 for q_ in clumps):
+                continue
+            out = (p_ - cc) / R
+            out = out / max(np.linalg.norm(out), 1e-6)
+            dirc = out * 0.8 + np.array([0.0, 0.55]) + rng.normal(0, 0.25, 2)     # outward, drooping
+            dirc = dirc / np.linalg.norm(dirc)
+            clumps.append((p_, dirc, rng.random() + 0.35 * float(out[1])))
+        leaves = []
+        twigs = []
+        for (p_, dirc, z) in clumps:
+            base = p_ - dirc * 0.22
+            twigs.append((np.array([base, p_ + dirc * 0.12]), z))
+            nl = int(rng.integers(8, 14))
+            for j in range(nl):
+                f_ = rng.uniform(0.0, 1.0)
+                bp = base + dirc * (0.34 * f_)
+                ang = (1 if j % 2 else -1) * rng.uniform(0.35, 1.25) * (1.0 - 0.5 * f_)
+                ld = rot(dirc, ang) + np.array([0.0, rng.uniform(0.1, 0.4)])
+                ld = ld / np.linalg.norm(ld)
+                ln = rng.uniform(0.26, 0.42)
+                leaves.append((bp, ld, ln, ln * rng.uniform(0.17, 0.23), z + rng.uniform(-0.05, 0.05)))
+        leaves.sort(key=lambda q: q[4])                                  # back to front
+        nL = len(leaves)
+        LC = np.array([q[0] + q[1] * 0.5 * q[2] for q in leaves])     # leaf centres
+        LD = np.array([q[1] for q in leaves])
+        LA = np.array([0.5 * q[2] for q in leaves])
+        LB = np.array([0.5 * q[3] for q in leaves])
+
+        def in_leaf(x, y, idx, grow_=1.0):
+            dx = x[:, None] - LC[idx, 0][None]
+            dy = y[:, None] - LC[idx, 1][None]
+            a_ = dx * LD[idx, 0][None] + dy * LD[idx, 1][None]
+            b_ = -dx * LD[idx, 1][None] + dy * LD[idx, 0][None]
+            return ((a_ / (LA[idx][None] * grow_)) ** 2 + (b_ / (LB[idx][None] * grow_)) ** 2) < 1.0
+
+        # a coverage map of the foliage for everything drawn behind it (limbs, hills, fields)
+        gx0, gy0 = cc[0] - R[0] - 1.0, cc[1] - R[1] - 1.2
+        gres = 25.0
+        gw_, gh_ = int((2 * R[0] + 2.0) * gres), int((2 * R[1] + 2.6) * gres)
+        fmask = np.zeros((gh_, gw_), np.uint8)
+        for (bp, ld, ln, lw, z) in leaves:
+            c_ = (bp + ld * 0.5 * ln - [gx0, gy0]) * gres
+            ang = math.degrees(math.atan2(ld[1], ld[0]))
+            cv2.ellipse(fmask, (int(c_[0] * 16), int(c_[1] * 16)), (int(0.5 * ln * gres * 16), int(0.5 * lw * gres * 16)),
+                        ang, 0, 360, 1, -1, cv2.LINE_8, 4)
+        fdist = cv2.distanceTransform((1 - fmask).astype(np.uint8), cv2.DIST_L2, 3) / gres
 
         def leafy(x, y, pad=0.0):
-            x = np.asarray(x, np.float64)[..., None]
-            y = np.asarray(y, np.float64)[..., None]
-            return np.any((x - cxs) ** 2 + ((y - cys) / 0.86) ** 2 < (crs + pad) ** 2, -1)
+            x = np.asarray(x, np.float64)
+            y = np.asarray(y, np.float64)
+            ix = np.clip(((x - gx0) * gres).astype(int), 0, gw_ - 1)
+            iy = np.clip(((y - gy0) * gres).astype(int), 0, gh_ - 1)
+            inb = (x >= gx0) & (x < gx0 + gw_ / gres) & (y >= gy0) & (y < gy0 + gh_ / gres)
+            return inb & (fdist[iy, ix] <= pad + 0.02)
         self._leafy = leafy
+
         # trunk
         hs = np.linspace(0, 1, 70)
         cx_ = tx + 0.1 * hs ** 1.5 + 0.03 * np.sin(hs * 4)
@@ -1117,6 +1208,8 @@ class Plenty:
                 q = np.array([[cx_[i] - wdt[i] * 0.5, yy[i]], [cx_[i] + wdt[i] * 0.95, yy[i] + 0.02]])
                 pp, rd, dd = hand(q, 0.0055, int(rng.integers(1 << 30)), dens=0.55, thin_end=0.4)
                 S.add(pp, rd, dd, layer=lay)
+        for (tw, z) in twigs:
+            segs.append((pen.resample(tw, 0.03) if len(tw) > 1 else tw, 0.012))
         # limbs, as double lines where thick, single where thin, hidden behind foliage
         for (cpts, w) in segs:
             pts = resample(cpts, 0.02)
@@ -1138,46 +1231,71 @@ class Plenty:
                     S.add(pp, rd, dd, layer=lay)
         _window(S, k, *T(0.05, 0.25), overlap=0.2)
 
-        # the crown: scalloped clusters, leaves ticked in on the shaded lower right, golden flowers on the lit side
+        # the crown: the leaves back to front, each hidden where a nearer leaf covers it; the shaded ones (lower
+        # right, and deep in the crown) get a midrib and a stroke or two of hatching
         k = len(S)
-        crown_c = np.array([cxs.mean(), cys.mean()])
         flowers = []
-        for ci, (x, y, r) in enumerate(clusters):
-            a = np.linspace(0, 2 * np.pi, 100)
-            sc = 1.0 + 0.09 * np.abs(np.sin(a * (4 + ci % 3) + ci))
-            px_ = x + r * sc * np.cos(a)
-            py_ = y + 0.86 * r * sc * np.sin(a)
-            vis = np.ones(len(a), bool)
-            for cj in range(ci + 1, len(clusters)):
-                vis &= (px_ - cxs[cj]) ** 2 + ((py_ - cys[cj]) / 0.86) ** 2 > (crs[cj] * 0.98) ** 2
+        light = np.array([-0.62, -0.78])
+        for li_, (bp, ld, ln, lw, z) in enumerate(leaves):
+            s = np.linspace(0, 1, 16)
+            hw = lw * 0.5 * np.sin(np.pi * s) ** 0.75 * (1.0 - 0.25 * s)
+            nrm = np.array([-ld[1], ld[0]])
+            side1 = bp[None] + ld[None] * (s * ln)[:, None] + nrm[None] * hw[:, None]
+            side2 = bp[None] + ld[None] * (s * ln)[:, None] - nrm[None] * hw[:, None]
+            outline = np.vstack([side1, side2[::-1][1:]])
+            front = np.arange(li_ + 1, nL)
+            vis = ~np.any(in_leaf(outline[:, 0], outline[:, 1], front, 1.02), axis=1) if len(front) else np.ones(len(outline), bool)
             dm = np.diff(np.concatenate([[0], vis.astype(np.int8), [0]]))
             for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
-                if b_ - a_ < 6:
+                if b_ - a_ < 2:
                     continue
-                pp, rd, dd = hand(np.column_stack([px_[a_:b_ + 1], py_[a_:b_ + 1]]), W(0.013), int(rng.integers(1 << 30)),
-                                  dens=dens, taper=(0.04, 0.1), thin_end=0.3)
+                pp, rd, dd = hand(outline[a_:b_ + 1], W(0.0062), int(rng.integers(1 << 30)), dens=dens, thin_end=0.5,
+                                  taper=(0.01, 0.02))
                 S.add(pp, rd, dd, layer=lay)
-            if not pencil:
-                front = lambda px__, py__, ci=ci: any((px__ - cxs[cj]) ** 2 + ((py__ - cys[cj]) / 0.86) ** 2 < crs[cj] ** 2
-                                                      for cj in range(ci + 1, len(clusters)))
-                for q in range(int(14 * r / 0.35)):
-                    aa = rng.uniform(-0.5, 2.0)
-                    rr_ = r * rng.uniform(0.3, 0.88)
-                    p0 = np.array([x + rr_ * math.cos(aa), y + 0.86 * rr_ * math.sin(aa)])
-                    if front(p0[0], p0[1]):
-                        continue
-                    p1 = p0 + 0.075 * np.array([math.cos(aa + 1.9), math.sin(aa + 1.9)])
-                    pp, rd, dd = hand(np.array([p0, (p0 + p1) / 2 + [0.008, -0.008], p1]), 0.0075, int(rng.integers(1 << 30)),
-                                      dens=0.85, thin_end=0.25)
+            if pencil:
+                continue
+            q = (bp + ld * 0.5 * ln - cc) / R
+            shade = float(np.dot(q, -light)) * 0.6 + 0.35 * (z < 0.45) + rng.normal(0, 0.15)
+            if shade > 0.25:
+                rib = bp[None] + ld[None] * np.array([[0.08], [0.85]]) * ln
+                vr = ~np.any(in_leaf(rib[:, 0], rib[:, 1], front, 1.0), axis=1) if len(front) else np.ones(2, bool)
+                if vr.all():
+                    pp, rd, dd = hand(rib, 0.0045, int(rng.integers(1 << 30)), dens=0.85, thin_end=0.3)
                     S.add(pp, rd, dd, layer=lay)
-                for q in range(int(rng.integers(1, 4))):
-                    aa = rng.uniform(2.7, 5.0)
-                    rr_ = r * rng.uniform(0.2, 0.72)
-                    fx_ = x + rr_ * math.cos(aa)
-                    fy_ = y + 0.86 * rr_ * math.sin(aa)
-                    if not front(fx_, fy_):
-                        flowers.append((fx_, fy_))
+                for hq in range(1 + int(shade > 0.6)):
+                    f_ = 0.3 + 0.3 * hq
+                    h0 = bp + ld * f_ * ln - nrm * 0.3 * lw
+                    h1 = h0 + ld * 0.22 * ln + nrm * 0.1 * lw
+                    hp = np.array([h0, h1])
+                    vh = ~np.any(in_leaf(hp[:, 0], hp[:, 1], front, 1.0), axis=1) if len(front) else np.ones(2, bool)
+                    if vh.all():
+                        pp, rd, dd = hand(hp, 0.0042, int(rng.integers(1 << 30)), dens=0.8, thin_end=0.3)
+                        S.add(pp, rd, dd, layer=lay)
+        # the golden flowers: racemes hanging from the sprays, most on the lit side, a few single florets
+        for (p_, dirc, z) in clumps:
+            q = (p_ - cc) / R
+            lit = float(np.dot(q, light))
+            if rng.random() > 0.3 + 0.5 * np.clip(lit + 0.35, 0, 1):
+                continue
+            n_ = int(rng.integers(6, 10))
+            sg_ = np.sign(dirc[0] + 1e-6)
+            st = p_ + dirc * 0.1
+            hang = catmull([st, st + np.array([0.05 * sg_, 0.17]), st + np.array([0.08 * sg_, rng.uniform(0.32, 0.46)])], 6)
+            if not pencil:
+                pp, rd, dd_ = hand(hang, 0.004, int(rng.integers(1 << 30)), dens=0.8, thin_end=0.4)
+                S.add(pp, rd, dd_, layer=lay)
+            sh_ = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(hang, axis=0).T))])
+            for m in range(n_):
+                sm_ = (m + 0.5) / n_ * sh_[-1]
+                fx_, fy_ = np.interp(sm_, sh_, hang[:, 0]), np.interp(sm_, sh_, hang[:, 1])
+                sd = 1 if m % 2 else -1
+                flowers.append((fx_ + sd * 0.035, fy_, 0.05 - 0.022 * m / n_))
+        for (bp, ld, ln, lw, z) in leaves[::7]:
+            q = (bp - cc) / R
+            if float(np.dot(q, light)) > 0.1 and z > 0.5:
+                flowers.append((bp[0], bp[1], 0.032))
         _window(S, k, *T(0.25, 0.55), overlap=0.85)
+
 
         # the far country: hills, a patchwork of fields, hedgerows, an orchard, stooks, cottages with smoke
         k = len(S)
@@ -1215,12 +1333,12 @@ class Plenty:
                         y = np.asarray(y)
                         xs_ = x + sl * (y - y_lo(x))
                         return (xs_ > xa + 0.05) & (xs_ < xb - 0.05) & (y > y_lo(x) + 0.06) & (y < y_hi(x) - 0.06) & free(x, y)
-                    if rng.random() < 0.72:
+                    if rng.random() < 0.86:
                         hatch(S, inside, lambda x, y: np.ones_like(x), (xa, self.Yh - 1.0, xb, self.hills(xb, 2) + 0.5),
                               ang, sp, 0.0, 0.0075, int(rng.integers(1 << 30)), dens=0.8, seg=(0.5, 2.0), wob=0.003)
                     else:
                         stipple(S, inside, lambda x, y: np.full_like(x, 0.55), (xa, self.Yh - 1.0, xb, self.hills(xb, 2) + 0.5),
-                                260, 0.012, int(rng.integers(1 << 30)))
+                                150, 0.011, int(rng.integers(1 << 30)))
                     # the hedge along the field's edge: a row of small round bushes
                     hx = np.arange(xa + 0.1, xb - 0.1, 0.16)
                     for x_ in hx:
@@ -1319,17 +1437,20 @@ class Plenty:
 
         # the gold: the flowers, laid last, one by one
         k = len(S)
-        for (fx_, fy_) in flowers:
+        for (fx_, fy_, fr_) in flowers:
             if pencil:
                 a = np.linspace(0, 2 * np.pi, 12)
-                q = np.column_stack([fx_ + 0.035 * np.cos(a), fy_ + 0.035 * np.sin(a)])
+                q = np.column_stack([fx_ + fr_ * np.cos(a), fy_ + fr_ * np.sin(a)])
                 pp, rd, dd = hand(q, 0.008, int(rng.integers(1 << 30)), dens=0.4, thin_end=0.8, taper=(0, 0))
                 S.add(pp, rd, dd, layer=lay)
                 continue
-            for p_ in range(5):
-                a = p_ * 1.2566 + rng.uniform(0, 0.5)
-                q = np.array([[fx_, fy_], [fx_ + 0.05 * math.cos(a), fy_ + 0.05 * math.sin(a)]])
-                S.add(q, np.array([0.02, 0.016]), np.array([1.0, 1.0]), layer=GILT)
+            # a floret: a small gilt boss with four short petals, a little irregular
+            S.add(np.array([[fx_, fy_], [fx_ + 0.002, fy_ + 0.001]]), np.array([fr_ * 0.62, fr_ * 0.62]), np.array([1.0, 1.0]),
+                  layer=GILT)
+            for p_ in range(4):
+                a = p_ * 1.5708 + rng.uniform(0, 0.6)
+                q = np.array([[fx_, fy_], [fx_ + fr_ * math.cos(a), fy_ + fr_ * math.sin(a)]])
+                S.add(q, np.array([fr_ * 0.4, fr_ * 0.3]), np.array([1.0, 1.0]), layer=GILT)
         _window(S, k, *T(0.9, 1.0), overlap=0.7)
         return S
 
@@ -1505,11 +1626,20 @@ class Havens:
         qy = float(self.coast(np.array([qx]))[0])
         quay = np.array([[qx - 1.4, qy + 0.35], [qx - 1.4, qy + 0.18], [qx + 0.2, qy + 0.18]])
         line(S, quay, W(0.016), self.seed + 12, dens=dens, layer=lay, lift=(4, 5), smooth=0)
-        tw = np.array([[qx + 0.35, qy + 0.05], [qx + 0.38, qy - 1.35], [qx + 0.55, qy - 1.55], [qx + 0.72, qy - 1.35],
-                       [qx + 0.75, qy + 0.05]])
+        # a slender round watch-tower (MAP-L: never an obelisk): a little batter, a corbelled parapet, merlons
+        tw = np.array([[qx + 0.35, qy + 0.05], [qx + 0.39, qy - 1.12], [qx + 0.35, qy - 1.18], [qx + 0.35, qy - 1.34],
+                       [qx + 0.43, qy - 1.34], [qx + 0.43, qy - 1.27], [qx + 0.51, qy - 1.27], [qx + 0.51, qy - 1.34],
+                       [qx + 0.6, qy - 1.34], [qx + 0.6, qy - 1.27], [qx + 0.68, qy - 1.27], [qx + 0.68, qy - 1.34],
+                       [qx + 0.76, qy - 1.34], [qx + 0.76, qy - 1.18], [qx + 0.72, qy - 1.12], [qx + 0.75, qy + 0.05]])
         line(S, tw, W(0.016), self.seed + 13, dens=dens, layer=lay, lift=(5, 6), smooth=0)
+        line(S, np.array([[qx + 0.36, qy - 1.18], [qx + 0.75, qy - 1.18]]), W(0.011), self.seed + 15, dens=dens,
+             layer=lay, lift=(5, 6), smooth=0)
+        line(S, np.array([[qx + 0.39, qy - 1.12], [qx + 0.72, qy - 1.12]]), W(0.009), self.seed + 16, dens=dens,
+             layer=lay, lift=(5, 6), smooth=0)
+        line(S, np.array([[qx + 0.52, qy - 0.92], [qx + 0.52, qy - 0.8]]), W(0.02), self.seed + 17, dens=dens,
+             layer=lay, lift=(5, 6), smooth=0)
         if not pencil:
-            hatch(S, _poly_inside(tw), lambda x, y: (x - (qx + 0.35)) / 0.4, (qx + 0.3, qy - 1.6, qx + 0.8, qy + 0.1), 90,
+            hatch(S, _poly_inside(tw), lambda x, y: (x - (qx + 0.35)) / 0.4, (qx + 0.3, qy - 1.4, qx + 0.8, qy + 0.1), 90,
                   0.035, 0.45, 0.007, self.seed + 14, dens=0.85, seg=(0.3, 1.2))
         _window(S, k, *T(0.05, 0.3), overlap=0.6)
         # the flame glyphs on the heights (ink now; they kindle as fire in the shot)
@@ -1576,8 +1706,10 @@ class Havens:
         return S
 
     def _roundel(self, S, rng, lay, pencil):
-        """Seen from behind at the stern: a hooded figure dark against the dusk, one arm raised; the hand is
-        bound in white bandage (bright strips on the dark), and holds up a small lamp whose flame is the colour."""
+        """THE one drawn detail (REV 1; MAP-L redraw): her bound hand, close, raising the small light. The hand is
+        wrapped in linen to the knuckles (never bare): bands wound across the back of the hand and the wrist, a loose
+        end trailing in the wind off the sea; it grips the stem of a small clay lamp held up against the dusk, whose
+        flame is the colour (it kindles in the shot); the dark cloak sleeve falls away below. Back-of-hand view."""
         cx, cy, R = self.roundel
         a = np.linspace(0, 2 * np.pi, 200)
         for rr, w in ((R, 0.03), (R - 0.12, 0.012)):
@@ -1586,56 +1718,114 @@ class Havens:
         Ri = R - 0.16
         U = lambda P: np.column_stack([cx + np.asarray(P, np.float64)[:, 0] * R, cy - np.asarray(P, np.float64)[:, 1] * R])
         inside_r = lambda x, y: np.hypot(np.asarray(x) - cx, np.asarray(y) - cy) < Ri
-        # the figure: hood, shoulders, cloak (a closed silhouette), and the raised arm with its falling sleeve
-        body = U(catmull([(-0.95, -0.95), (-0.72, -0.46), (-0.48, -0.3), (-0.36, 0.02), (-0.2, 0.14), (-0.02, 0.1),
-                          (0.06, -0.08), (0.12, -0.28), (0.3, -0.36), (0.5, -0.5), (0.72, -0.95)], 8))
-        arm = U(catmull([(0.12, -0.28), (0.24, -0.02), (0.3, 0.22), (0.33, 0.38), (0.44, 0.38), (0.45, 0.2),
-                         (0.42, -0.05), (0.36, -0.3), (0.3, -0.36)], 8))
-        body_in = _poly_inside(np.vstack([body, body[:1]]))
-        arm_in = _poly_inside(np.vstack([arm, arm[:1]]))
-        # the hand: a wrapped fist gripping the lamp's foot; the wraps as bands of paper left white
-        hx, hy = 0.39, 0.48
-        handp = U(np.column_stack([hx + 0.085 * np.cos(np.linspace(0, 2 * np.pi, 40)),
-                                   hy + 0.11 * np.sin(np.linspace(0, 2 * np.pi, 40))]))
-        hand_in = _poly_inside(handp)
-        dark_in = lambda x, y: (body_in(x, y) | arm_in(x, y)) & inside_r(x, y) & ~hand_in(x, y)
-        for P_, w_ in ((body, 0.016), (arm, 0.014)):
-            keep = inside_r(P_[:, 0], P_[:, 1])
+        # the shapes (roundel units, y up)
+        fist = U(catmull([(0.02, -0.04), (-0.05, 0.08), (-0.06, 0.2), (-0.02, 0.3), (0.05, 0.36), (0.1, 0.35), (0.14, 0.38),
+                          (0.19, 0.365), (0.23, 0.385), (0.28, 0.36), (0.33, 0.33), (0.37, 0.22), (0.36, 0.08),
+                          (0.32, -0.04)], 6))
+        wrist = U(catmull([(0.03, -0.02), (0.04, -0.16), (0.06, -0.3), (0.32, -0.28), (0.32, -0.14), (0.32, -0.02)], 6))
+        thumb = U(catmull([(-0.045, 0.13), (-0.015, 0.2), (0.05, 0.255), (0.125, 0.285), (0.135, 0.255), (0.06, 0.215), (0.005, 0.13)], 6))
+        sleeve = U(catmull([(0.05, -0.29), (-0.06, -0.56), (-0.2, -1.05), (0.75, -1.05), (0.56, -0.6), (0.34, -0.27),
+                            (0.2, -0.31)], 6))
+        fist_in = _poly_inside(np.vstack([fist, fist[:1]]))
+        wrist_in = _poly_inside(np.vstack([wrist, wrist[:1]]))
+        thumb_in = _poly_inside(np.vstack([thumb, thumb[:1]]))
+        sleeve_in = _poly_inside(np.vstack([sleeve, sleeve[:1]]))
+        hand_in = lambda x, y: fist_in(x, y) | wrist_in(x, y) | thumb_in(x, y)
+        # the lamp: a stem through the fist, a small round-bellied clay lamp on it, its spout to the right
+        stem_l = U([(0.14, -0.12), (0.14, 0.52)])
+        stem_r = U([(0.185, -0.12), (0.185, 0.52)])
+        lamp = U(catmull([(0.0, 0.56), (0.02, 0.62), (0.12, 0.655), (0.24, 0.64), (0.33, 0.62), (0.4, 0.635), (0.41, 0.61),
+                          (0.3, 0.56), (0.2, 0.53), (0.06, 0.53), (0.0, 0.56)], 6))
+        lamp_in = _poly_inside(np.vstack([lamp, lamp[:1]]))
+        stem_in = lambda x, y: (np.abs(np.asarray(x) - (cx + 0.1625 * R)) < 0.0225 * R) & \
+            (np.asarray(y) < cy - (-0.12) * R) & (np.asarray(y) > cy - 0.54 * R)
+        solid = lambda x, y: hand_in(x, y) | sleeve_in(x, y) | lamp_in(x, y) | stem_in(x, y)
+
+        def draw(P, w, clip=None):
+            keep = inside_r(P[:, 0], P[:, 1])
+            if clip is not None:
+                keep &= ~clip(P[:, 0], P[:, 1])
             dm = np.diff(np.concatenate([[0], keep.astype(np.int8), [0]]))
             for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
-                if b_ - a_ > 2:
-                    line(S, P_[a_:b_ + 1], w_, int(rng.integers(1 << 30)), layer=lay, lift=(6, 9), smooth=0)
-        line(S, handp, 0.012, int(rng.integers(1 << 30)), layer=lay, lift=(6, 9), smooth=0)
+                if b_ - a_ > 1:
+                    line(S, P[a_:b_ + 1], w, int(rng.integers(1 << 30)), layer=lay, lift=(6, 9), smooth=0)
+        # outlines: the sleeve behind the wrist, the stem behind the fist, the thumb over the fist
+        draw(sleeve, 0.016, clip=hand_in)
+        draw(fist, 0.015, clip=thumb_in)
+        draw(wrist, 0.014, clip=lambda x, y: fist_in(x, y) | sleeve_in(x, y))
+        draw(thumb, 0.014)
+        for st in (stem_l, stem_r):
+            draw(pen.resample(st, 0.02), 0.011, clip=lambda x, y: hand_in(x, y) | lamp_in(x, y))
+        draw(lamp, 0.013)
+        # the knuckles: soft marks where the wrapped fingers fold
+        for kx in (0.08, 0.17, 0.26):
+            draw(U(catmull([(kx - 0.02, 0.33), (kx, 0.31), (kx + 0.03, 0.325)], 4)), 0.008)
         if not pencil:
             box = (cx - R, cy - R, cx + R, cy + R)
-            hatch(S, dark_in, lambda x, y: np.ones_like(x), box, 80, 0.028, 0.0, 0.011, int(rng.integers(1 << 30)),
+            dark_in = lambda x, y: sleeve_in(x, y) & inside_r(x, y) & ~hand_in(x, y)
+            hatch(S, dark_in, lambda x, y: np.ones_like(x), box, 70, 0.028, 0.0, 0.011, int(rng.integers(1 << 30)),
                   dens=0.95, seg=(0.3, 1.0), wob=0.003)
-            hatch(S, dark_in, lambda x, y: np.ones_like(x), box, 10, 0.032, 0.0, 0.01, int(rng.integers(1 << 30)),
+            hatch(S, dark_in, lambda x, y: np.ones_like(x), box, 5, 0.034, 0.0, 0.01, int(rng.integers(1 << 30)),
                   dens=0.9, seg=(0.3, 1.0), wob=0.003)
-            # the bandage: bands wound across the fist, each outlined, the gaps between them shaded
-            for m, vv in enumerate(np.linspace(-0.08, 0.08, 5)):
-                P = U([(hx - 0.09, hy + vv - 0.02), (hx, hy + vv + 0.012), (hx + 0.09, hy + vv + 0.022)])
-                line(S, catmull(P, 6), 0.007, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
-            tail = U([(hx + 0.07, hy - 0.06), (hx + 0.15, hy - 0.14), (hx + 0.17, hy - 0.26), (hx + 0.12, hy - 0.34)])
-            line(S, catmull(tail, 6), 0.009, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
-            # the dusk behind: sky lines, darker upward, a sea line low down
-            sky_in = lambda x, y: inside_r(x, y) & ~(body_in(x, y) | arm_in(x, y) | hand_in(x, y))
-            for q, yy in enumerate(np.arange(cy - Ri, cy + 0.25 * R, 0.07)):
-                tone = (1.0 - (yy - (cy - Ri)) / (1.25 * R)) ** 1.2
+            # the linen: bands wound on the slant across the back of the hand and the wrist, each band's lower edge
+            # drawn, a little shading under each edge on the shadow (right) side
+            for m, off in enumerate(np.arange(-0.46, 0.5, 0.085)):
+                xs_ = np.linspace(-0.1, 0.42, 60)
+                band = U(np.column_stack([xs_, off + 0.42 * xs_ + 0.012 * np.sin(xs_ * 14 + m)]))
+                inb = hand_in(band[:, 0], band[:, 1]) & ~thumb_in(band[:, 0], band[:, 1])
+                dm = np.diff(np.concatenate([[0], inb.astype(np.int8), [0]]))
+                for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
+                    if b_ - a_ > 3:
+                        pp, rd, dd = hand(band[a_:b_ + 1], 0.0065, int(rng.integers(1 << 30)), dens=0.9, thin_end=0.5,
+                                          taper=(0.02, 0.05))
+                        S.add(pp, rd, dd, layer=lay)
+                        seg = band[a_:b_ + 1]
+                        for j in range(len(seg) // 2, len(seg), 3):
+                            p0 = seg[j]
+                            p1 = p0 + np.array([0.012, 0.05])
+                            if hand_in(np.array([p1[0]]), np.array([p1[1]]))[0]:
+                                pp, rd, dd = hand(np.array([p0, p1]), 0.0045, int(rng.integers(1 << 30)), dens=0.8,
+                                                  thin_end=0.3)
+                                S.add(pp, rd, dd, layer=lay)
+            # the thumb's wrap, crossing the other way
+            for off in (0.06, 0.14):
+                xs_ = np.linspace(-0.08, 0.16, 20)
+                band = U(np.column_stack([xs_, off + 0.9 * (xs_ + 0.05) - 0.06]))
+                inb = thumb_in(band[:, 0], band[:, 1])
+                if inb.sum() > 3:
+                    pp, rd, dd = hand(band[inb], 0.006, int(rng.integers(1 << 30)), dens=0.9, thin_end=0.5)
+                    S.add(pp, rd, dd, layer=lay)
+            # the loose end of the linen, trailing from the wrist in the wind off the sea
+            tail = U(catmull([(0.31, -0.2), (0.42, -0.24), (0.52, -0.2), (0.6, -0.26), (0.68, -0.22)], 8))
+            tail2 = U(catmull([(0.31, -0.25), (0.42, -0.3), (0.51, -0.26), (0.6, -0.32), (0.66, -0.29)], 8))
+            draw(tail, 0.01, clip=None)
+            draw(tail2, 0.009, clip=None)
+            # the dusk behind: sky lines, darker upward; the sea's line low down, and its swell below it
+            sky_in = lambda x, y: inside_r(x, y) & ~solid(x, y)
+            for q, yy in enumerate(np.arange(cy - Ri, cy + 0.42 * R, 0.07)):
+                tone = (1.0 - (yy - (cy - Ri)) / (1.42 * R)) ** 1.2
                 if q % 2 and tone < 0.5:
                     continue
                 xs = np.arange(cx - R, cx + R, 0.02)
-                keep = sky_in(xs, np.full_like(xs, yy)) & (np.hypot(xs - (cx + 0.41 * R), yy - (cy - 0.8 * R)) > 0.3 * R)
+                lf = (cx + 0.39 * R, cy - 0.68 * R)
+                keep = sky_in(xs, np.full_like(xs, yy)) & (np.hypot(xs - lf[0], yy - lf[1]) > 0.28 * R)
                 dm = np.diff(np.concatenate([[0], keep.astype(np.int8), [0]]))
                 for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
                     if b_ - a_ > 3:
                         pp, rd, dd = hand(np.column_stack([xs[a_:b_ + 1], np.full(b_ - a_ + 1, yy)]), 0.008 * (1 + tone),
                                           int(rng.integers(1 << 30)), dens=0.85, thin_end=0.5, taper=(0.02, 0.02))
                         S.add(pp, rd, dd, layer=lay)
-        # the lamp held up: a small clay lamp, its flame drawn lightly (it burns in colour in the shot)
-        lamp = U(catmull([(0.28, 0.6), (0.3, 0.66), (0.44, 0.7), (0.56, 0.68), (0.6, 0.72), (0.58, 0.64), (0.5, 0.58),
-                          (0.36, 0.57), (0.28, 0.6)], 6))
-        line(S, lamp, 0.013, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
-        fl = U(catmull([(0.57, 0.72), (0.55, 0.8), (0.58, 0.9), (0.6, 0.8), (0.59, 0.72)], 6))
+            for q, yy in enumerate(np.arange(cy + 0.46 * R, cy + Ri, 0.1)):
+                xs = np.arange(cx - R, cx + R, 0.02)
+                wv = yy + 0.012 * np.sin(xs * 9.0 + q * 1.7)
+                keep = sky_in(xs, wv)
+                dm = np.diff(np.concatenate([[0], keep.astype(np.int8), [0]]))
+                for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
+                    if b_ - a_ > 3:
+                        pp, rd, dd = hand(np.column_stack([xs[a_:b_ + 1], wv[a_:b_ + 1]]), 0.007, int(rng.integers(1 << 30)),
+                                          dens=0.8, thin_end=0.5, taper=(0.02, 0.02))
+                        S.add(pp, rd, dd, layer=lay)
+        # the lamp's flame, drawn lightly (it burns in colour in the shot)
+        fl = U(catmull([(0.39, 0.64), (0.37, 0.7), (0.395, 0.79), (0.42, 0.7), (0.405, 0.64)], 6))
         line(S, fl, 0.008, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
-        self.lamp_flame = (cx + 0.58 * R, cy - 0.8 * R)
+        self.lamp_flame = (cx + 0.395 * R, cy - 0.68 * R)

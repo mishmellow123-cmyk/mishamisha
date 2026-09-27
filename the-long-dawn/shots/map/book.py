@@ -28,7 +28,8 @@ import burn as BURN  # noqa: E402
 
 M_NONE, M_TABLE, M_LEATHER, M_PAGE_L, M_PAGE_R, M_EDGE, M_SPINE, M_BAND = 0, 1, 2, 3, 4, 5, 6, 7
 M_LEAF_F, M_LEAF_B = 8, 9      # a turning leaf: its front (the recto it was) and its back (the next verso)
-NCH = 6          # page texture channels: ink, wet, gilt, pencil, fire (glowing ink), ghost (scorched letters)
+NCH = 7          # page texture channels: ink, wet, gilt, pencil, fire (glowing ink), ghost (scorched letters),
+                 # rubric (vermilion: the illuminated initial's ground and the rubricated line; MAP-L)
 NG = 16          # G-buffer channels
 
 
@@ -605,6 +606,7 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 pencil = min(tv[3], 1.0)
                 fire = tv[4]
                 ghost = min(tv[5], 1.0)
+                rub = min(tv[6], 1.0)
                 # paper tooth: ink sits in the valleys, graphite catches on the peaks
                 tooth = 0.5 + 0.5 * fib
                 # iron-gall ink: warm brown where thin, near black where it pools
@@ -616,6 +618,12 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 ar = pr * (1 - k) + ir * k
                 ag = pg * (1 - k) + ig * k
                 ab = pb * (1 - k) + ib * k
+                # vermilion (rubric): an opaque, slightly chalky red laid over the ink it shares a letter with
+                if rub > 0.0:
+                    kr = min(rub * (0.92 + 0.16 * tooth), 1.0) ** 0.8
+                    ar = ar * (1 - kr) + 0.43 * kr
+                    ag = ag * (1 - kr) + 0.052 * kr
+                    ab = ab * (1 - kr) + 0.026 * kr
                 # graphite
                 gp = pencil * (0.75 + 0.5 * (1.0 - tooth))
                 gp = min(gp, 0.85)

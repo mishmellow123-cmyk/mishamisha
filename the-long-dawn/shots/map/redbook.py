@@ -132,6 +132,9 @@ class Page:
         tx.chan[..., 2] = np.clip(C, 0, 1)
         C, _ = pen.raster(pk, t, ppc, H, W, PENCIL)
         tx.chan[..., 3] = C
+        if np.any(pk['L'] == pen.RUBRIC):
+            C, _ = pen.raster(pk, t, ppc, H, W, pen.RUBRIC)
+            tx.chan[..., 6] = np.clip(C, 0, 1)
         if gains is not None:
             C, _ = pen.raster(pk, 1e9, ppc, H, W, INK, gain=gains[1])
             tx.chan[..., 4] = C
@@ -140,49 +143,131 @@ class Page:
         return tx.build()
 
 
-def initial(S, x, y, size, seed, glyph='lp'):
-    """The book's one illuminated initial: a letter of our script in gold leaf on a small ruled square, with
-    fine penwork tendrils curling down the margin (page cm; (x, y) is the square's top-left)."""
+def initial(S, x, y, size, seed, glyph='wc'):
+    """The book's one illuminated initial (H5; MAP-L redraw): a letter of our script in raised, burnished gold on a
+    square of vermilion, the ground diapered with a fine ink lattice and a gold bezant in every lozenge, inside a
+    gilt frame ruled in ink; a spray of ink vine with gilt ivy leaves and vermilion berries grows from its corners
+    down the margin. (x, y) is the square's top-left in page cm; size its side."""
     rng = np.random.default_rng(seed)
-    for inset, w in ((0.0, 0.02), (0.07, 0.009)):
-        a, b, c, d = x + inset, y + inset, x + size - inset, y + size - inset
-        for (p0, p1) in (((a - 0.03, b), (c + 0.03, b)), ((c, b - 0.03), (c, d + 0.03)), ((c + 0.03, d), (a - 0.03, d)),
-                         ((a, d + 0.03), (a, b - 0.03))):
-            pp, rr, dd = hand(np.array([p0, p1]), w, int(rng.integers(1 << 30)), slow=(5.0, 0.004), taper=(0.02, 0.02),
-                              thin_end=0.6)
-            S.add(pp, rr, dd)
-    # the letter, broad-nibbed in gold, and a fine ink spine that makes it read against the gilt
+    R_ = pen.RUBRIC
+    i0 = 0.075                                            # the frame's width
+    a, b, c, d = x + i0, y + i0, x + size - i0, y + size - i0
+    # the ground: vermilion laid in short overlapping strokes (a brush's full coverage, a little uneven)
+    yy = b + 0.004
+    while yy < d - 0.004:
+        xs = np.linspace(a + 0.004, c - 0.004, 9)
+        ys = yy + 0.004 * np.sin(xs * 9.0 + yy * 13.0) + rng.normal(0, 0.0015, 9)
+        S.add(np.column_stack([xs, ys]), np.full(9, 0.024), np.full(9, 1.0), layer=R_)
+        yy += 0.03
+    # the diaper: a fine ink lattice on the red, a gold bezant in each lozenge
+    n = 5
+    step = (c - a) / n
+    for k in range(-n, n + 1):
+        for sgn in (1, -1):
+            p0 = np.array([a + k * step, b]) if sgn > 0 else np.array([a + k * step, d])
+            p1 = p0 + np.array([1.0, sgn * 1.0]) * (c - a)
+            # clip the diagonal to the square
+            tt = np.linspace(0, 1, 60)
+            P = p0[None] + (p1 - p0)[None] * tt[:, None]
+            ok = (P[:, 0] >= a) & (P[:, 0] <= c) & (P[:, 1] >= b) & (P[:, 1] <= d)
+            if ok.sum() < 2:
+                continue
+            P = P[ok]
+            S.add(P, np.full(len(P), 0.0085), np.full(len(P), 1.0))
+    for iy in range(n):
+        for ix in range(n + 1):
+            cx_ = a + (ix + (0.5 if iy % 2 else 0.0)) * step
+            cy_ = b + (iy + 0.5) * step
+            if a + 0.05 < cx_ < c - 0.05:
+                S.add(np.array([[cx_, cy_], [cx_ + 0.001, cy_]]), np.array([0.028, 0.028]), np.array([1.0, 1.0]),
+                      layer=GILT)
+    # the frame: a gilt bar, ruled in ink outside and in
+    for inset, w, lay in ((0.0, 0.012, INK), (0.5 * i0, 0.032, GILT), (i0, 0.009, INK)):
+        a2, b2, c2, d2 = x + inset, y + inset, x + size - inset, y + size - inset
+        for (p0, p1) in (((a2 - 0.02, b2), (c2 + 0.02, b2)), ((c2, b2 - 0.02), (c2, d2 + 0.02)),
+                         ((c2 + 0.02, d2), (a2 - 0.02, d2)), ((a2, d2 + 0.02), (a2, b2 - 0.02))):
+            pp, rr, dd = hand(np.array([p0, p1]), w, int(rng.integers(1 << 30)), slow=(5.0, 0.004), taper=(0.01, 0.01),
+                              thin_end=0.85)
+            S.add(pp, rr, dd, layer=lay)
+    # the letter, broad-nibbed in gold, bold, and a fine ink line round it that makes it read against the red;
+    # drawn wide and then drawn up tall to fill its square, as an initial is
     G = pen.GLYPHS[glyph]
+    xs_ = [px for st in G['s'] for px, _ in pen._knots(st)]
     ys = [py for st in G['s'] for _, py in pen._knots(st)]
-    em = min((size - 0.42) / G['w'], (size - 0.42) / max(max(ys) - min(ys), 0.5))
-    hx = x + 0.5 * size - 0.5 * G['w'] * em
-    base = y + 0.5 * size + 0.5 * (max(ys) + min(ys)) * em          # the letter centred in its square
-    hg = pen.Hand(seed=seed + 1, xh=em, nib=0.55, thin=0.08, layer=GILT)
-    hg.write_word(S, [glyph], hx, base)
-    hi = pen.Hand(seed=seed + 1, xh=em, nib=0.05, thin=0.02, layer=INK)
-    hi.write_word(S, [glyph], hx, base)
-    # penwork: little spirals from the corners and a tendril down the outer margin
-    for (cx, cy, r0) in ((x - 0.05, y + size + 0.1, 0.16), (x + size + 0.08, y - 0.02, 0.12), (x - 0.12, y + 0.35, 0.1)):
-        a = np.linspace(0, 4.4, 40) + rng.uniform(0, 6)
-        rr_ = r0 * np.linspace(1.0, 0.2, 40)
-        pp, rr, dd = hand(np.column_stack([cx + rr_ * np.cos(a), cy + rr_ * np.sin(a)]), 0.008, int(rng.integers(1 << 30)),
-                          thin_end=0.3, taper=(0.05, 0.2))
-        S.add(pp, rr, dd)
-    ten = catmull([(x - 0.08, y + size + 0.25), (x - 0.25, y + size + 0.9), (x - 0.12, y + size + 1.6), (x - 0.3, y + size + 2.4)], 10)
-    pp, rr, dd = hand(ten, 0.009, int(rng.integers(1 << 30)), thin_end=0.2, taper=(0.1, 0.5))
+    inner = size - 2 * i0 - 0.42
+    em = inner / (max(xs_) - min(xs_) + 0.25)
+    stretch = min(1.6, inner / max((max(ys) - min(ys)) * em, 1e-3))
+    hx = x + 0.5 * size - 0.5 * (max(xs_) + min(xs_)) * em
+    base = y + 0.5 * size + 0.5 * (max(ys) + min(ys)) * em
+    cy0 = y + 0.5 * size
+    for lay, nib, thin in ((GILT, 0.17, 0.035), (INK, 0.025, 0.012)):
+        k0 = len(S)
+        hh = pen.Hand(seed=seed + 1, xh=em, nib=nib, thin=thin, layer=lay, slant=0.0)
+        hh.write_word(S, [glyph], hx, base)
+        for q in range(k0, len(S)):
+            P = S.P[q]
+            S.P[q] = np.column_stack([P[:, 0], cy0 + (P[:, 1] - cy0) * stretch])
+    # the ink edge of the gold: the gilt letter traced again a hair wider in ink, under the gold (it shows as a
+    # dark line round the leaf, as a painter outlines gilding)
+    k0 = len(S)
+    hh = pen.Hand(seed=seed + 1, xh=em, nib=0.17 * 1.3, thin=0.065, layer=INK, slant=0.0, dens=0.9)
+    hh.write_word(S, [glyph], hx, base)
+    for q in range(k0, len(S)):
+        P = S.P[q]
+        S.P[q] = np.column_stack([P[:, 0], cy0 + (P[:, 1] - cy0) * stretch])
+
+    # the spray: ink vine from the lower-left corner down the margin, gilt ivy leaves, vermilion berries
+    def leaf(px, py, ang, sz):
+        q = np.linspace(0, 1, 14)
+        # a small ivy leaf: a pointed heart, three lobes
+        r = sz * (0.55 + 0.45 * np.abs(np.sin(q * np.pi * 1.5)))
+        th = ang + (q - 0.5) * 2.4
+        outline = np.column_stack([px + r * np.cos(th), py + r * np.sin(th)])
+        outline = np.vstack([[px, py], outline, [px, py]])
+        # gold fill as a few dense strokes along the leaf, then its ink outline
+        for f_ in np.linspace(0.2, 0.85, 4):
+            P = np.array([[px, py], [px + f_ * sz * math.cos(ang - 0.5), py + f_ * sz * math.sin(ang - 0.5)],
+                          [px + 0.9 * sz * math.cos(ang), py + 0.9 * sz * math.sin(ang)],
+                          [px + f_ * sz * math.cos(ang + 0.5), py + f_ * sz * math.sin(ang + 0.5)], [px, py]])
+            S.add(P, np.full(len(P), 0.022 * sz / 0.14), np.full(len(P), 1.0), layer=GILT)
+        S.add(outline, np.full(len(outline), 0.006), np.full(len(outline), 1.0))
+
+    stem = catmull([(x + 0.02, y + size), (x - 0.22, y + size + 0.8), (x - 0.08, y + size + 1.7),
+                    (x - 0.3, y + size + 2.6), (x - 0.16, y + size + 3.5), (x - 0.34, y + size + 4.3)], 10)
+    pp, rr, dd = hand(stem, 0.011, int(rng.integers(1 << 30)), thin_end=0.25, taper=(0.05, 0.6))
     S.add(pp, rr, dd)
-    for q in range(4):
-        i = int(len(ten) * (0.2 + 0.2 * q))
-        c0 = ten[i]
-        a = np.linspace(0, 3.6, 24) + (0 if q % 2 else np.pi)
-        rr_ = 0.12 * np.linspace(1.0, 0.25, 24)
+    for q in range(7):
+        i = int(len(stem) * (0.1 + 0.125 * q))
+        c0 = stem[min(i, len(stem) - 1)]
         sg = 1 if q % 2 else -1
-        pp, rr, dd = hand(np.column_stack([c0[0] + sg * rr_ * np.cos(a) + sg * 0.12, c0[1] + rr_ * np.sin(a)]), 0.007,
-                          int(rng.integers(1 << 30)), thin_end=0.3)
+        tw = catmull([c0, c0 + np.array([sg * 0.16, 0.06]), c0 + np.array([sg * 0.3, -0.02])], 6)
+        pp, rr, dd = hand(tw, 0.006, int(rng.integers(1 << 30)), thin_end=0.3)
         S.add(pp, rr, dd)
-    # a single gilt dot at each tendril's end, as the penman finishes
-    for (dx, dy) in ((x - 0.3, y + size + 2.4), (x + size + 0.08, y - 0.02)):
-        S.add(np.array([[dx, dy], [dx + 0.001, dy]]), np.array([0.035, 0.035]), np.array([1.0, 1.0]), layer=GILT)
+        end = tw[-1]
+        if q % 3 == 2:
+            for m in range(3):                               # a cluster of vermilion berries
+                bx_, by_ = end[0] + 0.05 * math.cos(m * 2.1), end[1] + 0.05 * math.sin(m * 2.1)
+                S.add(np.array([[bx_, by_], [bx_ + 0.001, by_]]), np.array([0.026, 0.026]), np.array([1.0, 1.0]),
+                      layer=R_)
+        else:
+            leaf(end[0], end[1], (0.0 if sg > 0 else math.pi) + rng.uniform(-0.4, 0.4), 0.2)
+    # a short spray over the top, from the upper-left corner
+    top = catmull([(x, y + 0.02), (x - 0.35, y - 0.2), (x - 0.25, y - 0.55), (x - 0.5, y - 0.85)], 8)
+    pp, rr, dd = hand(top, 0.008, int(rng.integers(1 << 30)), thin_end=0.25, taper=(0.05, 0.5))
+    S.add(pp, rr, dd)
+    leaf(top[-1][0], top[-1][1], -2.2, 0.12)
+    leaf(top[len(top) // 2][0] + 0.02, top[len(top) // 2][1], 0.3, 0.1)
+
+
+def rubricate(S, base, x_max, k0=0, pad=(0.32, 0.14)):
+    """Turn the strokes written on the line whose baseline is `base`, left of x_max, into vermilion: the chapter's
+    opening words, as a rubricator would write them."""
+    for k in range(k0, len(S.P)):
+        P = S.P[k]
+        cy_ = float(P[:, 1].mean())
+        cx_ = float(P[:, 0].mean())
+        if base - pad[0] <= cy_ <= base + pad[1] and cx_ < x_max and S.L[k] == INK:
+            S.L[k] = pen.RUBRIC
 
 
 def leaves_last(seed=5):
@@ -205,11 +290,13 @@ def leaves_last(seed=5):
     def skipR(li, xa, xb):
         if li == 14:                            # the last chapter begins: a blank line, then the gilt initial
             return [(xa - 1, xb + 1)]
-        if 15 <= li <= 17:
-            return [(xa - 1, xa + 1.95)]
+        if 15 <= li <= 18:
+            return [(xa - 1, xa + 2.72)]
         return []
     recs = PG.text_page(R, seed + 1, lines=21, box=boxR, last_frac=0.42, skip=skipR)
-    initial(R, boxR[0] + 0.02, 2.9 + 0.62 * 14.45, 1.72, seed + 50, glyph='lp')
+    # the chapter's opening words in vermilion, beside the initial
+    rubricate(R, recs[15]['base'], boxR[0] + 2.72 + 5.2)
+    initial(R, boxR[0] + 0.02, 2.9 + 0.62 * 14.45, 2.5, seed + 50, glyph='wc')
     yl = recs[-1]['base']
     sketch_ship(R, 10.1, yl + 2.6, 0.75, seed + 300)
     # the tale's closing mark: a small flourish under the last line
