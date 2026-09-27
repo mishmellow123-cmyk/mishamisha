@@ -147,8 +147,8 @@ A = [
       'The lantern set down among the watch-fires; they sit and unrope; the east pales to rose; hearth smoke below.',
       [T('bluehour'), T('run')]),
     S('A20', 6240, 6480, 'X3', 'TITLE', 'EDIT over RUN-A',
-      'THE LONG DAWN kindles in the rose sky, holds, crumbles into rising sparks; fade to black from bar 81 b3.8.',
-      [T('bluehour'), T('run')]),
+      'THE LONG DAWN kindles in the rose sky over the valley, holds, crumbles into rising sparks as the sky pales.',
+      [T('bluehour'), T('run')], kind='title'),                  # ember title: edit/ember_title_v3.py
 ]
 
 # ------------------------------------------------------------------------------------------------------- B
@@ -194,7 +194,8 @@ B = [
       'One take: the crane to the range alight; the sun walks in, beacons pale, hers last; her fire-steel into the child\'s palm.',
       [T('handback')]),
     S('B14', 5200, 5440, 'X3', 'TITLE', 'EDIT over RUN-B',
-      'THE LONG DAWN kindles in the dawn sky and fades into the light.', [T('handback'), T('dawntitle')]),
+      'THE LONG DAWN kindles in the dawn sky and fades into the light.', [T('handback'), T('dawntitle')],
+      kind='title'),
 ]
 
 # ------------------------------------------------------------------------------------------------------- C

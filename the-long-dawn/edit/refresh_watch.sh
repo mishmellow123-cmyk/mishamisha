@@ -61,7 +61,7 @@ for p in sorted(glob.glob(os.path.join('$DELIV', '*_QC.json'))):
 step() {  # run one rebuild step, keep its output for the checks, print the lines that matter
   "$@" > "$RUN" 2>&1; local rc=$?
   cat "$RUN" >> "$RUN.all"
-  grep -E '^\*\*|^wrote|warning|RESULT|^\[FAIL\]|H9 kit|Traceback|Error|failed|^NEW:|^previews:' "$RUN" | cut -c1-170
+  grep -E '^\*\*|^wrote|warning|RESULT|^\[FAIL\]|H9 kit|Traceback|Error|failed|^NEW:|^previews:|^title_' "$RUN" | cut -c1-170
   return $rc
 }
 now=$(sig) || exit 1
@@ -87,6 +87,10 @@ while :; do
   : > "$RUN.all"
   export CUTS="${cuts% }"
   fail=0
+  tc=$(echo "$CUTS" | tr ' ' '\n' | grep -E '^[AB]$' | tr '\n' ' ' || true)
+  if [ -n "${tc// /}" ]; then                 # the ember titles (A20, B14) follow their plates' fires
+    export TITLE_CUTS="${tc% }"; step bash edit/title_v3.sh || fail=1; unset TITLE_CUTS
+  fi
   step bash edit/animatic.sh || fail=1
   step bash edit/h9_kit.sh || fail=1
   step bash edit/deliver.sh || fail=1

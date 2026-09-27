@@ -57,17 +57,18 @@ def _code_hash():
     re-keys segments with text over them (each segment also keys its own lines' words, frames and setting, so a
     table change re-encodes only the shots it touches)."""
     ctx = {n: inspect.getsource(o) for n, o in inspect.getmembers(AS.Ctx, inspect.isfunction)}
-    frame = [ctx[n] for n in sorted(ctx) if n not in ('x2', 'slate')] + [
+    frame = [ctx[n] for n in sorted(ctx) if n not in ('x2', 'slate', 'ember')] + [
         inspect.getsource(o) for o in (AS.grade, AS.burn_in, AS.smooth, AS.bar_beat, AS.locate, AS.chain,
                                        AS.plan_shot)]
     slate = [ctx['slate'], inspect.getsource(AS.make_slate), inspect.getsource(AS.draw_slate_clock)]
+    title = [ctx['ember'], open(os.path.join(ROOT, 'edit', 'title_scene.py')).read()]
     text = [inspect.getsource(o) for o in (titles.TextV3, titles.render_line, titles.lines_v3, titles.composite_v3,
                                            titles._noise, titles._heat_rgb, titles.smooth, titles._font)]
     text.append(repr([titles.Y_LOWER, titles.Y_TOP, titles.Y_BOTTOM, titles.Y_MID, titles.PARCH.tolist(),
                       titles.IRON.tolist(), titles.FIRE_RAMP.tolist(), titles.INK.tolist(), titles.GLOW.tolist(),
                       titles.W, titles.ITALIC, titles.EBG_ITALIC, titles.CINZEL]))
     h = lambda xs: hashlib.sha1('\n'.join(xs).encode()).hexdigest()[:12]
-    return dict(frame=h(frame), text=h(text), slate=h(slate), x2=h([ctx['x2']]))
+    return dict(frame=h(frame), text=h(text), slate=h(slate), x2=h([ctx['x2']]), title=h(title))
 
 
 def name_of(cut, variant, profile):
@@ -125,13 +126,20 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table):
     n = shot['f1'] - shot['f0']
     slated = plan['kind'] == 'slate' or (plan['kind'] == 'take' and plan['have'] < n)
     head = [ENGINE, code['frame'], code['text'] if rows else None, code['slate'] if slated else None,
-            code['x2'] if plan['kind'] == 'x2' else None, prof['scale'], prof['clean'], prof['crf'], prof['preset'],
+            code['x2'] if plan['kind'] == 'x2' else None, code['title'] if shot['kind'] == 'title' else None,
+            prof['scale'], prof['clean'], prof['crf'], prof['preset'],
             cut, i,
             {k: shot[k] for k in ('sec', 'f0', 'f1', 'code', 'name', 'owner', 'desc', 'kind')},
             plan['kind'], tdesc, plan['have'], bool(plan['alt'])]
     h.update(json.dumps(head, sort_keys=True, default=str).encode())
+    title = shot['kind'] == 'title'
+    if title and cut == 'B':                                  # B's stand-in sky is dusk_B's first frame
+        h.update(_stat(os.path.join(AS.RENDERS, 'dusk_B', 'f_00000.jpg')).encode())
     for f in range(shot['f0'], shot['f1']):
-        h.update('\n'.join(frame_sources(cut, variant, plan, f)).encode())
+        src = frame_sources(cut, variant, plan, f)
+        if title:                                             # the ember title layer over the plate
+            src.append(_stat(os.path.join(AS.RENDERS, f'title_{cut}', f'f_{f:05d}.exr')))
+        h.update('\n'.join(src).encode())
     h.update(json.dumps(rows).encode())
     return h.hexdigest()[:24]
 
@@ -334,21 +342,26 @@ def flashes(grid):
 def status_frames(cut, variant):
     shots = EDL.EDL[cut]
     plans = [AS.plan_shot(s, cut, variant) for s in shots]
-    slate, planned_black = 0, []
-    missing = []
+    slate, proxy, planned_black = 0, 0, []
+    missing, proxies = [], []
     for s, pl in zip(shots, plans):
         n = s['f1'] - s['f0']
         if pl['kind'] in ('black', 'x2') or 'BLACK' in s['name']:
             planned_black.append((s['f0'], s['f1']))
-        if pl['kind'] == 'slate':
+        gap = n - pl['have'] if pl['kind'] == 'take' else 0
+        if pl['kind'] in ('x2', 'titlesky') or (s['kind'] == 'title' and gap):
+            k = n if pl['kind'] != 'take' else gap
+            proxy += k
+            proxies.append(f"{s['sec']} {s['code']}" + (f' ({k} f)' if k < n else ''))
+        elif pl['kind'] == 'slate':
             slate += n
             missing.append(s['sec'] + ' ' + s['code'])
-        elif pl['kind'] == 'take' and pl['have'] < n:
-            slate += n - pl['have']
-            missing.append(f"{s['sec']} {s['code']} ({n - pl['have']} f)")
+        elif gap:
+            slate += gap
+            missing.append(f"{s['sec']} {s['code']} ({gap} f)")
     if cut == 'A':
         planned_black.append((6456, 6480))                    # the fade to black from bar 81 b3.8
-    return slate, planned_black, missing
+    return slate, planned_black, missing, proxy, proxies
 
 
 def qc(cut, variant, mov, mp4, audio_label, build):
@@ -377,7 +390,7 @@ def qc(cut, variant, mov, mp4, audio_label, build):
 
     p995, grid, nd = picture_stats(mov, total)
     black = p995 < 0.03
-    slate, planned, missing = status_frames(cut, variant)
+    slate, planned, missing, proxy, proxies = status_frames(cut, variant)
     runs, t = [], 0
     while t < nd:
         if black[t]:
@@ -428,13 +441,16 @@ def qc(cut, variant, mov, mp4, audio_label, build):
     check('INFO', 'sound source', audio_label)
     check('INFO' if slate == 0 else 'WARN', 'coverage',
           'every frame rendered' if slate == 0 else f'{slate:,} of {total:,} frames are slates: ' + ', '.join(missing))
+    if proxy:
+        check('WARN', 'EDIT proxies', f'{proxy:,} frames are EDIT stand-ins until their plates land: ' +
+              ', '.join(proxies))
     check('INFO', 'build', f"{build['encoded']} of {build['segments']} segments encoded "
                            f"({build['frames_encoded']:,} f) in {build['seconds']:.0f} s")
     head = (f"THE LONG DAWN v3 · {cut} · {FILM[cut]}{' · ALT (coded towers)' if variant else ''} · master QC · "
             f"{time.strftime('%d %b %H:%MZ', time.gmtime())}\n{mov} ({os.path.getsize(mov) / 1e6:.1f} MB)"
             f"{'  +  ' + os.path.basename(mp4) if mp4 else ''}\nRESULT: {worst}"
-            f"{'' if slate == 0 else '  (not final: slates remain)'}\n")
-    res.update(result=worst, complete=slate == 0, slate_frames=slate)
+            f"{'' if slate == 0 and proxy == 0 else '  (not final: slates or EDIT proxies remain)'}\n")
+    res.update(result=worst, complete=slate == 0 and proxy == 0, slate_frames=slate, proxy_frames=proxy)
     return head + '\n'.join(lines) + '\n', res
 
 

@@ -136,13 +136,13 @@ class Film:
         plan = self.plans[i]
         if plan['kind'] == 'black':
             return 'BLACK', False
-        if plan['kind'] == 'x2':
+        if plan['kind'] in ('x2', 'titlesky'):
             return 'PROXY', False
         if plan['kind'] != 'take':
             return 'SLATE', False
         p, alt = AS.locate(plan['take'], self.cut, self.variant, f)
-        if not p:
-            return 'SLATE', False
+        if not p:                                            # a title shot shows its stand-in sky, not a slate
+            return ('PROXY' if self.shots[i]['kind'] == 'title' else 'SLATE'), False
         if alt:
             return 'VARIANT', True
         return ('STAND_IN' if STAND_IN_RX.search(plan['take'].get('note') or '') else 'RENDERED'), False

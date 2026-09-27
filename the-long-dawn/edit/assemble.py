@@ -24,6 +24,7 @@ import sys
 import time
 from multiprocessing import Pool
 
+os.environ.setdefault('OPENCV_IO_ENABLE_OPENEXR', '1')          # the ember title layers are half-float EXR
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -32,6 +33,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'lib'))
 sys.path.insert(0, os.path.join(ROOT, 'edit'))
 import edl_v3 as EDL  # noqa: E402
+import look  # noqa: E402
+import title_scene as TS  # noqa: E402
 import titles  # noqa: E402
 
 cv2.setNumThreads(1)
@@ -145,6 +148,8 @@ def plan_shot(shot, cut, variant):
         return best
     if shot['kind'] == 'x2':
         return dict(kind='x2', take=None, have=shot['f1'] - shot['f0'], alt=0)
+    if shot['kind'] == 'title':                               # X3: the stand-in sky until the plate lands
+        return dict(kind='titlesky', take=None, have=shot['f1'] - shot['f0'], alt=0)
     return dict(kind='slate', take=None, have=0, alt=0)
 
 
@@ -158,6 +163,8 @@ class Ctx:
         self.shots = EDL.EDL[cut]
         self.plans = [plan_shot(s, cut, variant) for s in self.shots]
         self.lines = titles.lines_v3(cut, scale)
+        self.lines_nt = [ln for ln in self.lines if ln.kind != 'title']     # when the ember title plays
+        self._ember_on = False
         self._slates = {}
         self._vid = {}
         self._x2 = None
@@ -300,9 +307,15 @@ class Ctx:
         elif plan['kind'] == 'x2':
             img = self.x2(f, shot)
             status = 'EDIT proxy'
+        elif plan['kind'] == 'titlesky':
+            img = TS.standin_sky(self.cut, f, self.W, self.H)
+            status = 'EDIT proxy (stand-in sky)'
         elif plan['kind'] == 'take':
             img = self.take_frame(plan['take'], f)
-            if img is None:
+            if img is None and shot['kind'] == 'title':
+                img = TS.standin_sky(self.cut, f, self.W, self.H)
+                status = 'EDIT proxy (stand-in sky)'
+            elif img is None:
                 img = self.slate(i, 'gap')
                 status = 'SLATE (frame not rendered)'
             else:
@@ -314,14 +327,32 @@ class Ctx:
         is_slate = status.startswith('SLATE')
         if is_slate:
             draw_slate_clock(img, f, shot)
+        self._ember_on = False
+        if shot['kind'] == 'title':
+            img, self._ember_on = self.ember(img, f)
+            status += ' + ember title' if self._ember_on else ''
         if self.cut == 'A' and f >= 6456:                         # A: fade to black from bar 81 b3.8
             img = img * (1 - smooth((f - 6456) / 23.0))
         return img, shot, status, src
 
+    def ember(self, img, f):
+        """X3: add the ember title layer (renders/title_<cut>, linear light) the way the v2 title was composited:
+        linear_to_srgb(soft_clip(srgb_to_linear(picture) + layer)). (img, True) when the layer frame exists."""
+        p = os.path.join(RENDERS, f'title_{self.cut}', f'f_{f:05d}.exr')
+        lay = cv2.imread(p, cv2.IMREAD_UNCHANGED) if os.path.exists(p) else None
+        if lay is None:
+            return img, False
+        lay = lay[..., 2::-1].astype(np.float32)
+        if lay.shape[1] != self.W or lay.shape[0] != self.H:
+            lay = cv2.resize(lay, (self.W, self.H), interpolation=cv2.INTER_AREA)
+        x = np.maximum(look.srgb_to_linear(np.clip(img, 0, 1)) + lay, 0.0)
+        x = np.where(x <= 0.8, x, 0.8 + 0.2 * (1.0 - np.exp(-(x - 0.8) / 0.2)))           # soft_clip, knee 0.8
+        return look.linear_to_srgb(x).astype(np.float32), True
+
     def frame(self, f):
         img, shot, status, src = self.picture(f)
         img = np.ascontiguousarray(img, np.float32)
-        titles.composite_v3(img, self.lines, f)
+        titles.composite_v3(img, self.lines_nt if self._ember_on else self.lines, f)
         out = (np.clip(img, 0, 1) * 255 + 0.5).astype(np.uint8)
         if not self.clean:
             burn_in(out, f, shot, status, src, self.scale)
@@ -583,6 +614,11 @@ def coverage(cut, variant=None):
             status, src = 'EDIT (black)', 'edit'
         elif plan['kind'] == 'x2':
             status, src = 'EDIT proxy', 'edit star field (RUN-A plate pending)'
+        elif plan['kind'] == 'titlesky':
+            lay = os.path.join(RENDERS, f'title_{cut}')
+            status = 'EDIT proxy'
+            src = (f"stand-in sky (plate pending: {', '.join(os.path.relpath(chain(t, cut, None)[0], ROOT) for t in shot['takes'][:2])})"
+                   f" + ember title {'renders/title_' + cut if os.path.isdir(lay) else '(not rendered yet)'}")
         elif plan['kind'] == 'slate':
             status, src = 'SLATE', 'expects ' + ', '.join(
                 (os.path.relpath(chain(t, cut, None)[0], ROOT) + (f" + renders/{t['add']}" if t.get('add') else ''))
