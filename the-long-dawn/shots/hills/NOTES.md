@@ -1,3 +1,26 @@
+# >>> HEROINE-B STATE AT HANDOFF (new agent, 27 Sep ~19:25Z; owns B2 THE CLIMB only) <<<
+**Scope (director, twice):** HEROINE-B does ONLY B2 THE CLIMB (H4, B 640-879 -> `renders/climb_B`, B frame numbers).
+B3 THE DEAD EMBER stays HEROINE-L's: I do not touch `DeadEmber`, its jobs or `deadember_B`. H1 / H1-C are HEROINE-L's.
+**Inherited:** nothing rendered (`renders/climb_B` does not exist); HEROINE-L's "FOR HEROINE-B" block below is my brief
+(set points, moon az 80 el 14, camera ideas, pipeline = reveal.py/vigil.py, pot = B3's crafted vessel). The old 3-D
+close (`heroine_v3.Climb`) failed in five framings (pot hidden from behind, dark mass from the side, stand-in arete).
+**Files I own (new):** `shots/hills/climb_b.py`, `cloud/jobs/climb_b_*.json`. Read-only for me: `shots/run/{bworld,bset,
+vigil,reveal,pipe,rcam,keeper,fire2}.py` (RUN-B-3's), `heroine_v3.py` / `hsdf3.py` / `heroine.py` (HEROINE-L's: I import
+`figure`, `Climb.walker` ideas and `DeadEmber.pot` for the same crafted vessel, never edit them).
+**H5 items in my area:** silhouette + gloved hands only (she walks away; never a lit face); thin leather gloves; hood/cowl +
+red woven shawl; B's landform + night grade (RUN-B FINISH: exposure 1.15, bloom 0.06/1.2, vignette 0.22); the cairn =
+`bset.rubble_cairn()` at `bset.CAIRN` exactly as the vigil draws it; wide figure 40-60 px; pot glow the only warm point.
+**Plan:** (1) climb_b.py: two locked cameras on bworld (G-buffer per camera, re-shaded per frame), the 3-D figure as a
+depth-tested layer, the pot's light in the terrain shader, spindrift particles; (2) low-res local layout stills via renderq;
+(3) farm `--test` stills; (4) JOB READY climb_b (640-879) with check stills.
+**Live status (20:15Z):** climb_b.py committed 2dea449 (3-D figure v1, superseded). Director (via RUN-B-3): she is B's
+shared keeper = `bset.person2` drawn by RUN-B-3's `bfig.render` (+ `bprops.cairn3`), so climb_b now draws
+`keeper_carry()` (person2 'stand', arms=False, age 0.9 as the vigil; our sleeved arms, the pot at her right hip, heel
+lifts) through bfig when importable, FG.render otherwise (`CLIMB_FIG=h` keeps the 3-D figure for comparison). WIDE
+re-staged LOW on the NW flank (118 m out, 76 deg off her heading, looking up at the crest; her 47 px; the summit's
+beacon + cairn on the skyline right; the moon 34 deg left of frame, so the spindrift plumes are backlit): the high
+wide made bworld's summit-rim relief read as a fence along the crest. Spindrift = puffs (veil) + grains (sparkle).
+
 # >>> HEROINE-L STATE (27 Sep ~19:40Z) <<<
 **Done (committed cd96111, pushed).** All new work is behind flags; `beacon_v3` (the landed take) is unchanged.
 * **THE ROAR.** The cloud lane's roar fix IS in `renders/h1_v3h5` 1474-1555. My read at 1:1: she is darker and the
