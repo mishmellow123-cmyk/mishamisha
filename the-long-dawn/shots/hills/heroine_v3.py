@@ -774,8 +774,8 @@ class Find:
         close = 0.0 if self.HAND_SIDE else smoothstep(3088, 3102, f)
         if self.HAND_SIDE:
             W = self.HOL + np.array([0.19, 0.040, 0.0]) + np.array([0.21, 0.012, -0.02]) * (1 - r)
-            hand = dict(hand_n=tuple(W), elbow_n=(1.0, 0.25, -0.35), fdir_n=tuple(nrm([-1.0, -0.12, 0.05])),
-                        palm_n=(0.1, -1.0, 0.1), curl_n=(0.50, 0.58, 0.64, 0.70), thumb_n=0.45, spread_n=0.0,
+            hand = dict(hand_n=tuple(W), elbow_n=(1.0, 0.25, -0.35), fdir_n=tuple(nrm([-1.0, -0.22, 0.05])),
+                        palm_n=(0.15, -1.0, 0.15), curl_n=(0.26, 0.32, 0.40, 0.46), thumb_n=0.40, spread_n=0.0,
                         thumbout_n=0.05)
         else:
             W = self.HOL + np.array([0.058, 0.052, 0.018]) + np.array([0.10, 0.45, 0.10]) * (1 - r)
@@ -845,7 +845,9 @@ class Find:
                            bounce=np.array([0.012, 0.016, 0.024]), ao=0.015)
         img = np.zeros((cam.H, cam.W, 3), np.float32)
         img[:] = np.array([0.003, 0.005, 0.011], np.float32)
-        res = H3.render(cam, B, Hp, L, env, XP, ENV, inscription_ins(), ss=(3 if scale > 0.75 else 2),
+        Mf = H3.material_table3()
+        Mf[H3.M_GLOVE, 8] = 1.6                                  # the moon rims the leather: a glove, not a black cut-out
+        res = H3.render(cam, B, Hp, L, env, XP, ENV, inscription_ins(), Mf, ss=(3 if scale > 0.75 else 2),
                         sil=dict(skin=1.0, eyes=1.0, cap=0.85, cap_brim=0.85, hair=0.85))
         depth = comp(img, res)
         self._sheen(img, B, res, t)
