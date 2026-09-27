@@ -1,3 +1,80 @@
+# >>> HEROINE-L STATE (27 Sep ~19:40Z) <<<
+**Done (committed cd96111, pushed).** All new work is behind flags; `beacon_v3` (the landed take) is unchanged.
+* **THE ROAR.** The cloud lane's roar fix IS in `renders/h1_v3h5` 1474-1555. My read at 1:1: she is darker and the
+  recoil reads from 1478 on, but 1477 is still an arm thrust at the fire, she is still lit a smooth brown (doll-ish at
+  1:1), and the far hand shows a slab of steel (a phone read). Re-polish = shot `beacon_v3_roar2` (`apply_roar2()`):
+  fully flagged from the fire's key (x0.2) and bounce (x0.03), the shawl at 0.95, the exposure stopped down 34% for the
+  flare and eased back by ROAR+40, the guard up by ROAR+1.5, both tools gone at ROAR+1. Frames <= 1475 are identical,
+  so job `h1_v3_roar2` re-renders 1476-1555 IN PLACE in `renders/h1_v3h5` (80 fr, ~10 min on one box). NOT YET SEEN.
+* **H1-C** = shot `h1c` (`apply_h1c()` + `render.H1CShot`), C numbering -> `renders/h1_C`: C 2960-2999 = src 1216-1255
+  (strike 1 = C 2980), C 3150-3359 = src 1266-1475 (strike 3 = C 3178, catch C 3316). A telephoto window (`camera_c`,
+  hfov 12.8, from beside the take's lens) on her gloved hands, the flint and the tinder in the basket. Checked by
+  projection: her head never enters it (nose >= x 2144 px of 1920). In the take her nose is 11 cm from the tinder
+  while she blows, so in H1-C she blows from where she kneels (BLOW -> KNEEL) and the breath jets in from off-frame
+  right. Strike 2 is not struck (no sparks, flash or hand move): THE FIND's, at C 3009. Glove = dark thin leather
+  (`H1C_GLOVE`, the take's brown read as skin in the strike light). Steel = the C-shaped fire-steel (heroine.py tools
+  `both_c`: its straight back is where the old bar's scraping edge was, so every strike still lands; the ends curl
+  round the fingers to two scrolls). Jobs `h1c_a` / `h1c_b` (125 fr each). NOT YET SEEN.
+  **EDIT needs one line:** in both C14 H1-C rows of `edit/edl_v3.py`, put `T('h1', 0, 'v3', 'H1-C hands and flint')`
+  before `h1(...)`, so the EDL reads `renders/h1_C/` in C frames; grade it like MONTAGE's `ring_C` (both or neither).
+* **B3 THE DEAD EMBER**: the pot is a crafted vessel (`DeadEmber.CRAFTED`: a carinated shoulder, a flat foot, a rolled
+  lip, two pierced lugs, a leather thong knotted round the neck; fired clay: displacement 1.1 -> 0.35 mm, bump 0.10 ->
+  0.03). Jobs `h5_deadember_b_a/b/c` (880-959 / 960-1039 / 1040-1119 -> `renders/deadember_B`). The 16:00Z stills at
+  890/904 (`renders/heroine_tests/deadember_chk`, the OLD ball pot) read as a lid off a glowing vessel, but the pot was
+  a lumpy brown ball (potato / coconut) and the holding glove was dark on dark.
+* **Check stills: NONE yet.** My local stills were frozen by the director at 18:54Z (pids 10385-10387 in
+  `_local_logs/renderq/frozen_pids.txt`). I asked main (19:40Z) to launch `cloud/jobs/heroine_chk.json` (13 key frames:
+  roar2 1477/1479/1484, h1c 2980/3178/3250/3316/3345, dead ember 890/960/990/1030/1100 -> `renders/heroine_chk/*`), or
+  to give me one local slot after the thaw. Then JOB READY per full job.
+* **Superseded, removed:** `h2_find_c`, `h2_firetest_c` (MONTAGE-3D-4 owns every Ring close-up), `h5_deadember_b` (split).
+**SCOPE (director, ~19:50Z):** HEROINE-L keeps H1 (roar2, H1-C) and B3 THE DEAD EMBER. **B2 THE CLIMB belongs to the new
+agent HEROINE-B**; HEROINE-L does not start it. The handoff notes are below.
+
+## FOR HEROINE-B: THE CLIMB (B2, B 640-879 -> `renders/climb_B` in B frames; EDIT's B2 row reads `climb_B` first)
+Measured on bworld `b15` at 19:45Z (RUN-B-3 is still reshaping the far field, so read `BW.VERSION`, never bake a plate):
+* **Set** (`shots/run/bset.py`, read-only): TOP (-5457.7, 301.5, 31998.3); LIP (-5452.9, 300.9, 31998.9), the NE lip
+  where the path leaves the summit; BEACON (-5456.6, 301.2, 31998.3); CAIRN (-5455.2, 300.8, 32003.3).
+  `BS.path_at(s)` = the NE path, s m down from the lip along the NE ridge crest (`BW.RIDGE_AZ` 40; the local ridge
+  direction at s=60 is az 44, its normal az 134/314). Heights below the lip: s=20 -1.7, 40 -3.1, 60 -4.5, 80 -6.4,
+  100 -8.7, 140 -14.7, 200 -24.9, 300 -40.8. It is a broad, ROUNDED ridge (B's landform, not a knife-edge). The
+  cross-section at s=60 drops 1.5 m at +-10 m, about 5 m at +-20 m, 14-17 m at +-40 m and about 30 m at +-80 m; the
+  slopes steepen beyond +-20 m.
+* **Moon** = the vigil's (`VG.moon_at(VG.F0)`): az 80, el 14, low in the east. She climbs SW (az ~224) toward the
+  summit, so the moon is behind her, on her left.
+* **My intended cameras** (untested ideas only):
+  * WIDE 640-799, locked, from the NW side at about her height. For example, 100 m out along az 314 from path_at(60),
+    3-5 m below her, looking SE with hfov ~32. That puts her at ~50-60 px on the crest, walking screen-right toward
+    the summit. She stands against the moonlit cloud sea (`BW.CLOUD_Y` -650) and the layered far ranges. The moon is
+    ~50 deg left of frame, so the crest rims and backlit spindrift glow on the lee side. The pot is in front of her,
+    the only warm point.
+  * CLOSE 800-879 (bar 11 b1), locked, behind her and below on the path, looking up the ridge (SW) at the summit
+    shelf on the skyline, with her at ~120-150 px. The shawl is on her back; the hidden pot's glow pools warm on the
+    snow ahead of her feet and rims her edges. Time can jump between the cuts (the wide near s~60, the close near
+    s~12), since she must reach the cairn by B3 at 880.
+* **Pipeline pattern** = `shots/run/reveal.py` (per-frame `BW.build`) or `vigil.py` (one cached G-buffer for a locked
+  camera, then per-frame `BW.shade`). Build it once per camera and re-shade per frame. The pot's light on the snow
+  goes in the terrain shader's one fire light: LP[36] intensity, LP[37:40] position, LP[40:43] colour, LP[43]
+  radius (the beacon uses 9-17 and 40; the pot needs far less). The figure: `bset.person()` is a 2-D SDF billboard
+  that holds at 60-120 px (`age=0.85` as in the vigil: stooped, white hair at the hood's edge; `staff=False`, since
+  both hands are on the pot). It has no carry pose, and 'walk' swings the legs in screen-x, which is right for the
+  side view and a waddle from behind. So write your own carrier variant in your own file rather than editing
+  RUN-B-3's `bset.py`. Add the pot's glow with `fire2.halo`, and the stars and band as reveal.py does
+  (`KP.draw_stars`, `BW.add_band`).
+* **Old material:** `heroine_v3.Climb` / `climb_layer()` / `ClimbWideTest` (the 3-D hsdf figure). The close from
+  behind FAILED in five framings with it (REPORT 2 below). The sheet's fallback is the wide alone.
+* **The pot:** keep it the same vessel as B3's crafted pot (`heroine_v3.DeadEmber.CRAFTED`): squat, a carinated
+  shoulder, a rolled lip, lugs and a knotted thong. At 60 px only its glow reads.
+
+## FOR MONTAGE-3D-4 (the cut points around C14/C15; from their NOTES of 18:45Z and EDIT's C table)
+* C 2960-2999 H1-C (HEROINE) | 3000-3079 find_a (MONTAGE: strike 2's flash and sparks at 3009, her LEFT glove) |
+  3080-3149 find_b (MONTAGE: the fist at 3140) | 3150-3359 H1-C (HEROINE: strike 3 at 3178, the catch at 3316) |
+  3360-3599 fire (MONTAGE: the roar at 3360). No overlap and no gap. H1-C never shows strike 2.
+* Hands: the flint is in her LEFT (near) hand, which also takes the Ring in the find, so the Ring rides in that fist
+  through strike 3. The C-steel is in her RIGHT hand, as in your fire test. My H1-C steel is flat stock, 7 x 2.4 mm,
+  bent into a C round her fingers (a 5.4 cm straight back, 1.25 cm corners, short arms, 4.5 mm scrolls). If your fire
+  test's steel differs, tell me and I'll match it. My glove is dark brown-black leather, albedo (0.030, 0.021, 0.016),
+  roughness 0.34.
+
 # >>> STATE AT HANDOFF (HEROINE-L takes over the HEROINE lane, 27 Sep ~18:40Z) <<<
 **Import.** The cloud lane (account unreachable) left its state on `claude/v3-heroine` (head b86c2a0). Its own files were
 brought onto `claude/long-dawn-v2` by explicit path (commit 750222a; no merge): `heroine_v3.py`, `hsdf3.py`, `beacon.py`
