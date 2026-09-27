@@ -3,13 +3,17 @@
  "branch": "claude/render-vigil-b-look",
  "setup": [
   "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "python3 -c \"import sys; sys.path.insert(0, 'shots/run'); import handback_b as HB; HB.beacon_catalogue(); HB.villages_world(); HB.HandBack(0.5, 1.5, figures=False)\"",
   "NUMBA_NUM_THREADS=8 python3 shots/run/vigil.py --build --scale 0.5 --ss 1.5"
  ],
  "render": [
-  "NUMBA_NUM_THREADS=2 python3 shots/run/vigil.py --frames 1520,1800,2060,2300,2440,2640,2730,2800,2900,3000,3160,3300,3450,3620,3760,3839 --scale 0.5 --ss 1.5 --out renders/run_b_tests/vg2_look"
+  "NUMBA_NUM_THREADS=2 python3 shots/run/vigil.py --frames 1520,1700,1990,2060,2250,2400,2560,2730,2860,2960,3100,3230,3350,3500,3650,3700,3790,3839 --scale 0.5 --ss 1.5 --out renders/run_b_tests/vg2_look"
  ],
  "out_dir": "renders/run_b_tests/vg2_look",
- "frames": "1520,1800,2060,2300,2440,2640,2730,2800,2900,3000,3160,3300,3450,3620,3760,3839",
- "shape": [402, 960],
+ "frames": "1520,1700,1990,2060,2250,2400,2560,2730,2860,2960,3100,3230,3350,3500,3650,3700,3790,3839",
+ "shape": [
+  402,
+  960
+ ],
  "ship": "jpg"
 }

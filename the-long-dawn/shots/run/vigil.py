@@ -55,11 +55,11 @@ def bar(b, beat=1.0):
 FEEDS = [bar(25, 3), bar(27, 3), bar(29, 3), bar(31, 3), bar(35, 3), bar(37, 3), bar(39, 3), bar(43, 3),
          bar(45, 3), bar(47, 1)]
 F_FIRST_ANSWER = bar(35)
-F_TRAV1_IN, F_TRAV1_LIGHT = bar(36), bar(37)
-F_TRAV3_IN = bar(38)
+F_SEEN = bar(33)            # 'child_points' (2560): far off, someone kindles a small light (faint, unsure)
+F_TRAV1_LIGHT = bar(37)     # 'traveller' (2880): the first traveller's torch takes at her fire
 F_VILLAGE = bar(39)
 F_FLARE, F_HIS = bar(40, 2), bar(41)
-F_CHILD_IN, F_SIT, F_SHAWL = bar(46), bar(48), bar(48, 2)
+F_CHILD_IN, F_SIT, F_SHAWL = bar(46) - 100, bar(48), bar(48, 2)   # the child tops the path with its parent on bar 46
 F_JOIN_FIGS = bar(48, 2) + 30          # from here the hand-back draws the pair (the crane starts from this frame)
 
 
@@ -400,10 +400,14 @@ class Vigil:
         ss = self.ss
         join = smoothstep(bar(46, 3), bar(48, 3), f)        # into the hand-back's exact values by the crane
         for i, k in enumerate(K['idx']):
-            if f < K['t_on'][i] - 10:
+            if f < K['t_on'][i] - 10 and not (k == K['first'] and f >= F_SEEN - 4):
                 continue
             on = smoothstep(K['t_on'][i] - 10, K['t_on'][i] + 30, f)
             fl = F.flicker(t + 0.37 * k, k)                   # k = the catalogue index: the hand-back's flicker
+            if k == K['first'] and f < K['t_on'][i] + 30:     # bar 33: someone out there kindles a small light
+                seen = smoothstep(F_SEEN - 4, F_SEEN + 20, f)
+                unsure = 0.55 + 0.45 * math.sin(f * 0.21) * math.sin(f * 0.077 + 1.0)
+                on = max(on, 0.16 * seen * unsure)
             near = min(2500.0 / K['dist'][i], 1.0)
             big_hb = 1.8 if k in K['chosen'] else 1.0
             big = big_hb
@@ -550,7 +554,7 @@ class Vigil:
     def child(self, img, zb, scam, f, t, lights, amb, give):
         """Bar 46: the child comes up the path beside a traveller; stays by her (bar 47); sits against her (bar 48);
         is wrapped in her shawl and falls asleep."""
-        arrive = bar(47, 1) + 10
+        arrive = bar(46) + 50
         cp = self.child_pos()
         if f < arrive:
             s = 14.0 * (1.0 - (f - F_CHILD_IN) / float(arrive - F_CHILD_IN - 50))
@@ -582,8 +586,10 @@ class Vigil:
              dict(build=0.95, hood=1, pack=2, coat=0.6, cloak=14),
              dict(build=0.15, hood=0, pack=1, coat=0.6, cloak=0),
              dict(build=0.70, hood=2, pack=0, coat=0.6, cloak=14)]
-    TRIPS = [(bar(36), 1), (bar(38), 2), (bar(40, 3), 2), (bar(42), 2), (bar(43, 2), 2), (bar(44, 2), 2),
-             (bar(45, 2), 1), (bar(46), 1)]            # the last is the child's parent
+    # (frame the group's first torch takes, how many). The first on 'traveller' (bar 37 b1); three together
+    # (bar 38 b3); then more through bars 40-45; the last is the child's parent (the pair top the path on bar 46)
+    TRIPS = [(F_TRAV1_LIGHT, 1), (bar(38, 3), 3), (bar(40, 4), 2), (bar(42, 2), 2), (bar(43, 2), 2),
+             (bar(44, 2), 2), (bar(45, 2), 1), (bar(46) + 24, 1)]
 
     def travellers(self, img, zb, scam, f, t, lights, amb):
         ss = self.ss
@@ -594,7 +600,7 @@ class Vigil:
             for m in range(n):
                 look = self.LOOKS[(n_look + 3 * k0) % len(self.LOOKS)]
                 n_look += 1
-                s0 = t0 + m * 24
+                s0 = t0 - UP - 24 + m * 24                  # t0 = the moment this group's first torch takes
                 if f < s0:
                     continue
                 rs = BS.dirxz(self.cam_yaw + 90.0)          # screen-right on the ground
@@ -610,7 +616,7 @@ class Vigil:
                 elif f < s0 + UP + AT:                        # to the basket; the torch takes
                     u = (f - s0 - UP) / float(AT)
                     p = BS.on_ground(lip + (tgt - lip) * min(u * 2.0, 1.0))
-                    lit = u > 0.55
+                    lit = u >= 24.0 / AT
                     walk = (f - s0) / 22.0 if u < 0.5 else 0.0
                     pose = 'walk' if u < 0.5 else 'stand'
                 else:                                         # home: back over the lip, then a light going down

@@ -1,0 +1,17 @@
+{
+ "name": "reveal_b_look",
+ "branch": "claude/render-reveal-b-look",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=2 python3 shots/run/reveal.py --frames 1372,1398,1420,1450,1480,1519 --scale 0.5 --ss 1.5 --out renders/run_b_tests/rev2_look"
+ ],
+ "out_dir": "renders/run_b_tests/rev2_look",
+ "frames": "1372,1398,1420,1450,1480,1519",
+ "shape": [
+  402,
+  960
+ ],
+ "ship": "jpg"
+}
