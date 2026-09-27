@@ -121,7 +121,7 @@ ROLES = {
 }
 
 # the conductor's ride (dB on the players' dynamics, per section), from the battery
-RIDE = {"A4": -2.0, "A7": -2.0, "A10": -3.5}
+RIDE = {"A2": -1.5, "A3": -1.5, "A4": -2.8, "A7": -2.4, "A10": -5.0, "A16": -1.0, "A17": -0.8}
 # the drum hits share a bus limiter (score-mix domain, before the master), so no single stroke drives the master
 GROUPS = {"dr_": dict(ceiling_db=-9.0, release=0.08)}
 # the intended colour arc (median spectral centroid of the score stem, Hz): the point blinding, the race dark,
@@ -130,7 +130,7 @@ CENTROID = {"A4": (1000, 3000), "A7": (250, 700), "A8": (250, 700), "A19": (300,
 # measured extra anticipation (s) for soft entries whose fundamental arrives later than the kit's attack table
 # predicts (render 1, analysis/v3/final_A): {(part, global beat): seconds}
 SYNC_TRIM = {("call_vla", 180.0): 0.15, ("desert_vc", 194.0): 0.06, ("desert_cb", 194.0): 0.06,
-             ("hn_far", 216.0): 0.03, ("watch", 180.0): 0.05,
+             ("hn_far", 216.0): 0.03, ("watch", 180.0): 0.05, ("hn", 198.0): 0.03,
              **{("call_vlaq", b): 0.38 for b in (244.0, 252.0, 264.0, 276.0, 288.0)}}
 
 # the kindling's cycles (kit) and A's own

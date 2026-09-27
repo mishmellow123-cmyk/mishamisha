@@ -5,10 +5,10 @@
 | cut | file | status | owner |
 |---|---|---|---|
 | B score (THE VIGIL) | `music/out/v3/final_B.wav` (stems `final_B_score.wav`, `final_B_sfx.wav`) | **FINAL 10:50Z**: battery all PASS (sync 25/25, level map 14/14, dawn -2.3 LU under the crane, notes 0, clicks 0) | - |
-| A fallback | `music/out/v3/fallback_A.wav` (stems `fallback_A_score.wav`, `fallback_A_sfx.wav`) | **DONE 19:10Z** (re-rendered on the current engine so the file matches the committed source): battery all PASS (level map 20/20, sync 8/8, notes 0, clicks 0) | COMPOSER-A |
+| A fallback | `music/out/v3/fallback_A.wav` (stems `fallback_A_score.wav`, `fallback_A_sfx.wav`) | **DONE 18:58Z** (re-rendered on the current engine so the file matches the committed source): battery all PASS (level map 20/20, sync 8/8, notes 0, clicks 0) | COMPOSER-A |
 | B fallback | `music/out/v3/fallback_B.wav` (stems `fallback_B_score.wav`, `fallback_B_sfx.wav`) | **DONE 11:45Z**: battery all PASS (level map 14/14, sync 5/5, notes 0, clicks 0) | - |
-| C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | **DONE 19:10Z**: battery all PASS (level map 28/28, sync 7/7, notes 0, clicks 0). Fix: the ride (C2 bar-2 horn -6.5 dB, C12 piano -4.5 dB) + C11's race drone now falls away after the slip into C12's black (its tail was C12's peak, -6.4 LU) | COMPOSER-A |
-| A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`) | render 4 (20:40Z) battery ALL PASS (level map 20/20, rules 3/3, centroid 5/5, sync 55/55); a balance pass (render 5) is rendering: use the file once this row says FINAL | COMPOSER-A |
+| C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | **DONE 18:54Z**: battery all PASS (level map 28/28, sync 7/7, notes 0, clicks 0). Fix: the ride (C2 bar-2 horn -6.5 dB, C12 piano -4.5 dB) + C11's race drone now falls away after the slip into C12's black (its tail was C12's peak, -6.4 LU) | COMPOSER-A |
+| A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`; review copy `score_A.wav`) | **FINAL 20:35Z** (render 6): battery ALL PASS: level map 20/20, rules 3/3 (the brink A's loudest, the edge -1.5 LU under it; the blue hour -5.7 LU under it; the first fire -15.5 LU), centroid arc 5/5, sync 55/55, notes 0, clicks 0, -16.07 LUFS, TP -1.29 dBTP, 12,960,000 samples | COMPOSER-A |
 | C score | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | in progress (the current file is usable temp): render 3 20:21Z = level map 27/28, rules 3/3, sync 47/50; render 4 queued 20:30Z | COMPOSER-C |
 
 All masters: 48 kHz / 24-bit / stereo WAV, exactly the cut's length (A 6,480 f = 12,960,000 samples; B 5,440 f =
@@ -16,8 +16,8 @@ All masters: 48 kHz / 24-bit / stereo WAV, exactly the cut's length (A 6,480 f =
 stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
 
 ## SOUND (real effects lane, from 19:00Z): THE INTERFACE (COMPOSER-A, COMPOSER-C, EDIT: please read)
-- **What:** SOUND is replacing the synthesized effects with REAL recordings: Freesound (CC0 / CC-BY), the Sonniss GDC
-  2026 bundle, and ElevenLabs only for the gaps. Every cue of the locked cue sheets keeps its id, time, fades and envelope,
+- **What:** SOUND is replacing the synthesized effects with REAL recordings: Freesound originals (CC0 / CC-BY), and
+  ElevenLabs only for the gaps. Every cue of the locked cue sheets keeps its id, time, fades and envelope,
   and **its level is matched to your synthesized design of the same cue** (beds by integrated K-loudness, events by their
   loudest 400 ms), then trimmed by ear-proxies (analysis). Credits: `music/SFX_CREDITS.md`. Source: `src/sound_v3.py`
   (engine), `src/sound_recipes_<cut>.py` (what plays), `src/ir_v3.py` (MEASURED impulse responses).
@@ -36,6 +36,10 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
   as `mix.make_ir`. Voxengo's free set is NOT measured (it was made with Impulse Modeler), so it is not used. The proposed
   opt-in is `LONGDAWN_HALL=church` in `render_v3.hall_ir()`. It re-mixes the score only (the parts cache is dry, so it is not busted),
   and then the battery must be re-run. **Not wired yet: SOUND asks COMPOSER-A/C to agree here first.**
+- **COMPOSER-A (20:45Z): agreed**, as an opt-in, with the default unchanged, so that B FINAL and the three fallbacks stay
+  reproducible. A's final is LOCKED (render 6, 20:35Z; its pre-master is `cache/v3/premaster_score_final_A.npy`): run
+  `sound_v3.py A` whenever A's real effects are ready. Once the church hall is wired, A will re-mix with it and re-run its
+  battery, since the breaths, the 2 s true silence at bar 36 and the level map all depend on the tail.
 - **Status:** B first (all cues, real), then the flint take shared by A/B/C, C's book and council, then A's fire act.
 
 ## TWO COMPOSERS FROM 18:40Z: who owns what
@@ -49,38 +53,60 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
 - **Renders:** one each at a time (the Mac is at ~4.4 of 5 GB swap); outputs never collide (`final_A` vs `final_C`).
 - **Git:** commit with explicit paths only (`git commit -m ... -- <your paths>`).
 
-## COMPOSER-A (cut A) · STATE 19:15Z
-- Took over from COMPOSER-v3 at 18:35Z. B FINAL and the B fallback are untouched.
+## COMPOSER-A (cut A) · STATE 20:40Z: BOTH TASKS DONE
 - **1. C fallback: DONE** (table). The ride alone fixed C2 but not C12: C12's loudest 3 s was C11's race drone
-  swelling into the black and its 3 s hall tail. `fallback_v3.py` now lets a race section that is cut to silence
-  or black (not the brink) fall away over its last two beats, as C's sheet asks at the slip ("one glass tone falls
-  away into silence"). Only C11 matches (checked: A's and B's part keys unchanged by it). A's fallback was also
-  re-rendered, because the previous agent's last engine change (the horn ride on note gain) had not been rendered
-  for A: it still passes, and the file now matches the committed engine.
-- **2. A's full score:** `src/score_v3_A.py` (the plan is in its docstring, bar by bar).
-  * Render 1 (19:36Z): format/breaths/notes/clicks PASS; level map 6 FAIL, sync 17/54 FAIL, rule "brink loudest"
+  swelling into the black and its hall tail. `fallback_v3.py` now lets a race section cut to silence or black (not
+  the brink) fall away over its last two beats, as C's sheet asks at the slip. Only C11 matches (A's and B's part
+  keys checked unchanged). A's fallback re-rendered on the current engine too: still passes.
+- **2. A's full score: FINAL** (`src/score_v3_A.py`, written fresh on the kit; the plan is its docstring, bar by bar).
+  Nothing of the v1/v2 kindling or race is reused. What carries the story, and where to look in the code:
+  * the thinking cycle's pace is the plot: far-off 16ths (false dawn); a cycle shrinking 7 -> 5 -> 3 -> 1 notes
+    into the point (`opening`); below notice in the calm fire; the prize's arpeggio raced in 16ths (towers, edge);
+    16ths -> 8ths -> quarters locked to the bar on 59 b1 (`light`); walking in step, its glass warming toward gold
+    (`crossing`, `warm_morph`); warm inside the dawn;
+  * the corrupted call at four speeds in the edge (quarters, 8ths, 16ths in the middle strings only, a sustained
+    roll: never 32nds); a sweet D-major ring on every surge; the bellows drawing into every beat;
+  * the CALL for every fire (violas on the roar; a horn at the karst; the low strings at the desert; near horns on
+    the Run's odd fires; the violas inside the chord at every watch-fire); the ANSWER first on the Run's second
+    fire (51 b1), first in major on fire 6 (its C# the #11 over G); the Run's harmony rising by thirds from Bb to
+    Bm over the D pedal (`RUN_CHORDS`, `contour_lead`); the watchers' corrupted call answered by a far CALL; the
+    tritone healing to the fifth as the giants open (57 b1);
+  * the whole theme only in the blue hour (CALL 74 b3, ANSWER 76 b1, HOME 77 b1), the first real cadence A7 -> D on
+    78 b1; the effects own the impact (the score adds only a short timpani + bass drum under it) and every fire.
+  * Levels: a drum-bus limiter (`GROUPS`), the conductor's ride (`RIDE`), measured sync trims (`SYNC_TRIM`) and
+    centroid targets (`CENTROID`). Six renders; their findings are in the history below.
+- **Lesson for the next render of any cut:** the level map is relative to the loudest 3 s, and that anchor is
+  pinned by the master's limiter (the brink takes ~10 dB of gain reduction). Any pass that makes the film quieter
+  raises the master gain and lifts every untouched section (render 5: +0.7 LU). Keep ~1 LU of margin, and check
+  each story line's prominence with `src/who_v3.py` (per-part loudness in a window), not only the bands.
+- **Housekeeping:** `cache/v3/parts` is 20 GB of content-addressed part renders, many stale. Prune (keep only the
+  keys in the current `cache/v3/manifest_*.json`) only when NO render is running: a running render's parts are
+  not in a manifest until it finishes.
+- History of A's renders:
+  * Render 1 (19:16Z): format/breaths/notes/clicks PASS; level map 6 FAIL, sync 17/54 FAIL, rule "brink loudest"
     FAIL. Causes: the master crushed the brink by ~13 dB (transient peaks: taiko, the crumble piano, the drum roll),
     so the edge tied it; the glass too hot in bars 12-13; the score's own impact rang into bar 36's true silence.
     Sync: bowed D3 fundamentals arrive 0.15-0.4 s after the kit's broadband attack estimate; legato octave drops
     ~0.55 s; entries that crescendo from nothing through a velocity-layer boundary ~0.25 s.
-  * Render 2 (19:55Z): level map 18/20 (the edge -0.4 LU under the brink; A10's piano -7.1 vs -10), sync 50/54
+  * Render 2 (19:40Z): level map 18/20 (the edge -0.4 LU under the brink; A10's piano -7.1 vs -10), sync 50/54
     (the watch tone +60 ms; the low pizz measured in its band caught the previous note's leakage). The master
     still took 6-7 dB off every taiko hit in the edge (pumping) and 8-11 dB off the brink.
-  * Render 3 (20:15Z): level map 20/20, sync 55/55, centroid 5/5; one rule FAIL: bars 28-29 (four spiccato
+  * Render 3 (19:57Z): level map 20/20, sync 55/55, centroid 5/5; one rule FAIL: bars 28-29 (four spiccato
     sections in sixteenths + five brass) came within 0.8 LU of the brink. Checked: bar 36's two seconds are true
     silence (score -111 dBFS; only the effects' ash bed's 0.3 s fade tail).
-  * Render 4 (20:40Z): **battery ALL PASS** (level map 20/20, rules 3/3, centroid 5/5, sync 55/55, notes 0, clicks 0,
+  * Render 4 (20:08Z): **battery ALL PASS** (level map 20/20, rules 3/3, centroid 5/5, sync 55/55, notes 0, clicks 0,
     -16.04 LUFS, TP -1.29 dBTP). Fix: sparse beats dense in the sixteenths (only violas + second violins double;
-    cellos and first violins keep eighths), softer brass call. Kept as `out/v3/_keep_A_r4/` (+ its analysis in
-    `analysis/v3/_keep_A_r4/`).
-  * Render 5 (20:55Z): the balance worked (per-part loudness: every story line now leads its window: the
+    cellos and first violins keep eighths), softer brass call. (Its backup copy was deleted once render 6
+    passed.)
+  * Render 5 (20:23Z): the balance worked (per-part loudness: every story line now leads its window: the
     promise's line level with the bloom's top, the violas' CALL 1.8 dB over its pad, the first ANSWER leading the
     Run, the watchers' corrupted call over the hold, the dawn's ANSWER and HOME on top). But the master gain rose
     0.7 dB with the brink pinned at the limiter, so A2, A3 and A10 crept 0.2-0.5 LU over their bands, and run fire
     1's CALL arrived +56 ms. Lesson: the level map is relative to a limited anchor, so every quieter pass lifts all
     the untouched sections; keep ~1 LU of margin.
-  * Render 6 (21:10Z, running): `RIDE` A2 -1.5, A3 -1.5, A4 -2.8, A7 -2.4, A10 -5, A16 -1, A17 -0.8; trim run fire 1.
-  * Tool: `scratchpad/who.py <cut> <name> t0 t1 ...` ranks the parts by loudness in a window (from the part cache).
+  * Render 6 (20:35Z): `RIDE` A2 -1.5, A3 -1.5, A4 -2.8, A7 -2.4, A10 -5, A16 -1, A17 -0.8; trim run fire 1:
+    **battery ALL PASS -> FINAL.**
+  * Tool: `src/who_v3.py <cut> <name> t0 t1 ...` ranks the parts by loudness in a window (from the part cache).
 
 ## COMPOSER-C (cut C) · STATE
 - **20:25Z: render 3 battery**: level map 27/28 (C13 0.2 LU over: the glass streak meets the hiss in the snow),
