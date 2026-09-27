@@ -598,7 +598,7 @@ Sources use src numbering unless marked v2. "Red-team" means `review/picture_red
 - C's carved vows (C unmakes the Ring instead);
 - C's quoted caption.
 
-**What reuse buys.** A reuses about 45% of its running time from existing renders, B about 30%, and C about 35% (counting the ember and map footage it recomposites). Each cut still gets its own look, because A's ember and real-night world, B's shadow and land, and C's ink never share a grade.
+**What reuse buys.** Counted against the beat sheets, existing renders make up about 35% of A's running time, 30% of B's and 45% of C's (including the ember, map, run, accord and dawn footage C recomposites). Each cut still gets its own look, because A's ember and real-night world, B's shadow and land, and C's ink never share a grade.
 
 **The showpieces**, two per cut:
 - A: E3 and D1;
@@ -607,4 +607,112 @@ Sources use src numbering unless marked v2. "Red-team" means `review/picture_red
 
 All six build on engines the departments already have.
 
-<!-- NEXT: (7) music, (9) risks -->
+---
+
+# (7) The music plan: one theme, three arcs
+
+**What all three cuts share:**
+- **The grid.** 72 BPM, 1 beat = 20 frames, so every reused beat-synced render stays in sync. The tempo changes are changes of feel: half-time walks, metric modulation in A's race.
+- **One melody, the Beacon theme:** a rising call (D–A–D) and a falling answer.
+- **The rule.** No cut plays the call and its answer complete until its own ending:
+  - A: when the child runs;
+  - B: when the fire becomes the sun;
+  - C: at Cormallen, and again on the Havens horn.
+- **The instruments.** VSCO-2-CE samples plus the department's synths. No choir: nothing CC0 is good enough, and the synthesized choir is what the producers heard as fake.
+- **Never:** organ-led uplift, a bell on each word, a cymbal at any climax, Celtic pastiche, or a borrowed melody.
+- **Delivery.** Three masters (`final_A.wav`, `final_B.wav`, `final_C.wav`) with score and SFX stems, to the v2 loudness spec (−16 LUFS, ≤ −1.3 dBTP).
+
+**A · glass and pulse** (modern, restrained):
+- **Vigil.** A solo piano plays the call, and nothing answers.
+- **Kindling.** v1's glass arpeggios, reused.
+- **Gift.** The strings give the first answer.
+- **The race** has no tune, on purpose. v1's taiko pulse drives a new *gold* figure: a bright glass ostinato whose note values halve every 8 bars by metric modulation, over a Shepard–Risset riser. The music pays out faster and faster, seductive, then shrill.
+- **IMPACT** on the flash (v1's grasp hit), then one piano note.
+- **The turn.** A solo cello plays the call on the first flint strike. In the montage, each place answers with a different instrument: phrases, never a hit per fire.
+- **The compact.** Strings held, with no accent on any vow.
+- **The walk.** Half-time: pizzicato walking bass, the theme in the violas.
+- **The generation dawn.** A 25 s crescendo on a D pedal, opening through G♯ (Lydian) to D major add9. The brightest chord lands as the sun clears.
+- **The end.** A flute plays call and answer together; the chord is left open.
+
+**B · breath and ground** (folk and mythic):
+- **The shadow-play.** The plain flute (the film's own voice) over a frame drum.
+- **The grab.** A low cluster that breaks into a roar.
+- **The burning.** Sound design leads (a travelling wall of roar, wind, crackle), with brass swells under it.
+- **Ash.** Silence, then wind.
+- **The hands.** Breath, and a solo cello call when the coal catches.
+- **The carrying.** A half-time processional of low strings and frame drum. Horns answer from distant peaks as each beacon is lit; the answering is placed in space and gets more reverberant with distance.
+- **The knife-edge.** Wind and one high violin harmonic. Two beats of silence at the slip.
+- **The raising.** A brass chorale builds. At 216 the answer resolves to the tonic for the first time in B.
+- **The first dawn.** Open strings.
+- **The scarf.** Flute alone, and a faint echo of three flint strikes.
+
+**C · horns and strings** (the epic-fantasy tradition, every melody original):
+- **The leitmotifs:**
+  - the Beacon theme as a horn call, C's own voice;
+  - the Ring motif, a chromatic turn in the low strings: it enters at the forging, bends the theme under the Eye, and dissolves into the theme as the Ring melts;
+  - the Delving, a 5/4 ostinato for low strings and anvils, with no chant;
+  - the Walk, the theme as a slow march;
+  - the Party dance, in modal 3/4 and not Irish, which returns in the woodwinds for the year of plenty.
+- **The arc, chapter by chapter:**
+  - I: the diegetic dance, then a clarinet call;
+  - II: glass, strings, anvils;
+  - III: the ostinato speeds up, a sub, brass climbing by semitones, silence, solo piano;
+  - IV: flint strikes, then the horn passed peak to peak over strings in 6/8;
+  - V: solo cello, then the march;
+  - VI: the long crescendo and the full theme, with the brass chorale as C's "choral colour" and the horns for the eagles;
+  - VII: the tired dance, a solo horn call answered by strings, an open chord.
+- **No Celtic whistle and no drone** (critic M9).
+
+**SFX that carry story:**
+- **A:** gold sparks glittering off the footfalls and rising in pitch with altitude (the pay, audible); the crack of the cornice; the vigil's murmuring crowd.
+- **B:** the shadow-play's torch and paper; the burning's travelling roar; the rope creaking; wind on the arête.
+- **C:** paper, pen and page turns; anvils inside the forging; the Ring's soft metallic sigh as it melts; far-off eagles.
+
+---
+
+# (9) The three biggest risks, and how to test them in week 1
+
+**1. The metaphors don't read, or read too loudly.**
+- A may still feel on the nose; *the makers … the kingdoms* is its most literal line.
+- B's fire becoming the sun has to land without a word.
+- C could read as a quiz of references.
+
+**Test.** An animatic of all three cuts: existing renders, boards for the NEW shots, a temp score and the final text. Show it cold to six viewers: three who work on AI and three who don't, two of them readers of Tolkien. Each retells the story in their own words and names any line that made them wince.
+
+**Pass means:**
+- the insiders name the mapping in A and C without being prompted;
+- the outsiders tell a coherent legend;
+- nobody retells A or C in policy vocabulary;
+- B's viewers say that the fire became the sun;
+- no line draws a wince twice.
+
+Any line that fails is rewritten or cut.
+
+**2. The showpieces miss the quality bar and read as demos or filters.** The risks: mannequin runners in the race; the ink pass looking like a Photoshop filter; the match in the raising failing; the burning costing too much.
+
+**Test.** 48 hours per department for one hero frame and a 2-second motion clip each of:
+- E3, the race;
+- P7, the ink pass on one Run frame;
+- R3, the knife-edge;
+- R4, the raising (a grey-box of the fire-to-sun match);
+- D1, the generation dawn.
+
+Judge each side by side with the best frames the film already has: the heroine close-up, the map close-ups, the sea. Every showpiece has a named fallback in (6), and each gets a go or no-go at the end of week 1.
+
+**3. C tips into fan fiction, parody, or a legal problem.**
+
+**Test.**
+- **A read-through of C's cards and lines** with two Tolkien devotees and two people who have not read the book. The devotees must feel love, not a wink; the others must follow the story without the book.
+- **A legal check** on the seven chapter titles, the four short phrases, and the silhouettes that suggest elves, dwarves and walkers.
+- **A music check** that no cue resembles an existing score, by ear and by melodic contour.
+
+**Fallback.** Any chapter title that fails becomes a descriptive card in the same style, such as "The Beacons" or "The Council".
+
+**The order of work that follows.** The week-1 animatic and the spikes come first. Next are the red-team fixes that serve every cut at once:
+- the thinking fire's colour;
+- the grasp;
+- the Run's beacons;
+- the accord's camera and grade;
+- the title that kindles in place.
+
+The showpieces come last, in order of risk: R4, E3, P7, D1, R3, P2 and P3.
