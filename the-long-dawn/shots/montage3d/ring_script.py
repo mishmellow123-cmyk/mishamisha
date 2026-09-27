@@ -37,7 +37,7 @@ ASC = 1.85          # a tall lick's tip
 DSC = -0.85         # a deep fall's point
 SLANT = 0.10        # a slight forward lean
 W_HAIR = 0.034      # the joining hairline
-GAP = 0.14          # space between letters of a word (em)
+GAP = 0.20          # space between letters of a word (em)
 WORD_GAP = 0.80     # space between words (em)
 
 
@@ -86,16 +86,30 @@ class Pen:
 PEN0, PEN1 = 0.095, 0.030           # stroke width at the base and at the tip (em)
 
 
-def flame(x0, h=1.0, w=0.24, lean=0.12, wig=0.05, open_l=0.0, open_r=0.0, curl=0.0, tail=0.0, twin=0.0, n=90):
+def flame(x0, h=1.0, w=0.24, lean=0.12, wig=0.05, open_l=0.0, open_r=0.0, curl=0.0, tail=0.0, twin=0.0, n=90,
+          belly=0.0, flick=0.0, spur=0.0, spur_at=0.62):
     """One flame outline with its left base at (x0, 0). Returns [(P, widths), ...] and its right base point.
     open_l / open_r: the fraction of that side (from the base) left undrawn. curl: the tip bends on into a small
     open hook (>0 back to the left, <0 forward). tail: the right side runs on below the line and sweeps back.
     twin: a second, lower tip beside the first (the outline dips to a notch between them)."""
     t = np.linspace(0.0, 1.0, n)
-    half = w * np.sin(np.pi * t ** 0.62) * (1.0 - t) ** 1.05 / 0.52
-    c = x0 + w + lean * t ** 2 + wig * np.sin(2.0 * np.pi * t) * t
-    left = np.stack([c - half, h * t], 1)
-    right = np.stack([c + half, h * t], 1)
+    half = w * np.sin(np.pi * t ** 0.55) * (1.0 - t) ** 1.45 / 0.43
+    # the sides waver, each on its own phase, more toward the tip (a flame, never a droplet)
+    ph = 7.3 * h + 11.0 * lean + 5.0 * w
+    wav = 0.035 * np.clip(t / 0.35, 0, 1)
+    # a flickering tip: the top third of the flame bends aside (flick > 0 to the right)
+    c = x0 + w + lean * t ** 2 + wig * np.sin(2.0 * np.pi * t) * t + flick * np.clip((t - 0.62) / 0.38, 0, 1) ** 2
+    # an uneven belly: one side fuller than the other (belly > 0: the right side)
+    hl = half * (1.0 - belly * np.sin(np.pi * np.clip(t / 0.8, 0, 1))) + wav * np.sin(3.0 * np.pi * t + ph) * (1 - t)
+    hr = half * (1.0 + belly * np.sin(np.pi * np.clip(t / 0.8, 0, 1))) + wav * np.sin(3.4 * np.pi * t + ph + 1.9) * (1 - t)
+    hl, hr = np.maximum(hl, 0.0), np.maximum(hr, 0.0)
+    # a spur: a small tongue licking off the right side at spur_at of the height (pointed, rising)
+    if spur:
+        tri = np.clip(1.0 - np.abs(t - spur_at) / 0.09, 0.0, 1.0) ** 1.6
+        hr = hr + spur * tri
+    left = np.stack([c - hl, h * t], 1)
+    right = np.stack([c + hr, h * t + (0.35 * spur * h * np.clip(1.0 - np.abs(t - spur_at) / 0.09, 0.0, 1.0) ** 1.6
+                                        if spur else 0.0)], 1)
     out = []
     if twin:
         # the right half becomes a second flame: from the notch up to a lower tip and down to the base
@@ -149,19 +163,26 @@ def hair(a, b, dip=0.06):
 
 # name: (advance in em, [flame kwargs, ...] with x offsets, joins onward?)
 ALPHABET = {
-    'ka': (0.56, [dict(dx=0.0, h=1.00, w=0.23, lean=0.10)], True),
-    'ta': (0.60, [dict(dx=0.0, h=1.70, w=0.23, lean=0.30, wig=0.13)], True),
-    'ri': (0.58, [dict(dx=0.0, h=1.22, w=0.23, lean=0.14, curl=1.0)], True),
-    'lo': (0.58, [dict(dx=0.0, h=1.55, w=0.22, lean=-0.14, wig=-0.10, curl=-1.0)], True),
-    'mu': (0.66, [dict(dx=0.0, h=0.74, w=0.29, lean=0.22)], True),
-    'se': (0.58, [dict(dx=0.0, h=1.02, w=0.24, lean=0.08, tail=1.0)], False),
-    'na': (0.80, [dict(dx=0.0, h=1.22, w=0.23, lean=0.10, twin=1.0)], True),
-    'vo': (0.56, [dict(dx=0.0, h=1.08, w=0.24, lean=0.10, open_l=0.42)], False),
-    'di': (0.58, [dict(dx=0.0, h=1.12, w=0.24, lean=0.14, open_r=0.48)], False),
-    'he': (0.84, [dict(dx=0.0, h=1.30, w=0.22, lean=0.12), dict(dx=0.40, h=0.62, w=0.15, lean=0.14)], True),
-    'wa': (0.60, [dict(dx=0.0, h=0.92, w=0.24, lean=0.46, wig=0.10, curl=-0.8)], True),
-    'zu': (0.86, [dict(dx=0.0, h=0.66, w=0.16, lean=0.02), dict(dx=0.30, h=1.40, w=0.22, lean=0.16, curl=0.9)],
-           True),
+    # a small flame, full on the right, its tip flicking back to the left
+    'ka': (0.58, [dict(dx=0.0, h=1.02, w=0.25, lean=0.08, wig=0.07, belly=0.35, flick=-0.22)], True),
+    # a tall flame leaning into the wind in a long S, its tip thrown forward
+    'ta': (0.64, [dict(dx=0.0, h=1.70, w=0.22, lean=0.34, wig=0.16, belly=-0.2, flick=0.14)], True),
+    # a flame whose tip bends back over itself into a hook
+    'ri': (0.60, [dict(dx=0.0, h=1.22, w=0.23, lean=0.16, wig=0.06, belly=-0.3, curl=1.0)], True),
+    # a tall flame leaning back, a tongue licking off its right side
+    'lo': (0.64, [dict(dx=0.0, h=1.55, w=0.21, lean=-0.16, wig=-0.08, belly=0.25, spur=0.13, spur_at=0.58,
+                       flick=-0.08)], True),
+    # a low flame lying in the wind
+    'mu': (0.70, [dict(dx=0.0, h=0.76, w=0.28, lean=0.30, wig=0.08, belly=0.2, flick=0.22)], True),
+    'se': (0.58, [dict(dx=0.0, h=1.02, w=0.24, lean=0.08, belly=0.2, flick=-0.08, tail=1.0)], False),
+    'na': (0.80, [dict(dx=0.0, h=1.22, w=0.23, lean=0.10, belly=-0.15, flick=-0.06, twin=1.0)], True),
+    'vo': (0.56, [dict(dx=0.0, h=1.08, w=0.24, lean=0.10, belly=0.25, flick=0.1, open_l=0.42)], False),
+    'di': (0.58, [dict(dx=0.0, h=1.12, w=0.24, lean=0.14, belly=-0.25, flick=-0.1, open_r=0.48)], False),
+    'he': (0.86, [dict(dx=0.0, h=1.30, w=0.22, lean=0.12, belly=0.2, flick=-0.1),
+                  dict(dx=0.40, h=0.62, w=0.15, lean=0.16, flick=0.06)], True),
+    'wa': (0.62, [dict(dx=0.0, h=0.92, w=0.24, lean=0.46, wig=0.10, belly=0.2, curl=-0.8)], True),
+    'zu': (0.88, [dict(dx=0.0, h=0.66, w=0.16, lean=0.02, flick=0.08),
+                  dict(dx=0.30, h=1.40, w=0.22, lean=0.16, belly=-0.2, curl=0.9)], True),
 }
 ORDER = ['ka', 'ta', 'ri', 'lo', 'mu', 'se', 'na', 'vo', 'di', 'he', 'wa', 'zu']
 

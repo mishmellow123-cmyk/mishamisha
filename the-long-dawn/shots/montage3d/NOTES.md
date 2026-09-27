@@ -1,6 +1,6 @@
 # MONTAGE-3D — notes
 
-## >>> CANONICAL RING INSCRIPTION (published 27 Sep 10:40Z): HEROINE, EMBERS, ACCORD-v3 match THIS <<<
+## >>> CANONICAL RING INSCRIPTION (published 10:40Z, letterforms revised 10:58Z per the director; APPROVED; RING ONLY, not the book): HEROINE, EMBERS, ACCORD-v3 match THIS <<<
 * **Texture:** `the-long-dawn/assets/ring/inscription_outer.png` (9040x640) and `inscription_inner.png` (7264x640),
   16-bit grey, white = letter coverage. Mapping + proportions: `assets/ring/inscription.json`. Specimen:
   `assets/ring/inscription_specimen.png`. Generator at any resolution: `shots/montage3d/ring_script.py`
