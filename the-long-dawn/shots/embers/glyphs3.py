@@ -37,7 +37,7 @@ ATLAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'as
 C_CORE = look.hexrgb(look.PALETTE['mind_core'])
 C_ICE = look.hexrgb(look.PALETTE['mind_ice'])
 C_GOLD = look.hexrgb(look.PALETTE['mind_gold'])
-C_WHITE = np.array([0.80, 0.92, 1.00])              # the false dawn's cold glow (falsedawn.py) and the lantern's heart
+C_WHITE = np.array([0.72, 0.88, 1.00])              # the false dawn's cold glow (falsedawn.py: ice-white, a breath of cyan)
 
 # relative frequency of each script among the letters (glyphs.CAT_W, DNA thinned)
 CAT_W = {'latin': 12, 'greek': 6, 'cyrillic': 6, 'arabic': 9, 'hebrew': 5, 'devanagari': 7,
@@ -247,7 +247,7 @@ class Letters:
             w2 = w * cth + cw * sth
             ua = u[act]
             gr = (1.0 - ua) ** 1.25 * (1.0 + 0.12 * np.sin(np.pi * np.minimum(ua * 2.5, 1.0)))
-            gh = (1.0 - ua) ** 1.5
+            gh = (1.0 - ua) ** 1.1          # the height gives no faster than the radius: a ball falling in, never a disc
             # the swirl's own unevenness: a turbulence that dies as the letters fall in
             tq = w2 * 0.12 + np.array([0.01 * t, 0.0, -0.013 * t])
             turb = vnoise(tq, 1.0, (4.4, 1.1, 2.7), 2) * (1.6 * (1.0 - ua) * np.minimum(ua * 6.0, 1.0))[:, None]
