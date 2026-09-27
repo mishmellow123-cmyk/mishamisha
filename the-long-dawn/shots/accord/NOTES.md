@@ -1,7 +1,9 @@
 # ACCORD v3 (ACCORD-v3, 27 Sep): cut C only, C frames 4480-5679 -> `renders/accord_C3/f_%05d.png`
 
 ## >>> PAUSED 27 Sep ~18:00Z (ACCORD-2; director: usage window end; RESUME 20:00Z). No render running. <<<
-**Done this session (source committed + pushed; test stills only, in `renders/accord_C/tests/`):**
+**Done this session (source pushed: it landed inside RUN-B's commit 118eafd, which swept up the shared git index while
+ACCORD-2's files were staged; commit with `git commit <paths>` to avoid the race; test stills only, in
+`renders/accord_C/tests/`):**
 1. Torch flames rebuilt (`flame3.torch_density/torch_flames`): big tongues (fBm) + crinkle (turbulence), shell
    emission, hot middle third, flicker `torch_flicker()` shared with the torch's light; tight world-box march;
    Hf 0.44, Rf 0.088, I 22; a breeze `_WIND` (0.40,-0.16); the lit head glows as fuel under the flame (no corn cob).
