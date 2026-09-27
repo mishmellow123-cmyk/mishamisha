@@ -23,12 +23,19 @@ WORKERS="${WORKERS:-3}"
 EXTRA=""
 [ "${CLEAN:-0}" = "1" ] && EXTRA="--clean"
 python3 edit/assemble.py --edl --coverage --notes > /dev/null
+# the incremental engine (edit/deliver.py): only shots whose inputs changed are re-encoded; OLD=1 = assemble.py
+PROFILE=animatic
+[ "${CLEAN:-0}" = "1" ] && PROFILE=animatic_clean
+anim() {
+  if [ "${OLD:-0}" = "1" ]; then python3 edit/assemble.py --cut "$1" --animatic --workers "$WORKERS" $EXTRA ${2:+--variant $2}
+  else python3 edit/deliver.py --cut "$1" --profile "$PROFILE" --workers "$WORKERS" ${2:+--variant $2} | grep -v '^  '; fi
+}
 for c in $CUTS; do
-  python3 edit/assemble.py --cut "$c" --animatic --workers "$WORKERS" $EXTRA
+  anim "$c"
 done
 # A's alternate master (the coded pair) only when _alt_codedtowers frames exist on A's own timeline
 if [[ " $CUTS " == *" A "* ]] && { [ "${VARIANT:-0}" = "1" ] || ls renders/embers_A3_alt_codedtowers/f_* >/dev/null 2>&1; }; then
-  python3 edit/assemble.py --cut A --animatic --variant codedtowers --workers "$WORKERS" $EXTRA
+  anim A codedtowers
 fi
 python3 edit/assemble.py --coverage --notes | grep -E '^\*\*'
 ls -la "$HOME/mishamisha/_local_logs/animatic/"

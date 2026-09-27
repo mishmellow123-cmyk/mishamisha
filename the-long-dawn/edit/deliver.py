@@ -45,7 +45,10 @@ ENGINE = 'x5.1'                                        # bump when the encode it
 PROFILES = {
     'master': dict(scale=1.0, clean=True, crf=14, preset='slow', out=DELIVERY),
     'animatic': dict(scale=0.5, clean=False, crf=23, preset='medium', out=AS.ANIMATIC_DIR),
+    'animatic_clean': dict(scale=0.5, clean=True, crf=23, preset='medium', out=AS.ANIMATIC_DIR),
 }
+# the segments' SPS carries only the matrix; this stamps full BT.709 (primaries, transfer, matrix, limited range)
+VUI = 'h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0'
 FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES'}
 
 
@@ -58,8 +61,8 @@ def _code_hash():
 
 
 def name_of(cut, variant, profile):
-    if profile == 'animatic':
-        return f"{cut}_animatic{'_' + variant if variant else ''}"
+    if profile.startswith('animatic'):
+        return f"{cut}_animatic{'_' + variant if variant else ''}{'_clean' if profile == 'animatic_clean' else ''}"
     return f"{cut}_master{'_' + variant if variant else ''}"
 
 
@@ -168,7 +171,7 @@ def join_and_mux(segs, audio, out_path, profile, cut):
     acodec = ['-c:a', 'pcm_s24le'] if out_path.endswith('.mov') else ['-c:a', 'aac', '-b:a', '160k']
     tmp = out_path + '.part' + os.path.splitext(out_path)[1]
     cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-f', 'h264', '-framerate', str(FPS), '-i', '-', '-i', audio,
-           '-map', '0:v', '-map', '1:a', '-c:v', 'copy'] + acodec + [
+           '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-bsf:v', VUI] + acodec + [
            '-af', 'apad', '-t', dur, '-movflags', '+faststart+write_colr', tmp]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     for p in segs:
