@@ -39,6 +39,7 @@ TZ = float(_S[2] + 1.0)
 TOP_Y = 301.5
 RIDGE_AZ = 40.0                         # the NE ridge
 NCR = 16
+VERSION = 'b2'                           # bump when the terrain changes (cache keys)
 
 # row layout (type in col 12)
 #  dome  (0): 0 cx | 1 cz | 2 top | 3 R (reaches the cloud) | 4 p profile | 5 aniso | 6 angle | 7 seed | 8 lobe
@@ -175,7 +176,7 @@ def field(x, z, fp, hcur):
     wz = fbm2(x / 16000.0 - 0.7, z / 16000.0 + 3.3, ow, 202)
     S = 7600.0
     o = _lod(S, fp, 1.0, 9.0)
-    r = soft_ridged2(x / S + 0.55 * wx, z / S + 0.55 * wz, o, 261, 0.030, 1.9, 0.46)
+    r = soft_ridged2(x / S + 0.55 * wx, z / S + 0.55 * wz, o, 261, 0.045, 1.9, 0.42)
     oe = _lod(26000.0, fp, 1.0, 2.0)
     env = smoothstep(-0.32, 0.30, fbm2(x / 26000.0 + 0.9, z / 26000.0 - 3.1, oe, 262))
     hr = r * (0.50 + 0.50 * env)
@@ -544,10 +545,10 @@ def gbuffer(C, D, P, CR, hx, hz, nsteps, tmax, snow_bias, G, kstep, MD, mk):
                 nsz = -(hsz - h0) / es
                 nsy = 1.0 / math.sqrt(nsx * nsx + nsz * nsz + 1.0)
                 # thresholds vary in broad patches and in HORIZONTAL bands (strata): never along the fall line
-                band = gnoise2(h0 / 26.0 + x / 900.0, z / 900.0 - h0 / 400.0, 74)
-                patch = gnoise2(x / 700.0, z / 700.0, 73)
-                sv = nsy + 0.07 * patch + 0.06 * band + snow_bias
-                snow = smoothstep(0.62, 0.74, sv)
+                band = gnoise2(h0 / 40.0 + x / 1400.0, z / 1400.0 - h0 / 600.0, 74)
+                patch = gnoise2(x / 1100.0, z / 1100.0, 73)
+                sv = nsy + 0.035 * patch + 0.03 * band + snow_bias
+                snow = smoothstep(0.56, 0.66, sv)
                 wf = smoothstep(4.0, 0.5, fp)
                 if wf > 0.0:
                     sf = 0.05 * gnoise2(x / 3.0, z / 3.0, 75) + 0.03 * gnoise2(x * 1.1, z * 1.1, 76)
@@ -558,9 +559,10 @@ def gbuffer(C, D, P, CR, hx, hz, nsteps, tmax, snow_bias, G, kstep, MD, mk):
                 dtz = z - TZ
                 dtop = math.sqrt(dtx * dtx + dtz * dtz)
                 if dtop < 40.0:
-                    hol = gnoise2(x / 2.2, z / 2.2, 91) + 0.5 * gnoise2(x / 0.8, z / 0.8, 92)
-                    patchy = smoothstep(0.35, 0.65, hol * 0.5 + 0.5 - 0.25 * (1.0 - ny))
-                    snow = snow + (patchy * 0.9 - snow) * (1.0 - smoothstep(22.0, 40.0, dtop))
+                    # frost and old snow in the grain of the stones (fine), never blotches
+                    fine = gnoise2(x / 0.45, z / 0.45, 91) * 0.6 + gnoise2(x / 0.17, z / 0.17, 92) * 0.4
+                    frost = 0.18 + 0.30 * smoothstep(-0.2, 0.6, fine) + 0.25 * smoothstep(0.93, 0.99, ny)
+                    snow = snow + (min(frost, 0.75) - snow) * (1.0 - smoothstep(18.0, 40.0, dtop))
                 # rock tone: strata (horizontal) and broad patches
                 rv = 0.80 + 0.35 * (0.5 + 0.5 * gnoise2(h0 / 7.0 + x / 300.0, z / 300.0, 81))
                 rv *= 0.88 + 0.24 * (0.5 + 0.5 * patch)
@@ -772,6 +774,7 @@ def shade(G, LP, SKY, amb, fogp, cam_y, out):
                         sr = max(sr, vis * LP[30])
                         sg = max(sg, vis * LP[30] * 0.30)
                         sb = max(sb, vis * LP[30] * 0.34)
+                        ndl = max(ndl, 0.55)
             gw = max((nx * LP[13] + ny * LP[14] + nz * LP[15]) * 0.5 + 0.5, 0.0) ** 1.5
             # the moon (visibility interpolated between two precomputed channels)
             mv = 1.0
@@ -906,7 +909,7 @@ def set_rows():
     rows = [
         # her massif: a broad old dome, its flanks carved by the ranges' spurs and valleys, the summit left round
         dome_row(TX + 120.0, TZ - 260.0, TOP_Y - 13.0, 2700.0, p=1.6, aniso=1.2, ang=-35.0, seed=7, k=40.0,
-                 detail=0.30, rnd=0.04, keep=420.0),
+                 detail=0.30, rnd=0.04, keep=110.0),
         # the NE ridge (the way up and down): round-crested snow, into the cloud at ~2.9 km
         ridge_row((_R0[0], TOP_Y - 3.0, _R0[1]), (_R1[0], 40.0, _R1[1]), crest=30.0, seed=41, slope=0.75, k=30.0),
         ridge_row((_R1[0], 40.0, _R1[1]), (_R2[0], -760.0, _R2[1]), crest=40.0, seed=43, slope=0.9, k=45.0),

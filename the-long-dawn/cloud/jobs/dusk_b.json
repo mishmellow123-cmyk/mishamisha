@@ -1,0 +1,18 @@
+{
+ "name": "dusk_b",
+ "branch": "claude/render-dusk-b",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "NUMBA_NUM_THREADS=4 python3 shots/run/dusk.py --build --scale 1.0 --ss 1.5"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=2 python3 shots/run/dusk.py --range 0-159 --scale 1.0 --ss 1.5 --out renders/dusk_B --skip",
+  "NUMBA_NUM_THREADS=2 python3 shots/run/dusk.py --range 160-319 --scale 1.0 --ss 1.5 --out renders/dusk_B --skip",
+  "NUMBA_NUM_THREADS=2 python3 shots/run/dusk.py --range 320-479 --scale 1.0 --ss 1.5 --out renders/dusk_B --skip",
+  "NUMBA_NUM_THREADS=2 python3 shots/run/dusk.py --range 480-639 --scale 1.0 --ss 1.5 --out renders/dusk_B --skip"
+ ],
+ "out_dir": "renders/dusk_B",
+ "frames": "0-639",
+ "push_every": 300,
+ "ship": "jpg"
+}
