@@ -265,6 +265,13 @@ def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_
 
 
 def hall_ir():
+    # OPTION (SOUND lane, agreed with COMPOSER-A 20:44Z): LONGDAWN_HALL=church uses a MEASURED stone church
+    # (ir_v3.irs("church"): Freesound CC0 balloon IRs, T30 ~2.2 s mid).  Unset = the synthesized hall below, so
+    # B's final and the fallbacks stay reproducible.  It changes the mix only (the parts cache is dry).
+    if os.environ.get("LONGDAWN_HALL", "").lower() == "church":
+        import ir_v3
+        print("  hall: MEASURED church IR (LONGDAWN_HALL=church)", flush=True)
+        return ir_v3.irs("church")
     p = os.path.join(MUSIC, "cache", "ir_hall.npy")
     if os.path.exists(p):
         return list(np.load(p))

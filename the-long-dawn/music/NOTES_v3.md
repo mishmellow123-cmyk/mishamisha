@@ -15,32 +15,50 @@ All masters: 48 kHz / 24-bit / stereo WAV, exactly the cut's length (A 6,480 f =
 10,880,000; C 7,200 f = 14,400,000), -16 LUFS integrated, true peak <= -1.2 dBTP, from silence to silence, with
 stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
 
-## SOUND (real effects lane, from 19:00Z): THE INTERFACE (COMPOSER-A, COMPOSER-C, EDIT: please read)
-- **What:** SOUND is replacing the synthesized effects with REAL recordings: Freesound originals (CC0 / CC-BY), and
-  ElevenLabs only for the gaps. Every cue of the locked cue sheets keeps its id, time, fades and envelope,
-  and **its level is matched to your synthesized design of the same cue** (beds by integrated K-loudness, events by their
-  loudest 400 ms), then trimmed by ear-proxies (analysis). Credits: `music/SFX_CREDITS.md`. Source: `src/sound_v3.py`
-  (engine), `src/sound_recipes_<cut>.py` (what plays), `src/ir_v3.py` (MEASURED impulse responses).
+## SOUND (real effects lane, from 19:00Z): THE INTERFACE + STATE (COMPOSER-A, COMPOSER-C, EDIT: please read)
+**STATE AT 21:15Z (SOUND):**
+- **B: nearly there.** `out/v3/sound_B.wav` = final_B's pre-master score + REAL effects, mastered by `render_v3.master()`.
+  The battery: level map 14/14, sync 25/25 (all parts measured), dawn rule PASS, notes 0, TP -1.30. The last two
+  items were the first-half rule (-5.7 LU against a -6.0 limit) and a limiter click at 58.81 s, both caused by the
+  roar under her CALL. The fix is being rendered now (roar -1.5 dB, reveal fire -1.5 dB, plus an effects-only peak
+  guard pre-master: the effects duck, never the score, wherever they would push the master's limiter).
+  Next: run `python sound_v3.py B` and read `analysis/v3/sound_B/report.txt`. When everything passes, send main "B
+  PASSES" and update the MASTERS table with a SOUND row.
+- **The flint take (shared by A, B, C):** `src/sound_flint_v3.py`. Real strikes (Freesound 499027, CC0), breath,
+  catch and roar, used by all three cuts, each at its own cue level.
+- **C:** `src/sound_recipes_C.py` is drafted, covering every cue plus COMPOSER-C's own effects (pen, burns, drop, cock,
+  cold tick, seethe, dips, roads, fire remains/rises, read from `score_v3_C.extra_effects`), a hooded murmur (council
+  -> ring_set) and the catch. NOT rendered yet. Before rendering, add a hook in `sound_v3.build` that appends
+  `R.extra_cues(bm)`. Swap the pages to the Sonniss 344 Audio "slow_page_turns" and the sea to "soft_waves_cliffs".
+  The drop is f2200 with an after-drip +0.44 s (MIRROR's note below).
+- **A:** recipes not started (the fire act, the watch-fires, the beacons: use the flint module + oil_flare + the
+  Freesound fires).
+- **Sources:** 505 MB in `cache/sound/` (Freesound originals in `fs/`, ElevenLabs in `el/`, Sonniss picks in `sn/`: pine
+  branches, douse, oil flare, soft waves cliffs, antique book pages, paper foley, eye of the storm). All five Sonniss
+  bundles were harvested and deleted from ~/Downloads. Freesound OAuth is valid until about 19:00Z tomorrow
+  (`freesound_v3.py refresh`). ElevenLabs: about 250 credits used of the 30,000 budget.
+- **Measured reverb: WIRED as an option** (agreed with COMPOSER-A): `LONGDAWN_HALL=church python render_v3.py A` uses
+  the measured church (`ir_v3.irs("church")`). Its energy normalisation is identical to the synthesized hall's. Unset,
+  nothing changes. A needs a re-mix plus a battery re-run (about 5 min, no part re-renders), and that is COMPOSER-A's
+  render.
+
+- **What:** SOUND replaces the synthesized effects with REAL recordings: Freesound originals (CC0 / CC-BY), a few
+  Sonniss GDC 2026 picks, and ElevenLabs only for the gaps. Every cue of the locked cue sheets keeps its id, time,
+  fades and envelope. **Its level is matched to your synthesized design of the same cue**, and it is never louder on
+  any scale: beds by integrated loudness (with the loudest 3 s capped at +1 dB); events by the loudest 400 ms, capped
+  by the loudest 3 s and by the design's sample peak. Credits: `music/SFX_CREDITS.md`. Source: `src/sound_v3.py`
+  (engine), `src/sound_recipes_<cut>.py` (what plays), `src/sound_flint_v3.py` (the shared take), `src/ir_v3.py`
+  (MEASURED impulse responses).
 - **Files per cut (48 kHz, exact length):**
-  - `out/v3/sfxpre_<cut>.wav` is the real effects in the PRE-master domain, as float32 (what `render_v3.master()` takes).
-  - `out/v3/sound_<cut>.wav` is the master, `sound_<cut>_score.wav` + `sound_<cut>_sfx.wav`. It is made by YOUR `render_v3.master()`,
-    run on the saved `cache/v3/premaster_score_final_<cut>.npy` plus the real effects, so it has the same -16 LUFS / <= -1.2
-    dBTP chain, and the battery (`analysis/v3/sound_<cut>/`) is run on it.
+  - `out/v3/sfxpre_<cut>.wav` is the real effects in the PRE-master domain (float32), after the peak guard.
+  - `out/v3/sound_<cut>.wav` is `sound_<cut>_score.wav` + `sound_<cut>_sfx.wav`, made by YOUR `render_v3.master()` on the saved
+    `cache/v3/premaster_score_final_<cut>.npy` plus the real effects: the same -16 LUFS / <= -1.2 dBTP chain. The battery
+    (`analysis/v3/sound_<cut>/`) is run on it, with final_<cut>'s manifest.
   - `out/v3/sfx_<cut>.wav` is a copy of `sound_<cut>_sfx.wav`, the deliverable effects stem.
-- **For COMPOSER-A / COMPOSER-C:** nothing changes in your renders unless you opt in. When your final is locked, tell me
-  (or just re-run `python sound_v3.py <cut>`, about 2 minutes): it re-masters your newest pre-master score with the real
-  effects and runs your battery. The cue sheets stay locked. Where the picture changed (B is THE VIGIL), the
-  recipe says why, e.g. `B.his_fire` is silent (the far answer is a pinprick) and `B.x.flare` is added (her flare, 40 b2).
-- **Reverb (director, 20:00Z):** the synthesized hall in `mix.make_ir` is a machine tell. A MEASURED stone church is ready:
-  `ir_v3.irs("church")` (Freesound CC0, balloon IR, T30 about 2.2 s mid, highs shorter), in the same 4-IR, energy-normalised form
-  as `mix.make_ir`. Voxengo's free set is NOT measured (it was made with Impulse Modeler), so it is not used. The proposed
-  opt-in is `LONGDAWN_HALL=church` in `render_v3.hall_ir()`. It re-mixes the score only (the parts cache is dry, so it is not busted),
-  and then the battery must be re-run. **Not wired yet: SOUND asks COMPOSER-A/C to agree here first.**
-- **COMPOSER-A (20:45Z): agreed**, as an opt-in, with the default unchanged, so that B FINAL and the three fallbacks stay
-  reproducible. A's final is LOCKED (render 6, 20:35Z; its pre-master is `cache/v3/premaster_score_final_A.npy`): run
-  `sound_v3.py A` whenever A's real effects are ready. Once the church hall is wired, A will re-mix with it and re-run its
-  battery, since the breaths, the 2 s true silence at bar 36 and the level map all depend on the tail.
-- **Status:** B first (all cues, real), then the flint take shared by A/B/C, C's book and council, then A's fire act.
+- **For COMPOSER-A / COMPOSER-C:** nothing changes in your renders unless you opt in. When your final is locked, run
+  `python sound_v3.py <cut>` (about 3 minutes): it re-masters your newest pre-master score with the real effects and
+  runs your battery. The cue sheets stay locked. Where the picture changed, the recipe says why. B is THE VIGIL, so
+  `B.his_fire` is silent (the far answer is a pinprick) and `B.x.flare` is added (her own flare, 40 b2).
 
 ## PICTURE SYNC: C10 THE MIRROR (MIRROR lane, 21:10Z; for COMPOSER-C and SOUND)
 - Picture is `renders/mirror_C` (C 2080-2319), built to barmap_C: the drop STRIKES the water on **f2200 exactly (28 b3)**:
