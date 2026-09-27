@@ -223,7 +223,73 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
   `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
 
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION) - report 27 Sep <<<
-## PAUSED 27 Sep ~16:45Z (director: usage window end). RESUME HERE
+## >>> NOW (RUN-C-3, 27 Sep 20:20Z): JOB READY SENT for the 45 ink jobs (runC_reveal_a..o, runC_scroll_a..j,
+## runC_illum_a..t; 1040 frames; code = branch tip, last RUN-C push 60dffb0). Awaiting the director's launch.
+* Sheet: `_local_logs/review/runC_ink.jpg` (built by `scratchpad/rc3/sheet4.py` from `renders/_farmtest/`).
+* Gate PASS on the farm: 0.336 scroll / 0.341 reveal. Farm cost 34/36/42-44 s per frame per process (illum/scroll/reveal).
+* FREEZE: no RUN-C render-code pushes while the finals run (nodes fetch the tip before every unit).
+* Pending: final-code check frames reveal 114 / scroll 236 / illum 2640 (`rc3/farm4.log`) -> look, flag to main.
+* Next polish (after the finals land, re-render only what changes): C17's sepia wash patches still read as soft
+  blobs at full-frame size; triangle summits (shared terrain); the leftmost short tongue on near fires is a lobe.
+
+## STATE AT HANDOFF (RUN-C-3, 27 Sep 18:40Z) - live status below it
+Inherited: H5 fixes pushed (ce69649, 0e404d8); flicker gate PASSED (anchored/re-dealt 0.380 reveal, 0.395 scroll);
+three 1:1 check crops rendered (`renders/runC_{scroll,reveal,illum}/chk_crop/`), not yet reviewed; 14 job files
+written for 2x, JOB READY not sent. Orders: review the crops and fix what they show; re-split the jobs to <= 45 min
+each (more jobs are fine); JOB READY with crops + job list; then keep polishing.
+**What the 1:1 crops showed (18:45Z):** (1) the flames still read as glossy vector icons: a modelled highlight blob,
+a clean heavy outline, a fan of straight spikes (a crown), detached gold droplets; her fire's inner lines zigzag;
+smoke threads run ~3 flame-heights up as long straight scratches. (2) A BUG in the reveal: on grazing far crests
+the AOV ray march hits in some columns and misses in the next (land 4.3 km / cloud 11.4 km alternating in 1-4 px
+runs), and the outliner draws the comb as organ-pipe bars ~50 px tall (reveal 0 and 112, left of centre).
+(3) Hatch lines carry a pixel-scale sawtooth tremor at 1:1 (iso-lines of a fractal height smoothed only 2.5 px).
+(4) C24: the plumes are dark staple/crack shapes (two strands either side of a thin column); the sun's heavy dark
+ring reads as an icon.
+**Fixes (inkpass.py, 18:50Z):** `deteeth` (a (2w+1)-tap running median of depth per row, w = 2.5 kpx; outliers take
+all channels from the nearest median-depth pixel; nothing nearer than 300 m touched) at the top of compose; the
+woodcut flame (full-bodied tongues with long hooked tips, one leading, flat gold wash pooling at the rim with the
+paper's grain, no highlight, no droplets, per-tongue flow lines, pen pressure varies, far flames lighter/browner by
+the fog); smoke curls ~1 flame-height; HSMOOTH 2.5 -> 5; thin plumes one pale strand; the sun's ring finer/lighter.
+**Round 2 (19:05Z, after crops chk_crop2):** the bars were gone, but the median had filled the densest comb solid
+into a flat-topped CHIMNEY on the ridge (a building read) -> `_deteeth` now ERODES first (a sliver <= w px nearer
+than both neighbours takes the far side's data), then the median fills thin far slits. The hatch tremor survived
+HSMOOTH=5: its source is the hit point's plan position (x, z) jumping pixel to pixel on rough rock (the
+cross-contour field inherits it) -> `_surf_blur`: the line-placing fields (height, x, z) smoothed along the surface
+(depth-aware, never across a silhouette) at HFIELD_SIG=1.5 page px before `xhatch`. Flames: S-curve and sway
+stronger (the leading tongue was a straight horn), wash warmer. Plume strands give out before the plume bends over
+(the two strands joined in a staple). Wash ramp is now a smoothstep with module constants WASH_LO/HI/BLUR (A/B on
+scroll 232: 0.30/0.85/2.5 vs 0.40/0.62/1.2, the soft sepia blobs read as smudges at full-frame size).
+~~Test chain `scratchpad/rc3/t3.sh`~~ (killed unrun: director FARM READY 19:20Z; the local queue is for light work).
+**19:28Z: pushed f8f1fd8 (code + 45 jobs + runC_gate + runC_washB); farm look-dev running** (log `scratchpad/rc3/
+farm1.log`): full production frames reveal 0/114, scroll 168/236, illum 2480/2640 -> `renders/_farmtest/runC_<job>/`;
+the flicker gate as one unit (`shots/run/runc_gate.py`: AOV caches -> ink _g + re-dealt control -> ink_check -> a
+report-card FRAME `renders/_farmtest/runC_gate/gate_report/f_00000.jpg`, because the farm returns frames, not logs;
+plus its composites 108-115 / 232-239); wash B (RUNC_WASH=0.40,0.62,1.2) on scroll 236 vs the default.
+Farm usage: `python3 the-long-dawn/cloud/farm.py <jobs...> --test 1 --frames <list> --nodes 3` from ~/mishamisha.
+**FLICKER GATE on the farm (19:31Z, code 56d16cc = f8f1fd8 + others): PASS, better than before.** scroll 232-239
+anchored 0.0149 / re-dealt 0.0442 = **0.336** (was 0.395); reveal 108-115 anchored 0.0169 / re-dealt 0.0495 =
+**0.341** (was 0.380). The surface-smoothed line fields steadied the strokes. (12 s/frame on the node at half scale.)
+**Round-1 production frames (in `renders/_farmtest/runC_r1/`): reviewed 19:40Z.** Comb/chimney gone, crests clean;
+hatch lines smooth pen curves (no sawtooth). Farm cost: reveal 42-44 s, scroll 36 s, illum 34-36 s per frame (1
+process, 2 threads, cpu-8). **FAIL: her fire at reveal f0 (production size, ~500 px at 2x) read as a DUCK'S HEAD**:
+short fat side tongues + the base ellipse merged into one square body, the leading tongue a horn, a hooked tip
+closed a loop that read as an eye; flow lines crossed in an X. -> **bonfire v3 (8ee58fc)**: `flame_tongues` (n
+slender tongues spread +-0.26 H, side tongues 0.40-0.88 H tall, gentle bends, no hooks), `flame_sdf` returns outer
++ inner flame (same tongues at 58% x 62%: the illustrator's flame within a flame; chunked for near fires),
+`_fill_holes` (enclosed pockets filled, no rings), `flame_glyph` draws every fire (ink_flames + flame_sheet.py).
+Wash A/B (scroll 236): B (0.40/0.62/1.2) firmer and less smudged -> adopted as default. Known, not fixed: some
+scroll summits are near-perfect triangles (the Run world's terrain; shared with A, not mine to re-terrain tonight).
+**Round 2 (bonfire v3, 19:57Z, `_farmtest/runC_r2/`):** her fire at reveal f0 reads as a bonfire (slender tongues,
+inner flame, flat warm wash, pen line); glyph sheet good from 11 px to ~380 px final; the near ridge in C16 is thin
+and broken (no stock chart). At mid size (reveal 114, ~55 px) the outer tongues splayed like petals (a crown) ->
+**60dffb0**: one common wind (lean 0.09-0.15 H), splay 0.45 -> 0.22, downwind tongues up to 30% taller; wash B
+default. Round 3 check (sheet, reveal 114, scroll 236, illum 2640) = `rc3/farm4.log`.
+**FREEZE RULE once the finals launch:** farm nodes fetch the branch tip before EVERY unit, so any push to inkpass.py /
+render_ink.py / ink_aov.py / ink_final.py while runC_* finals run would mix two looks inside one shot. Polish goes
+into a local branch or waits until the finals have landed (then re-render only what changed).
+
+## PAUSED 27 Sep ~16:45Z (director: usage window end). (superseded by the block above)
+* **Background finished (noted, not reviewed).** Gate: MEAN anchored 0.0188 | re-dealt 0.0494 | screen-fixed 0.0397 | anchored/re-dealt 0.380;MEAN anchored 0.0178 | re-dealt 0.0450 | screen-fixed 0.0645 | anchored/re-dealt 0.395; Driver checks: GATE_DONE;reveal 0 2.8s (aov 2 plate 0 ink 1);illum 2640 2.0s (aov 1 plate 0 ink 1);scroll 169 3.0s (aov 2 plate 0 ink 1);scroll 168 3.0s (aov 2 plate 0 ink 1);FINAL_CHK_DONE; Crops: scroll 168 7.5s (aov 5 plate 0 ink 3);reveal 0 14.1s (aov 6 plate 0 ink 8);illum 2640 9.5s (aov 4 plate 0 ink 5);CROPS_DONE;
 **State.** All H5 fixes are coded and pushed (ce69649 look; 0e404d8 driver fixes plus the 14 job files rewritten for
 2x). JOB READY has NOT been sent yet. Two things run in the background (scratchpad `rc/`):
 1. `gate_h5b.sh` (log `gate_h5b.log`): the boil gate re-run with a TRUE boiling control. The salt now shifts every
@@ -332,18 +398,24 @@ terrain in a parchment grade) is NOT needed.
 * Near fires are true size and gilded in the flame; far ones are drawn 5x (an illustrator's licence) with a gold
   aureole so a fire 3-8 km off still reads as a fire, not a point.
 
-**RENDER_SPECs (cloud; the director launches; job files written, NOT launched).** One driver renders a final frame
-from scratch (AOVs -> ink -> 1920x804; no caches): `shots/run/ink_final.py`. Fresh box: the Run's usual setup
-(numpy, numba, scipy, opencv-python-headless); files needed: `shots/run/{ink_final,render_ink,ink_aov,inkpass,keeper,
-world,run,rcam,pipe,beacons,fire2,dawn}.py`, `shots/run/{summits,beacons}.npy`, `shots/montage/` (s1_peak, mt, common),
-`lib/look.py`. First frame per worker compiles numba (~2-3 min; each job warms the cache first). ~1.2 GB RAM per
-worker at full res (use --procs 3 on boxes under 12 GB). Deterministic apart from the PNG dither.
+**RENDER_SPECs (cloud; the director launches).** One driver renders a final frame from scratch (AOVs at 2x -> ink
+drawn at 3840x1608 -> INTER_AREA to 1920x804; no caches): `shots/run/ink_final.py`. Fresh box: numpy, numba 0.67,
+scipy, opencv-python-headless; files: `shots/run/{ink_final,render_ink,ink_aov,inkpass,keeper,world,run,rcam,pipe,
+beacons,fire2,dawn}.py`, `shots/run/{summits,beacons}.npy`, `shots/montage/` (s1_peak, mt, common), `lib/look.py`.
+Each job = one 4-vCPU box, 2 workers x 2 numba threads (~2.5-3 GB per worker at 2x), numba warmed in setup (~3 min).
+**Re-split 27 Sep 19:10Z (RUN-C-3) to <= 45 min per job: 45 jobs** (the old 14 are overwritten; names a..o/j/t).
+Cost basis: 1:1 quarter-frame crops at 2 threads on this (loaded) M2: scroll 13.1 s, illum 16.1 s, reveal ~25 s
+-> full frame per 2-worker box ~26/32/50 s on M2 cores; assumed 2x slower on a cloud 4-vCPU box -> ~52/64/100 s.
 
-| shot | command (from `the-long-dawn/`) | frames -> folder | cut C frames | jobs | est. cost |
+| shot | frames -> folder | cut C frames | jobs | frames/job | est. per job |
 |---|---|---|---|---|---|
-| C16 THE REVEAL | `python3 shots/run/ink_final.py --shot reveal --range 0-239 --procs 4 --skip` | 0-239 -> `renders/runC_reveal/` | 3600-3839 | `cloud/jobs/runC_reveal_{a..d}.json` | COST_REVEAL |
-| C17 THE LIVING INK RUN | `python3 shots/run/ink_final.py --shot scroll --range 0-319 --procs 4 --skip` | 0-319 -> `renders/runC_scroll/` | 3840-4159 | `cloud/jobs/runC_scroll_{a..d}.json` | COST_SCROLL |
-| C24 THE ILLUMINATION | `python3 shots/run/ink_final.py --shot illum --range 2398-2877 --procs 4 --skip` | 2398-2877 -> `renders/runC_illum/` (local = frame - 2398) | 5680-6159 | `cloud/jobs/runC_illum_{a..f}.json` | COST_ILLUM |
+| C16 THE REVEAL | 0-239 -> `renders/runC_reveal/` | 3600-3839 | `runC_reveal_{a..o}` (15) | 16 | ~27 min + ~5 setup |
+| C17 THE LIVING INK RUN | 0-319 -> `renders/runC_scroll/` | 3840-4159 | `runC_scroll_{a..j}` (10) | 32 | ~28 min + ~5 setup |
+| C24 THE ILLUMINATION | 2398-2877 -> `renders/runC_illum/` (local = frame - 2398) | 5680-6159 | `runC_illum_{a..t}` (20) | 24 | ~26 min + ~5 setup |
+
+Job command (per block): `python3 shots/run/ink_final.py --shot <shot> --range <a>-<b> --procs 2 --threads 2 --skip`
+(branch `claude/render-runC-<shot>-<letter>`, ship jpg). Regenerate the split with any block size (even blocks,
+replaces every runC_*.json): `python3 shots/run/runc_jobs.py <reveal> <scroll> <illum>` (today: 16 32 24).
 
 C24 renders dawn.py's colour plate in the same worker (half scale: it only feeds a blurred wash), with its smoke and
 WITHOUT the eagles; the sun breaks at local 1.5 (dawn 2399.5); the wash completes as the line settles home (local 320).
@@ -358,6 +430,75 @@ AOV + fire/smoke layers, caches), `inkpass.py` (the drawing), `ink_final.py` (pr
 boiling metric).
 
 ---
+
+# >>> RUN-B STATE AT HANDOFF 3 (new agent RUN-B-3, 27 Sep ~19:10Z) <<<
+**Inherited:** PAUSE 2 state below (DUSK v1 done in renders/dusk_B; hand-back/vigil/reveal coded and tested; jobs
+written, none READY). **Director's order for this agent:** (1) hand-back: fix the smooth middle-distance mountain
+that reads as a sand pile (rock bands, snow texture, haze) -> JOB READY + 2-3 check stills; (2) vigil -> JOB READY;
+(3) reveal: the fire reads as a warm point in the last wide frame, Milky Way stronger -> JOB READY; (4) DUSK v2 test
+into a NEW folder renders/dusk_B2 (v1 stays in renders/dusk_B as the fallback; EDIT repoints after approval).
+Heavy renders as cloud jobs of <= 45 min each; the director launches them when cloud access is back.
+**Live status (updated as work lands):**
+* bworld **b15** (the sand-pile fix; the dome was 100% snow at ~34 deg = sand's angle of repose, backlit, smooth):
+  `field()` beyond 1.7-2.8 km of her, above the cloud: (a) soft-ridged spur/gully relief (S 1150 m, 150 m) = what
+  makes the shoulder read; (b) strata cliff bands (P 64 m, irregular spacing, some missing, 4 deg dip, broad ~2 km
+  mask so bands run long; a 560 m mask made isolated "zebra dashes" = b12, rejected). `gbuffer`: wind-scoured
+  convex crests shed snow (dtop > 1.5 km). handback dawn fog: deeper valley haze (2.6e-4, H 220 m); crust sheen
+  0.25 -> 0.12 (read as a lake under the sun); flame absorb scales with the fire (dark "ears" in full sun).
+  Tests hbb_t12/t13: the mid mountain reads as a rock-banded snow massif rising out of haze.
+* **LANE SPLIT (19:3xZ):** RUN-B2 (agent adab49d5d24d90ffb) owns THE VIGIL + THE REVEAL (vigil.py, reveal.py; it is
+  adding a style=2 puppet to bset.person and may move bset CAM_*). RUN-B-3 (this block) = the hand-back + DUSK v2. My
+  one reveal commit (d36b553: end cam 650 m out/70 m up, far-fire warm point, band 0.14) is handed to RUN-B2.
+  THE JOIN 3839/3840 (RUN-B2's asks, done in handback_b 0b?): fire point light LP[36..43] in night()+dawn, the
+  vigil's Milky Way (add_band with vigil.BAND / BAND_GAIN), FINISH eases from vigil.FINISH to ours by 4160
+  (finish_at). RUN-B2 imports handback_b.beacon_catalogue() / villages_world() (keep names + cache keys).
+  Don't send the crane (3840-4079) or settled night (4080-~4160) as final until RUN-B2 and I have matched stills.
+* **Puppets (handback_b.py, not bset):** `sleeve_arm` (tapered arm, hanging sleeve, gloved mitten + thumb),
+  `keeper_hb(hands, give)` (opening: forearms out at chest height, palms open; the V read as "hooray" and hands-up
+  read as surrender), `child_hb(wake, reach, hold)` (one shawl drape: covered head, drape-filled neck, sloped
+  shoulders; the old two-ellipse child read as a snowman/pawn, a pure bell read as a pyramid).
+* **Farm (19:23Z on):** heavy tests via `cloud/farm.py <job> --test K --frames ...` (push first). First farm test OK
+  (renders/_farmtest/handback_b_*: settled setup 162 s; crane 64-80 s/frame single-thread). 19:41Z: CPU nodes
+  failing to boot farm-wide (all lanes' CPU tests "incomplete"); fell back to a light local half-res check (hbb_t14).
+
+## RUN-B2 (split off RUN-B ~19:25Z: B5 THE REVEAL + B6-B12 THE VIGIL; owns vigil.py, reveal.py; RUN-B-3 keeps
+## handback_b.py + dusk; bworld.py/bset.py shared, additive only)
+**STATE AT HANDOFF (RUN-B2, 27 Sep ~19:30Z):** vigil.py + reveal.py as committed in 118eafd (tested at quarter/half
+on b11; no renders in renders/vigil_B or reveal_B). Jobs vigil_b_a/b + reveal_b_a/b written, NOT READY. Open: reveal
+end frame (the summit read as a smooth dark sand dune; the fire not a warm point; band weak; a hard ragged seam at the
+cloud-sea horizon); the vigil->crane join at 3839/3840 (stars, band, far beacons, villages must be identical to
+handback_b's first crane frame; coordinating with RUN-B-3). **Live status:**
+* 19:30Z look-dev on the farm (vigil_b_look, 16 f, half res) of the committed vigil: the dead foreground dome,
+  a hard ragged cloud-sea horizon, stars as dashes (read as snow), no Milky Way in frame, travellers a row of
+  identical pointed black cones (Nazgul), her shawl a red box, the answers an even string of lights.
+* JOIN with RUN-B-3 agreed (their messages 19:40-20:15Z): at 3839/3840 the vigil adopts the hand-back's world
+  lists (handback_b.beacon_catalogue / villages_world / HandBack.chosen, glow formulas copied from layers()), the
+  hand-back's star catalogue (SK.make_stars 14000/101/7) with the wheel reaching identity at 3840 (theta(f); eases
+  to a stop over bar 48), the fire/light/flame settling into the hand-back's values over bar 48, and from 3810 the
+  pair drawn by HandBack.figures_at(frame=3840). RUN-B-3 adds: the fire point light in night(), add_band with
+  vigil.BAND/BAND_GAIN, star gain x vigil.STAR_GAIN, night_params(horizon_match=True), crane exposure from
+  vigil.FINISH easing to 0.80 by 4160. FIGURES split: person2 (bset) = MINE, B's one figure; bfig.render (no
+  uniform halo), bprops.cairn3 / child3 = RUN-B-3's (new files), both lanes switch when pushed.
+* CAMERA: 4 variants tested (vigil_b_cams): WSW looking ENE wins (cairn, her, fire separate on the crest; cloud sea
+  + rock islands; more sky). bset CAM_BEAR 62 / CAM_DIST 55 / CAM_UP 6 / CAM_YAW 70 / PITCH -3 / HFOV 36; the SET
+  axes YAW/FWD/RIGHT stay 31 (shelf_pt builds the set from them; RUN-B-3's catch). Pushed cec7290.
+* SEAM fixed: bset.match_horizon (the far haze = the sky's horizon colour); vigil/reveal use it.
+* Travellers: vigil-only way down the ENE slope (vpath), seven looks, their own torchlight, fewer at once.
+* REVEAL: held beat on the roar (20 m), log-distance pull from the cello's CALL (1398) to 700 m WNW +45 m (1506),
+  hfov 44->50, the summit low-left, the Milky Way (BAND posed for this wide, gain 0.16) from the right horizon.
+* 20:25Z look-dev of both (vigil_b_look 18 f + reveal_b_look 6 f) running on the farm.
+
+## FROM HEROINE-B (B2 THE CLIMB, B 640-879 -> renders/climb_B; `shots/hills/climb_b.py`), 27 Sep ~20:05Z
+* Per the director, THE CLIMB uses B's shared keeper: `bset.person2('stand', arms=False, staff=False, age=0.85)` plus
+  my own carrying arms (`handback_b.sleeve_arm`, imported read-only) under her shawl (I re-layer person2's shawl rows
+  on top), the clay pot at her right hip, and heel lifts for a rear-view trudge. I call `bfig.render(...)` with
+  FG.render's signature if `bfig` has one, else FG.render. **RUN-B-3: please tell me here bfig's call and your 3-D
+  cairn's function** (I draw `bset.rubble_cairn()` at `bset.CAIRN` and `beacon_base()` cold until then).
+* Read-only imports: bworld (G-buffer per locked camera), bset (path_at, CAIRN, BEACON, night_params,
+  match_horizon if present, person2), vigil (moon_at(F0) = az 80 el 14; `draw_sky` if present, frozen at f 1360).
+* FYI: `bset.path_at(s)` for s < ~30 is the straight chord from LIP to the first crest point and floats up to ~1.3 m
+  above the rounded crest (s 12: path y 299.90, ground 298.65). Anything walking the last 30 m (the vigil's
+  travellers and child) floats unless put `on_ground()`.
 
 # >>> RUN-B STATE AT PAUSE 2 (27 Sep ~16:40Z; RESUME 20:00Z) <<<
 **Nothing is rendering locally. No cloud job running for RUN-B.**
