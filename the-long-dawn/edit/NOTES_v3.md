@@ -15,6 +15,11 @@
   `EDIT_Q=1` (set for their children), so a caller cannot bypass the queue and nothing nests.
 - **Delivery chain (NEW, `edit/deliver.py` + `edit/deliver.sh`):** see "## Delivery chain" below. First test: B's
   master, queued 18:45Z behind three other lanes' jobs.
+- **FILM FINISH (FINISH lane, f855ea5; director's pick 250D_2383_fire):** the masters' last picture stage (see the
+  FINISH block below). EDIT depends on a contract FINISH keeps stable (finish/wire_edit.py, eae08fb):
+  `AS._finishing(ctx, look=None)`, `deliver._finish_id()`, `deliver.segment_key(..., fin)`. previews.py accepts
+  finished or unfinished segment keys (the FINISH backlog) and the H9 kit's stills are finished too (H9_FINISH=0
+  = unfinished). If you rewrite `_init`, `segment_key` or `build_video`, re-run `python3 finish/wire_edit.py`.
 - **X3 EMBER TITLES (director ~20:25Z; A20 6240-6479, B14 5200-5439):** `edit/ember_title_v3.py` plays the v2
   engine (`edit/ember_title.py`, unchanged) in a v3 scene (`edit/title_scene.py`): static camera, no occluders,
   sparks thrown by the fires found in the plate's first frame (stand-in fires until it lands), titles.py's v3
