@@ -304,7 +304,10 @@ class DeadEmber:
     HFOV = 38.0
     POV = False
     MOON = np.array([0.20, 0.62, -0.76]) / np.linalg.norm([0.20, 0.62, -0.76])   # B's moon: high on her left
-    SPARK_PX = (757.0, 256.0)                 # H1's flint edge (strike 1) in the full-res frame: the match cut
+    # the match cut (bar 15 b1): H1's strike-1 spark as B4 shows it. EDIT crops B4 from the take (B_H1_CROP 0.17, 0.22,
+    # 0.26, 0.26), which puts the full frame's (757, 256) at (1654, 303); if EDIT re-frames that crop, move this.
+    SPARK_PX = (1654.0, 303.0)
+    BASE_PX = (1290.0, 300.0)                 # the ember's eye right of centre from the start: a short drift
     EYE = POT + np.array([0.002, 0.1145, 0.014])   # the ember's eye: its top, turned a little toward the lens
     KNOCK = 920
     CRAFTED = True                            # HEROINE-L: the crafted vessel (pot()); False = the 16:00Z ball pot
@@ -467,11 +470,12 @@ class DeadEmber:
             tgt = self.POT + np.array([0.020, 0.095, 0.0])
             pos = tgt + np.array([-0.56, 0.56, -0.18])
         pos = pos + np.array([0.004 * fnoise1(t * 0.6, 3.0), 0.003 * fnoise1(t * 0.5, 5.0), 0.0])
-        w = smoothstep(1040, 1100, f) if not self.POV else 0.0
-        if w > 0.0:
-            eye = self.EYE
-            aimed = aim_at_screen(pos, tgt, eye, self.SPARK_PX, hf)
-            tgt = tgt * (1 - w) + aimed * w
+        if not self.POV:
+            # the ember held right of centre (a held lens: a slight wobble), easing onto the spark's place 1040-1100
+            w = smoothstep(1040, 1100, f)
+            wob = (1 - w) * np.array([3.0 * fnoise1(t * 0.6, 7.0), 2.0 * fnoise1(t * 0.5, 8.0)])
+            px = np.array(self.BASE_PX) * (1 - w) + np.array(self.SPARK_PX) * w + wob
+            tgt = aim_at_screen(pos, tgt, self.EYE, (float(px[0]), float(px[1])), hf)
         cam = Camera(pos, hfov=hf, scale=scale)
         yaw, pitch = cam.look_at(tgt)
         return Camera(pos, yaw=yaw, pitch=pitch, hfov=hf, scale=scale), float(np.linalg.norm(self.POT + [0, 0.11, 0] - pos))
