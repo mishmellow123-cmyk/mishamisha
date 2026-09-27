@@ -1,5 +1,5 @@
-"""C · THE LIVING INK: production driver (cloud). Per frame: the Run world's AOVs (render_ink.py) -> the ink pass
-(inkpass.py) -> a final 1920x804 frame. No caches are written. For THE ILLUMINATION the dawn's colour plate is
+"""C · THE LIVING INK: production driver (cloud). Per frame: the Run world's AOVs (render_ink.py) at 2x -> the ink
+pass (inkpass.py), drawn at 3840x1608 -> downsampled (INTER_AREA) to a final 1920x804 frame. No caches are written. For THE ILLUMINATION the dawn's colour plate is
 rendered in the same worker (dawn.py's terrain and smoke, WITHOUT the eagles: C cuts them) and laid in where the sun
 touches.
 
@@ -31,8 +31,7 @@ def illum_plate(frame, scale, ss, Wt, Ht):
     W, H = int(round(1920 * scale)), int(round(804 * scale))
     tcam = DN.camera(frame, W, H)
     fr = PI.Frame(tcam, ss)
-    DN.render_terrain(fr, frame)
-    DN.draw_smoke(fr, frame)
+    DN.render_terrain(fr, frame)                # (the smoke is drawn in ink; the plate only gives the wash its colour)
     img, zb, di = PI.to_target(fr)
     srgb = look.finish(img, **DN.FINISH)
     lin = look.srgb_to_linear(srgb)
@@ -73,7 +72,7 @@ def main():
     ap.add_argument('--frames', default=None)
     ap.add_argument('--range', default=None)
     ap.add_argument('--scale', type=float, default=1.0)
-    ap.add_argument('--ss', type=float, default=1.5)
+    ap.add_argument('--ss', type=float, default=2.0, help='supersampling: the page is drawn at 2x and downsampled (H5)')
     ap.add_argument('--procs', type=int, default=1)
     ap.add_argument('--threads', type=int, default=1)
     ap.add_argument('--out', default=None, help='sub-folder of renders/runC_<shot>/ (tests)')

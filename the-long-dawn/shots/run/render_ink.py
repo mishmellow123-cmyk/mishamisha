@@ -258,14 +258,8 @@ def render_aov(shot, frame, scale=0.5, ss=2.0):
     g = 0.5
     Eb = np.zeros((scam.H, scam.W, 3), np.float32)
     Eg = np.full((scam.H, scam.W, 3), g, np.float32)
-    if shot.name == 'illum':
-        # the smoke still rising from every summit that held a beacon (dawn.py's plumes, lit by the low sun)
-        for img in (Eb, Eg):
-            fr.img, fr.zb = img, zb0.copy()
-            shot.DN.draw_smoke(fr, frame)
-    elif len(shot.B):
-        fire_layer(Eb, zb0.copy(), scam, frame, shot.B, pxs)
-        fire_layer(Eg, zb0.copy(), scam, frame, shot.B, pxs)
+    # (H5) the fires and the dawn's smoke are DRAWN by the ink pass (inkpass.ink_flames / ink_plumes); these layers
+    # stay empty
     alpha = np.clip(1.0 - (Eg - Eb).mean(axis=2) / g, 0.0, 1.0)
     # warp to the (supersampled) target camera; AOVs nearest, layers linear
     mx, my = RC.warp_maps(fr.t_ss, scam)
