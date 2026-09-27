@@ -904,8 +904,8 @@ def _find_b(C, new_material, R, opts, T):
     # vision is awake the eye is on its glow and the fill sinks (an eye adapting, not a lamp being turned)
     nf = C.sun('nightfill', opts.get('fill_dir', (-0.55, -0.45, 0.70)), (0.50, 0.60, 1.0), 0.0, angle_deg=20.0)
     for f in range(START - 2, END + 3):
-        k = 1.0 - 0.7 * _ease((f - 3084) / 12.0) + 0.7 * _ease((f - 3134) / 10.0)
-        C.key(nf.data, 'energy', f, opts.get('fill', 1.3) * k)
+        k = 1.0 - 0.975 * _ease((f - 3084) / 12.0) + 0.975 * _ease((f - 3134) / 10.0)
+        C.key(nf.data, 'energy', f, opts.get('fill', 16.0) * k)          # the vision frames keep ~0.4, as tested
     if opts.get('debug_light'):
         C.sun('dbg', (0.3, -0.6, 0.7), (1, 1, 1), opts['debug_light'], angle_deg=5.0)
     cen = Vector(loc) + up * (0.5 * WIDTH)
