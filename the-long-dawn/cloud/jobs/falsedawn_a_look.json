@@ -1,0 +1,15 @@
+{
+ "name": "falsedawn_a_look",
+ "branch": "claude/render-falsedawn-a-look",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "python3 shots/run/falsedawn.py --design arc --frames 240,380,500 --scale 0.5 --threads 8"
+ ],
+ "out_dir": "renders/falsedawn_A",
+ "frames": "240,380,500",
+ "shape": [402, 960],
+ "push_every": 120,
+ "ship": "jpg"
+}

@@ -94,6 +94,52 @@ def build_range():
 
 
 FD_RANGE, RANGE_PTS = build_range()
+
+# The great far wall (H5, director 27 Sep ~19:10Z: "the uniform needle horizon: give it big landforms and aerial
+# depth"). A second knife-edge range stands right of the glow, 46 km out, beyond her summit (32 km at az -10), so
+# her fires in A14 stand in front of it. Its crests (world y 1300-2300 m) rise well over the uniform far needles,
+# pale with haze. The sierra at 9.5 km is dark, the needles are between, and the wall is palest: three veils
+# instead of one sawtooth. It is A-only and lives in this shot's terrain table (terrain_rows), which X2, A14 and
+# A15 share.
+WALL_YAW = -15.0                                 # centre azimuth from CAM0 (the glow is at -30)
+WALL_D = 46000.0
+WALL_KNOTS = [(-7600.0, 700.0), (-6400.0, 1350.0), (-5300.0, 1180.0), (-4100.0, 1720.0), (-3000.0, 1560.0),
+              (-1900.0, 2050.0), (-1000.0, 1840.0), (0.0, 2300.0), (900.0, 1980.0), (2100.0, 2160.0),
+              (3300.0, 1640.0), (4500.0, 1900.0), (5600.0, 1450.0), (6800.0, 1600.0), (8000.0, 1150.0),
+              (9000.0, 600.0)]
+
+
+def build_wall():
+    ya = math.radians(WALL_YAW)
+    dirv = np.array([math.sin(ya), math.cos(ya)])
+    perp = np.array([math.cos(ya), -math.sin(ya)])
+    c = CAM0[[0, 2]] + dirv * WALL_D
+    rng = np.random.default_rng(311)
+    pts = []
+    for o, y in WALL_KNOTS:
+        q = c + perp * o + dirv * rng.uniform(-900.0, 900.0)
+        pts.append((q[0], y + rng.uniform(-80.0, 80.0), q[1]))
+    rows = []
+    for k in range(len(pts) - 1):
+        a, b = pts[k], pts[k + 1]
+        # broad at the foot, knife-edged at the crest (p 1.6); the cutoff reaches the cloud so no flank is cut off
+        rows.append(WD.ridge_row(a, b, wl=260.0, wr=230.0, seed=331 + k, k=40.0, detail=0.22, slope=1.25, p=1.6))
+        rows[-1][14] = 0.95
+        rows[-1][13] = 4200.0
+    hi = [k for k in range(1, len(pts) - 1) if pts[k][1] > max(pts[k - 1][1], pts[k + 1][1])]
+    for k in hi:
+        if rng.random() < 0.4:
+            continue
+        rows.append(WD.crag_row(pts[k][0], pts[k][2], pts[k][1] + rng.uniform(40.0, 160.0),
+                                L=rng.uniform(160.0, 320.0), s_hi=rng.uniform(1.8, 2.6), s_lo=1.2,
+                                aniso=rng.uniform(1.4, 2.4), ang=ya + math.pi / 2 + rng.uniform(-0.5, 0.5),
+                                seed=360 + k, k=60.0, detail=0.3, shelf=0.0, nf=4))
+        rows[-1][14] = 0.95
+        rows[-1][13] *= 2.5
+    return np.array(rows)
+
+
+FD_WALL = build_wall()
 _CRF = None
 
 
@@ -101,7 +147,7 @@ def terrain_rows():
     global _CRF
     if _CRF is None:
         import run as RN
-        _CRF = np.vstack([RN.CR, FD_RANGE])
+        _CRF = np.vstack([RN.CR, FD_RANGE, FD_WALL])
     return _CRF
 
 
@@ -381,11 +427,13 @@ def light(frame, design):
     lk_el = math.radians(1.6)
     a = math.radians(GLOW_AZ)
     Lk = np.r_[np.array([math.cos(lk_el) * math.sin(a), math.sin(lk_el), math.cos(lk_el) * math.cos(a)]), GP[3:6]]
-    amb = lin('#1A2440') * 0.07
+    amb = lin('#1A2440') * 0.10
     S = SK.sky_params(zenith='#04071A', horizon='#141C3C', moon_dir=(0.0, -1.0, 0.0), halo_I=0.0, halo2_I=0.0,
                       horizon_glow=0.0)
     fogc = lin('#232A3A') * 0.22
-    fogp = np.array([5.0e-5, 1 / 1500.0, 2.2e-4, 1 / 140.0, 6.0 * min(I / 0.46, 1.0), fogc[0], fogc[1], fogc[2]])
+    # (H5) aerial depth: the near islands dark, the sierra half veiled, the far wall and the needles pale; a thicker
+    # cloud-top mist so the peaks stand IN the cloud sea (soft feet), never on a lake shore
+    fogp = np.array([1.0e-4, 1 / 1500.0, 3.6e-4, 1 / 140.0, 6.0 * min(I / 0.46, 1.0), fogc[0], fogc[1], fogc[2]])
     Q = np.zeros(24)
     Q[0] = {'arc': 0.40, 'cone': 0.20, 'veil': 0.25}[design] * I / 0.46
     Q[1] = 3.0
@@ -394,12 +442,15 @@ def light(frame, design):
     Q[4] = 0.60
     Q[5] = 0.25
     Q[7] = 0.25
-    Q[8] = 0.55
     Q[9] = 0.9
     Q[10] = 1.0
     Q[11] = 12.0
-    Q[13] = 1.5
+    Q[13] = 3.2                      # (H5) the cloud sea is brighter than the rock under the night sky: cloud, not water
+    Q[8] = 0.72                      # deeper troughs between the billows: relief, not ripples
     Q[16] = 0.05
+    Q[18] = 1.0                      # (H5) anti-streak snow noise (world.shade flag)
+    Q[3] = 0.30                      # snow holds on steeper ground (no combed stripes)
+    Q[4] = 0.54
     return (Lk, amb, S, fogp, Q), GP
 
 
@@ -488,9 +539,8 @@ def main():
 
 def _work(args):
     frames, d, scale, ss, od, threads, off = args
-    os.environ['NUMBA_NUM_THREADS'] = str(threads)
-    import numba
-    numba.set_num_threads(threads)
+    import numba                        # NUMBA_NUM_THREADS is fixed once numba runs (the farm sets it per node)
+    numba.set_num_threads(max(1, min(threads, numba.config.NUMBA_NUM_THREADS)))
     look = PI.look
     for f in frames:
         t0 = time.time()
