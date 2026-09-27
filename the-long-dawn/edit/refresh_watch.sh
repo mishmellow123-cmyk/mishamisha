@@ -50,7 +50,7 @@ for c in 'ABC':
                     h.update(repr(AS.provisional_sources(t, c, v, f)).encode())
     alt = h.hexdigest()[:10]                    # which take each shot plays and when its folders last changed
     audio = 'click'
-    for p in (tab.get((c, 'score')), os.path.join(v3, f'final_{c}.wav'), tab.get((c, 'fallback')),
+    for p in (AS.adopted_audio(c)[0], tab.get((c, 'score')), os.path.join(v3, f'final_{c}.wav'), tab.get((c, 'fallback')),
               os.path.join(v3, f'fallback_{c}.wav')):
         if p and os.path.isfile(p):
             audio = f'{os.path.basename(p)}@{int(os.path.getmtime(p))}'

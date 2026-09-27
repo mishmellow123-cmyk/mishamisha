@@ -39,6 +39,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -71,6 +72,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -103,6 +105,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -119,6 +122,7 @@
      "video": "edit/cache/x1_letters_C_test.mp4",
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "edit/cache/x1_letters_C_test.mp4"
      ]
@@ -151,6 +155,7 @@
      "video": null,
      "need": null,
      "add": "embers_C3_e15",
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -167,6 +172,7 @@
      "video": "edit/cache/x1_letters_C_test.mp4",
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "edit/cache/x1_letters_C_test.mp4"
      ]
@@ -199,6 +205,7 @@
      "video": null,
      "need": null,
      "add": "embers_C3_e15",
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -215,6 +222,7 @@
      "video": "edit/cache/x1_letters_C_test.mp4",
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "edit/cache/x1_letters_C_test.mp4"
      ]
@@ -247,6 +255,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/embers_C3"
      ]
@@ -263,6 +272,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/embers_C3_half"
      ]
@@ -295,6 +305,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/embers_C3"
      ]
@@ -311,6 +322,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/embers_C3_half"
      ]
@@ -347,6 +359,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -382,6 +395,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -398,6 +412,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/embers_C3"
      ]
@@ -414,6 +429,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/embers_C3_half"
      ]
@@ -446,6 +462,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/embers_C3"
      ]
@@ -462,6 +479,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/embers_C3_half"
      ]
@@ -494,6 +512,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/mirror_C",
       "renders/mirror_v3"
@@ -527,6 +546,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/embers_C3"
      ]
@@ -543,6 +563,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/embers_C3_half"
      ]
@@ -590,6 +611,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/embers_C3"
      ]
@@ -606,6 +628,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/embers_C3_half"
      ]
@@ -638,6 +661,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/ringfall_C",
       "renders/ringfall_v3"
@@ -655,6 +679,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/run_C",
       "renders/run_v3"
@@ -688,6 +713,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/h1_C",
       "renders/h1_v3"
@@ -708,6 +734,7 @@
       1555
      ],
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/h1_v3h5"
      ]
@@ -724,6 +751,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/h1_v3"
      ]
@@ -756,6 +784,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/ring_C",
       "renders/ring_v3"
@@ -773,6 +802,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/montage3d_v3/find_a"
      ]
@@ -805,6 +835,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/ring_C",
       "renders/ring_v3"
@@ -822,6 +853,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/montage3d_v3/find_b"
      ]
@@ -854,6 +886,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/h1_C",
       "renders/h1_v3"
@@ -874,6 +907,7 @@
       1555
      ],
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/h1_v3h5"
      ]
@@ -890,6 +924,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/h1_v3"
      ]
@@ -922,6 +957,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/ring_C",
       "renders/ring_v3"
@@ -939,6 +975,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/montage3d_v3/fire"
      ]
@@ -971,6 +1008,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/runC_reveal"
      ]
@@ -1003,6 +1041,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/runC_scroll"
      ]
@@ -1035,6 +1074,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/map_C"
      ]
@@ -1067,6 +1107,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/accord_C",
       "renders/accord_v3"
@@ -1100,6 +1141,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/accord_C",
       "renders/accord_v3"
@@ -1133,6 +1175,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/accord_C",
       "renders/accord_v3"
@@ -1166,6 +1209,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/ring_C",
       "renders/ring_v3"
@@ -1183,6 +1227,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/montage3d_v3/melt"
      ]
@@ -1199,6 +1244,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/accord_C",
       "renders/accord_v3"
@@ -1232,6 +1278,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/accord_C",
       "renders/accord_v3"
@@ -1249,6 +1296,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/fireremains_C",
       "renders/fireremains_v3"
@@ -1282,6 +1330,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/map_C"
      ]
@@ -1298,6 +1347,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -1314,6 +1364,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/fireremains_C",
       "renders/fireremains_v3"
@@ -1347,6 +1398,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/runC_illum"
      ]
@@ -1379,6 +1431,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -1411,6 +1464,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -1443,6 +1497,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]
@@ -1475,6 +1530,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/book_C"
      ]

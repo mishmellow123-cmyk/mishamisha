@@ -24,6 +24,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/dusk_B",
       "renders/dusk_v3"
@@ -41,6 +42,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/run_b_tests/dusk_motion"
      ]
@@ -73,6 +75,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/climb_B",
       "renders/climb_v3"
@@ -90,6 +93,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/heroine_B",
       "renders/heroine_v3"
@@ -123,6 +127,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/deadember_B",
       "renders/deadember_v3"
@@ -140,6 +145,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/heroine_B",
       "renders/heroine_v3"
@@ -181,6 +187,7 @@
       1555
      ],
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/h1_v3h5"
      ]
@@ -202,6 +209,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/h1_v3"
      ]
@@ -242,6 +250,7 @@
       1555
      ],
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/h1_v3h5"
      ]
@@ -263,6 +272,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": false,
      "folders": [
       "renders/h1_v3"
      ]
@@ -295,6 +305,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/reveal_B",
       "renders/reveal_v3"
@@ -312,6 +323,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/vigil_B",
       "renders/vigil_v3"
@@ -345,6 +357,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/vigil_B",
       "renders/vigil_v3"
@@ -378,6 +391,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/vigil_B",
       "renders/vigil_v3"
@@ -411,6 +425,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/vigil_B",
       "renders/vigil_v3"
@@ -444,6 +459,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/vigil_B",
       "renders/vigil_v3"
@@ -477,6 +493,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/vigil_B",
       "renders/vigil_v3"
@@ -510,6 +527,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/vigil_B",
       "renders/vigil_v3"
@@ -543,6 +561,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/vigil_B",
       "renders/vigil_v3"
@@ -576,6 +595,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/handback_B",
       "renders/handback_v3"
@@ -609,6 +629,7 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/handback_B",
       "renders/handback_v3"
@@ -626,13 +647,14 @@
      "video": null,
      "need": null,
      "add": null,
+     "final_eligible": true,
      "folders": [
       "renders/dawntitle_B",
       "renders/dawntitle_v3"
      ]
     }
    ],
-   "kind": "takes",
+   "kind": "title",
    "bars": [
     66,
     68

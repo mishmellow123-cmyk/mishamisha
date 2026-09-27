@@ -510,11 +510,27 @@ def masters_table():
     return out
 
 
+# Director-adopted sound masters: they take a cut's sound ahead of the MASTERS table (EDIT wires them; the table
+# stays the music lanes'). B (director, 27 Sep ~23:40Z): SOUND's sound_B.wav = final_B's pre-master score + real
+# recorded effects through COMPOSER's master chain (battery: level map 14/14, sync 25/25, dawn rule, -16.05 LUFS,
+# TP -1.30 dBTP). Outside deliver._code_hash(): a change re-muxes, it never re-encodes picture.
+ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master')}
+
+
+def adopted_audio(cut):
+    """(path, label) of the cut's adopted sound master if the file exists, else (None, None)."""
+    rel, label = ADOPTED_AUDIO.get(cut, (None, None))
+    p = os.path.join(ROOT, rel) if rel else None
+    return (p, label) if p and os.path.isfile(p) else (None, None)
+
+
 def resolve_audio(cut):
-    """(wav path, label): the composer's master, else the fallback master, else a bar click track."""
+    """(wav path, label): the adopted master, the composer's master, else the fallback master, else a click."""
     tab = masters_table()
     v3 = os.path.join(ROOT, 'music', 'out', 'v3')
-    for key, path, label in (((cut, 'score'), tab.get((cut, 'score')), 'COMPOSER master'),
+    ad, ad_label = adopted_audio(cut)
+    for key, path, label in ((None, ad, ad_label),
+                             ((cut, 'score'), tab.get((cut, 'score')), 'COMPOSER master'),
                              (None, os.path.join(v3, f'final_{cut}.wav'), 'COMPOSER master'),
                              ((cut, 'fallback'), tab.get((cut, 'fallback')), 'FALLBACK master'),
                              (None, os.path.join(v3, f'fallback_{cut}.wav'), 'FALLBACK master')):
@@ -724,7 +740,7 @@ def coverage_md(variant=None):
 def resolve_audio_label(cut):
     tab = masters_table()
     v3 = os.path.join(ROOT, 'music', 'out', 'v3')
-    for path, label in ((tab.get((cut, 'score')), 'COMPOSER master'), (os.path.join(v3, f'final_{cut}.wav'),
+    for path, label in (adopted_audio(cut), (tab.get((cut, 'score')), 'COMPOSER master'), (os.path.join(v3, f'final_{cut}.wav'),
                         'COMPOSER master'), (tab.get((cut, 'fallback')), 'FALLBACK master'),
                         (os.path.join(v3, f'fallback_{cut}.wav'), 'FALLBACK master')):
         if path and os.path.isfile(path):
