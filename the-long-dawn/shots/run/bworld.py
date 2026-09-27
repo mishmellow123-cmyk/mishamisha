@@ -358,7 +358,7 @@ def knoll(x, z, fp):
 def h_rock(x, z, fp, CR):
     up = 0.0
     for k in range(CR.shape[0]):
-        if CR[k, 12] > 2.5:
+        if CR[k, 12] > 2.5 and CR[k, 12] < 3.5:
             up += uplift(x, z, CR, k)
     h = field(x, z, fp, FLOOR) + up
     for k in range(CR.shape[0]):
@@ -385,6 +385,9 @@ def h_rock(x, z, fp, CR):
     hk = knoll(x, z, fp)
     if hk > -1e4:
         h = smax(h, hk, 4.0)
+    for k in range(CR.shape[0]):
+        if CR[k, 12] > 3.5 and CR[k, 12] < 4.5:
+            h += strata_zone(x, z, h, fp, CR, k)
     os_ = _lod(420.0, fp, 0.0, 2.0)
     if os_ > 0.0:
         h += 0.8 * fbm2(x / 420.0 - 1.1, z / 420.0 + 4.4, os_, 232)
@@ -397,13 +400,60 @@ def h_cloud(x, z, fp, t):
 
 
 @njit(fastmath=True, cache=True)
+def h_cloud_b(x, z, fp, t, amp):
+    """The cloud sea; amp > 0 (P[3], DUSK only) adds soft cumulus billows so its tops catch the sky light (at
+    amp = 0 this is exactly h_cloud: every other shot is unchanged)."""
+    h = W0.h_cloud(x, z, fp, t)
+    if amp > 0.0:
+        o1 = _lod(820.0, fp, 1.0, 3.0)
+        o2 = _lod(240.0, fp, 0.0, 3.0)
+        b1 = abs(fbm2(x / 820.0 + 7.1, z / 820.0 - 2.3, o1, 341))
+        h += amp * 52.0 * (b1 - 0.28)
+        if o2 > 0.0:
+            b2 = abs(fbm2(x / 240.0 - 1.7, z / 240.0 + 5.9, o2, 342))
+            h += amp * 16.0 * (b2 - 0.28)
+    return h
+
+
+@njit(fastmath=True, cache=True)
+def strata_zone(x, z, h, fp, CR, k):
+    """Type 4 rows (DUSK only): the field's strata cliff bands on an art-directed massif (her own): 0 cx | 1 cz |
+    2 amplitude | 3 r0 | 4 r1 (bands fade in from r0 to r1 out from the centre) | 13 reach."""
+    dx = x - CR[k, 0]
+    dz = z - CR[k, 1]
+    r = math.sqrt(dx * dx + dz * dz)
+    if r < CR[k, 3] or h < CLOUD_Y + 30.0:
+        return 0.0
+    ob = _lod(90.0, fp, 0.0, 1.0)
+    if ob <= 0.0:
+        return 0.0
+    A = CR[k, 2] * ob * smoothstep(CR[k, 3], CR[k, 4], r) * smoothstep(CLOUD_Y + 30.0, CLOUD_Y + 170.0, h)
+    mk = gnoise2(x / 1300.0 + 4.7, z / 1300.0 - 0.3, 291) + 0.30 * gnoise2(x / 500.0, z / 500.0, 292)
+    A *= smoothstep(-0.20, 0.15, mk)
+    if A <= 0.0:
+        return 0.0
+    P = 58.0
+    hb = h - 0.07 * (x * 0.4226 + z * 0.9063) + 8.0 * gnoise2(x / 600.0 - 1.9, z / 600.0 + 0.4, 293)
+    q = hb / P
+    q += 0.75 * gnoise2(q * 0.37 + 0.5, 0.37, 294)
+    n = int(math.floor(q))
+    f = q - n
+    hn = _h01(n + 2000, 7, 11)
+    if hn <= 0.30:
+        return 0.0
+    wr = 0.18 + 0.20 * _h01(n + 2000, 3, 5)
+    st = smoothstep(0.0, wr, f)
+    return A * P * (st - f) * (0.7 + 0.3 * hn)
+
+
+@njit(fastmath=True, cache=True)
 def hfun(x, z, fp, P, CR):
     """World height incl. Earth curvature relative to (P[0], P[1]); P[2] = time (s)."""
     dx = x - P[0]
     dz = z - P[1]
     curv = (dx * dx + dz * dz) / (2.0 * R_EARTH)
     h = h_rock(x, z, fp, CR)
-    hc = h_cloud(x, z, fp, P[2])
+    hc = h_cloud_b(x, z, fp, P[2], P[3])
     if hc > h:
         h = hc
     return h - curv
@@ -569,14 +619,14 @@ def gbuffer(C, D, P, CR, hx, hz, nsteps, tmax, snow_bias, G, kstep, MD, mk):
             ddz = z - P[1]
             curv = (ddx * ddx + ddz * ddz) / (2.0 * R_EARTH)
             hf = h_rock(x, z, fp, CR)
-            hc = h_cloud(x, z, fp, P[2])
+            hc = h_cloud_b(x, z, fp, P[2], P[3])
             cloud = hc > hf
             if cloud:
                 h0 = hc
                 ec = max(fp * 3.0, 30.0)
-                hxx = h_cloud(x + ec, z, max(fp, ec * 0.4), P[2])
-                hzz = h_cloud(x, z + ec, max(fp, ec * 0.4), P[2])
-                h0c = h_cloud(x, z, max(fp, ec * 0.4), P[2])
+                hxx = h_cloud_b(x + ec, z, max(fp, ec * 0.4), P[2], P[3])
+                hzz = h_cloud_b(x, z + ec, max(fp, ec * 0.4), P[2], P[3])
+                h0c = h_cloud_b(x, z, max(fp, ec * 0.4), P[2], P[3])
                 e = ec
                 hxx = hxx - h0c + h0
                 hzz = hzz - h0c + h0

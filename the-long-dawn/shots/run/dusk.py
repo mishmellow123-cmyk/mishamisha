@@ -31,7 +31,14 @@ import pipe as PI           # noqa: E402
 CM = PI.CM
 look = PI.look
 lin = CM.lin
-CR = BW.CR_B
+# DUSK v2: B's table + one strata zone on HER massif (rock bands on the big dome: a cue of scale; the other shots
+# never see this row) and the cloud sea's billows switched on (P[3] = 1: bworld.h_cloud_b)
+_ZONE = np.zeros(BW.NCR)
+_ZONE[:5] = [BW.TX, BW.TZ, 0.75, 650.0, 1150.0]
+_ZONE[12] = 4.0
+_ZONE[13] = 3000.0
+CR = np.vstack([BW.CR_B, _ZONE])
+CLOUD_RELIEF = 1.0
 TOP = np.array([BW.TX, BW.TOP_Y, BW.TZ])
 CACHE = os.path.join(CM.ROOT, 'renders', 'run_b_tests', 'cache')
 TESTS = os.path.join(CM.ROOT, 'renders', 'run_b_tests')
@@ -88,14 +95,14 @@ def params(e, pix_ang, u=0.0):
     LP[7] = 0.018
     LP[8] = 0.0011
     LP[9] = 0.92
-    LP[10] = 2.4
+    LP[10] = 1.9                                             # less flat fill on the cloud sea...
     LP[11] = 0.030 * (1.0 - u)                               # the belt's faint rose on the west faces, fading
     LP[12] = 0.30
     LP[13:16] = sun_dir(6.0)
-    LP[16:19] = lin('#E9A0A0') * 0.028
+    LP[16:19] = lin('#E9A0A0') * 0.075                       # ...more of the west's glow on its billows (texture)
     LP[19] = 0.0
     LP[20] = pix_ang
-    LP[30] = 0.55                                            # her last point stays a vivid red to the end...
+    LP[30] = 0.30                                            # her last point stays a clear ROSE to the end...
     LP[31] = 0.00012                                         # ...and goes out crisply on bar 8 b3
     LP[32] = -1
     LP[33] = -1
@@ -118,8 +125,8 @@ class DuskShot:
         self.tc = camera(W, H)
         self.fr = PI.Frame(self.tc, ss)
         scam = self.fr.src
-        self.P = np.array([scam.pos[0], scam.pos[2], 0.0, 0.0])
-        p = os.path.join(CACHE, f'bdusk_G_{BW.VERSION}_{scale:.3f}_{ss:.2f}.npy')
+        self.P = np.array([scam.pos[0], scam.pos[2], 0.0, CLOUD_RELIEF])
+        p = os.path.join(CACHE, f'bdusk_G_{BW.VERSION}v2_{scale:.3f}_{ss:.2f}.npy')
         if cache and os.path.exists(p):
             self.G = np.load(p)
         else:
@@ -223,6 +230,7 @@ class DuskShot:
         BW.shade(self.G, LP, SK, amb, fogp, float(scam.pos[1]), out)
         e_low = self.chosen[0][0] if self.chosen else self.e_her + 1.0
         out = wisps(out, self.G, scam.pos, e, e_low, 1.0 / scam.f)
+        out = far_layers(out, self.G, self.scale * self.ss)
         fr = self.fr
         fr.img = out
         dist = self.G[..., BW.G_DIST]
@@ -230,6 +238,56 @@ class DuskShot:
         fr.dist = dist
         img, _, _ = PI.to_target(fr)
         return img
+
+
+def _ridge1d(n, seed, scales, amps):
+    rng = np.random.default_rng(seed)
+    x = np.arange(n, dtype=np.float64)
+    out = np.zeros(n)
+    for sc, am in zip(scales, amps):
+        k = int(n / sc) + 3
+        v = rng.standard_normal(k)
+        xs = np.arange(k) * sc - sc
+        g = np.interp(x, xs, v)
+        out += am * (1.0 - np.sqrt(g * g + 0.08))         # rounded crests (old ranges, never needles)
+    return out
+
+
+_LAYERS = {}
+
+
+def far_layers(img, G, px_scale):
+    """Three far ridgelines above the horizon wall (director: layered far ranges fading into haze instead of one
+    flat wall): each one a little higher and closer to the sky's own colour than the one before it. Painted only on
+    sky pixels, in the colour of the far wall blended toward the sky behind it."""
+    H, W = img.shape[:2]
+    sky = G[..., BW.G_FLAG] == 0.0
+    key = (H, W)
+    if key not in _LAYERS:
+        top = np.argmax(~sky, axis=0).astype(np.float64)           # first terrain row from the top, per column
+        top = np.where((~sky).any(axis=0), top, np.nan)
+        base = np.nanmedian(top)
+        top = np.where(np.isnan(top), base, top)
+        from scipy.ndimage import median_filter
+        top = median_filter(top, size=max(int(40 * px_scale), 3))
+        rows = []
+        for j, (lift, amp, seed) in enumerate(((6.0, 14.0, 71), (12.0, 20.0, 72), (19.0, 26.0, 73))):
+            r = _ridge1d(W, seed, (520 * px_scale, 190 * px_scale, 70 * px_scale), (1.0, 0.45, 0.18))
+            r = (r - r.min()) / (r.max() - r.min() + 1e-9)
+            rows.append(top - (lift + amp * r) * px_scale)
+        _LAYERS[key] = (top, rows)
+    top, rows = _LAYERS[key]
+    yy = np.arange(H, dtype=np.float64)[:, None]
+    # the wall's own colour (the farthest terrain row band), per column, this frame
+    ti = np.clip(top.astype(int) + int(2 * px_scale), 0, H - 1)
+    wall = img[ti, np.arange(W)]
+    out = img
+    for rj, op in zip(rows, (0.62, 0.42, 0.26)):                # nearest painted layer first, the farthest faintest
+        m = (yy >= rj[None, :]) & (yy < top[None, :]) & sky
+        edge = np.clip((yy - rj[None, :]) / (1.2 * px_scale), 0.0, 1.0)
+        a = (op * edge * m)[..., None].astype(np.float32)
+        out = out * (1.0 - a) + wall[None, :, :] * a
+    return out.astype(np.float32)
 
 
 from numba import njit, prange   # noqa: E402

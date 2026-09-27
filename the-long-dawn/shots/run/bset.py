@@ -273,7 +273,7 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
     ws = (1.12 if child else 1.0) * (0.90 + 0.28 * build)
     stoop = 0.0 if child else 0.30 * age ** 1.3
     if weary is None:
-        weary = 0.8 if (pose == 'sit' and not child) else 0.0
+        weary = 0.5 if (pose == 'sit' and not child) else 0.0      # bowed, but the head clears the shoulders
     stoop = min(stoop + 0.25 * weary, 0.6)
     s = lean_to
     kneel = pose in ('kneel', 'feed', 'shield')
@@ -411,7 +411,7 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
         d.ellipse(head, 0.092 * sc, 0.110 * sc, ang=-tilt, k=0.05, mat=6, fuzz=0.006, ff=40.0)
     else:
         deep = 1.18 if hood == 2 else 1.0
-        d.trap(sho + up * 0.01, head + up * 0.02, shw * 0.80, hr_ * 0.95 * deep, rnd=0.03, k=0.07, mat=cloak)
+        d.trap(sho + up * 0.01, head + up * 0.02, shw * 0.64, hr_ * 0.92 * deep, rnd=0.03, k=0.05, mat=cloak)   # a shoulder break
         d.ellipse(head + up * 0.012, hr_ * 1.06 * deep, hr_ * 1.14 * deep, ang=-tilt, k=0.07, mat=cloak,
                   fuzz=0.012 if hood == 2 else 0.0, ff=30.0)
         if age > 0.7 and not child:
@@ -544,18 +544,14 @@ def beacon_base(seed=9, height=0.52, base_w=1.02, top_w=0.80, basket_h=0.42, bas
     back.new_group()
     back.trap((0.0, 0.02), (0.0, height - 0.02), base_w * 0.44, top_w * 0.44, rnd=0.03, mat=12)   # the chinks
 
+    import bfig as BF                    # rounded fieldstones (bfig STONE): no triangle-fan seams (director)
+    cnt = [0]
+
     def stone(cx, cy, r, tilt, elong, mat):
         back.new_group()
-        nv = 5 + int(rng.random() * 3)
-        a0_ = rng.random() * 2 * math.pi
-        vs = []
-        for i in range(nv):
-            a = a0_ + 2 * math.pi * (i + 0.35 * (rng.random() - 0.5)) / nv
-            rr = r * (0.75 + 0.35 * rng.random())
-            vs.append(_rot(np.array([rr * math.cos(a) * elong, rr * math.sin(a)]), tilt) + np.array([cx, cy]))
-        c = np.array([cx, cy])
-        for i in range(nv):
-            back.tri(c, vs[i], vs[(i + 1) % nv], rnd=0.008, k=0.008, mat=mat)
+        cnt[0] += 1
+        BF.add_stone(back, (cx, cy), r, elong=elong, ang=tilt, facet=0.15 + 0.15 * rng.random(),
+                     seed=seed * 1000 + cnt[0], mat=mat)
     y = 0.0
     while y < height - 0.06:
         u = y / height

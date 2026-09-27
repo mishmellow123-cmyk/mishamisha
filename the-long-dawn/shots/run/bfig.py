@@ -32,7 +32,8 @@ from mt.noise import gnoise2           # noqa: E402
 
 # B's material layout: mt.figure's 11 columns +
 #   11 translucency (0..1) | 12-14 transmitted tint | 15 fold depth (0..1) | 16 fold frequency (1/m) | 17 snow on top
-NCOLB = 18
+#   18 lichen (0..1: pale grey-green and ochre crust in small blotches, weathered stone)
+NCOLB = 19
 
 
 def pad(M):
@@ -65,6 +66,8 @@ def _mb():
     # granite: snow lies on the stones' upper faces
     for r in (16, 17, 23):
         M[r, 17] = 0.85
+        M[r, 18] = 0.55
+        M[r, 6] = 0.13                      # rounded fieldstones: a broad pillow, never a flat facet
     return M
 
 
@@ -134,7 +137,11 @@ def _sd_stone(x, y, cx, cy, tx, ty, b, facet, seed):
     rp = ra * rb * math.sin(tb - ta) / den if abs(den) > 1e-6 else 0.5 * (ra + rb)
     rp = min(max(rp, 0.5), 1.2)
     # softened by harmonics (weathered, never a perfect polygon)
-    rh = 1.0 + 0.06 * math.cos(2.0 * th + 6.2832 * _hash01(seed, 51)) + 0.04 * math.cos(3.0 * th + 6.2832 * _hash01(seed, 52))
+    rh = (1.0 + (0.05 + 0.07 * _hash01(seed, 55)) * math.cos(2.0 * th + 6.2832 * _hash01(seed, 51))
+          + (0.03 + 0.05 * _hash01(seed, 56)) * math.cos(3.0 * th + 6.2832 * _hash01(seed, 52))
+          + 0.025 * math.cos(5.0 * th + 6.2832 * _hash01(seed, 53)))
+    if v < -0.35:                                      # a flatter underside: it rests on the stone below
+        rh *= 1.0 - 0.10 * min((-v - 0.35) / 0.4, 1.0)
     r = rp * facet + rh * (1.0 - facet) * 0.96
     return (rho - r) * min(al, b) * 0.95
 
@@ -215,6 +222,19 @@ def _render(img, depth, P, gidx, M, L, amb, fx, fy, ppm, zf, x0, x1, y0, y1, see
                     ar += (0.78 - ar) * w
                     ag += (0.79 - ag) * w
                     ab += (0.84 - ab) * w
+                # lichen and weathering on stone: blotches of pale grey-green and ochre crust, mottled grey
+                lc = M[mat, 18]
+                if lc > 0.0:
+                    n1 = gnoise2(Xs * 26.0, Y * 26.0, seed + 21) + 0.5 * gnoise2(Xs * 9.0, Y * 9.0, seed + 22)
+                    li = lc * min(max((n1 - 0.18) / 0.22, 0.0), 1.0) * (1.0 - min(max(gy, 0.0) * 2.0 * (1.0 - u), 1.0) * sn)
+                    och = 0.5 + 0.5 * gnoise2(Xs * 5.0 + 3.0, Y * 5.0, seed + 23)
+                    lr = 0.30 + 0.12 * och
+                    lg = 0.31 + 0.02 * och
+                    lb = 0.24 - 0.10 * och
+                    mot = 0.82 + 0.36 * (0.5 + 0.5 * gnoise2(Xs * 4.0, Y * 4.0, seed + 24))
+                    ar = (ar * mot) * (1.0 - li) + lr * li
+                    ag = (ag * mot) * (1.0 - li) + lg * li
+                    ab = (ab * mot) * (1.0 - li) + lb * li
                 # cloth folds: soft vertical troughs splaying toward the hem (ambient occlusion)
                 ao = 1.0
                 fd = M[mat, 15]

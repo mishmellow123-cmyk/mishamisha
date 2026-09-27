@@ -36,44 +36,53 @@ def _ease(u):
 
 
 def cairn3(seed=3, H=1.62, R=1.05):
-    key = (seed, H, R)
+    """v2 (director: the v1 facets read as low-poly gems / nuts): rounded, weathered fieldstones of every size in a
+    loose heap (never courses of equal stones), lichen crust on their faces, snow on their tops and lodged in the
+    gaps between them, a ragged top of a few stones on end, a drift at the foot."""
+    key = (seed, H, R, 2)
     if key in _CAIRN:
         return _CAIRN[key]
     rng = np.random.default_rng(seed)
     d = FG.Drawing()
-    # the dark body of the heap: seen only through the gaps between the stones
     d.new_group()
-    d.trap((0.0, 0.02), (0.0, H * 0.74), R * 0.62, R * 0.10, rnd=0.04, k=0.0, mat=BF.GAP)
-    mats = (16, 17, 23)
+    d.trap((0.0, 0.02), (0.0, H * 0.72), R * 0.60, R * 0.10, rnd=0.05, k=0.0, mat=BF.GAP)       # the dark heart
+    mats = (16, 17, 23, 16)
     n = 0
     y = 0.0
-    # courses from the bottom up: big flat stones low, smaller and more tilted higher; the profile a worn cone
-    while y < H * 0.80:
+    while y < H * 0.78:
         uu = y / H
         half = R * (1.0 - uu) ** 0.9 * (0.93 + 0.12 * rng.random())
-        r = 0.19 * (1.0 - 0.40 * uu) * (0.85 + 0.30 * rng.random())
-        x = -half + r * 1.1
-        while x < half - r * 0.8:
-            rr = r * (0.75 + 0.5 * rng.random())
-            el = 1.25 + 0.6 * rng.random()
-            tilt = (rng.random() - 0.5) * (0.35 + 0.5 * uu)
-            cy = y + rr * (0.95 + 0.2 * rng.random())
+        r0 = 0.20 * (1.0 - 0.42 * uu)
+        x = -half + r0 * 0.9
+        row_top = y
+        placed = []
+        while x < half - r0 * 0.6:
+            rr = r0 * (0.55 + 0.75 * rng.random() ** 1.5)                     # mixed sizes: many small, a few big
+            el = 1.10 + 0.55 * rng.random()
+            tilt = (rng.random() - 0.5) * (0.30 + 0.45 * uu)
+            cy = y + rr * (0.85 + 0.25 * rng.random())
             d.new_group()
-            BF.add_stone(d, (x + rng.normal(0, 0.02), cy), rr, elong=el, ang=tilt, facet=0.65 + 0.3 * rng.random(),
-                         seed=seed * 1000 + n, mat=int(mats[rng.integers(0, 3)]))
+            BF.add_stone(d, (x + rng.normal(0, 0.02), cy), rr, elong=el, ang=tilt,
+                         facet=0.10 + 0.18 * rng.random(), seed=seed * 1000 + n, mat=int(mats[rng.integers(0, 4)]))
+            placed.append((x, cy + rr * 0.95, rr * el))
+            row_top = max(row_top, cy + rr)
             n += 1
-            x += rr * el * (1.80 + 0.22 * rng.random())                   # a narrow gap between neighbours
-        y += r * (1.45 + 0.20 * rng.random())
-    # the ragged top: two or three stones on end, off-centre, leaning; one small flat stone wedged beside them
+            x += rr * el * (1.70 + 0.30 * rng.random())
+        # snow lodged along this course's top: it shows in the gaps once the next course sits on it
+        d.new_group()
+        for (px, py, w) in placed:
+            if rng.random() < 0.8:
+                d.ellipse((px + rng.normal(0, 0.02), py - 0.01), w * (0.75 + 0.3 * rng.random()), 0.022,
+                          ang=rng.normal(0, 0.08), k=0.03, mat=BF.SNOW)
+        y += r0 * (1.40 + 0.25 * rng.random())
     top = y
-    for j, (dx, lean, rr, el) in enumerate(((-0.10, 0.28, 0.11, 0.62), (0.08, -0.22, 0.09, 0.58),
-                                           (0.20, -0.45, 0.075, 0.9))):
+    for j, (dx, lean, rr, el) in enumerate(((-0.10, 0.28, 0.12, 0.66), (0.09, -0.22, 0.095, 0.62),
+                                           (0.21, -0.45, 0.075, 0.95))):
         if j == 2 and rng.random() < 0.35:
             continue
         d.new_group()
-        BF.add_stone(d, (dx + rng.normal(0, 0.015), top + rr * 0.9), rr, elong=el, ang=math.pi / 2 + lean,
-                     facet=0.85, seed=seed * 1000 + 900 + j, mat=int(mats[rng.integers(0, 3)]))
-    # a drift of old snow at its foot, over the lowest stones' bases
+        BF.add_stone(d, (dx + rng.normal(0, 0.015), top + rr * 0.85), rr, elong=el, ang=math.pi / 2 + lean,
+                     facet=0.18, seed=seed * 1000 + 900 + j, mat=int(mats[rng.integers(0, 4)]))
     d.new_group()
     d.ellipse((0.05, 0.02), R * 1.05, 0.07, k=0.0, mat=BF.SNOW, fuzz=0.012, ff=10.0)
     d.ellipse((-R * 0.55, 0.05), R * 0.40, 0.08, ang=0.12, k=0.05, mat=BF.SNOW, fuzz=0.01, ff=12.0)
