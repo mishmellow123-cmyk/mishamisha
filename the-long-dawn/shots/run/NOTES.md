@@ -35,9 +35,12 @@
      read as a dark ink blot in the cloud; the people left the frame by 6200; bar 74's sky was night-black; the lantern a
      speck. Pass 2 (d448ea2: hazier lilac valley, torn partial cloud, camera 8.6 m from the lantern and held low, blue-
      hour sky, stronger lantern light) is on the farm as look-dev 3 -> `renders/_farmtest/bluehour_a_lookdev3/` (request
-     0927-165247-bluehouralookdev-83200). Review it; still open: the people read as dark mounds (want lean silhouettes
-     with a lantern rim), the horizon is the uniform needle skyline (give it a big landform as in the crossing), the new
-     lantern (item 1). JOB READY `bluehour_a2_01..20` only when a look-dev is clean.
+     0927-165247-bluehouralookdev-83200; it started after ca6cdba, so it should show the NEW lantern). ca6cdba put the
+     director's plain iron-and-horn lantern (`bluehour.lantern_v3`, Scene primitives only) and the HEART CONTRACT v2
+     flicker + warm edge into the blue hour; move `lantern_v3` into sdfppl and switch the crossing to it after the
+     crossing lands (then delete it here). Review look-dev 3; still open: the people read as dark mounds (want lean
+     silhouettes with a lantern rim), the horizon is the uniform needle skyline (give it a big landform as in the
+     crossing). JOB READY `bluehour_a2_01..20` only when a look-dev is clean.
 * **Committed + pushed** (46153c1, b8964e7, 297446f, dffa1bf, a92fde6, 5cde879, 3461166, 1fd0716):
   * `sdfppl.py`: v3 CLOTH (default; `cloth=False` = the v2 figure): elliptical cloak and cape bells, creased uneven
     folds, wind billow + lee hem lift + flutter (`wind` = world vector toward the lee, |v| = hem billow in m), SDF crease
