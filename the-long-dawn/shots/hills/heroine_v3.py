@@ -625,7 +625,7 @@ class Find:
     fingers close on it, 3660 lift it away."""
     F0, F1 = 3557, 3683
     HOL = np.array([0.33, 0.0, -0.40])
-    HFOV = 34.0
+    HFOV = 42.0
     STRIKE = 3557
     FLINT = np.array([0.32, 1.08, -0.07])
 
@@ -636,14 +636,14 @@ class Find:
         t = f / FPS
         r = self.reach(f)
         close = smoothstep(3636, 3650, f)
-        W = self.HOL + np.array([0.078, 0.082, 0.012]) + np.array([0.02, 0.22, 0.04]) * (1 - r)
+        W = self.HOL + np.array([0.058, 0.052, 0.018]) + np.array([0.03, 0.24, 0.04]) * (1 - r)
         p = dict(
-            pelvis=(0.80, 0.48, -0.02), yaw=0.0, lean=66.0, chest=16.0, twist=0.0, neck=8.0, head=22.0, head_yaw=0.0,
+            pelvis=(0.76, 0.42, -0.05), yaw=0.0, lean=72.0, chest=14.0, twist=0.0, neck=8.0, head=22.0, head_yaw=0.0,
             head_roll=0.0, shrug=0.1,
             hand_n=tuple(W), elbow_n=(0.3, -0.2, -1.0),
-            fdir_n=tuple(nrm([-0.55, -0.80, -0.10])), palm_n=tuple(nrm([-0.75, 0.35, -0.30])),
-            curl_n=tuple(np.array([0.18, 0.80, 0.90, 0.95]) * (1 - close) + np.array([0.55, 0.88, 0.94, 0.97]) * close),
-            thumb_n=0.25 + 0.30 * close, spread_n=0.0, thumbout_n=0.40 * (1 - close),
+            fdir_n=tuple(nrm([-0.60, -0.75, 0.10])), palm_n=tuple(nrm([-0.55, 0.45, 0.70])),
+            curl_n=tuple(np.array([0.30, 0.62, 0.82, 0.90]) * (1 - close) + np.array([0.62, 0.84, 0.92, 0.96]) * close),
+            thumb_n=0.45 + 0.30 * close, spread_n=0.0, thumbout_n=0.25 * (1 - close),
             hand_f=(0.55, 0.62, 0.10), elbow_f=(0.3, -1.0, 0.4), fdir_f=(-0.6, -0.6, -0.2), palm_f=(0.3, 0.2, -1.0),
             curl_f=(0.9, 0.9, 0.9, 0.9), thumb_f=0.7,
             foot_n=(0.40, 0.05, -0.22), knee_n=(-1.0, 0.5, 0.0), toe_n=(-1.0, 0.0, 0.0), sole_n=(0.0, 1.0, 0.0),
