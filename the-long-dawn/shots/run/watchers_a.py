@@ -128,7 +128,7 @@ def lighter_spot(P, lat=0.8):
 # on our side of the fire and 0.7 m to its right, so the flames show just left of the figure and rim it.
 PLATE_YAW = 7.0
 WATCHER_BEARING = 7.3
-FIRE_GAP = (1.2, 0.55)
+FIRE_GAP = (1.2, 0.72)
 
 
 def _plate_axes():
@@ -192,24 +192,25 @@ def lighter_scene(sc, f, P, lat, seed):
 
 
 def hearth_scene(sc, P, seed, scale=1.0):
-    """The seventh fire's low cairn: dry stones in three uneven courses, no mortar, to about 0.64 m, where nighta's recipe
-    puts a size-0.6 fire's base (0.45 x its 1.44 m flame). There before the catch (A14)."""
+    """The seventh fire's low cairn: weathered, rounded field stones (lumpy round cones at random axes, each its own
+    size, lightly fused where they touch) in three uneven courses to about 0.64 m, where nighta's recipe puts a size-0.6
+    fire's base. No cut blocks, no even gaps. There before the catch (A14)."""
     rng = np.random.default_rng(int(seed))
     base = np.asarray(P[:3], np.float64)
     sc.begin(rgb=(0.050, 0.047, 0.045))
     courses, top = 3, 0.64 * scale
     for c in range(courses):
         y0 = top * c / courses
-        rr = (0.44 - 0.14 * c / (courses - 1)) * scale
-        n = 11 - 2 * c
+        rr = (0.44 - 0.15 * c / (courses - 1)) * scale
+        n = 9 - 2 * c
         for m in range(n):
-            a_ = 2.0 * math.pi * (m + 0.5 * (c % 2)) / n + rng.uniform(-0.12, 0.12)
-            hs = top / courses * rng.uniform(0.95, 1.30)
-            q = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rr * rng.uniform(0.92, 1.06) \
-                + UP * (y0 + 0.5 * hs)
-            sc.box(q, (rng.uniform(0.09, 0.15) * scale, 0.5 * hs, rng.uniform(0.08, 0.12) * scale),
-                   yaw=a_ + math.pi / 2 + rng.uniform(-0.25, 0.25), pitch=rng.uniform(-0.12, 0.12),
-                   rnd=0.022 * scale, mat=5, k=0.0)
+            a_ = 2.0 * math.pi * (m + 0.5 * (c % 2)) / n + rng.uniform(-0.2, 0.2)
+            r0 = rng.uniform(0.075, 0.125) * scale
+            q = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rr * rng.uniform(0.88, 1.08) \
+                + UP * (y0 + r0 * rng.uniform(0.55, 0.9))
+            tang = np.array([-math.sin(a_), rng.uniform(-0.35, 0.35), math.cos(a_)])
+            tang = tang / np.linalg.norm(tang) * rng.uniform(0.03, 0.10) * scale
+            sc.cone(q - tang, q + tang, r0, r0 * rng.uniform(0.55, 0.9), mat=5, k=0.018 * scale)
     sc.end()
 
 
