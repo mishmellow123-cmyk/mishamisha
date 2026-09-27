@@ -1,0 +1,18 @@
+{
+ "name": "beaconrun_a_look",
+ "branch": "claude/render-beaconrun-a-look",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "A14_LABELS=1 A14_CAM=60,168,480,-30,-6,44 python3 shots/run/beaconrun_a.py --frames 4230 --scale 0.5 --threads 2",
+  "A14_LABELS=1 A14_CAM=-278,-165.5,875.3,-30,-4,44 python3 shots/run/beaconrun_a.py --frames 4231 --scale 0.5 --threads 2",
+  "A14_LABELS=1 A14_CAM=-142,-161.9,904,-30,-4,44 python3 shots/run/beaconrun_a.py --frames 4232 --scale 0.5 --threads 2",
+  "A14_LABELS=1 A14_CAM=-154.2,-216.2,1024.3,-30,-3,44 python3 shots/run/beaconrun_a.py --frames 4233 --scale 0.5 --threads 2"
+ ],
+ "out_dir": "renders/beaconrun_A",
+ "frames": "4230-4233",
+ "shape": [402, 960],
+ "push_every": 120,
+ "ship": "jpg"
+}
