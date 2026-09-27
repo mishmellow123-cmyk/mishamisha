@@ -33,7 +33,7 @@ import pages as PG  # noqa: E402
 import book as B  # noqa: E402
 import burn as BURN  # noqa: E402
 import redbook as RB  # noqa: E402
-from pen import INK, GILT, Strokes  # noqa: E402
+from pen import INK, Strokes  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 FPS = 24
@@ -377,7 +377,21 @@ class Book3:
             return bk, RB.Page(S, 100), K
         return self.once('letters', mk)
 
+    def blur(self, fn, t, n=3, shutter=1.0 / 48):
+        """Average n renders across the shutter (a turning leaf moves a long way in one frame)."""
+        acc = None
+        for k in range(n):
+            ts = t + shutter * ((k + 0.5) / n - 0.5)
+            h, a = fn(ts)
+            acc = (h, a) if acc is None else (acc[0] + h, acc[1] + a)
+        return acc[0] / n, acc[1] / n
+
     def shot_letters(self, t, f):
+        if 0.0 < t < 1.4:
+            return self.blur(self.letters_at, t, n=5)
+        return self.letters_at(t)
+
+    def letters_at(self, t):
         mt, pM, flk = self.mountain()
         bk, pD, K = self.letters()
         tM = pM.texture(1e9)
@@ -487,6 +501,11 @@ class Book3:
         return tx.build(), g
 
     def shot_last_pages(self, t, f):
+        if any(a < t < a + d for a, d in self.TURNS):
+            return self.blur(self.last_pages_at, t, n=5)
+        return self.last_pages_at(t)
+
+    def last_pages_at(self, t):
         ep = self.last_pages()
         bk = ep.book
         k, phi = None, 0.0

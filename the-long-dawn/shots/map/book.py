@@ -23,8 +23,7 @@ from numba import njit, prange
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', '..', 'lib'))
-import look  # noqa: E402
-from noise import fbm, gnoise, vnoise  # noqa: E402
+from noise import fbm, gnoise  # noqa: E402
 import burn as BURN  # noqa: E402
 
 M_NONE, M_TABLE, M_LEATHER, M_PAGE_L, M_PAGE_R, M_EDGE, M_SPINE, M_BAND = 0, 1, 2, 3, 4, 5, 6, 7

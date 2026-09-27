@@ -27,7 +27,7 @@ import pages as PG  # noqa: E402
 import book as B  # noqa: E402
 import burn as BURN  # noqa: E402
 import fire as FIRE  # noqa: E402
-from pen import INK, GILT, PENCIL, Strokes, hand, line, catmull, resample  # noqa: E402
+from pen import INK, GILT, PENCIL, Strokes, hand, line, catmull  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 FPS = 24
@@ -532,7 +532,6 @@ class Epilogue:
         k, phi = self.phase(t)
         leaf = None
         xl = []
-        hv_on = t >= EP_TURNS[0][0] + EP_TURNS[0][1]
         if t < EP_TURNS[0][0]:
             texL = self.tex_text
             texR = self.pPlenty.texture(t)

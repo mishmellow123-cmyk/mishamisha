@@ -21,7 +21,10 @@ Sheets: `review/v3/map_P1_redbook_set.jpg`, `map_P2_pages_pencil_ink.jpg`, `map_
 **RENDER_SPEC** (director launches; one machine type per job, 4 procs x 1 thread, `"ship": "jpg"`):
 * `cloud/jobs/map_v3_book.json`: 2312 frames `renders/book_C/` + `renders/book_C_matte/` (80-319, 320-559, 560-1039,
   1680-1991, 6160-7199), ~3 s/frame on 4 threads (~12 s per 1-thread proc): ~2 h on one 4-core box, ~1.2 GB RSS per proc.
-  Setup also writes `renders/book_C/x1_letters.json` (EMBERS: every spark's seed and the heart's screen track).
+  Page turns and the riffle are motion-blurred (5 and 3 shutter samples), which adds ~30 min. EMBERS' handoff is committed:
+  `review/v3/x1_letters.json` (glow 700, lift 720, fire 800, burn 840; 1961 spark seeds in screen px with their lift and
+  arrival frames; the heart's screen track and flame height per frame to 1039, where the fire stands at 961,426, 412 px
+  tall: E5-C's first frame should match it). Regenerate with `python3 book_c.py export --out DIR`.
 * `cloud/jobs/map_v3_road.json`: 320 frames `renders/map_C/f_04160..04479` + the X1 onto the map
   (`renders/x1_map_C/` glow and `_matte` keep, 4150-4185, centred at 960,300: change `--center` to the seventh beacon's
   bloom). Setup bakes the sheet if the cache is missing (~16 min on 4 cores); frames ~4 s.

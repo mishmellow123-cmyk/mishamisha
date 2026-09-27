@@ -20,8 +20,8 @@ import os
 import sys
 import time
 
-import cv2
 import numpy as np
+from numba import njit, prange
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -187,22 +187,22 @@ def x1_screen(center, frames, out, W=1920, H=804, t_open=None, span=1.1):
         print('x1', f)
 
 
+@njit(parallel=True, cache=True)
+def _x1_kernel(U, V, glow, keep, bf, t):
+    for i in prange(U.shape[0]):
+        for j in range(U.shape[1]):
+            brown, char, hole, edge, pool = BURN.field(bf, U[i, j], V[i, j], t)
+            keep[i, j] = (1.0 - hole) * (1.0 - 0.9 * char)
+            glow[i, j, 0] = edge * 4.2
+            glow[i, j, 1] = edge * 1.25
+            glow[i, j, 2] = edge * 0.18
+
+
 def _x1_field(bf, U, V, t):
     H, W = U.shape
     glow = np.zeros((H, W, 3), np.float32)
     keep = np.ones((H, W), np.float32)
-    from numba import njit, prange
-
-    @njit(parallel=True, cache=False)
-    def run(U, V, glow, keep, bf, t):
-        for i in prange(U.shape[0]):
-            for j in range(U.shape[1]):
-                brown, char, hole, edge, pool = BURN.field(bf, U[i, j], V[i, j], t)
-                keep[i, j] = (1.0 - hole) * (1.0 - 0.9 * char)
-                glow[i, j, 0] = edge * 4.2
-                glow[i, j, 1] = edge * 1.25
-                glow[i, j, 2] = edge * 0.18
-    run(U, V, glow, keep, bf, t)
+    _x1_kernel(U, V, glow, keep, bf, t)
     return glow, keep
 
 
