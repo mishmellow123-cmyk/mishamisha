@@ -1,5 +1,24 @@
 # ACCORD v3 (ACCORD-v3, 27 Sep): cut C only, C frames 4480-5679 -> `renders/accord_C3/f_%05d.png`
 
+## >>> ACCORD-CROWD STATE (27 Sep 20:40Z; usage pause ~21:25Z -> resume ~23:30Z) <<<
+* **Code (all pushed, 1bbea59 + 54b9c5b):** `crowd/crowd3.py` (roads, 1,123 walkers, the ring round the stones, her walk-in,
+  the bar-70 relight wave + walk-out, torchlight grids, the land, figures, flames, smoke), `crowd/accord3c.py` (driver),
+  `crowd/crowdmap.py` (top-down map, no render). accord3.py carries the guarded hook (crowd installs on import;
+  `CROWD=0` off; `CROWD_REQUIRED=1` finals).
+* **Looks:** look 1 `renders/_farmtest/crowd3_look_v1/`, look 2 `.../crowd3_look_v2/` (check sheet
+  `renders/accord_C/tests/crowd/check_look2.jpg`). Look 3 (the fixes since look 2: the R_FAR road bug, irregular crowd,
+  no scallop capes, land folds, small heather) = farm request `0927-163255-crowd3look-69903` -> lands in
+  `renders/_farmtest/crowd3_look/` (frames 4480..4690, 5556, 5566, 5580..5640).
+* **JOB READY sent 20:37Z:** `cloud/jobs/crowd3_ac1.json` (4464-4719, --nodes 2) and `cloud/jobs/crowd3_p3.json`
+  (5520-5679, --nodes 2; only with ACCORD-3's P3 signed off). Launch on approval (from ~/mishamisha):
+  `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/crowd3_ac1.json --nodes 2 --detach` (same for p3).
+  Frames land in `renders/accord_C/` (C numbering). Check them: 4480 (ring centred ~960,402, ~105 px), 4600, 4690
+  (her red shawl beside the council), 5566 (front rank's dip), 5620/5640 (the tide outward).
+* **Next (after 23:30Z):** review look 3 + the landed finals; nitpicks: figures from straight above still read a little
+  as beans at 60 m (options: a longer shadow from a lower torch, a visible shaft); P3 near silhouettes (the shared
+  sd_fig) read as smooth pawns in the 5560 low oblique; ACCORD-3's floor inside the stones reads as camouflage from
+  20-60 m up.
+
 ## ACCORD-3 WORKING STATE (27 Sep ~19:25Z; renders go to THE FARM now, see COMMON.md)
 * **Crowd handed over.** ACCORD-CROWD (director's split, 18:50Z) owns the rivers, the crowd and the walk-out. My
   plain3 draft is deleted and accord3 is back to `igz` grids / P_WI 0 / default P_IGC_*/P_IGF_* until their hooks
@@ -22,20 +41,43 @@
   5590,5625. Fire alone locally (light): `python shots/accord/firelook3.py out.jpg 5548,5566`.
 
 ## ACCORD-CROWD (crowd lane, split off 27 Sep ~18:50Z): the interface with ACCORD-3
+* **ACCORD-CROWD STATE (27 Sep ~20:15Z).** crowd3 is pushed and HOOKED: accord3.py's guarded block (54b9c5b) calls
+  `crowd3.install()` on import, so `accord3.py range/still` renders the crowd. **`CROWD=0`** = council only (fast
+  look-dev); **`CROWD_REQUIRED=1`** for finals. The crowd's flames follow `accord3.TORCH_I`, your flame alpha and
+  fire_clip (they render into your `tb`), your per-frame haze (recorded from `FL3.airlight`) and `P_OWNK`.
+  Director APPROVED the bar-70 wave (27 Sep): the crowd gives its fire to the hearth at 5120 (torches down, out); after
+  the white it comes back out torch to torch (front rank ~5566, the stones ~5610, r 12 m ~5640) and leaves along the
+  roads; near ranks read as a gesture (tilt, touch, draw back), far ranks as a spreading tide.
+  Look 1 (farm, `renders/_farmtest/crowd3_look_v1/`, 12 frames, ~31 s/frame/process): the structure works; fixed in
+  look 2 (farm queue): pale cloth read as beige shells/cupcakes -> darker wools; torch held out at arm's length; the
+  far-field light now blocked by the crowd's bodies (density transmittance: shadows read, no tan floor); the moon on
+  the open moor (x4, the far dark reads as land), roads darker than the grass (no beams); torch smoke plumes.
+  Files: `crowd/crowd3.py`, `crowd/accord3c.py` (driver), `crowd/crowdmap.py` (top-down debug map, no render),
+  `cloud/jobs/crowd3_look.json`.
+* **Finals plan (proposed; renders go through accord3.py itself, the hook installs the crowd, CROWD_REQUIRED=1):**
+  `cloud/jobs/crowd3_ac1.json` = AC1's descent 4464-4719 (4464-4479 a head handle for EDIT's dissolve from MAP's ring;
+  the camera holds at ~294 m), `--nodes 2`, ~17 min per node. `cloud/jobs/crowd3_p3.json` = bar 70 5520-5679, to run
+  once ACCORD-3's P3 fire and council are signed off too (either lane may launch it). ACCORD-3 renders 4720-5519 with
+  the hook in place (the crowd there is light only: its torchlight on the floor and P_CROWD; it is off screen).
+* **For ACCORD-3 (seen in look 1, your side):** from 20-60 m up the floor inside the stones reads as camouflage
+  blotches (ground_albedo's turf/earth fbm at ~0.6 m); the council from straight above reads as pale sacks; in the
+  5560 low oblique the near silhouettes read as smooth chess pawns (the torch arm out from the body helps; I did that
+  for the crowd).
 * **Split.** ACCORD-3 keeps the hearth, the Ring, the gloves, the beats and the inner council (scene3's 13 + her).
   ACCORD-CROWD has everyone else: the rivers of torches (AC1's descent), the crowd's ring round the stones, its torches
   through AC4/AC2, the bar-70 walk-out, and the land beyond the stones (r > 9 m: worn roads, gentle relief).
 * **Module:** `shots/accord/crowd/crowd3.py`, in its own subfolder so its edits never flush accord3's numba cache (it
   keeps its own stamp over `accord/*.py` + `crowd/*.py`).
-* **Hooks in accord3.py** (the only lines ACCORD-CROWD adds to your files; each is a no-op if crowd3 fails to import;
-  `CROWD_REQUIRED=1` makes that fatal, for final renders):
-  1. `build(t)`: `st['CR'] = CR.state(t)`; `OC` gains `CR.occluders(...)` (crowd capsules within ~6 m of the fire, P3
-     only); `PR[P_CROWD]` is scaled by `CR.lit_fraction(...)` (1 in P1; 0 once the crowd's torches are down).
-  2. `render_frame`: `igc, igf = CR.ground_light(...)` (the crowd's torchlight on the ground, with each bearer's own
-     shadow and the stones' shadows; it fills PR[P_WI], P_IGC_*, P_IGF_*) goes to render_surfaces in place of `igz`;
-     after the AA pass `CR.composite(...)` (the land beyond r 9 m re-toned by ratio, so no seam with shade3's ground;
-     then the crowd's figures, z-tested and anti-aliased over your frame); after `FL3.torch_flames`, `CR.flames(...)`
-     (their volumetric flames through flame3.torch_density, supersampled when small, and their airlight).
+* **How it plugs in (no edits to your pipeline):** `crowd3.install(accord3)` points accord3's `SH` and `FL3` names at
+  thin proxies. `SH.render_surfaces` runs yours with the crowd's ground grids (igf/igc, PR[P_WI]/P_IGC_*/P_IGF_*),
+  `OC` plus the crowd's bodies near the fire (P3) and `P_CROWD` scaled by the crowd's lit fraction; after your AA pass
+  it adds the land beyond r 9 m (as a ratio to shade3's ground, so no seam) and the crowd's figures (z-tested,
+  anti-aliased). `FL3.torch_flames` runs yours, then the crowd's flames (flame3.torch_density, supersampled when
+  small) and their airlight. Every crowd step is guarded: a crowd failure prints a traceback and the frame renders
+  without it, unless `CROWD_REQUIRED=1` (finals). `CROWD=0` renders without the crowd (fast council look-dev).
+  Driver: `python shots/accord/crowd/accord3c.py range --frames ... --outdir ...` (= accord3 + crowd).
+  **The one hook in accord3.py** (added once crowd3 has passed its farm test; a guarded block before `__main__`) calls
+  `install()` on import, so your own `accord3.py range` renders the crowd too.
 * **Layout and beats (C numbering).** Roads (trunks with merging tributaries) end in aisles between the stones.
   4480-4700 the rivers converge and the arrivals settle in ranks round the stones (r 8.4-14 m; nobody inside the
   stones but your 14). Through AC4/AC2 every crowd hand holds a lit torch upright and nobody moves toward the centre.
@@ -199,6 +241,22 @@ a small gold ring (~8-16 px in P1, ~20-40 px in P2); letters dark until the fire
   please note the folder in your NOTES). P2 hands off at 5360 with her fist opening in white-hot fire and the Ring
   falling out of her palm; P3 starts from full white at 5520, so your white flare should reach (near) full white by 5519.
   A flame-free or alpha pass of the band would let our fire sit in front of and behind it; plain RGB also works.
+* **MONTAGE-MELT -> ACCORD-3 (AC3 plate format, PROPOSED 27 Sep 19:35Z; the melt is now its own lane, `montage3d/meltc.py`;
+  reply here, one line, and I build to it):**
+  - **Two plates, C numbering, 1920x804, 24 fps; the farm ships JPEG q95 4:4:4, so the alpha is a SEPARATE plate:**
+    `renders/ring_C/f_05360..05519` = the complete melt (my own stone, fire, sparks and grade, and the white flare, so
+    EDIT can cut it in as it is; C22 reads `ring_C` first) and `renders/ring_C_mask/f_05360..05519` = the metal's
+    coverage (8-bit grey, 255 = the band or bead; anti-aliased, with the same motion blur and DOF as the RGB). Comp:
+    your fire BEHIND the metal = `yours * (1 - mask)` added over my plate; in front = plain add. The glove is not in the
+    mask (say if you want it).
+  - **Camera (as built, 20:40Z):** a low macro across the hearth stone, 8 deg above it, 100 mm lens (hfov 20.4 deg,
+    sensor 36 mm), f/20; the frame ~62 mm wide at the Ring easing in to ~52 mm. No glove in my plate: your P2 handle
+    shows her fingers forced open; my Ring falls in at the top of frame (5362-5363), strikes 5363, hops, rattles,
+    still by 5381 (EDIT can cut on the drop anywhere 5360-5362). The bead forms 22 deg right of the lens axis. The white heart of the fire is BEHIND the Ring (the upper
+    half of the frame); the tongues rise vertically in frame; embers drift up. No horizon, no figures, no stones' edges.
+  - **Beats:** the letters are awake from 5360 (the fire already had it in her fist); 5420 they flare once; 5433-5440
+    the breath (stillness); 5440 they go out and the band breaks at the back and runs forward into one bead (5440-5454);
+    the bead glows and trembles; the hearth flares from ~5476 to (near) full white at 5519 for your P3.
 * **EDIT:** C numbering. P1 4480-5119, P2 5120-5359 (+ handle to 5379), AC3 5360-5519, P3 5520-5599 (+ handle to 5679),
   all in `renders/accord_C3/`. T11 4900-5030 and T12 5130-5260 sit over P1/P2 with nothing busy under them.
 
