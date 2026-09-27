@@ -1,3 +1,11 @@
+> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
+> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
+> - The fire-basket plinth shows triangle-fan seams.
+> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
+> - The dark speckles on B's snow read as dalmatian spots (climb 700).
+>
+> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
+
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
 ## RUN-A2 STATE AT PAUSE (27 Sep ~20:55Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
@@ -238,14 +246,6 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
   use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact. In this world
   `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
 
-> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
-> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
-> - The fire-basket plinth shows triangle-fan seams.
-> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
-> - The dark speckles on B's snow read as dalmatian spots (climb 700).
->
-> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
-
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION, R13b RING FALLS) - report 27 Sep <<<
 ## >>> STATE FOR RESUME (RUN-C-3, 27 Sep ~20:50Z; usage window ends 21:25Z, resume ~23:30Z) <<<
 * **C16/C17/C24 FINALS: APPROVED + RUNNING on the farm** (director launched all 45 runC jobs, `--nodes 15`; log
@@ -254,11 +254,14 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
   illum 2640; also scroll 240 catch + illum 2490; scroll 256-295 frame-to-frame diffs smooth, no pops).
   ON RESUME: `grep -c` the log for GAVE UP / failed; count landed frames (reveal 240, scroll 320, illum 480);
   any missing -> `python3 the-long-dawn/cloud/farm.py <job>.json --missing --nodes 1-3` (after asking main).
-* **R13b THE RING FALLS part b (C 2840-2959): BUILT, look-dev on the farm at 20:48Z.** New driver
-  `shots/run/ringfall_ink.py` (eb22781) + jobs `cloud/jobs/runC_ringfall_{a,b,c}.json` (40 f each ->
-  `renders/runC_ringfall/`). Test frames 2850/2885/2899/2903/2935 land in `renders/_farmtest/runC_ringfall_*`
-  (log `scratchpad/rc4/farm_rf.log`). If JOB READY was not sent before the window closed: look at those, fix,
-  push, send JOB READY runC_ringfall_{a,b,c}. Design: keeper's summit at night (cool multiplied wash, moon out of
+* **R13b THE RING FALLS part b (C 2840-2959): JOB READY SENT 20:53Z** (runC_ringfall_{a,b,c}, 3 x 40 f ->
+  `renders/runC_ringfall/`; code `shots/run/ringfall_ink.py` at 136272f; strip `_local_logs/review/
+  runC_ringfall.jpg`). ON RESUME: if the director launched it, check it landed (120 frames) and look at 2840,
+  2899, 2900-2905 (the strike) and 2959 (C14's cut). If not launched, ask. Round 1's grey multiply on the yellow
+  parchment read as mud; fixed by laying the night wash on the page's VALUE (blue moonlight, gold the only warm
+  thing). Test frames: `renders/_farmtest/runC_ringfall_{a,c}` (final), `_farmtest/runC_rf1/` (round 1).
+  Nitpicks for later: the cairn is small (~15 px at 1x); the sky could deepen a little more.
+  Design: keeper's summit at night (moonlit wash on the page's value, moon out of
   frame upper left per E13a), the cairn drawn in ink at keeper.CAIRN, the Ring a drawn falling star (gold head,
   tapering broken tail between two fine lines) on an even screen path (FALL z=200 ease 0.8), strike on 2900 beside
   the cairn: gold bloom (0.5 s), 7 short sparks (2 f), steam plume (pale strands) leaning downwind to 2959.
