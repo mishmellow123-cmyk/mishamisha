@@ -265,7 +265,8 @@ def picture_stats(path, n):
     """Per frame, at 240x100: sRGB luma p99.5 (black) and linear relative luminance on a 24x10 grid (flashes)."""
     w, h = 240, 100
     cmd = ['ffmpeg', '-v', 'error', '-i', path, '-map', '0:v',
-           '-vf', f'scale={w}:{h}:flags=area:in_color_matrix=bt709:in_range=tv,format=rgb24',
+           '-vf', f'scale={w}:{h}:flags=area+accurate_rnd+full_chroma_int:in_color_matrix=bt709:in_range=tv,'
+                  'format=rgb24',                   # default flags read limited range ~2/255 dark (measured)
            '-f', 'rawvideo', '-']
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     lut = (((np.arange(256) / 255.0) + 0.055) / 1.055) ** 2.4
@@ -393,8 +394,8 @@ def qc(cut, variant, mov, mp4, audio_label, build):
         check('WARN', 'black frames', f'{len(runs)} black runs; not planned: ' + ', '.join(
             f"{a}-{b - 1} ({shot_at(a)['sec']} {shot_at(a)['name']})" for a, b in unexpected[:8]))
     else:
-        check('PASS', 'black frames', f'{len(runs)} black runs, all planned (black shots, the ember on black, '
-                                      'the fade)' if runs else 'none')
+        check('PASS', 'black frames', (f'{len(runs)} black runs, all planned: ' + ', '.join(
+            f"{a}-{b - 1} ({shot_at(a)['sec']})" for a, b in runs[:8])) if runs else 'none')
     fl, at = flashes(grid)
     if fl > 3:
         check('FAIL', 'flashes', f'{fl} flashes in one second from f {at} ({shot_at(at)["sec"]}); limit 3')
