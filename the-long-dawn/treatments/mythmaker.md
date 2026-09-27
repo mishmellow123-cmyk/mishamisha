@@ -82,4 +82,35 @@ Anything shorter turns the chapters into a checklist, which is exactly the fan-f
 
 C is the longest cut on purpose. The producers asked for the old tale throughout, and the old tale is long.
 
-<!-- NEXT: C(4) beat sheet -->
+## C(4) Beat sheet (seconds)
+
+**The look.** C is ink on parchment. Pen strokes draw themselves, and the camera moves over the page as over a stage. Fire is the only colour, and it is real HDR fire burning on the paper. From chapter IV the drawings rise into 3-D line art (an NPR ink pass over the Blender world). At the dawn, watercolour floods the ink.
+
+**Chapter cards.** Small Cinzel capitals with a roman numeral, set like a chapter head, about 3.5 s on the page, each followed by one turn of the page. The narration is the elder's voice, set as Cormorant italic in the lower third. Speakers in the frame are marked *(child)* and *(elder)*.
+
+### I · A LONG-EXPECTED PARTY (0–40)
+| t | picture | sound & music | text | conveys |
+|---|---|---|---|---|
+| 0–4 | Black. Card. | Distant festival music, diegetic: a slow dance in 3/4, modal but not Irish. | I · A LONG-EXPECTED PARTY | The book's form. The long dawn was long expected. |
+| 4–18 | A green hill at night. A great silver-barked tree hung with lanterns. Tables, children, fires on the far hills. Crane down through the leaves to a small hearth at the tree's foot. | The dance fades under wind and fire crackle. | — | A good future, a party. The tree is the mallorn Sam planted after the war, though nobody says so. |
+| 18–40 | Close-ups. A huge red leather book across the elder's and the child's knees (the elder wears the red scarf). Tolkien-style map pages, runes in the margins, a drawn Ring. The child turns to the later chapters: the handwriting changes from page to page, in many hands and many scripts. A map of *our* world, with a small flame drawn on the highest mountains. The drawn flame flickers into real fire. | A solo clarinet takes the Beacon theme's call (C's own colour: warm, never a tin whistle). | 20–24.5 *(child)* **Is it a true story?** · 26–31 *(elder)* **We're in the same tale still.** | The frame: the old tale, and ours written into the same book by many hands. |
+
+### II · THE SHADOW OF THE PAST (40–100)
+| t | picture | sound & music | text | conveys |
+|---|---|---|---|---|
+| 40–44 | Page turn. Card. | Low string drone. | II · THE SHADOW OF THE PAST | |
+| 44–62 | The ink letters of every script lift off the page, drift like embers, spiral inward and ignite in a white point (EMBERS kindling, composited *on the page*: the ember black becomes scorched parchment, the page edges glow). | The glass arpeggios, voiced for C's orchestra. Ignition hit at 61. | 46–54 **In the latter days, we gathered every word we had ever written, / and kindled from them a fire that could think.** | Everything we ever wrote became the fire. |
+| 62–72 | The thinking fire burns above the page: ice-white, gold edge, a slow unnatural breathing. Around it, ink drawings grow outward stroke by stroke: vines, wheat, a tree in flower, stars. | Strings: the first warm answer of the theme. | 63.5–69 **It was the fairest light ever made.** | The gift. "Fairest" is the word the Elder Days use for the light of the Trees. |
+| 72–88 | Towers of embers rise around the fire like the forges of rival realms. A ring of gold is forged out of the fire and an inscription in an invented script burns into it (embers_C, with the Ring re-shaded to a polished band). The page around it chars. | Anvils in the rhythm. A chromatic turn in the low strings: the Ring motif. | 74–80 **And the smiths of every realm raced to master it.** · 81.5–88 **In the dark, each began to forge a Ring to hold it alone.** | The race, and the temptation to own the fire, shared by every realm. Nobody is the villain. |
+| 88–100 | The Ring's fire turns to face us and becomes the lidless Eye. It holds. The parchment around it browns and smokes. | A held cluster. The anvils stop. | — | The Ring looking back at whoever holds it. No line: the Eye needs none. |
+
+### III · THE BRIDGE OF KHAZAD-DÛM (100–165)
+| t | picture | sound & music | text | conveys |
+|---|---|---|---|---|
+| 100–104 | Page turn. Card. | Silence, then one low drumbeat. | III · THE BRIDGE OF KHAZAD-DÛM | |
+| 104–130 | **THE DELVING** (NEW, 3-D in ink). A vertical descent through pen-drawn halls of endless pillars, stairs and shafts, with parallax in every layer of hatching. Veins of silver in the walls brighten the deeper we go. Far below, tiny lamps of the delvers go on digging. | An ostinato in 5/4 for low strings and anvils (original; no chant). It speeds up as the silver brightens. | 106–112 **Every fathom deeper, the silver ran richer.** · 114–120 **They delved too greedily, and too deep,** | Every step toward ruin pays. |
+| 130–150 | **THE WAKING.** At the mountain's root the silver runs into a crack of red light. The dark moves. Shadow and flame rise: never a creature, only wings of smoke with a mane of fire, at a scale that hurts. From high above, a hair-thin bridge spans the abyss. A small grey figure with a staff and a pinpoint of white light stands on it. The ink world starts to burn. Through the burning page, the ember globe cracks with fire. | Sub-bass. Brass roars climbing a semitone at a time. | 131–138 **and woke a fire that could burn the world for ever.** | The dread, made real. The world could end for good. The grey figure is there for those who know the book; nothing depends on him. |
+| 150–155 | The page burns through to white. | Everything in one hit, then cut to silence. | — | The brink. |
+| 155–165 | Black. One ember drifts down and dims. | Solo piano: the call, broken off. | 156–164 **In the old story, the Ring was unmade in the fire that forged it.** · 160.5–164 **This fire could not be unmade.** | Where our tale leaves the old one. |
+
+<!-- NEXT: C(4) chapters IV-VII -->
