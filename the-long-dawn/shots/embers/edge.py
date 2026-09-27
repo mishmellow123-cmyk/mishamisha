@@ -1237,9 +1237,9 @@ class CrownTrail:
 
     def __init__(self, seed=989):
         r = rng(seed)
-        n = 5000
-        self.t0 = A.T_CROWN + r.uniform(0.0, 40.0, n)
-        self.off = r.normal(0, 1, (n, 3)) * np.array([1.4, 2.2, 1.4])
+        n = 900
+        self.t0 = A.T_CROWN + 3.0 + r.uniform(0.0, 50.0, n)
+        self.off = r.normal(0, 1, (n, 3)) * np.array([1.0, 0.5, 1.0]) + np.array([0.0, -4.0, 0.0])   # its broken base
         self.v = r.normal(0, 1, (n, 3)) * 0.06 + np.array([0.0, 0.02, 0.0])
         self.E = r.lognormal(0, 0.7, n)
         self.T = r.uniform(0.5, 0.8, n)
@@ -1259,7 +1259,7 @@ class CrownTrail:
         P0, _ = at(ctx.t0)
         P1, a = at(ctx.t1)
         on = (t > self.t0)
-        e = self.E * on * np.exp(-a / 26.0) * 9.0
+        e = self.E * on * np.exp(-a / 20.0) * 3.0          # a thin trail off the break: the crown itself must read
         m = e > 1e-4
         ctx.fr.splat(P0[m], P1[m], 0.05, e[m], look.blackbody(self.T[m]), ctx.cam0, ctx.cam1, zref=30.0)
 
