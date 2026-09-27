@@ -59,7 +59,8 @@ STAND_IN_RX = re.compile(r'\b(pre-h5|test|preview|quarter-res|half-res|stand-in)
 SET_NAME = dict(lower='lower third', row='lower third, one row (T6b joins T6a)', black_top='on black, upper line',
                 black_bottom='on black, lower line', ink='ink write-on, lower third', ink_page='ink on the page, centre',
                 fire='fire letters, lower third', fire_black_top='fire letters on black, upper line',
-                fire_black_bottom='fire letters on black, lower line', title='main title (Cinzel)')
+                fire_black_bottom='fire letters on black, lower line', title='main title (Cinzel)',
+                in_picture='main title, burned into the page in the render (book space)')
 
 _FONTS = {}
 
@@ -93,8 +94,9 @@ def bbs(f):
 # --------------------------------------------------------------------------------------------- the text
 def legible(r, f):
     """The line is fully drawn at f (past its write-on / kindle / fade-in, before its fade-out)."""
-    lead = 26 if r['set'].startswith('ink') else 30 if r['set'] == 'title' else 14
-    tail = 50 if r['set'] == 'title' else 14
+    title = r['set'] in ('title', 'in_picture')
+    lead = 26 if r['set'].startswith('ink') else 30 if title else 14
+    tail = 50 if title else 14
     return r['f_in'] + lead <= f < r['f_out'] - tail
 
 
@@ -428,7 +430,8 @@ def text_md(films, stamp):
     style = {'A': 'Cormorant Garamond italic, lower third; T10a/T10b centred on black; the title kindles in the sky.',
              'B': 'Wordless: the title only, kindling in the dawn sky and fading into the light.',
              'C': 'Ink lines (EB Garamond italic) write on with a pen nib; fire lines kindle and crumble into sparks; '
-                  'T8a/T8b in fire on black; the title burns onto the blank page and cools to ink.'}
+                  'T8a/T8b in fire on black; the title burns onto the blank page in the render itself and cools to '
+                  'ink.'}
     for cut, film in films.items():
         L.append(f'## {cut} · {FILM[cut]}')
         L.append('')

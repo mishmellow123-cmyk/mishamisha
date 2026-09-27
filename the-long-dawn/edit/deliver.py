@@ -53,11 +53,18 @@ FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES'}
 
 
 def _code_hash():
-    """The frame pipeline's own code: a change here re-encodes every segment (audio and coverage code do not)."""
-    parts = [inspect.getsource(o) for o in (AS.Ctx, AS.grade, AS.make_slate, AS.draw_slate_clock, AS.burn_in,
+    """(frame code, text code). The frame pipeline's own code re-keys every segment; the text-drawing code only
+    re-keys segments with text over them (each segment also keys its own lines' words, frames and setting, so a
+    table change re-encodes only the shots it touches)."""
+    frame = [inspect.getsource(o) for o in (AS.Ctx, AS.grade, AS.make_slate, AS.draw_slate_clock, AS.burn_in,
                                             AS.smooth, AS.bar_beat, AS.locate, AS.chain, AS.plan_shot)]
-    parts.append(open(os.path.join(ROOT, 'edit', 'titles.py')).read())
-    return hashlib.sha1('\n'.join(parts).encode()).hexdigest()[:12]
+    text = [inspect.getsource(o) for o in (titles.TextV3, titles.render_line, titles.lines_v3, titles.composite_v3,
+                                           titles._noise, titles._heat_rgb, titles.smooth, titles._font)]
+    text.append(repr([titles.Y_LOWER, titles.Y_TOP, titles.Y_BOTTOM, titles.Y_MID, titles.PARCH.tolist(),
+                      titles.IRON.tolist(), titles.FIRE_RAMP.tolist(), titles.INK.tolist(), titles.GLOW.tolist(),
+                      titles.W, titles.ITALIC, titles.EBG_ITALIC, titles.CINZEL]))
+    h = lambda xs: hashlib.sha1('\n'.join(xs).encode()).hexdigest()[:12]
+    return h(frame), h(text)
 
 
 def name_of(cut, variant, profile):
@@ -110,14 +117,15 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table):
     take = plan['take']
     tdesc = None if take is None else {k: take.get(k) for k in ('stem', 'off', 'mode', 'crop', 'grade', 'matte',
                                                                   'under', 'video', 'note', 'add')}
-    head = [ENGINE, code, prof['scale'], prof['clean'], prof['crf'], prof['preset'], cut, i,
+    rows = [(r['id'], r['line'], r['f_in'], r['f_out'], r['set']) for r in table
+            if r['f_in'] < shot['f1'] and r['f_out'] > shot['f0']]
+    head = [ENGINE, code[0], code[1] if rows else None, prof['scale'], prof['clean'], prof['crf'], prof['preset'],
+            cut, i,
             {k: shot[k] for k in ('sec', 'f0', 'f1', 'code', 'name', 'owner', 'desc', 'kind')},
             plan['kind'], tdesc, plan['have'], bool(plan['alt'])]
     h.update(json.dumps(head, sort_keys=True, default=str).encode())
     for f in range(shot['f0'], shot['f1']):
         h.update('\n'.join(frame_sources(cut, variant, plan, f)).encode())
-    rows = [(r['id'], r['line'], r['f_in'], r['f_out'], r['set']) for r in table
-            if r['f_in'] < shot['f1'] and r['f_out'] > shot['f0']]
     h.update(json.dumps(rows).encode())
     return h.hexdigest()[:24]
 

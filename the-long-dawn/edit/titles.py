@@ -253,7 +253,7 @@ SET_AS = {
     'A': dict(T10a='black_top', T10b='black_bottom', T6a='row', T6b='row', title='title'),
     'B': dict(title='title'),
     'C': dict(T1='ink', T7='ink', T9='ink', T14='ink_page', T8a='fire_black_top', T8b='fire_black_bottom',
-              title='title'),
+              title='in_picture'),        # director ~19:20Z: MAP-L burns C's title into the page (book space)
 }
 DEFAULT_SET = {'A': 'lower', 'B': 'lower', 'C': 'fire'}
 Y_LOWER, Y_TOP, Y_BOTTOM, Y_MID = 648, 372, 440, 402          # 1920x804 picture coordinates
@@ -506,7 +506,7 @@ def lines_v3(cut, scale=1.0):
     out = []
     byid = {r['id']: r for r in rows}
     for r in rows:
-        if r['set'] == 'row':                                    # A: T6a then T6b joins on the same row
+        if r['set'] in ('row', 'in_picture'):   # row: A's T6a/T6b are set together below; in_picture: in the render
             continue
         out.append(TextV3(cut, r, scale))
     row_ids = [r['id'] for r in rows if r['set'] == 'row']

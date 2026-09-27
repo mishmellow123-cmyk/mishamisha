@@ -677,6 +677,23 @@
    "desc": "Dark, her breath, the scarf. Strike 1 on bar 38 b2: a spark in the dark.",
    "takes": [
     {
+     "stem": "h1",
+     "off": 0,
+     "mode": "v3",
+     "note": "H1-C hands and flint",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "folders": [
+      "renders/h1_C",
+      "renders/h1_v3"
+     ]
+    },
+    {
      "stem": "h1_v3h5",
      "off": -1744,
      "mode": "exact",
@@ -825,6 +842,23 @@
    "owner": "HEROINE",
    "desc": "She strikes again (bar 40 b3.9); a long blow; the kindling catches (bar 42 b2.8). Hands only.",
    "takes": [
+    {
+     "stem": "h1",
+     "off": 0,
+     "mode": "v3",
+     "note": "H1-C hands and flint",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "folders": [
+      "renders/h1_C",
+      "renders/h1_v3"
+     ]
+    },
     {
      "stem": "h1_v3h5",
      "off": -1884,
@@ -1426,7 +1460,7 @@
    "f1": 7200,
    "code": "X3",
    "name": "TITLE",
-   "owner": "EDIT over MAP",
+   "owner": "MAP",
    "desc": "THE LONG DAWN burns onto the blank page in fire-letters and cools to ink.",
    "takes": [
     {
@@ -1563,7 +1597,7 @@
    "line": "THE LONG DAWN",
    "f_in": 6980,
    "f_out": 7160,
-   "set": "title",
+   "set": "in_picture",
    "locked": "THE LONG DAWN"
   }
  ],
