@@ -210,7 +210,7 @@ def build(CH, cam_pos, n_extra=4, seed=4815):
     rng = np.random.default_rng(seed)
     P7 = np.asarray(CH[6, :3], np.float64)
     dx = 6.0
-    R = 1700.0
+    R = 2300.0
     xs = P7[0] + np.arange(-R, R + dx, dx)
     zs = P7[2] + np.arange(-R, R + dx, dx)
     X, Z = np.meshgrid(xs, zs)
@@ -226,7 +226,7 @@ def build(CH, cam_pos, n_extra=4, seed=4815):
         az = math.degrees(math.atan2(x - P7[0], z - P7[2]))
         da = (az - LOOK_AZ + 180.0) % 360.0 - 180.0
         dc = np.hypot(CH[:, 0] - x, CH[:, 2] - z).min()
-        if 170.0 <= d <= 1600.0 and abs(da) <= 32.0 and y - mn[j, i] > 3.0 and dc > 140.0:
+        if 200.0 <= d <= 2200.0 and abs(da) <= 45.0 and y - mn[j, i] > 3.0 and dc > 140.0:
             cands.append((x, y, z, d, da, y - mn[j, i]))
     C = np.array(cands).reshape(-1, 6)
     ok = []
@@ -240,18 +240,28 @@ def build(CH, cam_pos, n_extra=4, seed=4815):
         ok.append(not (hq > Q[:, 1] + 0.3).any())
     C = C[np.array(ok, bool)] if len(C) else C
     print('crests', len(ok), 'in sight', len(C), flush=True)
-    angs = [math.degrees(math.atan2(c[0] - cam_pos[0], c[2] - cam_pos[2])) for c in CH]
+    # in the plate's frame: inside it with a margin, below the far skyline band, clear of the chain fires (>= 70 px)
+    # and of the foreground watcher's silhouette (and its fire), so each extra reads as one more fire, not a clump
+    pcam = camera(FR0)
+    spot7, _ = seventh_spot(CH[6])
+    wa = pcam.project(spot7 + UP * 1.9)
+    wb = pcam.project(spot7)
+    cx_, cy_, _z = pcam.project(CH[:, :3] + UP * 1.0)
     order = sorted(range(len(C)), key=lambda k: -C[k, 5] * rng.uniform(0.6, 1.4))
     picked = []
     for k in order:
-        a = math.degrees(math.atan2(C[k, 0] - cam_pos[0], C[k, 2] - cam_pos[2]))
-        if any(abs(a - q) < 4.0 for q in angs + [p[1] for p in picked]):
+        sx, sy, sz = pcam.project(C[k, :3] + UP * 1.0)
+        if sz <= 0 or not (80.0 < sx < 1840.0 and 330.0 < sy < 780.0):
             continue
-        picked.append((k, a))
+        if wa[0] - 140.0 < sx < wa[0] + 120.0 and sy > wa[1] - 60.0:
+            continue
+        if np.min(np.hypot(cx_ - sx, cy_ - sy)) < 70.0 or any(math.hypot(sx - q[1], sy - q[2]) < 90.0 for q in picked):
+            continue
+        picked.append((k, sx, sy))
         if len(picked) >= n_extra:
             break
     fires, figs = [], []
-    for k, a in picked:
+    for k, _sx, _sy in picked:
         x, y, z, d, da, pr = C[k]
         fires.append([x, y, z, rng.uniform(3690.0, 3760.0), rng.uniform(0.55, 0.8), float(rng.integers(0, 9999))])
         w = _dir(LOOK_AZ + rng.uniform(-8.0, 8.0))
@@ -375,8 +385,11 @@ def camera(f, W=1920, H=804):
         pos, yaw, pitch, hfov = BR.end_cam()
     else:
         pos, yaw, pitch, hfov = default_cam(P7)
+    # A14 holds still on this plate into the cut, so the push eases in from rest (quintic) and is still drifting
+    # gently on the last frame (the cut to A16 follows the look)
     u = min(max((f - FR0) / float(NFR - 1), 0.0), 1.0)
-    e = u * u * (3.0 - 2.0 * u) * 0.5 + 0.5 * u
+    s5 = lambda x: x * x * x * (x * (6.0 * x - 15.0) + 10.0)
+    e = s5(0.8 * u) / s5(0.8)
     pos = np.asarray(pos, np.float64) + _dir(yaw) * PUSH * e
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
 
