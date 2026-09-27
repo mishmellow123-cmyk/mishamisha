@@ -8,7 +8,8 @@ Rules, read from the bar map + cue sheet (section tags, section "level", events,
              re-bowed, in every section except those tagged black / silence; at the section's level
              (pp default).  Sections tagged race/edge/brink darken it (the viola's Ab3: the tritone)
              and swell toward mp.  Sections tagged major/dawn/title use D add9 (A2, F#3, E4, A4) instead;
-             lydian sections the IGNITION chord (Bbmaj9#11/D).
+             lydian sections the IGNITION chord (Bbmaj9#11/D).  A race section cut to silence or black
+             (not the brink, which has its suck) falls away over its last two beats instead (C11's slip).
   breaths    every breath of the cue sheet cuts the drone: its notes end as the breath begins and new
              ones start on the breath's downbeat (a bloom out of silence, never a stroke).  Before a breath
              inside a section the previous section's voicing holds (C22: the tritone until the Ring goes).
@@ -36,7 +37,7 @@ CALL_RH = ((2, 2, 4), (1, 1, 2))              # half notes, or quarters when the
 FALLBACK_RIDE = {
     "A": {"A10": -2.4, "A13": -1.7, "A14": -1.7, "A15": -2.7, "A19": -1.4},
     "B": {"B1": -2.0, "B2": -1.0, "B5": -3.0, "B6": -8.0, "B7": -2.5, "B9": -1.6, "B10": -2.1, "B11": -1.2},
-    "C": {"C2": -6.5, "C12": -4.5, "C15": -1.2, "C18": -1.2, "C26": -0.8},    # from fallback_C render 1 (untested)
+    "C": {"C2": -6.5, "C12": -4.5, "C15": -1.2, "C18": -1.2, "C26": -0.8},    # renders 1-2 (C12's peak was C11's tail)
 }
 ANS_RH = ((2, 1, 1, 4), (1, .5, .5, 2))
 
@@ -98,6 +99,9 @@ def build(bm):
             prev = None
             continue
         race = bool(tags & {"race", "edge", "brink"})
+        # a race section cut to silence or black (not the brink, which has its suck) falls away over its last two
+        # beats instead of swelling into the black (C11: "at the slip one glass tone falls away into silence")
+        falls_away = i + 1 < len(secs) and bool(set(secs[i + 1].get("tags", [])) & {"silence", "black"})
         dawn = "dawn" in tags
         voices = _voices(tags, lvl)
         ptags = set(prev.get("tags", [])) if prev else set()
@@ -135,6 +139,8 @@ def build(bm):
                     S.P(pn).d((p0, lvl), (p1 - 3, lvl * 0.4), (p1 - 0.5, 0.03))
                 elif "brink" in tags:             # the cut's loudest
                     S.P(pn).d((p0, lvl), (p1 - 1.6, min(0.8, lvl * 1.5)), (p1 - 0.3, lvl * 0.8))   # then the suck
+                elif race and falls_away:         # C11: the slip (two beats before the black) falls away into
+                    S.P(pn).d((p0, lvl), (p1 - 2.0, min(0.5, lvl * 1.4)), (p1 - 0.15, 0.03))   # the silence
                 elif race:
                     S.P(pn).d((p0, lvl), (p1 - 0.5, min(0.5, lvl * 1.4)))
                 else:
