@@ -1,3 +1,26 @@
+# >>> EMBERS-A3 (split off EMBERS-A2, 27 Sep ~19:30Z): A16 TOWERS IN THE LIGHT + A17 THE FIRE, SEEN (4400-4879,
+# one take) + both in the _alt_codedtowers ALT. Owner file: turn.py (+ cloud/jobs/embers_A3_turn.json, _alt_turn.json).
+# Shared modules untouched so far (a3.py/edge.py/scene_b.py hooks are installed from turn.py on import). <<<
+## EMBERS-A3 STATE (27 Sep ~19:55Z)
+* Renders: NOTHING delivered yet for 4400-4879 (renders/embers_A3 has 1040-1839 + EMBERS-2/A2's shots).
+* turn.py v1 (unreviewed, farm look-dev next): one take 4400-4879. Camera: outside the ring behind giant 2 / forge 1
+  (the watchers' look, low, r 62 -> 44 slow push), A17 walks on through the gap between giant 2 and forge 1 (az 1.53)
+  to the rim; the heart is centred (959.5, 401.5) at 4879 (verified by projection), z ~18, hfov 50.
+  Layers: RidgeWorld (14 clusters of 1-5 fires on knife-edge ridgelines 65-360 out, crest glints only near the fires,
+  never a ring; its fires' directions light the backs), TowerLight (backs lit by the far fires + each opened tower's
+  facade light on the others: the giants lit by each other), Shutters (every window cell on the facing faces opens
+  bottom-up in a wave, 0.32 f/unit of height for the giants, a breath of flare, then steady), Beams (motes in the
+  pit's haze, the giants' light crosses in ~8 f), SmallLights (from the towers down their faces, from the hills in
+  strings, stopping at the rim in knots), Heart (the crossing's heart: sigmas 10/26/114 px, peaks 30/0.9/0.05,
+  (0.80,0.92,1.00), 7 slow filaments), world_light (the fire's light on the world draws back into the heart).
+  Hooks (t >= 4400 only): shutter (scene_b windows off once open), back_light 0, fire_centre y -7 (the crater's mouth,
+  as THE EDGE), fire_scale 2.0 -> 0.28 over 4800-4868, power (hands its light to the heart), the crater as occluder.
+  Opening order: giants 4480; then 3, 7, 1, 5, 4, 0 on the beats 4560-4660.
+* Look-dev on the FARM only: `farm.py cloud/jobs/embers_A3_turn.json --test 8 --frames ...`; per-frame camera trials:
+  TURN_CAMS='{"4400": [r, az, y, ty, hf]}' env in a test job's command.
+* Dependencies: edge.py (EMBERS-2) Crater/GoldRuns/PitEmbers/rim_r are used as-is; the crater's brink factor is 1 after
+  2640, so in A16 it starts bright and calms (edge `calm`) by 4700.
+
 # >>> EMBERS-2 (A only; C is EMBERS-C's) -- STATE 27 Sep ~19:25Z: the EDGE/BRINK pass, look-dev on the FARM <<<
 * Scope: A's shots only (EMBERS-C owns c3.py, scene_c.py, tolkien.py). Tests: farm.py <job> --test K --frames ...
   (renders/_farmtest/<job>/); the Mac lab (scratchpad e4/labsrv.py) is retired.
