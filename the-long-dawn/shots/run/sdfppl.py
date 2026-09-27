@@ -69,8 +69,12 @@ class Scene:
         c = np.asarray(c)
         self._add(r, [c + R, c - R])
 
-    def bell(self, a, b, ra, rb, fwd, depth=0.03, n=9, phase=0.0, mat=0, k=0.0):
-        """A hanging cloak: a cone from a (shoulders) to b (hem centre) with folds that deepen toward the hem."""
+    def bell(self, a, b, ra, rb, fwd, depth=0.03, n=9, phase=0.0, mat=0, k=0.0, ell=0.0, wind=0.0, wind_ang=math.pi):
+        """A hanging cloak: a cone from a (shoulders) to b (hem centre) with folds that deepen toward the hem.
+        ell: front/back slimmer than the sides (a body is not round: 0.3 = 30% slimmer front to back).
+        wind: metres of billow at the hem on the lee side (the windward side presses in, the lee hem lifts and
+        flutters); wind_ang: the direction the wind blows TOWARD, radians about the axis from `fwd`, positive toward
+        the figure's left (the frame of _sd_bell)."""
         r = np.zeros(NP)
         r[0] = 4
         r[1:4] = a
@@ -83,7 +87,10 @@ class Scene:
         r[14] = depth
         r[15] = n
         r[16] = phase
-        R = max(ra, rb) + depth
+        r[17] = ell
+        r[18] = wind
+        r[19] = wind_ang
+        R = max(ra, rb) + depth + 1.2 * abs(wind)
         self._add(r, [np.asarray(a) + R, np.asarray(a) - R, np.asarray(b) + R, np.asarray(b) - R])
 
     def torus(self, c, R, r_, mat=1, k=0.0):
@@ -180,9 +187,40 @@ def _sd_bell(px, py, pz, R):
     th = math.atan2(qx * sx + qy * sy + qz * sz, qx * fx + qy * fy + qz * fz)
     h = min(max(t / L, 0.0), 1.0)
     ph = R[16]
-    fold = R[14] * h * (math.sin(R[15] * th + ph) + 0.45 * math.sin(2.3 * R[15] * th + 1.7 * ph + 1.3))
-    r = R[7] + (R[8] - R[7]) * h + fold
-    Lh = L * (1.0 + 0.022 * math.sin(3.0 * th + 2.0 * ph) + 0.012 * math.sin(7.0 * th - ph))
+    ell = R[17]
+    W = R[18]
+    if ell == 0.0 and W == 0.0:
+        # v2 bell (kept exactly for any caller that asks for neither)
+        fold = R[14] * h * (math.sin(R[15] * th + ph) + 0.45 * math.sin(2.3 * R[15] * th + 1.7 * ph + 1.3))
+        r = R[7] + (R[8] - R[7]) * h + fold
+        Lh = L * (1.0 + 0.022 * math.sin(3.0 * th + 2.0 * ph) + 0.012 * math.sin(7.0 * th - ph))
+        slope = (R[8] - R[7]) / L
+        ds = (rho - r) / math.sqrt(1.0 + slope * slope)
+        dc = max(-t, t - Lh)
+        if ds > 0.0 and dc > 0.0:
+            d = math.sqrt(ds * ds + dc * dc)
+        else:
+            d = max(ds, dc)
+        return 0.6 * d          # conservative: the folds make it a non-exact distance
+    # v3 CLOTH: weight, creases and wind. Folds hang from the shoulders and open toward the hem; they are unevenly
+    # spaced, twist a little down the fall (more in wind), and have soft crests with sharp creases between them
+    # (|sin|, softened), not a fluted sine. The windward side presses in, the lee side billows and its hem lifts
+    # and flutters (a travelling wave on the phase). A body is flatter front to back than across (ell).
+    cw = math.cos(th - R[19])
+    lee = 0.5 + 0.5 * cw
+    thp = th + 0.32 * math.sin(2.0 * th + 0.6 * ph + 0.4) + (0.20 + 1.6 * abs(W)) * h * math.sin(0.37 * ph + 1.9 * th)
+    x = 0.5 * R[15] * thp + 0.5 * ph
+    sx2 = math.sin(x)
+    g = (math.sqrt(sx2 * sx2 + 0.035) - 0.187) / 0.83           # 0 in a crease, 1 on a crest
+    dep = R[14] * (0.55 + 0.45 * math.sin(3.0 * th + 0.23 * ph + 1.1)) * (1.0 + 1.5 * abs(W) * lee)
+    fold = dep * h ** 1.15 * (2.0 * g - 1.0)
+    hw = h ** 1.4
+    billow = W * hw * (1.15 * lee * lee - 0.30 * (1.0 - lee)) \
+        + 0.22 * W * hw * lee * math.sin(4.0 * th - 2.3 * ph + 5.0 * h)
+    ce = math.cos(th)
+    r = (R[7] + (R[8] - R[7]) * h) * (1.0 - ell * ce * ce) + fold + billow
+    Lh = L * (1.0 + 0.018 * math.sin(3.0 * th + 2.0 * ph) + 0.010 * math.sin(7.0 * th - ph)) + 0.35 * fold \
+        - abs(W) * (0.50 * lee * lee + 0.10 * lee * math.sin(5.0 * th - 2.9 * ph))
     slope = (R[8] - R[7]) / L
     ds = (rho - r) / math.sqrt(1.0 + slope * slope)
     dc = max(-t, t - Lh)
@@ -190,7 +228,7 @@ def _sd_bell(px, py, pz, R):
         d = math.sqrt(ds * ds + dc * dc)
     else:
         d = max(ds, dc)
-    return 0.6 * d          # conservative: the folds make it a non-exact distance
+    return 0.45 * d         # conservative: creases, billow and flutter make it far from an exact distance
 
 
 @njit(inline='always', fastmath=True)
@@ -338,25 +376,37 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                 nx /= nl
                 ny /= nl
                 nz /= nl
+                ao = 1.0
+                rimk = 0.0
                 if mat < 0.5:
-                    # cloth: folds that hang (noise stretched along the vertical) bend the normal, and a mottled
-                    # weave/wear varies the albedo, so lit sleeves read as fabric, not plastic
+                    # cloth: small hanging creases (noise stretched along the vertical) bend the normal; the albedo
+                    # carries long fibre streaks and broad wear (wool), not a blotchy mottle (which reads as clay)
                     fsc = 1.0 / max(e * 6.0, 0.012)
                     fk = min(fsc / 60.0, 1.0)
                     if fk > 0.05:
                         f1 = gnoise3(qx * 16.0, qy * 3.0, qz * 16.0, 11)
                         f2 = gnoise3(qx * 16.0 + 7.1, qy * 3.0, qz * 16.0 - 2.3, 12)
-                        nx += 0.55 * fk * f1
-                        nz += 0.55 * fk * f2
-                        ny += 0.15 * fk * gnoise3(qx * 30.0, qy * 30.0, qz * 30.0, 13)
+                        nx += 0.35 * fk * f1
+                        nz += 0.35 * fk * f2
+                        ny += 0.10 * fk * gnoise3(qx * 30.0, qy * 30.0, qz * 30.0, 13)
                         nl2 = math.sqrt(nx * nx + ny * ny + nz * nz) + 1e-12
                         nx /= nl2
                         ny /= nl2
                         nz /= nl2
-                    mot = 0.72 + 0.56 * (0.5 + 0.5 * gnoise3(qx * 7.0, qy * 5.0, qz * 7.0, 14))
+                    wv = gnoise3(qx * 26.0, qy * 3.2, qz * 26.0, 14)
+                    wr = gnoise3(qx * 2.6, qy * 1.8, qz * 2.6, 15)
+                    mot = (0.86 + 0.14 * wv) * (0.84 + 0.16 * wr)
                     ar, ag, ab = O[oi, 6] * mot, O[oi, 7] * mot, O[oi, 8] * mot
                     wrap = 0.12                  # little wrap: lights behind a figure rim it, they do not fill it
                     spec = 0.0
+                    # the creases hold shadow: occlusion from two probes along the normal (the cloth SDF is scaled
+                    # by 0.45, so a flat cloak reads 0.45 x the probe distance, which counts as open)
+                    o1, _m = _map(qx + nx * 0.02, qy + ny * 0.02, qz + nz * 0.02, P, i0, n)
+                    o2, _m = _map(qx + nx * 0.06, qy + ny * 0.06, qz + nz * 0.06, P, i0, n)
+                    oc1 = min(max(1.0 - o1 / (0.45 * 0.02), 0.0), 1.0)
+                    oc2 = min(max(1.0 - o2 / (0.45 * 0.06), 0.0), 1.0)
+                    ao = min(max(1.0 - 0.8 * (0.45 * oc1 + 0.55 * oc2), 0.3), 1.0)
+                    rimk = 0.9                   # wool fibres glow at the edge when a light is behind the figure
                 elif mat < 1.5:
                     ar, ag, ab = 0.035, 0.034, 0.033
                     wrap = 0.1
@@ -377,15 +427,25 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                     ar, ag, ab = 0.075, 0.075, 0.08
                     wrap = 0.2
                     spec = 0.0
-                cr = ar * amb[0] * (0.6 + 0.4 * ny)
-                cg = ag * amb[1] * (0.6 + 0.4 * ny)
-                cb = ab * amb[2] * (0.6 + 0.4 * ny)
+                cr = ar * amb[0] * (0.6 + 0.4 * ny) * ao
+                cg = ag * amb[1] * (0.6 + 0.4 * ny) * ao
+                cb = ab * amb[2] * (0.6 + 0.4 * ny) * ao
+                aod = 0.45 + 0.55 * ao
+                # rim: how edge-on the surface is to the camera (1 at the silhouette)
+                edge = 1.0 - abs(nx * dx + ny * dy + nz * dz)
+                edge = edge * edge * math.sqrt(edge)
                 # moon
                 ndm = nx * moon[0] + ny * moon[1] + nz * moon[2]
-                wm = max((ndm + wrap) / (1.0 + wrap), 0.0) * moon[6]
+                wm = max((ndm + wrap) / (1.0 + wrap), 0.0) * moon[6] * aod
                 cr += ar * moon[3] * wm
                 cg += ag * moon[4] * wm
                 cb += ab * moon[5] * wm
+                if rimk > 0.0:
+                    vm = max(dx * moon[0] + dy * moon[1] + dz * moon[2], 0.0)
+                    rm = rimk * edge * (0.25 + vm * vm * vm) * moon[6] * 3.0
+                    cr += ar * moon[3] * rm
+                    cg += ag * moon[4] * rm
+                    cb += ab * moon[5] * rm
                 if spec > 0.0 and ndm > 0.0:
                     hx, hy, hz2 = moon[0] - dx, moon[1] - dy, moon[2] - dz
                     hl = math.sqrt(hx * hx + hy * hy + hz2 * hz2) + 1e-9
@@ -403,10 +463,16 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                     ll = math.sqrt(l2) + 1e-9
                     ndl = (nx * lx2 + ny * ly2 + nz * lz2) / ll
                     E = LT[li, 6] / (l2 + LT[li, 7] * LT[li, 7])
-                    wl = max((ndl + wrap) / (1.0 + wrap), 0.0) * E
+                    wl = max((ndl + wrap) / (1.0 + wrap), 0.0) * E * aod
                     cr += ar * LT[li, 3] * wl
                     cg += ag * LT[li, 4] * wl
                     cb += ab * LT[li, 5] * wl
+                    if rimk > 0.0:
+                        vl = max((dx * lx2 + dy * ly2 + dz * lz2) / ll, 0.0)
+                        rl = rimk * edge * (0.2 + vl * vl * vl) * E * 2.5
+                        cr += ar * LT[li, 3] * rl
+                        cg += ag * LT[li, 4] * rl
+                        cb += ab * LT[li, 5] * rl
                     if spec > 0.0 and ndl > 0.0:
                         hx = lx2 / ll - dx
                         hy = ly2 / ll - dy
@@ -456,9 +522,130 @@ def _knee(hip, ank, l1, l2, w):
     return hip + u * a + n * hk
 
 
+def _bell_wind_ang(a, b, w, wind_vec):
+    """The wind's direction about a bell's axis a->b, in _sd_bell's frame (0 = the figure's forward w, positive toward
+    its left), and the wind's horizontal strength (|wind_vec|)."""
+    d = _unit(np.asarray(b) - np.asarray(a))
+    f = w - d * float(w @ d)
+    f = _unit(f)
+    s = np.cross(d, f)
+    wv = np.asarray(wind_vec, np.float64)
+    return math.atan2(float(wv @ s), float(wv @ f)), float(np.linalg.norm(wv[[0, 2]]))
+
+
 def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(0.215, 0.34), folds=9,
               fold_depth=0.03, fold_phase=0.0, sway=0.0, pack=False, staff_tip=None, lantern_side=0.0,
-              lantern_swing=0.0, carry=None, carry_side=1.0, peak=True, free_swing=0.0, reach=None):
+              lantern_swing=0.0, carry=None, carry_side=1.0, peak=True, free_swing=0.0, reach=None,
+              wind=None, ell=None, flutter=0.0, cloth=True):
+    """v3 CLOTH (cloth=True, the default): the cloak is elliptical (a body is flatter front to back), hangs with
+    creased folds, and takes the wind: `wind` = a world vector, the direction the wind blows toward, its length the
+    hem's billow in metres (0.1-0.3); the hem centre streams to the lee, the lee side billows and its hem lifts and
+    flutters (`flutter` = a phase that runs with time), the windward side presses onto the legs. The short cape is
+    cloth too, and the hood has a front brim, so a profile reads as a deep cowl, not a ball on a cone.
+    cloth=False keeps the v2 figure exactly."""
+    if not cloth:
+        return _traveller_v2(sc, pel, w, ank_l, ank_r, rgb, h, lean, hem, cloak, folds, fold_depth, fold_phase, sway,
+                             pack, staff_tip, lantern_side, lantern_swing, carry, carry_side, peak, free_swing, reach)
+    up = np.array([0.0, 1.0, 0.0])
+    w = _unit([w[0], 0.0, w[2]])
+    s = np.cross(up, w)                              # the walker's RIGHT in this world (sd_bell's +theta is its left)
+    fl = w * math.sin(lean) + up * math.cos(lean)
+    chest = pel + fl * 0.47 * h
+    neck = chest + fl * 0.11 * h
+    head = neck + up * 0.10 * h + w * 0.035 * h
+    ground_y = min(ank_l[1], ank_r[1]) - 0.07
+    wv = np.zeros(3) if wind is None else np.asarray(wind, np.float64)
+    wn = float(np.linalg.norm(wv))
+    wdir = wv / wn if wn > 1e-9 else np.zeros(3)
+    el = 0.30 if ell is None else ell
+    out = {}
+    sc.begin(rgb=rgb)
+    # legs (only the shins and boots show below the hem; the knees press the cloth where the stride opens it)
+    for side, ank in ((1.0, ank_l), (-1.0, ank_r)):
+        hip = pel + s * side * 0.085 * h
+        kn = _knee(hip, ank, 0.46 * h, 0.45 * h, w)
+        sc.cone(hip, kn, 0.074 * h, 0.058 * h, 0, 0.03)
+        sc.cone(kn, ank, 0.055 * h, 0.044 * h, 0, 0.02)
+        sc.box(ank + w * 0.045 * h - up * 0.035 * h, (0.052 * h, 0.048 * h, 0.13 * h),
+               yaw=math.atan2(w[0], w[2]), rnd=0.033 * h, mat=0, k=0.02)
+    # the cape over sloping shoulders: a short cloth bell, lightly folded, lifting a little in the wind
+    cape_a = neck - up * 0.015 * h
+    cape_b = chest - up * 0.07 * h + wdir * 0.2 * wn
+    ang, _ = _bell_wind_ang(cape_a, cape_b, w, wv)
+    sc.bell(cape_a, cape_b, 0.085 * h, 0.215 * h, w, 0.012 * h, 7, fold_phase * 0.7 + 0.9, 0, 0.05 * h,
+            ell=0.8 * el, wind=0.25 * wn, wind_ang=ang)
+    # the cloak: from the chest to the hem, the hem centre streaming to the lee and swaying with the gait
+    hem_c = np.array([pel[0], ground_y + hem * h, pel[2]]) - w * 0.04 * h + s * sway + wdir * 0.55 * wn
+    top = chest - up * 0.03 * h
+    ang, _ = _bell_wind_ang(top, hem_c, w, wv)
+    sc.bell(top, hem_c, cloak[0] * h, cloak[1] * h, w, fold_depth * h * 1.25, folds, fold_phase + flutter, 0,
+            0.06 * h, ell=el, wind=wn, wind_ang=ang)
+    if pack:
+        # a bundle on the back, under the cloak: it makes the hump
+        sc.box(chest - w * 0.18 * h - up * 0.10 * h, (0.16 * h, 0.21 * h, 0.11 * h), yaw=math.atan2(w[0], w[2]),
+               rnd=0.06 * h, mat=0, k=0.09 * h)
+    # the hood: a cowl round the head, a front brim standing proud of the (unseen) face, a soft point at the back,
+    # the cloth falling from it into the cape (no neck shows)
+    sc.cone(head - w * 0.02 * h, head + up * 0.012 * h, 0.112 * h, 0.116 * h, 0, 0.06 * h)
+    sc.cone(head + w * 0.075 * h + up * 0.045 * h, head + w * 0.10 * h - up * 0.06 * h, 0.05 * h, 0.042 * h, 0,
+            0.07 * h)
+    sc.cone(head - up * 0.05 * h - w * 0.02 * h, chest + up * 0.03 * h - w * 0.03 * h, 0.10 * h, 0.17 * h, 0,
+            0.07 * h)
+    if peak:
+        tip = head - w * 0.16 * h + up * 0.005 * h + wdir * 0.25 * wn
+        sc.cone(head - w * 0.05 * h + up * 0.05 * h, tip, 0.07 * h, 0.028 * h, 0, 0.05 * h)
+    # arms: loose sleeves, gloved hands
+    shL = chest + up * 0.02 * h + s * 0.19 * h
+    shR = chest + up * 0.02 * h - s * 0.19 * h
+
+    def arm(sh, hand, out_dir):
+        el_ = sh + 0.5 * (hand - sh) + out_dir * 0.05 * h - up * 0.05 * h
+        sc.cone(sh, el_, 0.076 * h, 0.070 * h, 0, 0.04 * h)
+        sc.cone(el_, hand - (hand - el_) * 0.12, 0.070 * h, 0.086 * h, 0, 0.02 * h)
+        sc.cone(hand, hand, 0.045 * h, 0.045 * h, 0, 0.015 * h)
+        return hand
+
+    if carry is not None:
+        # both hands steady the poles in front of the shoulders (a two-pole litter): no arm hangs free, so
+        # nothing below the cloak can read as a dangling limb
+        arm(shL, carry[0], s)
+        out['hand'] = arm(shR, carry[1], -s)
+    else:
+        sw = free_swing
+        if lantern_side != 0.0:
+            sl = -s if lantern_side > 0 else s
+            shA, shB = (shR, shL) if lantern_side > 0 else (shL, shR)
+            hand_l = shA + (w * (0.16 + 0.5 * sw) - up * 0.50 + sl * 0.07) * h
+            arm(shA, hand_l, sl)
+            out['lantern'] = hand_l - up * 0.21 * h + w * lantern_swing + wdir * 0.12 * wn
+            out['hand'] = hand_l
+        else:
+            sl = -s
+            shA, shB = shR, shL
+            hand_a = shA + (w * (0.06 - 0.5 * sw) - up * 0.52 + sl * 0.06) * h
+            arm(shA, hand_a, sl)
+        if staff_tip is not None:
+            hand_s = shB + (w * 0.22 - up * 0.34 - sl * 0.07) * h
+            arm(shB, hand_s, -sl)
+            sc.cone(hand_s + up * 0.28 * h, staff_tip, 0.017, 0.014, 2, 0.0)
+        elif reach is not None:
+            d = reach - shB
+            d = d / (np.linalg.norm(d) + 1e-9)
+            arm(shB, shB + d * 0.62 * h, -sl)
+        else:
+            hand_s = shB + (w * (0.08 - 0.5 * sw) - up * 0.52 - sl * 0.06) * h
+            arm(shB, hand_s, -sl)
+    sc.end()
+    out['waist'] = pel + up * 0.02 * h - s * 0.2 * h
+    out['head'] = head
+    out['chest'] = chest
+    out['shoulders'] = (shL, shR)
+    return out
+
+
+def _traveller_v2(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(0.215, 0.34), folds=9,
+                  fold_depth=0.03, fold_phase=0.0, sway=0.0, pack=False, staff_tip=None, lantern_side=0.0,
+                  lantern_swing=0.0, carry=None, carry_side=1.0, peak=True, free_swing=0.0, reach=None):
     """A hooded, cloaked traveller seen at any angle (no capsule limbs showing: a wool cloak from the shoulders to
     `hem` above the ground, folds deepening toward the hem and swinging with the gait, a hood, loose sleeves, gloved
     hands, boots). The caller plants the feet: pel = pelvis, ank_l / ank_r = ankle targets (world); the legs are

@@ -55,7 +55,8 @@ YAW_E = -30.0                                # walking direction = the world's s
 _a = math.radians(YAW_E)
 E3 = np.array([math.sin(_a), 0.0, math.cos(_a)])     # east (along the arete, the way they walk)
 S3 = np.array([math.cos(_a), 0.0, -math.sin(_a)])    # south (the camera's side; right when facing east)
-LAT = 8.0                                    # latitude: the pole sits low in the north, inside the wide
+LAT = 6.0                                    # latitude: the pole sits low in the north, well inside the wide,
+                                             # above the great range (it was 8: the pole sat on the frame's top edge)
 _nh = -S3
 POLE = np.array([_nh[0] * math.cos(math.radians(LAT)), math.sin(math.radians(LAT)),
                  _nh[2] * math.cos(math.radians(LAT))])
@@ -99,7 +100,62 @@ def _knot_y(u):
 CR0 = build_arete()
 CR0[:, 14] = 0.95                                # crags and ridges: the safe early-out bound (world, v3 flag)
 CR0[CR0[:, 12] >= 0.0, 13] *= 2.5                # crags: a cutoff radius beyond which every flank is under the cloud
-CR = CR0                                         # replaced by CR0 + the watch-fire sites below (_fire_sites)
+CR = CR0                                         # replaced by CR0 + the watch-fire sites + the great range (below)
+
+# ------------------------------------------------------------------ A's landform: the great range ---
+# The islands north of the arete are a field of small, uniform needles (a terrain tell in the wides). One great
+# knife-edge range stands across the view 7 km out, under the celestial pole: a serrated crest with one dominant,
+# asymmetric summit left of the pole, stepping down to the right into the open cloud sea. A second, older range
+# 18 km out on the right stands pale in the haze. Aerial depth: dark near islands, the great range, the far
+# range, the sky. (u, v) are the arete frame's metres: u east along the line, v south, the wide's camera at
+# about (-11, 62), the pole due north of it (u = -11).
+GR_V = -6900.0
+GR_U0 = -1120.0                                  # the dominant summit (about 9 deg left of the pole in the wide)
+GR_KNOTS = [(-2700, 250), (-2350, 360), (-2000, 330), (-1700, 420), (-1400, 385), (-1150, 470), (-900, 440),
+            (-650, 500), (-420, 465), (-250, 540), (-40, 560), (180, 505), (400, 450), (650, 468), (900, 400),
+            (1150, 372), (1400, 300), (1650, 248), (1950, 120), (2250, -160)]
+FR_V = -17500.0
+FR_KNOTS = [(1900, 150), (2400, 420), (3000, 520), (3600, 470), (4300, 600), (5000, 540), (5700, 575),
+            (6400, 470), (7200, 380), (8000, 150)]
+
+
+def build_ranges():
+    rows = []
+    crest = []
+    rng = np.random.default_rng(606)
+    for knots, v0, u0, sd in ((GR_KNOTS, GR_V, GR_U0, 300), (FR_KNOTS, FR_V, 0.0, 400)):
+        pts = []
+        for du, y in knots:
+            # the crest wanders (never a straight wall) and bows away from the camera at its ends
+            vv = v0 + rng.uniform(-140.0, 140.0) - 4.0e-5 * du * du
+            pts.append(uv(u0 + du, vv, y))
+        far = v0 < -10000.0
+        for k in range(len(pts) - 1):
+            a, b = pts[k], pts[k + 1]
+            rows.append(WD.ridge_row(a, b, wl=(70.0 if far else 46.0), wr=(64.0 if far else 42.0), seed=sd + k,
+                                     k=12.0, detail=(0.16 if far else 0.22), slope=(1.45 if far else 1.75)))
+            rows[-1][14] = 0.95
+        crest += pts if not far else []
+        # faceted spires of unequal height, width and lean on the high points; one dominant, asymmetric summit
+        hi = [k for k in range(1, len(pts) - 1) if pts[k][1] > max(pts[k - 1][1], pts[k + 1][1])]
+        main = max(hi, key=lambda k: pts[k][1])
+        for k in hi:
+            if k != main and rng.random() < 0.4:
+                continue
+            big = (k == main) and not far
+            rows.append(WD.crag_row(pts[k][0] + rng.uniform(-50.0, 50.0), pts[k][2] + rng.uniform(-50.0, 50.0),
+                                    pts[k][1] + (70.0 if big else rng.uniform(12.0, 45.0)),
+                                    L=(110.0 if big else rng.uniform(25.0, 55.0)),
+                                    s_hi=(2.3 if big else rng.uniform(2.4, 3.4)), s_lo=1.7,
+                                    aniso=(2.1 if big else rng.uniform(1.2, 2.0)),
+                                    ang=math.radians(YAW_E) + rng.uniform(-0.6, 0.6), seed=sd + 50 + k,
+                                    k=(26.0 if big else 14.0), detail=0.34, shelf=0.0, nf=(4 if big else 3)))
+            rows[-1][14] = 0.95
+            rows[-1][13] *= 2.5          # every flank reaches the cloud inside the cutoff (no walls)
+    return np.array(rows), crest
+
+
+GR_ROWS, GR_CREST = build_ranges()
 
 
 def ground_many(P, fp=0.02, CRx=None):
@@ -371,12 +427,19 @@ def _ug_table():
         rng = np.random.default_rng(606)
         rows = []
         for k in range(26):
-            # the visible cloud sea from the arete is the band under the horizon beyond ~15 km
-            dist = 14000.0 * (3.4 ** rng.random())                    # 14 - 48 km out, north of the arete
-            ang = math.radians(rng.uniform(-48.0, 48.0))
+            # the cloud sea still seen from the arete: the basin in front of the great range (2-6 km), and the
+            # open distance to its right (east of north) and beyond the frame's left edge
+            if k % 3 == 1:
+                dist = 2000.0 + 4200.0 * rng.random()
+                ang = math.radians(rng.uniform(-40.0, 40.0))
+                radk = 0.35
+            else:
+                dist = 10000.0 * (4.4 ** rng.random())                # 10 - 44 km
+                ang = math.radians(rng.uniform(0.0, 50.0) if rng.random() < 0.75 else rng.uniform(-60.0, -28.0))
+                radk = 1.0
             dirv = -S3 * math.cos(ang) + E3 * math.sin(ang)
             c = uv(0.0, 0.0) + dirv * dist
-            rad = rng.uniform(1400.0, 3600.0) * (0.6 + 0.4 * dist / 30000.0)
+            rad = rng.uniform(1400.0, 3600.0) * (0.6 + 0.4 * dist / 30000.0) * radk
             out_at = rng.uniform(655.0, 945.0) / FPS if k >= 3 else rng.uniform(1000.0, 1300.0) / FPS
             rows.append([c[0], c[2], rad, out_at, rng.uniform(0.6, 1.0), rng.uniform(0, 6.28)])
         _UG = np.array(rows)
@@ -436,7 +499,7 @@ def _finish_set():
     sites, rows = _fire_sites()
     rows[:, 14] = 0.95
     rows[:, 13] *= 2.5
-    CR = np.vstack([CR0, rows])
+    CR = np.vstack([CR0, rows, GR_ROWS])
     # each fire stands on the highest point of its rock's summit shelf
     out = []
     for q in sites:
@@ -504,6 +567,28 @@ def far_fires():
             _FAR = np.array(pts)
             np.save(fn, _FAR)
     return _FAR
+
+
+_RF = None
+
+
+def range_fires():
+    """Three watch-fires on the great range's crest (in notches and on a shoulder, never on the summit spire)."""
+    global _RF
+    if _RF is None:
+        out = []
+        for kn in (4, 8, 16):
+            p = GR_CREST[kn]
+            best = None
+            for du in np.linspace(-30.0, 30.0, 7):
+                for dv in np.linspace(-30.0, 30.0, 7):
+                    q = np.array([p[0] + du, 0.0, p[2] + dv])
+                    q[1] = ground_many(q, fp=0.5)[0]
+                    if best is None or q[1] > best[1]:
+                        best = q
+            out.append([best[0], best[1], best[2], 50.0])
+        _RF = np.array(out)
+    return _RF
 
 
 # ------------------------------------------------------------------ star trails ---
@@ -590,17 +675,20 @@ def _trails(img, mask, SX, SY, LUM, COL, sig):
                         img[yy, xx, 2] += wgt * COL[k, 2]
 
 
+T_TRAIL0 = T_WHEEL                               # the trails open with the wheel (bar 66 b1, T13)
+EXPO_MAX = 36.0                                  # degrees of arc a trail keeps (then its oldest end moves on)
+
+
 def draw_sky(fr, t, pxs):
-    """Stars on the sky clock: points at first, then arcs about the pole as the long exposure opens."""
+    """Stars on the sky clock: points until the sky begins to wheel (bar 66 b1), then trails that grow into long
+    concentric arcs about the pole, which is inside the frame from that bar on (so no trail is ever a loose dash:
+    gate, 'rain / warp'). The newest end is the star; the arc fades with age."""
     scam = fr.src
     st = stars()
     a = sky_angle(t)
     mask = (fr.dist > 1e8).astype(np.float32)
-    # the long exposure opens only once the camera has settled on the wide, with the pole in frame, so every
-    # trail is a concentric arc from its first frame (no warp-speed streaks while the camera swings); arcs are
-    # short (6 deg): the sky turns, it is not a star-trail photograph
-    expo = float(np.clip(a - sky_angle(T_WIDE), 0.0, 6.0))
-    M = 2 if expo < 0.05 else int(8 + 16 * min(expo / 10.0, 1.0))
+    expo = float(np.clip(a - sky_angle(T_TRAIL0), 0.0, EXPO_MAX))
+    M = 2 if expo < 0.05 else int(min(10 + 1.8 * expo, 72))
     angs = a - expo * (1.0 - np.linspace(0.0, 1.0, M))
     D = st['dir']
     # rotate every star for every sample (vectorised Rodrigues)
@@ -627,10 +715,14 @@ def draw_sky(fr, t, pxs):
         SK._splat(fr.img, sx[:, -1].astype(np.float64), sy[:, -1].astype(np.float64), head.astype(np.float64), col,
                   np.full(len(head), sig), mask)
         return
-    # the head (current position) stays a point; the arc behind it is the exposure, fading with age
-    wage = np.exp(-(1.0 - np.linspace(0.0, 1.0, M)) * 1.6)[None, :]
-    seg_e = lum[:, None] * ext * wage * 0.36 * (0.4 + 0.6 * min(expo / 5.0, 1.0))
-    _trails(fr.img, mask, sx.astype(np.float64), sy.astype(np.float64), seg_e[:, :-1].astype(np.float64), col,
+    # the head (current position) stays a point; the arc behind it is the exposure, fading with age. Energy per
+    # segment grows with its length on screen (^0.75), so a trail far from the pole is not a faint scratch while
+    # one near it burns (a real stack keeps a little of that: the inner trails are the brighter)
+    wage = np.exp(-(1.0 - np.linspace(0.0, 1.0, M)) * 1.25)[None, :]
+    segl = np.hypot(np.diff(sx, axis=1), np.diff(sy, axis=1))
+    seg_e = lum[:, None] * ext[:, :-1] * wage[:, :-1] * 0.10 * np.maximum(segl, 0.3) ** 0.75 \
+        * (0.35 + 0.65 * min(expo / 4.0, 1.0))
+    _trails(fr.img, mask, sx.astype(np.float64), sy.astype(np.float64), seg_e.astype(np.float64), col,
             float(sig))
     SK._splat(fr.img, sx[:, -1].astype(np.float64), sy[:, -1].astype(np.float64), (head * 0.6).astype(np.float64),
               col, np.full(len(head), sig), mask)
@@ -658,11 +750,32 @@ def night(t):
     Q[18] = 1.0                                  # anti-streak snow noise on the steep flanks (world.shade flag)
     Q[3] = 0.30                                  # snow holds on steeper ground: the upper flanks read as fluted
     Q[4] = 0.54                                  # snow, not black-and-white combed stripes
+    fogp = fogp.copy()
+    fogp[0] = 1.0e-4                             # aerial depth: near islands dark, the great range 7 km out half
+                                                 # veiled, the far range and the needles beyond it pale
     amb = amb * (0.55 + 0.45 * mf)
     S = SK.sky_params(zenith='#070B1C', horizon='#2A3866', moon_dir=md, moon_radius_deg=0.8,
                       halo_I=0.025 * mf, halo_w=0.22, halo2_I=0.012 * (0.3 + 0.7 * mf), halo2_w=0.7,
                       horizon_glow=0.25 * (0.6 + 0.4 * mf), gain=0.75 + 0.25 * mf)
     return (Lk, amb, S, fogp, Q), mf, md
+
+
+# ------------------------------------------------------------------ the wind on the arete ---
+# A steady headwind down the arete from the east-north-east (they walk into it), with gusts that travel along the
+# line, so no two cloaks move together. The cloaks stream to the lee (west, a little toward the camera), the hems
+# lift and flutter, the watch-fires lean downwind (screen left in every framing of this take).
+WIND_DIR = -E3 * 0.93 + S3 * 0.37
+WIND_DIR = WIND_DIR / np.linalg.norm(WIND_DIR)
+WIND0 = 0.17                                     # metres of billow at the hem in the mean wind
+FIRE_LEAN = -0.26
+
+
+def wind_at(t, s, k=0):
+    """Wind vector (world, toward the lee; |v| = hem billow in m) at shot time t for a figure at arc s, and a
+    flutter phase for figure k."""
+    g = 0.74 + 0.26 * math.sin(2 * math.pi * (t / 3.3 - s / 17.0)) \
+        + 0.13 * math.sin(2 * math.pi * (t / 1.15 - s / 6.0) + 1.0 + 3.0 * _hh(k, 31))
+    return WIND_DIR * WIND0 * g, 2 * math.pi * 1.35 * t * (0.85 + 0.3 * _hh(k, 32)) + 6.28 * _hh(k, 33)
 
 
 # ------------------------------------------------------------------ the scene at time t ---
@@ -727,12 +840,14 @@ def build_scene(t, cfg):
     carry_r = (rL + UP * 0.05 + wr_ * 0.13, rR + UP * 0.05 + wr_ * 0.13)
     ph_f = walk_phase(S_[0], 0)
     ph_r = walk_phase(S_[1], 1)
-    SP.traveller(sc, pf, wf_, aLf, aRf, (0.022, 0.018, 0.016), h=1.0, lean=lean_b, hem=0.21, cloak=(0.22, 0.37),
-                 folds=10, fold_depth=0.034, fold_phase=0.8 * math.sin(ph_f) + 1.1, sway=0.025 * math.sin(ph_f),
-                 carry=carry_f, carry_side=1.0, free_swing=0.06 * math.sin(ph_f), peak=True)
-    SP.traveller(sc, pr, wr_, aLr, aRr, (0.030, 0.030, 0.036), h=1.03, lean=lean_b, hem=0.21, cloak=(0.22, 0.37),
-                 folds=11, fold_depth=0.034, fold_phase=0.8 * math.sin(ph_r) + 2.3, sway=0.025 * math.sin(ph_r),
-                 carry=carry_r, carry_side=-1.0, free_swing=0.06 * math.sin(ph_r), peak=False)
+    wf_v, fl_f = wind_at(t, S_[0], 0)
+    wr_v, fl_r = wind_at(t, S_[1], 1)
+    SP.traveller(sc, pf, wf_, aLf, aRf, (0.022, 0.018, 0.016), h=1.0, lean=lean_b, hem=0.17, cloak=(0.20, 0.30),
+                 folds=11, fold_depth=0.030, fold_phase=0.8 * math.sin(ph_f) + 1.1, sway=0.025 * math.sin(ph_f),
+                 carry=carry_f, carry_side=1.0, free_swing=0.06 * math.sin(ph_f), peak=True, wind=wf_v, flutter=fl_f)
+    SP.traveller(sc, pr, wr_, aLr, aRr, (0.030, 0.030, 0.036), h=1.03, lean=lean_b, hem=0.17, cloak=(0.20, 0.30),
+                 folds=12, fold_depth=0.030, fold_phase=0.8 * math.sin(ph_r) + 2.3, sway=0.025 * math.sin(ph_r),
+                 carry=carry_r, carry_side=-1.0, free_swing=0.06 * math.sin(ph_r), peak=False, wind=wr_v, flutter=fl_r)
     sc.begin(rgb=(0.1, 0.07, 0.05))
     for a_, b_ in poles:
         sc.cone(a_, b_, 0.028, 0.028, 2, 0.0)
@@ -753,8 +868,9 @@ def build_scene(t, cfg):
         ph = walk_phase(S_[i], i)
         lside = 1.0 if _hh(k, 16) < 0.45 else -1.0
         # most wear knee-length hooded wool coats (the legs and the walk show); one in five a long cloak
-        long_ = (0.24 + 0.06 * _hh(k, 17), 0.31 + 0.05 * _hh(k, 19)) if _hh(k, 24) < 0.2 else \
-            (0.44 + 0.12 * _hh(k, 17), 0.24 + 0.05 * _hh(k, 19))
+        long_ = (0.20 + 0.06 * _hh(k, 17), 0.26 + 0.04 * _hh(k, 19)) if _hh(k, 24) < 0.2 else \
+            (0.42 + 0.12 * _hh(k, 17), 0.215 + 0.04 * _hh(k, 19))
+        wk_v, flk = wind_at(t, S_[i], i)
         tip = None
         if _hh(k, 12) < 0.35:
             q, wq = at(S_[i] + 0.5 + 0.12 * math.sin(ph))
@@ -762,12 +878,12 @@ def build_scene(t, cfg):
             q[1] = ground_many(q)[0]
             tip = q
         o = SP.traveller(sc, pel, w, aL, aR, pal[int(_hh(k, 11) * len(pal))], h=hts[i], lean=0.07 + 0.07 * _hh(k, 15),
-                         hem=long_[0], cloak=(0.205 + 0.03 * _hh(k, 18), long_[1]),
-                         folds=int(7 + 5 * _hh(k, 20)), fold_depth=0.022 + 0.018 * _hh(k, 21),
+                         hem=long_[0], cloak=(0.19 + 0.025 * _hh(k, 18), long_[1]),
+                         folds=int(8 + 5 * _hh(k, 20)), fold_depth=0.020 + 0.014 * _hh(k, 21),
                          fold_phase=0.8 * math.sin(ph) + 6.28 * _hh(k, 22), sway=0.03 * math.sin(ph),
                          pack=_hh(k, 13) < 0.7, staff_tip=tip, lantern_side=lside,
                          lantern_swing=0.03 * math.sin(2 * ph - 0.6), free_swing=0.08 * math.sin(ph),
-                         peak=_hh(k, 23) < 0.6)
+                         peak=_hh(k, 23) < 0.6, wind=wk_v * (0.8 + 0.4 * _hh(k, 34)), flutter=flk)
         waists.append(o['waist'])
         I = small_lantern_I(k, t)
         bc = SP.small_lantern(sc, o['lantern'], SMALL_COL, 2.2 * I / 0.3)
@@ -793,9 +909,10 @@ def build_scene(t, cfg):
         aR = kp - side * 0.12 + wk * 0.08 + UP * 0.07
         kneel = 0.34 if k == 0 else 0.0
         pel = kp + UP * (0.93 * 0.98 - 0.30 * feed - kneel)
-        SP.traveller(sc, pel, wk, aL, aR, (0.03, 0.025, 0.02), h=0.98, lean=0.10 + 0.55 * feed + 0.3 * (k == 0), hem=0.24,
-                     cloak=(0.21, 0.35), folds=9, fold_depth=0.03, fold_phase=1.3 * k, peak=True,
-                     reach=(p + UP * 0.25) if feed > 0.2 else None)
+        kw_v, kfl = wind_at(t, 0.0, 60 + k)
+        SP.traveller(sc, pel, wk, aL, aR, (0.03, 0.025, 0.02), h=0.98, lean=0.10 + 0.55 * feed + 0.3 * (k == 0), hem=0.20,
+                     cloak=(0.20, 0.29), folds=10, fold_depth=0.028, fold_phase=1.3 * k, peak=True,
+                     reach=(p + UP * 0.25) if feed > 0.2 else None, wind=kw_v * (0.7 if k == 0 else 1.0), flutter=kfl)
         fl = F.flicker(t, 30 + k)
         lights.append([p[0], p[1] + 0.9, p[2], F.FIRE_LIGHT[0], F.FIRE_LIGHT[1], F.FIRE_LIGHT[2], 9.0 * b * fl, 0.8])
     return sc, lights, lant, waists, heart
@@ -933,14 +1050,18 @@ def draw_fires(img, zb, scam, t):
     for k, p in enumerate(wfs()):
         b, ph = wf_burn(t, k)
         fl = F.flicker(t, 30 + k)
-        F2.flame(img, zb, scam, p + UP * 0.12, 1.5 * b, 0.42, t, seed=40 + k, I=12.0 * (0.5 + 0.5 * b), lean=0.12,
-                 zbias=0.5)
+        F2.flame(img, zb, scam, p + UP * 0.12, 1.5 * b, 0.42, t, seed=40 + k, I=12.0 * (0.5 + 0.5 * b),
+                 lean=FIRE_LEAN, zbias=0.5)
         sx, sy, z = scam.project(p + UP * 0.6)
         if z > 0.5:
             ppm = scam.f / z
             F2.halo(img, zb, sx, sy, 2.2 * ppm, 0.02 * b * fl, z=z, zbias=2.0)
-    # far watch-fires on the islands: warm points and a soft aura, burning low and fed on the sky clock
+    # far watch-fires on the islands (and three on the great range's crest): warm points and a soft aura, burning
+    # low and fed on the sky clock
     FF = far_fires()
+    RF = range_fires()
+    if len(RF):
+        FF = np.vstack([FF, RF]) if len(FF) else RF
     if len(FF):
         a = sky_angle(t)
         for k, (x, y, z_, pr) in enumerate(FF):

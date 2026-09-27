@@ -1,5 +1,13 @@
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
+## RUN-A2 STATE (split off 27 Sep ~19:00Z: A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy)
+* **Doing now:** the gate's fixes before any render. CROSSING: star trails open with the wheel (bar 66 b1) as long concentric
+  arcs about a pole held inside the frame; one big knife-edge range under the pole plus stronger aerial depth; cloaks rebuilt
+  as cloth (elliptical, sharp-creased folds, wind billow and hem lift, flutter, SDF occlusion, wool rim). BLUE HOUR: about 40
+  seated, unroped bearers round the set-down lantern, all turned to the east (no lit faces); a valley revealed through the
+  thinning cloud sea with thin grey-blue hearth columns; the rose only from bar 75 b1. A20: the same take continues 6240-6479.
+* **Nothing rendered yet, no job ready.** `farm.py` is not in the repo yet (jobs will be cut to <= 45 min when it lands).
+
 ## SPLIT (director approved ~19:05Z): two agents in this department
 * **RUN-A-L:** A2 FALSE DAWN (`falsedawn.py`), A11 X2 (`stars_a.py`, new), A13 R2-A REVEAL, A14 BEACON RUN and A15
   WATCHERS. Folders: `falsedawn_A`, `stars_A`, `reveal_A`, `beaconrun_A` and `watchers_A`.

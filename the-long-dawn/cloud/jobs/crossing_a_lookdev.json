@@ -1,0 +1,12 @@
+{
+ "name": "crossing_a_lookdev",
+ "branch": "claude/render-crossing-a-lookdev",
+ "setup": [],
+ "render": [
+  "python3 shots/run/crossing.py --frames 4880,5040,5280,5480,5700,5839 --scale 0.5 --out lookdev --procs 6"
+ ],
+ "out_dir": "renders/crossing_A/lookdev",
+ "frames": "4880,5040,5280,5480,5700,5839",
+ "shape": [402, 960],
+ "ship": "jpg"
+}
