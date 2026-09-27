@@ -717,21 +717,24 @@ def _cam_edge(tl, t):
     k0 = float(smootherstep(A.T_EDGE + 8, A.T_EDGE + 64, t))
     ty = lerp(1.0, ty, k0)
     fall = lerp(0.0, fall, k0)
-    up = float(smootherstep(A.T_BRINK, A.T_BRINK + 18, t)) * (1.0 - float(smootherstep(A.T_RIM_GIVES - 2, A.T_RIM_GIVES + 12, t)))
-    ty = ty + 30.0 * up
-    fall = fall * (1.0 - up) - 0.15 * up
-    hf = hf + 8.0 * up
+    # THE BRINK: the frame lifts with the updraft (a little upward: the forges lean in over it) but keeps the far
+    # lip in the bottom of frame, where the rim gives way under the gilded ones (2440)
+    up = float(smootherstep(A.T_BRINK - 2, A.T_BRINK + 22, t))
+    ty = lerp(ty, y + 4.2, up)
+    fall = lerp(fall, 0.0, up)
+    hf = lerp(hf, 96.0, up)
+    r = r - 1.5 * float(smoothstep(A.T_BRINK, T_CUT_CROWN, t))
     pos = np.array([r * math.cos(az), y, r * math.sin(az)])
     if t >= A.T_RIM_GIVES:
-        pos = pos + _shake(t, 0.5 * math.exp(-(t - A.T_RIM_GIVES) / 16.0))
+        pos = pos + _shake(t, 0.22 * math.exp(-(t - A.T_RIM_GIVES) / 16.0))
     return _cam(pos, np.array([0.0, ty, 0.0]), hf, fall, focus=r)
 
 
 def _cam_crown(tl, t):
     """THE BRINK's hero (bar 31 b4 - bar 32 b3): a long lens from outside the ring, level with a gilded forge's
-    crenellated crown (FALL_TOWER, never a giant), the crown black against the updraft's glare behind it. It
-    breaks on bar 32 b1 (the seam of fire across the forge, CrownBreak) and tips over into the pit; the camera
-    tilts down after it into the glare."""
+    crenellated crown (FALL_TOWER, never a giant), the crown dark against the updraft's glare behind it, its throat
+    roaring, gold running off it. It breaks on bar 32 b1 (a seam of fire opens across the forge: CrownBreak) and
+    tips over into the pit; the camera tilts down after it until it is black against the pit's glare."""
     if _CROWN[0] is None:
         _CROWN[0] = FallingCrown(tl.towers)
     fc = _CROWN[0]
@@ -742,39 +745,42 @@ def _cam_crown(tl, t):
     u = float(np.clip((t - T_CUT_CROWN) / (T_CUT_FALL - T_CUT_CROWN), 0, 1))
     r = 70.0 - 9.0 * float(smootherstep(0.0, 1.0, u))
     a = a7 + 0.05 + 0.03 * u
-    y = c0[1] - 1.0 - 6.0 * float(smoothstep(0.35, 1.0, u))
+    y = c0[1] - 3.0 - 5.0 * float(smoothstep(0.35, 1.0, u))
     pos = np.array([r * math.cos(a), y, r * math.sin(a)])
-    hf = 36.0 + 10.0 * float(smoothstep(0.3, 1.0, u))
-    tgt = cc + np.array([0.0, 1.0, 0.0])
+    hf = 38.0 + 10.0 * float(smoothstep(0.3, 1.0, u))
+    tgt = cc + np.array([0.0, 0.5, 0.0])
     if t >= A.T_CROWN:
-        pos = pos + _shake(t, 0.12 * math.exp(-(t - A.T_CROWN) / 12.0))
+        pos = pos + _shake(t, 0.1 * math.exp(-(t - A.T_CROWN) / 12.0))
     return _cam(pos, tgt, hf, 0.0, focus=float(np.linalg.norm(cc - pos)), ap=0.02)
 
 
 def _cam_fall(tl, t):
-    """OVER THE RIM (bar 32 b3 - bar 34): at the lip beside the broken forge, looking up at the crown as it drops
-    past; the camera tips over the rim after it and falls toward the fire until the frame is white (2640)"""
-    if _CROWN[0] is None:
-        _CROWN[0] = FallingCrown(tl.towers)
-    fc = _CROWN[0]
+    """OVER THE RIM (bar 32 b3 - bar 34): at the lip beside the broken forge, looking down into the pit; the crown
+    drops through the frame, black against the glare, into the lake; the camera tips forward over the rim after it
+    and falls toward the glare until the frame is white (2640). Slow turns: the fall is in the travel, not a whip."""
     tw = tl.towers
     _crater(tl)                                            # (the lip's shape: built before the first camera)
     ag = float(tw.ang[FALL_TOWER]) + 0.39                  # the gap between the broken forge and the next
     rl = float(rim_r(ag))
-    p0 = np.array([(rl + 1.6) * math.cos(ag), B.GROUND + 2.6, (rl + 1.6) * math.sin(ag)])
-    heart = np.array([0.0, FLOOR_Y + 5.0, 0.0])
-    cc = fc.centre(t)
-    # 2520-2546: at the lip, following the crown down past it; then the fall: in over the lip and down
-    k = float(ease_in(np.clip((t - (A.T_TIP + 22)) / (A.T_WHITE - (A.T_TIP + 22)), 0, 1), 1.8))
-    lean = float(smootherstep(A.T_TIP + 8, A.T_TIP + 30, t))
-    inward = -p0 * np.array([1.0, 0.0, 1.0]) / max(np.hypot(p0[0], p0[2]), 1e-6)
-    pos = p0 + inward * (2.2 * lean) + np.array([0.0, -1.0 * lean, 0.0])
-    pos = pos + (heart + np.array([0.0, 9.0, 0.0]) - pos) * (0.9 * k)
-    w_crown = 1.0 - float(smoothstep(A.T_TIP + 26, A.T_TIP + 44, t))
-    tgt = lerp(heart, cc, w_crown)
-    hf = 64.0 + 26.0 * k
-    pos = pos + _shake(t, 0.08 + 0.12 * k)
-    return _cam(pos, tgt, hf, 0.0, focus=float(np.linalg.norm(tgt - pos)), ap=0.02)
+    out = np.array([math.cos(ag), 0.0, math.sin(ag)])
+    p0 = out * (rl + 1.8) + np.array([0.0, B.GROUND + 2.8, 0.0])
+    heart = np.array([0.0, FLOOR_Y + 3.0, 0.0])
+    x = t - A.T_TIP
+    lean = float(smootherstep(4.0, 30.0, x))
+    pitch = math.radians(lerp(34.0, 64.0, lean))
+    pos = p0 - out * (2.4 * lean) + np.array([0.0, -1.2 * lean, 0.0])
+    look_d = -out * math.cos(pitch) + np.array([0.0, -math.sin(pitch), 0.0])
+    k = float(ease_in(np.clip((x - 24.0) / (A.T_WHITE - A.T_TIP - 24.0), 0, 1), 2.0))
+    pos = pos + (heart + np.array([0.0, 6.0, 0.0]) - pos) * (0.85 * k)
+    d_heart = heart - pos
+    d_heart /= max(np.linalg.norm(d_heart), 1e-6)
+    w = float(smootherstep(24.0, 70.0, x))
+    d = look_d * (1 - w) + d_heart * w
+    d /= np.linalg.norm(d)
+    tgt = pos + d * 20.0
+    hf = 70.0 + 18.0 * k
+    pos = pos + _shake(t, 0.05 + 0.1 * k)
+    return _cam(pos, tgt, hf, 0.0, focus=20.0, ap=0.02)
 
 
 def camera(tl, t):
@@ -955,7 +961,7 @@ class StripEmbers:
         P0, _, _ = self.pts(ctx.t0)
         P1, u, age = self.pts(ctx.t1)
         ok = age > 0.6
-        e = self.E * g * (1 - u) ** 0.6 * smoothstep(0.0, 0.08, u) * 7.0 * ok * (1.0 - 0.7 * float(smoothstep(T_CUT_CROWN - 4, T_CUT_CROWN, t)))
+        e = self.E * g * (1 - u) ** 0.6 * smoothstep(0.0, 0.08, u) * 7.0 * ok * (1.0 - 0.88 * float(smoothstep(T_CUT_CROWN - 4, T_CUT_CROWN, t)))
         col = look.blackbody(np.clip(0.5 + 0.25 * smoothstep(0.45, 0.8, u) - 0.15 * smoothstep(0.85, 1.0, u), 0, 0.9))
         ctx.fr.splat(P0[ok], P1[ok], 0.03, e[ok], col[ok], ctx.cam0, ctx.cam1, zref=30.0)
 
@@ -1074,8 +1080,10 @@ class GoldRuns:
 
 
 class CrownBreak:
-    """the crown's break (bar 32 b1): a seam of fire opens across the forge half a beat before, then the broken
-    faces glow raw (the stump's top and the crown's underside, which turns with it as it falls)"""
+    """the crown's break (bar 32 b1) and its legibility in the hero shot: a seam of fire opens across the forge a
+    beat before; its throat roars up through the parapet; a gold glint runs round its silhouette (the gilding
+    catching the updraft behind it); after the break the broken faces glow raw (the stump's top and the crown's
+    underside, which turns with it). The updraft's glare stands behind it at its height (the backdrop)."""
 
     def emit(self, ctx, tl):
         t = ctx.t
@@ -1085,26 +1093,51 @@ class CrownBreak:
             return
         cut = fc.cut_y(t)
         h = tw.height(FALL_TOWER, t)
-        pre = float(smoothstep(A.T_CROWN - 12, A.T_CROWN, t))
+        pre = float(smoothstep(A.T_CROWN - 16, A.T_CROWN, t))
         x = max(t - A.T_CROWN, 0.0)
+        hero = float(smoothstep(T_CUT_CROWN - 2, T_CUT_CROWN, t)) * (1.0 - float(smoothstep(T_CUT_FALL - 2, T_CUT_FALL, t)))
+        cam = ctx.cam
         for kind in (0, 4):
             pt = tw.cur[FALL_TOWER]['parts'][kind]
             if len(pt['idx']) == 0:
                 continue
             yw = pt['pl'][:, 1] - 66.0 + h + B.GROUND
             dd = yw - cut
-            sel = np.abs(dd) < 1.1
-            if not sel.any():
+            dtop = 66.0 - pt['pl'][:, 1]
+            # the seam and the broken faces
+            sel = np.abs(dd) < 1.2
+            if sel.any():
+                if t < A.T_CROWN:
+                    e = pre * np.exp(-(dd[sel] / 0.3) ** 2) * (0.75 + 0.25 * math.sin(1.7 * t)) * 16.0
+                    T = 0.64
+                else:
+                    e = np.exp(-np.abs(dd[sel]) / 0.5) * (2.2 * math.exp(-x / 18.0) + 0.6 * math.exp(-x / 90.0)) * 12.0
+                    T = 0.54 + 0.14 * math.exp(-x / 20.0)
+                ctx.fr.splat(pt['P0'][sel], pt['P1'][sel], 0.07, e.astype(np.float32), look.blackbody(T), ctx.cam0,
+                             ctx.cam1, zref=30.0, myid=FALL_TOWER)
+            if hero <= 0 or kind != 0:
                 continue
-            if t < A.T_CROWN:
-                e = pre * np.exp(-(dd[sel] / 0.25) ** 2) * (0.7 + 0.3 * math.sin(1.7 * t)) * 5.0
-                T = 0.62
-            else:
-                e = np.exp(-np.abs(dd[sel]) / 0.45) * (1.8 * math.exp(-x / 18.0) + 0.5 * math.exp(-x / 90.0)) * 4.0
-                T = 0.52 + 0.14 * math.exp(-x / 20.0)
-            ctx.fr.splat(pt['P0'][sel], pt['P1'][sel], 0.06, e.astype(np.float32), look.blackbody(T), ctx.cam0, ctx.cam1,
+            # the crown in the hero shot: its throat through the parapet, and a gold glint round its silhouette
+            up = dd > 0
+            if not up.any():
+                continue
+            P, N = pt['P'][up], pt['N'][up]
+            V = cam.pos[None, :] - P
+            ndv = np.abs((N * V).sum(1)) / np.maximum(np.linalg.norm(V, axis=1), 1e-6)
+            rim = (1.0 - np.clip(ndv, 0, 1)) ** 4
+            throat = np.exp(-np.maximum(dtop[up] - 0.2, 0.0) / 0.9)
+            e = hero * (2.2 * rim + 5.0 * throat * (0.8 + 0.2 * math.sin(1.3 * t)))
+            col = np.where(throat[:, None] > rim[:, None], look.blackbody(0.6)[None, :], np.array([[1.0, 0.8, 0.42]]))
+            m = e > 0.02
+            ctx.fr.splat(pt['P0'][up][m], pt['P1'][up][m], 0.05, e[m].astype(np.float32), col[m], ctx.cam0, ctx.cam1,
                          zref=30.0, myid=FALL_TOWER)
-
+        if hero > 0:
+            # the updraft's glare at the crown's height, behind it (seen from outside the ring)
+            c0 = fc.centre(min(t, A.T_CROWN))
+            G = np.array([[0.0, c0[1] - 1.0, 0.0]])
+            g = hero * Updraft.strength(t)
+            ctx.fr.splat(G, G, np.array([8.5]), np.array([5.5e4 * g]), look.blackbody(0.66)[None, :], ctx.cam0,
+                         ctx.cam1, profile=1, rmax=1400.0)
 
 class Updraft:
     """THE BRINK (H5): the fire swells and roars up into ONE column of flame and embers above it: a real fire's
