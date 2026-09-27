@@ -156,8 +156,8 @@ class Crater:
         self.c_spin = r.uniform(0.02, 0.06, ns)
         self.c_ctr = np.stack([seeds[:, 0], np.full(ns, B.GROUND), seeds[:, 1]], 1)
         self.g_E = r.lognormal(0, 0.4, n)
-        # the wall: ember rock with molten veins, lit from below
-        m = 110000
+        # the wall: ember rock with molten veins, lit from below (dense: a solid wall, not a wire basket)
+        m = 320000
         wr = R_RIM - WALL * r.random(m) ** 0.8
         wa = r.uniform(0, 2 * np.pi, m)
         wy = crater_y(wr) + r.normal(0, 0.25, m)
@@ -174,6 +174,15 @@ class Crater:
         fa = r.uniform(0, 2 * np.pi, k)
         self.f_p = np.stack([fr_ * np.cos(fa), np.full(k, FLOOR_Y) + r.normal(0, 0.2, k), fr_ * np.sin(fa)], 1)
         self.f_E = r.lognormal(0, 0.5, k)
+        # the plain the forges stand on: dark crust round the crater, lit where it meets the pit, fine cracks
+        g2 = 150000
+        pr = R_RIM + (46.0 - R_RIM) * r.random(g2) ** 1.6
+        pa = r.uniform(0, 2 * np.pi, g2)
+        self.p_p = np.stack([pr * np.cos(pa), np.full(g2, B.GROUND) + r.normal(0, 0.05, g2), pr * np.sin(pa)], 1)
+        cr = vnoise(self.p_p * np.array([0.3, 0.0, 0.3]), 1.0, (7.1, 0.0, 2.3), 2)[:, 0]
+        self.p_crack = np.exp(-(cr / 0.05) ** 2)
+        self.p_r = pr
+        self.p_E = r.lognormal(0, 0.35, g2)
         # the rim's lip: a line of heat along the edge
         q = 9000
         la = r.uniform(0, 2 * np.pi, q)
@@ -226,21 +235,29 @@ class Crater:
             return
         # the wall: lit from the molten floor below, veins of fire
         up = smoothstep(B.GROUND, FLOOR_Y, self.w_p[:, 1])
-        crumble = 0.0
-        e = self.w_E * (0.05 + 0.35 * up + 2.2 * self.w_vein * (0.4 + 0.6 * up)) * open_k * heat
-        col = look.blackbody(np.clip(0.36 + 0.2 * up + 0.18 * self.w_vein, 0, 0.85))
+        e = self.w_E * (0.06 + 1.1 * up ** 1.5 + 5.0 * self.w_vein * (0.3 + 0.7 * up)) * open_k * heat * 0.45
+        col = look.blackbody(np.clip(0.34 + 0.26 * up + 0.14 * self.w_vein, 0, 0.85))
         col = col * (1 - 0.4 * red) + (B.C_RED * 0.6 + B.C_CRIMSON * 0.4) * 0.4 * red
-        ctx.fr.splat(self.w_p, self.w_p, 0.07, e, col, ctx.cam0, ctx.cam1, zref=30.0)
+        ctx.fr.splat(self.w_p, self.w_p, 0.16, e, col, ctx.cam0, ctx.cam1, zref=30.0)
         # the floor: molten fire, churning (the glare the towers lean over)
         w = vnoise(self.f_p * 0.18 + np.array([0.0, 0.0, 0.01 * t]), 1.0, (0, 0, 0), 2)[:, 0]
-        e = self.f_E * (0.7 + 0.6 * w) * 2.6 * open_k * heat * (1 + 0.8 * float(smoothstep(A.T_BRINK, A.T_WHITE, t)))
+        e = self.f_E * (0.7 + 0.6 * w) * 16.0 * open_k * heat * (1 + 0.8 * float(smoothstep(A.T_BRINK, A.T_WHITE, t)))
         col = look.blackbody(np.clip(0.6 + 0.12 * w, 0, 0.9))
         ctx.fr.splat(self.f_p, self.f_p, 0.12, e, col, ctx.cam0, ctx.cam1, zref=30.0)
         H = np.array([[0.0, FLOOR_Y + 2.0, 0.0]])
-        ctx.fr.splat(H, H, np.array([14.0]), np.array([2600.0 * open_k * heat]), look.blackbody(0.6)[None, :],
-                     ctx.cam0, ctx.cam1, profile=1)
+        ctx.fr.splat(H, H, np.array([14.0]), np.array([9.0e4 * open_k * heat]), look.blackbody(0.6)[None, :],
+                     ctx.cam0, ctx.cam1, profile=1, rmax=1400.0)
+        # the pit's glow rising out of it: warm air over the crater (the glare the towers lean over)
+        H2 = np.array([[0.0, B.GROUND + 2.0, 0.0]])
+        ctx.fr.splat(H2, H2, np.array([12.0]), np.array([6.0e4 * open_k * heat]), look.blackbody(0.56)[None, :],
+                     ctx.cam0, ctx.cam1, profile=1, rmax=1400.0)
+        # the plain round the crater: dark, its edge lit by the pit, fine cracks of fire
+        edge_l = np.exp(-(self.p_r - R_RIM) / 2.5) * open_k
+        e = self.p_E * (0.012 + 1.3 * edge_l + 0.25 * self.p_crack * (0.3 + 0.7 * np.exp(-(self.p_r - R_RIM) / 12.0))) * heat
+        col = look.blackbody(np.clip(0.33 + 0.2 * edge_l + 0.08 * self.p_crack, 0, 0.8))
+        ctx.fr.splat(self.p_p, self.p_p, 0.14, e, col, ctx.cam0, ctx.cam1, zref=30.0)
         # the lip of the rim
-        el = 1.4 * open_k * (0.6 + 0.4 * np.sin(3 * self.l_a + 0.2 * t)) * heat
+        el = 3.5 * open_k * (0.6 + 0.4 * np.sin(3 * self.l_a + 0.2 * t)) * heat
         ctx.fr.splat(self.l_p, self.l_p, 0.05, el, look.blackbody(0.55), ctx.cam0, ctx.cam1, zref=30.0)
         # debris: the rim crumbling under the gilded towers
         self._debris(ctx)

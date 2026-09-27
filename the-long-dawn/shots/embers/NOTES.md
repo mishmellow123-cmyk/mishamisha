@@ -1,46 +1,33 @@
-# >>> PAUSED (EMBERS-v3 #2, 27 Sep ~11:25Z, director's usage pause) -- EXACT STATE + NEXT STEPS <<<
+# >>> EMBERS-v3 #2 -- STATE 27 Sep ~11:35Z (read this first) <<<
 
-No renders are running. Nothing final is rendered yet (renders/embers_A3 holds only the tower cache). Deliver finals to
-renders/embers_A3 (+ embers_A3_alt_codedtowers) and renders/embers_C3 in CUT frame numbering (EDIT-v3's EDL).
-Test tools (scratchpad e3/): `camlab.py CUT FRAME SCALE OUT.jpg r,az,y,ty,hf[,fs][@frame] ...` (one scene build, many
-cameras -> sheet), `hz.py K ...` (camlab with haze x K), `lineup2.py` (tower silhouettes + crowns), `rt.py`, `sheet.py`.
-At load ~4 a 0.3-scale A3 frame takes ~0.5 s after a ~40-120 s scene build; full res ~40-120 s.
+**Cloud (approved + launched by the director):** `embers_A3_a5` (A5 1040-1439), `embers_A3_a6` (A6 1440-1839 MAIN),
+`embers_A3_alt_a` (A6 1440-1839 ALT -> renders/embers_A3_alt_codedtowers). All at 65985e3. Frames arrive through the
+importer into renders/embers_A3 (+ _alt_codedtowers) in A's cut numbering. Check stills: the-long-dawn/review/
+embers_A3_check/ (v1 first pass, v3 = the approved A6 look). Director's verdicts: A5 calm fire + promise right; A6
+charcoal crust + banded forge-stacks right; the low wide shot up at the black giants is "the scale and dread".
 
-DONE since handoff (committed 3e1c26b + this commit):
-* H5 towers: `towers2.FORGES` rewritten: chimney, battered furnace (was the bottle kiln), bellows house (giant),
-  twin square flues, blast furnace (no gallery ring, no bulb, no hood flare), buttressed stack, furnace shaft (giant;
-  was the crucible "goblet"), telescope flue. Every crown squared or crenellated (`_merlon`, `_crenel_round`,
-  `_crenel_square`), setbacks are flat burning ledges (`_step_*`), straight batters only. Windows thinned to sparse slots
-  (a lit grid read as office towers). ALT giants (pagoda/obelisk) untouched.
-* H5 fire: ONE tongue on the axis (FLAME_TONGUES has one entry; tongue_axis single-tongue branch: slow even sway,
-  gentle S-wave, tip to a point), broader body (MIND_NARROW 0.8), inner embers (`MindFire.motes`, 1100 slow gold-white
-  motes), FireSparks thinned in A, no ignition starfield in A (Shockwave -> a soft flash when SCHED is set), no lens
-  streak (a3.finish_opts), no dust in A5 (SCHED.dust_k). A5 camera draws back from the point to r~26-27: the flame is
-  ~36% of frame height in the upper middle, lower third clear. Full-res check at 1180: reads as fire, no fork.
-* A towers lighting (FS path in Towers.emit): gentler height falloff, crisp crowns, a throat glow through each
-  crenellated parapet (`crown` term), roaring throats exempt from the shutters; the crust's ash mottling calmed
-  ("leopard print" at full res). Fire grows x2 during the promise (A3Sched.fire_scale) with power ~ scale^1.6, so it
-  stays the brightest thing once the towers rise. Giants now both grow to crown height y=42 (GIANT_TOP); others 12-26.
-* CAM_A5 keys rewritten 1272-1840 (promise up/back; down to the fire's height as the forges rise; wide for the giants;
-  swoop behind giant 2). Contact sheet: scratchpad e3/t2.jpg.
+**Done (all committed):** H5 fire (one tongue, inner embers, no starfield/streak, ~36% frame height, x2 through A6),
+H5 towers (squared/crenellated forge family, no lips/bowls/bulbs/galleries/flares; iron banding, soot, glowing
+throats; charcoal crust with the fire in seams/joints/edges), A6 cameras (fly-in; outside, low, wide up at the giants
+growing out of the top; cut on bar 23 to behind giant 2 with glare), lit forge-smoke canopy (Smoke broad term on A3),
+giants black above the ring with shutters shut. BRINK: the vortex is REMOVED from A (a3 emit); `edge.Updraft` (a
+pillar of flame + torn-off embers, 2400-2470 roar, subsides by the tip) + StripEmbers dragged in and up (no spiral).
 
-OPEN / NEXT (in order):
-1. A6 legibility (the blocker). The frames are ~80% black; dark tower sides vanish, so the ring and the giants don't
-   read at a glance. A single big haze splat (a3.emit_haze, SCHED.haze) makes a boxy glowing panel between the towers
-   at x15 (e3/cl6.jpg): REPLACE it with lit smoke particles on a broad falloff (Smoke.emit: add a term ~ light_pow /
-   (1 + (d/16)^2) on A3) so the near towers silhouette against warm air and the giants rise into it; try rim light on
-   dark sides. Then re-cut the A6 keys: best so far 1540 = (44, -0.05, 2.5, 7, 70); giants best seen low and far
-   (95, 0.15, 6, 18, 58) at 1795. Watch the reads: temple columns / tree trunks (too few tops in frame) and a city
-   skyline (square crowns rising at 1470).
-2. THE EDGE (edge.py, 1840-2400) and THE BRINK (2400-2640): replace the vortex with the updraft column of stripped
-   embers (H5); rim gives way 2440, a gilded crown (FALL_TOWER=4, never a giant) falls 2480, over the rim to white 2640.
-   The orbit camera (edge.camera) needs the same legibility pass.
-3. A9 dead valley, A10 ember, A16/A17 (edge.py) review; E1 GLYPHS retime (A 560-1040 from v2 src 300-480).
-4. C: switch every Ring to the canonical inscription (assets/ring/inscription_{outer,inner}.png + inscription.json;
-   generator shots/montage3d/ring_script.py): band proportions outer R = 2.25 x width, inner 1.81 x width; letters glow
-   deep orange-red, never white. Then E5-C forging (the Ring must not read as a halo / ring-toss), E11 race, E12 Eye (no
-   galaxy spiral), E8-C grasp (no galaxy spiral, not a gold-wire cage), E13, E15 with MAP.
-5. Full renders go to cloud jobs (cloud/jobs/embers_A3_*.json, "ship": "jpg"), then JOB READY to main.
+**NEXT (in order):**
+1. THE EDGE crater must read as SOLID rock (now a translucent "glass cylinder": splats are additive and only tower
+   crust feeds the occluder). Add a SCHED hook in Towers.prepare (e.g. `SCHED.extra_occluders(ctx)` -> P, N, A, ids)
+   and feed it edge.Crater's wall (w_p, w_n) and plain (p_p, up normals) so the near wall hides the far wall and the
+   plain hides what is under it. Then re-light: plain edge glow, wall gradient to the molten floor (already coded).
+2. THE EDGE camera: one steady orbit near rim height across the pit (lower third = dark near ground). Lab frames:
+   e3/ce1-3.jpg (best candidates r50 y14 ty-12 hf56 and r62 y24 ty-14 at az 2.7 rel. ALPHA_C: both giants flank).
+   Current edge.camera: r 60 y 36 ty -16 (too high/close: near towers fill the frame).
+3. BRINK look-dev: the Updraft pillar (e3/b3.jpg was the first pass: a thin dotty column) needs density/heat; the
+   camera tilts up with it 2400-2466, back down to the rim for the crown fall (2480, FALL_TOWER=4), then over the rim
+   into white on 2640. Check the rim collapse (Crater debris at 2440) reads.
+4. A9 dead valley / A10 ember / A16-A17 (edge.py) review; E1 GLYPHS retime (A 560-1040); then C (canonical Ring
+   inscription assets/ring/, Ring proportions outer R 2.25 x width; forging must not read as a halo; Eye and grasp
+   without the galaxy spiral).
+Tools (scratchpad e3/): camlab.py (one scene build, many cameras), hz.py, lineup2.py, rt.py, sheet.py.
 
 # STATE AT HANDOFF (EMBERS-v3 #2 takes over, 27 Sep ~10:10Z)
 
