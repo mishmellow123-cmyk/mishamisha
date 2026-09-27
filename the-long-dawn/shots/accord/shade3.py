@@ -599,8 +599,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             ch = sstep(0.76, 0.56, rr + 0.04 * (vnoise2(along * 9.0, ang, 94) - 0.5))
             chk = sstep(0.035, 0.0, abs(vnoise2(along * 38.0 + LG[kb_, 8], ang * 2.2, 95) - 0.5)) \
                 + 0.8 * sstep(0.03, 0.0, abs(vnoise2(along * 14.0, ang * 5.0 + LG[kb_, 8], 96) - 0.5))
-            cha = 0.016 * (1.0 - 0.75 * min(chk, 1.0))
-            crack = min(chk, 1.0) * ch
+            chk = min(chk, 1.0) * sstep(0.32, 0.62, vnoise2(along * 19.0 + LG[kb_, 8], ang * 3.4, 99))
+            cha = 0.016 * (1.0 - 0.45 * chk)
+            crack = chk * ch
             ar = mix(a * 1.00, cha, ch)
             ag = mix(a * 0.90, cha * 0.97, ch)
             ab = mix(a * 0.80, cha * 0.95, ch)
@@ -610,10 +611,10 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             ab = mix(ab, 0.028, wash * 0.25)
             eb_ = PR[P_EMB]
             if eb_ > 0.0:
-                cr_ = vnoise2(px * 120.0 + T * 0.03, py * 120.0 + pz * 60.0, 86)
-                glow = (sstep(0.45, 0.8, cr_) + 0.8 * crack) * eb_ * (0.5 + 0.5 * ch) * sstep(0.0, 0.3, PR[P_ASHG] * 1.2 - (rr - ASH_R0) / (ASH_R1 - ASH_R0) * 0.2)
-                pat = sstep(0.40, 0.70, vnoise2(along * 9.0 + LG[kb_, 8], ang * 1.3, 88))
-                glow = (0.9 * crack * (0.4 + 0.6 * pat) + 0.25 * pat) * eb_ * ch * sstep(0.80, 0.45, rr)
+                # Exposed embers occupy patches of the char; most checks stay dark.
+                pat = sstep(0.60, 0.82, vnoise2(along * 14.0 + LG[kb_, 8], ang * 2.1, 88))
+                grain = sstep(0.30, 0.70, vnoise2(along * 43.0 + LG[kb_, 8], ang * 6.0, 86))
+                glow = pat * (0.42 * (0.30 + 0.70 * grain) + 0.05 * crack) * eb_ * ch * sstep(0.80, 0.45, rr)
                 wh = PR[P_EMBW]
                 er += 2.6 * glow * (1.0 + 1.5 * wh)
                 eg += 2.6 * glow * (0.24 + 0.5 * wh)
@@ -757,7 +758,8 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         if tl > 0.0:
             g1 = vnoise2(px * 55.0 + T * 0.09, py * 55.0 + pz * 40.0, 53)
             g2 = vnoise2(px * 160.0 - T * 0.13, py * 160.0 + pz * 120.0, 56)
-            c = tl * (0.55 + 0.9 * g1 * g1 + 0.35 * g2)
+            # Only exposed fuel glows; the flame above it is a separate volume.
+            c = tl * 0.60 * sstep(0.60, 0.80, g1) * (0.20 + 0.80 * sstep(0.40, 0.75, g2))
             er += 1.6 * c
             eg += 0.55 * c
             eb += 0.08 * c
