@@ -32,6 +32,8 @@ import bset as BS           # noqa: E402
 import pipe as PI           # noqa: E402
 import rcam as RC           # noqa: E402
 import fire2 as F2          # noqa: E402
+import bfig as BF           # noqa: E402  (RUN-B-3's B figure light: sun-side rim, wool, stones)
+import bprops as BP         # noqa: E402  (RUN-B-3's cairn3 / child3, shared with the hand-back)
 import keeper as KP         # noqa: E402  (generic helpers only: star trails, village field)
 from mt import fire as F, figure as FG, sky as SK   # noqa: E402
 from mt.noise import smoothstep   # noqa: E402
@@ -495,11 +497,11 @@ class Vigil:
         fire_I = 1.8 * (lv + (1.0 - lv) * join) * fl3
         lights = [dict(pos=BS.BEACON + np.array([0, 1.3, 0]), col=F.FIRE_LIGHT, I=fire_I, r0=0.5),
                   dict(dir=md, col=lin('#A7BCE0'), I=moon_I)]
-        FG.render(img, zb, scam, BS.rubble_cairn(), BS.CAIRN, lights, amb=night_amb, mats=BS.M, t=t,
+        BF.render(img, zb, scam, BP.cairn3(), BS.CAIRN, lights, amb=night_amb * 2.6, t=t,
                   write_depth=True, zbias=0.3)
         back, front, fb = BS.beacon_base()
         eg = 0.3 + 0.7 * min(lv, 1.0)
-        FG.render(img, zb, scam, back, BS.BEACON, lights, amb=night_amb, mats=BS.M, t=t,
+        BF.render(img, zb, scam, back, BS.BEACON, lights, amb=night_amb, t=t,
                   emissive_gain=eg + (1.0 - eg) * join, write_depth=True, zbias=0.3)
         base = BS.BEACON + np.array([0.0, fb, 0.0])
         wind = 0.2 + 0.9 * storm(f)
@@ -511,7 +513,7 @@ class Vigil:
                  absorb=0.7 * join)
         bx, by, bz = scam.project(base + np.array([0, 0.6, 0]))
         F2.halo(img, zb, bx, by, 5.0 * scam.f / bz, 0.006 * lv + (0.005 - 0.006 * lv) * join, z=bz, zbias=3.0)
-        FG.render(img, zb, scam, front, BS.BEACON, lights, amb=night_amb, mats=BS.M, t=t, write_depth=False,
+        BF.render(img, zb, scam, front, BS.BEACON, lights, amb=night_amb, t=t, write_depth=False,
                   zbias=0.3)
         # travellers on the path (behind/beside her: drawn before her)
         self.travellers(img, zb, scam, f, t, lights, night_amb)
@@ -530,7 +532,7 @@ class Vigil:
                   wind=(0.4 if pose == 'sit' else 0.5) + 1.2 * storm(f), walk=ex.get('walk', 0.0) % 1.0,
                   reach=math.sin(math.pi * give) * 0.9 if pose == 'sit' else 0.0)
         d, pts = BS.person2('kneel' if pose == 'feed' else pose, **kw)
-        FG.render(img, zb, scam, d, pos, lights, amb=night_amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+        BF.render(img, zb, scam, d, pos, lights, amb=night_amb, t=t, write_depth=False, zbias=0.3)
         if pose == 'feed':
             q = ex.get('feed', 99)
             if 0 <= q < 26:            # sparks as the wood takes
@@ -543,13 +545,12 @@ class Vigil:
                             col=np.array([1.0, 0.55, 0.2]))
 
     def child_pos(self):
-        """Where the child sits against her: the hand-back's place for it (so the crane starts from this frame)."""
-        if self.hb is not None:
+        """Where the child sits against her: the hand-back's place (so the crane starts from this frame)."""
+        try:
             import handback_b as HB
-            side = self.hb._side()
-            fw = BS.dirxz(HB._sun_az() + HB.SET_TURN)
-            return BS.on_ground(BS.SEAT + side * 0.78 - fw * 0.20)
-        return BS.on_ground(BS.SEAT + BS.RIGHT * 0.6)
+            return HB.child_pos()
+        except Exception:
+            return BS.on_ground(BS.SEAT + BS.RIGHT * 0.6)
 
     def child(self, img, zb, scam, f, t, lights, amb, give):
         """Bar 46: the child comes up the path beside a traveller; stays by her (bar 47); sits against her (bar 48);
@@ -571,11 +572,11 @@ class Vigil:
                               walk=(f / 16.0) % 1.0)
         else:
             p = cp
-            if give >= 0.5 and self.hb is not None:
-                d, _ = BS.child_asleep(0.0)
+            if give >= 0.5:
+                d, _ = BP.child3(0.0)                         # wrapped in her shawl, asleep against her
             else:
-                d, _ = BS.person2('sit', age=0.0, shawl=give > 0.5, staff=False, child=True)
-        FG.render(img, zb, scam, d, BS.on_ground(p), lights, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+                d, _ = BS.person2('sit', age=0.0, shawl=False, staff=False, child=True, lean_to=-1.0)
+        BF.render(img, zb, scam, d, BS.on_ground(p), lights, amb=amb, t=t, write_depth=False, zbias=0.3)
 
     # the travellers: (arrival frame, looks). They come up the last of the NE path with unlit torches, light them
     # at the basket and go home down the ridge: the thread of torches grows through the night.
@@ -641,7 +642,7 @@ class Vigil:
                     lk = list(lights)
                     if lit:                                    # the torch lights its bearer
                         lk.append(dict(pos=tp + np.array([0.0, 0.15, 0.0]), col=F.FIRE_LIGHT, I=0.55 * fl, r0=0.25))
-                    FG.render(img, zb, scam, d, p, lk, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+                    BF.render(img, zb, scam, d, p, lk, amb=amb, t=t, write_depth=False, zbias=0.3)
                 else:
                     tp = p + np.array([0.0, 1.7, 0.0])
                 if lit:

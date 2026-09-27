@@ -2,7 +2,7 @@
 from H1-B's roar at 1372.
 
 A held beat on the roar (her dark shape by the fire as it roars up and settles, a slight drift back), then from the
-cello's CALL (bar 18 b3) one long pull back and up in log distance (20 m -> 700 m) that settles on the last wide by
+cello's CALL (bar 18 b3) one long pull back and up in log distance (20 m -> 240 m) that settles on the last wide by
 bar 19 b3.5: moonlit silver, her summit low left with the fire a single warm point, the cloud sea to the horizon
 with its rock islands, and the Milky Way rising from the horizon right of her summit. No red anywhere but her shawl
 and the fire. Nothing answers yet. The sky is the vigil's own (frozen here: this is real time), so the vigil's
@@ -27,6 +27,8 @@ import bset as BS           # noqa: E402
 import rcam as RC           # noqa: E402
 import pipe as PI           # noqa: E402
 import fire2 as F2          # noqa: E402
+import bfig as BF           # noqa: E402  (RUN-B-3's B figure light: sun-side rim, wool, stones)
+import bprops as BP         # noqa: E402  (RUN-B-3's cairn3 / child3, shared with the hand-back)
 import keeper as KP         # noqa: E402  (generic star trails)
 import vigil as VG          # noqa: E402  (the night's moon, sky wheel, band)
 from mt import fire as F, figure as FG   # noqa: E402
@@ -47,7 +49,9 @@ FACE_AZ = math.degrees(math.atan2(_fd[0], _fd[2]))        # she faces the fire
 BACK_AZ = FACE_AZ + 180.0
 F_HOLD, F_SETTLE = 1398, 1506        # the pull starts on the cello's CALL (bar 18 b3 = 1400), settles by bar 19 b3.5
 START = dict(dist=20.0, up=2.5, hfov=44.0, uv=(0.55, 0.60))
-END = dict(az=282.0, dist=700.0, up=45.0, hfov=50.0, uv=(0.40, 0.80))
+END = dict(az=282.0, dist=240.0, up=24.0, hfov=50.0, uv=(0.42, 0.74))   # at 700 m level the broad summit
+# plateau read as a sand dune; at ~240 m, a little above, it reads as a snowy summit crest (stony boss, the cairn,
+# her, the fire) against the silver cloud sea, and the sky above the horizon keeps half the frame for the band
 
 
 def _smoother(u):
@@ -98,7 +102,8 @@ class Reveal:
         G = BW.build(scam, P, CR, None, dmax=180000.0, moons=[self.moon], mk=10.0)
         LP, SN, amb, fogp = BS.night_params(self.moon, 1.0 / scam.f, horizon_match=True)
         LP[32], LP[33], LP[34] = 0, 0, 0.0
-        roar = math.exp(-((f - F0 - 4) / 14.0) ** 2)
+        # the roar: up on bar 18 b1, still roaring at the cut from H1-B (1372), settling over ~2 s
+        roar = smoothstep(F0 - 2, F0 + 4, f) * math.exp(-max(f - F0 - 14, 0) / 22.0)
         lv = 1.05 + 0.9 * roar
         LP[36] = 9.0 * lv * F.flicker(t, 3)
         LP[37:40] = BS.BEACON + np.array([0.0, 1.3, 0.0])
@@ -115,10 +120,10 @@ class Reveal:
         lights = [dict(pos=BS.BEACON + np.array([0, 1.3, 0]), col=F.FIRE_LIGHT, I=1.8 * lv * F.flicker(t, 3), r0=0.5),
                   dict(dir=md, col=lin('#A7BCE0'), I=0.5)]
         amb_f = lin('#27335E') * 0.45
-        FG.render(img, zb, scam, BS.rubble_cairn(), BS.CAIRN, lights, amb=amb_f, mats=BS.M, t=t, write_depth=True,
+        BF.render(img, zb, scam, BP.cairn3(), BS.CAIRN, lights, amb=amb_f * 2.6, t=t, write_depth=True,
                   zbias=0.3)
         back, front, fb = BS.beacon_base()
-        FG.render(img, zb, scam, back, BS.BEACON, lights, amb=amb_f, mats=BS.M, t=t, emissive_gain=1.0,
+        BF.render(img, zb, scam, back, BS.BEACON, lights, amb=amb_f, t=t, emissive_gain=1.0,
                   write_depth=True, zbias=0.3)
         base = BS.BEACON + np.array([0.0, fb, 0.0])
         F2.flame(img, zb, scam, base, 1.0 + 0.9 * roar, 0.44, t, seed=4, I=14.0 * lv, lean=0.15, zbias=0.5, tongues=6,
@@ -132,12 +137,12 @@ class Reveal:
                     col=np.array([1.0, 0.62, 0.26]))
             F2.halo(img, zb, bx, by, 5.0 * self.ss, 0.05 * far * lv, z=bz, zbias=bz * 0.02,
                     col=np.array([1.0, 0.50, 0.18]))
-        FG.render(img, zb, scam, front, BS.BEACON, lights, amb=amb_f, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+        BF.render(img, zb, scam, front, BS.BEACON, lights, amb=amb_f, t=t, write_depth=False, zbias=0.3)
         # her: weight back from the roar, then standing, looking at her fire
         d, _ = BS.person2('look', age=0.9, shawl=True, staff=True, wind=0.5)
         if f < F0 + 30:
             d.rotate(-0.10 * math.exp(-((f - F0 - 6) / 12.0) ** 2), pivot=(0.0, 0.0))
-        FG.render(img, zb, scam, d, HER, lights, amb=amb_f, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+        BF.render(img, zb, scam, d, HER, lights, amb=amb_f, t=t, write_depth=False, zbias=0.3)
         fr.img, fr.zb, fr.dist = img, zb, dist
         out, _, _ = PI.to_target(fr)
         return out

@@ -1,0 +1,14 @@
+{
+ "name": "vigil_b",
+ "branch": "claude/render-vigil-b",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "NUMBA_NUM_THREADS=8 python3 shots/run/vigil.py --build --scale 1.0 --ss 1.5"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=2 python3 shots/run/vigil.py --range 1520-3839 --scale 1.0 --ss 1.5 --out renders/vigil_B --skip"
+ ],
+ "out_dir": "renders/vigil_B",
+ "frames": "1520-3839",
+ "ship": "jpg"
+}
