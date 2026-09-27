@@ -989,9 +989,9 @@ class Plenty:
         self.box = (2.3, 3.0, 17.3, 19.0)
         bx0, by0, bx1, by1 = self.box
         self.Yh = by0 + 7.0            # the far skyline
-        self.tx = bx0 + 6.3            # the tree's foot
-        self.ty = by0 + 12.6
-        self.th = 8.2                  # its height
+        self.tx = bx0 + 6.0            # the tree's foot
+        self.ty = by0 + 12.9
+        self.th = 10.5                 # its height
 
     def hills(self, x, k):
         """The k-th ridge of rolling hills (0 = far) as a y for each x."""
@@ -1013,92 +1013,132 @@ class Plenty:
         frame_rules(S, self.box, self.seed + 1, layer=lay)
         _window(S, k, *T(0.0, 0.05), overlap=0.3)
 
-        # the tree: a slender trunk rising into a vase of limbs; the crown a cloud of leaf-clusters
+        # the tree: a young trunk with a flared foot, forking into a vase of limbs; foliage in clusters at the
+        # twigs, each cluster occluding what is behind it (limbs are drawn only where no leaves cover them)
         k = len(S)
         tx, ty, th = self.tx, self.ty, self.th
-        trunk_top = np.array([tx + 0.15, ty - 0.45 * th])
-        limbs = []
-        for m in range(7):
-            a = -np.pi / 2 + (m - 3) * 0.26 + rng.normal(0, 0.05)
-            L_ = th * (0.36 + 0.12 * rng.random()) * (1.0 - 0.12 * abs(m - 3))
-            p0 = trunk_top + np.array([0.04 * (m - 3), 0.25 * abs(m - 3) * 0.2])
-            p1 = p0 + 0.5 * L_ * np.array([math.cos(a) * 0.7, math.sin(a)])
-            p2 = p0 + L_ * np.array([math.cos(a) * 1.25, math.sin(a) * 0.95])
-            limbs.append(catmull([p0, p1, p2], 10))
-        # the trunk: two edges, a slight flare at the foot, smooth silver bark (sparse strokes on the shade side)
-        hs = np.linspace(0, 1, 60)
-        cx_ = tx + 0.15 * hs + 0.04 * np.sin(hs * 5)
-        wdt = 0.2 * (1 - 0.45 * hs) + 0.18 * np.exp(-hs / 0.06)
-        yy = ty - 0.45 * th * hs
-        line(S, np.column_stack([cx_ - wdt, yy]), W(0.02), self.seed + 5, dens=dens, layer=lay, lift=(3, 6), smooth=0)
-        line(S, np.column_stack([cx_ + wdt, yy]), W(0.026), self.seed + 6, dens=dens, layer=lay, lift=(3, 6), smooth=0)
-        if not pencil:
-            for q in np.linspace(0.25, 0.9, 5):
-                xs_ = cx_ + wdt * q
-                pp, rd, dd = hand(np.column_stack([xs_, yy])[3:-2], 0.007, int(rng.integers(1 << 30)), dens=0.7,
-                                  thin_end=0.3, taper=(0.3, 0.3))
-                S.add(pp, rd, dd, layer=lay)
-            for m in range(6):              # the faint rings of young bark
-                hq = rng.uniform(0.1, 0.9)
-                i = int(hq * 59)
-                q = np.array([[cx_[i] - wdt[i] * 0.6, yy[i]], [cx_[i] + wdt[i] * 0.9, yy[i] + 0.03]])
-                pp, rd, dd = hand(q, 0.006, int(rng.integers(1 << 30)), dens=0.6, thin_end=0.4)
-                S.add(pp, rd, dd, layer=lay)
-        for li, lb in enumerate(limbs):
-            line(S, lb, W(0.02 - 0.0015 * abs(li - 3)), self.seed + 10 + li, dens=dens, layer=lay, lift=(3, 5), smooth=0,
-                 taper=(0.05, 0.4))
-        _window(S, k, *T(0.05, 0.25), overlap=0.2)
-
-        # the crown: leaf clusters (scalloped), shaded on the lower right; golden flowers among them
-        k = len(S)
-        crown_c = np.array([tx + 0.3, ty - 0.74 * th])
+        # the crown is one big leafy volume (an ovoid lit from the upper left) built of clusters; a few windows
+        # of sky inside it let the limbs show
+        cc = np.array([tx + 0.25, ty - 0.64 * th])
+        R = np.array([0.31 * th, 0.27 * th])
+        wins = [cc + np.array([-0.45, 0.55]) * R, cc + np.array([0.4, 0.35]) * R, cc + np.array([0.05, 0.75]) * R]
         clusters = []
-        for m in range(46):
-            a = rng.uniform(0, 2 * np.pi)
-            r_ = math.sqrt(rng.random())
-            c = crown_c + np.array([2.4 * r_ * math.cos(a), 1.75 * r_ * math.sin(a)])
-            clusters.append((c[0], c[1], rng.uniform(0.33, 0.55)))
-        clusters.sort(key=lambda q: q[1])
+        tries = 0
+        while len(clusters) < 70 and tries < 4000:
+            tries += 1
+            a_ = rng.uniform(0, 2 * np.pi)
+            r_ = math.sqrt(rng.random()) ** 0.7
+            p_ = cc + R * np.array([r_ * math.cos(a_), r_ * math.sin(a_)])
+            # the ovoid is flatter below
+            if p_[1] > cc[1] + 0.55 * R[1] * (1 - 0.6 * abs(math.cos(a_))):
+                continue
+            if any(np.hypot(*(p_ - w_)) < 0.55 for w_ in wins):
+                continue
+            rc = rng.uniform(0.3, 0.62) * (1.0 - 0.25 * r_)
+            clusters.append((p_[0], p_[1], rc, rng.random() + 0.6 * (p_[1] - cc[1]) / R[1]))
+        clusters.sort(key=lambda q: q[3])                      # back to front
+        clusters = [(x, y, r) for x, y, r, z in clusters]
+        # limbs: curved, forking, reaching into the crown
+        segs = []
+        fork = np.array([tx + 0.1, ty - 0.3 * th])
+
+        def limb(p, target, w, depth):
+            mid = 0.5 * (p + target) + rng.normal(0, 0.25, 2) + np.array([0, -0.2])
+            c = catmull([p, mid, target], 10)
+            segs.append((c, w))
+            if depth > 0:
+                for q in range(2):
+                    t2 = target + np.array([rng.uniform(-1.0, 1.0), rng.uniform(-1.3, -0.4)]) * (0.6 + 0.3 * depth)
+                    limb(target, t2, w * 0.6, depth - 1)
+        for m in range(4):
+            tgt = cc + np.array([(m - 1.5) * 0.42, rng.uniform(0.0, 0.35)]) * R
+            limb(fork, tgt, 0.075, 2)
         cxs = np.array([q[0] for q in clusters])
         cys = np.array([q[1] for q in clusters])
         crs = np.array([q[2] for q in clusters])
+
+        def leafy(x, y, pad=0.0):
+            x = np.asarray(x, np.float64)[..., None]
+            y = np.asarray(y, np.float64)[..., None]
+            return np.any((x - cxs) ** 2 + ((y - cys) / 0.86) ** 2 < (crs + pad) ** 2, -1)
+        self._leafy = leafy
+        # trunk
+        hs = np.linspace(0, 1, 70)
+        cx_ = tx + 0.1 * hs ** 1.5 + 0.03 * np.sin(hs * 4)
+        wdt = 0.19 * (1 - 0.45 * hs) + 0.22 * np.exp(-hs / 0.05)
+        yy = ty - 0.3 * th * hs
+        line(S, np.column_stack([cx_ - wdt, yy]), W(0.022), self.seed + 5, dens=dens, layer=lay, lift=(3, 6), smooth=0)
+        line(S, np.column_stack([cx_ + wdt, yy]), W(0.028), self.seed + 6, dens=dens, layer=lay, lift=(3, 6), smooth=0)
+        if not pencil:
+            for q in np.linspace(0.3, 0.92, 5):
+                pp, rd, dd = hand(np.column_stack([cx_ + wdt * q, yy])[4:-3], 0.0065, int(rng.integers(1 << 30)), dens=0.7,
+                                  thin_end=0.3, taper=(0.3, 0.3))
+                S.add(pp, rd, dd, layer=lay)
+            for m in range(7):
+                i = int(rng.uniform(0.08, 0.95) * 69)
+                q = np.array([[cx_[i] - wdt[i] * 0.5, yy[i]], [cx_[i] + wdt[i] * 0.95, yy[i] + 0.02]])
+                pp, rd, dd = hand(q, 0.0055, int(rng.integers(1 << 30)), dens=0.55, thin_end=0.4)
+                S.add(pp, rd, dd, layer=lay)
+        # limbs, as double lines where thick, single where thin, hidden behind foliage
+        for (cpts, w) in segs:
+            pts = resample(cpts, 0.02)
+            vis = ~leafy(pts[:, 0], pts[:, 1], 0.02)
+            dm = np.diff(np.concatenate([[0], vis.astype(np.int8), [0]]))
+            for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
+                if b_ - a_ < 2:
+                    continue
+                seg = pts[a_:b_ + 1]
+                if w > 0.045:
+                    nrm = pen.normals(seg)
+                    for sd in (-1, 1):
+                        pp, rd, dd = hand(seg + nrm * (sd * w * 0.5), W(0.014 if sd < 0 else 0.018), int(rng.integers(1 << 30)),
+                                          dens=dens, thin_end=0.5, taper=(0.02, 0.05))
+                        S.add(pp, rd, dd, layer=lay)
+                else:
+                    pp, rd, dd = hand(seg, W(max(0.008, w * 0.35)), int(rng.integers(1 << 30)), dens=dens, thin_end=0.4,
+                                      taper=(0.02, 0.1))
+                    S.add(pp, rd, dd, layer=lay)
+        _window(S, k, *T(0.05, 0.25), overlap=0.2)
+
+        # the crown: scalloped clusters, leaves ticked in on the shaded lower right, golden flowers on the lit side
+        k = len(S)
+        crown_c = np.array([cxs.mean(), cys.mean()])
         flowers = []
         for ci, (x, y, r) in enumerate(clusters):
-            a = np.linspace(0, 2 * np.pi, 90)
-            sc = 1.0 + 0.1 * np.abs(np.sin(a * 4.5 + ci))           # scalloped edge: leaves
+            a = np.linspace(0, 2 * np.pi, 100)
+            sc = 1.0 + 0.09 * np.abs(np.sin(a * (4 + ci % 3) + ci))
             px_ = x + r * sc * np.cos(a)
-            py_ = y + r * sc * np.sin(a) * 0.85
+            py_ = y + 0.86 * r * sc * np.sin(a)
             vis = np.ones(len(a), bool)
             for cj in range(ci + 1, len(clusters)):
-                vis &= (px_ - cxs[cj]) ** 2 + (py_ - cys[cj]) ** 2 > (crs[cj] * 0.97) ** 2
+                vis &= (px_ - cxs[cj]) ** 2 + ((py_ - cys[cj]) / 0.86) ** 2 > (crs[cj] * 0.98) ** 2
             dm = np.diff(np.concatenate([[0], vis.astype(np.int8), [0]]))
             for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
                 if b_ - a_ < 6:
                     continue
-                pp, rd, dd = hand(np.column_stack([px_[a_:b_ + 1], py_[a_:b_ + 1]]), W(0.014), int(rng.integers(1 << 30)),
+                pp, rd, dd = hand(np.column_stack([px_[a_:b_ + 1], py_[a_:b_ + 1]]), W(0.013), int(rng.integers(1 << 30)),
                                   dens=dens, taper=(0.04, 0.1), thin_end=0.3)
                 S.add(pp, rd, dd, layer=lay)
             if not pencil:
-                # leaves: short curved ticks on the shaded lower right of each cluster
-                for q in range(int(10 * r / 0.4)):
-                    aa = rng.uniform(-0.4, 1.9)
-                    rr_ = r * rng.uniform(0.35, 0.85)
-                    p0 = np.array([x + rr_ * math.cos(aa), y + 0.85 * rr_ * math.sin(aa)])
-                    if any((p0[0] - cxs[cj]) ** 2 + (p0[1] - cys[cj]) ** 2 < crs[cj] ** 2 for cj in range(ci + 1, len(clusters))):
+                front = lambda px__, py__, ci=ci: any((px__ - cxs[cj]) ** 2 + ((py__ - cys[cj]) / 0.86) ** 2 < crs[cj] ** 2
+                                                      for cj in range(ci + 1, len(clusters)))
+                for q in range(int(14 * r / 0.35)):
+                    aa = rng.uniform(-0.5, 2.0)
+                    rr_ = r * rng.uniform(0.3, 0.88)
+                    p0 = np.array([x + rr_ * math.cos(aa), y + 0.86 * rr_ * math.sin(aa)])
+                    if front(p0[0], p0[1]):
                         continue
-                    p1 = p0 + 0.09 * np.array([math.cos(aa + 1.9), math.sin(aa + 1.9)])
-                    pp, rd, dd = hand(np.array([p0, (p0 + p1) / 2 + [0.01, -0.01], p1]), 0.008, int(rng.integers(1 << 30)),
+                    p1 = p0 + 0.075 * np.array([math.cos(aa + 1.9), math.sin(aa + 1.9)])
+                    pp, rd, dd = hand(np.array([p0, (p0 + p1) / 2 + [0.008, -0.008], p1]), 0.0075, int(rng.integers(1 << 30)),
                                       dens=0.85, thin_end=0.25)
                     S.add(pp, rd, dd, layer=lay)
-                # flowers on the lit upper left of the cluster
-                for q in range(int(rng.integers(2, 5))):
-                    aa = rng.uniform(2.6, 5.0)
-                    rr_ = r * rng.uniform(0.2, 0.75)
+                for q in range(int(rng.integers(1, 4))):
+                    aa = rng.uniform(2.7, 5.0)
+                    rr_ = r * rng.uniform(0.2, 0.72)
                     fx_ = x + rr_ * math.cos(aa)
-                    fy_ = y + 0.85 * rr_ * math.sin(aa)
-                    if any((fx_ - cxs[cj]) ** 2 + (fy_ - cys[cj]) ** 2 < crs[cj] ** 2 for cj in range(ci + 1, len(clusters))):
-                        continue
-                    flowers.append((fx_, fy_))
+                    fy_ = y + 0.86 * rr_ * math.sin(aa)
+                    if not front(fx_, fy_):
+                        flowers.append((fx_, fy_))
         _window(S, k, *T(0.25, 0.55), overlap=0.85)
 
         # the far country: hills, a patchwork of fields, hedgerows, an orchard, stooks, cottages with smoke
@@ -1106,8 +1146,7 @@ class Plenty:
         xs = np.linspace(bx0 + 0.25, bx1 - 0.25, 300)
         for kk in range(3):
             ys_ = self.hills(xs, kk)
-            keep = ~(((xs - crown_c[0]) / 2.7) ** 2 + ((ys_ - crown_c[1]) / 2.0) ** 2 < 1) & \
-                ~((np.abs(xs - tx) < 0.35) & (ys_ > crown_c[1]))
+            keep = ~leafy(xs, ys_, 0.06) & ~((np.abs(xs - tx - 0.1) < 0.4) & (ys_ > fork[1] - 0.2))
             dm = np.diff(np.concatenate([[0], keep.astype(np.int8), [0]]))
             for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
                 if b_ - a_ > 5:
@@ -1118,8 +1157,8 @@ class Plenty:
             def free(x, y):
                 x = np.asarray(x)
                 y = np.asarray(y)
-                ok = ~((((x - crown_c[0]) / 2.75) ** 2 + ((y - crown_c[1]) / 2.05) ** 2) < 1)
-                ok &= ~((np.abs(x - tx - 0.1) < 0.42) & (y > crown_c[1]) & (y < ty + 0.1))
+                ok = ~leafy(x, y, 0.08)
+                ok &= ~((np.abs(x - tx - 0.1) < 0.45) & (y > fork[1] - 0.2) & (y < ty + 0.1))
                 return ok
             for kk in range(2):
                 y_lo = lambda x, kk=kk: self.hills(x, kk)
@@ -1131,10 +1170,13 @@ class Plenty:
                     ang = rng.choice([0, 12, -14, 25, -30, 8]) + rng.normal(0, 3)
                     sp = rng.uniform(0.06, 0.1)
 
-                    def inside(x, y, xa=xa, xb=xb, y_lo=y_lo, y_hi=y_hi):
+                    sl = rng.uniform(-0.6, 0.6)
+
+                    def inside(x, y, xa=xa, xb=xb, y_lo=y_lo, y_hi=y_hi, sl=sl):
                         x = np.asarray(x)
                         y = np.asarray(y)
-                        return (x > xa + 0.05) & (x < xb - 0.05) & (y > y_lo(x) + 0.06) & (y < y_hi(x) - 0.06) & free(x, y)
+                        xs_ = x + sl * (y - y_lo(x))
+                        return (xs_ > xa + 0.05) & (xs_ < xb - 0.05) & (y > y_lo(x) + 0.06) & (y < y_hi(x) - 0.06) & free(x, y)
                     if rng.random() < 0.72:
                         hatch(S, inside, lambda x, y: np.ones_like(x), (xa, self.Yh - 1.0, xb, self.hills(xb, 2) + 0.5),
                               ang, sp, 0.0, 0.0075, int(rng.integers(1 << 30)), dens=0.8, seg=(0.5, 2.0), wob=0.003)
@@ -1152,20 +1194,33 @@ class Plenty:
                         q = np.column_stack([x_ + r_ * np.cos(a), y_ + r_ * np.sin(a)])
                         pp, rd, dd = hand(q, 0.009, int(rng.integers(1 << 30)), dens=0.9, thin_end=0.4, taper=(0.02, 0.02))
                         S.add(pp, rd, dd, layer=lay)
-            # stooks of corn in the near field (little tents of sheaves), in rows
+            # stooks of corn in the near field: sheaves leaning together, tied at the neck, in loose rows
             for row in range(3):
-                yb_ = self.hills(np.array([bx0 + 10.0]), 2)[0] + 0.55 + 0.45 * row
-                for x_ in np.arange(bx0 + 8.6 + 0.2 * row, bx1 - 0.8, 0.62 + 0.1 * row):
-                    if not free(np.array([x_]), np.array([yb_]))[0]:
-                        continue
-                    hh = 0.26 + 0.05 * row
-                    q = np.array([[x_ - 0.1 - 0.02 * row, yb_], [x_, yb_ - hh], [x_ + 0.11 + 0.02 * row, yb_]])
-                    line(S, q, 0.012, int(rng.integers(1 << 30)), dens=0.95, layer=lay, lift=(3, 4), smooth=0)
-                    for f in np.linspace(0.25, 0.75, 3):
-                        p0 = q[1] + (q[2] - q[1]) * f
-                        pp, rd, dd = hand(np.array([q[1] + [0.005, 0.02], p0]), 0.006, int(rng.integers(1 << 30)), dens=0.8,
-                                          thin_end=0.4)
+                yb_ = self.hills(np.array([bx0 + 10.0]), 2)[0] + 0.5 + 0.55 * row
+                sc_ = 0.8 + 0.25 * row
+                x_ = bx0 + 8.9 + 0.3 * row + rng.uniform(0, 0.3)
+                while x_ < bx1 - 0.9:
+                    if free(np.array([x_]), np.array([yb_]))[0] and rng.random() < 0.8:
+                        hh = 0.3 * sc_ * rng.uniform(0.9, 1.1)
+                        top = np.array([x_ + rng.normal(0, 0.02), yb_ - hh])
+                        for m in range(5):
+                            fx_ = x_ + (m - 2) * 0.055 * sc_
+                            q = np.array([[fx_ + (m - 2) * 0.02 * sc_, yb_ + rng.normal(0, 0.01)], top + [(m - 2) * 0.008, 0]])
+                            pp, rd, dd = hand(q, 0.006 + 0.001 * sc_, int(rng.integers(1 << 30)), dens=0.85, thin_end=0.4)
+                            S.add(pp, rd, dd, layer=lay)
+                        # the ears at the top, the tie, the shadow on the grass
+                        for m in range(4):
+                            a = -np.pi / 2 + (m - 1.5) * 0.45
+                            q = np.array([top, top + 0.07 * sc_ * np.array([math.cos(a), math.sin(a)])])
+                            pp, rd, dd = hand(q, 0.006, int(rng.integers(1 << 30)), dens=0.85, thin_end=0.3)
+                            S.add(pp, rd, dd, layer=lay)
+                        q = np.array([[x_ - 0.07 * sc_, yb_ - 0.62 * hh], [x_ + 0.07 * sc_, yb_ - 0.6 * hh]])
+                        pp, rd, dd = hand(q, 0.01, int(rng.integers(1 << 30)), dens=0.9, thin_end=0.6)
                         S.add(pp, rd, dd, layer=lay)
+                        q = np.array([[x_ + 0.05, yb_ + 0.01], [x_ + 0.3 * sc_, yb_ + 0.03]])
+                        pp, rd, dd = hand(q, 0.012, int(rng.integers(1 << 30)), dens=0.7, thin_end=0.3)
+                        S.add(pp, rd, dd, layer=lay)
+                    x_ += (0.55 + 0.25 * row) * rng.uniform(0.8, 1.3)
             # the orchard on the far slope: rows of small round trees
             for row in range(3):
                 for x_ in np.arange(bx0 + 0.8 + 0.2 * row, bx0 + 3.6, 0.34):
