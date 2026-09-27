@@ -458,7 +458,8 @@ class Shot:
         X = np.stack([Gc[..., BW.G_X], Gc[..., BW.G_Y], Gc[..., BW.G_Z]], -1).astype(np.float64)
         N = np.stack([Gc[..., BW.G_NX], Gc[..., BW.G_NY], Gc[..., BW.G_NZ]], -1).astype(np.float64)
         ok = (Gc[..., BW.G_DIST] < 1e8) & (Gc[..., BW.G_FLAG] != 2.0)
-        caps = self.her_body_world(f)
+        caps = self.her_body_world(f)[:2]            # her body shadows the pool; the pot's own belly is let off (the
+        #                                               leak is at its rim, and a pool round her feet sells the fire)
         out = _point_light(X, N, ok, np.asarray(glow_w, np.float64),
                            np.array([np.r_[a, b, r] for a, b, r in caps], np.float64), 0.05)
         col = np.asarray(MF.FIRE_LIGHT, np.float32) * np.float32(self.POOL * pot_I)
