@@ -509,7 +509,7 @@ class StripEmbers:
         P0, _, _ = self.pts(ctx.t0)
         P1, u, age = self.pts(ctx.t1)
         ok = age > 0.6
-        e = self.E * g * (1 - u) ** 0.6 * smoothstep(0.0, 0.08, u) * 4.0 * ok
+        e = self.E * g * (1 - u) ** 0.6 * smoothstep(0.0, 0.08, u) * 10.0 * ok
         col = look.blackbody(np.clip(0.5 + 0.25 * smoothstep(0.45, 0.8, u) - 0.15 * smoothstep(0.85, 1.0, u), 0, 0.9))
         ctx.fr.splat(P0[ok], P1[ok], 0.03, e[ok], col[ok], ctx.cam0, ctx.cam1, zref=30.0)
 
@@ -535,14 +535,14 @@ class Updraft:
 
     def __init__(self, seed=959):
         r = rng(seed)
-        n = 90000
+        n = 60000
         self.n = n
         self.ph = r.random(n)
         self.v = r.uniform(0.9, 1.6, n)                     # units / frame: it roars
         self.a = r.uniform(0, 2 * np.pi, n)
-        self.rr = r.random(n) ** 0.7                        # a dense core, ragged edges
+        self.rr = r.random(n) ** 1.3                        # a dense, bright core; ragged edges
         self.E = r.lognormal(0, 0.45, n)
-        self.rw = r.uniform(0.1, 0.24, n)                   # soft: a body of flame, not dots
+        self.rw = r.uniform(0.35, 0.8, n)                   # big soft blobs overlapping: a body of flame, not grains
         m = 14000                                           # embers riding it, faster, sharp
         self.m = m
         self.e_ph = r.random(m)
@@ -577,11 +577,13 @@ class Updraft:
         P0, s0, _ = self._col(ctx.t0, self.ph, self.v, self.a, self.rr)
         P1, s, h = self._col(ctx.t1, self.ph, self.v, self.a, self.rr)
         ok = s >= s0
-        puff = 0.55 + 0.45 * np.sin(0.21 * h - 0.33 * t + 2.0 * self.a) ** 2      # puffs travelling up it
-        hot = np.exp(-h / 26.0)
-        e = self.E * g * puff * (0.25 + 2.2 * hot) * smoothstep(0.0, 0.03, s) * (1.0 - smoothstep(0.6, 1.0, s)) * ok
-        e = e * (1.0 - 0.5 * self.rr) * 2.4
-        T = np.clip(0.47 + 0.3 * hot + 0.06 * (1 - self.rr), 0.0, 0.9)
+        # billows travelling up it, with dark gaps between them (tongues, never an even curtain)
+        bil = vnoise(P1 * np.array([0.07, 0.035, 0.07]) + np.array([0.0, -0.06 * t, 0.0]), 1.0, (9.1, 2.2, 4.4), 2)[:, 0]
+        puff = smoothstep(-0.15, 0.45, bil) ** 1.5
+        hot = np.exp(-h / 22.0)
+        e = self.E * g * puff * (0.15 + 3.0 * hot ** 1.3) * smoothstep(0.0, 0.03, s) * (1.0 - smoothstep(0.55, 1.0, s)) * ok
+        e = e * (1.0 - 0.6 * self.rr) * 16.0
+        T = np.clip(0.44 + 0.42 * hot ** 1.2 + 0.08 * (1 - self.rr) * hot, 0.0, 0.95)
         col = look.blackbody(T)
         col = col * (1 - 0.4 * red * (1 - hot))[:, None] + B.C_RED * (0.4 * red * (1 - hot))[:, None]
         m = e > 1e-4
@@ -591,7 +593,7 @@ class Updraft:
         Q1, q, hq = self._col(ctx.t1, self.e_ph, self.e_v, self.e_a, self.e_rr)
         ok = q >= q0
         fl = 0.6 + 0.4 * np.sin(0.9 * t + self.e_fl)
-        e = self.e_E * g * fl * (1.0 - q) ** 0.7 * smoothstep(0.0, 0.04, q) * ok * 3.0
+        e = self.e_E * g * fl * (1.0 - q) ** 0.7 * smoothstep(0.0, 0.04, q) * ok * 8.0
         col = look.blackbody(np.clip(0.52 + 0.2 * np.exp(-hq / 30.0), 0, 0.85))
         m = e > 1e-4
         ctx.fr.splat(Q0[m], Q1[m], 0.03, e[m], col[m], ctx.cam0, ctx.cam1, zref=30.0)

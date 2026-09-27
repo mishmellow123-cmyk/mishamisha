@@ -16,8 +16,13 @@ pillar of flame + torn-off embers, 2400-2470 roar, subsides by the tip) + StripE
 **11:40Z: THE EDGE now reads** (scratchpad e3/b4.jpg): the crater joins the occluder (`edge._extra_occluders`
 via `SCHED.extra_occluders` in Towers.prepare; crater splats carry myid=CRATER_ID), an irregular torn rim
 (`edge.rim_r`), hot walls lit from the molten floor, a dark plain whose edge glows; the orbit r 46 y 30 ty -12 looks
-down into the pit with the fire in the upper frame. Still open: the BRINK updraft reads as a curtain of gold grains,
-and the rim collapse (2440) / crown fall (2480) are not yet legible at contact-sheet size.
+down into the pit with the fire in the upper frame.
+**11:43Z: THE BRINK updraft reads** (e3/b6.jpg): embers torn off the tower crowns in bursts (StripEmbers x10) are
+dragged into a golden column rising from the swollen fire (Updraft: 60k soft blobs rw 0.35-0.8, core-dense rr^1.3,
+billow noise with dark gaps, hot at the root; x16). Still open: the rim collapse (2440) and the crown fall (2480,
+FALL_TOWER=4) need a legibility check at 0.5 scale; the tip over the rim to white (2520-2640) reads (b4 2530-2610).
+Then a full-res check still pair (2000 THE EDGE, 2450 THE BRINK) -> director -> cloud job 1840-2639 (+ ALT: the
+giants appear in THE EDGE too, so the ALT job must cover 1840-2639 as well).
 
 **NEXT (in order):**
 1. (DONE 11:40Z, see above) THE EDGE crater must read as SOLID rock (now a translucent "glass cylinder": splats are additive and only tower
