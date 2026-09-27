@@ -211,6 +211,20 @@ def debug_cam(cam, focus, scale):
     return Camera(q[:3], yaw=yaw, pitch=pitch, hfov=q[6], scale=scale), focus, True
 
 
+def aim_at_screen(pos, tgt, P, px_full, hfov, iters=4):
+    """A new look-at target (same camera position) that puts world point P at full-res pixel px_full."""
+    tgt = np.asarray(tgt, np.float64).copy()
+    for _ in range(iters):
+        c = Camera(pos, hfov=hfov, scale=1.0)
+        yaw, pitch = c.look_at(tgt)
+        c = Camera(pos, yaw=yaw, pitch=pitch, hfov=hfov, scale=1.0)
+        sx, sy, z = c.project(np.asarray(P, np.float64))
+        d = float(np.linalg.norm(tgt - np.asarray(pos)))
+        right, up = c.R[:, 0], c.R[:, 1]
+        tgt = tgt + right * (sx - px_full[0]) / c.f * d - up * (sy - px_full[1]) / c.f * d
+    return tgt
+
+
 # ------------------------------------------------------------ the figure ---
 
 def static_chain(anchor, direction, n, seg, droop=0.3, sway=(0.0, 0.0), seed=0.0):
@@ -265,69 +279,86 @@ def snow_ground(B, c, reach=1.2, hollow=None):
 # ================================================================ H5 ====
 
 class DeadEmber:
-    """B 40.0-50.0 s (frames 960-1199). Keys (frames): kneel settled 960; lid lifts 984-1010; the red eye 1010-1040;
-    blow 1 1040-1062 (the ember brightens a little: hope), blow 2 1072-1092 (nothing); it greys 1060-1130; the
-    breath hangs 1092-1150; still to 1199."""
-    F0, F1 = 960, 1199
+    """B · THE DEAD EMBER, bars 12-14 on the locked sheet: B frames 880-1119. Keys: she kneels at the cairn, her far
+    gloved hand on the lid's knob; it lifts the lid 888-904, carries it away from the lens and sets it down on the
+    stone on the far side, the small knock on bar 12 b3 (920); the hand returns to steady the pot's rim (924-944).
+    One red eye 920-980. From bar 13 b2 (980) she blows: the eye brightens a little (hope), then greys (1000-1100);
+    a second breath (1016) does nothing. The last red point is on bar 14 b4 (1100) and goes out by 1116; the breath
+    hangs. The camera drifts (1040-1100) so that last point sits where H1's first spark is born (the match cut on
+    bar 15 b1)."""
+    F0, F1 = 880, 1119
     POT = np.array([0.36, 0.28, -0.02])       # on the cairn's lowest course (top at 0.28 m)
     HFOV = 38.0
     POV = False
     MOON = np.array([0.20, 0.62, -0.76]) / np.linalg.norm([0.20, 0.62, -0.76])   # B's moon: high on her left
+    SPARK_PX = (757.0, 256.0)                 # H1's flint edge (strike 1) in the full-res frame: the match cut
+    EYE = POT + np.array([0.002, 0.1145, 0.014])   # the ember's eye: its top, turned a little toward the lens
+    KNOCK = 920
 
     def __init__(self):
         pass
 
     # ---- keys
     def life(self, f):
-        e = 1.0 - 0.55 * smoothstep(1044, 1066, f) - 0.45 * smoothstep(1066, 1130, f)
-        e += 0.18 * smoothstep(1041, 1047, f) * (1 - smoothstep(1049, 1062, f))       # a breath of hope
+        e = 1.0 - 0.55 * smoothstep(1000, 1030, f) - 0.45 * smoothstep(1030, 1100, f)
+        e += 0.18 * smoothstep(982, 988, f) * (1 - smoothstep(992, 1004, f))          # a breath of hope
         return float(np.clip(e, 0.0, 1.2))
 
+    def last_point(self, f):
+        """The last red point: a pinprick left in the eye once the rest has greyed; out by 1116."""
+        return 0.9 * smoothstep(1080, 1098, f) * (1 - smoothstep(1100, 1116, f))
+
     def lid_u(self, f):
-        return smoothstep(984, 1010, f)
+        return smoothstep(888, self.KNOCK, f)
+
+    def blow_env(self, f):
+        return max(smoothstep(980, 984, f) * (1 - smoothstep(1000, 1004, f)),
+                   smoothstep(1016, 1020, f) * (1 - smoothstep(1032, 1036, f)))
 
     def pose(self, f):
         t = f / FPS
         u = self.lid_u(f)
-        blow = max(smoothstep(1040, 1044, f) * (1 - smoothstep(1058, 1062, f)),
-                   smoothstep(1072, 1076, f) * (1 - smoothstep(1088, 1092, f)))
+        blow = self.blow_env(f)
         p = dict(
             pelvis=(0.80, 0.57, 0.0), yaw=0.0, lean=20.0 + 4.0 * blow, chest=6.0, twist=0.0, neck=12.0,
             head=40.0 + 6.0 * blow, head_yaw=0.0, head_roll=0.0, shrug=0.25,
             elbow_f=(0.2, -1.0, 0.9), elbow_n=(0.2, -1.0, -0.9),
-            curl_f=(0.30, 0.34, 0.40, 0.46), thumb_f=0.25, spread_f=0.15,
-            curl_n=(0.55, 0.62, 0.70, 0.74), thumb_n=0.55, spread_n=0.1,
+            curl_n=(0.30, 0.34, 0.40, 0.46), thumb_n=0.3, spread_n=0.1,
             foot_n=(1.12, 0.07, -0.12), foot_f=(1.12, 0.07, 0.12), knee_n=(-1.0, -0.6, -0.05), knee_f=(-1.0, -0.6, 0.05),
             toe_n=(1.0, -0.2, 0.0), toe_f=(1.0, -0.2, 0.0), sole_n=(0.0, -1.0, 0.0), sole_f=(0.0, -1.0, 0.0),
             hem=0.05, breath=math.sin(2 * math.pi * t / 3.6) * (1 - blow),
         )
-        # the lid: her near hand lifts it off by the knob and sets it on the stone at her left; then both hands cradle
-        # the pot (the near one returns 1010-1024)
+        # the lid: her FAR hand lifts it by the knob and sets it down on the stone beyond the pot (away from the lens:
+        # no arm crosses the frame), then comes back to steady the pot's rim
         rest = self.POT + np.array([0.0, 0.150, 0.0])
-        down = self.POT + np.array([0.020, -0.004, -0.175])
-        lift = self.POT + np.array([0.010, 0.230, -0.080])
-        lc = (rest * (1 - smoothstep(0, 0.45, u)) + lift * smoothstep(0, 0.45, u)) * (1 - smoothstep(0.45, 1.0, u)) \
-            + down * smoothstep(0.45, 1.0, u)
-        back = smoothstep(1010, 1024, f)
-        grip_lid = lc + np.array([0.040, 0.045, -0.020])
-        cradle = np.array([0.66, 0.43, -0.13])        # her near hand comes to rest on her thigh
-        hn = grip_lid * (1 - back) + cradle * back
-        p['hand_n'] = tuple(hn)
-        fl, pl = nrm([-0.75, -0.45, 0.35]), nrm([0.10, -0.80, 0.55])
-        fc, pc = nrm([-0.80, -0.55, 0.10]), nrm([0.10, -1.0, 0.10])
-        p['fdir_n'] = tuple(nrm(fl * (1 - back) + fc * back))
-        p['palm_n'] = tuple(nrm(pl * (1 - back) + pc * back))
-        p['curl_n'] = tuple(np.array([0.55, 0.62, 0.70, 0.74]) * (1 - back) + np.array([0.30, 0.34, 0.40, 0.46]) * back)
-        # the far hand cradles the far side of the pot throughout
-        p['hand_f'] = tuple(self.POT + np.array([0.050, 0.080, 0.085]))
-        p['fdir_f'] = (-0.55, -0.30, -0.78)
-        p['palm_f'] = tuple(nrm([-0.35, 0.05, -0.93]))
-        lid_u = smoothstep(0.45, 1.0, u)
+        lift = self.POT + np.array([0.012, 0.215, 0.040])
+        down = self.POT + np.array([0.030, 0.012, 0.172])
+        a = smoothstep(0.0, 0.5, u)
+        b = smoothstep(0.5, 1.0, u)
+        lc = rest * (1 - a) + lift * a
+        lc = lc * (1 - b) + down * b
+        back = smoothstep(self.KNOCK + 4, self.KNOCK + 24, f)
+        grip = lc + np.array([0.030, 0.050, 0.020])
+        steady = self.POT + np.array([0.050, 0.080, 0.085])
+        p['hand_f'] = tuple(grip * (1 - back) + steady * back)
+        fg, pg = nrm([-0.45, -0.75, -0.40]), nrm([0.05, -0.90, -0.40])
+        fs, ps = nrm([-0.55, -0.30, -0.78]), nrm([-0.35, 0.05, -0.93])
+        p['fdir_f'] = tuple(nrm(fg * (1 - back) + fs * back))
+        p['palm_f'] = tuple(nrm(pg * (1 - back) + ps * back))
+        p['curl_f'] = tuple(np.array([0.55, 0.62, 0.70, 0.74]) * (1 - back) + np.array([0.30, 0.34, 0.40, 0.46]) * back)
+        p['thumb_f'] = 0.55 * (1 - back) + 0.25 * back
+        p['spread_f'] = 0.15 * back
+        # her near hand rests on her thigh throughout
+        p['hand_n'] = (0.66, 0.43, -0.13)
+        p['fdir_n'] = tuple(nrm([-0.80, -0.55, 0.10]))
+        p['palm_n'] = tuple(nrm([0.10, -1.0, 0.10]))
         p['tools'] = 'none'
         p['rock'] = None
         p['expr'] = dict(purse=blow, blink=0.6, brow=0.2)
         p['look_at'] = self.POT + np.array([0.0, 0.09, 0.0])
-        return p, lc, lid_u, blow
+        lid_flat = b                                   # tipped while carried, flat once set down
+        tip = math.sin(math.pi * min(1.0, u)) * 0.6
+        return p, lc, (tip, lid_flat), blow
 
     # ---- props
     def pot(self, B, lid_c, lid_u):
@@ -354,7 +385,8 @@ class DeadEmber:
         B.ell(e + [0.009, -0.002, 0.004], np.array([0.0075, 0.0060, 0.0070]), k=0.004)
         B.ell(e + [-0.008, -0.003, -0.005], np.array([0.0060, 0.0045, 0.0055]), k=0.004)
         # the lid: a shallow clay dome with a knob, lifted in her near hand and tipped toward her
-        ax = nrm(np.array([0.0, 1.0, 0.0]) * (1 - lid_u) + nrm([0.25, 1.0, -0.15]) * lid_u)
+        tip, flat = lid_u
+        ax = nrm(np.array([0.0, 1.0, 0.0]) * (1 - tip) + nrm([0.25, 1.0, 0.45]) * tip)
         Rl = H3.ring_frame(ax, ref=(1.0, 0.0, 0.0))
         B.group('lid', H3.M_CLAY, disp=1, amp=0.0006, scale=90.0, band=0.004)
         B.ell(lid_c, np.array([0.049, 0.0100, 0.049]), R=Rl)
@@ -388,6 +420,11 @@ class DeadEmber:
             pos = np.array([0.35, 0.98, -0.44])
             tgt = self.POT + np.array([0.020, 0.110, 0.0])
         pos = pos + np.array([0.004 * fnoise1(t * 0.6, 3.0), 0.003 * fnoise1(t * 0.5, 5.0), 0.0])
+        w = smoothstep(1040, 1100, f) if not self.POV else 0.0
+        if w > 0.0:
+            eye = self.EYE
+            aimed = aim_at_screen(pos, tgt, eye, self.SPARK_PX, hf)
+            tgt = tgt * (1 - w) + aimed * w
         cam = Camera(pos, hfov=hf, scale=scale)
         yaw, pitch = cam.look_at(tgt)
         return Camera(pos, yaw=yaw, pitch=pitch, hfov=hf, scale=scale), float(np.linalg.norm(self.POT + [0, 0.11, 0] - pos))
@@ -416,13 +453,16 @@ class DeadEmber:
         XP[20] = 0.16
         XP[24] = 260.0
         # the eye: the ember's top, turned a little toward the lens; it narrows as the ember dies
-        XP[21:24] = epos + np.array([-0.004, 0.0075, -0.004])
+        XP[21:24] = self.EYE
         XP[31] = 0.0030 + 0.0026 * min(1.0, life)
+        XP[32] = self.last_point(f)
+        XP[20] *= 1.0 - smoothstep(1100, 1116, f)
         XP[25] = 1.0
         XP[26] = 1.0
         ENV = env_stack(night_env(moon=0.8))
         # light: B's silver moon from behind her; the ember inside the pot (its walls and her hands shadow it)
-        glow = 0.0026 * (0.02 + life ** 1.6) * (0.35 + 0.65 * lid_u)
+        open_ = smoothstep(888, 904, f)
+        glow = 0.0026 * (0.02 + life ** 1.6) * (0.35 + 0.65 * open_) + 0.0004 * self.last_point(f)
         L = [moon_light(0.45, self.MOON),
              light(epos + [0, 0.012, 0], (1.0, 0.30, 0.06), glow, 0.010, 6.0)]
         env = hero.env_vec(rim_dir=self.MOON, rim=np.array([0.10, 0.13, 0.20]), amb=np.array([0.004, 0.006, 0.011]),
@@ -433,7 +473,7 @@ class DeadEmber:
         img[:] = np.array([0.004, 0.006, 0.012], np.float32)
         depth = comp(img, res)
         # breath: from her hidden mouth down into the pot's glow, then hanging in the moonlight
-        self._breath(img, cam, f, anc, epos, life, lid_u)
+        self._breath(img, cam, f, anc, epos, life, open_)
         if not nodof:
             img = dof(img, depth, focus, K=cam.f * 0.0055, near_split=focus * 0.75)
         return finish(img, exposure=float(os.environ.get('V3_EXPO', 1.35)))
@@ -441,7 +481,7 @@ class DeadEmber:
     def _breath(self, img, cam, f, anc, epos, life, lid_u):
         import heroine_sdf as hsd
         mouth = anc['mouth']
-        puffs = ((1040, 0.9, 'blow'), (1072, 0.8, 'blow'), (1006, 1.6, 'out'), (1100, 2.4, 'hang'))
+        puffs = ((982, 1.0, 'blow'), (1016, 0.9, 'blow'), (930, 1.6, 'out'), (1040, 2.6, 'hang'))
         for (fs, dur, kind) in puffs:
             age = (f - fs) / FPS
             if age < 0 or age > dur + (1.8 if kind == 'hang' else 0.6):
