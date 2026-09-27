@@ -1177,6 +1177,14 @@ class Towers:
                 far = np.clip(24.0 / z, 0.3, 1.0)                               # fine joints simplify with distance
                 wave = self.heat_wave(i, t, yl)
                 ftop = 0.35 + 0.65 * smoothstep(0.0, 7.0, dtop)
+                crown = 0.0
+                if FS:
+                    # v3 A (H5 "ember life on the fire side of every tower"; the crowns must read): the fire-facing
+                    # side stays lit to the top, the crenellated crown is crisp, and each stack's own throat glows
+                    # up through its parapet (the forge's fire, seen from every side: not the thinking fire's light)
+                    ftop = 0.85 + 0.15 * smoothstep(0.0, 7.0, dtop)
+                    vgr = 0.55 + 0.45 * (1.0 - frac)
+                    crown = np.exp(-np.maximum(dtop - 0.25, 0.0) / 1.1) * (0.75 + 0.25 * np.sin(2.1 * t + 7.0 * ph))
                 keep = ftop * smoothstep(-0.3, 0.4, yl)              # thin at the very top; nothing underground
                 heat = (1 + 2.5 * wave) * surge
                 gild = 0.0
@@ -1197,10 +1205,13 @@ class Towers:
                     opening = np.where(key >= 0, 0.12, 1.0)
                     ash = smoothstep(0.2, 0.85, 0.35 * nz + 0.65 * nzv)  # glowing coal vs cooler ash, streaked upward
                     grain = 0.85 + 0.3 * rnd
+                    if FS:
+                        ash = 0.35 + 0.3 * ash       # v3 A: an even coal, not a leopard print (the joints carry detail)
                     L = 0.09 * (0.3 + 1.4 * ash) * (0.8 + 0.4 * nz2) * grain * fl * opening * (1 + 3.0 * base) * heat
                     rim = np.clip(1.0 - ndv / 0.35, 0, 1) ** 2 * (ndv > 0)
                     rimL = 0.35 * rim * (0.6 + 0.6 * nz2) * fl * heat
                     L = ((L + rimL) * vgr + 2.2 * front) * fside + 0.25 * rimL * vgr * (1 - fside)   # a glare fringe
+                    L = L + 0.35 * crown
                     T = 0.27 + 0.1 * ash + 0.18 * base + 0.2 * front
                     col = _tw_colours(T)
                     col = col * (1 - 0.8 * red) + C_CR * 0.8 * red
@@ -1209,7 +1220,7 @@ class Towers:
                     lam = np.clip((N * Lv).sum(1) / np.maximum(dL, 1e-6), 0, 1)
                     lit = 0.006 * light_pow * lam ** 1.3 / (1 + (dL / 16.0) ** 2) * (1 - 0.4 * red) * opening
                     if FS:
-                        lit = lit * FIRE_SIDE_LIT * (0.55 + 0.9 * nz2) * (0.8 + 0.4 * rnd)    # fine crust detail
+                        lit = lit * FIRE_SIDE_LIT * (0.8 + 0.35 * nz2) * (0.7 + 0.6 * rnd)    # fine crust detail
                     lit = lit * np.clip(hot / 0.3, 0, 1) ** 2          # roofs (hot 0.2) stay dark tile
                     face = smoothstep(-0.02, 0.1, ndv) * keep
                     colE = (col * L[:, None] + lcol[None, :] * lit[:, None]) * face[:, None]
@@ -1228,7 +1239,7 @@ class Towers:
                     # soft crevices of fire: a hot core line fading into the stone; slow patches of heat
                     patch = 0.2 + 1.3 * smoothstep(0.25, 0.9, 0.4 * nz + 0.6 * nzv) ** 1.5
                     L = (0.6 * far * (0.2 + 0.8 * hot ** 2) * patch * (0.8 + 0.4 * nz2) * fl * (1 + 3.0 * base) * heat
-                         * vgr + 2.0 * front) * fside
+                         * vgr + 2.0 * front) * fside + 0.9 * crown
                     T = 0.34 + 0.16 * nz + 0.1 * hot + 0.22 * base
                     col = _tw_colours(T)
                     col = col * (1 - 0.7 * red) + C_RED * 0.7 * red
@@ -1245,6 +1256,10 @@ class Towers:
                         * fside
                     if SCHED is not None and hasattr(SCHED, 'shutter'):
                         L = L * SCHED.shutter(i, t, pt['pl'])
+                    if FS:
+                        # the roaring throats (the only windows that face the sky) always burn, seen from anywhere
+                        throat = (N[:, 1] > 0.9) & (dtop < 1.5)
+                        L = np.where(throat, 2.4 * wf * (0.8 + 0.4 * rnd) * surge, L)
                     T = G['wT'][key] + 0.12 * base - 0.1 * red + 0.05 * (rnd - 0.5)
                     col = _tw_colours(T)
                     col = col * (1 - 0.35 * red) + (C_RED * 0.7 + look.blackbody(0.55) * 0.3) * 0.35 * red
@@ -1254,7 +1269,7 @@ class Towers:
                     continue
                 if kind == 1:                                        # seams of fire (floors, joints)
                     seg = 0.15 + 1.3 * nz2 ** 2.5
-                    L = (0.3 * hot * seg * fl * (1 + 4.0 * base) * heat * vgr + 2.0 * front) * fside
+                    L = (0.3 * hot * seg * fl * (1 + 4.0 * base) * heat * vgr + 2.0 * front) * fside + 0.9 * crown
                     T = 0.46 + 0.14 * nz2 + 0.2 * base
                     col = _tw_colours(T)
                     col = col * (1 - 0.7 * red) + C_RED * 0.7 * red
@@ -1264,7 +1279,7 @@ class Towers:
                     continue
                 # burning edges (corners, tier lips, eaves, ribs); they catch the crown-fire too
                 L = (0.2 * hot * (0.35 + 0.9 * nz2) * fl * (1 + 3.5 * base) * heat * (0.5 + 0.5 * far) * vgr + 2.5 * front) \
-                    * fside
+                    * fside + 1.6 * crown
                 T = 0.5 + 0.12 * nz2 + 0.2 * base
                 col = _tw_colours(T)
                 col = col * (1 - 0.7 * red) + C_RED * 0.7 * red

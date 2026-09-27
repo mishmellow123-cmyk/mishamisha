@@ -57,7 +57,7 @@ T_END = bar(62)             # 4880
 
 GIANTS = (2, 6)
 PROMISE_GAIN = 3.0
-GIANT_GROW = 30.0           # how much taller the giants grow over 1730-1830
+GIANT_TOP = 42.0            # both giants grow to this crown height (y) over 1730-1795; the rest stand at 12-26
 
 
 # ================================================================== schedule ===
@@ -71,6 +71,12 @@ class A3Sched:
     beats = [float(x) for x in range(T_EDGE, T_WHITE, BEAT)] + [float(T_LIGHT), float(T_LIGHT + BEAT)]
     smoke_gain = 0.45           # thinner smoke off the tops, so the silhouettes and the giants read
     surge_scale = 0.28          # 40 surges in A (v2 had 16): each one smaller, so the towers stay on the rim
+
+    def haze(self, t):
+        """0..1: the air of the arena lit by the fire (a backdrop the towers stand out against)"""
+        if t >= T_WHITE and t < T_LIGHT:
+            return 0.0
+        return float(smoothstep(T_PROMISE + 60, T_TOWERS + 60, t))
 
     def dust_k(self, t):
         return float(smoothstep(T_TOWERS, T_TOWERS + 80, t))
@@ -100,19 +106,23 @@ class A3Sched:
         return np.array([0.0, y, 0.0])
 
     def fire_scale(self, t):
-        if t < T_EDGE:
-            return 1.0
+        """the fire's size (x the A5 flame). As its light rolls out (the promise) it swells to twice A5's size, so
+        it stays the brightest thing in the frame once the towers rise round it; it swells again over the edge"""
         if t < T_LIGHT:
-            return 1.0 + 0.7 * float(smoothstep(T_EDGE, T_BRINK, t)) + 1.6 * float(smoothstep(T_BRINK, T_WHITE, t))
+            s_ = 1.0 + 1.0 * float(smootherstep(T_PROMISE, T_TOWERS, t))
+            s_ += 0.5 * float(smoothstep(T_EDGE, T_BRINK, t)) + 2.0 * float(smoothstep(T_BRINK, T_WHITE, t))
+            return s_
         # the calm fire after the turn, gathering into one small heart for the match cut
-        return 1.0 - 0.72 * float(smootherstep(T_HEART, T_END - 8, t))
+        return 2.0 * (1.0 - 0.72 * float(smootherstep(T_HEART, T_END - 8, t)))
 
     def power(self, t):
+        """surface brightness is kept as the fire grows (energy ~ its area), plus the race's own heat"""
+        k = self.fire_scale(t) ** 1.6
         if t < T_EDGE:
-            return 1.0
+            return k
         if t < T_LIGHT:
-            return 1.0 + 0.8 * float(smoothstep(T_EDGE, T_BRINK, t)) + 2.5 * float(smoothstep(T_BRINK, T_WHITE, t))
-        return 1.0 + 2.2 * float(smootherstep(T_HEART, T_END - 8, t))     # a small, intense heart
+            return k * (1.0 + 0.5 * float(smoothstep(T_EDGE, T_BRINK, t)) + 1.2 * float(smoothstep(T_BRINK, T_WHITE, t)))
+        return k * (1.0 + 2.2 * float(smootherstep(T_HEART, T_END - 8, t)))     # a small, intense heart
 
     def vortex_tilt(self, t):
         return np.eye(3)
@@ -135,7 +145,8 @@ class A3Sched:
 
     def tower_extra(self, towers, i, t):
         if i in GIANTS:
-            return GIANT_GROW * float(smootherstep(T_GIANTS, T_GIANTS + 65, t))
+            grow = GIANT_TOP - (B.GROUND + towers.h_rise[i])
+            return grow * float(smootherstep(T_GIANTS, T_GIANTS + 65, t))
         return 0.0
 
 
@@ -314,15 +325,16 @@ CAM_A5 = [  # (frame, radius, azimuth offset from ALPHA_C, height, target y, hfo
     (1110, 26.0, 0.12, -1.2, 0.9, 50.0),        # ... until it owns the frame: ~38% of its height, upper middle
     (1210, 26.8, 0.0, -1.5, 0.9, 50.0),
     (1272, 27.2, -0.1, -1.3, 0.9, 50.0),
-    (1310, 21.0, -0.17, 3.5, 0.5, 56.0),        # its light rolls out: up and back to see the land answer
-    (1370, 42.0, -0.21, 11.0, 5.0, 62.0),       # ... to the horizon
-    (1425, 46.0, -0.23, 10.0, 5.5, 62.0),
-    (1490, 60.0, -0.14, 9.0, 8.0, 50.0),        # outside the ring: the forges rise round the fire at its heart
-    (1600, 57.0, -0.09, 9.0, 9.0, 50.0),
-    (1690, 55.0, -0.04, 10.0, 10.0, 50.0),
-    (1728, 96.0, 0.0, 30.0, 15.0, 46.0),        # the whole ring: two giants outgrow the rest either side of the fire
-    (1760, 98.0, 0.02, 31.0, 17.0, 46.0),
-    (1796, 33.0, TH_G2 - AC - 0.24, 11.0, 4.0, 56.0),  # slipped behind one giant: a black mass fringed with glare
+    (1330, 34.0, -0.15, 3.5, 1.8, 56.0),        # its light rolls out: up and back to see the land answer
+    (1380, 48.0, -0.20, 11.0, 4.5, 62.0),       # ... to the horizon (the fire swells to twice its size)
+    (1425, 52.0, -0.22, 10.0, 5.0, 62.0),
+    (1470, 50.0, -0.16, 5.0, 7.0, 66.0),        # the forges rise round it: down to the fire's own height
+    (1540, 44.0, -0.05, 2.5, 7.0, 70.0),
+    (1620, 42.0, 0.05, 2.0, 7.5, 70.0),         # drifting round the ring (T5, T6a)
+    (1690, 52.0, 0.12, 7.0, 11.0, 64.0),
+    (1738, 84.0, 0.15, 17.0, 19.0, 60.0),       # the two giants outgrow the rest, either side of the fire
+    (1768, 94.0, 0.17, 20.0, 21.0, 60.0),
+    (1806, 38.0, TH_G2 - AC - 0.24, 12.0, 6.0, 58.0),  # slipped behind one giant: a black mass fringed with glare
     (1840, 31.0, TH_G2 - AC - 0.2, 10.0, 3.0, 56.0),
 ]
 
@@ -333,6 +345,23 @@ def cam_a5a6(t):
     pos = _polar(r, AC + a, y)
     tgt = np.array([0.0, ty, 0.0]) + 0.0 * pos
     return pos, tgt, float(hf)
+
+
+def emit_haze(ctx):
+    """the arena's air, lit by the fire: two broad soft glows round it (the near towers occlude them, so they stand
+    out as silhouettes; the giants rise into the lit air)"""
+    t = ctx.t
+    hz = SCHED.haze(t)
+    if hz <= 0:
+        return
+    C = B.crown_centre(t) + np.array([0.0, 2.0 * SCHED.fire_scale(t), 0.0])
+    pw = B.fire_power(t)
+    col = B.C_GOLD * 0.55 + np.array([1.0, 0.62, 0.32]) * 0.45
+    red = B.redness(t)
+    col = col * (1 - 0.7 * red) + B.C_RED * 0.7 * red
+    H = np.array([C, C + np.array([0.0, 6.0, 0.0])])
+    ctx.fr.splat(H, H, np.array([13.0, 34.0]), np.array([2600.0, 5200.0]) * hz * pw ** 0.5,
+                 np.array([col, col * 0.8 + np.array([0.9, 0.5, 0.3]) * 0.2]), ctx.cam0, ctx.cam1, profile=1)
 
 
 # =============================================================== timeline ===
@@ -352,7 +381,7 @@ class TimelineA3(TL.Timeline):
         if t < T_EDGE:
             pos, tgt, hf = cam_a5a6(t)
             focus = float(np.linalg.norm(B.crown_centre(t) - pos))
-            ap = float(lerp(0.06, 0.1, smoothstep(T_TOWERS, T_TOWERS + 100, t)))
+            ap = float(lerp(0.06, 0.03, smoothstep(T_TOWERS, T_TOWERS + 100, t)))   # the towers stay crisp
             return Camera(pos, tgt, hfov=hf, focus=focus, aperture=ap)
         import edge
         return edge.camera(self, t)
@@ -387,6 +416,7 @@ class TimelineA3(TL.Timeline):
         if t >= T_BRINK and t < T_LIGHT:
             self.vortex.emit(ctx)
         self.fire.emit(ctx)
+        emit_haze(ctx)
         self.fsparks.emit(ctx)
         self.shock.emit(ctx)
         self.promise.emit(ctx, mode='promise')
