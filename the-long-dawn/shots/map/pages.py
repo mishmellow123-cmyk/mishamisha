@@ -975,3 +975,278 @@ def to_tex(S, t, ppc, tex, dry=0.9, gains=None):
     C, _ = pen.raster(pk, t, ppc, H, W, PENCIL, gain=gains)
     tex.chan[..., 3] = np.maximum(tex.chan[..., 3], C)
     return tex
+
+
+# ======================================================= THE YEAR OF PLENTY ===
+
+class Plenty:
+    """A young silver-barked tree in golden flower in an open field; beyond it a patchwork of harvest fields,
+    hedgerows, an orchard, stooks of corn and a few cottages with smoke from every chimney. No round doors: the
+    tree in the field is the reference. The flowers are gold leaf and catch the hearth."""
+
+    def __init__(self, seed=41):
+        self.seed = seed
+        self.box = (2.3, 3.0, 17.3, 19.0)
+        bx0, by0, bx1, by1 = self.box
+        self.Yh = by0 + 7.0            # the far skyline
+        self.tx = bx0 + 6.3            # the tree's foot
+        self.ty = by0 + 12.6
+        self.th = 8.2                  # its height
+
+    def hills(self, x, k):
+        """The k-th ridge of rolling hills (0 = far) as a y for each x."""
+        bx0, by0, bx1, by1 = self.box
+        x = np.asarray(x, np.float64)
+        base = self.Yh + 0.9 * k + 0.45 * k * k
+        return base - (0.55 - 0.1 * k) * np.sin(x * (0.55 - 0.08 * k) + 1.3 * k) - 0.25 * np.sin(x * 1.4 + 3.0 * k)
+
+    def build(self, mode='ink', t0=0.0, t1=8.0):
+        rng = np.random.default_rng(self.seed)
+        S = Strokes()
+        pencil = mode == 'pencil'
+        lay = INK if not pencil else PENCIL
+        bx0, by0, bx1, by1 = self.box
+        dens = 0.55 if pencil else 0.95
+        W = (lambda w: w * 1.1) if pencil else (lambda w: w)
+        T = lambda a, b: (t0 + (t1 - t0) * a, t0 + (t1 - t0) * b)
+        k = len(S)
+        frame_rules(S, self.box, self.seed + 1, layer=lay)
+        _window(S, k, *T(0.0, 0.05), overlap=0.3)
+
+        # the tree: a slender trunk rising into a vase of limbs; the crown a cloud of leaf-clusters
+        k = len(S)
+        tx, ty, th = self.tx, self.ty, self.th
+        trunk_top = np.array([tx + 0.15, ty - 0.45 * th])
+        limbs = []
+        for m in range(7):
+            a = -np.pi / 2 + (m - 3) * 0.26 + rng.normal(0, 0.05)
+            L_ = th * (0.36 + 0.12 * rng.random()) * (1.0 - 0.12 * abs(m - 3))
+            p0 = trunk_top + np.array([0.04 * (m - 3), 0.25 * abs(m - 3) * 0.2])
+            p1 = p0 + 0.5 * L_ * np.array([math.cos(a) * 0.7, math.sin(a)])
+            p2 = p0 + L_ * np.array([math.cos(a) * 1.25, math.sin(a) * 0.95])
+            limbs.append(catmull([p0, p1, p2], 10))
+        # the trunk: two edges, a slight flare at the foot, smooth silver bark (sparse strokes on the shade side)
+        hs = np.linspace(0, 1, 60)
+        cx_ = tx + 0.15 * hs + 0.04 * np.sin(hs * 5)
+        wdt = 0.2 * (1 - 0.45 * hs) + 0.18 * np.exp(-hs / 0.06)
+        yy = ty - 0.45 * th * hs
+        line(S, np.column_stack([cx_ - wdt, yy]), W(0.02), self.seed + 5, dens=dens, layer=lay, lift=(3, 6), smooth=0)
+        line(S, np.column_stack([cx_ + wdt, yy]), W(0.026), self.seed + 6, dens=dens, layer=lay, lift=(3, 6), smooth=0)
+        if not pencil:
+            for q in np.linspace(0.25, 0.9, 5):
+                xs_ = cx_ + wdt * q
+                pp, rd, dd = hand(np.column_stack([xs_, yy])[3:-2], 0.007, int(rng.integers(1 << 30)), dens=0.7,
+                                  thin_end=0.3, taper=(0.3, 0.3))
+                S.add(pp, rd, dd, layer=lay)
+            for m in range(6):              # the faint rings of young bark
+                hq = rng.uniform(0.1, 0.9)
+                i = int(hq * 59)
+                q = np.array([[cx_[i] - wdt[i] * 0.6, yy[i]], [cx_[i] + wdt[i] * 0.9, yy[i] + 0.03]])
+                pp, rd, dd = hand(q, 0.006, int(rng.integers(1 << 30)), dens=0.6, thin_end=0.4)
+                S.add(pp, rd, dd, layer=lay)
+        for li, lb in enumerate(limbs):
+            line(S, lb, W(0.02 - 0.0015 * abs(li - 3)), self.seed + 10 + li, dens=dens, layer=lay, lift=(3, 5), smooth=0,
+                 taper=(0.05, 0.4))
+        _window(S, k, *T(0.05, 0.25), overlap=0.2)
+
+        # the crown: leaf clusters (scalloped), shaded on the lower right; golden flowers among them
+        k = len(S)
+        crown_c = np.array([tx + 0.3, ty - 0.74 * th])
+        clusters = []
+        for m in range(46):
+            a = rng.uniform(0, 2 * np.pi)
+            r_ = math.sqrt(rng.random())
+            c = crown_c + np.array([2.4 * r_ * math.cos(a), 1.75 * r_ * math.sin(a)])
+            clusters.append((c[0], c[1], rng.uniform(0.33, 0.55)))
+        clusters.sort(key=lambda q: q[1])
+        cxs = np.array([q[0] for q in clusters])
+        cys = np.array([q[1] for q in clusters])
+        crs = np.array([q[2] for q in clusters])
+        flowers = []
+        for ci, (x, y, r) in enumerate(clusters):
+            a = np.linspace(0, 2 * np.pi, 90)
+            sc = 1.0 + 0.1 * np.abs(np.sin(a * 4.5 + ci))           # scalloped edge: leaves
+            px_ = x + r * sc * np.cos(a)
+            py_ = y + r * sc * np.sin(a) * 0.85
+            vis = np.ones(len(a), bool)
+            for cj in range(ci + 1, len(clusters)):
+                vis &= (px_ - cxs[cj]) ** 2 + (py_ - cys[cj]) ** 2 > (crs[cj] * 0.97) ** 2
+            dm = np.diff(np.concatenate([[0], vis.astype(np.int8), [0]]))
+            for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
+                if b_ - a_ < 6:
+                    continue
+                pp, rd, dd = hand(np.column_stack([px_[a_:b_ + 1], py_[a_:b_ + 1]]), W(0.014), int(rng.integers(1 << 30)),
+                                  dens=dens, taper=(0.04, 0.1), thin_end=0.3)
+                S.add(pp, rd, dd, layer=lay)
+            if not pencil:
+                # leaves: short curved ticks on the shaded lower right of each cluster
+                for q in range(int(10 * r / 0.4)):
+                    aa = rng.uniform(-0.4, 1.9)
+                    rr_ = r * rng.uniform(0.35, 0.85)
+                    p0 = np.array([x + rr_ * math.cos(aa), y + 0.85 * rr_ * math.sin(aa)])
+                    if any((p0[0] - cxs[cj]) ** 2 + (p0[1] - cys[cj]) ** 2 < crs[cj] ** 2 for cj in range(ci + 1, len(clusters))):
+                        continue
+                    p1 = p0 + 0.09 * np.array([math.cos(aa + 1.9), math.sin(aa + 1.9)])
+                    pp, rd, dd = hand(np.array([p0, (p0 + p1) / 2 + [0.01, -0.01], p1]), 0.008, int(rng.integers(1 << 30)),
+                                      dens=0.85, thin_end=0.25)
+                    S.add(pp, rd, dd, layer=lay)
+                # flowers on the lit upper left of the cluster
+                for q in range(int(rng.integers(2, 5))):
+                    aa = rng.uniform(2.6, 5.0)
+                    rr_ = r * rng.uniform(0.2, 0.75)
+                    fx_ = x + rr_ * math.cos(aa)
+                    fy_ = y + 0.85 * rr_ * math.sin(aa)
+                    if any((fx_ - cxs[cj]) ** 2 + (fy_ - cys[cj]) ** 2 < crs[cj] ** 2 for cj in range(ci + 1, len(clusters))):
+                        continue
+                    flowers.append((fx_, fy_))
+        _window(S, k, *T(0.25, 0.55), overlap=0.85)
+
+        # the far country: hills, a patchwork of fields, hedgerows, an orchard, stooks, cottages with smoke
+        k = len(S)
+        xs = np.linspace(bx0 + 0.25, bx1 - 0.25, 300)
+        for kk in range(3):
+            ys_ = self.hills(xs, kk)
+            keep = ~(((xs - crown_c[0]) / 2.7) ** 2 + ((ys_ - crown_c[1]) / 2.0) ** 2 < 1) & \
+                ~((np.abs(xs - tx) < 0.35) & (ys_ > crown_c[1]))
+            dm = np.diff(np.concatenate([[0], keep.astype(np.int8), [0]]))
+            for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
+                if b_ - a_ > 5:
+                    line(S, np.column_stack([xs[a_:b_ + 1], ys_[a_:b_ + 1]]), W(0.016 + 0.004 * kk), int(rng.integers(1 << 30)),
+                         dens=dens * (0.8 + 0.07 * kk), layer=lay, lift=(1.5, 4.0), smooth=0)
+        if not pencil:
+            # fields between the ridges: each a patch of plough-lines at its own angle, some left as stubble dots
+            def free(x, y):
+                x = np.asarray(x)
+                y = np.asarray(y)
+                ok = ~((((x - crown_c[0]) / 2.75) ** 2 + ((y - crown_c[1]) / 2.05) ** 2) < 1)
+                ok &= ~((np.abs(x - tx - 0.1) < 0.42) & (y > crown_c[1]) & (y < ty + 0.1))
+                return ok
+            for kk in range(2):
+                y_lo = lambda x, kk=kk: self.hills(x, kk)
+                y_hi = lambda x, kk=kk: self.hills(x, kk + 1)
+                xcuts = np.sort(rng.uniform(bx0 + 0.3, bx1 - 0.3, 5 + 2 * kk))
+                xcuts = np.concatenate([[bx0 + 0.25], xcuts, [bx1 - 0.25]])
+                for fi in range(len(xcuts) - 1):
+                    xa, xb = xcuts[fi], xcuts[fi + 1]
+                    ang = rng.choice([0, 12, -14, 25, -30, 8]) + rng.normal(0, 3)
+                    sp = rng.uniform(0.06, 0.1)
+
+                    def inside(x, y, xa=xa, xb=xb, y_lo=y_lo, y_hi=y_hi):
+                        x = np.asarray(x)
+                        y = np.asarray(y)
+                        return (x > xa + 0.05) & (x < xb - 0.05) & (y > y_lo(x) + 0.06) & (y < y_hi(x) - 0.06) & free(x, y)
+                    if rng.random() < 0.72:
+                        hatch(S, inside, lambda x, y: np.ones_like(x), (xa, self.Yh - 1.0, xb, self.hills(xb, 2) + 0.5),
+                              ang, sp, 0.0, 0.0075, int(rng.integers(1 << 30)), dens=0.8, seg=(0.5, 2.0), wob=0.003)
+                    else:
+                        stipple(S, inside, lambda x, y: np.full_like(x, 0.55), (xa, self.Yh - 1.0, xb, self.hills(xb, 2) + 0.5),
+                                260, 0.012, int(rng.integers(1 << 30)))
+                    # the hedge along the field's edge: a row of small round bushes
+                    hx = np.arange(xa + 0.1, xb - 0.1, 0.16)
+                    for x_ in hx:
+                        y_ = float(self.hills(np.array([x_]), kk + 1)[0]) - 0.04
+                        if not free(np.array([x_]), np.array([y_]))[0] or rng.random() < 0.2:
+                            continue
+                        a = np.linspace(np.pi * 0.95, np.pi * 2.05, 14)
+                        r_ = 0.07 + 0.03 * rng.random()
+                        q = np.column_stack([x_ + r_ * np.cos(a), y_ + r_ * np.sin(a)])
+                        pp, rd, dd = hand(q, 0.009, int(rng.integers(1 << 30)), dens=0.9, thin_end=0.4, taper=(0.02, 0.02))
+                        S.add(pp, rd, dd, layer=lay)
+            # stooks of corn in the near field (little tents of sheaves), in rows
+            for row in range(3):
+                yb_ = self.hills(np.array([bx0 + 10.0]), 2)[0] + 0.55 + 0.45 * row
+                for x_ in np.arange(bx0 + 8.6 + 0.2 * row, bx1 - 0.8, 0.62 + 0.1 * row):
+                    if not free(np.array([x_]), np.array([yb_]))[0]:
+                        continue
+                    hh = 0.26 + 0.05 * row
+                    q = np.array([[x_ - 0.1 - 0.02 * row, yb_], [x_, yb_ - hh], [x_ + 0.11 + 0.02 * row, yb_]])
+                    line(S, q, 0.012, int(rng.integers(1 << 30)), dens=0.95, layer=lay, lift=(3, 4), smooth=0)
+                    for f in np.linspace(0.25, 0.75, 3):
+                        p0 = q[1] + (q[2] - q[1]) * f
+                        pp, rd, dd = hand(np.array([q[1] + [0.005, 0.02], p0]), 0.006, int(rng.integers(1 << 30)), dens=0.8,
+                                          thin_end=0.4)
+                        S.add(pp, rd, dd, layer=lay)
+            # the orchard on the far slope: rows of small round trees
+            for row in range(3):
+                for x_ in np.arange(bx0 + 0.8 + 0.2 * row, bx0 + 3.6, 0.34):
+                    y_ = float(self.hills(np.array([x_]), 1)[0]) + 0.25 + 0.3 * row
+                    a = np.linspace(0, 2 * np.pi, 20)
+                    r_ = 0.1 + 0.015 * row
+                    q = np.column_stack([x_ + r_ * np.cos(a), y_ - r_ + r_ * np.sin(a)])
+                    pp, rd, dd = hand(q, 0.009, int(rng.integers(1 << 30)), dens=0.9, thin_end=0.7, taper=(0, 0))
+                    S.add(pp, rd, dd, layer=lay)
+                    pp, rd, dd = hand(np.array([[x_, y_], [x_, y_ + 0.08]]), 0.01, int(rng.integers(1 << 30)), dens=0.9)
+                    S.add(pp, rd, dd, layer=lay)
+            # cottages: gabled roofs, small windows, a chimney each with a thread of smoke rising straight up
+            for (cx, kk, w_) in ((bx0 + 10.4, 0, 0.55), (bx0 + 11.3, 0, 0.45), (bx0 + 12.6, 1, 0.6), (bx0 + 13.7, 0, 0.5),
+                                 (bx0 + 1.2, 0, 0.45)):
+                gy_ = float(self.hills(np.array([cx]), kk)[0]) + 0.28
+                h_ = 0.3 * w_ / 0.5
+                body = np.array([[cx - w_ / 2, gy_], [cx - w_ / 2, gy_ - h_], [cx + w_ / 2, gy_ - h_], [cx + w_ / 2, gy_]])
+                roof = np.array([[cx - w_ / 2 - 0.06, gy_ - h_], [cx - 0.05, gy_ - h_ - 0.3 * w_ / 0.5],
+                                 [cx + w_ / 2 + 0.06, gy_ - h_]])
+                line(S, body, 0.012, int(rng.integers(1 << 30)), dens=0.95, layer=lay, lift=(4, 5), smooth=0)
+                line(S, roof, 0.014, int(rng.integers(1 << 30)), dens=0.95, layer=lay, lift=(4, 5), smooth=0)
+                hatch(S, _poly_inside(roof), lambda x, y: np.ones_like(x), (cx - w_, gy_ - h_ - 0.4, cx + w_, gy_ - h_),
+                      70, 0.03, 0.0, 0.007, int(rng.integers(1 << 30)), dens=0.85, seg=(0.2, 0.5))
+                chx = cx + 0.22 * w_
+                chy = gy_ - h_ - 0.14 * w_ / 0.5
+                line(S, np.array([[chx, chy + 0.04], [chx, chy - 0.12], [chx + 0.06, chy - 0.12], [chx + 0.06, chy + 0.01]]),
+                     0.01, int(rng.integers(1 << 30)), dens=0.95, layer=lay, lift=(3, 4), smooth=0)
+                sm = np.array([[chx + 0.03, chy - 0.16 - 0.35 * q] for q in range(7)])
+                sm[:, 0] += 0.05 * np.sin(np.arange(7) * 1.3)
+                pp, rd, dd = hand(catmull(sm, 6), 0.007, int(rng.integers(1 << 30)), dens=0.75, thin_end=0.1, taper=(0.02, 0.8))
+                S.add(pp, rd, dd, layer=lay)
+                for wx in (cx - 0.12 * w_ / 0.5, cx + 0.1 * w_ / 0.5):
+                    q = np.array([[wx, gy_ - 0.55 * h_], [wx + 0.001, gy_ - 0.54 * h_]])
+                    S.add(q, np.array([0.02, 0.02]), np.array([0.9, 0.9]), layer=lay)
+        _window(S, k, *T(0.45, 0.8), overlap=0.9)
+
+        # the near field: long grass, a few wild flowers; the tree's shadow falling to the right
+        k = len(S)
+        if not pencil:
+            yg = self.hills(np.array([bx0 + 7.0]), 2)[0] + 0.3
+            y_ = yg
+            while y_ < by1 - 0.12:
+                x_ = bx0 + 0.3 + rng.random() * 0.3
+                while x_ < bx1 - 0.3:
+                    hh = (0.05 + 0.3 * (y_ - yg) / (by1 - yg)) * rng.uniform(0.6, 1.3)
+                    near_tree = abs(x_ - tx) < 0.35 and abs(y_ - ty) < 0.3
+                    if not near_tree and rng.random() < 0.6:
+                        lean = rng.normal(0.08, 0.05)
+                        q = np.array([[x_, y_], [x_ + lean * 0.5, y_ - hh * 0.6], [x_ + lean, y_ - hh]])
+                        pp, rd, dd = hand(q, 0.008, int(rng.integers(1 << 30)), dens=0.85, thin_end=0.15, taper=(0.01, 0.6))
+                        S.add(pp, rd, dd, layer=lay)
+                    x_ += rng.uniform(0.05, 0.22) * (1.0 + 1.5 * (y_ - yg) / (by1 - yg))
+                y_ += 0.12 + 0.14 * (y_ - yg) / (by1 - yg)
+            # the shadow of the tree on the grass (to the right, the light is from the left)
+            sh = np.array([[tx + 0.1, ty + 0.02], [tx + 1.8, ty + 0.25], [tx + 3.2, ty + 0.3], [tx + 3.4, ty + 0.45],
+                           [tx + 1.6, ty + 0.5], [tx - 0.1, ty + 0.2]])
+            hatch(S, _poly_inside(sh), lambda x, y: np.ones_like(x), (tx - 0.2, ty - 0.1, tx + 3.6, ty + 0.6), 0, 0.04,
+                  0.0, 0.008, self.seed + 900, dens=0.8, seg=(0.3, 1.2))
+            # birds, far off
+            for m in range(5):
+                bx_ = bx0 + 9.5 + rng.random() * 4.5
+                by_ = by0 + 1.2 + rng.random() * 2.2
+                s_ = 0.08 + 0.05 * rng.random()
+                q = np.array([[bx_ - s_, by_ - 0.3 * s_], [bx_ - 0.4 * s_, by_ - 0.45 * s_], [bx_, by_],
+                              [bx_ + 0.4 * s_, by_ - 0.45 * s_], [bx_ + s_, by_ - 0.3 * s_]])
+                pp, rd, dd = hand(catmull(q, 4), 0.008, int(rng.integers(1 << 30)), dens=0.9, thin_end=0.3)
+                S.add(pp, rd, dd, layer=lay)
+        _window(S, k, *T(0.7, 0.92), overlap=0.9)
+
+        # the gold: the flowers, laid last, one by one
+        k = len(S)
+        for (fx_, fy_) in flowers:
+            if pencil:
+                a = np.linspace(0, 2 * np.pi, 12)
+                q = np.column_stack([fx_ + 0.035 * np.cos(a), fy_ + 0.035 * np.sin(a)])
+                pp, rd, dd = hand(q, 0.008, int(rng.integers(1 << 30)), dens=0.4, thin_end=0.8, taper=(0, 0))
+                S.add(pp, rd, dd, layer=lay)
+                continue
+            for p_ in range(5):
+                a = p_ * 1.2566 + rng.uniform(0, 0.5)
+                q = np.array([[fx_, fy_], [fx_ + 0.05 * math.cos(a), fy_ + 0.05 * math.sin(a)]])
+                S.add(q, np.array([0.02, 0.016]), np.array([1.0, 1.0]), layer=GILT)
+        _window(S, k, *T(0.9, 1.0), overlap=0.7)
+        return S

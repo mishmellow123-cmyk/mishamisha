@@ -19,7 +19,13 @@
   light from the right, frame the thick right block); the red binding barely reads in the wide; the Deep's
   halls repeat (vary arches/capitals per level); the Mountain's smoke puffs are a little regular; the flame is
   a touch pale; the Deep heal-in hole is small (fine) and its red glow could be stronger earlier.
-* Not started: THE YEAR OF PLENTY and THE HAVENS pages, the epilogue book shots (page turns, healing, blank
+* THE YEAR OF PLENTY (`pages.Plenty`) first draft exists (tree in a field, patchwork fields, hedges, orchard, stooks,
+  cottages with chimney smoke, birds, gilt flowers; no round doors) but reads clip-art-ish: the crown is a
+  lollipop of equal circles with limbs drawn through it, the stooks are a grid of "A"s, field edges are vertical.
+  Next pass: a bigger, asymmetric vase crown with varied, occluding clusters and sky gaps, limbs only where
+  visible, a flared trunk; field boundaries following the hills; irregular sheaves.
+* Not started: THE HAVENS page (verso, ship sliding west off the fore-edge, coast flame glyphs, a roundel of her
+  bound hand raising the small light), the epilogue book shots (page turns, healing, blank
   pages, the title page), P4 map_C + THE ROAD (map_fix branch code), smoke over the burns, review sheets and
   the final report (this section becomes that report).
 
