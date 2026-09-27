@@ -26,6 +26,7 @@ if HERE not in sys.path:
 import world as W0          # noqa: E402  (constants, cloud sea, fog; never modified)
 import s1_peak as S1        # noqa: E402
 from mt.noise import fbm2, gnoise2, smoothstep   # noqa: E402
+from mt.sky import milky_way   # noqa: E402
 
 CM = W0.CM
 R_EARTH = W0.R_EARTH
@@ -39,7 +40,7 @@ TZ = float(_S[2] + 1.0)
 TOP_Y = 301.5
 RIDGE_AZ = 40.0                         # the NE ridge
 NCR = 16
-VERSION = 'b2'                           # bump when the terrain changes (cache keys)
+VERSION = 'b9'                           # bump when the terrain changes (cache keys)
 
 # row layout (type in col 12)
 #  dome  (0): 0 cx | 1 cz | 2 top | 3 R (reaches the cloud) | 4 p profile | 5 aniso | 6 angle | 7 seed | 8 lobe
@@ -186,6 +187,21 @@ def field(x, z, fp, hcur):
         h = CLOUD_Y + 3291.0 * (1.0 - math.exp(-1.5 * u)) / 1.5
     else:
         h = CLOUD_Y + 3291.0 * u
+    # the far ranges stand in layers round her: warped rings of low ground (cloud-filled) between them
+    rx = x - TX
+    rz = z - TZ
+    rd = math.sqrt(rx * rx + rz * rz)
+    if rd > 5000.0:
+        rw = rd * (1.0 + 0.10 * wx + 0.06 * wz)
+        gap = 0.0
+        for Rk in (9500.0, 16500.0, 25000.0, 35500.0, 48000.0, 63000.0):
+            q = (rw - Rk) / (0.11 * Rk)
+            gap += math.exp(-q * q)
+        h -= 430.0 * min(gap, 1.0)
+    # the sunrise basin (ESE of her): open cloud sea between her and the far shoulder, its islands' beacons in it
+    ex = x - (TX + 4200.0 * 0.8829)
+    ez = z - (TZ - 4200.0 * 0.4695)
+    h -= 420.0 * math.exp(-(ex * ex + ez * ez) / (2.0 * 2600.0 * 2600.0))
     # the cloud bay she looks over (NNE of her) and her own neighbourhood kept low under her massif
     dx = x - (TX + 5200.0 * 0.4226)
     dz = z - (TZ + 5200.0 * 0.9063)
@@ -334,7 +350,7 @@ def h_rock(x, z, fp, CR):
         h = smax(h, hk, 4.0)
     os_ = _lod(420.0, fp, 0.0, 2.0)
     if os_ > 0.0:
-        h += 2.0 * fbm2(x / 420.0 - 1.1, z / 420.0 + 4.4, os_, 232)
+        h += 0.8 * fbm2(x / 420.0 - 1.1, z / 420.0 + 4.4, os_, 232)
     return h
 
 
@@ -520,8 +536,13 @@ def gbuffer(C, D, P, CR, hx, hz, nsteps, tmax, snow_bias, G, kstep, MD, mk):
             cloud = hc > hf
             if cloud:
                 h0 = hc
-                hxx = h_cloud(x + e, z, fp, P[2])
-                hzz = h_cloud(x, z + e, fp, P[2])
+                ec = max(fp * 3.0, 30.0)
+                hxx = h_cloud(x + ec, z, max(fp, ec * 0.4), P[2])
+                hzz = h_cloud(x, z + ec, max(fp, ec * 0.4), P[2])
+                h0c = h_cloud(x, z, max(fp, ec * 0.4), P[2])
+                e = ec
+                hxx = hxx - h0c + h0
+                hzz = hzz - h0c + h0
             else:
                 h0 = hf
                 hxx = h_rock(x + e, z, fp, CR)
@@ -590,7 +611,8 @@ def gbuffer(C, D, P, CR, hx, hz, nsteps, tmax, snow_bias, G, kstep, MD, mk):
             G[j, i, G_RV] = rv
             G[j, i, G_C0] = c0
             if cloud:
-                G[j, i, G_TROUGH] = smoothstep(CLOUD_Y - 120.0, CLOUD_Y + 110.0, h0)
+                G[j, i, G_TROUGH] = smoothstep(CLOUD_Y - 150.0, CLOUD_Y + 120.0, h0)
+                G[j, i, G_RV] = 0.5 + 0.5 * gnoise2(x / 900.0, z / 900.0, 95)
             G[j, i, G_FP] = fp
 
 
@@ -795,14 +817,18 @@ def shade(G, LP, SKY, amb, fogp, cam_y, out):
                     fdl = -(nx * px + ny * py + nz * pz) / dd
                     fr_ = LP[36] * max(fdl * 0.8 + 0.2, 0.0) / (d2 + 1.0) * (1.0 - smoothstep(0.5 * LP[43], LP[43], dd))
             if flag == 2.0:
-                wrap = max((ndl + 0.6) / 1.6, 0.0)
-                ca = LP[9]
-                sky = 0.55 + 0.45 * ny
+                wrap = max((ndl + 1.0) / 2.0, 0.0) ** 1.5
+                ca = LP[9] * (0.92 + 0.16 * G[j, i, G_RV])
+                sky = 0.70 + 0.30 * ny
+                # light through the thin tops, toward the light (sun)
+                if LP[44] > 0.5:
+                    fwd = max(dx * lx + dy * ly + dz * lz, 0.0) ** 8
+                    wrap += 0.6 * fwd
                 mw = max((mdl + LP[35]) / (1.0 + LP[35]), 0.0) * mv
                 cr = ca * (LP[3] * sr * wrap + amb[0] * LP[10] * sky + LP[16] * gw + LP[23] * mw * LP[27])
                 cg = ca * (LP[3] * sg * wrap + amb[1] * LP[10] * sky + LP[17] * gw + LP[23] * mw * LP[28])
                 cb = ca * (LP[3] * sb * wrap + amb[2] * LP[10] * sky + LP[18] * gw + LP[23] * mw * LP[29])
-                tk = 0.55 + 0.45 * G[j, i, G_TROUGH]
+                tk = 0.72 + 0.28 * G[j, i, G_TROUGH]
                 cr *= tk
                 cg *= tk
                 cb *= tk
@@ -857,6 +883,28 @@ def shade(G, LP, SKY, amb, fogp, cam_y, out):
             out[j, i, 2] = cb * tr + fb * (1.0 - tr)
 
 
+@njit(parallel=True, fastmath=True, cache=True)
+def add_band(G, Rm, Gp, I, gain, out):
+    """The Milky Way over the sky pixels, wheeling with the stars: view directions are taken into sky coordinates by
+    the sky rotation Rm (world = Rm . sky); extinction toward the horizon."""
+    H, W = G.shape[0], G.shape[1]
+    for j in prange(H):
+        for i in range(W):
+            if G[j, i, G_FLAG] != 0.0:
+                continue
+            dx = G[j, i, G_DX]
+            dy = G[j, i, G_DY]
+            dz = G[j, i, G_DZ]
+            sx = Rm[0, 0] * dx + Rm[1, 0] * dy + Rm[2, 0] * dz
+            sy = Rm[0, 1] * dx + Rm[1, 1] * dy + Rm[2, 1] * dz
+            sz = Rm[0, 2] * dx + Rm[1, 2] * dy + Rm[2, 2] * dz
+            r, g, b = milky_way(sx, sy, sz, Gp, I)
+            ext = smoothstep(0.0, 0.30, dy) * gain
+            out[j, i, 0] += r * ext
+            out[j, i, 1] += g * ext
+            out[j, i, 2] += b * ext
+
+
 # ------------------------------------------------------------------ utilities ---
 
 @njit(parallel=True, fastmath=True, cache=True)
@@ -908,16 +956,17 @@ def uplift_row(cx, cz, A, sigma, aniso=1.0, ang=0.0):
 def set_rows():
     rows = [
         # her massif: a broad old dome, its flanks carved by the ranges' spurs and valleys, the summit left round
-        dome_row(TX + 120.0, TZ - 260.0, TOP_Y - 13.0, 2700.0, p=1.6, aniso=1.2, ang=-35.0, seed=7, k=40.0,
+        dome_row(TX - 120.0, TZ - 180.0, TOP_Y - 13.0, 2700.0, p=1.6, aniso=1.2, ang=-35.0, seed=7, k=40.0,
                  detail=0.30, rnd=0.04, keep=110.0),
         # the NE ridge (the way up and down): round-crested snow, into the cloud at ~2.9 km
         ridge_row((_R0[0], TOP_Y - 3.0, _R0[1]), (_R1[0], 40.0, _R1[1]), crest=30.0, seed=41, slope=0.75, k=30.0),
         ridge_row((_R1[0], 40.0, _R1[1]), (_R2[0], -760.0, _R2[1]), crest=40.0, seed=43, slope=0.9, k=45.0),
     ]
-    # the sunrise shoulder: a broad whaleback ESE, a little higher than her summit (she sees the sun last)
-    sx, sz = polar(124.0, 3000.0)
-    rows.append(dome_row(sx, sz, TOP_Y + 18.0, 2300.0, p=1.7, aniso=1.7, ang=124.0 - 90.0, seed=11, k=120.0,
-                         detail=0.30, rnd=0.05, keep=250.0))
+    # the sunrise shoulder: a broad massif 8.5 km ESE whose skyline, seen from her, stands a little above the far
+    # skyline, so the sun clears it last for her (the cloud sea and its beacons stay open between)
+    sx, sz = polar(118.0, 13000.0)
+    rows.append(dome_row(sx, sz, TOP_Y - 100.0, 2300.0, p=1.55, aniso=1.25, ang=118.0 - 90.0, seed=11, k=120.0,
+                         detail=0.50, rnd=0.05, keep=200.0))
     return np.array(rows)
 
 

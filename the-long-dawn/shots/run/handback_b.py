@@ -54,7 +54,7 @@ F_SETTLE, F_GREY, F_FIRST, F_HER = 4080, 4160, 4240, 4800
 PALE = [4320, 4400, 4480, 4560, 4640, 4720]
 F_HANDS, F_CHILD_SUN, F_GIVE, F_WAKE = 4840, 4960, 4980, 5040
 F_PUSH0, F_PUSH1 = 4800, 5000
-MOON_END = BS.moon_vec(9.0, 252.0)          # the setting moon, low in the WSW (the vigil's last hour)
+MOON_END = BS.moon_vec(12.0, 305.0)         # the setting moon, low in the NW (the vigil's last hour)
 
 
 def _ease(u):
@@ -110,9 +110,9 @@ def _sun_az():
         else:
             eye = SEAT + np.array([0.0, 1.0, 0.0])
             best = None
-            for da in np.linspace(-12.0, 12.0, 97):
+            for da in np.linspace(-10.0, 10.0, 81):
                 el = skyline_el(SUN_BASE_AZ + da, eye)
-                sc = abs(el + 0.10) + 0.004 * abs(da + 4.0)
+                sc = abs(el + 0.52) + 0.004 * abs(da + 3.0)
                 if best is None or sc < best[1]:
                     best = (SUN_BASE_AZ + da, sc)
             SUN_AZ = best[0]
@@ -122,8 +122,8 @@ def _sun_az():
 
 
 # ------------------------------------------------------------------ cameras ---
-SET_BACK, SET_UP, SET_HFOV, SET_TURN = 15.0, 5.5, 46.0, -16.0   # behind her, a little above; the sun left of centre
-SET_SEAT_U, SET_SEAT_V = 0.66, 0.68                           # the pair low in the right third
+SET_BACK, SET_UP, SET_HFOV, SET_TURN = 14.0, 2.6, 44.0, 11.0    # behind her, a little above; the sun left of centre
+SET_SEAT_U, SET_SEAT_V = 0.62, 0.74                           # the pair low in the right third
 PUSH_HFOV = 30.0                                                # the push-in (a zoom from the locked position)
 
 
@@ -138,13 +138,13 @@ def _aim(pos, target, hfov, W, H, u, v):
 
 
 def settled_cam(W, H, frame=F_SETTLE):
-    az = _sun_az() - SET_TURN
+    az = _sun_az() + SET_TURN
     pos = SEAT - BS.dirxz(az) * SET_BACK + np.array([0.0, SET_UP, 0.0])
     tgt = SEAT + np.array([0.0, 0.55, 0.0])
     w = _ease((frame - F_PUSH0) / float(F_PUSH1 - F_PUSH0))
     hfov = SET_HFOV + (PUSH_HFOV - SET_HFOV) * w
-    u = SET_SEAT_U + (0.56 - SET_SEAT_U) * w
-    v = SET_SEAT_V + (0.62 - SET_SEAT_V) * w
+    u = SET_SEAT_U + (0.60 - SET_SEAT_U) * w
+    v = SET_SEAT_V + (0.82 - SET_SEAT_V) * w
     yaw, pitch = _aim(pos, tgt, hfov, W, H, u, v)
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
 
@@ -165,25 +165,25 @@ def camera(frame, W, H):
     db = (b1 - b0 + 540.0) % 360.0 - 180.0
     b = b0 + db * u
     s = math.sin(math.pi * u) ** 2
-    rr = r0 + (r1 - r0) * u + 70.0 * s                       # pulls back as it rises...
-    hh = h0 + (h1 - h0) * u + 55.0 * s                       # ...to see the whole range alight, then settles
+    rr = r0 + (r1 - r0) * u + 40.0 * s                       # pulls back as it rises...
+    hh = h0 + (h1 - h0) * u + 20.0 * s                       # ...to see the whole range alight, then settles
     a = math.radians(b)
     pos = SEAT + np.array([rr * math.sin(a), hh, rr * math.cos(a)])
-    hfov = c0.hfov_d + (c1.hfov_d - c0.hfov_d) * u + 12.0 * s
+    hfov = c0.hfov_d + (c1.hfov_d - c0.hfov_d) * u + 18.0 * s
 
     def seat_uv(c):
         x, y, z = c.project(SEAT + np.array([0.0, 0.55, 0.0]))
         return x / c.W, y / c.H
     (u0, v0), (u1, v1) = seat_uv(c0), seat_uv(c1)
-    us, vs = u0 + (u1 - u0) * u, v0 + (v1 - v0) * u + 0.10 * s
-    yaw, pitch = _aim(pos, SEAT + np.array([0.0, 0.55, 0.0]), hfov, W, H, us, min(vs, 0.86))
+    us, vs = u0 + (u1 - u0) * u, v0 + (v1 - v0) * u + 0.14 * s
+    yaw, pitch = _aim(pos, SEAT + np.array([0.0, 0.55, 0.0]), hfov, W, H, us, min(vs, 0.90))
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
 
 
 # ---------------------------------------------------------------- beacons ---
 def beacon_catalogue():
     """Every summit around her (0.8-70 km, all directions) standing well above the cloud: one beacon each."""
-    p = os.path.join(CACHE, f'hbb_beacons_{BW.VERSION}.npy')
+    p = os.path.join(CACHE, f'hbb_beacons3_{BW.VERSION}.npy')
     if os.path.exists(p):
         return np.load(p)
     pts = []
@@ -203,13 +203,14 @@ def beacon_catalogue():
                         bh, x, z, imp = h, x + ddx, z + ddz, True
                 if not imp:
                     step *= 0.5
-            if bh > BW.CLOUD_Y + 160.0 and math.hypot(x - BS.TOP[0], z - BS.TOP[2]) > 600.0:
+            rr = math.hypot(x - BS.TOP[0], z - BS.TOP[2])
+            if bh > BW.CLOUD_Y + (160.0 if rr < 15000.0 else 330.0) and rr > 600.0:
                 pts.append((x, bh, z))
     P = np.array(pts)
     keep = []
     for q in P[np.argsort(np.hypot(P[:, 0] - BS.TOP[0], P[:, 2] - BS.TOP[2]))]:
         dd = math.hypot(q[0] - BS.TOP[0], q[2] - BS.TOP[2])
-        if all(math.hypot(q[0] - k[0], q[2] - k[2]) > max(0.045 * dd, 400.0) for k in keep):
+        if all(math.hypot(q[0] - k[0], q[2] - k[2]) > max(0.07 * dd, 700.0) for k in keep):
             keep.append(q)
     B = np.array(keep)
     os.makedirs(CACHE, exist_ok=True)
@@ -277,7 +278,7 @@ def dawn_params(e, grey, pix_ang):
     LP[8] = 0.0026
     LP[9] = 0.95
     LP[10] = 2.2
-    LP[12] = 0.9
+    LP[12] = 0.25
     gd = np.array([L[0], 0.10, L[2]])
     LP[13:16] = gd / np.linalg.norm(gd)
     LP[16:19] = lin('#FFB98A') * 0.030 * up
@@ -290,7 +291,7 @@ def dawn_params(e, grey, pix_ang):
     SD = np.zeros(24)
     SD[0:3] = L
     SD[3:6] = np.array([1.0, 0.62, 0.36])
-    SD[6] = 60.0 * smoothstep(-0.6, 0.2, e)                  # a small soft disc: bright, never a starburst
+    SD[6] = 22.0 * smoothstep(-0.6, 0.2, e)                  # a small soft disc: warm, never clipped, never a starburst
     SD[7] = math.radians(0.27)
     SD[8:11] = lin('#2B53A0') * (0.20 + 0.40 * up) * grey
     SD[11:14] = lin('#FFC88A') * (0.22 + 0.60 * up) * grey
@@ -299,12 +300,12 @@ def dawn_params(e, grey, pix_ang):
     SD[18] = 0.035 * up
     SD[19] = 0.034
     SD[20] = 0.55
-    amb = lin('#6A86C8') * (0.08 + 0.22 * up) * max(grey, 0.3)
+    amb = lin('#6A86C8') * (0.14 + 0.30 * up) * max(grey, 0.3)
     fc = lin('#6F83B8') * (0.10 + 0.22 * up) * max(grey, 0.3)
     wc = lin('#FFC58A') * 0.7 * up
     fogp = np.zeros(16)
-    fogp[:8] = [5.0e-5, 1 / 1500.0, 2.0e-4, 1 / 150.0, 1.0, fc[0], fc[1], fc[2]]
-    fogp[8] = 30.0
+    fogp[:8] = [5.0e-5, 1 / 1500.0, 2.0e-4, 1 / 150.0, 0.6, fc[0], fc[1], fc[2]]
+    fogp[8] = 10.0
     fogp[9:12] = wc
     fogp[12:15] = L
     return LP, SD, amb, fogp
@@ -318,9 +319,13 @@ class HandBack:
         _sun_az()
         B = beacon_catalogue()
         th = beacon_thresholds(B)
-        self.B, self.th = B, th
+        self.B = B
         self.e_her = her_threshold()
-        self.th = np.minimum(self.th, self.e_her - 0.08)
+        self.th_raw = th
+        self.e_first0 = self.e_her - 0.95
+        rk = np.argsort(np.argsort(th + 1e-6 * np.arange(len(th))))
+        u = rk / max(len(th) - 1, 1)
+        self.th = self.e_first0 + (self.e_her - 0.10 - self.e_first0) * u ** 0.9
         self.V = villages_world()
         self._settled = None
         self.stars = SK.make_stars(14000, 101, lum_scale=7.0)
@@ -332,10 +337,9 @@ class HandBack:
         sx, sy, z = tc.project(self.B)
         ok = (z > 0) & (sx > 0.03 * self.W) & (sx < 0.97 * self.W) & (sy > 0) & (sy < self.H * 0.80)
         dist = np.linalg.norm(self.B - tc.pos, axis=1)
-        e_first = float(np.percentile(self.th[ok], 5)) if ok.any() else self.e_her - 1.0
-        e_first = min(e_first, self.e_her - 0.9)
+        e_first = self.e_first0
         cand = [(self.th[k], k) for k in np.nonzero(ok)[0] if e_first + 0.08 < self.th[k] < self.e_her - 0.06
-                and dist[k] < 30000.0]
+                and dist[k] < 45000.0]
         targets = np.linspace(e_first + 0.12, self.e_her - 0.10, 6)
         chosen = []
         for tg in targets:
@@ -471,7 +475,7 @@ class HandBack:
         a = math.radians(_sun_az())
         ee = math.radians(max(e, -1.0))
         L = np.array([math.cos(ee) * math.sin(a), math.sin(ee), math.cos(ee) * math.cos(a)])
-        fire_lvl = 1.0 - 0.9 * her_sun
+        fire_lvl = 1.0 - 0.97 * her_sun
         fire_I = 1.8 * fire_lvl * F.flicker(t, 3)
         amb = lin('#27335E') * 0.45 * night + lin('#6A86C8') * 0.14 * (1.0 - night)
         lights = [dict(dir=L, col=np.array([1.0, 0.62, 0.36]), I=2.2 * her_sun),
@@ -481,9 +485,9 @@ class HandBack:
                   zbias=0.3)
         back, front, fb = BS.beacon_base()
         FG.render(img, zb, scam, back, BS.BEACON, lights, amb=amb, mats=BS.M, t=t,
-                  emissive_gain=0.9 * fire_lvl + 0.1, write_depth=True, zbias=0.3)
+                  emissive_gain=0.95 * fire_lvl + 0.05, write_depth=True, zbias=0.3)
         base = BS.BEACON + np.array([0.0, fb, 0.0])
-        F2.flame(img, zb, scam, base, 1.0, 0.40, t, seed=4, I=12.0 * (0.12 + 0.88 * fire_lvl), lean=0.2, zbias=0.5,
+        F2.flame(img, zb, scam, base, 0.85, 0.34, t, seed=4, I=12.0 * (0.04 + 0.96 * fire_lvl), lean=0.2, zbias=0.5,
                  tongues=5, warp=1.2)
         bx, by, bz = scam.project(base + np.array([0, 0.6, 0]))
         F2.halo(img, zb, bx, by, 5.0 * scam.f / bz, 0.005 * fire_lvl, z=bz, zbias=3.0)
@@ -494,32 +498,48 @@ class HandBack:
             self.figures_at(img, zb, scam, frame, t, lights, amb)
 
     def figures_at(self, img, zb, scam, frame, t, lights, amb):
-        hands = smoothstep(F_HANDS - 10, F_HANDS + 30, frame) * (1.0 - smoothstep(F_CHILD_SUN - 50, F_CHILD_SUN - 20, frame))
-        give = smoothstep(F_CHILD_SUN - 20, F_GIVE, frame) * (1.0 - smoothstep(F_WAKE - 10, F_WAKE + 30, frame))
+        hands = smoothstep(F_HANDS - 10, F_HANDS + 30, frame) * (1.0 - smoothstep(F_CHILD_SUN - 40, F_CHILD_SUN - 10, frame))
+        give = smoothstep(F_CHILD_SUN - 10, F_GIVE, frame) * (1.0 - smoothstep(F_WAKE - 20, F_WAKE + 10, frame))
         wake = smoothstep(F_WAKE - 6, F_WAKE + 40, frame)
         child_sun = smoothstep(F_CHILD_SUN - 20, F_CHILD_SUN + 10, frame)
         side = self._side()
-        cpos = BS.on_ground(SEAT + side * 0.62)
+        fw = BS.dirxz(_sun_az() + SET_TURN)
+        cpos = BS.on_ground(SEAT + side * 0.78 - fw * 0.20)
         lk = [dict(lights[0], I=lights[0]['I'] * child_sun)] + lights[1:]
-        cd, cp = BS.child_asleep(wake, reach=0.0)
+        # the child: asleep in her red shawl; the small hand out, palm up, as she gives it; awake, holding it
+        cd, cp = BS.child_asleep(wake, reach=max(give, 0.7 * wake))
+        if frame >= F_GIVE and cp['hand'] is not None:
+            BS.fire_steel(cd, cp['hand'] + np.array([-0.03, 0.03]), ang=0.8, s=0.85)
         FG.render(img, zb, scam, cd, cpos, lk, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
-        pose = 'reach' if give > 0.0 else 'sit'
-        kd, kp = BS.person(pose, age=0.9, shawl=False, staff=True, reach=give, wind=0.4)
+        kd, kp = BS.person('sit', age=0.9, shawl=False, staff=True, reach=give, wind=0.4)
         if hands > 0.0:
             # her old hands drawn from her sleeves and opened to the sun: forearms out and up, palms open
             for sg in (-1, 1):
-                sh = np.array([0.17 * sg, 0.70])
+                sh = np.array([0.17 * sg, 0.66])
                 el = sh + np.array([0.20 * sg, -0.10 + 0.02 * hands]) * (0.4 + 0.6 * hands)
                 wr = el + np.array([0.16 * sg, 0.10 + 0.12 * hands]) * hands
                 kd.new_group()
                 kd.capsule(sh, el, 0.065, 0.055, k=0.03, mat=14)
                 kd.capsule(el, wr, 0.055, 0.045, k=0.03, mat=14)
                 kd.ellipse(wr + np.array([0.03 * sg, 0.02]), 0.045, 0.035, ang=0.6 * sg, mat=19)
-        if give > 0.0:
+        steel_local = None
+        if 0.0 < give and frame < F_GIVE:
             w = kp['hands'].get('R')
             if w is not None:
-                BS.fire_steel(kd, w + np.array([0.03, -0.05]), ang=0.3, s=1.0)
+                steel_local = w + np.array([0.03, -0.04])
+                BS.fire_steel(kd, steel_local, ang=0.3, s=1.0)
         FG.render(img, zb, scam, kd, SEAT, lights, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+        # the steel catches the new sun as it passes into the child's palm: one small warm glint (bar 63)
+        gl = math.exp(-((frame - F_GIVE + 4) / 14.0) ** 2) * child_sun
+        if gl > 0.01:
+            if steel_local is None:
+                steel_local = np.array([0.36, 0.40])
+            rgt = np.array([scam.right[0], 0.0, scam.right[2]])
+            pw = SEAT + rgt * steel_local[0] + np.array([0.0, steel_local[1], 0.0])
+            gx, gy, gz = scam.project(pw)
+            F2.glow(img, zb, gx, gy, 0.9 * self.ss, 6.0 * gl * self.ss * self.ss, z=gz, zbias=0.5,
+                    col=np.array([1.0, 0.78, 0.45]))
+            F2.halo(img, zb, gx, gy, 6.0 * self.ss, 0.012 * gl, z=gz, zbias=0.5, col=np.array([1.0, 0.7, 0.4]))
 
     def _side(self):
         f = BS.dirxz(_sun_az())
@@ -577,7 +597,7 @@ def main():
     else:
         frames = [int(x) for x in a.frames.split(',')]
     if a.skip:
-        frames = [f for f in frames if look.find_frame(out, f) is None]
+        frames = [f for f in frames if not os.path.exists(look.find_frame(out, f))]   # find_frame never returns None
     if any(f >= F_SETTLE for f in frames):
         shot.settled()
     print(f'sun az {_sun_az():.2f}; first light e={shot.e_first:.3f}; hers e={shot.e_her:.3f}; beacons {len(shot.B)}; '

@@ -1,0 +1,15 @@
+{
+ "name": "handback_b_crane_b",
+ "branch": "claude/render-handback-b-crane-b",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "NUMBA_NUM_THREADS=4 python3 shots/run/handback_b.py --frames 3840 --scale 0.1 --ss 1.0 --out /tmp/hbb_warm"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=1 python3 shots/run/handback_b.py --range 3960-4079 --scale 1.0 --ss 1.25 --out renders/handback_B --procs 4 --skip"
+ ],
+ "out_dir": "renders/handback_B",
+ "frames": "3960-4079",
+ "push_every": 300,
+ "ship": "jpg"
+}

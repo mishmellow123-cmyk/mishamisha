@@ -1,0 +1,15 @@
+{
+ "name": "reveal_b_a",
+ "branch": "claude/render-reveal-b-a",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "NUMBA_NUM_THREADS=4 python3 shots/run/reveal.py --frames 1519 --scale 0.1 --ss 1.0 --out /tmp/rev_warm"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=1 python3 shots/run/reveal.py --range 1360-1439 --scale 1.0 --ss 1.25 --out renders/reveal_B --procs 4 --skip"
+ ],
+ "out_dir": "renders/reveal_B",
+ "frames": "1360-1439",
+ "push_every": 300,
+ "ship": "jpg"
+}

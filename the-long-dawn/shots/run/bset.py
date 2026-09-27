@@ -54,10 +54,11 @@ def shelf_pt(r, f):
 
 
 BEACON = shelf_pt(0.9, 0.6)          # the fire-basket on its low dry-stone base
-CAIRN = shelf_pt(-2.3, -1.2)         # the counting cairn: one stone for every longest night she has kept
+CAIRN = None                         # set below: 3.2 m N of her seat (clear of her in both the vigil and the hand-back)
 KNEEL = shelf_pt(0.05, 0.30)         # where she kneels to strike / feed
 STAND = shelf_pt(-0.60, 0.15)        # where she keeps the watch (between the fire and the cairn)
 SEAT = on_ground(STAND + RIGHT * 0.25)
+CAIRN = on_ground(SEAT + 5.5 * dirxz(20.0) + 1.0 * dirxz(116.0))   # the counting cairn: one stone a longest night
 LIP = shelf_pt(3.8, 3.0)             # the NE lip: where the path leaves the summit
 
 
@@ -187,7 +188,7 @@ def person(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=Fa
             d.capsule(sh, e, 0.07 * sc, 0.06 * sc, k=0.04, mat=cloak)
             d.capsule(e, w, 0.06 * sc, 0.05 * sc, k=0.04, mat=19)
         d.tri(shL, shR + np.array([0.55, -0.35]) * sc, hem + np.array([0.45, 0.1]) * sc, rnd=0.02, k=0.05, mat=cloak)
-    elif pose in ('kneel', 'feed'):
+    elif pose in ('kneel', 'feed') and reach <= 0.0:
         e = shR + np.array([0.22, -0.18]) * sc
         w = e + np.array([0.20, -0.16 - (0.06 if pose == 'feed' else 0.0)]) * sc
         d.capsule(shR, e, 0.07 * sc, 0.06 * sc, k=0.04, mat=cloak)
@@ -200,10 +201,10 @@ def person(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=Fa
         hands['L'] = w2
     else:
         for sh, sg in ((shL, -1), (shR, 1)):
-            if pose == 'reach' and sg > 0:
+            if (pose == 'reach' or reach > 0.0) and sg > 0:
                 # the hand-off: the arm goes out and down to the one beside her, the gloved hand turned over
-                e = sh + np.array([0.20 + 0.10 * reach, -0.14 - 0.06 * reach]) * sc
-                w = e + np.array([0.16 + 0.10 * reach, -0.10 - 0.04 * reach]) * sc
+                e = sh + np.array([0.18 + 0.08 * reach, -0.20 - 0.06 * reach]) * sc
+                w = e + np.array([0.14 + 0.10 * reach, -0.14 - 0.04 * reach]) * sc
             else:
                 e = sh + np.array([0.04 * sg, -0.28]) * sc
                 w = e + np.array([0.03 * sg, -0.24 + (0.08 if (torch and sg > 0) else 0.0)]) * sc
@@ -248,29 +249,33 @@ def person(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=Fa
 
 
 def child_asleep(wake=0.0, reach=0.0):
-    """The traveller's child from behind, seated against her, wrapped in her red shawl: asleep (head down on her
-    arm), then waking (the head rises and turns to the sun); reach > 0: the small hand comes out, palm up."""
+    """The traveller's child from behind, seated against her, wrapped head and shoulders in her red shawl: one small
+    hooded lump (the head sunk into the wrap, no neck), asleep with the head bowed toward her; waking, the head rises
+    and turns to the sun. reach > 0: a small gloved hand comes out of the wrap toward her, palm up."""
     d = FG.Drawing()
     d.new_group()
-    d.trap((0.0, 0.0), (0.0, 0.28), 0.21, 0.16, rnd=0.04, k=0.05, mat=0, fuzz=0.01, ff=14.0)
-    lean = 0.35 * (1.0 - wake)
-    back = np.array([-0.10 * lean, 0.42])
-    d.ellipse(back, 0.16, 0.14, ang=0.4 * lean, k=0.06, mat=0)
-    head = back + np.array([-0.15 * lean, 0.13 + 0.06 * wake])
-    d.ellipse(head, 0.08, 0.09, k=0.03, mat=0)
-    if reach > 0.0:
-        sh = back + np.array([-0.12, 0.02])
-        w = sh + np.array([-0.14 - 0.06 * reach, -0.08 + 0.05 * reach])
-        d.capsule(sh, w, 0.04, 0.035, k=0.02, mat=0)
-        d.ellipse(w + np.array([-0.02, 0.0]), 0.03, 0.02, mat=19)
+    lean = 0.30 * (1.0 - wake)
+    # the lap and legs under the wrap (dark), the wrapped body and head as one smooth shape (red)
+    d.trap((0.0, 0.0), (0.0, 0.24), 0.23, 0.18, rnd=0.05, k=0.06, mat=0, fuzz=0.01, ff=14.0)
+    back = np.array([-0.07 * lean, 0.36])
+    head = back + np.array([-0.13 * lean - 0.02 * wake, 0.16 + 0.05 * wake])
     d.new_group()
-    # her red shawl round the child: over the head and shoulders, its fringed end over the small lap
-    d.ellipse(back + np.array([0.0, 0.03]), 0.18, 0.13, ang=0.4 * lean, k=0.02, mat=13, fuzz=0.008, ff=30.0)
-    d.ellipse(head + np.array([0.0, 0.01]), 0.095, 0.085, k=0.03, mat=13)
-    d.capsule(back + np.array([-0.16, -0.02]), back + np.array([0.16, -0.02]), 0.012, 0.012, mat=20)
-    d.chain(np.array([back + np.array([0.12, -0.04]), back + np.array([0.18, -0.14]), back + np.array([0.20, -0.26])]),
-            0.035, 0.022, k=0.02, mat=13)
-    return d, dict(head=head)
+    d.ellipse(back, 0.175, 0.16, ang=0.35 * lean, k=0.10, mat=13, fuzz=0.008, ff=30.0)
+    d.ellipse(head, 0.092, 0.105, k=0.10, mat=13, fuzz=0.008, ff=30.0)
+    d.tri(head + np.array([-0.07, 0.03]), head + np.array([0.06, 0.05]), head + np.array([0.01 - 0.03 * lean, 0.15]),
+          rnd=0.02, k=0.06, mat=13)
+    # the shawl's weave (a darker band) and its fringed end over the small lap
+    d.capsule(back + np.array([-0.16, -0.03]), back + np.array([0.16, -0.05]), 0.012, 0.012, mat=20)
+    d.chain(np.array([back + np.array([0.13, -0.05]), back + np.array([0.18, -0.15]), back + np.array([0.20, -0.26])]),
+            0.032, 0.020, k=0.02, mat=13)
+    hand = None
+    if reach > 0.0:
+        d.new_group()
+        sh = back + np.array([-0.12, -0.02])
+        hand = sh + np.array([-0.10 - 0.08 * reach, -0.10 + 0.04 * reach])
+        d.capsule(sh, hand, 0.035, 0.03, k=0.02, mat=13)
+        d.ellipse(hand + np.array([-0.02, 0.0]), 0.032, 0.022, mat=19)
+    return d, dict(head=head, hand=hand)
 
 
 def fire_steel(d, at, ang=0.0, s=1.0, mat=18):
@@ -288,7 +293,7 @@ def fire_steel(d, at, ang=0.0, s=1.0, mat=18):
 _CAIRN = {}
 
 
-def rubble_cairn(seed=3, H=2.05, R=1.30):
+def rubble_cairn(seed=3, H=1.62, R=1.05):
     """The counting cairn: a heap of field stones of every size (angular, irregular, tilted), broad at the base and
     tapering to a RAGGED top where a few stones stand up on end; dark chinks between them. Never courses, never a
     column, never a smooth outline. Local metres, base centre at the origin."""
@@ -337,15 +342,53 @@ def rubble_cairn(seed=3, H=2.05, R=1.30):
     return d
 
 
-def beacon_base(seed=9, height=0.80, base_w=1.20, top_w=0.95, basket_h=0.48, basket_w=1.05):
-    """The beacon: a low dry-stone base and an old fire-basket (rusted, sooted, uneven bars, one bent).
-    Returns (back, front, fire_base_y): back = core + stones + logs (before the flame), front = the bars (after)."""
-    from mt import props as PR
-    back, _front, fb, _rb = PR.cairn(seed=seed, height=height, base_w=base_w, top_w=top_w, basket=False,
-                                     basket_h=basket_h, basket_w=basket_w)
+def beacon_base(seed=9, height=0.52, base_w=1.02, top_w=0.80, basket_h=0.42, basket_w=0.86):
+    """The beacon: a low, rough plinth of field stones (never courses of bricks) and an old fire-basket (rusted,
+    sooted, uneven bars, one bent) holding split wood. Returns (back, front, fire_base_y): back = plinth + logs
+    (before the flame), front = the bars (after)."""
+    rng = np.random.default_rng(seed)
+    back = FG.Drawing()
+    back.new_group()
+    back.trap((0.0, 0.02), (0.0, height - 0.02), base_w * 0.44, top_w * 0.44, rnd=0.03, mat=12)   # the chinks
+
+    def stone(cx, cy, r, tilt, elong, mat):
+        back.new_group()
+        nv = 5 + int(rng.random() * 3)
+        a0_ = rng.random() * 2 * math.pi
+        vs = []
+        for i in range(nv):
+            a = a0_ + 2 * math.pi * (i + 0.35 * (rng.random() - 0.5)) / nv
+            rr = r * (0.75 + 0.35 * rng.random())
+            vs.append(_rot(np.array([rr * math.cos(a) * elong, rr * math.sin(a)]), tilt) + np.array([cx, cy]))
+        c = np.array([cx, cy])
+        for i in range(nv):
+            back.tri(c, vs[i], vs[(i + 1) % nv], rnd=0.008, k=0.008, mat=mat)
+    y = 0.0
+    while y < height - 0.06:
+        u = y / height
+        half = 0.5 * (base_w + (top_w - base_w) * u)
+        r = 0.085 + 0.05 * rng.random()
+        x = -half + r * 0.8
+        while x < half - r * 0.6:
+            rr = r * (0.75 + 0.5 * rng.random())
+            stone(x + rng.normal(0, 0.012), y + rr * 0.7, rr, (rng.random() - 0.5) * 0.6, 1.2 + 0.6 * rng.random(),
+                  16 if rng.random() < 0.6 else 17)
+            x += rr * (1.5 + 0.4 * rng.random())
+        y += r * (1.2 + 0.3 * rng.random())
+    top = height
+    fb = top + 0.07
+    for i in range(7):
+        back.new_group()
+        side = -1 if i % 2 else 1
+        a = side * (0.35 + 0.35 * rng.random())
+        L = basket_w * (0.42 + 0.18 * rng.random())
+        cx = (rng.random() - 0.5) * 0.20
+        cy = top + 0.08 + 0.04 * i
+        dx = math.cos(a) * L / 2
+        dy = math.sin(a) * L / 2
+        back.capsule((cx - dx, cy - dy), (cx + dx, cy + dy), 0.034, 0.028, mat=8)
     rng = np.random.default_rng(seed + 7)
     front = FG.Drawing()
-    top = fb - 0.07
     r0 = basket_w * 0.24
     r1 = basket_w * 0.52
     yb0 = top - 0.03

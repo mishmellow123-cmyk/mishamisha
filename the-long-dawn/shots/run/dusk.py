@@ -205,8 +205,11 @@ class DuskShot:
             rock = G[..., BW.G_FLAG] == 1.0
             G[..., BW.G_C0] = np.where(rock & ~self.her_mask, np.minimum(G[..., BW.G_C0], cap), G[..., BW.G_C0])
         # her last point is half gone exactly on bar 8 b3 (its last pixel's clearance crosses zero there)
-        c_top = float(self.G[..., BW.G_C0][self.her_mask].max()) if self.her_mask.any() else 0.0
-        self.e_out = math.degrees(math.asin(min(max(-c_top, -0.2), 0.2)))
+        if self.her_mask.any():
+            c_top = float(self.G[..., BW.G_C0][self.her_mask].max())
+            self.e_out = math.degrees(math.asin(min(max(-c_top, -0.2), 0.2)))
+        else:                                   # (tiny test scales only: her summit covers no pixel)
+            self.e_out = self.e_her
         fs = [F0] + SYNC_PEAKS[:len(chosen)] + [SYNC_LAST, F1 - 1]
         es = [chosen[0][0] + 1.6 if chosen else self.e_out + 2.4] + [c[0] for c in chosen] + \
             [self.e_out, self.e_out - 0.05]
