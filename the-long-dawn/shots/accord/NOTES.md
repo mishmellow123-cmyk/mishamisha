@@ -1,3 +1,5 @@
+> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** crowd3_ac1 (extended to **4464-4799**; 4720-4799 had fallen between the two lanes), accord3_ac4, accord3_p2 and accord3_p3 (crowd3_p3 is the SAME render as accord3_p3, so it is NOT launched separately). These are **v1-for-timing**; the council still fails the doll/clip-art gate. The fix list for the 23:29Z pass is in `_local_logs/PACING.md` (21:00Z council block).
+
 # ACCORD v3 (ACCORD-v3, 27 Sep): cut C only, C frames 4480-5679 -> `renders/accord_C3/f_%05d.png`
 
 ## >>> ACCORD-3 STATE (27 Sep ~20:50Z; usage ends ~21:25Z, RESUME ~23:30Z) <<<
