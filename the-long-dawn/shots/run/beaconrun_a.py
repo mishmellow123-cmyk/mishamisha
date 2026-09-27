@@ -53,7 +53,7 @@ def light(f=None):
     """H1's moonlit night (world.night_light) with the crossing's terrain fixes: the anti-streak snow noise (Q[18]),
     snow held on steeper ground, and more aerial depth so the ranges step back in veils."""
     if hasattr(NA, 'night_light'):
-        return NA.night_light()                  # the ONE A night (RUN-A3's kit): terrain fixes + the shared cloud sea
+        return cloud_knobs(*NA.night_light())    # the ONE A night (RUN-A3's kit) + look-dev overrides (idempotent)
     Lk, amb, S, fogp, Q = WD.night_light()
     Q = Q.copy()
     Q[18] = 1.0
