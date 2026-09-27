@@ -602,7 +602,7 @@ def build_figure(pose, t, scarf_pts=None, hair_pts=None, detail=1.0):
     flint_pt = None
     steel_pt = None
     tools = pose.get('tools', 'both')
-    if tools in ('both', 'flint'):
+    if tools in ('both', 'flint', 'both_c'):
         hn = anchors['hand_n']
         B.group('flint', M_FLINT, band=0.003)
         # a stone held in the curled fingers, its sharp top edge standing proud of thumb and index
@@ -624,6 +624,29 @@ def build_figure(pose, t, scarf_pts=None, hair_pts=None, detail=1.0):
         B.torus(loop_c - front * 0.002, np.stack([front, ax, z_]), 0.019, 0.0030, 0.0080, arc=(0.0, 2.3))
         bar_c = loop_c + front * 0.0185
         B.box(bar_c, np.array([0.0030, 0.036, 0.0080]), np.stack([front, ax, z_]), rnd=0.0014)
+        steel_pt = bar_c + front * 0.003
+    if tools in ('both_c', 'csteel'):
+        # H5 calls (HEROINE-L): her C-shaped fire-steel (never a flat bar), the one the fire test holds the Ring on.
+        # Flat stock (7 x 2.4 mm) forged into a C round her fingers: its straight back (the striking edge) lies across
+        # them exactly where the old bar's scraping edge was, so every strike still lands on the flint; the ends curl
+        # back round the finger bundle to the palm side and roll up in two small scrolls.
+        hf = anchors['hand_f']
+        B.group('steel', M_STEEL, band=0.001)
+        loop_c = (hf['mids'][0] + hf['mids'][1] + hf['mids'][2]) / 3.0
+        front = nrm(loop_c - hf['palm'])
+        ax = nrm(hf['sd'] - np.dot(hf['sd'], front) * front)
+        z_ = np.cross(front, ax)
+        bar_c = loop_c + front * 0.0185
+        R = np.stack([ax, z_, front])  # local x = along the back, y = the C's normal, z = out of the fist
+        Hb, r, La, rs = 0.027, 0.0125, 0.011, 0.0045
+        tp, wb, wa = 0.0012, 0.0036, 0.0029
+        B.box(bar_c, np.array([Hb, tp, wb]), R=R, rnd=0.0009)
+        B.torus(bar_c + ax * Hb - front * r, R, r, wb * 0.95, tp, arc=(0.0, math.pi / 2 + 0.03))
+        B.torus(bar_c - ax * Hb - front * r, R, r, wb * 0.95, tp, arc=(math.pi, math.pi / 2 + 0.03))
+        for sg in (1.0, -1.0):
+            B.box(bar_c + ax * sg * (Hb - 0.5 * La) - front * 2 * r, np.array([0.5 * La, tp, wa]), R=R, rnd=0.0009)
+            B.torus(bar_c + ax * sg * (Hb - La) - front * (2 * r - rs), R, rs, wa * 0.9, tp,
+                    arc=((math.pi if sg > 0 else 0.0), 1.9))
         steel_pt = bar_c + front * 0.003
     anchors['flint'] = flint_pt
     anchors['steel'] = steel_pt

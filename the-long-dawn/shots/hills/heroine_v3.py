@@ -307,6 +307,7 @@ class DeadEmber:
     SPARK_PX = (757.0, 256.0)                 # H1's flint edge (strike 1) in the full-res frame: the match cut
     EYE = POT + np.array([0.002, 0.1145, 0.014])   # the ember's eye: its top, turned a little toward the lens
     KNOCK = 920
+    CRAFTED = True                            # HEROINE-L: the crafted vessel (pot()); False = the 16:00Z ball pot
 
     def __init__(self):
         pass
@@ -382,19 +383,44 @@ class DeadEmber:
     def pot(self, B, lid_c, lid_u):
         """A round-bellied clay fire-pot (~15 cm), its lip sooted; ash inside with one ember; the lid in her hand."""
         c = self.POT
-        B.group('pot', H3.M_CLAY, disp=1, amp=0.0011, scale=55.0, band=0.005)
-        tilt = np.stack([nrm([1.0, 0.05, 0.0]), nrm([-0.05, 1.0, 0.03]), nrm([0.0, -0.03, 1.0])])   # hand-thrown: not true
-        B.ell(c + [0, 0.070, 0], np.array([0.079, 0.068, 0.077]), R=tilt)
-        B.ell(c + [0.012, 0.082, -0.010], np.array([0.068, 0.050, 0.070]), R=tilt, k=0.03)          # a heavier shoulder
-        B.ell(c + [0, 0.012, 0], np.array([0.052, 0.014, 0.052]), k=0.02)                      # foot
-        B.cone(c + [0, 0.112, 0], c + [0, 0.136, 0], 0.050, 0.044, k=0.014)                   # neck
-        B.torus(c + [0, 0.137, 0], np.eye(3), 0.041, 0.0078, 0.0088, k=0.010)                  # rim
-        B.ell(c + [0, 0.070, 0], np.array([0.069, 0.059, 0.069]), op=1, k=0.004)               # hollow
-        B.cone(c + [0, 0.100, 0], c + [0, 0.190, 0], 0.0335, 0.0335, op=1, k=0.004)            # mouth
+        if not self.CRAFTED:
+            B.group('pot', H3.M_CLAY, disp=1, amp=0.0011, scale=55.0, band=0.005)
+            tilt = np.stack([nrm([1.0, 0.05, 0.0]), nrm([-0.05, 1.0, 0.03]), nrm([0.0, -0.03, 1.0])])   # hand-thrown
+            B.ell(c + [0, 0.070, 0], np.array([0.079, 0.068, 0.077]), R=tilt)
+            B.ell(c + [0.012, 0.082, -0.010], np.array([0.068, 0.050, 0.070]), R=tilt, k=0.03)          # shoulder
+            B.ell(c + [0, 0.012, 0], np.array([0.052, 0.014, 0.052]), k=0.02)                      # foot
+            B.cone(c + [0, 0.112, 0], c + [0, 0.136, 0], 0.050, 0.044, k=0.014)                   # neck
+            B.torus(c + [0, 0.137, 0], np.eye(3), 0.041, 0.0078, 0.0088, k=0.010)                  # rim
+            B.ell(c + [0, 0.070, 0], np.array([0.069, 0.059, 0.069]), op=1, k=0.004)               # hollow
+        else:
+            # HEROINE-L (the H5 critic: "a coconut, a bowling ball"): a CRAFTED vessel, not a lumpy ball. A squat belly
+            # under a carinated shoulder, a flat foot, a short neck and a rolled lip; two pierced lugs on the shoulder;
+            # a leather thong knotted round the neck. Fired clay: a faint throwing unevenness, no lumps.
+            B.group('pot', H3.M_CLAY, disp=1, amp=0.00035, scale=26.0, band=0.005)
+            tilt = np.stack([nrm([1.0, 0.03, 0.0]), nrm([-0.03, 1.0, 0.02]), nrm([0.0, -0.02, 1.0])])   # thrown, not true
+            B.cone(c + [0, 0.001, 0], c + [0, 0.016, 0], 0.047, 0.055, k=0.006)                   # the flat foot
+            B.ell(c + [0, 0.064, 0], np.array([0.081, 0.058, 0.079]), R=tilt, k=0.012)            # squat belly
+            B.ell(c + [0.004, 0.092, -0.003], np.array([0.068, 0.034, 0.067]), R=tilt, k=0.022)   # carinated shoulder
+            B.cone(c + [0, 0.108, 0], c + [0, 0.133, 0], 0.047, 0.040, k=0.010)                   # neck
+            B.torus(c + [0, 0.137, 0], np.eye(3), 0.0425, 0.0066, 0.0070, k=0.007)                 # the rolled lip
+            for sg in (1.0, -1.0):                                                                  # pierced lugs
+                Rl_ = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]])
+                B.torus(c + [sg * 0.077, 0.089, 0.0], Rl_, 0.0082, 0.0030, 0.0036, k=0.004,
+                        arc=((math.pi / 2 if sg > 0 else -math.pi / 2), 2.1))
+            B.ell(c + [0, 0.064, 0], np.array([0.071, 0.050, 0.069]), op=1, k=0.004)               # hollow
+        B.cone(c + [0, 0.095 if self.CRAFTED else 0.100, 0], c + [0, 0.190, 0], 0.0335, 0.0335, op=1, k=0.004)   # mouth
         B.ell(c + [0.026, 0.1475, -0.030], np.array([0.0055, 0.0040, 0.0050]), op=1, k=0.0015)   # an old chip in the lip
         # soot: the lip blackened by years of carried fire
         B.group('soot', H3.M_BOOT, band=0.002)          # dark soot (M_COAL would grey to ash with no fire in it)
-        B.torus(c + [0, 0.1395, 0], np.eye(3), 0.0395, 0.0056, 0.0066, k=0.0)
+        B.torus(c + [0, 0.1395, 0], np.eye(3), 0.0415 if self.CRAFTED else 0.0395, 0.0056, 0.0066, k=0.0)
+        if self.CRAFTED:
+            # the thong: once round the neck, a knot on her side, two short ends hanging over the shoulder
+            B.group('thong', H3.M_BOOT, band=0.002)
+            B.torus(c + [0, 0.121, 0], np.eye(3), 0.0452, 0.0021, 0.0023, k=0.0)
+            kn = c + np.array([0.030, 0.121, -0.034])
+            B.ell(kn, np.array([0.0048, 0.0040, 0.0045]), k=0.002)
+            for dx, dz, ln in ((0.010, -0.004, 0.034), (-0.004, -0.010, 0.026)):
+                B.cone(kn, kn + np.array([dx, -ln, dz - 0.010]), 0.0021, 0.0017, k=0.002)
         B.group('ash', H3.M_ASH, disp=1, amp=0.0012, scale=160.0, band=0.004)
         B.ell(c + [0, 0.080, 0], np.array([0.058, 0.026, 0.058]))
         B.group('ember', H3.M_EMBER, disp=1, amp=0.0016, scale=150.0, band=0.004)
@@ -406,7 +432,8 @@ class DeadEmber:
         tip, flat = lid_u
         ax = nrm(np.array([0.0, 1.0, 0.0]) * (1 - tip) + nrm([0.25, 1.0, 0.45]) * tip)
         Rl = H3.ring_frame(ax, ref=(1.0, 0.0, 0.0))
-        B.group('lid', H3.M_CLAY, disp=1, amp=0.0006, scale=90.0, band=0.004)
+        B.group('lid', H3.M_CLAY, disp=1, amp=(0.00025 if self.CRAFTED else 0.0006), scale=(40.0 if self.CRAFTED else 90.0),
+                band=0.004)
         B.ell(lid_c, np.array([0.049, 0.0100, 0.049]), R=Rl)
         B.ell(lid_c + ax * 0.012, np.array([0.011, 0.009, 0.011]), R=Rl, k=0.008)
         B.ell(lid_c - ax * 0.010, np.array([0.040, 0.008, 0.040]), R=Rl, op=1, k=0.004)
@@ -487,7 +514,12 @@ class DeadEmber:
              light(epos + [0, 0.012, 0], (1.0, 0.30, 0.06), glow, 0.010, 6.0)]
         env = hero.env_vec(rim_dir=self.MOON, rim=np.array([0.10, 0.13, 0.20]), amb=np.array([0.004, 0.006, 0.011]),
                            bounce=np.array([0.010, 0.013, 0.020]), ao=0.02)
-        res = H3.render(cam, B, Hp, L, env, XP, ENV, None, ss=(3 if scale > 0.75 else 2),
+        Mt = H3.material_table3()
+        if self.CRAFTED:
+            # fired clay, not husk: broad mottling, a faint burnish, almost no bump
+            Mt[H3.M_CLAY, 3] = 0.70
+            Mt[H3.M_CLAY, 12:15] = [24.0, 0.20, 0.03]
+        res = H3.render(cam, B, Hp, L, env, XP, ENV, None, M=Mt, ss=(3 if scale > 0.75 else 2),
                         sil=dict(skin=1.0, eyes=1.0, cap=0.6, cap_brim=0.6, hair=0.6))
         img = np.zeros((cam.H, cam.W, 3), np.float32)
         img[:] = np.array([0.004, 0.006, 0.012], np.float32)

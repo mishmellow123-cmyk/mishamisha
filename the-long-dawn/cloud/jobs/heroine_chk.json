@@ -1,0 +1,28 @@
+{
+ "name": "heroine_chk",
+ "branch": "claude/render-heroine-chk",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "python3 shots/hills/render.py --shot beacon_v3_roar2 --frames 1477,1479,1484 --workers 1 --out renders/heroine_chk/roar2",
+  "python3 shots/hills/render.py --shot h1c --frames 2980,3178,3250,3316,3345 --workers 2 --out renders/heroine_chk/h1c",
+  "python3 shots/hills/render.py --shot deadember --frames 890,960,990,1030,1100 --workers 1 --out renders/heroine_chk/deadember"
+ ],
+ "outputs": [
+  {
+   "out_dir": "renders/heroine_chk/roar2",
+   "frames": "1477,1479,1484"
+  },
+  {
+   "out_dir": "renders/heroine_chk/h1c",
+   "frames": "2980,3178,3250,3316,3345"
+  },
+  {
+   "out_dir": "renders/heroine_chk/deadember",
+   "frames": "890,960,990,1030,1100"
+  }
+ ],
+ "push_every": 120,
+ "ship": "jpg"
+}

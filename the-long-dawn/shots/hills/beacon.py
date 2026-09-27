@@ -127,6 +127,8 @@ def strike_env(f):
     """Spark-light envelope: sum of the three strikes (peak ~1 on the frame, fast decay)."""
     e = 0.0
     for k, s in enumerate(STRIKES):
+        if H1C and k == 1:             # C: strike 2 is struck in THE FIND (MONTAGE-3D's shot)
+            continue
         d = f - s
         if d >= 0:
             e += (0.55 + 0.45 * k) * math.exp(-d / (2.2 + 0.6 * k))
@@ -393,6 +395,17 @@ FLINCH_V3 = _kp(pelvis=(0.90, 0.60, 0.0), lean=-18.0, chest=-10.0, neck=12.0, he
                 hand_n=(0.51, 1.21, -0.11), hand_f=(0.74, 0.96, 0.14), look=(1.4, 0.7, 1.0),
                 squint=1.0, blink=1.0, mouth=0.2, brow=-1.0, **_GUARD)
 V3_ROAR_SIL = 0.92               # at the roar her fire-lit groups go rim-only: a dark shape against the flare
+# HEROINE-L (27 Sep ~19Z), both off by default (render.py: beacon_v3_roar2, h1c):
+# V3_ROAR2: the roar re-polish (src 1474-1555): a true silhouette against the flare (fully flagged from the fire's key and
+#   its bounce, the shawl dark red, the exposure stopped down for the flare and eased back over the pull-back), the guard
+#   thrown up faster (no frame of an arm thrust at the fire), and her far hand an empty fist (no slab of steel in it).
+# H1C: C14's H1-C, hands and flint only: a telephoto window on her gloved hands, the flint and the tinder (the head never
+#   in frame: through the blow she stays kneeling upright and the breath jets in from off-frame right); strike 2 is
+#   THE FIND's (MONTAGE-3D, C 3009), so it is struck neither in sparks nor in the hand; dark thin leather (never a skin
+#   read in the strike light); her C-shaped fire-steel, the one the fire test (C15) holds the Ring on.
+V3_ROAR2 = False
+H1C = False
+H1C_GLOVE = (0.030, 0.021, 0.016, 0.34)   # dark thin leather: albedo, roughness (MONTAGE-3D's glove is near-black)
 RISE1_V3 = _kp(pelvis=(0.93, 0.74, 0.0), lean=6.0, chest=-2.0, neck=8.0, head=24.0, head_yaw=-38.0, shrug=0.7,
                hand_n=(0.60, 1.30, -0.13), hand_f=(0.72, 0.95, 0.20), foot_n=(0.52, 0.06, -0.20),
                foot_f=(1.13, 0.06, 0.10), knee_f=(-1.0, 0.2, 0.0), toe_f=(-1.0, -0.1, 0.0), sole_f=(0.0, 1.0, 0.0),
@@ -404,6 +417,22 @@ def apply_h5_calls():
     global V3_H5, V2_KEYS
     V3_H5 = True
     V2_KEYS = [(fr, FLINCH_V3 if pose is FLINCH else (RISE1_V3 if pose is RISE1 else pose), e) for fr, pose, e in V2_KEYS]
+    _HA.clear()
+
+
+def apply_roar2():
+    """HEROINE-L's roar re-polish (call after apply_h5_calls()); frames before ROAR - 1 are unchanged."""
+    global V3_ROAR2
+    V3_ROAR2 = True
+    _HA.clear()
+
+
+def apply_h1c():
+    """C14's H1-C (call after use_master_timing() and apply_h5_calls()): she never leans her face down to the tinder (she
+    blows from where she kneels; the head stays out of the hands' window), and strike 2 is not struck (THE FIND's)."""
+    global H1C, V2_KEYS
+    H1C = True
+    V2_KEYS = [(fr, KNEEL if pose is BLOW else pose, e) for fr, pose, e in V2_KEYS]
     _HA.clear()
 # exhales: (onset frame, duration s, kind) - lit only by what light is about (strikes, ember, flame)
 BREATHS = ((1212, 1.6, 'out'), (1252, 1.7, 'out'), (1281, 1.5, 'out'), (1297, 0.55, 'blow'), (1309, 0.50, 'blow'),
@@ -490,11 +519,13 @@ def yw2_pose(f):
     # rest, wind up, snap down scraping the edge exactly on the strike frame, follow through,
     # recover. The wrist target is solved from the bar's offset inside the (fixed) grip.
     for k, s in enumerate(STRIKES):
+        if H1C and k == 1:
+            continue
         d = f - s
         if 0 <= d < 5:
             hn += np.array([0.002, -0.006, 0.0]) * (1 - d / 5.0)
             lean_add += 1.2 * (1 - d / 5.0)
-    near_strike = [s for s in STRIKES if -13 <= f - s < 15]
+    near_strike = [s for s in STRIKES if -13 <= f - s < 15 and not (H1C and s == STRIKES[1])]
     if near_strike and f < STRIKES[-1] + 15:
         import heroine as hero
         s = near_strike[0]
@@ -528,6 +559,9 @@ def yw2_pose(f):
     # the guard (1360+): an open hand up between the heat and her face, following her head as
     # she recoils and rises; lowered as she finds her feet (a working gesture, nothing held aloft)
     gw = smoothstep(ROAR, ROAR + 3, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))
+    if V3_ROAR2:
+        # a flinch is fast: the forearm is across her face by ROAR + 1.5, so no frame shows an arm thrust at the fire
+        gw = smoothstep(ROAR - 0.5, ROAR + 1.5, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))
     if gw > 0:
         import heroine as hero
         q = dict(p)
@@ -581,6 +615,10 @@ def yw2_pose(f):
     p['rock'] = ROCK
     # she lets the flint go as she flinches (a 3 cm stone, gone inside the fast guard move)
     p['tools'] = 'both' if f < ROAR + 1 else 'steel'
+    if V3_ROAR2 and f >= ROAR + 1:
+        p['tools'] = 'none'            # the steel goes with the flint, inside the fast guard move (no slab in her fist)
+    if H1C:
+        p['tools'] = 'both_c' if f < ROAR + 1 else 'csteel'    # the flint, and her C-shaped fire-steel
     p['hem'] = 0.10 + 0.25 * smoothstep(ROAR, ROAR + 20, f)
     look = np.asarray(p.pop('look'), np.float64)
     p['expr'] = dict(mouth=p.pop('mouth'), purse=p.pop('purse'), squint=p.pop('squint'),
@@ -619,6 +657,28 @@ def camera(f, scale):
     yaw, pitch = cam.look_at(tgt)
     focus = float(np.linalg.norm(np.array([0.4, 1.0, 0.0]) - pos))
     return Camera(pos, yaw=yaw, pitch=pitch, hfov=hfov, scale=scale), focus, u
+
+
+# H1-C (C14): a telephoto window from beside the take's lens on her gloved hands, the flint and the tinder in the
+# basket. Her head (x >= 0.53 while she kneels) never enters it. A held lens: a slow drift, and after strike 3 the window
+# eases a little down and in toward the tinder while the ember is coaxed, then gives the first flame room to climb.
+H1C_POS = np.array([0.40, 1.00, -2.10])
+H1C_TGT = np.array([0.262, 1.118, -0.02])
+H1C_HFOV = 12.8
+
+
+def camera_c(f, scale):
+    t = f / FPS
+    hand = np.array([0.0016 * fnoise1(t * 0.7, 1.0), 0.0012 * fnoise1(t * 0.6, 2.0), 0.0])
+    s3 = STRIKES[2]
+    coax = smoothstep(s3 + 8, s3 + 40, f) * (1 - smoothstep(CATCH - 6, CATCH + 30, f))
+    pos = H1C_POS + hand + np.array([-0.015, -0.010, 0.10]) * coax
+    tgt = H1C_TGT + np.array([-0.022, -0.006, 0.0]) * coax + np.array([-0.012, 0.018, 0.0]) * smoothstep(CATCH, CATCH + 40, f)
+    hfov = H1C_HFOV - 1.6 * coax
+    cam = Camera(pos, hfov=hfov, scale=scale)
+    yaw, pitch = cam.look_at(tgt)
+    focus = float(np.linalg.norm(np.array([0.25, 1.11, -0.03]) - pos))
+    return Camera(pos, yaw=yaw, pitch=pitch, hfov=hfov, scale=scale), focus, 0.0
 
 
 # ---- v2 world layer: the shepherd's world (s1 / the Beacon Run) behind her summit -------------------
@@ -823,6 +883,8 @@ class FirstBeacon:
 
         def emit(sim, ff, dt):
             for k, s in enumerate(STRIKES):
+                if H1C and k == 1:
+                    continue
                 if s - 0.5 <= ff < s + 0.5:
                     n = int(((30, 45, 70) if V3_H5 else (70, 120, 220))[k] * dt * FPS * 1.0)
                     p = hero_anchors(s)['flint'] if HEROINE_V2 else ch.young_woman(yw_pose(s), s / FPS)[1]['flint']
@@ -869,7 +931,7 @@ class FirstBeacon:
     def render(self, f, scale=0.5):
         self.simulate()
         t = f / FPS
-        cam, focus, u = camera(f, scale)
+        cam, focus, u = camera_c(f, scale) if H1C else camera(f, scale)
         if HEROINE_V2:
             # dark adaptation: before the kindling catches the eye is used to the night, so the
             # moonlit summit and her cold rim are faintly there; the fire pulls it down; the
@@ -1111,6 +1173,10 @@ class FirstBeacon:
         expo = 1.05
         if V3_H5:
             expo = 1.05 * (V3_CLOSE_EXPO / 1.05 * (1 - smoothstep(ROAR + 4, ROAR + 58, f)) + smoothstep(ROAR + 4, ROAR + 58, f))
+        if V3_ROAR2:
+            # the lens stops down for the flare (she goes to a dark shape, the fire stays white-hot), and opens again
+            # as the pull-back reveals the world
+            expo *= 1.0 - 0.34 * smoothstep(ROAR - 1, ROAR + 1, f) * (1 - smoothstep(ROAR + 10, ROAR + 40, f))
         out = look.finish(img, exposure=expo, bloom_strength=0.09, bloom_threshold=0.9, vignette_amount=0.25,
                           lift=(0.011 if V3_H5 else 0.004))
         return out
@@ -1141,7 +1207,7 @@ class FirstBeacon:
                 L.append([TINDER[0], TINDER[1] + 0.03 + 0.06 * lv, TINDER[2] - 0.02,
                           0.30 * I, 0.135 * I, 0.036 * I, 0.03 + 0.04 * lv, -8.0])
             else:
-                I = min(lv, 2.5) * flick * (1 - 0.45 * rw)
+                I = min(lv, 2.5) * flick * (1 - (0.80 if V3_ROAR2 else 0.45) * rw)
                 L.append([FIRE_BASE[0], FIRE_BASE[1] + 0.55, FIRE_BASE[2] - 0.05, 0.75 * I, 0.34 * I, 0.095 * I,
                           0.28, 3.0])
         if reveal > 0.05:
@@ -1151,7 +1217,7 @@ class FirstBeacon:
             c = np.array([0.55, 0.70, 0.95]) * mi
             p0 = np.array([0.9, 1.0, 0.0]) + d * 100.0
             L.append([p0[0], p0[1], p0[2], c[0], c[1], c[2], 0.0, 0.0])
-        warm = (0.9 * lv * flick if f < ROAR else 0.35 * min(lv, 2.5) * flick) * (1 - 0.85 * rw)
+        warm = (0.9 * lv * flick if f < ROAR else 0.35 * min(lv, 2.5) * flick) * (1 - (0.97 if V3_ROAR2 else 0.85) * rw)
         rg = V3_RIM if V3_H5 else 1.0
         env = hero.env_vec(rim_dir=(0.55, 0.42, 0.72), rim=np.array([0.070, 0.100, 0.180]) * (1.0 + 1.0 * reveal) * rg,
                            amb=np.array([0.0035, 0.0050, 0.0100]) * (1.0 + 4.0 * reveal) * (1.0 + 0.5 * (rg - 1.0)),
@@ -1166,9 +1232,15 @@ class FirstBeacon:
             if rw > 0:
                 sil = dict(V3_SIL)
                 for gname in ('hood', 'coat', 'hand_sleeves', 'hand_n', 'hand_f', 'legs', 'boots', 'scarf'):
-                    sil[gname] = V3_ROAR_SIL * rw * (0.85 if gname == 'scarf' else 1.0)
-            res = hsdf3.render(cam, B, H, L, env, M=hsdf3.material_table3(), ss=(3 if scale > 0.75 else 2),
-                               sil=sil)
+                    if V3_ROAR2:
+                        sil[gname] = rw * (0.95 if gname == 'scarf' else 1.0)
+                    else:
+                        sil[gname] = V3_ROAR_SIL * rw * (0.85 if gname == 'scarf' else 1.0)
+            M3 = hsdf3.material_table3()
+            if H1C:
+                M3[hsdf3.M_GLOVE, 0:3] = H1C_GLOVE[:3]
+                M3[hsdf3.M_GLOVE, 3] = H1C_GLOVE[3]
+            res = hsdf3.render(cam, B, H, L, env, M=M3, ss=(3 if scale > 0.75 else 2), sil=sil)
             res = None if res is None else res[:5]
             Ls = L.copy()
             Ls[Ls[:, 7] != 0.0, 3:6] *= V3_STRAND_WARM

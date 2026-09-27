@@ -39,6 +39,20 @@ def make_shot(name):
         beacon.use_master_timing()
         beacon.apply_h5_calls()           # the director's H5 calls (07:10Z): wardrobe, sparks, flinch, lift, basket
         return beacon.FirstBeacon()
+    if name == 'beacon_v3_roar2':         # HEROINE-L: beacon_v3 + the roar re-polish (differs from beacon_v3 from src 1476)
+        import beacon
+        beacon.V3_REKEY = True
+        beacon.use_master_timing()
+        beacon.apply_h5_calls()
+        beacon.apply_roar2()
+        return beacon.FirstBeacon()
+    if name == 'h1c':                     # HEROINE-L: C14's H1-C (hands and flint only), frames in C NUMBERING:
+        import beacon                     # C 2960-2999 = src 1216-1255 (strike 1 = C 2980), C 3150-3359 = src
+        beacon.V3_REKEY = True            # 1266-1475 (strike 3 = C 3178, the catch C 3316; the roar C 3360 is
+        beacon.use_master_timing()        # MONTAGE-3D's fire test). The find (C 3000-3149) lies between.
+        beacon.apply_h5_calls()
+        beacon.apply_h1c()
+        return H1CShot(beacon.FirstBeacon())
     if name == 'beacon_v3_pre_h5':        # the master-timing take as rendered 05:09Z (before the H5 calls)
         import beacon
         beacon.V3_REKEY = True
@@ -55,6 +69,23 @@ def make_shot(name):
         import coda
         return coda.Coda()
     raise ValueError(name)
+
+
+class H1CShot:
+    """C frames -> the master take's src frames (BIBLE_V3 locked sheet C14: the find lies between strikes 2 and 3)."""
+    SEGS = ((2960, 3000, -1744), (3150, 3360, -1884))
+
+    def __init__(self, shot):
+        self.shot = shot
+
+    def src(self, f):
+        for a, b, off in self.SEGS:
+            if a <= f < b:
+                return f + off
+        raise ValueError(f'C frame {f} is not an H1-C frame (2960-2999, 3150-3359)')
+
+    def render(self, f, scale):
+        return self.shot.render(self.src(f), scale)
 
 
 def worker(args):

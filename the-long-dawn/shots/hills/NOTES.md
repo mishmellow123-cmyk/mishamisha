@@ -1,3 +1,19 @@
+# >>> STATE AT HANDOFF (HEROINE-L takes over the HEROINE lane, 27 Sep ~18:40Z) <<<
+**Import.** The cloud lane (account unreachable) left its state on `claude/v3-heroine` (head b86c2a0). Its own files were
+brought onto `claude/long-dawn-v2` by explicit path (commit 750222a; no merge): `heroine_v3.py`, `hsdf3.py`, `beacon.py`
+(all v3 work gated behind `V3_REKEY` / `V3_H5`, default off, so RUN/mountain callers are unchanged), `render.py` shots,
+this NOTES, and 7 job files in `cloud/jobs/` (`h1_v3_{rekey,master,h5,h5_roar}`, `h2_find_c`, `h2_firetest_c`,
+`h5_deadember_b`). Its review sheets are on disk (untracked) in `review/v3/heroine_v3_*`. Tracking ref deleted.
+**On disk at takeover.** `renders/h1_v3h5` = 356/356 JPEGs (src 1200-1555); **1474-1555 are the roar-fix re-render**
+(landed 15:39-15:45Z via the importer), 1200-1473 the 06:21-06:58Z H5 render. `renders/deadember_B`, `climb_B`,
+`heroine_C`: none. No HEROINE process running. Local python: `source ~/.venvs/longdawn/env.sh` (numba 0.67).
+**Scope now (director, ~18:30Z):** (1) THE ROAR on H1 (src ~1476-1510): a DARK SHAPE against the flare; the recoil =
+forearm across the face, head turned away, weight back. (2) H1-C: C14's flint take, hands and flint only; the find
+(C 3000-3149) and the fire test (C 3360-3599) are MONTAGE-3D-4's (`renders/ring_C`), so H1-C = C 2960-2999 + 3150-3359
+(EDIT's C14 rows). (3) H4 THE CLIMB (B2, B 640-879). (4) H5 THE DEAD EMBER (B3, B 880-1119 locked numbering). NOT
+ours: the bar-63 hand-off (RUN-B-3); `h2_find_c` / `h2_firetest_c` are SUPERSEDED by MONTAGE-3D-4's Ring close-ups
+(do not launch). Heavy renders go through the FARM (`cloud/farm.py`, being built) with JOB READY + check stills.
+
 # >>> HEROINE-v3 STATE (2026-09-27 ~16:05Z; PAUSED for the usage window, RESUME ~20:00Z) <<<
 **Exact state.** Nothing of this lane is rendering (the roar job finished 15:46Z; no process left running). Everything is
 committed and pushed to `claude/v3-heroine` (= `claude/heroine-character-work-0o4wv2`). H1 is DONE for all three cuts:
