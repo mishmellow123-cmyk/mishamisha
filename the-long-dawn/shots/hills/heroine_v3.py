@@ -135,8 +135,8 @@ def light(p, col, inten, radius, k):
     return [p[0], p[1], p[2], c[0], c[1], c[2], radius, k]
 
 
-def moon_light(inten):
-    p = MOON_DIR * 100.0
+def moon_light(inten, d=None):
+    p = (MOON_DIR if d is None else d) * 100.0
     c = MOON_COL * inten * 1e4
     return [p[0], p[1], p[2], c[0], c[1], c[2], 0.0, 0.0]
 
@@ -225,10 +225,13 @@ def static_chain(anchor, direction, n, seg, droop=0.3, sway=(0.0, 0.0), seed=0.0
     return np.array(P)
 
 
-def figure(pose, t, scarf_dir=(0.7, -0.7), hair_dir=(0.5, -0.8), gloved=True, scarf_n=14, detail=1.0):
+def figure(pose, t, scarf_dir=(0.7, -0.7), hair_dir=(0.5, -0.8), gloved=True, scarf_n=14, detail=1.0, scarf=True):
     an = hero.cheap_anchors(pose)
     sa = an['scarf_anchor'][:2]
-    scarf = static_chain(sa, scarf_dir, scarf_n, 0.078, droop=0.55, sway=(0.12, 0.05), seed=1.0)
+    if scarf:
+        scarf = static_chain(sa, scarf_dir, scarf_n, 0.078, droop=0.55, sway=(0.12, 0.05), seed=1.0)
+    else:
+        scarf = None
     hr = an['hair_root'][:2]
     hair = [static_chain(hr + np.array([-0.010 + 0.004 * k, 0.030 - 0.010 * k]), hair_dir, 8,
                          0.045 + 0.006 * (k % 3), droop=0.6, sway=(0.05, 0.03), seed=k * 1.3) for k in range(9)]
@@ -266,8 +269,10 @@ class DeadEmber:
     blow 1 1040-1062 (the ember brightens a little: hope), blow 2 1072-1092 (nothing); it greys 1060-1130; the
     breath hangs 1092-1150; still to 1199."""
     F0, F1 = 960, 1199
-    POT = np.array([0.34, 0.10, -0.03])       # on the cairn's flat foot-stone (top at 0.10 m)
+    POT = np.array([0.36, 0.28, -0.02])       # on the cairn's lowest course (top at 0.28 m)
     HFOV = 38.0
+    POV = False
+    MOON = np.array([0.20, 0.62, -0.76]) / np.linalg.norm([0.20, 0.62, -0.76])   # B's moon: high on her left
 
     def __init__(self):
         pass
@@ -287,31 +292,42 @@ class DeadEmber:
         blow = max(smoothstep(1040, 1044, f) * (1 - smoothstep(1058, 1062, f)),
                    smoothstep(1072, 1076, f) * (1 - smoothstep(1088, 1092, f)))
         p = dict(
-            pelvis=(0.74, 0.46, 0.0), yaw=0.0, lean=40.0 + 3.0 * blow, chest=10.0, twist=0.0, neck=16.0,
-            head=34.0 + 6.0 * blow, head_yaw=0.0, head_roll=0.0, shrug=0.2,
-            hand_f=(0.37, 0.115, 0.075), elbow_f=(0.2, -1.0, 0.8),
-            fdir_f=(-0.25, -0.55, -0.80), palm_f=(0.15, 0.10, -1.0),
-            curl_f=(0.30, 0.34, 0.38, 0.45), thumb_f=0.25, spread_f=0.15,
-            elbow_n=(0.1, -1.0, -0.8),
+            pelvis=(0.80, 0.57, 0.0), yaw=0.0, lean=20.0 + 4.0 * blow, chest=6.0, twist=0.0, neck=12.0,
+            head=40.0 + 6.0 * blow, head_yaw=0.0, head_roll=0.0, shrug=0.25,
+            elbow_f=(0.2, -1.0, 0.9), elbow_n=(0.2, -1.0, -0.9),
+            curl_f=(0.30, 0.34, 0.40, 0.46), thumb_f=0.25, spread_f=0.15,
             curl_n=(0.55, 0.62, 0.70, 0.74), thumb_n=0.55, spread_n=0.1,
-            foot_n=(1.00, 0.07, -0.11), foot_f=(1.00, 0.07, 0.11), knee_n=(-1.0, -0.35, -0.05), knee_f=(-1.0, -0.35, 0.05),
+            foot_n=(1.12, 0.07, -0.12), foot_f=(1.12, 0.07, 0.12), knee_n=(-1.0, -0.6, -0.05), knee_f=(-1.0, -0.6, 0.05),
             toe_n=(1.0, -0.2, 0.0), toe_f=(1.0, -0.2, 0.0), sole_n=(0.0, -1.0, 0.0), sole_f=(0.0, -1.0, 0.0),
             hem=0.05, breath=math.sin(2 * math.pi * t / 3.6) * (1 - blow),
         )
-        # the near hand: on the lid's knob, lifting it off and holding it aside, tilted toward her
+        # the lid: her near hand lifts it off by the knob and sets it on the stone at her left; then both hands cradle
+        # the pot (the near one returns 1010-1024)
         rest = self.POT + np.array([0.0, 0.150, 0.0])
-        held = self.POT + np.array([0.035, 0.150, -0.150])
-        lift = self.POT + np.array([0.0, 0.215, -0.02])
-        lc = (rest * (1 - smoothstep(0, 0.45, u)) + lift * smoothstep(0, 0.45, u)) * (1 - smoothstep(0.35, 1.0, u)) \
-            + held * smoothstep(0.35, 1.0, u)
-        p['hand_n'] = tuple(lc + np.array([0.030, 0.050, -0.010]))
-        p['fdir_n'] = tuple(nrm([-0.70, -0.55, 0.30]))
-        p['palm_n'] = tuple(nrm([0.20, -0.85, 0.35]))
+        down = self.POT + np.array([0.020, -0.004, -0.175])
+        lift = self.POT + np.array([0.010, 0.230, -0.080])
+        lc = (rest * (1 - smoothstep(0, 0.45, u)) + lift * smoothstep(0, 0.45, u)) * (1 - smoothstep(0.45, 1.0, u)) \
+            + down * smoothstep(0.45, 1.0, u)
+        back = smoothstep(1010, 1024, f)
+        grip_lid = lc + np.array([0.040, 0.045, -0.020])
+        cradle = np.array([0.66, 0.43, -0.13])        # her near hand comes to rest on her thigh
+        hn = grip_lid * (1 - back) + cradle * back
+        p['hand_n'] = tuple(hn)
+        fl, pl = nrm([-0.75, -0.45, 0.35]), nrm([0.10, -0.80, 0.55])
+        fc, pc = nrm([-0.80, -0.55, 0.10]), nrm([0.10, -1.0, 0.10])
+        p['fdir_n'] = tuple(nrm(fl * (1 - back) + fc * back))
+        p['palm_n'] = tuple(nrm(pl * (1 - back) + pc * back))
+        p['curl_n'] = tuple(np.array([0.55, 0.62, 0.70, 0.74]) * (1 - back) + np.array([0.30, 0.34, 0.40, 0.46]) * back)
+        # the far hand cradles the far side of the pot throughout
+        p['hand_f'] = tuple(self.POT + np.array([0.050, 0.080, 0.085]))
+        p['fdir_f'] = (-0.55, -0.30, -0.78)
+        p['palm_f'] = tuple(nrm([-0.35, 0.05, -0.93]))
+        lid_u = smoothstep(0.45, 1.0, u)
         p['tools'] = 'none'
         p['rock'] = None
         p['expr'] = dict(purse=blow, blink=0.6, brow=0.2)
         p['look_at'] = self.POT + np.array([0.0, 0.09, 0.0])
-        return p, lc, u, blow
+        return p, lc, lid_u, blow
 
     # ---- props
     def pot(self, B, lid_c, lid_u):
@@ -328,14 +344,14 @@ class DeadEmber:
         B.group('soot', H3.M_COAL, band=0.002)
         B.torus(c + [0, 0.1395, 0], np.eye(3), 0.0395, 0.0056, 0.0066, k=0.0)
         B.group('ash', H3.M_ASH, disp=1, amp=0.0012, scale=160.0, band=0.004)
-        B.ell(c + [0, 0.066, 0], np.array([0.066, 0.026, 0.066]))
+        B.ell(c + [0, 0.080, 0], np.array([0.066, 0.026, 0.066]))
         B.group('ember', H3.M_EMBER, disp=1, amp=0.0016, scale=150.0, band=0.004)
-        e = c + np.array([-0.004, 0.094, 0.003])
+        e = c + np.array([0.006, 0.107, 0.018])
         B.ell(e, np.array([0.0135, 0.0085, 0.011]), R=np.stack([nrm([1, 0.1, 0.3]), nrm([-0.1, 1, 0]), nrm([-0.3, 0, 1])]))
         B.ell(e + [0.009, -0.002, 0.004], np.array([0.0075, 0.0060, 0.0070]), k=0.004)
         B.ell(e + [-0.008, -0.003, -0.005], np.array([0.0060, 0.0045, 0.0055]), k=0.004)
         # the lid: a shallow clay dome with a knob, lifted in her near hand and tipped toward her
-        ax = nrm(np.array([0.0, 1.0, 0.0]) * (1 - lid_u) + nrm([0.30, 0.55, -0.78]) * lid_u)
+        ax = nrm(np.array([0.0, 1.0, 0.0]) * (1 - lid_u) + nrm([0.25, 1.0, -0.15]) * lid_u)
         Rl = H3.ring_frame(ax, ref=(1.0, 0.0, 0.0))
         B.group('lid', H3.M_CLAY, disp=1, amp=0.0006, scale=90.0, band=0.004)
         B.ell(lid_c, np.array([0.049, 0.0100, 0.049]), R=Rl)
@@ -343,39 +359,67 @@ class DeadEmber:
         B.ell(lid_c - ax * 0.010, np.array([0.040, 0.008, 0.040]), R=Rl, op=1, k=0.004)
         return e
 
+    def cairn(self, B):
+        """The foot of the summit cairn: a flat course stone under the pot and the next course stepping up beyond it."""
+        B.group('stone', H3.M_FLINT, disp=1, amp=0.004, scale=16.0, band=0.02)
+        rng = np.random.default_rng(5)
+        for (c, h, rot) in (((0.30, 0.235, -0.02), (0.20, 0.045, 0.26), 4.0), ((0.00, 0.19, -0.30), (0.16, 0.10, 0.14), -9.0),
+                            ((-0.02, 0.36, -0.04), (0.14, 0.075, 0.20), 6.0), ((0.02, 0.35, 0.30), (0.15, 0.08, 0.13), -5.0),
+                            ((0.33, 0.12, 0.05), (0.22, 0.10, 0.28), 2.0), ((-0.05, 0.50, 0.10), (0.12, 0.07, 0.18), 3.0)):
+            a = math.radians(rot)
+            R = np.stack([[math.cos(a), 0.0, math.sin(a)], [0.0, 1.0, 0.0], [-math.sin(a), 0.0, math.cos(a)]])
+            R = R @ np.stack([nrm([1.0, rng.normal(0, 0.04), 0.0]), nrm([rng.normal(0, 0.04), 1.0, 0.0]), [0.0, 0.0, 1.0]])
+            B.box(np.array(c), np.array(h), R=R, rnd=0.022, k=0.004)
+
     def camera(self, f, scale):
+        """Observational (B watches her): high on her left, ~50 deg down into the pot, her head and shoulders above the
+        frame. POV = True: her own point of view from between her eyes (the head is then not drawn)."""
         t = f / FPS
-        pos = np.array([0.31 + 0.003 * fnoise1(t * 0.5, 3.0), 0.80 + 0.002 * fnoise1(t * 0.4, 5.0), -0.40])
-        tgt = self.POT + np.array([0.02, 0.10, -0.05])
         hf = self.HFOV
+        if self.POV:
+            p, lc, lid_u, blow = self.pose(f)
+            an = hero.cheap_anchors(p)
+            pos = an['head'].p(0.070, 0.000, 0.0)
+            tgt = self.POT + np.array([-0.035, 0.120, 0.005])
+        else:
+            pos = np.array([0.35, 0.98, -0.44])
+            tgt = self.POT + np.array([0.020, 0.110, 0.0])
+        pos = pos + np.array([0.004 * fnoise1(t * 0.6, 3.0), 0.003 * fnoise1(t * 0.5, 5.0), 0.0])
         cam = Camera(pos, hfov=hf, scale=scale)
         yaw, pitch = cam.look_at(tgt)
-        return Camera(pos, yaw=yaw, pitch=pitch, hfov=hf, scale=scale), float(np.linalg.norm(self.POT + [0, 0.13, 0] - pos))
+        return Camera(pos, yaw=yaw, pitch=pitch, hfov=hf, scale=scale), float(np.linalg.norm(self.POT + [0, 0.11, 0] - pos))
 
     def render(self, f, scale=0.5):
         t = f / FPS
         cam, focus = self.camera(f, scale)
         cam, focus, nodof = debug_cam(cam, focus, scale)
         p, lid_c, lid_u, blow = self.pose(f)
-        B, F, Hp, anc, hair = figure(p, t, scarf_dir=(0.20, -1.0), hair_dir=(0.30, -0.95), scarf_n=10)
+        B, F, Hp, anc, hair = figure(p, t, hair_dir=(0.30, -0.95), scarf=False)
+        # the scarf's end hangs from the front of her neck as she bends over the pot, on its far side
+        J = anc['J']
+        front = J['C7'] + 0.030 * J['dn'] + 0.080 * J['Ut']
+        tail = static_chain(front[:2], (-0.05, -1.0), 7, 0.074, droop=0.1, sway=(0.04, 0.0), seed=2.0)
+        B.group('scarf')
+        hero.scarf_tail(B, tail, t, z0=0.060)
+        for g in B.groups:
+            if self.POV and g['name'] in ('skin', 'eyes', 'cap', 'cap_brim', 'hair'):
+                g['prims'] = []
         epos = self.pot(B, lid_c, lid_u)
-        snow_ground(B, np.array([0.40, 0.0, 0.0]), reach=1.6)
-        B.group('stone', H3.M_FLINT, disp=1, amp=0.004, scale=18.0, band=0.02)
-        Rs = np.stack([nrm([1.0, 0.03, 0.12]), nrm([-0.03, 1.0, 0.0]), nrm([-0.12, 0.0, 1.0])])
-        B.box(np.array([0.33, 0.045, -0.02]), np.array([0.19, 0.055, 0.15]), R=Rs, rnd=0.03)
+        snow_ground(B, np.array([0.60, 0.0, 0.0]), reach=1.6)
+        self.cairn(B)
         life = self.life(f)
         XP = np.zeros(64)
         XP[19] = life
-        XP[20] = 1.6 * lid_u ** 0.5 + 0.6
+        XP[20] = 0.22
         XP[24] = 260.0
         XP[25] = 1.0
         XP[26] = 1.0
         ENV = env_stack(night_env(moon=0.8))
         # light: B's silver moon from behind her; the ember inside the pot (its walls and her hands shadow it)
-        glow = 0.0045 * (0.25 + life ** 1.6) * (0.35 + 0.65 * lid_u)
-        L = [moon_light(0.30),
+        glow = 0.0045 * (0.02 + life ** 1.6) * (0.35 + 0.65 * lid_u)
+        L = [moon_light(0.45, self.MOON),
              light(epos + [0, 0.012, 0], (1.0, 0.30, 0.06), glow, 0.010, 6.0)]
-        env = hero.env_vec(rim_dir=MOON_DIR, rim=np.array([0.10, 0.13, 0.20]), amb=np.array([0.004, 0.006, 0.011]),
+        env = hero.env_vec(rim_dir=self.MOON, rim=np.array([0.10, 0.13, 0.20]), amb=np.array([0.004, 0.006, 0.011]),
                            bounce=np.array([0.010, 0.013, 0.020]), ao=0.02)
         res = H3.render(cam, B, Hp, L, env, XP, ENV, None, ss=(3 if scale > 0.75 else 2),
                         sil=dict(skin=1.0, eyes=1.0, cap=0.6, cap_brim=0.6, hair=0.6))
@@ -385,7 +429,7 @@ class DeadEmber:
         # breath: from her hidden mouth down into the pot's glow, then hanging in the moonlight
         self._breath(img, cam, f, anc, epos, life, lid_u)
         if not nodof:
-            img = dof(img, depth, focus, K=cam.f * 0.010, near_split=focus * 0.8)
+            img = dof(img, depth, focus, K=cam.f * 0.0055, near_split=focus * 0.75)
         return finish(img, exposure=float(os.environ.get('V3_EXPO', 1.35)))
 
     def _breath(self, img, cam, f, anc, epos, life, lid_u):
@@ -407,7 +451,7 @@ class DeadEmber:
                     k = min(1.0, a_ / 0.35)
                     pos = mouth + d * (1 - (1 - k) ** 2) + np.array([0.03, 0.02, -0.01]) * max(0.0, a_ - 0.35)
                     rad_m = 0.010 + 0.040 * min(a_, 0.9)
-                    dens = 0.10 * math.exp(-a_ / 0.9) * min(1.0, a_ / 0.06)
+                    dens = 0.035 * math.exp(-a_ / 0.7) * min(1.0, a_ / 0.06)
                 else:
                     pos = mouth + np.array([-0.03, -0.10, -0.02]) * (1 - math.exp(-a_ / 0.5)) + \
                         np.array([0.05, 0.03, -0.03]) * a_
@@ -417,14 +461,155 @@ class DeadEmber:
                 if z <= 0.05:
                     continue
                 d2 = float(np.sum((pos - epos) ** 2)) + 0.002
-                Ls = np.array([1.0, 0.33, 0.07]) * 0.0045 * (0.25 + life ** 1.6) * lid_u / d2 * 0.6 + \
+                Ls = np.array([1.0, 0.30, 0.06]) * 0.0045 * (0.02 + life ** 1.6) * lid_u / d2 * 0.25 + \
                     MOON_COL * 0.010
                 sig = max(0.8, cam.f * rad_m / z * 0.6)
                 hsd.splat_fog(img, float(sx), float(sy), sig, dens, Ls[0], Ls[1], Ls[2],
                               float(fs * 0.37 + q), f / FPS * 0.6, max(2.0, sig * 1.1))
 
 
-SHOTS = dict(deadember=DeadEmber)
+# ============================================================= C H2 ====
+
+BK_BOT, BK_TOP, BK_RT = 0.828, 1.168, 0.30        # the beacon basket (characters.Cairn(seed=11))
+FIRE_BASE = np.array([0.0, BK_BOT + 0.10, 0.0])
+
+
+def fire_env(inten=1.0):
+    """What the Ring sees inside her roaring beacon: fire below and all round the far side, the night above and
+    toward her."""
+    D = env_dirs()
+    x, y, z = D[..., 0], D[..., 1], D[..., 2]
+    img = np.zeros(D.shape, np.float32)
+    toward_fire = np.clip(-x * 0.8 + 0.2 - 0.6 * y, 0, 1)
+    img += (np.array([1.0, 0.42, 0.10]) * 6.0 * inten)[None, None] * (toward_fire ** 1.5)[..., None]
+    img += (np.array([1.0, 0.55, 0.18]) * 3.0 * inten)[None, None] * np.clip(-y, 0, 1)[..., None] ** 0.7   # coals
+    img += (np.array([1.0, 0.75, 0.40]) * 10.0 * inten)[None, None] * np.exp(-((x + 0.6) ** 2 + (y - 0.3) ** 2 + z ** 2) / 0.15)[..., None]
+    sky = np.array([0.003, 0.005, 0.012])[None, None] * np.ones_like(D)
+    img = np.where((y > 0.35)[..., None], img * 0.3 + sky, img)
+    return img.astype(np.float32)
+
+
+class FireTest:
+    """C 168.3-174.3 s (frames 4040-4183). Bag End: after the roar she holds the Ring into her beacon on the tip of her
+    steel. It hangs there in the flames, unmarked, its letters awake, not even warm. Her gloved hand trembles; the
+    steel dips once toward the coals; she cannot let it fall; she draws it back (4160+)."""
+    F0, F1 = 4040, 4183
+    HFOV = 36.0
+
+    def pose(self, f):
+        t = f / FPS
+        tremble = 0.0015 * fnoise1(t * 9.0, 7.0, 2) + 0.0008 * fnoise1(t * 17.0, 9.0, 1)
+        dip = 0.012 * smoothstep(4100, 4118, f) * (1 - smoothstep(4122, 4140, f))
+        back = smoothstep(4160, 4183, f)
+        wrist = np.array([0.345 + 0.08 * back, 1.168 - dip + tremble, 0.035])
+        p = dict(
+            pelvis=(0.80, 0.63, 0.0), yaw=0.0, lean=10.0, chest=4.0, twist=6.0, neck=16.0, head=20.0, head_yaw=0.0,
+            head_roll=0.0, shrug=0.4,
+            hand_f=tuple(wrist), elbow_f=(0.3, -1.0, 0.6),
+            fdir_f=tuple(nrm([-1.0, -0.10 - 0.8 * dip, -0.05])), palm_f=(0.0, -0.25, -1.0),
+            curl_f=(0.92, 0.92, 0.92, 0.92), thumb_f=0.75,
+            hand_n=(0.62, 0.95, -0.18), elbow_n=(0.2, -1.0, -0.6), fdir_n=(-0.3, -1.0, 0.0), palm_n=(0.2, 0.0, 1.0),
+            curl_n=(0.7, 0.75, 0.8, 0.85), thumb_n=0.5,
+            foot_n=(0.40, 0.05, -0.22), knee_n=(-1.0, 0.5, 0.0), toe_n=(-1.0, 0.0, 0.0), sole_n=(0.0, 1.0, 0.0),
+            foot_f=(1.05, 0.13, 0.09), knee_f=(-1.0, -0.3, 0.0), toe_f=(0.3, -1.0, 0.0), sole_f=(1.0, 0.1, 0.0),
+            hem=0.2, breath=math.sin(2 * math.pi * t / 3.0), tools='steel', rock=((0.78, 0.06, 0.10), (0.24, 0.09, 0.18)),
+            expr=dict(squint=0.6, brow=-0.3), look_at=(0.15, 1.12, -0.02),
+        )
+        return p, dip, back
+
+    def ring_on_tip(self, anc):
+        """The Ring hangs from the end of the steel's bar: axis along the bar, top of its bore on the bar."""
+        hf = anc['hand_f']
+        loop_c = (hf['mids'][0] + hf['mids'][1] + hf['mids'][2]) / 3.0
+        front = nrm(loop_c - hf['palm'])
+        ax = nrm(hf['sd'] - np.dot(hf['sd'], front) * front)
+        bar_c = loop_c + front * 0.0185
+        tipA, tipB = bar_c + ax * 0.033, bar_c - ax * 0.033
+        tip = tipA if tipA[0] < tipB[0] else tipB          # the end that points into the fire (-x)
+        bar_dir = nrm(tip - bar_c)
+        R, tb, hb, rnd = ring_dims()
+        centre = tip - bar_dir * 0.004 - np.array([0.0, R - tb + 0.0032, 0.0])
+        rows = H3.ring_frame(bar_dir, ref=(0.0, 1.0, 0.0))
+        return centre, rows, tip
+
+    def camera(self, f, scale, ring_c):
+        t = f / FPS
+        pos = ring_c + np.array([0.075, 0.020, -0.36]) + np.array([0.002 * fnoise1(t * 0.7, 2.0), 0.002 * fnoise1(t * 0.6, 4.0), 0])
+        tgt = ring_c + np.array([0.045, 0.004, 0.0])
+        cam = Camera(pos, hfov=self.HFOV, scale=scale)
+        yaw, pitch = cam.look_at(tgt)
+        return Camera(pos, yaw=yaw, pitch=pitch, hfov=self.HFOV, scale=scale), float(np.linalg.norm(ring_c - pos))
+
+    def wood(self, B):
+        """Burning split logs in the basket near its rim, and the nearest iron bars."""
+        B.group('coals', H3.M_COAL, disp=1, amp=0.003, scale=40.0, band=0.01)
+        rng = np.random.default_rng(3)
+        for k in range(9):
+            a = -0.9 + 0.25 * k + rng.normal(0, 0.08)
+            r = 0.10 + 0.10 * rng.random()
+            c = np.array([r * math.cos(a) * 0.9, BK_BOT + 0.12 + 0.10 * rng.random(), r * math.sin(a) - 0.02])
+            d = nrm([rng.normal(0, 0.5), 0.9, rng.normal(0, 0.5)])
+            B.cone(c - d * 0.14, c + d * 0.14, 0.030, 0.024, k=0.01)
+        B.group('bars', H3.M_IRON, band=0.004)
+        for k in range(7):
+            a = math.radians(-120 + 25 * k)
+            b0 = np.array([0.17 * math.cos(a), BK_BOT, 0.17 * math.sin(a)])
+            b1 = np.array([BK_RT * math.cos(a), BK_TOP, BK_RT * math.sin(a)])
+            B.cone(b0, b1, 0.007, 0.007)
+        B.torus(np.array([0.0, BK_TOP, 0.0]), np.eye(3), BK_RT, 0.008, 0.008)
+
+    def render(self, f, scale=0.5):
+        t = f / FPS
+        p, dip, back = self.pose(f)
+        B, F, Hp, anc, hair = figure(p, t, hair_dir=(0.8, -0.3))
+        ring_c, rows, tip = self.ring_on_tip(anc)
+        cam, focus = self.camera(f, scale, ring_c)
+        cam, focus, nodof = debug_cam(cam, focus, scale)
+        add_ring(B, ring_c, rows)
+        self.wood(B)
+        fl = fire.flicker(t, 3.3, 1.3)
+        XP = np.zeros(64)
+        ring_xp(XP, ring_c, rows, glow=0.9 + 0.15 * math.sin(t * 5.1))
+        XP[25], XP[26] = 1.0, 1.0
+        XP[28], XP[29], XP[30] = 0.9 * fl, 60.0, 0.85
+        ENV = env_stack(fire_env(1.0 * fl))
+        I = 2.2 * fl
+        L = [light(FIRE_BASE + [0.0, 0.40, 0.0], (1.0, 0.45, 0.12), 0.75 * I, 0.28, 3.0),
+             light(FIRE_BASE + [0.10, 0.12, -0.04], (1.0, 0.38, 0.08), 0.20 * I, 0.10, 3.0),
+             light(ring_c + [-0.05, 0.10, 0.05], (1.0, 0.62, 0.25), 0.035 * I, 0.03, 0.0),
+             moon_light(0.25)]
+        env = hero.env_vec(rim_dir=MOON_DIR, rim=np.array([0.06, 0.08, 0.13]), amb=np.array([0.003, 0.004, 0.008]),
+                           bounce=np.array([0.05, 0.02, 0.006]) * fl, ao=0.02)
+        img = np.zeros((cam.H, cam.W, 3), np.float32)
+        img[:] = np.array([0.002, 0.003, 0.007], np.float32)
+        # the fire behind: the beacon's flame and tongues licking up round the Ring
+        fimg = np.zeros_like(img)
+        fa = np.zeros(img.shape[:2], np.float32)
+        fire.draw_flame(fimg, fa, cam, FIRE_BASE, 1.9, 0.31, 0.55, t, 2.9, 10.0 * fl, fire.BONFIRE_STYLE)
+        for k, (dx, dz, h, w) in enumerate(((0.12, 0.06, 0.34, 0.06), (0.05, 0.10, 0.42, 0.08), (0.17, 0.02, 0.26, 0.05),
+                                           (-0.02, 0.14, 0.5, 0.09))):
+            fire.draw_flame(fimg, fa, cam, np.array([dx, BK_BOT + 0.16, dz]), h, w, 0.5, t, 7.0 + k, 6.0 * fl,
+                            fire.TORCH_STYLE)
+        img += fimg
+        res = H3.render(cam, B, Hp, L, env, XP, ENV, inscription_ins(), ss=(3 if scale > 0.75 else 2),
+                        sil=dict(skin=1.0, eyes=1.0, cap=0.85, cap_brim=0.85, hair=0.85))
+        depth = comp(img, res)
+        fire.add_glow(img, cam, FIRE_BASE + [0, 0.5, 0], 0.5, 0.06 * fl)
+        if not nodof:
+            img = dof(img, depth, focus, K=cam.f * 0.004)
+        return finish(img, exposure=float(os.environ.get('V3_EXPO', 0.55)), bloom=0.14)
+
+
+def inscription_ins():
+    return H3.inscription_accord()[0]
+
+
+class DeadEmberPOV(DeadEmber):
+    POV = True
+    HFOV = 40.0
+
+
+SHOTS = dict(deadember=DeadEmber, deadember_pov=DeadEmberPOV, firetest=FireTest)
 
 
 def main():
