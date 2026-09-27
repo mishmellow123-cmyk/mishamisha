@@ -73,6 +73,14 @@ with `farm.py <job> --nodes 3`, ONLY after the director approves JOB READY. The 
     request `...starsalook-71354`.
   * The ember starts at EMBERS' measured centroid (958.6, 547.5) at 3120 and eases to (960, 548).
   * NEXT: check the v2 sheet, then JOB READY `stars_a` (1 node, cheap).
+* **APPROVED and RENDERING:** `falsedawn_a` (main launched it with --nodes 6; log `_local_logs/jobs/falsedawn_a_farm.log`).
+  `stars_a` is JOB READY (sent 20:48Z).
+* **Post-23:30 list (director + mine), cheap re-renders:**
+  * A2: skew and notch the left sierra's highest spire (x ~430 at full res, a near-symmetric "perfect triangle").
+  * A2: vary the widths and lean of the foreground needles (lower centre), and add a broken crest or two.
+  * A2: the mackerel deck reads as flat streaks.
+  * A2: the cloud-sea strip at the bottom is dark.
+  * THE CLOUD SEA for all A nights (see below).
 * **A2 FALSE DAWN** (cut 80-559 -> `falsedawn_A`):
   * In: FD_WALL v2 (a fractal far crest, 46 km, az -15). A thin moon key (FD_MOON=1: az -59 el 21, I 0.28) for
     moonlit snow and aerial depth. glow_haze (0.25 share, no rays: the rays made vertical slabs, fixed in 049265c).
@@ -91,7 +99,13 @@ with `farm.py <job> --nodes 3`, ONLY after the director approves JOB READY. The 
   * The v1 look-dev failed at full frame: 2-5 px fires, and a flame towering over the seventh watcher. v2 (7d5c4d9)
     fixes both; its look-dev is request `...starsalook-71354`.
   * NEXT: check the v2 sheet and a low-res motion test, then JOB READY.
-* **THE ONE A NIGHT CLOUD SEA** (director): `nighta.night_light()` (RUN-A3) holds the CLOUD knobs. RUN-A-L owes
+* **THE ONE A NIGHT CLOUD SEA** (director): the knob grid was INCONCLUSIVE, because its camera looked into a crag. The
+  knob sets barely change the look. I told RUN-A3 to keep CLOUD at the world values and not to re-render A13 yet.
+  * The likely fix is geometry: an additive cumuliform relief for A's cloud sea. That is a leading CR row, like RUN-A2's
+    hole rows, which h_cloud_cr applies: 25-40 m cauliflower tops at a 90-150 m scale. Add a softer-wrap override if
+    needed.
+  * Test it from an A13-like high view over the sea. Then set nighta.CLOUD and re-render A13, A14 and A2 once.
+  * `nighta.night_light()` (RUN-A3) holds the CLOUD knobs. RUN-A-L owes
   RUN-A3 the final values from the knob grid (`beaconrun_a_cloud`, request `...beaconrunacloud-64823`: 6 static
   views 3920-3925 with NIGHT_CLOUD sets). The sets are listed in the job file. A13 will be re-rendered with them.
 * **Helpers:** `_local_logs/runA/pick_chain.py` (the chain picker), `_local_logs/runA/commit_runA.py` (commits).
