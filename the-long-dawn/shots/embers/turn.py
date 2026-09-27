@@ -65,7 +65,12 @@ def gather(t):
 
 def world_light(t):
     """the fire's light on the world: it draws back into the heart"""
-    return 1.0 - 0.72 * float(smootherstep(T_HEART + 10, T_END - 8, t))
+    return 1.0 - 0.85 * float(smootherstep(T_HEART + 10, T_END - 8, t))
+
+
+def night(t):
+    """the washes of light between the towers fade as the fire gathers: the night keeps only small lights"""
+    return 1.0 - 0.8 * float(smootherstep(T_HEART + 10, T_END - 8, t))
 
 
 _ORIG = A.__dict__.setdefault('_turn_orig', {})
@@ -135,13 +140,13 @@ def _polar(r, a, y):
 # one take: (frame, radius, azimuth, height, target y, hfov). From outside the ring behind giant 2 and forge 1 (the
 # watchers' look), a slow push; A17 walks on, down through the gap between them (az ~1.53) to the rim.
 CAM = [
-    (4400, 64.0, 1.620, 9.0, 3.0, 64.0),
-    (4480, 50.0, 1.640, 8.0, 2.0, 63.0),
-    (4560, 42.0, 1.660, 8.0, 1.0, 62.0),
-    (4640, 38.0, 1.670, 7.0, 1.0, 61.0),
-    (4720, 35.0, 1.660, 6.0, 0.5, 60.0),
-    (4780, 27.0, 1.600, 0.0, 0.0, 57.0),
-    (4840, 21.0, 1.550, -6.0, 0.0, 53.0),
+    (4400, 58.0, 1.560, 12.0, 1.0, 66.0),     # looking in through the gap between forge 1 and giant 2
+    (4480, 52.0, 1.560, 13.0, 1.0, 66.0),
+    (4560, 49.0, 1.560, 13.0, 1.0, 66.0),
+    (4640, 46.0, 1.560, 12.0, 1.0, 65.0),
+    (4720, 42.0, 1.560, 10.0, 1.0, 64.0),     # A17: the walk down through the gap
+    (4780, 31.0, 1.550, 3.0, 0.5, 60.0),
+    (4840, 22.0, 1.540, -5.0, 0.3, 54.0),
     (4880, 17.5, 1.530, -10.5, 0.0, 50.0),
 ]
 _LAB = {}
@@ -322,10 +327,10 @@ class TowerLight:
     (a lit crust with any grain reads as leopard print). Drawn as its own layer over the towers' points."""
 
     # per kind: (gain on the far fires' light, gain on the open towers' light, splat width, min geo term, face lo, hi)
-    KINDS = {0: (0.018, 0.035, None, 0.05, -0.02, 0.1),
-             2: (0.30, 0.55, 0.03, 0.6, -0.5, -0.1),
-             1: (0.22, 0.45, 0.022, 0.25, -0.02, 0.12),
-             4: (0.16, 0.35, 0.03, 0.15, -0.02, 0.12)}
+    KINDS = {0: (0.018, 0.02, None, 0.05, -0.02, 0.1),
+             2: (0.30, 0.30, 0.03, 0.6, -0.5, -0.1),
+             1: (0.22, 0.24, 0.022, 0.25, -0.02, 0.12),
+             4: (0.16, 0.18, 0.03, 0.15, -0.02, 0.12)}
 
     def emit(self, ctx, tl, rw):
         tw = tl.towers
@@ -336,7 +341,8 @@ class TowerLight:
         cpos = cam.pos
         fwd = cam.R[2]
         fpx = cam.f_px(1920)
-        kb = float(smoothstep(T_LIGHT - 2, T_LIGHT + 16, t))
+        kb = float(smoothstep(T_LIGHT - 2, T_LIGHT + 16, t)) * (0.5 + 0.5 * night(t))
+        kn = night(t)
         # the open facades as vertical line lights: samples up each opened tower's fire-facing face
         src, srcI, srcN, srcT = [], [], [], []
         for i in range(8):
@@ -400,7 +406,7 @@ class TowerLight:
                             (Nc[:, None, :] * Lh).sum(2), -1, 1)
                         emi = np.clip(-(D_[None, :, :] * Lh).sum(2), 0, 1) ** 0.7
                         Eo[c0:c0 + 20000] = (lam * emi * I_[None, :] / (1.0 + (dL / 24.0) ** 2)).sum(1)
-                    colE = colE + np.outer(Eo * go * grain, C_WIN)
+                    colE = colE + np.outer(Eo * (go * kn) * grain, C_WIN)
                 colE = colE * face[:, None]
                 z = np.maximum((P - cpos[None, :]) @ fwd, 0.3)
                 a = G[kind]['a'][sel] / pt['q']
@@ -471,7 +477,7 @@ class Shutters:
                 flare = 1.0 + 0.9 * np.exp(-np.maximum(x, 0.0) / 6.0) * (x > 0)
                 lvk = 0.55 + 0.45 * _hash01(key, 11)
                 wf = 1.0 + 0.1 * np.sin(0.21 * t + 6.2832 * _hash01(key, 7)) * np.sin(0.07 * t + 3.0 * _hash01(key, 5))
-                L = 2.4 * sw * flare * lvk * wf * facing * (1.0 if kind == 0 else 1.25)
+                L = 3.2 * sw * flare * lvk * wf * facing * (1.0 if kind == 0 else 1.25) * (0.7 + 0.3 * night(t))
                 col = look.blackbody(np.clip(0.6 + 0.08 * _hash01(key, 13) + 0.05 * (flare - 1.0), 0, 1))
                 z = np.maximum((P - cpos[None, :]) @ fwd, 0.3)
                 a = G[kind]['a'][idx][sel] / pt['q']
@@ -529,7 +535,7 @@ class Beams:
             drift = np.array([0.0, 0.02 * t, 0.0])
             hz = 0.5 + 0.5 * np.clip(vnoise(P * 0.18 + drift, 1.0, (3.0, 1.0, 7.0), 2)[:, 0] * 1.6, -1, 1)
             e = self.E * hz * np.exp(-0.5 * self.u ** 2) * (1.0 - 0.55 * self.s) * (6.0 if gi else 2.0) \
-                * np.clip(x / 10.0, 0, 1) * on
+                * np.clip(x / 10.0, 0, 1) * on * night(t)
             ctx.fr.splat(P[on], P[on], self.rw[on], e[on], C_WIN * 0.85 + np.array([0.15, 0.13, 0.1]), ctx.cam0,
                          ctx.cam1, profile=1, zref=30.0)
 
