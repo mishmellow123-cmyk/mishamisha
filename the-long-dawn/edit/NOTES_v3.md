@@ -71,23 +71,34 @@
   masters (B re-joined with the VUI fix; A, A ALT and C built cold, ~25 min of slots). The render queue held ~45
   jobs at 19:10Z, so the refresh waits its turn. Re-arm it after each refresh.
 
-## FINISH (lane FINISH, 27 Sep ~20:20Z): the photographic finish goes into the masters (after the director's pick)
+## FINISH (lane FINISH): the film finish is LIVE in the masters (27 Sep ~20:55Z, commit f855ea5)
 
-- **What:** a film finish on every rendered frame of every master (and A's ALT): spektrafilm's Kodak Vision3 negative
-  printed to 2383 (baked LUTs), halation, and grain that renews every frame (no bank, nothing loops). Code and notes:
-  `finish/` (`finish/NOTES.md`); review sheets in `_local_logs/review/finish/`. v3 masters carry no grain today, so
-  nothing in `assemble.py` is removed; the v1/v2 grain bank stays in the old assemblers.
-- **Where (proposed; FINISH writes it once the director picks the look, EDIT-2 please shout if it clashes):**
-  `Ctx.picture()`, right after `take_frame()` (so after crop, per-cut grade, book matte and add layers) and BEFORE
-  A's fade to black, slates, titles and burn-ins; slates and black shots are skipped; each take's finish mode comes
-  from its stem (Hill-curve renders: the full finish; RUN-C's ink (`runC_*`, plain sRGB): grain only). A `finish`
-  flag in `deliver.PROFILES` (masters on, animatics off, so animatic refreshes stay fast); `_code_hash()['frame']`
-  gains the finish code, the look's parameters and the LUT bundle's identity, so the first build after the switch
-  re-encodes every rendered segment once (slates are cheap).
-- **Cost:** ~0.85 CPU-s a frame at 1920x804 (numba; measured on the loaded Mac), rendered frames only.
-- **For EDIT-2 to weigh:** grain raises the masters' bitrate at CRF 14 (x264 `-tune grain` keeps it truer if you
-  want it); the QC's black threshold is unaffected (the finish keeps the renders' own 0.004 film-base black and
-  skips black shots).
+- **The look (director, ~20:35Z): `250D_2383_fire`**: spektrafilm's Kodak Vision3 250D negative printed to 2383
+  (baked LUTs), halation, grain 0.5 that renews every frame (seeded per cut frame; no bank, nothing loops), blend
+  0.75, the fire rule (never yellower than the source). RUN-C's ink (`runC_*`, plain sRGB): grain only. Code and
+  notes: `finish/` (`finish/NOTES.md`); sheets and QC evidence in `_local_logs/review/finish/`. The spektrafilm
+  credit is in `edit/CREDITS.md` (for the end crawl).
+- **Where (applied by `finish/wire_edit.py`, idempotent):** `assemble._init(..., finish)` wraps the worker Ctx's
+  `picture` with `_finishing()`: after the take (crop, per-cut grade, book matte, add layers), before titles and
+  burn-ins; slates, black and EDIT proxies are untouched. No Ctx method changed, so `_code_hash()` and the
+  animatics' segment keys did not move. `deliver.PROFILES['master']['finish'] = True` (animatics: no finish; the H9
+  kit's stills are unfinished too, since `h9_kit.py` builds its own Ctx: `AS._init(cut, v, 1.0, True, True)` or
+  `AS._finishing(ctx)` would give it the finish if you want the critic to see it).
+- **Incremental:** a master segment with rendered frames is keyed with the finish's identity; if it must be encoded
+  anyway (new renders, code changes) it is finished at once; if only the finish is missing (its unfinished twin is
+  cached) it joins a BACKLOG finished `FINISH_BUDGET` frames per film per run (default 1200; `FINISH_ALL=1` clears
+  it). The log line, the build stats and the QC report it (`[WARN] finish: ... still unfinished` while any
+  remains, else `[INFO] finish: ... every rendered frame finished`). Right now (after your 16834cf) every master
+  segment is stale anyway, so the next master build finishes all rendered frames: ~5,700 frames, ~76 CPU-min
+  (about 25 min extra on the 3 pool workers), then each new render is finished as it lands.
+- **Sanity check (director's condition) PASSED:** a finished B master built through this exact chain (wired copies,
+  scratch folder) got EDIT's QC: lengths exact (5,440 f, 10,880,000 samples), format 1920x804 bt709, no black
+  frames, 0 flashes, -1.30 dBTP, -16.1 LUFS; WARN only for the slates. The darkest night skies (A DESERT, A KARST,
+  A embers on black, B's H1 crop) through the CRF 14 master encode show no banding (the grain dithers: the largest
+  flat patch of one code in the DESERT sky 3.8% -> 0.5%, KARST 8.1% -> 1.4%). Bitrate: the finished embers shot was
+  smaller than before (16.2 vs 17.7 Mb/s), so no `-tune grain` needed.
+- **If it ever fails in a worker:** `finish/luts/` must hold the baked cubes (`bash finish/bake_luts.sh`, ~35 s a
+  stock; git-ignored); `_finish_id()` raises in the main process first with that instruction.
 
 ## Delivery chain (edit/deliver.py, edit/deliver.sh)
 
