@@ -1,0 +1,4 @@
+{"name": "zz_cloudtest", "branch": "claude/render-zz-cloudtest",
+ "setup": ["python3 -m pip install -q numpy opencv-python-headless"],
+ "render": ["python3 -c \"import sys; sys.path.insert(0,'lib'); import numpy as np, look; look.save_png('renders/zz_cloudtest/f_00000.png', np.zeros((804,1920,3),np.uint8)); print('ok')\""],
+ "out_dir": "renders/zz_cloudtest", "frames": "0", "push_every": 5, "ship": "jpg"}
