@@ -128,38 +128,24 @@
 # A16 TOWERS IN THE LIGHT, A17 THE FIRE, SEEN (+ A16/A17 in the _alt_codedtowers ALT). EMBERS-2 keeps A7/A8 (edge.py).
 # Owner files: glyphs3.py (A3/A4), aftermath.py (A9/A10), new modules only; a3.py/render.py hooks in small noted
 # commits. SCOPE (director, ~19:45Z): A16/A17 now belong to EMBERS-A3; EMBERS-A2 keeps A3/A4 (+ A9/A10, done). <<<
-## EMBERS-A2 PROGRESS
-* A9/A10 APPROVED (director ~19:45Z) and launched: cloud/jobs/embers_A3_a9a10.json (2640-3119), farm --nodes 1.
-  Code: aftermath.py (6bd5fe2). Check stills: review/embers_A3_check/a2/. The ember rests at px (960, 548); RUN-A-L
-  (A11 X2) and EDIT are told to carry it on from there.
-* For EMBERS-A3 (A16/A17): a3._mine() routes every frame >= T_LIGHT (4400) to turn.py, which is only a STUB that
-  replays the old edge.py path (edge.camera / cam_light, RidgeFires, SmallLights, _shutter, _back_light). Take
-  turn.py over (it is yours now) or point _mine() elsewhere.
-* A3/A4 (glyphs3.py, d4e48f9): the letters load assets/glyphs/atlas_v3.npz (committed; farm.py skips apt-get and
-  its image has no Noto, so no fonts are needed). Staging: 560 white (the false dawn's glow colour) drawn back to
-  the gathering point (px 964, 336); 626-686 the word for light in 11 scripts + A, ∞, ᚠ, a clef appear in it (FIRST:
-  placed by hand, none overlap); 655-850 currents of letters from every side (clumps travel together, bowed paths)
-  into a lumpy cloud; T2 700-840 dims letters in the lower third; 880+ the whole cloud turns about a near-vertical
-  axis seen from a rising low camera (kept momentum, turbulence, no arms/bulge/disc), falling in as a ball; the
-  gathering point rises to A5's ignition px (964, 238) over 930-1000; 1020-1040 the point holds (breath).
-  Farm-verified: point at 1039 = (967, 239) vs A5 1040 disc (964, 238). Job: cloud/jobs/embers_A3_a3a4.json
-  (560-1039, ~2 s/frame/process). Look-dev tests: renders/_farmtest/embers_A3_a3a4/. NEXT: check stills to
-  review/embers_A3_check/a2/glyphs/ -> JOB READY -> director. The local lab (scratchpad ea2/lab.py) is for
-  light 0.3-scale checks only; everything else goes to the farm (queue: farm.py status).
-## STATE AT HANDOFF (EMBERS-A2 takes over, 27 Sep ~18:55Z)
-* Renders: renders/embers_A3 has only A5+A6 (1040-1839, approved); NOTHING exists for my ranges (560-1039,
-  2640-3119, 4400-4879). The EDL (edit/NOTES_v3.md) expects all of them in renders/embers_A3, A cut numbering.
-* Code as found: a3.Promise mode='dead' (grey points, very dim in the 07:54Z sheet e3/v1.jpg), edge.Ash,
-  edge.LivingEmber (a speck), edge.RidgeFires / SmallLights / cam_light / _shutter / _back_light (first pass: A16
-  opened almost black, shutters only on the fire side, backs lit by a uniform outward term). The glyphs exist only
-  as v2 src 300-480 (scene_a: torch embers -> glyph field -> 3-arm galaxy spiral -> point with lens streak): the
-  torch, the galaxy arms and the streak must all go (H5: no screensaver). render.SHOTS_V3['A3'] has no 560-1040.
-* Continuity to honour: A5 f1040 opens on a soft white disc at px (960, ~225) (the point must land there);
-  A17 f4879 -> THE CROSSING f4880 (crossing.py: the lantern heart centred at (960, 402), core r ~10 px, glow ~26 px,
-  ice-white [0.80, 0.92, 1.00]); A10's ember -> A11 X2 (EDIT proxy draws the ember at (0.5 W, 0.60 H));
-  T10a/b centred on black at y 372 / 440 (2880-3060): the ember must stay clear of them.
-* Glyph fonts: the atlas caches renders/embers/cache/glyphs.npz (v1) + renders/embers_v2/cache/glyphs_v2.npz are NOT
-  in git; farm jobs rebuild from fonts: `apt-get install -y fonts-noto-core fonts-noto-cjk` in setup.
+## EMBERS-A2 FINAL STATE (27 Sep ~20:45Z): ALL MY SHOTS DELIVERED; the lane is closed
+* DELIVERED (director-approved, farm-rendered, QC'd: every frame present at 804x1920, no pops, finals match the
+  approved check stills to JPEG noise), in renders/embers_A3, A cut numbering:
+  - A3 INTO THE LIGHT . GLYPHS + A4 THE POINT: 560-1039 (480 f). Code glyphs3.py (d4e48f9), job
+    cloud/jobs/embers_A3_a3a4.json. Check stills + sheet: review/embers_A3_check/a2/glyphs/.
+  - A9 THE DEAD VALLEY + A10 BLACK . THE EMBER: 2640-3119 (480 f). Code aftermath.py (6bd5fe2), job
+    cloud/jobs/embers_A3_a9a10.json. Check stills: review/embers_A3_check/a2/.
+  Re-render either: python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/<job>.json --nodes 1 [--missing]
+* Hand-offs to other lanes:
+  - EMBERS-A3 (A16/A17): a3._mine() sends every frame >= T_LIGHT (4400) to turn.py, a STUB that replays the old
+    edge.py path. It is yours: rewrite it or re-point _mine().
+  - RUN-A-L (A11 X2) + EDIT: the ember rests at px (960, 548) at f3119 (core blackbody ~0.8, warm halo r ~12 px,
+    aftermath.ember_px / ember_life); the director has told both to carry it on from there.
+  - A5 continuity: A4's point sits at px (967, 239) on f1039; A5's ignition disc at (964, 238) on f1040.
+* Things to know: the glyph letters load assets/glyphs/atlas_v3.npz (committed; the approved v2 atlas as float16,
+  less the Om and the Eye of Horus), so farm nodes need no fonts (farm.py skips apt-get and has no Noto). Pushing
+  that binary needed `git -c http.postBuffer=157286400 push ...` (HTTP 400 otherwise). Shared-file edits went in
+  through _local_logs/ea2/pcommit.py (a temp index from HEAD), so no other lane's uncommitted WIP rode along.
 
 # >>> EMBERS-C (cut C's embers shots; EMBERS-2 keeps A). Owner files: c3.py, scene_c.py, tolkien.py (+ new C-only
 # modules). Shared (core.py, towers*.py, render.py, scene_b.py): small, noted commits only. <<<
