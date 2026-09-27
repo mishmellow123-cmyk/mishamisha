@@ -349,7 +349,7 @@ class E15:
         h = self.flame_h(float(f))
         if h > 0.01:
             import c3
-            bright = c3.fire_bright(float(f)) if f >= 1000 else 1.0
+            bright = c3.fire_bright(float(f))
             self.flame.emit(ctx, self.heart, FLAME_CM, bright=bright, height=h / FLAME_CM, calm=1.0,
                             sparks=float(smoothstep(T_FIRE + 20, T_FIRE + 60, f)))
         self.letters_in_flame(ctx)

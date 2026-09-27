@@ -1,0 +1,18 @@
+{
+ "name": "embers_C3_e15",
+ "branch": "claude/render-embers-C3-e15",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow fonttools || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools",
+  "cd shots/embers && python3 e15.py 700 --scale 0.1 --out /tmp/e15_warm"
+ ],
+ "render": [
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py 700-1039:4",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py 701-1039:4",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py 702-1039:4",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py 703-1039:4"
+ ],
+ "out_dir": "renders/embers_C3_e15",
+ "frames": "700-1039",
+ "push_every": 300,
+ "ship": "jpg"
+}

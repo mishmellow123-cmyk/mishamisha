@@ -59,7 +59,17 @@ G = B.GROUND                              # -14: the ground
 HF = 6.5                                  # the fire's height (world units)
 FIRE_ROOT = np.array([0.0, G, 0.0])       # it burns on the ground at the centre of the forges
 RING_W = 1.3                              # the band's width (world units): outer R 2.93, thickness 0.58
-AZ0 = B.TOWER_ANG0 + np.pi / 8            # the camera's azimuth: the gap between forges 0 and 1
+# E15 hands over at 1040 on MAP's camera (book_c.cam_letters at t = 20 s): (-0.3, -11.5, 12.0) cm from the heart
+# (z up), looking at the heart + (0, 0.2, 0), hfov 38, over a flame 3.3 cm x 0.9 (calm). The same flame here is
+# FLAME_S x 0.9 = HF tall, so that view scales by K_E15; the camera's azimuth IS the forging's reference azimuth, and
+# the forges are laid out round it (the gap between forges 0 and 1 is where the camera starts).
+FLAME_H = 0.9                             # cflame height fraction (MAP's calm flame is 0.9 of its full 3.3 cm)
+FLAME_S = HF / FLAME_H
+K_E15 = FLAME_S / 3.3
+AZ0 = math.atan2(11.5, -0.3)              # the camera's azimuth at 1040 (embers x-z plane: MAP (x, y, z) -> (x, z, -y))
+E15_R = K_E15 * math.hypot(0.3, 11.5)     # 1040: horizontal distance ...
+E15_Y = K_E15 * 12.0                      # ... height above the flame's root ...
+E15_TGT = np.array([0.0, 0.0, -0.2 * K_E15])   # ... and the target's offset from the root (MAP's +0.2 cm north)
 STROKES = [float(x) for x in range(T_FORGE, T_WRITE, BEAT)]         # the anvil: 1200 .. 1300, every beat
 RACE_BEATS = [float(x) for x in range(T_SURGE, T_RACE_END, BEAT)]   # 1560 .. 1660
 
@@ -171,9 +181,10 @@ def layout_towers(tw):
     r = rng(9031)
     k, n = tw.k, tw.k_all
     ns = n - k
-    ang_f = B.TOWER_ANG0 + 2 * np.pi * np.arange(k) / k + r.uniform(-0.09, 0.09, k)
+    a0 = AZ0 - np.pi / k                                      # the camera's gap is between forges 0 and 1
+    ang_f = a0 + 2 * np.pi * np.arange(k) / k + r.uniform(-0.09, 0.09, k)
     rad_f = 17.5 + r.uniform(-0.9, 0.9, k)
-    ang_s = B.TOWER_ANG0 + np.pi / k + 2 * np.pi * np.arange(ns) / ns + r.uniform(-0.12, 0.12, ns)
+    ang_s = a0 + np.pi / k + np.pi / ns + 2 * np.pi * np.arange(ns) / ns + r.uniform(-0.12, 0.12, ns)
     rad_s = r.uniform(31.0, 39.0, ns)
     tw.ang = np.concatenate([ang_f, ang_s])
     tw.rad = np.concatenate([rad_f, rad_s])
@@ -553,7 +564,9 @@ class GroundGlow:
 
     def emit(self, ctx):
         t = ctx.t
-        fb = fire_bright(t)
+        fb = fire_bright(t) * float(smoothstep(T_TOWERS, T_TOWERS + 50, t))   # (E15's fire burns in the black)
+        if fb <= 0:
+            return
         fpx = ctx.cam.f_px(1920)
         z = np.maximum((self.p - ctx.cam.pos) @ ctx.cam.R[2], 0.5)
         lit = 1.0 / (1.0 + (self.rr / 2.4) ** 2)
@@ -568,13 +581,14 @@ class GroundGlow:
 # ================================================================ cameras ===
 
 CAM_C6 = [  # (frame, radius, azimuth offset, height above ground, target height above ground, hfov)
-    (1040, 11.0, 0.00, 4.2, 3.4, 44.0),     # the gold fire alone (C5 hands over)
-    (1080, 12.5, 0.02, 5.0, 4.0, 46.0),
-    (1140, 19.0, 0.07, 9.0, 6.5, 54.0),     # the forges of every realm rise round it
-    (1200, 26.0, 0.12, 13.0, 8.0, 56.0),
-    (1250, 20.0, 0.16, 11.0, 10.0, 48.0),   # its light drawn out and beaten into a band
-    (1300, 15.5, 0.19, 10.5, 10.4, 42.0),
-    (1340, 14.0, 0.21, 10.6, 10.5, 38.0),   # the inscription burns up out of the metal
+    (1040, E15_R, 0.00, E15_Y, 0.0, 38.0),  # the gold fire alone: E15's (MAP's) view, 46 degrees above
+    (1070, 26.5, 0.02, 28.5, 0.6, 40.0),
+    (1120, 30.0, 0.06, 36.0, 2.0, 48.0),    # the forges of every realm rise round it, seen from above
+    (1180, 33.0, 0.10, 42.0, 3.0, 54.0),
+    (1215, 30.0, 0.14, 36.0, 6.0, 52.0),    # its light drawn out: the camera swoops down to the band
+    (1260, 22.0, 0.18, 22.0, 9.0, 48.0),
+    (1300, 16.0, 0.21, 12.5, 10.0, 42.0),   # beaten into a band
+    (1340, 14.0, 0.23, 10.8, 10.2, 38.0),   # the inscription burns up out of the metal
     (1390, 17.0, 0.24, 13.0, 17.0, 46.0),   # the Ring rises above the towers
     (1440, 25.0, 0.28, 17.0, 23.5, 56.0),
     (1500, 29.0, 0.32, 18.5, 25.0, 58.0),   # the hush
@@ -597,7 +611,7 @@ def cam_azimuth(t):
 def cam_c(t):
     r, a, y, ty, hf = _cam_keys(t)
     pos = np.array([r * math.cos(AZ0 + a), G + y, r * math.sin(AZ0 + a)])
-    tgt = np.array([0.0, G + ty, 0.0])
+    tgt = np.array([0.0, G + ty, 0.0]) + E15_TGT * (1.0 - float(smootherstep(T_TOWERS, T_TOWERS + 60, t)))
     sh = np.zeros(3)
     for tb in SCHED.pulses:
         x = t - tb
@@ -713,8 +727,9 @@ class TimelineC3(TL.Timeline):
         self.tsmoke.emit(ctx, lp, lc, lpw)
         self.walls.emit(ctx)
         self.sparks.emit(ctx)
-        self.cflame.emit(ctx, FIRE_ROOT, HF, bright=fire_bright(t), calm=1.0 - 0.5 * SCHED.race(t))
-        tip = FIRE_ROOT + np.array([0.0, 0.95 * HF, 0.0]) + self.cflame.lean(t) * HF
+        self.cflame.emit(ctx, FIRE_ROOT, FLAME_S, bright=fire_bright(t), height=FLAME_H,
+                         calm=1.0 - 0.5 * SCHED.race(t))
+        tip = FIRE_ROOT + np.array([0.0, 0.95 * HF, 0.0]) + self.cflame.lean(t) * FLAME_S * FLAME_H ** 2
         self.forge.emit(ctx, tip)
         self.gold_rain.emit(ctx)
 
