@@ -359,6 +359,8 @@ def h_rock(x, z, fp, CR):
             hc = crag(x, z, fp, CR, k, h)
         if hc > -1e4:
             h = smax(h, hc, CR[k, 9])
+    if CR.shape[0] > 0 and CR[0, 12] < -4.5:
+        h = carve(h, x, z, fp, CR)
     return h
 
 
@@ -393,6 +395,8 @@ def cloud_thin(x, z, CR):
     for k in range(CR.shape[0]):
         if CR[k, 12] > -4.5:
             break
+        if CR[k, 12] < -5.5:
+            continue                               # a valley-carve row (-6)
         dx = x - CR[k, 0]
         dz = z - CR[k, 1]
         if dx * dx + dz * dz > CR[k, 13] * CR[k, 13]:
@@ -414,6 +418,51 @@ def h_cloud_cr(x, z, fp, t, CR):
     h = h_cloud(x, z, fp, t)
     if CR.shape[0] > 0 and CR[0, 12] < -4.5:
         h -= cloud_thin(x, z, CR)
+    return h
+
+
+# ADDITIVE (v3, RUN-A2): valley carves. Rows with col 12 == -6 (leading the table, with any -5 rows) cap the rock by
+# a glacial trough along the segment a->b: a floor (heights ya -> yb, gentle fields-and-terraces noise) widening
+# into walls that steepen with distance, closing in rounded heads past the ends. h_rock skips them (col 12 < -2.5).
+# Layout: 0 ax | 1 az | 2 bx | 3 bz | 4 ya | 5 yb | 6 floor half-width | 7 wall slope at the foot | 8 wall
+# curvature (1/m) | 9 smooth k | 10 floor noise (m) | 11 seed | 12 -6 | 13 reach.
+def valley_row(a, b, ya, yb, hw=700.0, slope=0.35, curv=3.0e-4, k=90.0, noise=14.0, seed=5):
+    r = np.zeros(NCR)
+    r[:12] = [a[0], a[2], b[0], b[2], ya, yb, hw, slope, curv, k, noise, seed]
+    r[12] = -6.0
+    rise = 350.0 - min(ya, yb) + 3.0 * noise                      # the wall height that clears any rock
+    u = (-slope + math.sqrt(slope * slope + 4.0 * curv * rise)) / (2.0 * curv)
+    r[13] = hw + u + 2.0 * k
+    return r
+
+
+@njit(inline='always', fastmath=True)
+def carve(h, x, z, fp, CR):
+    for k in range(CR.shape[0]):
+        if CR[k, 12] > -4.5:
+            break
+        if CR[k, 12] > -5.5:
+            continue
+        ax = CR[k, 0]
+        az = CR[k, 1]
+        dx = CR[k, 2] - ax
+        dz = CR[k, 3] - az
+        L2 = dx * dx + dz * dz + 1e-9
+        tc = ((x - ax) * dx + (z - az) * dz) / L2
+        tc = min(max(tc, 0.0), 1.0)
+        ex = x - (ax + tc * dx)
+        ez = z - (az + tc * dz)
+        d = math.sqrt(ex * ex + ez * ez)
+        if d > CR[k, 13]:
+            continue
+        fy = CR[k, 4] + tc * (CR[k, 5] - CR[k, 4])
+        if CR[k, 10] > 0.0 and fp < 80.0:
+            fy += CR[k, 10] * fbm2(x / 420.0, z / 420.0, 3.0, int(CR[k, 11]))
+        u = max(d - CR[k, 6], 0.0)
+        cap = fy + CR[k, 7] * u + CR[k, 8] * u * u
+        kk = CR[k, 9]
+        hh = max(kk - abs(h - cap), 0.0) / kk
+        h = min(h, cap) - hh * hh * kk * 0.25
     return h
 
 

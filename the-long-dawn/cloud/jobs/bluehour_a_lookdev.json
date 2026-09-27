@@ -1,0 +1,12 @@
+{
+ "name": "bluehour_a_lookdev",
+ "branch": "claude/render-bluehour-a-lookdev",
+ "setup": [],
+ "render": [
+  "python3 shots/run/bluehour.py --frames 5840,5960,6080,6200,6400 --scale 0.5 --out lookdev --procs 5"
+ ],
+ "out_dir": "renders/bluehour_A/lookdev",
+ "frames": "5840,5960,6080,6200,6400",
+ "shape": [402, 960],
+ "ship": "jpg"
+}

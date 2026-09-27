@@ -736,6 +736,153 @@ def _traveller_v2(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, clo
     return out
 
 
+SEAT_POSES = ('knees', 'cross', 'back', 'side', 'kneel', 'lie')
+
+
+def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0, wind=None, flutter=0.0,
+           peak=True, reach=None, breath=0.0, pack=True, ground=None, fold_phase=0.0):
+    """A hooded adult sitting on the snow, in cloth (v3): lean proportions (a long back, sloping shoulders, a head a
+    seventh of the height), the cloak draped from the shoulders to the snow behind, the arms and elbows breaking
+    its outline, so a figure seen from behind is a person resting, not a bell or a plush toy.
+    base: the seat point on the snow; w: facing (horizontal); pose in SEAT_POSES:
+      knees  knees drawn up, arms round them, elbows out      cross  cross-legged, hands in the lap
+      back   leaning back on both hands, legs out            side   legs folded to one side, a hand planted
+      kneel  sitting on the heels (reach: a hand toward it)  lie    lying back on the pack, hands behind the head
+    tilt: the head toward its left (+) or right (-) (a head on a shoulder); turn: the head turned (rad, + left);
+    breath: the phase of a slow breath (the shoulders rise); ground(p) -> snow height for planted hands and feet.
+    Returns dict(head, chest, left, right (shoulders), w)."""
+    up = np.array([0.0, 1.0, 0.0])
+    w = _unit([w[0], 0.0, w[2]])
+    s = np.cross(up, w)                               # the figure's RIGHT (this world's convention)
+    B = np.asarray(base, np.float64)
+
+    def gnd(p):
+        if ground is None:
+            return p
+        q = np.array(p, np.float64)
+        q[1] = ground(q) + (q[1] - B[1])
+        return q
+
+    L_ = dict(knees=0.30, cross=0.10, back=-0.38, side=0.05, kneel=0.18, lie=-1.05)
+    ln = L_[pose] if lean is None else lean
+    pel_h = dict(knees=0.13, cross=0.12, back=0.12, side=0.12, kneel=0.30, lie=0.13)[pose]
+    if pack and pose in ('knees', 'cross', 'side'):
+        pel_h += 0.10                                  # sitting on the pack
+    P = B + up * pel_h * h
+    br = 0.006 * h * math.sin(breath)
+    tdir = w * math.sin(ln) + up * math.cos(ln)
+    C = P + tdir * 0.46 * h + up * br
+    N = C + tdir * 0.11 * h
+    sL = -s                                            # the figure's left
+    hd_dir = up * math.cos(tilt) + sL * math.sin(tilt)
+    Hd = N + hd_dir * 0.095 * h + w * 0.03 * h
+    if pose == 'lie':
+        Hd = N + tdir * 0.09 * h + up * 0.03 * h
+    hf = _unit(w * math.cos(turn) + sL * math.sin(turn))           # where the face points
+    wv = np.zeros(3) if wind is None else np.asarray(wind, np.float64)
+    wn = float(np.linalg.norm(wv))
+    wdir = wv / wn if wn > 1e-9 else np.zeros(3)
+    out = dict(head=Hd, chest=C, w=w)
+    sc.begin(rgb=rgb)
+    # ---- legs
+    if pose == 'knees':
+        K = [B + (w * 0.36 + s * sd * 0.11 + up * 0.40) * h for sd in (1.0, -1.0)]
+        A = [B + (w * 0.50 + s * sd * 0.12 + up * 0.06) * h for sd in (1.0, -1.0)]
+    elif pose == 'cross':
+        K = [B + (w * 0.20 + s * sd * 0.30 + up * 0.10) * h for sd in (1.0, -1.0)]
+        A = [B + (w * 0.30 - s * sd * 0.09 + up * 0.05) * h for sd in (1.0, -1.0)]
+    elif pose == 'back':
+        K = [B + (w * 0.42 + s * sd * 0.12 + up * 0.24) * h for sd in (1.0, -1.0)]
+        A = [B + (w * 0.80 + s * sd * 0.14 + up * 0.05) * h for sd in (1.0, -1.0)]
+    elif pose == 'side':
+        K = [B + (w * 0.30 + s * 0.24 + up * 0.13) * h, B + (w * 0.24 + s * 0.10 + up * 0.17) * h]
+        A = [B + (w * 0.02 + s * 0.46 + up * 0.05) * h, B + (-w * 0.02 + s * 0.34 + up * 0.05) * h]
+    elif pose == 'kneel':
+        K = [B + (w * 0.32 + s * sd * 0.12 + up * 0.06) * h for sd in (1.0, -1.0)]
+        A = [B + (-w * 0.06 + s * sd * 0.10 + up * 0.05) * h for sd in (1.0, -1.0)]
+    else:                                              # lie
+        K = [B + (w * 0.36 + s * sd * 0.12 + up * 0.38) * h for sd in (1.0, -1.0)]
+        A = [B + (w * 0.56 + s * sd * 0.13 + up * 0.06) * h for sd in (1.0, -1.0)]
+    A = [gnd(a) for a in A]
+    for sd, k_, a_ in zip((1.0, -1.0), K, A):
+        hip = P + s * sd * 0.085 * h
+        sc.cone(hip, k_, 0.074 * h, 0.058 * h, 0, 0.03 * h)
+        sc.cone(k_, a_, 0.055 * h, 0.044 * h, 0, 0.02 * h)
+        fw = _unit((a_ - k_) * np.array([1.0, 0.0, 1.0]) + w * 0.3)
+        sc.box(a_ + fw * 0.05 * h - up * 0.02 * h, (0.050 * h, 0.045 * h, 0.12 * h), yaw=math.atan2(fw[0], fw[2]),
+               rnd=0.032 * h, mat=0, k=0.02 * h)
+    # ---- the cloak: a short cape over sloping shoulders, then the drape from the shoulders to the snow behind
+    cape_a = N - up * 0.015 * h
+    cape_b = C - up * 0.07 * h
+    ang, _ = _bell_wind_ang(cape_a, cape_b, w, wv)
+    sc.bell(cape_a, cape_b, 0.085 * h, 0.21 * h, w, 0.012 * h, 7, fold_phase * 0.7 + 0.9, 0, 0.05 * h,
+            ell=0.26, wind=0.2 * wn, wind_ang=ang)
+    if pose != 'lie':
+        back = dict(knees=0.10, cross=0.14, back=0.30, side=0.12, kneel=0.16)[pose]
+        hem_c = B - w * back * h + up * 0.03 * h + wdir * 0.5 * wn
+        hem_c = gnd(hem_c)
+        top = C - up * 0.03 * h
+        ang, _ = _bell_wind_ang(top, hem_c, w, wv)
+        rb = dict(knees=0.33, cross=0.36, back=0.30, side=0.34, kneel=0.33)[pose]
+        sc.bell(top, hem_c, 0.19 * h, rb * h, w, 0.030 * h, 11, fold_phase + flutter, 0, 0.06 * h,
+                ell=0.24, wind=wn, wind_ang=ang)
+    else:
+        # lying back: the cloak spread under and around the body, the pack under the shoulders
+        sc.box(P - w * 0.25 * h + up * 0.02 * h, (0.26 * h, 0.035 * h, 0.40 * h), yaw=math.atan2(w[0], w[2]),
+               rnd=0.03 * h, mat=0, k=0.05 * h)
+        sc.cone(C - up * 0.02 * h, P, 0.17 * h, 0.16 * h, 0, 0.06 * h)
+    # ---- the hood: a cowl round the head, a front brim, a drape to the shoulders (no neck shows)
+    sc.cone(Hd - hf * 0.02 * h, Hd + up * 0.012 * h, 0.108 * h, 0.112 * h, 0, 0.06 * h)
+    sc.cone(Hd + hf * 0.072 * h + up * 0.045 * h, Hd + hf * 0.095 * h - up * 0.055 * h, 0.048 * h, 0.040 * h, 0,
+            0.07 * h)
+    sc.cone(Hd - up * 0.05 * h - hf * 0.02 * h, C + up * 0.03 * h - w * 0.03 * h, 0.098 * h, 0.165 * h, 0, 0.07 * h)
+    if peak:
+        sc.cone(Hd - hf * 0.05 * h + up * 0.05 * h, Hd - hf * 0.15 * h - up * 0.01 * h + wdir * 0.2 * wn,
+                0.066 * h, 0.026 * h, 0, 0.05 * h)
+    # ---- arms: loose sleeves, gloved hands
+    S = [C + up * 0.02 * h + s * sd * 0.18 * h for sd in (1.0, -1.0)]
+
+    def arm(sh, hand, elbow_out):
+        el_ = 0.5 * (sh + hand) + elbow_out
+        sc.cone(sh, el_, 0.074 * h, 0.068 * h, 0, 0.04 * h)
+        sc.cone(el_, hand - (hand - el_) * 0.12, 0.068 * h, 0.082 * h, 0, 0.02 * h)
+        sc.cone(hand, hand, 0.043 * h, 0.043 * h, 0, 0.015 * h)
+
+    if pose == 'knees':
+        km = 0.5 * (K[0] + K[1])
+        for sd, sh in zip((1.0, -1.0), S):
+            arm(sh, km + (w * 0.07 - up * 0.07 + s * sd * 0.035) * h, (s * sd * 0.11 - up * 0.03) * h)
+    elif pose == 'cross':
+        for sd, sh in zip((1.0, -1.0), S):
+            arm(sh, P + (w * 0.22 + s * sd * 0.07 + up * 0.10) * h, (s * sd * 0.08 - w * 0.02) * h)
+    elif pose == 'back':
+        for sd, sh in zip((1.0, -1.0), S):
+            arm(sh, gnd(B + (-w * 0.30 + s * sd * 0.22 + up * 0.04) * h), (s * sd * 0.04) * h)
+    elif pose == 'side':
+        arm(S[1], gnd(B + (-s * 0.30 + w * 0.02 + up * 0.04) * h), (-s * 0.05) * h)
+        arm(S[0], K[0] + up * 0.06 * h, (s * 0.06) * h)
+    elif pose == 'kneel':
+        if reach is not None:
+            d = _unit(np.asarray(reach) - S[0])
+            arm(S[0], S[0] + d * 0.60 * h, (s * 0.03 - up * 0.04) * h)
+        else:
+            arm(S[0], K[0] + (up * 0.07 - w * 0.02) * h, (s * 0.06) * h)
+        arm(S[1], K[1] + (up * 0.07 - w * 0.02) * h, (-s * 0.06) * h)
+    else:                                              # lie: hands behind the head, elbows out
+        for sd, sh in zip((1.0, -1.0), S):
+            arm(sh, Hd + (-tdir * 0.05 + s * sd * 0.07) * h, (s * sd * 0.20 + up * 0.04) * h)
+    sc.end()
+    if pack and pose in ('back', 'kneel'):
+        # the pack set down beside them
+        sc.begin(rgb=tuple(0.8 * c for c in rgb))
+        pk = gnd(B + (-w * 0.05 + s * 0.42 + up * 0.12) * h)
+        sc.box(pk, (0.15 * h, 0.12 * h, 0.11 * h), yaw=math.atan2(w[0], w[2]) + 0.5, rnd=0.05 * h, mat=0, k=0.0)
+        sc.end()
+    out['right'] = S[0]
+    out['left'] = S[1]
+    return out
+
+
 def small_lantern(sc, top, rgb_glow, gain, w=(0.0, 0.0, 1.0)):
     """A small hand lantern hanging from `top` (the hand): a glass body with an iron cap and base."""
     up = np.array([0.0, 1.0, 0.0])
