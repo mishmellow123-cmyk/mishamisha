@@ -3,17 +3,19 @@
 Each shot is a class with render(f, scale) -> display sRGB (look.finish). Frames are seconds x 24 in the shot's own
 cut, so they drop straight onto that cut's timeline (renders/heroine_B/, renders/heroine_C/):
 
-  DeadEmber  B 40.0-50.0 (960-1199)    H5. Over her left shoulder from behind and above: she kneels at the summit
-             cairn, lifts the clay fire-pot's lid, one red eye of ember on the ash; she blows; it greys under her
-             breath; the breath hangs. Her face is turned down, away from the lens: the head is a silhouette.
-  Find       C 148.2-153.5 (3557-3683) H2. Low on the snow by her knee: the second strike's flash finds a gold band in a
-             melted hollow; in the dark again its letters are faintly awake; her gloved hand closes on it.
-  FireTest   C 168.3-174.3 (4040-4183) H2, Bag End (REVISION 1). In her roaring beacon the Ring lies on the tip of her
-             steel, unmarked, letters awake, not even warm; her gloved hand holds it there and cannot let it fall.
+  DeadEmber  B 880-1119 (locked sheet, bars 12-14) H5. She kneels at the summit cairn, lifts the clay fire-pot's lid
+             (the knock on 920), one red eye of ember on the ash; she blows (980); it greys; the last red point on
+             1100 sits where H1's first spark is born (the match cut). Her head is a silhouette.
+             -> renders/deadember_B (B frames).
+  Find       C 3009-3059 H2 (fallback to the Blender find). Low on the snow by her knee: the second strike's flash
+             finds a gold band in a melted hollow; in the dark again its letters are faintly awake.
+  FireTest   C 3392-3599 H2, Bag End (fallback to the Blender fire test). In her roaring beacon the Ring lies on the
+             up-turned tip of her C-shaped fire-steel, unmarked, letters awake, not even warm; it tips and does not fall.
 
-The Ring is ring.py's band and inscription (BIBLE_V3 H2; REVISION 1 gives the Ring close-ups to a Blender bake-off,
-this band being its fallback). The hands are heroine.py's anatomical hands in leather gloves (hsdf3.gloves), the
-coat, sleeves and scarf are the accepted v2b figure's. Rendered by hsdf3 (the v3 fork of the heroine tracer).
+Every Ring carries THE SCRIPT OF FIRE, the canonical inscription (assets/ring, MONTAGE-3D-2; outer and inner faces as
+inscription.json maps them) at the canonical band proportions; ring.py's band and strip only if those assets are
+missing. The hands are heroine.py's anatomical hands in thin leather gloves (hsdf3.gloves); the hood and woven shawl
+are hsdf3.wardrobe_v3's. Rendered by hsdf3 (the v3 fork of the heroine tracer).
 
     python3 shots/hills/heroine_v3.py still deadember 1090 out.png [--scale 0.5]
 """
@@ -107,9 +109,16 @@ _RP = None
 
 
 def ring_dims():
-    """ring.py's section (R_OUT 0.186, R_IN 0.138, BAND 0.084, ROUND 0.013) scaled to a finger."""
+    """The canonical Ring's proportions (assets/ring/inscription.json: inner circumference / band width 11.358, outer
+    14.137, so the script of fire keeps its letter shapes) at a slim finger; ring.py's section (R_OUT 0.186, R_IN 0.138,
+    BAND 0.084) if the canonical assets are missing. The edge round is ring.py's."""
     RG = ring_py()
     s = RING_INNER / RG.R_IN
+    can = H3.inscription_canon()
+    if can is not None:
+        w = RING_INNER * 2 * math.pi / can[1]['aspect_i']
+        r_out = w * can[1]['aspect_o'] / (2 * math.pi)
+        return 0.5 * (r_out + RING_INNER), 0.5 * (r_out - RING_INNER), 0.5 * w, RG.ROUND * s
     R = 0.5 * (RG.R_OUT + RG.R_IN) * s
     tb = 0.5 * (RG.R_OUT - RG.R_IN) * s
     hb = 0.5 * RG.BAND * s
@@ -125,6 +134,8 @@ def add_ring(B, centre, rows):
 
 def ring_xp(XP, centre, rows, glow, engrave=1.0):
     R, tb, hb, rnd = ring_dims()
+    if H3.inscription_canon() is not None:           # the script of fire (MONTAGE-3D-2): one inscription on both rings
+        return H3.ring_xp_canon(XP, centre, rows, R, tb, hb, glow, engrave)
     return H3.ring_xp_accord(XP, centre, rows, R, tb, hb, glow, engrave)
 
 
@@ -253,6 +264,8 @@ def figure(pose, t, scarf_dir=(0.7, -0.7), hair_dir=(0.5, -0.8), gloved=True, sc
     B, F, Hp, anc = hero.build_figure(pose, t, scarf_pts=scarf, hair_pts=hair, detail=detail)
     if gloved:
         H3.gloves(B, Hp)
+    # H5 calls: a hood / wool cowl (no beanie, no streaming hair) and the red scarf as a woven wool shawl
+    H3.wardrobe_v3(B, F, anc['J'], anc['scarf_anchor'], scarf_pts=scarf, t=t)
     return B, F, Hp, anc, hair
 
 
@@ -545,14 +558,15 @@ class FireTest:
     HFOV = 40.0
     TIP = 3480
     OUT = 3560
+    C_HB = 0.046                    # half length of the steel's back: both corners clear her fist
 
     def ref_ring(self):
         """Where the Ring rests during the hold (3440): the locked camera frames it."""
         if not hasattr(self, '_ref'):
             p, dip, back = self.pose(3440)
             an = hero.build_figure(p, 3440 / FPS)[3]
-            tip, d, n = self.steel(hero.Builder(), an, dip)
-            self._ref = self.ring_on_tip(tip, d, n)[0]
+            p_, d, s_ = self.steel(hero.Builder(), an, dip)
+            self._ref = self.ring_on_tip(p_, d, s_)[0]
         return self._ref
 
     def tipping(self, f):
@@ -564,7 +578,7 @@ class FireTest:
         dip = 0.010 * self.tipping(f)
         enter = 1 - smoothstep(self.F0, self.F0 + 12, f)
         back = smoothstep(self.OUT - 4, self.OUT + 30, f)
-        wrist = np.array([0.370 + 0.10 * enter + 0.16 * back, 1.245 - dip + tremble + 0.02 * back, 0.010])
+        wrist = np.array([0.315 + 0.14 * enter + 0.20 * back, 1.225 - dip + tremble + 0.02 * back, 0.010])
         p = dict(
             pelvis=(0.80, 0.63, 0.0), yaw=0.0, lean=10.0, chest=4.0, twist=6.0, neck=16.0, head=20.0, head_yaw=0.0,
             head_roll=0.0, shrug=0.4,
@@ -581,76 +595,92 @@ class FireTest:
         return p, dip, back
 
     def steel(self, B, anc, dip, roll=0.0):
-        """Her steel held like a key: pinched between thumb and curled index, its bar pointing into the fire, rolled by
-        `roll` (deg) when it tips. Returns the tip, the bar's direction and its top face normal."""
+        """Her C-shaped fire-steel, the one she strikes with (H5 calls: never a flat bar): flat stock (7 x 2.4 mm)
+        forged into a C standing in the plane of her reach, broad face to the lens. Its straight back lies in her fist;
+        its upper end rounds forward into the long arm that ends in a small up-turned hook (the tip); its lower end
+        rounds forward into a short arm rolled up in a scroll. Returns the point on the long arm's top edge at its end
+        (where the Ring lies, round the hook), the reach direction d and the C's in-plane up s."""
         hf = anc['hand_f']
         a = hf['a']
-        up = np.array([0.0, 1.0, 0.0])
-        d = nrm(a + up * (0.10 - 1.5 * dip))
-        p0 = hf['thumb'] + a * 0.004 - hf['n'] * 0.004
-        p1 = p0 + d * 0.085
-        side = nrm(np.cross(d, up))
-        n = nrm(np.cross(side, d))
+        upw = np.array([0.0, 1.0, 0.0])
+        d = nrm(a + upw * (0.06 - 1.5 * dip))
+        s = nrm(hf['sd'] - np.dot(hf['sd'], d) * d)
+        if s[1] < 0:
+            s = -s
         if roll:
-            n = hero.rot_about(n, d, roll)
-            side = nrm(np.cross(d, n))
-        R = np.stack([d, n, side])
+            s = nrm(hero.rot_about(s, d, roll))
+        n = np.cross(d, s)
+        g = hf['palm'] + a * 0.018 + hf['n'] * 0.022          # the back, inside the fist
+        R = np.stack([d, n, s])        # local x = forward, y = the C's normal (the torus axis), z = in-plane up
         B.group('steel', H3.M_IRON, band=0.001)
-        B.box(0.5 * (p0 + p1), np.array([0.0425, 0.0035, 0.0075]), R=R, rnd=0.0012)
-        return p1, d, n
+        tp = 0.0012                    # half thickness, toward the lens
+        wb, wa = 0.0036, 0.0029        # half widths in the C's plane: the back, the arms
+        Hb, r = self.C_HB, 0.014       # half length of the back; the corners' radius
+        L, rh = 0.040, 0.0048          # the long arm; the hook
+        Ll, rs = 0.014, 0.0065         # the short arm; the scroll
+        B.box(g, np.array([wb, tp, Hb]), R=R, rnd=0.0009)
+        cu, cl = g + s * Hb + d * r, g - s * Hb + d * r
+        B.torus(cu, R, r, wb * 0.95, tp, arc=(3 * math.pi / 4, math.pi / 4 + 0.03))
+        B.torus(cl, R, r, wb * 0.95, tp, arc=(-3 * math.pi / 4, math.pi / 4 + 0.03))
+        a_top = cu + s * r                                   # the long arm's root
+        B.box(a_top + d * (0.5 * L), np.array([0.5 * L, tp, wa]), R=R, rnd=0.0009)
+        B.torus(a_top + d * L + s * rh, R, rh, wa, tp, arc=(-0.61, 0.96))      # the tip: an up-turned hook
+        l_bot = cl - s * r
+        B.box(l_bot + d * (0.5 * Ll), np.array([0.5 * Ll, tp, wa]), R=R, rnd=0.0009)
+        B.torus(l_bot + d * Ll + s * rs, R, rs, wa * 0.9, tp, arc=(0.62, 2.19))  # the scroll
+        return a_top + d * L + s * wa, d, s
 
-    def ring_on_tip(self, tip, d, n, slide=0.0):
-        """Bag End: the Ring lies flat on the end of the flat steel, balanced; `slide` (m) moves it toward the edge."""
+    def ring_on_tip(self, p, d, s, slide=0.0):
+        """Bag End: the Ring lies flat on the long arm's top edge with the up-turned hook rising through its hole,
+        balanced there; `slide` (m) edges it sideways, down the steel's roll, toward falling (the hook holds it)."""
         R, tb, hb, rnd = ring_dims()
-        centre = tip - d * (0.009 - slide) + n * (0.0035 + hb)
-        rows = H3.ring_frame(n, ref=d)
-        return centre, rows
+        n = np.cross(d, s)
+        sg = 1.0 if np.dot(np.array([0.0, -1.0, 0.0]), n) >= 0 else -1.0
+        axis = nrm(s + n * sg * math.tan(math.radians(24.0 * slide / 0.0055)))
+        centre = p - d * 0.0003 + axis * hb + n * sg * slide
+        return centre, H3.ring_frame(axis, ref=d)
 
     def camera(self, f, scale, ring_c):
         t = f / FPS
-        pos = ring_c + np.array([0.070, 0.105, -0.33]) + np.array([0.002 * fnoise1(t * 0.7, 2.0), 0.002 * fnoise1(t * 0.6, 4.0), 0])
-        tgt = ring_c + np.array([0.060, -0.004, 0.0])
+        pos = ring_c + np.array([0.040, 0.030, -0.46]) + np.array([0.002 * fnoise1(t * 0.7, 2.0), 0.002 * fnoise1(t * 0.6, 4.0), 0])
+        tgt = ring_c + np.array([0.042, -0.050, 0.015])        # the whole C and her fist; the Ring upper left
         cam = Camera(pos, hfov=self.HFOV, scale=scale)
         yaw, pitch = cam.look_at(tgt)
         return Camera(pos, yaw=yaw, pitch=pitch, hfov=self.HFOV, scale=scale), float(np.linalg.norm(ring_c - pos))
 
-    def wood(self, B):
-        """Burning split logs in the basket near its rim, and the nearest iron bars."""
+    def wood(self, B, half='all'):
+        """Burning split logs in the basket near its rim, and the aged basket (`half` of it: the far half renders
+        behind the flames, the near half with her)."""
         B.group('coals', H3.M_COAL, disp=1, amp=0.003, scale=40.0, band=0.01)
         rng = np.random.default_rng(3)
         for k in range(9):
             a = -0.9 + 0.25 * k + rng.normal(0, 0.08)
             r = 0.10 + 0.10 * rng.random()
-            c = np.array([r * math.cos(a) * 0.9 - 0.04, BK_BOT + 0.04 + 0.06 * rng.random(), r * math.sin(a) + 0.08])
+            c = np.array([r * math.cos(a) * 0.9 - 0.04, BK_BOT - 0.01 + 0.04 * rng.random(), r * math.sin(a) + 0.10])
             d = nrm([rng.normal(0, 0.5), 0.9, rng.normal(0, 0.5)])
             B.cone(c - d * 0.14, c + d * 0.14, 0.030, 0.024, k=0.01)
-        B.group('bars', H3.M_IRON, band=0.004)
-        for k in range(7):
-            a = math.radians(-120 + 25 * k)
-            b0 = np.array([0.17 * math.cos(a), BK_BOT, 0.17 * math.sin(a)])
-            b1 = np.array([BK_RT * math.cos(a), BK_TOP, BK_RT * math.sin(a)])
-            B.cone(b0, b1, 0.007, 0.007)
-        B.torus(np.array([0.0, BK_TOP, 0.0]), np.eye(3), BK_RT, 0.008, 0.008)
+        H3.basket_v3(B, BK_BOT, BK_TOP, 0.17, BK_RT, half=half)      # the same aged basket as the flint take
 
     def render(self, f, scale=0.5):
         t = f / FPS
         p, dip, back = self.pose(f)
-        B, F, Hp, anc, hair = figure(p, t, hair_dir=(0.8, -0.3))
+        B, F, Hp, anc, hair = figure(p, t, hair_dir=(0.8, -0.3), scarf=False)
         tp = self.tipping(f)
-        tip, d, n = self.steel(B, anc, dip, roll=9.0 * tp)
+        tip, d, s_ = self.steel(B, anc, dip, roll=9.0 * tp)
         ref = self.ref_ring()
-        ring_c, rows = self.ring_on_tip(tip, d, n, slide=0.0055 * smoothstep(self.TIP - 2, self.TIP + 8, f)
+        ring_c, rows = self.ring_on_tip(tip, d, s_, slide=0.0055 * smoothstep(self.TIP - 2, self.TIP + 8, f)
                                         * (1 - 0.35 * smoothstep(self.TIP + 14, self.TIP + 30, f)))
         cam, focus = self.camera(f, scale, ref)            # a locked frame: the steel moves through it
         cam, focus, nodof = debug_cam(cam, focus, scale)
         add_ring(B, ring_c, rows)
-        self.wood(B)
+        H3.basket_v3(B, BK_BOT, BK_TOP, 0.17, BK_RT, half='front')
         fl = fire.flicker(t, 3.3, 1.3)
         XP = np.zeros(64)
-        ring_xp(XP, ring_c, rows, glow=2.6 + 0.3 * math.sin(t * 5.1))
+        ring_xp(XP, ring_c, rows, glow=1.5 + 0.2 * math.sin(t * 5.1))      # letters awake; the gold not even warm
         XP[25], XP[26] = 1.0, 1.0
         XP[28], XP[29], XP[30] = 0.9 * fl, 60.0, 0.85
-        ENV = env_stack(fire_env(1.0 * fl))
+        XP[33] = BK_BOT + 0.12                                   # the basket's soot line
+        ENV = env_stack(fire_env(0.45 * fl))                   # gold, not white-hot: the Ring is not even warm
         I = 2.2 * fl
         L = [light(FIRE_BASE + [0.0, 0.40, 0.0], (1.0, 0.45, 0.12), 0.75 * I, 0.28, 3.0),
              light(FIRE_BASE + [0.10, 0.12, -0.04], (1.0, 0.38, 0.08), 0.20 * I, 0.10, 3.0),
@@ -660,28 +690,48 @@ class FireTest:
                            bounce=np.array([0.05, 0.02, 0.006]) * fl, ao=0.02)
         img = np.zeros((cam.H, cam.W, 3), np.float32)
         img[:] = np.array([0.002, 0.003, 0.007], np.float32)
-        # the fire behind: the beacon's flame and tongues licking up round the Ring
+        ss = 3 if scale > 0.75 else 2
+        # the basket's far half and the burning logs, behind the flames
+        Bb = hero.Builder()
+        self.wood(Bb, half='back')
+        XPb = XP.copy()
+        XPb[1] = 0.0
+        comp(img, H3.render(cam, Bb, Hp, L, env, XPb, ENV, None, ss=ss))
+        # the fire: the beacon's flame, and tongues licking up behind the Ring (none behind her fist: no glow fringe)
         fimg = np.zeros_like(img)
         fa = np.zeros(img.shape[:2], np.float32)
         fire.draw_flame(fimg, fa, cam, FIRE_BASE, 1.9, 0.31, 0.55, t, 2.9, 10.0 * fl, fire.BONFIRE_STYLE)
-        for k, (dx, dz, h, w) in enumerate(((0.14, 0.08, 0.50, 0.07), (0.05, 0.12, 0.62, 0.09), (0.20, 0.05, 0.44, 0.05),
-                                           (-0.02, 0.16, 0.7, 0.10), (0.10, 0.20, 0.55, 0.08))):
+        fire.draw_flame(fimg, fa, cam, np.array([0.15, BK_BOT + 0.06, 0.14]), 1.1, 0.16, 0.55, t, 5.3, 6.0 * fl,
+                        fire.BONFIRE_STYLE)                    # the flames the Ring lies in
+        for k, (dx, dz, h, w) in enumerate(((0.14, 0.08, 0.50, 0.07), (0.05, 0.12, 0.62, 0.09), (0.17, 0.04, 0.46, 0.045),
+                                           (-0.02, 0.16, 0.7, 0.10), (0.10, 0.20, 0.55, 0.08), (0.19, 0.12, 0.40, 0.04))):
             fire.draw_flame(fimg, fa, cam, np.array([dx, BK_BOT + 0.10, dz]), h, w, 0.5, t, 7.0 + k, 7.0 * fl,
                             fire.TORCH_STYLE)
         img += fimg
-        res = H3.render(cam, B, Hp, L, env, XP, ENV, inscription_ins(), ss=(3 if scale > 0.75 else 2),
+        fire.add_glow(img, cam, FIRE_BASE + [0, 0.5, 0], 0.5, 0.06 * fl)
+        Mft = H3.material_table3()
+        Mft[H3.M_GLOVE, 8] = 0.15                               # H5: no warm fringe round the glove's silhouette
+        res = H3.render(cam, B, Hp, L, env, XP, ENV, inscription_ins(), Mft, ss=ss,
                         sil=dict(skin=1.0, eyes=1.0, cap=0.85, cap_brim=0.85, hair=0.85))
         depth = comp(img, res)
+        # her figure's mask (hand, sleeve, coat): the flames in front of the Ring never paint over it
+        fig = np.zeros(img.shape[:2], np.float32)
+        if res is not None:
+            y0, x0, _, a_, _, grp = res
+            keep = [gi for gi, g in enumerate(B.groups) if g['name'] not in ('ring', 'steel', 'basket_front')]
+            fig[y0:y0 + a_.shape[0], x0:x0 + a_.shape[1]] = a_ * np.isin(grp, keep)
+            fig = cv2.GaussianBlur(fig, (0, 0), 1.5 * cam.W / 1920.0 + 0.5)
         # tongues of flame in front of and beside the Ring: it lies IN the fire
         fimg = np.zeros_like(img)
-        for k, (dx, dz, h, w) in enumerate(((0.10, -0.10, 0.44, 0.05), (0.22, -0.02, 0.36, 0.04))):
+        for k, (dx, dz, h, w) in enumerate(((0.10, -0.10, 0.44, 0.05), (0.16, -0.09, 0.34, 0.035))):
             fire.draw_flame(fimg, fa, cam, np.array([dx, BK_BOT + 0.16, dz]), h, w, 0.5, t, 17.0 + k, 3.0 * fl,
                             fire.TORCH_STYLE)
-        img += fimg * 0.6
-        fire.add_glow(img, cam, FIRE_BASE + [0, 0.5, 0], 0.5, 0.06 * fl)
+        img += fimg * 0.6 * (1 - fig[..., None])
         if not nodof:
             img = dof(img, depth, focus, K=cam.f * 0.0022)
-        return finish(img, exposure=float(os.environ.get('V3_EXPO', 0.55)), bloom=0.14)
+        # H5: no glow fringe round the hand: the fire's bloom is held off her glove and sleeve
+        img = img + (look.bloom(img, 0.04, 0.9) - img) * (1 - 0.9 * fig[..., None])
+        return finish(img, exposure=float(os.environ.get('V3_EXPO', 0.55)), bloom=0.0)
 
 
 class Find:
@@ -1038,7 +1088,8 @@ def glove_hand_layer(cam, wrist, fdir, palm, curls=(0.9, 0.9, 0.9, 0.9), thumb=0
 
 
 def inscription_ins():
-    return H3.inscription_accord()[0]
+    can = H3.inscription_canon()
+    return can[0] if can is not None else H3.inscription_accord()[0]
 
 
 class DeadEmberPOV(DeadEmber):

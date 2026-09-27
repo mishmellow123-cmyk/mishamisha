@@ -1,3 +1,41 @@
+# >>> HEROINE-v3 REPORT 3 / STATE (2026-09-27 ~10:50Z; the DIRECTOR'S H5 CALLS; paused for usage pacing, RESUME ~15:00Z) <<<
+
+**State.** H1 with every H5 call is rendering on this box (`cloud/jobs/h1_v3_h5.json`, `render.py --shot beacon_v3`, src
+1200-1555 master numbering, strike 1 = 1236, roar = 1476) -> `renders/h1_v3h5`, JPEGs to branch **`claude/render-h1-v3-h5`**
+(144/356 at 10:37Z, ~8.5 s/frame). It supersedes `claude/render-h1-v3-master` (pre-H5) and the 00:42Z re-key. The
+close-ups below are code + stills only; no close-up job is launched. B renders use LOCKED numbering and the B folders
+(`deadember_B`, `climb_B`, `heroine_B`).
+
+**H5 calls in my area (BIBLE_V3 top block), done / not done:**
+* [x] Humans silhouette or gloved hands only; H1 v2b un-accepted: `--shot beacon_v3` = the v3 silhouette re-key + the
+  master timing + `beacon.apply_h5_calls()`; the close-ups keep every head out of frame or a dark silhouette.
+* [x] Thin leather gloves (no felt mitts): `hsdf3.gloves` (0.35 mm over the anatomical hand, M_GLOVE dark leather).
+* [x] Flint sparks short, orange, falling and curving (gamma speeds, 0.10-0.32 s lives, gravity + drag + curl).
+* [x] The f1366 flinch re-posed (`FLINCH_V3`): head turned away, forearm across the face, weight back.
+* [x] A hood / wool cowl, no knit beanie; the red scarf as a woven wool shawl; no hair wires (`hsdf3.wardrobe_v3`).
+* [x] B: H1's crushed frames lifted (`V3_FLOOR`, `V3_CLOSE_SKY`, pre-roar exposure lift, black lift 0.011): half-res
+  checks at mean ~32/255; to be confirmed on the finished render's contact sheet (every frame mean > 20/255).
+* [x] B: the fire-basket aged (`hsdf3.basket_v3`: rust, soot line, uneven bars, bent finials), 3-D, in H1 and the fire test.
+* [ ] B: the dead ember at ~45 deg, a lidded vessel held by her hand, no blue wedge, a visible breath: NOT DONE (next).
+* [ ] B: the hands for the bar-63 hand-off (her fire-steel pressed into the child's palm): NOT DONE (next).
+* [x] C fire test: the Ring on the up-turned tip of her **C-shaped fire-steel** (flat stock forged into a C: the back in
+  her fist, the upper end rounding into the long arm and hook, the lower into a scroll; broad face to the lens), in the
+  flames; **no glow fringe round the hand** (bloom held off her glove and sleeve, the glove's rim gain down, the front
+  tongues masked by her figure, the basket's far half composited behind the flames). The whole C reads in frame; the
+  gold is gold, not white-hot. Tested 3440 (full res) and 3486 (the tip: the Ring edges over and holds).
+* [~] C find: the clean pit (fallback, `Find.HAND = False`) kept; no rust-yellow stain in 3012 or 3050. NOT DONE: the
+  meltwater / ice sheen on the disc (it still reads as a dark hole) and a side-entry glove test (else no glove at all).
+* [x] C inscription: **THE SCRIPT OF FIRE** (MONTAGE-3D-2, `assets/ring`) on every Ring here: outer and inner strips
+  mapped as `inscription.json` says (u CCW from the +axis end outside, 1 - that inside, row 0 = the +axis edge), the band
+  at the canonical proportions (inner circumference / width 11.358, outer 14.137, inner radius 8.8 mm); the letters
+  glow deep orange-red, never white (`hsdf3.inscription_canon`, `ring_xp_canon`; ring.py's strip only if missing).
+
+**Next steps (RESUME ~15:00Z), in order:** (1) when the H1 job completes: decode check, per-frame luminance, contact
+sheet `review/v3/heroine_v3_h1_h5_contact.jpg`, the flinch frames; (2) Find: the ice sheen + one side-entry glove test;
+(3) DeadEmber restage (45 deg, held vessel, breath, no blue wedge) in B 880-1119 -> `renders/deadember_B`
+(`cloud/jobs/h5_deadember_b.json` now points there; HOLD it until the restage is verified); (4) the bar-63 hand-off hands
+as a layer for RUN-B -> `renders/heroine_B`; (5) review sheet, jobs, push, verify_session, the 5-line summary.
+
 # >>> HEROINE-v3 REPORT 2 (2026-09-27 ~05:30Z; after the LOCKED beat sheets, director commit 99e9bfb) <<<
 
 The locked sheets moved every heroine shot; all are re-keyed to them. REPORT 1 (01:15Z) follows below for history.

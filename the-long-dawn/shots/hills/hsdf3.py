@@ -19,6 +19,7 @@ the ring's axis); 14 R, 15 TB, 16 HB, 17 letters' glow, 18 engraving depth; 19 e
 40-51 the inscription strip layout (see ring_xp), 52 inscription levels.
 """
 import math
+import os
 
 import numba as nb
 import numpy as np
@@ -53,7 +54,7 @@ def material_table3():
     M[M_IRON, :15] = [0.032, 0.029, 0.027, 0.42, 0.120, 0.0, 0.0, 0.0, 0.5, 0.6, 0.6, 1, 420.0, 0.35, 0.12]
     M[M_ASH, :15] = [0.21, 0.20, 0.19, 0.98, 0.020, 0.40, 0.25, 0.0, 0.5, 1.0, 0.0, 1, 300.0, 0.25, 0.20]
     # thin leather gloves (H5 calls): smooth, a soft sheen, fine grain; no felt
-    M[M_GLOVE, :15] = [0.078, 0.044, 0.029, 0.40, 0.045, 0.08, 0.12, 0.0, 0.7, 1.0, 0.0, 1, 900.0, 0.05, 0.03]
+    M[M_GLOVE, :15] = [0.078, 0.044, 0.029, 0.44, 0.045, 0.06, 0.10, 0.0, 0.6, 1.0, 0.0, 1, 700.0, 0.08, 0.09]
     # the hood / wool cowl: undyed dark wool, woven (tex 3)
     M[M_HOOD, :15] = [0.046, 0.041, 0.037, 0.95, 0.020, 0.10, 1.0, 0.0, 1.2, 1.0, 0.0, 3, 520.0, 0.22, 0.10]
     # the fire-basket's iron: rust and soot (tex 4), bars that have seen years of fire
@@ -242,6 +243,34 @@ def ins_sample(INS, XP, x, y, z, fp):
     """Coverage 0..1 of the inscription at a ring-local point (axis = local y). fp = pixel footprint (m).
     Line 1 on the outer face, read from outside; line 2 on the inner face, mirrored (tolkien.py's layout)."""
     R = XP[14]
+    if XP[53] > 1.5:
+        # THE SCRIPT OF FIRE (assets/ring, MONTAGE-3D-2's canonical strips): the outer strip in rows [0, XP[40]), u CCW
+        # seen from the +axis end; the inner strip below it from row XP[46], u = 1 - that; row 0 = the +axis edge
+        tb = XP[15]
+        rr = math.sqrt(x * x + z * z)
+        qq = rr - R
+        fade = min(1.0, max(0.0, (abs(qq) / tb - 0.35) / 0.40))
+        if fade <= 0.0:
+            return 0.0
+        th = math.atan2(-z, x) / 6.2831853
+        th = th - math.floor(th)
+        v = 0.5 - y / (2.0 * XP[16])
+        if v < 0.0 or v > 1.0:
+            return 0.0
+        if qq >= 0.0:
+            u, W, Hs, row0, tpm = th, XP[41], XP[40], 0.0, XP[48]
+        else:
+            u, W, Hs, row0, tpm = 1.0 - th, XP[45], XP[44], XP[46], XP[47]
+        lf = math.log(max(1.0, tpm * fp * 1.3)) / 0.6931472
+        nlev = int(XP[52])
+        l0 = min(int(lf), nlev - 1)
+        l1 = min(l0 + 1, nlev - 1)
+        fr = min(max(lf - l0, 0.0), 1.0)
+        s0 = 2.0 ** l0
+        s1 = 2.0 ** l1
+        c0 = _bilin(INS, l0, u * W / s0, (row0 + v * Hs) / s0)
+        c1 = _bilin(INS, l1, u * W / s1, (row0 + v * Hs) / s1)
+        return (c0 * (1 - fr) + c1 * fr) * fade
     if XP[53] > 0.5:
         # ring.py's layout: one strip once round the band (u), across its width (v); the inner face mirrored
         tb = XP[15]
@@ -457,8 +486,8 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
             refl *= 1.0 - 0.45 * k
             gl = XP[17] * ins * (1.0 + 0.10 * math.sin(XP[0] * 7.3 + x * 900.0))
             emr += gl * 1.00
-            emg += gl * 0.36
-            emb += gl * 0.07
+            emg += gl * 0.27
+            emb += gl * 0.04
     # ---- burning lumps: cracks and hot patches under an ash skin
     if M[m, 16] > 0.5:
         if m == M_COAL:
@@ -1025,7 +1054,14 @@ def inscription_accord(levels=6):
     import cv2
     here = os.path.dirname(os.path.abspath(__file__))
     cache = os.path.join(here, 'cache', 'ring_inscription_accord_v3.npz')
-    if os.path.exists(cache):
+    # H5 calls: one inscription on both rings, and MONTAGE-3D-2 (the Blender Ring) owns the canonical script. Drop its
+    # strip at this path (white script on black; width = once round the band's outer face, height = the band's width)
+    # or point RING_INSCRIPTION at it, and every Ring here reads it; until then, ring.py's strip.
+    canon = os.environ.get('RING_INSCRIPTION') or os.path.join(here, '..', '..', 'assets', 'textures', 'ring_inscription.png')
+    if os.path.exists(canon):
+        im = cv2.imread(canon, cv2.IMREAD_GRAYSCALE)
+        cov = (im.astype(np.float32) / 255.0)
+    elif os.path.exists(cache):
         cov = np.load(cache)['cov']
     else:
         spec = importlib.util.spec_from_file_location('ring_accord_ins', os.path.join(here, '..', 'accord', 'ring.py'))
@@ -1058,6 +1094,68 @@ def ring_xp_accord(XP, centre, rows, R, tb, hb, glow=0.0, engrave=1.0):
     XP[48] = ww / (2 * math.pi * (R + tb))          # texels per metre round the outer face
     XP[52] = stack.shape[0]
     XP[53] = 1.0
+    return XP
+
+
+_INSC = {}
+CANON_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'assets', 'ring')
+
+
+def inscription_canon(levels=6, rows=160):
+    """THE SCRIPT OF FIRE, the canonical inscription (MONTAGE-3D-2, assets/ring: inscription_outer.png and
+    inscription_inner.png, 16-bit coverage, 65535 = letter; inscription.json): both strips resampled to `rows` rows
+    (the band's width), outer over inner, with a 2x mip chain. Returns (INS (L, 2 rows, W), layout) or None if the
+    assets are missing."""
+    if 'c' in _INSC:
+        return _INSC['c']
+    import json
+    import cv2
+    jp = os.path.join(CANON_DIR, 'inscription.json')
+    if not os.path.exists(jp):
+        _INSC['c'] = None
+        return None
+    js = json.load(open(jp))
+    st = []
+    for face in ('outer', 'inner'):
+        im = cv2.imread(os.path.join(CANON_DIR, js['files'][face]), cv2.IMREAD_UNCHANGED).astype(np.float32)
+        im = im / (65535.0 if im.max() > 255.5 else 255.0)
+        if im.ndim == 3:
+            im = im.mean(-1)
+        w = int(round(im.shape[1] * rows / im.shape[0]))
+        st.append(cv2.resize(im, (w, rows), interpolation=cv2.INTER_AREA))
+    wo, wi = st[0].shape[1], st[1].shape[1]
+    base = np.zeros((2 * rows, max(wo, wi)), np.float32)
+    base[:rows, :wo] = st[0]
+    base[rows:, :wi] = st[1]
+    lv = [base]
+    for _ in range(levels - 1):
+        a = lv[-1]
+        lv.append(cv2.resize(a, (max(1, a.shape[1] // 2), max(1, a.shape[0] // 2)), interpolation=cv2.INTER_AREA))
+    stack = np.zeros((levels,) + base.shape, np.float32)
+    for k, a in enumerate(lv):
+        stack[k, :a.shape[0], :a.shape[1]] = a
+    lay = dict(h=rows, wo=wo, wi=wi, levels=levels, aspect_o=js['aspect']['outer_w_over_h'],
+               aspect_i=js['aspect']['inner_w_over_h'])
+    _INSC['c'] = (stack, lay)
+    return _INSC['c']
+
+
+def ring_xp_canon(XP, centre, rows, R, tb, hb, glow=0.0, engrave=1.0):
+    """The Ring's XP slots with the canonical script of fire (XP[53] = 2): the strip height is the band's width and u
+    runs once round each face."""
+    stack, lay = inscription_canon()
+    XP[1] = 1.0
+    XP[2:5] = centre
+    XP[5:14] = np.asarray(rows, np.float64).reshape(-1)
+    XP[14], XP[15], XP[16] = R, tb, hb
+    XP[17] = glow
+    XP[18] = engrave
+    XP[40], XP[41] = lay['h'], lay['wo']
+    XP[44], XP[45], XP[46] = lay['h'], lay['wi'], lay['h']
+    XP[48] = lay['wo'] / (2 * math.pi * (R + tb))     # texels per metre round the outer face
+    XP[47] = lay['wi'] / (2 * math.pi * (R - tb))     # and the inner
+    XP[52] = stack.shape[0]
+    XP[53] = 2.0
     return XP
 
 
