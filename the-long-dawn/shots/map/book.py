@@ -672,6 +672,15 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 qs = math.exp(-((qv - math.floor(qv) - 0.5) / 0.06) ** 2)
                 kq = _ss(0.3, 1.2, fp * 70.0 / 16.0)
                 lt = min(1.0, lt + 0.9 * qs * (1 - kq))
+                # striation that survives in a wide shot (H5): bands of leaves of slightly different tone, some
+                # standing proud, wandering a little along the edge
+                bv = G[i, j, 8] * 12.0 + 0.35 * gnoise(G[i, j, 9] * 0.25, G[i, j, 8] * 3.0, 11)
+                bi = math.floor(bv)
+                bt_ = (bi * 0.6180339887) % 1.0
+                bf_ = bv - bi
+                band = (bt_ - 0.5) * 0.9 + 0.35 * math.exp(-((bf_ - 0.5) / 0.1) ** 2) * (bt_ > 0.7)
+                kb = _ss(0.6, 1.6, fp * 12.0)
+                lt = min(max(lt + 0.45 * band * (1 - kb), 0.0), 1.0)
                 dust = 0.5 + 0.5 * fbm(G[i, j, 9] * 0.6, G[i, j, 8] * 3.0, 7, 3, 2.0, 0.5)
                 ar = (0.62 - 0.22 * lt) * (0.85 + 0.15 * dust)
                 ag = (0.50 - 0.2 * lt) * (0.85 + 0.15 * dust)

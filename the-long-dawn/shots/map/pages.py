@@ -586,14 +586,7 @@ class Mountain:
                         S.add(pp, rd, dd, layer=lay)
                     xx += ln + rng.uniform(0.2, 0.9)
                 yy += gap_ + rng.uniform(0, 0.05)
-        door = self.surf(0.36, -0.52)
-        road = catmull([(bx0 + 1.2, by1 - 0.1), (bx0 + 2.8, by1 - 1.0), (self.Xc - 3.3, self.Yb + 0.3),
-                        (self.Xc - 2.7, self.Yb - 0.25), (door[0] - 0.3, door[1] + 0.35), (door[0], door[1] + 0.12)], 14)
-        road = resample(road, 0.1)
-        for q in road:
-            pp, rd, dd = hand(np.array([q, q + [0.022, 0.0]]), W(0.02), int(rng.integers(1 << 30)), dens=dens,
-                              thin_end=0.8, taper=(0, 0))
-            S.add(pp, rd, dd, layer=lay)
+        door = self.surf(0.36, -0.52)          # (H5: no dotted route to it: it read as a treasure map)
         dx_, dy_ = door
         arch = np.array([[dx_ - 0.13, dy_ + 0.12], [dx_ - 0.13, dy_ - 0.06], [dx_, dy_ - 0.19], [dx_ + 0.13, dy_ - 0.06],
                          [dx_ + 0.13, dy_ + 0.12]])
@@ -878,35 +871,70 @@ class Deep:
             sel.sort(key=lambda q: S.P[k + q][:, 1].mean())
             _window_sel(S, k, sel, *T(a_ + 0.1 * (b_ - a_), b_), overlap=0.97)
 
-        # the vein: gold leaf, a bright thread with small branches, followed down level by level
+        # the seam (H5): a gold vein, thick and tapered, pinching and swelling as real veins do, branching into
+        # stringers; gilt, outlined in fine ink; it thickens the deeper they follow it
+        vs = arclen(self.vein)
+        VL = vs[-1]
+        grow = 0.1 + 0.2 * (vs / VL) ** 1.2                                   # cm: thicker with depth
+        swell = 0.55 + 0.45 * np.abs(np.sin(vs * 1.9 + 0.7)) + 0.12 * np.sin(vs * 5.3)
+        ends = np.clip(vs / 0.9, 0, 1) ** 0.6 * np.clip((VL - vs) / 1.2, 0, 1) ** 0.5   # tapered where it starts and ends
+        vein_w = grow * swell * ends
+        vn = pen.normals(self.vein)
         for k_h in range(len(self.halls) + 1):
             ya = by0 + 1.2 if k_h == 0 else self.halls[k_h - 1]['y1']
             yb = self.halls[k_h]['y1'] if k_h < len(self.halls) else self.glow[1] - 0.1
             m = (self.vein[:, 1] >= ya) & (self.vein[:, 1] <= yb)
-            seg = self.vein[m]
-            if len(seg) < 2:
+            if m.sum() < 2:
                 continue
+            seg = self.vein[m]
+            w_ = vein_w[m]
+            nr = vn[m]
             a_, b_ = pace(min(k_h, len(self.halls)))
             k = len(S)
-            s = arclen(seg)
-            wdt = 0.035 + 0.012 * k_h
             if pencil:
-                pp, rd, dd = hand(seg, 0.02, self.seed + 700 + k_h, dens=0.5, taper=(0.1, 0.1))
-                S.add(pp, rd, dd, layer=lay)
-            else:
-                pw_ = wdt * (0.7 + 0.5 * np.abs(np.sin(s * 3.1 + k_h)))
-                S.add(seg, 0.5 * pw_, np.ones(len(seg)), layer=GILT)
-                nrm = pen.normals(seg)
                 for side in (-1, 1):
-                    q = seg + nrm * (side * (0.5 * pw_ + 0.012))[:, None]
-                    pp, rd, dd = hand(q, 0.006, self.seed + 710 + k_h * 3 + side, dens=0.7, thin_end=0.6, taper=(0.05, 0.05))
+                    pp, rd, dd = hand(seg + nr * (side * 0.5 * w_)[:, None], 0.014, self.seed + 700 + 2 * k_h + side,
+                                      dens=0.45, taper=(0.1, 0.1))
+                    S.add(pp, rd, dd, layer=lay)
+            else:
+                # the gilt body: a band of overlapping pulls across its width, the edges wandering
+                for q in np.linspace(-0.42, 0.42, 5):
+                    wob = 0.08 * np.sin(np.arange(len(seg)) * 0.37 + q * 9.0)
+                    S.add(seg + nr * ((q + wob) * w_)[:, None], 0.3 * w_ + 0.004, np.ones(len(seg)), layer=GILT)
+                for side in (-1, 1):
+                    edge = seg + nr * (side * (0.5 * w_ + 0.01 + 0.012 * np.sin(np.arange(len(seg)) * 0.5 + side)))[:, None]
+                    pp, rd, dd = hand(edge, 0.008, self.seed + 710 + k_h * 3 + side, dens=0.85, thin_end=0.5,
+                                      taper=(0.08, 0.08))
                     S.add(pp, rd, dd, layer=INK)
-                for b in range(3 + k_h):
-                    i = int(rng.integers(5, len(seg) - 5))
-                    d = nrm[i] * (1 if rng.random() < 0.5 else -1)
-                    br = np.array([seg[i], seg[i] + d * 0.3 + rng.normal(0, 0.08, 2), seg[i] + d * 0.55 + rng.normal(0, 0.14, 2)])
-                    br = resample(catmull(br, 8), 0.02)
-                    S.add(br, np.linspace(0.5 * wdt * 0.6, 0.004, len(br)), np.ones(len(br)), layer=GILT)
+                # stringers: branches leaving at acute angles, tapering to nothing, some forking again
+                for b in range(3 + 2 * k_h):
+                    i = int(rng.integers(3, max(len(seg) - 3, 4)))
+                    sgn = 1 if rng.random() < 0.5 else -1
+                    t_ = np.array([seg[min(i + 1, len(seg) - 1)] - seg[max(i - 1, 0)]])[0]
+                    t_ = t_ / (np.linalg.norm(t_) + 1e-9)
+                    d = 0.55 * t_ + sgn * 0.85 * nr[i]
+                    Lb = rng.uniform(0.5, 1.4) * (0.7 + 0.15 * k_h)
+                    pts = [seg[i]]
+                    for q in range(5):
+                        d = d + rng.normal(0, 0.25, 2)
+                        d /= np.linalg.norm(d)
+                        pts.append(pts[-1] + d * Lb / 5)
+                    br = resample(catmull(np.array(pts), 6), 0.02)
+                    wb = np.linspace(0.42 * w_[i], 0.004, len(br))
+                    S.add(br, 0.5 * wb, np.ones(len(br)), layer=GILT)
+                    if w_[i] > 0.12:
+                        for side in (-1, 1):
+                            bn = pen.normals(br)
+                            pp, rd, dd = hand(br + bn * (side * (0.5 * wb + 0.008))[:, None], 0.006,
+                                              int(rng.integers(1 << 30)), dens=0.75, thin_end=0.2, taper=(0.02, 0.3))
+                            S.add(pp, rd, dd, layer=INK)
+                    if rng.random() < 0.45 and len(br) > 8:
+                        j = int(len(br) * rng.uniform(0.3, 0.6))
+                        d2 = d + sgn * 0.6 * np.array([-d[1], d[0]])
+                        d2 /= np.linalg.norm(d2)
+                        tw = np.array([br[j], br[j] + d2 * Lb * 0.35 + rng.normal(0, 0.05, 2)])
+                        tw = resample(tw, 0.02)
+                        S.add(tw, 0.5 * np.linspace(wb[j], 0.003, len(tw)), np.ones(len(tw)), layer=GILT)
             _window(S, k, *T(a_, a_ + 0.5 * (b_ - a_)), overlap=0.2)
 
         # the bottom: a chasm, black, where the glow will wake
@@ -1342,74 +1370,100 @@ class Havens:
         y = np.asarray(y, np.float64)
         return (y > self.coast(x)) & (x > self.shore_x(y))
 
-    def ship_mask(self, dx, ppc, H, W):
-        """Coverage of the ship's hull and sail (page raster), to erase the water and sky drawn behind it."""
-        import cv2
+    def ship_parts(self, dx=0.0):
+        """The swan-ship's shapes (page cm), shifted west by dx: hull (a swan's body, the stern its tail), the
+        prow a swan's neck and head, the sail on its yard."""
         x, y = self.ship
         x -= dx
         s = 1.3
-        hull = catmull([(x + 1.5 * s, y - 0.55 * s), (x + 1.25 * s, y - 0.12 * s), (x + 0.3 * s, y + 0.08 * s),
-                        (x - 0.9 * s, y + 0.02 * s), (x - 1.45 * s, y - 0.35 * s), (x - 1.62 * s, y - 0.95 * s),
-                        (x - 1.45 * s, y - 1.12 * s)], 8)
-        hull = np.vstack([hull, [[x - 1.45 * s, y - 0.4 * s], [x + 1.5 * s, y - 0.55 * s]]])
+        hull = catmull([(x + 1.52 * s, y - 0.72 * s), (x + 1.38 * s, y - 0.36 * s), (x + 0.9 * s, y - 0.02 * s),
+                        (x, y + 0.08 * s), (x - 0.95 * s, y + 0.02 * s), (x - 1.38 * s, y - 0.3 * s)], 10)
+        gun = catmull([(x + 1.52 * s, y - 0.72 * s), (x + 0.6 * s, y - 0.5 * s), (x - 0.5 * s, y - 0.46 * s),
+                       (x - 1.38 * s, y - 0.3 * s)], 10)
+        # the neck rises from the bow in an S and bends its head forward, the beak pointing west
+        neck_f = catmull([(x - 1.38 * s, y - 0.3 * s), (x - 1.56 * s, y - 0.62 * s), (x - 1.6 * s, y - 1.0 * s),
+                          (x - 1.46 * s, y - 1.34 * s), (x - 1.5 * s, y - 1.6 * s), (x - 1.7 * s, y - 1.7 * s),
+                          (x - 1.86 * s, y - 1.64 * s)], 10)
+        neck_b = catmull([(x - 1.2 * s, y - 0.42 * s), (x - 1.38 * s, y - 0.72 * s), (x - 1.44 * s, y - 1.02 * s),
+                          (x - 1.32 * s, y - 1.36 * s), (x - 1.36 * s, y - 1.68 * s), (x - 1.56 * s, y - 1.8 * s),
+                          (x - 1.74 * s, y - 1.76 * s), (x - 1.86 * s, y - 1.64 * s)], 10)
         yl, yr, ytop, ybot = x - 0.62 * s, x + 0.78 * s, y - 2.35 * s, y - 0.95 * s
         sail = np.array([[yl, ytop], [yl - 0.16 * s, 0.5 * (ytop + ybot)], [yl - 0.05 * s, ybot], [x + 0.1 * s, ybot + 0.12 * s],
                          [yr - 0.02 * s, ybot + 0.03 * s], [yr - 0.08 * s, 0.5 * (ytop + ybot)], [yr, ytop - 0.02 * s]])
+        return dict(x=x, y=y, s=s, hull=hull, gun=gun, neck_f=neck_f, neck_b=neck_b, sail=sail,
+                    yard=(yl, yr, ytop, ybot))
+
+    def ship_mask(self, dx, ppc, H, W):
+        """Coverage of the ship (hull, neck, sail), to erase the water and sky drawn behind it."""
+        import cv2
+        sp = self.ship_parts(dx)
+        body = np.vstack([sp['hull'], sp['gun'][::-1]])
+        neck = np.vstack([sp['neck_f'], sp['neck_b'][::-1]])
         m = np.zeros((H, W), np.uint8)
-        for P in (hull, sail):
+        for P in (body, neck, sp['sail']):
             cv2.fillPoly(m, [np.round(P * ppc * 16).astype(np.int32)], 255, lineType=cv2.LINE_AA, shift=4)
         m = cv2.GaussianBlur(m.astype(np.float32) / 255.0, (0, 0), 0.8)
         return np.clip(m * 1.05, 0, 1)
 
     def ship_strokes(self, dx=0.0, mode='ink'):
-        """The ship (a long grey hull, a swan prow to the west, one mast, a sail) and the small figure with her
-        light at the stern, shifted west by dx cm. Returns (Strokes, stern light position)."""
+        """The swan-ship at the plate's own line weights (outline 0.024, detail 0.012, hatching 0.0075), and the
+        small figure with her light at the stern, shifted west by dx cm. Returns (Strokes, stern light position)."""
         S = Strokes()
         lay = INK if mode == 'ink' else PENCIL
         rng = np.random.default_rng(self.seed + 7)
-        x, y = self.ship
-        x -= dx
-        s = 1.3
-        hull = catmull([(x + 1.5 * s, y - 0.55 * s), (x + 1.25 * s, y - 0.12 * s), (x + 0.3 * s, y + 0.08 * s),
-                        (x - 0.9 * s, y + 0.02 * s), (x - 1.45 * s, y - 0.35 * s), (x - 1.62 * s, y - 0.95 * s),
-                        (x - 1.45 * s, y - 1.12 * s)], 8)
-        line(S, hull, 0.02, self.seed + 1, layer=lay, lift=(8, 9))
-        gun = np.array([[x + 1.5 * s, y - 0.55 * s], [x - 1.45 * s, y - 0.4 * s]])
-        line(S, gun, 0.014, self.seed + 2, layer=lay, lift=(8, 9))
+        sp = self.ship_parts(dx)
+        x, y, s = sp['x'], sp['y'], sp['s']
+        line(S, sp['hull'], 0.024, self.seed + 1, layer=lay, lift=(8, 9), smooth=0)
+        line(S, sp['gun'], 0.016, self.seed + 2, layer=lay, lift=(8, 9), smooth=0)
+        line(S, sp['neck_f'], 0.02, self.seed + 3, layer=lay, lift=(8, 9), smooth=0)
+        line(S, sp['neck_b'], 0.016, self.seed + 4, layer=lay, lift=(8, 9), smooth=0)
+        hx, hy = x - 1.62 * s, y - 1.72 * s
+        S.add(np.array([[hx, hy], [hx + 0.001, hy]]), np.array([0.012, 0.012]), np.array([0.9, 0.9]), layer=lay)  # the eye
         if mode == 'ink':
-            hatch(S, _poly_inside(np.vstack([hull, gun[::-1]])), lambda px, py: np.ones_like(px),
-                  (x - 1.7 * s, y - 0.7 * s, x + 1.6 * s, y + 0.15 * s), 12, 0.04, 0.0, 0.007, self.seed + 3, dens=0.85,
-                  seg=(0.4, 1.2))
+            # the swan's wing carved along the side: long feathers sweeping back from the bow
+            for q in range(6):
+                f0 = np.array([x - (1.05 - 0.08 * q) * s, y - (0.42 - 0.035 * q) * s])
+                f1 = np.array([x + (0.25 + 0.2 * q) * s, y - (0.32 - 0.05 * q) * s])
+                fm = 0.5 * (f0 + f1) + np.array([0.0, 0.06 * s])
+                pp, rr, dd = hand(catmull([f0, fm, f1], 8), 0.012, int(rng.integers(1 << 30)), thin_end=0.25,
+                                  taper=(0.05, 0.3))
+                S.add(pp, rr, dd, layer=lay)
+            body = np.vstack([sp['hull'], sp['gun'][::-1]])
+            hatch(S, _poly_inside(body), lambda px, py: np.clip((py - (y - 0.6 * s)) / (0.7 * s), 0, 1) + 0.25,
+                  (x - 1.5 * s, y - 0.8 * s, x + 1.6 * s, y + 0.15 * s), 8, 0.035, 0.45, 0.0075, self.seed + 5,
+                  dens=0.85, seg=(0.4, 1.2))
+            neck = np.vstack([sp['neck_f'], sp['neck_b'][::-1]])
+            hatch(S, _poly_inside(neck), lambda px, py: (px - (x - 1.62 * s)) / (0.4 * s) + 0.5,
+                  (x - 1.9 * s, y - 1.85 * s, x - 1.15 * s, y - 0.3 * s), 70, 0.03, 0.55, 0.0075, self.seed + 6,
+                  dens=0.8, seg=(0.2, 0.6))
         mast = np.array([[x + 0.05 * s, y - 0.45 * s], [x + 0.08 * s, y - 2.6 * s]])
-        line(S, mast, 0.02, self.seed + 4, layer=lay)
-        # a square sail hung from its yard, filled by the east wind and bellying west
-        yl, yr, ytop, ybot = x - 0.62 * s, x + 0.78 * s, y - 2.35 * s, y - 0.95 * s
-        line(S, np.array([[yl - 0.08 * s, ytop + 0.02 * s], [yr + 0.08 * s, ytop - 0.02 * s]]), 0.016, self.seed + 5,
+        line(S, mast, 0.02, self.seed + 8, layer=lay)
+        yl, yr, ytop, ybot = sp['yard']
+        line(S, np.array([[yl - 0.08 * s, ytop + 0.02 * s], [yr + 0.08 * s, ytop - 0.02 * s]]), 0.016, self.seed + 9,
              layer=lay, lift=(8, 9), smooth=0)
         lead = catmull([(yl, ytop), (yl - 0.16 * s, 0.5 * (ytop + ybot)), (yl - 0.05 * s, ybot)], 10)
         trail = catmull([(yr, ytop - 0.02 * s), (yr - 0.08 * s, 0.5 * (ytop + ybot)), (yr - 0.02 * s, ybot + 0.03 * s)], 10)
         foot = catmull([(yl - 0.05 * s, ybot), (x + 0.1 * s, ybot + 0.12 * s), (yr - 0.02 * s, ybot + 0.03 * s)], 10)
         for q_, P_ in enumerate((lead, trail, foot)):
-            line(S, P_, 0.014, self.seed + 6 + q_, layer=lay, lift=(8, 9), smooth=0)
+            line(S, P_, 0.014, self.seed + 10 + q_, layer=lay, lift=(8, 9), smooth=0)
         if mode == 'ink':
-            # the seams of the cloth, and a little shade on the lee side of the belly
             for q in np.linspace(0.12, 0.88, 6):
                 xq = yl + (yr - yl) * q
                 seam = catmull([(xq, ytop), (xq - 0.1 * s * math.sin(q * math.pi), 0.5 * (ytop + ybot)),
                                 (xq, ybot + 0.12 * s * math.sin(q * math.pi))], 8)
-                pp, rr, dd = hand(seam, 0.006, int(rng.integers(1 << 30)), thin_end=0.4, dens=0.8)
+                pp, rr, dd = hand(seam, 0.0075, int(rng.integers(1 << 30)), thin_end=0.4, dens=0.8)
                 S.add(pp, rr, dd, layer=lay)
             sail_poly = np.vstack([lead, foot[1:], trail[::-1][1:]])
             hatch(S, _poly_inside(sail_poly), lambda px, py: (px - yl) / (yr - yl), (yl - 0.2 * s, ytop, yr, ybot + 0.15 * s),
-                  75, 0.04, 0.55, 0.0065, self.seed + 8, dens=0.75, seg=(0.2, 0.7))
+                  75, 0.04, 0.55, 0.0075, self.seed + 13, dens=0.75, seg=(0.2, 0.7))
         # the small figure at the stern (a silhouette), one arm raised with the light
-        fx, fy = x + 1.2 * s, y - 0.62 * s
+        fx, fy = x + 1.2 * s, y - 0.66 * s
         body = np.array([[fx, fy], [fx + 0.02, fy - 0.32]])
         S.add(resample(body, 0.02), np.linspace(0.05, 0.035, len(resample(body, 0.02))), 0.95, layer=lay)
         S.add(np.array([[fx + 0.02, fy - 0.38], [fx + 0.021, fy - 0.38]]), np.array([0.035, 0.035]), np.array([0.95, 0.95]),
               layer=lay)
         arm = np.array([[fx + 0.02, fy - 0.28], [fx + 0.09, fy - 0.45], [fx + 0.1, fy - 0.56]])
-        pp, rr, dd = hand(arm, 0.012, self.seed + 9, thin_end=0.6)
+        pp, rr, dd = hand(arm, 0.012, self.seed + 14, thin_end=0.6)
         S.add(pp, rr, dd, layer=lay)
         return S, (fx + 0.1, fy - 0.62)
 

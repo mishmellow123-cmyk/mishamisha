@@ -5,8 +5,8 @@ column = x * ppc of a page array. A drawing is a list of strokes, each drawn on 
 shot time) along its arc length the way a pen moves. Layers are max-combined (a pen line over a pen line
 is still one line), and a fresh stroke stays wet (darker, glossy) for a moment before it dries.
 
-Also here: the hand (a flowing broad-nib hand in the invented script of `embers/inscription.py`, with the
-dip cycle of a real pen: dark after each dip, paler as it runs dry), hatching that follows form and tone,
+Also here: the book hand (an invented broad-nib hand of its own, below, with the dip cycle of a real pen:
+dark after each dip, paler as it runs dry), hatching that follows form and tone,
 stipple, and the construction lines of a pencil underdrawing.
 """
 import math
@@ -19,7 +19,6 @@ from numba import njit, prange
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', 'embers'))
-import inscription as INS  # noqa: E402
 from noise import wobble1d  # noqa: E402
 
 INK, PENCIL, GILT, FIRE = 0, 1, 2, 3
@@ -359,43 +358,110 @@ def broad_nib(p, nib, thin, angle):
 
 # ================================================================ script ===
 
-# More letters for the book hand, in the family of the Ring's script (flame loops, crescents, curls,
-# forks, almonds). All original; none is a letter of a living or a Tolkien script.
-EXTRA = {
-    # a crescent opening upward with a flame-tick rising from its right horn
-    'cf': dict(w=1.0, s=[[(0.0, 0.85), (0.12, 0.2), (0.5, 0.0), (0.88, 0.25), (0.95, 0.9), (0.85, 1.4),
-                          (1.0, 1.75)]]),
-    # a low double wave whose tail dives below the line
-    'dw': dict(w=1.15, s=[[(0.0, 0.4), (0.2, 0.7), (0.42, 0.45), (0.62, 0.2), (0.84, 0.5), (0.9, 0.0),
-                           (0.78, -0.7), (0.58, -0.92)]]),
-    # an almond with a stem rising through its left point
-    'as': dict(w=1.0, s=[[(0.12, -0.05), (0.14, 1.2), (0.26, 2.05), (0.46, 2.2)],
-                         [(0.14, 0.5), (0.5, 0.95), (0.9, 0.5), (0.5, 0.06), (0.14, 0.5)]]),
-    # a curl sitting on a short flat foot
-    'cu': dict(w=0.9, s=[[(0.0, 0.02), (0.7, 0.0), (0.82, 0.3), (0.64, 0.82), (0.32, 0.9), (0.2, 0.62),
-                          (0.42, 0.44), (0.58, 0.58)]]),
-    # a hook descending from the x-height, with a small ring hung on it
-    'hr': dict(w=0.8, s=[[(0.1, 0.95), (0.5, 1.0), (0.62, 0.5), (0.5, -0.45), (0.28, -0.9)],
-                         [(0.12, 0.35), (0.22, 0.45), (0.3, 0.35), (0.2, 0.26), (0.12, 0.35)]]),
-    # a pointed arch with an inner tongue
-    'pa': dict(w=1.05, s=[[(0.0, 0.0), (0.12, 0.62), (0.5, 1.12), (0.88, 0.62), (1.0, 0.0)],
-                          [(0.5, 0.05), (0.42, 0.4), (0.5, 0.72), (0.58, 0.4)]]),
-    # a tall looped stem, the loop on the right, the foot sweeping back left
-    'ls': dict(w=0.85, s=[[(0.3, -0.02), (0.36, 1.1), (0.42, 1.95), (0.72, 2.1), (0.74, 1.72), (0.4, 1.4),
-                           (0.36, 0.5), (0.12, -0.1), (-0.08, 0.05)]]),
-    # three rising ticks joined at the foot (a small flame of three tongues)
-    'tt': dict(w=1.1, s=[[(0.0, 0.1), (0.3, 0.0), (0.55, 0.05), (0.85, 0.0), (1.1, 0.12)],
-                         [(0.18, 0.02), (0.1, 0.55), (0.24, 0.95)],
-                         [(0.55, 0.05), (0.5, 0.7), (0.62, 1.2)],
-                         [(0.9, 0.02), (0.86, 0.5), (0.98, 0.85)]]),
+# THE BOOK HAND (H5): a human calligraphic hand of its own, and deliberately not the Ring's (the script of fire,
+# `assets/ring`, is the fire's own: our writing goes into the fire, and what comes out is a script no one can
+# read). Its letters stand apart and are built from a small palette of broad-nib strokes: the lying wave, the
+# open wedge, the low heavy fall, the fork of a feather's tail, the small coil, the lozenge and the nib's own
+# lozenge dot. It has no stems, bowls, arches, cups or hooks, no marks over its letters, and nothing drawn from
+# Latin, Greek, Cyrillic, Tengwar or runes (the H5 critic read l, u and y in the first hand).
+def coil(cx, cy, r, turns=1.1, a0=0.0, cw=True, n=8, inward=False):
+    """A small spiral from its rim (at angle a0) winding inward (inward=True) or the reverse."""
+    s = -1.0 if cw else 1.0
+    pts = []
+    for k in range(n + 1):
+        u = k / n
+        a = a0 + s * u * turns * 2 * math.pi
+        rr = r * (1.0 - 0.72 * u)
+        pts.append((cx + rr * math.cos(a), cy + rr * math.sin(a)))
+    return pts if inward else pts[::-1]
+
+
+def lozenge(x0, y0, w, h, n=3):
+    """Sharp lozenge from its left corner, anticlockwise; n knots per side keep the sides straight."""
+    C = [(x0, y0), (x0 + w / 2, y0 - h / 2), (x0 + w, y0), (x0 + w / 2, y0 + h / 2), (x0, y0)]
+    pts = []
+    for (ax, ay), (bx, by) in zip(C[:-1], C[1:]):
+        for k in range(n):
+            u = k / n
+            pts.append((ax + (bx - ax) * u, ay + (by - ay) * u))
+    pts.append(C[-1])
+    return pts
+
+
+def dot(x, y):
+    return [(x, y), (x + 0.05, y + 0.035)]
+
+
+def fine(pts, k=0.55):
+    return (pts, k)
+
+
+BOOK = {
+    # a lying wave
+    'wa': dict(w=1.1, s=[[(0.0, 0.4), (0.14, 0.56), (0.34, 0.54), (0.56, 0.3), (0.78, 0.18), (0.98, 0.3), (1.08, 0.46)]]),
+    # a scroll lying on the line: one end rolled up, the other rolled down
+    'lc': dict(w=1.3, s=[coil(0.14, 0.34, 0.13, 1.0, math.pi * 1.5, cw=True) + [(0.36, 0.2), (0.66, 0.16), (0.96, 0.2)]
+                         + coil(1.12, 0.06, 0.13, 1.0, math.pi * 0.5, cw=True, inward=True)]),
+    # a small coil and a long low stroke out of it, ending in the nib's dot
+    'cw': dict(w=1.3, s=[coil(0.16, 0.42, 0.13, 1.1, math.pi * 1.9, cw=False) + [(0.44, 0.34), (0.8, 0.3), (1.08, 0.26)],
+                         dot(1.16, 0.24)]),
+    # a heavy low fall with a hairline entry and a flick at its foot
+    'hk': dict(w=0.95, s=[[(0.0, 0.6), (0.18, 0.66), (0.4, 0.44), (0.7, 0.12), (0.86, 0.02), (0.98, 0.08)]]),
+    # an open wedge, a coil at its upper tip
+    'wl': dict(w=1.05, s=[coil(0.9, 0.66, 0.1, 1.0, math.pi * 0.2, cw=False) + [(0.52, 0.52), (0.06, 0.34), (0.52, 0.16),
+                                                                                 (1.0, 0.02)]]),
+    # an open wedge with the nib's lozenge in its mouth
+    'wt': dict(w=1.05, s=[[(1.0, 0.68), (0.5, 0.52), (0.04, 0.35), (0.5, 0.18), (1.0, 0.02)], dot(0.56, 0.33)]),
+    # a feather's tail: a nib dot, a long flat stroke forking at its end
+    'fk': dict(w=1.2, s=[dot(0.0, 0.34), [(0.14, 0.36), (0.5, 0.4), (0.86, 0.36)],
+                         [(0.84, 0.37), (0.98, 0.54), (1.14, 0.62)], [(0.84, 0.35), (0.98, 0.18), (1.16, 0.1)]]),
+    # two lozenges bridged by a hairline
+    'll': dict(w=1.4, s=[fine(lozenge(0.0, 0.34, 0.56, 0.66)), [(0.56, 0.34), (0.7, 0.38), (0.84, 0.34)],
+                         fine(lozenge(0.84, 0.34, 0.5, 0.56))]),
+    # a lozenge pierced by a wave
+    'lp': dict(w=1.35, s=[[(0.0, 0.3), (0.2, 0.42), (0.42, 0.34), (0.66, 0.26), (0.9, 0.36), (1.12, 0.46), (1.32, 0.38)],
+                          fine(lozenge(0.36, 0.34, 0.6, 0.74))]),
+    # a lozenge sitting on a flat leaf
+    'ls': dict(w=1.2, s=[[(0.0, 0.08), (0.3, 0.02), (0.6, 0.0), (0.9, 0.02), (1.18, 0.08)], fine(lozenge(0.3, 0.42, 0.58, 0.68))]),
+    # a heavy fall from a hairline entry, through the line, ending in the nib's dot (descends)
+    'df': dict(w=1.35, s=[[(0.0, 0.58), (0.14, 0.66), (0.42, 0.46), (0.8, 0.06), (1.12, -0.3), (1.24, -0.44)],
+                          dot(1.28, -0.54)]),
+    # a coil with a short stroke forking out of it forward, like a bud
+    'cf': dict(w=1.2, s=[coil(0.16, 0.34, 0.14, 1.1, 0.0, cw=False) + [(0.44, 0.36), (0.74, 0.36)],
+                         [(0.72, 0.37), (0.86, 0.56), (1.02, 0.64)], [(0.72, 0.35), (0.88, 0.16), (1.04, 0.1)]]),
+    # a wave whose end rolls under itself
+    'wv': dict(w=1.15, s=[[(0.0, 0.34), (0.2, 0.54), (0.44, 0.46), (0.7, 0.28), (0.92, 0.3), (1.04, 0.44)]
+                          + coil(0.9, 0.3, 0.14, 1.0, math.pi * 0.2, cw=True, inward=True)]),
+    # the plain lozenge
+    'lo': dict(w=0.75, s=[fine(lozenge(0.0, 0.34, 0.7, 0.7))]),
+    # an open wedge whose lower arm rolls into a coil
+    'wc': dict(w=1.15, s=[[(1.0, 0.7), (0.5, 0.52), (0.04, 0.35), (0.5, 0.16), (0.9, 0.04)]
+                          + coil(1.0, 0.14, 0.12, 1.0, math.pi * 1.4, cw=False, inward=True)]),
+    # a lozenge, and from its forward corner a heavy fall through the line to the nib's dot (descends)
+    'dh': dict(w=1.45, s=[fine(lozenge(0.0, 0.5, 0.36, 0.4)), [(0.36, 0.5), (0.62, 0.3), (0.96, -0.08), (1.26, -0.4)],
+                          dot(1.32, -0.5)]),
 }
-GLYPHS = dict(INS.GLYPHS)
-GLYPHS.update(EXTRA)
-TALL = set(INS.TALL) | {'as', 'ls', 'cf'}
+GLYPHS = BOOK
+TALL = set()
 KEYS = sorted(GLYPHS.keys())
 # letter frequencies: a real language leans on a few letters
-_FREQ = np.array([1.7 if k in ('tw', 'pa', 'cu', 'fs', 'sp', 'cf', 'tt') else (0.45 if k in ('mc', 'aa', 'hs', 'vf') else (0.7 if k in TALL else 1.0)) for k in KEYS])
+_FREQ = np.array([{'wa': 1.6, 'hk': 1.4, 'cw': 1.3, 'lc': 1.3, 'wv': 1.2, 'wl': 0.8, 'wt': 0.6, 'wc': 0.6, 'll': 0.5,
+                   'lo': 0.5, 'df': 0.7, 'dh': 0.6}.get(k, 1.0) for k in KEYS])
 _FREQ = _FREQ / _FREQ.sum()
+# no two waves side by side (they would read as m or n), nor two wedges
+FAMILY = {'wa': 'wave', 'wv': 'wave', 'cw': 'wave', 'lc': 'wave', 'lp': 'wave', 'wl': 'wedge', 'wt': 'wedge',
+          'wc': 'wedge', 'hk': 'fall', 'df': 'fall', 'dh': 'fall'}
+JOIN_P = 0.18              # now and then a hairline carries one letter into the next
+MARK_P = 0.0               # no marks over the letters (they read as Latin accents)
+MARKS = {}
+
+
+def _knots(st):
+    return st[0] if isinstance(st, tuple) else st
+
+
+def _nibk(st):
+    return st[1] if isinstance(st, tuple) else 1.0
 
 
 class Hand:
@@ -419,7 +485,7 @@ class Hand:
         w, prev = [], None
         for _ in range(n):
             g = KEYS[int(r.choice(len(KEYS), p=_FREQ))]
-            while g == prev:
+            while g == prev or (prev is not None and FAMILY.get(g, g) == FAMILY.get(prev, prev)):
                 g = KEYS[int(r.choice(len(KEYS), p=_FREQ))]
             w.append(g)
             prev = g
@@ -450,20 +516,21 @@ class Hand:
             G = GLYPHS[g]
             sx = 1.0 + r.uniform(-0.05, 0.05)
             sy = 1.0 + r.uniform(-0.05, 0.05)
-            glyph = [[(cx + px * sx, py * sy) for px, py in st] for st in G['s']]
+            glyph = [[(cx + px * sx, py * sy) for px, py in _knots(st)] for st in G['s']]
+            nibs = [_nibk(st) for st in G['s']]
             ent = glyph[0][0]
-            if prev_exit is not None and r.random() < 0.6:
+            if prev_exit is not None and r.random() < JOIN_P:
                 hair.append([prev_exit, ((prev_exit[0] + ent[0]) / 2, 0.5 + r.uniform(-0.05, 0.12)), ent])
             prev_exit = glyph[-1][-1]
-            strokes.append((glyph, self.ink))
-            if g not in TALL and r.random() < 0.22:
-                mk = list(INS.MARKS.keys())[int(r.integers(0, len(INS.MARKS)))]
+            strokes.append((glyph, self.ink, nibs))
+            if g not in TALL and r.random() < MARK_P:
+                mk = list(MARKS.keys())[int(r.integers(0, len(MARKS)))]
                 mx = cx + G['w'] * sx * r.uniform(0.3, 0.6)
                 my = 1.3 + r.uniform(0.0, 0.2)
-                marks.append(([[(mx + a * 1.3, my + b * 1.3) for a, b in st] for st in INS.MARKS[mk]], self.ink))
+                marks.append(([[(mx + a * 1.3, my + b * 1.3) for a, b in st] for st in MARKS[mk]], self.ink))
             cx += G['w'] * sx + self.gap
             self._dip()
-        n_all = sum(len(gl) for gl, _ in strokes) + len(hair) + sum(len(m) for m, _ in marks)
+        n_all = sum(len(gl) for gl, _, _ in strokes) + len(hair) + sum(len(m) for m, _ in marks)
         dt = (t1 - t0) / max(n_all, 1)
         k = 0
 
@@ -484,9 +551,9 @@ class Hand:
             k += 1
 
         k_first = len(S)
-        for gl, ink in strokes:
-            for st in gl:
-                emit(st, self.nib, self.thin, ink)
+        for gl, ink, nibs in strokes:
+            for st, nk in zip(gl, nibs):
+                emit(st, self.nib * nk, self.thin, ink)
         for h in hair:
             emit(h, self.nib * 0.16, self.thin * 0.8, 0.8 * self.ink)
         for m, ink in marks:

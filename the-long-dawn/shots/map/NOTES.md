@@ -1,5 +1,24 @@
 # MAP-v3 (lane `map`): THE RED BOOK, the four ink pages, the burn-throughs, THE MAP ANSWERS
 
+## STATE (paused 27 Sep 10:45Z for usage pacing; resume ~15:00Z) · the H5 CALLS pass
+**Done (code committed; stills checked, not yet on review sheets):**
+- [x] Mount Doom page: treasure-map dotted route dropped (`pages.Mountain`, the door stays).
+- [x] THE DEEP: gold seam thicker, tapered, gilt, branching (`pages.Deep`: pinch-and-swell vein, 5 gilt pulls, forked stringers).
+- [x] THE HAVENS: ship redrawn swan-prowed at the plates' line weight (`pages.Havens.ship_parts/ship_mask/ship_strokes`).
+- [x] One gilt initial in the book (`redbook.initial`, last spread, right page; now a letter of the NEW hand, 'lp').
+- [x] Page-edge striation (`book.py`, M_EDGE shading: quire bands + fine leaf lines).
+- [x] THE ROAD on the map: a fine continuous pen line that grows as the pen goes (pressure swell, wet last half-degree, a bead at the nib); the ring of stones drawn as stones (`road.RoadShot.pen_line/stones_layer`).
+- [x] C's beacons hand-inked at the terrain's line weight with shell gold laid in, a live flame the glyph's size inside, pools cut to 0.4, no halo (`road.RoadShot.beacon_glyphs/flame_glyph/draw_fires`; `render.py` gains additive `room_gain/moon_gain` hooks).
+- [x] C23 bar 71 THE FIRE REMAINS (5600-5679 -> `renders/map_C`): from the council fire on the ring's stone the roads run out (a shortest-path tree over the land, `road.road_tree`: 5 trunks, 39 branches, 22 lowland hearths), a small moving flame at every road's head; hearth glyphs kindle where they arrive; the war-beacons settle low, the room warms; breath dim at 5668-5676. X1 from ACCORD's plate: `road.py x1 --center 960,402 --frames 5594-5640 --out renders/x1_map_C71` (opens 5600). Job `cloud/jobs/map_v3_road.json` updated (adds 5600-5679 + the x1).
+- [x] THE BOOK HAND replaced (director's script note): `pen.BOOK`, 16 invented letters from waves, open wedges, low falls, feather forks, coils, lozenges and the nib's dot; no stems, bowls, cups, hooks or marks; no two waves or two wedges side by side. Specimen checked: nothing reads as l, u, y (or any Latin letter), nor Tengwar, nor the Ring's teardrop script.
+- [x] Canonical Ring script fetched: `assets/ring` (script of fire, 16-bit coverage strips + json).
+
+**Next (in order):**
+1. Re-render the P1/P2/X1 stills with the new hand (`redbook.py stills`, `book_c.py frames --frames 100,700,850,6415 --scale 0.35`); check the C4 leaf and the enlarged initial.
+2. C4 kindling letters: glow like the Ring's letters in fire (assets/ring note: deep orange-red core, never white) as they lift; re-export `review/v3/x1_letters.json` (letter positions changed with the hand).
+3. Ring close-up FALLBACK = an ink ring drawn on the book's page carrying `assets/ring/inscription_outer.png`: melt on C22's beats (5360-5519: letters flare 5420, out 5440; crisp drop, slump to a bead, darker, no donut rim, white at the end) -> `renders/book_C`; a still for the find/fire-test fallback. Add to `cloud/jobs/map_v3_book.json`.
+4. Refresh review sheets (`review/v3/`: Deep seam, Havens ship, initial, striation, the Road line, bar 71, the new hand, the ink ring); update REPORT + RENDER_SPEC below; push; verify_session.py; 5-line summary.
+
 ## REPORT (MAP-v3, 27 Sep 05:25Z) · on the LOCKED bar map (`music/v3/barmap_C.json`)
 **What it is.** C's book as one 2.5-D engine, all shots numbered on C's own timeline (src frame = C frame):
 | shot | C frames | what happens | code |

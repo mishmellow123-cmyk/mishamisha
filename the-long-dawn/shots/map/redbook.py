@@ -133,6 +133,51 @@ class Page:
         return tx.build()
 
 
+def initial(S, x, y, size, seed, glyph='lp'):
+    """The book's one illuminated initial: a letter of our script in gold leaf on a small ruled square, with
+    fine penwork tendrils curling down the margin (page cm; (x, y) is the square's top-left)."""
+    rng = np.random.default_rng(seed)
+    for inset, w in ((0.0, 0.02), (0.07, 0.009)):
+        a, b, c, d = x + inset, y + inset, x + size - inset, y + size - inset
+        for (p0, p1) in (((a - 0.03, b), (c + 0.03, b)), ((c, b - 0.03), (c, d + 0.03)), ((c + 0.03, d), (a - 0.03, d)),
+                         ((a, d + 0.03), (a, b - 0.03))):
+            pp, rr, dd = hand(np.array([p0, p1]), w, int(rng.integers(1 << 30)), slow=(5.0, 0.004), taper=(0.02, 0.02),
+                              thin_end=0.6)
+            S.add(pp, rr, dd)
+    # the letter, broad-nibbed in gold, and a fine ink spine that makes it read against the gilt
+    G = pen.GLYPHS[glyph]
+    ys = [py for st in G['s'] for _, py in pen._knots(st)]
+    em = min((size - 0.42) / G['w'], (size - 0.42) / max(max(ys) - min(ys), 0.5))
+    hx = x + 0.5 * size - 0.5 * G['w'] * em
+    base = y + 0.5 * size + 0.5 * (max(ys) + min(ys)) * em          # the letter centred in its square
+    hg = pen.Hand(seed=seed + 1, xh=em, nib=0.55, thin=0.08, layer=GILT)
+    hg.write_word(S, [glyph], hx, base)
+    hi = pen.Hand(seed=seed + 1, xh=em, nib=0.05, thin=0.02, layer=INK)
+    hi.write_word(S, [glyph], hx, base)
+    # penwork: little spirals from the corners and a tendril down the outer margin
+    for (cx, cy, r0) in ((x - 0.05, y + size + 0.1, 0.16), (x + size + 0.08, y - 0.02, 0.12), (x - 0.12, y + 0.35, 0.1)):
+        a = np.linspace(0, 4.4, 40) + rng.uniform(0, 6)
+        rr_ = r0 * np.linspace(1.0, 0.2, 40)
+        pp, rr, dd = hand(np.column_stack([cx + rr_ * np.cos(a), cy + rr_ * np.sin(a)]), 0.008, int(rng.integers(1 << 30)),
+                          thin_end=0.3, taper=(0.05, 0.2))
+        S.add(pp, rr, dd)
+    ten = catmull([(x - 0.08, y + size + 0.25), (x - 0.25, y + size + 0.9), (x - 0.12, y + size + 1.6), (x - 0.3, y + size + 2.4)], 10)
+    pp, rr, dd = hand(ten, 0.009, int(rng.integers(1 << 30)), thin_end=0.2, taper=(0.1, 0.5))
+    S.add(pp, rr, dd)
+    for q in range(4):
+        i = int(len(ten) * (0.2 + 0.2 * q))
+        c0 = ten[i]
+        a = np.linspace(0, 3.6, 24) + (0 if q % 2 else np.pi)
+        rr_ = 0.12 * np.linspace(1.0, 0.25, 24)
+        sg = 1 if q % 2 else -1
+        pp, rr, dd = hand(np.column_stack([c0[0] + sg * rr_ * np.cos(a) + sg * 0.12, c0[1] + rr_ * np.sin(a)]), 0.007,
+                          int(rng.integers(1 << 30)), thin_end=0.3)
+        S.add(pp, rr, dd)
+    # a single gilt dot at each tendril's end, as the penman finishes
+    for (dx, dy) in ((x - 0.3, y + size + 2.4), (x + size + 0.08, y - 0.02)):
+        S.add(np.array([[dx, dy], [dx + 0.001, dy]]), np.array([0.035, 0.035]), np.array([1.0, 1.0]), layer=GILT)
+
+
 def leaves_last(seed=5):
     """P1: the last written spread. Left: a full page with a mountain sketched in the margin and a small ring
     by a paragraph; right: the tale ends two-thirds down, a small ship below it, then nothing."""
@@ -149,7 +194,15 @@ def leaves_last(seed=5):
     sketch_mountain(L, box[0] + 1.25, 2.9 + 0.62 * 8.6, 0.85, seed + 100)
     sketch_ring(L, box[2] - 0.8, 2.9 + 0.62 * 21.3, 0.42, seed + 200)
     boxR = (3.2, 2.9, 17.0, 26.4)
-    recs = PG.text_page(R, seed + 1, lines=21, box=boxR, last_frac=0.42)
+
+    def skipR(li, xa, xb):
+        if li == 14:                            # the last chapter begins: a blank line, then the gilt initial
+            return [(xa - 1, xb + 1)]
+        if 15 <= li <= 17:
+            return [(xa - 1, xa + 1.95)]
+        return []
+    recs = PG.text_page(R, seed + 1, lines=21, box=boxR, last_frac=0.42, skip=skipR)
+    initial(R, boxR[0] + 0.02, 2.9 + 0.62 * 14.45, 1.72, seed + 50, glyph='lp')
     yl = recs[-1]['base']
     sketch_ship(R, 10.1, yl + 2.6, 0.75, seed + 300)
     # the tale's closing mark: a small flourish under the last line

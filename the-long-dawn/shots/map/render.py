@@ -517,8 +517,9 @@ class Shot:
         # (it burns down further than it used to: at the end the map is warm only where fire touches it)
         room = 0.52 * flick * lerp(1.0, 0.17, smooth((t - 1995.0) / 65.0)) * (1.0 - 0.3 * smooth((t - 2060.0) / 27.0))
         room *= lerp(0.8, 1.0, smooth((t - 1935.0) / 30.0))
+        room *= self.room_gain(t)
         E = (room * rel * pool)[..., None] * np.array([1.0, 0.6, 0.3], np.float32)[None, None, :]
-        moon = lerp(1.0, 4.4, smooth((t - 1995.0) / 60.0))
+        moon = lerp(1.0, 4.4, smooth((t - 1995.0) / 60.0)) * self.moon_gain(t)
         E += moon * np.array([0.014, 0.024, 0.05], np.float32)[None, None, :]      # cool night fill (moonlight)
         # the first beacon's flare floods the peaks around it, then settles to a steady pool
         fo = self.flare(t)
@@ -560,6 +561,14 @@ class Shot:
 
     def exposure(self, t):
         return 1.5
+
+    def room_gain(self, t):
+        """(hook) the hearth beyond the table, relative to its keyed burn-down"""
+        return 1.0
+
+    def moon_gain(self, t):
+        """(hook) the cool night fill, relative to its keys"""
+        return 1.0
 
     def render(self, t, scale=1.0):
         hdr, cam = self.render_hdr(t, scale)
