@@ -428,13 +428,18 @@ class Shutters:
                 continue
             d = _face_dir(tw, i)
             G = tw.G[i]
-            for kind in (0, 3):
+            # a tower with no windows at all (the ALT's obelisk) opens along its great joints instead
+            blind = len(G[3]['p']) == 0 and not (G[0]['key'] >= 0).any()
+            for kind in ((4, 1) if blind else (0, 3)):
                 pt = tw.cur[i]['parts'][kind]
                 idx = pt['idx']
                 if len(idx) == 0:
                     continue
                 key = G[kind]['key'][idx]
                 win = key >= 0
+                if blind:
+                    key = (np.floor(G[kind]['p'][idx][:, 1] / 3.0)).astype(np.int64) + 1000   # one course per 'window'
+                    win = np.ones(len(idx), bool)
                 if kind == 0 and not win.any():
                     continue
                 P, N = pt['P'], pt['N']
