@@ -1,3 +1,25 @@
+# >>> HEROINE-v3 (2026-09-27, lane `heroine`, branch claude/v3-heroine): STATE AT 00:40Z (WIP) <<<
+
+**Read with BIBLE_V3 REVISION 1** (director, 00:40Z): H1 re-key (B7: face never lit or in focus; tinder, gloves,
+sparks, breath, scarf; head a rim-lit silhouette at most); FIRE TEST = Bag End (the Ring on the tip of her steel IN
+her beacon, unmarked, letters awake, not even warm; she cannot let it fall); Ring close-ups go to a Blender bake-off
+(`ring.py` = fallback), so this lane does hands, pose and light; H3 (hand forced open) is optional/last; H5 dead
+ember and H4 climb stay.
+
+**Code (new, nothing accepted is touched):**
+* `shots/hills/hsdf3.py`: fork of heroine_sdf's tracer (H1/v2b never imports it). T_BAND ring primitive; materials
+  GOLD (env-map reflection + inscription engraved/burning), CLAY, EMBER/COAL (emissive cracks under spreading ash,
+  `life`), SNOW (glints), ICE, IRON, ASH; returns a group-id buffer. UNTESTED at 00:40Z.
+
+**Next steps (in order):**
+1. H1 re-key: gloves (leather, no nails) + head groups rim-only under the warm sources, rendered through hsdf3
+   behind a default-off flag in beacon.py; half-res test 1262/1305/1322/1345 vs the v2b path; if good, full render
+   (src 1200-1439 -> renders/hills_v3) via a cloud/jobs json (ship jpg).
+2. Risk test #5 stills (full res): C THE FIND (hand closing on the band in a melted snow hollow, strike-lit),
+   C THE FIRE TEST (Bag End: the Ring on her steel's tip in the flames, her gloved hand holding it there), B THE DEAD
+   EMBER (over her shoulder from behind: clay pot, lid lifted, the ember greying under her breath). H3 last.
+3. Review sheet -> review/v3/heroine_v3_stills.jpg; RENDER_SPECs; this section rewritten as the report.
+
 # >>> HEROINE-2 (2026-09-26): FIRST BEACON v2b (s1 world, dry-stone courses, ignition) + RING fix - both LANDED <<<
 
 **LANDED 2026-09-26 18:4x (director accepted v2b).** Full-res FIRST BEACON src 1200-1439 rendered locally (240 frames,
