@@ -807,22 +807,21 @@ def _shifted(b, fn, off):
         b.P[i] = b.P[i] + np.asarray(off, float)
 
 
-def _mouth(b, r, y, hot=1.0):
-    """the throat of fire at the top of a stack: a disc of burning points (a window that always roars)"""
+def _mouth(b, r, y, hot=1.0, square=False):
+    """the throat of fire at the top of a stack: a disc (or square) of burning points (a window that always roars)"""
     key = int(b.new_windows(1)[0])
-    m = max(12, int(np.pi * r * r * b.dw * 0.25))
-    rr = r * np.sqrt(b.r.random(m))
-    a = b.r.uniform(0, 2 * np.pi, m)
-    pts = np.stack([rr * np.cos(a), np.full(m, y) + b.r.normal(0, 0.03, m), rr * np.sin(a)], 1)
-    b.add(WIN, pts, np.array([0.0, 1.0, 0.0]), np.pi * r * r / m, key, hot)
-
-
-def _lip(b, r0, r1, y0, y1, hot=1.0):
-    """a corbelled, flaring crown lip with a burning rim"""
-    b.revolve(lambda y: r0 + (r1 - r0) * _ss((y - y0) / max(y1 - y0, 1e-3)), y0, y1, dc=b.dc * 1.2, cracks=False)
-    b.circle(r1 + 0.03, y1, EDGE, 0.12, hot)
-    b.circle(r0 + 0.04, y0, EDGE, 0.07, 0.6 * hot)
-    b.annulus(max(r1 - 0.45, 0.0), r1, y1, 1.0)
+    if square:
+        m = max(12, int(4 * r * r * b.dw * 0.25))
+        q = b.r.uniform(-r, r, (m, 2))
+        pts = np.stack([q[:, 0], np.full(m, y) + b.r.normal(0, 0.03, m), q[:, 1]], 1)
+        area = 4 * r * r / m
+    else:
+        m = max(12, int(np.pi * r * r * b.dw * 0.25))
+        rr = r * np.sqrt(b.r.random(m))
+        a = b.r.uniform(0, 2 * np.pi, m)
+        pts = np.stack([rr * np.cos(a), np.full(m, y) + b.r.normal(0, 0.03, m), rr * np.sin(a)], 1)
+        area = np.pi * r * r / m
+    b.add(WIN, pts, np.array([0.0, 1.0, 0.0]), area, key, hot)
 
 
 def _hoops(b, rf, ys, width=0.1, hot=0.8):
@@ -830,105 +829,192 @@ def _hoops(b, rf, ys, width=0.1, hot=0.8):
         b.circle(float(rf(np.array([y]))[0]) + 0.04, float(y), EDGE, width, hot)
 
 
+# v3 (H5 critic): every crown is SQUARED or CRENELLATED. No flared lips (bottles, beakers), no bowls (goblets),
+# no bulbs, no platform rings, no curved flares anywhere (cooling towers, Eiffel feet): straight walls, straight
+# batters and stepped setbacks only.
+
+def _merlon(b, cx, cz, phi, w, d, y0, h, hot=0.85):
+    """one merlon: a small block of wall standing on the parapet (w along the wall, d through it), its top and
+    outer edges burning"""
+    c, s_ = math.cos(phi), math.sin(phi)
+    t = np.array([-s_, 0.0, c])
+    o = np.array([c, 0.0, s_])
+    ctr = np.array([cx, 0.0, cz])
+    m = max(8, int((2 * w * h + 2 * d * h + w * d) * b.dc))
+    face = b.r.random(m)
+    u = b.r.uniform(-0.5, 0.5, m)
+    v = b.r.uniform(0.0, 1.0, m)
+    p = np.zeros((m, 3))
+    n = np.zeros((m, 3))
+    # outer / inner faces (along the wall), end faces (through the wall), the top
+    f_out = face < 0.36
+    f_in = (face >= 0.36) & (face < 0.62)
+    f_end = (face >= 0.62) & (face < 0.86)
+    f_top = face >= 0.86
+    sgn_end = np.where(b.r.random(m) < 0.5, -1.0, 1.0)
+    for msk, pos, nrm in ((f_out, lambda: ctr + np.outer(u * w, t) + o * (d / 2), o),
+                          (f_in, lambda: ctr + np.outer(u * w, t) - o * (d / 2), -o)):
+        k = int(msk.sum())
+        if k:
+            P = pos()[msk]
+            P[:, 1] = y0 + v[msk] * h
+            p[msk], n[msk] = P, nrm
+    k = int(f_end.sum())
+    if k:
+        P = ctr + np.outer(sgn_end * w / 2, t) + np.outer(u * d, o)
+        P[:, 1] = y0 + v * h
+        p[f_end] = P[f_end]
+        n[f_end] = np.outer(sgn_end, t)[f_end]
+    k = int(f_top.sum())
+    if k:
+        P = ctr + np.outer(u * w, t) + np.outer((v - 0.5) * d, o)
+        P[:, 1] = y0 + h
+        p[f_top] = P[f_top]
+        n[f_top] = np.array([0.0, 1.0, 0.0])
+    b.add(CRUST, p, n, 1.0 / b.dc, -1, 0.3)
+    top_out = ctr + o * (d / 2) + np.array([0.0, y0 + h, 0.0])
+    b.line(top_out - t * (w / 2), top_out + t * (w / 2), EDGE, o, 0.07, hot)
+    for sg in (-1.0, 1.0):
+        e0 = ctr + o * (d / 2) + t * (sg * w / 2) + np.array([0.0, y0, 0.0])
+        b.line(e0, e0 + np.array([0.0, h, 0.0]), EDGE, o, 0.05, 0.7 * hot)
+
+
+def _crenel_round(b, r, y, n, h=None, hot=0.9):
+    """a crenellated rim round a round stack of radius r at height y: n merlons with gaps between them"""
+    h = h if h is not None else max(0.45, 0.42 * r)
+    w = 2 * np.pi * r / n * 0.56
+    d = max(0.22, 0.2 * r)
+    for k in range(n):
+        phi = 2 * np.pi * (k + 0.5) / n
+        _merlon(b, (r - d / 2) * math.cos(phi), (r - d / 2) * math.sin(phi), phi, w, d, y, h, hot)
+    b.circle(r + 0.02, y, EDGE, 0.08, 0.8 * hot)
+
+
+def _crenel_square(b, a, y, per_side, h=None, rot=0.0, hot=0.9):
+    """a crenellated parapet on a square top of apothem a (merlons at the corners and along each side)"""
+    h = h if h is not None else max(0.45, 0.36 * a)
+    d = max(0.22, 0.16 * a)
+    L = 2 * a
+    w = L / (2 * per_side - 1)
+    for j in range(4):
+        phi = rot + 2 * np.pi * j / 4
+        c, s_ = math.cos(phi), math.sin(phi)
+        for k in range(per_side):
+            u = -a + w / 2 + 2 * w * k
+            cx = (a - d / 2) * c - u * s_
+            cz = (a - d / 2) * s_ + u * c
+            _merlon(b, cx, cz, phi, w, d, y, h, hot)
+    b.ngon_ring(a + 0.02, y, 4, rot=rot, hot=0.8 * hot)
+
+
+def _step_round(b, r_lo, r_hi, y, hot=0.9):
+    """a stepped setback on a round stack: a flat burning ledge from r_lo out to r_hi"""
+    b.annulus(min(r_lo, r_hi), max(r_lo, r_hi), y, 1.0)
+    b.circle(max(r_lo, r_hi) + 0.03, y, EDGE, 0.1, hot)
+
+
+def _step_square(b, a_lo, a_hi, y, rot=0.0, hot=0.9, nsides=4):
+    b.ngon_slab(max(a_lo, a_hi), min(a_lo, a_hi), y, nsides, rot=rot)
+    b.ngon_ring(max(a_lo, a_hi) + 0.03, y, nsides, rot=rot, hot=hot, width=0.1)
+
+
 def forge_chimney(seed=0):
-    """F0: the tall stack. A tapering round chimney of brick courses bound by burning iron hoops, sparse slot
-    vents, a corbelled lip and a roaring throat."""
+    """F0: the tall stack. A round chimney of brick courses with a straight batter, bound by burning iron hoops,
+    sparse slot vents; at the top a straight cap band stepped out from the shaft, crenellated, a roaring throat."""
     b = TB(seed, dc=90.0, win_p=0.4, style=('masonry', 0.42, 0.95))
     top = HMAX
-    y1 = top - 1.3
+    y1 = top - 2.2
     rf = lambda y: 1.2 + 0.55 * np.clip((top - y) / 70.0, 0, 1)
-    b.revolve(rf, YBOT, y1, win=dict(fh=5.6, ww=0.26, wh=1.4, off=0.8, p=0.4), nbay=5)
+    b.revolve(rf, YBOT, y1, win=dict(fh=5.6, ww=0.2, wh=1.5, off=0.8, p=0.25), nbay=5)
     _hoops(b, rf, np.arange(y1 - 3.2, YBOT, -4.6))
-    _lip(b, 1.21, 1.72, y1, top)
-    _mouth(b, 1.35, top - 0.1)
+    r1 = float(rf(np.array([y1]))[0])
+    rc = r1 + 0.22
+    b.revolve(lambda y: np.full_like(y, rc), y1, top - 0.55, dc=110, cracks=False)
+    _step_round(b, r1, rc, y1)
+    _crenel_round(b, rc, top - 0.55, 8)
+    _mouth(b, rc - 0.25, top - 0.6)
     return b.done()
 
 
 def forge_kiln(seed=1):
-    """F1: the bottle kiln. A short neck swelling into a vast banded belly; furnace mouths round the belly."""
-    b = TB(seed, dc=85.0, win_p=0.55, style=('masonry', 0.5, 1.1))
+    """F1: the battered furnace. A square tower whose walls batter in straight (never a curve), furnace mouths
+    along its foot; a flat setback terrace two-thirds up, then a square flue, crenellated."""
+    b = TB(seed, dc=85.0, win_p=0.22, style=('masonry', 0.5, 1.1))
     top = HMAX
-    y1 = top - 1.0
-
-    def rf(y):
-        d = top - y
-        return 1.15 + 3.25 * _ss((d - 4.5) / 17.0) + 0.02 * np.maximum(d - 21.5, 0)
-    b.revolve(rf, YBOT, y1, win=dict(fh=4.2, ww=0.55, wh=0.8, off=0.6, p=0.5), nbay=9)
-    _hoops(b, rf, np.arange(top - 7.0, YBOT, -2.7), 0.09, 0.75)
-    _lip(b, 1.16, 1.55, y1, top)
-    _mouth(b, 1.2, top - 0.1)
+    ys = top - 24.0
+    apo = lambda y: 2.05 + 0.75 * np.clip((ys - y) / (ys - YBOT), 0, 1)
+    b.prism(apo, YBOT, ys, 4, rot=np.pi / 4, win=dict(fh=5.4, bw=1.5, ww=0.22, wh=1.5, off=0.6, p=0.2),
+            edge_hot=0.65)
+    for y in np.arange(ys - 3.0, YBOT, -5.5):
+        b.ngon_ring(float(apo(np.array([y]))[0]) + 0.04, float(y), 4, rot=np.pi / 4, hot=0.7, width=0.09)
+    af = 1.25
+    _step_square(b, af, 2.05, ys, rot=np.pi / 4)
+    b.prism(lambda y: np.full_like(y, af), ys, top - 0.6, 4, rot=np.pi / 4,
+            win=dict(fh=4.6, bw=1.0, ww=0.2, wh=1.4, off=1.0, p=0.2), edge_hot=0.75)
+    _crenel_square(b, af, top - 0.6, 2, rot=np.pi / 4)
+    _mouth(b, af * 0.8, top - 0.65, square=True)
     return b.done()
 
 
 def forge_bellows(seed=2):
     """F2: the bellows house. A square furnace block whose upper walls fold like a great bellows (burning ribs
-    on every fold), a hooded roof and one flue."""
+    on every fold); a flat roof stepped in, and one square flue, crenellated."""
     b = TB(seed, dc=90.0, win_p=0.35, style=('masonry', 0.5, 1.3))
     top = HMAX
-    fl0 = top - 7.5                       # flue from here
-    hood0 = fl0 - 2.6                     # hood from here
-    band0, band1 = hood0 - 17.0, hood0 - 0.6
+    roof = top - 8.0
+    band0, band1 = roof - 18.0, roof - 0.8
     pitch = 0.95
 
     def tri(y):
         u = (y - band0) / pitch
         return 1.0 - 2.0 * np.abs(u - np.floor(u) - 0.5)
     apo = lambda y: 2.35 + 0.32 * tri(y) * ((y > band0) & (y < band1)) + 0.01 * np.maximum(band0 - y, 0)
-    b.prism(apo, YBOT, hood0, 4, rot=np.pi / 4, win=dict(fh=3.1, bw=1.4, ww=0.34, wh=0.9, off=0.4, p=0.3),
+    b.prism(apo, YBOT, roof, 4, rot=np.pi / 4, win=dict(fh=4.1, bw=1.4, ww=0.22, wh=1.4, off=0.4, p=0.18),
             edge_hot=0.6)
     for y in np.arange(band0 + pitch * 0.5, band1, pitch):
         b.ngon_ring(2.35 + 0.32 + 0.02, y, 4, rot=np.pi / 4, hot=0.85, width=0.07)
     b.ngon_ring(2.4, band0, 4, rot=np.pi / 4, hot=0.7)
-    b.prism(lambda y: np.interp(y, [hood0, fl0], [2.45, 0.75]), hood0, fl0, 4, rot=np.pi / 4, edge_hot=0.8)
-    b.revolve(lambda y: np.full_like(y, 0.66), fl0 - 0.3, top - 0.8, dc=110)
-    _hoops(b, lambda y: np.full_like(y, 0.66), np.arange(top - 2.2, fl0, -1.9), 0.07, 0.8)
-    _lip(b, 0.67, 0.95, top - 0.8, top)
-    _mouth(b, 0.72, top - 0.1)
+    af = 1.15
+    _step_square(b, af, 2.37, roof, rot=np.pi / 4)
+    _crenel_square(b, 2.37, roof, 3, h=0.6, rot=np.pi / 4, hot=0.8)
+    b.prism(lambda y: np.full_like(y, af), roof, top - 0.6, 4, rot=np.pi / 4, edge_hot=0.8)
+    for y in np.arange(top - 2.4, roof, -1.9):
+        b.ngon_ring(af + 0.04, float(y), 4, rot=np.pi / 4, hot=0.8, width=0.07)
+    _crenel_square(b, af, top - 0.6, 2, rot=np.pi / 4)
+    _mouth(b, af * 0.8, top - 0.65, square=True)
     return b.done()
 
 
 def forge_twin(seed=3):
-    """F3: twin flues on one furnace block, braced together."""
+    """F3: twin square flues on one furnace block, braced together, each crenellated."""
     b = TB(seed, dc=90.0, win_p=0.4, style=('masonry', 0.46, 1.0))
     top = HMAX
     blk = top - 9.0
     apo = lambda y: 2.1 + 0.012 * np.maximum(blk - y, 0)
-    b.prism(apo, YBOT, blk, 4, rot=0.0, win=dict(fh=3.6, bw=1.25, ww=0.3, wh=1.1, off=0.5, p=0.4), edge_hot=0.65)
+    b.prism(apo, YBOT, blk, 4, rot=0.0, win=dict(fh=4.6, bw=1.25, ww=0.2, wh=1.5, off=0.5, p=0.2), edge_hot=0.65)
     b.ngon_ring(2.14, blk, 4, hot=0.9)
     b.ngon_slab(2.14, 0.0, blk, 4)
-    for zc in (-1.05, 1.08):
-        rf = lambda y: np.full_like(y, 0.72)
-        _shifted(b, lambda: (b.revolve(rf, blk - 0.2, top - 0.9, dc=110),
-                             _hoops(b, rf, np.arange(top - 2.5, blk, -2.1), 0.07, 0.8),
-                             _lip(b, 0.73, 0.98, top - 0.9, top), _mouth(b, 0.76, top - 0.1)), (0.0, 0.0, zc))
+    for zc, dt in ((-1.05, 0.0), (1.08, -1.6)):
+        af = 0.72
+        _shifted(b, lambda dt=dt: (b.prism(lambda y: np.full_like(y, af), blk - 0.2, top - 0.6 + dt, 4, edge_hot=0.8),
+                                   [b.ngon_ring(af + 0.04, float(y), 4, hot=0.8, width=0.07)
+                                    for y in np.arange(top - 2.5 + dt, blk, -2.1)],
+                                   _crenel_square(b, af, top - 0.6 + dt, 2),
+                                   _mouth(b, af * 0.75, top - 0.65 + dt, square=True)), (0.0, 0.0, zc))
     for yb in (blk + 2.8, blk + 5.6):
         b.line([0.0, yb, -0.4], [0.0, yb, 0.4], EDGE, None, 0.1, 0.85)
     return b.done()
 
 
 def forge_blast(seed=4):
-    """F4: the blast furnace. A thin stack over a hood, a charging gallery, the bosh swelling below it, a ring
-    of tuyeres roaring at its waist."""
+    """F4: the blast furnace. A round shaft with a straight batter, a ring of tuyeres roaring at its waist, a
+    stepped setback to a narrower stack, crenellated."""
     b = TB(seed, dc=90.0, win_p=0.5, style=('masonry', 0.44, 0.9))
     top = HMAX
-
-    def rf(y):
-        d = top - y
-        r = np.where(d < 6.0, 0.52, np.interp(d, [6.0, 9.0], [0.55, 2.0]))
-        bosh = 0.95 * np.exp(-((d - 17.5) / 4.2) ** 2)
-        r = np.where(d >= 9.0, 2.0 + bosh + 0.3 * _ss((d - 22.0) / 6.0), r)
-        return r
-    b.revolve(rf, YBOT, top - 0.7, win=dict(fh=2.2, ww=0.32, wh=0.5, off=0.25, p=0.2), nbay=12)
-    yg = top - 9.2
-    b.annulus(2.0, 3.0, yg, 1.0)
-    b.annulus(2.0, 3.0, yg - 0.2, -1.0)
-    b.circle(3.0, yg, EDGE, 0.1, 0.9)
-    for k in range(10):
-        a = 2 * np.pi * k / 10
-        b.line([3.0 * np.cos(a), yg, 3.0 * np.sin(a)], [3.0 * np.cos(a), yg + 0.9, 3.0 * np.sin(a)], EDGE, None,
-               0.05, 0.6)
-    b.circle(3.0, yg + 0.9, EDGE, 0.05, 0.6)
-    yt = top - 25.0                                  # the tuyere ring: a band of roaring ports
+    ys = top - 12.0
+    rf = lambda y: 1.85 + 0.45 * np.clip((ys - y) / (ys - YBOT), 0, 1)
+    b.revolve(rf, YBOT, ys, win=dict(fh=2.2, ww=0.32, wh=0.5, off=0.25, p=0.2), nbay=12)
+    yt = top - 28.0                                  # the tuyere ring: a band of roaring ports (windows, not a deck)
     key0 = b.new_windows(14)
     for k in range(14):
         a = 2 * np.pi * (k + 0.5) / 14
@@ -939,18 +1025,22 @@ def forge_blast(seed=4):
         b.add(WIN, np.stack([rr * np.cos(aa), yy, rr * np.sin(aa)], 1),
               _unit(np.stack([np.cos(aa), np.zeros(m), np.sin(aa)], 1)), 0.25 * 0.6 / m, int(key0[k]), 0.9)
     _hoops(b, rf, [yt + 0.9, yt - 0.9] + list(np.arange(yt - 4.0, YBOT, -4.5)), 0.1, 0.8)
-    _lip(b, 0.53, 0.78, top - 0.7, top)
-    _mouth(b, 0.56, top - 0.1)
+    r2 = 1.0
+    _step_round(b, r2, 1.85, ys)
+    b.revolve(lambda y: np.full_like(y, r2), ys, top - 0.5, dc=110)
+    _hoops(b, lambda y: np.full_like(y, r2), np.arange(top - 2.6, ys, -2.4), 0.07, 0.8)
+    _crenel_round(b, r2, top - 0.5, 6)
+    _mouth(b, r2 * 0.8, top - 0.55)
     return b.done()
 
 
 def forge_buttressed(seed=5):
-    """F5: a square stack stiffened by stepped corner buttresses, slot vents, a corbelled crown."""
+    """F5: a square stack stiffened by stepped corner buttresses, slot vents, a crenellated parapet."""
     b = TB(seed, dc=90.0, win_p=0.35, style=('masonry', 0.46, 1.05))
     top = HMAX
-    y1 = top - 1.6
+    y1 = top - 1.0
     apo = lambda y: 1.25 + 0.4 * np.clip((top - y) / 60.0, 0, 1)
-    b.prism(apo, YBOT, y1, 4, rot=0.0, win=dict(fh=4.4, bw=1.0, ww=0.22, wh=1.5, off=1.0, p=0.35), edge_hot=0.7)
+    b.prism(apo, YBOT, y1, 4, rot=0.0, win=dict(fh=5.0, bw=1.0, ww=0.2, wh=1.6, off=1.0, p=0.22), edge_hot=0.7)
     for sx in (-1, 1):
         for sz in (-1, 1):
             for (ya, yb_, w) in ((YBOT, top - 34.0, 0.55), (top - 34.0, top - 16.0, 0.4)):
@@ -959,53 +1049,67 @@ def forge_buttressed(seed=5):
                                                                edge_hot=0.5), (sx * c, 0.0, sz * c))
                 _shifted(b, lambda w=w, yb_=yb_: b.ngon_slab(w, 0.0, yb_, 4), (sx * c, 0.0, sz * c))
     a1 = float(apo(np.array([y1]))[0])
-    b.prism(lambda y: np.interp(y, [y1, top], [a1, a1 + 0.35]), y1, top, 4, edge_hot=0.9)
-    b.ngon_ring(a1 + 0.37, top, 4, hot=1.0)
-    b.ngon_slab(a1 + 0.35, a1 - 0.25, top, 4)
-    _mouth(b, a1 * 0.95, top - 0.1)
+    _crenel_square(b, a1, y1, 2)
+    _mouth(b, a1 * 0.85, y1 - 0.05, square=True)
     return b.done()
 
 
 def forge_crucible(seed=6):
-    """F6: an octagonal shaft crowned by a great iron crucible whose molten charge brims at the lip."""
-    b = TB(seed, dc=90.0, win_p=0.35, style=('masonry', 0.5, 1.0))
+    """F6: the furnace shaft. A massive octagonal shaft, straight-sided, a band of furnace mouths burning at its
+    waist; two flat setbacks, then a square flue, crenellated."""
+    b = TB(seed, dc=90.0, win_p=0.22, style=('masonry', 0.5, 1.0))
     top = HMAX
-    yb0 = top - 3.4
-    apo = lambda y: 1.4 + 0.3 * np.clip((top - y) / 60.0, 0, 1)
-    b.prism(apo, YBOT, yb0, 8, rot=np.pi / 8, win=dict(fh=4.8, bw=0.9, ww=0.24, wh=1.0, off=1.4, p=0.3),
+    s1, s2 = top - 9.0, top - 30.0
+    apo = lambda y: 2.3 + 0.25 * np.clip((s2 - y) / (s2 - YBOT), 0, 1)
+    b.prism(apo, YBOT, s2, 8, rot=np.pi / 8, win=dict(fh=5.2, bw=1.1, ww=0.22, wh=1.5, off=1.4, p=0.22),
             edge_hot=0.55)
-    for y in np.arange(yb0 - 2.0, YBOT, -5.2):
+    for y in np.arange(s2 - 2.0, YBOT, -5.2):
         b.ngon_ring(float(apo(np.array([y]))[0]) + 0.05, float(y), 8, rot=np.pi / 8, hot=0.75, width=0.1)
-    bowl = lambda y: 1.5 + 1.75 * _ss((y - yb0) / 3.4) ** 0.8
-    b.revolve(bowl, yb0, top, dc=110, meridians=12, cracks=False)
-    b.circle(3.26, top, EDGE, 0.14, 1.0)
-    b.circle(1.52, yb0, EDGE, 0.08, 0.7)
-    _mouth(b, 3.05, top - 0.25)
+    ym = s2 - 12.0                                   # the furnace mouths: a band of roaring arches
+    key0 = b.new_windows(16)
+    for k in range(16):
+        a = np.pi / 8 + 2 * np.pi * (k + 0.5) / 16
+        rr = float(apo(np.array([ym]))[0]) / math.cos(np.pi / 8 * 0.5) + 0.02
+        m = 110
+        aa = a + b.r.uniform(-0.06, 0.06, m)
+        yy = ym + b.r.uniform(-0.55, 0.55, m) * (1.0 - 0.4 * b.r.random(m))
+        b.add(WIN, np.stack([rr * np.cos(aa), yy, rr * np.sin(aa)], 1),
+              _unit(np.stack([np.cos(aa), np.zeros(m), np.sin(aa)], 1)), 0.3 * 1.1 / m, int(key0[k]), 0.95)
+    a2 = 1.65
+    _step_square(b, a2, 2.3, s2, rot=np.pi / 8, nsides=8)
+    b.prism(lambda y: np.full_like(y, a2), s2, s1, 8, rot=np.pi / 8, win=dict(fh=4.0, bw=1.0, ww=0.2, wh=1.2,
+                                                                             off=1.0, p=0.25), edge_hot=0.7)
+    af = 1.05
+    _step_square(b, af * 1.08, a2, s1, rot=np.pi / 8, nsides=8)
+    b.prism(lambda y: np.full_like(y, af), s1, top - 0.6, 4, rot=0.0, edge_hot=0.8)
+    for y in np.arange(top - 2.4, s1, -2.0):
+        b.ngon_ring(af + 0.04, float(y), 4, hot=0.8, width=0.07)
+    _crenel_square(b, af, top - 0.6, 2)
+    _mouth(b, af * 0.8, top - 0.65, square=True)
     return b.done()
 
 
 def forge_telescope(seed=7):
-    """F7: a telescoping flue: three drums of shrinking girth, each step a burning ledge."""
+    """F7: a telescoping flue: three drums of shrinking girth, each step a burning ledge; crenellated."""
     b = TB(seed, dc=90.0, win_p=0.4, style=('masonry', 0.48, 1.1))
     top = HMAX
     s1, s2 = top - 11.0, top - 25.0
     rf = lambda y: np.where(y > s1, 1.1, np.where(y > s2, 1.75, 2.45))
-    for (ya, yb_, r, nb) in ((YBOT, s2, 2.45, 10), (s2, s1, 1.75, 8), (s1, top - 0.9, 1.1, 6)):
-        b.revolve(lambda y, r=r: np.full_like(y, r), ya, yb_, win=dict(fh=3.4, ww=0.28, wh=1.0, off=0.7, p=0.4),
+    for (ya, yb_, r, nb) in ((YBOT, s2, 2.45, 10), (s2, s1, 1.75, 8), (s1, top - 0.5, 1.1, 6)):
+        b.revolve(lambda y, r=r: np.full_like(y, r), ya, yb_, win=dict(fh=4.4, ww=0.2, wh=1.4, off=0.7, p=0.22),
                   nbay=nb)
     for (ys, ro, ri) in ((s2, 2.45, 1.75), (s1, 1.75, 1.1)):
-        b.annulus(ri, ro + 0.12, ys, 1.0)
-        b.circle(ro + 0.12, ys, EDGE, 0.12, 0.95)
+        _step_round(b, ri, ro + 0.12, ys, 0.95)
     _hoops(b, rf, np.arange(top - 4.0, YBOT, -5.0), 0.08, 0.7)
-    _lip(b, 1.11, 1.45, top - 0.9, top)
-    _mouth(b, 1.15, top - 0.1)
+    _crenel_round(b, 1.1, top - 0.5, 7)
+    _mouth(b, 0.9, top - 0.55)
     return b.done()
 
 
 FORGES = [forge_chimney, forge_kiln, forge_bellows, forge_twin, forge_blast, forge_buttressed, forge_crucible,
           forge_telescope]
-FORGE_NAMES = ['chimney', 'bottle kiln', 'bellows house', 'twin flues', 'blast furnace', 'buttressed stack',
-               'crucible', 'telescope flue']
+FORGE_NAMES = ['chimney', 'battered furnace', 'bellows house', 'twin flues', 'blast furnace', 'buttressed stack',
+               'furnace shaft', 'telescope flue']
 def obelisk(seed=8):
     """ALT only ("coded pair"): a monolith, square tapering shaft, a pyramidion, a few great joints"""
     b = TB(seed, dc=90.0, style=('masonry', 2.6, 3.0), win_p=0.0)

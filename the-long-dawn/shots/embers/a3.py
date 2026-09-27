@@ -72,6 +72,9 @@ class A3Sched:
     smoke_gain = 0.45           # thinner smoke off the tops, so the silhouettes and the giants read
     surge_scale = 0.28          # 40 surges in A (v2 had 16): each one smaller, so the towers stay on the rim
 
+    def dust_k(self, t):
+        return float(smoothstep(T_TOWERS, T_TOWERS + 80, t))
+
     def redness(self, t):
         if t >= T_LIGHT:
             return 0.55 * (1 - float(smoothstep(T_STOP, T_HOLDS, t)))
@@ -307,10 +310,10 @@ TH_G2 = 2 * np.pi * 2 / 8 + B.TOWER_ANG0          # giant 2's azimuth
 
 CAM_A5 = [  # (frame, radius, azimuth offset from ALPHA_C, height, target y, hfov)
     (1040, 13.9, 0.43, 7.2, -1.35, 46.0),       # the v2 ignition camera (continuity with the point)
-    (1062, 13.6, 0.22, -0.8, 1.3, 50.0),
-    (1130, 13.6, 0.08, -2.4, 1.9, 50.0),        # the fire owns the frame: close, below it, tilted up
-    (1210, 13.2, -0.04, -2.6, 2.0, 50.0),
-    (1272, 13.8, -0.12, -2.0, 1.9, 50.0),
+    (1072, 21.0, 0.26, 2.2, 0.9, 48.0),         # the fire blooms and the camera draws back from it ...
+    (1110, 26.0, 0.12, -1.2, 0.9, 50.0),        # ... until it owns the frame: ~38% of its height, upper middle
+    (1210, 26.8, 0.0, -1.5, 0.9, 50.0),
+    (1272, 27.2, -0.1, -1.3, 0.9, 50.0),
     (1310, 21.0, -0.17, 3.5, 0.5, 56.0),        # its light rolls out: up and back to see the land answer
     (1370, 42.0, -0.21, 11.0, 5.0, 62.0),       # ... to the horizon
     (1425, 46.0, -0.23, 10.0, 5.5, 62.0),
@@ -398,7 +401,7 @@ class TimelineA3(TL.Timeline):
         return hdr
 
     def finish_opts(self, f):
-        streak = 0.05 * float(smoothstep(T_IGN - 25, T_IGN - 2, f)) * (1 - float(smoothstep(T_IGN + 4, T_IGN + 20, f)))
+        streak = 0.0             # v3 (H5): no anamorphic lens streak at the ignition
         bloom = 0.15
         if T_BLACK <= f < T_LIGHT:
             bloom = 0.1

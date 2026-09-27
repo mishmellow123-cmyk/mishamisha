@@ -68,6 +68,7 @@ MIND_BODY_DIM = 0.55      # the flame's body is dimmed by this much so its filam
 MIND_TONGUE_DIM = 0.55     # translucent tongues
 MIND_GLOW = 0.6           # the flame's halo
 MIND_STRETCH = 1.25       # a taller body (v2 1.05), so the tongues crown a body rather than make the flame
+MIND_NARROW = 0.8         # v3 (H5): a broad body under the one tongue (0.62 made a torch / a candle)
 MIND_SOFT = 0.03         # softer splats while it is a flame: a luminous body, not grain
 MIND_RIM_GOLD = 0.95      # gold on the silhouette only
 MIND_RIM_E = 4.0          # ... a little brighter there
@@ -245,9 +246,7 @@ def _build_filaments(seed=5, n_roots=18):
 # reaching out past the body so no smooth envelope edge shows, a glow drawn up the flame. All of this belongs to the
 # fire before it opens into the crown / Ring: it is weighted by (1 - crown_morph), so the race is unchanged.
 FLAME_TONGUES = [  # base azimuth, height above the orb centre, width, lean, flicker rate, phase
-    (0.25, 2.30, 0.27, 0.26, 0.155, 0.0),     # v3: flicker rates x0.5 (red team: it must move wrongly for a flame)
-    (2.45, 1.90, 0.22, 0.34, 0.195, 1.9),
-    (4.30, 1.62, 0.19, 0.40, 0.235, 3.6),
+    (0.0, 2.75, 0.5, 0.08, 0.155, 0.0),       # v3 (H5): ONE tapering tongue on the axis -- never a fork
 ]
 
 
@@ -272,10 +271,19 @@ def tongue_axis(kt, s, t, fw):
     sways, a travelling S-wave licks up it"""
     T = np.array(FLAME_TONGUES)
     th, H, W, lean, om, ph = [T[kt, j] for j in range(6)]
-    # v3: the three tongues rise and sink together on the breath (no flicker), with only a slow drift of their own
+    # v3: the tongue rises and sinks on the breath (no flicker), with only a slow drift of its own
     Ht = H * (1.0 + 0.16 * breath(t) + 0.035 * np.sin(om * t + ph))
-    y0 = 0.72
+    y0 = 0.55
     y = y0 + s * (Ht - y0)
+    if len(T) == 1:
+        # v3 (H5): one tongue on the axis, drawn to a single point; it leans a little on a slow, even sway and a
+        # gentle S-wave climbs it (too even for a flame), so its tip never splits
+        lean_a = 0.021 * t + ph
+        lick = 0.06 * s * (1.0 - 0.65 * s) * np.sin(2 * np.pi * 1.1 * s - om * 1.4 * t + ph)
+        px = lean * s * s * np.cos(lean_a) + lick
+        pz = lean * s * s * np.sin(0.8 * lean_a + 1.0) + 0.7 * lick * np.cos(0.5 * t * om)
+        w = W * (1.0 - s) ** 1.15 * (1.0 + 0.06 * np.sin(1.3 * om * t + 4.0 * s + ph))
+        return np.stack([px, y, pz], 1), w
     rb = 0.2 * (1.0 - 0.55 * s)
     sway = th + 0.3 * np.sin(0.035 * t + ph)
     lick = 0.13 * s * np.sin(2 * np.pi * 1.4 * s - om * 1.6 * t + ph)
@@ -361,6 +369,15 @@ class MindFire:
         a_ = r2.uniform(0, 2 * np.pi, m)
         rr_ = np.sqrt(r2.random(m))
         self.tu = np.stack([rr_ * np.cos(a_), rr_ * np.sin(a_)], 1)
+        # v3 (H5: "visible inner structure, embers and filaments, so it's a fire, not a ghost"): inner embers,
+        # slow motes climbing through the body and up the tongue on the fire's calm clock
+        r3 = rng(seed + 1700)
+        q = 1100
+        self.mo_ph = r3.random(q)
+        self.mo_v = r3.uniform(0.0035, 0.008, q)
+        self.mo_u = r3.normal(0, 1, (q, 2)) * 0.62
+        self.mo_E = r3.lognormal(0, 0.55, q)
+        self.mo_tw = r3.uniform(0, 2 * np.pi, q)
         print('mindfire: flow', n, 'tongues', m, 'filament pts', len(fp))
 
     # --- warp from orb coordinates (unit ball) to the ring/crown
@@ -377,6 +394,20 @@ class MindFire:
         y2 = lerp(y * R, y * 0.4 * 1.4, m)
         phi2 = phi + m * 0.012 * (t - 562)
         return np.stack([rho2 * np.cos(phi2), y2, rho2 * np.sin(phi2)], 1)
+
+    def motes(self, t):
+        """orb-space positions of the inner embers: up the body, then up the tongue's own axis"""
+        k = (self.mo_ph + self.mo_v * FLAME_CLOCK * (t - IGN)) % 1.0
+        T = np.array(FLAME_TONGUES)
+        Ht = T[0, 1] * (1.0 + 0.16 * breath(t))
+        y = -0.35 + k * (Ht - 0.1 + 0.35)
+        rad = np.interp(y, [-0.35, 0.1, 0.6, 1.3, 2.0, Ht], [0.18, 0.4, 0.4, 0.3, 0.13, 0.0])
+        s_ = np.clip((y - 0.55) / max(Ht - 0.55, 1e-3), 0, 1)
+        ax, _ = tongue_axis(np.zeros(len(k), int), s_, t, 1.0)
+        a = smoothstep(0.35, 0.75, y)
+        x = ax[:, 0] * a + self.mo_u[:, 0] * rad
+        z = ax[:, 2] * a + self.mo_u[:, 1] * rad
+        return np.stack([x, y, z], 1)
 
     def flow_pts(self, t):
         tt = t - IGN
@@ -413,8 +444,8 @@ class MindFire:
         yc = 0.08 + 0.3 * fw                                           # the hot zone sits up in the body
         d = np.sqrt(q1[:, 0] ** 2 + q1[:, 2] ** 2 + ((q1[:, 1] - yc) / (1.0 + 0.6 * fw)) ** 2)
         low = smoothstep(0.1, -0.6, q1[:, 1]) * fw                   # a cooler, dimmer base
-        q0 = flame_shape(q0, flame_w(ctx.t0), stretch_up=MIND_STRETCH, lift=0.32)
-        q1 = flame_shape(q1, flame_w(ctx.t1), stretch_up=MIND_STRETCH, lift=0.32)
+        q0 = flame_shape(q0, flame_w(ctx.t0), stretch_up=MIND_STRETCH, lift=0.32, narrow=MIND_NARROW)
+        q1 = flame_shape(q1, flame_w(ctx.t1), stretch_up=MIND_STRETCH, lift=0.32, narrow=MIND_NARROW)
         s_hat = _side(ctx.cam, C1)
         P0 = C0 + self.warp(q0, crown_morph(ctx.t0), R0, ctx.t0) @ crown_tilt(ctx.t0).T
         P1 = C1 + self.warp(q1, crown_morph(ctx.t1), R1, ctx.t1) @ crown_tilt(ctx.t1).T
@@ -532,6 +563,18 @@ class MindFire:
         F0 = C0 + self.warp(fq0, crown_morph(ctx.t0), R0, ctx.t0) @ crown_tilt(ctx.t0).T
         F1 = C1 + self.warp(fq1, crown_morph(ctx.t1), R1, ctx.t1) @ crown_tilt(ctx.t1).T
         ctx.fr.splat(F0, F1, 0.002, ef, fcol, ctx.cam0, ctx.cam1)       # v3 (locked sheet): filaments below notice
+        if fw > 0:
+            M0 = C0 + self.motes(ctx.t0) * R0 @ crown_tilt(ctx.t0).T
+            Mq = self.motes(ctx.t1)
+            M1 = C1 + Mq * R1 @ crown_tilt(ctx.t1).T
+            k = ((self.mo_ph + self.mo_v * FLAME_CLOCK * (ctx.t1 - IGN)) % 1.0)
+            k0 = ((self.mo_ph + self.mo_v * FLAME_CLOCK * (ctx.t0 - IGN)) % 1.0)
+            ok = k >= k0
+            life = smoothstep(0.0, 0.12, k) * (1.0 - smoothstep(0.7, 1.0, k))
+            tw = 0.8 + 0.2 * np.sin(0.2 * t + self.mo_tw)
+            em = self.mo_E * life * tw * ok * 7.0 * pw * fw * smoothstep(IGN + 4, IGN + 30, t)
+            cm = C_CORE * (1 - 0.6 * k)[:, None] + (C_GOLD * 0.8 + C_CORE * 0.2) * (0.6 * k)[:, None]
+            ctx.fr.splat(M0[ok], M1[ok], 0.005, em[ok], cm[ok], ctx.cam0, ctx.cam1)
         # --- glow (volumetric halo around the fire)
         H = np.array([C1, C1, C1 + [0, 0.4, 0]])
         rr = np.array([1.2, 3.0, 7.0]) * (1 + 1.5 * m)
@@ -569,7 +612,7 @@ class FireSparks:
         self.a = r.uniform(0, 2 * np.pi, n)
         self.sp = r.normal(0, 1, (n, 2))
         self.E = r.lognormal(0, 0.7, n)
-        self.flame_sub = rng(seed + 500).random(n) < 0.04   # v2: while it is a flame only a few sparks lift off
+        self.flame_sub = rng(seed + 500).random(n) < (0.04 if SCHED is None else 0.012)   # v2: only a few lift off
 
     def pts(self, t):
         C = crown_centre(t)
@@ -585,7 +628,7 @@ class FireSparks:
         fw = flame_w(t)
         if fw > 0:
             # v2: from the three tongue tips, a thin drifting plume (v1's column read as the bulb's cord)
-            kt = (np.arange(self.n) % 3)
+            kt = (np.arange(self.n) % len(FLAME_TONGUES))
             tip, _ = tongue_axis(kt, np.full(self.n, 0.97), t, fw)
             spr = 0.2 + 0.9 * k
             xf = tip[:, 0] * R + self.sp[:, 0] * spr
@@ -709,6 +752,14 @@ class Shockwave:
     def emit(self, ctx):
         t = ctx.t
         if t < IGN or t > IGN + 40:
+            return
+        if SCHED is not None:
+            # v3 (H5: "a radial ember starfield" at the ignition): the point simply catches -- a soft flash
+            a = t - IGN
+            if a < 10:
+                H = np.zeros((2, 3))
+                ctx.fr.splat(H, H, np.array([1.6, 5.0]), np.array([9.0e4, 4.0e4]) * math.exp(-a / 3.0),
+                             np.array([C_CORE, C_ICE]), ctx.cam0, ctx.cam1, profile=1)
             return
         P0 = self.pts(ctx.t0)
         P1 = self.pts(ctx.t1)
@@ -1587,6 +1638,11 @@ class Dust:
             return q + vnoise(self.p * 0.05 + np.array([0.003 * tq, 0, 0]), 0.5, (0, 0, 0), 1) * 1.5
         red = redness(t)
         e = self.E * 0.5 * (0.6 + 0.4 * np.sin(0.1 * t + self.ph))
+        if SCHED is not None and hasattr(SCHED, 'dust_k'):
+            k = SCHED.dust_k(t)          # v3 A: the fire alone in a clean black; the air fills as the towers rise
+            if k <= 0.0:
+                return
+            e = e * k
         col = look.blackbody(self.T) * (1 - 0.5 * red) + C_RED * 0.5 * red
         ctx.fr.splat(pts(ctx.t0), pts(ctx.t1), 0.01, e, col, ctx.cam0, ctx.cam1, zref=0.0)
 
