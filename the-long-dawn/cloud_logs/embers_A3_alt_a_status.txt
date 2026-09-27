@@ -5,3 +5,115 @@ host: Linux vm 6.18.44-fc-v42 #1 SMP PREEMPT_DYNAMIC @0 x86_64 | cpus 4
 13:00:03 setup: cd shots/embers && python3 render.py 1440 --cut A3 --alt-towers --scale 0.1 --out /tmp/embers_warm
 13:01:55 setup ok in 112s
 13:01:55 SETUP DONE; starting renders
+13:01:58 render[0] started: cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1440-1839:4 --cut A3 --alt-towers
+13:01:58 render[1] started: cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1441-1839:4 --cut A3 --alt-towers
+13:01:58 render[2] started: cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1442-1839:4 --cut A3 --alt-towers
+13:01:58 render[3] started: cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1443-1839:4 --cut A3 --alt-towers
+
+--- render[0] cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1440-1839:4 --cut A3 --alt-towers
+frame 1740 scale 1.0 2.25s
+frame 1744 scale 1.0 2.25s
+frame 1748 scale 1.0 2.31s
+frame 1752 scale 1.0 2.17s
+frame 1756 scale 1.0 1.86s
+frame 1760 scale 1.0 2.25s
+frame 1764 scale 1.0 2.47s
+frame 1768 scale 1.0 2.05s
+frame 1772 scale 1.0 2.11s
+frame 1776 scale 1.0 2.19s
+frame 1780 scale 1.0 2.11s
+frame 1784 scale 1.0 1.94s
+frame 1788 scale 1.0 1.90s
+frame 1792 scale 1.0 1.76s
+frame 1796 scale 1.0 2.20s
+frame 1800 scale 1.0 1.89s
+frame 1804 scale 1.0 1.85s
+frame 1808 scale 1.0 2.42s
+frame 1812 scale 1.0 2.06s
+frame 1816 scale 1.0 1.91s
+frame 1820 scale 1.0 1.66s
+frame 1824 scale 1.0 2.37s
+frame 1828 scale 1.0 2.71s
+frame 1832 scale 1.0 3.01s
+frame 1836 scale 1.0 2.43s
+
+--- render[1] cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1441-1839:4 --cut A3 --alt-towers
+frame 1741 scale 1.0 2.38s
+frame 1745 scale 1.0 1.96s
+frame 1749 scale 1.0 2.17s
+frame 1753 scale 1.0 1.83s
+frame 1757 scale 1.0 1.54s
+frame 1761 scale 1.0 2.14s
+frame 1765 scale 1.0 1.94s
+frame 1769 scale 1.0 1.98s
+frame 1773 scale 1.0 1.82s
+frame 1777 scale 1.0 2.05s
+frame 1781 scale 1.0 2.02s
+frame 1785 scale 1.0 1.98s
+frame 1789 scale 1.0 1.99s
+frame 1793 scale 1.0 2.04s
+frame 1797 scale 1.0 2.08s
+frame 1801 scale 1.0 2.10s
+frame 1805 scale 1.0 1.93s
+frame 1809 scale 1.0 2.07s
+frame 1813 scale 1.0 1.93s
+frame 1817 scale 1.0 2.81s
+frame 1821 scale 1.0 2.20s
+frame 1825 scale 1.0 2.53s
+frame 1829 scale 1.0 2.48s
+frame 1833 scale 1.0 1.95s
+frame 1837 scale 1.0 1.74s
+
+--- render[2] cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1442-1839:4 --cut A3 --alt-towers
+frame 1746 scale 1.0 1.72s
+frame 1750 scale 1.0 1.75s
+frame 1754 scale 1.0 1.96s
+frame 1758 scale 1.0 1.95s
+frame 1762 scale 1.0 2.16s
+frame 1766 scale 1.0 2.26s
+frame 1770 scale 1.0 2.39s
+frame 1774 scale 1.0 2.09s
+frame 1778 scale 1.0 1.95s
+frame 1782 scale 1.0 2.15s
+frame 1786 scale 1.0 2.11s
+frame 1790 scale 1.0 1.87s
+frame 1794 scale 1.0 1.94s
+frame 1798 scale 1.0 2.24s
+frame 1802 scale 1.0 2.16s
+frame 1806 scale 1.0 2.07s
+frame 1810 scale 1.0 1.79s
+frame 1814 scale 1.0 2.32s
+frame 1818 scale 1.0 2.20s
+frame 1822 scale 1.0 2.13s
+frame 1826 scale 1.0 2.56s
+frame 1830 scale 1.0 2.21s
+frame 1834 scale 1.0 2.14s
+crater: ground 70000 wall 320000 floor 60000
+frame 1838 scale 1.0 2.05s
+
+--- render[3] cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1443-1839:4 --cut A3 --alt-towers
+frame 1747 scale 1.0 2.44s
+frame 1751 scale 1.0 1.98s
+frame 1755 scale 1.0 2.39s
+frame 1759 scale 1.0 2.47s
+frame 1763 scale 1.0 2.53s
+frame 1767 scale 1.0 2.10s
+frame 1771 scale 1.0 2.21s
+frame 1775 scale 1.0 2.17s
+frame 1779 scale 1.0 2.07s
+frame 1783 scale 1.0 2.16s
+frame 1787 scale 1.0 2.42s
+frame 1791 scale 1.0 2.10s
+frame 1795 scale 1.0 1.97s
+frame 1799 scale 1.0 2.01s
+frame 1803 scale 1.0 1.96s
+frame 1807 scale 1.0 1.77s
+frame 1811 scale 1.0 2.01s
+frame 1815 scale 1.0 1.96s
+frame 1819 scale 1.0 2.21s
+frame 1823 scale 1.0 2.49s
+frame 1827 scale 1.0 2.55s
+frame 1831 scale 1.0 2.49s
+frame 1835 scale 1.0 2.15s
+crater: ground 70000 wall 320000 floor 60000
+frame 1839 scale 1.0 2.56s
