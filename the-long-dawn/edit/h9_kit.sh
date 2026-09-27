@@ -5,7 +5,12 @@
 #     {A,B,C}_overview.jpg  {A,B,C}_bars_<a>-<b>.jpg  A_ALT_codedtowers_bars_<a>-<b>.jpg  stills/<film>/*.jpg
 # Options (env): CUTS="A B C" (default), WORKERS=3.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+cd "$(dirname "$SELF")/.."
+if [ "${EDIT_Q:-0}" != "1" ]; then           # every local render goes through the render queue (COMMON.md)
+  export EDIT_Q=1
+  exec python3 "$HOME/mishamisha/_local_logs/renderq.py" -- bash "$SELF" "$@"
+fi
 source ~/.venvs/longdawn/env.sh
 # MAP-v3's X1 letters-to-fire motion test stands in for C4/C5 until renders/book_C lands (as in animatic.sh)
 if [ ! -s edit/cache/x1_letters_C_test.mp4 ]; then

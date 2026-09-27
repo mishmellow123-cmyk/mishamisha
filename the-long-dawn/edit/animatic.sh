@@ -5,7 +5,12 @@
 #   edit/NOTES_v3.md COVERAGE block, edit/edl/edl_{A,B,C}.json
 # Options (env): CUTS="A B C" (default), WORKERS=3, CLEAN=1 (no burn-ins), VARIANT=1 (force A's ALT master).
 set -euo pipefail
-cd "$(dirname "$0")/.."
+SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+cd "$(dirname "$SELF")/.."
+if [ "${EDIT_Q:-0}" != "1" ]; then           # every local render goes through the render queue (COMMON.md)
+  export EDIT_Q=1
+  exec python3 "$HOME/mishamisha/_local_logs/renderq.py" -- bash "$SELF" "$@"
+fi
 source ~/.venvs/longdawn/env.sh
 mkdir -p edit/cache "$HOME/mishamisha/_local_logs/animatic"
 # MAP-v3's X1 letters-to-fire motion test (C 560-906) stands in for C4/C5 until renders/book_C lands

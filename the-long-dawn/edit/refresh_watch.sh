@@ -2,8 +2,10 @@
 # THE LONG DAWN v3: wait for new picture or a new master, let it settle, rebuild what changed, then exit.
 # Run it in the background (one refresh per run; re-arm after each):  bash edit/refresh_watch.sh
 #   - polls every 60 s: frames found per cut (the EDL's own lookup, ALT included) + each cut's audio file and mtime
-#   - a change must hold still for 3 polls with no COMPOSER render running (or has waited 30 min: a progress refresh)
-#   - then: CUTS=<the cuts that changed> edit/animatic.sh, then edit/h9_kit.sh; exits (MAX_H hours idle: exits too)
+#   - a change must hold still for 3 polls (or has waited 30 min: a progress refresh); masters are snapshotted
+#     once settled, so a COMPOSER render in progress cannot tear the sound
+#   - then, for the cuts that changed: edit/animatic.sh, edit/h9_kit.sh, edit/deliver.sh (incremental masters + QC),
+#     each through the render queue; exits (MAX_H hours idle: exits too)
 set -uo pipefail
 cd "$(dirname "$0")/.."
 source ~/.venvs/longdawn/env.sh
@@ -28,7 +30,6 @@ for c in 'ABC':
     print(f'{c}:{have}+{alt}:{audio}')
 EOF
 }
-busy() { pgrep -f "python render_v3.py" >/dev/null; }
 now=$(sig) || exit 1
 [ -s "$STATE" ] || echo "$now" > "$STATE"
 last=$(cat "$STATE")
@@ -37,7 +38,7 @@ while :; do
   cur=$(sig) || { sleep 60; continue; }
   if [ "$cur" != "$last" ]; then
     [ -z "$seen" ] && since=$(date +%s)
-    if [ "$cur" = "$seen" ] && ! busy; then stable=$((stable + 1)); else stable=0; fi
+    if [ "$cur" = "$seen" ]; then stable=$((stable + 1)); else stable=0; fi
     seen="$cur"
     if [ "$stable" -ge 3 ] || [ $(( $(date +%s) - since )) -ge 1800 ]; then break; fi
   elif [ $(( $(date +%s) - t0 )) -ge $(( MAX_H * 3600 )) ]; then
@@ -49,4 +50,5 @@ cuts=$(diff <(echo "$last" | tr ' ' '\n') <(echo "$cur" | tr ' ' '\n') | sed -n 
 echo "refresh_watch: $(date -u +%H:%MZ) changed: ${cuts}| was: $(echo $last) | now: $(echo $cur)"
 CUTS="${cuts% }" bash edit/animatic.sh | grep -E '^\*\*|wrote|warning' | cut -c1-160
 bash edit/h9_kit.sh | tail -1
+CUTS="${cuts% }" bash edit/deliver.sh | grep -E '^RESULT|^\[FAIL\]|^wrote|encode' | cut -c1-160
 echo "$cur" > "$STATE"

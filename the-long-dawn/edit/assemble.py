@@ -455,7 +455,7 @@ def snapshot_audio(path, cut, tries=36):
     edit/cache/, and check it did not change during the copy. The caller deletes the snapshot after the encode."""
     import shutil
     import soundfile as sf
-    dst = os.path.join(CACHE, f'audio_{cut}.wav')
+    dst = os.path.join(CACHE, f'audio_{cut}_{os.getpid()}.wav')          # per process: builds may overlap
     want = EDL.TOTAL[cut] / FPS
     for _ in range(tries):
         try:

@@ -1,18 +1,39 @@
 # EDIT v3 (lane EDIT): the three EDLs, text, animatics
 
-## >>> PAUSED (director: usage window end, 27 Sep 16:33Z). RESUME after the director's 20:00Z run <<<
+## >>> STATE (EDIT-2, resumed 18:38Z on the new account; every lane runs continuously) <<<
 
-- **Nothing of EDIT's is running.** `refresh_watch.sh` was stopped at the director's call; no builds in flight.
-- **At 20:00Z the director runs** `bash edit/animatic.sh` (about 7 min: A, B, C and the ALT master) and
-  `bash edit/h9_kit.sh` (about 40 s). Both pick up whatever has landed; masters are snapshotted once settled, so a
-  COMPOSER render in progress only delays the audio pickup (up to 6 min), it cannot tear it.
-- **Last builds:** A + ALT 15:45-15:47Z on COMPOSER's `fallback_A.wav` of 15:42Z (COMPOSER was already rendering
-  another fallback_A iteration at 15:47Z, so the 20:00Z run will carry the newer one); B 15:36Z on `final_B.wav`
-  (15:24Z, battery all PASS); C 15:38Z on the click track. H9 kit 15:40Z (reports A's sound as the fallback).
-- **On RESUME:** check the 20:00Z outputs (durations, audio labels in the animatic log, the kit's overview sheets);
-  wire C's fallback and the A/C scores when they land (automatic); re-arm `bash edit/refresh_watch.sh` in the
-  background to keep the animatics and the kit fresh as renders land (one wake per settled landing; it rebuilds
-  only the cuts that changed, then the kit, then exits).
+- **Director's orders (18:38Z):** (1) keep the animatics and the H9 kit fresh with the watcher; (2) wire in
+  final_B, fallback_A, fallback_C, later the A and C scores; (3) a DELIVERY CHAIN: full-res masters per film + A's
+  ALT master, with QC (black frames, flashes, audio peaks, exact lengths), tested on the partial coverage so the
+  last render to a finished master takes minutes. Local renders go through `_local_logs/renderq.py` (3 slots);
+  commits name their paths (`git commit -m ... -- <paths>`; the index is shared).
+- **Sound:** the resolver already takes the MASTERS table (`music/NOTES_v3.md`): A = `fallback_A.wav`, B =
+  `final_B.wav`, C = `fallback_C.wav` (COMPOSER-C re-rendering it at 18:40Z with a level ride; the snapshot waits
+  for it to settle). The A and C scores (`final_A.wav`, `final_C.wav`, COMPOSER-A / COMPOSER-C) take over by
+  name as soon as they exist. New picture since 15:47Z: RUN-B's `dusk_B` (B1, 640 f, in B frames).
+- **Self-queueing scripts:** `animatic.sh`, `h9_kit.sh`, `deliver.sh` re-exec themselves through renderq unless
+  `EDIT_Q=1` (set for their children), so a caller cannot bypass the queue and nothing nests.
+- **Delivery chain (NEW, `edit/deliver.py` + `edit/deliver.sh`):** see "## Delivery chain" below. First test: B's
+  master, queued 18:45Z behind three other lanes' jobs.
+- **Watcher (`edit/refresh_watch.sh`):** re-armed after the B test passes; one refresh per settled landing:
+  animatics, the kit, then the incremental masters for the cuts that changed.
+
+## Delivery chain (edit/deliver.py, edit/deliver.sh)
+
+- **Masters** in `~/mishamisha/_local_logs/delivery/`: `<cut>_master.mov` (H.264 High, x264 CRF 14 slow, no
+  B-frames, 1920x804, 24 fps, BT.709 limited range with a real BT.709 RGB->YUV matrix, + the cut's sound master
+  as 24-bit PCM 48 kHz), `<cut>_master.mp4` (same picture, AAC 320k: the screener), `A_master_codedtowers.*`.
+- **Incremental:** one segment per EDL shot in `delivery/cache/master/<key>.h264`; the key hashes the shot's EDL
+  entry and take, every source frame's path/size/mtime (and the book matte and under-layers), the text over it,
+  and the frame-pipeline code (Ctx, grade, slates, burn-ins, lookup, titles.py). Only stale segments are encoded;
+  the film is byte-joined (Annex B, no B-frames: frame-exact), muxed with a settled snapshot of the sound master,
+  then QC'd. MAIN and ALT share every segment except A6. Unreferenced segments older than 2 h are pruned.
+- **QC** (`<name>_QC.txt` / `.json`, RESULT PASS / WARN / FAIL): exact lengths (frames counted from the stream,
+  samples decoded), format (codec, 1920x804, 24 fps, bt709, 48 kHz stereo), black frames (sRGB luma p99.5 < 0.03;
+  runs inside black shots, the ember on black, X2 and A's fade are planned, others WARN), flashes (BT.1702-style:
+  opposing runs of >= 0.1 relative luminance with the darker < 0.8 over >= 25% of the screen; > 3 a second FAILs),
+  sound (sample peak, 4x-oversampled true peak <= -1.0 dBTP, clipped samples, integrated LUFS vs -16 +/- 1; the
+  AAC screener's true peak), coverage (slate frames left, by shot).
 
 ## STATE AT HANDOFF (EDIT-2, 27 Sep ~15:50Z)
 
