@@ -58,8 +58,8 @@ def camera(f, W, H):
     u = (f - F0) / (F1 - 1 - F0)
     e = u * u * u * (u * (u * 6 - 15) + 10)            # smootherstep push
     e = 0.35 * u + 0.65 * e
-    hgt = 1.06 + (0.88 - 1.06) * e
-    tx, ty = 0.115 + 0.020 * e, 0.010 + 0.018 * e
+    hgt = 0.92 + (0.78 - 0.92) * e
+    tx, ty = 0.125 + 0.015 * e, 0.012 + 0.016 * e
     tilt = math.radians(4.0)
     pos = np.array([tx, ty - hgt * math.tan(tilt), hgt])
     fwd = np.array([0.0, math.sin(tilt), -math.cos(tilt)])
@@ -157,7 +157,7 @@ def star_sky(n=2048, span=1.25, seed=21):
     a faint band of the galaxy and a little airglow. Linear radiance, scaled for a ~2 % Fresnel mirror."""
     rng = np.random.default_rng(seed)
     img = np.zeros((n, n, 3), np.float32)
-    ns = 2600
+    ns = 1500
     ct = rng.uniform(math.cos(math.atan(span * 1.42)), 1.0, ns)            # uniform on the cap
     ph = rng.uniform(0, 2 * np.pi, ns)
     tn = np.sqrt(1 - ct * ct) / ct
@@ -178,7 +178,7 @@ def star_sky(n=2048, span=1.25, seed=21):
         gx = np.exp(-((np.arange(7) + x0 + 0.5 - x) ** 2) / (2 * sig * sig))
         gy = np.exp(-((np.arange(7) + y0 + 0.5 - y) ** 2) / (2 * sig * sig))
         img[y0:y0 + 7, x0:x0 + 7] += (gy[:, None] * gx[None, :])[..., None] * (flux[i] * tcol[i])[None, None, :]
-    img *= 90.0 / (2 * np.pi * sig * sig)
+    img *= 45.0 / (2 * np.pi * sig * sig)
     # the galaxy's band: a faint diagonal glow with dark lanes
     yy, xx = np.mgrid[0:n, 0:n].astype(np.float32) / n - 0.5
     d = (xx * 0.8 - yy * 0.6 + 0.12)
@@ -210,7 +210,7 @@ class Water:
         K = np.sqrt(kx[:, None] ** 2 + ky[None, :] ** 2)
         self.K = K
         self.w = np.sqrt((9.81 * K + 7.28e-5 * K ** 3) * np.tanh(K * 0.12))
-        self.gam = 0.18 + 2 * 1.6e-6 * K ** 2
+        self.gam = 0.55 + 2 * 2.4e-6 * K ** 2
         xs = (np.arange(N) + 0.5) * self.dx - self.L / 2
         self.X, self.Y = np.meshgrid(xs, -xs)
         r = np.hypot(self.X, self.Y)
@@ -243,16 +243,16 @@ class Water:
     def impulse(self, x, y, amp):
         r2 = (self.X - x) ** 2 + (self.Y - y) ** 2
         s2 = 0.0028 ** 2
-        self.v += -amp * 0.55 * (1 - r2 / (2 * s2)) * np.exp(-r2 / (2 * s2))
+        self.v += -amp * 1.2 * (1 - r2 / (2 * s2)) * np.exp(-r2 / (2 * s2))
 
     def step(self, dt):
         t = self.t
         env, _ = self.breath_env(t)
         if env.any():
             f = self.irfft(self.nb * np.exp(-1j * self.w * t))
-            self.v += dt * 5.0 * env * f / (np.abs(f).max() + 1e-9)
+            self.v += dt * 8.0 * env * f / (np.abs(f).max() + 1e-9)
         fa = self.irfft(self.na * np.exp(-1j * self.w * t))
-        self.v += dt * 0.025 * fa / (np.abs(fa).max() + 1e-9)
+        self.v += dt * 0.045 * fa / (np.abs(fa).max() + 1e-9)
         for (tp, amp) in list(self.pending):
             if t >= tp:
                 self.impulse(P_DROP[0], P_DROP[1], amp)
@@ -526,8 +526,8 @@ def render_kernel(out, kind, cam, fpx, gx, gy, sp, wf, wd, hmap, amap, wet, mp, 
             if th < 0:
                 th += 2 * math.pi
             rw = rt[int(th / (2 * math.pi) * rt.shape[0]) % rt.shape[0]]
-            edge = min(max((rw - rr) / 0.012, 0.0), 1.0)
-            edge = 0.25 + 0.75 * edge * edge * (3 - 2 * edge)
+            edge = min(max((rw - rr) / 0.05, 0.0), 1.0)
+            edge = 0.15 + 0.85 * edge * edge * (3 - 2 * edge)
             tr = (1 - F) * edge
             out[i, j, 0] = F * refl_r + tr * vr
             out[i, j, 1] = F * refl_g + tr * vg
@@ -567,13 +567,13 @@ class Mirror:
         sx, sy = 0.2705 * w, 0.358 * h                     # the sun (RUN-C f2480)
         Y, X = np.mgrid[0:h, 0:w].astype(np.float32)
         rs = np.hypot(X - sx, Y - sy) / w
-        d += (np.exp(-(rs / 0.012) ** 2) * 5.0 + np.exp(-(rs / 0.07) ** 2) * 0.9)[..., None] * \
+        d += (np.exp(-(rs / 0.008) ** 2) * 1.6 + np.exp(-(rs / 0.06) ** 2) * 0.3)[..., None] * \
             np.array([1.0, 0.78, 0.45], np.float32)
         self.dawn = np.ascontiguousarray(d * 0.62)
         self.sun_uv = (0.2705, 0.358)
         self.key = np.array([-0.45, 0.35, 0.82]) / np.linalg.norm([-0.45, 0.35, 0.82])
-        self.keyc = np.array([0.055, 0.068, 0.100])
-        self.skyc = np.array([0.012, 0.016, 0.030])
+        self.keyc = np.array([0.11, 0.135, 0.20])
+        self.skyc = np.array([0.018, 0.024, 0.045])
         self.deep = np.array([0.0012, 0.0019, 0.0028])
 
     def fire_frame(self, f):
@@ -582,7 +582,7 @@ class Mirror:
         a = s - i
         im = self.fire_u8[i].astype(np.float32) * (1 - a) + self.fire_u8[i + 1].astype(np.float32) * a
         lin = look.srgb_to_linear(im / 255.0)
-        lin = cv2.GaussianBlur(lin, (0, 0), 1.1)
+        lin = cv2.GaussianBlur(lin, (0, 0), 1.8)
         grow = 2.6 + 1.4 * smooth((f - 2150) / 150.0)
         return np.ascontiguousarray(lin * grow * np.array([1.05, 0.92, 0.85], np.float32))
 
@@ -662,7 +662,7 @@ class Mirror:
             d2 = ((pts - e) ** 2).sum(1)
             w = 1.0 / (d2 + 0.012)
             E[k] = (Lin * w[:, None]).sum(0) / w.sum()
-        return np.ascontiguousarray(1.3 * E + 0.5 * mean)
+        return np.ascontiguousarray(3.0 * E + 1.0 * mean)
 
     def ground(self, cam, fpx):
         H, W = self.H, self.W
@@ -670,7 +670,7 @@ class Mirror:
             n = 1024
             t = 0.5 + 0.5 * fbm(n, 41, base=8, octaves=6)
             leaves = np.clip(fbm(n, 42, base=200, octaves=2) * 3 - 2.4, 0, 1)
-            col = (np.array([0.006, 0.007, 0.005]) * t[..., None] + np.array([0.012, 0.009, 0.003]) * leaves[..., None])
+            col = (np.array([0.024, 0.028, 0.02]) * t[..., None] + np.array([0.05, 0.036, 0.012]) * leaves[..., None])
             self._gtex = col.astype(np.float32)
         jj, ii = np.meshgrid(np.arange(W) + 0.5 - W / 2, -(np.arange(H) + 0.5 - H / 2))
         vx, vy = jj / fpx, ii / fpx
