@@ -1,0 +1,14 @@
+{
+ "name": "bluehour_a_5",
+ "branch": "claude/render-bluehour-a-5",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "python3 shots/run/bluehour.py --range 6160-6239 --procs 4 --skip"
+ ],
+ "out_dir": "renders/bluehour_A",
+ "frames": "6160-6239",
+ "push_every": 300,
+ "ship": "jpg"
+}

@@ -1,6 +1,7 @@
-# >>> RUN-A (A . FALSE DAWN R1, THE CROSSING R6; next THE BLUE HOUR R7, THE WATCHERS R16) - report 27 Sep ~15:30Z <<<
-**THE CROSSING** (`shots/run/crossing.py`, figures `sdfppl.py`) and **FALSE DAWN** (`falsedawn.py`) carry every H5 call
-in RUN-A's area (checklist below) and are ready to render on the cloud: finals numbered in A's cut frames, per EDIT-v3.
+# >>> RUN-A (A . FALSE DAWN R1, THE CROSSING R6, THE BLUE HOUR R7; next THE WATCHERS R16) - report 27 Sep ~16:05Z <<<
+**THE CROSSING** (`shots/run/crossing.py`, figures `sdfppl.py`), **FALSE DAWN** (`falsedawn.py`) and **THE BLUE HOUR**
+(`bluehour.py`, new) carry every H5 call in RUN-A's area (checklist below) and are ready to render on the cloud:
+finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has been launched by this lane.
 
 ## H5 checklist (director's H5 calls, 07:10Z)
 | # | item | status |
@@ -12,7 +13,7 @@ in RUN-A's area (checklist below) and are ready to render on the cloud: finals n
 | 5 | FALSE DAWN = ARC only; clouds with structure; one or two big landforms | **DONE.** Arc only, locked to A2 (the glow shows on bar 3 b1, the nearest stars go out from bar 5 b1). One great knife-edge sierra 9.5 km out (A's landform), left of the glow: an irregular crest, one dominant asymmetric horn, and the glow rises behind its right shoulder so its notches cast the rays. The deck is a structured mackerel sky in banks with clear gaps, lit softly through each cloudlet with brighter edges. Lenticulars were tried and CUT (at night, lit from beneath, a stack reads as a fleet of saucers). |
 | 6 | Terrain tells out | **DONE** in this lane's shots. The vertical-stripe tell had two sources: (a) combed snow on steep flanks: gully detail halved, snow held on steeper ground, and an ADDITIVE `world.shade` flag `Q[18]` samples the fine snow noise in a height-skewed domain; (b) walls: `crag_row`'s cutoff radius is too short for elongated crags (the flank along the long axis is still ~200 m above the cloud where it is cut; the column marcher draws that wall as stripes). Fixed in this lane's rows (radius x2.5); worth checking in any other lane that uses `crag_row` with aniso > 1. Also additive: a safe early-out bound for crag/ridge rows (`CR[k,14] > 0`; 0 = v2). |
 | 7 | Humans: silhouettes or gloved hands; never a lit face; hoods/cowls; >= 40 px | **DONE.** Every head is a closed cowl (no face exists); keepers kneel or stand in profile or on the camera side of their fires; walkers ~57 px in the wide at full res. |
-| 8 | THE BLUE HOUR (R7): T14 over people together; the seated, unroped bearers and the set-down lantern in the foreground as the camera drifts to the hearth smoke; sun -6 to -2 deg, no disc | logged, not yet built (next in this lane). The crossing's set, figures and lantern are the kit. |
+| 8 | THE BLUE HOUR (R7): T14 over people together; the seated, unroped bearers and the set-down lantern in the foreground as the camera drifts to the hearth smoke; sun -6 to -2 deg, no disc | **DONE** (greybox verified at full res on T14's first frame; jobs written). A19 = cut 5840-6239 (bars 74-78). On a broad snow shoulder past the arete (the crossing's own set) the two bearers sit close with their backs to us, unroped: one's arm round the other, whose head leans on its shoulder; the great lantern set on the snow at their side lights their backs and a warm pool; the rope coiled, the poles laid down; the others of the line sit and stand in small groups, two watch-fires fed. The sun climbs -6.2 to -2.8 deg (no disc): the east pales to rose from bar 75 b1 under a deep blue sky, the stars fade. From bar 76 b1 the camera (a standing bearer's eye, a few paces behind them) drifts right and turns toward the hearth smoke rising from the valley through the cloud sea; the pair and the lantern slide into the lower-left third and never leave the frame through T14 (cut 6080-6200). |
 | 9 | R16 THE WATCHERS: backlit silhouettes only | logged, not yet built. The kit: `sdfppl.traveller` + the crossing's keeper staging. |
 
 ## Review files (`review/v3/`)
@@ -21,6 +22,8 @@ in RUN-A's area (checklist below) and are ready to render on the cloud: finals n
   12 fps (rendered 10:30Z, before the crag-radius fix: identical to the eye, no walls in frame).
 * `runA_falsedawn_arc_swell.jpg` (cut 240, 380, 500 at half scale) and `runA_falsedawn_arc_full_f500.jpg` (the peak,
   full res). `runA_falsedawn_three_designs.jpg` is the original three-way comparison (pre-H5).
+* THE BLUE HOUR: `runA_bluehour_T14_full_f6080.jpg` (full res, T14's first frame), `runA_bluehour_design_h.jpg`
+  (cut 5840, 6080, 6239 at half scale) and `runA_bluehour_greybox_q_12fps.mp4` (the whole take, quarter scale, 12 fps).
 * Earlier: `runA_crossing_wide_*` (main vs the fewer-larger fallback), `runA_underglow_run_demo.jpg` (the red
   under-glow in the Run's own world, for R3).
 
@@ -31,7 +34,12 @@ in RUN-A's area (checklist below) and are ready to render on the cloud: finals n
   single-thread: ~64 worker-hours, about 2 h on 8 four-core boxes. Fallback: `--variant few` (12 larger walkers).
 * FALSE DAWN: `cloud/jobs/falsedawn_a_{1..4}.json`, 120 frames each, `python3 shots/run/falsedawn.py --design arc
   --range A-B --procs 4 --skip` -> `renders/falsedawn_A/f_00080`..`f_00559`; ~1.5 min/frame single-thread at full res.
+* THE BLUE HOUR: `cloud/jobs/bluehour_a_{1..5}.json`, one bar (80 frames) each, `python3 shots/run/bluehour.py
+  --range A-B --procs 4 --skip` -> `renders/bluehour_A/f_05840`..`f_06239` (1920x804, ss 1.5, ship jpg), one machine
+  type. Measured: 112 s/frame at full res on 4 threads, so ~7 min single-thread: ~47 worker-hours, ~2.3 h per job on
+  a four-core box. Fallback: the design still (cut 6080) held as a slow push-in, or the crossing's final wide.
 * Tests use `--numbering shot` (0-959 / 0-479) and an `--out` subfolder; the EDL reads only the folder's own files.
+  (bluehour.py takes cut frames only; for more than one thread in one process set `NUMBA_NUM_THREADS` too.)
 * Data that must be committed: `shots/run/crossing_fires.npy` (the island fires), the Run's `summits.npy`/`beacons.npy`.
 
 ## How the pieces work (for whoever picks this up)
@@ -41,8 +49,14 @@ in RUN-A's area (checklist below) and are ready to render on the cloud: finals n
   sky on a faster clock (46 deg, ~3 h): stars, the moon setting behind the arete, the watch-fires fed, 34 island
   fires, the red under-glow going out (`world.cloud_glow`, additive, orange-red: crimson over blue reads magenta),
   the lantern warming from ice-white toward gold.
+* The blue hour reuses the crossing's set (`crossing.wfs()`), lantern, fires and `sdfppl`; its own parts are a sky
+  kernel (deep blue zenith, rose held low in the east, no disc), a soft high rose key with blue skylight on matte
+  snow, 56 hearth-smoke plumes (`dawn` puffs), and `sitter()` (seated, knees drawn up, a cowl that drapes to the
+  shoulders: a hood on a neck reads as a pawn). ADDITIVE world flag: crag row col 15 in (0, 1] buries the summit
+  boulders of a shelf crag under wind-packed snow (0 = v2); the shoulder uses 0.85.
 * Lessons: background renders on the session box do not survive a usage pause (the box is frozen, then rebooted);
-  use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact.
+  use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact. In this world
+  `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
 
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION) - report 27 Sep <<<
 ## PAUSED 27 Sep ~10:40Z (director's usage pacing). Nothing is rendering. RESUME HERE

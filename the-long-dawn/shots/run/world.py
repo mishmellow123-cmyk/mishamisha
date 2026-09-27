@@ -188,11 +188,13 @@ def crag(x, z, fp, CR, k, hcur):
     a = det * min(m + 0.25 * shelf, 2.0 * L)
     h += a * ((rg - 0.45) + 0.35 * (rg2 - 0.45))
     if shelf > 0.0 and m < 0.8 * L:
-        # the summit: broken slabs and boulders, not a table
+        # the summit: broken slabs and boulders, not a table ((v3, additive) col 15 in (0, 1] buries them under
+        # wind-packed snow, 1 = a smooth shelf; 0 keeps v2)
+        sb = 1.0 - CR[k, 15]
         o3 = _lod(3.0, fp, 1.0, 7.0)
-        h += 0.55 * fbm2(x * 0.45, z * 0.45, o3, seed + 4) * smoothstep(0.8 * L, 0.2 * L, m)
+        h += sb * 0.55 * fbm2(x * 0.45, z * 0.45, o3, seed + 4) * smoothstep(0.8 * L, 0.2 * L, m)
         o4 = _lod(1.2, fp, 1.0, 6.0)
-        h += 0.35 * (ridged2(x * 0.9 + 1.7, z * 0.9 - 0.3, o4, seed + 6) - 0.45) * smoothstep(0.8 * L, 0.1 * L, m)
+        h += sb * 0.35 * (ridged2(x * 0.9 + 1.7, z * 0.9 - 0.3, o4, seed + 6) - 0.45) * smoothstep(0.8 * L, 0.1 * L, m)
     return h
 
 
