@@ -71,6 +71,15 @@ def measure3(x, T, W, kind):
         thr = e.max() - 35
         idx = np.where((e > thr) & (t >= T - W))[0]
         return (float(t[idx[0]]) if len(idx) else None), float(e.max() - np.median(e))
+    if kind == "arrivew":
+        # (COMPOSER-C, additive) "arrive" on the part's BROADBAND envelope: for a soft entry out of its own silence
+        # whose fundamental is weak (low violas, bassoon, a cello's D2) or whose vibrato leaves a narrow band (a solo
+        # violin): it ARRIVES when its level (above 60 Hz, 10 ms) reaches 8 dB under the note's peak
+        t, e = A2.env_db(x, T - W - 0.4, T + 0.8, hp=60.0, win=0.01, hop=0.001)
+        m = (t >= T - W) & (t <= T + 0.8)
+        pk = e[m].max()
+        idx = np.where((e > pk - 8) & (t >= T - W))[0]
+        return (float(t[idx[0]]) if len(idx) else None), 8.0
     if kind.startswith("arrive:"):
         # a soft entry ARRIVES when its fundamental band reaches 8 dB under the note's peak
         f0 = 440 * 2 ** ((int(kind.split(":")[1]) - 69) / 12)

@@ -9,7 +9,7 @@
 | B fallback | `music/out/v3/fallback_B.wav` (stems `fallback_B_score.wav`, `fallback_B_sfx.wav`) | **DONE 11:45Z**: battery all PASS (level map 14/14, sync 5/5, notes 0, clicks 0) | - |
 | C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | **DONE 18:54Z**: battery all PASS (level map 28/28, sync 7/7, notes 0, clicks 0). Fix: the ride (C2 bar-2 horn -6.5 dB, C12 piano -4.5 dB) + C11's race drone now falls away after the slip into C12's black (its tail was C12's peak, -6.4 LU) | COMPOSER-A |
 | A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`; review copy `score_A.wav`) | **FINAL 20:35Z** (render 6): battery ALL PASS: level map 20/20, rules 3/3 (the brink A's loudest, the edge -1.5 LU under it; the blue hour -5.7 LU under it; the first fire -15.5 LU), centroid arc 5/5, sync 55/55, notes 0, clicks 0, -16.07 LUFS, TP -1.29 dBTP, 12,960,000 samples | COMPOSER-A |
-| C score | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | in progress (the current file is usable temp): render 4 20:48Z = level map 28/28, rules 3/3, sync 47/50 (probe fix); render 5 running 20:55Z | COMPOSER-C |
+| C score (THE LAST PAGES) | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | **FINAL 21:05Z**: battery all PASS (format/length/stems, -16.03 LUFS, TP -1.30 dBTP; level map 28/28; sync 51/51; rules 3/3: the slit is C's loudest, the dawn -2.5 LU under it, the prologue -8.7 LU; breaths 44-56 dB deep; notes 0; clicks 0). Review sheet `analysis/v3/final_C/review_C.jpg` | COMPOSER-C |
 | B with REAL effects (SOUND) | `music/out/v3/sound_B.wav` (stems `sound_B_score.wav` = final_B's score through the same master, `sound_B_sfx.wav` = `sfx_B.wav`) | **PASS 21:10Z**: battery all PASS (level map 14/14, dawn -2.3 LU, first half -6.1 LU, sync 25/25, notes 0, clicks 0); effects hits on their frames 15/15 (strikes 0.0-0.1 ms). 48 kHz/24-bit, 10,880,000 samples, -16.05 LUFS, TP -1.30 | SOUND |
 
 All masters: 48 kHz / 24-bit / stereo WAV, exactly the cut's length (A 6,480 f = 12,960,000 samples; B 5,440 f =
@@ -138,6 +138,30 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
   * Tool: `src/who_v3.py <cut> <name> t0 t1 ...` ranks the parts by loudness in a window (from the part cache).
 
 ## COMPOSER-C (cut C) · STATE
+- **21:05Z: C's full score FINAL** (`out/v3/final_C.wav` + stems; render 7). Battery all PASS: 48 kHz/24-bit, exactly
+  14,400,000 samples, stems sum to the master, -16.03 LUFS integrated, TP -1.30 dBTP; level map **28/28** against the
+  locked cue sheet's bands; **sync 51/51**; rules 3/3 (C's loudest 3 s at the slit, 83.5 s; everything after the Eye
+  >= 1.8 LU under it; the dawn -2.5 LU under it: warm, not loud; the prologue -8.7 LU); the three breaths 44-56 dB
+  deep; notes 0 (stuck/overlap/rates: percussion never faster than 16ths); clicks 0; master comp GR 5.0 / lim GR 5.6
+  dB max (the slit). Effects: -23.7 LUFS vs the score's -16.1 (B-like), and each fire owns its moment (the roar +2 LU
+  over its horn; the burns, the seethe, the dips, the blaze within 3-6 LU; the beacons ~6-7 LU under the Run's
+  16ths, the ostinato resting on each beacon's 16th). Page rules (`python score_v3_C.py`): no stroke on any
+  ignition, no ANSWER before beacon 2, no HOME before the dawn. Director's sheet: `analysis/v3/final_C/review_C.jpg`.
+- **What C's score is** (plan bar by bar in `score_v3_C.py`'s docstring): the book as chamber music (the cor anglais
+  CALL, harp, the pen and the page), the fire as orchestra; THE RING (D-Ab-D' C' Ab) loops unresolved from the
+  mountain page (stopped horns) through the Eye (trombones, the slit = C's loudest), the find (violas, ppp, as a
+  sweet D7#11), the fire test (the loop holds its D where the Ring should fall), the council (circling beneath the
+  chorale) and the bearer (rising by minor thirds, tremolo), until it HEALS in the white heart (C# and A as the
+  letters flare), 275 ms of silence, and cadences into D once (69 b1). **THE FIRE REMAINS** (H5): D major settles;
+  the ANSWER passed outward horn to farther horn in canon over G/B - D/A - A; the breath; the sunrise's D add9 bloom
+  and the whole theme (CALL on one horn, ANSWER + HOME in octave violins with the solo violin above, home on 76 b1).
+  **THE MIRROR** scored (one held A5, harp harmonics on the Ring's D/Ab turning to D major for the drop's breath).
+  Nothing Shire-like: no flute, no whistle, no pipes (the map's oboe is doubled by a clarinet).
+- **Shared-file change (additive only):** `analyze_v3.py` gains a sync kind `arrivew` (the `arrive` criterion on the
+  part's broadband envelope): low violas, the bassoon and a cello's D2 have almost no fundamental (checked by FFT:
+  the harmonic series are right) and a solo violin's vibrato leaves the +-60-cent band, so `arrive:<midi>` jumps
+  there. No existing kind changed; COMPOSER-A's reports are unaffected.
+- **Housekeeping:** pruned 2.5 GB of my superseded part stems (only names unique to C, none in any manifest).
 - **20:50Z: render 4 battery**: level map **28/28**, rules 3/3, notes 0, clicks 0, breaths 44-56 dB deep, master
   lim GR 6.2 dB; sync 47/50. The 3 misses were the PROBE, not the music (FFT per part: every harmonic series is
   right, no wrong notes): low violas, the bassoon and a cello's D2 have almost no fundamental, and a solo violin's

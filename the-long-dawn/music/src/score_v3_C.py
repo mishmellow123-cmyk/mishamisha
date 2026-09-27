@@ -120,7 +120,8 @@ C_SEATS = {
     "cl_c": dict(inst="clarinet", pan=0.12, width=0.35, depth=0.42, send=0.4, gain_db=5.2, humanize_ms=10, **_W),
     "cl_dbl": dict(inst="vla_q", pan=0.06, width=0.4, depth=0.36, send=0.32, gain_db=-8.0, humanize_ms=10, **_S),
     "ob_c": dict(inst="oboe", pan=0.22, width=0.35, depth=0.45, send=0.42, gain_db=0.0, humanize_ms=10, **_W),
-    "ob_dbl": dict(inst="flute", pan=0.22, width=0.35, depth=0.45, send=0.42, gain_db=0.6, humanize_ms=12, **_W),
+    # the oboe's answer doubled by a clarinet (not a flute: nothing pastoral, nothing Shire-like in C)
+    "ob_dbl": dict(inst="clarinet", pan=0.2, width=0.35, depth=0.45, send=0.42, gain_db=1.2, humanize_ms=12, **_W),
     "bsn_c": dict(inst="bassoon", pan=0.18, width=0.35, depth=0.45, send=0.38, gain_db=1.0, humanize_ms=10, **_W),
     # horns: stopped (a2), open, near to farthest
     "hn_st": dict(inst="horn", pan=-0.22, width=0.35, depth=0.42, send=0.36, gain_db=-6.0, humanize_ms=10, **_B),
@@ -168,7 +169,7 @@ for _k, _v in C_SEATS.items():
     K.SEATS.setdefault("C." + _k, _v)
 
 # dB per section, on the players' dynamics (kit ride): set from the battery (render 1)
-RIDE = {"C6": -1.5, "C7": -1.0, "C9": -1.0, "C17": -3.0, "C21": -2.5, "C22": -1.0, "C26": -3.0}
+RIDE = {"C6": -1.5, "C7": -1.0, "C9": -1.0, "C17": -3.0, "C21": -2.5, "C22": -1.0, "C24": -0.5, "C26": -3.0}
 # the whole score against the effects (gain only; the master brings the sum back to -16 LUFS): render 1 had the
 # effects 16 LU under the score (B: 8; the fallback, which the cue sheet's level bands were drawn on: 11)
 SCORE_TRIM_DB = -4.5
@@ -179,13 +180,18 @@ ANTIC_HI = {"vla_q": 0.52, "vc_ring": 0.52, "cl_dbl": 0.52, "vc_q": 0.52, "cb_q"
             "svln": 0.45, "svln2": 0.5}
 # seconds added to one entry's anticipation (the battery's per-layer sync, render 1)
 ANTIC_DT = {("torches_down", "vc_trem"): -0.087, ("council", "cl_c"): -0.067}
+# (sync probes: "arrive:<midi>" measures a soft entry in its fundamental's band; low violas, the bassoon and a cello's D2
+# have almost no fundamental, and a solo violin's vibrato leaves a narrow band, so those entries (each out of its own
+# silence) use "arrivew", the same arrival on the part's broadband envelope; a crescendo bloom has no single arrival,
+# so it is probed by its onset, "bloom")
 # absolute anticipation of one entry (event id, or (event id, beats after it)): a bloom's ONSET sits on the beat
 # (a swell has no single arrival); the dawn's first violins measured; a legato change's crossfade starts early by
 # this + half its fade
-ANTIC_SET = {("fire_alone", "vla"): 0.17, ("fire_alone", "vln1"): 0.17, ("fire_alone", "vln2"): 0.17,
-             ("map", "vla"): 0.1, ("map", "vln2"): 0.1, ("map", "vc"): 0.1, ("map", "cb"): 0.1,
-             ("ring_set", "bsn_c"): 0.13, ("ring_set", "vc_ring"): 0.3,
-             (("sunrise", 8), "vln1"): 0.16, (("sunrise", 8), "svln"): 0.51, ("plagal", "vln1_q"): 0.28}
+ANTIC_SET = {("fire_alone", "vla"): 0.05, ("fire_alone", "vln1"): 0.05, ("fire_alone", "vln2"): 0.05,
+             ("map", "vla"): 0.06, ("map", "vln2"): 0.06, ("map", "vc"): 0.06, ("map", "cb"): 0.06,
+             ("ring_set", "bsn_c"): 0.06, ("ring_set", "vc_ring"): 0.3,
+             (("sunrise", 8), "vln1"): 0.16, (("sunrise", 8), "svln"): 0.23, (("sunrise", 8), "svln2"): 0.34,
+             ("plagal", "vln1_q"): 0.28}
 
 
 # ---------------------------------------------------------------------------
@@ -379,7 +385,8 @@ def fire_alone(S, bm):
     for pn, top in (("cb", 0.3), ("vc", 0.3), ("vla", 0.3), ("vln2", 0.29), ("vln1", 0.28)):
         S.P(pn).d((alone - 0.05, 0.22 if pn in ("cb", "vc") else 0.12), (alone + 1.6, top), (alone + 4.5, top * 0.9),
                   (towers - 0.5, top * 0.82), (towers + 0.1, top * 0.8))
-    S.sync.append((alone * BEAT_S, "THE FIRE, ALONE: the fire's chord blooms (violas F3)", "vla", 0.25, "band:53"))
+    S.sync.append((alone * BEAT_S, "THE FIRE, ALONE: the fire's chord blooms (violas: its onset)", "vla", 0.25,
+                   "bloom"))
     # a harp roll up the chord with the bloom
     for k, p in enumerate(["D2", "Bb2", "F3", "C4", "D4", "E4", "A4", "E5"]):
         S.P("harp").n(p, alone + 0.02 + 0.14 * k, 4.0, 0.26 - 0.01 * k)
@@ -517,7 +524,7 @@ def eye(S, bm):
     e0, slit, mir = ev("eye_burn"), ev("slit_nothing"), ev("mirror")
     cut = slit + 1.5
     # the tam-tam: its wash swells from the Deep's 16ths to the slit, then its bloom (no stroke)
-    S.P("tam").n(60, ev("tick_16") + 1.0, slit - ev("tick_16") - 1.0, 0.85, rel=6.0, curve=1.8)
+    S.P("tam").n(60, ev("tick_16") + 1.0, slit - ev("tick_16") - 1.0, 0.72, rel=6.0, curve=1.8)
     # THE RING in the trombones (the bass trombone an octave under, the tuba on the pedal)
     put(S, "tbn", ring_notes("D3", e0))
     put(S, "tbn2", ring_notes("D2", e0))
@@ -534,7 +541,7 @@ def eye(S, bm):
     voiced(S, [(e0, {"vln_trem": ["D5", "Ab5"], "vla_trem": ["D4", "Ab4"], "vc_trem": ["D3", "Ab3"],
                      "cb_trem": ["D2"]}),
                (slit, {"vln_trem": ["D5", "Ab5", "D6"], "vla_trem": ["D4", "Ab4"]})], cut)
-    dyn(S, ("vln_trem", "vla_trem"), (e0 - 0.05, 0.2), (slit - 0.2, 0.66), (slit, 0.72), (cut, 0.7))
+    dyn(S, ("vln_trem", "vla_trem"), (e0 - 0.05, 0.2), (slit - 0.2, 0.58), (slit, 0.62), (cut, 0.6))
     dyn(S, ("vc_trem", "cb_trem"), (e0 - 0.05, 0.2), (slit - 0.6, 0.5), (slit, 0.3))
     # the weight at the slit on sustained cellos and basses (the tremolo's bow strokes are too peaky to carry it)
     hold(S, "vc", "D3", e0, cut)
@@ -714,12 +721,12 @@ def run(S, bm):
             S.P("vln2_sp").n(pat[q] + 12, tt, 0.25, v - 0.02)
         # the timpani on the 3 and the 6 only (and a light 16th before the 6)
         tp = RUN_TIMP[bass]
-        S.P("timp").n(tp, t + 0.75, 0.5, 0.38 + 0.02 * i)
-        S.P("timp").n(tp, t + 1.25, 0.25, 0.22 + 0.01 * i)
-        S.P("timp").n(tp, t + 1.5, 0.5, 0.42 + 0.02 * i)
+        S.P("timp").n(tp, t + 0.75, 0.5, 0.33 + 0.02 * i)
+        S.P("timp").n(tp, t + 1.25, 0.25, 0.19 + 0.01 * i)
+        S.P("timp").n(tp, t + 1.5, 0.5, 0.36 + 0.02 * i)
     dyn(S, "cb", (r0 - 0.1, 0.31), (mp - 0.3, 0.45))
     dyn(S, "vc", (r0 - 0.1, 0.34), (mp - 0.3, 0.49))
-    dyn(S, "vln1", (r0 - 0.1, 0.32), (mp - 0.3, 0.54))
+    dyn(S, "vln1", (r0 - 0.1, 0.28), (mp - 0.3, 0.47))
     # THE CALL passed peak to peak (beacons 1, 3, 5, 7: on D, F, A, C), each horn farther
     for k, (pn, root, v) in enumerate((("hn", "D4", 0.58), ("hn2", "F3", 0.6), ("hn_far", "A3", 0.62),
                                        ("hn_farther", "C4", 0.64))):
@@ -755,8 +762,8 @@ def map_answers(S, bm):
                      ("vln1", 0.3, 0.24)):
         S.P(pn).d((mp - 0.05, a * 0.5), (mp + 1.6, a), (mp + 8, a * 0.95), (road, b), (council - 0.3, b * 0.6),
                   (council + 0.1, 0.03))
-    S.sync.append((mp * BEAT_S, "THE MAP: the strings' F major blooms (violas A3)", "vla", 0.25, "band:57"))
-    # the violins sing the CALL on F (their own voice, no solo), the oboe answers (F E D A, the flute's breath in it)
+    S.sync.append((mp * BEAT_S, "THE MAP: the strings' F major blooms (violas: its onset)", "vla", 0.25, "bloom"))
+    # the violins sing the CALL on F (their own voice, no solo), the oboe answers (F E D A, a clarinet under it)
     line(S, "vln1", [("F4", 1.0), ("C5", 1.0), ("F5", 2.0)], mp + 1, legato=True)
     dyn(S, "vln1", (mp + 0.95, 0.34), (mp + 3, 0.36), (mp + 5, 0.3))
     lines(S, ("ob_c", "ob_dbl"), [("F5", 1.0), ("E5", 0.5), ("D5", 0.5), ("A4", 2.2)], mp + 4)
@@ -843,7 +850,7 @@ def bring_out(S, bm):
     for pn, v in (("bsn_c", 0.24), ("vc_ring", 0.22)):
         S.P(pn).d((rs - 0.1, v), (rs + 8, v * 1.05), (tor, v * 1.1))
     S.sync.append((rs * BEAT_S, "the Ring set on the stone: its loop circles beneath (D2)", "bsn_c+vc_ring", 0.25,
-                   "arrive:38"))
+                   "arrivew"))
 
 
 def bearer(S, bm):
@@ -953,7 +960,11 @@ def illumination(S, bm):
     for pn, v in (("vln1", 0.5), ("svln", 0.4), ("svln2", 0.33)):
         S.P(pn).d((a - 0.1, v * 0.9), (a + 2, v), (a + 6, v * 1.05), (home, v * 1.02), (home + 6, v * 0.9),
                   (plenty - 0.2, v * 0.6), (plenty + 0.1, 0.03))
-    S.sync.append((a * BEAT_S, "the dawn: the ANSWER, the solo violin above (D6)", "svln+svln2", 0.2, "arrive:86"))
+    # measured per layer (as B's HOME): the octave violins and the solo violin's lead; its quiet double (6 dB under)
+    # plateaus within 1-3 dB of the probe's threshold for 0.3 s, so its arrival is not a stable measure: its onset is
+    # aligned to the lead's instead (ANTIC_SET, from a shift simulation on the rendered stem)
+    S.sync.append((a * BEAT_S, "the dawn: the ANSWER in the octave violins (D5)", "vln1", 0.2, "arrivew"))
+    S.sync.append((a * BEAT_S, "the dawn: the ANSWER, the solo violin above (lead, D6)", "svln", 0.2, "arrivew"))
     S.sync.append((home * BEAT_S, "the line settles HOME (B4, 76 b1)", "vln1", 0.2, "pitch:71"))
     # the horns in counterpoint under the line (hn: after its call)
     cp = [("A4", 2.0), ("A4", 1.0), ("G4", 1.0), ("F#4", 2.0), ("E4", 1.0), ("E4", 1.0), ("D4", 2.0), ("D4", 2.0),
