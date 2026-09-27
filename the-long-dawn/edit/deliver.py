@@ -56,15 +56,18 @@ def _code_hash():
     """(frame code, text code). The frame pipeline's own code re-keys every segment; the text-drawing code only
     re-keys segments with text over them (each segment also keys its own lines' words, frames and setting, so a
     table change re-encodes only the shots it touches)."""
-    frame = [inspect.getsource(o) for o in (AS.Ctx, AS.grade, AS.make_slate, AS.draw_slate_clock, AS.burn_in,
-                                            AS.smooth, AS.bar_beat, AS.locate, AS.chain, AS.plan_shot)]
+    ctx = {n: inspect.getsource(o) for n, o in inspect.getmembers(AS.Ctx, inspect.isfunction)}
+    frame = [ctx[n] for n in sorted(ctx) if n not in ('x2', 'slate')] + [
+        inspect.getsource(o) for o in (AS.grade, AS.burn_in, AS.smooth, AS.bar_beat, AS.locate, AS.chain,
+                                       AS.plan_shot)]
+    slate = [ctx['slate'], inspect.getsource(AS.make_slate), inspect.getsource(AS.draw_slate_clock)]
     text = [inspect.getsource(o) for o in (titles.TextV3, titles.render_line, titles.lines_v3, titles.composite_v3,
                                            titles._noise, titles._heat_rgb, titles.smooth, titles._font)]
     text.append(repr([titles.Y_LOWER, titles.Y_TOP, titles.Y_BOTTOM, titles.Y_MID, titles.PARCH.tolist(),
                       titles.IRON.tolist(), titles.FIRE_RAMP.tolist(), titles.INK.tolist(), titles.GLOW.tolist(),
                       titles.W, titles.ITALIC, titles.EBG_ITALIC, titles.CINZEL]))
     h = lambda xs: hashlib.sha1('\n'.join(xs).encode()).hexdigest()[:12]
-    return h(frame), h(text)
+    return dict(frame=h(frame), text=h(text), slate=h(slate), x2=h([ctx['x2']]))
 
 
 def name_of(cut, variant, profile):
@@ -119,7 +122,10 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table):
                                                                   'under', 'video', 'note', 'add')}
     rows = [(r['id'], r['line'], r['f_in'], r['f_out'], r['set']) for r in table
             if r['f_in'] < shot['f1'] and r['f_out'] > shot['f0']]
-    head = [ENGINE, code[0], code[1] if rows else None, prof['scale'], prof['clean'], prof['crf'], prof['preset'],
+    n = shot['f1'] - shot['f0']
+    slated = plan['kind'] == 'slate' or (plan['kind'] == 'take' and plan['have'] < n)
+    head = [ENGINE, code['frame'], code['text'] if rows else None, code['slate'] if slated else None,
+            code['x2'] if plan['kind'] == 'x2' else None, prof['scale'], prof['clean'], prof['crf'], prof['preset'],
             cut, i,
             {k: shot[k] for k in ('sec', 'f0', 'f1', 'code', 'name', 'owner', 'desc', 'kind')},
             plan['kind'], tdesc, plan['have'], bool(plan['alt'])]

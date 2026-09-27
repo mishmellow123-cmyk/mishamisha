@@ -279,7 +279,8 @@ class Ctx:
         acc = cv2.GaussianBlur(acc, (0, 0), 0.55)
         acc += X['mw'] * smooth((f - (t0 + 80)) / 80.0)
         # the ember: one small warm light, breathing
-        ex, ey = 0.5 * self.W + 3 * np.sin(f * 0.013), 0.60 * self.H + 2 * np.sin(f * 0.021)
+        # director ~19:25Z: at (960, 548) = (0.5 W, 0.68 H), where EMBERS' A10 ember rests at the cut
+        ex, ey = 960 * self.scale, 548 * self.scale
         fl = 0.8 + 0.2 * np.sin(f * 0.9) * np.sin(f * 0.37 + 1)
         yy, xx = np.ogrid[0:self.H, 0:self.W]
         r2 = (xx - ex) ** 2 + (yy - ey) ** 2

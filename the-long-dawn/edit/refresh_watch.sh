@@ -18,9 +18,23 @@ sys.path.insert(0, 'edit')
 import assemble as AS
 tab = AS.masters_table()
 v3 = os.path.join(AS.ROOT, 'music', 'out', 'v3')
+import hashlib
+def dmt(d):
+    try:
+        return os.stat(d).st_mtime_ns
+    except OSError:
+        return 0
 for c in 'ABC':
-    have = sum(AS.plan_shot(s, c, None)['have'] for s in AS.EDL.EDL[c] if s['kind'] != 'black')
-    alt = sum(AS.plan_shot(s, c, 'codedtowers')['alt'] for s in AS.EDL.EDL[c]) if c == 'A' else 0
+    h, have = hashlib.sha1(), 0
+    for v in ((None, 'codedtowers') if c == 'A' else (None,)):
+        for s in AS.EDL.EDL[c]:
+            pl = AS.plan_shot(s, c, v)
+            have += pl['have'] if v is None and s['kind'] != 'black' else 0
+            t = pl['take'] or {}
+            dirs = AS.chain(t, c, v) if t and t['mode'] != 'video' else []
+            dirs += [os.path.join(AS.RENDERS, x) for x in (t.get('matte'), t.get('add')) if x]
+            h.update(repr((s['f0'], pl['kind'], t.get('stem'), pl['have'], pl['alt'], [dmt(d) for d in dirs])).encode())
+    alt = h.hexdigest()[:10]                    # which take each shot plays and when its folders last changed
     audio = 'click'
     for p in (tab.get((c, 'score')), os.path.join(v3, f'final_{c}.wav'), tab.get((c, 'fallback')),
               os.path.join(v3, f'fallback_{c}.wav')):
