@@ -1,31 +1,39 @@
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
-## RUN-A2 STATE (split off 27 Sep ~19:00Z: A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy)
-* **Doing now:** the gate's fixes before any render. CROSSING: star trails open with the wheel (bar 66 b1) as long concentric
-  arcs about a pole held inside the frame; one big knife-edge range under the pole plus stronger aerial depth; cloaks rebuilt
-  as cloth (elliptical, sharp-creased folds, wind billow and hem lift, flutter, SDF occlusion, wool rim). BLUE HOUR: about 40
-  seated, unroped bearers round the set-down lantern, all turned to the east (no lit faces); a valley revealed through the
-  thinning cloud sea with thin grey-blue hearth columns; the rose only from bar 75 b1. A20: the same take continues 6240-6479.
-* **No final render yet, no JOB READY yet.** Farm look-dev only (renders/_farmtest/crossing_a_*, bluehour_a_*).
-* **~16:00Z, all committed + pushed** (46153c1, b8964e7, 297446f, dffa1bf, a92fde6):
+## RUN-A2 STATE AT PAUSE (27 Sep ~20:55Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
+* **RESUME HERE.**
+  1. `python3 the-long-dawn/cloud/farm.py status`: did the director launch `crossing_a2_01..18` (sent JOB READY
+     ~20:52Z)? If approved and not launched: `farm.py the-long-dawn/cloud/jobs/crossing_a2_{01..18}.json --nodes 3`.
+     If frames have landed in renders/crossing_A: contact-sheet them (bars 62, 64, 66, 69, 70, 73) and check the trails
+     (concentric, never dashes), the red going out from bar 70, the keeper's kneel, no flame spikes.
+  2. Look at `renders/_farmtest/crossing_a_lookdev3/` (pass-3 code: kneeling keeper, less flame soot, lens blur on
+     the far background in the close-up, one-piece cowl, stronger far red) and `renders/_farmtest/bluehour_a_lookdev2/`
+     (the FIRST look at the rebuilt blue hour; 5840, 5960, 6080, 6200, 6400 at half res). Fix, re-test, then JOB READY
+     `bluehour_a2_01..20` (cut 5840-6479 incl. A20; ~33 min each at an estimated 500 s/frame single-thread).
+  3. Re-cut the jobs if measured costs differ: `python3 the-long-dawn/cloud/jobs/make_runA2_jobs.py --x-spf S
+     --b-spf S` (it deletes and rewrites crossing_a2_* / bluehour_a2_*). Note: the first farm timings included numba
+     compiles (world.py changed), so they overstate; a warm node's `s/frame` line is the number to use.
+* **Committed + pushed** (46153c1, b8964e7, 297446f, dffa1bf, a92fde6, 5cde879, 3461166, 1fd0716):
   * `sdfppl.py`: v3 CLOTH (default; `cloth=False` = the v2 figure): elliptical cloak and cape bells, creased uneven
     folds, wind billow + lee hem lift + flutter (`wind` = world vector toward the lee, |v| = hem billow in m), SDF crease
-    occlusion, a back-lit wool rim, fibre-streak albedo, a hood brim flush with the cowl. New `seated()` (six poses:
-    knees, cross, back, side, kneel, lie; lean adult proportions; for any lane's seated figures).
-  * `crossing.py`: headwind down the arete with travelling gusts (fires lean downwind); trails open with the wheel
-    (bar 66 b1) and grow to 36 deg concentric arcs about the pole (LAT 6, pole ~1/4 down the wide); the great
-    knife-edge range 7 km north under the pole (GR_KNOTS), the right third open sea for the red under-glow; haze
-    1e-4; opening camera H0 at the crest's height (the uphill bearer's boots in frame).
-    Look-dev 1 (half res) PASSED on trails, range and cloth read; fixed since: the far range's pyramid (cut), the
-    hood's snout, the hidden red. Pending: `crossing_a_closeup` (full res 4880/5000/5100) + wides re-test.
-  * `world.py` ADDITIVE (every other table unchanged, one comparison per call): -5 hole rows and -6 `valley_row`
-    carves (both read only while they LEAD the table), Q[19] snow line (fields and woods below), fogp[8] low-mist cap.
-  * `bluehour.py` rebuilt for A19 + A20 (640 f): ~42 seated people round the set-down lantern facing the dawn; a
-    glacial valley carved toward the rose (VAL_KNOTS 5.6-34 km) seen through the thinning cloud (cloudless sub-window
-    pass under torn cloud), river, ~60 hearth columns and glows; the gathering placed from the shoulder's measured
-    edge (`edge_f`), camera keys CAM_KEYS (rises 1.6 -> 2.6 m as it drifts, so the valley opens past the edge; A20
-    lifts to the rose for the title at y 360). Pending: `bluehour_a_lookdev` (5 half-res stills).
-  * `cloud/jobs/make_runA2_jobs.py`: writes the finals (<= 40 min per cpu-8 node, no --skip) once s/frame is measured.
+    occlusion, a back-lit wool rim, fibre-streak albedo, one deep cowl (no brow bump: it read as a face). `seated()`:
+    six poses (knees, cross, back, side, kneel, lie), lean adult proportions: FOR ANY LANE's seated figures (RUN-A3).
+  * `crossing.py`: headwind down the arete with travelling gusts; trails open with the wheel (bar 66 b1) and grow to
+    36 deg concentric arcs about the pole (LAT 6, the pole ~1/4 down the wide); the great knife-edge range 7 km north
+    under the pole (GR_KNOTS; a far range was tried and cut: a pyramid, and it hid the sea); haze 1e-4; far red patches
+    x2.6 so the red is there to go out; opening camera H0 = -0.45 (the uphill bearer's boots on the snow, full-res
+    check PASSED); near keeper = `seated` kneel; fires lean -0.15, soot 0.22; `lens_blur` (focus on the lantern).
+  * `world.py` ADDITIVE (one comparison per call for every other table): -5 `hole_row` and -6 `valley_row` rows (read
+    only while they LEAD the table), Q[19] snow line (fields and woods below), fogp[8] low-mist cap.
+  * `bluehour.py` (A19 + A20, 640 f): ~42 seated people round the set-down lantern, all facing the dawn; a glacial
+    valley carved toward the rose (VAL_KNOTS 5.6-34 km) seen through the thinning cloud (a cloudless sub-window pass
+    composited under torn cloud), a river, ~54 hearth columns and glows; the gathering placed from the shoulder's
+    measured edge (`edge_f` = 19 m); CAM_KEYS (the camera rises 1.6 -> 2.6 m as it drifts from bar 76, so the valley
+    opens past the edge; A20 lifts to the rose for the title at y 360). The first farm test crashed (fixed: per-disc
+    depth bias in `_splat_over`); no picture of it exists yet.
+  * Workers print a frame's full traceback (farm logs showed only the pool's re-raise).
+* **Risks to check first on resume:** the blue hour's valley may not show (the carve is under a sea of peaks; the
+  sub-window composite is untested in a picture); the people may still read plush at full res; A20's sky composition.
 
 ## RUN-A3 STATE AT PAUSE (27 Sep ~20:40Z; the account's usage ends ~21:25Z, RESUME ~23:30Z)
 * **A13 R2-A THE REVEAL: APPROVED and RENDERED** (`reveal_a_1`: 120/120 in `renders/reveal_A` at 20:46Z, QC'd: no gaps,
