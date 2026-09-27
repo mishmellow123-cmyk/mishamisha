@@ -581,7 +581,7 @@ def build_scene(t, cfg):
         tips.append((a_, b_))
     fr_carry = (shf + lat * 0.24 + w0 * 0.12 - UP * 0.03, shf - lat * 0.24 + w0 * 0.12 - UP * 0.03)
     rr_carry = (shr + lat * 0.24 + w0 * 0.12 - UP * 0.03, shr - lat * 0.24 + w0 * 0.12 - UP * 0.03)
-    out_f = SP.walker(sc, pf, w0, ph_f, (0.06, 0.045, 0.035), carry=fr_carry, pack=False, height=1.0, lean=0.1,
+    out_f = SP.walker(sc, pf, w0, ph_f, (0.022, 0.018, 0.016), carry=fr_carry, pack=False, height=1.0, lean=0.1,
                      carry_side=1.0)
     out_r = SP.walker(sc, pr, Wd[1], ph_r, (0.04, 0.042, 0.05), carry=rr_carry, pack=False, height=1.03, lean=0.1,
                      carry_side=-1.0)

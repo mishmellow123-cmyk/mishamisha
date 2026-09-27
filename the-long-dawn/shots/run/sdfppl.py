@@ -20,6 +20,8 @@ import math
 import numpy as np
 from numba import njit, prange
 
+from mt.noise import gnoise3
+
 NP = 16
 NO = 16
 
@@ -281,7 +283,22 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                 ny /= nl
                 nz /= nl
                 if mat < 0.5:
-                    ar, ag, ab = O[oi, 6], O[oi, 7], O[oi, 8]
+                    # cloth: folds that hang (noise stretched along the vertical) bend the normal, and a mottled
+                    # weave/wear varies the albedo, so lit sleeves read as fabric, not plastic
+                    fsc = 1.0 / max(e * 6.0, 0.012)
+                    fk = min(fsc / 60.0, 1.0)
+                    if fk > 0.05:
+                        f1 = gnoise3(qx * 16.0, qy * 3.0, qz * 16.0, 11)
+                        f2 = gnoise3(qx * 16.0 + 7.1, qy * 3.0, qz * 16.0 - 2.3, 12)
+                        nx += 0.55 * fk * f1
+                        nz += 0.55 * fk * f2
+                        ny += 0.15 * fk * gnoise3(qx * 30.0, qy * 30.0, qz * 30.0, 13)
+                        nl2 = math.sqrt(nx * nx + ny * ny + nz * nz) + 1e-12
+                        nx /= nl2
+                        ny /= nl2
+                        nz /= nl2
+                    mot = 0.72 + 0.56 * (0.5 + 0.5 * gnoise3(qx * 7.0, qy * 5.0, qz * 7.0, 14))
+                    ar, ag, ab = O[oi, 6] * mot, O[oi, 7] * mot, O[oi, 8] * mot
                     wrap = 0.35
                     spec = 0.0
                 elif mat < 1.5:
