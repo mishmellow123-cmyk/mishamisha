@@ -539,8 +539,8 @@ IMPACT, 275 ms before every sunrise).
 1. Whoever lights a fire gets the CALL; only an answer earns the ANSWER (first heard: A at the far world, B at the
    first far pinprick, C in the Run).
 2. The whole theme is withheld until each cut's dawn.
-3. The thinking cycle's tempo is its pace: sixteenths and faster while raced, quarter notes locked to the bar and
-   walking in step once carried.
+3. In A, the thinking cycle's tempo is its pace: sixteenths and faster while raced, quarter notes locked to the bar
+   and walking in step once carried.
 4. The effects own every fire: no musical stroke on an ignition, a vow, an eagle or a sunrise.
 
 **What the critics earned:** no choir, no organ, no borrowed melodies and nothing Shire-like in C (no whistle, no
@@ -551,9 +551,11 @@ moment, not the loudest.
 | section | music | level |
 |---|---|---|
 | false dawn, glyphs, ignition (bars 3–21) | a beating glass tone; the kindling cue; the Lydian bloom; one warm string line under the promise, cut off | rising from near silence |
+| the towers (22–25) | A7(♭9), the prize; low drums prepare | rising |
 | the edge (26–32) | a 200 ms breath; taiko on every beat; spiccato; the corrupted call in low brass; the rhythm doubling every two bars at a fixed 72, which the engine can do without a tempo change; a sweet metallic ring on each gilding; the bellows' breath | loud |
 | the brink, the grasp (33–38) | storm, a Shepard rise, brass clusters; the riser, the suck, IMPACT | **A's loudest** |
 | dead valley, black, stars (39–47) | wind and falling ash; two seconds of true silence; the silence piano; one high harmonic | silence |
+| the first fire (48–50) | effects only (the three strikes, the breath, the catch); a low D | near silence |
 | the roar to the Run (51–60) | strings and low brass on B♭, the call in the violas; the **watch tone** (a low D in the cellos) from the roar to the last chord; the ANSWER in canon at the far world; the Run's D pedal, harmony rising by thirds | rising |
 | watchers, towers in the light (61–69) | the corrupted call softened and answered; at T12 the tritone heals into the fifth; the cycle slows to quarter notes | hushed |
 | the crossing (70–81) | a walking ostinato (pizzicato, a soft drum on 1 and 3); the call inside the chord; the harmony moves only when the line passes a watch-fire; one viola and the wind at the narrowest stretch | steady |
@@ -578,8 +580,8 @@ glass, no piano; the quietest score)
 melodies only)
 - **Two sound worlds.** The book is chamber music (cor anglais, harp, clarinet, solo violin, and the pen and page as
   sound); the fire is the orchestra. Every burn-through is a change of orchestration, never a hit.
-- **The Ring motif** (the corrupted call as a closed four-note loop) never cadences until the Ring is taken by the
-  fire, and then resolves into D once. That resolution, not the dawn, is C's emotional climax.
+- **The Ring motif** (the corrupted call, D–A♭–D, turned into a closed loop) never cadences until the Ring is taken
+  by the fire, and then resolves into D once. That resolution, not the dawn, is C's emotional climax.
 - **Forging to the Eye:** anvil strokes in timpani and low bells, taiko, a glass glitter on each surge; the Deep's
   tick dividing faster; a tam-tam and trombones for the Eye; one held tone and a drop for the Mirror.
 - **The finding:** a glass tone falling with the Ring; the motif ppp and sweet in the violas at the find; silence at
