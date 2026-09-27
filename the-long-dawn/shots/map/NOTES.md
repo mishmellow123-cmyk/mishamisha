@@ -1,5 +1,21 @@
 # MAP-v3 (lane `map`): THE RED BOOK, the four ink pages, the burn-throughs, THE MAP ANSWERS
 
+## STATE (paused 27 Sep 16:35Z for the usage window; resume ~20:00Z)
+**Complete and pushed** (d74bd7b on `claude/v3-map` and `claude/map-red-book-deep-yurk7k`, rebased on
+`claude/long-dawn-v2`): every H5 call in the lane, both script notes and the X1 notes (log below); review sheets in
+`review/v3/` (`map_X1_letters_to_fire.jpg/.mp4`, `map_C22_ring_page.jpg`, `map_C23_fire_remains.jpg`,
+`map_C18_road.jpg`, `map_P1_redbook_set.jpg`, `map_P2_pages_pencil_ink.jpg`, `map_P2_pages_scans.jpg`);
+`review/v3/x1_letters.json` re-exported. **No renders are running**, locally or on the cloud: both jobs wait for the
+director (`cloud/jobs/map_v3_book.json` 2472 frames incl. the C22 fallback 5360-5519; `cloud/jobs/map_v3_road.json`
+400 frames incl. bar 71 5600-5679, plus the two X1 layers).
+**Next (on resume, in order):**
+1. `git pull --rebase origin claude/long-dawn-v2`; read any new director notes at the top of `BIBLE_V3.md`.
+2. If the jobs have run: check `cloud_logs/map_v3_book_status.txt` / `map_v3_road_status.txt`, spot-check shipped jpgs
+   (C4 streams 740-790, the C22 fall 5365-5374, bar 71's hearths, C18's end on the ring).
+3. Polish, if time allows: a rounder bead (C22), the fall visible a little longer, bar 71's roads kept off the small
+   hill glyphs; a half-res playback check of C22 and bar 71 (only stills so far).
+4. Re-run `python3 the-long-dawn/cloud/verify_session.py`; push to both branches; 5-line summary.
+
 ## H5 LOG (27 Sep ~15:50Z) · the director's H5 CALLS, the two script notes and the X1 notes: all applied
 - [x] **C is the book:** the words "Red Book" appear nowhere on screen (no titling is drawn in any page or plate; checked).
 - [x] **One inscription on both rings:** the Ring drawn in the book carries the canonical script of fire from `assets/ring`
