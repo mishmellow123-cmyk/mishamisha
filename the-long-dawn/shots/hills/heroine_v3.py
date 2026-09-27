@@ -81,7 +81,8 @@ def night_env(snow=1.0, moon=1.0, fig_dirs=(), fig_dark=0.15):
     img += (MOON_COL * 0.02 * moon)[None, None] * np.exp(-(1 - cm) / 0.004)[..., None]
     for d, rad in fig_dirs:
         c = D @ nrm(d)
-        m = smoothstep(math.cos(rad * 1.15), math.cos(rad * 0.85), c)
+        m = np.clip((c - math.cos(rad * 1.15)) / (math.cos(rad * 0.85) - math.cos(rad * 1.15)), 0, 1)
+        m = m * m * (3 - 2 * m)
         img = img * (1 - m[..., None] * (1 - fig_dark))
     return img.astype(np.float32)
 
@@ -255,8 +256,7 @@ def snow_ground(B, c, reach=1.2, hollow=None):
         B.torus(hc + np.array([0.0, 0.004, 0.0]), np.eye(3), hr * 1.02, hr * 0.28, 0.010, k=0.02)
         B.ell(hc + np.array([0.0, 0.2 * hd, 0.0]), np.array([hr * 1.02, hd * 1.2, hr * 0.98]), k=0.012, op=1)
         B.group('ice', H3.M_ICE, band=0.002)
-        B.ell(hc + np.array([0.0, 0.2 * hd, 0.0]), np.array([hr * 1.02, hd * 1.2, hr * 0.98]) + 0.0025)
-        B.ell(hc + np.array([0.0, 0.2 * hd, 0.0]), np.array([hr * 1.02, hd * 1.2, hr * 0.98]) - 0.0012, op=1)
+        B.ell(hc + np.array([0.0, 0.2 * hd, 0.0]), np.array([hr * 1.02, hd * 1.2, hr * 0.98]) + 0.0015)
         Rh = np.stack([[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
         B.plane(hc + np.array([0.0, -0.25 * hd, 0.0]), Rh, op=2, reach=hr * 1.6)
     return B
@@ -494,48 +494,59 @@ class FireTest:
     steel. It hangs there in the flames, unmarked, its letters awake, not even warm. Her gloved hand trembles; the
     steel dips once toward the coals; she cannot let it fall; she draws it back (4160+)."""
     F0, F1 = 4040, 4183
-    HFOV = 36.0
+    HFOV = 40.0
 
     def pose(self, f):
         t = f / FPS
         tremble = 0.0015 * fnoise1(t * 9.0, 7.0, 2) + 0.0008 * fnoise1(t * 17.0, 9.0, 1)
         dip = 0.012 * smoothstep(4100, 4118, f) * (1 - smoothstep(4122, 4140, f))
         back = smoothstep(4160, 4183, f)
-        wrist = np.array([0.345 + 0.08 * back, 1.168 - dip + tremble, 0.035])
+        wrist = np.array([0.370 + 0.08 * back, 1.245 - dip + tremble, 0.010])
         p = dict(
             pelvis=(0.80, 0.63, 0.0), yaw=0.0, lean=10.0, chest=4.0, twist=6.0, neck=16.0, head=20.0, head_yaw=0.0,
             head_roll=0.0, shrug=0.4,
             hand_f=tuple(wrist), elbow_f=(0.3, -1.0, 0.6),
-            fdir_f=tuple(nrm([-1.0, -0.10 - 0.8 * dip, -0.05])), palm_f=(0.0, -0.25, -1.0),
-            curl_f=(0.92, 0.92, 0.92, 0.92), thumb_f=0.75,
-            hand_n=(0.62, 0.95, -0.18), elbow_n=(0.2, -1.0, -0.6), fdir_n=(-0.3, -1.0, 0.0), palm_n=(0.2, 0.0, 1.0),
+            fdir_f=tuple(nrm([-1.0, 0.02 - 1.2 * dip, -0.10])), palm_f=(0.0, -0.35, -1.0),
+            curl_f=(0.80, 0.86, 0.90, 0.92), thumb_f=0.70,
+            hand_n=(0.70, 0.72, -0.06), elbow_n=(0.2, -1.0, -0.6), fdir_n=(-0.3, -1.0, 0.0), palm_n=(0.2, 0.0, 1.0),
             curl_n=(0.7, 0.75, 0.8, 0.85), thumb_n=0.5,
             foot_n=(0.40, 0.05, -0.22), knee_n=(-1.0, 0.5, 0.0), toe_n=(-1.0, 0.0, 0.0), sole_n=(0.0, 1.0, 0.0),
             foot_f=(1.05, 0.13, 0.09), knee_f=(-1.0, -0.3, 0.0), toe_f=(0.3, -1.0, 0.0), sole_f=(1.0, 0.1, 0.0),
-            hem=0.2, breath=math.sin(2 * math.pi * t / 3.0), tools='steel', rock=((0.78, 0.06, 0.10), (0.24, 0.09, 0.18)),
+            hem=0.2, breath=math.sin(2 * math.pi * t / 3.0), tools='none', rock=((0.78, 0.06, 0.10), (0.24, 0.09, 0.18)),
             expr=dict(squint=0.6, brow=-0.3), look_at=(0.15, 1.12, -0.02),
         )
         return p, dip, back
 
-    def ring_on_tip(self, anc):
-        """The Ring hangs from the end of the steel's bar: axis along the bar, top of its bore on the bar."""
+    def steel(self, B, anc, dip):
+        """Her steel held like a key: pinched between thumb and curled index, its bar pointing into the fire. Returns
+        the tip and the bar's direction."""
         hf = anc['hand_f']
-        loop_c = (hf['mids'][0] + hf['mids'][1] + hf['mids'][2]) / 3.0
-        front = nrm(loop_c - hf['palm'])
-        ax = nrm(hf['sd'] - np.dot(hf['sd'], front) * front)
-        bar_c = loop_c + front * 0.0185
-        tipA, tipB = bar_c + ax * 0.033, bar_c - ax * 0.033
-        tip = tipA if tipA[0] < tipB[0] else tipB          # the end that points into the fire (-x)
-        bar_dir = nrm(tip - bar_c)
+        a = hf['a']
+        up = np.array([0.0, 1.0, 0.0])
+        d = nrm(a + up * (0.10 - 1.5 * dip))
+        p0 = hf['thumb'] + a * 0.004 - hf['n'] * 0.004
+        p1 = p0 + d * 0.085
+        side = nrm(np.cross(d, up))
+        R = np.stack([d, nrm(np.cross(side, d)), side])
+        B.group('steel', H3.M_IRON, band=0.001)
+        B.box(0.5 * (p0 + p1), np.array([0.0425, 0.0035, 0.0075]), R=R, rnd=0.0012)
+        return p1, d
+
+    def ring_on_tip(self, tip, d):
+        """Bag End: the Ring lies flat on the end of the flat steel, balanced; a tilt of her wrist would tip it into
+        the coals."""
         R, tb, hb, rnd = ring_dims()
-        centre = tip - bar_dir * 0.004 - np.array([0.0, R - tb + 0.0032, 0.0])
-        rows = H3.ring_frame(bar_dir, ref=(0.0, 1.0, 0.0))
-        return centre, rows, tip
+        up = np.array([0.0, 1.0, 0.0])
+        side = nrm(np.cross(d, up))
+        n = nrm(np.cross(side, d))                     # the steel's top face normal
+        centre = tip - d * 0.009 + n * (0.0035 + hb)
+        rows = H3.ring_frame(n, ref=d)
+        return centre, rows
 
     def camera(self, f, scale, ring_c):
         t = f / FPS
-        pos = ring_c + np.array([0.075, 0.020, -0.36]) + np.array([0.002 * fnoise1(t * 0.7, 2.0), 0.002 * fnoise1(t * 0.6, 4.0), 0])
-        tgt = ring_c + np.array([0.045, 0.004, 0.0])
+        pos = ring_c + np.array([0.070, 0.105, -0.33]) + np.array([0.002 * fnoise1(t * 0.7, 2.0), 0.002 * fnoise1(t * 0.6, 4.0), 0])
+        tgt = ring_c + np.array([0.060, -0.004, 0.0])
         cam = Camera(pos, hfov=self.HFOV, scale=scale)
         yaw, pitch = cam.look_at(tgt)
         return Camera(pos, yaw=yaw, pitch=pitch, hfov=self.HFOV, scale=scale), float(np.linalg.norm(ring_c - pos))
@@ -547,7 +558,7 @@ class FireTest:
         for k in range(9):
             a = -0.9 + 0.25 * k + rng.normal(0, 0.08)
             r = 0.10 + 0.10 * rng.random()
-            c = np.array([r * math.cos(a) * 0.9, BK_BOT + 0.12 + 0.10 * rng.random(), r * math.sin(a) - 0.02])
+            c = np.array([r * math.cos(a) * 0.9 - 0.04, BK_BOT + 0.04 + 0.06 * rng.random(), r * math.sin(a) + 0.08])
             d = nrm([rng.normal(0, 0.5), 0.9, rng.normal(0, 0.5)])
             B.cone(c - d * 0.14, c + d * 0.14, 0.030, 0.024, k=0.01)
         B.group('bars', H3.M_IRON, band=0.004)
@@ -562,14 +573,15 @@ class FireTest:
         t = f / FPS
         p, dip, back = self.pose(f)
         B, F, Hp, anc, hair = figure(p, t, hair_dir=(0.8, -0.3))
-        ring_c, rows, tip = self.ring_on_tip(anc)
+        tip, d = self.steel(B, anc, dip)
+        ring_c, rows = self.ring_on_tip(tip, d)
         cam, focus = self.camera(f, scale, ring_c)
         cam, focus, nodof = debug_cam(cam, focus, scale)
         add_ring(B, ring_c, rows)
         self.wood(B)
         fl = fire.flicker(t, 3.3, 1.3)
         XP = np.zeros(64)
-        ring_xp(XP, ring_c, rows, glow=0.9 + 0.15 * math.sin(t * 5.1))
+        ring_xp(XP, ring_c, rows, glow=2.6 + 0.3 * math.sin(t * 5.1))
         XP[25], XP[26] = 1.0, 1.0
         XP[28], XP[29], XP[30] = 0.9 * fl, 60.0, 0.85
         ENV = env_stack(fire_env(1.0 * fl))
@@ -586,18 +598,143 @@ class FireTest:
         fimg = np.zeros_like(img)
         fa = np.zeros(img.shape[:2], np.float32)
         fire.draw_flame(fimg, fa, cam, FIRE_BASE, 1.9, 0.31, 0.55, t, 2.9, 10.0 * fl, fire.BONFIRE_STYLE)
-        for k, (dx, dz, h, w) in enumerate(((0.12, 0.06, 0.34, 0.06), (0.05, 0.10, 0.42, 0.08), (0.17, 0.02, 0.26, 0.05),
-                                           (-0.02, 0.14, 0.5, 0.09))):
-            fire.draw_flame(fimg, fa, cam, np.array([dx, BK_BOT + 0.16, dz]), h, w, 0.5, t, 7.0 + k, 6.0 * fl,
+        for k, (dx, dz, h, w) in enumerate(((0.14, 0.08, 0.50, 0.07), (0.05, 0.12, 0.62, 0.09), (0.20, 0.05, 0.44, 0.05),
+                                           (-0.02, 0.16, 0.7, 0.10), (0.10, 0.20, 0.55, 0.08))):
+            fire.draw_flame(fimg, fa, cam, np.array([dx, BK_BOT + 0.10, dz]), h, w, 0.5, t, 7.0 + k, 7.0 * fl,
                             fire.TORCH_STYLE)
         img += fimg
         res = H3.render(cam, B, Hp, L, env, XP, ENV, inscription_ins(), ss=(3 if scale > 0.75 else 2),
                         sil=dict(skin=1.0, eyes=1.0, cap=0.85, cap_brim=0.85, hair=0.85))
         depth = comp(img, res)
+        # tongues of flame in front of and beside the Ring: it lies IN the fire
+        fimg = np.zeros_like(img)
+        for k, (dx, dz, h, w) in enumerate(((0.10, -0.10, 0.44, 0.05), (0.22, -0.02, 0.36, 0.04))):
+            fire.draw_flame(fimg, fa, cam, np.array([dx, BK_BOT + 0.16, dz]), h, w, 0.5, t, 17.0 + k, 3.0 * fl,
+                            fire.TORCH_STYLE)
+        img += fimg * 0.6
         fire.add_glow(img, cam, FIRE_BASE + [0, 0.5, 0], 0.5, 0.06 * fl)
         if not nodof:
-            img = dof(img, depth, focus, K=cam.f * 0.004)
+            img = dof(img, depth, focus, K=cam.f * 0.0022)
         return finish(img, exposure=float(os.environ.get('V3_EXPO', 0.55)), bloom=0.14)
+
+
+class Find:
+    """C 148.2-153.5 s (frames 3557-3683). Low on the snow by her near knee. 3557 the second strike: its flash (from the
+    flint ~1 m above) finds a gold band in a melted hollow, sparks rain and die on the snow; dark again, the band's
+    letters are faintly awake (its own light, 3562+); 3600 her gloved near hand comes down out of the dark, 3640 the
+    fingers close on it, 3660 lift it away."""
+    F0, F1 = 3557, 3683
+    HOL = np.array([0.33, 0.0, -0.40])
+    HFOV = 30.0
+    STRIKE = 3557
+    FLINT = np.array([0.32, 1.08, -0.07])
+
+    def reach(self, f):
+        return smoothstep(3600, 3640, f) * (1 - smoothstep(3660, 3683, f))
+
+    def pose(self, f):
+        t = f / FPS
+        r = self.reach(f)
+        close = smoothstep(3636, 3650, f)
+        W = self.HOL + np.array([0.070, 0.070, 0.030]) + np.array([0.02, 0.22, 0.04]) * (1 - r)
+        p = dict(
+            pelvis=(0.80, 0.48, -0.02), yaw=0.0, lean=66.0, chest=16.0, twist=0.0, neck=8.0, head=22.0, head_yaw=0.0,
+            head_roll=0.0, shrug=0.1,
+            hand_n=tuple(W), elbow_n=(0.3, -0.2, -1.0),
+            fdir_n=tuple(nrm([-0.55, -0.72, -0.40])), palm_n=tuple(nrm([0.25, -0.45, 0.85])),
+            curl_n=tuple(np.array([0.22, 0.62, 0.80, 0.88]) * (1 - close) + np.array([0.62, 0.80, 0.90, 0.94]) * close),
+            thumb_n=0.30 + 0.30 * close, spread_n=0.05, thumbout_n=0.45 * (1 - close),
+            hand_f=(0.55, 0.62, 0.10), elbow_f=(0.3, -1.0, 0.4), fdir_f=(-0.6, -0.6, -0.2), palm_f=(0.3, 0.2, -1.0),
+            curl_f=(0.9, 0.9, 0.9, 0.9), thumb_f=0.7,
+            foot_n=(0.40, 0.05, -0.22), knee_n=(-1.0, 0.5, 0.0), toe_n=(-1.0, 0.0, 0.0), sole_n=(0.0, 1.0, 0.0),
+            foot_f=(1.05, 0.13, 0.09), knee_f=(-1.0, -0.3, 0.0), toe_f=(0.3, -1.0, 0.0), sole_f=(1.0, 0.1, 0.0),
+            hem=0.1, breath=math.sin(2 * math.pi * t / 3.3), tools='none', rock=None,
+            expr=dict(blink=0.5), look_at=tuple(self.HOL),
+        )
+        return p, r, close
+
+    def ring_pose(self, f, anc, close):
+        """Lying tilted on the frozen melt; once her fingers close, it rides in them."""
+        R, tb, hb, rnd = ring_dims()
+        rest = self.HOL + np.array([0.004, -0.0075 + hb * 0.9 + 0.002, 0.002])
+        rows_rest = H3.ring_frame(nrm([0.18, 1.0, -0.12]), ref=(1.0, 0.0, 0.0))
+        lift = smoothstep(3650, 3683, f)
+        if lift <= 0.0:
+            return rest, rows_rest
+        hn = anc['hand_n']
+        grip = 0.5 * (hn['thumb'] + hn['tips'][0])
+        c = rest * (1 - lift) + grip * lift
+        return c, rows_rest
+
+    def camera(self, f, scale):
+        t = f / FPS
+        pos = self.HOL + np.array([-0.030, 0.095, -0.30]) + np.array([0.0015 * fnoise1(t * 0.6, 2.0), 0.001 * fnoise1(t * 0.5, 4.0), 0])
+        tgt = self.HOL + np.array([0.010, 0.012, 0.0])
+        cam = Camera(pos, hfov=self.HFOV, scale=scale)
+        yaw, pitch = cam.look_at(tgt)
+        return Camera(pos, yaw=yaw, pitch=pitch, hfov=self.HFOV, scale=scale), float(np.linalg.norm(tgt - pos))
+
+    def render(self, f, scale=0.5):
+        t = f / FPS
+        cam, focus = self.camera(f, scale)
+        cam, focus, nodof = debug_cam(cam, focus, scale)
+        p, r, close = self.pose(f)
+        B, F, Hp, anc, hair = figure(p, t, hair_dir=(0.6, -0.8))
+        ring_c, rows = self.ring_pose(f, anc, close)
+        add_ring(B, ring_c, rows)
+        snow_ground(B, self.HOL + np.array([0.2, 0.0, 0.0]), reach=3.0, hollow=(self.HOL, 0.045, 0.030))
+        d = f - self.STRIKE
+        flash = math.exp(-d / 2.4) if d >= 0 else 0.0
+        awake = 0.05 + 0.03 * math.sin(t * 2.3)                # the letters, faintly awake in the dark
+        XP = np.zeros(64)
+        ring_xp(XP, ring_c, rows, glow=awake)
+        XP[25], XP[26] = 1.0, 1.0
+        # the night the band mirrors: sky, the moon behind her, the snow, her dark figure above
+        ENV = env_stack(night_env(moon=1.0, fig_dirs=((np.array([0.35, 0.9, 0.3]), 0.55),)) + 0.0)
+        L = [moon_light(0.30),
+             light(ring_c + np.array([0.0, 0.004, 0.0]), (1.0, 0.36, 0.07), 0.000025 * awake / 0.05, 0.008, 4.0)]
+        if flash > 0.01:
+            L.append(light(self.FLINT + [0.015, 0.015, -0.045], (1.0, 0.82, 0.58), 0.30 * flash, 0.05, 0.0))
+        env = hero.env_vec(rim_dir=MOON_DIR, rim=np.array([0.08, 0.11, 0.18]), amb=np.array([0.004, 0.006, 0.012]),
+                           bounce=np.array([0.012, 0.016, 0.024]), ao=0.015)
+        img = np.zeros((cam.H, cam.W, 3), np.float32)
+        img[:] = np.array([0.003, 0.005, 0.011], np.float32)
+        res = H3.render(cam, B, Hp, L, env, XP, ENV, inscription_ins(), ss=(3 if scale > 0.75 else 2),
+                        sil=dict(skin=1.0, eyes=1.0, cap=0.85, cap_brim=0.85, hair=0.85))
+        depth = comp(img, res)
+        if 0 <= d < 30:
+            self._sparks(img, cam, f)
+        if not nodof:
+            img = dof(img, depth, focus, K=cam.f * 0.0035)
+        return finish(img, exposure=float(os.environ.get('V3_EXPO', 1.6)))
+
+    def _sparks(self, img, cam, f):
+        """A few of the strike's sparks fall into the frame and die on the snow round the hollow."""
+        rng = np.random.default_rng(9)
+        n = 14
+        for k in range(n):
+            t0 = rng.uniform(0.0, 0.25)
+            life = rng.uniform(0.25, 0.7)
+            land = self.HOL + np.array([rng.normal(0, 0.06), 0.002, rng.normal(0, 0.05)])
+            age = (f - self.STRIKE) / FPS - t0
+            if age < 0 or age > life + 0.4:
+                continue
+            fall = 0.35
+            if age < fall:
+                u = age / fall
+                pos = land + np.array([0.0, 0.25 * (1 - u) ** 1.6, 0.0])
+                prev = land + np.array([0.0, 0.25 * (1 - max(0.0, u - 0.08)) ** 1.6, 0.0])
+                e = 1.0
+            else:
+                pos = prev = land
+                e = math.exp(-(age - fall) / 0.12)
+            sx, sy, z = cam.project(pos)
+            px, py, _ = cam.project(prev)
+            if z <= 0.02:
+                continue
+            en = 1.2 * e * cam.scale ** 2
+            from core import splat_streak
+            splat_streak(img, float(px), float(py), float(sx), float(sy), max(0.6, 1.1 * cam.scale), en, en * 0.55, en * 0.2)
 
 
 def inscription_ins():
@@ -609,7 +746,7 @@ class DeadEmberPOV(DeadEmber):
     HFOV = 40.0
 
 
-SHOTS = dict(deadember=DeadEmber, deadember_pov=DeadEmberPOV, firetest=FireTest)
+SHOTS = dict(deadember=DeadEmber, deadember_pov=DeadEmberPOV, firetest=FireTest, find=Find)
 
 
 def main():
