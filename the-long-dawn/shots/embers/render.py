@@ -33,7 +33,7 @@ OUTS = {'A': os.path.join(ROOT, 'renders', 'embers_v2'), 'B': os.path.join(ROOT,
 SHOTS = [(300, 880), (880, 960), (960, 1040), (1040, 1200)]
 SHOTS_V3 = {'A3': [(560, 1040), (1040, 1760), (1760, 1840), (1840, 2468), (2468, 2640), (2640, 2800), (2800, 3120),
                    (4400, 4880)],
-            'C3': [(1040, 1680), (1920, 2080), (2320, 2480)]}
+            'C3': [(1040, 1680), (1920, 2080), (2320, 2480), (2720, 2840)]}
 
 # text windows (v2 frames = src frames here) per cut, from the edit's current titles (director, framing review).
 # The band y~560-700 is calmed during these. Lines on black (1060-1186) sit mid-frame; kept for completeness.
@@ -74,6 +74,8 @@ def scene():
         elif variant.CUT == 'C3':
             import c3
             _scene = c3.TimelineC3()
+            import c2                   # EMBERS-C2: C9 THE EYE, C11 THE GRASP, C13a THE RING FALLS (c2.SHOTS2)
+            _scene = c2.Router(_scene)
         else:
             import timeline
             _scene = timeline.Timeline()
