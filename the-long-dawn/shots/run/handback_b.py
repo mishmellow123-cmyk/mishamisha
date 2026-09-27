@@ -311,6 +311,100 @@ def dawn_params(e, grey, pix_ang):
     return LP, SD, amb, fogp
 
 
+# ------------------------------------------------------------ the hand-back puppets ---
+# (built here, not in bset, so the vigil's puppets can change independently; the join matches on the SAME calls)
+def sleeve_arm(d, sh, el, wr, sg, hand_ang, palm=1.0, drape=0.11, mat=14):
+    """A cloaked arm (local metres): a tapered upper arm and forearm, the wide sleeve hanging under the forearm, and
+    a gloved hand (a mitten, its thumb out toward the body's centre line). palm 0 closed .. 1 open. Returns the
+    centre of the palm."""
+    sh, el, wr = np.asarray(sh, float), np.asarray(el, float), np.asarray(wr, float)
+    d.new_group()
+    d.capsule(sh, el, 0.080, 0.064, k=0.05, mat=mat, fuzz=0.008, ff=20.0)
+    d.capsule(el, wr, 0.060, 0.044, k=0.05, mat=mat, fuzz=0.008, ff=20.0)
+    fa = wr - el
+    L = float(np.linalg.norm(fa)) + 1e-9
+    u = fa / L
+    cuff = el + u * L * 0.86
+    low = el + u * L * 0.62 + np.array([0.0, -drape])
+    d.tri(el + np.array([0.0, -0.04]), cuff + np.array([0.0, -0.02]), low, rnd=0.035, k=0.05, mat=mat)   # the sleeve
+    d.ellipse(cuff, 0.052, 0.078, ang=math.atan2(u[1], u[0]), k=0.04, mat=mat)      # the cuff, flared
+    d.new_group()
+    hu = np.array([math.cos(hand_ang), math.sin(hand_ang)])
+    hn = np.array([-hu[1], hu[0]])
+    pc = wr + hu * 0.040
+    d.ellipse(pc, 0.046, 0.031, ang=hand_ang, k=0.02, mat=19)                     # the palm
+    d.ellipse(pc + hu * (0.040 + 0.015 * palm), 0.030, 0.024 - 0.004 * palm, ang=hand_ang, k=0.02, mat=19)
+    side = -sg if hn[0] * sg > 0 else sg                                             # thumb toward the centre line
+    th0 = wr + hu * 0.022 + hn * 0.022 * side
+    d.capsule(th0, th0 + hu * 0.026 + hn * (0.016 + 0.022 * palm) * side, 0.013, 0.010, k=0.01, mat=19)
+    return pc
+
+
+def keeper_hb(hands=0.0, give=0.0):
+    """Her, seated (BS.person 'sit', arms at rest inside the cloak) plus her own sleeved arms: hands 0..1 = drawn
+    from her sleeves and opened to the sun (elbows out, hands at shoulder height beside her, palms to the sun, fingers
+    up; never a V); give 0..1 = the right arm goes out and down to the child's palm with the fire-steel.
+    Returns (Drawing, pts) with pts['steel'] = where the steel sits in her right hand (local metres) or None."""
+    kd, kp = BS.person('sit', age=0.9, shawl=False, staff=True, reach=0.0, wind=0.4)
+    pts = dict(steel=None)
+    h = _ease(hands)
+    g = _ease(give)
+    for sg in (-1, 1):
+        sh = np.array([0.17 * sg, 0.64])
+        if sg > 0 and g > 0.0:
+            # the hand-off: out and down to the child's open palm, the gloved hand turned over, the steel in it
+            el = sh + np.array([0.11 + 0.04 * g, -0.13 - 0.03 * g])
+            wr = el + np.array([0.07 + 0.06 * g, -0.10 - 0.04 * g])
+            ang = math.radians(-30.0 - 15.0 * g)
+            pc = sleeve_arm(kd, sh, el, wr, sg, ang, palm=0.3, drape=0.10)
+            pts['steel'] = pc + np.array([0.02, -0.03])
+        elif h > 0.0:
+            # drawn from the sleeves and opened to the sun
+            el = sh + np.array([0.13 * sg, -0.19]) * (0.45 + 0.55 * h)
+            wr = el + np.array([0.15 * sg, 0.02]) * h + np.array([0.0, -0.12]) * (1.0 - h)
+            a_out = math.radians(28.0) if sg > 0 else math.radians(152.0)          # out and a little up, palms open
+            ang = a_out if h > 0.3 else math.atan2(wr[1] - el[1], wr[0] - el[0])
+            sleeve_arm(kd, sh, el, wr, sg, ang, palm=h, drape=0.12 + 0.05 * h)
+    return kd, pts
+
+
+def child_hb(wake=0.0, reach=0.0, hold=0.0):
+    """The traveller's child, seated against her, wrapped head and shoulders in her red shawl, from behind: ONE
+    continuous bell of drapery from the covered head to the lap (no neck notch, never a round head on a round body),
+    a soft peak where the shawl falls over the crown. Asleep the head is bowed and leans toward her; waking it rises
+    and turns to the sun. reach 0..1: a small gloved hand comes out of the wrap toward her, palm up; hold 0..1: the
+    hand, closed on the steel, comes back to the chest. Returns (Drawing, pts) with pts['hand'] (palm centre)."""
+    d = FG.Drawing()
+    lean = 0.32 * (1.0 - _ease(wake))
+    d.new_group()
+    d.trap((0.02, 0.0), (0.0, 0.20), 0.25, 0.20, rnd=0.05, k=0.06, mat=0, fuzz=0.01, ff=14.0)        # lap, legs
+    d.new_group()
+    base = np.array([0.0, 0.12])
+    tilt = np.array([-0.06 * lean, -0.03 * lean])                                  # asleep: bowed, leaning to her
+    d.trap(base, np.array([-0.01, 0.39]) + 0.4 * tilt, 0.25, 0.17, rnd=0.05, k=0.06, mat=13, fuzz=0.008, ff=30.0)
+    sho = np.array([-0.01, 0.37]) + 0.5 * tilt
+    d.ellipse(sho, 0.165, 0.065, ang=0.25 * lean, k=0.06, mat=13, fuzz=0.008, ff=30.0)              # sloped shoulders
+    head = np.array([-0.025 - 0.02 * wake, 0.505 + 0.02 * wake]) + tilt
+    d.trap(sho, head + np.array([0.0, -0.02]), 0.13, 0.085, rnd=0.03, k=0.05, mat=13)                 # drape, head->shoulders
+    d.ellipse(head, 0.074, 0.084, ang=0.35 * lean, k=0.05, mat=13, fuzz=0.008, ff=30.0)              # the covered head
+    d.tri(head + np.array([-0.04, 0.03]), head + np.array([0.05, 0.04]),
+          head + np.array([0.03 - 0.04 * lean, 0.10]), rnd=0.03, k=0.06, mat=13)                    # the crown's fold
+    d.capsule(base + np.array([-0.20, 0.12]), base + np.array([0.21, 0.10]), 0.011, 0.011, mat=20)    # the weave
+    d.chain(np.array([base + np.array([0.18, 0.13]), base + np.array([0.23, 0.03]), base + np.array([0.25, -0.08])]),
+            0.030, 0.018, k=0.02, mat=13)                                                            # fringed end
+    hand = None
+    r = _ease(reach)
+    if r > 0.0 or hold > 0.0:
+        d.new_group()
+        sh = base + np.array([-0.11, 0.19])
+        out = sh + np.array([-0.13 - 0.07 * r, -0.07 + 0.03 * r])
+        back = sh + np.array([-0.02, 0.02])
+        hand = out + (back - out) * _ease(hold)
+        d.capsule(sh, hand, 0.034, 0.026, k=0.03, mat=0)                                            # the small sleeve
+        d.ellipse(hand + np.array([-0.028, 0.004]), 0.030, 0.019, ang=0.15, k=0.02, mat=19)         # mitten, palm up
+    return d, dict(head=head, hand=hand)
+
+
 # ------------------------------------------------------------------ shot ---
 class HandBack:
     def __init__(self, scale=0.25, ss=1.5, figures=True):
@@ -382,10 +476,25 @@ class HandBack:
         self._settled = dict(tc=tc, fr=fr, scam=scam, G=G, P=P)
         return self._settled
 
-    def night(self, G, scam, grey=0.0):
+    def fire_level(self, frame):
+        e = self.sun_el(frame) if frame >= F_GREY else -5.0
+        her_sun = smoothstep(self.e_her - 0.04, self.e_her + 0.06, e) if frame >= F_GREY else 0.0
+        return 1.0 - 0.97 * her_sun
+
+    @staticmethod
+    def fire_light(LP, lvl, t):
+        """The fire lights the snow round the basket (the vigil's LP[36..43], so the join at 3839/3840 matches)."""
+        LP[36] = 9.0 * lvl * F.flicker(t, 3)
+        LP[37:40] = BS.BEACON + np.array([0.0, 1.3, 0.0])
+        LP[40:43] = np.array(F.FIRE_LIGHT)
+        LP[43] = 40.0
+
+    def night(self, G, scam, grey=0.0, frame=None):
         LP, SN, amb, fogp = BS.night_params(MOON_END, 1.0 / scam.f, east=BS.dirxz(_sun_az()), grey=grey)
         LP[32] = 0
         LP[33] = 0
+        if frame is not None:
+            self.fire_light(LP, self.fire_level(frame), frame / FPS)
         out = np.zeros((scam.H, scam.W, 3), np.float32)
         BW.shade(G, LP, SN, amb, fogp, float(scam.pos[1]), out)
         return out
@@ -398,17 +507,18 @@ class HandBack:
         scam, fr = S['scam'], S['fr']
         grey = smoothstep(F_GREY, F_FIRST, frame)
         G = S['G']
-        img = self.night(G, scam, grey)
+        img = self.night(G, scam, grey, frame)
         if frame >= F_GREY:
             e = self.sun_el(frame)
             LP, SD, amb, fogp = self.dawn(e, max(grey, 0.02), scam)
+            self.fire_light(LP, self.fire_level(frame), t)
             day = np.zeros((scam.H, scam.W, 3), np.float32)
             BW.shade(G, LP, SD, amb, fogp, float(scam.pos[1]), day)
             w = smoothstep(F_GREY, F_GREY + 80, frame)
             img = (img * (1.0 - w) + day * w).astype(np.float32)
         dist = G[..., BW.G_DIST].copy()
         zb = dist.copy()
-        self.layers(img, zb, dist, scam, frame, t)
+        self.layers(img, zb, dist, scam, frame, t, G)
         # the push-in: a zoom inside the settled source frame
         tc = settled_cam(self.W, self.H, frame)
         t_ss = tc.scaled(self.ss)
@@ -426,18 +536,21 @@ class HandBack:
         scam = fr.src
         P = np.array([scam.pos[0], scam.pos[2], t, 0.0])
         G = BW.build(scam, P, CR, None, dmax=180000.0, moons=[MOON_END], mk=10.0)
-        img = self.night(G, scam, 0.0)
+        img = self.night(G, scam, 0.0, frame)
         dist = G[..., BW.G_DIST].copy()
         zb = dist.copy()
-        self.layers(img, zb, dist, scam, frame, t)
+        self.layers(img, zb, dist, scam, frame, t, G)
         fr.img, fr.zb, fr.dist = img, zb, dist
         out, _, _ = PI.to_target(fr)
         return out
 
-    def layers(self, img, zb, dist, scam, frame, t):
+    def layers(self, img, zb, dist, scam, frame, t, G=None):
         ss = self.ss
         night = 1.0 - smoothstep(F_GREY, F_FIRST + 40, frame)
         e = self.sun_el(frame) if frame >= F_GREY else -5.0
+        if night > 0.01 and G is not None:
+            import vigil as VG          # lazy: vigil imports this module (the join shares one sky)
+            BW.add_band(G, np.eye(3), VG.BAND, getattr(VG, 'BAND_GAIN', 0.05), night, img)
         if night > 0.01:
             mask = (dist > 1e8).astype(np.float32)
             SK.splat_stars(img, scam, self.stars, mask, t=t, gain=ss * ss * night,
@@ -507,35 +620,29 @@ class HandBack:
         cpos = BS.on_ground(SEAT + side * 0.78 - fw * 0.20)
         lk = [dict(lights[0], I=lights[0]['I'] * child_sun)] + lights[1:]
         # the child: asleep in her red shawl; the small hand out, palm up, as she gives it; awake, holding it
-        cd, cp = BS.child_asleep(wake, reach=max(give, 0.7 * wake))
+        hold = smoothstep(F_WAKE + 4, F_WAKE + 60, frame)
+        cd, cp = child_hb(wake, reach=max(give, 0.8 * wake) if frame < F_WAKE + 60 else 0.8, hold=hold)
         if frame >= F_GIVE and cp['hand'] is not None:
-            BS.fire_steel(cd, cp['hand'] + np.array([-0.03, 0.03]), ang=0.8, s=0.85)
+            BS.fire_steel(cd, cp['hand'] + np.array([-0.028, 0.022]), ang=0.8, s=0.85)
         FG.render(img, zb, scam, cd, cpos, lk, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
-        kd, kp = BS.person('sit', age=0.9, shawl=False, staff=True, reach=give, wind=0.4)
-        if hands > 0.0:
-            # her old hands drawn from her sleeves and opened to the sun: forearms out and up, palms open
-            for sg in (-1, 1):
-                sh = np.array([0.17 * sg, 0.66])
-                el = sh + np.array([0.20 * sg, -0.10 + 0.02 * hands]) * (0.4 + 0.6 * hands)
-                wr = el + np.array([0.16 * sg, 0.10 + 0.12 * hands]) * hands
-                kd.new_group()
-                kd.capsule(sh, el, 0.065, 0.055, k=0.03, mat=14)
-                kd.capsule(el, wr, 0.055, 0.045, k=0.03, mat=14)
-                kd.ellipse(wr + np.array([0.03 * sg, 0.02]), 0.045, 0.035, ang=0.6 * sg, mat=19)
+        # her: seated; her old hands drawn from her sleeves and opened to the sun; then the hand-off
+        kd, kp = keeper_hb(hands=hands, give=give)
         steel_local = None
-        if 0.0 < give and frame < F_GIVE:
-            w = kp['hands'].get('R')
-            if w is not None:
-                steel_local = w + np.array([0.03, -0.04])
-                BS.fire_steel(kd, steel_local, ang=0.3, s=1.0)
+        if 0.0 < give and frame < F_GIVE and kp['steel'] is not None:
+            steel_local = kp['steel']
+            BS.fire_steel(kd, steel_local, ang=0.3, s=1.0)
         FG.render(img, zb, scam, kd, SEAT, lights, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
         # the steel catches the new sun as it passes into the child's palm: one small warm glint (bar 63)
         gl = math.exp(-((frame - F_GIVE + 4) / 14.0) ** 2) * child_sun
         if gl > 0.01:
-            if steel_local is None:
-                steel_local = np.array([0.36, 0.40])
             rgt = np.array([scam.right[0], 0.0, scam.right[2]])
-            pw = SEAT + rgt * steel_local[0] + np.array([0.0, steel_local[1], 0.0])
+            if steel_local is not None:                   # still in her hand
+                pw = SEAT + rgt * steel_local[0] + np.array([0.0, steel_local[1], 0.0])
+            elif cp['hand'] is not None:                  # in the child's palm
+                q = cp['hand'] + np.array([-0.028, 0.022])
+                pw = cpos + rgt * q[0] + np.array([0.0, q[1], 0.0])
+            else:
+                pw = SEAT + rgt * 0.45 + np.array([0.0, 0.30, 0.0])
             gx, gy, gz = scam.project(pw)
             F2.glow(img, zb, gx, gy, 0.9 * self.ss, 6.0 * gl * self.ss * self.ss, z=gz, zbias=0.5,
                     col=np.array([1.0, 0.78, 0.45]))
@@ -549,12 +656,19 @@ class HandBack:
 FINISH = dict(exposure=0.80, bloom_strength=0.05, bloom_threshold=1.8, streak_strength=0.0, vignette_amount=0.22)
 
 
+def finish_at(f):
+    """The crane opens in the vigil's grade (the join at 3839/3840) and eases into the hand-back's by the greying."""
+    import vigil as VG
+    w = _ease((f - F0) / float(F_GREY - F0))
+    return {k: VG.FINISH.get(k, v) + (v - VG.FINISH.get(k, v)) * w for k, v in FINISH.items()}
+
+
 def _work(args):
     frames, scale, ss, out, figs = args
     shot = HandBack(scale, ss, figs)
     for f in frames:
         t0 = time.time()
-        img = look.finish(shot.render(f), **FINISH)
+        img = look.finish(shot.render(f), **finish_at(f))
         look.save_png(look.frame_path(out, f), img)
         print(f'frame {f} {time.time() - t0:.2f}s', flush=True)
 
