@@ -7,7 +7,7 @@
   "cd shots/map && python3 geo.py && python3 features.py",
   "cd shots/map && (test -f ../../renders/map_C/cache/relief_4.npy || NUMBA_NUM_THREADS=1 python3 -c \"import bake; bake.pyramid('full', 48.0, workers=4)\")",
   "cd shots/map && python3 -c \"import relay; print(relay.Relay().summary())\"",
-  "cd shots/map && NUMBA_NUM_THREADS=4 python3 road.py frames --frames 4300 --scale 0.25 --out ../../cloud_logs/map_v3_road_warmup"
+  "cd shots/map && NUMBA_NUM_THREADS=4 python3 road.py frames --frames 4300,5640 --scale 0.25 --out ../../cloud_logs/map_v3_road_warmup"
  ],
  "render": [
   "NUMBA_NUM_THREADS=1 python3 shots/map/road.py frames --frames 4160,4164,4168,4172,4176,4180,4184,4188,4192,4196,4200,4204,4208,4212,4216,4220,4224,4228,4232,4236,4240,4244,4248,4252,4256,4260,4264,4268,4272,4276,4280,4284,4288,4292,4296,4300,4304,4308,4312,4316,4320,4324,4328,4332,4336,4340,4344,4348,4352,4356,4360,4364,4368,4372,4376,4380,4384,4388,4392,4396,4400,4404,4408,4412,4416,4420,4424,4428,4432,4436,4440,4444,4448,4452,4456,4460,4464,4468,4472,4476,5600,5604,5608,5612,5616,5620,5624,5628,5632,5636,5640,5644,5648,5652,5656,5660,5664,5668,5672,5676",

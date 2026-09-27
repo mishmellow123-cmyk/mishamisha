@@ -77,12 +77,19 @@ def sketch_ring(S, x, y, r, seed, gilt=False):
 
 
 def sketch_ship(S, x, y, s, seed):
-    """A small grey ship on a low sea: a long hull with a swan-high prow, one mast, a sail, a few waves."""
+    """A small grey ship on a low sea, the Havens' swan-ship drawn small (H5): a long hull whose prow rises west into
+    a swan's neck and head, one mast, a sail, a few waves."""
     rng = np.random.default_rng(seed)
-    hull = catmull([(x - 1.3 * s, y - 0.25 * s), (x - 0.9 * s, y + 0.12 * s), (x, y + 0.2 * s), (x + 0.9 * s, y + 0.1 * s),
-                    (x + 1.25 * s, y - 0.3 * s), (x + 1.35 * s, y - 0.75 * s), (x + 1.18 * s, y - 0.85 * s)], 8)
+    hull = catmull([(x + 1.3 * s, y - 0.32 * s), (x + 0.9 * s, y + 0.1 * s), (x, y + 0.2 * s), (x - 0.9 * s, y + 0.12 * s),
+                    (x - 1.22 * s, y - 0.28 * s), (x - 1.42 * s, y - 0.78 * s), (x - 1.3 * s, y - 1.18 * s),
+                    (x - 1.4 * s, y - 1.44 * s), (x - 1.56 * s, y - 1.46 * s), (x - 1.68 * s, y - 1.38 * s)], 8)
     line(S, hull, 0.02, seed, lift=(6, 7))
-    line(S, np.array([[x - 1.3 * s, y - 0.25 * s], [x + 1.28 * s, y - 0.3 * s]]), 0.014, seed + 1, lift=(6, 7))
+    line(S, np.array([[x + 1.3 * s, y - 0.32 * s], [x - 1.24 * s, y - 0.26 * s]]), 0.014, seed + 1, lift=(6, 7))
+    S.add(np.array([[x - 1.47 * s, y - 1.41 * s], [x - 1.465 * s, y - 1.41 * s]]), np.array([0.016, 0.016]), np.array([1.0, 1.0]))
+    for q in range(3):                                   # wing feathers along the side
+        a0 = x - 0.6 * s + 0.42 * q * s
+        feather = catmull([(a0, y - 0.02 * s), (a0 + 0.28 * s, y - 0.12 * s), (a0 + 0.52 * s, y - 0.06 * s)], 6)
+        line(S, feather, 0.008, seed + 20 + q)
     mast = np.array([[x - 0.05 * s, y - 0.25 * s], [x - 0.02 * s, y - 1.8 * s]])
     line(S, mast, 0.016, seed + 2)
     sail = catmull([(x - 0.02 * s, y - 1.7 * s), (x + 0.55 * s, y - 1.2 * s), (x + 0.62 * s, y - 0.55 * s),

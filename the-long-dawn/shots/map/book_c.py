@@ -42,6 +42,7 @@ SHOTS = {                     # name: (first frame, end frame) on C's timeline, 
     'mountain': (320, 560),
     'letters': (560, 1040),
     'deep': (1680, 1992),
+    'ring_melt': (5360, 5520),       # the Ring close-up FALLBACK for C22 (ringpage.py): the ink ring on the page
     'last_pages': (6160, 7200),
 }
 smooth = RB.smooth
@@ -90,85 +91,182 @@ def burn_post(hdr, alpha, G, bf, t, PH):
 # ================================================================ the fire ===
 
 class Kindling:
-    """C4-C5 (locked): the dense leaf's letters glow (bar 9 b4), lift off as sparks (bar 10 b1) and are drawn down
-    together, like sparks in a hearth's draught, never a spiral, into one point at the page's heart, where a
-    fire catches (bar 11 b1) and burns the page open (bar 11 b3); then the fire alone, gold and calm."""
+    """C4-C5 (locked; director's X1 notes). On bar 9 b4 the dense leaf's script glows AS LETTERS, lit like the
+    Ring's letters in fire (a deep orange-red core, never white) and legible as writing. From bar 10 b1 a peel runs
+    in from the rim: word by word, letter by letter, each stroke flares and peels off the page as the sparks that
+    were its ink, and every word's sparks go as one stream, drawn down toward the page's heart like sparks in a
+    hearth's draught, curving and quickening, with short trails (never a field of dots, never a spiral). They
+    gather at the heart; on bar 11 b1 one flame catches there, gold and calm, and on bar 11 b3 it burns the page
+    open."""
 
     T_GLOW, T_LIFT, T_FIRE, T_BURN = 140 / 24.0, 160 / 24.0, 240 / 24.0, 280 / 24.0   # shot seconds from 560
+    PEEL = 1.75                   # the peel front: rim (bar 10 b1) to the heart
+    TRAIL = 0.035                 # a spark's short trail (s)
+    GATHER = 4.2                  # how strongly the draught gathers sparks into streams
 
-    def __init__(self, book, words, F, side='R', seed=3, spp=4):
+    def __init__(self, book, words, F, S=None, side='R', seed=3, step=0.14):
         self.book, self.words, self.F = book, words, np.asarray(F, np.float64)
         rng = np.random.default_rng(seed)
         n = len(words)
-        cxy = np.array([[0.5 * (w[2] + w[3]), w[4]] for w in words])
+        cxy = np.array([[0.5 * (w[2] + w[3]), w[4] - 0.08] for w in words])
         dist = np.hypot(cxy[:, 0] - F[0], cxy[:, 1] - F[1])
         dn = dist / max(dist.max(), 1e-6)
-        # the glow ripples out from the page's heart in a third of a second; the lift follows from the rim inward
-        self.tg = self.T_GLOW + 0.35 * dn + rng.uniform(0, 0.08, n)
-        self.tl = self.T_LIFT + 0.9 * (1.0 - dn) ** 1.3 + rng.uniform(0, 0.12, n)
-        sp = []
-        for wi, (a, b, xl, xr, base, li) in enumerate(words):
-            m = max(3, int(spp * (xr - xl) / 0.9))
-            for u, v in zip(rng.uniform(xl, xr, m), base - rng.uniform(0.0, 0.3, m)):
-                sp.append((wi, u, v))
-        self.sp = np.array(sp)
-        N = len(self.sp)
-        wi = self.sp[:, 0].astype(int)
-        self.t0 = self.tl[wi] + rng.uniform(0.0, 0.25, N)
-        # the draught: every spark reaches the heart by the time the fire catches, the far ones travelling longest
-        self.d = np.maximum(self.T_FIRE - 0.15 - self.t0, 0.6) * rng.uniform(0.8, 1.0, N)
-        self.P0 = book.page_to_world(side, self.sp[:, 1], self.sp[:, 2]) + np.array([0, 0, 0.02])
+        # the glow ripples out from the heart in a third of a second (bar 9 b4)
+        self.tg = self.T_GLOW + 0.3 * dn + rng.uniform(0, 0.06, n)
+        # the peel: from the rim in toward the heart; each word from its far end to its near end
+        self.tl = self.T_LIFT + self.PEEL * (1.0 - dn) ** 1.1 + rng.uniform(0, 0.12, n)
+        self.dur = 0.22 + 0.1 * np.array([w[3] - w[2] for w in words])
         Fw = book.page_to_world(side, np.array([F[0]]), np.array([F[1]]))[0]
         self.Fw = Fw
-        rel = self.P0 - Fw
-        # a lift, then drawn down along a gentle arc straight toward the heart (no swirl)
-        self.P1 = self.P0 + np.column_stack([0.12 * rel[:, 0], 0.12 * rel[:, 1], rng.uniform(0.5, 1.5, N)])
-        self.P2 = Fw + np.column_stack([0.3 * rel[:, 0], 0.3 * rel[:, 1], rng.uniform(0.7, 1.6, N)])
-        self.P3 = Fw + np.column_stack([rng.normal(0, 0.08, (N, 2)), rng.uniform(0.05, 0.5, N)])
-        self.heat = rng.uniform(0.55, 1.0, N)
+        n_st = max(w[1] for w in words) if words else 0
+        self.ts = np.full(n_st, 1e9)                # each stroke's peel time
+        pts, t0s, wis = [], [], []
+        for wi, (a, b, xl, xr, base, li) in enumerate(words):
+            d = np.array([F[0] - cxy[wi, 0], F[1] - cxy[wi, 1]])
+            d /= max(np.hypot(*d), 1e-6)
+            for k in range(a, b):
+                P = S.P[k] if S is not None else np.array([[xl, base], [xr, base]])
+                c = P.mean(0)
+                # position along the word from its far end (0) to its near end (1)
+                w_ = (xr - xl) + 1e-6
+                fr_ = np.clip(((c[0] - xl) / w_ - 0.5) * np.sign(d[0] if abs(d[0]) > 0.2 else 1.0) + 0.5, 0, 1)
+                self.ts[k] = self.tl[wi] + self.dur[wi] * fr_
+                L = float(np.sum(np.hypot(*np.diff(P, axis=0).T))) if len(P) > 1 else 0.0
+                m = int(np.clip(round(L / step), 1, 4))
+                if len(P) > 1:
+                    s_ = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(P, axis=0).T))])
+                    q = np.sort(rng.uniform(0, max(s_[-1], 1e-6), m))
+                    pp = np.column_stack([np.interp(q, s_, P[:, 0]), np.interp(q, s_, P[:, 1])])
+                else:
+                    pp = P[:1].repeat(m, 0)
+                for j in range(m):
+                    pts.append(pp[j])
+                    t0s.append(self.ts[k] + 0.05 * j / max(m, 1) + rng.uniform(0, 0.03))
+                    wis.append(wi)
+        pts = np.array(pts)
+        self.wi = np.array(wis, int)
+        self.t0 = np.array(t0s)
+        self.side = side
+        self.P0 = book.page_to_world(side, pts[:, 0], pts[:, 1]) + np.array([0, 0, 0.02])
+        # the draught: every spark runs down a gently uneven slope toward the heart (the gradient of distance plus a
+        # smooth noise, turned only sideways): a flow with no turning in it, so no spiral, whose streamlines gather
+        # into streams that merge like rivulets as they near the heart, curving, and quicken as they come
+        self.pts = pts
+        self._fly(rng, seed)
+        self.heat = rng.uniform(0.6, 1.0, len(self.t0))
+
+    def _fly(self, rng, seed, h=0.05, ds=0.06, nmax=420):
+        from scipy.ndimage import map_coordinates
+        from noise import fbm_grid
+        F = self.F
+        u0, v0, u1, v1 = -1.0, -1.0, 21.0, 30.0
+        Wg, Hg = int((u1 - u0) / h), int((v1 - v0) / h)
+        Nf = fbm_grid(u0, -v0, h, h, Hg, Wg, 1.0 / 4.6, int(seed) + 17, 2, 2.0, 0.45).astype(np.float64)
+        gv, gu = np.gradient(Nf, h)
+        U = u0 + (np.arange(Wg) + 0.5) * h
+        V = v0 + (np.arange(Hg) + 0.5) * h
+        du = U[None, :] - F[0]
+        dv = V[:, None] - F[1]
+        r = np.maximum(np.hypot(du, dv), 1e-6)
+        ru, rv = du / r, dv / r
+        tu, tv = -rv, ru
+        side = self.GATHER * (gu * tu + gv * tv) * np.clip(r / 1.2, 0, 1)
+        fu = -ru - side * tu
+        fv = -rv - side * tv
+        n = np.maximum(np.hypot(fu, fv), 1e-9)
+        fu, fv = fu / n, fv / n
+
+        def flow(P):
+            cj = (P[:, 0] - u0) / h - 0.5
+            ci = (P[:, 1] - v0) / h - 0.5
+            return (map_coordinates(fu, [ci, cj], order=1, mode='nearest'),
+                    map_coordinates(fv, [ci, cj], order=1, mode='nearest'))
+        N = len(self.pts)
+        P = self.pts.copy()
+        lift = rng.uniform(0.3, 0.65, N)
+        tr = np.zeros((N, nmax, 3), np.float32)
+        tm = np.zeros((N, nmax), np.float32)
+        sacc = np.zeros(N)
+        tacc = np.zeros(N)
+        done = np.zeros(N, bool)
+        for k in range(nmax):
+            rr = np.hypot(P[:, 0] - F[0], P[:, 1] - F[1])
+            z = 0.02 + lift * RB.smooth_arr(sacc / 0.35) * np.clip(rr / 2.2, 0.12, 1.0) ** 0.7
+            tr[:, k, 0], tr[:, k, 1], tr[:, k, 2] = P[:, 0], P[:, 1], z
+            tm[:, k] = tacc
+            done |= rr < 0.12
+            a_, b_ = flow(P)
+            ha_ = 0.5 * ds
+            a2, b2 = flow(P + ha_ * np.column_stack([a_, b_]))              # midpoint step
+            step = np.where(done, 0.0, ds)
+            P = P + step[:, None] * np.column_stack([a2, b2])
+            speed = 2.2 + 9.0 / (rr + 1.5)                                    # cm/s: quicker near the heart
+            tacc = tacc + step / speed
+            sacc = sacc + step
+        T = tm[:, -1].astype(np.float64)
+        avail = np.maximum(self.T_FIRE - 0.12 - self.t0, 0.4)
+        sc = np.minimum(1.0, avail / np.maximum(T, 1e-6))
+        self.tm = (tm * sc[:, None]).astype(np.float32)
+        self.d = T * sc
+        # page -> world, once
+        W3 = self.book.page_to_world(self.side, tr[..., 0].ravel().astype(np.float64), tr[..., 1].ravel().astype(np.float64))
+        W3 = W3.reshape(N, nmax, 3)
+        W3[..., 2] += tr[..., 2]
+        self.tr = W3.astype(np.float32)
 
     def gains(self, t, nstrokes):
         gi = np.ones(nstrokes)
         gf = np.zeros(nstrokes)
         gg = np.zeros(nstrokes)
         for wi, (a, b, xl, xr, base, li) in enumerate(self.words):
-            tg, tl = self.tg[wi], self.tl[wi]
+            tg = self.tg[wi]
             if t < tg:
                 continue
-            e = smooth((t - tg) / 0.4) * (1.0 - smooth((t - tl) / 0.25))
-            fl = 1.0 + 0.18 * math.sin(t * 19.0 + wi * 1.7) + 0.1 * math.sin(t * 37.0 + wi)
-            gf[a:b] = 0.6 * e * fl + 0.8 * math.exp(-((t - tl) / 0.09) ** 2)
-            gi[a:b] = 1.0 - smooth((t - tl + 0.05) / 0.22)
-            gg[a:b] = 0.4 * smooth((t - tl) / 0.35)
+            e = smooth((t - tg) / 0.35)
+            fl = 1.0 + 0.12 * math.sin(t * 17.0 + wi * 1.7) + 0.07 * math.sin(t * 31.0 + wi)
+            ts = self.ts[a:b]
+            out = RB.smooth_arr((t - ts) / 0.1)
+            flash = np.exp(-((t - ts) / 0.05) ** 2)
+            gf[a:b] = (0.8 * e * fl + 0.9 * flash) * (1.0 - out)
+            gi[a:b] = (1.0 - 0.45 * e) * (1.0 - RB.smooth_arr((t - ts + 0.02) / 0.1))
+            gg[a:b] = 0.42 * RB.smooth_arr((t - ts) / 0.3)
         return gi, gf, gg
 
-    def sparks(self, t, dt=0.02):
-        tau = (t - self.t0) / self.d
-        live = (tau > 0) & (tau < 1)
-        if not live.any():
+    def pos(self, trel, idx):
+        """World positions of sparks idx at times trel since their lift (along their recorded flights)."""
+        tm = self.tm[idx]
+        k = np.clip((tm <= trel[:, None]).sum(1) - 1, 0, tm.shape[1] - 2)
+        r = np.arange(len(idx))
+        ta, tb = tm[r, k], tm[r, k + 1]
+        w = np.clip((trel - ta) / np.maximum(tb - ta, 1e-6), 0, 1)[:, None]
+        return self.tr[idx, k] * (1 - w) + self.tr[idx, k + 1] * w
+
+    def sparks(self, t):
+        trel = t - self.t0
+        live = np.where((trel > 0) & (trel < self.d))[0]
+        if not len(live):
             z = np.zeros((0, 3))
             return z, z, np.zeros(0), np.zeros(0)
-
-        def at(tt):
-            s = np.clip(tt, 0, 1)[:, None] ** 1.6          # drawn faster and faster toward the heart
-            b = 1 - s
-            return (b ** 3) * self.P0 + 3 * (b ** 2) * s * self.P1 + 3 * b * (s ** 2) * self.P2 + (s ** 3) * self.P3
-        Pn = at(tau)[live]
-        Pp = at(tau - dt / self.d)[live]
-        tl = tau[live]
-        br = self.heat[live] * np.clip(tl / 0.06, 0, 1) * (1.0 - RB.smooth_arr((tl - 0.85) / 0.15))
-        temp = 0.8 - 0.25 * tl
-        return Pn, Pp, br, temp
+        tl = trel[live]
+        Pn = self.pos(tl, live)
+        Pp = self.pos(np.maximum(tl - self.TRAIL, 0.0), live)
+        dl = Pp - Pn                                        # the trail stays short even where they race
+        L = np.linalg.norm(dl, axis=1)
+        Pp = Pn + dl * np.minimum(1.0, 0.28 / np.maximum(L, 1e-9))[:, None]
+        u = tl / self.d[live]
+        br = self.heat[live] * np.clip(tl / 0.05, 0, 1) * (1.0 - RB.smooth_arr((u - 0.88) / 0.12))
+        temp = 0.56 + 0.14 * u
+        return Pn.astype(np.float64), Pp.astype(np.float64), br, temp
 
     def ember(self, t):
         """The glowing point gathering at the heart before the fire catches (0..1)."""
         arr = np.sum(t > self.t0 + 0.9 * self.d) / max(len(self.t0), 1)
-        return min(1.0, 1.4 * arr) * (1.0 - ramp(t, self.T_FIRE, self.T_FIRE + 0.6))
+        return min(1.0, 1.3 * arr) * (1.0 - ramp(t, self.T_FIRE, self.T_FIRE + 0.6))
 
     def flame_h(self, t):
-        k = ramp(t, self.T_FIRE, self.T_FIRE + 1.2)
+        k = ramp(t, self.T_FIRE, self.T_FIRE + 1.4)
         calm = ramp(t, self.T_BURN + 2.0, self.T_BURN + 5.0)
-        return (0.3 + 3.2 * k) * (1.0 - 0.12 * calm) if t > self.T_FIRE else 0.0
+        return (0.3 + 3.0 * k) * (1.0 - 0.1 * calm) if t > self.T_FIRE else 0.0
 
 
 def fire_layer(cam, K, t, W, H):
@@ -178,7 +276,7 @@ def fire_layer(cam, K, t, W, H):
     if len(Pn):
         a, za = cam.project(Pn)
         b, zb = cam.project(Pp)
-        col = look.blackbody(np.clip(temp, 0, 1)) * (br * 4.0)[:, None]
+        col = look.blackbody(np.clip(temp, 0, 1)) * (br * 2.9)[:, None]      # embers, orange, never white
         sig = np.clip(0.55 * cam.F / za * 0.012, 0.6, 2.2)
         RB.streaks(img, b[:, 0].astype(np.float64), b[:, 1].astype(np.float64), a[:, 0].astype(np.float64),
                    a[:, 1].astype(np.float64), col[:, 0].astype(np.float64), col[:, 1].astype(np.float64),
@@ -201,13 +299,9 @@ def fire_layer(cam, K, t, W, H):
         ux, uy = (tx - bx) / max(hp, 1e-6), (ty - by) / max(hp, 1e-6)
         fr = t * FPS
         calm = ramp(t, K.T_BURN + 2.0, K.T_BURN + 5.0)
-        for k, (dxk, sc, wd, g, lean) in enumerate(((0.0, 1.0, 1.35, 1.0, 0.0), (-0.32, 0.5, 0.8, 0.55, -0.28),
-                                                     (0.3, 0.44, 0.75, 0.5, 0.3))):
-            bb, _ = cam.project(base + np.array([dxk * h * 0.5, 0, 0]))
-            ca, sa = math.cos(lean), math.sin(lean)
-            RB.FIRE.flame(img, float(bb[0]), float(bb[1]), float(hp * sc), float(ux * ca - uy * sa),
-                          float(ux * sa + uy * ca), float(fr * (1.3 - 0.5 * calm) + 11 * k), int(7 + 13 * k),
-                          float(1.5 * g), float(wd))
+        # one natural flame, gold and calm (no side tongues): a slow sway, its licks soft
+        RB.FIRE.flame(img, float(bx), float(by), float(hp), float(ux), float(uy), float(fr * (0.9 - 0.35 * calm)), 7,
+                      float(1.55), float(1.3), -0.22, 0.55 - 0.2 * calm)
         rr = max(hp * 0.16, 2.0)
         bed = np.exp(-(((xx - bx) / (rr * 1.6)) ** 2 + ((yy - by) / (rr * 0.55)) ** 2))
         img += bed[..., None] * np.array([2.2, 0.55, 0.08], np.float32)
@@ -373,7 +467,7 @@ class Book3:
             bk = self.book(0.66, 2.74, seed=5)
             S, words = dense_leaf()
             F = (10.0, 14.2)
-            K = Kindling(bk, words, F)
+            K = Kindling(bk, words, F, S=S)
             return bk, RB.Page(S, 100), K
         return self.once('letters', mk)
 
@@ -423,6 +517,60 @@ class Book3:
         cam = B.Cam(keyed(keys_p, t), keyed(keys_t, t), 38.0, self.W, self.H)
         cam.dof_k = 2.5
         return cam
+
+    # C22 FALLBACK (5360-5520): THE UNMAKING as the ink ring on the book's page (ringpage.py)
+    def ring_page(self):
+        def mk():
+            import ringpage
+            return self.book(1.5, 1.5, seed=13), ringpage.RingPage(), ringpage
+        return self.once('ring_page', mk)
+
+    def shot_ring_melt(self, t, f):
+        if 0.2 < t < 0.62:                              # the fall: a real shutter, or it strobes
+            return self.blur(lambda ts: self.ring_melt_at(ts), t, n=9)
+        return self.ring_melt_at(t)
+
+    def ring_melt_at(self, t):
+        bk, rp, RP = self.ring_page()
+        white = smooth((t - 5.4) / 1.2) ** 1.5
+        tR = rp.texture(t, white=white)
+        tL = self.tex_text(47)
+        cam = self.cam_ring(bk, t)
+        L = self.light((-50, 48, 36), 0.4, t, amt=0.1)
+        fx, fy = RP.RingPage.FIRE
+        fw = bk.page_to_world('R', np.array([fx]), np.array([fy - 1.6]))[0]
+        fl = B.flicker(t * 1.6, 5, 0.14) * (1.0 + 9.0 * white) * (1.0 - 0.25 * smooth((t - 3.3) / 1.0) * (1 - white))
+        xl = np.array([[fw[0], fw[1], fw[2] + 2.6, 1.9 * fl, 0.9 * fl, 0.24 * fl]])
+        hdr, alpha = self.finish_layer(bk, cam, L, tL, tR, t, xl=xl)
+        # the hearth flares to white: bar 70 opens in white
+        hdr = hdr * (1.0 + 5.0 * white) + (white ** 2) * 7.0
+        return hdr, alpha
+
+    def cam_ring(self, bk, t, still=None):
+        tgt = bk.page_to_world('R', np.array([10.2]), np.array([16.9]))[0]
+        off = np.array([-0.5, -17.5, 20.0]) * (1.0 - 0.08 * smooth(t / 6.6))
+        if still == 'find':
+            tgt = bk.page_to_world('R', np.array([10.2]), np.array([18.0]))[0]
+            off = np.array([0.8, -14.0, 16.5])
+        cam = B.Cam(tgt + off, tgt, 36.0, self.W, self.H)
+        cam.dof_k = 2.2
+        return cam
+
+    def ring_still(self, name):
+        """The find (the Ring lying on the page, its letters dark, a glint) and the fire test (in the drawn fire,
+        its letters awake, unmarked): the stills for their fallbacks."""
+        bk, rp, RP = self.ring_page()
+        if name == 'find':
+            tR = rp.texture(1.2, find=True, pristine=True)
+        else:
+            tR = rp.texture(1.2, pristine=True, awake=0.9)      # in the fire, letters awake, unmarked
+        tL = self.tex_text(47)
+        cam = self.cam_ring(bk, 0.0, still=name)
+        L = self.light((-50, 48, 36), 0.9 if name == 'find' else 0.55, 0.0, amt=0.1)
+        fx, fy = RP.RingPage.FIRE
+        fw = bk.page_to_world('R', np.array([fx]), np.array([fy - 1.6]))[0]
+        xl = None if name == 'find' else np.array([[fw[0], fw[1], fw[2] + 2.6, 2.6, 1.25, 0.35]])
+        return self.finish_layer(bk, cam, L, tL, tR, 0.0, xl=xl)
 
     # C8 THE DEEP (1680-1920) + the burn into THE EYE (1920-1992)
     def deep(self):

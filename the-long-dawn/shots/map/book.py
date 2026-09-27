@@ -658,9 +658,10 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     eg += edge * 1.25 + pool * ag * 0.3
                     eb += edge * 0.18 + pool * ab * 0.1
                 if fire > 0.0:
-                    er += fire * 3.2
-                    eg += fire * 1.15
-                    eb += fire * 0.22
+                    # awake in fire, like the Ring's letters: a deep orange-red core, never white
+                    er += fire * 2.7
+                    eg += fire * 0.64
+                    eb += fire * 0.1
             elif m == M_EDGE:
                 # leaf edges: one line per leaf, a little uneven, toned and dusty
                 lv = G[i, j, 8] * 70.0 + 0.6 * gnoise(G[i, j, 9] * 0.4, G[i, j, 8] * 20.0, 5)
