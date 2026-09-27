@@ -528,4 +528,41 @@ The title only: **THE LONG DAWN**, 252–259, kindling in place in empty sky (th
 
 **The balance** in a wordless cut is between spectacle and intimacy. B alternates them: the shadows, then the world burning; the hands, then the knife-edge; the crowd, then the sun; then a scarf.
 
-<!-- NEXT: (6) shared shot list -->
+---
+
+# (6) Shared shot list: all three cuts
+
+**Key:**
+- **●** used · **◐** partly used (crops or an extended variant)
+- **REUSE:** the existing render, with any fix named
+- **EXTEND:** the same department, a new camera, variant or length
+- **NEW:** new work, with its technique
+
+Sources use src numbering unless marked v2. "Red-team" means `review/picture_redteam.md`.
+
+## Embers, hills, montage, globe
+| ID | shot | A | B | C | status | source / technique | feasibility & risk |
+|---|---|---|---|---|---|---|---|
+| E1 | Kindling: torch embers, glyphs, spiral, point, ignition, the thinking fire | ● | | ● | REUSE + fix | `embers_v2` 300–628, with the red-team's fire fix: mind palette instead of blackbody, filaments restored, 35–40% of frame height, a slower "wrong" breathing motion. C gets it through K3 (on the page). | Low: parameters in `scene_b.py`. |
+| E2 | THE GIFT: an ember landscape blooming in the fire's light | ● | | | NEW | EMBERS point-splat engine: L-system trees, wheat and a river built from point sets, revealed by a light front expanding from the fire; gliding camera. | Medium, 1–2 weeks. Risk: screensaver prettiness. Guard: mind palette only, darkness all around. |
+| E3 | **THE RACE IN THE DARK** (60 s, unbroken): A's showpiece | ● | | | NEW | EMBERS: eight runners as ember-crust SDF figures, reusing the hand's bone/SDF and point-projection machinery with FK run cycles. Terrain is drawn only inside each fire's circle, so the glare rule makes it cheap. Gold spark particles from each footfall, denser with altitude. Tracking camera with vector blur. Leapfrog on the beat (the towers' surge logic). | Medium–high: about 3 weeks of look-dev, about 5 s/frame. Risk: mannequin runners. Guard: back-lit by their own fire, motion-blurred, never close. First test: a 2-s hero clip. |
+| E4 | THE BRINK: the storm fed by the runners' fires; the cornice | ● | | | EXTEND | `embers_v2` vortex 800–879, re-aimed per the red-team (asymmetric, fed from the runners, a torn eye), plus a NEW cornice lip in ember points. | Medium. |
+| E5 | The ember globe cracking | ● | | ● | REUSE | `embers_v2` 880–959 (third pass). C: burning through the page (K3). | Low. |
+| E6 | The grasp: a descending claw, palm down | ● | | | EXTEND | `embers` 960–1039, restaged per red-team TOP 8 #2 (`hand_transform`/`hand_yaw`), with an opaque crust whose cracks follow the anatomy. | Medium. Removes the raised-fist reading. |
+| E7 | The Ring forged, the towers, the Eye | | | ● | REUSE + fix | `embers_C` 562–879, with the red-team's Ring (a polished band at half height; forged by cooling, not a wipe) and Eye (iris built from the particles, ragged slit, centred over all the towers). | Medium. Shown through K3. |
+| E8 | The Eye goes dark | | | ● | NEW | EMBERS, cut C: the iris fibres unravel, the slit closes on black, the storm falls in on itself. | Low–medium, about 1 week. |
+| E9 | The last ember | ● | ◐ | ● | REUSE | `embers` 1040–1199. B uses it as the coal in the ash (composited, B4). | None. |
+| E10 | The lit mountain: thousands of orange fires; the runners at the edge | ● | | | NEW | EMBERS terrain points, with a fire network grown by the GLOBE's chain-graph logic (`fires.py`) on the human-fire ramp; the runners frozen at the edge. | Medium. |
+| H1 | THE VIGIL: a pre-dawn ridge, a crowd with lanterns, the elder and the child | ● | | | EXTEND | The HILLS intro world (`sky.py`, `land.py`) relit to pre-dawn; the `figures2` silhouettes repeated into a crowd line with lantern flames (the coda's fire tech); the red-team's torch-rim fix. | Medium. |
+| H2 | The hill at dusk | | ● | | REUSE + fix | `hills_v2` 0–339, with the red-team's fixes (torch rims, scarf graded by the flame, the ring kept off the figures). | Low. |
+| H3 | **THE SHADOW-PLAY** | | ● | | NEW | HILLS silhouettes cast onto a displaced rock plane lit by a `fire.py` torch. Penumbra widens with each figure's distance from the wall. One real HDR flame lives inside the shadow world. The burn-through is a fire front eating the plate. | Medium. Risk: a paper-cut template. Guard: physical penumbra and real flicker. |
+| H4 | The first flame (strikes, breath, catch, roar, reveal) | ◐ | ◐ | ● | REUSE | `hills_v2` 1200–1439, the accepted take plus its follow-ups. A: anonymous hands-only crops of 1236–1330. B: 1297–1340, extended by H5. C: the whole take under the ink pass (P7). | Low. |
+| H5 | Many hands around one coal | | ● | | EXTEND | The `heroine_sdf` tracer with 4–6 more hands and forearms (`hand()` from `heroine.py`) in different gloves and sleeves, and faces lit from below at the edge of frame. | Medium–high. Hands are the tracer's strength. Faces are the risk, so keep them at the frame edge. |
+| H6 | The sun on the vigil; the child runs downhill | ● | | | NEW | HILLS against a low sun: back-lit silhouettes, which is the style's strength. Lanterns pale in daylight. A run cycle for the child, with the pom-pom and scarf on verlet. | Medium. Keep the figures small and back-lit, so no clay-doll close-up. |
+| H7 | The scarf to the child; the torch; the beacon; the answering fires | | ● | | EXTEND | `hills_v2` coda 2460–2807: a NEW scarf transfer at 2540–2600 (the verlet scarf re-anchored from the elder to the child); the rest REUSED with the red-team's fixes (a battered cairn, the ring off the flame). | Medium. |
+| H8 | The lantern-tree party and the Red Book | | | ● | NEW | Blender: a procedural silver-barked tree (space-colonisation branches, instanced gold leaves, about 60 lanterns as fire cards and point lights). The book is a thick page mesh with a paper BSDF and gilt, handwriting in many scripts set from the repo's fonts plus Noto, close-ups with depth of field, and a cloth-sim page turn. | Medium–high. |
+| M1 | The shepherd on the far peak | ● | | | REUSE | `montage_v2` 1440–1519. | None. |
+| M2 | Desert, ice, karst, city, sea | ● | | | REUSE + fix | `montage` 1520–1759 and `montage_v2` city 1680–1719 (and karst once final), with aurora saturation −35%, no torch held aloft, and irregular coast fires with their reflections. | Low. |
+| G1 | The world answers: Earth at night, fires spreading hill by hill | ● | | | REUSE + fix | `globe_v2` 1760–1927, without the `F_LEAP` comets, with a 3:1 spread of fire sizes and cooler cities (red-team TOP 8 #1). | Low–medium: `fires.py` parameters, about 170 frames. |
+
+<!-- NEXT: (6) part 2 -->
