@@ -146,7 +146,7 @@ class A3Sched:
     def tower_extra(self, towers, i, t):
         if i in GIANTS:
             grow = GIANT_TOP - (B.GROUND + towers.h_rise[i])
-            return grow * float(smootherstep(T_GIANTS, T_GIANTS + 65, t))
+            return grow * float(smootherstep(T_GIANTS, T_GIANTS + 50, t))
         return 0.0
 
 
@@ -330,17 +330,24 @@ CAM_A5 = [  # (frame, radius, azimuth offset from ALPHA_C, height, target y, hfo
     (1425, 52.0, -0.22, 10.0, 5.0, 62.0),
     (1470, 50.0, -0.16, 5.0, 7.0, 66.0),        # the forges rise round it: down to the fire's own height
     (1540, 44.0, -0.05, 2.5, 7.0, 70.0),
-    (1620, 42.0, 0.05, 2.0, 7.5, 70.0),         # drifting round the ring (T5, T6a)
-    (1690, 52.0, 0.12, 7.0, 11.0, 64.0),
-    (1738, 84.0, 0.15, 17.0, 19.0, 60.0),       # the two giants outgrow the rest, either side of the fire
-    (1768, 94.0, 0.17, 20.0, 21.0, 60.0),
-    (1806, 38.0, TH_G2 - AC - 0.24, 12.0, 6.0, 58.0),  # slipped behind one giant: a black mass fringed with glare
-    (1840, 31.0, TH_G2 - AC - 0.2, 10.0, 3.0, 56.0),
+    (1620, 40.0, 0.05, 3.0, 5.0, 68.0),         # drifting round the ring (T5)
+    (1680, 27.0, -0.08, 3.0, 4.5, 72.0),        # in through the gap among the forges, the fire mid-frame (T6a)
+    (1722, 20.0, -0.30, 2.5, 5.0, 76.0),        # inside the ring, level with the fire
+    (1759, 13.0, -0.44, 1.0, 24.0, 88.0),       # tilting up as the two giants grow either side of it, lit from below
+]
+
+# bar 23 b1 (1760): a CUT to behind giant 2, which slips across the fire until it eclipses it: a black mass fringed
+# with glare, the other giant lost beyond the fire. Ends on THE EDGE's first camera (edge.py: r 31, ORB_A0).
+CAM_A6B = [
+    (1760, 36.0, TH_G2 - AC - 0.24, 13.0, 5.0, 58.0),
+    (1800, 33.0, TH_G2 - AC - 0.14, 11.5, 4.0, 57.0),
+    (1840, 31.0, TH_G2 - AC - 0.11, 10.0, 3.0, 56.0),
 ]
 
 
 def cam_a5a6(t):
-    k = [(f, np.array([r, a, y, ty, hf])) for f, r, a, y, ty, hf in CAM_A5]
+    keys = CAM_A6B if t >= T_BEHIND else CAM_A5
+    k = [(f, np.array([r, a, y, ty, hf])) for f, r, a, y, ty, hf in keys]
     r, a, y, ty, hf = catmull(t, k)
     pos = _polar(r, AC + a, y)
     tgt = np.array([0.0, ty, 0.0]) + 0.0 * pos
@@ -360,8 +367,15 @@ def emit_haze(ctx):
     red = B.redness(t)
     col = col * (1 - 0.7 * red) + B.C_RED * 0.7 * red
     H = np.array([C, C + np.array([0.0, 6.0, 0.0])])
-    ctx.fr.splat(H, H, np.array([13.0, 34.0]), np.array([2600.0, 5200.0]) * hz * pw ** 0.5,
-                 np.array([col, col * 0.8 + np.array([0.9, 0.5, 0.3]) * 0.2]), ctx.cam0, ctx.cam1, profile=1)
+    ctx.fr.splat(H[:1], H[:1], np.array([6.0]), np.array([900.0]) * hz * pw ** 0.5,
+                 col[None, :], ctx.cam0, ctx.cam1, profile=1)     # a small warm core; the lit smoke is the air
+    # the glare: a bright, tight bloom round the fire that a tower standing in front of it cuts into a fringe
+    # (A6's end: behind the giant, "a black mass fringed with glare")
+    g = float(smoothstep(T_BEHIND, T_BEHIND + 20, t)) * (1.0 - float(smoothstep(T_EDGE + 40, T_EDGE + 100, t)))
+    if g > 0:
+        Cg = B.crown_centre(t) + np.array([0.0, 2.4, 0.0])
+        ctx.fr.splat(Cg[None, :], Cg[None, :], np.array([9.0]), np.array([2.0e5 * g]) * pw ** 0.5,
+                     (B.C_CORE * 0.5 + B.C_GOLD * 0.5)[None, :], ctx.cam0, ctx.cam1, profile=1, rmax=1400.0)
 
 
 # =============================================================== timeline ===

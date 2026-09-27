@@ -1210,7 +1210,7 @@ class Towers:
                     L = 0.09 * (0.3 + 1.4 * ash) * (0.8 + 0.4 * nz2) * grain * fl * opening * (1 + 3.0 * base) * heat
                     rim = np.clip(1.0 - ndv / 0.35, 0, 1) ** 2 * (ndv > 0)
                     rimL = 0.35 * rim * (0.6 + 0.6 * nz2) * fl * heat
-                    L = ((L + rimL) * vgr + 2.2 * front) * fside + 0.25 * rimL * vgr * (1 - fside)   # a glare fringe
+                    L = ((L + rimL) * vgr + 2.2 * front) * fside + (0.8 if FS else 0.25) * rimL * vgr * (1 - fside)   # a glare fringe
                     L = L + 0.35 * crown
                     T = 0.27 + 0.1 * ash + 0.18 * base + 0.2 * front
                     col = _tw_colours(T)
@@ -1605,9 +1605,21 @@ class Smoke:
         a = r.uniform(0, 2 * np.pi, n)
         rr = 2.0 + 34.0 * r.random(n) ** 0.7
         self.p = np.stack([rr * np.cos(a), r.uniform(GROUND, 30.0, n), rr * np.sin(a)], 1)
+        if SCHED is not None and hasattr(SCHED, 'haze'):
+            # v3 A: the arena's air: more smoke, higher (the giants rise into it) and wider (past the ring)
+            r2 = rng(seed + 7)
+            m = 7000
+            a2 = r2.uniform(0, 2 * np.pi, m)
+            rr2 = 4.0 + 52.0 * r2.random(m) ** 0.8
+            self.p = np.vstack([self.p, np.stack([rr2 * np.cos(a2), r2.uniform(GROUND, 58.0, m), rr2 * np.sin(a2)], 1)])
+            self.n = n = n + m
         self.rw = r.uniform(1.6, 4.2, n)
         self.vy = r.uniform(0.004, 0.02, n)
         self.E = r.lognormal(0, 0.5, n)
+        if n > 5000:
+            r3 = rng(seed + 8)
+            self.rw[5000:] = r3.uniform(3.0, 7.5, n - 5000)
+            self.E[5000:] = r3.lognormal(0, 0.6, n - 5000)
 
     def emit(self, ctx, light_pos, light_col, light_pow):
         t = ctx.t
@@ -1615,11 +1627,14 @@ class Smoke:
             return
         p = self.p.copy()
         p[:, 1] += self.vy * (t - IGN)
-        p[:, 1] = GROUND + (p[:, 1] - GROUND) % 70.0
+        p[:, 1] = GROUND + (p[:, 1] - GROUND) % 72.0
         w = vnoise(p * 0.1 + np.array([0, 0, 0.004 * t]), 0.3, (0, 0, 0), 1)
         p = p + w * 3.0
         d = np.linalg.norm(p - light_pos, axis=1)
         lit = light_pow * 5.0 / (1 + (d / 3.2) ** 2) ** 2
+        if SCHED is not None and hasattr(SCHED, 'haze'):
+            # the fire lights the whole arena's air, falling off slowly: warm smoke the towers stand out against
+            lit = lit + light_pow * 0.04 * SCHED.haze(t) / (1 + (d / 17.0) ** 2)
         red = redness(t)
         amb = 1.2 * red * np.exp(-np.maximum(p[:, 1] - GROUND, 0) / 25.0)
         warm = light_col * 0.4 + look.blackbody(0.6) * 0.6

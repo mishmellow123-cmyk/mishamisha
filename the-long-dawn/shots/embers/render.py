@@ -31,7 +31,7 @@ OUTS = {'A': os.path.join(ROOT, 'renders', 'embers_v2'), 'B': os.path.join(ROOT,
 
 # shots: [start, end) -- the shutter never straddles a cut
 SHOTS = [(300, 880), (880, 960), (960, 1040), (1040, 1200)]
-SHOTS_V3 = {'A3': [(1040, 2640), (2640, 2800), (2800, 3120), (4400, 4880)],
+SHOTS_V3 = {'A3': [(1040, 1760), (1760, 2640), (2640, 2800), (2800, 3120), (4400, 4880)],
             'C3': [(1040, 1680), (1920, 2080), (2320, 2480)]}
 
 # text windows (v2 frames = src frames here) per cut, from the edit's current titles (director, framing review).
