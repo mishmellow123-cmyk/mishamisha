@@ -187,7 +187,7 @@ C is the longest cut on purpose. The producers asked for the old tale throughout
 | 386–398 | THE LONG DAWN (inked on the blank page) |
 
 **Reading speed.**
-- The fastest single line is 2.1 words per second; the pair on black runs at 2.5. The red-team measured the limit at 3.5.
+- The fastest single line runs at 2.0 words per second. The two deliberate pairs run at 2.3 (the kindling) and 2.5 (on black). The red-team measured the limit at 3.5.
 - No line starts before the previous one has faded, except the deliberate pairs.
 - Nothing is on screen while the Eye forms, while the Ring melts, or while the sun breaks.
 
