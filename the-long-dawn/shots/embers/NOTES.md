@@ -50,7 +50,28 @@ DESIGN (as rendered):
 
 # >>> EMBERS-C3 (27 Sep ~20:35Z, took over from EMBERS-C): E15 LETTERS TO FIRE, E5-C THE FORGING, E11 THE RACE, and the
 # canonical Ring (ringsolid.py) + gold flame (cflame.py). EMBERS-C2 owns E12 / E8-C / E13a (c2.py etc.). <<<
-## STATE AT HANDOFF (EMBERS-C3, 27 Sep ~21:15Z; the account idles ~21:25Z-23:30Z). READ THIS FIRST.
+## STATE AT HANDOFF (EMBERS-C3, 27 Sep 21:15Z; the account idles ~21:25Z-23:30Z). READ THIS FIRST.
+**UPDATE 21:14Z (supersedes the lines below where they differ):**
+* main's final (request 0927-165049-embersC3forging-81662 = forging + race, 640 f) was 376/640 at 21:12Z. The race frames are
+  good. Its forging frames carry the grid, and its last units may carry the 2adb619 joint-kill: they get REPLACED either way.
+* Ashlar test 1 (870d18f: seams + windows off, stone tones) did NOT remove the grid (_farmtest/embers_C3_forging_ashlar/
+  1262, 1380 vs _farmtest/embers_C3_forging/): the regular lines are kind-4 JOINT FIRE (towers2 joint_field: mullion or
+  bay grid). 2adb619 also kills kind 4 before 1420 (C3Sched.joint_k; scene_b hook) and strengthens the stone tones (0.5-1.3,
+  joints x0.25). TEST 2: request 0927-171206-embersC3forging-94897 -> renders/_farmtest/embers_C3_forging_ashlar2/
+  (1262, 1300, 1380). NEXT: if the grid is gone and the stones read (not a checkerboard, not blotches), relaunch
+  `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/embers_C3_forging.json --frames 1040-1439 --nodes 3`.
+  If the facades now look bare, add irregular joint fire back as masonry: mask kind-4 points to C3Sched.masonry's joints.
+  Remaining lines would be kind 2 EDGE (corners, tier lips): keep them (silhouette, bands).
+* E15 test 1 (_farmtest/embers_C3_e15/ 752-788, 905-945) is reviewed:
+  - SPARKS: fix 1 WORKS. Curving tributary streams join one trunk that is drawn down into the heart; no radial implosion,
+    no spiral. Nitpick: at 772-788 the two arms plus the trunk make a bird or T silhouette. Vary it with an earlier fade of
+    the arms, a less symmetric CH[1], or the trunk carrying sparks longer.
+  - LETTERS: the first try was a thin illegible squiggle (the word was scaled to width). 3aaa377 draws them up tall
+    (x2.4 height, thicker ink). TEST: request 0927-171250-embersC3e15-95345 -> renders/_farmtest/embers_C3_e15_letters2/
+    (900, 915, 930, 945). Gate: can a stranger see letters in the fire? If yes, send JOB READY embers_C3_e15 (340 f).
+* RULE: forging frames are being replaced, so c3 and scene_b changes gated to t < 1440 are safe. The race (1440+) must stay
+  byte-identical while main's final runs.
+
 **APPROVED + RENDERING (main launched them ~20:52Z, --nodes 3; log _local_logs/jobs/embers_C3_forging_race_farm.log):**
 * `cloud/jobs/embers_C3_race.json` E11 THE RACE, C 1440-1679 (240 f) -> renders/embers_C3. Code 71d3247. Camera outside the circle
   (r 49-57, height 18-20), the Ring hanging over a legible ring of crenellated crowns; hush 1440-1559 with slow drips (half
