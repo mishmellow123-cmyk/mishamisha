@@ -35,6 +35,8 @@ if HERE not in sys.path:
 
 import bworld as BW         # noqa: E402
 import bset as BS           # noqa: E402
+import bfig as BF           # noqa: E402  (B's figure light: sun-side rim only, wool, folds, stones)
+import bprops as BP         # noqa: E402  (the shared cairn3 + child3)
 import rcam as RC           # noqa: E402
 import pipe as PI           # noqa: E402
 import fire2 as F2          # noqa: E402
@@ -340,32 +342,42 @@ def sleeve_arm(d, sh, el, wr, sg, hand_ang, palm=1.0, drape=0.11, mat=14):
     return pc
 
 
-def keeper_hb(hands=0.0, give=0.0):
-    """Her, seated (BS.person 'sit', arms at rest inside the cloak) plus her own sleeved arms: hands 0..1 = drawn
-    from her sleeves and opened to the sun (elbows out, hands at shoulder height beside her, palms to the sun, fingers
-    up; never a V); give 0..1 = the right arm goes out and down to the child's palm with the fire-steel.
-    Returns (Drawing, pts) with pts['steel'] = where the steel sits in her right hand (local metres) or None."""
-    kd, kp = BS.person('sit', age=0.9, shawl=False, staff=True, reach=0.0, wind=0.4)
+def keeper_hb(hands=0.0, give=0.0, age=0.9, shawl=False, staff=True, wind=0.4):
+    """Her, seated: bset.person2('sit', arms=False) (RUN-B2's shared silhouette) plus her own sleeved arms from its
+    shoulders. hands 0..1: drawn from her sleeves and opened to the sun (forearms out at chest height, palms open;
+    never a V, never hands-up); give 0..1: the right arm goes out and down to the child's open palm with the steel.
+    At hands = give = 0 the arms rest in her lap. Returns (Drawing, pts) with pts['steel'] (local metres) or None."""
+    kd, kp = BS.person2('sit', age=age, shawl=shawl, staff=staff, wind=wind, arms=False)
     pts = dict(steel=None)
     h = _ease(hands)
     g = _ease(give)
     for sg in (-1, 1):
-        sh = np.array([0.17 * sg, 0.64])
+        sh = np.asarray(kp.get('sh_R' if sg > 0 else 'sh_L', np.array([0.17 * sg, 0.64])), float)
         if sg > 0 and g > 0.0:
-            # the hand-off: out and down to the child's open palm, the gloved hand turned over, the steel in it
             el = sh + np.array([0.11 + 0.04 * g, -0.13 - 0.03 * g])
             wr = el + np.array([0.07 + 0.06 * g, -0.10 - 0.04 * g])
-            ang = math.radians(-30.0 - 15.0 * g)
-            pc = sleeve_arm(kd, sh, el, wr, sg, ang, palm=0.3, drape=0.10)
+            pc = sleeve_arm(kd, sh, el, wr, sg, math.radians(-30.0 - 15.0 * g), palm=0.3, drape=0.10)
             pts['steel'] = pc + np.array([0.02, -0.03])
-        elif h > 0.0:
-            # drawn from the sleeves and opened to the sun
-            el = sh + np.array([0.13 * sg, -0.19]) * (0.45 + 0.55 * h)
-            wr = el + np.array([0.15 * sg, 0.02]) * h + np.array([0.0, -0.12]) * (1.0 - h)
-            a_out = math.radians(28.0) if sg > 0 else math.radians(152.0)          # out and a little up, palms open
-            ang = a_out if h > 0.3 else math.atan2(wr[1] - el[1], wr[0] - el[0])
+        else:
+            rest_el = sh + np.array([0.06 * sg, -0.22])
+            rest_wr = rest_el + np.array([-0.10 * sg, -0.05])
+            open_el = sh + np.array([0.13 * sg, -0.19])
+            open_wr = open_el + np.array([0.15 * sg, 0.02])
+            el = rest_el + (open_el - rest_el) * h
+            wr = rest_wr + (open_wr - rest_wr) * h
+            a_out = math.radians(28.0) if sg > 0 else math.radians(152.0)
+            a_rest = math.atan2(rest_wr[1] - rest_el[1], rest_wr[0] - rest_el[0])
+            ang = a_rest + (a_out - a_rest) * smoothstep(0.2, 0.7, h)
             sleeve_arm(kd, sh, el, wr, sg, ang, palm=h, drape=0.12 + 0.05 * h)
     return kd, pts
+
+
+def child_pos():
+    """Where the child sits against her (world): shared with the vigil's last bars."""
+    f = BS.dirxz(_sun_az())
+    side = np.array([f[2], 0.0, -f[0]])
+    fw = BS.dirxz(_sun_az() + SET_TURN)
+    return BS.on_ground(SEAT + side * 0.78 - fw * 0.20)
 
 
 def child_hb(wake=0.0, reach=0.0, hold=0.0):
@@ -490,7 +502,11 @@ class HandBack:
         LP[43] = 40.0
 
     def night(self, G, scam, grey=0.0, frame=None):
-        LP, SN, amb, fogp = BS.night_params(MOON_END, 1.0 / scam.f, east=BS.dirxz(_sun_az()), grey=grey)
+        try:
+            LP, SN, amb, fogp = BS.night_params(MOON_END, 1.0 / scam.f, east=BS.dirxz(_sun_az()), grey=grey,
+                                                horizon_match=True)       # the vigil's horizon (the join)
+        except TypeError:
+            LP, SN, amb, fogp = BS.night_params(MOON_END, 1.0 / scam.f, east=BS.dirxz(_sun_az()), grey=grey)
         LP[32] = 0
         LP[33] = 0
         if frame is not None:
@@ -553,7 +569,8 @@ class HandBack:
             BW.add_band(G, np.eye(3), VG.BAND, getattr(VG, 'BAND_GAIN', 0.05), night, img)
         if night > 0.01:
             mask = (dist > 1e8).astype(np.float32)
-            SK.splat_stars(img, scam, self.stars, mask, t=t, gain=ss * ss * night,
+            import vigil as VG
+            SK.splat_stars(img, scam, self.stars, mask, t=t, gain=ss * ss * night * getattr(VG, 'STAR_GAIN', 1.0),
                            scale=scam.f / (0.5 * 1920 / math.tan(math.radians(22.0))))
         # village glow under the cloud, fading into the day
         import keeper as KP
@@ -594,10 +611,10 @@ class HandBack:
         lights = [dict(dir=L, col=np.array([1.0, 0.62, 0.36]), I=2.2 * her_sun),
                   dict(pos=BS.BEACON + np.array([0, 1.3, 0]), col=F.FIRE_LIGHT, I=fire_I, r0=0.5),
                   dict(dir=MOON_END, col=lin('#A7BCE0'), I=0.45 * night)]
-        FG.render(img, zb, scam, BS.rubble_cairn(), BS.CAIRN, lights, amb=amb, mats=BS.M, t=t, write_depth=True,
+        BF.render(img, zb, scam, BP.cairn3(), BS.CAIRN, lights, amb=amb * 2.6, t=t, write_depth=True,   # snow = ground snow
                   zbias=0.3)
         back, front, fb = BS.beacon_base()
-        FG.render(img, zb, scam, back, BS.BEACON, lights, amb=amb, mats=BS.M, t=t,
+        BF.render(img, zb, scam, back, BS.BEACON, lights, amb=amb, t=t,
                   emissive_gain=0.95 * fire_lvl + 0.05, write_depth=True, zbias=0.3)
         base = BS.BEACON + np.array([0.0, fb, 0.0])
         F2.flame(img, zb, scam, base, 0.85, 0.34, t, seed=4, I=12.0 * (0.04 + 0.96 * fire_lvl), lean=0.2, zbias=0.5,
@@ -606,7 +623,7 @@ class HandBack:
         F2.halo(img, zb, bx, by, 5.0 * scam.f / bz, 0.005 * fire_lvl, z=bz, zbias=3.0)
         if her_sun > 0.3:              # in full sun her fire is only a shimmer of heat
             F.shimmer(img, scam, base + np.array([0, 0.9, 0]), 1.6, 0.5, t, amp_px=0.9 * ss * her_sun, seed=3)
-        FG.render(img, zb, scam, front, BS.BEACON, lights, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+        BF.render(img, zb, scam, front, BS.BEACON, lights, amb=amb, t=t, write_depth=False, zbias=0.3)
         if self.figures:
             self.figures_at(img, zb, scam, frame, t, lights, amb)
 
@@ -615,31 +632,44 @@ class HandBack:
         give = smoothstep(F_CHILD_SUN - 10, F_GIVE, frame) * (1.0 - smoothstep(F_WAKE - 20, F_WAKE + 10, frame))
         wake = smoothstep(F_WAKE - 6, F_WAKE + 40, frame)
         child_sun = smoothstep(F_CHILD_SUN - 20, F_CHILD_SUN + 10, frame)
-        side = self._side()
-        fw = BS.dirxz(_sun_az() + SET_TURN)
-        cpos = BS.on_ground(SEAT + side * 0.78 - fw * 0.20)
+        cpos = child_pos()
         lk = [dict(lights[0], I=lights[0]['I'] * child_sun)] + lights[1:]
-        # the child: asleep in her red shawl; the small hand out, palm up, as she gives it; awake, holding it
+        # the child (bprops.child3, shared with the vigil): asleep against her in her red shawl; the small hand out,
+        # palm up, as she gives it; awake, holding the steel at the chest, looking at the sun
         hold = smoothstep(F_WAKE + 4, F_WAKE + 60, frame)
-        cd, cp = child_hb(wake, reach=max(give, 0.8 * wake) if frame < F_WAKE + 60 else 0.8, hold=hold)
-        if frame >= F_GIVE and cp['hand'] is not None:
-            BS.fire_steel(cd, cp['hand'] + np.array([-0.028, 0.022]), ang=0.8, s=0.85)
-        FG.render(img, zb, scam, cd, cpos, lk, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
-        # her: seated; her old hands drawn from her sleeves and opened to the sun; then the hand-off
-        kd, kp = keeper_hb(hands=hands, give=give)
+        reach = max(give, 0.8 * wake) * (1.0 - hold) + 0.0 * hold
+        cd, cp = BP.child3(wake, reach=reach, hold=hold)
+        if frame >= F_GIVE and cp['steel'] is not None:
+            BS.fire_steel(cd, cp['steel'], ang=0.8, s=0.85)
+        BF.render(img, zb, scam, cd, cpos, lk, amb=amb, t=t, write_depth=False, zbias=0.3)
+        # her (bset.person2, RUN-B2's shared silhouette): its own arms at the join; from just before the hands open,
+        # her own old hands (sleeve_arm) crossfade in and carry the gesture and the hand-off to the end
+        kw = dict(age=0.9, shawl=False, staff=True, wind=0.4)
+        w_mine = smoothstep(F_HANDS - 26, F_HANDS - 8, frame)
         steel_local = None
-        if 0.0 < give and frame < F_GIVE and kp['steel'] is not None:
-            steel_local = kp['steel']
-            BS.fire_steel(kd, steel_local, ang=0.3, s=1.0)
-        FG.render(img, zb, scam, kd, SEAT, lights, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+        if w_mine < 1.0:
+            kd0, _ = BS.person2('sit', **kw)
+            if w_mine <= 0.0:
+                BF.render(img, zb, scam, kd0, SEAT, lights, amb=amb, t=t, write_depth=False, zbias=0.3)
+            else:
+                ia = img.copy()
+                BF.render(ia, zb.copy(), scam, kd0, SEAT, lights, amb=amb, t=t, write_depth=False, zbias=0.3)
+        if w_mine > 0.0:
+            kd, kp = keeper_hb(hands=hands, give=give, **kw)
+            if 0.0 < give and frame < F_GIVE and kp['steel'] is not None:
+                steel_local = kp['steel']
+                BS.fire_steel(kd, steel_local, ang=0.3, s=1.0)
+            BF.render(img, zb, scam, kd, SEAT, lights, amb=amb, t=t, write_depth=False, zbias=0.3)
+            if w_mine < 1.0:
+                img[...] = ia * (1.0 - w_mine) + img * w_mine
         # the steel catches the new sun as it passes into the child's palm: one small warm glint (bar 63)
         gl = math.exp(-((frame - F_GIVE + 4) / 14.0) ** 2) * child_sun
         if gl > 0.01:
             rgt = np.array([scam.right[0], 0.0, scam.right[2]])
             if steel_local is not None:                   # still in her hand
                 pw = SEAT + rgt * steel_local[0] + np.array([0.0, steel_local[1], 0.0])
-            elif cp['hand'] is not None:                  # in the child's palm
-                q = cp['hand'] + np.array([-0.028, 0.022])
+            elif cp['steel'] is not None:                 # in the child's palm
+                q = cp['steel']
                 pw = cpos + rgt * q[0] + np.array([0.0, q[1], 0.0])
             else:
                 pw = SEAT + rgt * 0.45 + np.array([0.0, 0.30, 0.0])
