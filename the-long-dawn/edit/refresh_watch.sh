@@ -7,8 +7,9 @@
 #     once settled, so a COMPOSER render in progress cannot tear the sound
 #   - then, for the cuts that changed: edit/animatic.sh, edit/h9_kit.sh, edit/deliver.sh (incremental masters + QC),
 #     each through the render queue, and it goes on watching
-#   - it EXITS (waking whoever launched it) only when a step fails, a QC says FAIL, a film's master becomes
-#     complete (no slates left), or nothing changes for MAX_H hours (default 6). Log: one block per refresh.
+#   - then the finished stretches go to ~/Downloads/The Long Dawn v3 - PREVIEWS/ (edit/previews.sh)
+#   - it EXITS (waking whoever launched it) only when a step fails, a QC says FAIL, a new preview file appears
+#     (exit 3), a film's master becomes complete (no slates left), or nothing changes for MAX_H hours (default 6).
 set -uo pipefail
 cd "$(dirname "$0")/.."
 source ~/.venvs/longdawn/env.sh
@@ -60,7 +61,7 @@ for p in sorted(glob.glob(os.path.join('$DELIV', '*_QC.json'))):
 step() {  # run one rebuild step, keep its output for the checks, print the lines that matter
   "$@" > "$RUN" 2>&1; local rc=$?
   cat "$RUN" >> "$RUN.all"
-  grep -E '^\*\*|^wrote|warning|RESULT|^\[FAIL\]|H9 kit|Traceback|Error|failed' "$RUN" | cut -c1-170
+  grep -E '^\*\*|^wrote|warning|RESULT|^\[FAIL\]|H9 kit|Traceback|Error|failed|^NEW:|^previews:' "$RUN" | cut -c1-170
   return $rc
 }
 now=$(sig) || exit 1
@@ -90,10 +91,13 @@ while :; do
   step bash edit/h9_kit.sh || fail=1
   step bash edit/deliver.sh || fail=1
   unset CUTS
+  step bash edit/previews.sh || fail=1        # the finished stretches -> ~/Downloads/The Long Dawn v3 - PREVIEWS/
   echo "$cur" > "$STATE"; last="$cur"
   if [ "$fail" = "1" ] || grep -q 'RESULT: FAIL' "$RUN.all"; then
     echo "refresh_watch: a step or a QC FAILED ($(date -u +%H:%MZ)); see $RUN.all"; exit 2
   fi
+  newp=$(grep '^NEW:' "$RUN.all" | sed 's/^NEW: //' | tr '\n' ' ')
+  if [ -n "${newp// /}" ]; then echo "refresh_watch: NEW PREVIEW: $newp($(date -u +%H:%MZ))"; exit 3; fi
   done1=$(complete)
   new=$(comm -13 <(echo "$done0") <(echo "$done1") | tr '\n' ' ')
   if [ -n "${new// /}" ]; then echo "refresh_watch: COMPLETE (no slates left): $new($(date -u +%H:%MZ))"; exit 0; fi
