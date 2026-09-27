@@ -134,8 +134,11 @@ def _unit(v):
     return v / (np.linalg.norm(v, axis=-1, keepdims=True) + 1e-12)
 
 
+_A3 = {}
+
+
 def _accord3():
-    return sys.modules.get('accord3')
+    return _A3.get('m') or sys.modules.get('accord3')
 
 
 def wind():
@@ -144,8 +147,11 @@ def wind():
 
 
 def haze():
+    """The smoke-haze density accord3 used for this frame's airlight (recorded by the FL3 proxy), else its HAZE."""
+    if 'hz' in _A3:
+        return float(_A3['hz'])
     A3 = _accord3()
-    return float(A3.HAZE) if A3 is not None and hasattr(A3, 'HAZE') else 0.006
+    return float(A3.HAZE) if A3 is not None and hasattr(A3, 'HAZE') else 0.0025
 
 
 # ==================================================================== roads ===
@@ -1857,6 +1863,8 @@ def install(A3=None):
         return A3
     rs0 = SH.render_surfaces
     tf0 = FL3.torch_flames
+    al0 = FL3.airlight
+    _A3['m'] = A3
 
     def render_surfaces(Wd, Hd, cam, PR, LT, OC, F, nf, S, ns, KB, LG, nlog, CH, nch, HDs, Js, HBB, RP, stex, ssz,
                         igc, igf, rgb, depth, oid, aa_pass, mask, nsub):
@@ -1910,12 +1918,17 @@ def install(A3=None):
         except Exception:
             _failed('crowd flames')
 
+    def airlight(img, depth, cam, LT, nl, sigma, hmin, lam):
+        _A3['hz'] = float(sigma)
+        al0(img, depth, cam, LT, nl, sigma, hmin, lam)
+
     shp = types.ModuleType('shade3_crowd')
     shp.__dict__.update(SH.__dict__)
     shp.render_surfaces = render_surfaces
     flp = types.ModuleType('flame3_crowd')
     flp.__dict__.update(FL3.__dict__)
     flp.torch_flames = torch_flames
+    flp.airlight = airlight
     A3.SH = shp
     A3.FL3 = flp
     A3._CROWD_INSTALLED = True
