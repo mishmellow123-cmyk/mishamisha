@@ -99,6 +99,21 @@ def fields():
     return _terra().world()
 
 
+def remap_points(A, u, v, border=cv2.BORDER_REPLICATE):
+    """cv2.remap at scattered pixel coordinates (u, v), any count (OpenCV's maps must stay under 32767 rows)."""
+    u = np.asarray(u, np.float32).ravel()
+    v = np.asarray(v, np.float32).ravel()
+    n = u.size
+    if n == 0:
+        return np.zeros(0, np.float32)
+    w = 2048
+    h = (n + w - 1) // w
+    pad = h * w - n
+    uu = np.concatenate([u, np.zeros(pad, np.float32)]).reshape(h, w)
+    vv = np.concatenate([v, np.zeros(pad, np.float32)]).reshape(h, w)
+    return cv2.remap(np.asarray(A, np.float32), uu, vv, cv2.INTER_LINEAR, borderMode=border).ravel()[:n]
+
+
 def sample(field, X, Y):
     """Bilinear sample of one of the world's rasters (by name or array) at map points X, Y (any shape)."""
     t = _terra()
@@ -108,8 +123,7 @@ def sample(field, X, Y):
     Y = np.asarray(Y, np.float64)
     u = ((X - MAP_X0) / t.D - 0.5).astype(np.float32)
     v = ((MAP_Y1 - Y) / t.D - 0.5).astype(np.float32)
-    out = cv2.remap(A, u.reshape(-1, 1), v.reshape(-1, 1), cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
-    return out.reshape(X.shape)
+    return remap_points(A, u, v).reshape(X.shape)
 
 
 def on_grid(field, X0, Y1, ppd, W, H):

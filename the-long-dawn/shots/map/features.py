@@ -91,11 +91,9 @@ def _candidates(field, thresh, rng, n, W, H):
 
 
 def _sample(field, XY):
-    W = field.shape[1]
-    x = ((XY[:, 0] - geo.MAP_X0) * FPPD - 0.5).astype(np.float32)
-    y = ((geo.MAP_Y1 - XY[:, 1]) * FPPD - 0.5).astype(np.float32)
-    return cv2.remap(field, x.reshape(-1, 1), y.reshape(-1, 1), cv2.INTER_LINEAR,
-                     borderMode=cv2.BORDER_REPLICATE).ravel()
+    x = (XY[:, 0] - geo.MAP_X0) * FPPD - 0.5
+    y = (geo.MAP_Y1 - XY[:, 1]) * FPPD - 0.5
+    return geo.remap_points(field, x, y)
 
 
 class Placer:
@@ -492,10 +490,11 @@ def headlands(landm, spacing=2.6, seed=31):
         k = 12                                           # +-1.2 degrees
         a = np.roll(P, k, 0) - P
         b = np.roll(P, -k, 0) - P
-        # a cape: the coast turns back on itself around this point, bulging seaward
-        ang = np.arctan2(a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0], (a * b).sum(1))
+        # a cape: the coast turns hard around this point, bulging seaward (the signed turn from the incoming
+        # direction to the outgoing one, positive toward the land side)
+        ang = np.arctan2(-a[:, 0] * b[:, 1] + a[:, 1] * b[:, 0], -(a * b).sum(1))
         orient = np.sign(np.sum(P[:, 0] * np.roll(P[:, 1], -1) - np.roll(P[:, 0], -1) * P[:, 1]))
-        conv = -ang * orient
+        conv = ang * orient
         cand = np.where(conv > 0.9)[0]
         cand = cand[np.argsort(-conv[cand])]
         taken = []

@@ -502,6 +502,13 @@ def rivers_from(F, rec, A, land, lake, d, thresh, min_len):
 
 # ================================================================== build ===
 
+def _objs(items):
+    a = np.empty(len(items), dtype=object)
+    for i, v in enumerate(items):
+        a[i] = v
+    return a
+
+
 _W = None
 
 
@@ -553,8 +560,7 @@ def world():
               lake=lake, coast=coast, lakes=lakes, rivers=rv)
     np.savez_compressed(path, S=S, E=E, Er=Er, land=land, rain=P.astype(np.float32), acc=A.astype(np.float32),
                         rug=rug.astype(np.float32), lake=lake,
-                        coast=np.array(coast, dtype=object), lakes=np.array(lakes, dtype=object),
-                        rivers=np.array(rv, dtype=object))
+                        coast=_objs(coast), lakes=_objs(lakes), rivers=_objs(rv))
     print('world', round(time.time() - t0, 1), 's', flush=True)
     return _W
 
@@ -582,8 +588,7 @@ def _coarse_S():
 
 
 def _samp(A, px, py):
-    return cv2.remap(A, px.astype(np.float32).reshape(-1, 1), py.astype(np.float32).reshape(-1, 1),
-                     cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE).ravel()
+    return geo.remap_points(A, px, py)
 
 
 def coast_rings():
