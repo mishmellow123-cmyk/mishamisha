@@ -5,10 +5,11 @@
   "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
  ],
  "render": [
-  "python3 shots/run/falsedawn.py --design arc --frames 240,380,500 --scale 0.5 --threads 8"
+  "FD_MOON=1 python3 shots/run/falsedawn.py --design arc --frames 240,380,500 --scale 0.5 --threads 4",
+  "FD_MOON=0 python3 shots/run/falsedawn.py --design arc --frames 241,501 --scale 0.5 --threads 4"
  ],
  "out_dir": "renders/falsedawn_A",
- "frames": "240,380,500",
+ "frames": "240,241,380,500,501",
  "shape": [402, 960],
  "push_every": 120,
  "ship": "jpg"

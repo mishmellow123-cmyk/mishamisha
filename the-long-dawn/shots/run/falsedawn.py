@@ -416,6 +416,35 @@ def glow_params(design, I):
     return GP
 
 
+MOON = os.environ.get('FD_MOON', '1') == '1'
+MOON_I = float(os.environ.get('FD_MOON_I', '0.28'))     # a thin moon: the Run's night is 0.55
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def glow_haze(img, dist, C, GP, SKL0, SKLD, SKL, haze_k, haze_d):
+    """The glow in the far haze over terrain and cloud (sky pixels are sky_pass's): a share that grows with distance,
+    seen at the horizon's elevation (the arch's foot). Used with the moon key, whose light cannot carry the glow."""
+    H, W = img.shape[0], img.shape[1]
+    f, cx, cyy = C[7], C[8], C[9]
+    for j in prange(H):
+        for i in range(W):
+            d = dist[j, i]
+            if d >= 1e8:
+                continue
+            hz = haze_k * (1.0 - math.exp(-d / haze_d))
+            if hz < 1e-4:
+                continue
+            xo = i + 0.5 - cx
+            dxh = C[3] * f + C[5] * xo
+            dzh = C[4] * f + C[6] * xo
+            vy = cyy - (j + 0.5)
+            nn = math.sqrt(dxh * dxh + dzh * dzh + vy * vy)
+            G = glow_at(dxh / nn, max(vy / nn, 0.0), dzh / nn, GP, SKL0, SKLD, SKL)
+            img[j, i, 0] += G * GP[3] * hz
+            img[j, i, 1] += G * GP[4] * hz
+            img[j, i, 2] += G * GP[5] * hz
+
+
 def milky_way():
     # the band rises from the left horizon (the bulge low on the left) and arches over the top of the frame
     a = np.array([math.sin(math.radians(-62.0)) * math.cos(math.radians(-4.0)), math.sin(math.radians(-4.0)),
@@ -435,6 +464,11 @@ def light(frame, design):
     lk_el = math.radians(1.6)
     a = math.radians(GLOW_AZ)
     Lk = np.r_[np.array([math.cos(lk_el) * math.sin(a), math.sin(lk_el), math.cos(lk_el) * math.cos(a)]), GP[3:6]]
+    if MOON:
+        # (H5, director: "the cloud sea ... texture and moonlit tops") a thin moon, out of frame high on the left (the
+        # A night's moon, az -59 el 21), keys the snow and the cloud-sea billows from the first frame; the glow keeps
+        # the sky and lights the far haze (glow_haze), so it still reads as a light below the horizon
+        Lk = np.r_[WD.MOON_DIR, lin('#9DB4D9')]
     amb = lin('#1A2440') * 0.10
     S = SK.sky_params(zenith='#04071A', horizon='#141C3C', moon_dir=(0.0, -1.0, 0.0), halo_I=0.0, halo2_I=0.0,
                       horizon_glow=0.0)
@@ -442,8 +476,12 @@ def light(frame, design):
     # (H5) aerial depth: the near islands dark, the sierra half veiled, the far wall and the needles pale; a thicker
     # cloud-top mist so the peaks stand IN the cloud sea (soft feet), never on a lake shore
     fogp = np.array([1.0e-4, 1 / 1500.0, 3.6e-4, 1 / 140.0, 6.0 * min(I / 0.46, 1.0), fogc[0], fogc[1], fogc[2]])
+    if MOON:
+        fogp[4] = 0.0                    # no in-scatter toward the moon: the haze glows toward the glow (glow_haze)
     Q = np.zeros(24)
     Q[0] = {'arc': 0.40, 'cone': 0.20, 'veil': 0.25}[design] * I / 0.46
+    if MOON:
+        Q[0] = MOON_I
     Q[1] = 3.0
     Q[2] = 10.0
     Q[3] = 0.40
@@ -486,6 +524,8 @@ def render(frame, design='arc', scale=1.0, ss=1.5):
     scam = fr.src
     C = scam.params()
     skl0, skld, skl = skyline(scam.pos)
+    if MOON:
+        glow_haze(fr.img, fr.dist, C, GP, skl0, skld, skl, 0.45, 30000.0)
     trans = np.zeros(fr.dist.shape, np.float32)
     # no lenticular stack: at night, lit from beneath, stacked lenses read as a fleet of saucers (a real-life
     # "UFO cloud"); the deck carries the structure instead
