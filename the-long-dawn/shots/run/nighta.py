@@ -46,6 +46,47 @@ FPS = 24.0
 BEAT = 20
 BAR = 80
 
+# ------------------------------------------------------------------ the light: one moonlit night ---
+# world.shade knobs by key: 'qN' -> Q[N], 'fN' -> fogp[N]. TERRAIN = the crossing's fixes (A14/A15: anti-streak snow
+# noise, snow held on steeper ground, more aerial depth). CLOUD = the shared moonlit cloud sea (RUN-A-L tunes it on
+# A14's frames; A2 and A13 use the same): q5 shadow floor | q8 trough dark | q9 albedo | q13 ambient gain | q15
+# self-shadow | f2, f3 cloud-top mist density and height scale. Starts at world.night_light's own values.
+# Look-dev override from a farm job: NIGHT_CLOUD="q8=0.75,q5=0.2,f2=3e-4" (any qN / fN key).
+TERRAIN = {'q18': 1.0, 'q3': 0.30, 'q4': 0.54, 'f0': 1.0e-4}
+_L0 = WD.night_light()
+CLOUD = {'q5': float(_L0[4][5]), 'q8': float(_L0[4][8]), 'q9': float(_L0[4][9]), 'q13': float(_L0[4][13]),
+         'q15': float(_L0[4][15]), 'f2': float(_L0[3][2]), 'f3': float(_L0[3][3])}
+
+
+def cloud_values():
+    """CLOUD with the NIGHT_CLOUD env override applied."""
+    out = dict(CLOUD)
+    for part in os.environ.get('NIGHT_CLOUD', '').split(','):
+        if '=' in part:
+            k, v = part.split('=', 1)
+            out[k.strip()] = float(v)
+    return out
+
+
+def apply_knobs(Q, fogp, knobs, u=1.0):
+    """Q, fogp (copies) moved a fraction u of the way to the knob values."""
+    Q = np.array(Q, np.float64, copy=True)
+    fogp = np.array(fogp, np.float64, copy=True)
+    for k, v in knobs.items():
+        arr = Q if k[0] == 'q' else fogp
+        i = int(k[1:])
+        arr[i] = arr[i] + (float(v) - arr[i]) * u
+    return Q, fogp
+
+
+def night_light():
+    """(Lk, amb, S, fogp, Q) of A's moonlit night: world.night_light + TERRAIN + CLOUD (+ NIGHT_CLOUD)."""
+    Lk, amb, S, fogp, Q = WD.night_light()
+    Q, fogp = apply_knobs(Q, fogp, TERRAIN)
+    Q, fogp = apply_knobs(Q, fogp, cloud_values())
+    return Lk, amb, S, fogp, Q
+
+
 # ------------------------------------------------------------------ the cold glow ---
 I0 = 0.14                     # the director's one knob for the glow in A13-A15
 GLOW_AZ = -30.0
