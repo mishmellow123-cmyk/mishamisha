@@ -546,14 +546,6 @@ def flame_scale(z):
 # icon: the catch blooms as gold wash on the rock the fire lights (see compose). Everything is analytic
 # (anti-aliased from true distances) and depth-tested against the drawn land.
 
-_TONGUES5 = np.array([        # base u, height, tip lean, width (fractions of the flame's height)
-    [0.00, 1.00, 0.05, 0.150],
-    [-0.11, 0.70, -0.17, 0.105],
-    [0.12, 0.76, 0.15, 0.105],
-    [-0.20, 0.44, -0.25, 0.075],
-    [0.21, 0.48, 0.27, 0.075]])
-
-
 def _seg_dist(px, py, cx, cy):
     """Distance from points (px, py) (N,) to a polyline (cx, cy) (M,); returns distance and the curve parameter
     (0-1) of the nearest point."""
@@ -576,48 +568,75 @@ def _smin(a, b, k):
     return b * (1 - h) + a * h - k * h * (1 - h)
 
 
-def flame_sdf(px, py, H, t, seed, n):
-    """Signed distance (page px, <0 inside) to a drawn bonfire flame of height H whose base centre is the origin
-    (y up): n fat tapering tongues rising from one base, overlapping at the root and parting into curling tips
-    (crisp notches between them), leaning with a common wind; plus the detached tip fragments. The tongues sway
-    as a slow wave running up them."""
-    # (27 Sep, the 1:1 crops) the old glyph was a fan of straight cones on a round base, glossy-shaded: a crown, an
-    # icon. Now: the woodcut flame. Each tongue has a full body and a long drawn tip that hooks back over (an S);
-    # one tongue leads, the others are lower and splay outward; they merge fluidly at the root. The second return
-    # is the engraver's flow line (a nested line inside the two leading tongues), not an offset of the union
-    # (which zigzagged at every notch). No detached droplets.
+def flame_tongues(t, seed, n):
+    """The bonfire's tongues (27 Sep, v3): n slender tongues rising from a broad root, several of them tall (a fire,
+    not one horn), each leaning with the common wind, splaying outward, bent in a gentle curve (never a hook: a hook
+    closes a loop that reads as an eye) and swaying as a slow wave runs up it. Returns [(cu, cv, w)] in units of the
+    flame's height, base centre at the origin, y up."""
     rng = np.random.default_rng(seed)
-    wind = 0.07 + 0.06 * rng.uniform()
-    bs = np.linspace(-0.19, 0.19, n) + 0.03 * rng.standard_normal(n)
-    s = np.linspace(0.0, 1.0, 28)
-    sd = np.full(px.shape, 1e9)
-    flow = np.full(px.shape, 1e9)
-    order = np.argsort(np.abs(bs))
-    for rank_, i in enumerate(order):
+    wind = 0.05 + 0.05 * rng.uniform()
+    spread = 0.26
+    bs = np.linspace(-spread, spread, n) + 0.03 * rng.standard_normal(n)
+    wm = 1.55 if n <= 3 else (1.2 if n <= 5 else 1.0)          # few tongues on a small glyph, and fuller
+    s = np.linspace(0.0, 1.0, 22)
+    out = []
+    for rank_, i in enumerate(np.argsort(np.abs(bs))):
         b = bs[i]
-        cen = 1.0 - min(abs(b) / 0.24, 1.0)
-        h = 1.0 if rank_ == 0 else (0.28 + 0.42 * cen ** 1.2) * (0.75 + 0.45 * rng.uniform())
+        cen = 1.0 - min(abs(b) / (spread + 0.05), 1.0)
+        h = 1.0 if rank_ == 0 else (0.40 + 0.48 * cen) * (0.80 + 0.35 * rng.uniform())
         side = 1.0 if b >= 0 else -1.0
-        l = wind + 0.60 * b + 0.04 * rng.standard_normal()
-        w = (0.16 + 0.06 * cen) * (0.85 + 0.3 * rng.uniform())
+        l = wind + 0.45 * b + 0.05 * rng.standard_normal()
+        w = (0.085 + 0.035 * cen) * wm * (0.85 + 0.30 * rng.uniform())
         ph = rng.uniform(0, 6.283)
         fr = 0.55 + 0.35 * rng.uniform()
-        hh = h * (1.0 + 0.06 * math.sin(6.283 * 0.8 * fr * t + ph))
-        curl = (0.13 + 0.08 * rng.uniform()) * (side if rank_ else (1.0 if rng.uniform() < 0.5 else -1.0))
-        cu = b + l * s ** 1.3 + curl * np.sin(math.pi * s ** 1.2) * s ** 2 - 0.6 * curl * s ** 3
-        cu = cu + 0.09 * hh * s ** 1.4 * np.sin(6.283 * fr * t - 3.0 * s + ph)
-        cv = hh * s
-        d, u = _seg_dist(px / H, py / H, cu, cv)
-        prof = w * np.clip(1.0 - u, 0, 1) ** 1.6 * (1.0 + 2.0 * u)     # full body, long drawn tip
-        sdi = (d - prof) * H
-        sd = _smin(sd, sdi, 0.035 * H)
-        if rank_ < 2 and hh > 0.45:
-            fl = np.abs(d - 0.42 * prof) * H
-            flow = np.minimum(flow, np.where((u > 0.20) & (u < 0.78), fl, 1e9))
-    # the base: low and broad, resting on its fuel
-    eb = np.sqrt((px / (0.30 * H)) ** 2 + ((py - 0.05 * H) / (0.085 * H)) ** 2)
-    sd = _smin(sd, (eb - 1.0) * 0.085 * H, 0.03 * H)
-    return sd, flow
+        hh = h * (1.0 + 0.07 * math.sin(6.283 * 0.8 * fr * t + ph))
+        bend = (0.035 + 0.035 * rng.uniform()) * (side if rank_ else (1.0 if rng.uniform() < 0.5 else -1.0))
+        cu = b + l * s ** 1.3 + bend * np.sin(math.pi * s) * s
+        cu = cu + 0.07 * hh * s ** 1.4 * np.sin(6.283 * fr * t - 3.0 * s + ph)
+        out.append((cu, hh * s, w))
+    return out
+
+
+def flame_sdf(px, py, H, t, seed, n, chunk=60000):
+    """Signed distances (page px, <0 inside) of a drawn bonfire of height H, base centre at the origin, y up: the
+    outer flame, and the inner flame (the same tongues at 58% height and 62% width, sitting on the same root: the
+    illustrator's flame-within-a-flame). Evaluated in chunks (a near fire covers ~10^5-10^6 px)."""
+    T = flame_tongues(t, seed, n)
+    so = np.empty(px.shape)
+    si = np.empty(px.shape)
+    for c0 in range(0, len(px), chunk):
+        X = px[c0:c0 + chunk] / H
+        Y = py[c0:c0 + chunk] / H
+        res = []
+        for (sx_, sy_, sc) in ((1.0, 1.0, 1.0), (0.62, 0.58, 0.60)):
+            sd = np.full(X.shape, 1e9)
+            for cu, cv, w in T:
+                d, u = _seg_dist(X / sx_, Y / sy_, cu, cv)
+                prof = w * np.clip(1.0 - u, 0, 1) ** 1.3 * (1.0 + 1.2 * u)
+                sd = _smin(sd, (d - prof) * H * sc, 0.022 * H * sc)
+            eb = np.sqrt((X / (0.30 * sx_)) ** 2 + ((Y - 0.02) / (0.05 * sy_)) ** 2)
+            sd = _smin(sd, (eb - 1.0) * 0.05 * H * sc, 0.02 * H * sc)
+            res.append(sd)
+        so[c0:c0 + chunk], si[c0:c0 + chunk] = res
+    return so, si
+
+
+def _fill_holes(sd, r):
+    """Pockets of 'outside' enclosed by the flame (two tongues touching twice) would be outlined as small rings -
+    eyes. They are filled, with a margin r px so no ring is drawn round them."""
+    out = (sd >= 0).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(out, connectivity=4)
+    Hh, Ww = sd.shape
+    hole = np.zeros(sd.shape, np.uint8)
+    for k in range(1, n):
+        x, y, w, h = st[k, 0], st[k, 1], st[k, 2], st[k, 3]
+        if x > 0 and y > 0 and x + w < Ww and y + h < Hh:
+            hole[lab == k] = 1
+    if not hole.any():
+        return sd
+    rr = int(math.ceil(r))
+    hole = cv2.dilate(hole, np.ones((2 * rr + 1, 2 * rr + 1), np.uint8)) > 0
+    return np.where(hole & (sd < rr + 1), np.minimum(sd, -(rr + 1.0)), sd)
 
 
 def smoke_line(px, py, H, t, seed, k):
@@ -633,8 +652,59 @@ def smoke_line(px, py, H, t, seed, k):
     return _seg_dist(px, py, cu, cv)
 
 
+def flame_glyph(PX, PY, Hp, t, seed, n, kpx, pw, grain, size=1.0):
+    """One fire drawn on the page. PX, PY (h, w): page px from the flame's base centre (y up); grain (h, w): the
+    paper's tooth in 0-1. Returns wash alpha, wash colour (linear, (h, w, 3)) and ink alpha - before any
+    occlusion. The pen: the outer line at the terrain's weight, pressing and lifting; the inner flame's line lighter
+    and more broken. The wash: warm gold laid flat, the inner flame paler, the root deeper, pooling at the rim."""
+    sh = PX.shape
+    so, si = flame_sdf(PX.ravel(), PY.ravel(), Hp, t, seed, n)
+    so = _fill_holes(so.reshape(sh), pw + 1.0)
+    si = _fill_holes(si.reshape(sh), pw + 1.0)
+    si = np.maximum(si, so)                                   # the inner flame stays inside the outer
+    inside = np.clip(0.5 - so / kpx, 0, 1)
+    core = np.clip(0.5 - si / (1.5 * kpx), 0, 1)
+    v = np.clip(PY / Hp, 0, 1)
+    root = np.clip((0.26 - v) / 0.26, 0, 1) ** 1.3
+    pool = np.exp(-(np.maximum(-so, 0.0) / (0.03 * Hp + 0.8 * kpx)) ** 2) * inside
+    g_hi, g_mid, g_lo = s2l(GOLD_HI), s2l(GOLD), s2l(GOLD_LO)
+    col = g_mid[None, None] * 0.66 + g_hi[None, None] * 0.34
+    col = col * (1 - 0.72 * core[..., None]) + (g_hi[None, None] * 0.80 + g_mid[None, None] * 0.20) * (0.72 * core[..., None])
+    col = col * (1 - 0.40 * root[..., None]) + g_mid[None, None] * (0.40 * root[..., None])
+    col = col * (1 - 0.30 * pool[..., None]) + g_lo[None, None] * (0.30 * pool[..., None])
+    col = col * (0.95 + 0.10 * grain)[..., None]
+    a = inside * (0.74 + 0.14 * grain)
+    lift = np.sin(PX / Hp * 9.0 + seed) * np.sin(PY / Hp * 7.0 + 2 * seed)
+    pen = np.clip((lift + 0.75) / 0.3, 0, 1)
+    prs = 0.75 + 0.25 * np.sin(PY / Hp * 11.0 + 0.7 * seed)
+    ln = np.clip(0.5 * pw * prs + 0.5 - np.abs(so), 0, 1) * (0.45 + 0.55 * pen)
+    lni = np.zeros_like(ln)
+    if Hp > 24.0 * kpx:
+        brk2 = np.clip((np.sin(PY / Hp * 13.0 + 1.7 * seed) + 0.25) / 0.3, 0, 1)
+        lni = np.clip(0.35 * pw + 0.5 - np.abs(si), 0, 1) * 0.50 * brk2 * np.clip(-so / (1.5 * kpx), 0, 1)
+    fuel = np.zeros_like(ln)
+    if Hp > 45.0 * kpx:                       # a few crossed billets under a near fire, behind the flame
+        X, Y = PX / Hp, PY / Hp
+        for (ax_, ay_, bx_, by_) in ((-0.36, -0.03, 0.30, 0.04), (-0.30, 0.04, 0.36, -0.04), (-0.12, -0.06, 0.14, -0.01)):
+            dx_, dy_ = bx_ - ax_, by_ - ay_
+            tt_ = np.clip(((X - ax_) * dx_ + (Y - ay_) * dy_) / (dx_ * dx_ + dy_ * dy_), 0, 1)
+            dd_ = np.sqrt((X - ax_ - tt_ * dx_) ** 2 + (Y - ay_ - tt_ * dy_) ** 2) * Hp
+            fuel = np.maximum(fuel, np.clip(0.5 * 2.2 * pw + 0.5 - dd_, 0, 1) * (1 - 0.6 * np.abs(tt_ - 0.5)))
+        fuel = fuel * np.clip(1.0 - inside * 1.5, 0, 1)
+    sm = np.zeros_like(ln)
+    if size > 0.6 and Hp > 9.0 * kpx:        # a curl of smoke or two, thin and broken, once the fire is up
+        for k in range(2 if Hp > 40.0 * kpx else 1):
+            dd, u = smoke_line(PX.ravel(), PY.ravel(), Hp, t, seed, k)
+            dd, u = dd.reshape(sh), u.reshape(sh)
+            wv = pw * 0.8 * (1.0 - 0.8 * u)
+            brk = 0.5 + 0.5 * np.sin(6.283 * (u * (3.0 + k) - 0.35 * t) + seed)
+            sm = np.maximum(sm, np.clip(0.5 * wv + 0.5 - dd, 0, 1) * np.clip(1.0 - u, 0, 1) ** 1.1
+                            * (brk > 0.25) * 0.45 * min((size - 0.6) / 0.3, 1.0))
+    return a, col, np.maximum.reduce([ln, lni, sm, fuel])
+
+
 def ink_flames(R, B, kpx, pp):
-    """The fires drawn on the page. Returns fill alpha, fill colour (linear), line alpha (ink), all (H, W)."""
+    """The fires drawn on the page. Returns wash alpha, wash colour (linear), ink alpha and the ink's farness, (H, W)."""
     import beacons as BC
     A = R['A']
     H, W = A.shape[:2]
@@ -646,7 +716,6 @@ def ink_flames(R, B, kpx, pp):
     la = np.zeros((H, W), np.float32)
     lf = np.zeros((H, W), np.float32)             # the pen's farness (aerial perspective) where it drew
     dist = A[..., 1]
-    g_hi, g_mid = s2l(GOLD_HI), s2l(GOLD)
     rows = []
     for b in B:
         size, inten, light = BC.env(frame, b[3])
@@ -667,75 +736,28 @@ def ink_flames(R, B, kpx, pp):
         if Hp < 2.0 * kpx:
             continue
         near = min(max((Hp / kpx - 20.0) / 120.0, 0.0), 1.0)
-        n = 5 if Hp > 34.0 * kpx else 3
         pw = kpx * (0.75 + 0.55 * near)                   # the terrain's pen weight, a touch more near
         x0 = int(max(sx - 0.9 * Hp - 4, 0))
         x1 = int(min(sx + 1.2 * Hp + 5, W))
-        y0 = int(max(sy - 3.2 * Hp - 4, 0))
+        y0 = int(max(sy - 2.3 * Hp - 4, 0))
         y1 = int(min(sy + 0.15 * Hp + 5, H))
         if x1 <= x0 or y1 <= y0:
             continue
         yy, xx = np.mgrid[y0:y1, x0:x1].astype(np.float64)
-        px = (xx + 0.5 - sx).ravel()
-        py = (sy - (yy + 0.5)).ravel()
+        PX = xx + 0.5 - sx
+        PY = sy - (yy + 0.5)
         seed = int(b[5]) * 7 + 3
         n = 3 if Hp < 22.0 * kpx else (5 if Hp < 70.0 * kpx else 7)
-        sd, flow = flame_sdf(px, py, Hp, t, seed, n)
-        sd = sd.reshape(yy.shape)
-        flow = flow.reshape(yy.shape)
-        sda = sd
+        grain = np.clip(pp[y0:y1, x0:x1, 1] * 0.5 + 0.5, 0, 1)
+        a, col, l_all = flame_glyph(PX, PY, Hp, t, seed, n, kpx, pw, grain, size)
         # the land in front hides the fire (a nearer ridge); the fire's own summit does not
         vis = (dist[y0:y1, x0:x1] > fd - max(3.0, 0.004 * fd)).astype(np.float32)
         vis = cv2.GaussianBlur(vis, (0, 0), 0.6 * kpx) if min(vis.shape) > 3 else vis
-        inside = np.clip(0.5 - sda / kpx, 0, 1) * vis
-        # the gold wash, laid flat as a brush lays it: pale gold, a little deeper toward the root, pooling darker
-        # along the edge where it dried and taking the paper's grain; no modelled highlight (that read as a glossy
-        # icon); never an emoji red
-        v = np.clip(((sy - (yy + 0.5)) / Hp), 0, 1)
-        grain = np.clip(pp[y0:y1, x0:x1, 1] * 0.5 + 0.5, 0, 1)
-        root = np.clip((0.30 - v) / 0.30, 0, 1) ** 1.3
-        pool = np.exp(-(np.maximum(-sd, 0.0) / (0.035 * Hp + 0.8 * kpx)) ** 2) * inside
-        col = g_mid[None, None] * 0.62 + g_hi[None, None] * 0.38
-        col = col * (1 - 0.45 * root[..., None]) + g_mid[None, None] * (0.45 * root[..., None])
-        col = col * (1 - 0.30 * pool[..., None]) + s2l(GOLD_LO)[None, None] * (0.30 * pool[..., None])
-        col = col * (0.95 + 0.10 * grain)[..., None]
-        a = inside * (0.72 + 0.14 * grain)
+        a = a * vis
         fa[y0:y1, x0:x1] = np.maximum(fa[y0:y1, x0:x1], a)
         m = (a > 0)[..., None]
         fc[y0:y1, x0:x1] = np.where(m, col, fc[y0:y1, x0:x1])
-        # the pen: the outer line at the terrain's weight, pressing and lifting along its length; the flow line
-        # inside the leading tongues, lighter and broken; the lifts are fixed to the flame, not the screen
-        lift = np.sin(px.reshape(yy.shape) / Hp * 9.0 + seed) * np.sin(py.reshape(yy.shape) / Hp * 7.0 + 2 * seed)
-        pen = np.clip((lift + 0.75) / 0.3, 0, 1)
-        prs = 0.75 + 0.25 * np.sin(py.reshape(yy.shape) / Hp * 11.0 + 0.7 * seed)
-        ln = np.clip(0.5 * pw * prs + 0.5 - np.abs(sda), 0, 1) * (0.45 + 0.55 * pen)
-        lni = np.zeros_like(ln)
-        if Hp > 24.0 * kpx:
-            brk2 = np.clip((np.sin(py.reshape(yy.shape) / Hp * 17.0 + seed) + 0.35) / 0.3, 0, 1)
-            lni = np.clip(0.30 * pw + 0.5 - flow, 0, 1) * 0.55 * brk2 * np.clip(-sd / (1.5 * kpx), 0, 1)
-        # the fuel: a few crossed strokes under a near fire
-        fuel = np.zeros_like(ln)
-        if Hp > 45.0 * kpx:
-            PX = px.reshape(yy.shape) / Hp
-            PY = py.reshape(yy.shape) / Hp
-            for (ax_, ay_, bx_, by_) in ((-0.36, -0.03, 0.30, 0.04), (-0.30, 0.04, 0.36, -0.04), (-0.12, -0.06, 0.14, -0.01)):
-                dx_, dy_ = bx_ - ax_, by_ - ay_
-                tt_ = np.clip(((PX - ax_) * dx_ + (PY - ay_) * dy_) / (dx_ * dx_ + dy_ * dy_), 0, 1)
-                dd_ = np.sqrt((PX - ax_ - tt_ * dx_) ** 2 + (PY - ay_ - tt_ * dy_) ** 2) * Hp
-                fuel = np.maximum(fuel, np.clip(0.5 * 2.2 * pw + 0.5 - dd_, 0, 1) * (1 - 0.6 * np.abs(tt_ - 0.5)))
-        # a stroke of smoke or two, thin and broken, only once the fire is up
-        sm = np.zeros_like(ln)
-        if size > 0.6 and Hp > 9.0 * kpx:
-            for k in range(2 if Hp > 40.0 * kpx else 1):
-                dd, u = smoke_line(px, py, Hp, t, seed, k)
-                dd = dd.reshape(yy.shape)
-                u = u.reshape(yy.shape)
-                wv = pw * 0.8 * (1.0 - 0.8 * u)
-                brk = 0.5 + 0.5 * np.sin(6.283 * (u * (3.0 + k) - 0.35 * t) + seed)
-                sm = np.maximum(sm, np.clip(0.5 * wv + 0.5 - dd, 0, 1) * np.clip(1.0 - u, 0, 1) ** 1.1
-                                * (brk > 0.25) * 0.45 * min((size - 0.6) / 0.3, 1.0))
-        fuel = fuel * np.clip(1.0 - inside * 1.5, 0, 1)             # the fire stands in front of its fuel
-        l_all = np.maximum.reduce([ln, lni, sm, fuel]) * vis
+        l_all = l_all * vis
         iy, ix = int(min(max(sy + 2.0 * kpx, 0), H - 1)), int(min(max(sx, 0), W - 1))
         farf = float(np.clip(1.0 - A[iy, ix, 12], 0.0, 1.0)) * 0.7
         upd = l_all > la[y0:y1, x0:x1]
