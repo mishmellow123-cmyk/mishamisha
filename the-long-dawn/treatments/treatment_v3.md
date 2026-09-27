@@ -471,7 +471,7 @@ fixes cited as such are specified in `review/picture_redteam.md` and not repeate
 | R4 | THE RING OF WATCHERS | A 200.0–210.0 | NEW | a high wide: chains of summit fires closing across the ranges around the cold glow, shot as a beacon chain closing, never as a cordon; 240 frames | medium |
 | R5 | THE VALLEY: one geometry, three renderings | A (E3, E4, R7) | NEW | a valley height function in the marcher: terraces as stepped contour bands, orchards as instanced round crowns, a river, clustered roofs, hearth smoke; point-sampled for EMBERS | the utopia poster → timeless forms, nothing futuristic, haze and smoke before detail |
 | R6 | **THE CROSSING** | A 230.0–270.0 | NEW (A's signature) | a designed knife-edge arête (the `crag` primitive) above the cloud sea between watch-fires; about 40 roped bearers as instanced SDF silhouettes of 20–40 px, each with a small lantern; the great iron-and-glass lantern on poles as a moving light with its own pool; the rope as a catenary of highlights; a time-lapse sky wheeling about the pole with easing; watch-fires burning down and fed; the under-glow going out patch by patch; light trails by accumulation with decay; the lantern's fire warming from ice-white to gold; the camera at walking pace; 960 frames | the "LED dots" read → fewer, larger bearers; or the line of lights alone over the Run's last wide |
-| R7 | **THE LONG DAWN** | A 270.0–300.0 | NEW (`dawn.py`) | from the highest cairn, the sun rising slowly (−4° to +1.5° over 27 s) exactly behind the lantern; watch-fires paling by their local sun elevation (the globe's rule); the cloud sea thinning over R5; 720 frames | high → hold on the lantern and the sun, the valley only as smoke under cloud |
+| R7 | **THE LONG DAWN** | A 270.0–300.0 | NEW (`dawn.py`) | from the highest cairn, the sun rising slowly (−4° to +1.5° over 27 s) exactly behind the lantern, a clean limb-darkened disc with no starburst; watch-fires paling by their local sun elevation (the globe's rule); the cloud sea thinning over R5; 720 frames | high → hold on the lantern and the sun, the valley only as smoke under cloud |
 | R8 | **DUSK** | B 0.0–26.7 | NEW (`dawn.py`) | the dawn world as a sunset: the earth's shadow climbing, alpenglow leaving the lower peaks first, the last light on her summit at 25.0; 640 frames | low |
 | R9 | **THE FIRST NIGHT and THE LIFETIME** | B 66.7–180.0 | NEW (B's signature) | one locked frame near her summit. About eight world plates (moonlit, starlit, storm, fog, clear, snow, grey dawn, late-life night) rendered once each. Per-frame layers composited over them: fire and smoke (`fire2`); the dry-stone cairn growing one course a year (`cairn2`); her figure at five ages (H6); travellers climbing in and threads of torches descending (lights on splines with small silhouettes); far pinpricks answering on the horizon, more each year; village lights under the cloud sea as a growing field of warm points; star trails. About 2,700 frames, 8 terrain renders | must read without words and never as a slideshow → THE VIGIL (one night in the same set; see Q2) |
 | R10 | **THE WHOLE RANGE** | B 180.0–200.0 | NEW | a slow crane rise from her summit to about 30 km: fires on every catalogued summit and procedurally beyond, to the curved horizon; the valleys glowing under thinning cloud; 480 frames | medium → a high static wide of the range alight |
@@ -677,7 +677,7 @@ Both panels found two strong, distinct concepts for A and two for B; the overlap
 as B's first act, and this B has no embers act, no race and no words. A argues, B endures, C remembers.
 - **Option 1 (recommended):** A · EVERY STEP CLOSER (5:10), B · THE KEEPER (4:20), C · THE LAST PAGES (6:03), as
   written above. 15:33 in all.
-- **Option 2 at its best:** C, plus one longer film, **A/B · THE KEEPER OF THE FIRE** (about 6:40, thirteen lines):
+- **Option 2 at its best:** C, plus one longer film, **A/B · THE KEEPER OF THE FIRE** (about 6:30, thirteen lines):
 
   | t | beat |
   |---|---|
@@ -686,8 +686,8 @@ as B's first act, and this B has no embers act, no race and no words. A argues, 
   | 2:47–3:10 | THE FIRST NIGHT: nothing answers; a stone at the grey dawn |
   | 3:10–4:40 | THE LIFETIME: the far child who points; the grown child's beacon; travellers carrying flame down; year by year the chain closes around the glow and the red under the cloud goes out; late in her life, a line of lights walks across the far ridge (THE CROSSING, seen from her summit) |
   | 4:40–5:00 | THE WHOLE RANGE: every summit alight; the glow beyond the ranges gone |
-  | 5:00–6:00 | THE HAND-BACK, and the valley below in morning; the child wakes in her scarf: *It took longer than anyone wanted.* |
-  | 6:00–6:40 | *No one got there first.* · the title |
+  | 5:00–6:15 | THE HAND-BACK, and the valley below in morning; the child wakes in her scarf. *It took longer than anyone wanted.* · *No one got there first.* |
+  | 6:15–6:30 | the title |
 
   It gains a lot: the lifetime gives *It took longer than anyone wanted* its full weight, there is one score fewer,
   and the slate is about three minutes shorter. It loses more: the wordless legend you asked for; A's cleanest
@@ -740,7 +740,7 @@ as a still); place names written on the ink pages.
 
 ## Appendix · Who wrote what
 - **The contrarian:** the three time-scales; all three spines; the false dawn; THE EDGE; dark adaptation; every ridge
-  at once; the lantern that paces the walk; the dawn as the carried fire; the lifetime shot and its chaconne; the
+  at once; a procession that never walks faster than its own light; the dawn as the carried fire; the lifetime shot and its chaconne; the
   child who grows up to answer; the life of a Ring; *No one dared to be second.*, *No one got there first.*, *So she
   called for aid.*, *The one who carried it could not let it go.*, *The last pages were left for us.*
 - **The dramatist:** the knife-edge crossing, the rope and the glass lantern; the keeper at the bellows; the red under
