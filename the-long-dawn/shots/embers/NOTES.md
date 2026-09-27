@@ -154,6 +154,71 @@
 
 # >>> EMBERS-C (cut C's embers shots; EMBERS-2 keeps A). Owner files: c3.py, scene_c.py, tolkien.py (+ new C-only
 # modules). Shared (core.py, towers*.py, render.py, scene_b.py): small, noted commits only. <<<
+## STATE AT HANDOFF (EMBERS-C, 27 Sep ~20:30Z; the director asked for a fresh agent). READ THIS FIRST.
+**Scope now:** E15 LETTERS TO FIRE (C 700-1039, with MAP-L's page), E5-C THE FORGING (C6 1040-1439), E11 THE RACE
+(C7 1440-1679), plus the shared canonical Ring + gold-flame assets. EMBERS-C2 owns E12 / E8-C / E13a (c2.py router,
+c_eye.py, c_grasp.py, c_fall.py; it routes C 1920-2079, 2320-2479, 2720-2839 in render.py --cut C3). Don't edit its files.
+**Approved / delivered:** NOTHING yet. No JOB READY sent, no finals: renders/embers_C3 and renders/embers_C3_e15 are empty
+(the animatic still plays embers_C3_half, pre-H5, and MAP's old X1 test mp4). Director-approved CONTRACT for E15: MAP-L's
+book_C 560-1039 is page only (letters glowing as letters, strokes' flare-and-go-out, page lit by the fire, burn + hole;
+fire=None, xl kept); EMBERS-C delivers renders/embers_C3_e15 (C 700-1039, additive on black); EDIT wired the comp
+(8974648: out = book_rgb + (1 - matte) * black + e15). EDIT asked for dimming at 700-716 (T2's tail) and 920-1030 (T5a):
+done in e15.TEXT (the flame layer too, via e15.band_rows).
+**Assets (shared with EMBERS-C2):**
+* `shots/embers/ringsolid.py` THE RING: `render(cam, W, H, Rot, C, width, RingState, Env, th_range=None)` ->
+  (premultiplied HDR rgb, alpha, camera depth). Canonical band (ringc.py proportions: outer R 2.25 x width, thickness
+  0.44 x width, section SQ 2.8), z-buffered numba raster, supersampled; polished gold = Schlick Fresnel (F0 gold) x
+  `Env` (vertical gradient + spherical-Gaussian `lobe`s + `point` bodies); canonical inscription from assets/ring/
+  (outer u = -theta/2pi, inner u = theta/2pi, v from the +axis edge; mipped by footprint) as emission, colour C_LETTER
+  deep orange-red; `RingState`: letters, write(th), heat(th) (white->yellow->orange->dull red), hammer, sec (section
+  scale: a thread beaten out to the band), glow, glow_col, exposure, alpha. `merge_occluder(fr, alpha, depth)` joins it
+  to the splat occluder (splats behind it vanish; returns the towers' occluder for `visibility(before, depth, H, W)`).
+  Lessons: a face-on band reads as a halo (show it three-quarter); keep a warm term in Env or gold goes copper/olive.
+* `shots/embers/cflame.py` THE GOLD FLAME: `draw(hdr, root_px, tip_px, t, bright, calm, vis, glow, seed, scale)`, a
+  screen-space procedural flame about its own axis (one tongue, domain-warped licks climbing, heat ramp; brightness is
+  surface brightness, so any size); `Sparks().emit(ctx, root, height, bright, amount)` calm tip sparks (3-D splats).
+  The same flame is drawn by e15.py (through 1039) and c3.py (from 1040), so the handover is continuous by construction.
+**Code:** `c3.py` (C's timeline: C3Sched hooks for scene_b, layout_towers (8 forges r~17.5 + 10 far r 31-39, heights
+alike, surge lead passing round: none taller, no pair), ring_frame/heat/sec/write/letters/env, ForgeFX (thread of light
+flame-tip -> white-hot front 1202-1238; stroke sparks), GoldRain (ballistic molten drops band -> windows), GroundPool
+(screen-space ground lit by the fire), CAM_C6, TimelineC3 with modes sched/eye/grasp/src; eye/grasp are dead once
+EMBERS-C2's router is in), `e15.py` (own driver, `--frames`; imports MAP-L's committed shots/map/book_c.py ONCE to cache
+MAP's camera per 1/4 frame, every stroke's spark seed + lift time, the heart and its flame-height track into
+renders/embers_C3_e15/cache/mapdata_<hash of MAP's sources>.npz; Draught = sink + curl-noise eddies per word),
+`variant.fire_side_only()` includes C3 (A's approved charcoal forge look), scene_c.GRIP_OVERRIDE + crease arcs.
+**Jobs:** `cloud/jobs/embers_C3_forge.json` (C 1040-1679, render.py --cut C3; farm ~7 s/frame on a GPU node),
+`cloud/jobs/embers_C3_e15.json` (C 700-1039, e15.py --frames; ~2.8 s/frame). Tests: from ~/mishamisha,
+`python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/<job>.json --frames a,b,c --test N` (lands in
+renders/_farmtest/<job>/; PUSH CODE FIRST). Sheets: `python ~/mishamisha/_local_logs/review/embers_C/sh.py OUT.jpg 4 480
+_farmtest/embers_C3_forge:1040 ...`. Review sheets (durable): ~/mishamisha/_local_logs/review/embers_C/.
+**Verdicts on the last passes** (review/embers_C/forge_race_pass4.jpg, e15_pass3.jpg; frames in renders/_farmtest/):
+* FORGING 1040-1345 is close: the gold flame alone (1040) is right; the forges rise round it in the gap view (1100-1195,
+  charcoal + seams: reads as forges, but the far ones' dotted seams read a little like lit office grids at distance);
+  the band being drawn and beaten (1210-1285) reads, but it is a thin WHITE hoop near face-on at 1240-1262 (halo risk);
+  1305-1345 is the strongest: a heavy cold-gold band, the canonical letters burning up. 1380 is awkward (the Ring cut off
+  at frame bottom as it rises); 1410 good (Ring tumbling up, letters).
+* RACE 1440-1679 FAILS in pass 4: the under-the-Ring camera loses the towers (1450-1545 is a small ring in black) and,
+  from inside the forges' ring, the gold rain and the walls of red become RADIAL STREAKS (1580-1665 = warp-speed
+  screensaver). Pass 3 (review/embers_C/forge_race_pass3.jpg, 1470-1540: the Ring over a crenellated crown, towers
+  below) was the better geometry.
+* E15: the flame (820-1039) is one gold tongue, calm, no fork (slightly candle-narrow); the peel reads (745-752) but the
+  convergence reads as a radial implosion and a bow-tie at 784-792, not streams in a draught; the letters in the flame
+  (900-935) are illegible white squiggles. Nothing yet judged over MAP's page (MAP-L's page-only book_C not rendered).
+**Next steps, in order:**
+1. RACE camera: outside and low among the crowns (r 30-34, height 18-21 above ground, target at the Ring, hfov 55-60,
+   azimuth in the gap AZ0 so no forge fills the lens), the Ring hanging just above the crowns with 4-6 towers in frame;
+   keep the lens OUTSIDE scene_b.Walls (radial sheets r 5-21 at the gaps; set walls_t0 later or push them off-axis if
+   they still streak); gold rain must read as drops arcing into windows (seen side-on, not falling at the lens).
+2. FORGING: turn the forming band more edge-on (ring_frame yaw offset 40 -> ~60 deg while sec < 0.6) and keep it
+   orange-hot except the running front; smooth CAM_C6 1345-1440 so the Ring rises through frame centre (no cut-off at
+   1380); consider SKYLINE seams dimmer at distance.
+3. E15: fewer, distinct streams (one thread per word, ~40-60 threads, a gentle common drift so it is not radially
+   symmetric, stagger arrivals to kill the bow-tie); either make the letters in the flame legible (2-3 glyphs, xh ~0.5
+   cm, bright gold lines inside the body, 880-960) or cut them; base 15-20% broader. Check E15 1039 vs C3 1040 side by
+   side (same flame root/height: C6's 1040 key is MAP's camera at 1040 scaled by K_E15).
+4. Full-res check stills -> the-long-dawn/review/embers_C3_check/ -> SendMessage main: JOB READY embers_C3_forge
+   (640 frames) and embers_C3_e15 (340 frames); finals only after approval (farm.py --nodes 1-3).
+
 ## EMBERS-C -> EMBERS-C2 (27 Sep ~20:00Z; the director's split: C2 owns E12, E8-C, E13a; I keep E15, E5-C, E11
 ## and the shared Ring (ringsolid.py) + gold flame (cflame.py) assets). My look-dev on C2's shots, to fold in:
 * `eye3.py` (committed; c3 'eye' mode, dead once c2.Router takes 1920-2079): a screen-space sky on a plane facing
