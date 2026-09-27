@@ -228,7 +228,7 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     t = f / FPS
     Pp = np.array([scam.pos[0], scam.pos[2], t, 0.0])
     D = np.zeros((scam.H, scam.W))
-    WD.march(Pp, CR, C, 0.2, 90000.0, 0.0035, 0.35, 700.0, 9, D)
+    WD.march(Pp, CR, C, 0.2, 90000.0, 0.0035, 0.35, FD.terrain_hmax(CR), 9, D)
     fr.img = np.zeros((scam.H, scam.W, 3), np.float32)
     fr.zb = np.zeros((scam.H, scam.W), np.float32)
     fr.dist = np.zeros((scam.H, scam.W), np.float32)

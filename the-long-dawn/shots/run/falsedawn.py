@@ -162,6 +162,51 @@ def terrain_rows():
     return _CRF
 
 
+def terrain_hmax(CR=None):
+    """Conservative world-height ceiling for A's terrain, before Earth curvature.
+
+    The far wall's current ridge endpoints reach 2332.665 m; the old 700 m marcher
+    cutoff can stop an upward ray before it reaches them. Bound the primitives,
+    including their displacement and smooth unions, rather than sampling peaks.
+
+    Source contract: mt.noise's unit gradients and convex interpolation give
+    abs(gnoise2), abs(fbm2) <= 2 and 0 <= ridged2 <= 1 (including fractional LOD).
+    In world.ridge/crag, ribs therefore add at most (1 + .35) * .55 = .7425
+    times their amplitude; strata add at most their period times their blend.
+    world.smax adds at most k/4 at each union. hfun's curvature and the optional
+    cloud holes/valley carves only lower height. Keep these envelopes in step
+    with those functions if their terrain/noise recipes change.
+    """
+    CR = terrain_rows() if CR is None else CR
+    # S1.h_near: base <= .55*.9*1.3 + .05*2 + .2; each of its five
+    # boulders updates h <= max(h, 1.6*bh + .3*h), leaving h < 3 m.
+    # h_cloud <= CLOUD_Y + 150*2 + 55 + 10*2 + 7 (world's extra billows).
+    # S1.h_far: prom,r <= 1, plus the nonnegative beacon Gaussian.
+    ceiling = max(3.0, WD.CLOUD_Y + 382.0, 300.0 + max(WD.S1.HB + 450.0, 0.0))
+    for row in CR:
+        kind = row[12]
+        if kind < -2.5:                       # track/carve/hole rows add no height
+            continue
+        if kind < -1.5:
+            # near_range's final soft cap <= lip + 2000; d <= reach.
+            top = row[6] - row[10] + 2000.0 + max(-row[7] * row[11], 0.0)
+        elif kind < 0.0:
+            if min(row[6], row[7]) <= 0.0 or min(row[10], row[11]) < 0.0:
+                raise ValueError('A terrain ceiling requires positive ridge widths and nonnegative detail/slope')
+            top = max(row[2], row[5]) + 0.5 * 5.5 + 0.7425 * row[10] * 90.0 + 0.5 * 2.0
+        else:
+            if row[3] <= 0.0 or min(row[4], row[5], row[10], row[11]) < 0.0:
+                raise ValueError('A terrain ceiling requires positive crag L and nonnegative slopes/detail/shelf')
+            # _drop(m) >= 0 for nonnegative slopes. Strata tw <= .22*1.5,
+            # period .22*L; ribs amplitude <= detail*2*L. Shelf noise has
+            # absolute bound .55*2 + .35*.55, including a signed shelf blend.
+            top = row[2] + 0.33 * 0.22 * row[3] + 0.7425 * row[10] * 2.0 * row[3]
+            if row[11] > 0.0:
+                top += 1.2925 * abs(1.0 - row[15])
+        ceiling = max(ceiling, top) + max(row[9], 0.0) * 0.25
+    return float(ceiling)
+
+
 def camera(frame, W=1920, H=804):
     u = min(max(frame / (NFR - 1), 0.0), 1.0)
     e = u * u * (3 - 2 * u) * 0.35 + 0.65 * u
@@ -523,7 +568,7 @@ def render(frame, design='arc', scale=1.0, ss=1.5):
     tcam = camera(frame, W, H)
     fr = PI.Frame(tcam, ss)
     lt, GP = light(frame, design)
-    PI.render_terrain(fr, frame, terrain_rows(), lt, np.zeros((0, 8)))
+    PI.render_terrain(fr, frame, terrain_rows(), lt, np.zeros((0, 8)), hmax=terrain_hmax())
     scam = fr.src
     C = scam.params()
     skl0, skld, skl = skyline(scam.pos)

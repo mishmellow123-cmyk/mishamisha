@@ -125,7 +125,8 @@ def static(scale, ss):
     W, H = int(round(1920 * scale)), int(round(804 * scale))
     fr = PI.Frame(camera(W, H), ss)
     _, GP = FD.light(0, 'arc')                  # A2's sky model with the glow off (swell 0)
-    PI.render_terrain(fr, 0, FD.terrain_rows(), WD.night_light(), np.zeros((0, 8)))   # H1's moonlit night
+    PI.render_terrain(fr, 0, FD.terrain_rows(), WD.night_light(), np.zeros((0, 8)),
+                      hmax=FD.terrain_hmax())   # H1's moonlit night
     scam = fr.src
     stars = FD._STARS if FD._STARS is not None else SK.make_stars(16000, 101, lum_scale=6.0)
     # (v2) the Milky Way as stars, not smoke: a dense faint layer on the galactic plane (80% of 90k within ~9 deg)

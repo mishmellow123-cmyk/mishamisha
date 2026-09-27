@@ -33,6 +33,7 @@ os.environ.setdefault('NUMBA_NUM_THREADS', '1')
 import world as WD          # noqa: E402
 import rcam as RC           # noqa: E402
 import pipe as PI           # noqa: E402
+import falsedawn as FD      # noqa: E402
 import nighta as NA         # noqa: E402
 import sdfppl as SP         # noqa: E402  (RUN-A2's; read-only)
 from mt import fire as F    # noqa: E402
@@ -439,7 +440,7 @@ def render(f, scale=1.0, ss=1.5):
     t = f / FPS
     Pp = np.array([scam.pos[0], scam.pos[2], t, 0.0])
     D = np.zeros((scam.H, scam.W))
-    WD.march(Pp, BR.CR, C, 0.2, 90000.0, 0.0035, 0.35, 700.0, 9, D)
+    WD.march(Pp, BR.CR, C, 0.2, 90000.0, 0.0035, 0.35, FD.terrain_hmax(BR.CR), 9, D)
     fr.img = np.zeros((scam.H, scam.W, 3), np.float32)
     fr.zb = np.zeros((scam.H, scam.W), np.float32)
     fr.dist = np.zeros((scam.H, scam.W), np.float32)
