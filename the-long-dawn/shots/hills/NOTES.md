@@ -6,14 +6,15 @@ with her hands in leather gloves and her head a rim-lit silhouette at every phas
 (2) **Risk test #5 (people)** stills: B THE DEAD EMBER (H5), C THE FIRE TEST as Bag End (H2), C THE FIND (H2); code in
 `shots/hills/heroine_v3.py` on a fork of the heroine tracer (`hsdf3.py`) so nothing accepted can change.
 Sheets: `review/v3/heroine_v3_sheet1.jpg`, `heroine_v3_sheet2.jpg`, `heroine_v3_sheet3.jpg` (final stills),
-`heroine_v3_h1_contact.jpg` (the re-keyed take, every 12th frame).
+`heroine_v3_h1_contact.jpg` (the re-keyed take, every 12th frame), `heroine_v3_deadember_motion.jpg` + `_mt1.mp4`.
 
 **Verdicts against the fallbacks.**
 * H1 re-key: PASS (a re-key, not a crop: the composition, timing and every other element are the accepted take).
 * FIRE TEST (Bag End): PASS. The Ring lies on the tip of her steel in the flames, balanced, gold and unmarked, its
   letters burning; her gloved fist holds it there (tremble, one dip toward the coals, drawn back). Beats its fallback.
-* DEAD EMBER: PASS with notes. Seen high on her left, looking into the clay fire-pot (her head above frame): the lid
-  off, one red eye in a char crust, her breath, the eye greying to ash. Beats its fallback on legibility.
+* DEAD EMBER: PASS with notes (stills). Seen high on her left, looking into the clay fire-pot (her head above frame):
+  the lid off, one red eye in a char crust, her breath, the eye greying to ash. Beats its fallback on legibility; in
+  motion the lid lift still needs restaging (see RENDER_SPEC).
 * FIND: SPLIT. The band in the melted hollow, found by the strike's flash and faintly awake in the dark: PASS (and
   it is the bible's fallback image). Her gloved hand closing on it: FAIL (at the reach the glove silhouette breaks
   into a claw) -> FALLBACK taken: the band in the hollow, then cut to her closed fist.
@@ -28,8 +29,11 @@ band (the Blender bake-off may replace it); H1 keeps the v2b timing (the v3 reti
 * `cloud/jobs/h1_v3_rekey.json`: DONE on this box (see above).
 * `cloud/jobs/h2_firetest_c.json`: C 4040-4183 (144 fr) -> `renders/heroine_C` (`--shot firetest`), ~60-90 s/frame/
   core, ~45 min. Ready.
-* `cloud/jobs/h5_deadember_b.json`: B 960-1199 (240 fr) -> `renders/heroine_B` (`--shot deadember`), ~1 h. Ready after
-  one look at a 24-frame motion test (the lid lift 984-1024 has not been seen in motion).
+* `cloud/jobs/h5_deadember_b.json`: B 960-1199 (240 fr) -> `renders/heroine_B` (`--shot deadember`), ~1 h. NOT YET:
+  the quarter-res motion test (`review/v3/heroine_v3_deadember_motion.jpg`, `..._mt1.mp4`, 976-1152 every 4th) holds
+  from 1008 on (the eye, her glove on the rim, the scarf end, the greying) but the lid lift 976-1004 is a dark smear:
+  her near arm sweeps across the lens. Restage (lift the lid away to frame left, or start with the lid already off)
+  and re-test before launching; the snow wedge between her knee and body also wants softening.
 * `cloud/jobs/h2_find_c.json`: C 3557-3620 (64 fr) -> `renders/heroine_C` (`--shot find`), the fallback version
   (`Find.HAND = False`: the flash reveal, the sparks dying, the letters' glow; no hand), ~25 min. Ready.
 
