@@ -146,6 +146,11 @@ class C3Sched:
     def tower_extra(self, towers, i, t):
         return 0.0
 
+    def seam_k(self, i):
+        """the floor and bay seams, dimmed (a lit grid reads as offices at night): the forges' bands and edges,
+        their throats and the fire in the joints carry them; the far ring dimmer still"""
+        return 0.4 if i < 8 else 0.2
+
     def shutter(self, i, t, pl):
         """facade windows: dim embers (a grid of lit windows reads as offices at night); they flare a little on the
         race's beats"""
@@ -197,6 +202,9 @@ def layout_towers(tw):
     rad_f = 17.5 + r.uniform(-0.9, 0.9, k)
     ang_s = a0 + np.pi / k + np.pi / ns + 2 * np.pi * np.arange(ns) / ns + r.uniform(-0.12, 0.12, ns)
     rad_s = r.uniform(31.0, 39.0, ns)
+    d_s = (ang_s - AZ0 + np.pi) % (2 * np.pi) - np.pi
+    m_s = np.abs(d_s) < math.radians(24.0)         # (C7 looks back through this corridor: no far tower looms in it)
+    ang_s[m_s] = AZ0 + np.where(d_s[m_s] > 0, math.radians(27.0), math.radians(-33.0))
     tw.ang = np.concatenate([ang_f, ang_s])
     tw.rad = np.concatenate([rad_f, rad_s])
     tw.rot = [(-a + np.pi) for a in tw.ang]
@@ -222,12 +230,14 @@ def ring_frame(t):
     it turns slowly (the letters travel); from 1360 it rises above the towers and tilts to hang over them."""
     cam_az = cam_azimuth(t)
     rise = float(smootherstep(T_RISE, T_RACE + 30, t))
-    y = G + RING_Y0 + (RING_Y1 - RING_Y0) * rise + 3.0 * float(smoothstep(T_SURGE, T_RACE_END, t))
+    y = G + RING_Y0 + (RING_Y1 - RING_Y0) * rise + 1.2 * float(smoothstep(T_SURGE, T_RACE_END, t))
     y += 0.12 * math.sin(0.05 * t)                      # it breathes in the heat
     C = np.array([0.0, y, 0.0])
     # axis: horizontal, turned ~40 degrees off the line of sight (so its hole and its thickness both show) ->
     # tilted up toward vertical as it rises (it hangs over the towers, never face-on like a halo)
-    yaw = cam_az + math.radians(40.0) + 0.0035 * (t - T_FORGE)
+    yaw_band = math.radians(40.0) + 0.0035 * (t - T_FORGE)
+    yaw_thread = math.radians(67.0) + 0.0012 * (t - T_FORGE)
+    yaw = cam_az + lerp(yaw_thread, yaw_band, float(smootherstep(T_FORGE + 66, T_FORGE + 102, t)))
     tilt = math.radians(90.0) - math.radians(48.0) * rise
     Rt = B._rot_about(yaw, tilt)
     spin = 0.006 * (t - T_FORGE)
@@ -271,7 +281,7 @@ def ring_heat(t):
         laid = FRONT_T[0] + (FRONT_T[1] - FRONT_T[0]) * frac                  # when the front passed here
         age = np.maximum(t - laid, 0.0)
         front = np.exp(-age / 4.0)                                          # white just behind the front
-        h = 0.52 * beaten + 0.48 * front + 0.4 * strike * cooling
+        h = 0.35 * beaten + 0.66 * front + 0.3 * strike * cooling
         return np.clip(h, 0, 1)
     return f
 
@@ -479,25 +489,49 @@ class GoldRain:
     another, each landing in a window that flares; from 1560 on every surge a rain of drops from all round the
     band into every forge. Each drop: a bright bead with a short tail; each landing: a flare and a splash."""
 
-    G_ = 0.014                       # gravity (units / frame^2)
+    G_ = 0.024                       # gravity (units / frame^2): long, slow flights that visibly FALL
 
     def __init__(self, tl, seed=611):
         r = rng(seed)
         self.tl = tl
         tw = tl.towers
-        slow_t = np.sort(r.uniform(T_RACE + 18, T_SURGE - 6, 13))
-        fast_t = np.concatenate([np.full(34, tb) + r.uniform(-4, 10, 34) for tb in RACE_BEATS])
-        self.t0 = np.concatenate([slow_t, fast_t])
+        slow_t = np.sort(r.uniform(T_RACE + 6, T_SURGE - 30, 13))
+        # the race: on every beat ~10 streams, each a line of 7 drops leaving one place on the band (1.3 f apart)
+        # for one window, plus a few loose drops; streams fall in arcs under gravity, seen from the side
+        ns_, nd_ = 10, 7
+        st_t, st_id = [], []
+        sid = 0
+        for tb in RACE_BEATS:
+            for k_ in range(ns_):
+                t_s = tb + r.uniform(-2, 8)
+                st_t.append(t_s + 1.6 * np.arange(nd_))
+                st_id.append(np.full(nd_, sid))
+                sid += 1
+        st_t = np.concatenate(st_t)
+        st_id = np.concatenate(st_id)
+        loose_t = np.concatenate([np.full(10, tb) + r.uniform(-4, 10, 10) for tb in RACE_BEATS])
+        self.t0 = np.concatenate([slow_t, st_t, loose_t])
         n = len(self.t0)
         self.slow = np.arange(n) < len(slow_t)
-        self.dur = np.where(self.slow, r.uniform(34, 46, n), r.uniform(18, 28, n))
-        self.th = r.uniform(0, 2 * np.pi, n)
-        # the hush feeds the nearest forges (toward the lens); the race feeds all of them
+        grp = np.concatenate([np.arange(len(slow_t)) + 100000, st_id, np.arange(len(loose_t)) + 200000])
+        ug, inv = np.unique(grp, return_inverse=True)
+        g_dur = r.uniform(36, 46, len(ug))
+        g_th = r.uniform(0, 2 * np.pi, len(ug))
+        g_tw = r.integers(0, tw.k_all, len(ug))
+        g_hy = r.uniform(0.62, 0.93, len(ug))
+        g_side = r.uniform(-0.6, 0.6, len(ug))
+        self.dur = np.where(self.slow, r.uniform(44, 56, n), g_dur[inv])
+        self.th = g_th[inv]
+        # the hush feeds the nearest forges; the race feeds all of them
         near = self._near_forges(tw)
-        self.tw_i = np.where(self.slow, near[r.integers(0, len(near), n)], r.integers(0, tw.k_all, n))
-        self.hy = np.where(self.slow, r.uniform(0.78, 0.93, n), r.uniform(0.6, 0.95, n))
-        self.side = r.uniform(-0.6, 0.6, n)
+        self.tw_i = np.where(self.slow, near[r.integers(0, len(near), n)], g_tw[inv])
+        self.hy = np.where(self.slow, r.uniform(0.78, 0.93, n), g_hy[inv])
+        self.side = g_side[inv]
         self.E = r.lognormal(0, 0.3, n) * np.where(self.slow, 1.5, 1.0)
+        # each drop leaves the band's rim level or a little downward (spilled, never lobbed up like a fountain);
+        # its flight time is solved from the drop height; the hush falls slow (half gravity: the first drips)
+        self.v0d = np.where(self.slow, r.uniform(0.0, 0.03, n), r.uniform(0.0, 0.12, n))
+        self.g = np.where(self.slow, 0.5 * self.G_, self.G_)
         self.sz = np.where(self.slow, 1.4, 1.0) * r.uniform(0.8, 1.2, n)
 
     @staticmethod
@@ -533,12 +567,16 @@ class GoldRain:
         t = ctx.t
         if t < T_RACE or t >= T_RACE_END:
             return
-        live = (t >= self.t0 - 1) & (t < self.t0 + self.dur + 18)
-        if not live.any():
-            return
         if not hasattr(self, '_A'):
             self._A = self.start(self.t0)
             self._B = self.target(self.t0 + self.dur)
+            for _ in range(3):
+                Hh = np.maximum(self._A[:, 1] - self._B[:, 1], 2.0)
+                self.dur = (-self.v0d + np.sqrt(self.v0d ** 2 + 2.0 * self.g * Hh)) / self.g
+                self._B = self.target(self.t0 + self.dur)
+        live = (t >= self.t0 - 1) & (t < self.t0 + self.dur + 18)
+        if not live.any():
+            return
         A, Bt = self._A, self._B
         fpx = ctx.cam.f_px(1920)
 
@@ -546,9 +584,9 @@ class GoldRain:
             u = np.clip((tq - self.t0) / self.dur, 0.0, 1.0)
             T_ = self.dur
             # ballistic: leaves the band with the velocity that lands it in its window at t0 + dur
-            v0 = (Bt - A) / T_[:, None] + np.array([0.0, 0.5 * self.G_, 0.0]) * T_[:, None]
+            v0 = (Bt - A) / T_[:, None] + np.array([0.0, 0.5, 0.0]) * (self.g * T_)[:, None]
             s = u * T_
-            return A + v0 * s[:, None] - np.array([0.0, 0.5 * self.G_, 0.0]) * (s ** 2)[:, None], u
+            return A + v0 * s[:, None] - np.array([0.0, 0.5, 0.0]) * (self.g * s ** 2)[:, None], u
         P0, u0 = pos(ctx.t0)
         P1, u1 = pos(ctx.t1)
         fly = live & (t >= self.t0) & (u1 < 1.0)
@@ -569,6 +607,29 @@ class GoldRain:
             e = self.E[fl] * 40.0 * np.exp(-land[fl] / 5.0) * self.sz[fl] * (fpx / z) ** 2 * 0.004
             ctx.fr.splat(Bt[fl], Bt[fl], 0.9 * self.sz[fl], e, C_GOLDEN * 0.75 + np.array([1.0, 0.85, 0.5]) * 0.25,
                          ctx.cam0, ctx.cam1, profile=1, zref=0.0)
+
+
+# ============================================================== the walls ===
+
+class WallsC(B.Walls):
+    """C7: the walls of red rise between the towers to about crown height; the two that would stand edge-on on the
+    lens's axis (in the camera's gap and the gap behind the fire) stay down, so no red column splits the frame"""
+
+    def __init__(self, towers, seed=77):
+        super().__init__(towers, seed)
+        d = (self.ang - AZ0 + np.pi) % (2 * np.pi) - np.pi
+        axis = (np.abs(d) < math.radians(20.0)) | (np.abs(np.abs(d) - np.pi) < math.radians(20.0))
+        self.start = np.where(axis, 1e9, self.start)
+
+    def height(self, t, w):
+        base = 24.0 * float(B.ease_out((t - self.start[w]) / 30.0, 2.5))
+        grow = 0.0
+        for tb in B.BEATS:
+            if tb >= self.t0w + 22:
+                x = (t - tb - 3.0) / 6.0
+                if x > 0:
+                    grow += 1.6 * float(B.ease_out_back(x, 1.3))
+        return base + grow
 
 
 # ============================================================ the ground ===
@@ -651,13 +712,13 @@ CAM_C6 = [  # (frame, radius, azimuth offset, height above ground, target height
     (1250, 30.0, 0.00, 8.0, 8.5, 44.0),
     (1300, 25.0, 0.00, 9.0, 9.6, 42.0),     # beaten on the strokes
     (1335, 16.0, 0.00, 10.4, 10.3, 40.0),   # cold gold: the letters burn up out of the metal
-    (1362, 14.0, 0.00, 9.0, 12.0, 42.0),
-    (1400, 11.5, 0.01, 5.5, 22.0, 56.0),    # the Ring rises above the towers: we go in under it
-    (1440, 10.0, 0.02, 3.8, 31.0, 66.0),
-    (1500, 9.5, 0.03, 3.2, 34.5, 70.0),     # the hush: the Ring overhead among the crowns
-    (1560, 9.2, 0.04, 3.0, 35.5, 72.0),
-    (1620, 9.0, 0.05, 3.0, 36.0, 72.0),     # the race
-    (1680, 9.0, 0.06, 3.0, 36.5, 72.0),
+    (1362, 21.0, 0.00, 11.0, 11.0, 44.0),   # bar 18: the Ring rises out of the fire; we pull back and follow it up
+    (1400, 36.0, 0.01, 13.5, 17.0, 52.0),   # ... out through the forges' gap (the far ring passes either side)
+    (1440, 52.0, 0.02, 18.5, 25.5, 56.0),   # C7 hush: outside the circle, the Ring hanging over the crowns
+    (1500, 57.0, 0.035, 20.0, 26.0, 56.0),
+    (1560, 56.0, 0.05, 20.0, 26.5, 56.0),   # 20 b3: the race; a slow push in, off-axis (no symmetric framing)
+    (1620, 52.0, 0.065, 20.0, 27.5, 57.0),
+    (1680, 49.0, 0.08, 20.0, 28.0, 58.0),
 ]
 
 
@@ -725,6 +786,7 @@ class TimelineC3(TL.Timeline):
     gold_rain = property(lambda s: s._get('gold_rain', lambda: GoldRain(s)))
     grasp = property(lambda s: s._get('grasp', GR.Grasp))
     ground = property(lambda s: s._get('ground', GroundPool))
+    walls = property(lambda s: s._get('walls', lambda: WallsC(s.towers)))
 
     def src(self):
         if self._src is None:
@@ -784,7 +846,7 @@ class TimelineC3(TL.Timeline):
             return dict(bokeh_pow=0.0, bokeh_cap=1.0, fog_start=70.0, fog_len=90.0, near=0.3)
         if self.mode(f) == 'grasp':
             return dict(bokeh_pow=0.0, bokeh_cap=1.0, near=0.3)
-        return dict(bokeh_pow=0.25, bokeh_cap=1.6, fog_start=60.0, fog_len=80.0, near=0.3)
+        return dict(bokeh_pow=0.25, bokeh_cap=1.6, fog_start=72.0, fog_len=90.0, near=0.3)
 
     def emit(self, ctx):
         t = ctx.t

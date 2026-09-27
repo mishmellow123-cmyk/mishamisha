@@ -1,0 +1,18 @@
+{
+ "name": "embers_C3_race",
+ "branch": "claude/render-embers-C3-race",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow fonttools || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools",
+  "cd shots/embers && python3 render.py 1040 --cut C3 --scale 0.1 --out /tmp/embers_warm"
+ ],
+ "render": [
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1440-1679:4 --cut C3",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1441-1679:4 --cut C3",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1442-1679:4 --cut C3",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1443-1679:4 --cut C3"
+ ],
+ "out_dir": "renders/embers_C3",
+ "frames": "1440-1679",
+ "push_every": 300,
+ "ship": "jpg"
+}

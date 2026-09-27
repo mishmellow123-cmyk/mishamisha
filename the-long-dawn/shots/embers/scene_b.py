@@ -1312,6 +1312,8 @@ class Towers:
                 if kind == 1:                                        # seams of fire (floors, joints)
                     seg = 0.15 + 1.3 * nz2 ** 2.5
                     L = (0.3 * hot * seg * fl * (1 + 4.0 * base) * heat * vgr + 2.0 * front) * fside + 0.9 * crown
+                    if SCHED is not None and hasattr(SCHED, 'seam_k'):
+                        L = L * SCHED.seam_k(i)          # (C3: a lit grid of seams reads as offices at night)
                     T = 0.46 + 0.14 * nz2 + 0.2 * base
                     col = _tw_colours(T)
                     col = col * (1 - 0.7 * red) + C_RED * 0.7 * red
