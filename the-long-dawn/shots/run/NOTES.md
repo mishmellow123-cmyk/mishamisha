@@ -532,6 +532,26 @@ boiling metric).
 
 ---
 
+# >>> RUN-B-3 STATE (28 Sep ~00:05Z): RUN-B-3 now owns ALL of B's remaining picture (RUN-B2, HEROINE-B paused) <<<
+**Landed finals:** handback_B 3840-5199 (1360/1360), vigil_B, reveal_B, climb_B (see _local_logs/handoff/
+LAUNCHED_BY_MAIN.md). DUSK v1 in renders/dusk_B (fallback).
+**This pass (8931dc7, pushed):** (1) bprops.cairn3 v2: rounded weathered fieldstones of mixed size (bfig STONE with
+facet 0.1-0.28 + irregular harmonics + a flatter underside), lichen crust (bfig col 18), snow caps + snow lodged
+along each course's top (shows in the gaps), a drift at the foot. v1 read as low-poly gems/nuts; the user rejected
+Codex's A15 capsule/box cairn studies (don't go there). (2) bset.beacon_base plinth = bfig fieldstones (no
+triangle-fan seams). (3) bset.person2: 'sit' weary 0.8 -> 0.5 and a narrower cowl base (shw*0.64): her head clears
+the shoulders (she read as a rock in the 4300 wide). (4) DUSK v2 (dusk.py): DUSK-only switches in bworld
+(CR type-4 strata_zone row on HER massif; P[3] = cloud-sea billows via h_cloud_b; both inert elsewhere), west
+glow 0.075 on the billows, LP[10] 1.9, rose last point (LP[30] 0.30), far_layers() = three painted ridgelines
+above the horizon wall fading into haze. Cache key bdusk_G_{VERSION}v2.
+**Running:** farm look-dev farm_all_t1 (frames 0/320/575 dusk_b2, 850 climb, 1372 reveal, 3839 vigil, 3840 crane,
+4300/4880 hand-back) -> renders/_farmtest/<job>/ (log _local_logs/runB/farm_all_t1.log).
+**NEXT:** review those stills at the four gates -> JOB READY: dusk_b2 (0-639 -> renders/dusk_B2) + re-renders of
+every range where the cairn/plinth/her figure read: climb_b 640-879, reveal_b 1360-1519, vigil_b 1520-3839,
+handback_b_{crane_a,crane_b,night,dawn_a,dawn_b} 3840-5199 (the join stays identical: all use the same bprops/bset).
+If cheap after that: RUN-B2's nitpicks (summit_snow on for vigil + hand-back together; the shawl passing in one
+frame; the Milky Way's cloudy texture; the flat fog veil).
+
 # >>> RUN-B-3 STATE AT PAUSE (27 Sep ~21:15Z, account usage ends; RESUME ~23:30Z) <<<
 **Lane:** RUN-B-3 = THE HAND-BACK (3840-5199) + DUSK v2. RUN-B2 (agent adab49d5d24d90ffb) owns THE VIGIL + THE REVEAL.
 **Code (all pushed; last edfa370):** bworld b15 (sand-pile fix); handback_b.py (person2 + sleeve_arm arms,
