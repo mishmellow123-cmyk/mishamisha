@@ -1097,6 +1097,8 @@ class Plenty:
                 ang = bend
                 if depth == 0:                       # twigs droop toward their ends
                     ang += 0.07 * np.sign(dd[0] + 1e-6) * (i / n)
+                if depth == 3:                       # main limbs: out from the leader, then turning up
+                    ang += -0.09 * np.sign(dd[0] + 1e-6) * (1.0 - i / n)
                 dd = rot(dd, ang)
                 if depth <= 1:
                     dd = dd + np.array([0.0, 0.035 * (i / n)])
@@ -1125,14 +1127,20 @@ class Plenty:
                 i = int(round(frac * n))
                 grow(P[i], rot(dd if frac >= 1.0 else (P[min(i + 1, n)] - P[max(i - 1, 0)]), a), Ln * rng.uniform(0.55, 0.7),
                      w * 0.62, depth - 1)
-        for a in (-0.56, -0.19, 0.17, 0.52):
-            d0 = rot(np.array([0.0, -1.0]), a + rng.normal(0, 0.06))
+        for li_, a in enumerate((-0.56, -0.19, 0.17, 0.52)):
+            # each limb leaves the leader at its own height (never all from one point), first outward, then up
+            org = fork + np.array([0.02 * a, -(0.0, 0.55, 0.3, 0.85)[li_]])
+            d0 = rot(np.array([0.0, -1.0]), 1.35 * a + rng.normal(0, 0.06))
             # the limb's length: 60% of the way from the fork to where its line leaves the crown's ovoid (the fork
             # sits below the crown, so march out along the ray and take the far exit)
             ts_ = np.linspace(0.0, 9.0, 361)
-            ins = np.array([ovo(fork + d0 * tt) < 1.0 for tt in ts_])
+            ins = np.array([ovo(org + d0 * tt) < 1.0 for tt in ts_])
             exit_ = ts_[np.nonzero(ins)[0][-1]] if ins.any() else 0.5 * R[1]
-            grow(fork, d0, 0.62 * exit_, 0.068, 3)
+            grow(org, d0, 0.62 * exit_, 0.068 - 0.006 * li_, 3)
+        # the leader: the trunk carried up through the limbs into the crown
+        lead = catmull([fork + np.array([0.0, 0.1]), fork + np.array([0.05, -0.6]), fork + np.array([-0.04, -1.2]),
+                        cc + np.array([0.08, 0.35 * R[1]])], 8)
+        segs.append((lead, 0.07))
 
         # the leaves: sprays of long pointed leaves, each spray on its own short twig, filling the crown's ovoid
         # (irregular edge, flatter below) except for a few windows of sky where the limbs show
@@ -1291,9 +1299,9 @@ class Plenty:
         for (p_, dirc, z) in clumps:
             q = (p_ - cc) / R
             lit = float(np.dot(q, light))
-            if rng.random() > 0.3 + 0.5 * np.clip(lit + 0.35, 0, 1):
+            if rng.random() > 0.55 + 0.4 * np.clip(lit + 0.35, 0, 1):
                 continue
-            n_ = int(rng.integers(6, 10))
+            n_ = int(rng.integers(8, 13))
             sg_ = np.sign(dirc[0] + 1e-6)
             st = p_ + dirc * 0.1
             hang = catmull([st, st + np.array([0.05 * sg_, 0.17]), st + np.array([0.08 * sg_, rng.uniform(0.32, 0.46)])], 6)
@@ -1305,7 +1313,7 @@ class Plenty:
                 sm_ = (m + 0.5) / n_ * sh_[-1]
                 fx_, fy_ = np.interp(sm_, sh_, hang[:, 0]), np.interp(sm_, sh_, hang[:, 1])
                 sd = 1 if m % 2 else -1
-                flowers.append((fx_ + sd * 0.035, fy_, 0.05 - 0.022 * m / n_))
+                flowers.append((fx_ + sd * 0.04, fy_, 0.068 - 0.03 * m / n_))
         for (bp, ld, ln, lw, z) in leaves[::7]:
             q = (bp - cc) / R
             if float(np.dot(q, light)) > 0.1 and z > 0.5:

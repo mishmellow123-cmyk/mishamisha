@@ -143,7 +143,7 @@ class Page:
         return tx.build()
 
 
-def initial(S, x, y, size, seed, glyph='wc'):
+def initial(S, x, y, size, seed, glyph='lp'):
     """The book's one illuminated initial (H5; MAP-L redraw): a letter of our script in raised, burnished gold on a
     square of vermilion, the ground diapered with a fine ink lattice and a gold bezant in every lozenge, inside a
     gilt frame ruled in ink; a spray of ink vine with gilt ivy leaves and vermilion berries grows from its corners
@@ -296,7 +296,7 @@ def leaves_last(seed=5):
     recs = PG.text_page(R, seed + 1, lines=21, box=boxR, last_frac=0.42, skip=skipR)
     # the chapter's opening words in vermilion, beside the initial
     rubricate(R, recs[15]['base'], boxR[0] + 2.72 + 5.2)
-    initial(R, boxR[0] + 0.02, 2.9 + 0.62 * 14.45, 2.5, seed + 50, glyph='wc')
+    initial(R, boxR[0] + 0.02, 2.9 + 0.62 * 14.45, 2.5, seed + 50, glyph='lp')   # 'wc' read as a tick in a box
     yl = recs[-1]['base']
     sketch_ship(R, 10.1, yl + 2.6, 0.75, seed + 300)
     # the tale's closing mark: a small flourish under the last line

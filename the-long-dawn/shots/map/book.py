@@ -621,9 +621,9 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 # vermilion (rubric): an opaque, slightly chalky red laid over the ink it shares a letter with
                 if rub > 0.0:
                     kr = min(rub * (0.92 + 0.16 * tooth), 1.0) ** 0.8
-                    ar = ar * (1 - kr) + 0.43 * kr
-                    ag = ag * (1 - kr) + 0.052 * kr
-                    ab = ab * (1 - kr) + 0.026 * kr
+                    ar = ar * (1 - kr) + 0.5 * kr
+                    ag = ag * (1 - kr) + 0.078 * kr
+                    ab = ab * (1 - kr) + 0.028 * kr
                 # graphite
                 gp = pencil * (0.75 + 0.5 * (1.0 - tooth))
                 gp = min(gp, 0.85)
