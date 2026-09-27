@@ -3,10 +3,19 @@
 
     python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/<job>.json [more.json ...]
             [--nodes N] [--gpu] [--frames A-B[,C-D]] [--test [K]] [--local-out DIR] [--missing] [--dry-run]
-    python3 the-long-dawn/cloud/farm.py status        # farm nodes, who holds them, mission spend, token expiry
-    python3 the-long-dawn/cloud/farm.py stop-idle     # stop every farm node that no live farm.py is using
+            [--detach] [--direct]
+    python3 the-long-dawn/cloud/farm.py status          # the queue, the farm nodes, spend, token expiry
+    python3 the-long-dawn/cloud/farm.py cancel <request>
+    python3 the-long-dawn/cloud/farm.py stop-idle       # stop every farm node that nothing is using
 
-What a run does:
+One shared queue: every farm.py call is a REQUEST to a single farm daemon on this Mac (started on demand, gone
+after 5 idle minutes). The daemon drives the whole node pool: --test requests go ahead of finals, each request
+uses at most --nodes N nodes at once, finals leave 2 slots free for look-dev, and a node that finishes a unit
+takes the next one from any request (else it stops at once). The calling farm.py just follows its request's
+log and exits when the request is done (exit 0), incomplete/failed (1) or cancelled (2). Ctrl-C (or killing
+it) cancels the request. --detach submits and returns. --direct runs in-process without the daemon.
+
+What a request does:
   * plans units: each job's frames are split across --nodes N units. Every unit keeps the job's own lanes (its
     render commands), each lane cut to a contiguous slice of its frames, so a node runs the job exactly as the
     department designed it, on fewer frames. A lane that leaves the node's CPUs mostly idle is cut into more
@@ -20,8 +29,8 @@ What a run does:
     HTTPS endpoint as they land, are checked again here (sha256 + decode at the job's shape, default
     804x1920), and are swapped into the-long-dawn/<out_dir> atomically. A landed JPEG supersedes an older PNG.
     Nothing is pushed to git and no credential ever leaves this Mac.
-  * cost: every node stops the moment it has no more work (and stops itself after 10 idle minutes if this
-    process dies). Spend is refused past LDFARM_SPEND_STOP (default $200) of the farm mission.
+  * cost: a node stops the moment no queued unit wants it (and stops itself after 10 idle minutes if the
+    daemon dies). Requests are refused past LDFARM_SPEND_STOP (default $200) of farm spend.
 
 Modes:
   --test [K]   look-dev: K frames (default 4) spread over the job (or over --frames), on one node unless
@@ -30,17 +39,23 @@ Modes:
   --missing    render only the frames this Mac doesn't already have.
   --dry-run    print the plan (units and rewritten commands) and touch nothing.
 
-Credential: ~/.config/longdawn-farm/token (chmod 600; a workspace-scoped infra token), or $LDFARM_TOKEN.
-Limits (env): LDFARM_MAX_CPU (30), LDFARM_MAX_GPU (2), LDFARM_MAX_ENDPOINTS (15: one per streaming node).
+Files: ~/.cache/ldfarm/ (inbox/, req/<id>.log + .json, daemon.log, leases/). Credential:
+~/.config/longdawn-farm/token (chmod 600; a workspace-scoped infra token), or $LDFARM_TOKEN.
+Limits (env): LDFARM_MAX_CPU (30), LDFARM_MAX_GPU (2), LDFARM_MAX_ENDPOINTS (15: one per streaming node),
+LDFARM_TEST_RESERVE (2).
 """
 import argparse
+import fcntl
 import hashlib
 import io
+import itertools
 import json
 import math
 import os
+import random
 import re
 import signal
+import subprocess
 import sys
 import tarfile
 import threading
@@ -51,12 +66,6 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 VENV_PY = os.path.expanduser('~/.venvs/longdawn/bin/python')
-if __name__ == '__main__':
-    import importlib.util
-    if importlib.util.find_spec('cv2') is None:       # system python3: re-run under the project venv (has cv2)
-        if os.path.exists(VENV_PY) and os.path.realpath(sys.executable) != os.path.realpath(VENV_PY):
-            os.execv(VENV_PY, [VENV_PY] + sys.argv)
-        sys.exit('farm: needs cv2 (the ~/.venvs/longdawn venv)')
 # cv2/numpy are imported only where frames land, so a run that is waiting for a node stays small on this Mac
 
 HERE = os.path.dirname(os.path.abspath(__file__))                 # the-long-dawn/cloud
@@ -66,11 +75,21 @@ API = os.environ.get('LDFARM_API', 'https://autoresearch.sfcompute.com/preview')
 CFG = os.path.expanduser('~/.config/longdawn-farm')
 CACHE = os.path.expanduser('~/.cache/ldfarm')
 LEASES = os.path.join(CACHE, 'leases')
+INBOX = os.path.join(CACHE, 'inbox')
+REQDIR = os.path.join(CACHE, 'req')
+DONEDIR = os.path.join(CACHE, 'done')
+DLOCK = os.path.join(CACHE, 'daemon.lock')
+DLOG = os.path.join(CACHE, 'daemon.log')
+DPID = os.path.join(CACHE, 'daemon.pid')
+DAEMON_IDLE_EXIT = int(os.environ.get('LDFARM_DAEMON_IDLE_EXIT', '300'))
 MISSION = os.environ.get('LDFARM_MISSION', 'long-dawn-render-farm')
 PORT = 8700
 MAX_CPU = int(os.environ.get('LDFARM_MAX_CPU', '30'))
 MAX_GPU = int(os.environ.get('LDFARM_MAX_GPU', '2'))
+MAX_BOOTING = int(os.environ.get('LDFARM_MAX_BOOTING', '4'))  # nodes creating/queued/waking at once
+MAX_SPILL = int(os.environ.get('LDFARM_MAX_SPILL', '6'))    # extra h100-1 nodes that take CPU units while cpu-8 has no room
 MAX_STREAM = int(os.environ.get('LDFARM_MAX_ENDPOINTS', '15'))
+TEST_RESERVE = int(os.environ.get('LDFARM_TEST_RESERVE', '2'))  # slots finals leave free so look-dev never waits long
 SPEND_WARN = float(os.environ.get('LDFARM_SPEND_WARN', '150'))
 SPEND_STOP = float(os.environ.get('LDFARM_SPEND_STOP', '200'))
 KINDS = {'cpu': dict(chip='cpu-8', prefix='ldf-c', cpu=8, cap=MAX_CPU),
@@ -81,6 +100,7 @@ BOOT = r'''set -e
 export PATH=$HOME/.local/bin:$PATH
 mkdir -p ~/ld/runs && cd ~/ld
 pkill -f "farm_node[.]py agent" || true
+[ -f ~/ld/runs/pgids ] && for g in $(cat ~/ld/runs/pgids); do kill -TERM -$g 2>/dev/null; done; rm -f ~/ld/runs/pgids
 command -v uv >/dev/null 2>&1 || (curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1)
 [ -d mishamisha/.git ] || git clone -q --single-branch --branch claude/long-dawn-v2 --depth 1 --filter=blob:none https://github.com/mishmellow123-cmyk/mishamisha
 git -C mishamisha fetch -q --depth 1 origin claude/long-dawn-v2 && git -C mishamisha reset -q --hard FETCH_HEAD
@@ -97,6 +117,7 @@ echo "BOOT OK $(git -C mishamisha rev-parse --short HEAD)"
 '''
 
 STOP = threading.Event()
+UNIT_SERIAL = itertools.count(1)
 PRINT = threading.Lock()
 
 
@@ -133,7 +154,7 @@ def _meta():
 WORKSPACE = os.environ.get('LDFARM_WORKSPACE') or _meta().get('workspace') or 'long-dawn-farm'
 
 
-def api(method, path, body=None, params=None, timeout=90, tries=6):
+def api(method, path, body=None, params=None, timeout=90, tries=14):
     params = dict(params or {})
     params['workspace'] = WORKSPACE
     url = API + path + '?' + urllib.parse.urlencode(params)
@@ -156,7 +177,8 @@ def api(method, path, body=None, params=None, timeout=90, tries=6):
                 sys.exit('farm: the farm credential was refused (expired?). Ask FARM to vend a new token.')
             if e.code in (429, 503) or e.code >= 500:
                 last = ApiError(e.code, err.get('code'), err.get('message'))
-                time.sleep(min(float(e.headers.get('Retry-After') or (2 + 3 * attempt)), 60))
+                wait = float(e.headers.get('Retry-After') or (2 + 3 * attempt))
+                time.sleep(min(max(wait, 2.0) + random.random() * 3, 60))
                 continue
             raise ApiError(e.code, err.get('code'), err.get('message'))
         except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
@@ -199,12 +221,22 @@ def mission_cost():
 
 # ------------------------------------------------------------------ leases: concurrent farm.py runs never share a node
 
+_ALIVE = {}
+
+
 def _alive(pid):
+    """True for a running process; a zombie (exited, not yet reaped) counts as dead. Cached for 5 s."""
+    hit = _ALIVE.get(pid)
+    if hit and time.time() - hit[0] < 5:
+        return hit[1]
     try:
         os.kill(pid, 0)
-        return True
+        st = subprocess.run(['ps', '-o', 'stat=', '-p', str(pid)], capture_output=True, text=True).stdout.strip()
+        ok = bool(st) and not st.startswith('Z')
     except OSError:
-        return False
+        ok = False
+    _ALIVE[pid] = (time.time(), ok)
+    return ok
 
 
 def lease(name, run_id):
@@ -365,7 +397,9 @@ SKIP_SETUP = re.compile(r'apt-get|-m venv\b.*bpy|bpy==')
 
 
 class Job:
-    def __init__(self, path, args):
+    def __init__(self, path, args, say=None):
+        self.say = say or log
+        self.tag = ''
         self.path = path
         self.spec = json.load(open(path))
         self.name = self.spec['name']
@@ -416,7 +450,7 @@ class Job:
         self.want = want
         self.whole = self.lanes is None
         if self.whole and (args.frames or args.test is not None or args.missing):
-            log(f'[{self.name}] note: its frame arguments are not rewritable, so it runs whole (all frames)')
+            self.say(f'[{self.name}] note: its frame arguments are not rewritable, so it runs whole (all frames)')
             self.want = set(allf)
 
     def units(self, n_units, cpu_limit, retry_of=None, frames=None):
@@ -457,7 +491,7 @@ class Job:
         return out
 
     def _unit(self, j, items, frames, conc, retry_of):
-        uid = f'{self.name}-{time.strftime("%m%d%H%M%S")}-{j}' + (f'-r{retry_of}' if retry_of else '')
+        uid = f'{self.tag}-{self.name}-{j}' + (f'-r{retry_of}.{next(UNIT_SERIAL)}' if retry_of else '')
         outputs = [dict(key=o['key'], out_dir=o['out_dir'], frames=sorted(set(o['frames']) & set(frames)))
                    for o in self.outputs]
         outputs = [o for o in outputs if o['frames']]
@@ -468,9 +502,13 @@ class Job:
 
 # ------------------------------------------------------------------ one node: boot, agent, endpoint
 
+class CapacityError(RuntimeError):
+    """The platform has no room for this shape right now (a failed create or wake)."""
+
+
 class Node:
-    def __init__(self, name, kind):
-        self.name, self.kind = name, kind
+    def __init__(self, name, kind, sched):
+        self.name, self.kind, self.sched = name, kind, sched
         self.url = self.tok = None
         self.cpu = KINDS[kind]['cpu']
         self.state = 'booting'
@@ -482,6 +520,16 @@ class Node:
         self.t_ready = None
         self.error = None
         self.region = None
+        self.last_job = None
+        self.queued = False
+        self.t_queued = None
+        self.req = None            # the request whose work made us start this node (boot news goes to its log)
+
+    def say(self, msg):
+        if self.req is not None:
+            self.req.log(msg)
+        else:
+            log(msg)
 
     def agent(self, method, path, body=None, timeout=60, raw=False):
         data = json.dumps(body).encode() if body is not None else None
@@ -491,35 +539,57 @@ class Node:
             b = r.read()
             return b if raw else json.loads(b or b'{}')
 
-    def boot(self, farm):
+    def _guard(self):
+        """Every write/exec below wakes a stopped node, so bail out once the run is over or the node was stopped."""
+        if STOP.is_set() or self.state == 'stopped':
+            raise RuntimeError('interrupted during boot')
+
+    def boot(self):
         kind = KINDS[self.kind]
         info = get_node(self.name)
         if info is None or str(info.get('status', '')).startswith('failed'):
             self._guard()
-            log(f'{self.name}: creating {kind["chip"]}')
+            self.say(f'{self.name}: creating {kind["chip"]}')
             info = api('POST', '/nodes', dict(chip=kind['chip'], name=self.name, mission=MISSION, max_wait='2h'))
         self.exists = True
         t0 = time.time()
-        woke = False
-        while not STOP.is_set():
+        woke = None
+        last_q = 0
+        while True:
+            self._guard()
             st = str(info.get('status', ''))
             if st.startswith('running'):
                 break
-            if st.startswith('stopped') and not woke:
-                log(f'{self.name}: waking its parked disk')
-                try:
-                    api('POST', f'/nodes/{self.name}/commands', dict(command='true', timeout=30, max_wait='2h'), timeout=60)
-                except ApiError as e:
-                    if 'queued' not in e.message and 'waking' not in e.message:
-                        log(f'{self.name}: wake answered {e.message[:160]}')
-                woke = True
-            elif st.startswith(('queued',)) and int(time.time() - t0) % 120 < 5:
-                log(f'{self.name}: queued (position {info.get("queue_position") or info.get("position")}, '
-                    f'est {info.get("estimated_ready_seconds")} s)')
+            if st.startswith('failed'):
+                raise CapacityError(f'create failed: {str(info.get("error", ""))[:160]}')
+            if st.startswith('stopped'):
+                stp = info.get('stopped') or {}
+                if woke is None:
+                    self.say(f'{self.name}: waking its parked disk')
+                    woke = time.time()
+                    try:
+                        api('POST', f'/nodes/{self.name}/commands', dict(command='true', timeout=30, max_wait='2h'), timeout=60)
+                    except ApiError as e:
+                        if 'queued' not in e.message and 'waking' not in e.message:
+                            self.say(f'{self.name}: wake answered {e.message[:160]}')
+                elif time.time() - woke > 20 and stp.get('reason') == 'wake_failed':
+                    raise CapacityError(f'wake failed: {str((info.get("last_failure") or {}).get("error", ""))[:160]}')
+                elif time.time() - woke > 240:
+                    raise CapacityError('the wake never started')
+            self.queued = st.startswith('queued')
+            if self.queued and not self.t_queued:
+                self.t_queued = time.time()
+            if self.queued and time.time() - last_q > 120:
+                last_q = time.time()
+                self.say(f'{self.name}: queued for capacity (est {info.get("estimated_ready_seconds")} s); its place '
+                         f'is kept (queued demand is what starts machines)')
             if 'unrestorable' in st or 'lost' in st:
                 raise RuntimeError(f'{self.name} is {st}')
-            time.sleep(5)
+            for _ in range(4 if self.queued else 1):   # a queue moves in minutes: poll it every 20 s
+                self._guard()
+                time.sleep(5)
             info = get_node(self.name) or {}
+        self.queued = False
         self.cpu = int((info.get('resources') or {}).get('cpu_limit') or kind['cpu'])
         self.region = info.get('region')
         self._guard()
@@ -544,15 +614,10 @@ class Node:
                 time.sleep(3)
         else:
             raise RuntimeError(f'{self.name}: agent did not answer on its endpoint')
+        self.t_ready = self.last_ok = time.time()
         self.state = 'ready'
-        self.t_ready = time.time()
-        log(f'{self.name}: ready ({self.kind}, cpu_limit {self.cpu}, {self.region}, {out.split("BOOT OK")[-1].strip()}) '
-            f'in {time.time() - t0:.0f}s')
-
-    def _guard(self):
-        """Every write/exec below wakes a stopped node, so bail out once the run is over or the node was stopped."""
-        if STOP.is_set() or self.state == 'stopped':
-            raise RuntimeError('run interrupted during boot')
+        self.say(f'{self.name}: ready ({self.kind}, cpu_limit {self.cpu}, {self.region}, '
+                 f'{out.split("BOOT OK")[-1].strip()}) in {time.time() - t0:.0f}s')
 
     def expose(self):
         r = {}
@@ -570,136 +635,344 @@ class Node:
                 pass
         raise RuntimeError(f'{self.name}: expose_port gave no bearer token (fields: {sorted(r.keys())})')
 
-    def stop(self, why=''):
+    def stop(self, why='', api_stop=True):
         if self.state == 'stopped':
             return
+        self.state = 'stopped'
+        if not api_stop:
+            self.exists = False
         try:
             if self.url:
                 self.agent('POST', '/quit', {}, timeout=10)
         except Exception:                           # noqa: BLE001
             pass
-        if not self.exists:                         # never created: nothing is billing
-            self.state = 'stopped'
-            release(self.name)
-            return
-        try:
-            api('POST', f'/nodes/{self.name}/stop', dict(mission=MISSION), timeout=60)
-            log(f'{self.name}: stopped{" (" + why + ")" if why else ""}')
-        except ApiError as e:
-            log(f'{self.name}: stop failed: {e.message[:200]} -- run `farm.py stop-idle`')
-        self.state = 'stopped'
+        if self.exists:
+            try:
+                api('POST', f'/nodes/{self.name}/stop', dict(mission=MISSION), timeout=60)
+                log(f'{self.name}: stopped{" (" + why + ")" if why else ""}')
+            except ApiError as e:
+                log(f'{self.name}: stop failed: {e.message[:200]} -- run `farm.py stop-idle`')
         release(self.name)
 
 
-# ------------------------------------------------------------------ the run
+# ------------------------------------------------------------------ requests: one per farm.py call
 
-class Farm:
-    def __init__(self, jobs, args):
-        self.jobs, self.args = jobs, args
-        self.run_id = time.strftime('%m%d-%H%M%S') + f'-{os.getpid()}'
+TERMINAL = ('done', 'incomplete', 'failed', 'cancelled')
+
+
+def _paths(rid):
+    return (os.path.join(REQDIR, rid + '.log'), os.path.join(REQDIR, rid + '.json'), os.path.join(REQDIR, rid + '.cancel'))
+
+
+class Request:
+    def __init__(self, rid, argv, submitted, direct=False):
+        self.id, self.argv, self.submitted, self.direct = rid, argv, submitted, direct
+        self.args = parse_run_args(argv)
+        self.short = hashlib.sha1(rid.encode()).hexdigest()[:6]
+        self.jobs = []
+        self.state = 'queued'
+        self.units_total = self.units_open = 0
+        self.landed = self.total = 0
+        self.results = []
+        self.gave_up = []
+        self.cancelled = False
+        self.t_start = self.t_end = None
+        self.prio = 0 if self.args.test is not None else 1
+        self.budget = 1
+        self.note = ''
+        self.logp, self.statep, self.cancelp = _paths(rid)
+        self.logf = None if direct else open(self.logp, 'a')
+
+    def log(self, msg):
+        line = time.strftime('%H:%M:%S') + ' ' + str(msg)
+        if self.direct:
+            with PRINT:
+                print(line, flush=True)
+        else:
+            self.logf.write(line + '\n')
+            self.logf.flush()
+            with PRINT:
+                print(f'[{self.id}] {msg}', flush=True)
+
+    def save(self):
+        if self.direct:
+            return
+        d = dict(id=self.id, state=self.state, kind='test' if self.prio == 0 else 'final', note=self.note,
+                 jobs=[j.name for j in self.jobs] or [os.path.basename(p) for p in self.args.jobs],
+                 landed=self.landed, total=self.total, units_total=self.units_total, units_open=self.units_open,
+                 budget=self.budget, submitted=self.submitted, t_start=self.t_start, t_end=self.t_end,
+                 gave_up=self.gave_up, dests=sorted({o['dest'] for j in self.jobs for o in j.outputs}))
+        tmp = self.statep + '.tmp'
+        with open(tmp, 'w') as fh:
+            json.dump(d, fh)
+        os.replace(tmp, self.statep)
+
+    def finish(self, state, note=''):
+        self.state, self.note, self.t_end = state, note, time.time()
+        took = (self.t_end - (self.t_start or self.submitted)) / 60
+        self.log(f'REQUEST {state.upper()}: {self.landed}/{self.total} frames landed in {took:.1f} min'
+                 + (f' ({note})' if note else ''))
+        for r in self.results:
+            self.log(f'    {r["job"]:<22} {r["node"]} {r["kind"]} {r["frames"]:>4} frames  setup {r["setup"]}s  '
+                     f'render {r["render"]}s  {r["s_per_frame"]} s/frame  {r["state"]}'
+                     + (f'  MISSING {r["missing"]}' if r.get('missing') else ''))
+        for j in self.jobs:
+            for o in j.outputs:
+                if set(o['frames']) & j.want:
+                    self.log(f'[{j.name}] frames in {o["dest"]}')
+        self.save()
+        if not self.direct:
+            try:
+                os.makedirs(DONEDIR, exist_ok=True)
+                os.replace(os.path.join(INBOX, self.id + '.json'), os.path.join(DONEDIR, self.id + '.json'))
+            except OSError:
+                pass
+            with open(os.path.join(CACHE, 'runs.jsonl'), 'a') as fh:
+                fh.write(json.dumps(dict(req=self.id, state=state, landed=self.landed, total=self.total,
+                                         results=self.results, t=time.time())) + '\n')
+            self.logf.close()
+
+
+# ------------------------------------------------------------------ the scheduler (the daemon, or one --direct run)
+
+def ukind(u):
+    return 'gpu' if u['_job'].gpu else 'cpu'
+
+
+class Scheduler:
+    def __init__(self):
+        self.reqs = {}
         self.queue = []
         self.nodes = {}
         self.landed = {}           # unit id -> set((key, frame))
-        self.results = []          # finished unit summaries
-        self.pool = ThreadPoolExecutor(max_workers=6)
-        self.t0 = time.time()
-        self.total = sum(len(set(o['frames']) & j.want) for j in jobs for o in j.outputs)
-        self.n_landed = 0
-        self.boot_failures = 0
+        self.lock = threading.RLock()
+        self.pool = ThreadPoolExecutor(max_workers=8)
+        self.seq = 0
+        self.boot_failures = 0     # consecutive
+        self.last_grow = 0
         self.waiting_noted = False
-        self.lock = threading.Lock()
+        self.last_spend = (0, None)
+        self.backoff = {}           # kind -> (retry_at, delay) after a capacity failure
+        self.cpu_blocked_until = 0
+        self.bad_names = {}          # node name -> skip until (a node that failed its bootstrap)
+        self.last_report = 0
+        self.unit_secs = []          # recent unit wall times, for ETAs
 
-    def plan(self):
-        n = self.args.nodes or 1
-        weights = {j.name: len(j.want) for j in self.jobs}
-        tot = sum(weights.values()) or 1
-        for j in self.jobs:
-            kind = 'gpu' if j.gpu else 'cpu'
-            u = 1 if self.args.test is not None and not self.args.nodes else max(1, round(n * weights[j.name] / tot))
-            self.queue += j.units(u, KINDS[kind]['cpu'])
-        self.queue.sort(key=lambda u: -sum(len(o['frames']) for o in u['outputs']))
+    # -- intake
+    def add(self, req):
+        try:
+            for p in req.args.jobs:
+                j = Job(p, req.args, say=req.log)
+                j.tag = req.short
+                req.jobs.append(j)
+        except Exception as e:                      # noqa: BLE001
+            self.reqs[req.id] = req
+            return req.finish('failed', f'bad job file: {e}')
+        self.reqs[req.id] = req
+        jobs = [j for j in req.jobs if j.want]
+        for j in req.jobs:
+            if not j.want:
+                req.log(f'[{j.name}] nothing to render (every wanted frame is already here?)')
+        units = plan_units(jobs, req.args)
+        req.total = sum(len(set(o['frames']) & j.want) for j in jobs for o in j.outputs)
+        req.units_total = req.units_open = len(units)
+        req.budget = req.args.nodes or (1 if req.args.test is not None else max(1, len(units)))
+        if not units:
+            return req.finish('done', 'nothing to render')
+        if req.args.dry_run:
+            req.log(f'plan: {len(units)} unit(s), {req.total} frames, up to {req.budget} node(s) (dry run: nothing starts)')
+            return print_plan(units, req.log, verbose=True)
+        spend = self.spend()
+        if spend is not None and spend >= SPEND_STOP and not os.environ.get('LDFARM_SPEND_OK'):
+            return req.finish('failed', f'farm spend ${spend:.2f} >= ${SPEND_STOP:.0f}: ask the director')
+        with self.lock:
+            for u in units:
+                u['_req'], u['_prio'], u['_seq'] = req, req.prio, self.seq
+                self.seq += 1
+            self.queue += units
+        waiting = sum(1 for u in self.queue if u['_req'] is not req)
+        req.log(f'queued: {len(units)} unit(s), {req.total} frames, '
+                f'{"TEST (goes first)" if req.prio == 0 else "final"}, up to {req.budget} node(s); '
+                f'{waiting} other unit(s) in the queue')
+        print_plan(units, req.log, verbose=bool(req.args.dry_run))
+        req.save()
 
-    def print_plan(self, verbose=False):
-        for u in self.queue:
-            j = u['_job']
-            fr = sorted({f for o in u['outputs'] for f in o['frames']})
-            log(f'unit {u["id"]} [{"gpu" if j.gpu else "cpu"}] {len(fr)} frames ({compact(fr)[:80]}), '
-                f'{len(u["items"])} processes, {u["concurrency"]} at once')
-            if verbose or len(self.queue) <= 4:
-                for it in u['items'][:12]:
-                    log(f'    {it["cmd"][:220]}')
-                if len(u['items']) > 12:
-                    log(f'    ... {len(u["items"]) - 12} more')
-        for j in self.jobs:
-            for c in j.skipped_setup:
-                log(f'[{j.name}] setup step skipped (the farm image provides it): {c[:120]}')
-            for o in j.outputs:
-                log(f'[{j.name}] output {o["out_dir"]} -> {o["dest"]}')
+    def spend(self):
+        t, v = self.last_spend
+        if time.time() - t > 60:
+            v = mission_cost()
+            self.last_spend = (time.time(), v)
+            if v is not None and v >= SPEND_WARN:
+                log(f'WARNING: farm spend ${v:.2f} (warn ${SPEND_WARN:.0f}, stop ${SPEND_STOP:.0f})')
+        return v
+
+    def cancel(self, req, why='cancelled by its caller'):
+        with self.lock:
+            if req.cancelled or req.state in TERMINAL:
+                return
+            req.cancelled = True
+            mine = [u for u in self.queue if u['_req'] is req]
+            for u in mine:
+                self.queue.remove(u)
+            req.units_open -= len(mine)
+            running = [nd for nd in self.nodes.values() if nd.unit and nd.unit['_req'] is req]
+        req.log(f'cancelling ({why}): {len(mine)} queued unit(s) dropped, {len(running)} running unit(s) stopping')
+        for nd in running:
+            try:
+                nd.agent('POST', '/cancel', dict(unit=nd.unit['id']), timeout=20)
+            except Exception:                       # noqa: BLE001
+                pass
+        self.maybe_finish(req)
+
+    def maybe_finish(self, req):
+        if req.state in TERMINAL or req.units_open > 0:
+            return
+        if req.cancelled:
+            req.finish('cancelled')
+        elif req.gave_up:
+            req.finish('incomplete', f'{sum(len(frames_of(g)) for g in req.gave_up)} frame(s) never landed')
+        else:
+            req.finish('done')
+
+    # -- nodes
+    def spilling(self):
+        """cpu-8 had no room lately: h100-1 nodes take CPU units too (6.6x the price per node, so only then)."""
+        return MAX_SPILL > 0 and time.time() < self.cpu_blocked_until
+
+    def dispatchable(self, node_kind):
+        """Units a node of this kind may start now, best first: its own kind before spilled CPU work, --test before
+        finals, then FIFO. A request never runs on more than its --nodes budget at once."""
+        kinds = ['gpu', 'cpu'] if node_kind == 'gpu' and self.spilling() else [node_kind]
+        running = {}
+        for nd in self.nodes.values():
+            if nd.unit:
+                running[nd.unit['_req'].id] = running.get(nd.unit['_req'].id, 0) + 1
+        out, taken = [], {}
+        for u in sorted(self.queue, key=lambda u: (ukind(u) != node_kind, u['_prio'], u['_seq'])):
+            r = u['_req']
+            if ukind(u) not in kinds or r.cancelled:
+                continue
+            if running.get(r.id, 0) + taken.get(r.id, 0) >= r.budget:
+                continue
+            taken[r.id] = taken.get(r.id, 0) + 1
+            out.append(u)
+        return out
 
     def acquire(self):
-        want_n = {}
-        for kind in KINDS:
-            queued = sum(1 for u in self.queue if ('gpu' if u['_job'].gpu else 'cpu') == kind)
-            live = [nd for nd in self.nodes.values() if nd.kind == kind and nd.state != 'stopped']
-            idle = [nd for nd in live if nd.unit is None]
-            budget = self.args.nodes or (1 if self.args.test is not None else queued + len(live))
-            want_n[kind] = max(0, min(queued - len(idle), budget - len(live)))
-        if not any(want_n.values()):
-            return 0
-        existing = {x['name']: x for x in list_nodes()}
+        now = time.time()
+        with self.lock:
+            live = [nd for nd in self.nodes.values() if nd.state in ('booting', 'ready')]
+            if any(nd.kind == 'cpu' and nd.queued and now - (nd.t_queued or now) > 60 for nd in live):
+                self.cpu_blocked_until = max(self.cpu_blocked_until, now + 300)   # cpu-8 queue isn't moving
+
+            def idle(kind):
+                return [nd for nd in live if nd.kind == kind and nd.unit is None and not nd.queued]
+            cpu_units = self.dispatchable('cpu')
+            gpu_own = [u for u in self.dispatchable('gpu') if ukind(u) == 'gpu']
+            need = {'cpu': max(0, len(cpu_units) - len(idle('cpu'))), 'gpu': max(0, len(gpu_own) - len(idle('gpu')))}
+            if need['cpu'] and self.spilling():
+                gpu_live = sum(1 for nd in live if nd.kind == 'gpu')
+                spare = max(0, len(idle('gpu')) - len(gpu_own))
+                spill = max(0, min(need['cpu'] - spare, MAX_GPU + MAX_SPILL - gpu_live - need['gpu']))
+                need['gpu'] += spill
+                need['cpu'] = min(need['cpu'], 1)          # keep probing cpu-8 with one create at a time
+            has_test = any(u['_prio'] == 0 for u in self.queue)
         added = 0
-        for kind, n in want_n.items():
-            if not n:
+        booting = sum(1 for nd in self.nodes.values() if nd.state == 'booting')
+        for kind, n in need.items():
+            if n <= 0 or now < self.backoff.get(kind, (0, 0))[0]:
+                continue                                   # nothing to do, or that shape is backing off
+            n = min(n, MAX_BOOTING - booting)              # the platform holds at most 4 queued creates per account
+            if n <= 0:
                 continue
             kd = KINDS[kind]
-            held = live_leases()                           # every farm.py run's nodes, this one's included
-            mine = sorted((x for x in existing.values() if x['name'].startswith(kd['prefix'])),
-                          key=lambda x: (0 if str(x.get('state', '')).startswith('running') else 1, x['name']))
-            got = []
-            for x in mine:
-                st = str(x.get('state', ''))
-                if len(got) >= n or 'unrestorable' in st or 'lost' in st or st.startswith('failed'):
-                    continue
-                if len(held) + len(got) >= MAX_STREAM:
-                    break
-                if lease(x['name'], self.run_id):
-                    got.append(x['name'])
-            i = 1
-            while len(got) < n and sum(1 for k in held if k.startswith(kd['prefix'])) + len(got) < kd['cap'] \
-                    and len(held) + len(got) < MAX_STREAM and i < 100:
-                name = f'{kd["prefix"]}{i:02d}'
-                i += 1
-                if name in existing or name in held:
-                    continue
-                if lease(name, self.run_id):
-                    got.append(name)
-            if len(got) < n and not self.waiting_noted:
-                others = len([h for h in held.values() if h.get('pid') != os.getpid()])
-                log(f'{kind}: {len(got)} of {n} nodes free now (caps {kd["cap"]} {kind}, {MAX_STREAM} streaming; '
-                    f'{others} held by other farm runs); the rest of this run waits its turn')
-            for name in got:
-                nd = Node(name, kind)
-                self.nodes[name] = nd
-                self.pool.submit(self._boot, nd)
-                added += 1
-        self.waiting_noted = added == 0
+            cap_kind = kd['cap'] + (MAX_SPILL if kind == 'gpu' and self.spilling() else 0)
+            cap_total = MAX_STREAM if has_test else MAX_STREAM - TEST_RESERVE
+            held = live_leases()
+            room = min(cap_total - len(held), cap_kind - sum(1 for k in held if k.startswith(kd['prefix'])))
+            if room <= 0:
+                if not self.waiting_noted:
+                    log(f'every farm slot is busy ({len(held)} nodes held); queued units wait their turn')
+                    self.waiting_noted = True
+                continue
+            names = self.lease_names(kind, min(n, room))
+            booting += len(names)
+            with self.lock:
+                disp = self.dispatchable(kind)
+                for i, name in enumerate(names):
+                    nd = Node(name, kind, self)
+                    nd.req = disp[min(i, len(disp) - 1)]['_req'] if disp else None
+                    self.nodes[name] = nd
+                    self.pool.submit(self._boot, nd)
+            added += len(names)
+        if added:
+            self.waiting_noted = False
         return added
+
+    def lease_names(self, kind, n):
+        kd = KINDS[kind]
+        existing = {x['name']: x for x in list_nodes()}
+        held = live_leases()
+        got = []
+        for x in sorted((x for x in existing.values() if x['name'].startswith(kd['prefix'])),
+                        key=lambda x: (0 if str(x.get('state', '')).startswith('running') else 1, x['name'])):
+            st = str(x.get('state', ''))
+            if len(got) >= n:
+                break
+            if x['name'] in held or x['name'] in self.nodes and self.nodes[x['name']].state != 'stopped':
+                continue
+            if 'unrestorable' in st or 'lost' in st or self.bad_names.get(x['name'], 0) > time.time():
+                continue
+            if lease(x['name'], 'farmd'):
+                got.append(x['name'])
+        i = 1
+        while len(got) < n and i < 100:
+            name = f'{kd["prefix"]}{i:02d}'
+            i += 1
+            if name in existing or name in held or self.bad_names.get(name, 0) > time.time():
+                continue
+            if lease(name, 'farmd'):
+                got.append(name)
+        return got
 
     def _boot(self, nd):
         try:
-            nd.boot(self)
-        except Exception as e:                      # noqa: BLE001
+            nd.boot()
+            self.boot_failures = 0
+            self.backoff.pop(nd.kind, None)
+        except CapacityError as e:
+            until, delay = self.backoff.get(nd.kind, (0, 30))
+            delay = min(300, delay * 2)
+            self.backoff[nd.kind] = (time.time() + delay, delay)
+            if nd.kind == 'cpu':
+                self.cpu_blocked_until = time.time() + 900
+            nd.say(f'{nd.name}: no {KINDS[nd.kind]["chip"]} capacity ({e}); that shape retries in {delay}s'
+                   + ('; CPU units spill onto h100-1 meanwhile' if nd.kind == 'cpu' and MAX_SPILL else ''))
+            nd.stop('no capacity', api_stop='create failed' not in str(e))
+        except ApiError as e:                       # any refusal (queued-creates max, capacity, rate limit): wait, retry
+            until, delay = self.backoff.get(nd.kind, (0, 15))
+            delay = min(180, delay * 2)
+            self.backoff[nd.kind] = (time.time() + delay, delay)
+            if 'queued' in e.message or 'capacity' in e.message or 'carve' in e.message:
+                if nd.kind == 'cpu':
+                    self.cpu_blocked_until = time.time() + 900
+            nd.say(f'{nd.name}: platform said "{e.message[:110]}"; waiting {delay}s, then retrying (the unit stays queued)')
+            nd.stop('platform refusal', api_stop=nd.exists and e.status != 422)
+        except Exception as e:                      # noqa: BLE001 - this NODE is broken: skip it for a while
             nd.error = str(e)[:400]
             if not STOP.is_set():
                 self.boot_failures += 1
-                log(f'{nd.name}: FAILED to boot: {nd.error}')
+                self.bad_names[nd.name] = time.time() + 900
+                nd.say(f'{nd.name}: failed to boot ({nd.error[:240]}); trying another node (the unit stays queued)')
+                if self.boot_failures in (4, 10):
+                    log(f'ALERT: {self.boot_failures} node boots in a row failed; last: {nd.error[:200]}')
             nd.stop('boot failed')
 
     # -- frames
     def fetch(self, nd, unit, entries):
         import cv2
         import numpy as np
-        j = unit['_job']
+        j, req = unit['_job'], unit['_req']
         byname = {f'{e["key"]}/{e["name"]}': e for e in entries}
         names = list(byname)
         got = []
@@ -714,11 +987,11 @@ class Farm:
                         continue
                     b = tf.extractfile(m).read()
                     if hashlib.sha256(b).hexdigest() != e['sha']:
-                        log(f'[{j.name}] {m.name} from {nd.name}: sha256 mismatch, will ask again')
+                        req.log(f'[{j.name}] {m.name} from {nd.name}: sha256 mismatch, will ask again')
                         continue
                     im = cv2.imdecode(np.frombuffer(b, np.uint8), cv2.IMREAD_COLOR)
                     if im is None or im.shape[:2] != j.shape:
-                        log(f'[{j.name}] {m.name} from {nd.name}: bad decode {None if im is None else im.shape}')
+                        req.log(f'[{j.name}] {m.name} from {nd.name}: bad decode {None if im is None else im.shape}')
                         continue
                     o = next(o for o in j.outputs if o['key'] == e['key'])
                     os.makedirs(o['dest'], exist_ok=True)
@@ -732,15 +1005,16 @@ class Farm:
                     got.append(m.name)
                     with self.lock:
                         self.landed.setdefault(unit['id'], set()).add((e['key'], e['frame']))
-                        self.n_landed += 1
+                        req.landed += 1
         if got:
             nd.agent('POST', '/ack', dict(unit=unit['id'], files=got), timeout=30)
             fr = sorted(int(n.split('f_')[1][:5]) for n in got)
-            log(f'[{j.name}] +{len(got)} ({compact(fr)[:60]}) from {nd.name} | {self.n_landed}/{self.total} landed')
+            req.log(f'[{j.name}] +{len(got)} ({compact(fr)[:60]}) from {nd.name} | {req.landed}/{req.total} landed')
+            req.save()
         return got
 
     def tick(self, nd):
-        """Poll one ready node: land new frames, notice a finished unit, hand out the next one."""
+        """Poll one ready node: land new frames, notice a finished unit, hand out the next unit or stop the node."""
         try:
             st = nd.agent('GET', f'/status?since={nd.seq}', timeout=30)
             nd.bad_polls = 0
@@ -749,165 +1023,420 @@ class Farm:
             nd.bad_polls += 1
             if nd.bad_polls in (3, 10, 30):
                 log(f'{nd.name}: endpoint not answering ({str(e)[:120]}); {nd.bad_polls} polls')
-            if time.time() - (nd.last_ok or nd.t_ready or time.time()) > 240:   # give its work to another node
+            if time.time() - (nd.last_ok or time.time()) > 240:
                 self.node_lost(nd, 'endpoint silent for 4 min')
             return
         new = st.get('ready', [])
-        if new:
+        if new and nd.unit:
+            mine = [e for e in new if e['unit'] == nd.unit['id']]
+            if mine:
+                try:
+                    self.fetch(nd, nd.unit, mine)
+                except Exception as e:              # noqa: BLE001
+                    log(f'{nd.name}: download failed ({str(e)[:160]}); retrying')
+                    return                           # nd.seq unchanged: the same frames are offered again
             nd.seq = max(nd.seq, max(e['seq'] for e in new))
-            byunit = {}
-            for e in new:
-                byunit.setdefault(e['unit'], []).append(e)
-            for uid, entries in byunit.items():
-                if nd.unit and nd.unit['id'] == uid:
-                    try:
-                        self.fetch(nd, nd.unit, entries)
-                    except Exception as e:          # noqa: BLE001
-                        log(f'{nd.name}: download failed ({str(e)[:160]}); retrying')
-                        nd.seq = min(x['seq'] for x in entries) - 1
-                        return
+        elif new:
+            nd.seq = max(nd.seq, max(e['seq'] for e in new))
         if nd.unit:
             us = next((u for u in st.get('units', []) if u['id'] == nd.unit['id']), None)
             if us and us['state'] in ('done', 'failed', 'cancelled') and not st.get('more'):
                 self.finish_unit(nd, us)
         if nd.unit is None:
-            if self.queue_for(nd):
-                u = self.queue_for(nd)[0]
-                spec = {k: v for k, v in u.items() if not k.startswith('_')}
-                nd.agent('POST', '/unit', spec, timeout=30)     # raises -> the unit stays queued
+            self.dispatch(nd)
+
+    def dispatch(self, nd):
+        with self.lock:
+            disp = self.dispatchable(nd.kind)
+            finals_running = sum(1 for x in self.nodes.values() if x.unit and x.unit['_prio'] == 1)
+            if finals_running >= MAX_STREAM - TEST_RESERVE:
+                disp = [u for u in disp if u['_prio'] == 0]
+            if not disp:
+                u = None
+            else:
+                best = disp[0]['_prio']
+                tier = [u for u in disp if u['_prio'] == best]
+                u = next((u for u in tier if u['_job'].name == nd.last_job), tier[0])   # warm setup first
                 self.queue.remove(u)
                 nd.unit = u
-                u['_t0'] = time.time()
-                fr = sum(len(o['frames']) for o in u['outputs'])
-                log(f'{nd.name}: unit {u["id"]} ({fr} frames, {len(u["items"])} processes, {u["concurrency"]} at once)')
-            else:
-                nd.stop('no more work')
-
-    def queue_for(self, nd):
-        return [u for u in self.queue if (u['_job'].gpu) == (nd.kind == 'gpu')]
+        if u is None:
+            nd.stop('no queued work')
+            return
+        spec = {k: v for k, v in u.items() if not k.startswith('_')}
+        try:
+            nd.agent('POST', '/unit', spec, timeout=30)
+        except Exception as e:                      # noqa: BLE001
+            with self.lock:
+                nd.unit = None
+                self.queue.append(u)
+            log(f'{nd.name}: could not hand over {u["id"]} ({str(e)[:120]}); requeued')
+            return
+        req = u['_req']
+        u['_t0'] = time.time()
+        nd.last_job = u['_job'].name
+        if req.t_start is None:
+            req.t_start = time.time()
+            req.state = 'running'
+            req.save()
+        fr = sum(len(o['frames']) for o in u['outputs'])
+        req.log(f'{nd.name}: unit {u["id"]} ({fr} frames, {len(u["items"])} processes, {u["concurrency"]} at once)')
 
     def finish_unit(self, nd, us):
         u = nd.unit
-        j = u['_job']
+        j, req = u['_job'], u['_req']
         want = {(o['key'], f) for o in u['outputs'] for f in o['frames']}
         got = self.landed.get(u['id'], set())
         missing = sorted(want - got)
         t = us.get('t', {})
         n = len(got)
         render_s = (t.get('end', 0) - t.get('setup_done', t.get('start', 0))) if t.get('end') else None
-        self.results.append(dict(job=j.name, unit=u['id'], node=nd.name, kind=nd.kind, frames=n, state=us['state'],
-                                 wall=round(time.time() - u['_t0']), setup=round(t.get('setup_done', 0) - t.get('start', 0)) if t.get('setup_done') else None,
-                                 render=round(render_s) if render_s else None, commit=us.get('commit'),
-                                 s_per_frame=round(render_s / n, 2) if render_s and n else None))
+        res = dict(job=j.name, unit=u['id'], node=nd.name, kind=nd.kind, frames=n, state=us['state'],
+                   wall=round(time.time() - u.get('_t0', time.time())), commit=us.get('commit'),
+                   setup=round(t['setup_done'] - t['start']) if t.get('setup_done') and t.get('start') else None,
+                   render=round(render_s) if render_s else None,
+                   s_per_frame=round(render_s / n, 2) if render_s and n else None)
+        req.results.append(res)
+        self.unit_secs.append(res['wall'])
         msg = f'{nd.name}: unit {u["id"]} {us["state"]} at {us.get("commit")}: {n}/{len(want)} frames'
         if render_s and n:
-            msg += f', {render_s / n:.2f} s/frame on the node (setup {self.results[-1]["setup"]}s)'
-        log(msg)
+            msg += f', {render_s / n:.2f} s/frame on the node (setup {res["setup"]}s)'
+        req.log(msg)
         if us.get('error'):
-            log(f'    error: {us["error"]}')
+            req.log(f'    error: {us["error"]}')
         for i, lines in (us.get('fail_tails') or {}).items():
-            log(f'    process {i} tail:')
+            req.log(f'    process {i} tail:')
             for ln in lines[-12:]:
-                log(f'      | {ln[:200]}')
+                req.log(f'      | {ln[:200]}')
         for ln in (us.get('setup_tail') or [])[-15:]:
-            log(f'      setup| {ln[:200]}')
-        if missing:
-            frames = sorted({f for _, f in missing})
-            if u['_retry'] < 1 and us['state'] != 'cancelled' and not STOP.is_set():
-                log(f'[{j.name}] {len(frames)} frame(s) missing ({compact(frames)[:80]}): one retry queued')
-                self.queue += j.units(1, KINDS['gpu' if j.gpu else 'cpu']['cpu'], retry_of=u['_retry'] + 1, frames=frames)
-            else:
-                log(f'[{j.name}] GAVE UP on {len(frames)} frame(s): {compact(frames)}')
-                self.results[-1]['missing'] = compact(frames)
-        nd.unit = None
+            req.log(f'      setup| {ln[:200]}')
+        with self.lock:
+            nd.unit = None
+            req.units_open -= 1
+            if missing and not req.cancelled:
+                frames = sorted({f for _, f in missing})
+                if u['_retry'] < 1 and us['state'] != 'cancelled' and not STOP.is_set():
+                    req.log(f'[{j.name}] {len(frames)} frame(s) missing ({compact(frames)[:80]}): one retry queued')
+                    for r in j.units(1, KINDS[ukind(u)]['cpu'], retry_of=u['_retry'] + 1, frames=frames):
+                        r['_req'], r['_prio'], r['_seq'] = req, req.prio, self.seq
+                        self.seq += 1
+                        self.queue.append(r)
+                        req.units_open += 1
+                else:
+                    req.log(f'[{j.name}] GAVE UP on {len(frames)} frame(s): {compact(frames)}')
+                    res['missing'] = compact(frames)
+                    req.gave_up.append(compact(frames))
+        req.save()
+        self.maybe_finish(req)
 
     def node_lost(self, nd, why):
         log(f'{nd.name}: LOST ({why})')
-        if nd.unit:
-            u = nd.unit
-            j = u['_job']
+        with self.lock:
+            u, nd.unit = nd.unit, None
+        if u:
+            req, j = u['_req'], u['_job']
             want = {(o['key'], f) for o in u['outputs'] for f in o['frames']}
             missing = sorted({f for _, f in want - self.landed.get(u['id'], set())})
-            if missing:
-                self.queue += j.units(1, KINDS[nd.kind]['cpu'], retry_of=u['_retry'] + 1, frames=missing)
-            nd.unit = None
+            with self.lock:
+                req.units_open -= 1
+                if missing and not req.cancelled:
+                    for r in j.units(1, KINDS[nd.kind]['cpu'], retry_of=u['_retry'] + 1, frames=missing):
+                        r['_req'], r['_prio'], r['_seq'] = req, req.prio, self.seq
+                        self.seq += 1
+                        self.queue.append(r)
+                        req.units_open += 1
+            req.log(f'{nd.name} was lost ({why}); {len(missing)} frame(s) requeued')
+            self.maybe_finish(req)
         nd.stop(why)
 
-    def run(self):
-        spend = mission_cost()
-        if spend is not None:
-            if spend >= SPEND_STOP and not os.environ.get('LDFARM_SPEND_OK'):
-                raise SystemExit(f'farm: mission spend ${spend:.2f} >= ${SPEND_STOP:.0f}: stopping here (tell the director; '
-                                 f'LDFARM_SPEND_OK=1 overrides)')
-            if spend >= SPEND_WARN:
-                log(f'WARNING: farm mission spend is ${spend:.2f} (warn ${SPEND_WARN:.0f}, stop ${SPEND_STOP:.0f})')
-        self.acquire()
-        last_note = last_grow = time.time()
-        while not STOP.is_set():
-            live = [nd for nd in self.nodes.values() if nd.state not in ('stopped', 'failed')]
-            ready = [nd for nd in live if nd.state == 'ready']
-            futures = [self.pool.submit(self.tick, nd) for nd in ready]
-            for f in futures:
-                try:
-                    f.result()
-                except Exception as e:              # noqa: BLE001
-                    log(f'poll error: {str(e)[:200]}')
-            busy = [nd for nd in self.nodes.values() if nd.unit is not None]
-            booting = [nd for nd in live if nd.state == 'booting']
-            if not self.queue and not busy and not booting:
-                break
-            if self.queue and (not live or time.time() - last_grow > 30):
-                if self.boot_failures >= 3:
-                    log('nodes keep failing to boot; giving up. Units left: ' + ', '.join(u['id'] for u in self.queue))
-                    break
-                last_grow = time.time()
-                if not self.acquire() and not live:
-                    time.sleep(12)                  # every farm node is busy: wait for one to free up
-            if time.time() - last_note > 120:
-                last_note = time.time()
-                log(f'-- {self.n_landed}/{self.total} landed, {len(busy)} node(s) rendering, {len(booting)} booting, '
-                    f'{len(self.queue)} unit(s) queued, {(time.time() - self.t0) / 60:.1f} min')
-            time.sleep(3)
-        self.shutdown()
+    # -- the loop
+    def step(self):
+        live = [nd for nd in self.nodes.values() if nd.state in ('booting', 'ready')]
+        if self.queue and (time.time() - self.last_grow > 10 or not live):
+            self.last_grow = time.time()
+            self.acquire()                          # units are never dropped: they wait until a node takes them
+            self.report_waiting()
+        ready = [nd for nd in self.nodes.values() if nd.state == 'ready']
+        for f in [self.pool.submit(self.tick, nd) for nd in ready]:
+            try:
+                f.result()
+            except Exception as e:                  # noqa: BLE001
+                log(f'poll error: {str(e)[:200]}')
+        for name in [n for n, nd in self.nodes.items() if nd.state == 'stopped']:
+            del self.nodes[name]
+
+    def report_waiting(self):
+        if time.time() - self.last_report < 60:
+            return
+        self.last_report = time.time()
+        with self.lock:
+            order = sorted(self.queue, key=lambda u: (u['_prio'], u['_seq']))
+            busy = sum(1 for nd in self.nodes.values() if nd.unit)
+            live = sum(1 for nd in self.nodes.values() if nd.state in ('booting', 'ready'))
+        avg = sum(self.unit_secs[-20:]) / len(self.unit_secs[-20:]) if self.unit_secs else 240
+        seen = set()
+        for pos, u in enumerate(order, 1):
+            r = u['_req']
+            if r.id in seen:
+                continue
+            seen.add(r.id)
+            eta = (pos / max(1, live)) * avg / 60
+            r.log(f'waiting: queue position {pos} of {len(order)} ({"test" if r.prio == 0 else "final"}), '
+                  f'{busy} node(s) rendering, {live} up or booting; ETA to start ~{eta:.0f} min')
+
+    def active(self):
+        return any(r.state not in TERMINAL for r in self.reqs.values())
 
     def shutdown(self):
         for nd in list(self.nodes.values()):
-            if nd.state not in ('stopped',):
-                nd.stop('run over' if not STOP.is_set() else 'interrupted')
-        spend = mission_cost()
-        log(f'RUN {self.run_id} {"INTERRUPTED" if STOP.is_set() else "DONE"}: {self.n_landed}/{self.total} frames landed '
-            f'in {(time.time() - self.t0) / 60:.1f} min' + (f'; farm mission spend ${spend:.2f}' if spend is not None else ''))
-        for r in self.results:
-            log(f'    {r["job"]:<22} {r["node"]} {r["kind"]} {r["frames"]:>4} frames  setup {r["setup"]}s  render {r["render"]}s '
-                f' {r["s_per_frame"]} s/frame  wall {r["wall"]}s  {r["state"]}' + (f'  MISSING {r["missing"]}' if r.get('missing') else ''))
-        os.makedirs(CACHE, exist_ok=True)
-        with open(os.path.join(CACHE, 'runs.jsonl'), 'a') as fh:
-            fh.write(json.dumps(dict(run=self.run_id, jobs=[j.name for j in self.jobs], landed=self.n_landed,
-                                     total=self.total, results=self.results, t=time.time())) + '\n')
-        for j in self.jobs:
-            for o in j.outputs:
-                log(f'[{j.name}] frames in {o["dest"]}')
+            nd.stop('farm shutting down')
 
 
-# ------------------------------------------------------------------ commands
+def plan_units(jobs, args):
+    n = args.nodes or 1
+    weights = {j.name: len(j.want) for j in jobs}
+    tot = sum(weights.values()) or 1
+    units = []
+    for j in jobs:
+        kind = 'gpu' if j.gpu else 'cpu'
+        u = 1 if args.test is not None and not args.nodes else max(1, round(n * weights[j.name] / tot))
+        units += j.units(u, KINDS[kind]['cpu'])
+    units.sort(key=lambda u: -sum(len(o['frames']) for o in u['outputs']))
+    return units
+
+
+def print_plan(units, say, verbose=False):
+    for u in units:
+        j = u['_job']
+        fr = sorted({f for o in u['outputs'] for f in o['frames']})
+        say(f'unit {u["id"]} [{"gpu" if j.gpu else "cpu"}] {len(fr)} frames ({compact(fr)[:80]}), '
+            f'{len(u["items"])} processes, {u["concurrency"]} at once')
+        if verbose or len(units) <= 4:
+            for it in u['items'][:12]:
+                say(f'    {it["cmd"][:220]}')
+            if len(u['items']) > 12:
+                say(f'    ... {len(u["items"]) - 12} more')
+    for j in {u['_job'] for u in units}:
+        for c in j.skipped_setup:
+            say(f'[{j.name}] setup step skipped (the farm image provides it): {c[:120]}')
+        for o in j.outputs:
+            if set(o['frames']) & j.want:
+                say(f'[{j.name}] output {o["out_dir"]} -> {o["dest"]}')
+
+
+# ------------------------------------------------------------------ daemon and client
+
+def daemon_alive():
+    os.makedirs(CACHE, exist_ok=True)
+    fh = open(DLOCK, 'a+')
+    try:
+        fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        fh.close()
+        return True
+    fcntl.flock(fh, fcntl.LOCK_UN)
+    fh.close()
+    return False
+
+
+def ensure_daemon():
+    if daemon_alive():
+        return
+    # double fork: the daemon's parent is launchd, never a farm.py client (so it can't linger as a zombie)
+    subprocess.Popen(['/bin/sh', '-c', 'nohup "$0" "$1" daemon >> "$2" 2>&1 < /dev/null &',
+                      VENV_PY, os.path.abspath(__file__), DLOG], cwd=os.path.dirname(ROOT)).wait()
+    for _ in range(40):
+        time.sleep(0.25)
+        if daemon_alive():
+            return
+
+
+def cmd_daemon():
+    os.makedirs(INBOX, exist_ok=True)
+    os.makedirs(REQDIR, exist_ok=True)
+    lockf = open(DLOCK, 'a+')
+    try:
+        fcntl.flock(lockf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        return                                      # another daemon has the pool
+    with open(DPID, 'w') as fh:
+        fh.write(str(os.getpid()))
+    upgrade = threading.Event()
+    signal.signal(signal.SIGTERM, lambda *a: STOP.set())
+    signal.signal(signal.SIGINT, lambda *a: STOP.set())
+    signal.signal(signal.SIGUSR1, lambda *a: (upgrade.set(), STOP.set()))
+    log(f'farm daemon {os.getpid()} up (streaming nodes {MAX_STREAM}, test reserve {TEST_RESERVE})')
+    sched = Scheduler()
+    idle_since = time.time()
+    try:
+        while not STOP.is_set():
+            for fn in sorted(os.listdir(INBOX)):
+                rid = fn[:-5]
+                if not fn.endswith('.json') or rid in sched.reqs:
+                    continue
+                try:
+                    r = json.load(open(os.path.join(INBOX, fn)))
+                    req = Request(rid, r['argv'], r['submitted'])
+                except Exception as e:              # noqa: BLE001
+                    log(f'bad request {fn}: {e}')
+                    os.replace(os.path.join(INBOX, fn), os.path.join(INBOX, fn + '.bad'))
+                    continue
+                sched.add(req)
+            for req in list(sched.reqs.values()):
+                if req.state not in TERMINAL and os.path.exists(req.cancelp):
+                    sched.cancel(req)
+            sched.step()
+            if sched.active() or sched.nodes:
+                idle_since = time.time()
+            elif time.time() - idle_since > DAEMON_IDLE_EXIT:
+                log('no requests for a while: daemon exits (the next farm.py call starts a new one)')
+                break
+            for rid in [rid for rid, r in sched.reqs.items() if r.state in TERMINAL and time.time() - r.t_end > 600]:
+                del sched.reqs[rid]
+            time.sleep(2)
+    finally:
+        if upgrade.is_set():
+            log('farm daemon exits for an upgrade: nodes and requests stay for the next daemon')
+            os._exit(0)
+        sched.shutdown()
+        log('farm daemon down')
+
+
+def new_request_id(args):
+    base = re.sub(r'[^A-Za-z0-9]', '', os.path.basename(args.jobs[0]).replace('.json', ''))[:24]
+    return f'{time.strftime("%m%d-%H%M%S")}-{base}-{os.getpid() % 100000:05d}'
+
+
+def cmd_submit(argv):
+    args = parse_run_args(argv)
+    if args.dry_run or args.direct:
+        return cmd_direct(argv, args)
+    fixed = []
+    for i, a in enumerate(argv):                    # absolute paths: the daemon runs elsewhere
+        prev = argv[i - 1] if i else ''
+        if a.endswith('.json') and not a.startswith('-'):
+            p = a if os.path.exists(a) else os.path.join(ROOT, 'cloud', 'jobs', a)
+            if not os.path.exists(p):
+                sys.exit(f'farm: no such job file: {a}')
+            json.load(open(p))                      # a broken job file fails here, not in the daemon
+            a = os.path.abspath(p)
+        elif prev == '--local-out':
+            a = os.path.abspath(os.path.expanduser(a))
+        fixed.append(a)
+    rid = new_request_id(args)
+    os.makedirs(INBOX, exist_ok=True)
+    os.makedirs(REQDIR, exist_ok=True)
+    logp, statep, cancelp = _paths(rid)
+    tmp = os.path.join(INBOX, rid + '.tmp')
+    with open(tmp, 'w') as fh:
+        json.dump(dict(argv=fixed, submitted=time.time(), client_pid=os.getpid(), cwd=os.getcwd()), fh)
+    os.replace(tmp, os.path.join(INBOX, rid + '.json'))
+    print(time.strftime('%H:%M:%S') + f' submitted {rid} to the farm queue', flush=True)
+    ensure_daemon()
+    if args.detach:
+        print(f'follow it with: tail -f {logp}   (state: {statep})')
+        return 0
+    return follow(rid)
+
+
+def follow(rid):
+    logp, statep, cancelp = _paths(rid)
+    state = {'cancel': False}
+
+    def on_signal(sig, frame):
+        if state['cancel']:
+            os._exit(130)
+        state['cancel'] = True
+        open(cancelp, 'w').close()
+        print(time.strftime('%H:%M:%S') + ' cancelling this request (again to leave it running)...', flush=True)
+    signal.signal(signal.SIGINT, on_signal)
+    signal.signal(signal.SIGTERM, on_signal)
+    pos, last_check = 0, time.time()
+    while True:
+        if os.path.exists(logp):
+            with open(logp) as fh:
+                fh.seek(pos)
+                chunk = fh.read()
+                pos = fh.tell()
+            if chunk:
+                sys.stdout.write(chunk)
+                sys.stdout.flush()
+        st = {}
+        try:
+            st = json.load(open(statep))
+        except (OSError, ValueError):
+            pass
+        if st.get('state') in TERMINAL:
+            with open(logp) as fh:
+                fh.seek(pos)
+                sys.stdout.write(fh.read())
+            return 0 if st['state'] == 'done' else (2 if st['state'] == 'cancelled' else 1)
+        if time.time() - last_check > 20:
+            last_check = time.time()
+            if not daemon_alive():
+                print(time.strftime('%H:%M:%S') + ' the farm daemon is not running: restarting it', flush=True)
+                ensure_daemon()
+        time.sleep(1)
+
+
+def cmd_direct(argv, args):
+    """In-process run (--direct, and --dry-run): the same scheduler, no daemon."""
+    req = Request(new_request_id(args), argv, time.time(), direct=True)
+    sched = Scheduler()
+    sched.add(req)
+    if args.dry_run or req.state in TERMINAL:
+        return 0
+
+    def on_signal(sig, frame):
+        if STOP.is_set():
+            os._exit(1)
+        req.log('interrupt: stopping the farm nodes (press again to abandon)')
+        STOP.set()
+    signal.signal(signal.SIGINT, on_signal)
+    signal.signal(signal.SIGTERM, on_signal)
+    try:
+        while req.state not in TERMINAL and not STOP.is_set():
+            sched.step()
+            time.sleep(2)
+    finally:
+        sched.shutdown()
+        if req.state not in TERMINAL:
+            req.finish('cancelled', 'interrupted')
+    return 0 if req.state == 'done' else 1
+
 
 def cmd_status():
     held = live_leases()
     meta = _meta()
-    try:
-        items = list_nodes()
-    except ApiError as e:
-        sys.exit(f'farm: {e}')
+    alive = daemon_alive()
+    print(f'farm daemon: {"running (pid " + open(DPID).read().strip() + ")" if alive and os.path.exists(DPID) else "not running (starts on the next farm.py call)"}')
     print(f'workspace {WORKSPACE}, mission {MISSION}, token expires {meta.get("expires_at", "?")}')
     spend = mission_cost()
     if spend is not None:
-        print(f'farm mission spend ${spend:.2f} (warn ${SPEND_WARN:.0f}, refuse ${SPEND_STOP:.0f}, workspace cap $230)')
+        print(f'farm spend ${spend:.2f} (warn ${SPEND_WARN:.0f}, refuse ${SPEND_STOP:.0f}, workspace cap $230)')
+    rows = []
+    if os.path.isdir(REQDIR):
+        for fn in os.listdir(REQDIR):
+            if fn.endswith('.json'):
+                try:
+                    rows.append(json.load(open(os.path.join(REQDIR, fn))))
+                except (OSError, ValueError):
+                    pass
+    act = sorted([r for r in rows if r.get('state') not in TERMINAL], key=lambda r: r.get('submitted', 0))
+    done = sorted([r for r in rows if r.get('state') in TERMINAL], key=lambda r: r.get('t_end') or 0)[-6:]
+    print(f'requests: {len(act)} active')
+    for r in act + done:
+        age = (time.time() - r.get('submitted', time.time())) / 60
+        print(f'  {r["id"]:<44} {r.get("kind", "?"):<5} {r.get("state", "?"):<10} {r.get("landed", 0)}/{r.get("total", 0)} frames, '
+              f'{r.get("units_total", 0) - r.get("units_open", 0)}/{r.get("units_total", 0)} units, {age:.0f} min ago')
+    try:
+        items = list_nodes()
+    except ApiError as e:
+        return print(f'nodes: {e}')
+    print(f'nodes: {sum(1 for x in items if str(x.get("state", "")).startswith("running"))} running, {len(held)} held')
     for x in sorted(items, key=lambda x: x['name']):
         h = held.get(x['name'])
         print(f'  {x["name"]:<10} {x.get("chip", "?"):<7} {str(x.get("state", "?")):<34} '
-              f'{("held by farm.py pid " + str(h["pid"]) + " run " + h["run"]) if h else ""}')
-    if not items:
-        print('  (no farm nodes yet)')
+              f'{("held by pid " + str(h["pid"]) + " (" + h["run"] + ")") if h else ""}')
 
 
 def cmd_stop_idle():
@@ -923,12 +1452,16 @@ def cmd_stop_idle():
             print(f'{x["name"]}: {e.message[:200]}')
 
 
-def main():
-    if len(sys.argv) > 1 and sys.argv[1] == 'status':
-        return cmd_status()
-    if len(sys.argv) > 1 and sys.argv[1] == 'stop-idle':
-        return cmd_stop_idle()
-    ap = argparse.ArgumentParser(description='THE LONG DAWN render farm', usage=__doc__)
+def cmd_cancel(rid):
+    logp, statep, cancelp = _paths(rid)
+    if not os.path.exists(statep) and not os.path.exists(os.path.join(INBOX, rid + '.json')):
+        sys.exit(f'farm: no request {rid} (farm.py status lists them)')
+    open(cancelp, 'w').close()
+    print(f'cancel requested for {rid}')
+
+
+def parse_run_args(argv):
+    ap = argparse.ArgumentParser(prog='farm.py', description='THE LONG DAWN render farm', usage=__doc__)
     ap.add_argument('jobs', nargs='+')
     ap.add_argument('--nodes', type=int, default=None)
     ap.add_argument('--gpu', action='store_true')
@@ -937,40 +1470,41 @@ def main():
     ap.add_argument('--local-out', default=None)
     ap.add_argument('--missing', action='store_true')
     ap.add_argument('--dry-run', action='store_true')
-    args = ap.parse_args()
-    args.nodes_retry = True
-    jobs = []
-    for p in args.jobs:
-        if not os.path.exists(p) and os.path.exists(os.path.join(ROOT, 'cloud', 'jobs', p)):
-            p = os.path.join(ROOT, 'cloud', 'jobs', p)
-        jobs.append(Job(p, args))
-    for j in jobs:
-        if not j.want:
-            log(f'[{j.name}] nothing to render (all wanted frames already here?)')
-    jobs = [j for j in jobs if j.want]
-    if not jobs:
-        return
-    farm = Farm(jobs, args)
-    farm.plan()
-    log(f'plan: {len(farm.queue)} unit(s), {farm.total} frames, jobs: ' + ', '.join(
-        f'{j.name}{" (gpu)" if j.gpu else ""}' for j in jobs))
-    farm.print_plan(verbose=args.dry_run)
-    if args.dry_run:
-        return
+    ap.add_argument('--direct', action='store_true')
+    ap.add_argument('--detach', action='store_true')
+    args = ap.parse_args(argv)
+    args.jobs = [p if os.path.exists(p) or not os.path.exists(os.path.join(ROOT, 'cloud', 'jobs', p))
+                 else os.path.join(ROOT, 'cloud', 'jobs', p) for p in args.jobs]
+    return args
 
-    def on_signal(sig, frame):
-        if STOP.is_set():
-            os._exit(1)
-        log('interrupt: stopping the farm nodes (press again to abandon)')
-        STOP.set()
-    signal.signal(signal.SIGINT, on_signal)
-    signal.signal(signal.SIGTERM, on_signal)
-    try:
-        farm.run()
-    finally:
-        for nd in farm.nodes.values():
-            release(nd.name)
+
+def ensure_venv():
+    import importlib.util
+    if importlib.util.find_spec('cv2') is None:
+        if os.path.exists(VENV_PY) and os.path.realpath(sys.executable) != os.path.realpath(VENV_PY):
+            os.execv(VENV_PY, [VENV_PY] + sys.argv)
+        sys.exit('farm: needs cv2 (the ~/.venvs/longdawn venv)')
+
+
+def main():
+    argv = sys.argv[1:]
+    cmd = argv[0] if argv else ''
+    if cmd == 'status':
+        return cmd_status()
+    if cmd == 'stop-idle':
+        return cmd_stop_idle()
+    if cmd == 'cancel' and len(argv) == 2:
+        return cmd_cancel(argv[1])
+    if cmd == 'daemon':
+        ensure_venv()
+        return cmd_daemon()
+    if not argv or cmd in ('-h', '--help', 'help'):
+        print(__doc__)
+        return 0
+    if '--direct' in argv:
+        ensure_venv()
+    return cmd_submit(argv)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main() or 0)

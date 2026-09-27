@@ -1,0 +1,13 @@
+{
+ "name": "mt3d_probe_gpu",
+ "branch": "claude/render-mt3d-probe-gpu",
+ "setup": [
+  "$HOME/bpyenv/bin/python -c \"import bpy; print('bpy', bpy.app.version_string)\""
+ ],
+ "render": [
+  "cd shots/montage3d && MT3D_PROBE=1 MT3D_ENGINE=CYCLES MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=fire_still timeout 2400 python3 render.py ring3d --final --force --frames 100 --samples 64 --outdir renders/montage3d_v3/probe_cycles_gpu"
+ ],
+ "out_dir": "renders/montage3d_v3/probe_cycles_gpu",
+ "frames": "100",
+ "ship": "jpg"
+}

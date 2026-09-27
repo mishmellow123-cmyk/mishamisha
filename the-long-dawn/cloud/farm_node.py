@@ -39,7 +39,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-VERSION = 3
+VERSION = 4
 HOME = os.path.expanduser('~')
 LD = os.path.join(HOME, 'ld')
 REPO = os.path.join(LD, 'mishamisha')
@@ -250,6 +250,8 @@ def run_unit(u):
                                      stdout=lf, stderr=subprocess.STDOUT, start_new_session=True)
                 u.procs[i] = (p, lf)
                 u.items[i].update(state='running', t0=now())
+                with open(os.path.join(RUNS, 'pgids'), 'a') as fh:     # a later agent kills these on takeover
+                    fh.write(f'{p.pid}\n')
             for i, (p, lf) in list(u.procs.items()):
                 if p.poll() is not None:
                     lf.close()
