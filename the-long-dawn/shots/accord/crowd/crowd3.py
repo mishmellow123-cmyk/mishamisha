@@ -52,6 +52,7 @@ def _stamp():
 _stamp()
 
 import numpy as np  # noqa: E402
+import cv2  # noqa: E402
 from numba import njit, prange  # noqa: E402
 from scipy.spatial import cKDTree  # noqa: E402
 
@@ -91,22 +92,22 @@ WAVE_V = 0.14              # m per frame: the flame passes torch to torch outwar
 Q_RMAX = 50.0              # the queues on the roads (P3) reach this far out
 # light
 TORCH_I = 1.25             # = accord3.flames_and_lights (a torch's light, before its flicker)
-FLAME_I = 22.0             # = accord3's torch flame emission
+FLAME_I = 16.0             # accord3's council torches use 22; the crowd's are a touch lower so cores stay yellow
 FIRE_HOT = SC.FIRE_HOT
 CROWD_SEED = 20260927
 MAXF_RENDER = 6000
 
 _CLOTH = np.array([
-    (0.0135, 0.0130, 0.0126),   # charcoal
-    (0.0200, 0.0142, 0.0102),   # umber
-    (0.0300, 0.0262, 0.0205),   # undyed wool
-    (0.0170, 0.0168, 0.0164),   # grey
-    (0.0175, 0.0130, 0.0100),   # brown
-    (0.0102, 0.0100, 0.0098),   # black
-    (0.0112, 0.0130, 0.0175),   # blue-grey (rare)
-    (0.0260, 0.0205, 0.0150),   # fawn
-    (0.0145, 0.0112, 0.0090),   # peat
-    (0.0230, 0.0225, 0.0215),   # pale grey
+    (0.0120, 0.0116, 0.0112),   # charcoal
+    (0.0165, 0.0118, 0.0085),   # umber
+    (0.0190, 0.0166, 0.0132),   # undyed dark wool
+    (0.0138, 0.0136, 0.0133),   # grey
+    (0.0152, 0.0113, 0.0087),   # brown
+    (0.0092, 0.0090, 0.0088),   # black
+    (0.0100, 0.0112, 0.0146),   # blue-grey (rare)
+    (0.0172, 0.0138, 0.0104),   # dun
+    (0.0124, 0.0097, 0.0079),   # peat
+    (0.0115, 0.0118, 0.0124),   # slate
 ])
 _CLOTH_P = np.array([0.16, 0.15, 0.10, 0.10, 0.13, 0.12, 0.04, 0.07, 0.09, 0.04])
 
@@ -266,14 +267,18 @@ def _looks(n, rng):
     L['sheenk'] = rng.uniform(0.5, 1.6, n)
     c1 = rng.choice(len(_CLOTH), n, p=_CLOTH_P)
     c2 = np.where(rng.random(n) < 0.6, c1, rng.choice(len(_CLOTH), n, p=_CLOTH_P))
-    tint = rng.uniform(0.85, 1.15, (n, 1))
+    tint = rng.uniform(0.80, 1.10, (n, 1))
     L['c1'] = _CLOTH[c1] * tint
-    L['c2'] = _CLOTH[c2] * rng.uniform(0.85, 1.15, (n, 1))
+    L['c2'] = _CLOTH[c2] * rng.uniform(0.80, 1.10, (n, 1))
     L['seed'] = rng.uniform(0.0, 60.0, n)
     L['bph'] = rng.uniform(0.0, 2 * np.pi, n)
     L['hf'] = 0.44 * rng.uniform(0.86, 1.14, n)
     L['fseed'] = rng.uniform(0.0, 200.0, n)
     L['ember'] = rng.uniform(0.05, 0.12, n)
+    L['reach'] = rng.uniform(-0.03, 0.07, n)
+    L['wander'] = rng.uniform(0.05, 0.14, n)
+    L['wph'] = rng.uniform(0, 2 * np.pi, n)
+    L['wper'] = rng.uniform(140.0, 260.0, n)
     return L
 
 
@@ -328,8 +333,8 @@ def _build_p1(roads):
                 rw = m // ab
                 n_in_row = ab if rw < nrow - 1 else size - ab * (nrow - 1)
                 ln = (m % ab) - (n_in_row - 1) / 2.0
-                lane = ln * rng.uniform(0.78, 0.95) + rng.normal(0, 0.09)
-                tm = t + rw * drow / vg * 24.0 + rng.normal(0, 3.0)
+                lane = ln * rng.uniform(0.80, 1.02) + rng.normal(0, 0.12)
+                tm = t + rw * drow / vg * 24.0 + rng.normal(0, 4.0)
                 rows.append((k, tm, vg * rng.uniform(0.99, 1.01), lane, j))
             t += ((nrow - 1) * drow + rng.exponential(13.0) + 2.5) / v * 24.0
     rows = np.array(rows)
@@ -382,8 +387,9 @@ def _p1_positions(P, roads, t):
             continue
         p, tg = route_at(routes[k], s[m])
         nx, ny = -tg[:, 1], tg[:, 0]
-        x[m] = p[:, 0] + nx * P['lane'][m]
-        y[m] = p[:, 1] + ny * P['lane'][m]
+        wl = P['wander'][m] * np.sin(2 * np.pi * tt / P['wper'][m] + P['wph'][m])
+        x[m] = p[:, 0] + nx * (P['lane'][m] + wl)
+        y[m] = p[:, 1] + ny * (P['lane'][m] + wl)
         hx[m], hy[m] = -tg[:, 0], -tg[:, 1]          # walking inward
         walk[m] = 1.0
         dist[m] = -s[m]
@@ -607,10 +613,10 @@ def _torch_pose_p1(L, t, walk, tdown):
     n = len(walk)
     hs, side = L['hs'], L['side']
     b = 0.004 * np.sin(2 * np.pi * t / 96.0 + L['bph'])
-    stand_h = np.stack([np.full(n, 0.30), side * 0.13, 1.08 * hs + 2 * b], -1)
-    stand_a = _unit(np.stack([np.full(n, 0.14), -side * 0.05, np.ones(n)], -1))
-    walk_h = np.stack([np.full(n, 0.33), side * 0.15, 1.17 * hs], -1)
-    walk_a = _unit(np.stack([np.full(n, 0.22), -side * 0.04, np.ones(n)], -1))
+    stand_h = np.stack([np.full(n, 0.38) + L['reach'], side * (0.21 + 0.5 * L['reach']), 1.10 * hs + 2 * b], -1)
+    stand_a = _unit(np.stack([np.full(n, 0.16), side * 0.05, np.ones(n)], -1))
+    walk_h = np.stack([np.full(n, 0.40) + L['reach'], side * (0.23 + 0.5 * L['reach']), 1.19 * hs], -1)
+    walk_a = _unit(np.stack([np.full(n, 0.24), side * 0.06, np.ones(n)], -1))
     w = walk[:, None]
     H = stand_h * (1 - w) + walk_h * w
     A = _unit(stand_a * (1 - w) + walk_a * w)
@@ -637,8 +643,8 @@ def _torch_pose_p3(L, tau):
     sp_a = _unit(np.stack([np.full(n, 0.08), -side * 0.03, np.ones(n)], -1))
     dip_h = np.stack([np.full(n, 0.50), side * 0.07, 1.10 * hs], -1)
     dip_a = _unit(np.stack([np.full(n, 0.86), -side * 0.03, np.full(n, 0.40)], -1))
-    up_h = np.stack([np.full(n, 0.31), side * 0.15, 1.19 * hs], -1)
-    up_a = _unit(np.stack([np.full(n, 0.14), -side * 0.03, np.ones(n)], -1))
+    up_h = np.stack([np.full(n, 0.40) + L['reach'], side * (0.23 + 0.5 * L['reach']), 1.20 * hs], -1)
+    up_a = _unit(np.stack([np.full(n, 0.20), side * 0.05, np.ones(n)], -1))
     u = _smr((tau + 12.0) / 10.0)
     v = _smr((tau - 4.0) / 10.0)
     w = (u * (1 - v))[:, None]
@@ -776,7 +782,7 @@ def state(t, prev=True):
     n3 = W['n3']
     wd = wind()
     base = top - 0.03 * axw / (np.linalg.norm(axw, axis=1, keepdims=True) + 1e-9)
-    lean_xy = wd[None, :] - 0.35 * vel[:, :2]
+    lean_xy = wd[None, :] - 0.24 * vel[:, :2]
     ln = np.linalg.norm(lean_xy, axis=1, keepdims=True)
     lean_xy = np.where(ln > 1.6, lean_xy * 1.6 / np.maximum(ln, 1e-9), lean_xy)
     FLr = np.zeros((len(x), FL3.FL_N))
@@ -844,6 +850,8 @@ def her_walkin(t):
 
 
 # ============================================================ the land's roads ===
+MOON_MOOR = 4.0                      # the moon on the open moor, x shade3's (the far dark must read as land)
+SKY_MOOR = 0.6
 PMC_R, PMC_CELL = 236.0, 0.5         # coarse worn-road mask
 PMF_R, PMF_CELL = 30.0, 0.04         # fine worn-road mask near the ring
 
@@ -916,7 +924,7 @@ R_FAR = 16.0                         # the far field's reach (coarse, the stones
 
 
 @njit(parallel=True, **FM)
-def _splat(Gd, x0, cell, TL, order, tys, OCA, OFF, rmax, r0, r1, near, ch):
+def _splat(Gd, x0, cell, TL, order, tys, OCA, OFF, rmax, r0, r1, near, ch, DN, dx0, dcell, sig):
     """Torchlight on the ground (irradiance on the level ground, ndl^0.7 as shade3's ground), rows in parallel.
     near=True: only within r0..r1 of each torch (fading out), with the soft shadows of that torch's own
     occluders OCA[OFF[k]:OFF[k+1]]; near=False: only beyond (fading in), same occluder lists."""
@@ -958,6 +966,12 @@ def _splat(Gd, x0, cell, TL, order, tys, OCA, OFF, rmax, r0, r1, near, ch):
                 f = ndl ** 0.7 / (d2 + rl * rl + 0.02) * w
                 if o1 > o0:
                     f *= G.soft_vis(xc, yc, 0.0, lx, ly, lz, rl, OCA[o0:o1], o1 - o0, -1.0)
+                if sig > 0.0 and dxy > 0.6:
+                    # bodies in the way: the crowd's density along the path (three samples), its bodies ~0.45 m wide
+                    dn = (grid_sample(DN, dx0, dx0, dcell, lx + dx * 0.25, ly + dy * 0.25)
+                          + grid_sample(DN, dx0, dx0, dcell, lx + dx * 0.5, ly + dy * 0.5)
+                          + grid_sample(DN, dx0, dx0, dcell, lx + dx * 0.75, ly + dy * 0.75)) / 3.0
+                    f *= math.exp(-sig * dn * (dxy - 0.6))
                 Gd[row, col] += I * f
 
 
@@ -1090,11 +1104,18 @@ def ground_light(cs, cam, Wd, Hd, OC, PR):
     order = np.argsort(ty).astype(np.int64)
     tys = np.ascontiguousarray(ty[order])
     TLn = np.ascontiguousarray(np.where(inb_near[:, None], TL, 0.0))
+    # the crowd's density (people per m2, 1 m cells, softened) for the far field's transmittance
+    Hc = min(Hs + R_FAR, 440.0)
+    DN = np.zeros((int(math.ceil(2 * Hc)), int(math.ceil(2 * Hc))), np.float32)
+    ix = np.floor(CF[:, G.F_X] + Hc).astype(np.int64)
+    iy = np.floor(CF[:, G.F_Y] + Hc).astype(np.int64)
+    ok = (ix >= 0) & (ix < DN.shape[1]) & (iy >= 0) & (iy < DN.shape[0])
+    np.add.at(DN, (iy[ok], ix[ok]), 1.0)
+    DN = cv2.GaussianBlur(DN, (0, 0), 1.1)
     Gf = np.zeros((n, n), np.float32)
-    _splat(Gf, x0, cell, TLn, order, tys, OCA, OFF, R_NEAR1, R_NEAR0, R_NEAR1, True, 4)
+    _splat(Gf, x0, cell, TLn, order, tys, OCA, OFF, R_NEAR1, R_NEAR0, R_NEAR1, True, 4, DN, -Hc, 1.0, 0.0)
     # far field (coarse): every torch in reach, the stones' and council's shadows only
     cc = float(np.clip(cell * 4.0, 0.25, 1.0))
-    Hc = min(Hs + R_FAR, 440.0)
     ncg = int(math.ceil(2 * Hc / cc))
     Gc = np.zeros((ncg, ncg), np.float32)
     rows, off = [], [0]
@@ -1109,7 +1130,7 @@ def ground_light(cs, cam, Wd, Hd, OC, PR):
     OCF = np.array(rows, np.float64) if rows else np.zeros((1, 8))
     OFFF = np.array(off, np.int64)
     TLf = np.ascontiguousarray(np.where(inb[:, None], TL, 0.0))
-    _splat(Gc, -Hc, cc, TLf, order, tys, OCF, OFFF, R_FAR, R_NEAR0, R_NEAR1, False, 4)
+    _splat(Gc, -Hc, cc, TLf, order, tys, OCF, OFFF, R_FAR, R_NEAR0, R_NEAR1, False, 4, DN, -Hc, 1.0, 0.45)
     EF = Gc.copy()
     _upsample_add(Gf, x0, cell, Gc, -Hc, cc)
     Gf += 1e-7                      # shade3 falls back to igc only where igf is exactly 0
@@ -1198,11 +1219,11 @@ def _land_pass(rgb, depth, oid, cam, PR, CA, MS, x0, cell2, PMC, PMF):
                 nr = mix(nr, 0.050 * (1.0 + 0.4 * n2), 0.7 * trod)
                 ng = mix(ng, 0.045 * (1.0 + 0.4 * n2), 0.7 * trod)
                 nb = mix(nb, 0.037 * (1.0 + 0.4 * n2), 0.7 * trod)
-                # the worn roads: pale, dry, trodden earth
-                ea = 0.078 * (1.0 + 0.35 * n2)
-                nr = mix(nr, ea * 1.00, 0.85 * pm)
-                ng = mix(ng, ea * 0.88, 0.85 * pm)
-                nb = mix(nb, ea * 0.70, 0.85 * pm)
+                # the worn roads: trodden earth, darker and browner than the dry grass either side
+                ea = 0.046 * (1.0 + 0.35 * n2)
+                nr = mix(nr, ea * 1.00, 0.80 * pm)
+                ng = mix(ng, ea * 0.86, 0.80 * pm)
+                nb = mix(nb, ea * 0.68, 0.80 * pm)
                 nr = mix(ar, nr, w)
                 ng = mix(ag, ng, w)
                 nb = mix(ab, nb, w)
@@ -1212,22 +1233,27 @@ def _land_pass(rgb, depth, oid, cam, PR, CA, MS, x0, cell2, PMC, PMF):
             c0 = c0 * nr / max(ar, 1e-5)
             c1 = c1 * ng / max(ag, 1e-5)
             c2 = c2 * nb / max(ab, 1e-5)
-            # the folds: moonlight on the slopes (the difference against the level ground)
+            # the far dark: the moon on the open moor (brighter than on the council ground, where the torches rule),
+            # shaped by the folds of the land
             wr = sstep(12.0, 30.0, r)
-            if wr > 0.0 and mi > 0.0:
+            wm = sstep(11.0, 22.0, r)
+            if (wr > 0.0 or wm > 0.0) and mi > 0.0:
                 e = 2.0
                 hx = (_relief(px + e, py) - _relief(px - e, py)) / (2 * e)
                 hy = (_relief(px, py + e) - _relief(px, py - e)) / (2 * e)
+                hx *= wr
+                hy *= wr
                 nl = math.sqrt(hx * hx + hy * hy + 1.0)
                 ndm = (-hx * mdx - hy * mdy + mdz) / nl
-                d_m = (max(ndm, 0.0) - mdz) * mi * wr
-                sk = (0.45 * (1.0 / nl - 1.0)) * PR[SH.P_SKI] * wr
+                boost = 1.0 + (MOON_MOOR - 1.0) * wm
+                d_m = (max(ndm, 0.0) * boost - mdz) * mi
+                sk = (boost * (0.55 + 0.45 / nl) - 1.0) * PR[SH.P_SKI] * SKY_MOOR
                 c0 += nr * (d_m * PR[SH.P_MCR] + sk * PR[SH.P_SKR])
                 c1 += ng * (d_m * PR[SH.P_MCG] + sk * PR[SH.P_SKG])
                 c2 += nb * (d_m * PR[SH.P_MCB] + sk * PR[SH.P_SKB])
-            # the crowd's moon shadows, then their contact darkening
+            # the crowd's moon shadows (the moor's brighter moon too), then their contact darkening
             if ms > 0.0 and mi > 0.0:
-                e_m = mi * mdz * ms
+                e_m = mi * mdz * ms * (1.0 + (MOON_MOOR - 1.0) * sstep(11.0, 22.0, r))
                 c0 = max(c0 - nr * e_m * PR[SH.P_MCR], c0 * 0.35)
                 c1 = max(c1 - ng * e_m * PR[SH.P_MCG], c1 * 0.35)
                 c2 = max(c2 - nb * e_m * PR[SH.P_MCB], c2 * 0.35)
