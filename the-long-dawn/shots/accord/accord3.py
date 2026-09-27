@@ -115,7 +115,7 @@ def flames_and_lights(t, Fa):
             fl = FL3.torch_flicker(3.7 * i + 1.3, float(t), resources()['noise3']) / 0.98
             I = 1.0 * lit[i] * (0.55 + 0.45 * fl)
             c = SC.FIRE_HOT
-            L.append([base[0] + lean[0] * 0.08, base[1] + lean[1] * 0.08, base[2] + 0.22, 0.09,
+            L.append([base[0] + lean[0] * 0.08, base[1] + lean[1] * 0.08, base[2] + 0.22, 0.22,
                       I * c[0], I * c[1], I * c[2], float(i)])
     return FL, L
 
@@ -288,6 +288,18 @@ def build(t, cam=None, scale=1.0):
 
 # =============================================================== render ===
 
+FIRE_LC = 1.9      # flame radiance knee after exposure: brighter than this rolls off without losing its hue
+
+
+def fire_clip(F, lc):
+    """Hue-preserving soft clip of a flame's own light (before the tonemap): ACES whites any colour pushed far past
+    1, which turned every flame to cotton. Each pixel keeps its hue while its brightest channel rolls off toward
+    lc (tanh); the white heart stays only where the flame truly is white-hot."""
+    L = F.max(axis=2, keepdims=True)
+    k = np.where(L > 1e-6, lc * np.tanh(L / lc) / np.maximum(L, 1e-6), 1.0)
+    return (F * k).astype(np.float32)
+
+
 def edge_mask(oid, rgb):
     m = np.zeros(oid.shape, bool)
     d = oid[:, 1:] != oid[:, :-1]
@@ -437,15 +449,18 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
         FL3.hearth_volume(Wd, Hd, cam, st['HP'], R['ang'], R['ang'].shape[0], R['noise3'], depth, fb,
                           int(28 + 14 * min(scale, 1.0)), st['CF'], st['CF'].shape[0])
         rgb = rgb * 1.0
-        rgb += cv2.GaussianBlur(fb, (0, 0), 0.7 * max(scale, 0.5))
+        rgb += fire_clip(cv2.GaussianBlur(fb, (0, 0), 0.7 * max(scale, 0.5)), FIRE_LC / max(SC.exposure(t), 0.3))
     rgb = heat_haze(rgb, t, cam, scale, fs, window)
     # the firelight in the thin smoke haze over the council
     LTa = st['LT']
     # (bar 70: a clear night round a steady fire, only a breath of smoke)
-    FL3.airlight(rgb, depth, cam, LTa, int(st['PR'][SH.P_NL]), HAZE * (0.35 if SC.plate(t) == 3 else 1.0), 0.06, 0.35)
+    hz = HAZE * (0.35 if SC.plate(t) == 3 else 1.0) * (1.0 - 0.7 * smooth(ramp(t, SC.GILT_FIND0, SC.GILT_FIND0 + 30)) * (t < SC.P2[0]))
+    FL3.airlight(rgb, depth, cam, LTa, int(st['PR'][SH.P_NL]), hz, 0.06, 0.35)
     # the torch flames (after the haze so they stay crisp)
     FLm = st['FL']
-    FL3.torch_flames(rgb, depth, cam, FLm, FLm.shape[0], float(t), R['noise3'], 0.85)
+    tb = np.zeros_like(rgb)
+    FL3.torch_flames(tb, depth, cam, FLm, FLm.shape[0], float(t), R['noise3'], 0.0)
+    rgb += fire_clip(tb, FIRE_LC / max(SC.exposure(t), 0.3))
     # sparks
     SP = FL3.sparks(t, fs)
     if SP.shape[0]:

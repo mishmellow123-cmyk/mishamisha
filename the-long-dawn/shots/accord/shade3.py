@@ -502,7 +502,8 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         # a pale lichen crust on the rim, soot low on its sides; the top worn smooth where hands have rested
         ln = fbm2(px * 7.0, py * 7.0 + pz * 5.0, 81, 4, 2.1, 0.55, fp * 7.0)
         gr = fbm2(px * 130.0, py * 130.0 + pz * 95.0, 82, 2, 2.3, 0.6, fp * 130.0)
-        a = 0.032 * (1.0 + 0.55 * ln)
+        rw_ = math.sqrt(px * px + py * py)
+        a = 0.032 * (1.0 + 0.55 * ln) * (1.0 + 0.45 * sstep(0.30, 0.05, rw_) * sstep(STONE_TOP - 0.02, STONE_TOP, pz))
         crk = sstep(0.008, 0.0, abs(0.62 * px + 0.78 * py - 0.05 + 0.03 * math.sin(9.0 * px - 4.0 * py))) * sstep(STONE_TOP - 0.04, STONE_TOP - 0.01, pz)
         a *= 1.0 - 0.45 * crk
         a *= 1.0 + 0.22 * sstep(0.05, 0.16, gr) - 0.12 * sstep(-0.05, -0.16, gr)
@@ -528,16 +529,15 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         co = PR[P_COAL]
         if co > 0.0:
             rr_ = math.sqrt(px * px + py * py)
-            bed = sstep(0.30, 0.21, rr_ + 0.035 * (vnoise2(px * 14.0, py * 14.0, 88) - 0.5)) \
+            bed = sstep(0.23, 0.13, rr_ + 0.05 * fbm2(px * 9.0, py * 9.0, 88, 3, 2.1, 0.5, fp * 9.0)) \
                 * sstep(STONE_TOP - 0.06, STONE_TOP - 0.025, pz)
             if bed > 0.0:
-                c1 = vnoise2(px * 30.0 + T * 0.003, py * 30.0, 89)
-                c2 = vnoise2(px * 11.0 - T * 0.004, py * 11.0 + 3.0, 90)
-                c3 = vnoise2(px * 85.0, py * 85.0 - T * 0.005, 99)
-                heat = (0.40 + 0.60 * sstep(0.28, 0.02, rr_)) * (0.60 + 0.40 * c2)
-                # the coals glow through where the black crust has broken (soft patches, a finer grain in them)
-                open_ = sstep(0.52, 0.72, 0.65 * c1 + 0.35 * c2) * (0.7 + 0.3 * c3)
-                glow = bed * co * heat * (0.08 + 0.85 * open_)
+                c1 = fbm2(px * 26.0 + T * 0.003, py * 26.0, 89, 4, 2.2, 0.55, fp * 26.0)
+                c2 = fbm2(px * 9.0 - T * 0.004, py * 9.0 + 3.0, 90, 3, 2.1, 0.5, fp * 9.0)
+                heat = (0.45 + 0.55 * sstep(0.20, 0.0, rr_)) * (0.70 + 0.60 * c2)
+                # the coals glow through where the black crust has broken (soft patches)
+                open_ = sstep(-0.02, 0.22, c1 + 0.4 * c2)
+                glow = bed * co * heat * (0.06 + 0.80 * open_)
                 ar = mix(ar, 0.004, bed)
                 ag = mix(ag, 0.0036, bed)
                 ab = mix(ab, 0.0035, bed)
@@ -611,9 +611,8 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             if eb_ > 0.0:
                 cr_ = vnoise2(px * 120.0 + T * 0.03, py * 120.0 + pz * 60.0, 86)
                 glow = (sstep(0.45, 0.8, cr_) + 0.8 * crack) * eb_ * (0.5 + 0.5 * ch) * sstep(0.0, 0.3, PR[P_ASHG] * 1.2 - (rr - ASH_R0) / (ASH_R1 - ASH_R0) * 0.2)
-                if PR[P_COAL] > 0.0:
-                    pat = sstep(0.40, 0.70, vnoise2(along * 9.0 + LG[kb_, 8], ang * 1.3, 88))
-                    glow = (0.9 * crack * (0.4 + 0.6 * pat) + 0.25 * pat) * eb_ * ch * sstep(0.80, 0.45, rr)
+                pat = sstep(0.40, 0.70, vnoise2(along * 9.0 + LG[kb_, 8], ang * 1.3, 88))
+                glow = (0.9 * crack * (0.4 + 0.6 * pat) + 0.25 * pat) * eb_ * ch * sstep(0.80, 0.45, rr)
                 wh = PR[P_EMBW]
                 er += 7.0 * glow * (1.0 + 1.5 * wh)
                 eg += 7.0 * glow * (0.28 + 0.5 * wh)

@@ -595,7 +595,7 @@ def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps, CF, ncf):
                     er += e * cr
                     eg += e * cg
                     eb += e * cb
-                    tr *= math.exp(-d * ds * (2.6 if p3 else 5.0) * (1.0 - wh))
+                    tr *= math.exp(-d * ds * (4.0 if p3 else 5.0) * (1.0 - wh))
                     if tr < 0.01:
                         break
             out[y, x, 0] = out[y, x, 0] * tr + er

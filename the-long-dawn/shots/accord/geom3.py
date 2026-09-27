@@ -119,7 +119,7 @@ def flat_top(r, th):
     d2 = _flat2d(px, py)
     # an old frost crack across the top, a shallow groove
     cr = abs(0.62 * px + 0.78 * py - 0.05 + 0.03 * math.sin(9.0 * px - 4.0 * py))
-    return (STONE_TOP - 0.024 * sstep(-0.07, 0.0, d2) + 0.012 * px - 0.006 * py
+    return (STONE_TOP - 0.011 * sstep(-0.04, 0.0, d2) + 0.012 * px - 0.006 * py
             + 0.010 * math.sin(2.3 * px + 1.1) * math.sin(3.1 * py) + 0.007 * (vnoise2(px * 6.0, py * 6.0, 303) - 0.5)
             - 0.004 * sstep(0.006, 0.0, cr))
 

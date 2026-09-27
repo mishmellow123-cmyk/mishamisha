@@ -892,7 +892,7 @@ def gilt_find_cam(t, scale):
     inward = FIG_PSI[GILDED] + math.pi
     d = (inward - az_back + 3 * math.pi) % (2 * math.pi) - math.pi
     phi = math.degrees(az_back + 0.22 * d) + 5.0 * smooth(ramp(t, GILT_FIND1, 5119))
-    h = 1.40 - 0.12 * smooth(ramp(t, GILT_FIND1, 5119))
+    h = 1.08 - 0.08 * smooth(ramp(t, GILT_FIND1, 5119))
     return _cam_from(kn, h, 34.0, phi, scale), kn
 
 
@@ -918,7 +918,8 @@ def camera(t, scale=1.0):
         f = hand_fist_pos(max(t, 5160)) if t > 5150 else ring_rest()
         k = smooth(ramp(t, 5120, 5170))
         tgt = np.array([0.0, 0.0, 0.30]) * (1 - k) + np.array([f[0] * 0.55, f[1] * 0.55, 0.36]) * k
-        return _cam_from(tgt, h, 4.0, phi, scale)
+        tilt = 4.0 + 17.0 * smoother(ramp(t, 5205, 5300))
+        return _cam_from(tgt, h, tilt, phi, scale)
     # P3: out of the white, low and oblique behind her shoulder (so the flames stand up as flames and the far
     # bearers are dark against them); then the crane up, turning to top-down as the flame is carried away, so by
     # 5600 the ring of stones lies where MAP's drawn ring will burn through
