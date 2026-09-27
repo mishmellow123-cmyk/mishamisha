@@ -101,8 +101,11 @@ def main():
     for cmd in job.get('setup', []):
         log(f'setup: {cmd}')
         t = time.time()
-        r = sh(cmd)
+        r = sh(cmd, capture_output=True, text=True)
+        sys.stdout.write(r.stdout or ''); sys.stderr.write(r.stderr or '')
         if r.returncode != 0:
+            for line in ((r.stdout or '') + (r.stderr or '')).splitlines()[-40:]:
+                log('  | ' + line)                   # the failing command's own output, so the status log shows why
             log(f'ERROR setup failed (exit {r.returncode}): {cmd}')
             log('JOB ENDED (setup failed)')
             git_push([write_status(name)], branch, len(want), 0)

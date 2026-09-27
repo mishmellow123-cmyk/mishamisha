@@ -2,7 +2,7 @@
  "name": "embers_A3_alt_edge",
  "branch": "claude/render-embers-A3-alt-edge",
  "setup": [
-  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow",
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow fonttools || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools",
   "cd shots/embers && python3 render.py 1840 --cut A3 --alt-towers --scale 0.1 --out /tmp/embers_warm"
  ],
  "render": [
