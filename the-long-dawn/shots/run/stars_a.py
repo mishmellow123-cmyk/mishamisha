@@ -216,9 +216,8 @@ def main():
 
 def _work(args):
     frames, scale, ss, od, threads = args
-    os.environ['NUMBA_NUM_THREADS'] = str(threads)
-    import numba
-    numba.set_num_threads(threads)
+    import numba                        # NUMBA_NUM_THREADS is fixed once numba runs (the farm sets it per node)
+    numba.set_num_threads(max(1, min(threads, numba.config.NUMBA_NUM_THREADS)))
     look = PI.look
     for f in frames:
         t0 = time.time()
