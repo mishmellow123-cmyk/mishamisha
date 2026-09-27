@@ -1305,3 +1305,238 @@ class Plenty:
                 S.add(q, np.array([0.02, 0.016]), np.array([1.0, 1.0]), layer=GILT)
         _window(S, k, *T(0.9, 1.0), overlap=0.7)
         return S
+
+
+# ============================================================== THE HAVENS ===
+
+class Havens:
+    """A harbour at dusk on a verso: the grey ship slips out west (to the left, off the page's outer edge);
+    flame glyphs stand along the coast to kindle one by one in farewell; at the stern a small light. In a
+    roundel, the one drawn detail: her bound hand raising the small light."""
+
+    def __init__(self, seed=53):
+        self.seed = seed
+        self.box = (3.0, 3.0, 17.0, 14.2)
+        bx0, by0, bx1, by1 = self.box
+        self.Yh = by0 + 6.2                       # horizon
+        self.ship = (bx0 + 7.2, self.Yh + 2.3)    # the ship's keel centre at rest (page cm)
+        self.roundel = (bx0 + 2.3, by1 + 3.2, 1.85)   # below the plate, in the page's lower left
+        rng = np.random.default_rng(seed)
+        # the coast: headlands on the right (east), the haven among them; fires on the heights
+        self.fires = []
+
+    def coast(self, x):
+        bx0, by0, bx1, by1 = self.box
+        x = np.asarray(x, np.float64)
+        # land rises from the harbour mouth (x ~ bx0 + 9) to the eastern hills
+        u = np.clip((x - (bx0 + 8.6)) / 5.4, 0, 1)
+        return self.Yh + 1.3 - 2.6 * u ** 0.7 - 0.35 * np.sin(x * 2.3) * u - 0.25 * np.sin(x * 5.1 + 1) * u
+
+    def ship_strokes(self, dx=0.0, mode='ink'):
+        """The ship (a long grey hull, a swan prow to the west, one mast, a sail) and the small figure with her
+        light at the stern, shifted west by dx cm. Returns (Strokes, stern light position)."""
+        S = Strokes()
+        lay = INK if mode == 'ink' else PENCIL
+        rng = np.random.default_rng(self.seed + 7)
+        x, y = self.ship
+        x -= dx
+        s = 1.3
+        hull = catmull([(x + 1.5 * s, y - 0.55 * s), (x + 1.25 * s, y - 0.12 * s), (x + 0.3 * s, y + 0.08 * s),
+                        (x - 0.9 * s, y + 0.02 * s), (x - 1.45 * s, y - 0.35 * s), (x - 1.62 * s, y - 0.95 * s),
+                        (x - 1.45 * s, y - 1.12 * s)], 8)
+        line(S, hull, 0.02, self.seed + 1, layer=lay, lift=(8, 9))
+        gun = np.array([[x + 1.5 * s, y - 0.55 * s], [x - 1.45 * s, y - 0.4 * s]])
+        line(S, gun, 0.014, self.seed + 2, layer=lay, lift=(8, 9))
+        if mode == 'ink':
+            hatch(S, _poly_inside(np.vstack([hull, gun[::-1]])), lambda px, py: np.ones_like(px),
+                  (x - 1.7 * s, y - 0.7 * s, x + 1.6 * s, y + 0.15 * s), 12, 0.04, 0.0, 0.007, self.seed + 3, dens=0.85,
+                  seg=(0.4, 1.2))
+        mast = np.array([[x + 0.05 * s, y - 0.45 * s], [x + 0.1 * s, y - 2.5 * s]])
+        line(S, mast, 0.016, self.seed + 4, layer=lay)
+        sail = catmull([(x + 0.12 * s, y - 2.35 * s), (x - 0.75 * s, y - 1.95 * s), (x - 0.95 * s, y - 1.2 * s),
+                        (x + 0.1 * s, y - 0.75 * s)], 8)
+        line(S, sail, 0.014, self.seed + 5, layer=lay, lift=(8, 9))
+        if mode == 'ink':
+            for q in np.linspace(0.15, 0.85, 7):
+                p0 = np.array([x + 0.11 * s, y - (2.35 - 1.6 * q) * s])
+                p1 = p0 + np.array([-(0.9 * math.sin(q * math.pi) + 0.1) * s, 0.03 * s])
+                pp, rr, dd = hand(np.array([p0, p1]), 0.007, int(rng.integers(1 << 30)), thin_end=0.3)
+                S.add(pp, rr, dd, layer=lay)
+        # the small figure at the stern (a silhouette), one arm raised with the light
+        fx, fy = x + 1.2 * s, y - 0.62 * s
+        body = np.array([[fx, fy], [fx + 0.02, fy - 0.32]])
+        S.add(resample(body, 0.02), np.linspace(0.05, 0.035, len(resample(body, 0.02))), 0.95, layer=lay)
+        S.add(np.array([[fx + 0.02, fy - 0.38], [fx + 0.021, fy - 0.38]]), np.array([0.035, 0.035]), np.array([0.95, 0.95]),
+              layer=lay)
+        arm = np.array([[fx + 0.02, fy - 0.28], [fx + 0.09, fy - 0.45], [fx + 0.1, fy - 0.56]])
+        pp, rr, dd = hand(arm, 0.012, self.seed + 9, thin_end=0.6)
+        S.add(pp, rr, dd, layer=lay)
+        return S, (fx + 0.1, fy - 0.62)
+
+    def build(self, mode='ink', t0=0.0, t1=8.0):
+        rng = np.random.default_rng(self.seed)
+        S = Strokes()
+        pencil = mode == 'pencil'
+        lay = INK if not pencil else PENCIL
+        bx0, by0, bx1, by1 = self.box
+        dens = 0.55 if pencil else 0.95
+        W = (lambda w: w * 1.1) if pencil else (lambda w: w)
+        T = lambda a, b: (t0 + (t1 - t0) * a, t0 + (t1 - t0) * b)
+        k = len(S)
+        frame_rules(S, self.box, self.seed + 1, layer=lay)
+        _window(S, k, *T(0.0, 0.05))
+        # the coast: headlands on the right, cliffs hatched, a quay and a small tower at the haven
+        k = len(S)
+        xs = np.linspace(bx0 + 8.3, bx1 - 0.2, 200)
+        cy = self.coast(xs)
+        line(S, np.column_stack([xs, cy]), W(0.024), self.seed + 10, dens=dens, layer=lay, lift=(2, 4), smooth=0)
+        if not pencil:
+            for x_ in np.arange(bx0 + 8.5, bx1 - 0.25, 0.05):
+                y_ = float(self.coast(np.array([x_]))[0])
+                ln = min(self.Yh + 1.35 - y_, 0.25 + 0.6 * rng.random())
+                if ln > 0.05 and rng.random() < 0.8:
+                    pp, rd, dd = hand(np.array([[x_, y_ + 0.02], [x_ - 0.02, y_ + ln]]), 0.0075, int(rng.integers(1 << 30)),
+                                      dens=0.85, thin_end=0.3)
+                    S.add(pp, rd, dd, layer=lay)
+        # the far western headland, low and faint
+        xw = np.linspace(bx0 + 0.25, bx0 + 3.6, 60)
+        yw = self.Yh - 0.25 * np.exp(-((xw - (bx0 + 1.6)) / 1.1) ** 2) - 0.05 * np.sin(xw * 4)
+        line(S, np.column_stack([xw, yw]), W(0.012), self.seed + 11, dens=dens * 0.7, layer=lay, lift=(2, 4), smooth=0)
+        # the quay and the tower at the haven's inner shore
+        qx = bx0 + 9.2
+        qy = float(self.coast(np.array([qx]))[0])
+        quay = np.array([[qx - 1.4, qy + 0.35], [qx - 1.4, qy + 0.18], [qx + 0.2, qy + 0.18]])
+        line(S, quay, W(0.016), self.seed + 12, dens=dens, layer=lay, lift=(4, 5), smooth=0)
+        tw = np.array([[qx + 0.35, qy + 0.05], [qx + 0.38, qy - 1.35], [qx + 0.55, qy - 1.55], [qx + 0.72, qy - 1.35],
+                       [qx + 0.75, qy + 0.05]])
+        line(S, tw, W(0.016), self.seed + 13, dens=dens, layer=lay, lift=(5, 6), smooth=0)
+        if not pencil:
+            hatch(S, _poly_inside(tw), lambda x, y: (x - (qx + 0.35)) / 0.4, (qx + 0.3, qy - 1.6, qx + 0.8, qy + 0.1), 90,
+                  0.035, 0.45, 0.007, self.seed + 14, dens=0.85, seg=(0.3, 1.2))
+        _window(S, k, *T(0.05, 0.3), overlap=0.6)
+        # the flame glyphs on the heights (ink now; they kindle as fire in the shot)
+        k = len(S)
+        self.fires = []
+        for m, fxp in enumerate(np.linspace(bx0 + 9.9, bx1 - 0.7, 6)):
+            fy_ = float(self.coast(np.array([fxp]))[0]) - 0.02
+            hh = 0.34 + 0.1 * rng.random()
+            fl = [(fxp - 0.1, fy_), (fxp - 0.12, fy_ - 0.35 * hh), (fxp - 0.02, fy_ - 0.7 * hh), (fxp + 0.03, fy_ - hh),
+                  (fxp + 0.1, fy_ - 0.55 * hh), (fxp + 0.1, fy_)]
+            line(S, np.array(fl), W(0.012), self.seed + 20 + m, dens=dens, layer=lay, lift=(4, 5), smooth=8)
+            self.fires.append((fxp, fy_, hh))
+        _window(S, k, *T(0.3, 0.4), overlap=0.3)
+        # the sea: engraved water, the lines closer toward the horizon, broken where light falls on it
+        k = len(S)
+        if not pencil:
+            yy = self.Yh + 0.06
+            li = 0
+            while yy < by1 - 0.1:
+                gap = 0.05 + 0.1 * ((yy - self.Yh) / (by1 - self.Yh)) ** 1.3
+                xs = np.arange(bx0 + 0.25, bx1 - 0.25, 0.02)
+                ys = yy + 0.012 * np.sin(xs * (9 - 3 * (yy - self.Yh) / (by1 - self.Yh)) + li * 1.7)
+                keep = ys > self.coast(xs) + 0.06
+                # the fires' reflections: gaps below each fire
+                for (fxp, fy_, hh) in self.fires:
+                    keep &= ~((np.abs(xs - fxp) < 0.05 + 0.05 * rng.random()) & (rng.random() < 0.8))
+                # the ship's place (drawn separately) stays clear
+                sx, sy = self.ship
+                keep &= ~((np.abs(xs - sx) < 2.3) & (np.abs(ys - (sy - 0.1)) < 0.35))
+                dm = np.diff(np.concatenate([[0], keep.astype(np.int8), [0]]))
+                for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
+                    if b_ - a_ < 3:
+                        continue
+                    pts = np.column_stack([xs[a_:b_ + 1], ys[a_:b_ + 1]])
+                    line(S, pts, 0.008 + 0.004 * (yy - self.Yh) / (by1 - self.Yh), int(rng.integers(1 << 30)), dens=0.85,
+                         layer=lay, lift=(0.4, 1.6), smooth=0, taper=(0.03, 0.05), thin_end=0.3)
+                yy += gap
+                li += 1
+        # the dusk sky: lines darker toward the top, the afterglow low in the west
+        if not pencil:
+            for li, yy in enumerate(np.arange(by0 + 0.22, self.Yh - 0.1, 0.062)):
+                tone = (1.0 - (yy - by0) / (self.Yh - by0)) ** 0.9
+                xs = np.arange(bx0 + 0.25, bx1 - 0.25, 0.02)
+                glow = np.exp(-np.hypot((xs - (bx0 + 2.0)) / 5.0, (yy - self.Yh) / 2.2))
+                t_ = tone * (1.0 - 0.8 * glow)
+                lvl = 0 if li % 4 == 0 else (1 if li % 2 == 0 else 2)
+                keep = (t_ > (0.02, 0.25, 0.5)[lvl]) & (yy < self.coast(xs) - 0.1)
+                dm = np.diff(np.concatenate([[0], keep.astype(np.int8), [0]]))
+                for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
+                    if b_ - a_ < 4:
+                        continue
+                    pts = np.column_stack([xs[a_:b_ + 1], np.full(b_ - a_ + 1, yy)])
+                    s0 = len(S)
+                    line(S, pts, 0.008, int(rng.integers(1 << 30)), dens=0.88, layer=lay, lift=(3, 6), smooth=0,
+                         slow=(5.0, 0.002), fast=(0.4, 0.0008), taper=(0.02, 0.04), thin_end=0.5)
+                    for q in range(s0, len(S)):
+                        S.R[q] = S.R[q] * (1.0 + 1.2 * tone ** 2)
+            # the evening star
+            ex, ey = bx0 + 3.1, by0 + 1.6
+            for a in (0.0, np.pi / 2, np.pi / 4, -np.pi / 4):
+                r_ = 0.14 if a in (0.0, np.pi / 2) else 0.07
+                q = np.array([[ex - r_ * math.cos(a), ey - r_ * math.sin(a)], [ex + r_ * math.cos(a), ey + r_ * math.sin(a)]])
+                pp, rd, dd = hand(q, 0.01, int(rng.integers(1 << 30)), dens=0.9, thin_end=0.2)
+                S.add(pp, rd, dd, layer=lay)
+        _window(S, k, *T(0.4, 0.75), overlap=0.9)
+        # the roundel: her bound hand raising the small light
+        k = len(S)
+        self._roundel(S, rng, lay, pencil)
+        _window(S, k, *T(0.75, 1.0), overlap=0.7)
+        return S
+
+    def _roundel(self, S, rng, lay, pencil):
+        cx, cy, R = self.roundel
+        a = np.linspace(0, 2 * np.pi, 200)
+        for rr, w in ((R, 0.03), (R - 0.12, 0.012)):
+            q = np.column_stack([cx + rr * np.cos(a), cy + rr * np.sin(a)])
+            line(S, q, w, int(rng.integers(1 << 30)), layer=lay, lift=(4, 7), smooth=0)
+        # the hand, in roundel units (u right, v up), palm up, the lamp resting in it, raised from below
+        U = lambda P: np.column_stack([cx + np.asarray(P)[:, 0] * R, cy - np.asarray(P)[:, 1] * R])
+        arm_l = [(-0.34, -0.98), (-0.3, -0.55), (-0.28, -0.22), (-0.36, -0.02), (-0.46, 0.1)]
+        arm_r = [(0.12, -0.98), (0.1, -0.55), (0.12, -0.24), (0.22, -0.08), (0.36, 0.0)]
+        # fingers curl up round the lamp on the right; the thumb on the left
+        fingers = [(0.36, 0.0), (0.46, 0.08), (0.48, 0.2), (0.4, 0.26), (0.3, 0.2)]
+        thumb = [(-0.46, 0.1), (-0.5, 0.2), (-0.44, 0.3), (-0.34, 0.26), (-0.3, 0.16)]
+        palm = [(-0.3, 0.16), (-0.1, 0.12), (0.1, 0.13), (0.3, 0.2)]
+        for P, w in ((arm_l, 0.018), (arm_r, 0.022), (fingers, 0.018), (thumb, 0.016), (palm, 0.012)):
+            line(S, U(catmull(P, 8)), w, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
+        # the knuckle lines of the curled fingers
+        for q in (0.08, 0.16):
+            P = [(0.44 - q * 0.2, 0.06 + q), (0.36 - q * 0.3, 0.1 + q * 0.9)]
+            line(S, U(np.array(P)), 0.01, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
+        # the bandage: strips wound round palm and wrist, a loose end
+        for m, (va, vb) in enumerate(((-0.34, -0.26), (-0.22, -0.14), (-0.1, -0.02), (0.02, 0.09))):
+            for vv in (va, vb):
+                P = [(-0.34 + 0.02 * m, vv), (-0.1, vv + 0.03), (0.12, vv + 0.01), (0.2 + 0.04 * m, vv - 0.02)]
+                line(S, U(catmull(P, 6)), 0.011, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
+            if not pencil:
+                y0, y1 = cy - vb * R, cy - va * R
+                hatch(S, lambda x, y, y0=y0, y1=y1: (y > y0 + 0.01) & (y < y1 - 0.01) & (x > cx - 0.3 * R) & (x < cx + 0.16 * R),
+                      lambda x, y: (np.asarray(x) - (cx - 0.3 * R)) / (0.46 * R), (cx - 0.35 * R, y0, cx + 0.2 * R, y1),
+                      75, 0.035, 0.55, 0.007, int(rng.integers(1 << 30)), dens=0.8, seg=(0.1, 0.3))
+        tail = [(0.2, -0.05), (0.34, -0.14), (0.4, -0.3), (0.36, -0.42)]
+        line(S, U(catmull(tail, 6)), 0.012, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
+        # the sleeve at the bottom of the roundel, hatched
+        if not pencil:
+            hatch(S, lambda x, y: (np.hypot(x - cx, y - cy) < R - 0.14) & (y > cy + 0.62 * R) &
+                  (x > cx - 0.36 * R) & (x < cx + 0.14 * R), lambda x, y: np.ones_like(x),
+                  (cx - 0.4 * R, cy + 0.6 * R, cx + 0.2 * R, cy + R), 20, 0.04, 0.0, 0.009, int(rng.integers(1 << 30)),
+                  dens=0.85, seg=(0.2, 0.6))
+        # the lamp: a small clay lamp with a spout and a ring handle
+        lamp = [(-0.3, 0.26), (-0.36, 0.34), (-0.2, 0.44), (0.12, 0.44), (0.3, 0.4), (0.44, 0.44), (0.4, 0.34), (0.2, 0.26),
+                (-0.3, 0.26)]
+        line(S, U(catmull(lamp, 6)), 0.016, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
+        ring = [(-0.32, 0.32), (-0.46, 0.36), (-0.44, 0.44), (-0.34, 0.42)]
+        line(S, U(catmull(ring, 6)), 0.012, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
+        # the flame at the spout: drawn lightly in ink; it burns in colour in the shot (FIRE)
+        fl = [(0.42, 0.46), (0.38, 0.56), (0.42, 0.7), (0.46, 0.6), (0.44, 0.46)]
+        line(S, U(catmull(fl, 6)), 0.009, int(rng.integers(1 << 30)), layer=lay, lift=(6, 7), smooth=0)
+        self.lamp_flame = (cx + 0.42 * R, cy - 0.56 * R)
+        # rays of the small light, inside the roundel only
+        if not pencil:
+            for m in range(10):
+                a_ = m * 0.63 + 0.2
+                p0 = np.array(self.lamp_flame) + 0.16 * R * np.array([math.cos(a_), math.sin(a_)])
+                p1 = np.array(self.lamp_flame) + (0.3 + 0.08 * rng.random()) * R * np.array([math.cos(a_), math.sin(a_)])
+                if np.hypot(*(p1 - [cx, cy])) < R - 0.2:
+                    pp, rd, dd = hand(np.array([p0, p1]), 0.007, int(rng.integers(1 << 30)), dens=0.75, thin_end=0.2)
+                    S.add(pp, rd, dd, layer=lay)

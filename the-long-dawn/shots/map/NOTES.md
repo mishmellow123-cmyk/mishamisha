@@ -24,8 +24,12 @@
   boundaries and hedges; orchard; sheaves tied at the neck; cottages with chimney smoke; birds. No round doors.
   Still to do: the clusters read a little like cotton balls (vary size/shape, add tonal shading on the lower
   right of the crown), the trunk is thin and forks high, the far fields are busy. Not yet seen in the book.
-* Not started: THE HAVENS page (verso, ship sliding west off the fore-edge, coast flame glyphs, a roundel of her
-  bound hand raising the small light), the epilogue book shots (page turns, healing, blank
+* THE HAVENS (`pages.Havens`, verso) first draft: engraved dusk sky and sea, the evening star, the ship (animated
+  west via `ship_strokes(dx)`), six flame glyphs on the heights, a roundel of her bound hand raising a small lamp.
+  Not yet good: the land has no shoreline (its cliff strokes and the sea lines overlap in a grid on the right),
+  the sail reads as a crescent, and the roundel's hand does not read as a hand yet (needs a proper profile
+  with separate fingers round the lamp). Next pass before any Havens still is shown.
+* Not started: the epilogue book shots (page turns, healing, blank
   pages, the title page), P4 map_C + THE ROAD (map_fix branch code), smoke over the burns, review sheets and
   the final report (this section becomes that report).
 
