@@ -6,10 +6,10 @@
   "NUMBA_NUM_THREADS=8 CROWD_REQUIRED=1 python3 shots/accord/crowd/accord3c.py still 5600 --scale 0.12"
  ],
  "render": [
-  "NUMBA_NUM_THREADS=2 CROWD_REQUIRED=1 CROWD_TIMING=1 python3 shots/accord/crowd/accord3c.py range --frames 4480,4540,4600,4630,4660,4690,5530,5560,5580,5600,5620,5640 --outdir renders/accord_C"
+  "NUMBA_NUM_THREADS=2 CROWD_REQUIRED=1 CROWD_TIMING=1 python3 shots/accord/crowd/accord3c.py range --frames 4480,4540,4600,4630,4660,4690,5556,5566,5580,5600,5620,5640 --outdir renders/accord_C"
  ],
  "out_dir": "renders/accord_C",
- "frames": "4480,4540,4600,4630,4660,4690,5530,5560,5580,5600,5620,5640",
+ "frames": "4480,4540,4600,4630,4660,4690,5556,5566,5580,5600,5620,5640",
  "push_every": 300,
  "ship": "jpg"
 }

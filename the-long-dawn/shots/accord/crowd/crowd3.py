@@ -262,7 +262,7 @@ def _looks(n, rng):
     L['hs'] = hs
     L['ws'] = np.clip(rng.normal(1.0, 0.055, n) * (0.55 + 0.45 * hs), 0.84, 1.20)
     L['typ'] = rng.choice([0, 1, 2, 3, 5], n, p=[0.22, 0.30, 0.22, 0.09, 0.17]).astype(np.float64)
-    L['cape'] = np.where(rng.random(n) < 0.72, rng.uniform(0.26, 0.46, n), 0.0)
+    L['cape'] = np.where(rng.random(n) < 0.38, rng.uniform(0.22, 0.40, n), 0.0)
     L['train'] = rng.uniform(0.12, 0.30, n)
     bow = rng.uniform(2.0, 10.0, n)
     elder = rng.random(n) < 0.05
@@ -270,7 +270,7 @@ def _looks(n, rng):
     L['bow'] = np.radians(bow)
     L['side'] = rng.choice([-1.0, 1.0], n)
     L['weave'] = rng.uniform(0.7, 2.0, n)
-    L['sheenk'] = rng.uniform(0.5, 1.6, n)
+    L['sheenk'] = rng.uniform(0.12, 0.40, n)
     c1 = rng.choice(len(_CLOTH), n, p=_CLOTH_P)
     c2 = np.where(rng.random(n) < 0.6, c1, rng.choice(len(_CLOTH), n, p=_CLOTH_P))
     tint = rng.uniform(0.80, 1.10, (n, 1))
@@ -290,6 +290,33 @@ def _looks(n, rng):
 
 # ============================================================ P1: the rivers ===
 
+def _irregular(x, y, rng, dmin, warp=0.45, gaps=0.07, jr=0.28):
+    """Break a ranked layout into a crowd: a smooth warp (people stand in knots), radial scatter, a few gaps,
+    and nobody closer than dmin to anyone already placed."""
+    n = len(x)
+    ph = rng.uniform(0, 2 * np.pi, 4)
+    wx = warp * (np.sin(0.61 * x + 0.43 * y + ph[0]) * 0.6 + np.sin(1.37 * y - 0.29 * x + ph[1]) * 0.4)
+    wy = warp * (np.sin(0.57 * y - 0.51 * x + ph[2]) * 0.6 + np.sin(1.21 * x + 0.37 * y + ph[3]) * 0.4)
+    r = np.hypot(x, y) + 1e-9
+    dr = rng.normal(0, jr, n)
+    x2 = x + wx + x / r * dr + rng.normal(0, 0.08, n)
+    y2 = y + wy + y / r * dr + rng.normal(0, 0.08, n)
+    keep = rng.random(n) > gaps
+    order = rng.permutation(n)
+    placed = []
+    ok = np.zeros(n, bool)
+    for i in order:
+        if not keep[i]:
+            continue
+        if placed:
+            P = np.array(placed)
+            if np.min(np.hypot(P[:, 0] - x2[i], P[:, 1] - y2[i])) < dmin:
+                continue
+        placed.append((x2[i], y2[i]))
+        ok[i] = True
+    return x2, y2, ok
+
+
 def _stone_clear(x, y, S, margin):
     ok = np.ones(np.shape(x), bool)
     for j in range(S.shape[0]):
@@ -299,19 +326,25 @@ def _stone_clear(x, y, S, margin):
 
 
 def _p1_slots(rng, S):
-    sl = []
-    for k in range(N_RANKS):
-        r = R_FRONT + k * RANK_DR
-        n = int(2 * np.pi * r / SPACING)
+    X, Y, K = [], [], []
+    for k in range(int((N_RANKS - 1) * RANK_DR / 0.86) + 1):
+        r = R_FRONT + k * 0.86
+        n = int(2 * np.pi * r / 0.86)
         az0 = rng.uniform(0, 2 * np.pi)
-        az = az0 + 2 * np.pi * np.arange(n) / n + rng.normal(0, 0.14 * SPACING / r, n)
-        rr = r + rng.normal(0, 0.13, n)
-        x, y = rr * np.cos(az), rr * np.sin(az)
-        keep = np.abs(_wrap(az - TRUNK_AZ[HER_TRUNK])) * rr > AISLE_HALF + 0.25
-        keep &= _stone_clear(x, y, S, 0.48)
-        for q in np.nonzero(keep)[0]:
-            sl.append((x[q], y[q], rr[q], az[q] % (2 * np.pi), k))
-    return np.array(sl)
+        az = az0 + 2 * np.pi * np.arange(n) / n + rng.normal(0, 0.30 / r, n)
+        X += list(r * np.cos(az))
+        Y += list(r * np.sin(az))
+        K += [k] * n
+    X, Y, K = np.array(X), np.array(Y), np.array(K)
+    x, y, ok = _irregular(X, Y, rng, 0.77, warp=0.45, gaps=0.03, jr=0.26)
+    rr = np.hypot(x, y)
+    az = np.arctan2(y, x) % (2 * np.pi)
+    ok &= np.abs(_wrap(az - TRUNK_AZ[HER_TRUNK])) * rr > AISLE_HALF + 0.25
+    ok &= _stone_clear(x, y, S, 0.48)
+    ok &= (rr > R_FRONT - 0.35) & (rr < R_FRONT + (N_RANKS - 1) * RANK_DR + 0.45)
+    q = np.nonzero(ok)[0]
+    # ranks by distance from the stones (the settle order fills the front first)
+    return np.stack([x[q], y[q], rr[q], az[q], np.clip(np.round((rr[q] - R_FRONT) / RANK_DR), 0, N_RANKS - 1)], -1)
 
 
 def _build_p1(roads):
@@ -367,6 +400,12 @@ def _build_p1(roads):
         free[q] = False
     P['slot'] = slot_of
     P['slots'] = slots
+    late = np.nonzero((P['tm'] < T_FREEZE) & (slot_of < 0))[0]
+    qpos = np.zeros(n)
+    for j in range(len(TRUNK_AZ)):
+        m = late[P['trunk'][late] == j]
+        qpos[m] = 1.3 * (1 + np.arange(len(m)))
+    P['qpos'] = qpos
     # the settling walk: in along the road to the walkway, round it, then in to the place
     P['s_walk_mouth'] = np.array([routes[k]['s_mouth'] for k in P['route']])
     return P
@@ -386,7 +425,8 @@ def _p1_positions(P, roads, t):
     # --- still on the road: s from the gap outward (the mouth is at s_mouth)
     sm = P['s_walk_mouth']
     s = sm + P['v'] * (P['tm'] - tt) / 24.0
-    on_road = s > sm
+    s = np.maximum(s, sm + P['qpos'])                 # those with no place stop in a queue behind the mouth
+    on_road = (s > sm) | (P['qpos'] > 0)
     for k in range(len(routes)):
         m = on_road & (P['route'] == k)
         if not m.any():
@@ -474,19 +514,21 @@ def _build_p3(roads):
     rng = np.random.default_rng(CROWD_SEED + 3)
     S = SC.stones()
     pts = []
+    X, Y = [], []
     r = P3_R0
-    k = 0
     while r < P3_RMAX:
-        n = int(2 * np.pi * r / P3_SP)
+        n = int(2 * np.pi * r / 0.86)
         az0 = rng.uniform(0, 2 * np.pi)
-        az = az0 + 2 * np.pi * np.arange(n) / n + rng.normal(0, 0.10 / r, n)
-        rr = r + rng.normal(0, 0.07, n)
-        x, y = rr * np.cos(az), rr * np.sin(az)
-        keep = _stone_clear(x, y, S, 0.45)
-        for q in np.nonzero(keep)[0]:
-            pts.append((x[q], y[q], rr[q], az[q] % (2 * np.pi), -1, 0.0, 0.0))
-        r += P3_DR + rng.uniform(-0.05, 0.05)
-        k += 1
+        az = az0 + 2 * np.pi * np.arange(n) / n + rng.normal(0, 0.22 / r, n)
+        X += list(r * np.cos(az))
+        Y += list(r * np.sin(az))
+        r += 0.86
+    X, Y = np.array(X), np.array(Y)
+    x, y, ok = _irregular(X, Y, rng, 0.84, warp=0.30, gaps=0.03, jr=0.16)
+    rr = np.hypot(x, y)
+    ok &= _stone_clear(x, y, S, 0.45) & (rr > P3_R0 - 0.12)
+    for q in np.nonzero(ok)[0]:
+        pts.append((x[q], y[q], rr[q], math.atan2(y[q], x[q]) % (2 * np.pi), -1, 0.0, 0.0))
     # the queues along the roads (two files) from just outside the ring to Q_RMAX
     for rt_i, rt in enumerate(roads['routes']):
         if rt_i != min(i for i, q in enumerate(roads['routes']) if q['trunk'] == rt['trunk']):
@@ -926,7 +968,7 @@ def masks():
 
 # ============================================================ the torchlight ===
 R_NEAR0, R_NEAR1 = 3.2, 4.2          # near field (fine, with every bearer's shadow) fades out between these
-R_FAR = 16.0                         # the far field's reach (coarse, the stones' and council's shadows)
+R_FARF = 16.0                         # the far field's reach (coarse, the stones' and council's shadows)
 
 
 @njit(parallel=True, **FM)
@@ -1084,7 +1126,7 @@ def ground_light(cs, cam, Wd, Hd, OC, PR):
     lit = TL[:, 4] > 1e-4
     # torches whose light can reach the visible ground
     tx, ty = TL[:, 0], TL[:, 1]
-    inb = lit & (tx > x0b - R_FAR) & (tx < x1b + R_FAR) & (ty > y0b - R_FAR) & (ty < y1b + R_FAR)
+    inb = lit & (tx > x0b - R_FARF) & (tx < x1b + R_FARF) & (ty > y0b - R_FARF) & (ty < y1b + R_FARF)
     inb_near = inb & (tx > x0b - R_NEAR1) & (tx < x1b + R_NEAR1) & (ty > y0b - R_NEAR1) & (ty < y1b + R_NEAR1)
     # occluders per torch: its bearer and the bodies within 2.6 m (near); the stones and council (both)
     OCs = np.ascontiguousarray(OC[OC[:, 7] > -3.0]) if OC is not None and len(OC) else np.zeros((0, 8))
@@ -1111,7 +1153,7 @@ def ground_light(cs, cam, Wd, Hd, OC, PR):
     tys = np.ascontiguousarray(ty[order])
     TLn = np.ascontiguousarray(np.where(inb_near[:, None], TL, 0.0))
     # the crowd's density (people per m2, 1 m cells, softened) for the far field's transmittance
-    Hc = min(Hs + R_FAR, 440.0)
+    Hc = min(Hs + R_FARF, 440.0)
     DN = np.zeros((int(math.ceil(2 * Hc)), int(math.ceil(2 * Hc))), np.float32)
     ix = np.floor(CF[:, G.F_X] + Hc).astype(np.int64)
     iy = np.floor(CF[:, G.F_Y] + Hc).astype(np.int64)
@@ -1130,13 +1172,13 @@ def ground_light(cs, cam, Wd, Hd, OC, PR):
             off.append(off[-1])
             continue
         d = np.hypot(stat_xy[:, 0] - tx[k], stat_xy[:, 1] - ty[k])
-        sel = np.nonzero(d < R_FAR + 3.0)[0]
+        sel = np.nonzero(d < R_FARF + 3.0)[0]
         rows += [OCs[j] for j in sel]
         off.append(off[-1] + len(sel))
     OCF = np.array(rows, np.float64) if rows else np.zeros((1, 8))
     OFFF = np.array(off, np.int64)
     TLf = np.ascontiguousarray(np.where(inb[:, None], TL, 0.0))
-    _splat(Gc, -Hc, cc, TLf, order, tys, OCF, OFFF, R_FAR, R_NEAR0, R_NEAR1, False, 4, DN, -Hc, 1.0, 0.45)
+    _splat(Gc, -Hc, cc, TLf, order, tys, OCF, OFFF, R_FARF, R_NEAR0, R_NEAR1, False, 4, DN, -Hc, 1.0, 0.45)
     EF = Gc.copy()
     _upsample_add(Gf, x0, cell, Gc, -Hc, cc)
     Gf += 1e-7                      # shade3 falls back to igc only where igf is exactly 0
@@ -1161,8 +1203,8 @@ def ground_light(cs, cam, Wd, Hd, OC, PR):
 def _relief(x, y):
     """Gentle folds of the dark land (m): long swells and shallow hollows; level round the ring."""
     r = math.sqrt(x * x + y * y)
-    h = 2.4 * fbm2(x * 0.0060 + 3.1, y * 0.0060 - 1.7, 71, 3, 2.1, 0.5, 0.0) \
-        + 0.8 * fbm2(x * 0.021, y * 0.021 + 5.0, 72, 3, 2.2, 0.5, 0.0)
+    h = 14.0 * fbm2(x * 0.0055 + 3.1, y * 0.0055 - 1.7, 71, 3, 2.1, 0.5, 0.0) \
+        + 3.2 * fbm2(x * 0.019, y * 0.019 + 5.0, 72, 3, 2.2, 0.5, 0.0)
     return h * sstep(10.0, 34.0, r)
 
 
@@ -1208,7 +1250,7 @@ def _land_pass(rgb, depth, oid, cam, PR, CA, MS, x0, cell2, PMC, PMF):
             if w > 0.0:
                 pm = grid_sample(PMF, -PMF_R, -PMF_R, PMF_CELL, px, py) if r < PMF_R - 1.0 else \
                     grid_sample(PMC, -PMC_R, -PMC_R, PMC_CELL, px, py)
-                n1 = fbm2(px * 0.045 + 1.3, py * 0.045, 331, 4, 2.1, 0.55, fp * 0.045)
+                n1 = fbm2(px * 0.11 + 1.3, py * 0.11, 331, 4, 2.1, 0.55, fp * 0.11)
                 n2 = fbm2(px * 0.6, py * 0.6 + 2.0, 332, 3, 2.2, 0.5, fp * 0.6)
                 n3 = fbm2(px * 0.011 - 4.0, py * 0.011 + 2.2, 333, 4, 2.1, 0.5, fp * 0.011)
                 # the open moor: dry grass and old heath, paler than the trodden council ground under the moon
@@ -1217,10 +1259,10 @@ def _land_pass(rgb, depth, oid, cam, PR, CA, MS, x0, cell2, PMC, PMF):
                 ng = mix(ng, 0.063 * g, w)
                 nb = mix(nb, 0.050 * g, w)
                 # heather and scrub in dark blotches, bare earth where the gathering has trodden the heath flat
-                heath = sstep(0.02, 0.16, n1) * (1.0 - pm)
-                nr = mix(nr, 0.030 * (1.0 + 0.5 * n2), 0.60 * heath)
-                ng = mix(ng, 0.026 * (1.0 + 0.5 * n2), 0.60 * heath)
-                nb = mix(nb, 0.024 * (1.0 + 0.5 * n2), 0.60 * heath)
+                heath = sstep(-0.02, 0.22, n1) * (1.0 - pm)
+                nr = mix(nr, 0.036 * (1.0 + 0.5 * n2), 0.45 * heath)
+                ng = mix(ng, 0.032 * (1.0 + 0.5 * n2), 0.45 * heath)
+                nb = mix(nb, 0.029 * (1.0 + 0.5 * n2), 0.45 * heath)
                 trod = sstep(19.0, 12.5, r) * (0.55 + 0.45 * sstep(-0.1, 0.2, n2))
                 nr = mix(nr, 0.050 * (1.0 + 0.4 * n2), 0.7 * trod)
                 ng = mix(ng, 0.045 * (1.0 + 0.4 * n2), 0.7 * trod)
