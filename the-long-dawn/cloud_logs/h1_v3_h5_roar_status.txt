@@ -5,25 +5,58 @@ host: Linux vm 6.18.44-fc-v42 #1 SMP PREEMPT_DYNAMIC @0 x86_64 | cpus 4
 15:35:23 SETUP DONE; starting renders
 15:35:25 render[0] started: python3 shots/hills/render.py --shot beacon_v3 --frames 1474-1555 --step 2 --workers 2 --out renders/h1_v3h5 --skip-existing
 15:35:25 render[1] started: python3 shots/hills/render.py --shot beacon_v3 --frames 1475-1555 --step 2 --workers 2 --out renders/h1_v3h5 --skip-existing
+15:39:31 pushed 10 (total 10/82; 24.6s/frame wall)
 
 --- render[0] python3 shots/hills/render.py --shot beacon_v3 --frames 1474-1555 --step 2 --workers 2 --out renders/h1_v3h5 --skip-existing
-/home/user/h1roar/the-long-dawn/shots/hills/beacon.py:68: RuntimeWarning: invalid value encountered in power
-  h -= np.where(a > 2.5, 0.55 * (a - 2.5) ** 1.35, 0.0)
-/home/user/h1roar/the-long-dawn/shots/hills/beacon.py:68: RuntimeWarning: invalid value encountered in power
-  h -= np.where(a > 2.5, 0.55 * (a - 2.5) ** 1.35, 0.0)
-[w0] beacon_v3 f1474 154.7s
-[w1] beacon_v3 f1476 155.0s
-[w0] beacon_v3 f1478 41.9s
 [w1] beacon_v3 f1480 46.5s
+[w1] beacon_v3 f1484 36.7s
+[w0] beacon_v3 f1482 42.2s
+[w1] beacon_v3 f1488 29.3s
+[w0] beacon_v3 f1486 32.8s
+[w1] beacon_v3 f1492 26.2s
+[w0] beacon_v3 f1490 27.3s
+[w1] beacon_v3 f1496 22.7s
+[w0] beacon_v3 f1494 25.8s
+[w1] beacon_v3 f1500 22.8s
+[w0] beacon_v3 f1498 19.5s
+[w1] beacon_v3 f1504 22.6s
+[w0] beacon_v3 f1502 23.7s
+[w1] beacon_v3 f1508 21.9s
+[w0] beacon_v3 f1506 19.2s
+[w1] beacon_v3 f1512 22.2s
+[w0] beacon_v3 f1510 21.3s
+[w1] beacon_v3 f1516 21.8s
+[w0] beacon_v3 f1514 21.5s
+[w1] beacon_v3 f1520 19.8s
+[w0] beacon_v3 f1518 20.9s
+[w1] beacon_v3 f1524 20.4s
+[w0] beacon_v3 f1522 20.0s
+[w1] beacon_v3 f1528 15.6s
+[w0] beacon_v3 f1526 15.7s
 
 --- render[1] python3 shots/hills/render.py --shot beacon_v3 --frames 1475-1555 --step 2 --workers 2 --out renders/h1_v3h5 --skip-existing
-/home/user/h1roar/the-long-dawn/shots/hills/beacon.py:68: RuntimeWarning: invalid value encountered in power
-  h -= np.where(a > 2.5, 0.55 * (a - 2.5) ** 1.35, 0.0)
-/home/user/h1roar/the-long-dawn/shots/hills/beacon.py:68: RuntimeWarning: invalid value encountered in power
-  h -= np.where(a > 2.5, 0.55 * (a - 2.5) ** 1.35, 0.0)
-[w1] beacon_v3 f1477 154.7s
-[w0] beacon_v3 f1475 155.0s
-[w0] beacon_v3 f1479 36.1s
-[w1] beacon_v3 f1481 45.2s
-[w0] beacon_v3 f1483 38.0s
 [w1] beacon_v3 f1485 32.9s
+[w0] beacon_v3 f1487 30.4s
+[w1] beacon_v3 f1489 29.4s
+[w0] beacon_v3 f1491 25.5s
+[w1] beacon_v3 f1493 23.7s
+[w0] beacon_v3 f1495 22.2s
+[w1] beacon_v3 f1497 25.2s
+[w0] beacon_v3 f1499 22.3s
+[w1] beacon_v3 f1501 23.5s
+[w0] beacon_v3 f1503 23.7s
+[w1] beacon_v3 f1505 22.4s
+[w0] beacon_v3 f1507 20.0s
+[w1] beacon_v3 f1509 20.4s
+[w0] beacon_v3 f1511 22.2s
+[w1] beacon_v3 f1513 21.0s
+[w0] beacon_v3 f1515 20.8s
+[w1] beacon_v3 f1517 19.2s
+[w0] beacon_v3 f1519 23.0s
+[w1] beacon_v3 f1521 22.7s
+[w1] beacon_v3 f1525 20.0s
+[w0] beacon_v3 f1523 23.2s
+[w1] beacon_v3 f1529 16.8s
+[w0] beacon_v3 f1527 15.8s
+[w1] beacon_v3 f1533 15.7s
+[w0] beacon_v3 f1531 15.8s
