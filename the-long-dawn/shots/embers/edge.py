@@ -635,15 +635,27 @@ class FallingCrown:
     def cut_y(self, t):
         return B.GROUND + self.tw.height(FALL_TOWER, A.T_CROWN) - 9.0
 
-    def centre(self, t):
-        """world centre of the crown (before the break: the top of its tower)"""
+    def _c_lean(self, t):
+        """the crown's true centre at t (before the break): the forge leans in over the pit (a shear toward local +x,
+        which faces the centre), so the crown sits inward of the base's axis"""
         tw = self.tw
-        top = tw.top(FALL_TOWER, min(t, A.T_CROWN))
-        c = top - np.array([0.0, 4.5, 0.0])
+        h = tw.height(FALL_TOWER, A.T_CROWN)
+        lean = float(np.asarray(A.SCHED.tower_lean(min(t, A.T_WHITE - 1)))[FALL_TOWER]) if t < A.T_LIGHT else 0.0
+        r_ = float(tw.rot[FALL_TOWER])
+        ex = np.array([math.cos(r_), 0.0, math.sin(r_)])
+        return tw.top(FALL_TOWER, A.T_CROWN) - np.array([0.0, 4.5, 0.0]) + ex * (h - 4.5) * lean
+
+    def centre(self, t):
+        """world centre of the crown (before the break: the top of its leaning forge)"""
         if t < A.T_CROWN:
-            return tw.top(FALL_TOWER, t) - np.array([0.0, 4.5, 0.0])
+            tw = self.tw
+            h = tw.height(FALL_TOWER, t)
+            lean = float(np.asarray(A.SCHED.tower_lean(t))[FALL_TOWER])
+            r_ = float(tw.rot[FALL_TOWER])
+            ex = np.array([math.cos(r_), 0.0, math.sin(r_)])
+            return tw.top(FALL_TOWER, t) - np.array([0.0, 4.5, 0.0]) + ex * (h - 4.5) * lean
         R, pivot, off = self.state(t)
-        return (c - pivot) @ R.T + pivot + off
+        return self._c_lean(A.T_CROWN) + off
 
     def state(self, t):
         """rigid transform applied to the crown's points (world): (R, pivot, offset). It turns about its own centre
@@ -653,15 +665,17 @@ class FallingCrown:
         b = tw.base(FALL_TOWER)
         inward = -b / max(np.linalg.norm(b[[0, 2]]), 1e-6)
         inward[1] = 0.0
-        c0 = tw.top(FALL_TOWER, A.T_CROWN) - np.array([0.0, 4.5, 0.0])
+        c_t = self._c_lean(t)
+        c_0 = self._c_lean(A.T_CROWN)
         ang = (0.0016 * x * x + 0.01 * x) if x < 20.0 else (0.84 + 0.074 * (x - 20.0))   # it tips over, then tumbles
         axis = np.cross(np.array([0.0, 1.0, 0.0]), inward)
         axis /= np.linalg.norm(axis)
         c, s = math.cos(ang), math.sin(ang)
         K = np.array([[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]])
         R = np.eye(3) + s * K + (1 - c) * (K @ K)
-        off = inward * min(0.01 * x * x + 0.08 * x, 11.0) + np.array([0.0, -0.5 * CROWN_G * max(x - 3.0, 0.0) ** 2, 0.0])
-        return R, c0, off
+        off = (c_0 - c_t) + inward * min(0.01 * x * x + 0.08 * x, 11.0) + \
+            np.array([0.0, -0.5 * CROWN_G * max(x - 3.0, 0.0) ** 2, 0.0])
+        return R, c_t, off
 
 
 # ---------------------------------------------------------------- cameras
