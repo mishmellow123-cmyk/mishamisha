@@ -6,22 +6,9 @@ host: Linux vm 6.18.44-fc-v42 #1 SMP PREEMPT_DYNAMIC @0 x86_64 | cpus 4
 15:35:25 render[0] started: python3 shots/hills/render.py --shot beacon_v3 --frames 1474-1555 --step 2 --workers 2 --out renders/h1_v3h5 --skip-existing
 15:35:25 render[1] started: python3 shots/hills/render.py --shot beacon_v3 --frames 1475-1555 --step 2 --workers 2 --out renders/h1_v3h5 --skip-existing
 15:39:31 pushed 10 (total 10/82; 24.6s/frame wall)
+15:43:52 pushed 48 (total 58/82; 8.7s/frame wall)
 
 --- render[0] python3 shots/hills/render.py --shot beacon_v3 --frames 1474-1555 --step 2 --workers 2 --out renders/h1_v3h5 --skip-existing
-[w1] beacon_v3 f1480 46.5s
-[w1] beacon_v3 f1484 36.7s
-[w0] beacon_v3 f1482 42.2s
-[w1] beacon_v3 f1488 29.3s
-[w0] beacon_v3 f1486 32.8s
-[w1] beacon_v3 f1492 26.2s
-[w0] beacon_v3 f1490 27.3s
-[w1] beacon_v3 f1496 22.7s
-[w0] beacon_v3 f1494 25.8s
-[w1] beacon_v3 f1500 22.8s
-[w0] beacon_v3 f1498 19.5s
-[w1] beacon_v3 f1504 22.6s
-[w0] beacon_v3 f1502 23.7s
-[w1] beacon_v3 f1508 21.9s
 [w0] beacon_v3 f1506 19.2s
 [w1] beacon_v3 f1512 22.2s
 [w0] beacon_v3 f1510 21.3s
@@ -33,20 +20,22 @@ host: Linux vm 6.18.44-fc-v42 #1 SMP PREEMPT_DYNAMIC @0 x86_64 | cpus 4
 [w0] beacon_v3 f1522 20.0s
 [w1] beacon_v3 f1528 15.6s
 [w0] beacon_v3 f1526 15.7s
+[w1] beacon_v3 f1532 17.0s
+[w0] beacon_v3 f1530 17.1s
+[w1] beacon_v3 f1536 15.8s
+[w0] beacon_v3 f1534 14.9s
+[w1] beacon_v3 f1540 15.4s
+[w0] beacon_v3 f1538 15.5s
+[w1] beacon_v3 f1544 15.5s
+[w0] beacon_v3 f1542 15.7s
+[w1] beacon_v3 f1548 15.7s
+[w0] beacon_v3 f1546 15.3s
+[w1] beacon_v3 f1552 15.8s
+[w0] beacon_v3 f1550 15.4s
+[w0] beacon_v3 f1554 14.8s
+rendered 41 frames in 599s (29.2s/frame/worker)
 
 --- render[1] python3 shots/hills/render.py --shot beacon_v3 --frames 1475-1555 --step 2 --workers 2 --out renders/h1_v3h5 --skip-existing
-[w1] beacon_v3 f1485 32.9s
-[w0] beacon_v3 f1487 30.4s
-[w1] beacon_v3 f1489 29.4s
-[w0] beacon_v3 f1491 25.5s
-[w1] beacon_v3 f1493 23.7s
-[w0] beacon_v3 f1495 22.2s
-[w1] beacon_v3 f1497 25.2s
-[w0] beacon_v3 f1499 22.3s
-[w1] beacon_v3 f1501 23.5s
-[w0] beacon_v3 f1503 23.7s
-[w1] beacon_v3 f1505 22.4s
-[w0] beacon_v3 f1507 20.0s
 [w1] beacon_v3 f1509 20.4s
 [w0] beacon_v3 f1511 22.2s
 [w1] beacon_v3 f1513 21.0s
@@ -60,3 +49,15 @@ host: Linux vm 6.18.44-fc-v42 #1 SMP PREEMPT_DYNAMIC @0 x86_64 | cpus 4
 [w0] beacon_v3 f1527 15.8s
 [w1] beacon_v3 f1533 15.7s
 [w0] beacon_v3 f1531 15.8s
+[w1] beacon_v3 f1537 17.6s
+[w0] beacon_v3 f1535 17.2s
+[w1] beacon_v3 f1541 15.8s
+[w0] beacon_v3 f1539 15.9s
+[w1] beacon_v3 f1545 15.8s
+[w0] beacon_v3 f1543 15.4s
+[w1] beacon_v3 f1549 16.0s
+[w0] beacon_v3 f1547 15.9s
+[w0] beacon_v3 f1551 15.9s
+[w1] beacon_v3 f1553 16.5s
+[w0] beacon_v3 f1555 15.8s
+rendered 41 frames in 594s (29.0s/frame/worker)
