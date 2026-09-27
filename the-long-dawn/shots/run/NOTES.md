@@ -27,35 +27,26 @@
     lifts to the rose for the title at y 360). Pending: `bluehour_a_lookdev` (5 half-res stills).
   * `cloud/jobs/make_runA2_jobs.py`: writes the finals (<= 40 min per cpu-8 node, no --skip) once s/frame is measured.
 
-## RUN-A3 STATE (live, 27 Sep ~20:15Z): A13 R2-A THE REVEAL, A15 R16 THE WATCHERS
-* **Owns:** `reveal_a.py` + `reveal_a_fires.npy` (A13, cut 3680-3799 -> `renders/reveal_A`), `watchers_a.py` +
-  `watchers_a_extra.npy` + `watchers_a_figs.npy` (A15, cut 4240-4399 -> `renders/watchers_A`), `nighta.py` (A's night kit:
-  A13-A15 and A14 import it), jobs `reveal_a_1`, `watchers_a_look`. Uses `sdfppl.py` read-only (figure requests go to
-  RUN-A2 through this block), `world.py` untouched, `falsedawn.glow_at` read-only.
-* **The shared night (`nighta.py`, agreed with RUN-A-L):** moonlit (`world.night_light`, s1's moon az -59 el 21); the cold
-  glow = falsedawn's arc at az -30, el_s -3.2, no deck, I(f) = I0 (0.14) x (1 + 0.07 sin(2 pi f / 80)), A2's star kill, a
-  0.35 share in the far haze; the red under the cloud = 150 world-fixed patches (seed 4613) for `world.cloud_glow` in
-  crossing's orange-red, pulsing on every beat (cut f % 20 == 0: 2-frame rise, exp(-dt/9) decay, floor 0.55); fires =
-  beacons.py's recipe (`fire_layer`, `fires_layer` with haze transmittance, `lt_rows`, `pl_rows`, `ignition_sparks`).
-  All times are A cut frames.
-* **A13 (built, look-dev on the farm).** Continues H1's take with H1's own renderer (`shots/hills/beacon.py` imported
-  read-only, configured as render.py's `beacon_v3_roar2`; src = cut - 2124), the take's simulations extended past src
-  1555 (spindrift keeps the take's own draw), two runtime hooks with md5 source guards (camera: H1's formula to 1555, then a
-  quintic crane from rest to (8.2, 14, -59.2) local, yaw -14, pitch -4.5, hfov 60; world layer: H1's plus the A night,
-  faded in over 3680-3728 because H1's frames never had it). 83 summit fires (four distance bands 0.3-80 km; line of sight
-  incl. her summit grid): those in H1's last frame (+60 px) catch 3684-3740 at random, never in a wave from her; the pan
-  brings the rest in already burning. Ends on her silhouette at 46 px (probe), the glow at x 482.
-  **Continuity verified:** farm cut 3680 vs `h1_v3h5` 1555 = mean abs diff 0.64/255 (only her roar2 wardrobe and the fire's
-  flicker differ).
-* **A15 (built, look-dev on the farm).** A14's chain (RUN-A-L, bb4d7a4): the seventh at (-1004, -194.4, -508), my brink.
-  A15's plate = `watchers_a.plate(CHAIN[6])` = A14's END_CAM: eye level 1.65 m over the seventh lighter's ground, 14.5 m
-  behind them, yaw -23 (the glow's core in the left third), pitch -1.8, hfov 40; the lighter ~320 px, right third,
-  silhouetted against the seventh fire 1.2 m beyond; a 1.2 m push easing in from rest. Figures: the lighters of chain fires
-  7/5/3/1 (crouched at their own catch, risen by +22, turned to the glow by +36) and 4 EXTRA watch-fires 1.3-1.7 km out
-  (already burning). A14 draws the same figures through `draw_figures` (before the fires) and stacks EXTRA.
-  **Open:** the chain lighters are small at A14's distances (fire 5's ~25 px, fire 3's ~9 px): judge on the look-dev.
-* **Next:** review both look-devs at full res (composition + 1:1 crops; the four gate questions), fix, then JOB READY
-  (reveal_a_1: 120 frames; watchers: 160 frames split in <= 45-min jobs).
+## RUN-A3 STATE AT PAUSE (27 Sep ~20:40Z; the account's usage ends ~21:25Z, RESUME ~23:30Z)
+* **A13 R2-A THE REVEAL: APPROVED, final queued on the farm** (`reveal_a_1`, cut 3680-3799 -> `renders/reveal_A`,
+  launched 20:24Z with `--nodes 1`). Continues H1's take in H1's own renderer (continuity 3680 vs h1_v3h5 1555 = 0.64/255).
+  **Pending (director's note, cheap 6-min re-render):** the cloud sea reads as a flat snowfield. When RUN-A-L sends the
+  final `nighta.CLOUD` values (its cloud-sea knob grid on the farm), set them in `nighta.CLOUD`, commit, push, then
+  `farm.py the-long-dawn/cloud/jobs/reveal_a_1.json --nodes 1` again (delete `renders/reveal_A` first, or the `--skip`
+  keeps the old frames). reveal_a.py already blends CLOUD + f0 in over 3680-3728 (never q18, the snow's domain).
+* **A15 R16 THE WATCHERS: look-dev v2 on the farm** (`watchers_a_look`, 3 frames -> `renders/_farmtest/watchers_a_look`);
+  the final job `watchers_a_1` (160 frames) is written and pushed, NOT approved. v1 failed at 1:1 (the lit ledge read as
+  clay, the flame floated over a clip-art wood teepee, the lighter stood beside the fire). v2: the seventh fire on a
+  dry-stone beacon cairn (5 courses, ~1.02 m); the lighter almost in front of it (a backlit silhouette, the flame above the
+  hood); `nighta.POOL_I` 14 -> 6; eye 1.9 m (fires 1 and 3 in sight); a 3.5 m push easing in from A14's hold; A14's catch
+  flares drawn after the fires. Plate = A14's END_CAM: (-999.58, -192.88, -523.22), yaw -23, pitch -1.8, hfov 40.
+  **Next:** review the v2 look-dev (sheet + 1:1 crop of the lighter and the cairn). If good: JOB READY watchers_a_1 with
+  check stills; if the near ground still reads as clay, the fallback is to drop the plate's lower third (pitch up, the
+  ground to the frame's edge) or to let the push carry the lighter past the ground faster.
+* **Shared kit `nighta.py`:** night_light() (world.night_light + TERRAIN + CLOUD, `NIGHT_CLOUD` env override), the cold glow
+  (I0 0.14, breathing once a bar), the red under the cloud (150 world-fixed patches, beat pulse), fires (`POOL_I` 6).
+  A14 (`beaconrun_a.py`, RUN-A-L) imports it, plus `watchers_a.plate/draw_figures/extra_fires`.
+* **Check stills:** `_local_logs/review/runA/runA3_reveal_*.jpg`.
 
 ## RUN-A-L STATE (live, 27 Sep ~19:50Z): A2 FALSE DAWN, A11 X2, A14 BEACON RUN
 * **Split, third lane:** RUN-A3 took A13 and A15 at ~19:15Z. RUN-A-L keeps A2, A11 and A14 and owns `falsedawn.py`,
