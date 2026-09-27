@@ -104,15 +104,8 @@ def frame_sources(cut, variant, plan, f):
         out.append(_stat(mp) if mp else 'matte:none')
         spec = take.get('under')
         if spec:
-            how, stem, *rest = spec
-            g = rest[0] if (how == 'hold' and rest) else f
-            for d in (stem, stem + '_half'):
-                up = AS.index(os.path.join(AS.RENDERS, d)).get(g)
-                if up:
-                    out.append(_stat(up))
-                    break
-            else:
-                out.append('under:none')
+            up, _ = AS.locate_under(spec, f)
+            out.append(_stat(up) if up else 'under:none')
     return out
 
 
@@ -389,6 +382,25 @@ def status_frames(cut, variant):
     return slate, planned_black, missing, proxy, proxies
 
 
+def provisional_frames(cut, variant):
+    """Count present frames using declared provisional sources, once per frame; selection is unchanged."""
+    count, sources = 0, []
+    for shot in EDL.EDL[cut]:
+        plan = AS.plan_shot(shot, cut, variant)
+        if plan['kind'] != 'take':
+            continue
+        n, used = 0, set()
+        for f in range(shot['f0'], shot['f1']):
+            provisional = AS.provisional_sources(plan['take'], cut, variant, f)
+            if provisional:
+                n += 1
+                used.update(provisional)
+        if n:
+            count += n
+            sources.append(f"{shot['sec']} {shot['code']} ({n} f, {', '.join(sorted(used))})")
+    return count, sources
+
+
 def qc(cut, variant, mov, mp4, audio_label, build):
     total = EDL.TOTAL[cut]
     lines, res = [], {'file': mov, 'checks': []}
@@ -416,6 +428,7 @@ def qc(cut, variant, mov, mp4, audio_label, build):
     p995, grid, nd = picture_stats(mov, total)
     black = p995 < 0.03
     slate, planned, missing, proxy, proxies = status_frames(cut, variant)
+    provisional, provisional_sources = provisional_frames(cut, variant)
     runs, t = [], 0
     while t < nd:
         if black[t]:
@@ -469,6 +482,9 @@ def qc(cut, variant, mov, mp4, audio_label, build):
     if proxy:
         check('WARN', 'EDIT proxies', f'{proxy:,} frames are EDIT stand-ins until their plates land: ' +
               ', '.join(proxies))
+    if provisional:
+        check('WARN', 'provisional picture sources', f'{provisional:,} frames use provisional sources: ' +
+              ', '.join(provisional_sources))
     check('INFO', 'build', f"{build['encoded']} of {build['segments']} segments encoded "
                            f"({build['frames_encoded']:,} f) in {build['seconds']:.0f} s")
     if build.get('finish'):                                   # FINISH: the film finish and what is still unfinished
@@ -477,11 +493,14 @@ def qc(cut, variant, mov, mp4, audio_label, build):
               f"{build['finish']}" + (f"; {nb} segments ({build.get('finish_backlog_frames', 0):,} f) still "
                                       f"unfinished (the budgeted backlog; FINISH_ALL=1 clears it)" if nb else
                                       '; every rendered frame finished'))
+    # Picture-source completeness only: audio/finish warnings and creative approval are separate decisions.
+    complete = slate == 0 and proxy == 0 and provisional == 0
     head = (f"THE LONG DAWN v3 · {cut} · {FILM[cut]}{' · ALT (coded towers)' if variant else ''} · master QC · "
             f"{time.strftime('%d %b %H:%MZ', time.gmtime())}\n{mov} ({os.path.getsize(mov) / 1e6:.1f} MB)"
             f"{'  +  ' + os.path.basename(mp4) if mp4 else ''}\nRESULT: {worst}"
-            f"{'' if slate == 0 and proxy == 0 else '  (not final: slates or EDIT proxies remain)'}\n")
-    res.update(result=worst, complete=slate == 0 and proxy == 0, slate_frames=slate, proxy_frames=proxy)
+            f"{'' if complete else '  (picture sources incomplete: slates, EDIT proxies or provisional sources remain)'}\n")
+    res.update(result=worst, complete=complete, slate_frames=slate, proxy_frames=proxy,
+               provisional_frames=provisional, provisional_sources=provisional_sources)
     return head + '\n'.join(lines) + '\n', res
 
 

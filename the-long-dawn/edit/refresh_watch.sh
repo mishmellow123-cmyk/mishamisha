@@ -9,7 +9,8 @@
 #     each through the render queue, and it goes on watching
 #   - then the finished stretches go to ~/Downloads/The Long Dawn v3 - PREVIEWS/ (edit/previews.sh)
 #   - it EXITS (waking whoever launched it) only when a step fails, a QC says FAIL, a new preview file appears
-#     (exit 3), a film's master becomes complete (no slates left), or nothing changes for MAX_H hours (default 6).
+#     (exit 3), a film's picture sources become complete (no slates, EDIT proxies or provisional sources),
+#     or nothing changes for MAX_H hours (default 6). Completion is not creative approval or audio/finish QC.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 source ~/.venvs/longdawn/env.sh
@@ -39,7 +40,14 @@ for c in 'ABC':
             t = pl['take'] or {}
             dirs = AS.chain(t, c, v) if t and t['mode'] != 'video' else []
             dirs += [os.path.join(AS.RENDERS, x) for x in (t.get('matte'), t.get('add')) if x]
-            h.update(repr((s['f0'], pl['kind'], t.get('stem'), pl['have'], pl['alt'], [dmt(d) for d in dirs])).encode())
+            if t.get('matte') and t.get('under'):
+                stem = t['under'][1]
+                dirs += [os.path.join(AS.RENDERS, x) for x in (stem, stem + '_half')]
+            h.update(repr((s['f0'], pl['kind'], t.get('stem'), pl['have'], pl['alt'],
+                           AS.EDL.is_final_take(pl['take']), [dmt(d) for d in dirs])).encode())
+            if pl['kind'] == 'take':
+                for f in range(s['f0'], s['f1']):
+                    h.update(repr(AS.provisional_sources(t, c, v, f)).encode())
     alt = h.hexdigest()[:10]                    # which take each shot plays and when its folders last changed
     audio = 'click'
     for p in (tab.get((c, 'score')), os.path.join(v3, f'final_{c}.wav'), tab.get((c, 'fallback')),
@@ -50,7 +58,7 @@ for c in 'ABC':
     print(f'{c}:{have}+{alt}:{audio}')
 EOF
 }
-complete() {  # the masters whose QC says complete (no slates), one name per line
+complete() {  # QC's picture-source completeness signal, one master name per line
   python3 -c "
 import glob, json, os
 for p in sorted(glob.glob(os.path.join('$DELIV', '*_QC.json'))):
@@ -104,7 +112,7 @@ while :; do
   if [ -n "${newp// /}" ]; then echo "refresh_watch: NEW PREVIEW: $newp($(date -u +%H:%MZ))"; exit 3; fi
   done1=$(complete)
   new=$(comm -13 <(echo "$done0") <(echo "$done1") | tr '\n' ' ')
-  if [ -n "${new// /}" ]; then echo "refresh_watch: COMPLETE (no slates left): $new($(date -u +%H:%MZ))"; exit 0; fi
+  if [ -n "${new// /}" ]; then echo "refresh_watch: PICTURE SOURCES COMPLETE (no slates, proxies or provisional sources): $new($(date -u +%H:%MZ))"; exit 0; fi
   done0="$done1"
   [ "${ONCE:-0}" = "1" ] && exit 0
 done

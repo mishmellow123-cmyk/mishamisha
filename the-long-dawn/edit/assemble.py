@@ -119,6 +119,40 @@ def locate(take, cut, variant, f):
     return None, False
 
 
+def locate_under(spec, f):
+    """Metadata-only (path, folder stem) matching Ctx.under's first-present source and held-frame rules.
+
+    Keep the renderer unchanged to preserve existing segment hashes. The parity tests exercise its actual
+    reads against this lookup, including decode failure (which never tries the next folder).
+    """
+    if not spec:
+        return None, None
+    how, stem, *rest = spec
+    g = rest[0] if (how == 'hold' and rest) else f
+    for d in (stem, stem + '_half'):
+        p = index(os.path.join(RENDERS, d)).get(g)
+        if p:
+            return p, d
+    return None, None
+
+
+def provisional_sources(take, cut, variant, f):
+    """Declared provisional sources selected for a present frame, including its optional book under-layer.
+
+    Like coverage, this uses source indexes, not decoded pixels. Missing matte/under layers keep their
+    existing compositor behavior; a selected under-layer counts only when the matte path is present.
+    """
+    p, _ = locate(take, cut, variant, f)
+    if not p:
+        return ()
+    sources = [] if EDL.is_final_take(take) else [take['stem']]
+    if take.get('matte') and index(os.path.join(RENDERS, take['matte'])).get(f + take['off']):
+        up, stem = locate_under(take.get('under'), f)
+        if up and not EDL.UNDER_FINAL_ELIGIBILITY.get(stem, True):
+            sources.append('under:' + stem)
+    return tuple(sources)
+
+
 def complete(take, cut, variant, a, b):
     got = set()
     for d in chain(take, cut, variant):
@@ -235,6 +269,7 @@ class Ctx:
             img = grade(img, take['grade'])
         return img
 
+    # Source selection is mirrored by locate_under for metadata; test_picture_readiness pins parity.
     def under(self, spec, f):
         if not spec:
             return None

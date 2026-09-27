@@ -55,7 +55,6 @@ MEANING = dict(
     BLACK='planned black: the films open, and breathe, on black',
     PROXY='an edit-built stand-in (the X2 star field) until the department\'s plate lands',
     VARIANT='the producer\'s labelled alternate for A (the two giants as coded towers); shown beside MAIN')
-STAND_IN_RX = re.compile(r'\b(pre-h5|test|preview|quarter-res|half-res|stand-in)\b', re.I)
 SET_NAME = dict(lower='lower third', row='lower third, one row (T6b joins T6a)', black_top='on black, upper line',
                 black_bottom='on black, lower line', ink='ink write-on, lower third', ink_page='ink on the page, centre',
                 fire='fire letters, lower third', fire_black_top='fire letters on black, upper line',
@@ -143,9 +142,11 @@ class Film:
         p, alt = AS.locate(plan['take'], self.cut, self.variant, f)
         if not p:                                            # a title shot shows its stand-in sky, not a slate
             return ('PROXY' if self.shots[i]['kind'] == 'title' else 'SLATE'), False
+        if AS.provisional_sources(plan['take'], self.cut, self.variant, f):
+            return 'STAND_IN', alt
         if alt:
             return 'VARIANT', True
-        return ('STAND_IN' if STAND_IN_RX.search(plan['take'].get('note') or '') else 'RENDERED'), False
+        return 'RENDERED', False
 
     def note(self, f):
         plan = self.plans[self.shot_i(f)]

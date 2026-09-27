@@ -28,13 +28,29 @@ def bf(bar, beat=1.0):
 
 
 def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=None, video=None, need=None,
-      add=None):
+      add=None, final_eligible=True):
     """need=(a, b): the take is used only once its folder holds every src frame a..b (a shared take such as H1
     switches over in one piece, never frame by frame while a render is still landing).
     add='<folder>': an additive layer in the same src numbering (renders/<folder>/), added after the matte comp;
-    a frame counts as rendered only when the add layer has it too."""
+    a frame counts as rendered only when the add layer has it too.
+    final_eligible=False: an explicitly provisional take may still play in partial masters and previews,
+    but cannot establish picture-source completeness. Approved reuse remains eligible."""
     return dict(stem=stem, off=off, mode=mode, note=note, crop=crop, grade=grade, matte=matte, under=under,
-                video=video, need=need, add=add)
+                video=video, need=need, add=add, final_eligible=final_eligible)
+
+
+def is_final_take(take):
+    """Declared source eligibility, independent of filenames, resolution, age and descriptive wording.
+
+    Takes from older callers without the field retain their existing eligibility. This is not a creative
+    approval or a check of the encoded media; absence and EDIT proxies are handled by their own status.
+    """
+    return take is not None and take.get('final_eligible', True)
+
+
+# Explicit folder eligibility when a source is composited beneath a take. This does not infer eligibility
+# from the '_half' suffix: approved reuse remains eligible unless declared here.
+UNDER_FINAL_ELIGIBILITY = {'embers_C3_half': False}
 
 
 def S(sec, f0, f1, code, name, owner, desc, takes=(), kind='takes'):
@@ -50,7 +66,8 @@ H1_POST5 = 'H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, ora
 
 
 def h1(off, **kw):
-    return [T('h1_v3h5', off, 'exact', H1_POST5, need=(1200, 1555), **kw), T('h1_v3', off, 'exact', H1_PRE5, **kw)]
+    return [T('h1_v3h5', off, 'exact', H1_POST5, need=(1200, 1555), **kw),
+            T('h1_v3', off, 'exact', H1_PRE5, final_eligible=False, **kw)]
 
 
 # B: "H1 in B cropped to hands, tinder and sparks" (B DECISION 06:40Z): x, y, w, h as fractions of the frame
@@ -66,7 +83,7 @@ B_H1_ROAR_CROP = (0.20, 0.08, 0.30, 0.30)
 H1_C = T('h1', 0, 'v3', 'H1-C hands and flint')
 EMB_A = [T('embers_A3', 0, 'exact', 'EMBERS v3, A timeline')]
 EMB_C = [T('embers_C3', 0, 'exact', 'EMBERS v3, C timeline'),
-         T('embers_C3_half', 0, 'exact', 'EMBERS v3 half-res preview, pre-H5')]
+         T('embers_C3_half', 0, 'exact', 'EMBERS v3 half-res preview, pre-H5', final_eligible=False)]
 BOOK = dict(matte='book_C_matte')
 
 
@@ -79,7 +96,7 @@ def book_e15():
 
 
 X1_TEST = T('x1_letters_C_test', -560, 'video', 'MAP-v3 X1 motion test (half-res mp4, C 560-906)',
-            video='edit/cache/x1_letters_C_test.mp4')
+            video='edit/cache/x1_letters_C_test.mp4', final_eligible=False)
 
 
 def ring(shot):
@@ -128,7 +145,8 @@ A = [
     S('A13', 3860, 3920, 'M5', 'DESERT', 'MONTAGE-3D-2',
       'A dune crest under the Milky Way; a robed figure; her stone beacon catches on bar 49 b3; she looks out.',
       [T('montage3d_v3/desert', -3860, 'exact', 'Blender DESERT v3 final (H5: wide, plain cloak, irregular prints)'),
-       T('montage', 1520 - 3860, 'layered', 'Blender DESERT montage_v2 1520-1579, pre-H5 (framing, footprints)')]),
+       T('montage', 1520 - 3860, 'layered', 'Blender DESERT montage_v2 1520-1579, pre-H5 (framing, footprints)',
+         final_eligible=False)]),
     S('A14', 3920, 4240, 'R3', 'THE BEACON RUN', 'RUN-A',
       "Following her look, fires link across the ranges every two beats, seven of them; the red under-glow pulses.",
       [T('beaconrun'), T('run')]),
@@ -157,7 +175,8 @@ VIGIL = [T('vigil', 0, 'v3', 'RUN-B THE VIGIL')]
 B = [
     S('B1', 0, 640, 'R8', 'DUSK', 'RUN-B',
       'The range at sunset above the cloud sea; the light leaves the peaks lowest first; one last red point goes out.',
-      [T('dusk'), T('run_b_tests/dusk_motion', 0, 'exact', 'quarter-res motion test, pre-H5 (triangle peak)')]),
+      [T('dusk'), T('run_b_tests/dusk_motion', 0, 'exact', 'quarter-res motion test, pre-H5 (triangle peak)',
+                    final_eligible=False)]),
     S('B2', 640, 880, 'H4', 'THE CLIMB', 'HEROINE + RUN-B',
       'Blue night: a tiny figure on a snow arete carries a clay fire-pot, the only warm point; then close behind her.',
       [T('climb'), T('heroine')]),
@@ -227,7 +246,7 @@ C = [
     S('C9', 1920, 1992, 'E12', 'THE EYE (burn-through)', 'MAP + EMBERS',
       'The glow burns through the page into the storm, which resolves into a lidless Eye over all the towers.',
       [book(under=('same', 'embers_C3')), T('embers_C3', 0, 'exact', 'EMBERS v3, C timeline'),
-       T('embers_C3_half', 0, 'exact', 'EMBERS v3 half-res preview, pre-H5')]),
+       T('embers_C3_half', 0, 'exact', 'EMBERS v3 half-res preview, pre-H5', final_eligible=False)]),
     S('C9', 1992, 2080, 'E12', 'THE EYE ONTO NOTHING', 'EMBERS',
       'On bar 26 b1 its slit opens for the first time, onto empty black: no one is behind it.', EMB_C),
     S('C10', 2080, 2320, 'M4', 'THE MIRROR (optional)', 'MONTAGE',
