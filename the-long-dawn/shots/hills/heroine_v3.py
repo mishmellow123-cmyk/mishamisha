@@ -410,13 +410,16 @@ class DeadEmber:
         life = self.life(f)
         XP = np.zeros(64)
         XP[19] = life
-        XP[20] = 0.22
+        XP[20] = 0.16
         XP[24] = 260.0
+        # the eye: the ember's top, turned a little toward the lens; it narrows as the ember dies
+        XP[21:24] = epos + np.array([-0.004, 0.0075, -0.004])
+        XP[31] = 0.0030 + 0.0026 * min(1.0, life)
         XP[25] = 1.0
         XP[26] = 1.0
         ENV = env_stack(night_env(moon=0.8))
         # light: B's silver moon from behind her; the ember inside the pot (its walls and her hands shadow it)
-        glow = 0.0045 * (0.02 + life ** 1.6) * (0.35 + 0.65 * lid_u)
+        glow = 0.0026 * (0.02 + life ** 1.6) * (0.35 + 0.65 * lid_u)
         L = [moon_light(0.45, self.MOON),
              light(epos + [0, 0.012, 0], (1.0, 0.30, 0.06), glow, 0.010, 6.0)]
         env = hero.env_vec(rim_dir=self.MOON, rim=np.array([0.10, 0.13, 0.20]), amb=np.array([0.004, 0.006, 0.011]),
@@ -461,7 +464,7 @@ class DeadEmber:
                 if z <= 0.05:
                     continue
                 d2 = float(np.sum((pos - epos) ** 2)) + 0.002
-                Ls = np.array([1.0, 0.30, 0.06]) * 0.0045 * (0.02 + life ** 1.6) * lid_u / d2 * 0.25 + \
+                Ls = np.array([1.0, 0.30, 0.06]) * 0.0026 * (0.02 + life ** 1.6) * lid_u / d2 * 0.25 + \
                     MOON_COL * 0.010
                 sig = max(0.8, cam.f * rad_m / z * 0.6)
                 hsd.splat_fog(img, float(sx), float(sy), sig, dens, Ls[0], Ls[1], Ls[2],
