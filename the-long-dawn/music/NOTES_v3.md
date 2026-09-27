@@ -8,8 +8,8 @@
 | A fallback | `music/out/v3/fallback_A.wav` (stems `fallback_A_score.wav`, `fallback_A_sfx.wav`) | **DONE 19:10Z** (re-rendered on the current engine so the file matches the committed source): battery all PASS (level map 20/20, sync 8/8, notes 0, clicks 0) | COMPOSER-A |
 | B fallback | `music/out/v3/fallback_B.wav` (stems `fallback_B_score.wav`, `fallback_B_sfx.wav`) | **DONE 11:45Z**: battery all PASS (level map 14/14, sync 5/5, notes 0, clicks 0) | - |
 | C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | **DONE 19:10Z**: battery all PASS (level map 28/28, sync 7/7, notes 0, clicks 0). Fix: the ride (C2 bar-2 horn -6.5 dB, C12 piano -4.5 dB) + C11's race drone now falls away after the slip into C12's black (its tail was C12's peak, -6.4 LU) | COMPOSER-A |
-| A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`) | pending: `src/score_v3_A.py` being written | COMPOSER-A |
-| C score | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | pending: `src/score_v3_C.py` being written | COMPOSER-C |
+| A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`) | render 4 (20:40Z) battery ALL PASS (level map 20/20, rules 3/3, centroid 5/5, sync 55/55); a balance pass (render 5) is rendering: use the file once this row says FINAL | COMPOSER-A |
+| C score | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | in progress: render 2 20:00Z = level map 28/28, rules 3/3, sync 45/50 (usable temp); render 3 queued 20:10Z (sync, peaks, effects balance) | COMPOSER-C |
 
 All masters: 48 kHz / 24-bit / stereo WAV, exactly the cut's length (A 6,480 f = 12,960,000 samples; B 5,440 f =
 10,880,000; C 7,200 f = 14,400,000), -16 LUFS integrated, true peak <= -1.2 dBTP, from silence to silence, with
@@ -34,10 +34,52 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
   away into silence"). Only C11 matches (checked: A's and B's part keys unchanged by it). A's fallback was also
   re-rendered, because the previous agent's last engine change (the horn ride on note gain) had not been rendered
   for A: it still passes, and the file now matches the committed engine.
-- **2. A's full score:** `src/score_v3_A.py` written (the plan is in its docstring, bar by bar). Next: render
-  (`python render_v3.py A`), battery, ride, iterate.
+- **2. A's full score:** `src/score_v3_A.py` (the plan is in its docstring, bar by bar).
+  * Render 1 (19:36Z): format/breaths/notes/clicks PASS; level map 6 FAIL, sync 17/54 FAIL, rule "brink loudest"
+    FAIL. Causes: the master crushed the brink by ~13 dB (transient peaks: taiko, the crumble piano, the drum roll),
+    so the edge tied it; the glass too hot in bars 12-13; the score's own impact rang into bar 36's true silence.
+    Sync: bowed D3 fundamentals arrive 0.15-0.4 s after the kit's broadband attack estimate; legato octave drops
+    ~0.55 s; entries that crescendo from nothing through a velocity-layer boundary ~0.25 s.
+  * Render 2 (19:55Z): level map 18/20 (the edge -0.4 LU under the brink; A10's piano -7.1 vs -10), sync 50/54
+    (the watch tone +60 ms; the low pizz measured in its band caught the previous note's leakage). The master
+    still took 6-7 dB off every taiko hit in the edge (pumping) and 8-11 dB off the brink.
+  * Render 3 (20:15Z): level map 20/20, sync 55/55, centroid 5/5; one rule FAIL: bars 28-29 (four spiccato
+    sections in sixteenths + five brass) came within 0.8 LU of the brink. Checked: bar 36's two seconds are true
+    silence (score -111 dBFS; only the effects' ash bed's 0.3 s fade tail).
+  * Render 4 (20:40Z): **battery ALL PASS** (level map 20/20, rules 3/3, centroid 5/5, sync 55/55, notes 0, clicks 0,
+    -16.04 LUFS, TP -1.29 dBTP). Fix: sparse beats dense in the sixteenths (only violas + second violins double;
+    cellos and first violins keep eighths), softer brass call. Kept as `out/v3/_keep_A_r4/` (+ its analysis in
+    `analysis/v3/_keep_A_r4/`).
+  * Render 5 (20:55Z, running): a balance pass, because per-part loudness showed story lines buried: the promise's
+    line 8 dB under the bloom (the bloom now leaves its register), the violas' CALL 4 dB under its Bb pad, the
+    watchers' corrupted call ~8 dB under the string hold, the Run's far answers under the D pedal, the crossing's
+    cycle 10 dB over the walk and the call, the dawn's ANSWER and HOME under the pad and basses. If render 5 fails
+    anything, restore render 4 from `_keep_A_r4` (it passes) and report.
+  * Tool: `scratchpad/who.py <cut> <name> t0 t1 ...` ranks the parts by loudness in a window (from the part cache).
 
 ## COMPOSER-C (cut C) · STATE
+- **20:05Z: render 2 battery**: level map **28/28 PASS**, all 3 rules PASS (everything after the Eye >= 1.8 LU
+  under the slit; the dawn -3.1 LU; the prologue -9.4 LU), sfx -25.7 LUFS vs score -16.0 (B-like), notes 0, clicks
+  0; sync 45/50 (the misses: two crescendo blooms probed as arrivals, and entries the attack table over-reads:
+  per-layer the quiet sections arrive ~0.52 s after starting, the violins' D5 0.16 s, the solo violin 0.44 s).
+  The master pulled 13 dB at the slit (the cello tremolo's 15 dB crest) and 7.5 dB at a race surge (taiko +
+  timpani). **Render 3 (queued 20:10Z behind A)**: the slit's weight on sustained arco cellos and basses (tremolo
+  lower), the race's drums lower; the blaze, the seethe, the torches' dips and the cold ticks up where they are
+  the moment (still 8-33 LU under in render 2), the music ridden down around them (C21 -2.5, the white heart's loop,
+  bar 70, the horn under the roar); anticipation from the measured attacks; the blooms' onsets on the beat.
+- **19:45Z: render 1 battery** (`analysis/v3/final_C/`): format/loudness/TP PASS, notes 0, clicks 0, breaths 47-55 dB
+  deep; level map 23/28 (C4, C6, C10, C12, C13 too loud: the harp-harmonics voice ~14 dB hot, the glass and the
+  falling glass a few dB hot); sync 41/50 (soft string entries under-anticipated: the quiet sections' bow needs
+  ~0.55 s; two probes measured the wrong thing). **The effects were buried** (16 LU under the score; B 8, the
+  fallback 11): the roar 9 LU under its horn, the beacons 13-15 LU under the Run, the seethe 28 LU under.
+  **Render 2 (19:45Z)**: `SCORE_TRIM_DB` -4.5 (gain only), voices rebalanced, the music leaves room at each fire
+  (the horn under the roar, the Run ridden -3, the Eye and the map bloom after their burn-throughs), the white heart
+  thinned to the healing Ring loop + the seethe, a growing blaze for the fire everyone lit (`C+.fire.rises`), sync
+  trims from per-layer measurements (`ANTIC_HI`, `ANTIC_DT`, `ANTIC_SET`).
+- **19:15Z: score written** (`src/score_v3_C.py`, plan bar by bar in its docstring; 63 parts, ~1,400 notes, 50
+  sync points; page checks 0: notes, rates, no stroke on any ignition, no ANSWER before beacon 2, no HOME before
+  the dawn). **Render 1 queued** behind COMPOSER-A's (`wait_and_render.sh` waits for any render_v3 to finish;
+  log `C1.log` in the scratchpad). Next: the battery, a ride (`RIDE` in score_v3_C.py), iterate.
 - **18:55Z: writing** `src/score_v3_C.py` (the score) + `src/voices_v3_C.py` (C's own synth voices and effect
   designs: the pen, paper burn, cold-metal tick, the melt's seethe, the cock crow, the drop, the torches' dip, the
   harp harmonics, the anvil, the tam-tam swell, the falling glass tone). Both owned by COMPOSER-C. They REGISTER
