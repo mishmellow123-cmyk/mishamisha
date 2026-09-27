@@ -60,6 +60,7 @@ TESTS = os.path.join(ROOT, 'renders', 'heroine_tests')
 CACHE = os.path.join(TESTS, 'cache_climb')
 
 F0, FC, F1 = 640, 800, 880            # WIDE 640-799 (bars 9-10), CLOSE 800-879 (bar 11 b1)
+FIG = os.environ.get('CLIMB_FIG', 'b')  # 'b' = B's shared keeper (person2 + bfig), 'h' = HEROINE's 3-D figure (old)
 
 # the night: the vigil's moon (low in the ENE), its colour, the sky wheel frozen at the reveal's first frame
 MOON_AZ, MOON_EL = VG.moon_at(VG.F0)
@@ -69,8 +70,13 @@ SKY_ANG = VG.sky_angle(VG.F0) - math.radians(VG.STAR_DEG / (VG.F1 - VG.F0)) * (V
 F_SKY = 1360                          # the climb is real time: the sky does not wheel; it is the reveal's first sky
 FINISH = dict(exposure=1.15, bloom_strength=0.06, bloom_threshold=1.2, streak_strength=0.0, vignette_amount=0.22)
 NIGHT_AMB = lin('#27335E') * 0.45
-WIND_AZ = 314.0                       # the wind blows toward the NW: off the crest toward the wide's lens
+WIND_AZ = 330.0                       # the wind blows toward the NNW: across the crest, off it toward the wide's lens
 WIND = BS.dirxz(WIND_AZ)
+try:                                  # RUN-B-3's shared figure renderer and props (B's keeper, the 3-D-read cairn)
+    import bfig as BF                 # noqa: E402
+    import bprops as BP               # noqa: E402
+except Exception:                     # not on this checkout yet: mt.figure and bset's cairn
+    BF = BP = None
 
 
 def dirxz(az):
@@ -148,6 +154,62 @@ class Walk:
 
 
 # ------------------------------------------------------------------ her figure (3-D, hsdf3) ---
+# materials: hsdf3's table + the woven shawl (the vigil puppet's red wrap: M 13 / 20 in bset) as two rows of our own
+M_SHAWL, M_SHAWL_DARK = H3.NMAT3, H3.NMAT3 + 1
+
+
+def material_table():
+    M0 = H3.material_table3()
+    M = np.zeros((M0.shape[0] + 2, M0.shape[1]))
+    M[:M0.shape[0]] = M0
+    M[M_SHAWL] = M0[H3.M_SCARF]
+    M[M_SHAWL, 0:3] = [0.30, 0.021, 0.017]                  # bset's shawl red, lit by the moon it reads deep red
+    M[M_SHAWL_DARK] = M0[H3.M_SCARF]
+    M[M_SHAWL_DARK, 0:3] = [0.20, 0.015, 0.012]             # the darker woven bands
+    return M
+
+
+MTAB = material_table()
+
+
+def shawl_wrap(B, J, t, wind=1.0):
+    """The red woven-wool shawl as the vigil draws it: a broad wrap over the shoulders and down the upper back (over
+    the hood's cape and the cloak), two darker woven bands across it, and one fringed end hanging at her right front
+    edge, lifting in the wind."""
+    C7, Ut, Vt, Wt = J['C7'], J['Ut'], J['Vt'], J['Wt']
+    R = np.stack([Wt, Vt, Ut])
+    c = C7 - 0.12 * Vt - 0.035 * Ut
+    rad = np.array([0.268, 0.218, 0.196])
+    bot = C7 - 0.31 * Vt
+    front = C7 + 0.05 * Ut
+    B.group('shawl', M_SHAWL, disp=1, amp=0.0012, scale=60.0, band=0.006)
+    B.ell(c, rad, R=R)
+    B.plane(bot, np.stack([-Vt, Wt, Ut]), op=2, reach=0.9)
+    B.plane(front, np.stack([Ut, Wt, Vt]), op=2, reach=0.9)
+    # the weave: two darker bands across her back (as the puppet's two bands)
+    B.group('shawl_bands', M_SHAWL_DARK, disp=1, amp=0.0010, scale=60.0, band=0.004)
+    for y0, y1 in ((-0.182, -0.160), (-0.072, -0.050)):
+        B.ell(c, rad + 0.0035, R=R)
+        B.plane(C7 + y0 * Vt, np.stack([-Vt, Wt, Ut]), op=2, reach=0.9)
+        B.plane(C7 + y1 * Vt, np.stack([Vt, Wt, Ut]), op=2, reach=0.9)
+        B.plane(front, np.stack([Ut, Wt, Vt]), op=2, reach=0.9)
+    # the fringed end at her right front edge (her right = -Wt), hanging from the shoulder and lifting downwind
+    right = -Wt if np.dot(Wt, [1.0, 0.0, 0.0]) < 0 else Wt
+    e0 = C7 - 0.05 * Vt + 0.035 * Ut + right * 0.235
+    sway = 0.02 * math.sin(2 * math.pi * 0.7 * t) + 0.01 * math.sin(2 * math.pi * 1.9 * t + 1.0)
+    e1 = e0 - 0.17 * Vt + right * (0.025 + 0.02 * wind + sway) + 0.02 * Ut
+    e2 = e1 - 0.10 * Vt + right * (0.02 + 0.03 * wind + 2 * sway)
+    B.group('shawl')
+    B.cone(e0, e1, 0.030, 0.034, k=0.02)
+    B.cone(e1, e2, 0.034, 0.036, k=0.02)
+    B.group('shawl_bands')
+    for k in range(6):                                          # the fringe: short twisted threads
+        u = (k + 0.5) / 6.0 - 0.5
+        a0 = e2 + Ut * (0.05 * u) + right * (0.005 * u)
+        a1 = a0 - Vt * (0.045 + 0.01 * (k % 2)) + right * (0.012 + 0.02 * wind + 2.5 * sway)
+        B.cone(a0, a1, 0.0035, 0.0025, k=0.002)
+
+
 def build_her(walk, f, wind=1.0):
     """The Builder for her at frame f (local frame): HEROINE's figure + a long wool cloak + B3's crafted pot, lid on."""
     p, pel, c, glow, t, ph = walk.pose(f)
@@ -172,6 +234,7 @@ def build_her(walk, f, wind=1.0):
     # half-space (the plane's local +x = outside): R[0] = +z keeps what is behind her chest
     B.plane(np.array([0.0, pel[1], pel[2] + 0.09]), np.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]),
             op=2, reach=1.6)
+    shawl_wrap(B, J, t, wind)
     # the pot: B3's crafted vessel (same geometry), lid on
     de = HV.DeadEmber()
     de.POT = c
@@ -196,9 +259,112 @@ def her_layer(walk, f, tcam, ss=3, pot_I=1.0):
          HV.light(glow + np.array([0.0, 0.004, 0.0]), (1.0, 0.36, 0.08), 0.0045 * pot_I, 0.02, 4.0)]
     env = hero.env_vec(rim_dir=moon_l, rim=np.array([0.10, 0.13, 0.20]), amb=np.array([0.005, 0.007, 0.013]),
                        bounce=np.array([0.010, 0.012, 0.018]), ao=0.03)
-    res = H3.render(cam, B, Hp, np.asarray(L, np.float64), env, ss=ss,
+    res = H3.render(cam, B, Hp, np.asarray(L, np.float64), env, M=MTAB, ss=ss,
                     sil=dict(skin=1.0, eyes=1.0, cap=0.3, cap_brim=0.3, hair=0.3))
     return res, walk.to_world(glow), walk.to_world(c)
+
+
+# ------------------------------------------------------------------ her figure: B's shared keeper (2-D) ---
+# The director (via RUN-B-3): she is B's keeper all film = bset.person2 (RUN-B2's silhouette) rendered by RUN-B-3's
+# bfig.py when it lands (FG.render until then). person2 has no carry pose, so: person2 'stand' with arms=False, our
+# own sleeved arms (handback_b.sleeve_arm's style) under her shawl, the clay pot at her right hip, and a rear-view
+# trudge (heels lift in turn, the body bobs and sways; person2's 'walk' swings the legs sideways, a waddle from behind).
+_BASE_M = BF.MB() if BF is not None else BS.M
+_EXTRA = np.array([[0.105, 0.052, 0.032, 0.9, 0.15, 10.0, 0.06, 0, 0, 0, 0],         # fired clay, sooted
+                   [0.040, 0.020, 0.012, 0.0, 0.0, 8.0, 0.30, 1.0, 0.36, 0.08, 0.0]])  # the light under the lid
+M_CLAY2, M_GLOW2 = len(_BASE_M), len(_BASE_M) + 1
+MATS2 = np.vstack([_BASE_M, np.pad(_EXTRA, ((0, 0), (0, _BASE_M.shape[1] - _EXTRA.shape[1])))])
+
+
+def _sleeve_arm(d, sh, el, wr, sg, hand_ang, palm=0.3, drape=0.10, mat=14):
+    """handback_b.sleeve_arm's arm (RUN-B-3's style) if it is importable, else the same drawing here."""
+    try:
+        import handback_b as HB
+        return HB.sleeve_arm(d, sh, el, wr, sg, hand_ang, palm=palm, drape=drape, mat=mat)
+    except Exception:
+        sh, el, wr = np.asarray(sh, float), np.asarray(el, float), np.asarray(wr, float)
+        d.new_group()
+        d.capsule(sh, el, 0.080, 0.064, k=0.05, mat=mat, fuzz=0.008, ff=20.0)
+        d.capsule(el, wr, 0.060, 0.044, k=0.05, mat=mat, fuzz=0.008, ff=20.0)
+        d.new_group()
+        hu = np.array([math.cos(hand_ang), math.sin(hand_ang)])
+        pc = wr + hu * 0.040
+        d.ellipse(pc, 0.046, 0.031, ang=hand_ang, k=0.02, mat=19)
+        return pc
+
+
+def keeper_carry(t, ph, wind=1.0):
+    """(Drawing, pts) for her from behind, carrying the pot. pts: pot (belly centre), glow (the lid's leak), head.
+    Local metres, feet at the origin, x = screen right; wind = the screen side the wind blows her hem and shawl to."""
+    kw = dict(age=0.9, staff=False, arms=False, wind=wind, walk=0.0)
+    d0, p0 = BS.person2('stand', shawl=False, **kw)
+    ds, _ = BS.person2('stand', shawl=True, **kw)
+    g0 = max(int(r[12]) for r in d0.rows)
+    shawl_rows = [r.copy() for r in ds.rows if int(r[12]) > g0]
+    d = FG.Drawing()
+    d.rows = [r.copy() for r in d0.rows]
+    d.group = g0
+    # the trudge: each heel lifts in turn (leather rows below the knee move up), the other foot planted
+    for r in d.rows:
+        if int(r[11]) != 19:
+            continue
+        typ = int(r[0])
+        if typ == FG.CAPSULE and min(r[2], r[4]) < 0.40:
+            side = 1.0 if r[3] > 0 else -1.0
+            lift = 0.055 * max(0.0, math.sin(2 * math.pi * ph + (0.0 if side > 0 else math.pi)))
+            j = 4 if r[4] < r[2] else 2                     # the lower end
+            r[j] += lift
+        elif typ == FG.ELLIPSE and r[2] < 0.12:
+            side = 1.0 if r[1] > 0 else -1.0
+            lift = 0.055 * max(0.0, math.sin(2 * math.pi * ph + (0.0 if side > 0 else math.pi)))
+            r[2] += lift
+            r[4] *= 1.0 - 0.25 * lift / 0.055               # the lifted boot shows its sole edge-on
+    sL, sR = np.asarray(p0['sh_L'], float), np.asarray(p0['sh_R'], float)
+    # the pot at her right hip, a little out from the cloak: the one warm thing she has
+    pot = np.array([sR[0] + 0.105, sR[1] - 0.47])
+    # her left arm: the upper arm down her side, the forearm forward to the pot (hidden by her body)
+    elL = sL + np.array([0.035, -0.25])
+    _sleeve_arm(d, sL, elL, elL + np.array([0.06, -0.05]), -1, -0.3, palm=0.2)
+    # her right arm: down her side, the forearm out and forward to cup the pot's belly from below
+    elR = sR + np.array([0.055, -0.24])
+    wrR = pot + np.array([0.035, -0.070])
+    _sleeve_arm(d, sR, elR, wrR, 1, math.radians(165.0), palm=0.55)
+    # the vessel (B3's crafted pot in profile): a squat belly under a carinated shoulder, a short neck and rolled lip,
+    # the lid with its knob; the thong knotted round the neck; light leaking where the lid sits unevenly
+    d.new_group()
+    d.ellipse(pot, 0.081, 0.056, k=0.01, mat=M_CLAY2)
+    d.ellipse(pot + np.array([0.0, 0.030]), 0.069, 0.032, k=0.012, mat=M_CLAY2)
+    d.trap(pot + np.array([0.0, 0.052]), pot + np.array([0.0, 0.073]), 0.047, 0.041, rnd=0.004, k=0.008, mat=M_CLAY2)
+    d.capsule(pot + np.array([-0.043, 0.075]), pot + np.array([0.043, 0.075]), 0.007, 0.007, k=0.005, mat=M_CLAY2)
+    d.ellipse(pot + np.array([0.0, -0.058]), 0.050, 0.010, k=0.004, mat=M_CLAY2)
+    d.new_group()
+    d.capsule(pot + np.array([-0.046, 0.060]), pot + np.array([0.046, 0.060]), 0.0028, 0.0028, mat=19)   # the thong
+    d.new_group()
+    d.capsule(pot + np.array([-0.036, 0.082]), pot + np.array([0.040, 0.085]), 0.0045, 0.0065, mat=M_GLOW2)
+    d.ellipse(pot + np.array([0.030, 0.086]), 0.010, 0.007, mat=M_GLOW2)                                # the chip
+    d.new_group()
+    d.ellipse(pot + np.array([0.002, 0.090]), 0.049, 0.010, ang=0.03, k=0.004, mat=M_CLAY2)             # the lid
+    d.ellipse(pot + np.array([0.002, 0.102]), 0.011, 0.009, k=0.006, mat=M_CLAY2)                        # knob
+    # her right glove round the belly in front of the pot, her left glove's fingers over the lid's far edge
+    d.new_group()
+    d.ellipse(pot + np.array([0.030, -0.030]), 0.042, 0.030, ang=0.5, k=0.02, mat=19)
+    d.ellipse(pot + np.array([-0.058, 0.070]), 0.026, 0.018, ang=-0.4, k=0.015, mat=19)
+    # her shawl over it all (as person2 drapes it over the arms)
+    for r in shawl_rows:
+        r[12] = int(r[12]) - g0 + d.group
+        d.rows.append(r)
+    d.group = max(int(r[12]) for r in d.rows)
+    head = np.asarray(p0['head'], float)
+    return d, dict(pot=pot, glow=pot + np.array([0.02, 0.084]), head=head)
+
+
+def bfig_render():
+    """RUN-B-3's bfig renderer if it has landed (same call as FG.render), else FG.render."""
+    try:
+        import bfig as BF
+        return getattr(BF, 'render', FG.render)
+    except Exception:
+        return FG.render
 
 
 # ------------------------------------------------------------------ the shots ---
@@ -225,11 +391,6 @@ class Shot:
             os.replace(tmp, p)
         self.dist = self.G[..., BW.G_DIST].astype(np.float32)
         self.sky = (self.dist > 1e8).astype(np.float32)
-        # per-pixel |ray| / |ray_h| of the target camera: horizontal range -> 3-D distance
-        tt = self.tc
-        us, vs = np.meshgrid(np.arange(tt.W) + 0.5, np.arange(tt.H) + 0.5)
-        d = tt.ray(us, vs)
-        self.k3 = (np.linalg.norm(d, axis=-1) / np.maximum(np.hypot(d[..., 0], d[..., 2]), 1e-9)).astype(np.float32)
 
     def key(self):
         c = self.camera(1920, 804)
@@ -299,14 +460,17 @@ class Shot:
         caps = self.her_body_world(f)
         out = _point_light(X, N, ok, np.asarray(glow_w, np.float64),
                            np.array([np.r_[a, b, r] for a, b, r in caps], np.float64), 0.05)
-        col = np.asarray(MF.FIRE_LIGHT, np.float32) * np.float32(0.030 * pot_I)
+        col = np.asarray(MF.FIRE_LIGHT, np.float32) * np.float32(self.POOL * pot_I)
         return out[..., None].astype(np.float32) * col[None, None, :]
 
     def summit(self, img, zb, scam, t):
         """The counting cairn and the cold beacon, exactly as the vigil draws them (no fire yet)."""
         lights = [dict(dir=MOON, col=MOON_LIN, I=0.5)]
-        FG.render(img, zb, scam, BS.rubble_cairn(), BS.CAIRN, lights, amb=NIGHT_AMB, mats=BS.M, t=t,
-                  write_depth=True, zbias=0.3)
+        if BP is not None:
+            BF.render(img, zb, scam, BP.cairn3(), BS.CAIRN, lights, amb=NIGHT_AMB, t=t, write_depth=True, zbias=0.3)
+        else:
+            FG.render(img, zb, scam, BS.rubble_cairn(), BS.CAIRN, lights, amb=NIGHT_AMB, mats=BS.M, t=t,
+                      write_depth=True, zbias=0.3)
         back, front, fb = BS.beacon_base()
         FG.render(img, zb, scam, back, BS.BEACON, lights, amb=NIGHT_AMB, mats=BS.M, t=t, emissive_gain=0.0,
                   write_depth=True, zbias=0.3)
@@ -321,8 +485,12 @@ class Shot:
         t = f / FPS
         scam = self.fr.src
         pI = self.pot_I(f)
-        res, glow_w, c_w = her_layer(self.walk, f, self.fr.t_out, ss=3, pot_I=pI)
-        img = self.world(f, glow_w, pI)
+        p, pel, c, glow, _t, ph = self.walk.pose(f)
+        glow3 = self.walk.to_world(glow)                    # the lid's leak where the pot really is (in front of her)
+        res = None
+        if FIG == 'h':
+            res, glow_w, c_w = her_layer(self.walk, f, self.fr.t_out, ss=3, pot_I=pI)
+        img = self.world(f, glow3, pI)
         zb = self.dist.copy()
         if hasattr(VG, 'draw_sky'):                # RUN-B2's one sky (vigil + hand-back), frozen at the reveal's start
             VG.draw_sky(img, self.G, scam, self.sky, F_SKY, 1.0, self.ss)
@@ -330,12 +498,24 @@ class Shot:
             BW.add_band(self.G, KP._rotmat(KP.POLE, SKY_ANG), VG.BAND, 0.06, 1.0, img)
             KP.draw_stars(img, scam, self.sky, SKY_ANG - 0.0004, SKY_ANG, 1.6 * self.ss * self.ss, K=3)
         self.summit(img, zb, scam, t)
+        if FIG == 'b':
+            # B's keeper (person2 + our carrying arms and pot), a billboard at her feet, as the vigil draws her
+            feet = self.walk.to_world([0.0, self.walk.ground(0.0, pel[2]), pel[2]])
+            wside = 1.0 if float(WIND @ scam.right) >= 0.0 else -1.0
+            d, kp = keeper_carry(t, ph, wind=wside * self.WIND_HEM)
+            d.rotate(0.010 * math.sin(2 * math.pi * ph), pivot=(0.0, 0.0))          # the trudge's sway
+            glow_w = feet + scam.right * kp['glow'][0] + np.array([0.0, kp['glow'][1], 0.0])
+            lights = [dict(dir=MOON, col=MOON_LIN, I=0.5),
+                      dict(pos=glow3, col=MF.FIRE_LIGHT, I=0.05 * pI, r0=0.12)]
+            bfig_render()(img, zb, scam, d, feet, lights, amb=NIGHT_AMB, mats=MATS2, t=t, write_depth=True,
+                          zbias=0.3, emissive_gain=pI)
+            self._head_w = feet + np.array([0.0, kp['head'][1], 0.0])
         fr = self.fr
         fr.img, fr.zb, fr.dist = img, zb, self.dist
         out, zt, _ = PI.to_target(fr)
         out = np.ascontiguousarray(out, np.float32)
-        d3 = zt * self.k3
-        # her, depth-tested against the snow (her boots sink a little into it)
+        d3 = np.ascontiguousarray(zt, np.float32)             # G_DIST: 3-D metres along the ray
+        # the 3-D figure (FIG 'h'), depth-tested against the snow (her boots sink a little into it)
         if res is not None:
             y0, x0, rgb, a, dd, _ = res
             h, w = a.shape
@@ -366,94 +546,116 @@ class Shot:
 
     core_gain = 1.0
     halo_gain = 1.0
+    POOL = 0.06
+    WIND_HEM = 1.0
 
-    # --- spindrift: grains torn off the snow by the wind (toward the NW), lit by the low moon (forward scatter) and,
-    # near her, by the pot
-    N_GRAINS = 0
+    # --- spindrift: snow torn off the crest by the wind (toward the NNW), lit by the low moon (forward scatter) and,
+    # near her, by the pot. Two layers from one emission model: PUFFS (big soft blobs that grow as they diffuse: the
+    # veil of a plume) and GRAINS (fine streaks: the sparkle inside it).
+    PUFF = dict(n=0)
+    GRAIN = dict(n=0)
 
     def sources(self, rng, n):
         """(n, 3) world emission points on the snow (override)."""
         raise NotImplementedError
 
     def gust(self, t, P):
-        """0..1 gust strength at time t for emission points P (a wave travelling downwind along the ridge)."""
+        """0..1 gust strength at time t for emission points P (bursts travelling downwind and along the ridge)."""
         u = (P[:, 0] * WIND[0] + P[:, 2] * WIND[2]) * 0.02 + (P[:, 0] * WIND[2] - P[:, 2] * WIND[0]) * 0.035
         g = 0.5 + 0.5 * np.sin(2 * math.pi * (0.16 * t - u) + 1.3) * np.sin(2 * math.pi * (0.07 * t + 0.4 * u) + 0.2)
         return np.clip((g - 0.25) / 0.75, 0.0, 1.0) ** 1.5
 
-    def grains(self, f, shutter=0.5):
-        """Positions at shutter open/close, energies and radii of the grains alive at frame f (deterministic)."""
-        n = self.N_GRAINS
-        if getattr(self, '_src', None) is None:
-            self._src = self.sources(np.random.default_rng(self.SEED), n)
-        P = self._src
-        rng = np.random.default_rng(self.SEED + 1)
-        LIFE = rng.uniform(*self.LIFE, n)
-        T0 = rng.uniform(F0 / FPS - self.LIFE[1], F1 / FPS, n)           # emission times over the whole climb
-        V = rng.uniform(*self.SPEED, n)
-        LIFT = rng.uniform(*self.LIFT, n)
-        SW = rng.uniform(0.2, 1.0, n) * self.SWIRL
+    def particles(self, key, f, shutter=0.5):
+        """(P0, P1, energy, age/life, alive mask) of layer `key` at frame f; deterministic (seeded per layer)."""
+        L = getattr(self, key)
+        n = L['n']
+        ck = '_src_' + key
+        if getattr(self, ck, None) is None:
+            setattr(self, ck, self.sources(np.random.default_rng(L['seed']), n))
+        P = getattr(self, ck)
+        rng = np.random.default_rng(L['seed'] + 1)
+        LIFE = rng.uniform(*L['life'], n)
+        T0 = rng.uniform(F0 / FPS - L['life'][1], F1 / FPS, n)          # emission times over the whole climb
+        V = rng.uniform(*L['speed'], n)
+        LIFT = rng.uniform(*L['lift'], n)
+        SW = rng.uniform(0.2, 1.0, n) * L['swirl']
         PH = rng.uniform(0, 2 * math.pi, (n, 3))
-        OM = rng.uniform(2.0, 6.0, (n, 3))
-        B = rng.random(n) ** 3.0                                          # a few bright grains, many faint
+        OM = rng.uniform(1.5, 5.0, (n, 3))
+        B = rng.random(n) ** L.get('bright_pow', 3.0)
         gate = rng.random(n)
         t0 = f / FPS
+        side = np.array([WIND[2], 0.0, -WIND[0]])
         out = []
         for dt in (0.0, shutter / FPS):
-            t = t0 + dt
-            a = t - T0
+            a = t0 + dt - T0
             alive = (a > 0) & (a < LIFE) & (gate < self.gust(T0, P))
-            side = np.array([WIND[2], 0.0, -WIND[0]])
             hor = V[:, None] * a[:, None] * WIND[None, :] * (1.0 - 0.25 * np.clip(a / LIFE, 0, 1))[:, None]
             sw = (SW[:, None] * (np.sin(OM[:, 0:1] * a[:, None] + PH[:, 0:1]) * side[None, :]
                                  + 0.4 * np.sin(OM[:, 1:2] * a[:, None] + PH[:, 1:2]) * WIND[None, :]))
-            up = LIFT * (1.0 - np.exp(-a / 0.5)) - 0.35 * a + 0.25 * SW * np.sin(OM[:, 2] * a + PH[:, 2])
+            up = LIFT * (1.0 - np.exp(-a / 0.6)) - L.get('settle', 0.35) * a + 0.25 * SW * np.sin(OM[:, 2] * a + PH[:, 2])
             Q = P + hor + sw
             Q[:, 1] += up
             out.append((Q, alive))
         (Q0, al0), (Q1, al1) = out
         a = t0 - T0
-        fade = np.clip(a / 0.25, 0, 1) * np.clip((LIFE - a) / (0.45 * LIFE), 0, 1)
+        u = np.clip(a / LIFE, 0.0, 1.0)
+        fade = np.clip(a / 0.30, 0, 1) * np.clip((1.0 - u) / 0.5, 0, 1)
         m = al0 & al1
-        return Q0[m], Q1[m], (B * fade)[m], m
+        return Q0[m], Q1[m], (B * fade)[m], u[m]
+
+    def _light(self, Q, e, gain, warm):
+        """Energy (linear RGB) each particle scatters toward the lens: the moon by Henyey-Greenstein (g 0.6) and the
+        pot's light near it."""
+        tc = self.fr.t_out
+        v = tc.pos[None, :] - Q
+        v /= np.linalg.norm(v, axis=1, keepdims=True)
+        cth = -(v @ MOON)                                   # cos of the scattering angle
+        g = 0.6
+        hg = (1 - g * g) / (1 + g * g - 2 * g * cth) ** 1.5
+        col = MOON_LIN[None, :] * (gain * e * (0.25 + 0.75 * hg))[:, None]
+        gw = getattr(self, '_glow_w', None)
+        if gw is not None and warm > 0.0:
+            r2 = np.sum((Q - gw[None, :]) ** 2, axis=1)
+            col += np.asarray(MF.FIRE_LIGHT)[None, :] * (warm * e / (r2 + 0.05))[:, None]
+        return col
 
     def spindrift(self, out, d3, f):
-        if self.N_GRAINS <= 0:
-            return
-        Q0, Q1, e, m = self.grains(f)
-        if len(Q0) == 0:
-            return
         tc = self.fr.t_out
         s = tc.W / 1920.0
-        # forward scatter of the moon (Henyey-Greenstein, g 0.55) toward the lens
-        v = tc.pos[None, :] - Q0
-        v /= np.linalg.norm(v, axis=1, keepdims=True)
-        cth = v @ MOON
-        g = 0.55
-        hg = (1 - g * g) / (1 + g * g - 2 * g * cth) ** 1.5
-        col = MOON_LIN[None, :] * (self.GRAIN_E * e * (0.35 + 0.65 * hg))[:, None] * s * s
-        # near the pot the grains catch its warm light
-        gw = getattr(self, '_glow_w', None)
-        if gw is not None:
-            r2 = np.sum((Q0 - gw[None, :]) ** 2, axis=1)
-            col += np.asarray(MF.FIRE_LIGHT)[None, :] * (self.GRAIN_WARM * e / (r2 + 0.05))[:, None] * s * s
-        rad = np.full(len(Q0), max(0.55, self.GRAIN_R * s))
         C = np.r_[tc.pos, tc.fwd, tc.right, tc.up, tc.f, tc.cx, tc.cy].astype(np.float64)
-        _splat_streaks(out, d3, C, Q0.astype(np.float64), Q1.astype(np.float64), col.astype(np.float64), rad, 0.05)
+        for key in ('PUFF', 'GRAIN'):
+            L = getattr(self, key)
+            if L['n'] <= 0:
+                continue
+            Q0, Q1, e, u = self.particles(key, f)
+            if len(Q0) == 0:
+                continue
+            # radius in px: puffs grow as they diffuse (world metres -> px at their distance); grains stay fine
+            dist = np.linalg.norm(Q0 - tc.pos[None, :], axis=1)
+            rw = L['r0'] + (L['r1'] - L['r0']) * u
+            rad = np.maximum(rw * tc.f / np.maximum(dist, 0.5), L['rmin'] * s)
+            col = self._light(Q0, e, L['gain'], L.get('warm', 0.0))
+            col *= (2.0 * math.pi * rad * rad)[:, None] if key == 'PUFF' else s * s
+            _splat_streaks(out, d3, C, Q0.astype(np.float64), Q1.astype(np.float64), col.astype(np.float64),
+                           rad.astype(np.float64), 0.05)
 
 
 class Wide(Shot):
-    """640-799: locked, down the ridge behind her right shoulder and above the crest: the crest runs up the frame to
-    her tiny figure and on to the rounded summit; the moonlit SE flank on one side of it, the NW flank in shadow."""
+    """640-799: locked, 115 m behind her right shoulder and 14 m above her: the broad snow crest climbs the frame to the
+    rounded summit (the cold beacon and the cairn on its skyline), her tiny figure on it (47 px), the pot's glow the
+    one warm point, spindrift torn off the crest; the far ranges in layers beyond. Same side of the axis as the close.
+    (A low or side-on wide shows bworld's summit-rim step, ~25 m below the top, as a fence along the crest.)"""
     name = 'climbw'
     S0 = 34.0                    # her path position (m below the lip) at 640
-    OFF = 48.0                   # camera bearing off her back axis, toward her right (90 = square to the ridge):
-                                 # the pot's glow clears her right side; the crest climbs the frame to the summit
-    DIST = 115.0                 # camera distance from her
-    UP = 12.0                    # camera height above her feet
+    REL = 150.0                  # camera bearing from her, degrees clockwise from her heading: behind her right shoulder
+    DIST = 115.0                 # camera distance from her (horizontal)
+    CAM_H = 1.7                  # camera height above the snow under it (at least)
+    UP = 14.0                    # or this height above her feet, if higher
     HFOV = 30.0
-    AIM_S = 22.0                 # the path point the camera aims at (between her and the summit)
-    SU, SV = 0.50, 0.58          # its place in frame (a band of sky and stars over the far ranges)
+    AIM_U = 0.35                 # aim at this point between her (0) and the cairn (1), 1 m up
+    SU, SV = 0.50, 0.50          # its place in frame
+    WIND_HEM = 0.9
+    POOL = 0.06
 
     def __init__(self, scale=0.25, ss=1.5):
         Shot.__init__(self, scale, ss, Walk(self.S0, F0))
@@ -461,9 +663,9 @@ class Wide(Shot):
     def camera(self, W, H):
         wk = Walk(self.S0, F0)
         her = wk.base
-        pos = her + dirxz((wk.heading + 180.0 - self.OFF) % 360.0) * self.DIST
-        pos[1] = her[1] + self.UP
-        tgt = BS.on_ground(BS.path_at(self.AIM_S)) + np.array([0.0, 1.0, 0.0])
+        pos = her + dirxz((wk.heading + self.REL) % 360.0) * self.DIST
+        pos[1] = max(her[1] + self.UP, BS.ground(pos[0], pos[2]) + self.CAM_H)
+        tgt = her + (BS.on_ground(BS.CAIRN) - her) * self.AIM_U + np.array([0.0, 1.0, 0.0])
         d = tgt - pos
         bear = math.degrees(math.atan2(d[0], d[2]))
         el = math.degrees(math.atan2(d[1], math.hypot(d[0], d[2])))
@@ -472,25 +674,17 @@ class Wide(Shot):
         pitch = el + math.degrees(math.atan((self.SV - 0.5) * H / fpx))
         return RC.RCam(pos, yaw, pitch, 0.0, self.HFOV, W, H)
 
-    core_gain = 1.0
-    halo_gain = 1.0
-    # spindrift off the crest, streaming toward the lens over the NW flank
-    N_GRAINS = 60000
-    SEED = 41
-    LIFE = (1.2, 3.2)
-    SPEED = (5.0, 11.0)
-    LIFT = (0.3, 2.2)
-    SWIRL = 0.9
-    GRAIN_E = 0.9
-    GRAIN_WARM = 0.0
-    GRAIN_R = 0.9
+    # spindrift off the crest: plumes torn over it, streaming down the NW flank toward the lens, backlit by the moon
+    PUFF = dict(n=2600, seed=51, life=(2.0, 4.2), speed=(3.5, 8.0), lift=(0.6, 2.8), swirl=1.3, settle=0.45,
+                gain=0.0050, warm=0.0, r0=0.35, r1=1.9, rmin=1.5, bright_pow=1.0)
+    GRAIN = dict(n=45000, seed=53, life=(1.2, 3.0), speed=(5.0, 10.0), lift=(0.3, 2.4), swirl=0.9, settle=0.40,
+                 gain=0.35, warm=0.0, r0=0.0, r1=0.0, rmin=0.7, bright_pow=3.0)
 
     def sources(self, rng, n):
-        s = rng.uniform(-2.0, 115.0, n)
-        P = np.array([BS.on_ground(BS.path_at(max(q, 0.0))) for q in np.linspace(0.0, 115.0, 231)])
-        k = np.clip(((s - 0.0) / 115.0 * 230).astype(int), 0, 230)
-        Q = P[k] + np.c_[rng.normal(0, 0.8, n), rng.uniform(0.02, 0.35, n), rng.normal(0, 0.8, n)]
-        Q -= WIND[None, :] * rng.uniform(0.0, 4.0, n)[:, None]          # a little upwind of the crest line
+        pts = np.array([BS.on_ground(BS.path_at(q)) for q in np.linspace(0.0, 120.0, 241)])
+        k = rng.integers(0, 241, n)
+        Q = pts[k] + np.c_[rng.normal(0, 0.9, n), rng.uniform(0.03, 0.30, n), rng.normal(0, 0.9, n)]
+        Q -= WIND[None, :] * rng.uniform(0.0, 3.0, n)[:, None]           # from just upwind of the crest line
         return Q
 
 
@@ -498,11 +692,11 @@ class Close(Shot):
     """800-879: locked, behind her right shoulder and a little above; the pot past her right hip."""
     name = 'climbc'
     S0 = 12.0
-    BACK = 12.5                  # camera distance behind her
-    SIDE = 33.0                  # degrees off her back axis, toward her right (the pot shows past her right hip)
-    UP = 2.0                     # camera height above her feet
-    HFOV = 44.0
-    SU, SV = 0.26, 0.66          # where her pelvis sits in frame: the lip, the cold beacon and the cairn fit right
+    BACK = 20.0                  # camera distance behind her: a longer lens, the summit looming over her
+    SIDE = 25.0                  # degrees off her back axis, toward her right (the pot at her right hip)
+    UP = 2.2                     # camera height above her feet
+    HFOV = 32.0
+    SU, SV = 0.33, 0.66          # where her pelvis sits in frame: the lip, the cold beacon and the cairn fit right
 
     def __init__(self, scale=0.25, ss=1.5):
         Shot.__init__(self, scale, ss, Walk(self.S0, FC))
@@ -522,16 +716,16 @@ class Close(Shot):
         pitch = el + math.degrees(math.atan((self.SV - 0.5) * H / fpx))
         return RC.RCam(pos, yaw, pitch, 0.0, self.HFOV, W, H)
 
-    # ground drift: grains skimming the snow from the left (upwind, SE) across and toward the lens; the pot warms them
-    N_GRAINS = 26000
-    SEED = 43
-    LIFE = (0.8, 2.2)
-    SPEED = (3.0, 7.5)
-    LIFT = (0.02, 0.7)
-    SWIRL = 0.35
-    GRAIN_E = 0.028
-    GRAIN_WARM = 0.0015
-    GRAIN_R = 1.1
+    # ground drift: grains skimming the snow from her left (upwind) across and past her; near the pot they catch its
+    # warm light; a few low veils of drift
+    PUFF = dict(n=700, seed=61, life=(1.0, 2.4), speed=(2.5, 6.0), lift=(0.05, 0.6), swirl=0.4, settle=0.10,
+                gain=0.012, warm=0.010, r0=0.25, r1=0.9, rmin=2.0, bright_pow=1.0)
+    GRAIN = dict(n=24000, seed=63, life=(0.8, 2.2), speed=(3.0, 7.5), lift=(0.02, 0.7), swirl=0.35, settle=0.10,
+                 gain=20.0, warm=1.2, r0=0.0, r1=0.0, rmin=1.0, bright_pow=3.0)
+    WIND_HEM = 1.0
+    POOL = 0.15
+    core_gain = 3.0
+    halo_gain = 2.5
 
     def sources(self, rng, n):
         wk = self.walk
