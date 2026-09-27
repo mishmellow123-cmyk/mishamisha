@@ -1,3 +1,65 @@
+# >>> DIRECTOR'S H5 CALLS (27 Sep ~07:10Z): READ THIS FIRST; it overrides REVISION 1 and everything below <<<
+The hour-5 critic (`_local_logs/review/h5/H5_CRITIC.md`) is accepted in the main. Apply every item in your area before rendering anything new.
+1. **HUMANS: silhouette or gloved hands only.** Never a lit face, never a bare hand close. No modern wardrobe: a hood or wool cowl, not a
+   knit beanie; the red scarf stays, as a woven wool shawl. Un-accept H1 v2b. Thin leather gloves. Flint sparks short, orange, falling and
+   curving. The flinch (f1366): head turned away, forearm across the face, weight back. THE CROSSING: the uphill bearer's feet are planted in
+   frame (no dangling legs). Bag End: TONGS (as in the book), no "nail file", no glow fringe round the hand. Any figure that must be read is
+   ≥40 px; B's locked frame keeps H6's 60–120 px.
+2. **ONE RULE FOR REAL-WORLD SIGNALS: LANDSCAPES, NOT LANDMARKS.** No identifiable real place, monument, building type, product or regional
+   dress in any frame; variety comes from biome, weather, light and hour.
+   - KARST: drop the pines and the Zhangjiajie profile, making irregular weathered rock towers in mist (never v1).
+   - DESERT: wide framing only; a plain cloak with wind in it; ripples randomised and fading at the crest; footprints smaller, irregular and
+     half-filled, in a real gait.
+   - A's towers: no Eiffel platform ring or flared base; no cooling-tower flare; no bottle or beaker lips (square or crenellate the tops);
+     move the round-capped stack off the glowing hole's axis (f870); no red pole under the ring. The f590 glowing slab becomes the flame
+     seen from below.
+   - The only exception is the labelled producer alternate `_alt_codedtowers`.
+   - C is the BOOK, not the films: the Ring carries our own script, with one inscription on both rings; her glove comes in from the side
+     (no gauntlet descending); the words "Red Book" never appear on screen.
+3. **LINES** (same in/out frames; everything else stays as locked):
+   - A-T2 *We fed it everything we knew.*
+   - A-T7 *The closer they came, the more it paid.*
+   - A-T9 *Whoever won, there would have been no morning.* It answers T5's "whoever" and kills the "morning after" snicker.
+   - A-T10a *Even those who raced were afraid.* T10b *None would slow alone.* stays.
+   - A-T14 plays over people together: the seated lantern-bearers stay in the foreground as the camera drifts to the hearth smoke.
+   - C-T6 *Each said: better us than them.*
+   - C-T7 *They delved deeper every year, for the gold ran deeper still.* This is the 01:15Z call; the sheet's "for every stroke paid" is
+     superseded.
+4. **C · THE FIRE REMAINS** replaces C23 THE EYE FALLS: bars 70–71 (f5520–5680), and it is no longer optional.
+   - Out of the unmaking's white, the fire everyone lit settles, warm and steady, on the council stone where the Ring was. Every torch dips
+     into it.
+   - A burn-through to the map: from the ring of stones many roads run outward, each a small moving flame, and hearth glyphs kindle where
+     they arrive (the Road, reversed). Without this, the melt reads as "we destroyed the fire".
+   - The melt: darker, a crisp drop, letters that stay letters until they go out, no donut rim. The numba fallback becomes an ink ring on
+     the page.
+5. **NO SCREENSAVERS, NO CLIP-ART.**
+   - A's galaxy vortex (f840–870) becomes fire physics: embers dragged up into one roaring updraft column for 1–2 s, or a cut on the
+     flare. No starfield or lens streak at f490. One tapering tongue with no fork (f505–535).
+   - Terrain tells out: vertical texture streaks, the perfect triangle peak, combed dunes, stamp footprints, the hard Earth-shadow seam,
+     smudge clouds.
+   - Each film owns its landform. A = knife-edge ranges. B = old, broad, glaciated massifs and a rounded summit above the cloud sea, with
+     the far ranges as layered silhouettes. C = ink.
+   - C's beacons are hand-inked at the terrain's line weight with a gold wash (no emoji halo). Feather R15's colour edge; hatching follows
+     the form; render at 2x and downsample.
+   - The Deep's gold seam: thicker, tapered, gilt and branching. The Havens ship: redrawn swan-prowed at the plates' line weight. Add one
+     gilt initial in the book.
+6. **B · THE VIGIL must be readable.**
+   - One continuously moving sky, with no blinking plates: dissolve 6–10 f if a plate must change, and grade the grey dawns down.
+   - The cairn is built of visible, irregular stones with a ragged top.
+   - Lift H1's crushed frames so her silhouette never vanishes.
+   - The dead ember at about 45°, with no blue wedge and a visible breath.
+   - Age the fire-basket: rust, soot, uneven bars.
+   - The hand-back is a real hand-off: on bar 63 she presses her fire-steel into the child's palm. Tame the sun starburst.
+   - DUSK is re-terrained (no Toblerone peak), with a soft Belt-of-Venus band.
+**PROTECT:**
+- the A-T1 and false-dawn pairing
+- the roped lantern line and the wheeling stars
+- the far beacons in the cloud sea
+- H1's pull-back to a lone fire
+- the Blender find and fire test
+- the Deep ink plate
+- *In ours, there was no Dark Lord.*
+
 # >>> REVISION 1 (director, 27 Sep ~00:40Z): READ THIS FIRST; it overrides the treatment below <<<
 The director accepted the v3 red-team (`review/v3_redteam.md`, read §§1, 2, 5) almost whole. Summary:
 - **Runtimes (bar maps lock at hour 2):** A **4:30 (81 bars @72)**, B **3:45 (68 bars)**, C **5:00 (90 bars)**. Floor if music
