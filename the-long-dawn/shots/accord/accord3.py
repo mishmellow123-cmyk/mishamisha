@@ -149,8 +149,8 @@ def hearth_state(t):
     return fs, HP, CF
 
 
-CALM_I = 11.0           # bar 70: the fire that remains (emission scale of flame3.calm_density)
-P2_I = 12.0             # AC2: the fire everyone lit
+CALM_I = 24.0           # bar 70: the fire that remains (emission scale of flame3.calm_density)
+P2_I = 24.0             # AC2: the fire everyone lit
 
 
 def calm_lights(t, fs, CF):

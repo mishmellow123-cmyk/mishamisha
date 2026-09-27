@@ -542,9 +542,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
                 ar = mix(ar, 0.004, bed)
                 ag = mix(ag, 0.0036, bed)
                 ab = mix(ab, 0.0035, bed)
-                ce_r = 1.7 * glow
-                ce_g = 1.7 * glow * 0.22
-                ce_b = 1.7 * glow * 0.025
+                ce_r = 2.4 * glow
+                ce_g = 2.4 * glow * 0.24
+                ce_b = 2.4 * glow * 0.03
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.0, False, -1.0,
                               PR, LT, OC, igc, igf, 1.0)
         sr, sg, sb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 22.0, PR, LT, OC, -1.0)

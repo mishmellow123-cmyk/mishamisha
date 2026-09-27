@@ -464,7 +464,7 @@ def calm_density(x, y, z, HP, CF, ncf, n3):
         return 0.0, 0.0
     # hot over the coals (the roots), cooling through the body, the torn tips dull red
     troot = 1.0 - sstep(0.02, 0.85, uu)
-    temp = clamp(0.12 + 0.66 * troot * (1.0 - 0.40 * min(rb, 1.0)) + 0.46 * (nl - 0.5)
+    temp = clamp(0.20 + 0.70 * troot * (1.0 - 0.40 * min(rb, 1.0)) + 0.46 * (nl - 0.5)
                  + 0.12 * sstep(0.0, 0.6, e), 0.0, 1.0)
     # the luminous sheet: emission peaks where the flame surface folds (limb-bright tongues, crisp edges)
     sh = (e - 0.14) / 0.16
@@ -595,7 +595,7 @@ def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps, CF, ncf):
                     er += e * cr
                     eg += e * cg
                     eb += e * cb
-                    tr *= math.exp(-d * ds * (4.0 if p3 else 5.0) * (1.0 - wh))
+                    tr *= math.exp(-d * ds * ((3.0 if calm else 1.3) if p3 else 5.0) * (1.0 - wh))
                     if tr < 0.01:
                         break
             out[y, x, 0] = out[y, x, 0] * tr + er
