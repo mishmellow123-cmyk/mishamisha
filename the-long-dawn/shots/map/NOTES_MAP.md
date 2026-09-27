@@ -1,5 +1,26 @@
 # MAP-L2 (lane MAP): C18 THE MAP ANSWERS + THE ROAD, and C23 bar 71 THE ROADS OUT, on an INVENTED world
 
+# >>> STATE (MAP-L2, 27 Sep ~20:40Z; usage pause 21:25Z -> ~23:30Z). RESUME HERE <<<
+* THE MAP IS ON AN INVENTED WORLD (terra.py, WORLD_VER 4): no real-world data anywhere in the map lane. Code pushed
+  (a624990 + earlier). Design: the ring at (0, 18) on the High Moor at the sheet's centre (dark: no relay fire on it);
+  her beacon on the knee of her range (13, 8); the Run's seven pre-lit along its east arm (relay.CHAIN, the seventh at
+  C17's burn-through point 1130,485 via road.opening_key); the west river from the knee's lake to the western bay; the
+  northern range, a NE desert with a salt lake, the hook (NW), the long cape (SW), an archipelago on the great western
+  sea; four labels in the book hand (terra.LABELS). The crane: CAM_KEYS in road.py (opening solved from the relay).
+* FARM RUNS IN FLIGHT at 20:40Z (logs in the scratchpad `terra/`): `map_sketch` --test 7 (geography stills 1-7 ->
+  renders/_farmtest/map_sketch; 7 = a data card with the relay/road/camera numbers) and `map_l2_c18` --test 6 (the REAL
+  shot: ROI bake + relay + 6 frames -> renders/_farmtest/map_l2_c18/). Neither was reviewed by me yet.
+* NEXT (on resume): (1) look at renders/_farmtest/map_sketch (f1 whole sheet design colours, f3 the camera's world inked
+  flat, f4 the widest view, f5 opening, f6 end, f7 numbers) and renders/_farmtest/map_l2_c18 (the shot); (2) if the
+  director approved the geography, fix any nitpicks and run `python3 the-long-dawn/cloud/farm.py
+  the-long-dawn/cloud/jobs/map_l2_c18.json --nodes 1` (only after the director's approval of JOB READY); (3) review the
+  landed frames (4160 open + burn-through match, 4300, 4390 widest, 4440 arrival, 4479 end on the ring, bar 71 5600-5679
+  roads out and hearths), then EDIT's comp notes (X1 centres: C18 1130,485 = C17's seventh; bar 71 960,402).
+* Known open items: the Road's line and the relay were never seen rendered in the shot yet; labels never seen; the moor
+  must read as open downs (not a crater); the desert must be a light ragged stipple (v3 was a dense bullseye, fixed in
+  v4 code, unseen); bar 71's hearths/roads on the new land unseen. Old real-Earth caches in renders/map_C/cache (807 MB)
+  and v2 frames renders/map_C/f_01920-02087 (real Earth, superseded, unused by EDIT's v3 list) can be deleted.
+
 # >>> STATE AT HANDOFF (MAP-L2 splits the MAP half off MAP/BOOK, 27 Sep ~19:00Z local) <<<
 * MAP-L keeps the BOOK (book.py, pages.py, pen.py, redbook.py, book_c.py, ringpage.py and `NOTES.md`). MAP-L2 owns the map
   files: geo.py, features.py, rivers.py, sheet.py, bake.py, relay.py, render.py, road.py (+ the rev-2 legacy webmap.py,
