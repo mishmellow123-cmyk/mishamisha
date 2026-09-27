@@ -177,21 +177,26 @@ def draw_cairn(img_lin, c, A, kpx, IP):
 
 
 def night_wash(img_lin, A, kpx, H, W):
-    """The drawing under a cool night wash (multiplied, so the paper's grain and the line work stay): deep
-    blue-grey, paler where the moon lights the snow; the sky a deeper ultramarine toward the top."""
+    """The drawing under a moonlit night wash, as a hand-coloured engraving lays it: the page taken to its value
+    (so the parchment's yellow does not turn the blue to mud), then an ultramarine wash, paler and cooler where the
+    moon lights the snow; the sky deepening toward the top. The line work and the paper's grain stay. Gold is laid
+    after this, so the Ring is the only warm thing in the frame (E13a's hand-off)."""
     import cv2
     surf = A[..., 0]
     sky = (surf >= 2.5).astype(np.float32)
     lit = np.clip(A[..., 10], 0, 1) * np.clip(A[..., 11], 0, 1)
     snow = np.clip(A[..., 9], 0, 1)
     lit = cv2.GaussianBlur((lit * (0.35 + 0.65 * snow)).astype(np.float32), (0, 0), 2.0 * kpx)
-    night = np.array([0.30, 0.34, 0.48], np.float32)
-    moon = np.array([0.66, 0.72, 0.86], np.float32)
+    Y = img_lin @ np.array([0.2126, 0.7152, 0.0722])
+    Y = Y / 0.62                                               # the bare page's value -> 1
+    night = np.array([0.34, 0.42, 0.66])
+    moon = np.array([0.70, 0.78, 0.98])
     m = night[None, None] + (moon - night)[None, None] * np.clip(lit * 1.3, 0, 1)[..., None]
-    yy = (np.arange(H, dtype=np.float32) / H)[:, None, None]
-    msky = night[None, None] * (0.72 + 0.34 * yy)
+    yy = (np.arange(H, dtype=np.float64) / H)[:, None, None]
+    top, hor = np.array([0.14, 0.19, 0.38]), np.array([0.30, 0.37, 0.58])
+    msky = top[None, None] + (hor - top)[None, None] * np.clip(yy / 0.62, 0, 1) ** 1.2
     m = m * (1 - sky[..., None]) + msky * sky[..., None]
-    return img_lin * m
+    return 0.62 * Y[..., None] * m
 
 
 def draw_stars(img_lin, c, A, kpx, H, W):
