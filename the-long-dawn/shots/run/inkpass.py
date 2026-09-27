@@ -574,7 +574,7 @@ def flame_tongues(t, seed, n):
     closes a loop that reads as an eye) and swaying as a slow wave runs up it. Returns [(cu, cv, w)] in units of the
     flame's height, base centre at the origin, y up."""
     rng = np.random.default_rng(seed)
-    wind = 0.05 + 0.05 * rng.uniform()
+    wind = 0.09 + 0.06 * rng.uniform()                        # one common wind: every fire leans the same way
     spread = 0.26
     bs = np.linspace(-spread, spread, n) + 0.03 * rng.standard_normal(n)
     wm = 1.55 if n <= 3 else (1.2 if n <= 5 else 1.0)          # few tongues on a small glyph, and fuller
@@ -583,9 +583,9 @@ def flame_tongues(t, seed, n):
     for rank_, i in enumerate(np.argsort(np.abs(bs))):
         b = bs[i]
         cen = 1.0 - min(abs(b) / (spread + 0.05), 1.0)
-        h = 1.0 if rank_ == 0 else (0.40 + 0.48 * cen) * (0.80 + 0.35 * rng.uniform())
+        h = 1.0 if rank_ == 0 else (0.40 + 0.48 * cen) * (0.80 + 0.35 * rng.uniform()) * (1.0 + 0.30 * b / spread)
         side = 1.0 if b >= 0 else -1.0
-        l = wind + 0.45 * b + 0.05 * rng.standard_normal()
+        l = wind + 0.22 * b + 0.05 * rng.standard_normal()        # (0.45 splayed the outer tongues into a crown)
         w = (0.085 + 0.035 * cen) * wm * (0.85 + 0.30 * rng.uniform())
         ph = rng.uniform(0, 6.283)
         fr = 0.55 + 0.35 * rng.uniform()
@@ -787,7 +787,8 @@ def fire_soft(A, B, frame, campos):
 
 
 HFIELD_SIG = 1.5        # the line-placing fields' smoothing along the surface (page px)
-WASH_LO, WASH_HI, WASH_BLUR = 0.30, 0.85, 2.5     # the sepia shadow wash's ramp on the macro shadow, and its blur
+WASH_LO, WASH_HI, WASH_BLUR = 0.40, 0.62, 1.2     # the sepia shadow wash's ramp on the macro shadow, and its blur
+                                                  # (27 Sep farm A/B: 0.30/0.85/2.5 read as grey smudges; firmer edges)
 if os.environ.get('RUNC_WASH'):                     # look-dev A/B on the farm: RUNC_WASH=lo,hi,blur
     WASH_LO, WASH_HI, WASH_BLUR = [float(v) for v in os.environ['RUNC_WASH'].split(',')]
 
