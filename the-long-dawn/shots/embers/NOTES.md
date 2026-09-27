@@ -126,8 +126,17 @@
 * For EMBERS-A3 (A16/A17): a3._mine() routes every frame >= T_LIGHT (4400) to turn.py, which is only a STUB that
   replays the old edge.py path (edge.camera / cam_light, RidgeFires, SmallLights, _shutter, _back_light). Take
   turn.py over (it is yours now) or point _mine() elsewhere.
-* A3/A4 (glyphs3.py): the letters load assets/glyphs/atlas_v3.npz (committed; farm.py skips apt-get and its image
-  has no Noto, so no fonts are needed). Look-dev in progress in the lab (scratchpad ea2/lab.py, light work only).
+* A3/A4 (glyphs3.py, d4e48f9): the letters load assets/glyphs/atlas_v3.npz (committed; farm.py skips apt-get and
+  its image has no Noto, so no fonts are needed). Staging: 560 white (the false dawn's glow colour) drawn back to
+  the gathering point (px 964, 336); 626-686 the word for light in 11 scripts + A, ∞, ᚠ, a clef appear in it (FIRST:
+  placed by hand, none overlap); 655-850 currents of letters from every side (clumps travel together, bowed paths)
+  into a lumpy cloud; T2 700-840 dims letters in the lower third; 880+ the whole cloud turns about a near-vertical
+  axis seen from a rising low camera (kept momentum, turbulence, no arms/bulge/disc), falling in as a ball; the
+  gathering point rises to A5's ignition px (964, 238) over 930-1000; 1020-1040 the point holds (breath).
+  Farm-verified: point at 1039 = (967, 239) vs A5 1040 disc (964, 238). Job: cloud/jobs/embers_A3_a3a4.json
+  (560-1039, ~2 s/frame/process). Look-dev tests: renders/_farmtest/embers_A3_a3a4/. NEXT: check stills to
+  review/embers_A3_check/a2/glyphs/ -> JOB READY -> director. The local lab (scratchpad ea2/lab.py) is for
+  light 0.3-scale checks only; everything else goes to the farm (queue: farm.py status).
 ## STATE AT HANDOFF (EMBERS-A2 takes over, 27 Sep ~18:55Z)
 * Renders: renders/embers_A3 has only A5+A6 (1040-1839, approved); NOTHING exists for my ranges (560-1039,
   2640-3119, 4400-4879). The EDL (edit/NOTES_v3.md) expects all of them in renders/embers_A3, A cut numbering.
