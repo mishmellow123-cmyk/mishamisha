@@ -191,7 +191,35 @@ def lighter_scene(sc, f, P, lat, seed):
     _figure(sc, spot, ww, f, seed, h=1.0, crouch=crouch, reach=rp, rgb=(0.030, 0.026, 0.022), staff=False)
 
 
+def hearth_scene(sc, P, seed, scale=1.0):
+    """The seventh fire's hearth (there before the catch: the lighter crouches at it in A14): a ring of irregular,
+    unequal stones round a leaning stack of split wood, so the flame stands on fuel, not on bare snow."""
+    rng = np.random.default_rng(int(seed))
+    base = np.asarray(P[:3], np.float64)
+    sc.begin(rgb=(0.070, 0.066, 0.064))
+    n = 14
+    for m in range(n):
+        a_ = 2 * math.pi * m / n + rng.uniform(-0.16, 0.16)
+        rr = (0.62 + rng.uniform(-0.05, 0.07)) * scale
+        q = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rr
+        q[1] = ground(q[0], q[2])
+        hs = rng.uniform(0.55, 1.15) * scale
+        sc.box(q + UP * 0.05 * hs, (0.11 * hs, 0.075 * hs, 0.09 * hs), yaw=a_ + rng.uniform(-0.6, 0.6),
+               pitch=rng.uniform(-0.35, 0.35), rnd=0.03 * hs, mat=5, k=0.0)
+    sc.end()
+    sc.begin(rgb=(0.055, 0.040, 0.030))
+    for m in range(7):
+        a_ = 2 * math.pi * m / 7 + rng.uniform(-0.3, 0.3)
+        foot = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rng.uniform(0.30, 0.42) * scale
+        foot[1] = base[1] + 0.02
+        top = base + np.array([rng.uniform(-0.06, 0.06), rng.uniform(0.55, 0.78) * scale, rng.uniform(-0.06, 0.06)])
+        r0 = rng.uniform(0.035, 0.055) * scale
+        sc.cone(foot, top, r0, r0 * 0.75, mat=2, k=0.0)
+    sc.end()
+
+
 def seventh_scene(sc, f, P7):
+    hearth_scene(sc, P7, 7070)
     spot, w = seventh_spot(P7)
     crouch, reach, turn = lighter_pose(f, P7[3])
     rp = (np.asarray(P7[:3]) + UP * 0.3) if reach > 0.2 else None
