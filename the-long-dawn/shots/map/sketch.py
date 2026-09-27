@@ -9,6 +9,7 @@
   4  the widest view inked, through the camera (no fires, no light): the geography as the viewer will see it
   5  the opening (4160) inked: her range, her beacon and the Run's seven
   6  the end (4479) inked: the ring of stones on the High Moor
+  7  a data card (world, glyph and relay numbers, the opening key, the Road, the camera footprints)
 """
 import argparse
 import math
@@ -171,6 +172,39 @@ def frame(k, out):
         import bake
         r = bake.bake_region(-46.0, 32.2, W_, H_, 20.0)
         img = bake.l2s(r['rgb'])
+    elif k == 7:
+        # a data card: the numbers behind the sketches (read off the still; the farm ships frames only)
+        import relay
+        import road
+        import features as ft
+        lines = []
+        w = terra.world()
+        lines.append(f'world v{terra.VER}: land cells {int(w["land"].sum())}  rivers {len(w["rivers"])}  lakes {len(w["lakes"])}  coast rings {len(w["coast"])}')
+        g = ft.build()['glyphs']
+        lines.append(f'glyphs {len(g)}: peaks {int((g[:, 1] == 0).sum())} hills {int((g[:, 1] == 1).sum())} trees {int((g[:, 1] == 2).sum())} conifers {int((g[:, 1] == 3).sum())}  dots {len(ft.build()["dots"])}')
+        try:
+            r = relay.Relay()
+            sm = r.summary()
+            lines.append(f'relay: {sm}')
+            lines.append('her beacon ' + str(np.round(r.P[0], 2).tolist()) + '  chain ' + str(np.round(r.P[r.chain[1:]], 1).tolist()))
+            for kk, (name, *_) in enumerate(relay.ROUTES):
+                m = (r.line == kk)
+                if m.any():
+                    lines.append(f'  {name:8s} fires {int(m.sum()):3d}  first {r.t_ign[m].min():.0f}  last {r.t_ign[m].max():.0f}')
+            ok = road.opening_key()
+            lines.append('opening key (tx, ty, w, head): ' + str(np.round(ok, 2).tolist() if ok else ok))
+            rp = road.road_path(r.P[0], np.array(terra.RING))
+            lines.append(f'the Road: {len(rp)} pts, length {road.pen.arclen(rp)[-1]:.1f} deg')
+        except Exception as e:
+            import traceback
+            lines += ['relay/road FAILED: ' + repr(e)[:150]] + traceback.format_exc().splitlines()[-6:]
+        for nm, c in cams().items():
+            F = footprint(c, 2)
+            lines.append(f'cam {nm}: w {c.width:.1f}  X {F[:, 0].min():.0f}..{F[:, 0].max():.0f}  Y {F[:, 1].min():.0f}..{F[:, 1].max():.0f}')
+        im = np.full((H_, W_, 3), 18, np.uint8)
+        for i, ln in enumerate(lines[:30]):
+            cv2.putText(im, ln[:150], (20, 34 + 25 * i), cv2.FONT_HERSHEY_SIMPLEX, 0.62, (235, 235, 235), 1, cv2.LINE_AA)
+        img = im.astype(np.float32) / 255.0
     else:
         import bake
         cam = cams()[{4: 'wide', 5: 'open', 6: 'end'}[k]]

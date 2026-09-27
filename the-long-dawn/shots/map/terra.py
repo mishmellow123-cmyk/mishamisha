@@ -115,6 +115,7 @@ RANGES = {
 }
 # hill country (x, y, radius, strength): low rolling uplands where the fire finds hills to stand on
 HILLS = [(-10.0, 5.0, 4.0, 0.7), (-12.0, 24.0, 4.0, 0.6), (15.0, 23.5, 4.0, 0.7), (36.0, 29.0, 5.0, 0.7),
+         (28.0, 14.0, 4.0, 0.6), (6.0, -7.0, 4.5, 0.7), (40.0, 18.0, 4.0, 0.6),
          (-3.0, -12.0, 5.0, 0.8), (26.0, -4.0, 4.0, 0.7), (48.0, 34.0, 7.0, 0.8), (62.0, 32.0, 7.0, 0.9),
          (86.0, 12.0, 8.0, 0.8), (80.0, -8.0, 7.0, 0.8), (100.0, 30.0, 8.0, 0.8), (140.0, 30.0, 9.0, 0.8),
          (150.0, 60.0, 9.0, 0.8), (70.0, 60.0, 8.0, 0.8), (0.0, 58.0, 7.0, 0.8), (-12.0, 50.0, 5.0, 0.7),
@@ -131,6 +132,15 @@ VALLEYS = [
 BASINS = [(19.4, 14.2, 3.0, 1.0, 1.2), (31.0, 24.0, 2.3, 1.5, 1.0), (-9.5, 22.5, 1.2, 0.7, 0.7),
           (58.0, 42.0, 3.4, 2.0, 1.2), (96.0, 40.0, 3.0, 2.0, 1.0), (140.0, 50.0, 3.0, 2.0, 1.0),
           (10.0, 60.0, 2.4, 1.4, 0.9)]
+
+# the map's few words, in the book hand (bake.labels): each one word along a curve (the letters' up is the curve's
+# left): the great western sea, her range, the northern range, the desert
+LABELS = [
+    dict(pts=[(-27.2, 9.0), (-27.4, 13.0), (-28.4, 17.5)], n=6, xh=0.42, gap=1.0, seed=31),
+    dict(pts=[(17.5, 2.6), (23.5, 1.7), (30.0, 1.6)], n=5, xh=0.42, gap=0.9, seed=32),
+    dict(pts=[(-7.0, 36.2), (-0.5, 36.8), (5.5, 36.6)], n=6, xh=0.4, gap=0.9, seed=33),
+    dict(pts=[(27.0, 31.0), (33.0, 31.6), (39.0, 30.6)], n=5, xh=0.45, gap=1.3, seed=34),
+]
 
 RIVER_T = 1800.0             # a channel drains at least this much rain (cells x rainfall)
 WIND = 12.0                  # the rain comes from the great western sea, a little south of west (degrees)
@@ -614,6 +624,8 @@ def world():
         if 0 <= i < lab.shape[0] and 0 <= j < lab.shape[1] and lab[i, j] > 0:
             keep[lab[i, j]] = True
     lake = keep[lab]
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    lake = cv2.morphologyEx(lake.astype(np.uint8), cv2.MORPH_OPEN, k).astype(bool) & land
     wgt = (0.25 + P).astype(np.float64) * land
     A = accumulate(F, rec, wgt, land)
     print('hydrology', round(time.time() - t0, 1), 's', flush=True)

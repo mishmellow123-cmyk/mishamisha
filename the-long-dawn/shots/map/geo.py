@@ -17,7 +17,7 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 # the invented world's version: every cache (world, glyphs, coasts, rivers, relay, the baked sheet) lives under
 # its own folder, so a farm node's parked disk can never hand a stale world to a new one (the real-Earth caches
 # of v2/rev 3 lived in renders/map_C/cache and are retired)
-WORLD_VER = 3
+WORLD_VER = 4
 CACHE = os.path.join(ROOT, 'renders', 'map_C', 'cache_w', f'v{WORLD_VER}')
 os.makedirs(CACHE, exist_ok=True)
 

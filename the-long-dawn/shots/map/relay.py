@@ -61,17 +61,46 @@ def origin(top, kind, size):
 
 
 def routes():
-    """The great lines, from the invented world's design (see terra.RANGES and the NOTES): (name, parent,
-    branch point or start fire, delay or first catch, waypoints). Filled in once."""
+    """The great lines on the invented world (terra's design): (name, parent, branch point or start fire, delay or
+    first catch, waypoints). Every line runs off the widest frame. The High Moor stays dark: it is no one's."""
     global ROUTES, PACE
     if ROUTES:
         return ROUTES
-    R = terra.RANGES
-    east = [(x, y) for (x, y, h, w) in R['hers_e']][2:] + [(98.0, 30.0)]
     ROUTES = [
-        ('east', None, 'hers', 0.0, east),
+        # the Run's line runs on from the seventh along her range's east arm, over the pass, off the east edge
+        ('east', None, 'hers', 0.0,
+         [(30.0, 4.9), (33.0, 5.2), (37.5, 6.0), (43.0, 7.8), (50.0, 10.4), (57.0, 13.6), (64.0, 18.0), (70.0, 24.0)]),
+        # down the west arm to the south-west lowlands and off the bottom edge
+        ('west', None, 'hers', 1944.0,
+         [(9.0, 6.2), (5.0, 3.6), (0.5, 0.4), (-4.0, -3.4), (-8.0, -7.0), (-4.0, -12.0), (-9.0, -16.0)]),
+        # north across the valley by the lake's hills, to the northern range, and along it east off the top
+        ('north', None, 'hers', 1950.0,
+         [(16.5, 15.5), (15.5, 21.0), (15.0, 26.0), (13.0, 31.5), (13.0, 34.8), (19.0, 36.8), (25.0, 39.6), (31.0, 43.0),
+          (38.0, 49.0)]),
+        # along the northern range west, to the hook and its tip
+        ('north_w', 'north', (13.0, 34.8), 9.0,
+         [(7.5, 33.6), (2.5, 33.2), (-2.5, 33.6), (-8.0, 33.2), (-13.0, 33.5), (-20.0, 38.0), (-26.0, 36.8), (-30.5, 34.4),
+          (-32.5, 30.0)]),
+        # down the west river to the western bay
+        ('river', 'west', (5.0, 3.6), 10.0,
+         [(4.5, 8.5), (0.0, 11.2), (-4.0, 12.4), (-8.0, 13.8), (-12.0, 15.4), (-16.0, 16.4)]),
+        # along the coast south, down the long cape to its tip
+        ('coast_s', 'river', (-12.0, 15.4), 8.0,
+         [(-18.0, 12.2), (-22.0, 10.0), (-26.0, 8.4), (-31.0, 5.0), (-36.0, 0.6)]),
+        # along the coast north, round the bulge into the hook's bay
+        ('coast_n', 'river', (-12.0, 15.4), 12.0,
+         [(-18.5, 19.5), (-22.0, 21.5), (-23.0, 25.0), (-21.0, 29.0), (-24.0, 31.0), (-17.0, 41.0)]),
+        # east from the lake's hills across the plains into the desert, off the east edge
+        ('desert', 'north', (15.5, 21.0), 12.0,
+         [(20.0, 22.5), (25.0, 24.5), (30.0, 27.5), (35.0, 29.0), (41.0, 30.0), (48.0, 33.0), (56.0, 37.0)]),
+        # south from the west arm across the lowlands to the south range, and along it east
+        ('south', 'west', (0.5, 0.4), 10.0,
+         [(3.0, -5.0), (7.0, -10.0), (14.0, -13.0), (22.0, -15.0), (30.0, -17.0), (38.0, -22.0)]),
     ]
-    PACE = {}
+    # the lines that have furthest to go run a little faster, so the fire reaches every edge of the widest frame
+    # at about the same time
+    PACE = {'east': 0.95, 'north': 0.95, 'north_w': 0.9, 'desert': 0.95, 'coast_n': 1.0, 'coast_s': 1.0,
+            'river': 1.0, 'south': 1.05, 'west': 1.0}
     return ROUTES
 
 
@@ -131,6 +160,8 @@ class Relay:
         ok = (top[:, 0] > X0) & (top[:, 0] < X1) & (top[:, 1] > Y0) & (top[:, 1] < Y1)
         org = origin(top, kind[idx], G[idx, 3])
         ok &= np.hypot(top[:, 0] - org[0], top[:, 1] - org[1]) > 0.9
+        mc, mr = terra.MOOR['c'], terra.MOOR['r']
+        ok &= np.hypot(top[:, 0] - mc[0], (top[:, 1] - mc[1]) * 1.12) > 1.05 * mr      # the moor is no one's: dark
         idx, top = idx[ok], top[ok]
         n = len(idx) + 1
         self.P = np.concatenate([org[None, :], top])

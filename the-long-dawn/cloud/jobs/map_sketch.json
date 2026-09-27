@@ -6,9 +6,9 @@
   "cd shots/map && NUMBA_NUM_THREADS=8 python3 terra.py"
  ],
  "render": [
-  "cd shots/map && NUMBA_NUM_THREADS=8 python3 sketch.py --frames 1-6 --out renders/map_sketch"
+  "cd shots/map && NUMBA_NUM_THREADS=8 python3 sketch.py --frames 1-7 --out renders/map_sketch"
  ],
  "out_dir": "renders/map_sketch",
- "frames": "1-6",
+ "frames": "1-7",
  "ship": "jpg"
 }

@@ -9,9 +9,10 @@ import geo
 import ink
 from noise import fbm, gnoise, wobble1d
 
-# folds: the sheet was folded in six (two vertical creases, one horizontal)
+# folds: the sheet was folded in nine (two vertical creases, two horizontal), so no crease runs under the heart of
+# the map, where the ring of stones is drawn
 FOLD_X = (-60.0, 60.0)
-FOLD_Y = (0.5 * (geo.MAP_Y0 + geo.MAP_Y1),)
+FOLD_Y = (geo.MAP_Y0 + (geo.MAP_Y1 - geo.MAP_Y0) / 3.0, geo.MAP_Y0 + 2.0 * (geo.MAP_Y1 - geo.MAP_Y0) / 3.0)
 
 
 # ------------------------------------------------------------ parchment ---
