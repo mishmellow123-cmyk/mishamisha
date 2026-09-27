@@ -1016,6 +1016,27 @@ def climb_layer(cam, f, world_pos, heading_deg=0.0, glow=1.0, ss=3):
     return H3.render(cam, B, Hp, L, env, ss=ss, sil=dict(skin=1.0, eyes=1.0, cap=0.3, cap_brim=0.3, hair=0.3))
 
 
+def glove_hand_layer(cam, wrist, fdir, palm, curls=(0.9, 0.9, 0.9, 0.9), thumb=0.8, side='f', lights=(), env=None,
+                     ss=3, forearm=0.22):
+    """Her gloved hand (and sleeve cuff) alone as an RGBA + depth layer for another lane's camera (e.g. ACCORD's AC2:
+    the top-down close of her fist over the Ring on the stone). side 'f' = her right hand, 'n' = her left.
+    `lights` rows as hsdf3 ([x,y,z, r,g,b, radius, soft_k]). Returns hsdf3.render's tuple or None."""
+    B = hero.Builder()
+    a = nrm(fdir)
+    W = np.asarray(wrist, np.float64)
+    ha = hero.hand(B, 'hand_' + side, W + a * 0.004, a, np.asarray(palm, np.float64), -1.0 if side == 'f' else 1.0,
+                   curls, thumb=thumb)
+    B.group('hand_sleeves', H3.M_COAT, band=0.006)
+    B.cone(W - a * forearm, W - a * 0.005, 0.050, 0.046, k=0.02)
+    cf = hero.perp_frame(a)
+    B.torus(W - a * 0.012, np.stack([cf[0], a, cf[1]]), 0.040, 0.009, 0.020, k=0.012)
+    Hp = np.zeros(160)
+    H3.gloves(B, Hp)
+    if env is None:
+        env = hero.env_vec()
+    return H3.render(cam, B, Hp, np.asarray(lights, np.float64).reshape(-1, 8), env, ss=ss)
+
+
 def inscription_ins():
     return H3.inscription_accord()[0]
 

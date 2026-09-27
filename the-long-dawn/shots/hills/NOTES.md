@@ -21,7 +21,7 @@ eye 920-980; from bar 13 b2 (980) she blows, a breath of hope, then the eye grey
 14 b4 (1100), out by 1116; the camera drifts 1040-1100 so that point sits exactly where H1's first spark is born
 (full-res px 757, 256): the match cut on bar 15 b1. Quarter-res motion test `review/v3/heroine_v3_deadember_mt2.jpg`:
 the lid lift is clean now. Fixed since: the ash poking through the wall, the soot (M_COAL greyed to ash) now dark.
-Verdict: PASS (beats its fallback). Stills: `renders/heroine_B/stills/deadember_{936,1100}.png`.
+Verdict: PASS (beats its fallback). Stills: `renders/heroine_B/stills/deadember_{936,1100}.png`; sheet `review/v3/heroine_v3_sheet4_locked.jpg`.
 
 **C THE FIRE TEST (H2, Bag End), C 3392-3599.** Locked frame on the fire; her fist brings the steel in (3392-3404), the
 Ring lies on its tip in the flames from bar 43 b3 (3400); on bar 44 b3 (3480) the steel dips and rolls, the Ring slides
@@ -37,6 +37,10 @@ the wide alone, her figure <= 60 px with the pot's glow the only warm point, on 
 `heroine_v3.climb_layer(cam, f, world_pos, heading_deg)`: the trudging, gloved figure with the glowing clay pot as an
 RGBA + depth layer for any camera (B's moon; the pot's light; the scarf and hair in the wind); `climb_wide_test` is a
 crude stand-in wide for scale only.
+
+**For ACCORD (AC2, "with HEROINE's hand"):** `heroine_v3.glove_hand_layer(cam, wrist, fdir, palm, curls, thumb, side,
+lights)` renders her gloved hand and sleeve cuff alone as an RGBA + depth layer in any camera (e.g. the top-down fist
+over the Ring on the stone); smoke-tested.
 
 **RENDER_SPEC (one 4-core box each, 2 processes x 2 workers, `--step 2`, ship jpg; `render.py --shot <name>`):**
 * `cloud/jobs/h1_v3_master.json` (beacon_v3): RUNNING here, see above.
