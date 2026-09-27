@@ -1,27 +1,26 @@
 # THE LONG DAWN v3: score & sound (COMPOSER-v3 notes)
 
-## >>> PAUSED (director's usage pacing, 27 Sep ~10:25Z). EXACT STATE + NEXT STEPS <<<
-- **DONE: B = THE VIGIL, full score, rendered + battery** -> `out/v3/final_B.wav` (+ `final_B_score.wav`,
-  `final_B_sfx.wav`, `score_B.wav`), analysis `analysis/v3/final_B/` (report.txt, overview/spec/roll.png).
-  Changes in `src/score_v3_B.py`: docstring/plan = THE VIGIL (hours); B8 in her frame (the ground holds its breath,
-  one high harmonic, her call FALTERS: D3 A3, no octave, at 32 b2); B10 in her frame (her fire flares: her call near,
-  then the nearer beacon's ANSWER in major over G); B12 the traveller's child stays and falls asleep (softer: ride
-  -2.0 dB, pads settle into the crane; four far horns answer far and soft); bar 63 b3 the fire-steel press = the
-  dead of night's A5 harmonic returns ppp under her HOME phrase (no stroke; HOME still lands on D3 at 64 b1);
-  measured sync trims (SYNC_TRIM).  Battery: format PASS, -16.05 LUFS / -1.30 dBTP, level map 14/14 PASS, notes 0,
-  clicks 0, breath 59.8 dB deep, sync 23/24 PASS.
-- **Two small open fixes on B (next render, ~2 min):** (1) sync: HOME at 62 b1 now measures -200 ms (the +0.13 s
-  trim overshot, the measurement looks bimodal): set SYNC_TRIM["home_phrase"] to ~+0.03 and re-check; (2) RULE
-  "the dawn is warm, not loud" now -1.5 LU (limit -2.0; the softer B12 raised the master gain, the limited crane
-  stayed put): lower the post-sunrise strings/horns ~0.8 dB (e.g. a ride on B13 from the sunrise, or scale the H
-  pads' dyn in handback()) and re-render: `cd music/src && python render_v3.py B`.
-- **IN PROGRESS: fallback engine rewritten** (`src/fallback_v3.py`, not yet run): calls/answers pass between two
-  horns when fires are close (A's Run, C's beacons and coast fires stacked overlapping notes on one horn before);
-  every breath cuts the drone and re-blooms on its downbeat (B's sunrise sits inside B13); the silence piano waits
-  2 s of true silence.  NEXT: `python render_v3.py A --fallback`, then B, then C (one at a time, ~2-4 min each);
-  read each report + overview; put the paths in the MASTERS table.
-- **THEN:** A's full score (`src/score_v3_A.py`, new), C's full score (`src/score_v3_C.py`, new; bars 70-71 = THE FIRE
-  REMAINS: warm, settling, the ANSWER passed outward soft, the tritone resolved, into bar 72's 275 ms breath).
+## >>> PAUSED (director: usage window end, 27 Sep ~12:05Z; RESUME 20:00Z). EXACT STATE + NEXT STEPS <<<
+- **1. B score: FINAL.** `out/v3/final_B.wav` (+ stems). Battery all PASS: sync 25/25 (HOME at 62 b1 is measured per
+  layer: the doubled B3 beats in the narrow band; each layer's anticipation is set in ANTIC_SET), level map 14/14,
+  the dawn -2.3 LU under the crane, first half -6.4 LU, notes 0, clicks 0.  Dawn fix = the first paling horn and
+  her late CALL a little softer, the bloom's swell smaller.
+- **2. Fallback masters** (`src/fallback_v3.py`, generic from bar map + cue sheet; per-cut conductor's ride
+  FALLBACK_RIDE from each battery; horns take the ride on note gain so their sample layer/attack stays measured):
+  * **A: DONE** `out/v3/fallback_A.wav`: battery all PASS (20/20 sections vs the cue sheet's bands, sync 8/8).
+    Rendered before the last engine change (horn ride on gain, anticipation after the ride): an optional
+    re-render for consistency, `python render_v3.py A --fallback`, then re-check (should still pass).
+  * **B: DONE** `out/v3/fallback_B.wav`: battery all PASS (14/14, sync 5/5; the crane is the loudest, the night
+    calls one bar each with the bar of silence after, the dawn blooms after the breath).
+  * **C: rendered once** `out/v3/fallback_C.wav`: sync 7/7, notes 0, but 2 sections out of band (C2 the book's
+    horn CALL -2.9 LU, limit -8; C12 the silence piano -6.9, limit -10). A ride for C is now in FALLBACK_RIDE
+    (untested). **NEXT: `cd music/src && python render_v3.py C --fallback`** (~10 min: the effects stem is now
+    cached, so ~4 min), check the table, adjust the ride once more if needed, update MASTERS.
+- **3. THEN A's and C's full scores** (`src/score_v3_A.py`, `src/score_v3_C.py`, both new). Notes for A: the v1/v2
+  race and kindling (score.py) are NOT reusable as is (strokes on the ignition, 32nd rolls, cymbals); write fresh
+  in the v3 rules on the kit. C: bars 70-71 = THE FIRE REMAINS (warm, settling, the ANSWER passed outward, soft,
+  the tritone resolved, into bar 72's 275 ms breath).
+- Memory is very tight (swap 12 of 13 GB used by the whole machine at 12:00Z): one render at a time.
 
 ## STATE AT HANDOFF (COMPOSER-v3 #2, 27 Sep 10:10Z)
 
@@ -49,10 +48,10 @@
 
 | cut | file | status |
 |---|---|---|
-| B score (THE VIGIL) | `music/out/v3/final_B.wav` (stems `final_B_score.wav`, `final_B_sfx.wav`) | rendered 10:22Z, battery passed but 2 small fixes pending |
-| A fallback | - | pending |
-| B fallback | - | pending |
-| C fallback | - | pending |
+| B score (THE VIGIL) | `music/out/v3/final_B.wav` (stems `final_B_score.wav`, `final_B_sfx.wav`) | **FINAL 10:50Z**: battery all PASS (sync 25/25, level map 14/14, dawn -2.3 LU under the crane, notes 0, clicks 0) |
+| A fallback | `music/out/v3/fallback_A.wav` (stems `fallback_A_score.wav`, `fallback_A_sfx.wav`) | **DONE 11:25Z**: battery all PASS (level map 20/20 vs the cue sheet's bands, sync 8/8, notes 0, clicks 0) |
+| B fallback | `music/out/v3/fallback_B.wav` (stems `fallback_B_score.wav`, `fallback_B_sfx.wav`) | **DONE 11:45Z**: battery all PASS (level map 14/14, sync 5/5, notes 0, clicks 0) |
+| C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | usable temp 12:00Z; 2 sections too loud (C2's horn call, C12's piano); ride fix pending one re-render |
 | A score | - | pending |
 | C score | - | pending |
 
