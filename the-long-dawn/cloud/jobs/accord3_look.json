@@ -1,0 +1,15 @@
+{
+ "name": "accord3_look",
+ "branch": "claude/render-accord3-look",
+ "setup": [
+  "NUMBA_NUM_THREADS=8 python3 shots/accord/accord3.py still 4620 --scale 0.15",
+  "NUMBA_NUM_THREADS=8 python3 shots/accord/accord3.py still 5250 --scale 0.15"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=2 python3 shots/accord/accord3.py range --frames 4480,4560,4620,4660,4840,5040,5160,5250,5548,5566,5590,5625 --outdir renders/accord_C"
+ ],
+ "out_dir": "renders/accord_C",
+ "frames": "4480,4560,4620,4660,4840,5040,5160,5250,5548,5566,5590,5625",
+ "push_every": 300,
+ "ship": "jpg"
+}
