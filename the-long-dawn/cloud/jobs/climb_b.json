@@ -1,0 +1,15 @@
+{
+ "name": "climb_b",
+ "branch": "claude/render-climb-b",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "NUMBA_NUM_THREADS=4 python3 shots/hills/climb_b.py --frames 700,840 --scale 0.1 --ss 1.0 --out /tmp/climb_warm"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=1 python3 shots/hills/climb_b.py --range 640-879 --scale 1.0 --ss 1.5 --out renders/climb_B --skip"
+ ],
+ "out_dir": "renders/climb_B",
+ "frames": "640-879",
+ "push_every": 240,
+ "ship": "jpg"
+}
