@@ -3,6 +3,11 @@
 under-glow are must-haves).*
 
 ## STATE AT THE BLOCK (01:20Z to 05:00Z): renders running on this box
+* 01:07Z: `grey_q` at 92/960 (~7 frames/min; the close-up frames are the slow ones). Expect `grey_q` about 02:30Z,
+  `grey_q_few` about 02:50Z, `grey_h` running past 05:00Z (partial at resume is fine; judge the wides first).
+* Pushed: `claude/v3-runA` and `claude/run-a-crossing-greybox-ub8wbz` at 0b1e3c9 (code, job files, two review sheets).
+* 01:06Z: cloth folds and mottle in the SDF shader; the front bearer in near-black wool (the one figure the lantern
+  must light from the camera's side).
 * `scratchpad/bg_chain.sh` (launched 00:52Z): `renders/crossing_A/grey_q` (0.25 scale, all 960 frames) ->
   `grey_q_few` (the fallback: 12 larger walkers, every 2nd frame) -> `grey_h` (0.5 scale, 960 frames). Each stage
   writes an mp4 to `review/v3/crossing_greybox_{q,q_fewer_larger,h}.mp4`. Log: `scratchpad/bg_chain.log`.
