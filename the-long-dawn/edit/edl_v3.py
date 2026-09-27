@@ -143,7 +143,9 @@ B = [
       [T('climb'), T('heroine')]),
     S('B3', 880, 1120, 'H5', 'THE DEAD EMBER', 'HEROINE',
       'The summit cairn: she lifts the lid on one red eye of ember; it greys to ash under her breath. Hands only.',
-      [T('deadember'), T('heroine')]),
+      # director 27 Sep: HEROINE's job h5_deadember_b renders 960-1199 into heroine_B = B3 880-1119 (off +80);
+      # later HEROINE deliveries use locked B numbering (deadember_B).
+      [T('deadember'), T('heroine', 80, 'v3', 'HEROINE job numbering 960-1199 = B3 880-1119')]),
     S('B4', 1120, 1360, 'H1-B', 'THE FIRST FIRE', 'HEROINE (EDIT crop)',
       'Match cut on the last red point to the first spark: three strikes, a long blow, the catch. Hands, tinder, sparks.',
       h1(H1_S1 - 1120, crop=B_H1_CROP, grade='B')),
