@@ -5,10 +5,10 @@
   "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
  ],
  "render": [
-  "python3 shots/run/crossing.py --range 0-119 --procs 4 --skip"
+  "python3 shots/run/crossing.py --range 4880-4999 --procs 4 --skip"
  ],
  "out_dir": "renders/crossing_A",
- "frames": "0-119",
+ "frames": "4880-4999",
  "push_every": 300,
  "ship": "jpg"
 }

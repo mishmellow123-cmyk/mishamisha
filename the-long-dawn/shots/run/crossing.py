@@ -1,4 +1,4 @@
-"""THE CROSSING (cut A, R6; A's showpiece #2). 960 frames, shot-local numbering 0-959 (renders/crossing_A/).
+"""THE CROSSING (cut A, R6; A's showpiece #2). 960 frames: A cut frames 4880-5839 (renders/crossing_A/, EDIT-v3).
 
 Match cut on the heart of light: the same light, now inside a great lantern of iron and glass hung between two
 poles on the shoulders of two hooded bearers. The camera draws back and out over the void, never getting ahead
@@ -12,8 +12,8 @@ burn low and are fed, the red under the cloud goes out patch by patch, the lante
 toward gold, and the path behind the line keeps a faint trail of light. By the end it is the dark hour before
 the blue hour.
 
-  python crossing.py --frames 0,240,480,720,959 --scale 0.5 --out t1       # stills -> renders/crossing_A/t1/
-  python crossing.py --range 0-959 --procs 4 --skip                         # full  -> renders/crossing_A/
+  python crossing.py --frames 0,240,480 --numbering shot --scale 0.5 --out t1   # test stills -> renders/crossing_A/t1/
+  python crossing.py --range 4880-5839 --procs 4 --skip                          # finals, A cut frames -> crossing_A/
   --variant few   the fallback test: 12 walkers, larger (camera closer)
 """
 import argparse
@@ -98,6 +98,7 @@ def _knot_y(u):
 
 CR0 = build_arete()
 CR0[:, 14] = 0.95                                # crags and ridges: the safe early-out bound (world, v3 flag)
+CR0[CR0[:, 12] >= 0.0, 13] *= 2.5                # crags: a cutoff radius beyond which every flank is under the cloud
 CR = CR0                                         # replaced by CR0 + the watch-fire sites below (_fire_sites)
 
 
@@ -434,6 +435,7 @@ def _finish_set():
     global CR, _WF
     sites, rows = _fire_sites()
     rows[:, 14] = 0.95
+    rows[:, 13] *= 2.5
     CR = np.vstack([CR0, rows])
     # each fire stands on the highest point of its rock's summit shelf
     out = []
@@ -1002,8 +1004,11 @@ def render(frame, scale=1.0, ss=1.5, variant='main', trail=True):
     return img
 
 
+CUT0 = 4880                                      # A18 starts on A's cut frame 4880 (bar 62): files use cut frames
+
+
 def work(args):
-    frames, scale, out, threads, ss, variant = args
+    frames, scale, out, threads, ss, variant, off = args
     os.environ['NUMBA_NUM_THREADS'] = str(threads)
     import numba
     numba.set_num_threads(threads)
@@ -1012,7 +1017,7 @@ def work(args):
     look = PI.look
     for f in frames:
         t0 = time.time()
-        img = look.finish(render(f, scale=scale, ss=ss, variant=variant), **FINISH)
+        img = look.finish(render(f - off, scale=scale, ss=ss, variant=variant), **FINISH)
         look.save_png(look.frame_path(out, f), img)
         print(f'frame {f} {time.time() - t0:.1f}s', flush=True)
 
@@ -1029,26 +1034,33 @@ def main():
     ap.add_argument('--threads', type=int, default=1)
     ap.add_argument('--variant', default='main')
     ap.add_argument('--skip', action='store_true')
+    ap.add_argument('--numbering', choices=('cut', 'shot'), default='cut',
+                    help="cut (default, EDIT-v3's delivery convention): frames are A's cut frames 4880-5839; "
+                         "shot: 0-959 (tests)")
     a = ap.parse_args()
+    off = CUT0 if a.numbering == 'cut' else 0
     base = os.path.join(PI.CM.ROOT, 'renders', 'crossing_A')
     out = base if a.out is None else os.path.join(base, a.out)
     os.makedirs(out, exist_ok=True)
     if a.frames:
         frames = [int(x) for x in a.frames.split(',')]
     else:
-        s, e = (a.range or f'0-{NFR - 1}').split('-')
+        s, e = (a.range or f'{off}-{off + NFR - 1}').split('-')
         frames = list(range(int(s), int(e) + 1, a.step))
+    bad = [f for f in frames if not off <= f < off + NFR]
+    if bad:
+        raise SystemExit(f'frames outside the shot ({off}-{off + NFR - 1} in {a.numbering} numbering): {bad[:5]}')
     if a.skip:
         frames = [f for f in frames if not os.path.exists(PI.look.frame_path(out, f))]
     far_fires()              # build the island fire table once (cached to crossing_fires.npy) before forking
     path()
     if a.procs <= 1:
-        work((frames, a.scale, out, a.threads, a.ss, a.variant))
+        work((frames, a.scale, out, a.threads, a.ss, a.variant, off))
     else:
         import multiprocessing as mp
         chunks = [frames[i::a.procs] for i in range(a.procs)]
         with mp.get_context('spawn').Pool(a.procs) as pool:
-            pool.map(work, [(c, a.scale, out, 1, a.ss, a.variant) for c in chunks])
+            pool.map(work, [(c, a.scale, out, 1, a.ss, a.variant, off) for c in chunks])
 
 
 if __name__ == '__main__':

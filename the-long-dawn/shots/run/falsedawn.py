@@ -1,4 +1,4 @@
-"""FALSE DAWN (cut A, R1). 480 frames, shot-local numbering 0-479 (renders/falsedawn_A/).
+"""FALSE DAWN (cut A, R1). 480 frames: A cut frames 80-559 (renders/falsedawn_A/, EDIT-v3's convention).
 
 High on a ridge at midnight, moonless: the Milky Way above, the cloud sea below. Beyond the far ranges a cold
 white glow swells under the horizon, at the azimuth where the true morning will come (the world's sunrise
@@ -10,7 +10,8 @@ the terrain lit from below the horizon:
   cone  a tall leaning pyramid of pale light (the zodiacal light, the astronomer's own "false dawn")
   veil  no visible source: only the deck lit from beneath across the sky, and a thin white line on the skyline
 
-  python falsedawn.py --design arc --frames 420 --scale 0.5 --out stills
+  python falsedawn.py --frames 500 --scale 0.5 --out stills          # the peak (cut 500 = shot 420), a test still
+  python falsedawn.py --range 80-559 --procs 4 --skip                # finals, A cut frames -> renders/falsedawn_A/
 """
 import argparse
 import math
@@ -85,6 +86,10 @@ def build_range():
                                 ang=ya + math.pi / 2 + rng.uniform(-0.6, 0.6), seed=140 + k, k=(30.0 if big else 14.0),
                                 detail=0.36, shelf=0.0, nf=(4 if big else 3)))
         rows[-1][14] = 0.95                # a safe early-out bound for big detailed crags (world.crag, v3 flag)
+        # crag_row's cutoff radius assumes an isotropic falloff: along an elongated crag's long axis the flank is
+        # still ~200 m above the cloud where it is cut, which stands as a wall (drawn as vertical stripes). A
+        # 2.5x radius lets every flank reach the cloud first.
+        rows[-1][13] *= 2.5
     return np.array(rows), np.array(pts)
 
 
@@ -111,8 +116,10 @@ def camera(frame, W=1920, H=804):
 
 def swell(frame):
     """The glow's growth: nothing, then a slow swell, breathing once a bar (80 frames), too evenly."""
-    u = min(max((frame - 30.0) / 400.0, 0.0), 1.0)
-    return (u * u * (3 - 2 * u)) ** 1.3 * (1.0 + 0.07 * math.sin(2 * math.pi * frame / 80.0))
+    # locked to A2 (cut 80-560): the glow shows on bar 3 b1 (shot 80), is bright enough to put out the nearest
+    # stars by bar 5 b1 (shot 240), and peaks for the push into the white at bar 8 b1 (A3); a breath once a bar
+    u = min(max((frame - 80.0) / 360.0, 0.0), 1.0)
+    return (u * u * (3 - 2 * u)) ** 1.1 * (1.0 + 0.07 * math.sin(2 * math.pi * frame / 80.0))
 
 
 # ------------------------------------------------------------------ skyline (for the shadow rays) ---
@@ -435,9 +442,12 @@ def render(frame, design='arc', scale=1.0, ss=1.5):
 FINISH = dict(exposure=1.05, bloom_strength=0.06, bloom_threshold=0.6, streak_strength=0.0, vignette_amount=0.25)
 
 
+CUT0 = 80                                        # A2 starts on A's cut frame 80 (bar 2): files use cut frames
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--frames', default='420')
+    ap.add_argument('--frames', default=None)
     ap.add_argument('--range', default=None)
     ap.add_argument('--design', default='arc')          # the H5 call: ARC only (cone, veil kept for the record)
     ap.add_argument('--scale', type=float, default=1.0)
@@ -446,14 +456,21 @@ def main():
     ap.add_argument('--threads', type=int, default=4)
     ap.add_argument('--procs', type=int, default=1)
     ap.add_argument('--skip', action='store_true')
+    ap.add_argument('--numbering', choices=('cut', 'shot'), default='cut',
+                    help="cut (default, EDIT-v3's delivery convention): frames are A's cut frames 80-559; "
+                         "shot: 0-479 (tests)")
     a = ap.parse_args()
+    off = CUT0 if a.numbering == 'cut' else 0
     base = os.path.join(PI.CM.ROOT, 'renders', 'falsedawn_A')
     out = base if a.out is None else os.path.join(base, a.out)
     if a.range:
         s, e = a.range.split('-')
         frames = list(range(int(s), int(e) + 1))
     else:
-        frames = [int(x) for x in a.frames.split(',')]
+        frames = [int(x) for x in (a.frames or str(off + 420)).split(',')]
+    bad = [f for f in frames if not off <= f < off + NFR]
+    if bad:
+        raise SystemExit(f'frames outside the shot ({off}-{off + NFR - 1} in {a.numbering} numbering): {bad[:5]}')
     designs = DESIGNS if a.design == 'all' else (a.design,)
     look = PI.look
     for d in designs:
@@ -461,23 +478,23 @@ def main():
         os.makedirs(od, exist_ok=True)
         todo = [f for f in frames if not (a.skip and os.path.exists(look.frame_path(od, f)))]
         if a.procs <= 1:
-            _work((todo, d, a.scale, a.ss, od, a.threads))
+            _work((todo, d, a.scale, a.ss, od, a.threads, off))
         else:
             import multiprocessing as mp
             chunks = [todo[i::a.procs] for i in range(a.procs)]
             with mp.get_context('spawn').Pool(a.procs) as pool:
-                pool.map(_work, [(c, d, a.scale, a.ss, od, 1) for c in chunks])
+                pool.map(_work, [(c, d, a.scale, a.ss, od, 1, off) for c in chunks])
 
 
 def _work(args):
-    frames, d, scale, ss, od, threads = args
+    frames, d, scale, ss, od, threads, off = args
     os.environ['NUMBA_NUM_THREADS'] = str(threads)
     import numba
     numba.set_num_threads(threads)
     look = PI.look
     for f in frames:
         t0 = time.time()
-        img = look.finish(render(f, d, scale, ss), **FINISH)
+        img = look.finish(render(f - off, d, scale, ss), **FINISH)
         look.save_png(look.frame_path(od, f), img)
         print(f'{d} frame {f} {time.time() - t0:.1f}s', flush=True)
 
