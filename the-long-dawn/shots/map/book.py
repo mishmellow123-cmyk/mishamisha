@@ -568,13 +568,13 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 bf = burnR if right else burnL
                 if bf[0] > 0.0:
                     brown, char, hole, edge, pool = BURN.field(bf, u, v, t)
-                    ar = ar * (1 - 0.5 * brown) * (1 - 0.93 * char)
-                    ag = ag * (1 - 0.72 * brown) * (1 - 0.95 * char)
-                    ab = ab * (1 - 0.88 * brown) * (1 - 0.96 * char)
+                    ar = ar * (1 - 0.62 * brown) * (1 - 0.96 * char)
+                    ag = ag * (1 - 0.82 * brown) * (1 - 0.97 * char)
+                    ab = ab * (1 - 0.95 * brown) * (1 - 0.98 * char)
                     cov = 1.0 - hole
-                    er += edge * 7.0 + pool * ar * 1.4
-                    eg += edge * 2.4 + pool * ag * 0.7
-                    eb += edge * 0.5 + pool * ab * 0.25
+                    er += edge * 4.2 + pool * ar * 0.6
+                    eg += edge * 1.25 + pool * ag * 0.3
+                    eb += edge * 0.18 + pool * ab * 0.1
                 if fire > 0.0:
                     er += fire * 3.2
                     eg += fire * 1.15
@@ -666,7 +666,8 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 Lc = L_col[c] * fall * sh
                 d_ = alb * (1.0 - metal) * (Lc * dif + fill_col[c] * ndf + amb_col[c] * ao)
                 s_ = (spec * (1.0 - metal) + mc * metal) * Lc * spd
-                e_ = metal * mc * env_col[c] * envk * ao
+                # gold leaf: a mirror of the warm room plus the broad scatter of crinkled, burnished leaf
+                e_ = metal * mc * (env_col[c] * envk * ao * 2.2 + 0.55 * Lc * max(ndl, 0.0) + 0.9 * amb_col[c] * ao)
                 # extra lights (a fire on the page): diffuse only
                 x_ = 0.0
                 for q in range(xl.shape[0]):

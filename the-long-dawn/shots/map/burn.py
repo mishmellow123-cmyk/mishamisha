@@ -52,7 +52,7 @@ def dist(bf, u, v):
     n1 = fbm(u * f, v * f, 301 + s, 3, 2.0, 0.5)
     n2 = gnoise(u * f * 7.0, v * f * 7.0, 303 + s)
     n3 = gnoise(u * f * 26.0, v * f * 26.0, 305 + s)
-    return r * (1.0 + bf[6] * n1) + 0.25 * bf[6] * n1 + 0.05 * n2 + 0.012 * n3
+    return r * (1.0 + bf[6] * n1) + 0.3 * bf[6] * n1 + 0.11 * n2 + 0.035 * n3
 
 
 @njit(cache=True)
@@ -84,11 +84,17 @@ def field(bf, u, v, t):
         a = 0.012
         hole = min(max(0.5 - sdf / a, 0.0), 1.0)
         we = bf[11]
-        if sdf > -0.02 and sdf < 4.0 * we:
-            hot = 0.55 + 0.45 * gnoise(u * 6.0 - t * 0.9, v * 6.0 + t * 0.7, 311 + int(bf[8]))
-            spark = gnoise(u * 40.0, v * 40.0 + t * 3.0, 313)
-            e = math.exp(-((sdf - 0.3 * we) / we) ** 2)
-            edge = e * hot * (1.0 + 0.8 * max(spark - 0.3, 0.0))
+        if sdf > -0.02 and sdf < 5.0 * we:
+            # the burning line is uneven: some stretches blaze, some are only a dull red thread
+            hot = 0.5 + 0.5 * gnoise(u * 5.0 - t * 0.8, v * 5.0 + t * 0.6, 311 + int(bf[8]))
+            hot = max(hot, 0.0) ** 1.6
+            spark = gnoise(u * 38.0, v * 38.0 + t * 2.5, 313)
+            e = math.exp(-((sdf - 0.25 * we) / we) ** 2)
+            edge = e * (0.12 + 1.1 * hot) * (1.0 + 1.2 * max(spark - 0.35, 0.0))
+        # glowing threads in the fresh char, fading as it cools
+        if sdf > 0.0 and sdf < w:
+            cr = gnoise(u * 22.0, v * 22.0, 317 + int(bf[8]))
+            edge += 0.25 * max(cr - 0.45, 0.0) * (1.0 - sdf / w) ** 2
         # the embers' light on the paper around the edge
-        pool = math.exp(-max(sdf, 0.0) / 0.7) * (1.0 - hole)
+        pool = math.exp(-max(sdf, 0.0) / 0.5) * (1.0 - hole)
     return brown, char, hole, edge, pool

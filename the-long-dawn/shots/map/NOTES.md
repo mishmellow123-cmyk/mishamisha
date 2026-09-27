@@ -1,27 +1,27 @@
 # MAP-v3 (lane `map`): THE RED BOOK, the four ink pages, the burn-throughs, THE MAP ANSWERS
 
-## STATE (2026-09-27 ~01:12Z, work in progress; read this first)
-* Branch base `b5fd34e` (BIBLE_V3 Revision 1). Plan follows Revision 1: X1a LETTERS TO FIRE (the page's ink letters
-  glow in reading order, lift off as sparks, pour into a flame standing on the paper, whose heat browns and burns the
-  page open onto the next shot) replaces C's glyph spiral/ignition; P3 cut; plenty page without round doors; Havens
-  page shows her bound hand raising the small light; map_C gets THE ROAD.
-* Code (uncommitted, all in `shots/map/`): `pen.py` (strokes drawn on in time, wet ink, broad-nib invented hand with a
-  dip cycle, hatching, stipple), `book.py` (2.5-D red book by a hearth: ray-marched height columns, soft shadows, AO,
-  procedural aged paper, iron-gall ink, gilt, graphite, leather + gilt rolls, DoF), `burn.py` (ragged burn/heal
-  field), `pages.py` (`Mountain`, `Deep` in pencil and ink, timed drawing-on; `text_page`), `redbook.py` (P1 leaves
-  with small mountain/ring/ship drawings, `LettersToFire`, sparks, flame, shots `set`/`mountain`/`x1`/`deep`, CLI).
-  Needs Pillow (`inscription.py` imports PIL): cloud setup must `pip install pillow`.
-* Working now: `python3 redbook.py x1 --frames 30,70,110 --scale 0.5 --out DIR` (letters glow -> sparks -> flame ->
-  burn-through; ~2.4 s/frame at half res after compile) and `python3 redbook.py set --key wide|drift|sheaf`.
-* Look status: X1a mechanics right and promising; the burn hole is too round with a too-wide white rim (needs a
-  ragged, thin hot edge + visible char band); flame a bit pale; exposure ~1.1 for more mood. Mountain ink reads as an
-  engraving (tonal sky, ridges, puffed smoke); Deep reads as dark vaulted halls stacked down a gilt vein (a little
-  repetitive). Book set reads as an open old book; the red binding is too thin to read (enlarge squares/raise
-  leather albedo, done partly) and the table specular sparkled (shadow step capped, fixed?).
-* NEXT: burn edge; stills of the set (wide/drift/sheaf), Mountain + Deep in the book (ink) and pencil flat sheets;
-  8 X1 frames full-res comped over the stand-in plate; review sheets to `review/v3/`; job file(s)
-  `cloud/jobs/map_v3_*.json` (ship jpg; shot-local numbering, bases in NOTES); commit; push `claude/v3-map` and
-  the session branch. No full render launched yet (nothing verified).
+## STATE (2026-09-27 01:09Z; read this first)
+* Branch base `b5fd34e` (BIBLE_V3 Revision 1), lane branch `claude/v3-map`. Revision 1 applied: X1a LETTERS TO FIRE
+  (the page's ink letters glow in reading order, lift off as sparks, pour into a flame standing on the paper, whose
+  heat browns and burns the page open onto the next shot) replaces C's glyph spiral/ignition; P3 cut; plenty page
+  without round doors; Havens page shows her bound hand raising the small light; map_C gets THE ROAD.
+* **A local full-res render is running in the background on the MAP box** (started 01:08Z, 4 procs x 1 thread,
+  `cloud/jobs/map_v3_book.json`'s render commands): 1000 frames into `renders/book_C/` (+ `renders/book_C_matte/`),
+  logs in the session scratchpad `renderlog/`. It is a MOTION TEST of the current look (not yet director-approved);
+  when I resume: check it finished, make half-res preview mp4s per shot and judge motion (hatching shimmer, the
+  letters' wave, sparks, burn edge, camera pace).
+* Shots (shot-local src numbering, `redbook.SHOTS`): prologue 1000-1319 (C2), mountain 2000-2239 (C3), x1
+  3000-3159 (C4), deep 4000-4279 (C9 + the burn into the Eye). Comp: `out = rgb + (1 - matte) * next`.
+* Code (`shots/map/`): `pen.py`, `book.py`, `burn.py`, `pages.py`, `redbook.py` (see the files' docstrings).
+  Stills: `python3 redbook.py stills --out DIR`; X1 tests: `python3 redbook.py x1 --frames ... --scale 0.5`;
+  frames: `python3 redbook.py frames --frames A-B --out renders/book_C`. Needs Pillow.
+* Known look issues to fix next: the prologue's "sheaf" end framing (the fore-edge is in shadow: add a bounce
+  light from the right, frame the thick right block); the red binding barely reads in the wide; the Deep's
+  halls repeat (vary arches/capitals per level); the Mountain's smoke puffs are a little regular; the flame is
+  a touch pale; the Deep heal-in hole is small (fine) and its red glow could be stronger earlier.
+* Not started: THE YEAR OF PLENTY and THE HAVENS pages, the epilogue book shots (page turns, healing, blank
+  pages, the title page), P4 map_C + THE ROAD (map_fix branch code), smoke over the burns, review sheets and
+  the final report (this section becomes that report).
 
 # MAP (cut C) — THE WORLD ANSWERS, told on a map
 
