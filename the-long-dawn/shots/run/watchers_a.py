@@ -452,6 +452,8 @@ def render(f, scale=1.0, ss=1.5):
     SK.splat_stars(fr.img, scam, BR.stars(), kill, t=t, gain=ss * ss, scale=pxs)
     draw_figures(fr.img, fr.zb, scam, f, LT, light, CH=CH)
     NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD)
+    if hasattr(BR, 'draw_flares'):
+        BR.draw_flares(fr.img, fr.zb, scam, f, pxs, fogp)     # A14's catch flares run on into A15 (the last to 4260)
     img, zb, di = PI.to_target(fr)
     return img
 
