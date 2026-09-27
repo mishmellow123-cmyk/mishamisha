@@ -248,6 +248,167 @@ def person(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=Fa
     return d, dict(hands=hands, head=hc, torch=hands.get('torch'))
 
 
+def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=False, walk=0.0, wind=1.0,
+            reach=0.0, build=0.5, hood=0, pack=0, coat=1.0, cloak=14, lean_to=1.0):
+    """Style 2 (RUN-B2): a person seen from behind at 40-120 px. A ROUNDED wool cowl that falls into the shoulders
+    (never a pointed tip: a row of pointed hoods read as Nazguls), a stoop that lowers the head and rounds the back
+    (never a sideways tilt), the red woven shawl draped as a triangle down the back from shoulder to shoulder with
+    two darker woven chevrons and a ragged fringe (never a red box), a heavy cloak to mid-calf (travellers: coat to
+    the knee, legs walking), gloves, a staff taller than her. Travellers vary: build 0..1 (slight..broad), hood 0 =
+    cowl up / 1 = cowl down (a round head over a wool wrap) / 2 = a deep cowl with a fur edge, pack 0 none / 1 a
+    rolled bundle / 2 a frame pack. lean_to: +1 the work (fire, child) is screen-right, -1 screen-left.
+    pose: stand | look | walk | kneel | feed | sit | shield | reach.  Returns (Drawing, pts)."""
+    d = FG.Drawing()
+    d.new_group()
+    k = 0.03
+    sc = 0.60 if child else (0.95 + 0.10 * build)
+    ws = (1.12 if child else 1.0) * (0.90 + 0.28 * build)
+    stoop = 0.0 if child else 0.30 * age ** 1.3
+    s = lean_to
+    kneel = pose in ('kneel', 'feed')
+    sit = pose == 'sit'
+    ph = walk * 2 * math.pi
+    wk = 1.0 if pose == 'walk' else 0.0
+    # body landmarks (metres, feet at the origin)
+    if kneel:
+        hip = np.array([0.0, 0.46])
+        tilt = s * (0.30 + (0.18 if pose == 'feed' else 0.0))       # the torso leans toward the work
+    elif sit:
+        hip = np.array([0.0, 0.30])
+        tilt = s * 0.06
+    else:
+        hip = np.array([0.0, 0.90])
+        tilt = s * 0.03 * wk
+    hip = hip * sc
+    up = _rot(np.array([0.0, 1.0]), -tilt)
+    side = _rot(np.array([1.0, 0.0]), -tilt)
+    torso = 0.44 * sc * (1.0 - 0.10 * stoop)
+    sho = hip + up * torso                                  # shoulder line centre
+    shw = 0.20 * ws * sc / 0.95                               # half shoulder width
+    head = sho + up * (0.17 * sc - 0.10 * stoop) + side * (0.02 * s * stoop)
+    # legs and boots
+    if kneel:
+        kn = hip + np.array([0.18 * s, -0.40 * sc])
+        d.capsule(hip + side * 0.06 * s, kn, 0.085 * sc, 0.07 * sc, k=k, mat=cloak)
+        d.capsule(kn, kn + np.array([-0.30 * s, -0.02]), 0.065 * sc, 0.05 * sc, k=k, mat=19)
+        d.capsule(hip - side * 0.06 * s, np.array([-0.16 * s, 0.05]), 0.09 * sc, 0.06 * sc, k=k, mat=cloak)
+    elif sit:
+        d.capsule(hip + np.array([0.05, 0.0]), np.array([0.26, 0.10]) * sc, 0.09 * sc, 0.075 * sc, k=k, mat=cloak)
+        d.capsule(hip - np.array([0.05, 0.0]), np.array([-0.24, 0.08]) * sc, 0.09 * sc, 0.075 * sc, k=k,
+                  mat=cloak)
+    else:
+        for sg in (-1, 1):
+            sw = 0.16 * math.sin(ph + (0.0 if sg > 0 else math.pi)) * wk * (1.0 - 0.5 * age)
+            lift = 0.05 * max(0.0, math.sin(ph + (0.0 if sg > 0 else math.pi) + 1.2)) * wk
+            a = hip + np.array([0.06 * sg * ws, 0.0])
+            ft = np.array([0.08 * sg * ws + sw * sc, 0.03 + lift])
+            kn_ = 0.5 * (a + ft) + np.array([0.0, 0.02])
+            d.capsule(a, kn_, 0.085 * sc * ws, 0.065 * sc, k=k, mat=cloak)
+            d.capsule(kn_, ft, 0.062 * sc, 0.050 * sc, k=k, mat=19)
+            d.ellipse(ft + np.array([0.0, -0.005]), 0.055 * sc, 0.035 * sc, k=0.01, mat=19)
+    # the cloak / coat
+    if kneel or sit:
+        hem_y = 0.04
+        d.trap(np.array([0.10 * s * (1 if kneel else 0), hem_y]), sho + up * 0.02, 0.36 * ws * sc, shw * 0.95,
+               rnd=0.05, k=0.06, mat=cloak, fuzz=0.010, ff=14.0)
+    else:
+        hem_y = hip[1] - (0.62 if coat >= 1.0 else 0.40) * sc
+        flare = 0.05 * wind + 0.03 * math.sin(ph) * wk
+        d.trap(np.array([flare, hem_y]), sho + up * 0.01, (0.27 if coat >= 1.0 else 0.23) * ws * sc, shw * 0.96,
+               rnd=0.04, k=0.06, mat=cloak, fuzz=0.010, ff=14.0)
+    # rounded shoulders and, with age, a rounded back
+    d.ellipse(sho - up * 0.02, shw * 1.05, 0.085 * sc, ang=-tilt, k=0.07, mat=cloak)
+    if stoop > 0.05:
+        d.ellipse(sho - up * 0.07 * sc + up * 0.02, shw * 0.92, (0.10 + 0.10 * stoop) * sc, ang=-tilt, k=0.08,
+                  mat=cloak)
+    # arms
+    hands = {}
+    shL = sho - side * shw * 0.92
+    shR = sho + side * shw * 0.92
+    for sh, sg in ((shL, -1), (shR, 1)):
+        work = (sg == s)
+        if pose == 'shield':
+            e = sh + np.array([0.26 * sg + 0.12 * s, -0.08]) * sc
+            w = e + np.array([0.18 * sg + 0.14 * s, -0.10]) * sc
+        elif kneel and work:
+            e = sh + np.array([0.20 * s, -0.20]) * sc
+            w = e + np.array([0.20 * s, -0.12 - (0.08 if pose == 'feed' else 0.0)]) * sc
+        elif kneel:
+            e = sh + np.array([0.06 * s, -0.24]) * sc
+            w = e + np.array([0.16 * s, -0.10]) * sc
+        elif (pose == 'reach' or reach > 0.0) and work:
+            e = sh + np.array([(0.16 + 0.08 * reach) * s, -0.20 - 0.05 * reach]) * sc
+            w = e + np.array([(0.14 + 0.10 * reach) * s, -0.13 - 0.04 * reach]) * sc
+        elif staff and not child and sg == -s:
+            e = sh + np.array([-0.06 * s, -0.24]) * sc
+            w = e + np.array([-0.05 * s, -0.08]) * sc
+        elif torch and sg == s:
+            e = sh + np.array([0.07 * s, -0.22]) * sc
+            w = e + np.array([0.05 * s, 0.02]) * sc
+        else:
+            sw = -0.06 * math.sin(ph + (0.0 if sg > 0 else math.pi)) * wk
+            e = sh + np.array([0.03 * sg + sw, -0.27]) * sc
+            w = e + np.array([0.01 * sg + sw, -0.23]) * sc
+        d.capsule(sh, e, 0.068 * sc, 0.058 * sc, k=0.05, mat=cloak)
+        d.capsule(e, w, 0.058 * sc, 0.048 * sc, k=0.04, mat=cloak)
+        d.ellipse(w + np.array([0.0, -0.035 * sc]), 0.040 * sc, 0.048 * sc, k=0.02, mat=19)
+        hands['L' if sg < 0 else 'R'] = w
+    if staff and not child:
+        hs = hands['R' if s < 0 else 'L']
+        tip = np.array([hs[0] - 0.05 * s, 0.0])
+        top = np.array([hs[0] - 0.01 * s, head[1] + 0.16])
+        if kneel or sit:
+            top = hs + np.array([-0.30 * s, 0.55])
+            tip = hs + np.array([0.25 * s, -0.30])
+        d.capsule(top, tip, 0.019, 0.016, mat=4)
+    if torch:
+        hr = hands['R' if s > 0 else 'L']
+        th = hr + np.array([0.08 * s, 0.50]) * sc
+        d.capsule(hr - np.array([0.0, 0.05]), th, 0.018, 0.022, mat=4)
+        hands['torch'] = th
+    # packs
+    if pack == 1:
+        d.new_group()
+        pc = sho - up * 0.20 * sc
+        d.capsule(pc - side * 0.18 * sc, pc + side * 0.18 * sc, 0.085 * sc, 0.085 * sc, k=0.02, mat=4, fuzz=0.006)
+    elif pack == 2:
+        d.new_group()
+        d.trap(sho - up * 0.42 * sc, sho + up * 0.04, 0.17 * sc, 0.15 * sc, rnd=0.04, k=0.02, mat=0, fuzz=0.006)
+        d.capsule(sho + up * 0.06 - side * 0.12 * sc, sho + up * 0.06 + side * 0.12 * sc, 0.035, 0.035, mat=4)
+    # the head: a rounded cowl flowing into the shoulders (or cowl down: a round head over a wool wrap)
+    d.new_group()
+    hr_ = 0.108 * sc * (1.10 if child else 1.0)
+    if hood == 1 and not child:
+        d.ellipse(sho + up * 0.03, shw * 0.82, 0.075 * sc, ang=-tilt, k=0.05, mat=cloak, fuzz=0.012, ff=22.0)
+        d.ellipse(head, 0.092 * sc, 0.110 * sc, ang=-tilt, k=0.05, mat=6, fuzz=0.006, ff=40.0)
+    else:
+        deep = 1.18 if hood == 2 else 1.0
+        d.trap(sho + up * 0.01, head + up * 0.02, shw * 0.80, hr_ * 0.95 * deep, rnd=0.03, k=0.07, mat=cloak)
+        d.ellipse(head + up * 0.012, hr_ * 1.06 * deep, hr_ * 1.14 * deep, ang=-tilt, k=0.07, mat=cloak,
+                  fuzz=0.012 if hood == 2 else 0.0, ff=30.0)
+        if age > 0.7 and not child:
+            d.ellipse(head + side * (0.10 * s) - up * 0.035, 0.028, 0.045, mat=15)
+    if shawl:
+        d.new_group()
+        # the red woven shawl: over both shoulders, its point hanging down the back
+        L_ = sho - side * shw * 1.05 + up * 0.02
+        R_ = sho + side * shw * 1.05 + up * 0.02
+        tip_ = sho - up * (0.36 * sc) + side * (0.03 * wind * (0 if kneel else 1))
+        d.tri(L_, R_, tip_, rnd=0.025, k=0.03, mat=13, fuzz=0.007, ff=34.0)
+        d.capsule(L_ + up * 0.005, R_ + up * 0.005, 0.045 * sc, 0.045 * sc, k=0.04, mat=13)
+        for q, wq in ((0.30, 0.013), (0.62, 0.011)):             # two darker woven chevrons
+            a_ = L_ + (tip_ - L_) * q
+            b_ = R_ + (tip_ - R_) * q
+            m_ = 0.5 * (a_ + b_) - up * (0.30 * (1.0 - q) * 0.36 * sc)
+            d.chain(np.array([a_, m_, b_]), wq * sc / 0.95, wq * sc / 0.95, mat=20)
+        # the fringe at the point: a few short tassels
+        for i in range(5):
+            u = (i - 2) / 2.0
+            p0 = tip_ + side * 0.05 * u + up * (0.035 * abs(u))
+            d.capsule(p0, p0 - up * 0.05 + side * 0.01 * wind, 0.012, 0.008, mat=13)
+    return d, dict(hands=hands, head=head, torch=hands.get('torch'))
+
+
 def child_asleep(wake=0.0, reach=0.0):
     """The traveller's child from behind, seated against her, wrapped head and shoulders in her red shawl: one small
     hooded lump (the head sunk into the wrap, no neck), asleep with the head bowed toward her; waking, the head rises
@@ -421,7 +582,15 @@ def moon_vec(el_deg, az_deg):
     return BW.sun_vec(el_deg, az_deg)
 
 
-def night_params(moon, pix_ang, gain=1.0, east=None, grey=0.0, halo=1.0, stars_sky=1.0):
+def match_horizon(SN, fogp):
+    """The far haze converges to the sky's own horizon colour, so the cloud sea's far edge melts into the sky (a fog
+    brighter than the horizon sky left a hard, ragged seam along the horizon). In place; RUN-B2, additive."""
+    SN[6:9] = fogp[5:8]
+    fogp[9:12] = fogp[5:8]
+    fogp[4] = 0.0
+
+
+def night_params(moon, pix_ang, gain=1.0, east=None, grey=0.0, halo=1.0, stars_sky=1.0, horizon_match=False):
     """Moonlit silver (R2-B's grade, never crushed): LP / SN / amb / fogp for bworld.shade with a moon key whose
     visibility channels are set by the caller (LP[32:35]). grey = 0..1 the east greying (east = its direction)."""
     LP = np.zeros(BW.NLP)
@@ -461,4 +630,6 @@ def night_params(moon, pix_ang, gain=1.0, east=None, grey=0.0, halo=1.0, stars_s
     fogp[8] = 6.0
     fogp[9:12] = _lin('#6F86B8') * 0.9 * gain
     fogp[12:15] = moon
+    if horizon_match:
+        match_horizon(SN, fogp)
     return LP, SN, amb, fogp

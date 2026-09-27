@@ -30,9 +30,10 @@ if HERE not in sys.path:
 import bworld as BW         # noqa: E402
 import bset as BS           # noqa: E402
 import pipe as PI           # noqa: E402
+import rcam as RC           # noqa: E402
 import fire2 as F2          # noqa: E402
 import keeper as KP         # noqa: E402  (generic helpers only: star trails, village field)
-from mt import fire as F, figure as FG   # noqa: E402
+from mt import fire as F, figure as FG, sky as SK   # noqa: E402
 from mt.noise import smoothstep   # noqa: E402
 
 CM = PI.CM
@@ -91,13 +92,63 @@ def fog(f):
 
 
 STAR_DEG = 132.0            # the sky wheels ~9 hours across the vigil
-# the Milky Way (sky coordinates at the vigil's start): a band from the ESE horizon (the reveal's view) up through the
-# pole, its bright centre low in the ESE; it wheels with the stars through the night
-BAND = np.array([-0.244, 0.697, -0.674, 0.962, 0.087, -0.258, 0.13, 117.0])
+F_WHEEL_SLOW = bar(47)      # the wheel eases to a stop at the crane (the hand-back's stars are static)
+_OMEGA = math.radians(STAR_DEG) / ((F_WHEEL_SLOW - F0) + 0.5 * (F1 - F_WHEEL_SLOW))
 
 
-def sky_angle(f):
-    return math.radians(STAR_DEG * (f - F0) / float(F1 - F0))
+def theta(f):
+    """The sky's rotation about the pole (radians) at frame f: 0 at the crane (f >= F1), negative before it; the
+    rate is constant until bar 47, then eases to zero at F1. Continues linearly before F0 (the reveal)."""
+    if f >= F1:
+        return 0.0
+    L = F1 - F_WHEEL_SLOW
+    if f >= F_WHEEL_SLOW:
+        u = (f - F_WHEEL_SLOW) / float(L)
+        return -_OMEGA * L * (0.5 - u + u ** 3 - 0.5 * u ** 4)
+    return -_OMEGA * ((F_WHEEL_SLOW - f) + 0.5 * L)
+
+
+def sky_rot(f):
+    return KP._rotmat(KP.POLE, theta(f))
+
+
+def sky_angle(f):          # (kept for callers of the old API)
+    return theta(f)
+
+
+# the Milky Way in SKY coordinates = its world pose at the crane (R = I at F1); it wheels with the stars
+def _band_from_start(b_start):
+    """A band given as its pose at the vigil's start (F0) -> sky coordinates."""
+    Rm = sky_rot(F0).T
+    n = Rm @ np.asarray(b_start[0:3])
+    c = Rm @ np.asarray(b_start[3:6])
+    return np.r_[n, c, b_start[6:8]]
+
+
+BAND = _band_from_start(np.array([-0.244, 0.697, -0.674, 0.962, 0.087, -0.258, 0.13, 117.0]))
+BAND_GAIN = 0.10
+
+_STARS = None
+
+
+def star_cat():
+    """The hand-back's catalogue (make_stars(14000, 101, 7.0)), so the sky is one sky across the join."""
+    global _STARS
+    if _STARS is None:
+        _STARS = SK.make_stars(14000, 101, lum_scale=7.0)
+    return _STARS
+
+
+def draw_sky(img, G, scam, mask, f, clear, ss):
+    """The stars (points, a half-frame shutter) and the Milky Way, wheeling about the pole."""
+    st = star_cat()
+    t = f / FPS
+    scale = scam.f / (0.5 * 1920 / math.tan(math.radians(22.0)))
+    for th in np.linspace(theta(f), theta(f + 0.5), 3):
+        Rk = KP._rotmat(KP.POLE, th)
+        SK.splat_stars(img, scam, dict(st, dir=st['dir'] @ Rk.T), mask, t=t, gain=ss * ss * clear / 3.0,
+                       scale=scale)
+    BW.add_band(G, sky_rot(f), BAND, BAND_GAIN, clear, img)
 
 
 def fire_level(f):
@@ -120,15 +171,33 @@ def fire_level(f):
 
 
 # ------------------------------------------------------------------ the frame ---
+# the locked frame (defaults: bset's vigil camera, which is also the hand-back crane's first frame); --cam
+# overrides it for look-dev (bear, dist, up, yaw, pitch, hfov: bearing camera->top, metres out, metres above the top)
+VCAM = dict(bear=BS.CAM_BEAR, dist=BS.CAM_DIST, up=BS.CAM_UP, yaw=BS.YAW, pitch=BS.PITCH, hfov=BS.HFOV)
+_VK = ('bear', 'dist', 'up', 'yaw', 'pitch', 'hfov')
+
+
+def camera(W=1920, H=804):
+    pos = BS.TOP - VCAM['dist'] * BS.dirxz(VCAM['bear']) + np.array([0.0, VCAM['up'], 0.0])
+    return RC.RCam(pos, VCAM['yaw'], VCAM['pitch'], 0.0, VCAM['hfov'], W, H)
+
+
+def cam_key():
+    if all(abs(VCAM[k] - getattr(BS, n)) < 1e-9 for k, n in zip(_VK, ('CAM_BEAR', 'CAM_DIST', 'CAM_UP', 'YAW',
+                                                                       'PITCH', 'HFOV'))):
+        return 'bs'
+    return 'c' + '_'.join(f'{VCAM[k]:g}' for k in _VK)
+
+
 class Vigil:
     def __init__(self, scale=0.25, ss=1.5):
         self.scale, self.ss = scale, ss
         self.W, self.H = int(round(1920 * scale)), int(round(804 * scale))
-        self.tc = BS.camera(self.W, self.H)
+        self.tc = camera(self.W, self.H)
         self.fr = PI.Frame(self.tc, ss)
         scam = self.fr.src
         self.P = np.array([scam.pos[0], scam.pos[2], 0.0, 0.0])
-        p = os.path.join(CACHE, f'vig_G_{BW.VERSION}_{scale:.3f}_{ss:.2f}.npy')
+        p = os.path.join(CACHE, f'vig_G_{BW.VERSION}_{cam_key()}_{scale:.3f}_{ss:.2f}.npy')
         if os.path.exists(p):
             self.G = np.load(p)
         else:
@@ -139,105 +208,63 @@ class Vigil:
             os.replace(tmp, p)
         self.dist = self.G[..., BW.G_DIST].astype(np.float32)
         self.sky = (self.dist > 1e8).astype(np.float32)
-        self.peaks = self._peaks()
+        self.peaks = self._answers()
         self.vill = self._villages()
         self.rng = np.random.default_rng(5)
 
-    # far summits in frame that the camera sees, nearest first; each gets the frame it first answers
-    def _peaks(self):
-        p = os.path.join(CACHE, f'vig_peaks2_{BW.VERSION}.npy')
+    # the far answers: the hand-back's beacon catalogue (every summit well above the cloud, all round her), those
+    # this frame sees; the one on her line of sight answers first (bar 35), the rest one by one to bar 46. At the
+    # crane every one of them burns exactly as the hand-back draws it.
+    def _answers(self):
+        import handback_b as HB
         scam = self.fr.src
-        if os.path.exists(p):
-            P = np.load(p)
-        else:
-            cand = []
-            for r in np.geomspace(2500.0, 60000.0, 60):
-                for a in np.linspace(BS.YAW - 24, BS.YAW + 24, 40):
-                    d = BS.dirxz(a)
-                    cand.append((BS.CAM_POS[0] + d[0] * r, BS.CAM_POS[2] + d[2] * r, r))
-            pk = []
-            for x, z, r in cand:
-                fp = r / 600.0
-                step = max(r * 0.012, 40.0)
-                bh = BW.h_rock(x, z, fp, CR)
-                for _it in range(12):
-                    imp = False
-                    for ddx, ddz in ((step, 0), (-step, 0), (0, step), (0, -step)):
-                        h = BW.h_rock(x + ddx, z + ddz, fp, CR)
-                        if h > bh:
-                            bh, x, z, imp = h, x + ddx, z + ddz, True
-                    if not imp:
-                        step *= 0.5
-                if bh > BW.CLOUD_Y + 150.0:
-                    pk.append((x, bh, z))
-            Pk = np.array(pk)
-            keep = []
-            for q in Pk:
-                dd = math.hypot(q[0] - BS.CAM_POS[0], q[2] - BS.CAM_POS[2])
-                if all(math.hypot(q[0] - k[0], q[2] - k[2]) > max(0.035 * dd, 250.0) for k in keep):
-                    keep.append(q)
-            P = np.array(keep)
-            os.makedirs(CACHE, exist_ok=True)
-            np.save(p, P)
-        dist = np.linalg.norm(P - BS.CAM_POS, axis=1)
-        curv = ((P[:, 0] - scam.pos[0]) ** 2 + (P[:, 2] - scam.pos[2]) ** 2) / (2 * BW.R_EARTH)
-        Pc = P.copy()
-        Pc[:, 1] = P[:, 1] - curv + 3.0
-        sx, sy, z = scam.project(Pc)
-        ok = []
-        for i in range(len(P)):
-            ix, iy = int(sx[i]), int(sy[i])
-            if not (2 <= ix < scam.W - 2 and 2 <= iy < scam.H - 2) or z[i] <= 0:
+        B = HB.beacon_catalogue()
+        Bc = B.copy()
+        Bc[:, 1] += 3.0 - ((Bc[:, 0] - scam.pos[0]) ** 2 + (Bc[:, 2] - scam.pos[2]) ** 2) / (2 * BW.R_EARTH)
+        sx, sy, z = scam.project(Bc)
+        dd = np.linalg.norm(B - scam.pos, axis=1)
+        vis = []
+        for k in range(len(B)):
+            if z[k] <= 0 or not (2 <= sx[k] < scam.W - 2 and 2 <= sy[k] < scam.H - 2):
                 continue
-            if self.dist[iy - 1:iy + 2, ix - 1:ix + 2].max() > dist[i] * 0.97:
-                ok.append(i)
-        Pc, dist = Pc[ok], dist[ok]
-        sx, sy = sx[ok], sy[ok]
-        n = len(Pc)
-        # the first answer: far off, on her line of sight (right of her, low on the far skyline)
+            ix, iy = int(sx[k]), int(sy[k])
+            if self.dist[iy - 1:iy + 2, ix - 1:ix + 2].max() >= dd[k] * 0.97:
+                vis.append(k)
+        vis = np.array(vis, int)
         hx, hy, hz = scam.project(BS.TOP + np.array([0.0, 1.5, 0.0]))
-        pref = [i for i in range(n) if dist[i] > 12000 and hx + 0.06 * scam.W < sx[i] < hx + 0.40 * scam.W]
+        pref = [k for k in vis if dd[k] > 12000 and hx + 0.06 * scam.W < sx[k] < hx + 0.40 * scam.W]
         rng = np.random.default_rng(7)
-        order = list(rng.permutation(n))
-        first = min(pref, key=lambda i: abs(sx[i] - (hx + 0.2 * scam.W))) if pref else (order[0] if n else None)
+        order = list(rng.permutation(vis)) if len(vis) else []
+        first = min(pref, key=lambda k: abs(sx[k] - (hx + 0.2 * scam.W))) if pref else (order[0] if order else None)
         if first is not None:
             order.remove(first)
             order.insert(0, first)
-        t_on = np.zeros(n)
-        for k, i in enumerate(order):
-            if k == 0:
-                t_on[i] = F_FIRST_ANSWER
+        t_on = {}
+        n = len(order)
+        for i, k in enumerate(order):
+            if i == 0:
+                t_on[k] = F_FIRST_ANSWER
             else:
-                u = k / max(n - 1, 1)
-                t_on[i] = bar(36, 3) + (bar(46) - bar(36, 3)) * u ** 0.7 + rng.normal() * 20
-        return dict(P=Pc, dist=dist, t_on=t_on, first=first)
+                u = i / max(n - 1, 1)
+                t_on[k] = bar(36, 3) + (bar(46) - bar(36, 3)) * u ** 0.7 + rng.normal() * 20
+        try:
+            chosen = set(HB.HandBack(self.scale, self.ss, figures=False).chosen)
+        except Exception as e:          # the hand-back's schedule is only needed for the join's brightness
+            print('vigil: no hand-back schedule:', e, flush=True)
+            chosen = set()
+        return dict(idx=vis, P=Bc[vis], sx=sx[vis], sy=sy[vis], z=z[vis], dist=dd[vis],
+                    t_on=np.array([t_on[k] for k in vis]), first=first, chosen=chosen)
 
     def _villages(self):
+        """The hand-back's village glows under the cloud (x, z, radius, gain); they wake one by one from bar 39."""
+        import handback_b as HB
+        V = HB.villages_world()
         scam = self.fr.src
+        d = np.hypot(V[:, 0] - scam.pos[0], V[:, 1] - scam.pos[2])
         rng = np.random.default_rng(11)
-        pts = []
-        for _k in range(6000):
-            i = int(rng.integers(0, scam.W))
-            j = int(rng.integers(int(scam.H * 0.35), scam.H))
-            dd = self.dist[j, i]
-            if dd > 1e8 or dd < 1500 or dd > 30000 or self.G[j, i, BW.G_FLAG] != 2.0:
-                continue
-            x, z = self.G[j, i, BW.G_X], self.G[j, i, BW.G_Z]
-            if BW.h_rock(float(x), float(z), 20.0, CR) < BW.CLOUD_Y - 40:
-                pts.append((x, z, dd))
-        pts = np.array(pts)
-        keep = []
-        for q in pts[rng.permutation(len(pts))]:
-            if all(math.hypot(q[0] - k[0], q[1] - k[1]) > 900 for k in keep):
-                keep.append(q)
-            if len(keep) >= 20:
-                break
-        V = np.array(keep)
-        V = V[np.argsort(V[:, 2])]
-        t_on = F_VILLAGE + np.linspace(0, bar(46) - F_VILLAGE, len(V)) + rng.normal(size=len(V)) * 15
-        t_on[0] = F_VILLAGE
-        rad = rng.uniform(260, 520, len(V))
-        return dict(V=V, t_on=t_on, rad=rad)
+        rank = np.argsort(np.argsort(d + rng.normal(size=len(d)) * 2500.0))
+        t_on = F_VILLAGE + (bar(46) - F_VILLAGE) * (rank / max(len(V) - 1, 1)) ** 0.8
+        return dict(V=V, t_on=t_on)
 
     # --- the world, relit
     def world(self, f):
@@ -267,6 +294,7 @@ class Vigil:
         SN[3:9] = SN[3:9] * (1.0 - 0.85 * st) + np.r_[grey * 0.55, grey * 0.9] * st
         SN[3:9] = SN[3:9] * (1.0 - 0.6 * fg) + np.r_[lin('#3C4A70') * 0.35, lin('#5A6A90') * 0.5] * 0.6 * fg
         SN[9] *= 1.0 - 0.8 * st
+        BS.match_horizon(SN, fogp)
         out = np.zeros((scam.H, scam.W, 3), np.float32)
         BW.shade(self.G, LP, SN, amb, fogp, float(scam.pos[1]), out)
         return out, md, lv
@@ -278,23 +306,21 @@ class Vigil:
         zb = self.dist.copy()
         st, fg = storm(f), fog(f)
         clear = (1.0 - st) * (1.0 - 0.85 * fg)
-        # the Milky Way and the stars wheeling (short trails: a slow shutter)
+        # the stars and the Milky Way, wheeling (the hand-back's sky: identity at the crane)
         if clear > 0.02:
-            BW.add_band(self.G, KP._rotmat(KP.POLE, sky_angle(f)), BAND, 0.05, clear, img)
-            a1 = sky_angle(f)
-            a0 = a1 - math.radians(STAR_DEG / (F1 - F0)) * 5.0
-            KP.draw_stars(img, scam, self.sky, a0, a1, 1.6 * self.ss * self.ss * clear, K=6)
+            draw_sky(img, self.G, scam, self.sky, f, clear, self.ss)
         # the far answers, one by one; the line-of-sight light flares into a beacon on bar 41
         self.answers(img, zb, scam, f, t, clear)
-        # village glow under the cloud
+        # village glow under the cloud (the hand-back's villages, waking one by one)
         V = self.vill
         u_on = np.clip((f - (V['t_on'] - 30.0)) / 90.0, 0.0, 1.0)
         on = u_on * u_on * (3.0 - 2.0 * u_on) * (1.0 - 0.8 * fg) * (1.0 - 0.7 * st)
         if on.max() > 0:
             fld = np.zeros(self.dist.shape, np.float32)
             C = scam.params()
+            VV = V['V']
             KP._village_field(scam.W, scam.H, C[8], C[9], C[7], scam.pos[0], scam.pos[1], scam.pos[2], C[3], C[4],
-                              C[5], C[6], self.dist, V['V'][:, 0], V['V'][:, 1], V['rad'], on * 1.0, fld)
+                              C[5], C[6], self.dist, VV[:, 0], VV[:, 1], VV[:, 2], VV[:, 3] * on, fld)
             img += fld[..., None] * (np.array([1.0, 0.55, 0.22], np.float32) * 0.10)[None, None, :]
         # the summit: the cairn, the beacon, the fire, the figures, the torches
         self.summit(img, zb, scam, f, t, md, lv)
@@ -309,23 +335,25 @@ class Vigil:
 
     def answers(self, img, zb, scam, f, t, clear):
         K = self.peaks
-        if len(K['P']) == 0:
-            return
-        sx, sy, z = scam.project(K['P'])
         ss = self.ss
-        for k in range(len(K['P'])):
-            if f < K['t_on'][k] - 10:
+        join = smoothstep(bar(46, 3), bar(48, 3), f)        # into the hand-back's exact values by the crane
+        for i, k in enumerate(K['idx']):
+            if f < K['t_on'][i] - 10:
                 continue
-            on = smoothstep(K['t_on'][k] - 10, K['t_on'][k] + 30, f)
-            fl = F.flicker(t + 0.37 * k, k)
-            near = min(9000.0 / K['dist'][k], 1.0)
-            big = 1.0
-            if k == K['first']:
-                big = 1.3 + 1.4 * smoothstep(F_HIS - 6, F_HIS + 30, f)       # "the answer, nearer": it flares
-            en = 5.0 * big * on * fl * (0.4 + 0.6 * near) * ss * ss * (0.25 + 0.75 * clear)
-            F2.glow(img, zb, sx[k], sy[k], 0.7 * ss, en, z=z[k], zbias=z[k] * 0.02, col=np.array([1.0, 0.52, 0.18]))
-            F2.halo(img, zb, sx[k], sy[k], 3.0 * ss, 0.02 * big * on * (0.5 + 0.5 * near) * (0.3 + 0.7 * clear),
-                    z=z[k], zbias=z[k] * 0.02, col=np.array([1.0, 0.45, 0.12]))
+            on = smoothstep(K['t_on'][i] - 10, K['t_on'][i] + 30, f)
+            fl = F.flicker(t + 0.37 * k, k)                   # k = the catalogue index: the hand-back's flicker
+            near = min(2500.0 / K['dist'][i], 1.0)
+            big_hb = 1.8 if k in K['chosen'] else 1.0
+            big = big_hb
+            if k == K['first']:                               # "the answer, nearer": it flares on bar 41
+                big = max(big_hb, 1.3 + 1.4 * smoothstep(F_HIS - 6, F_HIS + 30, f))
+            big = big + (big_hb - big) * join
+            wx = 0.25 + 0.75 * clear
+            en = 7.0 * big * on * fl * (0.4 + 0.6 * near) * ss * ss * wx
+            F2.glow(img, zb, K['sx'][i], K['sy'][i], 0.8 * ss, en, z=K['z'][i], zbias=K['z'][i] * 0.02,
+                    col=np.array([1.0, 0.52, 0.18]))
+            F2.halo(img, zb, K['sx'][i], K['sy'][i], 3.0 * ss, 0.026 * big * on * (0.5 + 0.5 * near) * wx,
+                    z=K['z'][i], zbias=K['z'][i] * 0.02, col=np.array([1.0, 0.45, 0.12]))
 
     # --- her and the others
     def her_track(self):
@@ -540,8 +568,15 @@ class Vigil:
 FINISH = dict(exposure=1.15, bloom_strength=0.06, bloom_threshold=1.2, streak_strength=0.0, vignette_amount=0.22)
 
 
+def set_cam(spec):
+    if spec:
+        for k, v in zip(_VK, spec.split(',')):
+            VCAM[k] = float(v)
+
+
 def _work(args):
-    frames, scale, ss, out = args
+    frames, scale, ss, out, cam = args
+    set_cam(cam)
     shot = Vigil(scale, ss)
     for f in frames:
         t1 = time.time()
@@ -562,10 +597,12 @@ def main():
     ap.add_argument('--out', default='vig_t')
     ap.add_argument('--skip', action='store_true')
     ap.add_argument('--procs', type=int, default=1)
+    ap.add_argument('--cam', default=None, help='bear,dist,up,yaw,pitch,hfov (look-dev)')
     a = ap.parse_args()
+    set_cam(a.cam)
     t0 = time.time()
     shot = Vigil(a.scale, a.ss)              # builds every cache once, before any fork
-    print(f'G-buffer {time.time() - t0:.1f}s; answers {len(shot.peaks["P"])}; villages {len(shot.vill["V"])}',
+    print(f'G-buffer {time.time() - t0:.1f}s; answers {len(shot.peaks["idx"])}; villages {len(shot.vill["V"])}',
           flush=True)
     if a.build:
         return
@@ -579,11 +616,11 @@ def main():
     if a.skip:
         frames = [f for f in frames if not os.path.exists(look.find_frame(out, f))]   # find_frame never returns None
     if a.procs <= 1:
-        _work((frames, a.scale, a.ss, out))
+        _work((frames, a.scale, a.ss, out, a.cam))
     else:
         import multiprocessing as mp
         with mp.get_context('spawn').Pool(a.procs) as pool:
-            pool.map(_work, [(frames[i::a.procs], a.scale, a.ss, out) for i in range(a.procs)])
+            pool.map(_work, [(frames[i::a.procs], a.scale, a.ss, out, a.cam) for i in range(a.procs)])
 
 
 if __name__ == '__main__':

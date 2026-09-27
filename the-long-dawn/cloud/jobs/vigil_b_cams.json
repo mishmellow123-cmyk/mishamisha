@@ -1,0 +1,21 @@
+{
+ "name": "vigil_b_cams",
+ "branch": "claude/render-vigil-b-cams",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "python3 -c \"import sys; sys.path.insert(0, 'shots/run'); import handback_b as HB; HB.beacon_catalogue(); HB.villages_world(); HB.HandBack(0.5, 1.5, figures=False)\""
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=2 python3 shots/run/vigil.py --cam 20,44,1.5,31,-1.2,40 --frames 1520,2900,3620,3836 --scale 0.5 --ss 1.5 --out renders/run_b_tests/vg2_cams",
+  "NUMBA_NUM_THREADS=2 python3 shots/run/vigil.py --cam 22,58,8,30,-4,34 --frames 1521,2901,3621,3837 --scale 0.5 --ss 1.5 --out renders/run_b_tests/vg2_cams",
+  "NUMBA_NUM_THREADS=2 python3 shots/run/vigil.py --cam 62,55,6,70,-3,36 --frames 1522,2902,3622,3838 --scale 0.5 --ss 1.5 --out renders/run_b_tests/vg2_cams",
+  "NUMBA_NUM_THREADS=2 python3 shots/run/vigil.py --cam 40,60,10,43,-4.5,34 --frames 1523,2903,3623,3839 --scale 0.5 --ss 1.5 --out renders/run_b_tests/vg2_cams"
+ ],
+ "out_dir": "renders/run_b_tests/vg2_cams",
+ "frames": "1520,1521,1522,1523,2900,2901,2902,2903,3620,3621,3622,3623,3836,3837,3838,3839",
+ "shape": [
+  402,
+  960
+ ],
+ "ship": "jpg"
+}
