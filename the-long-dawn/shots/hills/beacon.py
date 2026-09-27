@@ -50,6 +50,13 @@ FOG = np.array([1.0 / 60000.0, 1.0 / 900.0, -1500.0, 260.0, 0.6, math.radians(3.
 # v2 (Sep 2026): the Young Woman as a sculpted 3-D figure lit by the fire (heroine.py +
 # heroine_sdf.py) instead of the 2-D card puppet. Only this take uses it; False = the v1 puppet.
 HEROINE_V2 = True
+# v3 (BIBLE_V3 REVISION 1, red-team B7): the flint take RE-KEYED for all cuts. Her hands are gloved (leather), and
+# the warm sources (strikes, ember, tinder flame, the roar) reach her head only at grazing angles, so the face is never
+# lit: the head is a rim-lit silhouette. Rendered through hsdf3 (the v3 fork of the tracer). Timing, poses, camera,
+# scarf, breath, sparks and fire are the accepted v2b take. False = v2b exactly. render.py's shot 'beacon_v3' sets it.
+V3_REKEY = False
+V3_SIL = dict(skin=1.0, eyes=1.0, cap=0.85, cap_brim=0.85, hair=0.85)
+V3_STRAND_WARM = 0.12        # the warm sources' share left on the hair strands, flyaways and lashes
 
 
 # ------------------------------------------------------------------ world ---
@@ -1020,10 +1027,20 @@ class FirstBeacon:
                            amb=np.array([0.0035, 0.0050, 0.0100]) * (1.0 + 4.0 * reveal),
                            bounce=np.array([0.030, 0.012, 0.004]) * warm, ao=0.02)
         L = np.array(L, np.float64).reshape(-1, 8)
-        res = hero.render(cam, B, H, L, env, ss=(3 if scale > 0.75 else 2))
+        if V3_REKEY:
+            import hsdf3
+            hsdf3.gloves(B, H)
+            res = hsdf3.render(cam, B, H, L, env, M=hsdf3.material_table3(), ss=(3 if scale > 0.75 else 2),
+                               sil=V3_SIL)
+            res = None if res is None else res[:5]
+            Ls = L.copy()
+            Ls[Ls[:, 7] != 0.0, 3:6] *= V3_STRAND_WARM
+        else:
+            res = hero.render(cam, B, H, L, env, ss=(3 if scale > 0.75 else 2))
+            Ls = L
         # fine hair strands along the simulated locks, and the lashes
-        sets = [hero.hair_strands(cam, hair, F, t, L, env), hero.flyaways(cam, F, t, L, env),
-                hero.lashes(cam, F, pose.get('expr'), L, env)]
+        sets = [hero.hair_strands(cam, hair, F, t, Ls, env), hero.flyaways(cam, F, t, Ls, env),
+                hero.lashes(cam, F, pose.get('expr'), Ls, env)]
         return hero.draw_fine(res, cam, sets)
 
     def _tinder_smoke(self, img, cam, f, t, em_e, lv):
