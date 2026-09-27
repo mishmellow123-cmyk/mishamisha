@@ -723,6 +723,235 @@ def hand_transform(t):
     return R, W
 
 
+# ======================================================= v3: THE GRASP THAT CANNOT HOLD (cut C only) ===
+# BIBLE_V3 rev. 1 (B9, and the picture red team's "raised fist"): a claw of embers DESCENDS from the upper left,
+# palm down, knuckles to the lens, the camera above it looking down into the storm's eye where the Ring hangs. It
+# closes on the Ring and cannot hold it: the crust glows from inside and cracks along the hand's own lines, gold
+# leaks between the fingers, and the band slips through them and falls away into the eye (the Ring falls).
+# No frame shows a forearm rising from below or a fist raised on top of it. (A has no grasp any more.)
+
+C_LEAK = look.hexrgb('#F7B23E') * 0.8 + look.hexrgb(look.PALETTE['mind_gold']) * 0.2   # the Ring's gold
+GR_EL0, GR_EL1 = 27.0, 20.0        # camera elevation above the grip (degrees): above the hand, never below
+GR_D0, GR_D1 = 74.0, 63.0          # camera distance to the grip (a slow push in)
+GR_YAW = math.radians(-32.0)       # the arm comes in from the upper left, not straight down the lens axis
+GR_BETA = math.radians(40.0)       # the fingers point down and toward the lens
+HOLLOW = np.array([0.0, 0.50, 0.10])   # where the closing fist holds the Ring (hand-local, units of L)
+# v3 timing (re-cut for C's locked sheet: c3.py plays src 960-1040 at half speed over C 2320-2480):
+T_REACH0, T_REACH1 = 961.0, 979.0      # the descent (C 2322-2358)
+T_CLOSE0, T_CLOSE1 = 971.0, 980.0      # the fingers close on the Ring, slow then decisive (C 2360, bar 30 b3)
+T_CRACK0 = 1000.0                      # the crust glows and cracks from inside (C 2400, bar 31 b1)
+T_SLIP = 1020.0                        # the band slips out between the fingers (C 2440, bar 31 b3)
+RING_G = 0.1                           # the fall's gravity (units / frame^2)
+
+
+def grip_point():
+    return B.crown_centre(960.0)
+
+
+def _gr_h():
+    """horizontal unit vector from the grip toward the grasp camera"""
+    a = GRASP_AZ
+    return np.array([math.cos(a), 0.0, math.sin(a)])
+
+
+def cam_grasp_v3(t):
+    """Above the hand, looking down past it into the storm's eye (level with it or above, never below)."""
+    G = grip_point()
+    u = float(np.clip((t - 960) / 80.0, 0, 1))
+    push = float(ease_in_out(u))
+    el = math.radians(lerp(GR_EL0, GR_EL1, push))
+    d = lerp(GR_D0, GR_D1, push)
+    h = _gr_h()
+    up = np.array([0.0, 1.0, 0.0])
+    side = np.cross(up, h)
+    pos = G + d * (h * math.cos(el) + up * math.sin(el))
+    tgt = G + np.array([0.0, lerp(-3.0, -6.5, push), 0.0]) - side * 2.0
+    if t > T_CRACK0 + 6:
+        k = min((t - (T_CRACK0 + 6)) / 10.0, 1.0)
+        pos = pos + 0.25 * k * np.array([math.sin(3.3 * t), math.sin(4.1 * t) * 0.6, math.cos(2.7 * t)])
+    return pos, tgt
+
+
+def _hand_basis():
+    """hand-local -> world rotation for the claw: fingers (+Y) down and toward the lens, palm (+Z) down,
+    turned so the arm enters from the upper left"""
+    h = _gr_h()
+    up = np.array([0.0, 1.0, 0.0])
+    f = h * math.cos(GR_BETA) - up * math.sin(GR_BETA)
+    pn = -up * math.cos(GR_BETA) - h * math.sin(GR_BETA)
+    x = np.cross(f, pn)
+    R0 = np.stack([x, f, pn], 1)
+    c, s_ = math.cos(GR_YAW), math.sin(GR_YAW)
+    Ry = np.array([[c, 0.0, s_], [0.0, 1.0, 0.0], [-s_, 0.0, c]])
+    return Ry @ R0
+
+
+def hand_pose_v3(t):
+    """a spread claw while it descends; the fingers hook as it arrives; they close on the Ring (slow, then
+    decisive), clench, then spasm a little open as the band slips out"""
+    reach = float(smoothstep(T_REACH0 + 2, T_REACH1 - 4, t))
+    close = 0.3 * float(smoothstep(T_CLOSE0, T_CLOSE0 + 5, t)) + 0.7 * float(ease_in((t - (T_CLOSE0 + 4))
+                                                                                   / (T_CLOSE1 - T_CLOSE0 - 4), 1.6))
+    close = float(np.clip(close, 0, 1))
+    fail = float(smoothstep(T_SLIP - 1.0, T_SLIP + 4.0, t))           # the grip gives as the band slips
+    flex, spread = {}, {}
+    rest = (0.35, 0.45, 0.3)
+    claw = (0.52, 0.97, 0.75)                    # hooked, spread: a claw, not a flat reaching hand
+    closed = {'index': (1.4, 1.62, 1.2), 'middle': (1.45, 1.66, 1.25), 'ring': (1.5, 1.66, 1.25),
+              'little': (1.55, 1.62, 1.2)}
+    for fi, f in enumerate(FNAMES):
+        cf = float(np.clip(close * (1.0 + 0.06 * (fi - 1.5)), 0, 1))
+        a = [lerp(rest[k], claw[k], reach) for k in range(3)]
+        lag = (0.0, 0.08, 0.16)
+        a = [lerp(a[k], closed[f][k], float(np.clip((cf - lag[k]) / (1 - lag[k]), 0, 1))) for k in range(3)]
+        # the failing grip: the middle and ring fingers part a little, the others shudder
+        give = fail * (0.32 if f in ('middle', 'ring') else 0.12)
+        a = [a[0] - 0.6 * give, a[1] - give, a[2] - 0.6 * give]
+        flex[f] = tuple(a)
+        s0 = lerp(SPREAD_REST[f], SPREAD_OPEN[f] * 1.1, reach)
+        s1 = lerp(s0, SPREAD_REST[f] * 0.2, cf)
+        spread[f] = s1 + fail * {'index': -0.02, 'middle': -0.05, 'ring': 0.05, 'little': 0.02}[f]
+    thumb = lerp(lerp(0.35, 0.05, reach), 0.9, close) - 0.15 * fail
+    return flex, spread, thumb
+
+
+def hand_transform_v3(t):
+    """World placement of the claw (rotation local->world, wrist position): it descends on a diagonal from the
+    upper left and settles so the closing fist's hollow lands on the Ring; as the band slips it jerks back a little."""
+    G = grip_point()
+    R = _hand_basis()
+    Wf = G - R @ (HOLLOW * HAND_L)
+    h = _gr_h()
+    up = np.array([0.0, 1.0, 0.0])
+    side = np.cross(up, h)                       # screen right, roughly
+    fwd = R[:, 1]
+    W0 = Wf - fwd * 34.0 + up * 22.0 - side * 26.0
+    arr = float(ease_out((t - T_REACH0) / (T_REACH1 - T_REACH0), 2.2))
+    W = W0 + (Wf - W0) * arr
+    # a slow drop onto it as the fingers close (weight), then a jerk back as it fails
+    W = W - up * (1.2 * float(smoothstep(T_REACH1 - 4, T_CLOSE1 + 2, t)))
+    jerk = float(smoothstep(T_SLIP, T_SLIP + 5.0, t))
+    W = W - fwd * (2.2 * jerk) + up * (1.6 * jerk)
+    tilt = 0.06 * float(smoothstep(T_SLIP, T_SLIP + 6.0, t))
+    R = R @ _rx(-tilt)
+    return R, W
+
+
+def ring_state_v3(t):
+    """the Ring in the grasp: (centre, rotation) -- it hangs in the storm's eye, is closed on, and slips out
+    between the middle and ring fingers, tumbling as it falls away into the eye"""
+    G = grip_point()
+    h = _gr_h()
+    up = np.array([0.0, 1.0, 0.0])
+    a = math.atan2(h[2], h[0])
+    tilt = math.radians(62.0)                      # its face turned up toward the lens: it reads as a ring
+    Rm = B._rot_about(a, tilt)
+    C = G.copy()
+    if t > T_SLIP:
+        x = t - T_SLIP
+        slide = 1.6 * float(smoothstep(0.0, 3.5, x)) * min(x, 3.5) / 3.5
+        fall = 0.5 * RING_G * max(x - 2.5, 0.0) ** 2
+        R_h = _hand_basis()
+        C = C - up * (slide + fall) + R_h[:, 0] * (0.9 * float(smoothstep(0.0, 4.0, x)))
+        tum = 0.16 * x + 0.02 * x * x
+        c, s_ = math.cos(tum), math.sin(tum)
+        ax = np.cross(up, h)
+        ax /= np.linalg.norm(ax)
+        K = np.array([[0, -ax[2], ax[1]], [ax[2], 0, -ax[0]], [-ax[1], ax[0], 0]])
+        Rt = np.eye(3) + s_ * K + (1 - c) * (K @ K)
+        Rm = Rt @ Rm
+    return C, Rm
+
+
+def _seg_dist2(P, a, b):
+    """distance (x, y only) from points to the segment a-b"""
+    a, b = np.asarray(a, float), np.asarray(b, float)
+    d = b - a
+    u = np.clip(((P[:, 0] - a[0]) * d[0] + (P[:, 1] - a[1]) * d[1]) / max(d @ d, 1e-12), 0, 1)
+    return np.hypot(P[:, 0] - (a[0] + u * d[0]), P[:, 1] - (a[1] + u * d[1]))
+
+
+def _poly_dist(P, pts):
+    return np.min([_seg_dist2(P, pts[i], pts[i + 1]) for i in range(len(pts) - 1)], axis=0)
+
+
+PALM_LINES = [  # hand-local (x, y), units of L: heart, head and life lines
+    [(0.135, 0.335), (0.06, 0.35), (-0.02, 0.372), (-0.1, 0.405)],
+    [(-0.125, 0.305), (-0.04, 0.29), (0.04, 0.265), (0.11, 0.225)],
+    [(-0.105, 0.315), (-0.085, 0.24), (-0.06, 0.16), (-0.035, 0.07)],
+]
+
+
+def anat_cracks(P, own, sk, A_rest, R_rest):
+    """v3 (picture red team): cracks that follow the hand's anatomy, in the rest pose (hand-local, units of L).
+    Large plates on the back of the hand and the forearm, long creases (the tendons to each knuckle, the knuckle
+    wrinkles, the palm's three lines, the flexion creases, the wrist), small cells at the joints; bark along the
+    fingers. Returns (sharp 0..1: the crack itself, soft 0..1: the crust near a crack, where heat shows through,
+    plate id 0..1, crease 0..1: the hottest, widest lines)."""
+    n = len(P)
+    x, y, z = P[:, 0], P[:, 1], P[:, 2]
+    names = np.array(sk.names)[own]
+    is_f = np.array([('_p' in nm or '_mcp' in nm or '_pip' in nm or '_dip' in nm) and not nm.startswith('thumb')
+                     for nm in names])
+    is_t = np.array([nm.startswith('thumb') for nm in names])
+    is_arm = sk.forearm[own]
+    dorsal = z < 0.012
+    # distance to the nearest knuckle (MCP, PIP, DIP, thumb IP) and to the wrist
+    kn = []
+    for f in FNAMES:
+        for node in ('_mcp', '_pip', '_dip'):
+            kn.append(A_rest[sk.idx[f + node]])
+    kn.append(A_rest[sk.idx['thumb_ip']])
+    kn = np.array(kn)
+    dk = np.sqrt(((P[:, None, :] - kn[None, :, :]) ** 2).sum(-1)).min(1)
+    near_j = np.exp(-(dk / 0.03) ** 2) + np.exp(-((y - 0.01) / 0.03) ** 2) * (~is_f)
+    near_j = np.clip(near_j, 0, 1)
+
+    def wor(Q, freq, seed, width):
+        F1, F2, cid = np.empty(n), np.empty(n), np.empty(n, np.int64)
+        _worley(np.ascontiguousarray(Q), freq, seed, F1, F2, cid)
+        e = F2 - F1
+        return 1.0 - smoothstep(0.0, width, e), 1.0 - smoothstep(0.0, width * 2.5, e), (cid % 997) / 997.0
+    Qb = P * np.array([1.0, 0.55, 1.0])                        # plates stretched along the arm and hand
+    big, big_s, plate = wor(Qb, 6.5, 11, 0.05)
+    Qf = P.copy()
+    Qf[:, 1] = np.where(y > 0.42, 0.42 + (y - 0.42) * 0.42, y)  # bark running along the fingers
+    mid, mid_s, plate_f = wor(Qf, 15.0, 17, 0.06)
+    small, small_s, _ = wor(P, 36.0, 29, 0.07)
+    w_big = ((~is_f) & (~is_t) & (dorsal | is_arm)).astype(float) * (1 - near_j)
+    w_mid = np.clip(1.0 - w_big - near_j, 0, 1)
+    sharp = np.maximum.reduce([w_big * big, w_mid * mid * 0.85, near_j * small * 0.75])
+    soft = np.maximum.reduce([w_big * big_s, w_mid * mid_s * 0.8, near_j * small_s * 0.7])
+    plate = np.where(w_big > 0.5, plate, plate_f)
+    # ---- creases
+    cre = np.zeros(n)
+    # the tendons: wrist -> each knuckle, on the back of the hand
+    for f in FNAMES:
+        mx, my = FINGERS[f][0], FINGERS[f][1]
+        d = _seg_dist2(P, (mx * 0.3, 0.06), (mx, my - 0.03))
+        cre = np.maximum(cre, np.exp(-(d / 0.0075) ** 2) * (dorsal & ~is_f & ~is_arm))
+    # knuckle wrinkles (back) and flexion creases (front) at every finger joint: short transverse lines
+    for f in FNAMES:
+        for node, amp in (('_mcp', 0.8), ('_pip', 1.0), ('_dip', 0.9)):
+            j = sk.idx[f + node]
+            c = A_rest[j]
+            ax = R_rest[sk.idx[f + ('_p1' if node == '_pip' else '_p2' if node == '_dip' else '_p0')]][:, 1]
+            along = (P - c) @ ax
+            lat = np.linalg.norm((P - c) - along[:, None] * ax[None, :], axis=1)
+            band = np.exp(-(lat / 0.05) ** 2)
+            for off in ((-0.012, 0.012) if node != '_mcp' else (0.0,)):
+                cre = np.maximum(cre, amp * np.exp(-((along - off) / 0.0042) ** 2) * band * (is_f | ~is_arm))
+    # the palm's three lines, and the wrist
+    pal = (~is_f) & (~is_t) & (~is_arm) & (z > 0.0)
+    for L_ in PALM_LINES:
+        cre = np.maximum(cre, np.exp(-(_poly_dist(P, L_) / 0.006) ** 2) * pal)
+    for yw in (0.015, -0.02):
+        cre = np.maximum(cre, 0.8 * np.exp(-((y - yw) / 0.005) ** 2) * (~is_f) * (~is_t))
+    sharp = np.clip(np.maximum(sharp, cre), 0, 1)
+    soft = np.clip(np.maximum(soft, 0.6 * np.sqrt(cre)), 0, 1)
+    return sharp, soft, plate, cre
+
+
 def _splat_col(fr, P0, P1, RW, colE, ctx):
     """splat points whose colour carries the energy; dark points are skipped"""
     E = colE.max(1)
@@ -747,17 +976,28 @@ class Hand:
         args = sk.kernel_args(A, R)
         rest_u = self._surface(self.u_own, self.u_q, A, R, args)[0]
         rest_c = self._surface(c_own, c_q, A, R, args)[0]
-        cr, plate = self._cracks(rest_c)
-        keep = r.random(len(cr)) < cr
+        # v3: cracks follow the anatomy (anat_cracks); plus a fine network that only opens as the claw fails
+        cr, soft_c, plate, cre_c = anat_cracks(rest_c, c_own, sk, A, R)
+        nfine = len(cr)
+        F1, F2, cidf = np.empty(nfine), np.empty(nfine), np.empty(nfine, np.int64)
+        _worley(np.ascontiguousarray(rest_c), 19.0, 41, F1, F2, cidf)
+        fine = (1.0 - smoothstep(0.0, 0.05, F2 - F1)) * 0.32
+        late = (r.random(nfine) < fine) & (r.random(nfine) >= cr)
+        keep = (r.random(len(cr)) < cr) | late
         # drop points that stay buried inside other bones in every pose the shot visits
         keep &= self._exposed(c_own, c_q)
         self.c_own, self.c_q, self.c_area = c_own[keep], c_q[keep], c_area[keep]
         self.c_tex = rest_c[keep]
         self.c_plate = plate[keep]
+        self.c_cre = cre_c[keep]
+        self.c_late = late[keep]
+        # when each late crack opens: first where it grips (the palm and fingers round the Ring), last up the arm
+        dgrip = np.linalg.norm((self.c_tex - np.array([0.0, 0.5, 0.06])) * np.array([1.0, 0.8, 1.0]), axis=1)
+        self.c_open = T_CRACK0 + 16.0 * np.clip(dgrip / 0.9, 0, 1.4) + r.uniform(-2.0, 2.0, len(self.c_tex))
         ku = self._exposed(self.u_own, self.u_q)
         self.u_own, self.u_q, self.u_area = self.u_own[ku], self.u_q[ku], self.u_area[ku]
         self.u_tex = rest_u[ku]
-        _, self.u_plate = self._cracks(self.u_tex)
+        _, self.u_soft, self.u_plate, _ = anat_cracks(self.u_tex, self.u_own, sk, A, R)
         # knuckles (dorsal points of the MCP, PIP and DIP joints in the rest pose) burn hotter
         kpts = []
         for f in FNAMES:
@@ -802,8 +1042,8 @@ class Hand:
 
     def _exposed(self, own, q):
         wmax = np.zeros(len(own))
-        for pose in (REST_POSE, hand_pose_at(975.0), hand_pose_at(1012.0), hand_pose_at(1028.0),
-                     hand_pose_at(1040.0)):
+        for pose in (REST_POSE, hand_pose_v3(T_REACH0 + 4), hand_pose_v3(T_REACH1 - 4), hand_pose_v3(T_CLOSE1),
+                     hand_pose_v3(T_SLIP + 2), hand_pose_v3(T_SLIP + 10)):
             A, R = self.sk.pose(*pose)
             wmax = np.maximum(wmax, self._surface(own, q, A, R, self.sk.kernel_args(A, R), iters=2)[2])
         return wmax > 0.02
@@ -823,9 +1063,9 @@ class Hand:
         return np.clip(np.maximum(c1, 0.4 * c2 * (0.3 + 0.7 * plate)), 0, 1), plate
 
     def pose_world(self, t):
-        flex, spread, th = hand_pose_at(t)
+        flex, spread, th = hand_pose_v3(t)
         A, R = self.sk.pose(flex, spread, th)
-        Rh, W = hand_transform(t)
+        Rh, W = hand_transform_v3(t)
         return A, R, Rh, W
 
     def raw_world(self, own, q, t):
@@ -850,11 +1090,13 @@ class Hand:
         fpx = cam.f_px(1920)
         Cc = B.crown_centre(960.0)
         fade_in = float(smoothstep(960, 963, t))
-        close = float(smoothstep(1015, 1036, t))
-        clench = float(smoothstep(1026, 1036, t))
-        # heat of the hand: it wakes as it rises, roars as it closes
-        heat = 0.75 + 0.25 * float(smoothstep(964, 990, t))
-        surge = 1.4 * close ** 1.5 + 1.2 * clench ** 2
+        close = float(smoothstep(T_CLOSE0, T_CLOSE1, t))
+        # heat of the hand: it wakes as it descends; v3: as it closes on the Ring it glows from inside and cracks,
+        # hottest as the band slips, then the broken crust cools a little
+        heat = 0.75 + 0.25 * float(smoothstep(964, T_CLOSE1, t))
+        glowk = float(smoothstep(T_CRACK0, T_SLIP + 1.0, t)) ** 1.4 * (1 - 0.35 * float(smoothstep(T_SLIP + 2, 1040, t)))
+        surge = 0.0
+        ringC = ring_state_v3(t)[0]
 
         def view(P, N):
             V = cam.pos - P
@@ -877,7 +1119,6 @@ class Hand:
         fp = np.clip(f, 0.0, 1.0)
         along = (P - Wr) @ Rh[:, 1] / HAND_L                  # position along the arm (0 = wrist)
         fore_fade = smoothstep(-0.95, 0.0, along)
-        fist_u = 1 + surge * smoothstep(0.1, 0.5, self.u_tex[:, 1])
         w = Wn * front * fade_in
         L = Cc - P
         dL = np.linalg.norm(L, axis=1)
@@ -887,22 +1128,27 @@ class Hand:
         rim = np.clip(1.0 - fp / rimw, 0, 1) ** 2.2
         rim_c = np.clip(1.0 - fp / 0.4, 0, 1) ** 2
         fl = 1 + 0.35 * np.sin(1.1 * t + 9 * self.u_rnd) * np.sin(0.37 * t + 23 * self.u_rnd)
-        plate_glow = smoothstep(0.72, 1.0, self.u_plate) * 0.05
-        v_body = (0.018 + plate_glow + 0.06 * self.u_kn) * heat * fl * fist_u
-        v_rim = 3.2 * heat * (0.6 + 0.4 * fl) * fore_fade * (1 + 0.5 * surge)
+        # v3: an opaque, near-black crust; heat shows through only where it is thin (beside the cracks, over the
+        # knuckles), and more as the claw fails; gold where the Ring burns inside the grip
+        dR = np.linalg.norm(P - ringC[None, :], axis=1)
+        leak = np.exp(-(np.maximum(dR - 2.6, 0.0) / 1.7) ** 2) * close        # only where it touches the band
+        thin = np.clip(self.u_soft + 0.6 * self.u_kn, 0, 1)
+        v_body = (0.011 + 0.02 * self.u_kn) * heat * fl + thin ** 2 * (0.01 + 0.02 * glowk) * heat
+        v_rim = 3.2 * heat * (0.6 + 0.4 * fl) * fore_fade
         v_cold = lam ** 1.5 * (0.5 + 2.4 * near) * (1 + 0.8 * close)
         e_scale = pa * fp * w
-        c_body = C_CRIMSON * 0.7 + C_RED * 0.3
+        c_body = (C_CRIMSON * 0.7 + C_RED * 0.3)[None, :] * (1 - thin[:, None] * glowk) \
+            + look.blackbody(0.62)[None, :] * (thin[:, None] * glowk)
         c_rim = look.blackbody(0.42 + 0.2 * rim) * 0.75 + C_RED * 0.25
         c_cold = C_ICE * 0.65 + C_CORE * 0.35
-        colB = (c_body[None, :] * (v_body * fore_fade)[:, None]) * e_scale[:, None]
+        colB = (c_body * (v_body * fore_fade)[:, None] + C_LEAK[None, :] * (0.45 * leak)[:, None]) * e_scale[:, None]
         # rims go to their own layer: post keeps them at the OUTER silhouette (a backlight cannot reach the
         # edge of a finger that lies in front of the palm), so a finger seen end-on is never a lit ring
         colR = (c_rim * (v_rim * rim)[:, None] + c_cold[None, :] * (v_cold * rim_c)[:, None]) * e_scale[:, None]
         spacing = np.sqrt(self.u_area) * HAND_L
         _splat_col(fr_hand, P0, P1, spacing * 0.3, colB, ctx)
         _splat_col(getattr(ctx, 'fr_rim', fr_hand), P0, P1, spacing * 0.3, colR, ctx)
-        cov = pa * fp * Wn * front * 5.0 * fade_in
+        cov = pa * fp * Wn * front * 9.0 * fade_in             # v3: denser coverage -- the crust is opaque
         fr_cov.splat(P0, P1, spacing * 0.9, cov, np.ones(3), ctx.cam0, ctx.cam1, zref=0.0)
 
         # ---------------- cracks: the coal bed (seams of fire in the crust, hottest at the knuckles)
@@ -917,12 +1163,18 @@ class Hand:
         # heat pulses travel up the arm into the fingers
         wave = 0.5 + 0.5 * np.sin(2 * np.pi * (self.c_tex[:, 1] * 1.3 - (t - 960) / 30.0))
         flc = 1 + 0.4 * np.sin(1.7 * t + self.c_ph) * np.sin(0.53 * t + 2.3 * self.c_ph)
-        hot = (0.1 + 0.9 * self.c_var ** 2) * (0.55 + 0.45 * wave) * flc * (1 + 3.0 * self.c_kn)
-        hot = hot * (0.55 + 0.45 * smoothstep(0.05, 0.55, self.c_tex[:, 1]))
-        fist_c = smoothstep(0.1, 0.5, self.c_tex[:, 1])
-        v_c = 1.5 * hot * heat * (1 + surge * fist_c) * smoothstep(-1.0, -0.05, alongc)
-        temp = np.clip(0.36 + 0.2 * self.c_var + 0.18 * self.c_kn + (0.16 * close + 0.1 * clench) * fist_c, 0, 0.95)
-        colc = look.blackbody(temp) * (v_c * pac * fcp ** 0.8 * Wc * (fc > 0) * fade_in)[:, None]
+        # v3: creases burn hottest; plates' seams medium; the late network opens from the grip outward as it fails
+        cls = 0.45 + 1.1 * self.c_cre
+        opened = np.where(self.c_late, smoothstep(self.c_open, self.c_open + 3.0, t), 1.0)
+        fresh = np.where(self.c_late, np.exp(-np.maximum(t - self.c_open, 0.0) / 5.0) * opened, 0.0)
+        hot = cls * (0.25 + 0.75 * self.c_var ** 2) * (0.6 + 0.4 * wave) * flc * (1 + 1.5 * self.c_kn)
+        v_c = 1.3 * hot * heat * opened * (1 + glowk * (0.15 + 1.8 * self.c_cre) + 1.1 * fresh) * smoothstep(-1.0, -0.05, alongc)
+        dRc = np.linalg.norm(Pc - ringC[None, :], axis=1)
+        leakc = np.exp(-(np.maximum(dRc - 2.6, 0.0) / 2.0) ** 2) * close
+        temp = np.clip(0.36 + 0.16 * self.c_var + 0.12 * self.c_cre + glowk * (0.06 + 0.3 * self.c_cre) + 0.2 * fresh
+                       + 0.15 * leakc, 0, 0.93)
+        colc = (look.blackbody(temp) * v_c[:, None] + C_LEAK[None, :] * (2.2 * leakc)[:, None]) \
+            * (pac * fcp ** 0.8 * Wc * (fc > 0) * fade_in)[:, None]
         sp_c = np.sqrt(self.c_area) * HAND_L
         _splat_col(fr_hand, Pc + (Q0 - Qm), Pc + (Q1 - Qm), sp_c * 0.3, colc, ctx)
 

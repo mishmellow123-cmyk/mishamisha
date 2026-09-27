@@ -10,7 +10,7 @@ CUT = 'A'
 def set_cut(c):
     global CUT
     CUT = c.upper()
-    assert CUT in ('A', 'B', 'C'), CUT
+    assert CUT in ('A', 'B', 'C', 'A3', 'C3'), CUT
 
 
 def text_band():
@@ -18,4 +18,19 @@ def text_band():
 
 
 def tolkien():
-    return CUT == 'C'
+    return CUT in ('C', 'C3')
+
+
+# v3 (director's switch, A only): MAIN = "two giants, uncoded"; ALT = "coded pair" (the giants dressed as a pagoda
+# and an obelisk; everything else identical) -> renders/embers_v2_alt_codedtowers
+TOWERS_ALT = False
+
+
+def giants():
+    """the two towers that outgrow the rest (A only; C keeps many equal towers)"""
+    return (2, 6) if CUT in ('A', 'A3') else ()
+
+
+def fire_side_only():
+    """A: every tower is lit only on the face turned to the fire, black toward the others (BIBLE_V3 A7 / E5)"""
+    return CUT in ('A', 'A3')

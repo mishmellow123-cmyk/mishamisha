@@ -1,3 +1,138 @@
+# STATE AT HANDOFF (EMBERS-v3 #2 takes over, 27 Sep ~10:10Z)
+
+The previous agent was cut off at ~07:27Z. Its render processes are dead. What exists:
+* **Code (uncommitted until 10:15Z):** `a3.py` (A's own timeline + schedule, THE PROMISE valley, A5/A6 cameras),
+  `edge.py` (THE EDGE crater, gilding, lean, the falling crown, BRINK vortex shape + ember stripping, dead-valley ash,
+  the living ember, A16 ridge fires / shutters, A17 small lights), `c3.py` (C's FORGING + RACE schedule, gold rain;
+  EYE and GRASP by warped v2 src time); hooks in scene_b / scene_c / tolkien / towers2 / variant / render / timeline.
+* **Renders:** `renders/embers_C3_half/` = C3 at 0.5 scale, 1040-1679 + 1920-2079 + 2320-2479 (960 frames, made
+  BEFORE the H5 calls: stale look, review only). `renders/embers_A3/` = cache only, no frames. `embers_v2`,
+  `embers_v2_alt_codedtowers`, `embers_C` = the v2-numbered fixes (superseded by A3 / C3).
+* **Look at handoff (0.3-scale tests in the scratchpad):** the fire still forks into two tongues (A3 1140, C3 1060);
+  A6's cameras sit among the towers (frames full of close slabs, the ring and the giants don't read); THE EDGE is
+  dim and illegible; THE BRINK and C's EYE / GRASP still have the blue-white galaxy spiral (the Winamp read); the
+  promise reads (orchards, river, roofs) but the river is a clean ribbon; C's Ring reads as a halo over the towers.
+* **H5 items to apply before any new render:** (1) the fire: one tapering tongue, no fork, inner embers + filaments,
+  35-40% of frame height, ice-white / gold edge, no starfield or lens streak at ignition, the fire from below is a
+  flame (not a slab); (2) towers: no platform ring / flared base, no cooling-tower flare, no bottle or beaker lips
+  (square / crenellate), the round-capped stack off the glowing axis, no red pole, ember life on every fire side;
+  (3) THE BRINK: an updraft column of stripped embers (1-2 s), not a vortex; rim gives way 2440, a gilded crown
+  (never a giant's) falls 2480, over the rim into white by 2640; (4) C's Ring carries `shots/accord/ring.py`'s
+  inscription (the canonical Blender ring's), and never reads as a halo or a ring-toss trophy.
+
+# EMBERS v3 -- PART 2 (27 Sep, after the director's review): the locked beat sheets (IN PROGRESS)
+
+Director (review of fire + towers): towers' fire-facing sides need real ember life (not flat black slabs); the
+fire must own the frame (35-40% of frame height); and build A's v3 embers act to the LOCKED beat sheet (BIBLE_V3
+"REVISION 1 . LOCKED BEAT SHEETS"; no crown in A, THE EDGE crater, the rim collapse, the dead valley in grey
+promise-points) with the coded-pair ALT for tower shots, and C's pieces (Ring forged, gold rain, Eye onto nothing,
+the claw that cannot hold) to C's sheet. Renders are in each cut's OWN frame numbers:
+`render.py FRAMES --cut A3` -> renders/embers_A3 (ALT: --alt-towers -> renders/embers_A3_alt_codedtowers);
+`--cut C3` -> renders/embers_C3. The v2-numbered folders (embers_v2, embers_C) are superseded.
+
+* Code: `a3.py` (A's schedule A3Sched installed as scene_b.SCHED; the promise valley E3/E4; A5/A6 cameras;
+  TimelineA3), `edge.py` (THE EDGE crater, gilding, lean, the falling crown, the BRINK vortex shape and ember
+  stripping, the dead valley's ash, the living ember, A16 ridge fires / shutters / warm backs, A17 small lights and
+  the walk down), `c3.py` (C's schedule for THE FORGING + THE RACE incl. gold rain; THE EYE and THE GRASP render
+  the v2 src scene at warped times). scene_b/tolkien functions consult `SCHED` only when a v3 cut sets it; the v2
+  src timeline is unchanged when it is None.
+* Frames (A): A5 1040-1440 ignition + promise, A6 1440-1840 towers + two giants, A7 1840-2400 THE EDGE, A8
+  2400-2640 THE BRINK (white on 2640), A9 2640-2800 dead valley, A10 2800-3120 the ember, A16 4400-4720 towers in
+  the light, A17 4720-4880 the fire seen. (C): C6 1040-1440 forging, C7 1440-1680 race + gold rain, C9 1920-2080
+  the Eye onto nothing, C11 2320-2480 the grasp that cannot hold.
+* A uses the eight forges only (no skyline: the ring and the giants must read); C keeps the skyline, no giants.
+* Tower geometry is cached (renders/embers_A3/cache/towers_<hash>.pkl, keyed by towers2.py + switches).
+* This Mac is heavily loaded by other lanes (load ~150-200): a 0.3-scale test frame takes 5-15 s, a process's
+  first frame several minutes.
+
+# EMBERS v3 (EMBERS-v3 lane, BIBLE_V3 rev. 1), 27 Sep 2026 -- report
+
+Director's order: (1) towers "TWO GIANTS, UNCODED" + the ALT switch, (3) the thinking fire (A only), then (2) the
+grasp (C only, the claw that cannot hold), (4) C's Eye onto empty black, (5) C's Ring polish. All five are in code;
+renders run in the background from `_local_logs/embers_v3_logs/queue_*.sh` (each writes `<name>.done`).
+Review sheets: `_local_logs/review/embers_v3_{fire,towers,grasp,ring,eye}.jpg` (left the v2 frame, right v3; the
+v2 frames are kept as JPEG q92 in `_local_logs/embers_v3_before/{embers_v2,embers_C}/` 480-1039).
+
+**Renders.** A: 480-879 MAIN -> renders/embers_v2 (480-628 re-rendered with the final fire camera); ALT 540-879 ->
+renders/embers_v2_alt_codedtowers, then `dedupe_alt.py` deletes every ALT frame equal to MAIN to the dither (only
+the frames that differ stay; its log lists them). C: 960-1039 (grasp) then 562-879 (race: new towers, Ring, Eye) ->
+renders/embers_C. Not re-rendered: A 960-1039 (A has no grasp now; the old frames are stale), C 480-561 (C no longer
+uses the ignition), B (no embers act).
+
+## (1) Towers: one family of forge-stacks, two giants (towers2.py, scene_b.Towers, variant.py, render.py)
+* The eight nearest the fire are one invented family (`towers2.FORGES`): tall chimney, bottle kiln, bellows house
+  (walls folded like a bellows, a burning rib on every fold), twin flues, blast furnace (gallery, bosh, a roaring
+  tuyere ring), buttressed stack, crucible tower (a brimming iron bowl), telescoping flue. Brick courses, burning
+  iron hoops, slot vents, corbelled lips, a roaring throat. No pagoda, obelisk, dome or flag (the v2 designs stay in
+  the file, unused). Behind them a far skyline of ten more of the same family (`SKYLINE`: other seeds and girths,
+  33-46 units out, 0.4 density, kept out of the camera's sector and out of the gap behind the fire).
+* Giants (A only, `variant.giants()` = towers 2 and 6, opposite each other across the fire, left and right of it
+  in the race camera): +2.0 per beat from 660 and a 1.8 lead on alternate beats (they leap-frog); heights at 800:
+  82 / 73 vs 49-61; at 880: 102 / 96 vs 66-72 (built down to y=-52 so no base ever shows).
+* A only (`variant.fire_side_only()`): every tower lit only on the face turned to the fire, black toward the others
+  (crust, joints, windows, seams, edges x a soft terminator), a faint glare fringe on the backs.
+* ALT (`render.py --alt-towers`, A only): the two giants dressed as `pagoda` and `obelisk`, everything else
+  identical. C: the same forge family, no giants, no switch, self-lit as in v2, and (v3) every tower leans toward
+  the Eye 826-862.
+* Motion is v2's (same RNG stream); the other departments' walls/sparks/embers/smoke stay with the eight forges.
+
+## (3) The thinking fire, A (scene_b: MIND_* constants, breath(), FLAME_CLOCK, _rim(), CAM_B 500-548)
+* Mind palette, not blackbody: an ice-WHITE body (C_MIND_ICE = 45% mind_core + 55% mind_ice, never gas-blue), a
+  white core, tongues white at the root and ice along their length, gold only on the silhouette (a view-dependent
+  rim: the outer ~15% of the body's and tongues' left/right edges, a deeper gold than mind_gold, never orange).
+  No blue base, no orange tips.
+* The thought is visible: the body is dimmed (x0.18) and translucent, the filament tree 5x brighter with thicker
+  threads, pulses on a slower clock, and on every breath one wave of light climbs from the core through the whole
+  tree; no filament tangle at the base.
+* Motion that is wrong for a flame: one even breath per bar (80 frames: radius +/-12%, light +/-28%, all three
+  tongues rising and sinking together), tongue flicker rates x0.5, particles up the tongues at x0.55 speed,
+  laminar tongues, no per-particle sparkle (frame-to-frame luminance change median 1.2%).
+* Size and camera: back in (16-17 units, v2 17.4-19.6 but the v2 flame was dim), below it and tilted up; the whole
+  flame ~45% of the frame height, the tip in frame at the fullest breath, above the caption band.
+* Everything v3 is weighted by flame_w(), so from 628 on the crown / Ring are as before.
+
+## (2) The grasp, C only: the claw that cannot hold (scene_c v3 block, tolkien.Ring.frame, timeline)
+* Camera ABOVE the hand (27 -> 20 deg), looking down into the storm's eye where the Ring hangs bright; the claw
+  descends on a diagonal from the upper left, palm down, knuckles to the lens, spread and hooked (962-1014); it
+  closes on the Ring (1012-1029, slow then decisive); the crust glows from inside and cracks (1017+: a fine network
+  opens from the grip outward, the creases burn hotter, gold where the hand touches the band, the Ring's glare
+  spills between the fingers); at 1029.5 the band slips out between the middle and ring fingers, the claw jerks
+  back and its grip gives, and the Ring falls away tumbling into the eye. No flash (GRASP_FLASH = False).
+* Crust: opaque (coverage x1.8) and near-black; cracks follow the anatomy (`anat_cracks`): large plates on the back
+  of the hand and forearm, the extensor tendons to each knuckle, knuckle wrinkles and flexion creases at every
+  joint, the palm's three lines, the wrist, small cells at the joints, bark along the fingers.
+
+## (4) The Eye, C (tolkien.Eye, scene_b CAM_B_C, Towers.lean)
+* 260 thin fibres with dark gaps (most smoulder, a few burn), streaming inward faster, thinner splats; the slit's
+  edge is ragged and shimmers (Eye.slit_w), its rim a ragged band of fire; the slit is masked to true black
+  (alpha 0.997): its first opening shows nothing behind it. The band burns as ragged fire (angular noise), not a
+  clean ring.
+* Centred over the whole ring: C's camera swings back to the gap opposite (azimuth 0) and rises (840: 60 away, 36
+  up; 880: 68, 34) so the Eye stands above every tower top; the towers lean toward it.
+
+## (5) The Ring, C (tolkien: HB 0.5, TB 0.38, PEXP 2, inscription_v3 cache)
+* Half the band height, a rounded section; one continuous surface (no per-point sparkle, overlapping splats);
+  polished metal: a dark gold body mirroring the burning towers below, ONE sharp highlight (the fires' reflection)
+  that travels round the band as it turns. Forged by cooling: the whole band white-hot at once (596-600), through
+  pale yellow to gold by ~640, throwing 2,600 sparks; only the inscription burns. In the grasp it is x11 bright.
+
+## Verified (half-res look-dev unless noted)
+* Fire: 480-628 full res (sheet embers_v3_fire), motion test 484-580 (m_fire1: calm, breath visible).
+* Towers: A MAIN 540-879 full res (sheet embers_v3_towers); ALT spot-checked at 740/800.
+* Grasp: 966-1039 at 0.35-0.5 scale; Ring: 600-760 at 0.5; Eye: 820-878 at 0.5. Full-res C renders queued.
+
+## Remaining weaknesses
+* The two giants barely read in the v2 race camera (it sits inside the ring near the towers: the giants are at the
+  frame edges or seen from the back). They will read in a wider or orbiting camera (E6's); until then ALT and MAIN
+  differ in few frames.
+* A 640-880 still has the v2 crown (the bible's A has none: E6/E7 are another lane).
+* Grasp: from above, the fingers read a little thick (glove-like); the Ring is mostly hidden 1000-1014 (its glare
+  shows between the fingers); the failure glow at 1026-1034 is strong. Motion not yet reviewed at full res.
+* Eye: at sheet size it is still an orange disc with a slit (now fibrous and ragged); menace depends on motion.
+* Ring: 606-612 the white-hot band blooms hard; the inscription reads as flecks except in close-up.
+
+----------------------------------------------------------------------------------------------------------------
+
 # EMBERS v2 — third pass (director: the globe read as a football), 2026-09-26
 
 Re-rendered: embers_v2 486-627, 880-959 · embers_B 486-627, 880-959 · embers_C 562-627, 880-959.
