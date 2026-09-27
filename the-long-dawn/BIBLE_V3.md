@@ -1,3 +1,41 @@
+# >>> REVISION 1 (director, 27 Sep ~00:40Z): READ THIS FIRST; it overrides the treatment below <<<
+The director accepted the v3 red-team (`review/v3_redteam.md`, read §§1, 2, 5) almost whole. Summary:
+- **Runtimes (bar maps lock at hour 2):** A **4:30 (81 bars @72)**, B **3:45 (68 bars)**, C **5:00 (90 bars)**. Floor if music
+  runs late: A 4:10, B 3:30, C 4:30. Revised beat sheets + `music/v3/barmap_{A,B,C}.json` come from the SHOWRUNNER-REV lane.
+- **A and C must not share a plot (B1):** A keeps the embers act. C gives up the glyph spiral, the A-style ignition and P3:
+  **C's fire is born from the book** (the ink letters on the Red Book's page glow, lift off as sparks and pour into a fire that
+  burns through the page). C keeps only: the Ring forged, gold raining from the Ring, the Eye, the grasp on the Ring. C's ink
+  Run gets its own camera (lateral, at beacon height, like a scroll unrolling).
+- **A (B4, B5, B8):** NO grasp in A; its catastrophe is its own physics (the rim gives way, a crown falls, the camera tips over
+  the rim into white). The dead valley is drawn in the PROMISE's own ember technique, grey. Cut the ember Earth (orbital), M1
+  (the city rooftop), R4 (the cordon ring of fires from above; watchers only in eyelines), E10's tiny keepers (shutters only), R5's
+  3-D valley. **A ends in the blue hour:** the lantern set down among the watch-fires, the east pales to rose, hearth smoke rising
+  from the valley in grey-blue light; NO sun disc, no paling rule, no alignment. B owns the sunrise.
+- **C (B2, B3, B9, B10, §4):** CUT the carved vows; the council is "bring out the Ring": she sets it on the stone at the centre,
+  the camera orbits, every hand holds a torch and none reaches for it (one gilded or ember-scarred hand among the torches: the forge
+  that grasped helps save it). Hinge: *In the old story, the Ring is unmade in the fire that forged it. / Ours was forged at every
+  forge at once.* The Eye's first opening shows a slit onto empty black (no one behind it). The Ring FALLS because the claw cannot
+  hold it (the crust glows, cracks, the band slips through the fingers). The fire test is Bag End: she holds the Ring in her beacon on
+  the tip of her steel; it lies there unmarked and she cannot let it fall. The Havens page shows her bound hand raising the small
+  light. CUT the eagles, the round doors, *They were not hasty*. The cock crow stays only distant and soft. A slow dotted route crosses
+  the map toward the council (the Road).
+- **Towers (B6):** re-dress `towers2.py` as ONE invented, placeless family of furnace-stacks and forge-towers: NO pagoda, NO
+  obelisk, no cultural coding. Do this BEFORE any tower shot renders.
+- **The heroine's face (B7):** the flint take shows NO lit or in-focus face: tinder, gloves, sparks, breath, scarf; the head a
+  rim-lit silhouette at most (re-key, or crop to the hands and tinder).
+- **Text (§2):** apply the ten line fixes and the four smaller ones exactly as the red team gives them.
+- **Showpieces, in this order (§5.1):** 1 THE HAND-BACK (B; fold the whole-range crane into its opening) · 2 THE CROSSING (A) ·
+  3 THE EDGE without the keeper (A) · 4 THE RED BOOK + four pages + burn-throughs incl. letters to fire (C) · 5 DUSK (B) · 6 THE
+  RING FALLS (C) · 7 THE LIFETIME cut to 3-4 plates, ~10 nights (B; fallback THE VIGIL) · 8 THE LIVING INK, three shots only (C's
+  reveal, a 12 s lateral run, the illumination). Must-haves S/M: the red under-glow, FALSE DAWN, dark adaptation, the dead valley,
+  H1 re-keyed, the towers re-dressed, A's blue hour, C's grasp that can't hold, the Eye onto nothing. Blender lane: a bake-off for
+  the Ring close-ups (the find, the fire test, the melt) against `ring.py`.
+- **Score (§5.4):** sparse beats dense; double exposed lines or sit them on pads; percussion no faster than 16ths at 72; warm, never
+  loud dawns; an analysis battery per section; a FALLBACK MASTER per cut (effects, drone, silence piano, the CALL on horns) by H10.
+- **Gates:** a fresh-context CRITIC agent at H5 and H9 (contact sheets, animatic and lines only; four fixed questions: tell the story
+  back; name any real company, country, deal or institution it evokes; which moment would get a laugh; does any frame read as a doll,
+  clip-art, a poster or a tech demo).
+
 # THE LONG DAWN v3: the treatment
 
 *The showrunner's synthesis. Writers' room, 27 Sep 2026. Session gate at start: GATE PASS.*
