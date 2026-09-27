@@ -1,3 +1,18 @@
+# >>> MAP-L PAUSE STATE (27 Sep ~16:40 local / ~20:40Z; usage gap to ~23:30Z) -- READ FIRST ON RESUME <<<
+* JOB READY sent for `cloud/jobs/map_v3_book.json` (2,472 frames -> renders/book_C + book_C_matte, C numbering; C2,
+  C3, C4-C5 page only, C8+C9 burn, C22 ink-ring fallback, C25-C28 with the C28 title). Command once approved:
+  `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/map_v3_book.json --nodes 3` (~30-40 min).
+  If it was approved and launched before the gap, check on resume: `farm.py status`; then `--missing` for any holes.
+* Check stills (all passed): renders/_farmtest/map_v3_book/book_C (request 61819, commit 3461166).
+* ON RESUME: (1) verify the delivery: count frames 80-319, 320-559, 560-1039, 1680-1991, 5360-5519, 6160-7199 in
+  renders/book_C and _matte; spot-check C3's riffle (335), C4's leaf turn (574), the C22 fall (5366-5374) and C26's
+  leaf turn (6400-6434) for motion-blur artefacts; (2) contact sheet of every 40th frame -> review; (3) nitpicks for
+  a cheap re-render: the initial's ink diaper too faint on the red (redbook.initial: lattice width 0.0085 -> ~0.012,
+  dens 1.0); the Plenty plate dim in the low hearth (as scripted; could lift the C25 light a touch in
+  book_c.last_pages_at); (4) EMBERS-C's e15 over the C4-C5 page layer: check the comp in EDIT's animatic.
+* Owned files: book.py, book_c.py, burn.py, pages.py (Mountain, Deep, Plenty, Havens), pen.py, redbook.py,
+  ringpage.py, titleburn.py; job map_v3_book. The MAP (road.py etc.) is MAP-L2's.
+
 # >>> MAP-L STATE (27 Sep ~16:25 local): check stills reviewed, fixes pushed, JOB READY next <<<
 * Pushed: book pass 1f5d629; C22 fallback flames 3439334; C3 Mountain 7b60e0b; check-still fixes 93ba9ac.
 * Farm check stills (12, request 0927-154521, commit 3083493) in renders/_farmtest/map_v3_book/book_C, reviewed at
