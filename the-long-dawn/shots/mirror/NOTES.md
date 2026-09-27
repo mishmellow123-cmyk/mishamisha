@@ -17,9 +17,16 @@
   - 2206: the drop's rings bloom the dawn out from the sun.
   - 2222: the golden dawn and the drawn ranges.
   - 2300: the fire back (red walls, towers, sparks).
-* NITPICKS (a cheap re-render):
+* FARM STILLS REVIEWED (21:10Z; renders/_farmtest/mirror_C/ 2160, 2222, 2300, at full res): PASS.
+  - A basin, not a porthole. The fire reads, the golden dawn reads, the fire is back. No Eye.
+  - The 1:1 crop showed star reflections smeared into scratch-like streaks over the bright visions. FIXED in the
+    kernel: the sky reflection is dimmed where the vision is bright, and the star gain went 45 -> 34.
+  - The fix was verified locally (2088 keeps its stars, 2222 is clean) and is pushed. The final picks it up from the
+    branch tip.
+  - Farm cost: ~24 s/frame for isolated test frames. That includes re-simulating from the start, so a final
+    slice of 80 frames on one node should run ~10-15 min.
+* NITPICKS LEFT (a cheap re-render):
   - The dawn's sun is a soft glow, not the drawn disc (lower the added glow in Mirror.__init__).
-  - Faint star dust over the dawn (star_sky gain 45).
   - The drawn ranges are faint under the gold (the `land` factor).
   - The lip could take more warm glow (rim_glow 3.0*E).
 * Music: the sync note is in music/NOTES_v3.md ("PICTURE SYNC: C10"). The drop strikes f2200, the after-drip ~2210.6,

@@ -178,7 +178,7 @@ def star_sky(n=2048, span=1.25, seed=21):
         gx = np.exp(-((np.arange(7) + x0 + 0.5 - x) ** 2) / (2 * sig * sig))
         gy = np.exp(-((np.arange(7) + y0 + 0.5 - y) ** 2) / (2 * sig * sig))
         img[y0:y0 + 7, x0:x0 + 7] += (gy[:, None] * gx[None, :])[..., None] * (flux[i] * tcol[i])[None, None, :]
-    img *= 45.0 / (2 * np.pi * sig * sig)
+    img *= 34.0 / (2 * np.pi * sig * sig)
     # the galaxy's band: a faint diagonal glow with dark lanes
     yy, xx = np.mgrid[0:n, 0:n].astype(np.float32) / n - 0.5
     d = (xx * 0.8 - yy * 0.6 + 0.12)
@@ -529,6 +529,11 @@ def render_kernel(out, kind, cam, fpx, gx, gy, sp, wf, wd, hmap, amap, wet, mp, 
             edge = min(max((rw - rr) / 0.05, 0.0), 1.0)
             edge = 0.15 + 0.85 * edge * edge * (3 - 2 * edge)
             tr = (1 - F) * edge
+            if not got:                                    # a bright vision drowns the stars' reflections
+                ks = 1.0 / (1.0 + 7.0 * (vr + vg + vb))
+                refl_r *= ks
+                refl_g *= ks
+                refl_b *= ks
             out[i, j, 0] = F * refl_r + tr * vr
             out[i, j, 1] = F * refl_g + tr * vg
             out[i, j, 2] = F * refl_b + tr * vb
