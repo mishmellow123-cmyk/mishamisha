@@ -107,7 +107,67 @@ def setup_render(scale=1.0, samples=64, vol=None, mblur=False, shutter=0.5, filt
         ee.motion_blur_max = 48
     vl = sc.view_layers[0]
     vl.use_pass_z = True
+    if ENGINE == 'CYCLES':
+        use_cycles(sc, samples, filter_px, vol)
     return sc
+
+
+# MT3D_ENGINE=CYCLES renders the same scene in Cycles: Metal GPU on this Mac, CPU on a cloud box (pip bpy has no GPU).
+ENGINE = os.environ.get('MT3D_ENGINE', 'EEVEE').upper()
+
+
+def use_cycles(sc, samples, filter_px=1.5, vol=None):
+    r = sc.render
+    r.engine = 'CYCLES'
+    cy = sc.cycles
+    dev = 'CPU'
+    if os.environ.get('MT3D_DEVICE', 'AUTO').upper() != 'CPU':
+        try:
+            pr = bpy.context.preferences.addons['cycles'].preferences
+            for kind in ('METAL', 'CUDA', 'OPTIX', 'HIP', 'ONEAPI'):
+                try:
+                    pr.compute_device_type = kind
+                except Exception:
+                    continue
+                pr.get_devices()
+                gpus = [d for d in pr.devices if d.type != 'CPU']
+                if gpus:
+                    for d in pr.devices:
+                        d.use = d.type != 'CPU'
+                    dev = 'GPU'
+                    break
+        except Exception as e:
+            print('CYCLES device probe failed:', e, flush=True)
+    cy.device = dev
+    print(f'CYCLES device {dev}', flush=True)
+    cy.samples = samples
+    cy.use_adaptive_sampling = True
+    cy.adaptive_threshold = float(os.environ.get('MT3D_NOISE', '0.015'))
+    cy.adaptive_min_samples = max(16, samples // 8)
+    cy.use_denoising = True
+    try:
+        cy.denoiser = 'OPENIMAGEDENOISE'
+        cy.denoising_input_passes = 'RGB_ALBEDO_NORMAL'
+        cy.denoising_prefilter = 'ACCURATE'
+    except Exception:
+        pass
+    cy.max_bounces = 8
+    cy.diffuse_bounces = 2
+    cy.glossy_bounces = 4
+    cy.transmission_bounces = 4
+    cy.volume_bounces = 0
+    cy.transparent_max_bounces = 24
+    cy.caustics_reflective = False
+    cy.caustics_refractive = False
+    cy.blur_glossy = 0.5
+    cy.sample_clamp_indirect = 8.0
+    cy.filter_width = filter_px
+    cy.use_auto_tile = True
+    cy.tile_size = 2048 if dev == 'GPU' else 256
+    if vol:
+        cy.volume_step_rate = 2.0
+        cy.volume_max_steps = 256
+    r.threads_mode = 'AUTO'
 
 
 # ------------------------------------------------------------------ camera ---

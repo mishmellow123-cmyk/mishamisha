@@ -34,7 +34,8 @@ import exr  # noqa: E402
 import fireparts as FP  # noqa: E402
 import look  # noqa: E402
 
-BLENDER = os.path.expanduser('~/Applications/Blender.app/Contents/MacOS/Blender')
+# MT3D_BLENDER: a Blender binary, or a python that can `import bpy` (pip bpy==4.5.14 in its own venv on a cloud box)
+BLENDER = os.environ.get('MT3D_BLENDER') or os.path.expanduser('~/Applications/Blender.app/Contents/MacOS/Blender')
 FINAL_DIR = os.path.join(ROOT, 'renders', 'montage_v2')
 LOCK = os.path.join(HERE, 'cache', 'blender.lock')
 
@@ -87,6 +88,13 @@ def post_frame(shot, f, exr_dir, out_dir, scene, keep_exr):
     if hasattr(shot, 'post'):
         hdr = shot.post(f, hdr, depth, cam, scene)
     img = look.finish(hdr, **shot.FINISH)
+    if os.environ.get('MT3D_PROBE') and scene.get('_secs', {}).get(str(f)):
+        import cv2
+        txt = f"{os.environ.get('MT3D_ENGINE', 'EEVEE')} {scene['_secs'][str(f)]:.0f} s/frame"
+        im8 = np.ascontiguousarray(img)
+        col = (1.0, 1.0, 1.0) if im8.dtype != np.uint8 else (255, 255, 255)
+        cv2.putText(im8, txt, (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.4, col, 3, cv2.LINE_AA)
+        img = im8
     look.save_png(look.frame_path(out_dir, f), img)
     if not keep_exr:
         os.remove(p)
@@ -102,6 +110,7 @@ def main():
     ap.add_argument('--samples', type=int, default=None)
     ap.add_argument('--out', default=None, help='test name (-> tests/<name>/)')
     ap.add_argument('--final', action='store_true', help='full res -> renders/montage_v2/')
+    ap.add_argument('--outdir', default=None, help='final output folder (relative to the project root)')
     ap.add_argument('--keep-exr', action='store_true')
     ap.add_argument('--force', action='store_true', help='ignore other departments\' Blender processes')
     ap.add_argument('--opts', default='{}', help='json dict passed to the shot build')
@@ -117,10 +126,11 @@ def main():
     else:
         frames = list(range(shot.START, shot.END + 1, a.step))
     scale = 1.0 if a.final else a.scale
-    out_dir = FINAL_DIR if a.final else os.path.join(HERE, 'tests', a.out or f'{a.shot}_test')
+    out_dir = (os.path.join(ROOT, a.outdir) if a.outdir else FINAL_DIR) if a.final else \
+        os.path.join(HERE, 'tests', a.out or f'{a.shot}_test')
     os.makedirs(out_dir, exist_ok=True)
     cache = os.path.join(HERE, 'cache', a.shot)
-    tag = 'final' if a.final else (a.out or 'test')
+    tag = ('final' + ('_' + os.path.basename(a.outdir.rstrip('/')) if a.outdir else '')) if a.final else (a.out or 'test')
     exr_dir = os.path.join(cache, f'exr_{tag}')
     os.makedirs(exr_dir, exist_ok=True)
     samples = a.samples or (shot.SAMPLES if a.final else max(16, shot.SAMPLES // 2))
@@ -145,7 +155,8 @@ def main():
     timing = shot.timing(all_frames)
     if hasattr(shot, 'prep'):
         timing.update(shot.prep(all_frames, cache) or {})
-    timing['sprites'] = {s.name: dict(card=s.card(), first=os.path.join(spr_dir, f'{s.name}_{all_frames[0]:05d}.exr'))
+    f_first = max(all_frames[0], 0)       # Blender reads a leading '-' as part of the sequence prefix
+    timing['sprites'] = {s.name: dict(card=s.card(), first=os.path.join(spr_dir, f'{s.name}_{f_first:05d}.exr'))
                          for s in specs}
     print(f'prep {time.time() - t0:.1f}s ({len(specs)} flame sequences)', flush=True)
 
@@ -166,7 +177,10 @@ def main():
               '-- waiting 3 min', flush=True)
         time.sleep(180)
 
-    cmd = [BLENDER, '-b', '--factory-startup', '-noaudio', '-P', os.path.join(HERE, 'bl_main.py'), '--', job_path]
+    if os.path.basename(BLENDER).startswith('python'):
+        cmd = [BLENDER, os.path.join(HERE, 'bl_main.py'), '--', job_path]      # the bpy module
+    else:
+        cmd = [BLENDER, '-b', '--factory-startup', '-noaudio', '-P', os.path.join(HERE, 'bl_main.py'), '--', job_path]
     log_path = os.path.join(cache, f'blender_{tag}.log')
     t1 = time.time()
     done = []
@@ -202,6 +216,7 @@ def main():
             if line.startswith(('BUILD', 'FRAME', 'DONE', 'Traceback', 'Error', 'ERROR')) or 'Error' in line:
                 print(line.rstrip(), flush=True)
             if line.startswith('FRAME'):
+                scene.setdefault('_secs', {})[line.split()[1]] = float(line.split()[2].rstrip('s'))
                 if not started:
                     with open(os.path.join(exr_dir, 'scene.json')) as fh:
                         scene.update(json.load(fh))

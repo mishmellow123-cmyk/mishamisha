@@ -11,8 +11,19 @@ import json
 import math
 import os
 
-START, END, IGN = 1640, 1679, 1650
+SRC0, SRC1, IGN_SRC = 1640, 1679, 1650
+# KARST_SLOW=1: the same shot at 2/3 speed on its own 60-frame timeline (0-59, flare 15 frames in) for v3 cut A.
+# Every time-driven thing is evaluated at SOURCE time sf(f), so the slow motion is real (no repeated frames).
+SLOW = bool(os.environ.get('KARST_SLOW'))
+RATE = 2.0 / 3.0 if SLOW else 1.0
+START, END = (0, 59) if SLOW else (SRC0, SRC1)
+IGN = START + int(round((IGN_SRC - SRC0) / RATE))
 SAMPLES = 96
+
+
+def sf(f):
+    """Source frame (1640-1679 time base) for timeline frame f."""
+    return SRC0 + (f - START) * RATE
 FPS = 24.0
 HFOV = 40.0
 CAM0 = (0.0, 0.0, 30.0)
@@ -42,6 +53,16 @@ MIDS = [((-70, 300), 9, 62, 21.1), ((-160, 430), 24, 70, 22.7), ((95, 360), 13, 
 BANKS = [((-40, 240, -2.0), (260, 70, 13), 0.028), ((110, 410, 6.0), (320, 90, 16), 0.022),
          ((-160, 600, 12.0), (420, 120, 20), 0.018), ((150, 950, 8.0), (600, 200, 24), 0.014)]
 NFAR_VAR = 10
+# v3 (H5): weathered rock towers (towers.py), no vegetation. KARST_V2=1 rebuilds the accepted v2 pillars + pines.
+V3 = not os.environ.get('KARST_V2')
+# the mid towers keep v2's places and layers, with varied, broader proportions (no forest of columns)
+MIDS3 = [((-70, 300), 14, 52, 21.1), ((-160, 430), 30, 64, 22.7), ((95, 360), 13, 36, 23.3),
+         ((10, 470), 9, 78, 24.9), ((175, 520), 24, 92, 25.1), ((-45, 650), 36, 44, 26.3),
+         ((-240, 770), 18, 118, 27.7), ((80, 780), 16, 60, 28.1), ((240, 880), 34, 120, 29.9),
+         ((-110, 1000), 26, 80, 31.3), ((150, 1150), 40, 54, 32.9), ((-310, 1250), 28, 140, 33.7),
+         ((40, 250), 8.0, 24, 34.1), ((-5, 360), 7.5, 40, 35.9)]
+FAR3 = [(12.0, 60.0), (18.0, 40.0), (9.0, 75.0), (22.0, 55.0), (14.0, 30.0), (10.0, 90.0), (26.0, 45.0),
+        (15.0, 70.0), (20.0, 60.0), (11.0, 50.0)]
 FINISH = dict(exposure=1.0, bloom_strength=0.08, bloom_threshold=0.8, streak_strength=0.0, vignette_amount=0.25)
 
 
@@ -58,20 +79,25 @@ def moon_dir(az=None, el=None):
 
 def flame_specs():
     import fireparts as FP
-    return [FP.FlameSpec('beacon', Hf=2.3, Rb=0.34, seed=8, I=26.0, tongues=5, lean=0.25, ppm=90,
-                         t_ign=ftime(IGN)),
-            FP.FlameSpec('torch', Hf=0.3, Rb=0.045, seed=23, I=16.0, tongues=3, lean=0.05, ppm=200, env=False)]
+    specs = [FP.FlameSpec('beacon', Hf=2.3, Rb=0.34, seed=8, I=26.0, tongues=5, lean=0.25, ppm=90,
+                          t_ign=ftime(IGN_SRC)),
+             FP.FlameSpec('torch', Hf=0.3, Rb=0.045, seed=23, I=16.0, tongues=3, lean=0.05, ppm=200, env=False)]
+    if SLOW:
+        for sp in specs:
+            sp.params = (lambda frame, _p=sp.params: _p(sf(frame)))
+    return specs
 
 
 def timing(frames):
     import fireparts as FP
     out = dict(beacon=[], torch=[], ember=[])
     for f in frames:
-        t = ftime(f)
-        s, i, l = FP.ignite_env(t, ftime(IGN))
+        t = ftime(sf(f))
+        s, i, l = FP.ignite_env(t, ftime(IGN_SRC))
         out['beacon'].append((f, l * FP.flicker(t, 21)))
         out['torch'].append((f, FP.flicker(t, 5)))
-        out['ember'].append((f, 0.0 if f < IGN else min(1.0, (f - IGN + 1) / 10.0) * (0.8 + 0.2 * FP.flicker(t, 3))))
+        e = 0.0 if sf(f) < IGN_SRC else min(1.0, (sf(f) - IGN_SRC + 1) / 10.0) * (0.8 + 0.2 * FP.flicker(t, 3))
+        out['ember'].append((f, e))
     return out
 
 
@@ -203,6 +229,7 @@ def _tree_points(V, veg, up, rng, dens_ledge=0.08, zmin=-1e9, zmax=1e9, max_n=40
 def prep(frames, cache):
     import numpy as np
     import karstgen as KG
+    import towers as TW
     geo = os.path.join(cache, 'geo')
     os.makedirs(geo, exist_ok=True)
     info = dict(geo=geo, pillars=[], trees=[], far=[])
@@ -210,7 +237,7 @@ def prep(frames, cache):
     nverts = [0]
 
     def make(name, cx, cy, R0, zt, seed, nt, dz, z_lo, z_hi=None, dcap=None, zb=-60.0, dens_ledge=0.08,
-             crown_trees=True, cap=0.22, rock=0.0):
+             crown_trees=True, cap=0.22, rock=0.0, style=None, keep=None):
         path = os.path.join(geo, f'{name}.bin')
         tpath = os.path.join(geo, f'{name}_trees.json')
         d = math.hypot(cx - CAM0[0], cy - CAM0[1])
@@ -219,10 +246,14 @@ def prep(frames, cache):
             import struct
             nverts[0] += struct.unpack('<ii', open(path, 'rb').read(8))[0]
         else:
-            V, Q, veg = _pillar_mesh(cx, cy, R0, zb, zt, seed, nt, dz, z_lo, z_hi=z_hi, dcap=dcap, cap=cap,
-                                     rock=rock)
+            if V3:
+                V, Q, veg = TW.tower_mesh(cx, cy, R0, zb, zt, seed, nt, dz, z_lo, z_hi=z_hi, dcap=dcap,
+                                          style=style, keep=keep)
+            else:
+                V, Q, veg = _pillar_mesh(cx, cy, R0, zb, zt, seed, nt, dz, z_lo, z_hi=z_hi, dcap=dcap, cap=cap,
+                                         rock=rock)
             up = KG.upness(V, Q)
-            KG.write_mesh(path, V, Q, np.maximum(veg, np.clip(up, 0, 1) * 0.9))
+            KG.write_mesh(path, V, Q, veg if V3 else np.maximum(veg, np.clip(up, 0, 1) * 0.9))
             nverts[0] += len(V)
             tr = _tree_points(V, veg, up, np.random.default_rng(int(seed * 100)), dens_ledge=dens_ledge,
                               zmin=max(z_lo + 1.0, -4.0), zmax=(z_hi - 1.0) if z_hi else 1e9, max_n=3000)
@@ -240,21 +271,29 @@ def prep(frames, cache):
                 rows.append([x, y, z, float(yaw if crown else out_yaw), s, tx, ty, var])
             json.dump(rows, open(tpath, 'w'))
         info['pillars'].append(dict(name=name, path=path))
-        info['trees'].extend(rows)
+        if not V3:
+            info['trees'].extend(rows)
 
     h = HERO
+    # the hero keeps its crown whole on the camera side (the beacon and the figure stand there)
+    to_cam = math.atan2(CAM0[1] - h['c'][1], CAM0[0] - h['c'][0])
     make('hero', h['c'][0], h['c'][1], h['R0'], h['zt'], h['seed'], h['nt'], h['dz'], h['z_lo'], dcap=h['dcap'],
-         zb=h['zb'], dens_ledge=0.12, crown_trees=False, cap=h['cap'], rock=h['rock'])
+         zb=h['zb'], dens_ledge=0.12, crown_trees=False, cap=h['cap'], rock=h['rock'], style='stack',
+         keep=(to_cam, 1.3))
     n = NEAR_L
     make('nearL', n['c'][0], n['c'][1], n['R0'], n['zt'], n['seed'], n['nt'], n['dz'], n['z_lo'], z_hi=n['z_hi'],
          zb=n['zb'], dens_ledge=0.12)
-    for k, ((cx, cy), R0, top, seed) in enumerate(MIDS):
+    for k, ((cx, cy), R0, top, seed) in enumerate(MIDS3 if V3 else MIDS):
         nt, s = _res_for(math.hypot(cx, cy), R0)
         make(f'mid{k}', cx, cy, R0, top, seed, nt, s, MID_ZLO, dcap=2.0 * s, dens_ledge=0.06)
     for v in range(NFAR_VAR):
         path = os.path.join(geo, f'far{v}.bin')
         if not os.path.exists(path) or redo:
-            V, Q, veg = _pillar_mesh(0.0, 0.0, 12.0, -60.0, 60.0, 100.0 + v * 7.3, 96, 0.75, -60.0, dcap=1.5)
+            if V3:
+                R0v, topv = FAR3[v]
+                V, Q, veg = TW.tower_mesh(0.0, 0.0, R0v, -60.0, topv, 100.0 + v * 7.3, 96, 0.75, -60.0, dcap=1.5)
+            else:
+                V, Q, veg = _pillar_mesh(0.0, 0.0, 12.0, -60.0, 60.0, 100.0 + v * 7.3, 96, 0.75, -60.0, dcap=1.5)
             KG.write_mesh(path, V, Q, veg)
         import struct
         nverts[0] += struct.unpack('<ii', open(path, 'rb').read(8))[0]
@@ -286,7 +325,7 @@ def prep(frames, cache):
     info['trees'] = [t for t in info['trees']
                      if all(math.hypot(t[0] - c[0], t[1] - c[1]) > r for c, r in clear) and not in_corridor(t)]
     # the hero crown's pines, composed (right = -side, away = -toward)
-    for (dx, dy), var, s, az in HERO_PINES:
+    for (dx, dy), var, s, az in ([] if V3 else HERO_PINES):
         xy = hc - side * dx - toward * dy
         z = top_z(xy, 0.8, HERO['zt'])
         info['trees'].append([float(xy[0]), float(xy[1]), z - 0.25, math.radians(az), s, 0.0, 0.0, var])
@@ -294,9 +333,9 @@ def prep(frames, cache):
     # the sight line; denser toward the rim
     rs = np.random.default_rng(515)
     crown_v = Vh[Vh[:, 2] > HERO['zt'] - 0.3]
-    placed = [(p[0], p[1]) for p in info['trees'][-len(HERO_PINES):]]
+    placed = [(p[0], p[1]) for p in info['trees'][-len(HERO_PINES):]] if not V3 else []
     shrubs = []
-    for _ in range(4000):
+    for _ in range(0 if V3 else 4000):
         q = crown_v[int(rs.integers(0, len(crown_v)))]
         xy = q[:2]
         rim = np.hypot(*(xy - hc)) / HERO['R0']
@@ -361,10 +400,11 @@ def _figure_frames(frames, cache, beacon, root, yaw):
     basket = to_local(beacon + np.array([0, 0, 1.2]))
     torch, step = {}, {}
     for f in frames:
-        p = FG.interp_pose(f, FIG_KEYS)
+        fs = sf(f)
+        p = FG.interp_pose(fs, FIG_KEYS)
         J = FG.fk(p)
-        back = 0.55 * FG.ease((f - 1650.5) / 5.0)                 # step back from the flare
-        u_in = FG.ease((f - 1644.0) / 5.5) * (1 - FG.ease((f - 1650.5) / 3.0))
+        back = 0.55 * FG.ease((fs - 1650.5) / 5.0)                # step back from the flare
+        u_in = FG.ease((fs - 1644.0) / 5.5) * (1 - FG.ease((fs - 1650.5) / 3.0))
         hold = np.array([0.1, 0.8, 0.55])
         hold /= np.linalg.norm(hold)
         thr = basket - J['r_sh']
@@ -373,12 +413,12 @@ def _figure_frames(frames, cache, beacon, root, yaw):
         tdir /= np.linalg.norm(tdir)
         if u_in > 1e-4:
             FG.ik_arm(J, 'r', J['r_hand'] * (1 - u_in) + (basket - thr * 0.55) * u_in, pole=(0.5, -0.3, -0.8))
-        if f >= 1650.5:
+        if fs >= 1650.5:
             grip, tdir = basket - thr * 0.55 + np.array([0, back, 0]), thr   # torch left in the basket
         else:
             grip = J['r_hand'].copy()
         # shield: left hand to the front of the face while recoiling
-        sh = FG.ease((f - 1650.0) / 3.0) * (1 - FG.ease((f - 1664.0) / 12.0))
+        sh = FG.ease((fs - 1650.0) / 3.0) * (1 - FG.ease((fs - 1664.0) / 12.0))
         if sh > 1e-3:
             face = J['head'] + J['R_head'] @ np.array([0.05, 0.16, -0.02])
             FG.ik_arm(J, 'l', J['l_hand'] * (1 - sh) + face * sh, pole=(-0.6, -0.2, -0.9))
@@ -386,7 +426,7 @@ def _figure_frames(frames, cache, beacon, root, yaw):
         step[str(f)] = -back
         path = os.path.join(d, f'fig_{f:05d}.bin')
         if not os.path.exists(path) or os.environ.get('MT3D_REFIG'):
-            Vv, Q, M = FG.mesh_sdf(FG.hoodie_body(J, f / FPS), h=0.012, disp=(0.003, 8.0, 21.0, 0.0))
+            Vv, Q, M = FG.mesh_sdf(FG.hoodie_body(J, fs / FPS), h=0.012, disp=(0.003, 8.0, 21.0, 0.0))
             FG.write_mesh(path, Vv, Q, M)
     return dict(fig_dir=d, fig_torch=torch, fig_step=step)
 
@@ -397,15 +437,15 @@ _SPARKS = None
 def post(frame, hdr, depth, cam, scene):
     import fireparts as FP
     global _SPARKS
-    t = ftime(frame)
+    t = ftime(sf(frame))
     fb = scene['fire_base']
-    if frame >= IGN:
+    if sf(frame) >= IGN_SRC:
         if _SPARKS is None:
-            _SPARKS = FP.ZSparks(73, (fb[0], fb[1], fb[2] + 0.4), ftime(IGN), ftime(END) + 0.1, burst=120, rate=30,
+            _SPARKS = FP.ZSparks(73, (fb[0], fb[1], fb[2] + 0.4), ftime(IGN_SRC), ftime(SRC1) + 0.1, burst=120, rate=30,
                                  ember_rate=10, wind=(1.4, 0.3, 0.0), I=24.0, radius=0.3)
-        s, i, l = FP.ignite_env(t, ftime(IGN))
+        s, i, l = FP.ignite_env(t, ftime(IGN_SRC))
         FP.shimmer(hdr, cam, fb, 2.3 * s, 0.34, t, amp_px=0.8 * cam.W / 1920)
-        _SPARKS.render(hdr, depth, cam, t)
+        _SPARKS.render(hdr, depth, cam, t, shutter=RATE / 48.0)
     return hdr
 
 
@@ -456,11 +496,11 @@ def build(job):
     if crop:
         cam.data.lens = 18.0 / (math.tan(math.radians(HFOV) / 2) * crop[2] / 1920.0)
     for f in range(START - 1, END + 2):
-        u = (f - START) / (END - START)
+        u = (sf(f) - SRC0) / (SRC1 - SRC0)
         x = 1.6 + (-2.2 - 1.6) * ease_x(u)
-        k = kick(ftime(f), ftime(IGN))
+        k = kick(ftime(sf(f)), ftime(IGN_SRC))
         shift = ((crop[0] - 960.0) / crop[2], -(crop[1] - 402.0) / crop[2]) if crop else (0.0, 0.0)
-        C.key_camera(cam, f, (CAM0[0] + x, CAM0[1] + 0.8 * (f - START) / 40.0, CAM0[2] + 0.02 * k),
+        C.key_camera(cam, f, (CAM0[0] + x, CAM0[1] + 0.8 * (sf(f) - SRC0) / 40.0, CAM0[2] + 0.02 * k),
                      0.0, PITCH0 + 0.06 * k, shift=shift)
     # a valley floor far below the mist top so every downward ray is fogged (the mist sea)
     R = 20000.0
@@ -485,18 +525,19 @@ def build(job):
                 var=[v for x, y, v, sxy, sz, r in far])
     # -------------------------------------------------------------- trees
     tree_col = C.collection('TREES_SRC', hide=True)
-    pmats = _pine_materials(C, new_material)
+    pmats = _pine_materials(C, new_material) if K['trees'] else None
     nfar = NPINE_NEAR + NPINE_LEDGE + NPINE_FAR
-    for v in range(nfar + NSHRUB):
+    for v in range(nfar + NSHRUB if K['trees'] else 0):
         kind = 'shrub' if v >= nfar else ('ledge' if (NPINE_NEAR <= v < NPINE_NEAR + NPINE_LEDGE or v == nfar - 1)
                                           else 'crown')
         _pine(C, FK, f'pine{v:02d}', tree_col, pmats, seed=v * 13 + 5, kind=kind,
               lod=1 if NPINE_NEAR + NPINE_LEDGE <= v < nfar else 0)
     tr = K['trees']
     print(f'BUILD trees {len(tr)}', flush=True)
-    C.instancer('trees', [(t[0], t[1], t[2]) for t in tr], tree_col,
-                rot=[(t[5], t[6], t[3]) for t in tr], scl=[(t[4], t[4], t[4]) for t in tr],
-                var=[int(t[7]) for t in tr])
+    if tr:
+        C.instancer('trees', [(t[0], t[1], t[2]) for t in tr], tree_col,
+                    rot=[(t[5], t[6], t[3]) for t in tr], scl=[(t[4], t[4], t[4]) for t in tr],
+                    var=[int(t[7]) for t in tr])
     # ------------------------------------------------------------- beacon
     bx, by, bz = K['beacon']
     B = FK.beacon('beacon', (bx, by, bz - 0.05), seed=41, height=1.0, ember_frames=T['ember'],
@@ -507,7 +548,7 @@ def build(job):
     # crown without over-lighting the rock and pines
     FK.fire_lights('beacon', fb, 2.3, T['beacon'], power=2600.0, radius=0.45, cutoff=400.0,
                    volume=opts.get('fire_vol', 2.2))
-    FK.smoke_plume('beacon_smoke', fb + Vector((0, 0, 0.9)), ftime(IGN), height=16.0, r0=0.35, spread=0.32,
+    FK.smoke_plume('beacon_smoke', fb + Vector((0, 0, 0.9)), ftime(IGN_SRC), height=16.0, r0=0.35, spread=0.32,
                    rise=1.6, wind=(1.6, 0.3), dens=1.4, albedo=0.35)
     # a veil of mist wrapping the hero's upper shaft just under the crown (lit from above by the fire)
     hc = HERO['c']
@@ -548,12 +589,36 @@ def build(job):
     for f, P in heads:
         tf.location = P
         tf.keyframe_insert('location', frame=f)
-        tf.scale = (1, 1, 1) if f < IGN + 1 else (0.001, 0.001, 0.001)
+        tf.scale = (1, 1, 1) if sf(f) < IGN_SRC + 1 else (0.001, 0.001, 0.001)
         tf.keyframe_insert('scale', frame=f)
         tl.location = P + Vector((0, 0, 0.25))
         tl.keyframe_insert('location', frame=f)
-        C.key(tl.data, 'energy', f, 40.0 * tt.get(f, 1.0) * (1.0 if f < IGN else 0.0))
+        C.key(tl.data, 'energy', f, 40.0 * tt.get(f, 1.0) * (1.0 if sf(f) < IGN_SRC else 0.0))
+    if SLOW:
+        _retime_volumes(bpy)
     return dict(fire_base=list(fb))
+
+
+def _retime_volumes(bpy):
+    """The kit's volume 'time' nodes are keyed to seconds of the timeline; point them at SOURCE seconds."""
+    from kit import core as C
+    from kit import fire as FK
+    trees = [m.node_tree for m in bpy.data.materials if m.node_tree] + list(bpy.data.node_groups)
+    n = 0
+    for nt in trees:
+        nd = nt.nodes.get('time')
+        if nd is None or nd.type != 'VALUE':
+            continue
+        if nt.animation_data:
+            nt.animation_data_clear()
+        C.key_socket(nd.outputs[0], START, ftime(sf(START)))
+        C.key_socket(nd.outputs[0], END, ftime(sf(END)))
+        for fc in FK._fcurves(nt.animation_data.action):
+            fc.extrapolation = 'LINEAR'
+            for kp in fc.keyframe_points:
+                kp.interpolation = 'LINEAR'
+        n += 1
+    print(f'BUILD retimed {n} volume clocks', flush=True)
 
 
 def per_frame(job, f):
@@ -639,7 +704,9 @@ def _rock_material(C, new_material):
     x, y, z = nb.sep(P)
     veg = nb.attr('veg').outputs['Fac']
     n1 = nb.noise(P, scale=0.08, detail=4.0, rough=0.55)
-    streak = nb.noise(nb.comb(nb.mul(x, 1.0), nb.mul(y, 1.0), nb.mul(z, 0.08)), scale=0.6, detail=5.0, rough=0.6)
+    streak = (nb.noise(nb.comb(nb.mul(x, 0.12), nb.mul(y, 0.12), nb.mul(z, 1.6)), scale=0.6, detail=5.0, rough=0.6)
+              if V3 else
+              nb.noise(nb.comb(nb.mul(x, 1.0), nb.mul(y, 1.0), nb.mul(z, 0.08)), scale=0.6, detail=5.0, rough=0.6))
     tone = nb.madd(n1.outputs['Fac'], 0.5, 0.75)
     tone = nb.mul(tone, nb.madd(nb.sstep(0.35, 0.7, streak.outputs['Fac']), -0.45, 1.0))
     rockc = nb.colscale((0.29, 0.275, 0.25), tone)

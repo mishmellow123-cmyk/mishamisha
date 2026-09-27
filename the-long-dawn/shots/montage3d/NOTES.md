@@ -14,7 +14,43 @@
   One fixed sequence: never re-randomise. The metal is plain when cold; the letters exist only in fire (emission
   through this mask, deep orange-red, never white).
 
-## >>> STATE AT HANDOFF (MONTAGE-3D-2 fresh lane, 27 Sep 10:15Z) <<<
+## >>> STATE (PAUSED 11:40Z for usage pacing; RESUME ~15:00Z) <<<
+**Delivery folders (EDIT-v3 EDL convention):** KARST -> `renders/montage3d_v3/karst_slow/f_00000-00059`;
+DESERT -> `renders/montage3d_v3/desert/f_00000-00059` (= src 1520-1579 at speed); THE RING -> `renders/ring_C/`
+in C frame numbering (find 3000-3149, fire test 3360-3599, melt 5360-5519).
+**Done since the handoff:** canonical inscription (APPROVED, above). Pipeline: `MT3D_ENGINE=CYCLES` (kit/core
+`use_cycles`: Metal GPU here, CPU in the cloud; adaptive + OIDN) and `MT3D_BLENDER=<python with pip bpy>` (render.py
+runs bl_main.py as a bpy-module script). Cycles/Metal verified on the bake-off fire still (`tests/t_cyc1`, new
+letters awake; the first run spent ~8 min compiling Metal kernels, now cached). Probe job `cloud/jobs/mt3d_probe.json`
+(pip bpy==4.5.14 in its own venv, since bpy pins numpy<2; the same still in EEVEE via Mesa/EGL and in Cycles CPU,
+seconds stamped on the frame) = JOB READY, not launched.
+**KARST v3 = code written, NOT rendered:** `towers.py` (karstgen's r(theta,z) with fluting ~off, reshaped in numpy:
+one-sided waists/bulges, strata of hard/soft beds with bevels + bedding notches, lean, a bitten broken crown;
+styles stack/spire/split/slab) + `karst.py` `V3` (towers for hero/nearL/MIDS3/FAR3, no trees/scrub, horizontal
+strata in the rock shader; the hero crown kept whole on the camera side for the beacon; `KARST_V2=1` = old).
+NEXT: `MT3D_REKARST=1 KARST_SLOW=1 python render.py karst --frames 0,15,59 --scale 0.5 --samples 24 --out t_k3a`
+(EEVEE), look (mushroom/bottle/chess-piece silhouettes? rim light? glow?), then the 60-frame slow final.
+**DESERT v3 = code written, NOT rendered:** ripples (two families 8/13 cm, 18 deg apart, mixed in patches, 2-scale
+domain warp, breathing amplitude, fading over the last ~3 m to every crest), footprints (0.30 m steps +-15%, 25x10 cm,
+toe-out, toe dig, downhill kick, 30-85% wind-filled), `cloak_body` (bare dark head + hair knot lifting downwind,
+rolled wool collar, tunic/trousers/boots, gloved hands; the cloak a continuous ~3 cm sheet of flattened ellipsoids
+with in-out folds, a downwind billow and a flap wave; SDF h=0.007). The first (tube) cloak read as a grass skirt;
+the sheet version is UNSEEN: preview with the numpy turnaround (`$SCR/figprev.py`, needs `tprev.py` beside it)
+before Blender. NEXT: `MT3D_REFIG=1 python render.py desert --frames 1520,1540,1545,1579 --scale 0.5 --samples 24
+--out t_des8`, then full-res crops of the prints/ripples and the figure (wide framing only in the cut).
+**THE RING = not rebuilt yet** (only the inscription + engine). Plan: Cycles for all three (local Metal tests,
+cloud CPU finals). C14 find: dark, lit ONLY by strike 2's spark flash (decaying light + short orange falling
+sparks), the band in a clean hollow, unmarked; a thin leather glove enters from the SIDE (not descending) and
+closes on it; find_b: palm open, the towers-bowing vision in the polish, fist. C15: the band on the tip of a
+C-shaped fire-steel (an oval loop, one end a curled tip) in the beacon's flames, unmarked, letters awake (outer +
+inner strips), the tip dips on 3480 and it does not fall, drawn out 3560 into the gloved fist; no glow fringe.
+C22 melt: darker exposure, a crisp drop (no haze), one slump surface (no second skin = no doubled rim/donut),
+letters stay letters (emission follows the UVs on the slumping surface) until they go out at 5440.
+**Engine question for the director (pending):** KARST/DESERT are accepted EEVEE looks; cloud EEVEE needs the probe to
+pass (Mesa llvmpipe, likely slow). Recommendation: render those two 60-frame finals locally (one Blender, ~1.5 h and
+~45 min) unless the probe shows cloud EEVEE is practical; the Ring finals go to the cloud in Cycles.
+
+## >>> STATE AT HANDOFF (MONTAGE-3D-2 fresh lane, 27 Sep 10:15Z; history) <<<
 **What exists (checked 10:12Z; no MONTAGE-3D process running):**
 * KARST v2 (pines, Zhangjiajie profile): `renders/montage_v2/f_01640-01679` (40 fr) and the 2/3-speed re-time
   `renders/montage3d_v3/karst_slow/f_00000-00059` (60 fr, complete). BOTH SUPERSEDED by H5 (de-specify: no pines,
