@@ -90,8 +90,8 @@ class RoadShot(MAP.Shot):
         k = smooth((t - 2010.0) / 77.0)
         tx, ty = self._tx(t), self._ty(t)
         tx += (self.ring[0] - tx) * k
-        ty += (self.ring[1] - 1.5 - ty) * k              # (the tilt puts the look-point a little south of centre)
-        w = self._width(t) * (1.0 - 0.38 * smooth((t - 2050.0) / 37.0))
+        ty += (self.ring[1] - ty) * k
+        w = self._width(t) * (1.0 - 0.72 * smooth((t - 2040.0) / 47.0) ** 1.3)
         return MAP.Cam(tx, ty, w, self._tilt(t), self._head(t), W, H)
 
     # map_C rev 3's own keys (v2 clock), so the push can be layered on them
