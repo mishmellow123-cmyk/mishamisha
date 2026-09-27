@@ -47,15 +47,20 @@
   invisible at H1's distance), check 3680 against 3679 again, then delete `renders/reveal_A` and re-run
   `farm.py the-long-dawn/cloud/jobs/reveal_a_1.json --nodes 1`. The re-render also carries nighta 2913ad7 (the far haze
   without the glow's shadow rays, which fell as faint vertical slabs under the horizon; the landed final predates it).
-* **A15 R16 THE WATCHERS: look-dev v2 on the farm** (`watchers_a_look`, 3 frames -> `renders/_farmtest/watchers_a_look`);
-  the final job `watchers_a_1` (160 frames) is written and pushed, NOT approved. v1 failed at 1:1 (the lit ledge read as
-  clay, the flame floated over a clip-art wood teepee, the lighter stood beside the fire). v2: the seventh fire on a
-  dry-stone beacon cairn (5 courses, ~1.02 m); the lighter almost in front of it (a backlit silhouette, the flame above the
-  hood); `nighta.POOL_I` 14 -> 6; eye 1.9 m (fires 1 and 3 in sight); a 3.5 m push easing in from A14's hold; A14's catch
-  flares drawn after the fires. Plate = A14's END_CAM: (-999.58, -192.88, -523.22), yaw -23, pitch -1.8, hfov 40.
-  **Next:** review the v2 look-dev (sheet + 1:1 crop of the lighter and the cairn). If good: JOB READY watchers_a_1 with
-  check stills; if the near ground still reads as clay, the fallback is to drop the plate's lower third (pitch up, the
-  ground to the frame's edge) or to let the push carry the lighter past the ground faster.
+* **A15 R16 THE WATCHERS: NOT approved; look-dev v3 on the farm at 20:49Z** (`watchers_a_look` -> 3 frames in
+  `renders/_farmtest/watchers_a_look`); the final job `watchers_a_1` (160 frames, cut 4240-4399 -> `renders/watchers_A`)
+  is written and pushed. History at 1:1:
+  * v1: the lit ledge read as clay, the flame floated a metre over a clip-art wood teepee, the lighter beside the fire.
+  * v2: the lighter straight in front of the fire put the flame ON the hood (a torch / candle read); the cairn's lit
+    boxes read as blocks; the whole frame had a warm cast, which was the recipe's two air-glow halos (7 m / 30 m world
+    sigma = thousands of px at 15 m, depth-passed to everything behind the fire), not the LT pool.
+  * v3 (04c1843): nighta caps the halos on screen (90 / 260 px at 1920; beacons unchanged); the lighter 0.55 m right
+    of the fire (the flame beside the hood, rimming it); a low 3-course cairn to 0.64 m (the size-0.6 flame's base).
+  **Resume:** review v3 (sheet + 1:1 crop of the lighter/cairn/flame). If "good with nitpicks": JOB READY watchers_a_1
+  with the stills. Still open if v3 shows them: (a) a single bright shadow ray of the glow above the sierra can read as
+  a searchlight (GP[11] is shared with A14; any change must go in nighta for both); (b) the near ledge's moonlit rock
+  may still read as clay at 15-60 m: the fallback is to pitch the plate up so the ledge leaves the lower third (A14's
+  END_CAM follows `plate()`, tell RUN-A-L). Plate now: (-999.22, -192.66, -522.97), yaw -23, pitch -1.8, hfov 40.
 * **Shared kit `nighta.py`:** night_light() (world.night_light + TERRAIN + CLOUD, `NIGHT_CLOUD` env override), the cold glow
   (I0 0.14, breathing once a bar), the red under the cloud (150 world-fixed patches, beat pulse), fires (`POOL_I` 6).
   A14 (`beaconrun_a.py`, RUN-A-L) imports it, plus `watchers_a.plate/draw_figures/extra_fires`.
