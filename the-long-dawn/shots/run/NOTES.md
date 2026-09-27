@@ -1,26 +1,31 @@
-> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
-> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
-> - The fire-basket plinth shows triangle-fan seams.
-> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
-> - The dark speckles on B's snow read as dalmatian spots (climb 700).
->
-> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
-
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
-## RUN-A2 STATE AT PAUSE (27 Sep ~20:55Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
-* **RESUME HERE.**
-  1. `python3 the-long-dawn/cloud/farm.py status`: did the director launch `crossing_a2_01..18` (sent JOB READY
-     ~20:52Z)? If approved and not launched: `farm.py the-long-dawn/cloud/jobs/crossing_a2_{01..18}.json --nodes 3`.
-     If frames have landed in renders/crossing_A: contact-sheet them (bars 62, 64, 66, 69, 70, 73) and check the trails
-     (concentric, never dashes), the red going out from bar 70, the keeper's kneel, no flame spikes.
-  2. Look at `renders/_farmtest/crossing_a_lookdev3/` (pass-3 code: kneeling keeper, less flame soot, lens blur on
-     the far background in the close-up, one-piece cowl, stronger far red) and `renders/_farmtest/bluehour_a_lookdev2/`
-     (the FIRST look at the rebuilt blue hour; 5840, 5960, 6080, 6200, 6400 at half res). Fix, re-test, then JOB READY
-     `bluehour_a2_01..20` (cut 5840-6479 incl. A20; ~33 min each at an estimated 500 s/frame single-thread).
-  3. Re-cut the jobs if measured costs differ: `python3 the-long-dawn/cloud/jobs/make_runA2_jobs.py --x-spf S
-     --b-spf S` (it deletes and rewrites crossing_a2_* / bluehour_a2_*). Note: the first farm timings included numba
-     compiles (world.py changed), so they overstate; a warm node's `s/frame` line is the number to use.
+## RUN-A2 STATE AT PAUSE (27 Sep ~21:00Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
+* **RESUME HERE (~23:30Z).**
+  0. **FREEZE:** `crossing_a2_01..18` (cut 4880-5839) were APPROVED and launched by main at ~20:50Z with --nodes 6
+     (log `_local_logs/jobs/crossing_a2_farm.log`; ~2 h). Until they complete, push NOTHING that changes their output:
+     no edits to crossing.py, sdfppl.py's existing functions/kernel, or world.py outside per-shot settings. (bluehour.py
+     is safe: the crossing never imports it. New sdfppl functions are safe only if import-tested before a push.)
+  1. When the crossing lands: contact-sheet renders/crossing_A (bars 62, 64, 66, 69, 70, 73), then do the DIRECTOR'S
+     FIX LIST for a partial re-render of the affected jobs:
+     - **Procession (5480, 5839): ~20 identical, evenly spaced hooded figures read as instanced CG / pawns on a rail.**
+       Irregular spacing with pairs and gaps; one helping another over a step; vary heights, gait phases, hood and
+       cloak cuts (long cloak / coat / cape, peak or none, pack or none), lantern heights.
+     - **The great lantern (4880):** KEEP the white core (the A17 -> A18 match cut: EMBERS-A3's fire gathers into a
+       white heart at (959.5, 401.5) on 4879, at our heart's size). Fix only (a) the housing: plain, timeless IRON AND
+       HORN (director's call, over the bible's "iron and glass"): no onion base, no arched panels (straight posts, flat
+       horn panes, a plain pyramid roof, a flat base); (b) the LED read: a flame-like flicker in the core and a faint
+       warm halo at its edge. AGREE the heart's look with EMBERS-A3 through NOTES so both sides of the cut match.
+       Build it as a NEW function (e.g. `sdfppl.lantern_v3`) and switch crossing and blue hour to it together.
+     - **Fire-ring stones (4880):** grey sugar cubes -> rough, irregular, snow-dusted stones.
+     Affected: the close-up jobs (lantern, stones: 01..08 at least) and the wides from bar 69 (procession: ~11..18).
+  2. **Blue hour: NOT READY.** Look-dev 2 (`renders/_farmtest/bluehour_a_lookdev2/`, old code) failed the gate: the valley
+     read as a dark ink blot in the cloud; the people left the frame by 6200; bar 74's sky was night-black; the lantern a
+     speck. Pass 2 (d448ea2: hazier lilac valley, torn partial cloud, camera 8.6 m from the lantern and held low, blue-
+     hour sky, stronger lantern light) is on the farm as look-dev 3 -> `renders/_farmtest/bluehour_a_lookdev3/` (request
+     0927-165247-bluehouralookdev-83200). Review it; still open: the people read as dark mounds (want lean silhouettes
+     with a lantern rim), the horizon is the uniform needle skyline (give it a big landform as in the crossing), the new
+     lantern (item 1). JOB READY `bluehour_a2_01..20` only when a look-dev is clean.
 * **Committed + pushed** (46153c1, b8964e7, 297446f, dffa1bf, a92fde6, 5cde879, 3461166, 1fd0716):
   * `sdfppl.py`: v3 CLOTH (default; `cloth=False` = the v2 figure): elliptical cloak and cape bells, creased uneven
     folds, wind billow + lee hem lift + flutter (`wind` = world vector toward the lee, |v| = hem billow in m), SDF crease
@@ -245,6 +250,14 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
 * Lessons: background renders on the session box do not survive a usage pause (the box is frozen, then rebooted);
   use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact. In this world
   `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
+
+> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
+> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
+> - The fire-basket plinth shows triangle-fan seams.
+> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
+> - The dark speckles on B's snow read as dalmatian spots (climb 700).
+>
+> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
 
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION, R13b RING FALLS) - report 27 Sep <<<
 ## >>> STATE FOR RESUME (RUN-C-3, 27 Sep ~20:50Z; usage window ends 21:25Z, resume ~23:30Z) <<<
