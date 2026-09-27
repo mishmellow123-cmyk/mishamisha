@@ -1,6 +1,60 @@
 # >>> EMBERS-C2 (split off EMBERS-C, 27 Sep ~19:15Z): C9 E12 THE EYE ONTO NOTHING (1920-2079), C11 E8-C THE GRASP
 # THAT CANNOT HOLD (2320-2479), C13a E13a THE RING FALLS (2720-2839). EMBERS-C keeps E15, E5-C, E11 + the Ring/flame. <<<
-## EMBERS-C2 STATE (27 Sep ~19:55Z)
+## STATE AT HANDOFF (EMBERS-C2 -> next agent, 27 Sep ~20:15Z). Read this first.
+* COMMITTED (f7b250f + this commit): `c2.py` (bar grid, `Router`, `ENABLED`, `plane_coords`, `storm_layer`), `c_eye.py`,
+  `c_grasp.py`, `c_fall.py`, `c2lab.py` (look-dev harness, no tower geometry), farm jobs
+  `cloud/jobs/embers_C3_{eye,grasp,fall}.json` (4 lanes of `render.py A-B:4 --cut C3` -> renders/embers_C3, jpg). The
+  eye job file is EMBERS-C's (same config). render.py: my hook only (the `c2.Router` wrap + SHOTS_V3['C3'] (2720, 2840)).
+  The OTHER uncommitted render.py hunk (A3 SHOTS_V3 2460/2520) is EMBERS-2's: never commit it.
+* ROUTING: `c2.ENABLED = {'eye'}`. Only C 1920-2079 runs my code today. 2320-2479 still goes to c3's 'grasp' mode
+  (EMBERS-C's grasp3.py). 2720-2839 falls through to c3's src warp (garbage). Add 'grasp' / 'fall' to ENABLED BEFORE
+  any farm test or render of those frames.
+* RENDERS: nothing delivered to renders/embers_C3 for my ranges; no JOB READY sent yet.
+  - Farm test IN FLIGHT: `farm.py cloud/jobs/embers_C3_eye.json --test 6 --frames 1930,1966,1992,2003,2040,2079
+    --local-out <scratchpad>/ec2/farm_eye1` (queued 16:03 local, pid 54976; log ec2/farm_eye1.log). It is the first
+    look at the Eye WITH the towers (occluder mask, bend, light). Verdict: see the FARM line below.
+  - Lab sheets (0.4 scale, no towers): scratchpad ec2/{eye,grasp,fall}_l4.jpg (pass 4 = current code).
+* VERDICTS (pass 4, lab):
+  - E12 EYE: the structure works. The storm is drawn in (it contracts, never turns: no spiral). The glazed iris has a
+    closed seam, the rim is broken flame tongues, the slit opens at 2000 onto true black and reads as a pit, and the
+    push-in lands. WEAK: the iris reads beige, like a wood-grain ball, not "yellow as a cat's" nor fire. ACES
+    desaturates it, so push the chroma (mid zone g 0.5 -> 0.42, b 0.09 -> 0.04; pupillary zone b 0.3 -> 0.16) and
+    raise E (x1.6 near the collarette). The storm is dim at 1930-1950 (fine under MAP's burn; check against book_C).
+    The rim is thin at 1985 (the flames lengthen after 2000, good).
+  - E8-C GRASP: reads as intended. It is a gaunt charcoal claw of embers (talons, jagged crust, red rim, no gauntlet)
+    descending onto the three-quarter Ring. The grip hides the band with gold leaking between the fingers. The
+    crack network opens from the grip 2400-2440, the band drops out under the fist at ~2446 and falls, and the claw
+    goes dark after. WEAK: the blaze cracks (2420-2446) are too white and too wide. In shade_claw, cap T at 0.74,
+    set e_crack to (0.22 + 2.0 * hk) and narrow anat_cracks' sharp. The big arcs on the back of the hand read as
+    loops. The lab background is black: towers and storm are unverified (farm). Check the hang -> grip blend
+    (2350-2360) and the fall in motion.
+  - E13a FALL: 2722-2745 is good: out of black a small gold band tumbles in three-quarter, letters faint, the deck
+    dark below. BROKEN after 2760: the deck reads as streaky brushed grey (fur), not moonlit billows (cut the domain
+    warp 1.5 -> 0.6, add billow contrast, light the tops from the moon). 2805 is a beige blur (veil + warmth too big).
+    2839 is brown murk with NO Ring visible. Restage the end: don't take the camera into the deck. Either stay above
+    it and let a warm glint sink into thin tops, or use EMBERS-C's ringfall3 plan (through the cloud and out its
+    underside into clear night; we slow, it drops away as a small glint).
+* HANDOVER CONTRACT with RUN-C (R13b from 2840) is NOT agreed. My block below says "down and to the right";
+  EMBERS-C proposed "a ~20 px glint just below frame centre, falling straight down". RUN-C has not built R13b yet.
+  Recommend EMBERS-C's version (simpler to match). Agree it with the active RUN-C lane (PACING.md table) and write it
+  into both NOTES.
+* NEXT STEPS, in order:
+  1. When farm_eye1 lands: review it with the towers. Check the bend reads, no tower sits under the Eye, there is no
+     symmetric pair, and the sky sits behind the towers cleanly (occluder mask edges at half res). Fix the iris
+     colour. Send JOB READY embers_C3_eye (160 frames; the farm does embers at ~9 f/s per node) with 3-4 full-res
+     stills to review/embers_C3_check/.
+  2. Grasp: apply the crack tone-down, set ENABLED |= {'grasp'}, commit and push, then run a farm `--test` on
+     2330,2356,2364,2420,2446,2465 (the first look with towers far below). Tune the storm backdrop (c_grasp.post:
+     storm_layer lp[0] 0.22) and send JOB READY embers_C3_grasp.
+  3. Fall: fix the clouds and the ending, set ENABLED |= {'fall'}, settle the RUN-C contract, then send JOB READY
+     embers_C3_fall.
+  4. When MAP's book_C 1920-1991 exists: the storm's glow must sit where the page burns through (near frame
+     centre-bottom). Adjust the Eye's CAM_KEYS if not.
+* HOW: look-dev with `EYE=f,f GR=f,f FA=f,f renderq -- ec2/run_lab.sh TAG` (scratchpad) or
+  `renderq -- python c2lab.py SHOT out.jpg 0.4 frames` (repo). Commit through a temporary index (GIT_INDEX_FILE),
+  so only your paths go in, not others' staged files or EMBERS-2's render.py hunk.
+
+## EMBERS-C2 DESIGN (as built, 27 Sep ~19:55Z)
 * Owner files (new): `c2.py` (bar grid, `Router`, `storm_layer`/`plane_coords`: the 2.5-D storm as billboard planes),
   `c_eye.py` (E12), `c_grasp.py` (E8-C), `c_fall.py` (E13a). Shared touch: `render.py` (small, noted): `--cut C3`
   wraps c3.TimelineC3 in `c2.Router`, which sends C 1920-2079 / 2320-2479 / 2720-2839 to my shots (only those listed
