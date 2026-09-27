@@ -386,11 +386,11 @@ class Relay:
                 for r, (name, parent, bp, delay, _) in enumerate(ROUTES):
                     if started[r] or parent is None or names.index(parent) != line[i]:
                         continue
-                    if isinstance(bp, str) or np.hypot(*(ll2xy(*bp) - P[i])) < 3.0:
+                    if isinstance(bp, str) or np.hypot(*(ll2xy(*bp) - P[i])) < 5.0:
                         started[r] = True
                         heapq.heappush(heap, (tn + delay * rng.uniform(0.9, 1.2), 1, i * 64 + r))
                 # now and then a short side line answers into the ranges beside it, later still
-                if i != 0 and rng.random() < 0.12 and np.hypot(*(P[i] - P[0])) > 4.0:
+                if i != 0 and rng.random() < 0.3 and np.hypot(*(P[i] - P[0])) > 4.0:
                     heapq.heappush(heap, (tn + rng.uniform(15.0, 45.0), 2, i))
             elif ev == 0:
                 ln = line[i]
@@ -404,7 +404,7 @@ class Relay:
                 # never a third line from one fire); else wait for the parent line to move on
                 bp = ll2xy(*ROUTES[r][2])
                 near = np.where((line == line[i]) & ~side & (t <= tn))[0]
-                near = near[(np.hypot(*(P[near] - bp).T) < 5.5) & np.array([len(children[k]) < 2 for k in near], bool)]
+                near = near[(np.hypot(*(P[near] - bp).T) < 7.0) & np.array([len(children[k]) < 2 for k in near], bool)]
                 done = waiting = False
                 for k in sorted(near.tolist(), key=lambda k: np.hypot(*(P[k] - bp))):
                     if not moved_on(k, tn):

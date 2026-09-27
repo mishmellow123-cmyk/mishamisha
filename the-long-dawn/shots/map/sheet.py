@@ -104,9 +104,10 @@ def parchment(X0, Y1, H, W, ppd, stains, spots):
                 dd = abs(x - fx)
                 fw = max(fw, math.exp(-(dd / 0.35) ** 2))
                 hh += 0.07 * max(0.0, 1.0 - dd / 1.4) ** 2
-            dd = abs(y - (0.5 * (-65.26378901391432 + 99.965853834121)))
-            fw = max(fw, math.exp(-(dd / 0.35) ** 2))
-            hh -= 0.06 * max(0.0, 1.0 - dd / 1.4) ** 2
+            for fy in (-10.18724, 44.88930):            # the horizontal folds at the sheet's thirds (FOLD_Y)
+                dd = abs(y - fy)
+                fw = max(fw, math.exp(-(dd / 0.35) ** 2))
+                hh -= 0.06 * max(0.0, 1.0 - dd / 1.4) ** 2
             out[i, j, 0] = t
             out[i, j, 1] = st
             out[i, j, 2] = ed
