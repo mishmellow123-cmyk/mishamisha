@@ -557,21 +557,20 @@ Heavy renders as cloud jobs of <= 45 min each; the director launches them when c
 
 ## RUN-B2 (split off RUN-B ~19:25Z: B5 THE REVEAL + B6-B12 THE VIGIL; owns vigil.py, reveal.py; RUN-B-3 keeps
 ## handback_b.py + dusk; bworld.py/bset.py shared, additive only)
-**>>> RUN-B2 STATE AT PAUSE (27 Sep ~20:50Z; usage gap to ~23:30Z) <<<**
-* CODE (all pushed, tip 6d7714f): vigil.py (the WSW locked frame, the hand-back's sky/beacons/villages, the join at
-  3839 = handback_b's crane frame 3840 incl. HandBack.figures_at from 3810, barmap_B sync, the hail, squall, fog,
-  travellers on the ENE way, the child), reveal.py (held roar behind her left shoulder -> log pull to 130 m WSW on
-  the vigil's axis, the Milky Way arching over her summit, bset.summit_snow), bset.py (person2 incl. 'hail',
-  summit_snow, match_horizon, night_params(horizon_match), CAM_* WSW with SET axes frozen at 31).
-* JOBS (farm): cloud/jobs/vigil_b.json (1520-3839 -> renders/vigil_B, suggest --nodes 3, ~30-45 min) and
-  reveal_b.json (1360-1519 -> renders/reveal_B, --nodes 2-3, ~30 min). Check stills: renders/run_b_tests/
-  b2_check_local (local, half res) and renders/_farmtest/b2_check (farm, 11 f). JOB READY sent? see live status.
-* NEXT on resume: (1) if the director approved: launch `python3 the-long-dawn/cloud/farm.py
-  the-long-dawn/cloud/jobs/vigil_b.json --nodes 3` (and reveal_b.json --nodes 2) from ~/mishamisha, then review the
-  landed frames (contact sheets every ~200 f; the join 3839 vs renders/handback_B 3840); (2) nitpicks list below.
-* NITPICKS (cheap re-renders later): summit_snow is reveal-only (the vigil/crane join must change together: offer
-  to RUN-B-3); the far answers at full res may read as an even skyline string (a distance falloff, shared with
-  handback_b.layers); the fog hours are a flat veil (drifting wisps would help); stars sparse at half res.
+**>>> RUN-B2 STATE AT PAUSE (27 Sep ~21:00Z; usage gap to ~23:30Z) <<<**
+* CODE (all pushed, tip 67f3785): vigil.py, reveal.py, bset.py (see the live status below for what each does).
+* JOB READY SENT 20:55Z for vigil_b (1520-3839 -> renders/vigil_B, --nodes 3, ~30-45 min) and reveal_b
+  (1360-1519 -> renders/reveal_B, --nodes 2, ~30 min). Check stills: _local_logs/review/runB2_jobready.jpg (half
+  res; the local stills are renders/run_b_tests/b2_check_local, b2_check_local3). Launched? see the live status.
+* JOIN with RUN-B-3 (handback_b crane 3840): matched numerically (my 3839 vs their hbb_t15/f_03840: sky 0.5/255);
+  the two remaining diffs were fixed in 2f86c1a (cloud sea frozen at t=160; the fire's light settles to full).
+* NEXT on resume (~23:30Z): (1) if approved and not yet launched: from ~/mishamisha run `python3
+  the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/vigil_b.json --nodes 3` and `... reveal_b.json --nodes 2`
+  (check `farm.py status` first: a request may already be queued); (2) review the landed frames: contact sheets
+  every ~200 f, the join 3839 vs renders/handback_B 3840, the reveal pull 1372-1519; (3) nitpicks, cheap re-renders:
+  - summit_snow on the vigil + hand-back together (RUN-B-3 agreed; re-render the vigil where the summit is lit);
+  - the reveal's band still a little cloudy (more band stars / less fbm contrast), a dark hump at its left edge;
+  - the fog hours a flat veil (drifting wisps); the far answers' distance falloff (shared with handback_b.layers).
 
 **STATE AT HANDOFF (RUN-B2, 27 Sep ~19:30Z):** vigil.py + reveal.py as committed in 118eafd (tested at quarter/half
 on b11; no renders in renders/vigil_B or reveal_B). Jobs vigil_b_a/b + reveal_b_a/b written, NOT READY. Open: reveal
