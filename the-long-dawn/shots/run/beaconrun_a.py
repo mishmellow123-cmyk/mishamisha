@@ -52,6 +52,8 @@ CAT = np.load(os.path.join(HERE, 'summits.npy'))
 def light(f=None):
     """H1's moonlit night (world.night_light) with the crossing's terrain fixes: the anti-streak snow noise (Q[18]),
     snow held on steeper ground, and more aerial depth so the ranges step back in veils."""
+    if hasattr(NA, 'night_light'):
+        return NA.night_light()                  # the ONE A night (RUN-A3's kit): terrain fixes + the shared cloud sea
     Lk, amb, S, fogp, Q = WD.night_light()
     Q = Q.copy()
     Q[18] = 1.0
@@ -59,6 +61,29 @@ def light(f=None):
     Q[4] = 0.54
     fogp = fogp.copy()
     fogp[0] = 1.0e-4
+    return cloud_knobs(Lk, amb, S, fogp, Q)
+
+
+CLOUD_KEYS = {'q1': ('Q', 1), 'q2': ('Q', 2), 'q5': ('Q', 5), 'q8': ('Q', 8), 'q9': ('Q', 9), 'q13': ('Q', 13),
+              'q15': ('Q', 15), 'f2': ('F', 2), 'f3': ('F', 3), 'amb': ('A', 0)}
+
+
+def cloud_knobs(Lk, amb, S, fogp, Q):
+    """Look-dev: NIGHT_CLOUD="q8=0.75,q5=0.2,..." overrides the cloud-sea knobs (amb scales the ambient)."""
+    spec = os.environ.get('NIGHT_CLOUD', '')
+    if spec:
+        Q = Q.copy()
+        fogp = fogp.copy()
+        amb = np.array(amb, np.float64).copy()
+        for kv in spec.split(','):
+            k, v = kv.split('=')
+            kind, i = CLOUD_KEYS[k.strip()]
+            if kind == 'Q':
+                Q[i] = float(v)
+            elif kind == 'F':
+                fogp[i] = float(v)
+            else:
+                amb = amb * float(v)
     return Lk, amb, S, fogp, Q
 
 
@@ -174,7 +199,8 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     fr.dist = np.zeros((scam.H, scam.W), np.float32)
     WD.shade(C, D, Pp, CR, S, LT, Lk, Q, amb, fogp, fr.img, fr.zb, fr.dist, PL)
     # the red under the cloud, throbbing on the race's beat
-    WD.cloud_glow(C, D, Pp, CR, NA.ug_rows(f), fogp, fr.img)
+    if os.environ.get('A14_NOUG') != '1':
+        WD.cloud_glow(C, D, Pp, CR, NA.ug_rows(f), fogp, fr.img)
     # the cold glow beyond the ranges, breathing once a bar; it puts out the stars near it
     kill = np.zeros(fr.dist.shape, np.float32)
     skl = NA.skyline(scam.pos, CR, WD)

@@ -1,0 +1,23 @@
+{
+ "name": "beaconrun_a_cloud",
+ "branch": "claude/render-beaconrun-a-cloud",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "A14_NOUG=1 A14_CAM=-952,-60,-633,-10,-9,50 python3 shots/run/beaconrun_a.py --frames 3920 --scale 0.5 --threads 2",
+  "A14_NOUG=1 A14_CAM=-952,-60,-633,-10,-9,50 NIGHT_CLOUD=q8=0.8,q5=0.15,q15=0.8 python3 shots/run/beaconrun_a.py --frames 3921 --scale 0.5 --threads 2",
+  "A14_NOUG=1 A14_CAM=-952,-60,-633,-10,-9,50 NIGHT_CLOUD=q8=0.8,q5=0.15,q15=0.8,q9=0.7,q13=0.9 python3 shots/run/beaconrun_a.py --frames 3922 --scale 0.5 --threads 2",
+  "A14_NOUG=1 A14_CAM=-952,-60,-633,-10,-9,50 NIGHT_CLOUD=q8=0.8,q5=0.15,q15=0.8,q9=0.7,q13=0.9,f2=0.0004 python3 shots/run/beaconrun_a.py --frames 3923 --scale 0.5 --threads 2",
+  "A14_NOUG=1 A14_CAM=-952,-60,-633,-10,-9,50 NIGHT_CLOUD=q8=0.8,q5=0.15,q15=0.8,q9=0.7,q13=0.9,f2=0.0005,f3=0.0045 python3 shots/run/beaconrun_a.py --frames 3924 --scale 0.5 --threads 2",
+  "A14_NOUG=1 A14_CAM=-952,-60,-633,-10,-9,50 NIGHT_CLOUD=q8=0.8,q5=0.15,q15=0.8,q1=2.5,q2=6,q13=0.9 python3 shots/run/beaconrun_a.py --frames 3925 --scale 0.5 --threads 2"
+ ],
+ "out_dir": "renders/beaconrun_A",
+ "frames": "3920-3925",
+ "shape": [
+  402,
+  960
+ ],
+ "push_every": 120,
+ "ship": "jpg"
+}
