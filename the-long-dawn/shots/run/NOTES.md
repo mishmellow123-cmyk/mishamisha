@@ -78,6 +78,10 @@ brightness (they go out near it); terrain lit from just over the horizon so the 
   searchlight or sci-fi beacon. The veil reads as cloud lit by a city (light pollution). Keep the rays soft and
   few (a "studio logo" read appears as soon as they are crisp).
 
+* Full-res arc (review/v3/runA_falsedawn_arc_full_f420.jpg, the glow's peak): reads as dawn come too early. Next pass:
+  keep the zenith darker at the peak (it greys out, losing "midnight"), break up the evenly scattered deck wisps
+  (a procedural tell), keep a few stars high in the frame.
+
 ## RENDER_SPEC (director launches; do NOT launch before the look is approved at 0.5 scale)
 * THE CROSSING: `cloud/jobs/crossing_a_{1..8}.json`, 120 frames each, `python3 shots/run/crossing.py --range A-B
   --procs 4 --skip` -> `renders/crossing_A/f_%05d` (shot-local 0-959; 1920x804; ship jpg). One machine type.
