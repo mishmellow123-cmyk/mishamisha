@@ -525,7 +525,9 @@ def render(frame, design='arc', scale=1.0, ss=1.5):
     C = scam.params()
     skl0, skld, skl = skyline(scam.pos)
     if MOON:
-        glow_haze(fr.img, fr.dist, C, GP, skl0, skld, skl, 0.45, 30000.0)
+        GPh = GP.copy()
+        GPh[11] = 0.0                    # no shadow rays in the haze: under the horizon they fall as vertical slabs
+        glow_haze(fr.img, fr.dist, C, GPh, skl0, skld, skl, 0.25, 30000.0)
     trans = np.zeros(fr.dist.shape, np.float32)
     # no lenticular stack: at night, lit from beneath, stacked lenses read as a fleet of saucers (a real-life
     # "UFO cloud"); the deck carries the structure instead
