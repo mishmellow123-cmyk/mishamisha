@@ -51,13 +51,13 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 VENV_PY = os.path.expanduser('~/.venvs/longdawn/bin/python')
-try:
-    import cv2
-    import numpy as np
-except ImportError:                                   # system python3: re-run under the project venv (has cv2)
-    if os.path.exists(VENV_PY) and os.path.realpath(sys.executable) != os.path.realpath(VENV_PY):
-        os.execv(VENV_PY, [VENV_PY] + sys.argv)
-    raise
+if __name__ == '__main__':
+    import importlib.util
+    if importlib.util.find_spec('cv2') is None:       # system python3: re-run under the project venv (has cv2)
+        if os.path.exists(VENV_PY) and os.path.realpath(sys.executable) != os.path.realpath(VENV_PY):
+            os.execv(VENV_PY, [VENV_PY] + sys.argv)
+        sys.exit('farm: needs cv2 (the ~/.venvs/longdawn venv)')
+# cv2/numpy are imported only where frames land, so a run that is waiting for a node stays small on this Mac
 
 HERE = os.path.dirname(os.path.abspath(__file__))                 # the-long-dawn/cloud
 ROOT = os.path.dirname(HERE)                                      # the-long-dawn
@@ -606,6 +606,7 @@ class Farm:
         self.total = sum(len(set(o['frames']) & j.want) for j in jobs for o in j.outputs)
         self.n_landed = 0
         self.boot_failures = 0
+        self.waiting_noted = False
         self.lock = threading.Lock()
 
     def plan(self):
@@ -636,16 +637,22 @@ class Farm:
                 log(f'[{j.name}] output {o["out_dir"]} -> {o["dest"]}')
 
     def acquire(self):
-        need = {'cpu': 0, 'gpu': 0}
-        for u in self.queue:
-            need['gpu' if u['_job'].gpu else 'cpu'] += 1
-        want_n = {k: min(v, self.args.nodes or (1 if self.args.test is not None else v)) for k, v in need.items()}
+        want_n = {}
+        for kind in KINDS:
+            queued = sum(1 for u in self.queue if ('gpu' if u['_job'].gpu else 'cpu') == kind)
+            live = [nd for nd in self.nodes.values() if nd.kind == kind and nd.state != 'stopped']
+            idle = [nd for nd in live if nd.unit is None]
+            budget = self.args.nodes or (1 if self.args.test is not None else queued + len(live))
+            want_n[kind] = max(0, min(queued - len(idle), budget - len(live)))
+        if not any(want_n.values()):
+            return 0
         existing = {x['name']: x for x in list_nodes()}
-        held = live_leases()
+        added = 0
         for kind, n in want_n.items():
             if not n:
                 continue
             kd = KINDS[kind]
+            held = live_leases()                           # every farm.py run's nodes, this one's included
             mine = sorted((x for x in existing.values() if x['name'].startswith(kd['prefix'])),
                           key=lambda x: (0 if str(x.get('state', '')).startswith('running') else 1, x['name']))
             got = []
@@ -653,28 +660,30 @@ class Farm:
                 st = str(x.get('state', ''))
                 if len(got) >= n or 'unrestorable' in st or 'lost' in st or st.startswith('failed'):
                     continue
-                if len(held) + len(got) + len(self.nodes) >= MAX_STREAM:
+                if len(held) + len(got) >= MAX_STREAM:
                     break
                 if lease(x['name'], self.run_id):
                     got.append(x['name'])
             i = 1
             while len(got) < n and sum(1 for k in held if k.startswith(kd['prefix'])) + len(got) < kd['cap'] \
-                    and len(held) + len(got) + len(self.nodes) < MAX_STREAM:
+                    and len(held) + len(got) < MAX_STREAM and i < 100:
                 name = f'{kd["prefix"]}{i:02d}'
                 i += 1
-                if name in existing:
+                if name in existing or name in held:
                     continue
                 if lease(name, self.run_id):
                     got.append(name)
-            if len(got) < n:
-                log(f'{kind}: {len(got)} of {n} nodes available now (caps: {kd["cap"]} {kind}, {MAX_STREAM} streaming; '
-                    f'{len(held)} held by other farm runs); the rest of the work queues')
+            if len(got) < n and not self.waiting_noted:
+                others = len([h for h in held.values() if h.get('pid') != os.getpid()])
+                log(f'{kind}: {len(got)} of {n} nodes free now (caps {kd["cap"]} {kind}, {MAX_STREAM} streaming; '
+                    f'{others} held by other farm runs); the rest of this run waits its turn')
             for name in got:
                 nd = Node(name, kind)
                 self.nodes[name] = nd
                 self.pool.submit(self._boot, nd)
-        if not self.nodes:
-            raise SystemExit('farm: no node is free right now (every farm node is held by another farm.py run)')
+                added += 1
+        self.waiting_noted = added == 0
+        return added
 
     def _boot(self, nd):
         try:
@@ -688,6 +697,8 @@ class Farm:
 
     # -- frames
     def fetch(self, nd, unit, entries):
+        import cv2
+        import numpy as np
         j = unit['_job']
         byname = {f'{e["key"]}/{e["name"]}': e for e in entries}
         names = list(byname)
@@ -831,7 +842,7 @@ class Farm:
             if spend >= SPEND_WARN:
                 log(f'WARNING: farm mission spend is ${spend:.2f} (warn ${SPEND_WARN:.0f}, stop ${SPEND_STOP:.0f})')
         self.acquire()
-        last_note = time.time()
+        last_note = last_grow = time.time()
         while not STOP.is_set():
             live = [nd for nd in self.nodes.values() if nd.state not in ('stopped', 'failed')]
             ready = [nd for nd in live if nd.state == 'ready']
@@ -845,11 +856,13 @@ class Farm:
             booting = [nd for nd in live if nd.state == 'booting']
             if not self.queue and not busy and not booting:
                 break
-            if self.queue and not live:
+            if self.queue and (not live or time.time() - last_grow > 30):
                 if self.boot_failures >= 3:
                     log('nodes keep failing to boot; giving up. Units left: ' + ', '.join(u['id'] for u in self.queue))
                     break
-                self.acquire()
+                last_grow = time.time()
+                if not self.acquire() and not live:
+                    time.sleep(12)                  # every farm node is busy: wait for one to free up
             if time.time() - last_note > 120:
                 last_note = time.time()
                 log(f'-- {self.n_landed}/{self.total} landed, {len(busy)} node(s) rendering, {len(booting)} booting, '
