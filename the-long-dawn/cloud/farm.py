@@ -1387,7 +1387,17 @@ class Scheduler:
             nd.stop('no queued work')
             return
         spec = {k: v for k, v in u.items() if not k.startswith('_')}
-        if not u['_job'].gpu and nd.cpu > KINDS['cpu']['cpu']:     # a bigger node than planned for: use its cores
+        j = u['_job']
+        if not j.gpu and not j.whole and nd.cpu > KINDS['cpu']['cpu'] and nd.kind != 'ssh':
+            # a bigger node than the plan assumed (a 14-28 core h100 taking cpu work): re-cut the same frames into
+            # more processes for this node; the unit keeps its id, outputs and frames
+            frames = sorted({f for o in u['outputs'] for f in o['frames']})
+            try:
+                re_u = j.units(1, nd.cpu, frames=frames)
+                if re_u and len(re_u[0]['items']) >= len(spec['items']):
+                    spec['items'], spec['concurrency'] = re_u[0]['items'], re_u[0]['concurrency']
+            except Exception as e:                  # noqa: BLE001 - keep the original cut
+                log(f'{nd.name}: re-cut of {u["id"]} failed ({str(e)[:100]}); using the planned one')
             spec['concurrency'] = min(len(spec['items']), max(spec['concurrency'], nd.cpu // u.get('_d', 2)))
         if nd.kind == 'ssh':                        # someone's laptop: total threads stay within its budget
             per = max(2, u.get('_d', 2))
