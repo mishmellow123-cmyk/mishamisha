@@ -1,0 +1,497 @@
+"""C · THE RED BOOK shots (P1, P2, X1): the pages, the cameras, LETTERS TO FIRE, stills and frames.
+
+    python redbook.py stills --out ../../review/v3/map_stills      # the risk-test stills (pencil and ink)
+    python redbook.py x1 --frames 0,20,40,60,80,100,120,140 --out DIR   # LETTERS TO FIRE test frames
+    python redbook.py frames <shot> --range A-B --out renders/book_C   # delivery frames (shot-local numbering)
+
+Shots are timed in shot-local seconds (t = (frame - base) / 24), so the bar map can retime them without
+renumbering. Every frame is a pure function of its frame number. The book layer is written premultiplied
+(with the fire layer added on top) plus a matte, so EDIT comps it over the next shot: out = rgb + (1 - a) * next.
+"""
+import argparse
+import math
+import os
+import sys
+import time
+
+import cv2
+import numpy as np
+from numba import njit, prange
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, '..', '..', 'lib'))
+import look  # noqa: E402
+import pen  # noqa: E402
+import pages as PG  # noqa: E402
+import book as B  # noqa: E402
+import burn as BURN  # noqa: E402
+import fire as FIRE  # noqa: E402
+from pen import INK, GILT, PENCIL, Strokes, hand, line, catmull, resample  # noqa: E402
+
+ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
+FPS = 24
+
+
+def smooth(x):
+    x = min(1.0, max(0.0, x))
+    return x * x * (3 - 2 * x)
+
+
+def lerp(a, b, t):
+    return np.asarray(a, np.float64) + (np.asarray(b, np.float64) - np.asarray(a, np.float64)) * t
+
+
+# ======================================================= small ink drawings ===
+
+def sketch_mountain(S, x, y, s, seed, fire=True):
+    """A small marginal mountain (width ~2 s cm) with smoke, drawn quickly in the margin."""
+    rng = np.random.default_rng(seed)
+    L = np.array([[x - s, y], [x - 0.45 * s, y - 0.55 * s], [x - 0.12 * s, y - 1.05 * s]])
+    R = np.array([[x + 0.12 * s, y - 1.05 * s], [x + 0.5 * s, y - 0.5 * s], [x + s, y]])
+    line(S, L, 0.018, seed, lift=(5, 6))
+    line(S, R, 0.022, seed + 1, lift=(5, 6))
+    line(S, np.array([[x - 0.12 * s, y - 1.05 * s], [x, y - 0.98 * s], [x + 0.12 * s, y - 1.05 * s]]), 0.016, seed + 2)
+    for q in np.linspace(0.1, 0.9, 9):
+        p0 = R[0] + (R[-1] - R[0]) * q
+        p1 = p0 + np.array([-0.18 * s * (1 - q), 0.35 * s * (1 - q) + 0.1 * s])
+        pp, rr, dd = hand(np.array([p0, p1]), 0.008, int(rng.integers(1 << 30)), thin_end=0.2)
+        S.add(pp, rr, dd)
+    if fire:
+        for m in range(3):
+            c = np.array([[x + 0.02 * s, y - 1.12 * s], [x + (0.1 + 0.25 * m) * s, y - (1.5 + 0.18 * m) * s],
+                          [x + (0.35 + 0.4 * m) * s, y - (1.6 + 0.1 * m) * s]])
+            line(S, catmull(c, 8), 0.012, seed + 10 + m, lift=(5, 6))
+    line(S, np.array([[x - 1.3 * s, y + 0.02], [x + 1.4 * s, y + 0.01]]), 0.012, seed + 20, lift=(5, 6))
+
+
+def sketch_ring(S, x, y, r, seed, gilt=False):
+    a = np.linspace(0, 2 * np.pi, 70)
+    for sc in (1.0, 0.72):
+        P = np.column_stack([x + r * sc * np.cos(a), y + 0.8 * r * sc * np.sin(a)])
+        pp, rr, dd = hand(P, 0.012, seed + int(sc * 10), taper=(0, 0), thin_end=0.9, slow=(1.0, 0.003))
+        S.add(pp, rr, dd)
+    if gilt:
+        P = np.column_stack([x + 0.86 * r * np.cos(a), y + 0.8 * 0.86 * r * np.sin(a)])
+        S.add(P, np.full(len(P), 0.13 * r), np.ones(len(P)), layer=GILT)
+
+
+def sketch_ship(S, x, y, s, seed):
+    """A small grey ship on a low sea: a long hull with a swan-high prow, one mast, a sail, a few waves."""
+    rng = np.random.default_rng(seed)
+    hull = catmull([(x - 1.3 * s, y - 0.25 * s), (x - 0.9 * s, y + 0.12 * s), (x, y + 0.2 * s), (x + 0.9 * s, y + 0.1 * s),
+                    (x + 1.25 * s, y - 0.3 * s), (x + 1.35 * s, y - 0.75 * s), (x + 1.18 * s, y - 0.85 * s)], 8)
+    line(S, hull, 0.02, seed, lift=(6, 7))
+    line(S, np.array([[x - 1.3 * s, y - 0.25 * s], [x + 1.28 * s, y - 0.3 * s]]), 0.014, seed + 1, lift=(6, 7))
+    mast = np.array([[x - 0.05 * s, y - 0.25 * s], [x - 0.02 * s, y - 1.8 * s]])
+    line(S, mast, 0.016, seed + 2)
+    sail = catmull([(x - 0.02 * s, y - 1.7 * s), (x + 0.55 * s, y - 1.2 * s), (x + 0.62 * s, y - 0.55 * s),
+                    (x - 0.02 * s, y - 0.45 * s)], 8)
+    line(S, sail, 0.014, seed + 3, lift=(6, 7))
+    for q in np.linspace(0.15, 0.85, 6):
+        p0 = np.array([x - 0.02 * s, y - (1.7 - 1.2 * q) * s])
+        p1 = p0 + np.array([0.5 * s * math.sin(q * math.pi) + 0.05 * s, 0.02 * s])
+        pp, rr, dd = hand(np.array([p0, p1]), 0.007, int(rng.integers(1 << 30)), thin_end=0.25)
+        S.add(pp, rr, dd)
+    for m in range(4):
+        yy = y + (0.35 + 0.18 * m) * s
+        xx = x - 1.6 * s + 0.3 * m * s
+        wv = np.array([[xx + 0.4 * k * s, yy + 0.05 * s * math.sin(k * 2.1)] for k in range(8 - m)])
+        line(S, catmull(wv, 6), 0.009, seed + 10 + m, lift=(4, 6))
+
+
+# =================================================================== pages ===
+
+class Page:
+    """Strokes of one page and its texture at a time t. `burning` strokes (the text of X1a) get per-stroke
+    gains for ink, fire and ghost from a LettersToFire."""
+
+    def __init__(self, S, ppc, seed=0):
+        self.S = S
+        self.pk = S.pack()
+        self.ppc = ppc
+        self.tex = B.PageTex(PG.PW, PG.PH, ppc)
+
+    def texture(self, t, gains=None):
+        tx = self.tex
+        tx.chan[:] = 0
+        pk = self.pk
+        H, W, ppc = tx.H, tx.W, self.ppc
+        g_ink = None if gains is None else gains[0]
+        C, Wt = pen.raster(pk, t, ppc, H, W, INK, dry=0.9, gain=g_ink)
+        tx.chan[..., 0] = C
+        tx.chan[..., 1] = Wt
+        C, _ = pen.raster(pk, t, ppc, H, W, GILT, gain=g_ink)
+        tx.chan[..., 2] = np.clip(C, 0, 1)
+        C, _ = pen.raster(pk, t, ppc, H, W, PENCIL)
+        tx.chan[..., 3] = C
+        if gains is not None:
+            C, _ = pen.raster(pk, 1e9, ppc, H, W, INK, gain=gains[1])
+            tx.chan[..., 4] = C
+            C, _ = pen.raster(pk, 1e9, ppc, H, W, INK, gain=gains[2])
+            tx.chan[..., 5] = np.clip(C, 0, 1)
+        return tx.build()
+
+
+def leaves_last(seed=5):
+    """P1: the last written spread. Left: a full page with a mountain sketched in the margin and a small ring
+    by a paragraph; right: the tale ends two-thirds down, a small ship below it, then nothing."""
+    L, R = Strokes(), Strokes()
+    box = (3.0, 2.9, 16.8, 26.4)          # verso: the wider margin is the outer (left) one
+
+    def skipL(li, xa, xb):
+        if 3 <= li <= 8:
+            return [(xa - 1, xa + 2.9)]
+        if 20 <= li <= 22:
+            return [(xb - 1.7, xb + 1)]
+        return []
+    PG.text_page(L, seed, lines=38, box=box, skip=skipL)
+    sketch_mountain(L, box[0] + 1.25, 2.9 + 0.62 * 8.6, 0.85, seed + 100)
+    sketch_ring(L, box[2] - 0.8, 2.9 + 0.62 * 21.3, 0.42, seed + 200)
+    boxR = (3.2, 2.9, 17.0, 26.4)
+    recs = PG.text_page(R, seed + 1, lines=21, box=boxR, last_frac=0.42)
+    yl = recs[-1]['base']
+    sketch_ship(R, 10.1, yl + 2.6, 0.75, seed + 300)
+    # the tale's closing mark: a small flourish under the last line
+    fl = catmull([(8.6, yl + 0.55), (9.5, yl + 0.42), (10.2, yl + 0.62), (10.9, yl + 0.45), (11.6, yl + 0.55)], 8)
+    line(R, fl, 0.014, seed + 400, lift=(8, 9))
+    return L, R, yl
+
+
+def mountain_leaves(seed=11, mode='ink', t0=0.0, t1=8.0):
+    """P2 THE MOUNTAIN: an early recto with the plate, the caption band left clear (T1), and the tale below;
+    the verso opposite is text. Returns (L, R, words_R) where words_R are the recto's words (for X1a)."""
+    mt = PG.Mountain(seed)
+    R = mt.build(mode, t0, t1)
+    h = pen.Hand(seed=seed + 7, xh=0.2)
+    k0 = len(R)
+    h.write_block(R, 3.2, 15.05, 13.8, 18, 0.62, last_frac=None)
+    words = [(a + 0, b + 0, xl, xr, base, li) for (a, b, xl, xr, base, li) in h.words]
+    L = Strokes()
+    PG.text_page(L, seed + 3, lines=38, box=(3.0, 2.9, 16.8, 26.4))
+    return L, R, words, mt
+
+
+# ================================================================== x1: fire ===
+
+class LettersToFire:
+    """X1a: the letters glow in reading order (accelerating), lift off as sparks that stream into a flame
+    standing on the page; the flame's heat browns the paper and burns it open onto the next shot."""
+
+    def __init__(self, book, words, F, side='R', t_glow=(0.2, 2.6), seed=3, spp=4):
+        self.book, self.words, self.F, self.side = book, words, np.asarray(F, np.float64), side
+        rng = np.random.default_rng(seed)
+        n = len(words)
+        order = np.argsort([w[5] * 100 + w[2] for w in words])       # reading order: line, then x
+        rank = np.empty(n)
+        rank[order] = np.arange(n)
+        # kindle times accelerate through the text
+        self.tk = t_glow[0] + (t_glow[1] - t_glow[0]) * (rank / max(n - 1, 1)) ** 0.62
+        self.tk += rng.uniform(-0.04, 0.04, n)
+        self.glow_d = rng.uniform(0.35, 0.6, n)                       # time glowing before it lifts
+        self.lift = self.tk + self.glow_d
+        # sparks sampled on each word's strokes
+        self.sp = []
+        for wi, (a, b, xl, xr, base, li) in enumerate(words):
+            m = max(3, int(spp * (xr - xl) / 0.9))
+            u = rng.uniform(xl, xr, m)
+            v = base - rng.uniform(0.0, 0.3, m)
+            for k in range(m):
+                self.sp.append((wi, u[k], v[k]))
+        self.sp = np.array(self.sp)
+        N = len(self.sp)
+        self.sp_t0 = self.lift[self.sp[:, 0].astype(int)] + rng.uniform(0.0, 0.3, N)
+        self.sp_d = rng.uniform(0.9, 1.8, N)
+        P0 = book.page_to_world(side, self.sp[:, 1], self.sp[:, 2])
+        Fw = book.page_to_world(side, np.array([self.F[0]]), np.array([self.F[1]]))[0]
+        self.Fw = Fw
+        self.P0 = P0 + np.array([0, 0, 0.02])
+        up = rng.uniform(0.6, 2.2, N)
+        lat = rng.normal(0, 0.8, (N, 2))
+        self.P1 = self.P0 + np.column_stack([lat * 0.6, up])
+        ang = rng.uniform(0, 2 * np.pi, N)
+        rad = rng.uniform(0.8, 2.6, N)
+        self.P2 = Fw + np.column_stack([rad * np.cos(ang), rad * np.sin(ang), rng.uniform(1.5, 3.4, N)])
+        self.P3 = Fw + np.column_stack([rng.normal(0, 0.15, (N, 2)), rng.uniform(0.2, 1.4, N)])
+        self.seed = seed
+        self.heat = rng.uniform(0.6, 1.0, N)
+
+    def gains(self, t, nstrokes):
+        """Per-stroke gains (ink, fire, ghost) at time t for a page with nstrokes strokes."""
+        gi = np.ones(nstrokes)
+        gf = np.zeros(nstrokes)
+        gg = np.zeros(nstrokes)
+        for wi, (a, b, xl, xr, base, li) in enumerate(self.words):
+            tk, tl = self.tk[wi], self.lift[wi]
+            if t < tk:
+                continue
+            # the glow rises in the ink, flickers, and flares as the letter lifts
+            e = smooth((t - tk) / 0.25) * (1.0 - smooth((t - tl) / 0.2))
+            fl = 1.0 + 0.25 * math.sin(t * 23.0 + wi * 1.7) + 0.15 * math.sin(t * 41.0 + wi)
+            gf[a:b] = 0.55 * e * fl + 0.9 * math.exp(-((t - tl) / 0.08) ** 2)
+            gi[a:b] = 1.0 - smooth((t - tl + 0.05) / 0.2)
+            gg[a:b] = 0.4 * smooth((t - tl) / 0.3)
+        return gi, gf, gg
+
+    def sparks(self, t, dt=0.018):
+        """World positions of the live sparks now and a shutter earlier, their brightness."""
+        tau = (t - self.sp_t0) / self.sp_d
+        live = (tau > 0) & (tau < 1)
+        if not live.any():
+            z = np.zeros((0, 3))
+            return z, z, np.zeros(0), np.zeros(0)
+
+        def at(tt):
+            s = np.clip(tt, 0, 1)[:, None]
+            a = s ** 1.25
+            b = 1 - a
+            P = (b ** 3) * self.P0 + 3 * (b ** 2) * a * self.P1 + 3 * b * (a ** 2) * self.P2 + (a ** 3) * self.P3
+            # curl: a little swirl that grows then settles
+            w = np.sin(np.pi * s) * 0.35
+            ph = self.sp_d[:, None] * 7.0
+            P = P + w * np.column_stack([np.sin(tt * 9.0 + ph[:, 0]), np.cos(tt * 8.0 + ph[:, 0] * 1.3), 0 * tt])
+            return P
+        Pn = at(tau)[live]
+        Pp = at(tau - dt / self.sp_d)[live]
+        tl = tau[live]
+        br = self.heat[live] * np.clip(tl / 0.08, 0, 1) * (1.0 - smooth_arr((tl - 0.8) / 0.2))
+        temp = 0.78 - 0.3 * tl
+        return Pn, Pp, br, temp
+
+    def flame_h(self, t):
+        """The flame's height (cm): fed by the arriving sparks."""
+        arr = np.sum(t > self.sp_t0 + 0.85 * self.sp_d) / max(len(self.sp_t0), 1)
+        k = smooth((t - 1.0) / 0.6)
+        return (0.3 + 3.2 * arr ** 0.6) * k
+
+
+def smooth_arr(x):
+    x = np.clip(x, 0, 1)
+    return x * x * (3 - 2 * x)
+
+
+@njit(cache=True, parallel=True)
+def streaks(img, x0, y0, x1, y1, r, g, b, sig):
+    """Additive anti-aliased streaks (a spark's travel during the shutter), Gaussian across, per row band."""
+    H, W = img.shape[0], img.shape[1]
+    nb = 64
+    band = (H + nb - 1) // nb
+    for bnd in prange(nb):
+        r0 = bnd * band
+        r1 = min(H, r0 + band)
+        for k in range(len(x0)):
+            s = sig[k]
+            m = 3.0 * s + 1.0
+            if max(y0[k], y1[k]) + m < r0 or min(y0[k], y1[k]) - m > r1:
+                continue
+            xa = int(max(0, math.floor(min(x0[k], x1[k]) - m)))
+            xb = int(min(W - 1, math.ceil(max(x0[k], x1[k]) + m)))
+            ya = int(max(r0, math.floor(min(y0[k], y1[k]) - m)))
+            yb = int(min(r1 - 1, math.ceil(max(y0[k], y1[k]) + m)))
+            dx = x1[k] - x0[k]
+            dy = y1[k] - y0[k]
+            L2 = dx * dx + dy * dy
+            L = math.sqrt(L2) + 1e-6
+            norm = 1.0 / (1.0 + L / (2.5 * s))          # energy spread along a longer streak
+            for i in range(ya, yb + 1):
+                for j in range(xa, xb + 1):
+                    px = j + 0.5 - x0[k]
+                    py = i + 0.5 - y0[k]
+                    t = 0.0
+                    if L2 > 1e-9:
+                        t = min(max((px * dx + py * dy) / L2, 0.0), 1.0)
+                    qx = px - t * dx
+                    qy = py - t * dy
+                    w = math.exp(-(qx * qx + qy * qy) / (2 * s * s)) * norm * (0.4 + 0.6 * t)
+                    img[i, j, 0] += w * r[k]
+                    img[i, j, 1] += w * g[k]
+                    img[i, j, 2] += w * b[k]
+
+
+def fire_layer(cam, x1, t, W, H):
+    """Sparks and the flame as an additive HDR layer, plus the flame's light (for the page) and its screen base."""
+    img = np.zeros((H, W, 3), np.float32)
+    Pn, Pp, br, temp = x1.sparks(t)
+    if len(Pn):
+        a, za = cam.project(Pn)
+        b, zb = cam.project(Pp)
+        col = look.blackbody(np.clip(temp, 0, 1)) * (br * 4.0)[:, None]
+        sig = np.clip(0.55 * cam.F / za * 0.012, 0.6, 2.2)
+        streaks(img, b[:, 0].astype(np.float64), b[:, 1].astype(np.float64), a[:, 0].astype(np.float64),
+                a[:, 1].astype(np.float64), col[:, 0].astype(np.float64), col[:, 1].astype(np.float64),
+                col[:, 2].astype(np.float64), sig.astype(np.float64))
+    h = x1.flame_h(t)
+    xl = None
+    if h > 0.02:
+        base = x1.Fw + np.array([0, 0, 0.02])
+        top = base + np.array([0, 0, h])
+        (bx, by), zb_ = cam.project(base)
+        (tx, ty), _ = cam.project(top)
+        hp = math.hypot(tx - bx, ty - by)
+        ux, uy = (tx - bx) / max(hp, 1e-6), (ty - by) / max(hp, 1e-6)
+        fr = t * FPS
+        for k, (dxk, sc, wd, g) in enumerate(((0.0, 1.0, 1.0, 1.0), (-0.18, 0.72, 0.8, 0.7), (0.2, 0.62, 0.8, 0.6))):
+            ox = dxk * h * 0.5
+            bb, _ = cam.project(base + np.array([ox, 0, 0]))
+            FIRE.flame(img, float(bb[0]), float(bb[1]), float(hp * sc), float(ux), float(uy), float(fr * 1.3 + 11 * k),
+                       int(7 + 13 * k), float(1.6 * g), float(wd))
+        pw = 1.6 * h * (1.0 + 0.12 * math.sin(t * 17.0) + 0.08 * math.sin(t * 29.0))
+        xl = np.array([[base[0], base[1], base[2] + 0.6 * h, pw * 1.0, pw * 0.5, pw * 0.16]])
+    return img, xl
+
+
+# ================================================================== shots ===
+
+class Shot:
+    """A book shot: geometry, pages and cameras, rendered to (rgb premultiplied + fire, alpha)."""
+
+    def __init__(self, name, W=1920, H=804):
+        self.name, self.W, self.H = name, W, H
+        self.x1 = None
+        self.burnR = None
+        self.plate_col = np.array([0.0, 0.0, 0.0])
+        if name == 'set':                  # P1 prologue: the last written spread
+            self.book = B.Book(TL=2.6, TR=1.4, seed=3)
+            L, R, self.yl = leaves_last()
+            self.pL, self.pR = Page(L, 70), Page(R, 70)
+            self.light = B.Light((-55, 55, 38), (1.0, 0.66, 0.36), power=2.2, radius=9)
+        elif name in ('mountain', 'x1'):
+            self.book = B.Book(TL=0.6, TR=2.8, seed=5)
+            L, R, words, self.mt = mountain_leaves()
+            self.pL, self.pR = Page(L, 40), Page(R, 110)
+            self.light = B.Light((-50, 48, 36), (1.0, 0.66, 0.36), power=2.2, radius=9)
+            if name == 'x1':
+                F = (10.1, 19.2)
+                self.x1 = LettersToFire(self.book, words, F)
+                self.burnR = BURN.params(F, t_start=3.5, speed=1.6, p=1.75, amp=0.4, freq=0.35, seed=4,
+                                         brown=2.2, char=0.25, edge=0.07, lead=1.2)
+        elif name == 'deep':
+            self.book = B.Book(TL=1.6, TR=2.2, seed=9)
+            self.deep = PG.Deep()
+            R = self.deep.build('ink', 0.0, 8.0)
+            L = Strokes()
+            PG.text_page(L, 31, lines=38, box=(3.0, 2.9, 16.8, 26.4))
+            self.pL, self.pR = Page(L, 40), Page(R, 110)
+            self.light = B.Light((-50, 48, 36), (1.0, 0.66, 0.36), power=2.2, radius=9)
+
+    def camera(self, t, key=None):
+        W, H = self.W, self.H
+        bk = self.book
+        if self.name == 'set':
+            keys = {
+                'wide': ((-2.0, -58.0, 44.0), (0.5, 1.0, 1.0), 40.0, None, 0.0),
+                'drift': ((-12.0, -17.0, 13.0), (-10.0, 3.0, 2.0), 30.0, None, 5.0),
+                'sheaf': ((17.0, -24.0, 17.0), (11.5, -3.0, 1.5), 34.0, None, 4.0),
+            }
+            pos, tgt, fov, foc, k = keys[key or 'wide']
+            cam = B.Cam(pos, tgt, fov, W, H)
+            cam.dof_k = k
+            return cam
+        if self.name in ('mountain', 'x1'):
+            fx, fy = self.mt.ring
+            if self.name == 'mountain' or key == 'plate':
+                tgt = bk.page_to_world('R', np.array([9.8]), np.array([8.2]))[0]
+                pos = tgt + np.array([-0.6, -17.5, 16.0])
+                cam = B.Cam(pos, tgt, 38.0, W, H)
+                cam.dof_k = 2.0
+                return cam
+            # x1: from the caption band down to the text, pushing in slowly toward the flame
+            F = self.x1.Fw
+            a = smooth(t / 6.5)
+            tgt = F + np.array([0.0, 1.2 - 0.9 * a, 0.0])
+            pos = tgt + lerp((-0.5, -16.5, 17.0), (-0.3, -12.0, 12.5), a)
+            cam = B.Cam(pos, tgt, 40.0, W, H)
+            cam.dof_k = 3.0
+            return cam
+        if self.name == 'deep':
+            v = 4.0 if key is None else key
+            tgt = bk.page_to_world('R', np.array([9.6]), np.array([v]))[0]
+            pos = tgt + np.array([-0.4, -13.5, 13.0])
+            cam = B.Cam(pos, tgt, 40.0, W, H)
+            cam.dof_k = 2.5
+            return cam
+
+    def render(self, t, key=None, draw_t=1e9, plate=None):
+        cam = self.camera(t, key)
+        gains = None
+        if self.x1 is not None:
+            gains = self.x1.gains(t, len(self.pR.S))
+        tL = self.pL.texture(draw_t)
+        tR = self.pR.texture(draw_t, gains)
+        fire, xl = (None, None)
+        if self.x1 is not None:
+            fire, xl = fire_layer(cam, self.x1, t, self.W, self.H)
+        fl = B.flicker(t, 3, 0.09)
+        L = B.Light(self.light.pos + np.array([1.5 * math.sin(t * 1.3), 0.8 * math.sin(t * 0.9), 0.5 * math.sin(t * 2.1)]),
+                    self.light.col / np.max(self.light.col) * np.max(self.light.col) * fl, 1.0, self.light.radius)
+        L.col = self.light.col * fl
+        hdr, alpha, G = B.render(self.book, cam, L, tL, tR, t, burnR=self.burnR, xlights=xl)
+        hdr = B.dof(hdr, G[..., 1].astype(np.float32), cam, cam.dof_k * self.W / 1920.0)
+        if fire is not None:
+            hdr = hdr + fire
+        return hdr, alpha, cam
+
+
+def comp(hdr, alpha, plate=None):
+    """Stand-in comp: the book layer (premultiplied + fire) over the next shot's plate."""
+    if plate is None:
+        return hdr
+    return hdr + (1.0 - alpha)[..., None] * plate
+
+
+def finish(hdr, exposure=1.35):
+    return look.finish(hdr, exposure=exposure, bloom_strength=0.06, bloom_threshold=1.2, vignette_amount=0.32)
+
+
+def save(path, srgb, q=92):
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    out = (np.clip(srgb, 0, 1)[..., ::-1] * 255 + 0.5).astype(np.uint8)
+    if path.endswith('.jpg'):
+        cv2.imwrite(path, out, [cv2.IMWRITE_JPEG_QUALITY, q])
+    else:
+        cv2.imwrite(path, out)
+
+
+def ember_plate(W, H, cam, x1, t):
+    """A stand-in for the next shot (the fire in the dark): warm black with the flame's glow."""
+    p = np.zeros((H, W, 3), np.float32)
+    (bx, by), _ = cam.project(x1.Fw)
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    d = np.hypot(xx - bx, (yy - by) * 1.2) / W
+    g = np.exp(-d / 0.22)[..., None]
+    return p + g * np.array([0.05, 0.018, 0.004], np.float32) + np.array([0.004, 0.003, 0.0025], np.float32)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('what')
+    ap.add_argument('--frames', default='')
+    ap.add_argument('--out', default=os.path.join(ROOT, 'review', 'v3', 'map_tests'))
+    ap.add_argument('--scale', type=float, default=1.0)
+    ap.add_argument('--key', default=None)
+    a = ap.parse_args()
+    W, H = int(1920 * a.scale), int(804 * a.scale)
+    if a.what == 'x1':
+        sh = Shot('x1', W, H)
+        for f in [int(x) for x in a.frames.split(',')]:
+            t0 = time.time()
+            t = f / FPS
+            hdr, alpha, cam = sh.render(t)
+            plate = ember_plate(W, H, cam, sh.x1, t)
+            img = finish(comp(hdr, alpha, plate))
+            save(os.path.join(a.out, f'x1_{f:04d}.jpg'), img)
+            print(f, '%.1fs' % (time.time() - t0), flush=True)
+    else:
+        sh = Shot(a.what, W, H)
+        for f in [float(x) for x in (a.frames or '0').split(',')]:
+            t0 = time.time()
+            key = a.key
+            if a.what == 'deep' and key is not None:
+                key = float(key)
+            hdr, alpha, cam = sh.render(f, key)
+            save(os.path.join(a.out, f'{a.what}_{a.key or "k"}_{int(f * 100):05d}.jpg'), finish(hdr))
+            print(a.what, a.key, f, '%.1fs' % (time.time() - t0), flush=True)
+
+
+if __name__ == '__main__':
+    main()

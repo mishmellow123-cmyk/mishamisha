@@ -1,3 +1,28 @@
+# MAP-v3 (lane `map`): THE RED BOOK, the four ink pages, the burn-throughs, THE MAP ANSWERS
+
+## STATE (2026-09-27 ~01:12Z, work in progress; read this first)
+* Branch base `b5fd34e` (BIBLE_V3 Revision 1). Plan follows Revision 1: X1a LETTERS TO FIRE (the page's ink letters
+  glow in reading order, lift off as sparks, pour into a flame standing on the paper, whose heat browns and burns the
+  page open onto the next shot) replaces C's glyph spiral/ignition; P3 cut; plenty page without round doors; Havens
+  page shows her bound hand raising the small light; map_C gets THE ROAD.
+* Code (uncommitted, all in `shots/map/`): `pen.py` (strokes drawn on in time, wet ink, broad-nib invented hand with a
+  dip cycle, hatching, stipple), `book.py` (2.5-D red book by a hearth: ray-marched height columns, soft shadows, AO,
+  procedural aged paper, iron-gall ink, gilt, graphite, leather + gilt rolls, DoF), `burn.py` (ragged burn/heal
+  field), `pages.py` (`Mountain`, `Deep` in pencil and ink, timed drawing-on; `text_page`), `redbook.py` (P1 leaves
+  with small mountain/ring/ship drawings, `LettersToFire`, sparks, flame, shots `set`/`mountain`/`x1`/`deep`, CLI).
+  Needs Pillow (`inscription.py` imports PIL): cloud setup must `pip install pillow`.
+* Working now: `python3 redbook.py x1 --frames 30,70,110 --scale 0.5 --out DIR` (letters glow -> sparks -> flame ->
+  burn-through; ~2.4 s/frame at half res after compile) and `python3 redbook.py set --key wide|drift|sheaf`.
+* Look status: X1a mechanics right and promising; the burn hole is too round with a too-wide white rim (needs a
+  ragged, thin hot edge + visible char band); flame a bit pale; exposure ~1.1 for more mood. Mountain ink reads as an
+  engraving (tonal sky, ridges, puffed smoke); Deep reads as dark vaulted halls stacked down a gilt vein (a little
+  repetitive). Book set reads as an open old book; the red binding is too thin to read (enlarge squares/raise
+  leather albedo, done partly) and the table specular sparkled (shadow step capped, fixed?).
+* NEXT: burn edge; stills of the set (wide/drift/sheaf), Mountain + Deep in the book (ink) and pencil flat sheets;
+  8 X1 frames full-res comped over the stand-in plate; review sheets to `review/v3/`; job file(s)
+  `cloud/jobs/map_v3_*.json` (ship jpg; shot-local numbering, bases in NOTES); commit; push `claude/v3-map` and
+  the session branch. No full render launched yet (nothing verified).
+
 # MAP (cut C) — THE WORLD ANSWERS, told on a map
 
 ## Revision 2 (2026-09-26): fire, not fibre — per critic_tone.md §B2 / critic_framing.md m8, m9
