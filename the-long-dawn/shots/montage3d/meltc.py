@@ -101,7 +101,7 @@ def letters(f):
         tw *= 1.0 - 0.35 * _ss((f - B['hit']) / 0.8) * (1.0 - _ss((f - B['hit'] - 1.0) / 2.0))  # the strike jars it
     if B['breath'] <= f:
         tw = 1.0
-    fl = 1.75 * math.exp(-max(0.0, f - (B['flare'] + 0.8)) / 5.5) * _ss((f - (B['flare'] - 1.6)) / 2.4)
+    fl = 1.55 * math.exp(-max(0.0, f - (B['flare'] + 0.8)) / 5.5) * _ss((f - (B['flare'] - 1.6)) / 2.4)
     return (base * tw + fl) * (1.0 - _ss((f - (B['out'] - 0.6)) / 2.1))
 
 
@@ -114,14 +114,14 @@ def hot(f):
     """The metal's own incandescence (blackbody strength): barely there while it lies; a dull red as it slumps
     (mostly at the back, see the shader); molten orange once it runs; up with the white flare."""
     v = 0.012 + 0.10 * _ss((f - B['soft0']) / (B['breath'] - B['soft0']))
-    v += 0.40 * _ss((f - B['out'] - 1.0) / 11.0) + 0.10 * _ss((f - B['merge']) / 20.0)
-    v += 2.2 * _ss((f - B['white0']) / (END - B['white0'])) ** 1.6
+    v += 0.16 * _ss((f - B['out'] - 1.0) / 11.0) + 0.05 * _ss((f - B['merge']) / 20.0)
+    v += 1.6 * _ss((f - B['white0']) / (END - B['white0'])) ** 1.6
     return v
 
 
 def hot_temp(f):
-    return 1180.0 + 180.0 * _ss((f - B['soft0']) / 50.0) + 170.0 * _ss((f - B['out']) / 16.0) + \
-        250.0 * _ss((f - B['white0']) / (END - B['white0']))
+    return 1180.0 + 180.0 * _ss((f - B['soft0']) / 50.0) + 420.0 * _ss((f - B['out']) / 12.0) + \
+        300.0 * _ss((f - B['white0']) / (END - B['white0']))
 
 
 def liquid(f):
@@ -228,10 +228,10 @@ def ring_state(f):
 
 def cam_state(f):
     """Camera: a low macro across the stone, 12 deg up, easing in; the band's front in focus, then the bead."""
-    el = math.radians(12.0)
+    el = math.radians(8.0)
     d = 0.170 - 0.022 * _sm((f - 5364.0) / 72.0) - 0.004 * _ss((f - 5446.0) / 60.0)
     drift = 0.0012 * _ss((f - START) / (END - START))
-    tgt = (drift, -0.0030, 0.0036 + 0.0034 * (1.0 - _sm((f - 5361.0) / 14.0)))
+    tgt = (drift, -0.0030, 0.0050 + 0.0034 * (1.0 - _sm((f - 5361.0) / 14.0)))
     pos = (tgt[0] - 0.0009 * _ss((f - START) / 160.0), tgt[1] - d * math.cos(el), tgt[2] + d * math.sin(el))
     front = (0.0, -R_OUT, 0.0030)
     rb = BEAD_R + BEAD_A * 0.92
@@ -244,14 +244,16 @@ def cam_state(f):
 # ======================================================================= venv side (numpy) ===
 
 def flame_specs():
+    """The hearth's flames (the film's bonfire sprites), rooted in the burning kindling 7-17 cm behind the band:
+    at this distance their tongues, not their roots, fill the upper frame."""
     if PREVIEW:
         return []
     import fireparts as FP
-    return [FP.FlameSpec('wall', Hf=0.16, Rb=0.07, seed=43, I=26.0, tongues=7, lean=0.0, ppm=1400, env=False),
-            FP.FlameSpec('wall2', Hf=0.13, Rb=0.06, seed=71, I=26.0, tongues=6, lean=0.004, ppm=1400, env=False),
-            FP.FlameSpec('lick', Hf=0.060, Rb=0.020, seed=19, I=22.0, tongues=5, lean=0.003, ppm=3600, env=False),
-            FP.FlameSpec('lick2', Hf=0.050, Rb=0.017, seed=5, I=22.0, tongues=4, lean=-0.004, ppm=3600,
-                         env=False)]
+    kw = dict(I=24.0, env=False)
+    return [FP.FlameSpec('kA', Hf=0.075, Rb=0.022, seed=43, tongues=5, lean=0.002, ppm=3400, **kw),
+            FP.FlameSpec('kB', Hf=0.105, Rb=0.030, seed=71, tongues=6, lean=-0.003, ppm=3000, **kw),
+            FP.FlameSpec('kC', Hf=0.140, Rb=0.042, seed=19, tongues=7, lean=0.003, ppm=2600, **kw),
+            FP.FlameSpec('kD', Hf=0.050, Rb=0.014, seed=5, tongues=4, lean=-0.001, ppm=4000, **kw)]
 
 
 def timing(frames):
@@ -683,16 +685,20 @@ def gold_melt(new_material, R, fr):
         nb.link(nb.comb(nb.sub(1.0, u_) if flip else u_, v_, 0.0), tx.inputs['Vector'])
         c = nb.mul(tx.outputs['Color'], nb.sstep(0.25, 0.6, nb.attr(key).outputs['Fac']))
         cov = c if cov is None else nb.add(cov, c)
-    col = nb.mixcol(_keyv(nb, 'flarecol', flare_col, fr), (1.0, 0.20, 0.025), (1.0, 0.44, 0.075))
+    col = nb.mixcol(_keyv(nb, 'flarecol', flare_col, fr), (1.0, 0.19, 0.022), (1.0, 0.40, 0.06))
     lk = _keyv(nb, 'letters', letters, fr)
-    shader = nb.addshader(shader, nb.emission(col, nb.mul(nb.mul(cov, lk), 2.6)))
+    shader = nb.addshader(shader, nb.emission(col, nb.mul(nb.mul(cov, lk), 1.9)))
     # the metal's own heat: weighted to the back while solid (strip u -> angle round the band), even once liquid
     ang = nb.mul(u_, 2.0 * math.pi)
     back = nb.madd(nb.math('COSINE', nb.sub(ang, TH_B)), 0.5, 0.5)
     wgt = nb.mixf(liq, nb.madd(nb.pw(back, 2.0), 0.9, 0.1), 1.0)
     bb = nb.n('ShaderNodeBlackbody')
     nb.link(_keyv(nb, 'temp', hot_temp, fr), bb.inputs['Temperature'])
-    hk = nb.mul(_keyv(nb, 'hot', hot, fr), wgt)
+    # a metal glows where it faces you and mirrors at grazing angles (emissivity = 1 - reflectance)
+    lw = nb.n('ShaderNodeLayerWeight')
+    lw.inputs['Blend'].default_value = 0.5
+    face = nb.pw(nb.sub(1.0, lw.outputs['Facing']), 1.6)
+    hk = nb.mul(nb.mul(_keyv(nb, 'hot', hot, fr), wgt), face)
     shader = nb.addshader(shader, nb.emission(bb.outputs['Color'], hk))
     nb.output(surface=shader)
     _aov(nb, 'ringmask', 1.0)
@@ -802,13 +808,14 @@ def _stone(C, new_material):
     grain = nb.voronoi(P, scale=1400.0, feature='F1')
     gr, _, _ = nb.sep(grain.outputs['Color'])
     soot = nb.noise(P, scale=55.0, detail=5.0, rough=0.6)
-    ash = nb.sstep(0.62, 0.74, nb.noise(P, scale=160.0, detail=6.0, rough=0.72).outputs['Fac'])
+    ash = nb.sstep(0.56, 0.78, nb.noise(P, scale=70.0, detail=7.0, rough=0.75).outputs['Fac'])
     fleck = nb.sstep(0.93, 0.97, nb.noise(P, scale=900.0, detail=2.0, rough=0.5).outputs['Fac'])
-    col = nb.mixcol(nb.sstep(0.80, 0.92, gr), (0.034, 0.031, 0.029), (0.085, 0.078, 0.072))
-    col = nb.mixcol(nb.mul(nb.sstep(0.35, 0.7, soot.outputs['Fac']), 0.85), col, (0.010, 0.009, 0.008))
-    col = nb.mixcol(nb.mul(ash, 0.55), col, (0.21, 0.20, 0.19))
-    col = nb.mixcol(nb.mul(fleck, 0.7), col, (0.30, 0.29, 0.27))
-    bs = nb.principled(Base_Color=col, Roughness=nb.madd(soot.outputs['Fac'], 0.25, 0.55))
+    col = nb.mixcol(nb.mul(nb.sstep(0.80, 0.95, gr), 0.5), (0.026, 0.024, 0.022), (0.045, 0.041, 0.038))
+    col = nb.mixcol(nb.mul(nb.sstep(0.30, 0.72, soot.outputs['Fac']), 0.9), col, (0.006, 0.005, 0.0045))
+    col = nb.mixcol(nb.mul(ash, 0.55), col, (0.11, 0.105, 0.10))
+    col = nb.mixcol(nb.mul(fleck, 0.15), col, (0.16, 0.15, 0.14))
+    bs = nb.principled(Base_Color=col, Roughness=nb.madd(soot.outputs['Fac'], 0.08, 0.88))
+    bs.inputs['Specular IOR Level'].default_value = 0.10
     h = nb.add(nb.mul(grain.outputs['Distance'], 0.6), nb.mul(ash, 0.4))
     nb.link(nb.bump(h, 0.35, 0.00018), bs.inputs['Normal'])
     nb.output(surface=bs)
@@ -832,7 +839,8 @@ def _coals(C, new_material, fr):
     bb = nb.n('ShaderNodeBlackbody')
     bb.inputs['Temperature'].default_value = 1350.0
     gk = _keyv(nb, 'coalk', fire, fr)
-    em = nb.emission(bb.outputs['Color'], nb.mul(nb.mul(nb.add(glow, nb.mul(skin.outputs['Fac'], 0.25)), gk), 3.0))
+    em = nb.emission(bb.outputs['Color'], nb.mul(nb.mul(nb.add(nb.mul(glow, 0.8), nb.mul(skin.outputs['Fac'], 0.05)),
+                                                        gk), 1.2))
     bs = nb.principled(Base_Color=(0.05, 0.045, 0.04), Roughness=0.9)
     nb.output(surface=nb.addshader(bs, em))
     spots = [(-0.034, 0.018), (-0.046, 0.052), (0.038, 0.012), (0.052, 0.046), (-0.018, 0.070), (0.020, 0.080),
@@ -931,19 +939,152 @@ def _embers(C, new_material, fr):
     print(f'embers: {n} in this job', flush=True)
 
 
-def _flames(C, T, cam, fr):
-    """The white heart: tongues on camera-facing additive cards behind and beside the band (the gold mirrors them;
-    they light nothing diffusely: the lamps do that), and two soft licks at the frame's lower corners."""
+def _flame_mat(new_material, name, W, H, lam, seed, gain, fr, rise=1.0, glossy_only=False):
+    """A sheet of flame tongues W x H metres (u across, v up). A noise field along the sheet (swaying more as it
+    rises, drifting, flickering) is cut by a threshold that climbs with height, so every tongue is wide at its root
+    and tapers to a torn point, at its own irregular spacing and height; wisps are torn off the edges; the roots
+    glow in patches (the white heart), never a line. Blackbody colour: yellow-white at the roots, orange at the
+    tips. Additive (emission + transparent)."""
+    m, nb = new_material(name)
+    uvn = nb.n('ShaderNodeUVMap')
+    uvn.uv_map = 'UVMap'
+    u_, v_, _ = nb.sep(uvn.outputs['UV'])
+    t = _keyv(nb, name + '_t', lambda f: f / FPS, fr)
+    x = nb.mul(nb.sub(u_, 0.5), W)
+    z = nb.mul(v_, H)
+    zn = nb.clamp01(nb.div(z, H))
+    k1 = 1.6 / lam
+    n1 = nb.noise(nb.comb(nb.mul(x, k1), nb.sub(nb.mul(z, k1 * 0.7), nb.mul(t, rise * k1 * 0.09)), seed),
+                  scale=1.0, detail=3.0, rough=0.5, dims='4D', w=nb.mul(t, 0.7))
+    sway = nb.mul(nb.mul(nb.sub(n1.outputs['Fac'], 0.5), 1.4 * lam), nb.pw(zn, 0.8))
+    xs = nb.add(x, sway)
+    # the tongue field: irregular columns (1-D noise across, slowly changing), sharpened
+    c = nb.noise(nb.comb(nb.div(xs, lam), nb.mul(t, 0.35), seed + 3.0), scale=1.0, detail=2.0, rough=0.45,
+                 dims='3D')
+    cf = nb.sstep(0.28, 0.78, c.outputs['Fac'])
+    # each tongue's reach flickers
+    nh = nb.noise(nb.comb(nb.div(xs, 1.7 * lam), 0.0, seed + 5.0), scale=1.0, detail=1.0, dims='4D',
+                  w=nb.mul(t, 1.4))
+    reach = nb.madd(nh.outputs['Fac'], 0.9, 0.35)
+    # threshold climbs with height: wide roots, pointed tips
+    thr = nb.div(zn, reach)
+    tongue = nb.sstep(nb.mul(thr, 0.92), nb.add(nb.mul(thr, 0.92), 0.22), cf)
+    k2 = 6.0 / lam
+    n2 = nb.noise(nb.comb(nb.mul(x, k2), nb.sub(nb.mul(z, k2 * 0.55), nb.mul(t, rise * k2 * 0.14)), seed + 7.0),
+                  scale=1.0, detail=3.0, rough=0.6, dims='4D', w=nb.mul(t, 1.6))
+    wisp = nb.sstep(0.28, 0.70, n2.outputs['Fac'])
+    dens = nb.mul(tongue, nb.madd(wisp, 0.55, 0.45))
+    roots = nb.mul(nb.sub(1.0, nb.sstep(0.0, 0.14, zn)), nb.sstep(0.35, 0.75, n1.outputs['Fac']))
+    dens = nb.mx(dens, nb.mul(roots, 0.8))
+    dens = nb.mul(dens, nb.sstep(-0.004, 0.002, z))
+    heat = nb.clamp01(nb.sub(1.0, nb.mul(zn, 1.25)))
+    bb = nb.n('ShaderNodeBlackbody')
+    nb.link(nb.madd(heat, 950.0, 1250.0), bb.inputs['Temperature'])
+    hotk = nb.madd(heat, 0.8, 0.2)
+    k = _keyv(nb, name + '_k', fire, fr)
+    em = nb.emission(bb.outputs['Color'], nb.mul(nb.mul(nb.mul(dens, hotk), k), gain))
+    tr = nb.n('ShaderNodeBsdfTransparent')
+    nb.output(surface=nb.addshader(tr, em))
+    try:
+        m.emission_sampling = 'NONE'
+    except Exception:
+        pass
+    return m
+
+
+def _flame_sheet(C, new_material, name, center, W, H, lam, seed, gain, fr, rise=1.0, yaw=0.0):
+    import bpy
+    x0, y0, z0 = center
+    cy, sy = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+    P = []
+    for (dx, dz) in ((-0.5 * W, -0.006), (0.5 * W, -0.006), (0.5 * W, H), (-0.5 * W, H)):
+        P.append((x0 + dx * cy, y0 + dx * sy, z0 + dz))
+    m = _flame_mat(new_material, name, W, H + 0.006, lam, seed, gain, fr, rise)
+    ob = C.mesh_obj(name, P, [(0, 1, 2, 3)], mat=m, smooth=False)
+    uv = ob.data.uv_layers.new(name='UVMap')
+    for li, (uu, vv) in enumerate([(0, 0), (1, 0), (1, 1), (0, 1)]):
+        uv.data[li].uv = (uu, vv)
+    for attr in ('visible_diffuse', 'visible_shadow', 'visible_volume_scatter', 'visible_transmission'):
+        try:
+            setattr(ob, attr, False)
+        except Exception:
+            pass
+    return ob
+
+
+def _stick(r, length, seed, nu=14, nl=24):
+    """A charred stick along +x (radius r, length), a hair crooked and knotty, closed ends."""
+    from mathutils import Vector, noise
+    V, F = [], []
+    for j in range(nl + 1):
+        x = -0.5 * length + length * j / nl
+        bend = 0.08 * r * noise.noise(Vector((x * 30.0, seed, 0.0)))
+        for i in range(nu):
+            a = 2 * math.pi * i / nu
+            k = 1.0 + 0.12 * noise.noise(Vector((x * 90.0, a * 1.3, seed))) - 0.1 * max(0.0, math.cos(a - 1.2)) ** 3
+            V.append((x, bend + r * k * math.cos(a), r * k * math.sin(a)))
+    for j in range(nl):
+        for i in range(nu):
+            i2 = (i + 1) % nu
+            F.append((j * nu + i, j * nu + i2, (j + 1) * nu + i2, (j + 1) * nu + i))
+    c0, c1 = len(V), len(V) + 1
+    V += [(-0.5 * length, 0.0, 0.0), (0.5 * length, 0.0, 0.0)]
+    for i in range(nu):
+        i2 = (i + 1) % nu
+        F.append((c0, i2, i))
+        F.append((c1, nl * nu + i, nl * nu + i2))
+    return V, F
+
+
+def _char_mat(new_material, fr):
+    """Burning kindling: black char in squares and cracks, the cracks and the underside glowing, pale ash at the
+    edges of the cracks."""
+    m, nb = new_material('char')
+    P = nb.texco().outputs['Object']
+    vo = nb.voronoi(nb.mul(P, (1.0, 2.2, 2.2)), scale=520.0, feature='DISTANCE_TO_EDGE')
+    crack = nb.sub(1.0, nb.sstep(0.0, 0.07, vo.outputs['Distance']))
+    under = nb.sstep(0.2, -0.6, nb.sep(nb.geo().outputs['Normal'])[2])
+    hotn = nb.noise(P, scale=160.0, detail=3.0)
+    glow = nb.mul(nb.mx(crack, nb.mul(under, 0.6)), nb.sstep(0.35, 0.7, hotn.outputs['Fac']))
+    bb = nb.n('ShaderNodeBlackbody')
+    bb.inputs['Temperature'].default_value = 1400.0
+    em = nb.emission(bb.outputs['Color'], nb.mul(nb.mul(glow, _keyv(nb, 'chark', fire, fr)), 4.0))
+    ash = nb.mul(nb.sstep(0.0, 0.10, vo.outputs['Distance']), nb.sub(1.0, nb.sstep(0.10, 0.2, vo.outputs['Distance'])))
+    col = nb.mixcol(nb.mul(ash, 0.5), (0.018, 0.016, 0.015), (0.16, 0.15, 0.14))
+    bs = nb.principled(Base_Color=col, Roughness=0.92)
+    bs.inputs['Specular IOR Level'].default_value = 0.2
+    nb.link(nb.bump(vo.outputs['Distance'], 0.5, 0.0006), bs.inputs['Normal'])
+    nb.output(surface=nb.addshader(bs, em))
+    return m
+
+
+def _flames(C, new_material, T, cam, fr):
+    """The white heart: the hearth's kindling burning in a loose arc round the flat stone, 7-17 cm behind the band,
+    its flames (the film's bonfire tongues) rising and filling the upper frame; the gold mirrors them. The cards light
+    nothing diffusely (the lamps do that)."""
+    import random
+
+    import bpy
     from kit import fire as FK
     from mathutils import Vector
-    cards = [('wall', (0.0, 0.085, -0.004), 0.60), ('wall2', (-0.055, 0.060, -0.003), 0.50),
-             ('wall2', (0.060, 0.070, -0.003), 0.50), ('lick', (-0.020, 0.032, 0.0), 0.55),
-             ('lick2', (0.024, 0.036, 0.0), 0.55), ('lick', (0.004, 0.050, 0.0), 0.45),
-             ('lick2', (-0.045, 0.024, 0.0), 0.45), ('lick', (0.050, 0.026, 0.0), 0.45)]
-    obs = []
+    m = _char_mat(new_material, fr)
+    rng = random.Random(7)
+    sticks = [(-0.045, 0.085, 0.0065, 0.11, 18.0), (0.035, 0.095, 0.0075, 0.12, -24.0),
+              (0.000, 0.125, 0.0090, 0.14, 6.0), (-0.090, 0.110, 0.0070, 0.10, 52.0),
+              (0.085, 0.120, 0.0070, 0.11, -48.0), (-0.020, 0.160, 0.010, 0.15, -12.0),
+              (0.060, 0.170, 0.009, 0.13, 20.0), (0.012, 0.072, 0.0045, 0.06, 70.0)]
+    for k, (x, y, r, L, yaw) in enumerate(sticks):
+        V, F = _stick(r, L, 3.0 + k * 1.7)
+        ob = C.mesh_obj(f'stick{k}', V, F, mat=m)
+        ob.location = (x, y, r * 0.85 + (0.004 if k in (5, 6) else 0.0))
+        ob.rotation_euler = (0.0, math.radians(rng.uniform(-3, 3)), math.radians(yaw))
+    cards = [('kD', (0.012, 0.074, 0.004), 0.20), ('kA', (-0.042, 0.088, 0.006), 0.22),
+             ('kA', (0.036, 0.098, 0.007), 0.22), ('kB', (-0.004, 0.128, 0.008), 0.20),
+             ('kB', (-0.088, 0.114, 0.006), 0.16), ('kB', (0.084, 0.124, 0.006), 0.16),
+             ('kC', (-0.020, 0.165, 0.012), 0.15), ('kC', (0.060, 0.172, 0.011), 0.14)]
     for i, (name, pos, gain) in enumerate(cards):
         sp = T['sprites'][name]
-        fc = FK.flame_card(f'{name}{i}', Vector(pos), sp['card'], sp['first'], cam, gain=gain, fog=False)
+        fc = FK.flame_card(f'{name}_{i}', Vector(pos), sp['card'], sp['first'], cam, gain=gain, fog=False)
         for nd in fc.data.materials[0].node_tree.nodes:
             if nd.type == 'EMISSION':
                 base = nd.inputs['Strength'].default_value
@@ -958,8 +1099,47 @@ def _flames(C, T, cam, fr):
                 setattr(fc, attr, False)
             except Exception:
                 pass
-        obs.append(fc)
-    return obs
+
+
+def _mirrors(C, new_material, fr):
+    """What the gold mirrors (reflections only; the lens and the stone never see them): the fire's canopy overhead,
+    brightest over the heart behind the band, fading toward the lens; and a dim warm bounce behind the lens, so the
+    band's front stays dark gold (the letters read) but still reads as gold."""
+    m, nb = new_material('canopy')
+    P = nb.texco().outputs['Generated']
+    gx, gy, _ = nb.sep(P)
+    k = nb.mul(nb.sstep(0.05, 0.85, gy), nb.sub(1.0, nb.mul(nb.pw(nb.math('ABSOLUTE', nb.sub(gx, 0.5)), 2.0), 2.4)))
+    n = nb.noise(nb.comb(nb.mul(gx, 5.0), nb.mul(gy, 3.0), _keyv(nb, 'cant', lambda f: f * 0.09, fr)), scale=1.0,
+                 detail=3.0, dims='3D')
+    k = nb.mul(k, nb.madd(n.outputs['Fac'], 1.2, 0.4))
+    col = nb.mixcol(nb.sstep(0.3, 1.0, gy), (1.0, 0.50, 0.17), (1.0, 0.74, 0.42))
+    nb.output(surface=nb.emission(col, nb.mul(nb.mul(nb.clamp01(k), _keyv(nb, 'canopyk', fire, fr)), 1.6)))
+    cp = C.mesh_obj('canopy', [(-0.22, -0.06, 0.09), (0.22, -0.06, 0.09), (0.22, 0.24, 0.13), (-0.22, 0.24, 0.13)],
+                    [(0, 3, 2, 1)], mat=m, smooth=False)
+    def bounce(f):
+        return fire(f) * (0.10 + 0.55 * _ss((f - B['out'] - 2.0) / 10.0))
+    m2 = _flame_mat(new_material, 'bounce', 0.60, 0.22, 0.06, 41.0, 1.0, fr, 1.0)
+    for nd in m2.node_tree.nodes:                                 # re-key its strength: bounce(f), not fire(f)
+        if nd.type == 'VALUE' and nd.name == 'bounce_k':
+            for f in fr:
+                nd.outputs[0].default_value = bounce(f)
+                nd.outputs[0].keyframe_insert('default_value', frame=f)
+    bo = C.mesh_obj('bounce', [(-0.30, -0.36, -0.02), (0.30, -0.36, -0.02), (0.30, -0.36, 0.20),
+                               (-0.30, -0.36, 0.20)], [(0, 1, 2, 3)], mat=m2, smooth=False)
+    uvb = bo.data.uv_layers.new(name='UVMap')
+    for li, (uu, vv) in enumerate([(0, 0), (1, 0), (1, 1), (0, 1)]):
+        uvb.data[li].uv = (uu, vv)
+    for ob in (cp, bo):
+        for attr in ('visible_camera', 'visible_diffuse', 'visible_shadow', 'visible_transmission',
+                     'visible_volume_scatter'):
+            try:
+                setattr(ob, attr, False)
+            except Exception:
+                pass
+    try:
+        m.emission_sampling = 'NONE'
+    except Exception:
+        pass
 
 
 def _lights(C, fr):
@@ -978,17 +1158,18 @@ def _lights(C, fr):
         ob = C.link_obj(bpy.data.objects.new(name, ld))
         ob.location = pos
         ob.rotation_euler = Euler(tuple(math.radians(a) for a in rot))
-        try:
-            ob.visible_camera = False
-        except Exception:
-            pass
+        for attr in ('visible_camera', 'visible_glossy'):
+            try:
+                setattr(ob, attr, False)
+            except Exception:
+                pass
         L.append((ld, w))
         return ob
 
-    area('heart', (0.0, 0.075, 0.055), (-128.0, 0.0, 0.0), 0.10, (1.0, 0.66, 0.36), 2.6)
-    area('crown', (0.0, 0.020, 0.110), (0.0, 0.0, 0.0), 0.12, (1.0, 0.60, 0.30), 1.1)
-    area('bedL', (-0.075, 0.020, 0.008), (0.0, -84.0, 0.0), 0.05, (1.0, 0.42, 0.12), 0.35)
-    area('bedR', (0.075, 0.030, 0.008), (0.0, 84.0, 0.0), 0.05, (1.0, 0.42, 0.12), 0.35)
+    area('heart', (0.0, 0.075, 0.055), (-128.0, 0.0, 0.0), 0.10, (1.0, 0.62, 0.32), 0.85)
+    area('crown', (0.0, 0.020, 0.110), (0.0, 0.0, 0.0), 0.12, (1.0, 0.58, 0.28), 0.22)
+    area('bedL', (-0.075, 0.020, 0.008), (0.0, -84.0, 0.0), 0.05, (1.0, 0.40, 0.10), 0.12)
+    area('bedR', (0.075, 0.030, 0.008), (0.0, 84.0, 0.0), 0.05, (1.0, 0.40, 0.10), 0.12)
     for f in fr:
         k = fire(f)
         for ld, w in L:
@@ -1072,9 +1253,9 @@ def build(job):
     _band(C, g, R, T, fr)
     _stone(C, new_material)
     if not PREVIEW:
-        _coals(C, new_material, fr)
         _embers(C, new_material, fr)
-        _flames(C, T, cam, fr)
+        _mirrors(C, new_material, fr)
+        _flames(C, new_material, T, cam, fr)
         _lights(C, fr)
     else:
         for ob in bpy.data.objects:
