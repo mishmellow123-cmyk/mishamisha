@@ -138,6 +138,10 @@ def glow_pass(img, dist, kill, C, GP, SKL0, SKLD, SKL, haze_k, haze_d):
     pixels, 0 elsewhere."""
     H, W = img.shape[0], img.shape[1]
     f, cx, cyy = C[7], C[8], C[9]
+    # the haze sees the smooth arch only: under the horizon every pixel shares el = 0, so the shadow rays (GP[11])
+    # would run straight down each column as hard vertical slabs over the far terrain (RUN-A-L's find in A2)
+    GPh = GP.copy()
+    GPh[11] = 0.0
     for j in prange(H):
         for i in range(W):
             xo = i + 0.5 - cx
@@ -158,7 +162,7 @@ def glow_pass(img, dist, kill, C, GP, SKL0, SKLD, SKL, haze_k, haze_d):
                 hz = haze_k * (1.0 - math.exp(-d / haze_d))
                 if hz > 1e-4:
                     # the haze sees the glow at the horizon's elevation (the arch's foot), not the ground's
-                    G = _glow_at(dx, max(dy, 0.0), dz, GP, SKL0, SKLD, SKL)
+                    G = _glow_at(dx, max(dy, 0.0), dz, GPh, SKL0, SKLD, SKL)
                     img[j, i, 0] += G * GP[3] * hz
                     img[j, i, 1] += G * GP[4] * hz
                     img[j, i, 2] += G * GP[5] * hz
