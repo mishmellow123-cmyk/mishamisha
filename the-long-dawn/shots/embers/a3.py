@@ -104,7 +104,7 @@ class A3Sched:
         if t >= T_EDGE and t < T_LIGHT:
             # EMBERS-2: as the ground falls away it settles into the crater's mouth, just above the lip, so the towers
             # lean in over the edge to reach it; at the brink it swells up out of the pit
-            y = -7.0 * float(smootherstep(T_EDGE + 6, T_EDGE + 90, t)) + 5.0 * float(smoothstep(T_BRINK, T_BRINK + 60, t))
+            y = -9.0 * float(smootherstep(T_EDGE + 6, T_EDGE + 90, t)) + 5.0 * float(smoothstep(T_BRINK, T_BRINK + 60, t))
         return np.array([0.0, y, 0.0])
 
     def fire_scale(self, t):
@@ -112,7 +112,10 @@ class A3Sched:
         it stays the brightest thing in the frame once the towers rise round it; it swells again over the edge"""
         if t < T_LIGHT:
             s_ = 1.0 + 1.0 * float(smootherstep(T_PROMISE, T_TOWERS, t))
-            s_ += 0.5 * float(smoothstep(T_EDGE, T_BRINK, t)) + 2.0 * float(smoothstep(T_BRINK, T_WHITE, t))
+            # EMBERS-2: it settles smaller into the crater's mouth as the ground falls away (the bowl and the far
+            # towers must read round it), then swells out of the pit at the brink
+            s_ += (-0.6 * float(smootherstep(T_EDGE + 6, T_EDGE + 70, t)) + 0.3 * float(smoothstep(T_EDGE + 70, T_BRINK, t))
+                   + 2.6 * float(smoothstep(T_BRINK, T_WHITE, t)))
             return s_
         # the calm fire after the turn, gathering into one small heart for the match cut
         return 2.0 * (1.0 - 0.72 * float(smootherstep(T_HEART, T_END - 8, t)))
