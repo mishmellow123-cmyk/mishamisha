@@ -8,7 +8,7 @@ from bar 50 b3 to bar 53 b3. Near and far alternate, so the far answer is heard 
 The camera is a slow, high glider on a long lens. It never overtakes a fire, every fire stays ahead of it, and
 there is always one in frame. It descends and settles behind the seventh fire, the nearest, which catches on bar
 53 b3 beside the one who lit it. A15 R16 THE WATCHERS (RUN-A3) holds from this last position: it imports
-END_CAM, FIRES, CR and light() from here.
+end_cam(), FIRES, CR and light() from here.
 
 Shared night (nighta.py, RUN-A3's kit): the glow, the red under the cloud and the fire recipe are the same in
 A13-A15.
@@ -63,30 +63,67 @@ def light(f=None):
 
 
 # ------------------------------------------------------------------ the chain (world-fixed) ---
-# (x, y, z, f_ign, size, seed): nighta's fire rows. Filled by the look-dev pass; see NOTES (RUN-A-L) for the picks.
-CHAIN = np.zeros((0, 6))
-LIT = np.zeros((0, 6))                           # fires that caught with hers (A13), already burning here
+# (x, y, z, f_ign, size, seed): nighta's fire rows, picked by _local_logs/runA/pick_chain.py and committed as
+# beaconrun_a_chain.npy. The seventh summit is RUN-A3's best brink (-1004, -508): level where its lighter stands,
+# falling away beyond it toward the glow. Every fire is SEEN (with a 1 m sightline margin) from both the glider's
+# start and the plate (A15). The near chain comes in toward us (1: 1.07 km, 3: 530 m, 5: 190 m, 7: here), and so
+# does the far chain answering it (2: 18.5 km, the far answer on bar 51 b1; 4: 9.3 km, high on the great sierra;
+# 6: 5.2 km).
+CHAIN = np.load(os.path.join(HERE, 'beaconrun_a_chain.npy'))
+FIRES = CHAIN                                    # A15's name for the seven (ignition order)
+_LITF = os.path.join(HERE, 'reveal_a_fires.npy')  # A13's fires (RUN-A3): already burning, far off (her cluster)
+LIT = np.load(_LITF) if os.path.exists(_LITF) else np.zeros((0, 6))
+LT_MAX = 3000.0                                  # a fire's pool on the snow only matters near the camera
+
+
+def extra():
+    """RUN-A3's EXTRA watch-fires on the ridges between (built against CHAIN and END_CAM); empty until they land."""
+    try:
+        import watchers_a as WA
+        E = np.asarray(WA.extra_fires(), np.float64).reshape(-1, 6)
+    except Exception:
+        E = np.zeros((0, 6))
+    return E
 
 
 def fires_table():
-    return np.vstack([LIT, CHAIN]) if len(LIT) else CHAIN
+    return np.vstack([LIT, extra(), CHAIN])
 
-
-FIRES = CHAIN                                    # A15's name for the seven (ignition order)
 
 # ------------------------------------------------------------------ the camera ---
-# keys: (cut frame, x, y, z, yaw, pitch, hfov); PCHIP through the keys, eased to rest at the end
-CAM_KEYS = [(3920, 60.0, 168.0, 480.0, -30.0, -6.0, 40.0),
-            (4239, 60.0, 168.0, 480.0, -30.0, -6.0, 40.0)]
-_PCH = None
+# A slow crane-glide: from 75 m over the land behind the seventh summit, forward and down along the plate's axis,
+# settling at the seventh lighter's eye (A15's plate, watchers_a.plate) by 4230 and holding there. The seventh
+# summit rises into frame as we come down. Pitch opens from looking down over the ranges to the plate's -1.8.
+T_SETTLE = 4230
+BACK0, UP0 = 120.0, 75.0
+PITCH0, HFOV0 = -6.5, 44.0
+_PLATE = None
+
+
+def end_cam():
+    """(pos, yaw, pitch, hfov) at cut 4239 = A15's plate (RUN-A3's watchers_a.plate at the seventh fire)."""
+    global _PLATE
+    if _PLATE is None:
+        import watchers_a as WA
+        pos, yaw, pitch, hfov = WA.plate(CHAIN[6])
+        _PLATE = (np.asarray(pos, np.float64), float(yaw), float(pitch), float(hfov))
+    return _PLATE
+
+
+END_CAM = True                                   # A15 reads end_cam() (watchers_a.camera checks this flag)
+
+
+def _ease(u):
+    """0..1 with a gentle start speed (a moving cut) that settles to rest: 1 - (1 - u)^1.6."""
+    u = min(max(u, 0.0), 1.0)
+    return 1.0 - (1.0 - u) ** 1.6
 
 
 def _cam_env():
     s = os.environ.get('A14_CAM')
     if not s:
         return None
-    v = [float(a) for a in s.split(',')]
-    return v
+    return [float(a) for a in s.split(',')]
 
 
 def camera(f, W=1920, H=804):
@@ -94,22 +131,16 @@ def camera(f, W=1920, H=804):
     if ov is not None:
         x, y, z, yaw, pitch, hfov = ov
         return RC.RCam(np.array([x, y, z]), yaw, pitch, 0.0, hfov, W, H)
-    global _PCH
-    if _PCH is None:
-        from scipy.interpolate import PchipInterpolator
-        K = np.array(CAM_KEYS, np.float64)
-        _PCH = [PchipInterpolator(K[:, 0], K[:, j]) for j in range(1, 7)]
-    ff = min(max(float(f), CAM_KEYS[0][0]), CAM_KEYS[-1][0])
-    x, y, z, yaw, pitch, hfov = [float(p(ff)) for p in _PCH]
-    return RC.RCam(np.array([x, y, z]), yaw, pitch, 0.0, hfov, W, H)
-
-
-END_CAM = None                                   # (pos, yaw, pitch, hfov) at cut 4239, set with the keys
-
-
-def end_cam():
-    c = camera(FR0 + NFR - 1)
-    return c.pos.copy(), c.yaw_d, c.pitch_d, c.hfov_d
+    pos1, yaw, pitch1, hfov1 = end_cam()
+    fw = np.array([math.sin(math.radians(yaw)), 0.0, math.cos(math.radians(yaw))])
+    pos0 = pos1 - fw * BACK0 + np.array([0.0, UP0, 0.0])
+    e = _ease((f - FR0) / float(T_SETTLE - FR0))
+    # the height comes down a little later than the travel (a glider flares at the end): no dive at the start
+    eh = _ease(((f - FR0) / float(T_SETTLE - FR0)) ** 1.15)
+    pos = pos0 + (pos1 - pos0) * np.array([e, eh, e])
+    pitch = PITCH0 + (pitch1 - PITCH0) * _ease(((f - FR0) / float(T_SETTLE - FR0)) ** 1.3)
+    hfov = HFOV0 + (hfov1 - HFOV0) * e
+    return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
 
 
 # ------------------------------------------------------------------ the frame ---
@@ -128,7 +159,8 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     tcam = camera(f, W, H)
     fr = PI.Frame(tcam, ss)
     FT = fires_table()
-    LT = NA.lt_rows(FT, f)
+    near = np.hypot(FT[:, 0] - tcam.pos[0], FT[:, 2] - tcam.pos[2]) < LT_MAX
+    LT = NA.lt_rows(FT[near], f)
     PL = NA.pl_rows(FT, max_dist=6000.0, cam_pos=tcam.pos)
     Lk, amb, S, fogp, Q = light(f)
     scam = fr.src
@@ -149,7 +181,15 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     NA.glow_pass(fr.img, fr.dist, kill, C, NA.glow_gp(f), skl[0], skl[1], skl[2], NA.HAZE_K, NA.HAZE_D)
     pxs = PI.src_scale(fr)
     SK.splat_stars(fr.img, scam, stars(), kill, t=t, gain=ss * ss, scale=pxs)
+    # the lighters (RUN-A3's watchers_a): after the stars, BEFORE the fires, so each is a silhouette against its fire
+    import watchers_a as WA
+    WA.draw_figures(fr.img, fr.zb, scam, f, LT, (Lk, amb, S, fogp, Q), CH=CHAIN)
     NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD)     # each dimmed by the air in front
+    # a near catch throws a short burst of orange sparks that arc and fall (H5): fires 5 and 7
+    for k in (4, 6):
+        x, y, z, fi, sz, sd = CHAIN[k]
+        if fi <= f < fi + 40 and np.hypot(x - scam.pos[0], z - scam.pos[2]) < 400.0:
+            NA.ignition_sparks(np.array([x, y, z]), fi, sz, sd).render(fr.img, fr.zb, scam, t, gain=1.0, zbias=0.3)
     img, zb, di = PI.to_target(fr)
     if mblur and _cam_env() is None:
         v, u = np.mgrid[0:H, 0:W].astype(np.float64)

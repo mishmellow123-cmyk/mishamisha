@@ -103,10 +103,27 @@ FD_RANGE, RANGE_PTS = build_range()
 # A15 share.
 WALL_YAW = -15.0                                 # centre azimuth from CAM0 (the glow is at -30)
 WALL_D = 46000.0
-WALL_KNOTS = [(-7600.0, 700.0), (-6400.0, 1350.0), (-5300.0, 1180.0), (-4100.0, 1720.0), (-3000.0, 1560.0),
-              (-1900.0, 2050.0), (-1000.0, 1840.0), (0.0, 2300.0), (900.0, 1980.0), (2100.0, 2160.0),
-              (3300.0, 1640.0), (4500.0, 1900.0), (5600.0, 1450.0), (6800.0, 1600.0), (8000.0, 1150.0),
-              (9000.0, 600.0)]
+WALL_HALF = 8600.0                               # half its length (m): about +-10.5 deg from CAM0
+WALL_N = 49                                      # crest knots (~360 m apart): a fractal skyline, not straight slopes
+# (v2, 20:00Z) crags removed: at 46 km a steep faceted horn reads as a flat-topped tower (battlements)
+
+
+def _wall_profile(rng):
+    """Crest heights along the wall (world y): three unequal massifs on a low base, then midpoint displacement
+    (roughness 0.55) so the skyline is broken at every scale; no perfect triangle, no flat run."""
+    o = np.linspace(-WALL_HALF, WALL_HALF, WALL_N)
+    base = 650.0 + 1150.0 * np.exp(-((o + 3600.0) / 1900.0) ** 2) + 1550.0 * np.exp(-((o - 700.0) / 1500.0) ** 2) \
+        + 950.0 * np.exp(-((o - 4700.0) / 1300.0) ** 2)
+    base *= 0.72 + 0.28 * np.clip(1.0 - (np.abs(o) / WALL_HALF) ** 3, 0.0, 1.0)      # the ends fall into the cloud
+    n = WALL_N - 1
+    d = np.zeros(WALL_N)
+    step, amp = n, 420.0
+    while step > 1:
+        half = step // 2
+        for i in range(half, n, step):
+            d[i] = 0.5 * (d[i - half] + d[i + half]) + rng.normal(0.0, amp)
+        step, amp = half, amp * 0.55
+    return o, base + d
 
 
 def build_wall():
@@ -115,27 +132,18 @@ def build_wall():
     perp = np.array([math.cos(ya), -math.sin(ya)])
     c = CAM0[[0, 2]] + dirv * WALL_D
     rng = np.random.default_rng(311)
-    pts = []
-    for o, y in WALL_KNOTS:
-        q = c + perp * o + dirv * rng.uniform(-900.0, 900.0)
-        pts.append((q[0], y + rng.uniform(-80.0, 80.0), q[1]))
+    o, hy = _wall_profile(rng)
+    # the crest wanders in depth (low frequency), so its faces turn to the light at different angles
+    dep = 700.0 * np.sin(o / 2300.0 + 0.7) + 380.0 * np.sin(o / 870.0 + 2.1)
+    pts = [(c[0] + perp[0] * oo + dirv[0] * dd, h, c[1] + perp[1] * oo + dirv[1] * dd) for oo, h, dd in zip(o, hy, dep)]
     rows = []
     for k in range(len(pts) - 1):
         a, b = pts[k], pts[k + 1]
-        # broad at the foot, knife-edged at the crest (p 1.6); the cutoff reaches the cloud so no flank is cut off
-        rows.append(WD.ridge_row(a, b, wl=260.0, wr=230.0, seed=331 + k, k=40.0, detail=0.22, slope=1.25, p=1.6))
+        w = rng.uniform(300.0, 380.0)
+        rows.append(WD.ridge_row(a, b, wl=w, wr=w * rng.uniform(0.8, 1.1), seed=331 + k, k=60.0, detail=0.22,
+                                 slope=rng.uniform(1.10, 1.45)))
         rows[-1][14] = 0.95
-        rows[-1][13] = 4200.0
-    hi = [k for k in range(1, len(pts) - 1) if pts[k][1] > max(pts[k - 1][1], pts[k + 1][1])]
-    for k in hi:
-        if rng.random() < 0.4:
-            continue
-        rows.append(WD.crag_row(pts[k][0], pts[k][2], pts[k][1] + rng.uniform(40.0, 160.0),
-                                L=rng.uniform(160.0, 320.0), s_hi=rng.uniform(1.8, 2.6), s_lo=1.2,
-                                aniso=rng.uniform(1.4, 2.4), ang=ya + math.pi / 2 + rng.uniform(-0.5, 0.5),
-                                seed=360 + k, k=60.0, detail=0.3, shelf=0.0, nf=4))
-        rows[-1][14] = 0.95
-        rows[-1][13] *= 2.5
+        rows[-1][13] = 4200.0                    # the flanks reach the cloud sea (~1.3 km out) before the cut
     return np.array(rows)
 
 
