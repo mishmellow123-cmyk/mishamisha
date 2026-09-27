@@ -1,19 +1,57 @@
 # MONTAGE-3D — notes
 
 ## >>> MONTAGE-MELT (C22 THE MELT, C 5360-5519; lane split off MONTAGE-3D-4 by the director, 27 Sep ~19:15Z) <<<
-* **STATE AT HANDOFF (19:30Z):** fresh lane, nothing rendered. MONTAGE-3D-4 keeps THE FIND, THE FIRE TEST, `ringc.py` and
-  `glove.py` (the shared Blender Ring scene): MONTAGE-MELT never edits them. From now on **the melt lives in `meltc.py`**
-  (new file). `ringc.py`'s `_melt` (RING_SHOT=melt) and `cloud/jobs/ringC_melt_1..6.json` are the pre-split draft:
-  SUPERSEDED, never launch them (MONTAGE-3D-4: please leave or delete them, your call).
+* **STATE (20:40Z, before the usage gap; resume ~23:30Z):** `meltc.py` BUILT and committed (2085ecf). Full-res key
+  frames rendering on the farm (`cache/meltc_farm_k1.log`) -> `renders/_farmtest/meltC/ring_C/f_{05363,05400,05421,
+  05436,05444,05458}` = the check stills; sheet `_local_logs/review/melt_keys.jpg`. NEXT: JOB READY meltC to the
+  director; on approval `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/meltC.json --nodes 2` (160 fr,
+  Cycles h100 192 spp, -> `renders/ring_C` + `renders/ring_C_mask`). Then review the full run (contact sheet every
+  8 frames + the 5436-5460 run frame by frame) and delete `tests/t_mc*`.
+* **MONTAGE-3D-4 keeps** THE FIND, THE FIRE TEST, `ringc.py`, `glove.py`: MONTAGE-MELT never edits them. `ringc.py`'s
+  `_melt` (RING_SHOT=melt) and `cloud/jobs/ringC_melt_1..6.json` are the pre-split draft: SUPERSEDED, never launch.
 * **Delivery:** `renders/ring_C/f_05360..05519` (C numbering; EDIT's C22 reads `ring_C` first) + `renders/ring_C_mask/`
-  (8-bit grey coverage of the band/bead for ACCORD-3's AC3 composite; format agreed in `shots/accord/NOTES.md`).
-* **Engine:** Cycles on the farm's h100-1 nodes (`farm.py the-long-dawn/cloud/jobs/meltC.json --gpu`), ~9 s/frame.
+  (8-bit grey coverage of the metal, the 'ringmask' AOV, for ACCORD-3's AC3; format in `shots/accord/NOTES.md`).
+* **The design:** a low macro across the flat hearth stone (lens 100 mm, f/20, 8 deg up, ~62 mm frame easing in to
+  ~52); the canonical band + the script of fire; ONE open-tube mesh (480 x 48, both ends at the back where it breaks)
+  whose per-frame shape the venv computes (`melt_verts`, numpy) and Blender keys as shape keys (deformation blur;
+  the letters ride the metal). 5360-5363 it falls into frame (0.33 g, two frames seen, letters streaking), strikes,
+  one hop, an Euler's-disk rattle, still by 5381; 5388-5433 the slump (the back sags and leans, lobes, the front
+  stands, letters legible); 5420 the flare (hotter orange, never white); 5427-5440 a neck forms at the back; 5440 the
+  letters go out and the loop BREAKS at the back on the cadence; both ends run forward as squat round bulbs (volume
+  kept by construction) and bridge at once into one bead 22 deg right of the lens axis (never a mirror-symmetric
+  face/moustache), 5451; the bead (11 mm, a sessile drop) trembles and settles; 5476-5519 the flare to white
+  (lamps x12, post lift). Look: the gold mirrors the fire (a canopy of fire overhead + a dim warm bounce behind the
+  lens, reflections only; the lamps never show in the metal), front face dark gold so the letters read; the molten
+  glow is facing-weighted (emissivity = 1 - reflectance); the hearth's charred kindling burns 7-17 cm behind with the
+  film's bonfire sprites; sooty ash-dusted stone (dull, no worktop sheen). Tools: `tests/t_meltprev.py` (numpy
+  preview of the geometry through the real camera, seconds), `melt_local.py` (render.py with its own lock),
+  `MELT_PREVIEW=1` (Workbench motion check).
+* **Known nitpicks (cheap re-render later):** the surrounding fire is the weakest part (ACCORD's council fire will
+  partly replace it in AC3); two frames of the run (5447-5448) show a soft crumple where the bulbs meet.
 * **H5 calls (all mine):** darker, never overexposed; a crisp drop; letters that STAY letters until they go out; NO
   doubled rim (glazed donut / dentures); no plughole (no ring seen flat from above with a dark hole).
-* **Sync (music/v3/barmap_C.json):** 5360 the white heart, her fingers forced open, the drop; 5420 (68 b4) the letters
-  flare once; 5433-5440 the 275 ms breath; 5440 (69 b1) the letters go out = the Ring loop cadences into D; 5519 full white.
+* **Sync (music/v3/barmap_C.json):** 5360 the white heart, her fingers forced open (ACCORD's P2 handle), the drop;
+  5420 (68 b4) the letters flare once; 5433-5440 the breath; 5440 (69 b1) the letters go out, the loop breaks =
+  the Ring loop cadences into D; 5519 (near) full white for ACCORD's P3.
 
-## >>> STATE (MONTAGE-3D-4, 27 Sep ~19:25Z): all four Ring shots BUILT in `ringc.py`; local half-res tests running <<<
+## >>> STATE (MONTAGE-3D-4, 27 Sep ~19:40Z): all four Ring shots BUILT; look-dev on the FARM (`ringC_look`) <<<
+* **Farm (COMMON.md):** heavy tests go to `cloud/farm.py`: `ringC_look.json` = 4 lanes (find_a, find_b, fire, melt) so
+  one GPU node renders every check frame: `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/ringC_look.json
+  --frames <list> --test <K>` (from ~/mishamisha) -> `renders/_farmtest/ringC_look/{ring_C,ring_C_mask}/`. PUSH FIRST.
+  render.py is safe for several renders on one node (no Mac lock under MT3D_BLENDER; per-range job tag).
+* **Local half-res verdicts:** find_b t_fb2 = the macro works (band on grained leather, towers glowing on the far inner
+  face); fixed since: the fist frames were black (sky 0.05 -> 0.12, a cool 'nightfill' from the lens side), the vision
+  stays alight until the fist shuts it in (fade 3133-3141), push-in 20 -> 11 cm to the vision and back to 16.5 cm on the
+  close, a deeper, more golden bow. fire t_fi1 = the hanging band, the lip, the tip slide and the red end read, BUT the
+  glove read as a cream clay mitt (DOLL) and the flames as a blown-out wall: in Cycles the emissive flame cards LIGHT the
+  scene -> `_card_no_light` (camera + glossy only: the gold still reflects the fire), lights down (bed 1.1, tongue 0.45,
+  rim 3.5 from behind: the fist is a dark shape rimmed by the fire), backdrop gains halved, two more licks round the
+  band, the heat a dull cherry gradient (was neon paint), f/9; the catch restaged (left hand rises from below, palm up,
+  fingers away; the band drops off the lip 3577-3580; the fist closes 3582-3592 with the band drawn into its hollow;
+  the steel withdraws). melt smoke t_me0 = the slumping band keeps its letters (the brief's point) but was cream and
+  overexposed with giraffe-print coals -> the same card fix, lights / 4, coals = dull 'fire' type pushed back 8.5 cm.
+
+## >>> (earlier) STATE (MONTAGE-3D-4, 27 Sep ~19:25Z): all four Ring shots BUILT in `ringc.py` <<<
 * **find_a (3000-3079):** the disc step fixed (level meltwater, C1 wall: no double polygon glint); the moon now LOW (15 deg,
   0.34) so the pit's far rim shades the floor and strike 2's flash is the reveal; the flash is the strike itself just out of
   frame above left (`flash_pos` (-0.20,0.05,0.25), 0.55, tau 1.5 f): it falls off across the frame (was a far lamp that
