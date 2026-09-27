@@ -17,7 +17,7 @@ heroine / hsdf3 / heroine_v3 only for `CLIMB_FIG=h` (the old 3-D figure, superse
 * bworld's crest RISER (0.36 m vertical step ~25 m below the top, reported to RUN-B-3 in shots/run/NOTES.md) is patched
   in OUR G-buffer copy only (`Shot.patch_risers`): near-vertical ground pixels near the summit get the up-normal.
 **Check stills:** renders/_farmtest/climb_b/ (700/760/840, before the glow fix), climb_b_v2/ (720/850, glow fix),
-climb_b_v3/ (760/850, + pool + riser patch; landing ~21:00Z); half res: renders/heroine_tests/climb_t4/.
+climb_b_v3/ (760/850, + pool + riser patch; still queued on the farm at 21:07Z: CHECK THE CREST right of her in 760 for the fence before launching); half res: renders/heroine_tests/climb_t4/. **21:07Z: no approval received yet.**
 **Nitpicks for after 23:30Z (cheap re-render):** the pot reads weakly in the close (a bigger warm halo, or hold it a
 little further out); spindrift in the wide is faint (the view faces away from the moon: back-scatter); the foreground
 snow's dark stone specks are RUN-B's texture; if RUN-B-3 fixes the riser, `patch_risers` becomes a no-op.
