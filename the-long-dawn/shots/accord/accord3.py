@@ -50,7 +50,7 @@ import flame3 as FL3  # noqa: E402
 import nbcore  # noqa: E402
 import fire as FI  # noqa: E402
 
-OUT = os.path.join(SC.ROOT, 'renders', 'accord_C3')
+OUT = os.path.join(SC.ROOT, 'renders', 'accord_C')   # EDIT-v3 convention: C numbering (4480-5599; bar 70 = 5520-5599)
 INSCRIPTION = os.path.join(SC.ROOT, 'assets', 'ring', 'inscription_outer.png')
 _RES = {}
 NOBAND = np.zeros(3)

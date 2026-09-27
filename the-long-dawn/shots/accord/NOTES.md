@@ -1,5 +1,31 @@
 # ACCORD v3 (ACCORD-v3, 27 Sep): cut C only, C frames 4480-5679 -> `renders/accord_C3/f_%05d.png`
 
+## >>> PAUSED 27 Sep ~11:05Z (director: usage pacing; RESUME in the 15:00Z window) <<<
+**Where it stands.** The v3 engine is written, committed (7442e33) and renders (numba, CPU): `accord3.py` (driver:
+still / range / sheet), `scene3.py` (timeline, cameras P1/P2/P3, the roster of 13 + her, poses, the hand rig, the Ring,
+the fire timeline), `geom3.py` (flat stone, cold hearth with kerb/logs/charcoal, figures with kneel/lean/walk, gloved
+fists, the detailed hand `sd_hand`, the real-size Ring, analytic capsule soft shadows), `shade3.py` (surfaces),
+`flame3.py` (volumetric torch flames, the hearth fire that catches from every torch, sparks), `flamelook3.py` (flame
+look-dev: `python shots/accord/flamelook3.py out.jpg`, side + top views). v2 files untouched.
+**Output:** EDIT-v3's convention is `renders/accord_C/` in C numbering (4480-5599; bar 70 = 5520-5599);
+`accord3.OUT` points there (v2's src frames 1912-2247 in the same folder do not collide). Test stills so far in
+`renders/accord_C3/tests/` (delete that folder once superseded). A still: `python shots/accord/accord3.py still 4960
+--scale 0.5` (~45 s half res); a full-res crop: `--window x0,y0,w,h --scale 1.0`.
+**First-look verdict (4960, the AC4 orbit, half res): NOT yet festival grade.** Fix list, in order:
+1. Torch flames read as faint grainy streaks / cotton buds: too thin (envelope and noise threshold in
+   `flame3.torch_density`), leaning too hard in the wind (`accord3._WIND`), too few steps. Tune in `flamelook3.py`
+   until a vigorous 30-40 cm flame with tongues, a yellow core and orange edges; then bloom and a soft smoke wisp.
+2. Hoods read as smooth mushroom caps (v2's "game pieces" risk): add hood folds and peaks, cut the velvet edge-glow
+   (`vel` in `shade3`), keep the cloth near-black with warm rims, drop the olive cast (lower `P_CROWD`).
+3. The torch head's wrap ridges read as a corn cob; the gloved fist as a beige block (too bright, too boxy).
+4. The ash bed reads as a cow-print (big black blots): soft grey ash, small 3-D charcoal, visible half-burnt logs.
+   The flat stone reads as a loaf: darker, crisper edge, pitted granite. Kerb: irregular sizes and spacing.
+5. Her shawl reads as a red plastic ring: a thinner layer with drape and folds, a darker wool red with texture.
+**Then:** stills 4840 (the Ring set), 5040 (the gilded hand), 5130/5165/5210/5340 (P2), 5530/5560/5590 (bar 70);
+the walkers and crowd (a `plain3`) for AC1's descent and bar 70's crane; the 4480 match; cloud jobs
+(`cloud/jobs/accord3_*.json`, ship jpg); the AC3 composite once MONTAGE-3D-2's melt 5360-5519 exists.
+Canonical inscription: `assets/ring/inscription_outer.png` (MONTAGE-3D-2), loaded by `accord3.inscription_mips()`.
+
 ## STATE AT HANDOFF (27 Sep ~10:15Z, ACCORD-v3 taking over; no brief/log files for this lane)
 * **On disk (v2, do not touch):** `renders/accord_C/` src 1912-2247 (vows + Ring in the hearth; the bible's AC1
   fallback), `accord_A/`, `accord_B/` (retired by BIBLE_V3 section 8: A and B have no table), `accord/` (v1), cache
