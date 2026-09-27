@@ -8,9 +8,10 @@ reads as lit glass between dark iron bars); cloth takes a per-object tint. No sh
 in the wides; in the close-up the light is inside the lantern, so the bars' silhouettes are what matter).
 
 Primitive row (NP floats):
-  0 type (0 round cone a->b | 1 rounded box | 2 glass box shell | 3 torus about +y)
+  0 type (0 round cone a->b | 1 rounded box | 2 glass box shell | 3 torus about +y | 4 bell: a hanging cloak)
   1-3 a | 4-6 b (box: 4 = yaw, 5 = pitch-about-right) | 7 ra (box: rounding) | 8 rb | 9 material
-  10 blend k (smooth union with the object so far) | 11-13 box half extents | 14 torus major R
+  10 blend k (smooth union with the object so far) | 11-13 box half extents (bell: the forward reference)
+  14 torus major R (bell: fold depth at the hem) | 15 bell fold count | 16 bell fold phase
 Object row (NO floats): 0 first prim | 1 n prims | 2-4 bound centre | 5 bound radius | 6-8 cloth rgb
   | 9 emission gain (glass) | 10-12 glass rgb | 13 depth bias (m)
 Materials: 0 cloth | 1 iron | 2 wood | 3 small-lantern glass (emissive) | 4 rope | 5 stone
@@ -22,7 +23,7 @@ from numba import njit, prange
 
 from mt.noise import gnoise3
 
-NP = 16
+NP = 20
 NO = 16
 
 
@@ -67,6 +68,23 @@ class Scene:
         R = float(np.linalg.norm(half)) + rnd
         c = np.asarray(c)
         self._add(r, [c + R, c - R])
+
+    def bell(self, a, b, ra, rb, fwd, depth=0.03, n=9, phase=0.0, mat=0, k=0.0):
+        """A hanging cloak: a cone from a (shoulders) to b (hem centre) with folds that deepen toward the hem."""
+        r = np.zeros(NP)
+        r[0] = 4
+        r[1:4] = a
+        r[4:7] = b
+        r[7] = ra
+        r[8] = rb
+        r[9] = mat
+        r[10] = k
+        r[11:14] = fwd
+        r[14] = depth
+        r[15] = n
+        r[16] = phase
+        R = max(ra, rb) + depth
+        self._add(r, [np.asarray(a) + R, np.asarray(a) - R, np.asarray(b) + R, np.asarray(b) - R])
 
     def torus(self, c, R, r_, mat=1, k=0.0):
         r = np.zeros(NP)
@@ -140,13 +158,51 @@ def _sd_torus(px, py, pz, R):
 
 
 @njit(inline='always', fastmath=True)
+def _sd_bell(px, py, pz, R):
+    ax, ay, az = R[1], R[2], R[3]
+    dx, dy, dz = R[4] - ax, R[5] - ay, R[6] - az
+    L = math.sqrt(dx * dx + dy * dy + dz * dz) + 1e-9
+    dx /= L
+    dy /= L
+    dz /= L
+    pax, pay, paz = px - ax, py - ay, pz - az
+    t = pax * dx + pay * dy + paz * dz
+    qx, qy, qz = pax - dx * t, pay - dy * t, paz - dz * t
+    rho = math.sqrt(qx * qx + qy * qy + qz * qz) + 1e-9
+    # angle about the axis, measured from the figure's forward direction
+    fd = R[11] * dx + R[12] * dy + R[13] * dz
+    fx, fy, fz = R[11] - dx * fd, R[12] - dy * fd, R[13] - dz * fd
+    fl = math.sqrt(fx * fx + fy * fy + fz * fz) + 1e-9
+    fx /= fl
+    fy /= fl
+    fz /= fl
+    sx, sy, sz = dy * fz - dz * fy, dz * fx - dx * fz, dx * fy - dy * fx
+    th = math.atan2(qx * sx + qy * sy + qz * sz, qx * fx + qy * fy + qz * fz)
+    h = min(max(t / L, 0.0), 1.0)
+    ph = R[16]
+    fold = R[14] * h * (math.sin(R[15] * th + ph) + 0.45 * math.sin(2.3 * R[15] * th + 1.7 * ph + 1.3))
+    r = R[7] + (R[8] - R[7]) * h + fold
+    Lh = L * (1.0 + 0.022 * math.sin(3.0 * th + 2.0 * ph) + 0.012 * math.sin(7.0 * th - ph))
+    slope = (R[8] - R[7]) / L
+    ds = (rho - r) / math.sqrt(1.0 + slope * slope)
+    dc = max(-t, t - Lh)
+    if ds > 0.0 and dc > 0.0:
+        d = math.sqrt(ds * ds + dc * dc)
+    else:
+        d = max(ds, dc)
+    return 0.6 * d          # conservative: the folds make it a non-exact distance
+
+
+@njit(inline='always', fastmath=True)
 def _prim(px, py, pz, R):
     t = R[0]
     if t < 0.5:
         return _sd_cone(px, py, pz, R)
     if t < 2.5:
         return _sd_box(px, py, pz, R)
-    return _sd_torus(px, py, pz, R)
+    if t < 3.5:
+        return _sd_torus(px, py, pz, R)
+    return _sd_bell(px, py, pz, R)
 
 
 @njit(inline='always', fastmath=True)
@@ -299,7 +355,7 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                         nz /= nl2
                     mot = 0.72 + 0.56 * (0.5 + 0.5 * gnoise3(qx * 7.0, qy * 5.0, qz * 7.0, 14))
                     ar, ag, ab = O[oi, 6] * mot, O[oi, 7] * mot, O[oi, 8] * mot
-                    wrap = 0.35
+                    wrap = 0.12                  # little wrap: lights behind a figure rim it, they do not fill it
                     spec = 0.0
                 elif mat < 1.5:
                     ar, ag, ab = 0.035, 0.034, 0.033
@@ -386,97 +442,107 @@ def _unit(v):
     return v / (np.linalg.norm(v) + 1e-12)
 
 
-def walker(sc, feet, w, phase, rgb, lantern=None, staff=False, pack=True, height=1.0, lean=0.08, hood=True,
-           carry=None, arm_out=0.0, carry_side=1.0, lantern_side=1.0):
-    """A roped walker in a hooded parka, seen at any angle. feet: ground point under the pelvis; w: walking
-    direction (horizontal unit); phase: walk-cycle phase (radians). lantern: None, or 'hand' -> returns the
-    lantern's world position (it hangs from the leading hand, swinging with the step). carry: None, or
-    (left_shoulder_target, right_shoulder_target) for pole bearers (hands up on the poles).
-    Returns dict(waist=..., lantern=...)."""
+def _knee(hip, ank, l1, l2, w):
+    """Two-bone IK: the knee for a hip and an ankle, bending forward (toward w)."""
+    d = ank - hip
+    L = float(np.linalg.norm(d)) + 1e-9
+    L2 = min(L, (l1 + l2) * 0.999)
+    a = (l1 * l1 - l2 * l2 + L2 * L2) / (2.0 * L2)
+    hk = math.sqrt(max(l1 * l1 - a * a, 0.0))
+    u = d / L
+    n = w - u * float(w @ u)
+    nl = float(np.linalg.norm(n))
+    n = n / nl if nl > 1e-6 else np.array([0.0, 1.0, 0.0])
+    return hip + u * a + n * hk
+
+
+def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(0.215, 0.34), folds=9,
+              fold_depth=0.03, fold_phase=0.0, sway=0.0, pack=False, staff_tip=None, lantern_side=0.0,
+              lantern_swing=0.0, carry=None, carry_side=1.0, peak=True, free_swing=0.0, reach=None):
+    """A hooded, cloaked traveller seen at any angle (no capsule limbs showing: a wool cloak from the shoulders to
+    `hem` above the ground, folds deepening toward the hem and swinging with the gait, a hood, loose sleeves, gloved
+    hands, boots). The caller plants the feet: pel = pelvis, ank_l / ank_r = ankle targets (world); the legs are
+    solved by two-bone IK so the stance foot stays planted where it was put.
+    lantern_side: +1 right hand / -1 left hand / 0 none (a hand-lantern hangs below it, `lantern_swing` in m).
+    carry: (left target, right target) on the poles; carry_side picks the hand that steadies the pole.
+    staff_tip: ground point of a staff held in the free hand. reach: a world point the free hand reaches toward
+    (feeding a fire). Returns dict(waist, lantern, hand, head, chest, shoulders)."""
     up = np.array([0.0, 1.0, 0.0])
     w = _unit([w[0], 0.0, w[2]])
-    s = np.cross(up, w)            # left of the walker
-    h = height
-    bob = 0.018 * h * math.cos(2 * phase)
-    pel = feet + up * (0.93 * h + bob)
-    fwd_lean = w * math.sin(lean) + up * math.cos(lean)
-    chest = pel + fwd_lean * 0.50 * h
-    neck = chest + fwd_lean * 0.10 * h
-    head = neck + up * 0.11 * h + w * 0.02 * h
-    sc.begin(rgb=rgb)
-    # legs: hip flexion +-24 deg, knee flexes in swing
+    s = np.cross(up, w)                              # the walker's left
+    fl = w * math.sin(lean) + up * math.cos(lean)
+    chest = pel + fl * 0.47 * h
+    neck = chest + fl * 0.11 * h
+    head = neck + up * 0.10 * h + w * 0.035 * h
+    ground_y = min(ank_l[1], ank_r[1]) - 0.07
     out = {}
-    for side, ph in ((1.0, 0.0), (-1.0, math.pi)):
-        a = phase + ph
-        th = math.radians(22.0) * math.sin(a)
-        kn = math.radians(8.0 + 42.0 * max(0.0, math.sin(a + 1.3)) ** 2)
+    sc.begin(rgb=rgb)
+    # legs (only the shins and boots show below the hem)
+    for side, ank in ((1.0, ank_l), (-1.0, ank_r)):
         hip = pel + s * side * 0.085 * h
-        thigh = (w * math.sin(th) - up * math.cos(th)) * 0.45 * h
-        knee = hip + thigh
-        tk = th - kn
-        shin = (w * math.sin(tk) - up * math.cos(tk)) * 0.45 * h
-        ank = knee + shin
-        sc.cone(hip, knee, 0.078 * h, 0.062 * h, 0, 0.03)
-        sc.cone(knee, ank, 0.060 * h, 0.048 * h, 0, 0.02)
-        sc.cone(ank + up * 0.02, ank + w * 0.13 * h + up * 0.01, 0.045 * h, 0.04 * h, 0, 0.02)
-    # parka: torso, skirt
-    sc.cone(pel - up * 0.02, chest, 0.15 * h, 0.172 * h, 0, 0.05)
-    sc.cone(pel, pel - up * 0.22 * h - w * 0.02, 0.17 * h, 0.175 * h, 0, 0.05)
-    sc.cone(chest, neck, 0.15 * h, 0.09 * h, 0, 0.04)
-    # hood (a hooded head: no face ever shows) with a little peak at the back
-    sc.cone(head - w * 0.01, head + up * 0.02, 0.118 * h, 0.12 * h, 0, 0.04)
-    if hood:
-        sc.cone(head - w * 0.06 * h + up * 0.04 * h, head - w * 0.12 * h - up * 0.03 * h, 0.085 * h, 0.05 * h, 0,
-                0.05)
+        kn = _knee(hip, ank, 0.46 * h, 0.45 * h, w)
+        sc.cone(hip, kn, 0.080 * h, 0.062 * h, 0, 0.03)
+        sc.cone(kn, ank, 0.060 * h, 0.047 * h, 0, 0.02)
+        sc.box(ank + w * 0.045 * h - up * 0.035 * h, (0.055 * h, 0.05 * h, 0.13 * h),
+               yaw=math.atan2(w[0], w[2]), rnd=0.035 * h, mat=0, k=0.02)
+    # the cloak: sloping shoulders (a short cape), then the bell to the hem, trailing a little and swaying
+    cape_top = neck - up * 0.02 * h
+    sc.cone(cape_top, chest - up * 0.05 * h, 0.11 * h, 0.205 * h, 0, 0.05 * h)
+    hem_c = np.array([pel[0], ground_y + hem * h, pel[2]]) - w * 0.05 * h + s * sway
+    sc.bell(chest - up * 0.03 * h, hem_c, cloak[0] * h, cloak[1] * h, w, fold_depth * h, folds, fold_phase, 0,
+            0.06 * h)
     if pack:
-        sc.box(chest - w * 0.19 * h - up * 0.14 * h, (0.17 * h, 0.23 * h, 0.11 * h),
-               yaw=math.atan2(w[0], w[2]), rnd=0.05 * h, mat=0, k=0.04)
-    # arms
-    shL = chest - up * 0.03 * h + s * 0.2 * h
-    shR = chest - up * 0.03 * h - s * 0.2 * h
+        # a bundle on the back, under the cloak: it makes the hump
+        sc.box(chest - w * 0.20 * h - up * 0.10 * h, (0.17 * h, 0.22 * h, 0.12 * h), yaw=math.atan2(w[0], w[2]),
+               rnd=0.06 * h, mat=0, k=0.09 * h)
+    # the hood: a head-shaped cowl, a soft point at the back, gathered into the cape
+    sc.cone(head - w * 0.015 * h, head + up * 0.015 * h, 0.122 * h, 0.125 * h, 0, 0.06 * h)
+    if peak:
+        sc.cone(head - w * 0.05 * h + up * 0.05 * h, head - w * 0.15 * h + up * 0.0 * h, 0.075 * h, 0.03 * h, 0,
+                0.05 * h)
+    # arms: loose sleeves, gloved hands
+    shL = chest + up * 0.02 * h + s * 0.19 * h
+    shR = chest + up * 0.02 * h - s * 0.19 * h
+
+    def arm(sh, hand, out_dir):
+        el = sh + 0.5 * (hand - sh) + out_dir * 0.05 * h - up * 0.05 * h
+        sc.cone(sh, el, 0.080 * h, 0.072 * h, 0, 0.04 * h)
+        sc.cone(el, hand - (hand - el) * 0.12, 0.072 * h, 0.088 * h, 0, 0.02 * h)
+        sc.cone(hand, hand, 0.047 * h, 0.047 * h, 0, 0.015 * h)
+        return hand
+
     if carry is not None:
-        # one hand steadies the pole on its shoulder; the other arm hangs free and swings a little
-        sh, tgt = (shL, carry[0]) if carry_side > 0 else (shR, carry[1])
-        el = sh + 0.5 * (tgt - sh) + up * (-0.20 * h) + w * 0.02
-        sc.cone(sh, el, 0.058 * h, 0.05 * h, 0, 0.02)
-        sc.cone(el, tgt, 0.05 * h, 0.042 * h, 0, 0.02)
-        sh2 = shR if carry_side > 0 else shL
-        so = -s if carry_side > 0 else s
-        sw = 0.15 * math.sin(phase)
-        el2 = sh2 + (w * 0.04 * sw - up * 0.28 + so * 0.05) * h
-        hd2 = sh2 + (w * (0.10 + 0.1 * sw) - up * 0.55 + so * 0.07) * h
-        sc.cone(sh2, el2, 0.058 * h, 0.05 * h, 0, 0.02)
-        sc.cone(el2, hd2, 0.05 * h, 0.044 * h, 0, 0.02)
+        # both hands steady the poles in front of the shoulders (a two-pole litter): no arm hangs free, so
+        # nothing below the cloak can read as a dangling limb
+        arm(shL, carry[0], s)
+        out['hand'] = arm(shR, carry[1], -s)
     else:
-        # the lantern hand leads a little; the other hand holds a staff or swings
-        sw = 0.20 * math.sin(phase + math.pi)
-        # the lantern hand: right (lantern_side > 0) or left; the other hand holds a staff or swings
-        sl = -s if lantern_side > 0 else s
-        shA, shB = (shR, shL) if lantern_side > 0 else (shL, shR)
-        hand_l = shA + (w * (0.18 + 0.1 * sw) - up * 0.52 + sl * (0.06 + arm_out)) * h
-        el_l = shA + (w * 0.05 - up * 0.27 + sl * 0.05) * h
-        sc.cone(shA, el_l, 0.058 * h, 0.05 * h, 0, 0.02)
-        sc.cone(el_l, hand_l, 0.05 * h, 0.044 * h, 0, 0.02)
-        if staff:
-            hand_s = shB + (w * 0.22 - up * 0.38 - sl * 0.08) * h
-            el_s = shB + (w * 0.02 - up * 0.26 - sl * 0.08) * h
-            sc.cone(shB, el_s, 0.058 * h, 0.05 * h, 0, 0.02)
-            sc.cone(el_s, hand_s, 0.05 * h, 0.044 * h, 0, 0.02)
-            tip = feet + w * (0.55 + 0.15 * math.sin(phase)) * h - sl * 0.2 * h
-            sc.cone(hand_s + up * 0.25 * h, tip, 0.016, 0.014, 2, 0.0)
-        else:
-            sw2 = -sw
-            hand_s = shB + (w * (0.12 * sw2) - up * 0.55 - sl * 0.05) * h
-            el_s = shB + (w * 0.03 * sw2 - up * 0.28 - sl * 0.04) * h
-            sc.cone(shB, el_s, 0.058 * h, 0.05 * h, 0, 0.02)
-            sc.cone(el_s, hand_s, 0.05 * h, 0.044 * h, 0, 0.02)
-        if lantern == 'hand':
-            # hanging lantern: a small pendulum lagging the hand
-            sway = 0.10 * math.sin(phase * 2.0 - 0.6)
-            out['lantern'] = hand_l - up * 0.20 * h + w * sway * 0.3
+        sw = free_swing
+        if lantern_side != 0.0:
+            sl = -s if lantern_side > 0 else s
+            shA, shB = (shR, shL) if lantern_side > 0 else (shL, shR)
+            hand_l = shA + (w * (0.16 + 0.5 * sw) - up * 0.50 + sl * 0.07) * h
+            arm(shA, hand_l, sl)
+            out['lantern'] = hand_l - up * 0.21 * h + w * lantern_swing
             out['hand'] = hand_l
+        else:
+            sl = -s
+            shA, shB = shR, shL
+            hand_a = shA + (w * (0.06 - 0.5 * sw) - up * 0.52 + sl * 0.06) * h
+            arm(shA, hand_a, sl)
+        if staff_tip is not None:
+            hand_s = shB + (w * 0.22 - up * 0.34 - sl * 0.07) * h
+            arm(shB, hand_s, -sl)
+            sc.cone(hand_s + up * 0.28 * h, staff_tip, 0.017, 0.014, 2, 0.0)
+        elif reach is not None:
+            d = reach - shB
+            d = d / (np.linalg.norm(d) + 1e-9)
+            arm(shB, shB + d * 0.62 * h, -sl)
+        else:
+            hand_s = shB + (w * (0.08 - 0.5 * sw) - up * 0.52 - sl * 0.06) * h
+            arm(shB, hand_s, -sl)
     sc.end()
-    out['waist'] = pel - up * 0.02 * h - s * 0.12 * h
+    out['waist'] = pel + up * 0.02 * h - s * 0.2 * h
     out['head'] = head
     out['chest'] = chest
     out['shoulders'] = (shL, shR)

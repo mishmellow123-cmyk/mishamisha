@@ -157,7 +157,12 @@ def crag(x, z, fp, CR, k, hcur):
     # envelope bound (warp can move u,v by <= 0.2 L; detail adds <= 0.55 det min(m, 2L))
     m0 = _facet_m(u, v, n, seed) - shelf
     mb = max(m0 - 0.34 * L * 1.5 * 1.414, 0.0)
-    ub = top - _drop(mb, L, shi, slo) + 0.6 * det * min(max(m0, 0.0) + 0.4 * L, 2.0 * L)
+    # (v3, additive) col 14 > 0 widens this bound: the ribs below can add up to ~0.74 det min(m, 2L), which the
+    # v2 factor 0.6 undershoots on big, detailed crags (it skipped them on their lower flanks: small cliffs that
+    # the column marcher draws as vertical stripes). 0 keeps the v2 bound exactly.
+    bf = 0.6 if CR[k, 14] <= 0.0 else CR[k, 14]
+    ub = top - _drop(mb, L, shi, slo) + bf * det * min(max(m0, 0.0) + 0.4 * L, 2.0 * L) + (0.0 if CR[k, 14] <= 0.0
+                                                                                         else 0.5 * CR[k, 9])
     if ub < hcur - CR[k, 9]:
         return -1e5
     # irregular facets: a gentle domain warp
@@ -216,7 +221,10 @@ def ridge(x, z, fp, CR, k, hcur):
     # envelope bound before paying for noise (warp <= 9 m)
     w0 = CR[k, 6] if (dx * ez - dz * ex) > 0.0 else CR[k, 7]
     db = max(d0 - 9.0, 0.0)
-    ub = yc - slope * db * (db / w0) ** (p - 1.0) + 0.6 * det * min(slope * db + 6.0, 90.0) + 4.0
+    # (v3, additive) col 14 > 0 widens this bound as in crag(): the ribs can add ~0.74 det min(drop + 6, 90)
+    bf = 0.6 if CR[k, 14] <= 0.0 else CR[k, 14]
+    ub = yc - slope * db * (db / w0) ** (p - 1.0) + bf * det * min(slope * db + 6.0, 90.0) + 4.0 \
+        + (0.0 if CR[k, 14] <= 0.0 else 0.5 * CR[k, 9])
     if ub < hcur - CR[k, 9]:
         return -1e5
     # wandering crest: warp the query point
@@ -479,6 +487,7 @@ def soft_shadow(P, CR, x, y, z, lx, ly, lz, t0, tmax, nsteps, k, fp):
 #  5 cloud shadow floor | 6 alpenglow (0 night) | 7 sheen | 8 cloud trough dark | 9 cloud albedo
 # 10 rock albedo scale | 11 key-light shadow k (far) | 12 fog in-scatter toward key: gain
 # 13 cloud ambient gain | 14 sun-disc (0 = moon) | 15 cloud self-shadow strength | 16 bounce fill
+# 18 (v3, additive) anti-streak: > 0 samples the fine snow noise in a height-skewed domain (0 = the v2 look)
 
 
 @njit(parallel=True, fastmath=True, cache=True)
@@ -593,7 +602,14 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                         nmx = -(hmx - h0) / em
                         nmz = -(hmz - h0) / em
                         nmy = 1.0 / math.sqrt(nmx * nmx + nmz * nmz + 1.0)
-                        sf = gnoise2(x / 9.0, z / 9.0, 75) * 0.06 + gnoise2(x * 0.9, z * 0.9, 76) * 0.035
+                        if Q[18] > 0.0:
+                            # ADDITIVE (v3): sample the fine snow noise in a height-skewed domain so steep faces
+                            # do not show it stretched down the fall line (the "combed" streak tell)
+                            sk = Q[18] * h0
+                            sf = gnoise2((x + 0.8 * sk) / 9.0, (z - 0.6 * sk) / 9.0, 75) * 0.06 \
+                                + gnoise2((x + 0.8 * sk) * 0.9, (z - 0.6 * sk) * 0.9, 76) * 0.035
+                        else:
+                            sf = gnoise2(x / 9.0, z / 9.0, 75) * 0.06 + gnoise2(x * 0.9, z * 0.9, 76) * 0.035
                         sv = 0.42 * ny + 0.33 * nmy + 0.25 * nsy + sn * 0.6 + sf
                         sneat = smoothstep(Q[3], Q[4], sv)
                         snow = snow + (sneat - snow) * wf

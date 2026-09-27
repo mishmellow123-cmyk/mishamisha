@@ -69,25 +69,24 @@ def uv(u, v, y=0.0):
 # crest knots (u along the arete, v lateral wander, crest height)
 KNOTS = [(-330.0, 0.0, 188.0), (-235.0, 7.0, 158.0), (-150.0, -3.0, 142.0), (-70.0, 4.0, 131.0),
          (-10.0, -2.0, 126.0), (60.0, 3.0, 133.0), (150.0, -4.0, 158.0), (255.0, 0.0, 206.0)]
-WF_U = (-128.0, 52.0)                        # the two watch-fires of this stretch (behind, ahead)
+# the four watch-fires the line passes (A18: bars 64, 67, 70, 73 = shot frames 160, 400, 640, 880). The first stands
+# on a shoulder beside the path, so the bearers walk past it; the others stand on pinnacles beyond the arete, each
+# placed on the camera's line of sight through the lantern at its bar, so the lantern passes in front of it
+PASS_FRAMES = (160, 400, 640, 880)
+PASS_BEYOND = (None, 70.0, 160.0, 300.0)       # metres beyond the lantern along that line of sight
 
 
-def build_set():
+def build_arete():
     rows = []
     for k in range(len(KNOTS) - 1):
         a, b = KNOTS[k], KNOTS[k + 1]
         pa, pb = uv(a[0], a[1], a[2]), uv(b[0], b[1], b[2])
-        rows.append(WD.ridge_row(pa, pb, wl=15.0, wr=13.0, seed=41 + 3 * k, k=6.0, detail=0.24, slope=1.9))
+        # detail 0.14 (was 0.24): the deep gullies read as combed streaks on the steep flanks at close range
+        rows.append(WD.ridge_row(pa, pb, wl=15.0, wr=13.0, seed=41 + 3 * k, k=6.0, detail=0.14, slope=1.9))
     for (u, top, seed, ang) in ((-338.0, 196.0, 7, 0.4), (262.0, 214.0, 11, -0.3)):
         p = uv(u, 0.0)
         rows.append(WD.crag_row(p[0], p[2], top, L=16.0, s_hi=2.4, s_lo=1.35, aniso=1.4, ang=math.radians(YAW_E) + ang,
                                 seed=seed, k=7.0, detail=0.3, shelf=2.0, nf=4))
-    # the watch-fire steps: a small rock shoulder beside the crest (camera side) for each fire
-    for u in WF_U:
-        cr = _knot_y(u)
-        p = uv(u, 5.5)
-        rows.append(WD.crag_row(p[0], p[2], cr - 1.2, L=3.5, s_hi=2.0, s_lo=1.6, aniso=1.2, ang=math.radians(YAW_E),
-                                seed=int(abs(u)) + 3, k=2.5, detail=0.25, shelf=1.4, nf=4))
     return np.array(rows)
 
 
@@ -97,13 +96,15 @@ def _knot_y(u):
     return float(np.interp(u, us, ys))
 
 
-CR = build_set()
+CR0 = build_arete()
+CR0[:, 14] = 0.95                                # crags and ridges: the safe early-out bound (world, v3 flag)
+CR = CR0                                         # replaced by CR0 + the watch-fire sites below (_fire_sites)
 
 
-def ground_many(P, fp=0.02):
+def ground_many(P, fp=0.02, CRx=None):
     P = np.asarray(P, np.float64).reshape(-1, 3)
     out = np.zeros(len(P))
-    WD.heights(P[:, 0].copy(), P[:, 2].copy(), fp, CR, out)
+    WD.heights(P[:, 0].copy(), P[:, 2].copy(), fp, CR if CRx is None else CRx, out)
     return out
 
 
@@ -117,13 +118,13 @@ def _build_path():
     UU, VV = np.meshgrid(us, vs, indexing='ij')
     pts = C0[None, None, :] + E3[[0, 2]] * UU[..., None] + S3[[0, 2]] * VV[..., None]
     h = np.zeros(UU.size)
-    WD.heights(pts[..., 0].ravel().copy(), pts[..., 1].ravel().copy(), 0.02, CR, h)
+    WD.heights(pts[..., 0].ravel().copy(), pts[..., 1].ravel().copy(), 0.02, CR0, h)
     h = h.reshape(UU.shape)
     vbest = vs[np.argmax(h, axis=1)]
     from scipy.ndimage import gaussian_filter1d
     v = gaussian_filter1d(vbest, 6.0, mode='nearest')          # sigma 3 m
     P = np.stack([uv(u, vv) for u, vv in zip(us, v)])
-    y = ground_many(P)
+    y = ground_many(P, CRx=CR0)
     y = np.maximum(gaussian_filter1d(y, 1.2, mode='nearest'), y - 0.04)
     P[:, 1] = y
     seg = np.linalg.norm(np.diff(P, axis=0), axis=1)
@@ -163,8 +164,8 @@ S_L0 = None                                   # arc length of the lantern at fra
 
 def variant_cfg(variant):
     if variant == 'few':
-        return dict(n=12, gap=4.2, jit=0.5, r1=52.0, dT=12.0, hfov1=46.0, h1=1.6, r0=5.5)
-    return dict(n=40, gap=2.6, jit=0.35, r1=64.0, dT=17.0, hfov1=48.0, h1=2.2, r0=5.5)
+        return dict(n=12, gap=4.2, jit=0.5, r1=52.0, dT=12.0, hfov1=46.0, h1=1.6, r0=9.5)
+    return dict(n=40, gap=2.6, jit=0.35, r1=64.0, dT=17.0, hfov1=48.0, h1=2.2, r0=9.5)
 
 
 def _hh(i, j=0):
@@ -195,18 +196,73 @@ def line_s(t, cfg):
     return np.array(out)
 
 
-def walk_phase(sk, k):
-    # phase follows the distance actually walked, so the feet never slide
-    stride = 0.75 * (0.92 + 0.16 * _hh(k, 5))
-    return 2 * math.pi * (sk / stride + _hh(k, 6))
+STANCE = 0.62                                    # fraction of the cycle a foot is planted (a slow, careful walk)
+
+
+def stride_of(i):
+    """Stride (m) of figure i (0, 1 = the bearers: short, loaded steps)."""
+    return 0.62 if i < 2 else 0.75 * (0.92 + 0.16 * _hh(i, 5))
+
+
+def foot_cycle(s, S, ph, delta):
+    """Where one foot is along the path (arc length) and how high it is lifted, for a body at arc s. A planted foot
+    stays exactly where it was put (no sliding); it is under the body at mid-stance and swings to the next plant."""
+    v = s / S + ph + delta
+    k = math.floor(v)
+    c = v - k
+    sp = S * (k + 0.5 * STANCE - ph - delta)
+    if c < STANCE:
+        return sp, 0.0
+    u = (c - STANCE) / (1.0 - STANCE)
+    return sp + S * u * u * (3.0 - 2.0 * u), 0.10 * math.sin(math.pi * u)
+
+
+def walk_phase(s, i):
+    """Cycle phase (radians) of figure i at arc s, for the cloak's swing."""
+    return 2 * math.pi * (s / stride_of(i) + _hh(i, 6))
+
+
+def plant(figs):
+    """Feet and pelvises for figures [(arc s, index i, height h, crouch m)]: each foot planted on the real terrain
+    (one height query for all), the pelvis lowered wherever a leg could not otherwise reach its foot."""
+    feet = []
+    for (s_, i, h, cr) in figs:
+        S = stride_of(i)
+        ph = _hh(i, 6)
+        for delta, side in ((0.0, 1.0), (0.5, -1.0)):
+            sf, lift = foot_cycle(s_, S, ph, delta)
+            feet.append((sf, side, lift, h))
+    sfs = np.array([f[0] for f in feet])
+    P, Wd = at(sfs)
+    lat = np.cross(UP[None, :], Wd)
+    Q = P + lat * np.array([f[1] * 0.10 * f[3] for f in feet])[:, None]
+    gy = ground_many(Q)
+    Q[:, 1] = np.maximum(gy, P[:, 1] - 0.05) + np.array([0.075 * f[3] + f[2] for f in feet])
+    out = []
+    for n_, (s_, i, h, cr) in enumerate(figs):
+        pb, wb = at(s_)
+        aL, aR = Q[2 * n_], Q[2 * n_ + 1]
+        latb = np.cross(UP, wb)
+        pel = pb + UP * (0.93 * h - cr)
+        for a, side in ((aL, 1.0), (aR, -1.0)):
+            hip = pel + latb * side * 0.085 * h
+            dxz = math.hypot(a[0] - hip[0], a[2] - hip[2])
+            L = 0.91 * h * 0.985
+            pel[1] = min(pel[1], a[1] + math.sqrt(max(L * L - dxz * dxz, 0.0)))
+        out.append((pel, aL, aR, wb))
+    return out
 
 
 # ------------------------------------------------------------------ the two clocks ---
 SKY_DEG = 46.0                                # the sky turns ~3 hours over the shot
 
 
+T_WHEEL = 320 / FPS                              # bar 66 b1: the sky begins to wheel (T13 lands with it)
+T_WIDE = 560 / FPS                               # bar 69 b1: the camera has settled; star trails may open
+
+
 def _rate(t):
-    return smoothstep(7.0, 17.0, t) * (1.0 - 0.35 * smoothstep(31.0, 40.0, t))
+    return smoothstep(T_WHEEL, T_WHEEL + 6.0, t) * (1.0 - 0.35 * smoothstep(31.0, 40.0, t))
 
 
 _CLK = None
@@ -283,19 +339,24 @@ def camera(frame, W=1920, H=804, cfg=None):
     cfg = cfg or variant_cfg('main')
     t = frame / FPS
     L = heart_pos(t)
-    # the draw-back starts within a second of the match cut (a cubic ease: it is under way by 3 s) and settles at
-    # 26 s; the swing from behind to side-on runs alongside it
-    e1 = _ss((t - 1.0) / 25.0)
-    e2 = _ss((t - 1.0) / 24.0)
+    # bar 63 b1 (3.33 s): the draw-back begins (a cubic ease); it settles on bar 69 b1 (23.33 s), in time for the
+    # narrowest stretch; the swing from behind to side-on runs alongside it
+    e1 = _ss((t - 80 / FPS) / 20.0)
+    e2 = _ss((t - 80 / FPS) / 19.0)
     r = cfg['r0'] * (cfg['r1'] / cfg['r0']) ** e1
-    beta = math.radians(14.0 + 60.0 * e2)
-    h = 1.25 + (cfg['h1'] - 1.25) * e1 ** 1.3
+    # side-on from the first frame, a little behind the lantern and below the crest, so the bearers stand in
+    # profile on the crest's skyline against the stars, feet on the snow; the draw-back rises to crest level
+    beta = math.radians(72.0 + 4.0 * e2)
+    h = -0.9 + (cfg['h1'] + 0.9) * e1 ** 1.3
     pos = L + (-E3 * math.cos(beta) + S3 * math.sin(beta)) * r + UP * h
-    T = L - E3 * cfg['dT'] * e1 - UP * 0.3 * e1
-    d = T - pos
-    yaw = math.degrees(math.atan2(d[0], d[2]))
+    hfov = 38.0 + (cfg['hfov1'] - 38.0) * e1
+    # frame the lantern directly: centred for the match cut, easing to 80% across the frame in the wide (the line
+    # trails away to the left), a little below the centre so the sky has room to turn
+    d = L - pos
+    x_frac = 0.5 + 0.30 * e1
+    off = math.degrees(math.atan(math.tan(math.radians(hfov) * 0.5) * (2.0 * x_frac - 1.0)))
+    yaw = math.degrees(math.atan2(d[0], d[2])) - off
     pitch = math.degrees(math.atan2(d[1], math.hypot(d[0], d[2]))) + 3.0 * e1
-    hfov = 32.0 + (cfg['hfov1'] - 32.0) * e1
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
 
 
@@ -315,62 +376,98 @@ def _ug_table():
             dirv = -S3 * math.cos(ang) + E3 * math.sin(ang)
             c = uv(0.0, 0.0) + dirv * dist
             rad = rng.uniform(1400.0, 3600.0) * (0.6 + 0.4 * dist / 30000.0)
-            out_at = rng.uniform(6.0, 44.0) if k >= 3 else rng.uniform(47.0, 60.0)
+            out_at = rng.uniform(655.0, 945.0) / FPS if k >= 3 else rng.uniform(1000.0, 1300.0) / FPS
             rows.append([c[0], c[2], rad, out_at, rng.uniform(0.6, 1.0), rng.uniform(0, 6.28)])
         _UG = np.array(rows)
     return _UG
 
 
 def underglow(t):
-    """Patch table for WD.cloud_glow at shot time t: each patch dies on the sky clock, with a last flicker."""
-    a = sky_angle(t)
+    """Patch table for WD.cloud_glow at shot time t: steady until bar 70 b1 (f640), then each patch goes out at its
+    own time, with a last flicker."""
     T = _ug_table()
     out = []
     col = np.array([1.0, 0.34, 0.07]) * 1.4      # orange-red: crimson over blue moonlit cloud reads magenta
     for x, z, rad, a_out, g, ph in T:
-        live = 1.0 - smoothstep(a_out - 3.5, a_out, a)
+        live = 1.0 - smoothstep(a_out - 1.4, a_out, t)
         if live <= 0.0:
             continue
-        fl = 1.0 + 0.25 * math.sin(7.0 * t + ph) * smoothstep(a_out - 6.0, a_out - 2.0, a) * live
+        fl = 1.0 + 0.25 * math.sin(7.0 * t + ph) * smoothstep(a_out - 3.0, a_out - 1.0, t) * live
         I = g * live * fl
         out.append([x, z, rad, col[0] * I, col[1] * I, col[2] * I, 900.0, 0.35])
     return np.array(out, np.float64).reshape(-1, 8)
 
 
 # ------------------------------------------------------------------ watch-fires ---
-def wf_positions():
+def _fire_sites():
+    """The four watch-fires and the rock that carries each (CR rows). Built from the main variant's camera."""
+    cfg = variant_cfg('main')
+    sites = []
+    rows = []
+    for k, (f, D) in enumerate(zip(PASS_FRAMES, PASS_BEYOND)):
+        t = f / FPS
+        L = heart_pos(t)
+        if D is None:
+            # a rock shoulder just beyond the crest (away from the camera), level with the lantern at its bar:
+            # the bearers pass in front of its fire as backlit silhouettes
+            p, w = at(lantern_s(t))
+            north = np.cross(UP, w)
+            q = p + north * 2.6 + w * 0.3
+            top = p[1] - 0.40
+            rows.append(WD.crag_row(q[0], q[2], top, L=3.0, s_hi=2.2, s_lo=1.7, aniso=1.25,
+                                    ang=math.radians(YAW_E), seed=31, k=2.5, detail=0.2, shelf=1.2, nf=4))
+            sites.append(np.array([q[0], top, q[2]]))
+        else:
+            cam = camera(f, cfg=cfg).pos
+            d = L - cam
+            d /= np.linalg.norm(d)
+            q = L + d * D
+            top = q[1] - 0.9
+            rows.append(WD.crag_row(q[0], q[2], top, L=10.0 + 3.0 * k, s_hi=2.8, s_lo=1.55, aniso=1.3,
+                                    ang=math.radians(YAW_E + 25.0 * k), seed=50 + 7 * k, k=6.0, detail=0.24,
+                                    shelf=1.5, nf=4))
+            sites.append(np.array([q[0], top, q[2]]))
+    return sites, np.array(rows)
+
+
+def _finish_set():
+    global CR, _WF
+    sites, rows = _fire_sites()
+    rows[:, 14] = 0.95
+    CR = np.vstack([CR0, rows])
+    # each fire stands on the highest point of its rock's summit shelf
     out = []
-    for u in WF_U:
-        # the top of the little rock step
+    for q in sites:
         best = None
-        for dv in np.linspace(-2.5, 2.5, 11):
-            for du in np.linspace(-2.5, 2.5, 11):
-                q = uv(u + du, 5.5 + dv)
-                q[1] = ground_many(q)[0]
-                if best is None or q[1] > best[1]:
-                    best = q
+        for dv in np.linspace(-1.6, 1.6, 9):
+            for du in np.linspace(-1.6, 1.6, 9):
+                c = q + np.array([du, 0.0, dv])
+                c[1] = ground_many(c)[0]
+                if best is None or c[1] > best[1]:
+                    best = c
         out.append(best)
-    return out
+    _WF = out
 
 
 _WF = None
 
 
 def wfs():
-    global _WF
     if _WF is None:
-        _WF = wf_positions()
+        _finish_set()
     return _WF
 
 
 def wf_burn(t, k):
-    """Watch-fire k: burns low on the sky clock and is fed (a flare) every ~13 degrees of sky."""
-    a = sky_angle(t) + 5.0 * k
+    """Watch-fire k: burns low on the sky clock and is fed (a flare) every ~13 degrees of sky; before the sky
+    wheels it simply burns."""
+    a = sky_angle(t) + 4.0 * k
     period = 13.0
     ph = (a % period) / period
     since = ph * period
     b = 0.32 + 0.68 * math.exp(-since / 5.5)
-    return b, ph
+    w = smoothstep(0.0, 2.0, sky_angle(t))
+    return (1.0 - w) * 0.85 + w * b, ph if w > 0.5 else 0.0
 
 
 _FAR = None
@@ -497,8 +594,10 @@ def draw_sky(fr, t, pxs):
     st = stars()
     a = sky_angle(t)
     mask = (fr.dist > 1e8).astype(np.float32)
-    expo = min(a, 6.0) * smoothstep(0.0, 6.0, a)          # degrees of arc in each trail (short: the sky
-    # turns, it is not a star-trail photograph)
+    # the long exposure opens only once the camera has settled on the wide, with the pole in frame, so every
+    # trail is a concentric arc from its first frame (no warp-speed streaks while the camera swings); arcs are
+    # short (6 deg): the sky turns, it is not a star-trail photograph
+    expo = float(np.clip(a - sky_angle(T_WIDE), 0.0, 6.0))
     M = 2 if expo < 0.05 else int(8 + 16 * min(expo / 10.0, 1.0))
     angs = a - expo * (1.0 - np.linspace(0.0, 1.0, M))
     D = st['dir']
@@ -554,6 +653,9 @@ def night(t):
     Lk[3:6] = Lk[3:6] * (1 - 0.35 * warm) + np.array([0.75, 0.55, 0.40]) * 0.35 * warm
     Q = Q.copy()
     Q[0] = 0.55 * mf
+    Q[18] = 1.0                                  # anti-streak snow noise on the steep flanks (world.shade flag)
+    Q[3] = 0.30                                  # snow holds on steeper ground: the upper flanks read as fluted
+    Q[4] = 0.54                                  # snow, not black-and-white combed stripes
     amb = amb * (0.55 + 0.45 * mf)
     S = SK.sky_params(zenith='#070B1C', horizon='#2A3866', moon_dir=md, moon_radius_deg=0.8,
                       halo_I=0.025 * mf, halo_w=0.22, halo2_I=0.012 * (0.3 + 0.7 * mf), halo2_w=0.7,
@@ -562,79 +664,136 @@ def night(t):
 
 
 # ------------------------------------------------------------------ the scene at time t ---
+def _shoulders(pel, w, h, lean):
+    """The same shoulder points SP.traveller builds (left, right), so the poles can rest on them."""
+    sd = np.cross(UP, w)
+    fl = w * math.sin(lean) + UP * math.cos(lean)
+    chest = pel + fl * 0.47 * h
+    return chest + UP * 0.02 * h + sd * 0.19 * h, chest + UP * 0.02 * h - sd * 0.19 * h
+
+
+_KEEP = {}
+
+
+def keeper_spot(k):
+    """Where fire k's keeper stands: on the camera side of the fire (so the fire backlights them and never
+    lights a face), on the highest footing 0.7-1.1 m from it."""
+    if k not in _KEEP:
+        p = wfs()[k]
+        cam = camera(PASS_FRAMES[k], cfg=variant_cfg('main')).pos
+        d = cam - p
+        d[1] = 0.0
+        d /= np.linalg.norm(d)
+        if k == 0:
+            # the near fire sits just beyond the crest: its keeper kneels on its west side, in profile, facing it
+            # (below the poles as the bearers pass, and never front-lit)
+            _, w = at(lantern_s(PASS_FRAMES[0] / FPS))
+            d = -w.copy()
+        side = np.cross(UP, d)
+        best = None
+        for r in (0.7, 0.85, 1.0, 1.1):
+            for o in (-0.35, 0.0, 0.35):
+                q = p + d * r + side * o
+                q[1] = ground_many(q)[0]
+                if best is None or q[1] > best[1] + 0.05:
+                    best = q
+        _KEEP[k] = (best, -d)
+    return _KEEP[k]
+
+
 def build_scene(t, cfg):
     sc = SP.Scene()
     S_ = line_s(t, cfg)
-    P, Wd = at(S_)
+    n = len(S_)
+    hts = [1.0, 1.03] + [0.93 + 0.14 * _hh(k, 14) for k in range(cfg['n'])]
+    # the bearers walk loaded: knees a little bent, shorter steps (stride_of)
+    planted = plant([(S_[i], i, hts[i], 0.04 if i < 2 else 0.0) for i in range(n)])
     lights = []
     lant = []
     waists = []
     hc = heart_col(t)
     br = breath(t)
-    # the two bearers and the great lantern
-    pf, pr = P[0], P[1]
-    w0 = Wd[0]
-    lat = np.cross(UP, w0)
+    # ---- the great lantern on its poles, carried by two cloaked bearers
+    lean_b = 0.14
+    (pf, aLf, aRf, wf_), (pr, aLr, aRr, wr_) = planted[0], planted[1]
+    fL, fR = _shoulders(pf, wf_, 1.0, lean_b)
+    rL, rR = _shoulders(pr, wr_, 1.03, lean_b)
+    lat = np.cross(UP, wf_)
+    poles = ((fL + UP * 0.075 + wf_ * 0.35, rL + UP * 0.075 - wr_ * 0.35),
+             (fR + UP * 0.075 + wf_ * 0.35, rR + UP * 0.075 - wr_ * 0.35))
+    carry_f = (fL + UP * 0.05 + wf_ * 0.13, fR + UP * 0.05 + wf_ * 0.13)
+    carry_r = (rL + UP * 0.05 + wr_ * 0.13, rR + UP * 0.05 + wr_ * 0.13)
     ph_f = walk_phase(S_[0], 0)
     ph_r = walk_phase(S_[1], 1)
-    bob_f = 0.018 * math.cos(2 * ph_f)
-    bob_r = 0.018 * math.cos(2 * ph_r)
-    shf = pf + UP * (1.47 + bob_f)
-    shr = pr + UP * (1.47 + bob_r)
-    tips = []
-    for side in (1.0, -1.0):
-        a_ = shf + lat * side * 0.26 + w0 * 0.35
-        b_ = shr + lat * side * 0.26 - w0 * 0.35
-        tips.append((a_, b_))
-    fr_carry = (shf + lat * 0.24 + w0 * 0.12 - UP * 0.03, shf - lat * 0.24 + w0 * 0.12 - UP * 0.03)
-    rr_carry = (shr + lat * 0.24 + w0 * 0.12 - UP * 0.03, shr - lat * 0.24 + w0 * 0.12 - UP * 0.03)
-    out_f = SP.walker(sc, pf, w0, ph_f, (0.022, 0.018, 0.016), carry=fr_carry, pack=False, height=1.0, lean=0.1,
-                     carry_side=1.0)
-    out_r = SP.walker(sc, pr, Wd[1], ph_r, (0.04, 0.042, 0.05), carry=rr_carry, pack=False, height=1.03, lean=0.1,
-                     carry_side=-1.0)
+    SP.traveller(sc, pf, wf_, aLf, aRf, (0.022, 0.018, 0.016), h=1.0, lean=lean_b, hem=0.21, cloak=(0.22, 0.37),
+                 folds=10, fold_depth=0.034, fold_phase=0.8 * math.sin(ph_f) + 1.1, sway=0.025 * math.sin(ph_f),
+                 carry=carry_f, carry_side=1.0, free_swing=0.06 * math.sin(ph_f), peak=True)
+    SP.traveller(sc, pr, wr_, aLr, aRr, (0.030, 0.030, 0.036), h=1.03, lean=lean_b, hem=0.21, cloak=(0.22, 0.37),
+                 folds=11, fold_depth=0.034, fold_phase=0.8 * math.sin(ph_r) + 2.3, sway=0.025 * math.sin(ph_r),
+                 carry=carry_r, carry_side=-1.0, free_swing=0.06 * math.sin(ph_r), peak=False)
     sc.begin(rgb=(0.1, 0.07, 0.05))
-    for a_, b_ in tips:
+    for a_, b_ in poles:
         sc.cone(a_, b_, 0.028, 0.028, 2, 0.0)
-    mid = 0.5 * (shf + shr)
-    sc.cone(mid + lat * 0.3 + UP * 0.03, mid - lat * 0.3 + UP * 0.03, 0.022, 0.022, 2, 0.0)   # crossbar
-    heart = heart_pos(t)
-    sc.cone(mid + UP * 0.03, heart + UP * RING, 0.008, 0.008, 1, 0.0)  # the hook
+    mid = 0.25 * (poles[0][0] + poles[0][1] + poles[1][0] + poles[1][1])
+    sc.cone(mid + lat * 0.30, mid - lat * 0.30, 0.022, 0.022, 2, 0.0)                     # crossbar
+    heart = mid - UP * (0.10 + RING) + _swing(t) * wf_
+    sc.cone(mid, heart + UP * RING, 0.008, 0.008, 1, 0.0)                                # the hook
     sc.end()
     SP.great_lantern(sc, heart, math.radians(YAW_E) + 0.3, hc, 0.9 * br, scale=LANT_K)
     lights.append([heart[0], heart[1], heart[2], hc[0], hc[1], hc[2], 2.6 * br, 0.35])
-    waists += [out_f['waist'], out_r['waist']]
-    # the roped walkers
+    waists += [0.5 * (pf + pr), pr]          # the rope is tied in at the rear bearer's waist
+    # ---- the roped walkers: hooded wool cloaks and coats, packs, staffs; no two alike
     pal = [(0.07, 0.035, 0.028), (0.04, 0.045, 0.06), (0.06, 0.05, 0.03), (0.035, 0.045, 0.035), (0.05, 0.05, 0.05),
-           (0.075, 0.04, 0.03)]
+           (0.075, 0.04, 0.03), (0.055, 0.042, 0.038)]
     for k in range(cfg['n']):
         i = k + 2
+        pel, aL, aR, w = planted[i]
         ph = walk_phase(S_[i], i)
-        o = SP.walker(sc, P[i], Wd[i], ph, pal[int(_hh(k, 11) * len(pal))], lantern='hand',
-                      staff=_hh(k, 12) < 0.35, pack=_hh(k, 13) < 0.8, height=0.93 + 0.14 * _hh(k, 14),
-                      lean=0.06 + 0.08 * _hh(k, 15), lantern_side=1.0 if _hh(k, 16) < 0.45 else -1.0)
+        lside = 1.0 if _hh(k, 16) < 0.45 else -1.0
+        # most wear knee-length hooded wool coats (the legs and the walk show); one in five a long cloak
+        long_ = (0.24 + 0.06 * _hh(k, 17), 0.31 + 0.05 * _hh(k, 19)) if _hh(k, 24) < 0.2 else \
+            (0.44 + 0.12 * _hh(k, 17), 0.24 + 0.05 * _hh(k, 19))
+        tip = None
+        if _hh(k, 12) < 0.35:
+            q, wq = at(S_[i] + 0.5 + 0.12 * math.sin(ph))
+            q = q - np.cross(UP, wq) * (0.22 * lside)
+            q[1] = ground_many(q)[0]
+            tip = q
+        o = SP.traveller(sc, pel, w, aL, aR, pal[int(_hh(k, 11) * len(pal))], h=hts[i], lean=0.07 + 0.07 * _hh(k, 15),
+                         hem=long_[0], cloak=(0.205 + 0.03 * _hh(k, 18), long_[1]),
+                         folds=int(7 + 5 * _hh(k, 20)), fold_depth=0.022 + 0.018 * _hh(k, 21),
+                         fold_phase=0.8 * math.sin(ph) + 6.28 * _hh(k, 22), sway=0.03 * math.sin(ph),
+                         pack=_hh(k, 13) < 0.7, staff_tip=tip, lantern_side=lside,
+                         lantern_swing=0.03 * math.sin(2 * ph - 0.6), free_swing=0.08 * math.sin(ph),
+                         peak=_hh(k, 23) < 0.6)
         waists.append(o['waist'])
-        top = o['lantern']
         I = small_lantern_I(k, t)
-        bc = SP.small_lantern(sc, top, SMALL_COL, 2.2 * I / 0.3)
+        bc = SP.small_lantern(sc, o['lantern'], SMALL_COL, 2.2 * I / 0.3)
         lights.append([bc[0], bc[1], bc[2], SMALL_COL[0], SMALL_COL[1], SMALL_COL[2], I, 0.12])
         lant.append((bc, I))
-    # the watch-fires: stone rings + a keeper
+    # ---- the watch-fires: a ring of stones at the near one; a hooded keeper at each, backlit, feeding it
     for k, p in enumerate(wfs()):
         b, ph = wf_burn(t, k)
-        sc.begin(rgb=(0.07, 0.07, 0.075))
-        rng = np.random.default_rng(70 + k)
-        for m in range(9):
-            a_ = 2 * math.pi * m / 9 + rng.uniform(-0.2, 0.2)
-            q = p + np.array([math.cos(a_), 0.0, math.sin(a_)]) * 0.55
-            sc.box(q + UP * 0.08, (0.16, 0.11, 0.12), yaw=a_, rnd=0.05, mat=5, k=0.0)
-        sc.end()
+        if k == 0:
+            sc.begin(rgb=(0.07, 0.07, 0.075))
+            rng = np.random.default_rng(70 + k)
+            for m in range(13):
+                a_ = 2 * math.pi * m / 13 + rng.uniform(-0.15, 0.15)
+                q = p + np.array([math.cos(a_), 0.0, math.sin(a_)]) * (0.50 + rng.uniform(-0.04, 0.05))
+                hs = rng.uniform(0.6, 1.0)
+                sc.box(q + UP * 0.05 * hs, (0.09 * hs, 0.07 * hs, 0.08 * hs), yaw=a_ + rng.uniform(-0.5, 0.5),
+                       pitch=rng.uniform(-0.3, 0.3), rnd=0.025, mat=5, k=0.0)
+            sc.end()
         feed = smoothstep(0.86, 0.93, ph) * (1.0 - smoothstep(0.97, 1.0, ph))
-        kp = p + S3 * 0.9 - E3 * 0.8
-        wk = (p - kp)
-        wk[1] = 0
-        wk /= np.linalg.norm(wk)
-        o = SP.walker(sc, kp + UP * 0.0, wk, 0.4, (0.08, 0.06, 0.05), pack=False, height=0.98,
-                      lean=0.1 + 0.9 * feed)
+        kp, wk = keeper_spot(k)
+        side = np.cross(UP, wk)
+        aL = kp + side * 0.12 + UP * 0.07
+        aR = kp - side * 0.12 + wk * 0.08 + UP * 0.07
+        kneel = 0.34 if k == 0 else 0.0
+        pel = kp + UP * (0.93 * 0.98 - 0.30 * feed - kneel)
+        SP.traveller(sc, pel, wk, aL, aR, (0.03, 0.025, 0.02), h=0.98, lean=0.10 + 0.55 * feed + 0.3 * (k == 0), hem=0.24,
+                     cloak=(0.21, 0.35), folds=9, fold_depth=0.03, fold_phase=1.3 * k, peak=True,
+                     reach=(p + UP * 0.25) if feed > 0.2 else None)
         fl = F.flicker(t, 30 + k)
         lights.append([p[0], p[1] + 0.9, p[2], F.FIRE_LIGHT[0], F.FIRE_LIGHT[1], F.FIRE_LIGHT[2], 9.0 * b * fl, 0.8])
     return sc, lights, lant, waists, heart
