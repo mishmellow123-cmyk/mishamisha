@@ -10,8 +10,11 @@
     python book_c.py frames --frames 700,760,840 --scale 0.5 --out DIR  # tests
     python book_c.py export --out renders/book_C                        # x1_letters.json for EMBERS (spark seeds)
 
-Every frame is a pure function of its C frame number. The layer is premultiplied colour (with the fire and sparks
-added on top) plus a matte: EDIT comps out = rgb + (1 - matte) * next shot. Text lines are EDIT's (T1 is written in
+Every frame is a pure function of its C frame number. The layer is premultiplied colour plus a matte: EDIT comps
+out = rgb + (1 - matte) * next shot. C4-C5 (560-1040) is PAGE ONLY (director, agreed with EMBERS-C): the letters
+glow and each stroke flares and goes out on its locked timing, the page is lit by the fire (point lights), the page
+burns and opens; the sparks, the ember and the flame are EMBERS-C's (renders/embers_C3_e15, added by EDIT; seeds
+from `Kindling` / `export`). `--with-fire` draws MAP's own fire for tests. Text lines are EDIT's (T1 is written in
 the Mountain's caption band, T7 on the Deep, T14 on the first healed blank page, the title on the last).
 """
 import argparse
@@ -310,6 +313,23 @@ def fire_layer(cam, K, t, W, H):
     return img, (np.array(xl) if xl else None)
 
 
+def fire_lights(K, t):
+    """The fire's light on the page only: the gathering ember and the flame as point lights (the same values
+    fire_layer returns), for the PAGE-ONLY C4-C5 layer (director, 27 Sep, agreed with EMBERS-C: EMBERS renders the
+    sparks, the ember and the flame into renders/embers_C3_e15; EDIT adds them over book_C)."""
+    base = K.Fw + np.array([0, 0, 0.02])
+    xl = []
+    e = K.ember(t)
+    if e > 0.01:
+        xl.append([base[0], base[1], base[2] + 0.4, 0.5 * e, 0.22 * e, 0.06 * e])
+    h = K.flame_h(t)
+    if h > 0.02:
+        calm = ramp(t, K.T_BURN + 2.0, K.T_BURN + 5.0)
+        pw = 1.6 * h * (1.0 + (0.12 * math.sin(t * 17.0) + 0.08 * math.sin(t * 29.0)) * (1 - 0.6 * calm))
+        xl.append([base[0], base[1], base[2] + 0.6 * h, pw, pw * 0.5, pw * 0.16])
+    return np.array(xl) if xl else None
+
+
 # ================================================================== pages ===
 
 def dense_leaf(seed=61):
@@ -323,10 +343,11 @@ def dense_leaf(seed=61):
 class Book3:
     """The book shots of C, sharing pages and textures."""
 
-    def __init__(self, W=1920, H=804):
+    def __init__(self, W=1920, H=804, with_fire=False):
         self.W, self.H = W, H
         self.books = {}
         self.cache = {}
+        self.with_fire = with_fire      # C4-C5: MAP's own sparks and flame (tests only; the delivery is PAGE ONLY)
 
     def book(self, TL, TR, seed=3):
         key = (round(TL, 3), round(TR, 3), seed)
@@ -499,7 +520,12 @@ class Book3:
         # the hearth sinks low until the page is almost dark; then the letters and the fire light it
         power = 2.2 - 1.9 * ramp(t, 0.5, 5.0)
         L = self.light((-50, 48, 36), power, t, amt=0.12)
-        fire, xl = fire_layer(cam, K, t, self.W, self.H)
+        # PAGE ONLY (contract with EMBERS-C): the page lit by the fire, not the fire; stroke timings and the camera
+        # are EMBERS-C's seeds and must not change without telling them
+        if self.with_fire:
+            fire, xl = fire_layer(cam, K, t, self.W, self.H)
+        else:
+            fire, xl = None, fire_lights(K, t)
         post = None
         if t > K.T_FIRE:
             Fu, Fv = float(K.Fw[0]), float(0.5 * bk.PH - K.Fw[1])
@@ -751,12 +777,13 @@ def main():
     ap.add_argument('--frames', default='')
     ap.add_argument('--out', default=os.path.join(ROOT, 'renders', 'book_C'))
     ap.add_argument('--scale', type=float, default=1.0)
+    ap.add_argument('--with-fire', action='store_true', help="C4-C5 tests: add MAP's own sparks and flame")
     a = ap.parse_args()
     W, H = int(1920 * a.scale), int(804 * a.scale)
     if a.what == 'export':
         export_letters(a.out, W, H)
         return
-    b3 = Book3(W, H)
+    b3 = Book3(W, H, with_fire=a.with_fire)
     matte = a.out.rstrip('/') + '_matte'
     for f in frames_of(a.frames):
         t0 = time.time()
