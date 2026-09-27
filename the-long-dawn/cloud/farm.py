@@ -86,6 +86,9 @@ MISSION = os.environ.get('LDFARM_MISSION', 'long-dawn-render-farm')
 PORT = 8700
 MAX_CPU = int(os.environ.get('LDFARM_MAX_CPU', '30'))
 MAX_GPU = int(os.environ.get('LDFARM_MAX_GPU', '2'))
+SSH_GPU_AFTER_S = int(os.environ.get('LDFARM_SSH_GPU_AFTER_S', '180'))  # M4 Metal takes Cycles units after this wait
+FINAL_AGING_S = int(os.environ.get('LDFARM_FINAL_AGING_S', '300'))   # finals never wait longer than this behind tests
+MAX_QUEUED = int(os.environ.get('LDFARM_MAX_QUEUED', '4'))      # nodes per pool waiting in a capacity queue
 MAX_BOOTING = int(os.environ.get('LDFARM_MAX_BOOTING', '4'))  # nodes creating/queued/waking at once
 MAX_SPILL = int(os.environ.get('LDFARM_MAX_SPILL', '6'))    # extra h100-1 nodes that take CPU units while cpu-8 has no room
 MAX_STREAM = int(os.environ.get('LDFARM_MAX_ENDPOINTS', '15'))
@@ -93,14 +96,14 @@ TEST_RESERVE = int(os.environ.get('LDFARM_TEST_RESERVE', '2'))  # slots finals l
 SPEND_WARN = float(os.environ.get('LDFARM_SPEND_WARN', '150'))
 SPEND_STOP = float(os.environ.get('LDFARM_SPEND_STOP', '200'))
 KINDS = {'cpu': dict(chip='cpu-8', prefix='ldf-c', cpu=8, cap=MAX_CPU),
-         'gpu': dict(chip='h100-1', prefix='ldf-g', cpu=14, cap=MAX_GPU)}
+         'gpu': dict(chip='h100-1', prefix='ldf-g', cpu=14, cap=MAX_GPU),
+         'ssh': dict(chip='ssh', prefix='ldf-m', cpu=8, cap=0)}      # our own machines over ssh (ssh_nodes.json)
 BATCH = 16                                                        # frames per download request
 
 BOOT = r'''set -e
 export PATH=$HOME/.local/bin:$PATH
 mkdir -p ~/ld/runs && cd ~/ld
 pkill -f "farm_node[.]py agent" || true
-[ -f ~/ld/runs/pgids ] && for g in $(cat ~/ld/runs/pgids); do kill -TERM -$g 2>/dev/null; done; rm -f ~/ld/runs/pgids
 command -v uv >/dev/null 2>&1 || (curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1)
 [ -d mishamisha/.git ] || git clone -q --single-branch --branch claude/long-dawn-v2 --depth 1 --filter=blob:none https://github.com/mishmellow123-cmyk/mishamisha
 git -C mishamisha fetch -q --depth 1 origin claude/long-dawn-v2 && git -C mishamisha reset -q --hard FETCH_HEAD
@@ -115,6 +118,39 @@ if command -v nvidia-smi >/dev/null 2>&1; then
 fi
 echo "BOOT OK $(git -C mishamisha rev-parse --short HEAD)"
 '''
+
+SSH_BOOT = r'''set -e
+LDF=$HOME/ldfarm
+mkdir -p "$LDF/bin" "$LDF/config" "$LDF/runs"
+# everything uv writes stays under ~/ldfarm: binary, managed pythons, caches, receipt; no shell profile is touched
+export UV_INSTALL_DIR="$LDF/bin" INSTALLER_NO_MODIFY_PATH=1 UV_NO_MODIFY_PATH=1 XDG_CONFIG_HOME="$LDF/config" \
+       XDG_CACHE_HOME="$LDF/cache" XDG_DATA_HOME="$LDF/share" UV_CACHE_DIR="$LDF/uv-cache" \
+       UV_PYTHON_INSTALL_DIR="$LDF/uv-python" UV_PYTHON_BIN_DIR="$LDF/uv-python-bin" \
+       UV_TOOL_DIR="$LDF/uv-tools" UV_TOOL_BIN_DIR="$LDF/uv-tools-bin" UV_NO_CONFIG=1
+export PATH="$LDF/bin:$PATH"
+pkill -f "ldfarm/farm_node[.]py agent" || true
+[ -x "$LDF/bin/uv" ] || (curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1)
+cd "$LDF"
+[ -d mishamisha/.git ] || git clone -q --single-branch --branch claude/long-dawn-v2 --depth 1 --filter=blob:none https://github.com/mishmellow123-cmyk/mishamisha
+git -C mishamisha fetch -q --depth 1 origin claude/long-dawn-v2 && git -C mishamisha reset -q --hard FETCH_HEAD
+[ -x venv/bin/python ] || uv venv -q --seed --python 3.12 venv
+venv/bin/python -c "import numba, numpy, scipy, cv2, PIL, fontTools, pip" 2>/dev/null || uv pip install -q --python venv/bin/python pip numba==0.67.0 llvmlite==0.49.0 numpy==2.5.3 scipy==1.18.1 opencv-python-headless==4.10.0.84 pillow==12.3.0 fonttools==4.66.0
+if [ -n "$LDFARM_WANT_BPY" ]; then
+  [ -x bpyenv/bin/python ] || uv venv -q --python 3.11 bpyenv
+  [ -d bpyenv/lib/python3.11/site-packages/bpy ] || uv pip install -q --python bpyenv/bin/python bpy==4.5.14
+  bpyenv/bin/python -c "import bpy" >/dev/null 2>&1 && echo "bpy ok"
+fi
+echo "BOOT OK $(git -C mishamisha rev-parse --short HEAD)"
+'''
+SSH_CFG = os.path.join(CFG, 'ssh_nodes.json')
+
+
+def ssh_specs():
+    try:
+        return json.load(open(SSH_CFG))
+    except (OSError, ValueError):
+        return []
+
 
 STOP = threading.Event()
 UNIT_SERIAL = itertools.count(1)
@@ -134,89 +170,144 @@ class ApiError(Exception):
         self.status, self.code, self.message = status, code, message or ''
 
 
-def _token():
-    t = os.environ.get('LDFARM_TOKEN')
-    if not t:
-        p = os.path.join(CFG, 'token')
-        if not os.path.exists(p):
-            sys.exit(f'farm: no credential at {p} (ask FARM to vend one)')
-        t = open(p).read().strip()
-    return t
+class Pool:
+    """One Autoresearch account/workspace the farm can rent from: its own token, endpoint cap, create queue, rate
+    limit, credit and refusal threshold. Node names carry the pool's prefix, so leases stay unique across pools."""
 
+    def __init__(self, name, token_file, field, workspace, mission, spend_stop, prefix, max_stream, cap_note=''):
+        self.name, self.token_file, self.field, self.workspace = name, token_file, field, workspace
+        self.mission, self.spend_stop, self.prefix, self.max_stream = mission, spend_stop, prefix, max_stream
+        self.cap_note = cap_note
+        self._tok = None
+        self._spend = (0, None)
+        self.mission_ok = False
 
-def _meta():
-    try:
-        return json.load(open(os.path.join(CFG, 'token.meta.json')))
-    except (OSError, ValueError):
-        return {}
+    def token(self):
+        if self._tok is None:
+            raw = open(self.token_file).read()
+            self._tok = (json.loads(raw)[self.field] if self.field else raw).strip()
+        return self._tok
 
-
-WORKSPACE = os.environ.get('LDFARM_WORKSPACE') or _meta().get('workspace') or 'long-dawn-farm'
-
-
-def api(method, path, body=None, params=None, timeout=90, tries=14):
-    params = dict(params or {})
-    params['workspace'] = WORKSPACE
-    url = API + path + '?' + urllib.parse.urlencode(params)
-    data = json.dumps(body).encode() if body is not None else None
-    last = None
-    for attempt in range(tries):
-        req = urllib.request.Request(url, data=data, method=method,
-                                     headers={'Authorization': 'Bearer ' + _token(), 'Content-Type': 'application/json'})
+    def meta(self):
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
-                raw = r.read()
-                return json.loads(raw) if raw else {}
-        except urllib.error.HTTPError as e:
-            txt = e.read().decode('utf-8', 'replace')
+            if self.field:
+                d = json.load(open(self.token_file))
+                return {'expires_at': d.get('expires_at'), 'workspace': self.workspace}
+            return json.load(open(os.path.join(os.path.dirname(self.token_file), 'token.meta.json')))
+        except (OSError, ValueError):
+            return {}
+
+    def api(self, method, path, body=None, params=None, timeout=90, tries=14):
+        params = dict(params or {})
+        params['workspace'] = self.workspace
+        url = API + path + '?' + urllib.parse.urlencode(params)
+        data = json.dumps(body).encode() if body is not None else None
+        last = None
+        for attempt in range(tries):
+            req = urllib.request.Request(url, data=data, method=method, headers={
+                'Authorization': 'Bearer ' + self.token(), 'Content-Type': 'application/json'})
             try:
-                err = json.loads(txt).get('error', {})
-            except ValueError:
-                err = {'message': txt[:300]}
-            if e.code == 401:
-                sys.exit('farm: the farm credential was refused (expired?). Ask FARM to vend a new token.')
-            if e.code in (429, 503) or e.code >= 500:
-                last = ApiError(e.code, err.get('code'), err.get('message'))
-                wait = float(e.headers.get('Retry-After') or (2 + 3 * attempt))
-                time.sleep(min(max(wait, 2.0) + random.random() * 3, 60))
-                continue
-            raise ApiError(e.code, err.get('code'), err.get('message'))
-        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
-            last = ApiError(0, 'network', str(e)[:200])
-            time.sleep(2 + 3 * attempt)
-    raise last or ApiError(0, 'unreachable', path)
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    raw = r.read()
+                    return json.loads(raw) if raw else {}
+            except urllib.error.HTTPError as e:
+                txt = e.read().decode('utf-8', 'replace')
+                try:
+                    err = json.loads(txt).get('error', {})
+                except ValueError:
+                    err = {'message': txt[:300]}
+                if e.code == 401:
+                    raise ApiError(401, 'unauthenticated', f'pool {self.name}: the credential was refused (expired?)')
+                if e.code in (429, 503) or e.code >= 500:
+                    last = ApiError(e.code, err.get('code'), err.get('message'))
+                    wait = float(e.headers.get('Retry-After') or (2 + 3 * attempt))
+                    time.sleep(min(max(wait, 2.0) + random.random() * 3, 60))
+                    continue
+                raise ApiError(e.code, err.get('code'), err.get('message'))
+            except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
+                last = ApiError(0, 'network', str(e)[:200])
+                time.sleep(2 + 3 * attempt)
+        raise last or ApiError(0, 'unreachable', path)
+
+    def get_node(self, name):
+        try:
+            return self.api('GET', f'/nodes/{name}')
+        except ApiError as e:
+            if e.status == 404 or 'no node named' in e.message:
+                return None
+            raise
+
+    def list_nodes(self):
+        return self.api('GET', '/nodes').get('items', [])
+
+    def ensure_mission(self):
+        if not self.mission_ok:
+            try:
+                self.api('POST', '/missions', dict(name=self.mission, title='THE LONG DAWN render farm'))
+                self.mission_ok = True
+            except ApiError as e:
+                log(f'pool {self.name}: mission {self.mission}: {e.message[:120]}')
+
+    def mission_cost(self):
+        try:
+            m = self.api('GET', f'/missions/{self.mission}')
+        except ApiError:
+            return None
+        v = (m.get('cost') or {}).get('total_usd')
+        return float(v) if isinstance(v, (int, float)) else None
+
+    def spend(self):
+        t, v = self._spend
+        if time.time() - t > 60:
+            v = self.mission_cost()
+            self._spend = (time.time(), v)
+        return v
+
+    def over_budget(self):
+        v = self.spend()
+        return v is not None and v >= self.spend_stop and not os.environ.get('LDFARM_SPEND_OK')
+
+    def pfx(self, kind):
+        return self.prefix + ('g' if kind == 'gpu' else 'c')
+
+    def owns(self, name):
+        return name.startswith((self.prefix + 'c', self.prefix + 'g'))
+
+
+def load_pools():
+    pools = [Pool('p1', os.path.join(CFG, 'token'), None, os.environ.get('LDFARM_WORKSPACE', 'long-dawn-farm'),
+                  MISSION, SPEND_STOP, 'ldf-', MAX_STREAM, 'workspace cap $230')]
+    p2 = os.path.expanduser('~/.config/longdawn-farm2/token.json')
+    if os.path.exists(p2) and not os.environ.get('LDFARM_NO_POOL2'):
+        pools.append(Pool('p2', p2, 'token', 'default', MISSION, float(os.environ.get('LDFARM_SPEND_STOP_P2', '450')),
+                          'lf2-', int(os.environ.get('LDFARM_MAX_ENDPOINTS_P2', '15')), 'org byeron98: default cap $1,060'))
+    return pools
+
+
+POOLS = []
+
+
+def api(*a, **k):
+    return POOLS[0].api(*a, **k)
 
 
 def get_node(name):
-    try:
-        return api('GET', f'/nodes/{name}')
-    except ApiError as e:
-        if e.status == 404 or 'no node named' in e.message:
-            return None
-        raise
+    return pool_of(name).get_node(name)
 
 
 def list_nodes():
-    return api('GET', '/nodes').get('items', [])
+    return [x for p in POOLS for x in p.list_nodes()]
 
 
 def mission_cost():
-    try:
-        m = api('GET', f'/missions/{MISSION}')
-    except ApiError:
-        return None
-    for k in ('cost', 'receipt', 'spend'):
-        v = m.get(k)
-        if isinstance(v, dict):
-            for kk in ('usd', 'total_usd', 'spend_usd'):
-                if isinstance(v.get(kk), (int, float)):
-                    return float(v[kk])
-        elif isinstance(v, (int, float)):
-            return float(v)
-    for k in ('cost_usd', 'total_usd', 'spend_usd'):
-        if isinstance(m.get(k), (int, float)):
-            return float(m[k])
-    return None
+    return POOLS[0].mission_cost()
+
+
+def pool_of(name):
+    for p in POOLS:
+        if p.owns(name):
+            return p
+    return POOLS[0]
 
 
 # ------------------------------------------------------------------ leases: concurrent farm.py runs never share a node
@@ -502,19 +593,25 @@ class Job:
 
 # ------------------------------------------------------------------ one node: boot, agent, endpoint
 
+class Interrupted(RuntimeError):
+    """The scheduler stopped this node during its boot on purpose (run over, or trimmed from a capacity queue)."""
+
+
 class CapacityError(RuntimeError):
     """The platform has no room for this shape right now (a failed create or wake)."""
 
 
 class Node:
-    def __init__(self, name, kind, sched):
+    def __init__(self, name, kind, sched, pool=None):
         self.name, self.kind, self.sched = name, kind, sched
+        self.pool = pool or (pool_of(name) if kind != 'ssh' else None)
         self.url = self.tok = None
         self.cpu = KINDS[kind]['cpu']
         self.state = 'booting'
         self.unit = None           # current unit dict
         self.seq = 0               # last ready seq seen
         self.bad_polls = 0
+        self.ticking = False
         self.last_ok = None
         self.exists = False
         self.t_ready = None
@@ -523,6 +620,7 @@ class Node:
         self.last_job = None
         self.queued = False
         self.t_queued = None
+        self.created_new = False
         self.req = None            # the request whose work made us start this node (boot news goes to its log)
 
     def say(self, msg):
@@ -542,16 +640,19 @@ class Node:
     def _guard(self):
         """Every write/exec below wakes a stopped node, so bail out once the run is over or the node was stopped."""
         if STOP.is_set() or self.state == 'stopped':
-            raise RuntimeError('interrupted during boot')
+            raise Interrupted('interrupted during boot')
 
     def boot(self):
         kind = KINDS[self.kind]
-        info = get_node(self.name)
+        pool = self.pool
+        pool.ensure_mission()
+        info = pool.get_node(self.name)
         if info is None or str(info.get('status', '')).startswith('failed'):
             self._guard()
             self.say(f'{self.name}: creating {kind["chip"]}')
-            info = api('POST', '/nodes', dict(chip=kind['chip'], name=self.name, mission=MISSION, max_wait='2h'))
-        self.exists = True
+            self.created_new = True
+            info = pool.api('POST', '/nodes', dict(chip=kind['chip'], name=self.name, mission=pool.mission, max_wait='2h'))
+        self.exists = True                          # from here on, any failure must stop the node (never leak one)
         t0 = time.time()
         woke = None
         last_q = 0
@@ -568,7 +669,7 @@ class Node:
                     self.say(f'{self.name}: waking its parked disk')
                     woke = time.time()
                     try:
-                        api('POST', f'/nodes/{self.name}/commands', dict(command='true', timeout=30, max_wait='2h'), timeout=60)
+                        pool.api('POST', f'/nodes/{self.name}/commands', dict(command='true', timeout=30, max_wait='2h'), timeout=60)
                     except ApiError as e:
                         if 'queued' not in e.message and 'waking' not in e.message:
                             self.say(f'{self.name}: wake answered {e.message[:160]}')
@@ -588,22 +689,23 @@ class Node:
             for _ in range(4 if self.queued else 1):   # a queue moves in minutes: poll it every 20 s
                 self._guard()
                 time.sleep(5)
-            info = get_node(self.name) or {}
+            info = pool.get_node(self.name) or {}
         self.queued = False
         self.cpu = int((info.get('resources') or {}).get('cpu_limit') or kind['cpu'])
         self.region = info.get('region')
         self._guard()
-        r = api('POST', f'/nodes/{self.name}/commands', dict(command=BOOT, timeout=280), timeout=320)
+        r = pool.api('POST', f'/nodes/{self.name}/commands', dict(command=BOOT, timeout=280), timeout=320)
         out = (r.get('stdout') or '') + (r.get('stderr') or '')
         if r.get('exit_code') != 0 or 'BOOT OK' not in out:
-            raise RuntimeError(f'{self.name}: bootstrap failed: {out[-600:]}')
+            raise RuntimeError(f'{self.name}: bootstrap failed (exit {r.get("exit_code")}, fields '
+                               f'{sorted(k for k in r if k not in ("stdout", "stderr"))}): {out[-500:]}')
         if self.kind == 'gpu' and 'bpy ok' not in out:
             raise RuntimeError(f'{self.name}: bpy does not import: {out[-400:]}')
         self._guard()
-        api('POST', f'/nodes/{self.name}/files', dict(path='ld/farm_node.py', content=open(AGENT).read()))
+        pool.api('POST', f'/nodes/{self.name}/files', dict(path='ld/farm_node.py', content=open(AGENT).read()))
         self._guard()
-        api('POST', f'/nodes/{self.name}/commands',
-            dict(command=f'cd ~/ld && exec ~/ld/venv/bin/python -u ~/ld/farm_node.py agent --port {PORT}', detach=True))
+        pool.api('POST', f'/nodes/{self.name}/commands',
+                 dict(command=f'cd ~/ld && exec ~/ld/venv/bin/python -u ~/ld/farm_node.py agent --port {PORT}', detach=True))
         self._guard()
         self.expose()
         for _ in range(40):
@@ -622,7 +724,7 @@ class Node:
     def expose(self):
         r = {}
         for attempt in range(2):
-            r = api('POST', f'/nodes/{self.name}/endpoints', dict(port=PORT, auth='bearer'))
+            r = self.pool.api('POST', f'/nodes/{self.name}/endpoints', dict(port=PORT, auth='bearer'))
             tok = r.get('token') or r.get('bearer_token') or r.get('auth_token')
             if not tok and isinstance(r.get('bearer'), dict):
                 tok = r['bearer'].get('token')
@@ -630,7 +732,7 @@ class Node:
                 self.url, self.tok = r['url'], tok
                 return
             try:                                    # an older endpoint whose token we never saw: replace it
-                api('DELETE', f'/nodes/{self.name}/endpoints/{PORT}')
+                self.pool.api('DELETE', f'/nodes/{self.name}/endpoints/{PORT}')
             except ApiError:
                 pass
         raise RuntimeError(f'{self.name}: expose_port gave no bearer token (fields: {sorted(r.keys())})')
@@ -648,10 +750,90 @@ class Node:
             pass
         if self.exists:
             try:
-                api('POST', f'/nodes/{self.name}/stop', dict(mission=MISSION), timeout=60)
+                self.pool.api('POST', f'/nodes/{self.name}/stop', dict(mission=self.pool.mission), timeout=60)
                 log(f'{self.name}: stopped{" (" + why + ")" if why else ""}')
             except ApiError as e:
                 log(f'{self.name}: stop failed: {e.message[:200]} -- run `farm.py stop-idle`')
+        release(self.name)
+
+
+class SshNode(Node):
+    """A machine of ours reached over ssh (the M4): same agent, bound to 127.0.0.1 there, reached through an ssh
+    tunnel from this Mac. It lives in ~/<home> on that machine and nowhere else; caffeinate keeps it awake while
+    the agent runs, and the agent exits after 10 idle minutes. Free, so it takes CPU units before any cloud node."""
+
+    def __init__(self, spec, sched):
+        super().__init__(spec['name'], 'ssh', sched)
+        self.host = spec['host']
+        self.home = spec.get('home', 'ldfarm')
+        self.cpu = int(spec.get('cpu', 8))
+        self.lport = int(spec.get('local_port', 18701))
+        self.bpy = bool(spec.get('bpy'))
+        self.tunnel = None
+        self.exists = True
+
+    def ssh(self, cmd, stdin=None, timeout=900):
+        return subprocess.run(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', '-o', 'ServerAliveInterval=15',
+                               self.host, cmd], input=stdin, capture_output=True, text=True, timeout=timeout)
+
+    def open_tunnel(self):
+        if self.tunnel and self.tunnel.poll() is None:
+            return
+        self.tunnel = subprocess.Popen(['ssh', '-N', '-o', 'BatchMode=yes', '-o', 'ExitOnForwardFailure=yes',
+                                        '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=3',
+                                        '-L', f'127.0.0.1:{self.lport}:127.0.0.1:{PORT}', self.host],
+                                       stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                       start_new_session=True)
+        time.sleep(1.5)
+
+    def agent(self, method, path, body=None, timeout=60, raw=False):
+        self.open_tunnel()
+        return super().agent(method, path, body, timeout, raw)
+
+    def boot(self):
+        t0 = time.time()
+        self._guard()
+        self.say(f'{self.name}: preparing {self.host} over ssh')
+        r = self.ssh(('LDFARM_WANT_BPY=1 ' if self.bpy else '') + '/bin/bash -s', stdin=SSH_BOOT, timeout=1500)
+        out = (r.stdout or '') + (r.stderr or '')
+        if r.returncode != 0 or 'BOOT OK' not in out:
+            raise RuntimeError(f'{self.name}: ssh bootstrap failed: {out[-400:]}')
+        self._guard()
+        r = self.ssh(f'cat > ~/{self.home}/farm_node.py', stdin=open(AGENT).read(), timeout=60)
+        if r.returncode != 0:
+            raise RuntimeError(f'{self.name}: could not copy the agent: {(r.stderr or "")[-200:]}')
+        env = (f'LDFARM_HOME=$HOME/{self.home} LDFARM_SSH=1 LDFARM_BIND=127.0.0.1 LDFARM_CPU_LIMIT={self.cpu} '
+               f'LDFARM_BPYENV=$HOME/{self.home}/bpyenv LDFARM_UNIT_HOME=$HOME/{self.home}/home NUMBA_NUM_THREADS={self.cpu}')
+        self.ssh(f'cd ~/{self.home} && {env} nohup caffeinate -dimsu venv/bin/python -u farm_node.py agent '
+                 f'--port {PORT} > agent.log 2>&1 < /dev/null &', timeout=60)
+        self.url, self.tok = f'http://127.0.0.1:{self.lport}', 'ssh-tunnel'
+        for _ in range(40):
+            try:
+                self.agent('GET', '/status', timeout=10)
+                break
+            except Exception:                   # noqa: BLE001 - agent or tunnel still starting
+                if self.tunnel and self.tunnel.poll() is not None:
+                    self.tunnel = None
+                time.sleep(3)
+        else:
+            raise RuntimeError(f'{self.name}: agent did not answer through the ssh tunnel')
+        self.t_ready = self.last_ok = time.time()
+        self.state = 'ready'
+        self.say(f'{self.name}: ready ({self.host}, {self.cpu} threads, {out.split("BOOT OK")[-1].strip()}) '
+                 f'in {time.time() - t0:.0f}s')
+
+    def stop(self, why='', api_stop=True):
+        if self.state == 'stopped':
+            return
+        self.state = 'stopped'
+        try:
+            if self.url:
+                Node.agent(self, 'POST', '/quit', {}, timeout=10)
+        except Exception:                           # noqa: BLE001
+            pass
+        if self.tunnel and self.tunnel.poll() is None:
+            self.tunnel.terminate()
+        log(f'{self.name}: released{" (" + why + ")" if why else ""}')
         release(self.name)
 
 
@@ -673,6 +855,7 @@ class Request:
         self.state = 'queued'
         self.units_total = self.units_open = 0
         self.landed = self.total = 0
+        self.landed_set = set()     # (job, output key, frame) this request itself landed
         self.results = []
         self.gave_up = []
         self.cancelled = False
@@ -701,7 +884,8 @@ class Request:
                  jobs=[j.name for j in self.jobs] or [os.path.basename(p) for p in self.args.jobs],
                  landed=self.landed, total=self.total, units_total=self.units_total, units_open=self.units_open,
                  budget=self.budget, submitted=self.submitted, t_start=self.t_start, t_end=self.t_end,
-                 gave_up=self.gave_up, dests=sorted({o['dest'] for j in self.jobs for o in j.outputs}))
+                 gave_up=self.gave_up, dests=sorted({o['dest'] for j in self.jobs for o in j.outputs}),
+                 landed_frames=sorted(self.landed_set))
         tmp = self.statep + '.tmp'
         with open(tmp, 'w') as fh:
             json.dump(d, fh)
@@ -746,7 +930,8 @@ class Scheduler:
         self.nodes = {}
         self.landed = {}           # unit id -> set((key, frame))
         self.lock = threading.RLock()
-        self.pool = ThreadPoolExecutor(max_workers=8)
+        self.pool = ThreadPoolExecutor(max_workers=12)       # polls/downloads: short
+        self.boot_pool = ThreadPoolExecutor(max_workers=64)  # boots: may wait in a capacity queue for many minutes
         self.seq = 0
         self.boot_failures = 0     # consecutive
         self.last_grow = 0
@@ -754,6 +939,9 @@ class Scheduler:
         self.last_spend = (0, None)
         self.backoff = {}           # kind -> (retry_at, delay) after a capacity failure
         self.cpu_blocked_until = 0
+        self.known = set()
+        self.budget_noted = {}
+        self.last_sweep = 0
         self.bad_names = {}          # node name -> skip until (a node that failed its bootstrap)
         self.last_report = 0
         self.unit_secs = []          # recent unit wall times, for ETAs
@@ -769,6 +957,22 @@ class Scheduler:
             self.reqs[req.id] = req
             return req.finish('failed', f'bad job file: {e}')
         self.reqs[req.id] = req
+        resumed = 0
+        try:                                        # a restarted daemon resumes: skip only what THIS request landed
+            prev = json.load(open(req.statep)).get('landed_frames', [])
+        except (OSError, ValueError):
+            prev = []
+        mine = {(jn, int(k), int(f)) for jn, k, f in prev}
+        req.landed_set |= mine
+        req.landed = len(req.landed_set)
+        for j in req.jobs:
+            done_here = {f for f in j.want
+                         if all((j.name, o['key'], f) in mine for o in j.outputs if f in o['frames'])}
+            if done_here:
+                j.want -= done_here
+                resumed += len(done_here)
+        if resumed:
+            req.log(f'resuming: {resumed} frame(s) of this request already landed; planning the rest')
         jobs = [j for j in req.jobs if j.want]
         for j in req.jobs:
             if not j.want:
@@ -782,9 +986,8 @@ class Scheduler:
         if req.args.dry_run:
             req.log(f'plan: {len(units)} unit(s), {req.total} frames, up to {req.budget} node(s) (dry run: nothing starts)')
             return print_plan(units, req.log, verbose=True)
-        spend = self.spend()
-        if spend is not None and spend >= SPEND_STOP and not os.environ.get('LDFARM_SPEND_OK'):
-            return req.finish('failed', f'farm spend ${spend:.2f} >= ${SPEND_STOP:.0f}: ask the director')
+        if all(p.over_budget() for p in POOLS):
+            return req.finish('failed', 'every pool is past its spend threshold: ask the director')
         with self.lock:
             for u in units:
                 u['_req'], u['_prio'], u['_seq'] = req, req.prio, self.seq
@@ -835,23 +1038,47 @@ class Scheduler:
             req.finish('done')
 
     # -- nodes
-    def spilling(self):
-        """cpu-8 had no room lately: h100-1 nodes take CPU units too (6.6x the price per node, so only then)."""
-        return MAX_SPILL > 0 and time.time() < self.cpu_blocked_until
+    def trim_queues(self):
+        """Keep at most MAX_QUEUED nodes per pool waiting in a capacity queue (cpu gets only 2 while spilling, so h100
+        wakes and creates can queue too). Extra waiters are cancelled - newest first - which frees their slots."""
+        for pool in POOLS:
+            waiting = [nd for nd in self.nodes.values() if nd.pool is pool and nd.state == 'booting' and nd.queued]
+            cpu_w = sorted((nd for nd in waiting if nd.kind == 'cpu'), key=lambda nd: nd.t_queued or 0)
+            keep = 2 if self.spilling() else MAX_QUEUED
+            extra = cpu_w[keep:] + [nd for nd in waiting if nd.kind == 'gpu'][max(0, MAX_QUEUED - min(len(cpu_w), keep)):]
+            for nd in extra:
+                nd.say(f'{nd.name}: leaving the capacity queue ({len(waiting)} of this pool\'s nodes were waiting)')
+                self.bad_names[nd.name] = time.time() + 600
+                nd.stop('trimmed from the capacity queue')
 
-    def dispatchable(self, node_kind):
+    def spilling(self):
+        """cpu-8 has no room: h100-1 nodes take CPU units too (6.6x the price per node, so only then)."""
+        if MAX_SPILL <= 0:
+            return False
+        if time.time() < self.cpu_blocked_until:
+            return True
+        return any(nd.kind == 'cpu' and nd.queued and nd.state == 'booting' for nd in self.nodes.values())
+
+    def dispatchable(self, node_kind, bpy=False):
         """Units a node of this kind may start now, best first: its own kind before spilled CPU work, --test before
         finals, then FIFO. A request never runs on more than its --nodes budget at once."""
-        kinds = ['gpu', 'cpu'] if node_kind == 'gpu' and self.spilling() else [node_kind]
+        kinds = (['gpu', 'cpu'] if node_kind == 'gpu' and self.spilling() else
+                 (['cpu', 'gpu'] if bpy else ['cpu']) if node_kind == 'ssh' else [node_kind])
         running = {}
         for nd in self.nodes.values():
             if nd.unit:
                 running[nd.unit['_req'].id] = running.get(nd.unit['_req'].id, 0) + 1
         out, taken = [], {}
-        for u in sorted(self.queue, key=lambda u: (ukind(u) != node_kind, u['_prio'], u['_seq'])):
+        now = time.time()
+
+        def eff(u):                                 # aging: a final queued 5+ min competes with tests, FIFO
+            return 0 if u['_prio'] == 0 or now - u['_req'].submitted > FINAL_AGING_S else 1
+        for u in sorted(self.queue, key=lambda u: (ukind(u) != node_kind, eff(u), u['_seq'])):
             r = u['_req']
             if ukind(u) not in kinds or r.cancelled:
                 continue
+            if node_kind == 'ssh' and ukind(u) == 'gpu' and now - r.submitted < SSH_GPU_AFTER_S:
+                continue                            # an h100 gets first claim on Cycles work
             if running.get(r.id, 0) + taken.get(r.id, 0) >= r.budget:
                 continue
             taken[r.id] = taken.get(r.id, 0) + 1
@@ -868,6 +1095,17 @@ class Scheduler:
             def idle(kind):
                 return [nd for nd in live if nd.kind == kind and nd.unit is None and not nd.queued]
             cpu_units = self.dispatchable('cpu')
+            if cpu_units:                                  # our own ssh machines first: they cost nothing
+                for spec in ssh_specs():
+                    nd = self.nodes.get(spec['name'])
+                    if (nd is None or nd.state == 'stopped') and now >= self.backoff.get(spec['name'], (0, 0))[0] \
+                            and lease(spec['name'], 'farmd'):
+                        nd = SshNode(spec, self)
+                        nd.req = cpu_units[0]['_req']
+                        self.nodes[spec['name']] = nd
+                        self.boot_pool.submit(self._adopt_ssh, nd)
+                live = [nd for nd in self.nodes.values() if nd.state in ('booting', 'ready')]
+                cpu_units = cpu_units[len(idle('ssh')) + sum(1 for nd in live if nd.kind == 'ssh' and nd.state == 'booting'):]
             gpu_own = [u for u in self.dispatchable('gpu') if ukind(u) == 'gpu']
             need = {'cpu': max(0, len(cpu_units) - len(idle('cpu'))), 'gpu': max(0, len(gpu_own) - len(idle('gpu')))}
             if need['cpu'] and self.spilling():
@@ -877,44 +1115,57 @@ class Scheduler:
                 need['gpu'] += spill
                 need['cpu'] = min(need['cpu'], 1)          # keep probing cpu-8 with one create at a time
             has_test = any(u['_prio'] == 0 for u in self.queue)
+        self.trim_queues()
         added = 0
-        booting = sum(1 for nd in self.nodes.values() if nd.state == 'booting')
         for kind, n in need.items():
-            if n <= 0 or now < self.backoff.get(kind, (0, 0))[0]:
-                continue                                   # nothing to do, or that shape is backing off
-            n = min(n, MAX_BOOTING - booting)              # the platform holds at most 4 queued creates per account
-            if n <= 0:
-                continue
-            kd = KINDS[kind]
-            cap_kind = kd['cap'] + (MAX_SPILL if kind == 'gpu' and self.spilling() else 0)
-            cap_total = MAX_STREAM if has_test else MAX_STREAM - TEST_RESERVE
-            held = live_leases()
-            room = min(cap_total - len(held), cap_kind - sum(1 for k in held if k.startswith(kd['prefix'])))
-            if room <= 0:
-                if not self.waiting_noted:
-                    log(f'every farm slot is busy ({len(held)} nodes held); queued units wait their turn')
-                    self.waiting_noted = True
-                continue
-            names = self.lease_names(kind, min(n, room))
-            booting += len(names)
-            with self.lock:
-                disp = self.dispatchable(kind)
-                for i, name in enumerate(names):
-                    nd = Node(name, kind, self)
-                    nd.req = disp[min(i, len(disp) - 1)]['_req'] if disp else None
-                    self.nodes[name] = nd
-                    self.pool.submit(self._boot, nd)
-            added += len(names)
+            for pool in sorted(POOLS, key=lambda p: sum(1 for k in live_leases() if p.owns(k))):
+                if n <= 0:
+                    break
+                if now < self.backoff.get((pool.name, kind), (0, 0))[0]:
+                    continue                               # that pool's shape is backing off
+                if pool.over_budget():
+                    if not self.budget_noted.get(pool.name):
+                        log(f'pool {pool.name}: spend ${pool.spend():.2f} >= ${pool.spend_stop:.0f}; no new nodes there')
+                        self.budget_noted[pool.name] = True
+                    continue
+                kd = KINDS[kind]
+                cap_kind = kd['cap'] + (MAX_SPILL if kind == 'gpu' and self.spilling() else 0)
+                cap_total = pool.max_stream if has_test else pool.max_stream - TEST_RESERVE
+                waiting = {nm for nm, nd in self.nodes.items() if nd.queued and nd.state == 'booting'}
+                held = [k for k in live_leases() if pool.owns(k) and k not in waiting]   # queued: no endpoint yet
+                room = min(cap_total - len(held), cap_kind - sum(1 for k in held if k.startswith(pool.pfx(kind))))
+                booting = [nd for nd in self.nodes.values() if nd.pool is pool and nd.state == 'booting']
+                room = min(room, MAX_QUEUED + 2 - len(booting))
+                if room <= 0:
+                    continue
+                creating = sum(1 for nd in self.nodes.values()
+                               if nd.state == 'booting' and nd.created_new and nd.pool is pool)
+                names = self.lease_names(pool, kind, min(n, room), max_new=max(0, MAX_BOOTING - creating))
+                with self.lock:
+                    disp = self.dispatchable(kind)
+                    for i, name in enumerate(names):
+                        nd = Node(name, kind, self, pool)
+                        nd.req = disp[min(i, len(disp) - 1)]['_req'] if disp else None
+                        self.nodes[name] = nd
+                        self.boot_pool.submit(self._boot, nd)
+                added += len(names)
+                n -= len(names)
+            if n > 0 and not self.waiting_noted:
+                log(f'{kind}: every pool is at its cap or backing off; {n} more node(s) wanted, work waits its turn')
+                self.waiting_noted = True
         if added:
             self.waiting_noted = False
         return added
 
-    def lease_names(self, kind, n):
-        kd = KINDS[kind]
-        existing = {x['name']: x for x in list_nodes()}
+    def lease_names(self, pool, kind, n, max_new=99):
+        """Parked or running farm nodes first (a wake is not a create), then at most max_new brand-new names: the
+        platform holds only 4 queued creates per account."""
+        prefix = pool.pfx(kind)
+        existing = {x['name']: x for x in pool.list_nodes()}
+        self.known = set(existing)
         held = live_leases()
         got = []
-        for x in sorted((x for x in existing.values() if x['name'].startswith(kd['prefix'])),
+        for x in sorted((x for x in existing.values() if x['name'].startswith(prefix)),
                         key=lambda x: (0 if str(x.get('state', '')).startswith('running') else 1, x['name'])):
             st = str(x.get('state', ''))
             if len(got) >= n:
@@ -923,43 +1174,60 @@ class Scheduler:
                 continue
             if 'unrestorable' in st or 'lost' in st or self.bad_names.get(x['name'], 0) > time.time():
                 continue
+            if st.startswith('running'):            # a live agent may be mid-unit: sweep_orphans re-attaches it
+                continue
             if lease(x['name'], 'farmd'):
                 got.append(x['name'])
         i = 1
-        while len(got) < n and i < 100:
-            name = f'{kd["prefix"]}{i:02d}'
+        new = 0
+        while len(got) < n and i < 100 and new < max_new:
+            name = f'{prefix}{i:02d}'
             i += 1
             if name in existing or name in held or self.bad_names.get(name, 0) > time.time():
                 continue
             if lease(name, 'farmd'):
                 got.append(name)
+                new += 1
         return got
 
     def _boot(self, nd):
         try:
             nd.boot()
             self.boot_failures = 0
-            self.backoff.pop(nd.kind, None)
+            if nd.pool:
+                self.backoff.pop((nd.pool.name, nd.kind), None)
+        except Interrupted:
+            return
         except CapacityError as e:
-            until, delay = self.backoff.get(nd.kind, (0, 30))
+            if 'wake' in str(e):
+                self.bad_names[nd.name] = time.time() + 900
+                nd.say(f'{nd.name}: its parked disk can\'t wake right now ({e}); using other nodes for 15 min')
+                return nd.stop('wake failed')
+            key = (nd.pool.name, nd.kind)
+            until, delay = self.backoff.get(key, (0, 30))
             delay = min(300, delay * 2)
-            self.backoff[nd.kind] = (time.time() + delay, delay)
+            self.backoff[key] = (time.time() + delay, delay)
             if nd.kind == 'cpu':
                 self.cpu_blocked_until = time.time() + 900
             nd.say(f'{nd.name}: no {KINDS[nd.kind]["chip"]} capacity ({e}); that shape retries in {delay}s'
                    + ('; CPU units spill onto h100-1 meanwhile' if nd.kind == 'cpu' and MAX_SPILL else ''))
             nd.stop('no capacity', api_stop='create failed' not in str(e))
         except ApiError as e:                       # any refusal (queued-creates max, capacity, rate limit): wait, retry
-            until, delay = self.backoff.get(nd.kind, (0, 15))
+            key = (nd.pool.name if nd.pool else nd.name, nd.kind)
+            until, delay = self.backoff.get(key, (0, 15))
             delay = min(180, delay * 2)
-            self.backoff[nd.kind] = (time.time() + delay, delay)
+            self.backoff[key] = (time.time() + delay, delay)
             if 'queued' in e.message or 'capacity' in e.message or 'carve' in e.message:
                 if nd.kind == 'cpu':
                     self.cpu_blocked_until = time.time() + 900
             nd.say(f'{nd.name}: platform said "{e.message[:110]}"; waiting {delay}s, then retrying (the unit stays queued)')
-            nd.stop('platform refusal', api_stop=nd.exists and e.status != 422)
+            nd.stop('platform refusal', api_stop=nd.exists)
         except Exception as e:                      # noqa: BLE001 - this NODE is broken: skip it for a while
             nd.error = str(e)[:400]
+            if nd.kind == 'ssh':
+                self.backoff[nd.name] = (time.time() + 300, 300)
+                nd.say(f'{nd.name}: not available ({nd.error[:200]}); retrying in 5 min')
+                return nd.stop('ssh boot failed')
             if not STOP.is_set():
                 self.boot_failures += 1
                 self.bad_names[nd.name] = time.time() + 900
@@ -1005,7 +1273,8 @@ class Scheduler:
                     got.append(m.name)
                     with self.lock:
                         self.landed.setdefault(unit['id'], set()).add((e['key'], e['frame']))
-                        req.landed += 1
+                        req.landed_set.add((j.name, e['key'], e['frame']))
+                        req.landed = len(req.landed_set)
         if got:
             nd.agent('POST', '/ack', dict(unit=unit['id'], files=got), timeout=30)
             fr = sorted(int(n.split('f_')[1][:5]) for n in got)
@@ -1045,17 +1314,24 @@ class Scheduler:
         if nd.unit is None:
             self.dispatch(nd)
 
+    def _tick(self, nd):
+        try:
+            self.tick(nd)
+        except Exception as e:                      # noqa: BLE001
+            log(f'{nd.name}: poll error: {str(e)[:200]}')
+        finally:
+            nd.ticking = False
+
     def dispatch(self, nd):
         with self.lock:
-            disp = self.dispatchable(nd.kind)
+            disp = self.dispatchable(nd.kind, bpy=getattr(nd, 'bpy', False))
             finals_running = sum(1 for x in self.nodes.values() if x.unit and x.unit['_prio'] == 1)
             if finals_running >= MAX_STREAM - TEST_RESERVE:
                 disp = [u for u in disp if u['_prio'] == 0]
             if not disp:
                 u = None
             else:
-                best = disp[0]['_prio']
-                tier = [u for u in disp if u['_prio'] == best]
+                tier = disp[:3]                     # warm-setup affinity, but only within the next 3 in line
                 u = next((u for u in tier if u['_job'].name == nd.last_job), tier[0])   # warm setup first
                 self.queue.remove(u)
                 nd.unit = u
@@ -1150,19 +1426,112 @@ class Scheduler:
 
     # -- the loop
     def step(self):
+        self.sweep_orphans()
         live = [nd for nd in self.nodes.values() if nd.state in ('booting', 'ready')]
         if self.queue and (time.time() - self.last_grow > 10 or not live):
             self.last_grow = time.time()
             self.acquire()                          # units are never dropped: they wait until a node takes them
             self.report_waiting()
-        ready = [nd for nd in self.nodes.values() if nd.state == 'ready']
-        for f in [self.pool.submit(self.tick, nd) for nd in ready]:
-            try:
-                f.result()
-            except Exception as e:                  # noqa: BLE001
-                log(f'poll error: {str(e)[:200]}')
+        for nd in [nd for nd in self.nodes.values() if nd.state == 'ready' and not nd.ticking]:
+            nd.ticking = True
+            self.pool.submit(self._tick, nd)
         for name in [n for n, nd in self.nodes.items() if nd.state == 'stopped']:
             del self.nodes[name]
+
+    def sweep_orphans(self):
+        """A running farm node that no farm process holds (an old daemon's, a crashed run's) is adopted when work waits
+        for its kind and stopped at once otherwise: nothing idles on the meter."""
+        if time.time() - self.last_sweep < 60:
+            return
+        self.last_sweep = time.time()
+        held = live_leases()
+        items = []
+        for pool in POOLS:
+            try:
+                items += [(pool, x) for x in pool.list_nodes()]
+            except ApiError:
+                pass
+        for pool, x in items:
+            name, st = x['name'], str(x.get('state', ''))
+            if not pool.owns(name) or name in held or not st.startswith('running'):
+                continue
+            if name in self.nodes and self.nodes[name].state != 'stopped':
+                continue
+            kind = 'gpu' if name.startswith(pool.pfx('gpu')) else 'cpu'
+            with self.lock:
+                work = [u for u in self.queue if ukind(u) == kind or (kind == 'gpu' and ukind(u) == 'cpu')]
+            if work and lease(name, 'farmd'):
+                if kind == 'gpu' and all(ukind(u) == 'cpu' for u in work):
+                    self.cpu_blocked_until = max(self.cpu_blocked_until, time.time() + 300)
+                nd = Node(name, kind, self, pool)
+                nd.req = work[0]['_req']
+                self.nodes[name] = nd
+                self.boot_pool.submit(self._adopt, nd)
+                log(f'{name}: adopting a running node nobody held ({len(work)} unit(s) waiting)')
+            elif not work:
+                try:
+                    pool.api('POST', f'/nodes/{name}/stop', dict(mission=pool.mission))
+                    log(f'{name}: stopped (running, held by no farm process, no work waiting)')
+                except ApiError as e:
+                    log(f'{name}: orphan stop failed: {e.message[:120]}')
+
+    def rebind(self, nd, st):
+        """The agent's in-flight (or finished-but-uncollected) unit becomes this node's unit again, by its id."""
+        live = [u for u in st.get('units', []) if u['state'] not in ('done', 'failed', 'cancelled')
+                or u.get('frames_ready', 0) > u.get('acked', 0)]
+        with self.lock:
+            for au in live[-1:]:
+                q = next((u for u in self.queue if u['id'] == au['id']), None)
+                if q is not None:
+                    self.queue.remove(q)
+                    nd.unit, q['_t0'] = q, time.time()
+                    nd.last_job = q['_job'].name
+                    q['_req'].log(f'{nd.name}: re-attached to its running unit {q["id"]} ({au["state"]})')
+
+    def _adopt_ssh(self, nd):
+        try:
+            nd.url, nd.tok = f'http://127.0.0.1:{nd.lport}', 'ssh-tunnel'
+            st = nd.agent('GET', '/status', timeout=10)
+            if int(st.get('version', 0)) < 5:
+                raise RuntimeError('old agent')
+            self.rebind(nd, st)
+            nd.t_ready = nd.last_ok = time.time()
+            nd.state = 'ready'
+            nd.say(f'{nd.name}: re-attached to its running agent')
+        except Exception:                           # noqa: BLE001 - no live agent there: boot it
+            self._boot(nd)
+
+    def _adopt(self, nd):
+        """Re-attach to the agent already running there (fresh endpoint token); if it answers, rebind its in-flight
+        unit to the matching queued unit and carry on. Otherwise boot the node from scratch."""
+        try:
+            nd.exists = True
+            info = nd.pool.get_node(nd.name) or {}
+            nd.cpu = int((info.get('resources') or {}).get('cpu_limit') or nd.cpu)
+            nd.region = info.get('region')
+            try:
+                nd.pool.api('DELETE', f'/nodes/{nd.name}/endpoints/{PORT}')
+            except ApiError:
+                pass
+            nd.expose()
+            st = None
+            for _ in range(5):
+                try:
+                    st = nd.agent('GET', '/status', timeout=15)
+                    break
+                except Exception:                   # noqa: BLE001
+                    time.sleep(3)
+            if not st or int(st.get('version', 0)) < 4:
+                raise RuntimeError('no current agent answers there')
+            self.rebind(nd, st)
+            nd.t_ready = nd.last_ok = time.time()
+            nd.state = 'ready'
+            nd.say(f'{nd.name}: adopted without a reboot ({nd.kind}, cpu_limit {nd.cpu}, {nd.region})')
+        except Interrupted:
+            return
+        except Exception as e:                      # noqa: BLE001
+            nd.say(f'{nd.name}: re-attach failed ({str(e)[:120]}); booting it fresh')
+            self._boot(nd)
 
     def report_waiting(self):
         if time.time() - self.last_report < 60:
@@ -1406,13 +1775,12 @@ def cmd_direct(argv, args):
 
 def cmd_status():
     held = live_leases()
-    meta = _meta()
     alive = daemon_alive()
     print(f'farm daemon: {"running (pid " + open(DPID).read().strip() + ")" if alive and os.path.exists(DPID) else "not running (starts on the next farm.py call)"}')
-    print(f'workspace {WORKSPACE}, mission {MISSION}, token expires {meta.get("expires_at", "?")}')
-    spend = mission_cost()
-    if spend is not None:
-        print(f'farm spend ${spend:.2f} (warn ${SPEND_WARN:.0f}, refuse ${SPEND_STOP:.0f}, workspace cap $230)')
+    for pool in POOLS:
+        sp = pool.mission_cost()
+        print(f'pool {pool.name}: workspace {pool.workspace}, token expires {pool.meta().get("expires_at", "?")}, '
+              f'spend ${sp if sp is not None else float("nan"):.2f} (refuses new nodes at ${pool.spend_stop:.0f}; {pool.cap_note})')
     rows = []
     if os.path.isdir(REQDIR):
         for fn in os.listdir(REQDIR):
@@ -1428,28 +1796,34 @@ def cmd_status():
         age = (time.time() - r.get('submitted', time.time())) / 60
         print(f'  {r["id"]:<44} {r.get("kind", "?"):<5} {r.get("state", "?"):<10} {r.get("landed", 0)}/{r.get("total", 0)} frames, '
               f'{r.get("units_total", 0) - r.get("units_open", 0)}/{r.get("units_total", 0)} units, {age:.0f} min ago')
-    try:
-        items = list_nodes()
-    except ApiError as e:
-        return print(f'nodes: {e}')
+    items = []
+    for pool in POOLS:
+        try:
+            items += pool.list_nodes()
+        except ApiError as e:
+            print(f'pool {pool.name} nodes: {e}')
     print(f'nodes: {sum(1 for x in items if str(x.get("state", "")).startswith("running"))} running, {len(held)} held')
     for x in sorted(items, key=lambda x: x['name']):
         h = held.get(x['name'])
         print(f'  {x["name"]:<10} {x.get("chip", "?"):<7} {str(x.get("state", "?")):<34} '
               f'{("held by pid " + str(h["pid"]) + " (" + h["run"] + ")") if h else ""}')
+    for sp in ssh_specs():
+        h = held.get(sp['name'])
+        print(f'  {sp["name"]:<10} {"ssh":<7} {sp["host"]:<34} {("in use by pid " + str(h["pid"])) if h else "idle (starts when CPU work is queued)"}')
 
 
 def cmd_stop_idle():
     held = live_leases()
-    for x in list_nodes():
-        st = str(x.get('state', ''))
-        if x['name'] in held or not st.startswith(('running', 'provisioning', 'queued', 'waking')):
-            continue
-        try:
-            api('POST', f'/nodes/{x["name"]}/stop', dict(mission=MISSION))
-            print(f'stopped {x["name"]} (was {st})')
-        except ApiError as e:
-            print(f'{x["name"]}: {e.message[:200]}')
+    for pool in POOLS:
+        for x in pool.list_nodes():
+            st = str(x.get('state', ''))
+            if x['name'] in held or not pool.owns(x['name']) or not st.startswith(('running', 'provisioning', 'queued', 'waking')):
+                continue
+            try:
+                pool.api('POST', f'/nodes/{x["name"]}/stop', dict(mission=pool.mission))
+                print(f'stopped {x["name"]} (was {st})')
+            except ApiError as e:
+                print(f'{x["name"]}: {e.message[:200]}')
 
 
 def cmd_cancel(rid):
@@ -1487,6 +1861,7 @@ def ensure_venv():
 
 
 def main():
+    POOLS[:] = load_pools()
     argv = sys.argv[1:]
     cmd = argv[0] if argv else ''
     if cmd == 'status':

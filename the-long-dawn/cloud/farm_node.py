@@ -39,15 +39,18 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-VERSION = 4
+VERSION = 5
 HOME = os.path.expanduser('~')
-LD = os.path.join(HOME, 'ld')
+LD = os.path.expanduser(os.environ.get('LDFARM_HOME') or os.path.join(HOME, 'ld'))   # ~/ldfarm on an ssh node
 REPO = os.path.join(LD, 'mishamisha')
 ROOT = os.path.join(REPO, 'the-long-dawn')
 RUNS = os.path.join(LD, 'runs')
 BRANCH = 'claude/long-dawn-v2'
 IDLE_STOP_S = int(os.environ.get('LDFARM_IDLE_STOP_S', '600'))
-CPU_LIMIT = int(os.environ.get('GMN_CPU_LIMIT') or 8)
+CPU_LIMIT = int(os.environ.get('LDFARM_CPU_LIMIT') or os.environ.get('GMN_CPU_LIMIT') or 8)
+SSH_NODE = bool(os.environ.get('LDFARM_SSH'))       # a machine reached over ssh: no platform metadata service
+BPYENV = os.environ.get('LDFARM_BPYENV')             # where bpy lives when $HOME/bpyenv isn't ours to create
+BIND = os.environ.get('LDFARM_BIND', '0.0.0.0')      # 127.0.0.1 on an ssh node: only the tunnel reaches it
 
 LOCK = threading.RLock()
 UNITS = {}            # id -> unit dict (state lives here)
@@ -77,10 +80,13 @@ def tail(path, n=40):
 
 def base_env(extra=None):
     env = dict(os.environ)
-    env['PATH'] = os.path.join(LD, 'venv', 'bin') + ':' + os.path.join(HOME, '.local', 'bin') + ':' + env.get('PATH', '')
+    env['PATH'] = os.path.join(LD, 'venv', 'bin') + ':' + os.path.join(LD, 'bin') + ':' + os.path.join(HOME, '.local', 'bin') + ':' + env.get('PATH', '')
     env['PYTHONUNBUFFERED'] = '1'
     env.setdefault('CUDA_CACHE_MAXSIZE', '4294967296')     # keep Cycles' one-time sm_90 JIT in ~/.nv (4 GiB cap)
     env.setdefault('NUMBA_NUM_THREADS', str(CPU_LIMIT))     # numba's pool ceiling = this node's budget, not the host
+    if os.environ.get('LDFARM_UNIT_HOME'):                  # ssh node: Blender/Cycles caches and prefs stay in our dir
+        env['HOME'] = os.environ['LDFARM_UNIT_HOME']
+        os.makedirs(env['HOME'], exist_ok=True)
     for k, v in (extra or {}).items():
         env[str(k)] = str(v)
     return env
@@ -229,7 +235,7 @@ def run_unit(u):
                     lf.write(f'$ {cmd}\n')
                     lf.flush()
                     t = now()
-                    r = subprocess.run(cmd, shell=True, cwd=ROOT, env=env, stdout=lf, stderr=subprocess.STDOUT)
+                    r = subprocess.run(localize(cmd), shell=True, cwd=ROOT, env=env, stdout=lf, stderr=subprocess.STDOUT)
                     lf.write(f'[exit {r.returncode} in {now() - t:.0f}s]\n')
                     lf.flush()
                     if r.returncode != 0:
@@ -246,7 +252,7 @@ def run_unit(u):
                 lf = open(os.path.join(u.dir, f'item_{i}.log'), 'w')
                 lf.write(f'$ {it["cmd"]}\n')
                 lf.flush()
-                p = subprocess.Popen(it['cmd'], shell=True, cwd=ROOT, env=base_env({**(spec.get('env') or {}), **(it.get('env') or {})}),
+                p = subprocess.Popen(localize(it['cmd']), shell=True, cwd=ROOT, env=base_env({**(spec.get('env') or {}), **(it.get('env') or {})}),
                                      stdout=lf, stderr=subprocess.STDOUT, start_new_session=True)
                 u.procs[i] = (p, lf)
                 u.items[i].update(state='running', t0=now())
@@ -326,7 +332,17 @@ def busy():
     return any(u.state not in ('done', 'failed', 'cancelled') for u in UNITS.values())
 
 
+def localize(cmd):
+    """On an ssh node, jobs that name $HOME/bpyenv get this machine's own bpy venv (inside LDFARM_HOME)."""
+    if BPYENV:
+        for k in ('$HOME/bpyenv', '${HOME}/bpyenv', '~/bpyenv'):
+            cmd = cmd.replace(k, BPYENV)
+    return cmd
+
+
 def self_stop():
+    if SSH_NODE:
+        return                                      # nothing bills here; the agent just exits (and caffeinate with it)
     try:
         req = urllib.request.Request('http://169.254.42.1/v1/stop', method='POST', data=b'',
                                      headers={'Metadata-Flavor': 'givemeanode'})
@@ -473,7 +489,7 @@ def main():
         sys.exit(2)
     port = int(sys.argv[sys.argv.index('--port') + 1]) if '--port' in sys.argv else 8700
     os.makedirs(RUNS, exist_ok=True)
-    srv = ThreadingHTTPServer(('0.0.0.0', port), H)
+    srv = ThreadingHTTPServer((BIND, port), H)
     srv.daemon_threads = True
     threading.Thread(target=worker, daemon=True).start()
     threading.Thread(target=watchdog, daemon=True).start()
