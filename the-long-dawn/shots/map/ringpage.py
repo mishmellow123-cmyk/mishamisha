@@ -275,9 +275,9 @@ def ring_outline(S, P, seed, width=0.02):
 
 # ================================================================ the fire ===
 
-def tongue(bx, by, H, W, lean, t, k):
-    """One drawn flame tongue (closed outline, page cm, y down): a broad body that narrows into a licking S-curve and
-    a curled tip, alive (it sways, stretches and breathes)."""
+def tongue_geom(bx, by, H, W, lean, t, k):
+    """A drawn flame tongue's centreline and half-width (page cm, y down): a broad body that narrows into a licking
+    S-curve and a curled tip, alive (it sways, stretches and breathes)."""
     s = np.linspace(0.0, 1.0, 26)
     ph = 1.7 * k
     Hh = H * (1.0 + 0.08 * math.sin(t * 2.1 + ph) + 0.05 * math.sin(t * 5.3 + 2 * ph))
@@ -286,9 +286,28 @@ def tongue(bx, by, H, W, lean, t, k):
     cxl = bx + lean * s * Hh + sway + curl
     cyl = by - s * Hh
     wd = W * (1.0 - s) ** 0.9 * (0.75 + 0.25 * np.sin(np.pi * np.minimum(s * 1.6, 1.0)))
+    return s, cxl, cyl, wd
+
+
+def tongue(bx, by, H, W, lean, t, k):
+    """One drawn flame tongue as a closed outline."""
+    s, cxl, cyl, wd = tongue_geom(bx, by, H, W, lean, t, k)
     left = np.column_stack([cxl - wd, cyl])
     right = np.column_stack([cxl + wd, cyl])[::-1]
     return np.vstack([left, right])
+
+
+def tongue_lines(bx, by, H, W, lean, t, k, n=5):
+    """The engraver's lines inside a tongue: strokes that follow its flow from the base and converge on its tip,
+    the outer ones stopping short (MAP-L: a drawn flame, not a paper cut-out)."""
+    s, cxl, cyl, wd = tongue_geom(bx, by, H, W, lean, t, k)
+    out = []
+    for f in np.linspace(-0.62, 0.62, n):
+        smax = 0.9 - 0.42 * abs(f)
+        m = (s >= 0.05) & (s <= smax)
+        if m.sum() >= 3:
+            out.append(np.column_stack([cxl[m] + f * wd[m], cyl[m]]))
+    return out
 
 
 def gn_(x, k):
@@ -412,21 +431,28 @@ class RingPage:
         gilt = np.zeros((Hh, Ww), np.float32)
         core = np.zeros((Hh, Ww), np.float32)
         S = Strokes()
+        heart = np.zeros((Hh, Ww), np.float32)
         for k, (bx, by, Hk, Wk, lean) in enumerate(tongues):
             O = tongue(bx, by, Hk * grow, Wk, lean, t, k + seed)
             Q = np.round((O - [ox, oy]) * ppc * 16).astype(np.int32)
             cv2.fillPoly(gilt, [Q], 1.0, lineType=cv2.LINE_AA, shift=4)
-            I = tongue(bx, by + 0.05, Hk * grow * 0.55, Wk * 0.45, lean, t + 0.05, k + seed)
+            Hq = tongue(bx, by + 0.03, Hk * grow * 0.62, Wk * 0.72, lean, t + 0.03, k + seed)
+            QH = np.round((Hq - [ox, oy]) * ppc * 16).astype(np.int32)
+            cv2.fillPoly(heart, [QH], 1.0, lineType=cv2.LINE_AA, shift=4)
+            I = tongue(bx, by + 0.05, Hk * grow * 0.45, Wk * 0.42, lean, t + 0.05, k + seed)
             QI = np.round((I - [ox, oy]) * ppc * 16).astype(np.int32)
             cv2.fillPoly(core, [QI], 1.0, lineType=cv2.LINE_AA, shift=4)
             pen.line(S, O, 0.016, seed * 7 + k, smooth=0, lift=(2.0, 4.0))
+            for j, L_ in enumerate(tongue_lines(bx, by, Hk * grow, Wk, lean, t, k + seed)):
+                pen.line(S, L_, 0.0085, seed * 7 + 100 * k + j, smooth=0, lift=(3.0, 5.0), dens=0.85)
         C, _ = pen.raster(S.pack(), 1e9, ppc, Hh, Ww, pen.INK, ox=ox, oy=oy)
         m = gilt > 0
         fl = 1.0 + 0.1 * math.sin(t * 13.0) + 0.06 * math.sin(t * 29.0 + 1.0)
-        # overwrite what lies behind the flame: gold laid in the tongue, its heart glowing, the pen's outline
-        win[..., 0] = np.where(m, np.maximum(C, 0.06 * gilt), np.maximum(win[..., 0], C))
-        win[..., 2] = np.where(m, 0.55 * gilt * (1 - 0.9 * C), win[..., 2])
-        win[..., 4] = np.where(m, (0.1 * gilt + 0.4 * core * fl) * flare, win[..., 4])
+        # overwrite what lies behind the flame: the pen's outline and flow lines, gold laid only in the heart, the
+        # heart glowing
+        win[..., 0] = np.where(m, np.maximum(C * (1.0 - 0.45 * core), 0.04 * gilt), np.maximum(win[..., 0], C))
+        win[..., 2] = np.where(m, 0.6 * heart * (1 - 0.85 * C), win[..., 2])
+        win[..., 4] = np.where(m, (0.07 * gilt + 0.18 * heart + 0.5 * core * fl) * flare, win[..., 4])
         win[..., 3] = np.where(m, 0.0, win[..., 3])
 
     def _embers(self, win, ox, oy, t, flare):
