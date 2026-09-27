@@ -1,8 +1,10 @@
 # >>> HEROINE-v3 REPORT 3 / STATE (2026-09-27 ~10:50Z; the DIRECTOR'S H5 CALLS; paused for usage pacing, RESUME ~15:00Z) <<<
 
-**State.** H1 with every H5 call is rendering on this box (`cloud/jobs/h1_v3_h5.json`, `render.py --shot beacon_v3`, src
-1200-1555 master numbering, strike 1 = 1236, roar = 1476) -> `renders/h1_v3h5`, JPEGs to branch **`claude/render-h1-v3-h5`**
-(144/356 at 10:37Z, ~8.5 s/frame). It supersedes `claude/render-h1-v3-master` (pre-H5) and the 00:42Z re-key. The
+**State.** H1 with every H5 call is **RENDERED**: `cloud/jobs/h1_v3_h5.json` (`render.py --shot beacon_v3`, src 1200-1555
+master numbering, strike 1 = 1236, roar = 1476) -> `renders/h1_v3h5`, **356/356 JPEGs on branch `claude/render-h1-v3-h5`**
+(JOB COMPLETE 11:04Z, 48 min on this box). Every frame decodes at 1920x804; per-frame mean luma 31.9-80/255 (darkest
+src 1443), **no frame at <= 20/255**: her silhouette never vanishes. Contact sheet `review/v3/heroine_v3_h1_h5_contact.jpg`.
+It supersedes `claude/render-h1-v3-master` (pre-H5) and the 00:42Z re-key. The
 close-ups below are code + stills only; no close-up job is launched. B renders use LOCKED numbering and the B folders
 (`deadember_B`, `climb_B`, `heroine_B`).
 
@@ -13,8 +15,8 @@ close-ups below are code + stills only; no close-up job is launched. B renders u
 * [x] Flint sparks short, orange, falling and curving (gamma speeds, 0.10-0.32 s lives, gravity + drag + curl).
 * [x] The f1366 flinch re-posed (`FLINCH_V3`): head turned away, forearm across the face, weight back.
 * [x] A hood / wool cowl, no knit beanie; the red scarf as a woven wool shawl; no hair wires (`hsdf3.wardrobe_v3`).
-* [x] B: H1's crushed frames lifted (`V3_FLOOR`, `V3_CLOSE_SKY`, pre-roar exposure lift, black lift 0.011): half-res
-  checks at mean ~32/255; to be confirmed on the finished render's contact sheet (every frame mean > 20/255).
+* [x] B: H1's crushed frames lifted (`V3_FLOOR`, `V3_CLOSE_SKY`, pre-roar exposure lift, black lift 0.011): confirmed on
+  the full render, every frame mean >= 31.9/255.
 * [x] B: the fire-basket aged (`hsdf3.basket_v3`: rust, soot line, uneven bars, bent finials), 3-D, in H1 and the fire test.
 * [ ] B: the dead ember at ~45 deg, a lidded vessel held by her hand, no blue wedge, a visible breath: NOT DONE (next).
 * [ ] B: the hands for the bar-63 hand-off (her fire-steel pressed into the child's palm): NOT DONE (next).
@@ -30,8 +32,7 @@ close-ups below are code + stills only; no close-up job is launched. B renders u
   at the canonical proportions (inner circumference / width 11.358, outer 14.137, inner radius 8.8 mm); the letters
   glow deep orange-red, never white (`hsdf3.inscription_canon`, `ring_xp_canon`; ring.py's strip only if missing).
 
-**Next steps (RESUME ~15:00Z), in order:** (1) when the H1 job completes: decode check, per-frame luminance, contact
-sheet `review/v3/heroine_v3_h1_h5_contact.jpg`, the flinch frames; (2) Find: the ice sheen + one side-entry glove test;
+**Next steps (RESUME ~15:00Z), in order:** (1) H1 H5 is done (above); (2) Find: the ice sheen + one side-entry glove test;
 (3) DeadEmber restage (45 deg, held vessel, breath, no blue wedge) in B 880-1119 -> `renders/deadember_B`
 (`cloud/jobs/h5_deadember_b.json` now points there; HOLD it until the restage is verified); (4) the bar-63 hand-off hands
 as a layer for RUN-B -> `renders/heroine_B`; (5) review sheet, jobs, push, verify_session, the 5-line summary.
