@@ -5,7 +5,7 @@
   1  the whole sheet, design colours (relief tint, rain, rivers, lakes, coasts); the ring, her beacon, the Run's
      seven and the Road marked; the camera's footprint at the open (4160), the widest (~4390) and the end (4479)
   2  the camera's widest view (v2 2040 ~ C 4390) in design colours, through the shot's own camera
-  3  the whole sheet inked (the bake at low resolution): what the hand draws, everywhere
+  3  the camera's world inked, flat and north up (X -46..50, Y -8..32): what the hand draws
   4  the widest view inked, through the camera (no fires, no light): the geography as the viewer will see it
   5  the opening (4160) inked: her range, her beacon and the Run's seven
   6  the end (4479) inked: the ring of stones on the High Moor
@@ -32,7 +32,13 @@ W_, H_ = 1920, 804
 def design_rgb(X0, Y1, ppd, W, H):
     """Design colours on a map-space pixel grid (sRGB float)."""
     E = geo.on_grid('E', X0, Y1, ppd, W, H)
-    P = geo.on_grid('rain', X0, Y1, ppd, W, H)
+    P = geo.on_grid('moist', X0, Y1, ppd, W, H)
+    xs = X0 + (np.arange(W) + 0.5) / ppd
+    ys = Y1 - (np.arange(H) + 0.5) / ppd
+    dz = np.zeros((H, W), np.float32)
+    for (cx, cy, rx, ry) in terra.DESERTS:
+        q = np.hypot((xs[None, :] - cx) / rx, (ys[:, None] - cy) / ry)
+        dz = np.maximum(dz, np.clip((1.05 - q) / 0.5, 0, 1))
     land = geo.on_grid(terra.world()['land'].astype(np.float32), X0, Y1, ppd, W, H) > 0.5
     lake = geo.on_grid(terra.world()['lake'].astype(np.float32), X0, Y1, ppd, W, H) > 0.5
     sea = np.array([0.56, 0.63, 0.67])
@@ -40,8 +46,9 @@ def design_rgb(X0, Y1, ppd, W, H):
     dry = np.array([0.91, 0.81, 0.58])
     hi = np.array([0.50, 0.41, 0.33])
     snow = np.array([0.93, 0.91, 0.89])
-    r = np.clip((P - 0.2) / 1.2, 0, 1)[..., None]
+    r = np.clip((P - 0.25) / 0.35, 0, 1)[..., None] * (1 - dz[..., None])
     base = dry * (1 - r) + wet * r
+    base = base * (1 - 0.6 * dz[..., None]) + np.array([0.95, 0.86, 0.62]) * 0.6 * dz[..., None]
     e = E[..., None]
     a = np.clip((e - 2.2) / 3.8, 0, 1)
     b = np.clip((e - 6.0) / 3.0, 0, 1)
@@ -160,14 +167,10 @@ def frame(k, out):
         overlay(im8, to_px, 2.0, road=rd, chain=ch)
         img = through(cam, X0, Y1, ppd, im8[..., ::-1].astype(np.float32) / 255.0)
     elif k == 3:
+        # the camera's world, inked and flat (north up): X -46..50, Y -8..32 at 20 px per map degree
         import bake
-        ppd = H_ / (geo.MAP_Y1 - geo.MAP_Y0 + 4.0)
-        W = int(round(360 * ppd))
-        r = bake.bake_region(-180.0, geo.MAP_Y1 + 2.0, W, H_, ppd)
-        full = np.full((H_, W_, 3), 0.01, np.float32)
-        x = (W_ - W) // 2
-        full[:, x:x + W] = bake.l2s(r['rgb'])
-        img = full
+        r = bake.bake_region(-46.0, 32.2, W_, H_, 20.0)
+        img = bake.l2s(r['rgb'])
     else:
         import bake
         cam = cams()[{4: 'wide', 5: 'open', 6: 'end'}[k]]

@@ -35,7 +35,7 @@ KIND_PEAK, KIND_HILL = 0, 1
 
 # THE RUN'S SEVEN: lit along her range's east arm before the map opens (C17 catches them at C 3880-4120; on this
 # clock that is ~1773-1899), the seventh still blooming as the burn-through opens the map.
-CHAIN = [(16.3, 7.3), (19.2, 6.6), (22.1, 5.9), (25.0, 5.3), (28.2, 5.0), (31.6, 5.1), (34.8, 5.6)]
+CHAIN = [(15.2, 7.6), (17.4, 7.1), (19.5, 6.6), (21.6, 6.0), (23.8, 5.5), (26.0, 5.2), (28.2, 5.0)]
 CHAIN_T = [1800.0, 1818.0, 1836.0, 1854.0, 1872.0, 1890.0, 1918.0]
 
 # name, parent line, branch point (x, y) on the parent line, delay after the parent's fire there catches (frames),

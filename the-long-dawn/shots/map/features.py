@@ -71,16 +71,28 @@ def map_fields():
     mc, mr = terra.MOOR['c'], terra.MOOR['r']
     dm = np.hypot(X[None, :] - mc[0], (Y[:, None] - mc[1]) * 1.1) / mr
     out['moor'] = (1.0 - smoothstep(dm, 0.42, 0.62)).astype(np.float32)
+    out['moorall'] = (1.0 - smoothstep(dm, 0.75, 1.0)).astype(np.float32)
     dr = np.hypot(X[None, :] - terra.RING[0], Y[:, None] - terra.RING[1])
     out['clear'] = smoothstep(dr, 1.1, 1.8).astype(np.float32)
+    dz = np.zeros((H, W), np.float32)
+    for (cx, cy, rx, ry) in terra.DESERTS:
+        q = np.hypot((X[None, :] - cx) / rx, (Y[:, None] - cy) / ry)
+        np.maximum(dz, (1.0 - smoothstep(q, 0.55, 1.05)).astype(np.float32), out=dz)
+    out['desert'] = dz
+    bx0, bx1, by0, by1 = terra.CAM_BOX
+    out['box'] = (np.clip((X[None, :] - bx0) / 6.0, 0, 1) * np.clip((bx1 - X[None, :]) / 6.0, 0, 1) *
+                  np.clip((Y[:, None] - by0) / 6.0, 0, 1) * np.clip((by1 - Y[:, None]) / 6.0, 0, 1)).astype(np.float32)
     return out, W, H
 
 
 # --------------------------------------------------------------- placing ---
 
-def _candidates(field, thresh, rng, n, W, H):
-    """Random candidate positions (map XY) where field > thresh, weighted by the field."""
+def _candidates(field, thresh, rng, n, W, H, boost=None):
+    """Random candidate positions (map XY) where field > thresh, weighted by the field (and by `boost`, so the
+    region the camera sees is filled as densely as the hand would fill it)."""
     w = np.clip(field - thresh, 0, None).ravel()
+    if boost is not None:
+        w = w * (1.0 + 7.0 * boost.ravel())
     if w.sum() <= 0:
         return np.zeros((0, 2)), np.zeros(0)
     idx = rng.choice(len(w), size=n, p=w / w.sum())
@@ -355,7 +367,8 @@ def build(seed=11):
     M = cv2.GaussianBlur(M.astype(np.float32), (0, 0), 0.8)
     glyphs = []           # (Y, kind, X, s, param, seed)
     mount = Placer(0.66, 0.5)
-    cand, val = _candidates(M, 0.3, rng, 60000, W, H)
+    box = F['box']
+    cand, val = _candidates(M, 0.3, rng, 90000, W, H, box)
     order = np.argsort(-(val + rng.normal(0, 0.06, len(val))))
     for i in order:
         x, y = cand[i]
@@ -373,17 +386,23 @@ def build(seed=11):
     allland = landm > 0.5
     Hf = np.maximum(smoothstep(R1, float(np.percentile(R1[allland], 80)), float(np.percentile(R1[allland], 97))),
                     0.8 * smoothstep(Gr, float(np.percentile(Gr[allland], 78)), float(np.percentile(Gr[allland], 95))))
+    pz = cv2.GaussianBlur(rng.random((H // 6, W // 6)).astype(np.float32), (0, 0), 1.1)
+    pz = cv2.resize(pz, (W, H), interpolation=cv2.INTER_CUBIC)
+    pz = (pz - pz.mean()) / (pz.std() + 1e-6)
+    broken = smoothstep(pz, -0.9, 0.6)                   # foothills come in clumps, never a kerb along a range
+    moor = F['moorall']
     Hf = Hf * smoothstep(elev, 0.9, 1.6) + 0.4 * smoothstep(elev, 1.6, 2.6) * (1.0 - smoothstep(Er, 3.2, 4.2))
-    Hf *= (1 - smoothstep(M, 0.2, 0.4)) * (1.0 - F['moor'])
+    Hf = Hf * broken * (1.0 - moor) + moor * 0.42 * smoothstep(pz, -0.4, 1.2)      # the moor: downs, scattered
+    Hf *= (1 - smoothstep(M, 0.2, 0.4))
     Hf *= inland * free
     Hf = cv2.GaussianBlur(Hf.astype(np.float32), (0, 0), 1.0)
     hills = Placer(0.95, 0.75)
-    cand, val = _candidates(Hf, 0.22, rng, 50000, W, H)
+    cand, val = _candidates(Hf, 0.22, rng, 90000, W, H, box)
     order = np.argsort(-(val + rng.normal(0, 0.15, len(val))))
     for i in order:
         x, y = cand[i]
         hv = float(val[i])
-        if rng.random() > 0.1 + 0.8 * hv:
+        if rng.random() > 0.05 + 0.75 * hv:
             continue
         s = 0.5 + 0.3 * min(hv, 1.0) + rng.uniform(-0.05, 0.08)
         if hills.ok(x, y, s, (mount,)):
@@ -399,15 +418,15 @@ def build(seed=11):
     woods = smoothstep(patch, -0.55, 0.15)
     moist = F['moist']
     north = smoothstep(Yg, 46.0, 54.0)
-    Fb = smoothstep(moist, 0.48, 0.66) * (1.0 - smoothstep(elev, 2.2, 3.0)) * (1.0 - north)
-    Fc = smoothstep(moist, 0.36, 0.52) * np.maximum(smoothstep(elev, 2.1, 2.9) * (1.0 - smoothstep(elev, 5.0, 6.0)),
+    Fb = smoothstep(moist, 0.3, 0.48) * (1.0 - smoothstep(elev, 2.2, 3.0)) * (1.0 - north) * (1.0 - F['desert'])
+    Fc = smoothstep(moist, 0.22, 0.38) * np.maximum(smoothstep(elev, 2.1, 2.9) * (1.0 - smoothstep(elev, 5.0, 6.0)),
                                                     north * (1.0 - smoothstep(elev, 4.5, 5.5)))
     Ff = np.maximum(Fb, Fc) * woods * inland * free * (1.0 - F['moor'])
     Ff *= (1 - smoothstep(M, 0.15, 0.3)) * (1 - smoothstep(Hf, 0.45, 0.7))
     Ff = cv2.GaussianBlur(Ff.astype(np.float32), (0, 0), 0.8)
     conf = Fc / np.maximum(Fb + Fc, 1e-3)
     trees = Placer(0.72, 0.62)
-    cand, val = _candidates(Ff, 0.3, rng, 110000, W, H)
+    cand, val = _candidates(Ff, 0.3, rng, 260000, W, H, box)
     order = rng.permutation(len(cand))
     for i in order:
         x, y = cand[i]
@@ -462,11 +481,11 @@ def build(seed=11):
             keep.append(g)
         glyphs = keep + added
     # ---- desert stipple (plain dots, weighted)
-    Dz = (1.0 - smoothstep(F['moist'], 0.17, 0.29)) * (1.0 - smoothstep(elev, 2.6, 3.6))
+    Dz = F['desert'] * (1.0 - smoothstep(F['moist'], 0.4, 0.6)) * (1.0 - smoothstep(elev, 2.6, 3.6))
     Dz = cv2.GaussianBlur(Dz.astype(np.float32), (0, 0), 1.2)
     Dz = Dz * inland * free * (1 - smoothstep(M, 0.1, 0.3))
     n = 200000
-    cand, val = _candidates(Dz, 0.08, rng, n, W, H)
+    cand, val = _candidates(Dz, 0.08, rng, n, W, H, box)
     keep = rng.random(len(cand)) < np.clip((val - 0.08) * 1.6, 0, 1)
     dots = cand[keep]
     dots = dots[rng.random(len(dots)) < 0.6]

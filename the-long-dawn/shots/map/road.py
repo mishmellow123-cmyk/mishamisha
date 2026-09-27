@@ -42,8 +42,48 @@ F0, F1 = 4160, 4480
 ARRIVE = 4440                                   # bar 56 b3: the road reaches the ring
 T10 = (4190, 4320)
 SEVENTH_SCREEN = (1130.0, 485.0)                 # C17's seventh beacon on screen as the burn-through opens
+OPEN_B = (560.0, 360.0)                          # her beacon on screen at the open (the Road leaves it up-left)
+_OPEN = None
+
+
+def opening_key():
+    """The opening framing (v2 1905-1920), solved from the relay: the Run's seventh fire exactly where C17's
+    burn-through opens (SEVENTH_SCREEN) and her beacon at OPEN_B, at the keyed tilt. Returns (tx, ty, w, head)."""
+    global _OPEN
+    if _OPEN is not None:
+        return _OPEN or None
+    from scipy.optimize import least_squares
+    import relay
+    try:
+        r = relay.Relay()
+    except Exception as e:                          # before the glyphs exist (the design sketches)
+        print('opening_key: no relay yet:', e)
+        _OPEN = False
+        return None
+    B = r.P[0]
+    S7 = r.P[r.chain[-1]]
+    tilt = CAM_KEYS[0][4]
+
+    def res(p):
+        tx, ty, lw, hd = p
+        cam = MAP.Cam(tx, ty, math.exp(lw), tilt, hd, 1920, 804)
+        uv, _ = cam.project(np.array([[S7[0], S7[1], 0.0], [B[0], B[1], 0.0]]))
+        return np.concatenate([(uv[0] - SEVENTH_SCREEN) / 100.0, (uv[1] - OPEN_B) / 100.0])
+    k0 = CAM_KEYS[0]
+    sol = least_squares(res, [k0[1], k0[2], math.log(k0[3]), k0[5]])
+    tx, ty, lw, hd = sol.x
+    _OPEN = (float(tx), float(ty), float(math.exp(lw)), float(hd))
+    return _OPEN
+
+
 def _key(t, col, log=False):
-    ks = [(k[0], math.log(k[col]) if log else k[col]) for k in CAM_KEYS]
+    keys = list(CAM_KEYS)
+    ok = opening_key()
+    if ok:
+        tx, ty, w, hd = ok
+        keys[0] = (keys[0][0], tx, ty, w, keys[0][4], hd)
+        keys[1] = (keys[1][0], tx, ty, w, keys[1][4], hd)
+    ks = [(k[0], math.log(k[col]) if log else k[col]) for k in keys]
     v = MAP.spline(t, ks)
     return math.exp(v) if log else v
 
@@ -339,7 +379,12 @@ def cost_grid(cx, cy, span, step):
     rug = geo.sample('rug', X, Y)
     acc = geo.sample('acc', X, Y)
     river = np.clip(np.log(np.maximum(acc, 1.0) / terra.RIVER_T) + 0.6, 0, 1.5)
-    cost = 1.0 + 2.6 * np.clip(rug, 0, 1.5) + 0.22 * np.clip(elev, 0, 9) + 3.0 * river + 80.0 * (land < 0.5)
+    # a road keeps off a river's banks and crosses it where it must (a ford), never running along it
+    import cv2
+    wet = (acc > terra.RIVER_T).astype(np.uint8)
+    dr = cv2.distanceTransform(1 - wet, cv2.DIST_L2, 3) * step
+    bank = np.exp(-(dr / 0.45) ** 2)
+    cost = 1.0 + 2.6 * np.clip(rug, 0, 1.5) + 0.22 * np.clip(elev, 0, 9) + 3.0 * river + 2.2 * bank + 80.0 * (land < 0.5)
     return xs, ys, X, Y, cost, land
 
 
