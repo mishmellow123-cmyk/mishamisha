@@ -88,8 +88,15 @@
   * v4 (6e78762): the cairn of weathered, rounded field stones (lumpy round cones at random axes, lightly fused, three
     uneven courses to 0.64 m); the lighter 0.72 m beside the fire. The request (0927-165213-watchersalook) stays
     queued through the gap; its frames land in `renders/_farmtest/watchers_a_look/` while we are idle.
-  **Resume:** review v4 (sheet + 1:1 crop of the lighter/cairn/flame; if it never landed, re-run `farm.py
-  the-long-dawn/cloud/jobs/watchers_a_look.json --test 3`). If "good with nitpicks": JOB READY watchers_a_1
+  * v4 LANDED 21:13Z (`_local_logs/review/runA/runA3_watchers_v4_sheet.jpg`): the warm cast is gone and the lighter
+    reads as a dark hooded silhouette beside the flame. STILL FAILS: the rounded cairn reads as a lit pile of smooth
+    lumps (potatoes), and the firelit ledge just behind the fire reads as smooth clay.
+  **Resume (v5):** (1) let the lighter's body cover most of the cairn: FIRE_GAP ~(1.0, 0.35), the flame rising beside
+  the hood (v2's 0.14 put it ON the hood); smaller, darker, more numerous stones, partly sunk, so only their tops catch
+  the fire; (2) the clay ledge: pitch the plate up 2-3 deg (the ledge leaves the lower third) or halve the seventh's pool
+  for close views (a per-fire pool needs a kit change shared with A14: tell RUN-A-L); (3) check the glow's one bright
+  shadow ray over the sierra does not read as a searchlight (GP[11], shared). Then `--test 3`, then JOB READY
+  watchers_a_1. If "good with nitpicks": JOB READY watchers_a_1
   with the stills. Still open if v3 shows them: (a) a single bright shadow ray of the glow above the sierra can read as
   a searchlight (GP[11] is shared with A14; any change must go in nighta for both); (b) the near ledge's moonlit rock
   may still read as clay at 15-60 m: the fallback is to pitch the plate up so the ledge leaves the lower third (A14's
@@ -270,14 +277,6 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
 * Lessons: background renders on the session box do not survive a usage pause (the box is frozen, then rebooted);
   use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact. In this world
   `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
-
-> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
-> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
-> - The fire-basket plinth shows triangle-fan seams.
-> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
-> - The dark speckles on B's snow read as dalmatian spots (climb 700).
->
-> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
 
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION, R13b RING FALLS) - report 27 Sep <<<
 ## >>> STATE FOR RESUME (RUN-C-3, 27 Sep ~20:50Z; usage window ends 21:25Z, resume ~23:30Z) <<<
