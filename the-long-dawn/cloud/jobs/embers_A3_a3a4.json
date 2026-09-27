@@ -1,0 +1,18 @@
+{
+ "name": "embers_A3_a3a4",
+ "branch": "claude/render-embers-A3-a3a4",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow fonttools || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools",
+  "cd shots/embers && python3 render.py 700 --cut A3 --scale 0.1 --out /tmp/embers_warm"
+ ],
+ "render": [
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 560-1039:4 --cut A3",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 561-1039:4 --cut A3",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 562-1039:4 --cut A3",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 563-1039:4 --cut A3"
+ ],
+ "out_dir": "renders/embers_A3",
+ "frames": "560-1039",
+ "push_every": 300,
+ "ship": "jpg"
+}

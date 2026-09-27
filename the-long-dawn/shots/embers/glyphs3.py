@@ -46,8 +46,12 @@ CAT_W = {'latin': 12, 'greek': 6, 'cyrillic': 6, 'arabic': 9, 'hebrew': 5, 'deva
          'phoenician': 1, 'linearb': 1, 'georgian': 1.5, 'armenian': 1.5, 'thai': 1.5,
          'bengali': 1.5, 'tibetan': 1, 'cherokee': 1, 'syllabics': 1, 'tifinagh': 1,
          'khmer': 1, 'sinhala': 1, 'gujarati': 1, 'telugu': 1, 'myanmar': 1, 'yi': 1, 'syriac': 1}
-# the first letters, appearing in the white: the word for light (and a few of the oldest marks)
-FIRST = ['光', 'نور', 'φῶς', 'אור', 'свет', 'ज्ञान', '빛', 'ብርሃን', 'ஒளி', 'A', 'ᚠ', '∞', '\U0001D11E', 'ع']
+# the first letters, appearing in the white: the word for light (and a few of the oldest marks), each with its
+# place round the gathering point (x right, y up, z toward the lens; world units), spaced so none overlap
+FIRST = [('光', (-5.8, 2.6, 0.5)), ('نور', (4.9, 2.9, -1.0)), ('φῶς', (-2.2, 3.5, -2.0)), ('אור', (1.5, 3.9, 1.2)),
+         ('свет', (0.2, 1.2, 2.0)), ('ज्ञान', (6.8, 0.5, 0.4)), ('빛', (-7.0, -0.5, -1.5)), ('ብርሃን', (-3.5, 0.5, 1.4)),
+         ('ஒளி', (3.2, -0.9, -2.2)), ('A', (-1.1, -1.7, 0.8)), ('ᚠ', (8.6, 2.5, -2.6)), ('∞', (3.1, 1.9, 2.8)),
+         ('\U0001D11E', (-8.8, 1.5, 1.8)), ('ع', (5.6, -2.3, 1.0))]
 
 
 def load_atlas():
@@ -82,7 +86,7 @@ def camera(tl, t):
     cam = Camera(pos, np.zeros(3), hfov=hf, focus=D, aperture=lerp(0.07, 0.035, u))
     # tilt so that the gathering point sits at POINT_PX (above the frame's centre, as the fire will)
     f = cam.f_px(1920)
-    py = lerp(GATHER_Y, POINT_PX[1], float(smootherstep(T_SPIRAL + 20, T_POINT + 40, t)))
+    py = lerp(GATHER_Y, POINT_PX[1], float(smootherstep(T_POINT - 30, T_POINT + 40, t)))
     a = math.atan((401.5 - py) / f)
     b = math.atan((POINT_PX[0] - 959.5) / f)
     right, up, fwd = cam.R
@@ -115,7 +119,8 @@ class Letters:
         w /= w.sum()
         proto = r.choice(len(w), size=n, p=w)
         # the first letters (in the white)
-        first = [A['text'].index(x) for x in FIRST if x in A['text']]
+        firsts = [(A['text'].index(x), p) for x, p in FIRST if x in A['text']]
+        first = [i for i, _ in firsts]
         nf = len(first)
         proto[:nf] = first
         self.nf = nf
@@ -142,10 +147,7 @@ class Letters:
                 d /= np.linalg.norm(d)
                 home[i] = d * 7.0 * r.random() ** 0.5 * np.array([1.3, 0.86, 1.15])
         # the first letters: spread round the gathering point, near its depth, in focus
-        fa = r.permutation(np.linspace(0, 2 * np.pi, nf, endpoint=False)) + r.uniform(-0.35, 0.35, nf)
-        fr = r.uniform(0.8, 4.2, nf) ** 1.0
-        home[:nf] = np.stack([fr * np.cos(fa) * 1.35, fr * np.sin(fa) * 0.62 + r.normal(0, 0.35, nf),
-                              r.uniform(-3.0, 3.0, nf)], 1)
+        home[:nf] = np.array([p for _, p in firsts], np.float64) + np.array([0.0, -0.6, 0.0])
         self.home = home
         # ---- where each comes from: the frame's sides, past the lens (behind the camera), out of the depth
         sides = np.array([[-1, 0.15, 0.1], [1, 0.1, 0.05], [0.15, 1, 0.1], [-0.1, -1, 0.1], [0.25, 0.1, 1.0],
