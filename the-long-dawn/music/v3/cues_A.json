@@ -1,0 +1,885 @@
+{
+ "cut": "A",
+ "sections": {
+  "A1": {
+   "tags": [
+    "black"
+   ],
+   "level": "niente",
+   "rel": [
+    -40,
+    -14
+   ]
+  },
+  "A2": {
+   "tags": [
+    "night"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ]
+  },
+  "A3": {
+   "tags": [
+    "glow"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -5
+   ]
+  },
+  "A4": {
+   "tags": [
+    "glow"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -4
+   ]
+  },
+  "A5": {
+   "tags": [
+    "lydian"
+   ],
+   "level": "mp",
+   "rel": [
+    -16,
+    -3
+   ]
+  },
+  "A6": {
+   "tags": [
+    "race"
+   ],
+   "level": "p",
+   "rel": [
+    -16,
+    -2
+   ]
+  },
+  "A7": {
+   "tags": [
+    "race",
+    "edge"
+   ],
+   "level": "mp",
+   "rel": [
+    -12,
+    -1
+   ]
+  },
+  "A8": {
+   "tags": [
+    "race",
+    "brink"
+   ],
+   "level": "mf",
+   "rel": [
+    -10,
+    0
+   ]
+  },
+  "A9": {
+   "tags": [
+    "black"
+   ],
+   "level": "niente",
+   "rel": [
+    -30,
+    -8
+   ]
+  },
+  "A10": {
+   "tags": [
+    "silence"
+   ],
+   "level": "pp",
+   "rel": [
+    -40,
+    -10
+   ]
+  },
+  "A11": {
+   "tags": [
+    "night"
+   ],
+   "level": "pp",
+   "rel": [
+    -26,
+    -10
+   ]
+  },
+  "A12": {
+   "tags": [
+    "fire"
+   ],
+   "level": "pp",
+   "rel": [
+    -26,
+    -6
+   ]
+  },
+  "A13": {
+   "tags": [
+    "night"
+   ],
+   "level": "p",
+   "rel": [
+    -16,
+    -3
+   ]
+  },
+  "A14": {
+   "tags": [
+    "night"
+   ],
+   "level": "mp",
+   "rel": [
+    -14,
+    -2
+   ]
+  },
+  "A15": {
+   "tags": [
+    "night"
+   ],
+   "level": "p",
+   "rel": [
+    -18,
+    -5
+   ]
+  },
+  "A16": {
+   "tags": [
+    "night"
+   ],
+   "level": "p",
+   "rel": [
+    -18,
+    -5
+   ]
+  },
+  "A17": {
+   "tags": [
+    "night"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -6
+   ]
+  },
+  "A18": {
+   "tags": [
+    "night"
+   ],
+   "level": "p",
+   "rel": [
+    -18,
+    -5
+   ]
+  },
+  "A19": {
+   "tags": [
+    "dawn",
+    "major"
+   ],
+   "level": "mp",
+   "rel": [
+    -14,
+    -2
+   ]
+  },
+  "A20": {
+   "tags": [
+    "title",
+    "major"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -5
+   ]
+  }
+ },
+ "events": {
+  "strike1": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "strike2": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "strike3": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "roar": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ],
+   "owner": "HEROINE"
+  },
+  "karst_flare": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "desert_fire": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "run_1": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "run_3": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "run_5": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "run_7": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "run_2": {
+   "kind": "fire",
+   "tags": [
+    "answer"
+   ],
+   "desc": "the ANSWER first heard (the second fire)"
+  },
+  "run_4": {
+   "kind": "fire"
+  },
+  "run_6": {
+   "kind": "fire"
+  },
+  "watchers": {
+   "kind": "music",
+   "tags": [
+    "answer"
+   ]
+  },
+  "watchfire_1": {
+   "kind": "picture",
+   "tags": [
+    "watchfire"
+   ]
+  },
+  "watchfire_2": {
+   "kind": "picture",
+   "tags": [
+    "watchfire"
+   ]
+  },
+  "watchfire_3": {
+   "kind": "picture",
+   "tags": [
+    "watchfire"
+   ]
+  },
+  "watchfire_4": {
+   "kind": "picture",
+   "tags": [
+    "watchfire"
+   ]
+  }
+ },
+ "extra_events": [],
+ "breaths": [
+  {
+   "t0": {
+    "at": "ignition",
+    "s": -0.833333
+   },
+   "t1": {
+    "at": "ignition"
+   },
+   "exempt": [],
+   "why": "one beat of breath before the ignition"
+  },
+  {
+   "t0": {
+    "at": "edge",
+    "s": -0.2
+   },
+   "t1": {
+    "at": "edge"
+   },
+   "exempt": [],
+   "why": "200 ms before the race"
+  },
+  {
+   "t0": {
+    "at": "white_impact",
+    "s": -0.125
+   },
+   "t1": {
+    "at": "white_impact"
+   },
+   "exempt": [],
+   "why": "the suck before the IMPACT"
+  },
+  {
+   "t0": {
+    "at": "set_down",
+    "s": -0.275
+   },
+   "t1": {
+    "at": "set_down"
+   },
+   "exempt": [],
+   "why": "275 ms before the blue hour"
+  }
+ ],
+ "ambience": [
+  {
+   "id": "A.wind.open",
+   "fx": "wind",
+   "t0": 0.0,
+   "t1": {
+    "at": "white",
+    "beats": 1
+   },
+   "gain_db": -20,
+   "fade_in": 2.5,
+   "fade_out": 2.0,
+   "params": {
+    "strength": 0.45,
+    "howl": 0.14,
+    "hiss": 0.08,
+    "cut": 560,
+    "gust_rate": 0.14
+   },
+   "env": [
+    [
+     0,
+     0
+    ],
+    [
+     8,
+     -2
+    ],
+    [
+     20,
+     -8
+    ]
+   ]
+  },
+  {
+   "id": "A.fire.edge",
+   "fx": "fire",
+   "t0": {
+    "at": "towers"
+   },
+   "t1": {
+    "at": "white_impact"
+   },
+   "gain_db": -24,
+   "fade_in": 4.0,
+   "fade_out": 0.2,
+   "params": {
+    "rate": 18,
+    "level": 1.0,
+    "breath": 1.2
+   },
+   "env": [
+    [
+     0,
+     -8
+    ],
+    [
+     24,
+     0
+    ],
+    [
+     44,
+     4
+    ]
+   ]
+  },
+  {
+   "id": "A.storm.brink",
+   "fx": "wind",
+   "t0": {
+    "at": "vortex"
+   },
+   "t1": {
+    "at": "white_impact"
+   },
+   "gain_db": -16,
+   "fade_in": 2.0,
+   "fade_out": 0.1,
+   "params": {
+    "strength": 1.0,
+    "howl": 0.6,
+    "hiss": 0.5,
+    "cut": 1300,
+    "gust_rate": 0.7
+   }
+  },
+  {
+   "id": "A.wind.ash",
+   "fx": "wind",
+   "t0": {
+    "at": "dead_valley",
+    "beats": -1
+   },
+   "t1": {
+    "at": "silence"
+   },
+   "gain_db": -24,
+   "fade_in": 1.0,
+   "fade_out": 0.3,
+   "params": {
+    "strength": 0.35,
+    "howl": 0.1,
+    "hiss": 0.3,
+    "cut": 500
+   }
+  },
+  {
+   "id": "A.wind.night",
+   "fx": "wind",
+   "t0": {
+    "at": "silence",
+    "s": 2.0
+   },
+   "t1": {
+    "at": "roar",
+    "beats": 1
+   },
+   "gain_db": -24,
+   "fade_in": 3.0,
+   "fade_out": 1.0,
+   "params": {
+    "strength": 0.35,
+    "howl": 0.12,
+    "hiss": 0.06,
+    "cut": 520,
+    "gust_rate": 0.12
+   }
+  },
+  {
+   "id": "A.wind.watch",
+   "fx": "wind",
+   "t0": {
+    "at": "roar"
+   },
+   "t1": {
+    "at": "lantern",
+    "beats": 1
+   },
+   "gain_db": -26,
+   "fade_in": 2.0,
+   "fade_out": 2.0,
+   "params": {
+    "strength": 0.4,
+    "howl": 0.14,
+    "hiss": 0.08
+   }
+  },
+  {
+   "id": "A.wind.crossing",
+   "fx": "wind",
+   "t0": {
+    "at": "lantern"
+   },
+   "t1": {
+    "at": "set_down",
+    "s": -0.3
+   },
+   "gain_db": -24,
+   "fade_in": 2.0,
+   "fade_out": 0.3,
+   "params": {
+    "strength": 0.5,
+    "howl": 0.2,
+    "hiss": 0.12,
+    "cut": 620,
+    "gust_rate": 0.16
+   }
+  },
+  {
+   "id": "A.air.blue",
+   "fx": "wind",
+   "t0": {
+    "at": "set_down"
+   },
+   "t1": {
+    "at": "end_fade",
+    "beats": 1
+   },
+   "gain_db": -30,
+   "fade_in": 3.0,
+   "fade_out": 3.0,
+   "params": {
+    "strength": 0.22,
+    "howl": 0.02,
+    "hiss": 0.02,
+    "cut": 380,
+    "gust_rate": 0.08
+   }
+  },
+  {
+   "id": "A.fire.blue",
+   "fx": "fire",
+   "t0": {
+    "at": "set_down"
+   },
+   "t1": {
+    "at": "end_fade",
+    "beats": 1
+   },
+   "gain_db": -30,
+   "fade_in": 2.0,
+   "fade_out": 3.0,
+   "params": {
+    "rate": 8,
+    "level": 0.7,
+    "breath": 0.7
+   }
+  }
+ ],
+ "sfx": [
+  {
+   "id": "A.impact",
+   "fx": "roar",
+   "t": {
+    "at": "white_impact"
+   },
+   "gain_db": -6,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 5.0,
+    "lead": 0.05,
+    "size": 1.6,
+    "sustain": 0.2,
+    "bright": 0.6
+   }
+  },
+  {
+   "id": "A.strike1",
+   "fx": "strike",
+   "t": {
+    "at": "strike1"
+   },
+   "gain_db": -12.0,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "A.strike2",
+   "fx": "strike",
+   "t": {
+    "at": "strike2"
+   },
+   "gain_db": -12.5,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "A.strike3",
+   "fx": "strike",
+   "t": {
+    "at": "strike3"
+   },
+   "gain_db": -13.0,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "A.blow",
+   "fx": "blow",
+   "t": {
+    "at": "blow"
+   },
+   "gain_db": -22,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 4.0,
+    "glow": 1.0
+   }
+  },
+  {
+   "id": "A.roar",
+   "fx": "roar",
+   "t": {
+    "at": "roar"
+   },
+   "gain_db": -6,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 4.5,
+    "lead": 0.3
+   }
+  },
+  {
+   "id": "A.karst_flare",
+   "fx": "roar",
+   "t": {
+    "at": "karst_flare"
+   },
+   "gain_db": -15.3,
+   "pan": null,
+   "dist": 0.55,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.desert_fire",
+   "fx": "roar",
+   "t": {
+    "at": "desert_fire"
+   },
+   "gain_db": -15.0,
+   "pan": null,
+   "dist": 0.5,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.run_1",
+   "fx": "roar",
+   "t": {
+    "at": "run_1"
+   },
+   "gain_db": -13.2,
+   "pan": null,
+   "dist": 0.2,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.run_2",
+   "fx": "roar",
+   "t": {
+    "at": "run_2"
+   },
+   "gain_db": -13.8,
+   "pan": null,
+   "dist": 0.3,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.run_3",
+   "fx": "roar",
+   "t": {
+    "at": "run_3"
+   },
+   "gain_db": -14.1,
+   "pan": null,
+   "dist": 0.35,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.run_4",
+   "fx": "roar",
+   "t": {
+    "at": "run_4"
+   },
+   "gain_db": -14.7,
+   "pan": null,
+   "dist": 0.45,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.run_5",
+   "fx": "roar",
+   "t": {
+    "at": "run_5"
+   },
+   "gain_db": -15.0,
+   "pan": null,
+   "dist": 0.5,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.run_6",
+   "fx": "roar",
+   "t": {
+    "at": "run_6"
+   },
+   "gain_db": -15.6,
+   "pan": null,
+   "dist": 0.6,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.run_7",
+   "fx": "roar",
+   "t": {
+    "at": "run_7"
+   },
+   "gain_db": -15.9,
+   "pan": null,
+   "dist": 0.65,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "A.watchfire1",
+   "fx": "fire",
+   "t": {
+    "at": "watchfire_1",
+    "beats": -2
+   },
+   "gain_db": -26,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 5.0,
+    "rate": 10,
+    "level": 0.8,
+    "breath": 0.6
+   }
+  },
+  {
+   "id": "A.watchfire2",
+   "fx": "fire",
+   "t": {
+    "at": "watchfire_2",
+    "beats": -2
+   },
+   "gain_db": -26,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 5.0,
+    "rate": 10,
+    "level": 0.8,
+    "breath": 0.6
+   }
+  },
+  {
+   "id": "A.watchfire3",
+   "fx": "fire",
+   "t": {
+    "at": "watchfire_3",
+    "beats": -2
+   },
+   "gain_db": -26,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 5.0,
+    "rate": 10,
+    "level": 0.8,
+    "breath": 0.6
+   }
+  },
+  {
+   "id": "A.watchfire4",
+   "fx": "fire",
+   "t": {
+    "at": "watchfire_4",
+    "beats": -2
+   },
+   "gain_db": -26,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 5.0,
+    "rate": 10,
+    "level": 0.8,
+    "breath": 0.6
+   }
+  }
+ ]
+}

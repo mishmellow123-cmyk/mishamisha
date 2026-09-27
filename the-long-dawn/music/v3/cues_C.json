@@ -1,0 +1,888 @@
+{
+ "cut": "C",
+ "sections": {
+  "C1": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -40,
+    -12
+   ]
+  },
+  "C2": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ]
+  },
+  "C3": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ]
+  },
+  "C4": {
+   "tags": [
+    "book"
+   ],
+   "level": "p",
+   "rel": [
+    -22,
+    -6
+   ]
+  },
+  "C5": {
+   "tags": [
+    "lydian"
+   ],
+   "level": "p",
+   "rel": [
+    -18,
+    -4
+   ]
+  },
+  "C6": {
+   "tags": [
+    "race"
+   ],
+   "level": "p",
+   "rel": [
+    -16,
+    -3
+   ]
+  },
+  "C7": {
+   "tags": [
+    "race"
+   ],
+   "level": "mp",
+   "rel": [
+    -14,
+    -1
+   ]
+  },
+  "C8": {
+   "tags": [
+    "race"
+   ],
+   "level": "p",
+   "rel": [
+    -16,
+    -2
+   ]
+  },
+  "C9": {
+   "tags": [
+    "race",
+    "brink"
+   ],
+   "level": "mf",
+   "rel": [
+    -12,
+    0
+   ]
+  },
+  "C10": {
+   "tags": [
+    "night"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ]
+  },
+  "C11": {
+   "tags": [
+    "race"
+   ],
+   "level": "mp",
+   "rel": [
+    -16,
+    -2
+   ]
+  },
+  "C12": {
+   "tags": [
+    "silence"
+   ],
+   "level": "pp",
+   "rel": [
+    -40,
+    -10
+   ]
+  },
+  "C13": {
+   "tags": [
+    "night"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ]
+  },
+  "C14": {
+   "tags": [
+    "fire"
+   ],
+   "level": "pp",
+   "rel": [
+    -26,
+    -6
+   ]
+  },
+  "C15": {
+   "tags": [
+    "night"
+   ],
+   "level": "p",
+   "rel": [
+    -16,
+    -3
+   ]
+  },
+  "C16": {
+   "tags": [
+    "night"
+   ],
+   "level": "p",
+   "rel": [
+    -18,
+    -4
+   ]
+  },
+  "C17": {
+   "tags": [
+    "night"
+   ],
+   "level": "mp",
+   "rel": [
+    -14,
+    -1
+   ]
+  },
+  "C18": {
+   "tags": [
+    "major"
+   ],
+   "level": "p",
+   "rel": [
+    -16,
+    -3
+   ]
+  },
+  "C19": {
+   "tags": [
+    "book"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -5
+   ]
+  },
+  "C20": {
+   "tags": [
+    "book"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -5
+   ]
+  },
+  "C21": {
+   "tags": [
+    "race"
+   ],
+   "level": "mp",
+   "rel": [
+    -14,
+    -1
+   ]
+  },
+  "C22": {
+   "tags": [
+    "major"
+   ],
+   "level": "mp",
+   "rel": [
+    -14,
+    -1
+   ]
+  },
+  "C23": {
+   "tags": [
+    "major"
+   ],
+   "level": "p",
+   "rel": [
+    -18,
+    -4
+   ]
+  },
+  "C24": {
+   "tags": [
+    "dawn",
+    "major"
+   ],
+   "level": "mp",
+   "rel": [
+    -12,
+    -1
+   ]
+  },
+  "C25": {
+   "tags": [
+    "book",
+    "major"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -5
+   ]
+  },
+  "C26": {
+   "tags": [
+    "book"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -5
+   ]
+  },
+  "C27": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ]
+  },
+  "C28": {
+   "tags": [
+    "title",
+    "major"
+   ],
+   "level": "p",
+   "rel": [
+    -22,
+    -6
+   ]
+  }
+ },
+ "events": {
+  "book": {
+   "kind": "music",
+   "tags": [
+    "call"
+   ],
+   "desc": "the storyteller's CALL (in the finished score: the cor anglais)"
+  },
+  "strike1": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "strike2": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "strike3": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "roar": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ],
+   "owner": "HEROINE"
+  },
+  "beacon_1": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "beacon_3": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "beacon_5": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "beacon_7": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "beacon_2": {
+   "kind": "fire",
+   "tags": [
+    "answer"
+   ],
+   "desc": "the ANSWER first heard"
+  },
+  "beacon_4": {
+   "kind": "fire"
+  },
+  "beacon_6": {
+   "kind": "fire"
+  },
+  "coast_1": {
+   "kind": "fire",
+   "tags": [
+    "answer"
+   ]
+  },
+  "coast_2": {
+   "kind": "fire",
+   "tags": [
+    "answer"
+   ]
+  },
+  "coast_3": {
+   "kind": "fire",
+   "tags": [
+    "answer"
+   ]
+  }
+ },
+ "extra_events": [],
+ "breaths": [
+  {
+   "t0": {
+    "at": "race",
+    "s": -0.2
+   },
+   "t1": {
+    "at": "race"
+   },
+   "exempt": [],
+   "why": "200 ms before the race"
+  },
+  {
+   "t0": {
+    "at": "unmade",
+    "s": -0.275
+   },
+   "t1": {
+    "at": "unmade"
+   },
+   "exempt": [],
+   "why": "275 ms before the Ring loop cadences"
+  },
+  {
+   "t0": {
+    "at": "sunrise",
+    "s": -0.275
+   },
+   "t1": {
+    "at": "sunrise"
+   },
+   "exempt": [],
+   "why": "275 ms before the sunrise"
+  }
+ ],
+ "ambience": [
+  {
+   "id": "C.hearth.open",
+   "fx": "hearth",
+   "t0": 0.0,
+   "t1": {
+    "at": "page_turn",
+    "beats": 2
+   },
+   "gain_db": -22,
+   "fade_in": 1.0,
+   "fade_out": 2.0,
+   "params": {}
+  },
+  {
+   "id": "C.fire.born",
+   "fx": "fire",
+   "t0": {
+    "at": "fire_catches"
+   },
+   "t1": {
+    "at": "towers_rise",
+    "beats": 2
+   },
+   "gain_db": -24,
+   "fade_in": 0.6,
+   "fade_out": 2.0,
+   "params": {
+    "rate": 12,
+    "level": 0.9,
+    "breath": 0.8
+   }
+  },
+  {
+   "id": "C.fire.forge",
+   "fx": "fire",
+   "t0": {
+    "at": "towers_rise"
+   },
+   "t1": {
+    "at": "deep"
+   },
+   "gain_db": -26,
+   "fade_in": 3.0,
+   "fade_out": 0.5,
+   "params": {
+    "rate": 16,
+    "level": 1.0,
+    "breath": 1.2
+   },
+   "env": [
+    [
+     0,
+     -6
+    ],
+    [
+     20,
+     0
+    ],
+    [
+     26,
+     3
+    ]
+   ]
+  },
+  {
+   "id": "C.storm.eye",
+   "fx": "wind",
+   "t0": {
+    "at": "eye_burn"
+   },
+   "t1": {
+    "at": "mirror"
+   },
+   "gain_db": -18,
+   "fade_in": 2.0,
+   "fade_out": 1.0,
+   "params": {
+    "strength": 0.9,
+    "howl": 0.5,
+    "hiss": 0.4,
+    "cut": 1100,
+    "gust_rate": 0.5
+   }
+  },
+  {
+   "id": "C.wind.fall",
+   "fx": "wind",
+   "t0": {
+    "at": "ring_falls"
+   },
+   "t1": {
+    "at": "reveal",
+    "beats": 4
+   },
+   "gain_db": -25,
+   "fade_in": 2.0,
+   "fade_out": 2.0,
+   "params": {
+    "strength": 0.4,
+    "howl": 0.14,
+    "hiss": 0.07,
+    "cut": 520
+   }
+  },
+  {
+   "id": "C.hearth.council",
+   "fx": "fire",
+   "t0": {
+    "at": "council"
+   },
+   "t1": {
+    "at": "white_heart"
+   },
+   "gain_db": -28,
+   "fade_in": 2.0,
+   "fade_out": 0.3,
+   "params": {
+    "rate": 10,
+    "level": 0.8,
+    "breath": 0.9
+   },
+   "env": [
+    [
+     0,
+     -4
+    ],
+    [
+     30,
+     0
+    ],
+    [
+     36,
+     5
+    ]
+   ]
+  },
+  {
+   "id": "C.air.dawn",
+   "fx": "wind",
+   "t0": {
+    "at": "sunrise"
+   },
+   "t1": {
+    "at": "plenty"
+   },
+   "gain_db": -30,
+   "fade_in": 3.0,
+   "fade_out": 2.0,
+   "params": {
+    "strength": 0.22,
+    "howl": 0.02,
+    "hiss": 0.02,
+    "cut": 380
+   }
+  },
+  {
+   "id": "C.hearth.end",
+   "fx": "hearth",
+   "t0": {
+    "at": "plenty"
+   },
+   "t1": {
+    "at": "plagal",
+    "beats": 4
+   },
+   "gain_db": -26,
+   "fade_in": 2.0,
+   "fade_out": 3.0,
+   "params": {}
+  },
+  {
+   "id": "C.sea",
+   "fx": "sea",
+   "t0": {
+    "at": "havens"
+   },
+   "t1": {
+    "at": "blank"
+   },
+   "gain_db": -24,
+   "fade_in": 2.0,
+   "fade_out": 2.0,
+   "params": {}
+  }
+ ],
+ "sfx": [
+  {
+   "id": "C.page_turn_0",
+   "fx": "page",
+   "t": {
+    "at": "page_turn_0"
+   },
+   "gain_db": -16,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.riffle",
+   "fx": "page",
+   "t": {
+    "at": "riffle"
+   },
+   "gain_db": -16,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.page_turn",
+   "fx": "page",
+   "t": {
+    "at": "page_turn"
+   },
+   "gain_db": -16,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.snow_hiss",
+   "fx": "hiss",
+   "t": {
+    "at": "snow"
+   },
+   "gain_db": -14,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 2.5
+   }
+  },
+  {
+   "id": "C.strike1",
+   "fx": "strike",
+   "t": {
+    "at": "strike1"
+   },
+   "gain_db": -12.0,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.strike2",
+   "fx": "strike",
+   "t": {
+    "at": "strike2"
+   },
+   "gain_db": -12.5,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.strike3",
+   "fx": "strike",
+   "t": {
+    "at": "strike3"
+   },
+   "gain_db": -13.0,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.blow",
+   "fx": "blow",
+   "t": {
+    "at": "blow"
+   },
+   "gain_db": -22,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 4.0,
+    "glow": 1.0
+   }
+  },
+  {
+   "id": "C.roar",
+   "fx": "roar",
+   "t": {
+    "at": "roar"
+   },
+   "gain_db": -6,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 4.5,
+    "lead": 0.3
+   }
+  },
+  {
+   "id": "C.beacon1",
+   "fx": "roar",
+   "t": {
+    "at": "beacon_1"
+   },
+   "gain_db": -13.15,
+   "pan": null,
+   "dist": 0.22999999999999998,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "C.beacon2",
+   "fx": "roar",
+   "t": {
+    "at": "beacon_2"
+   },
+   "gain_db": -13.55,
+   "pan": null,
+   "dist": 0.31,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "C.beacon3",
+   "fx": "roar",
+   "t": {
+    "at": "beacon_3"
+   },
+   "gain_db": -13.95,
+   "pan": null,
+   "dist": 0.39,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "C.beacon4",
+   "fx": "roar",
+   "t": {
+    "at": "beacon_4"
+   },
+   "gain_db": -14.35,
+   "pan": null,
+   "dist": 0.47,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "C.beacon5",
+   "fx": "roar",
+   "t": {
+    "at": "beacon_5"
+   },
+   "gain_db": -14.75,
+   "pan": null,
+   "dist": 0.55,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "C.beacon6",
+   "fx": "roar",
+   "t": {
+    "at": "beacon_6"
+   },
+   "gain_db": -15.15,
+   "pan": null,
+   "dist": 0.63,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "C.beacon7",
+   "fx": "roar",
+   "t": {
+    "at": "beacon_7"
+   },
+   "gain_db": -15.55,
+   "pan": null,
+   "dist": 0.7100000000000001,
+   "exempt": false,
+   "params": {
+    "dur": 3.0,
+    "lead": 0.15,
+    "size": 0.8,
+    "sustain": 0.3
+   }
+  },
+  {
+   "id": "C.page.plenty",
+   "fx": "page",
+   "t": {
+    "at": "plenty"
+   },
+   "gain_db": -18,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.page.havens",
+   "fx": "page",
+   "t": {
+    "at": "havens"
+   },
+   "gain_db": -18,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.page.blank",
+   "fx": "page",
+   "t": {
+    "at": "blank"
+   },
+   "gain_db": -18,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "C.page.blank_2",
+   "fx": "page",
+   "t": {
+    "at": "blank_2"
+   },
+   "gain_db": -18,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  }
+ ]
+}

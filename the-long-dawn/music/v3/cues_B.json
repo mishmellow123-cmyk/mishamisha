@@ -1,0 +1,1526 @@
+{
+ "cut": "B",
+ "sections": {
+  "B1": {
+   "tags": [
+    "dusk"
+   ],
+   "level": "pp",
+   "rel": [
+    -15,
+    -8
+   ],
+   "centroid": [
+    150,
+    700
+   ]
+  },
+  "B2": {
+   "tags": [
+    "climb"
+   ],
+   "level": "pp",
+   "rel": [
+    -17,
+    -8
+   ],
+   "centroid": [
+    150,
+    900
+   ]
+  },
+  "B3": {
+   "tags": [
+    "ember",
+    "black"
+   ],
+   "level": "niente",
+   "rel": [
+    -21,
+    -11
+   ]
+  },
+  "B4": {
+   "tags": [
+    "firstfire"
+   ],
+   "level": "pp",
+   "rel": [
+    -19,
+    -6
+   ]
+  },
+  "B5": {
+   "tags": [
+    "reveal"
+   ],
+   "level": "p",
+   "rel": [
+    -10,
+    -2
+   ],
+   "centroid": [
+    150,
+    800
+   ]
+  },
+  "B6": {
+   "tags": [
+    "firstnight"
+   ],
+   "level": "p",
+   "rel": [
+    -14,
+    -6
+   ],
+   "centroid": [
+    150,
+    700
+   ]
+  },
+  "B7": {
+   "tags": [
+    "lifetime"
+   ],
+   "level": "p",
+   "rel": [
+    -13,
+    -4
+   ],
+   "centroid": [
+    150,
+    900
+   ]
+  },
+  "B8": {
+   "tags": [
+    "farpeak"
+   ],
+   "level": "pp",
+   "rel": [
+    -18,
+    -8
+   ]
+  },
+  "B9": {
+   "tags": [
+    "lifetime"
+   ],
+   "level": "p",
+   "rel": [
+    -11,
+    -3
+   ],
+   "centroid": [
+    150,
+    1000
+   ]
+  },
+  "B10": {
+   "tags": [
+    "grown"
+   ],
+   "level": "p",
+   "rel": [
+    -12,
+    -3
+   ]
+  },
+  "B11": {
+   "tags": [
+    "lifetime"
+   ],
+   "level": "mp",
+   "rel": [
+    -9,
+    -2
+   ],
+   "centroid": [
+    200,
+    1100
+   ]
+  },
+  "B12": {
+   "tags": [
+    "lifetime",
+    "major"
+   ],
+   "level": "mp",
+   "rel": [
+    -9,
+    -1.5
+   ],
+   "centroid": [
+    200,
+    1100
+   ]
+  },
+  "B13": {
+   "tags": [
+    "handback",
+    "dawn",
+    "major"
+   ],
+   "level": "mp",
+   "rel": [
+    -9,
+    0
+   ],
+   "centroid": [
+    200,
+    1500
+   ]
+  },
+  "B14": {
+   "tags": [
+    "title",
+    "major"
+   ],
+   "level": "p",
+   "rel": [
+    -15,
+    -4
+   ]
+  }
+ },
+ "events": {
+  "peak_1": {
+   "kind": "picture",
+   "tags": [
+    "peak"
+   ],
+   "owner": "RUN-B"
+  },
+  "peak_2": {
+   "kind": "picture",
+   "tags": [
+    "peak"
+   ],
+   "owner": "RUN-B"
+  },
+  "peak_3": {
+   "kind": "picture",
+   "tags": [
+    "peak"
+   ],
+   "owner": "RUN-B"
+  },
+  "peak_4": {
+   "kind": "picture",
+   "tags": [
+    "peak"
+   ],
+   "owner": "RUN-B"
+  },
+  "peak_5": {
+   "kind": "picture",
+   "tags": [
+    "peak"
+   ],
+   "owner": "RUN-B"
+  },
+  "peak_6": {
+   "kind": "picture",
+   "tags": [
+    "peak"
+   ],
+   "owner": "RUN-B"
+  },
+  "last_red": {
+   "kind": "picture",
+   "tags": [
+    "peak"
+   ],
+   "owner": "RUN-B"
+  },
+  "strike1": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "strike2": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "strike3": {
+   "kind": "sfx",
+   "tags": [
+    "strike"
+   ],
+   "owner": "HEROINE"
+  },
+  "catch": {
+   "kind": "picture",
+   "owner": "HEROINE"
+  },
+  "roar": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ],
+   "owner": "HEROINE"
+  },
+  "call_cello": {
+   "kind": "music",
+   "lock": "hard"
+  },
+  "night_1": {
+   "kind": "music",
+   "tags": [
+    "night1_call"
+   ]
+  },
+  "call_2": {
+   "kind": "music",
+   "tags": [
+    "night1_call"
+   ]
+  },
+  "call_3": {
+   "kind": "music",
+   "tags": [
+    "night1_call"
+   ]
+  },
+  "stone_1": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "stone_2": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "stone_3": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "stone_5": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "stone_8": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "stone_12": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "stone_20": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "stone_30": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "stone_45": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: an hour gone; she feeds the fire"
+  },
+  "year_2": {
+   "kind": "night",
+   "len_beats": 8,
+   "ground": "D3",
+   "dir": -1,
+   "mode": "minor",
+   "answers": [],
+   "calls": [],
+   "weather": "STORM",
+   "level": 0.24,
+   "call_at": 1.0,
+   "call_rh": [
+    1,
+    1,
+    1.5
+   ],
+   "first_answer": false,
+   "major_v": true,
+   "pad": 1,
+   "desc": "THE VIGIL: hour 2; chaconne variation"
+  },
+  "year_3": {
+   "kind": "night",
+   "len_beats": 8,
+   "ground": "C3",
+   "dir": -1,
+   "mode": "minor",
+   "answers": [],
+   "calls": [],
+   "weather": "CLEAR",
+   "level": 0.25,
+   "call_at": 1.0,
+   "call_rh": [
+    1,
+    1,
+    1.5
+   ],
+   "first_answer": false,
+   "major_v": true,
+   "pad": 1,
+   "desc": "THE VIGIL: hour 3; chaconne variation"
+  },
+  "year_5": {
+   "kind": "night",
+   "len_beats": 8,
+   "ground": "Bb2",
+   "dir": -1,
+   "mode": "minor",
+   "answers": [],
+   "calls": [],
+   "weather": "FOG",
+   "level": 0.23,
+   "call_at": 1.0,
+   "call_rh": [
+    1,
+    1,
+    1.5
+   ],
+   "first_answer": false,
+   "major_v": true,
+   "pad": 1,
+   "desc": "THE VIGIL: hour 4; chaconne variation"
+  },
+  "year_8": {
+   "kind": "night",
+   "len_beats": 8,
+   "ground": "G2",
+   "dir": 1,
+   "mode": "minor",
+   "answers": [
+    {
+     "at": 4.0,
+     "horn": "hn_farther",
+     "mode": "minor",
+     "rhythm": [
+      1.5,
+      0.5,
+      0.5,
+      1.5
+     ],
+     "vel": 0.3
+    }
+   ],
+   "calls": [],
+   "weather": "CLEAR",
+   "level": 0.26,
+   "call_at": 1.0,
+   "call_rh": [
+    1,
+    1,
+    1.5
+   ],
+   "first_answer": true,
+   "major_v": false,
+   "pad": 2,
+   "desc": "THE VIGIL: hour 5; chaconne variation"
+  },
+  "year_12": {
+   "kind": "night",
+   "len_beats": 8,
+   "ground": "A2",
+   "dir": 1,
+   "mode": "minor",
+   "answers": [
+    {
+     "at": 5.0,
+     "horn": "hn_far",
+     "mode": "minor",
+     "rhythm": [
+      1,
+      0.5,
+      0.5,
+      1
+     ],
+     "vel": 0.31
+    }
+   ],
+   "calls": [
+    {
+     "at": 4.0,
+     "horn": "hn2",
+     "root": "D3",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.3
+    }
+   ],
+   "weather": "CLEAR",
+   "level": 0.27,
+   "call_at": 1.0,
+   "call_rh": [
+    1,
+    1,
+    1.5
+   ],
+   "first_answer": false,
+   "major_v": false,
+   "pad": 2,
+   "desc": "THE VIGIL: hour 6; chaconne variation"
+  },
+  "year_20": {
+   "kind": "night",
+   "len_beats": 8,
+   "ground": "B2",
+   "dir": 1,
+   "mode": "major",
+   "answers": [
+    {
+     "at": 6.0,
+     "horn": "hn_farther",
+     "mode": "major",
+     "rhythm": [
+      0.75,
+      0.25,
+      0.25,
+      0.75
+     ],
+     "vel": 0.28
+    }
+   ],
+   "calls": [
+    {
+     "at": 4.0,
+     "horn": "hn2",
+     "root": "D3",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.32
+    },
+    {
+     "at": 5.0,
+     "horn": "hn_far",
+     "root": "A2",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.3
+    }
+   ],
+   "weather": "CLEAR",
+   "level": 0.28,
+   "call_at": 1.0,
+   "call_rh": [
+    1,
+    2,
+    2
+   ],
+   "first_answer": false,
+   "major_v": false,
+   "pad": 2,
+   "desc": "THE VIGIL: hour 7; chaconne variation"
+  },
+  "year_30": {
+   "kind": "night",
+   "len_beats": 8,
+   "ground": "E2",
+   "dir": 1,
+   "mode": "major",
+   "answers": [
+    {
+     "at": 3.0,
+     "horn": "hn_farther",
+     "mode": "major",
+     "rhythm": [
+      1,
+      0.5,
+      0.5,
+      2
+     ],
+     "vel": 0.31
+    },
+    {
+     "at": 5.5,
+     "horn": "hn5",
+     "mode": "major",
+     "rhythm": [
+      1,
+      0.5,
+      0.5,
+      1
+     ],
+     "vel": 0.28
+    }
+   ],
+   "calls": [
+    {
+     "at": 2.5,
+     "horn": "hn2",
+     "root": "D3",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.34
+    },
+    {
+     "at": 4.0,
+     "horn": "hn",
+     "root": "A2",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.33
+    },
+    {
+     "at": 5.0,
+     "horn": "hn_far",
+     "root": "D3",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.3
+    }
+   ],
+   "weather": "CLEAR",
+   "level": 0.3,
+   "call_at": 1.0,
+   "call_rh": [
+    1,
+    1,
+    1.5
+   ],
+   "first_answer": false,
+   "major_v": false,
+   "pad": 3,
+   "desc": "THE VIGIL: hour 8; chaconne variation"
+  },
+  "year_45": {
+   "kind": "night",
+   "len_beats": 8,
+   "ground": "A2",
+   "dir": 1,
+   "mode": "major",
+   "answers": [
+    {
+     "at": 2.5,
+     "horn": "hn_far",
+     "mode": "major",
+     "rhythm": [
+      1,
+      0.5,
+      0.5,
+      2
+     ],
+     "vel": 0.33
+    },
+    {
+     "at": 4.5,
+     "horn": "hn_farther",
+     "mode": "major",
+     "rhythm": [
+      1,
+      0.5,
+      0.5,
+      1.5
+     ],
+     "vel": 0.3
+    },
+    {
+     "at": 5.5,
+     "horn": "hn6",
+     "mode": "major",
+     "rhythm": [
+      1,
+      0.5,
+      0.5,
+      1
+     ],
+     "vel": 0.27
+    }
+   ],
+   "calls": [
+    {
+     "at": 2.0,
+     "horn": "hn",
+     "root": "D3",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.35
+    },
+    {
+     "at": 3.5,
+     "horn": "hn2",
+     "root": "A2",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.33
+    },
+    {
+     "at": 5.0,
+     "horn": "hn5",
+     "root": "D3",
+     "rhythm": [
+      1,
+      1,
+      1.5
+     ],
+     "vel": 0.29
+    }
+   ],
+   "weather": "FOG",
+   "level": 0.31,
+   "call_at": 1.0,
+   "call_rh": [
+    1,
+    1,
+    1.0
+   ],
+   "first_answer": false,
+   "major_v": false,
+   "pad": 3,
+   "desc": "THE VIGIL: hour 9; chaconne variation"
+  },
+  "year_60": {
+   "kind": "music",
+   "tags": [
+    "arrival"
+   ]
+  },
+  "y60_strikes": {
+   "kind": "sfx",
+   "tags": [
+    "feed"
+   ],
+   "desc": "THE VIGIL: she feeds the fire; the traveller's child sits by her"
+  },
+  "far_peak_1": {
+   "kind": "picture",
+   "tags": [
+    "harmonic"
+   ]
+  },
+  "first_answer": {
+   "kind": "music",
+   "tags": [
+    "answer"
+   ]
+  },
+  "his_fire": {
+   "kind": "fire",
+   "tags": [
+    "answer"
+   ]
+  },
+  "pale_1": {
+   "kind": "picture",
+   "tags": [
+    "pale"
+   ],
+   "owner": "RUN-B"
+  },
+  "pale_2": {
+   "kind": "picture",
+   "tags": [
+    "pale"
+   ],
+   "owner": "RUN-B"
+  },
+  "pale_3": {
+   "kind": "picture",
+   "tags": [
+    "pale"
+   ],
+   "owner": "RUN-B"
+  },
+  "pale_4": {
+   "kind": "picture",
+   "tags": [
+    "pale"
+   ],
+   "owner": "RUN-B"
+  },
+  "pale_5": {
+   "kind": "picture",
+   "tags": [
+    "pale"
+   ],
+   "owner": "RUN-B"
+  },
+  "pale_6": {
+   "kind": "picture",
+   "tags": [
+    "pale"
+   ],
+   "owner": "RUN-B"
+  },
+  "sunrise": {
+   "kind": "music"
+  },
+  "call_late": {
+   "kind": "music"
+  },
+  "home_phrase": {
+   "kind": "music"
+  },
+  "child_wakes": {
+   "kind": "music"
+  },
+  "title": {
+   "kind": "music"
+  },
+  "east_greys": {
+   "kind": "music"
+  },
+  "crane": {
+   "kind": "music"
+  },
+  "range_alight": {
+   "kind": "music"
+  },
+  "birdsong": {
+   "kind": "sfx"
+  }
+ },
+ "extra_events": [
+  {
+   "id": "m.dusk_voice",
+   "t": {
+    "at": "wind",
+    "beats": 2.0
+   },
+   "kind": "music",
+   "desc": "her cello enters on D4 (the light on every peak)"
+  },
+  {
+   "id": "m.climb_out",
+   "t": {
+    "at": "climb_close",
+    "beats": 2.5
+   },
+   "kind": "music",
+   "desc": "her held D3 gone under the wind"
+  },
+  {
+   "id": "m.flare",
+   "t": {
+    "at": "far_peak_2",
+    "beats": 1.0
+   },
+   "kind": "music",
+   "desc": "her light flares: her call, from far"
+  },
+  {
+   "id": "m.y60_call",
+   "t": {
+    "at": "y60_sits"
+   },
+   "kind": "music",
+   "desc": "year 60: her call as she sits; the answers overlap"
+  }
+ ],
+ "breaths": [
+  {
+   "t0": {
+    "at": "sunrise",
+    "s": -0.275
+   },
+   "t1": {
+    "at": "sunrise"
+   },
+   "exempt": [],
+   "why": "275 ms of silence ending on the sunrise"
+  }
+ ],
+ "ambience": [
+  {
+   "id": "B.wind.dusk",
+   "fx": "wind",
+   "t0": 0.0,
+   "t1": {
+    "at": "climb",
+    "beats": 1
+   },
+   "gain_db": -20,
+   "fade_in": 3.0,
+   "fade_out": 2.0,
+   "params": {
+    "strength": 0.42,
+    "howl": 0.14,
+    "hiss": 0.07,
+    "cut": 560,
+    "gust_rate": 0.16
+   },
+   "env": [
+    [
+     0,
+     0
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     12,
+     -4
+    ],
+    [
+     24,
+     -3
+    ]
+   ]
+  },
+  {
+   "id": "B.wind.climb",
+   "fx": "wind",
+   "t0": {
+    "at": "last_red",
+    "beats": -2
+   },
+   "t1": {
+    "at": "summit",
+    "beats": 1
+   },
+   "gain_db": -26,
+   "fade_in": 3.0,
+   "fade_out": 2.5,
+   "params": {
+    "strength": 0.75,
+    "howl": 0.38,
+    "hiss": 0.3,
+    "cut": 820,
+    "gust_rate": 0.3
+   }
+  },
+  {
+   "id": "B.spindrift",
+   "fx": "spindrift",
+   "t0": {
+    "at": "climb"
+   },
+   "t1": {
+    "at": "summit"
+   },
+   "gain_db": -33,
+   "fade_in": 2.0,
+   "fade_out": 2.0,
+   "params": {
+    "rate": 0.4
+   }
+  },
+  {
+   "id": "B.wind.ember",
+   "fx": "wind",
+   "t0": {
+    "at": "summit",
+    "beats": -1
+   },
+   "t1": {
+    "at": "roar",
+    "beats": 1
+   },
+   "gain_db": -30,
+   "fade_in": 2.0,
+   "fade_out": 1.2,
+   "params": {
+    "strength": 0.34,
+    "howl": 0.16,
+    "hiss": 0.05,
+    "cut": 500,
+    "gust_rate": 0.14
+   }
+  },
+  {
+   "id": "B.fire.reveal",
+   "fx": "fire",
+   "t0": {
+    "at": "catch"
+   },
+   "t1": {
+    "at": "night_1",
+    "beats": 1
+   },
+   "gain_db": -27,
+   "fade_in": 0.6,
+   "fade_out": 2.5,
+   "params": {
+    "rate": 11,
+    "level": 0.8,
+    "breath": 0.7
+   }
+  },
+  {
+   "id": "B.wind.night1",
+   "fx": "wind",
+   "t0": {
+    "at": "roar",
+    "beats": -1
+   },
+   "t1": {
+    "at": "year_2",
+    "beats": 1
+   },
+   "gain_db": -27,
+   "fade_in": 2.5,
+   "fade_out": 2.0,
+   "params": {
+    "strength": 0.33,
+    "howl": 0.1,
+    "hiss": 0.05,
+    "cut": 520,
+    "gust_rate": 0.12
+   }
+  },
+  {
+   "id": "B.fire.vigil",
+   "fx": "fire",
+   "t0": {
+    "at": "night_1"
+   },
+   "t1": {
+    "at": "her_light",
+    "beats": 3
+   },
+   "gain_db": -31,
+   "fade_in": 1.5,
+   "fade_out": 6.0,
+   "params": {
+    "rate": 8,
+    "level": 0.7,
+    "breath": 0.8
+   },
+   "env": [
+    [
+     0,
+     0
+    ],
+    [
+     60,
+     -1
+    ],
+    [
+     96,
+     0
+    ]
+   ]
+  },
+  {
+   "id": "B.wind.life",
+   "fx": "wind",
+   "t0": {
+    "at": "stone_1",
+    "beats": 1
+   },
+   "t1": {
+    "at": "crane",
+    "beats": 1
+   },
+   "gain_db": -30,
+   "fade_in": 2.0,
+   "fade_out": 2.0,
+   "params": {
+    "strength": 0.4,
+    "howl": 0.16,
+    "hiss": 0.1,
+    "cut": 560,
+    "gust_rate": 0.18
+   }
+  },
+  {
+   "id": "B.storm.year_2",
+   "fx": "wind",
+   "t0": {
+    "at": "year_2",
+    "beats": -0.5
+   },
+   "t1": {
+    "at": "year_3",
+    "beats": 0.5
+   },
+   "gain_db": -21,
+   "fade_in": 0.8,
+   "fade_out": 1.2,
+   "params": {
+    "strength": 0.9,
+    "howl": 0.5,
+    "hiss": 0.45,
+    "cut": 1100,
+    "gust_rate": 0.6
+   }
+  },
+  {
+   "id": "B.snow.year_2",
+   "fx": "spindrift",
+   "t0": {
+    "at": "year_2"
+   },
+   "t1": {
+    "at": "year_3"
+   },
+   "gain_db": -26,
+   "fade_in": 0.6,
+   "fade_out": 1.0,
+   "params": {
+    "rate": 0.9
+   }
+  },
+  {
+   "id": "B.wind.far_peak_1",
+   "fx": "wind",
+   "t0": {
+    "at": "far_peak_1"
+   },
+   "t1": {
+    "at": "far_peak_1",
+    "beats": 8
+   },
+   "gain_db": -31,
+   "fade_in": 0.6,
+   "fade_out": 0.8,
+   "params": {
+    "strength": 0.5,
+    "howl": 0.22,
+    "hiss": 0.12,
+    "cut": 640,
+    "gust_rate": 0.2
+   }
+  },
+  {
+   "id": "B.wind.far_peak_2",
+   "fx": "wind",
+   "t0": {
+    "at": "far_peak_2"
+   },
+   "t1": {
+    "at": "far_peak_2",
+    "beats": 8
+   },
+   "gain_db": -31,
+   "fade_in": 0.6,
+   "fade_out": 0.8,
+   "params": {
+    "strength": 0.5,
+    "howl": 0.22,
+    "hiss": 0.12,
+    "cut": 640,
+    "gust_rate": 0.2
+   }
+  },
+  {
+   "id": "B.wind.high",
+   "fx": "wind",
+   "t0": {
+    "at": "crane",
+    "beats": -1
+   },
+   "t1": {
+    "at": "sunrise",
+    "beats": 0.5
+   },
+   "gain_db": -25,
+   "fade_in": 2.5,
+   "fade_out": 1.5,
+   "params": {
+    "strength": 0.5,
+    "howl": 0.08,
+    "hiss": 0.22,
+    "cut": 950,
+    "gust_rate": 0.1
+   }
+  },
+  {
+   "id": "B.air.dawn",
+   "fx": "wind",
+   "t0": {
+    "at": "sunrise"
+   },
+   "t1": {
+    "at": "title",
+    "beats": 12
+   },
+   "gain_db": -31,
+   "fade_in": 4.0,
+   "fade_out": 5.0,
+   "params": {
+    "strength": 0.22,
+    "howl": 0.02,
+    "hiss": 0.02,
+    "cut": 380,
+    "gust_rate": 0.08
+   },
+   "env": [
+    [
+     0,
+     0
+    ],
+    [
+     30,
+     -3
+    ],
+    [
+     50,
+     -7
+    ]
+   ]
+  }
+ ],
+ "sfx": [
+  {
+   "id": "B.lid",
+   "fx": "knock_lid",
+   "t": {
+    "at": "lid"
+   },
+   "gain_db": -21,
+   "pan": -0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.blow_ember",
+   "fx": "blow",
+   "t": {
+    "at": "blow_ember"
+   },
+   "gain_db": -25,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 3.2,
+    "glow": 0.5
+   }
+  },
+  {
+   "id": "B.ember_hiss",
+   "fx": "hiss",
+   "t": {
+    "at": "ember_last",
+    "beats": -1.5
+   },
+   "gain_db": -29,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 2.2
+   }
+  },
+  {
+   "id": "B.strike1",
+   "fx": "strike",
+   "t": {
+    "at": "strike1"
+   },
+   "gain_db": -13.0,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "bright": 1.05
+   }
+  },
+  {
+   "id": "B.strike2",
+   "fx": "strike",
+   "t": {
+    "at": "strike2"
+   },
+   "gain_db": -13.5,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "bright": 1.1
+   }
+  },
+  {
+   "id": "B.strike3",
+   "fx": "strike",
+   "t": {
+    "at": "strike3"
+   },
+   "gain_db": -14.0,
+   "pan": 0.05,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "bright": 1.15
+   }
+  },
+  {
+   "id": "B.blow_tinder",
+   "fx": "blow",
+   "t": {
+    "at": "blow"
+   },
+   "gain_db": -24,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 4.0,
+    "glow": 1.0
+   }
+  },
+  {
+   "id": "B.catch",
+   "fx": "fire",
+   "t": {
+    "at": "catch"
+   },
+   "gain_db": -26,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "rate": 26,
+    "level": 1.0,
+    "breath": 0.3,
+    "dur": 1.6
+   }
+  },
+  {
+   "id": "B.roar",
+   "fx": "roar",
+   "t": {
+    "at": "roar"
+   },
+   "gain_db": -5,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 4.5,
+    "lead": 0.3,
+    "size": 1.0,
+    "sustain": 0.45
+   }
+  },
+  {
+   "id": "B.feed.stone_1",
+   "fx": "feed",
+   "t": {
+    "at": "stone_1"
+   },
+   "gain_db": -19,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.stone_2",
+   "fx": "feed",
+   "t": {
+    "at": "stone_2"
+   },
+   "gain_db": -20.0,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.stone_3",
+   "fx": "feed",
+   "t": {
+    "at": "stone_3"
+   },
+   "gain_db": -19,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.stone_5",
+   "fx": "feed",
+   "t": {
+    "at": "stone_5"
+   },
+   "gain_db": -20.0,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.stone_8",
+   "fx": "feed",
+   "t": {
+    "at": "stone_8"
+   },
+   "gain_db": -19,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.stone_12",
+   "fx": "feed",
+   "t": {
+    "at": "stone_12"
+   },
+   "gain_db": -20.0,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.stone_20",
+   "fx": "feed",
+   "t": {
+    "at": "stone_20"
+   },
+   "gain_db": -19,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.stone_30",
+   "fx": "feed",
+   "t": {
+    "at": "stone_30"
+   },
+   "gain_db": -20.0,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.stone_45",
+   "fx": "feed",
+   "t": {
+    "at": "stone_45"
+   },
+   "gain_db": -19,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.feed.y60_strikes",
+   "fx": "feed",
+   "t": {
+    "at": "y60_strikes"
+   },
+   "gain_db": -20.0,
+   "pan": 0.1,
+   "dist": null,
+   "exempt": false,
+   "params": {}
+  },
+  {
+   "id": "B.traveller",
+   "fx": "fire",
+   "t": {
+    "at": "traveller"
+   },
+   "gain_db": -28,
+   "pan": null,
+   "dist": null,
+   "exempt": false,
+   "params": {
+    "dur": 2.0,
+    "rate": 14,
+    "level": 0.9,
+    "breath": 0.5
+   }
+  },
+  {
+   "id": "B.his_fire",
+   "fx": "roar",
+   "t": {
+    "at": "his_fire"
+   },
+   "gain_db": -20,
+   "pan": 0.35,
+   "dist": 0.6,
+   "exempt": false,
+   "params": {
+    "dur": 3.5,
+    "lead": 0.2,
+    "size": 0.8,
+    "sustain": 0.35
+   }
+  },
+  {
+   "id": "B.birds",
+   "fx": "blackbird",
+   "t": {
+    "at": "birdsong"
+   },
+   "gain_db": -17,
+   "pan": null,
+   "dist": 0.4,
+   "exempt": false,
+   "params": {
+    "phrases": 3
+   }
+  },
+  {
+   "id": "B.birds2",
+   "fx": "blackbird",
+   "t": {
+    "at": "birdsong",
+    "beats": 9.5
+   },
+   "gain_db": -23,
+   "pan": null,
+   "dist": 0.7,
+   "exempt": false,
+   "params": {
+    "phrases": 2
+   }
+  }
+ ]
+}
