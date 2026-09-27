@@ -1,0 +1,27 @@
+{
+ "name": "ringC_look",
+ "branch": "claude/render-ringC-look",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "python3 -m venv $HOME/bpyenv && $HOME/bpyenv/bin/pip install -q bpy==4.5.14",
+  "$HOME/bpyenv/bin/python -c \"import bpy; print('bpy', bpy.app.version_string)\""
+ ],
+ "render": [
+  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.03 MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=find_a python3 render.py ringc --final --force --samples 128 --outdir renders/ring_C --range 3000-3079",
+  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.03 MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=find_b python3 render.py ringc --final --force --samples 128 --outdir renders/ring_C --range 3080-3149",
+  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.03 MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=fire python3 render.py ringc --final --force --samples 128 --outdir renders/ring_C --range 3360-3599",
+  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.03 MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=melt python3 render.py ringc --final --force --samples 128 --outdir renders/ring_C --range 5360-5519"
+ ],
+ "outputs": [
+  {
+   "out_dir": "renders/ring_C",
+   "frames": "3000-3149,3360-3599,5360-5519"
+  },
+  {
+   "out_dir": "renders/ring_C_mask",
+   "frames": "5360-5519"
+  }
+ ],
+ "push_every": 120,
+ "ship": "jpg"
+}

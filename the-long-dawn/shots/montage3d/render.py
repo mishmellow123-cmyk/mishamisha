@@ -63,6 +63,8 @@ def pid_alive(pid):
 
 
 def acquire_lock():
+    if os.environ.get('MT3D_BLENDER'):          # a farm/cloud node (bpy module): no shared Mac GPU to guard
+        return
     os.makedirs(os.path.dirname(LOCK), exist_ok=True)
     if os.path.exists(LOCK):
         try:
@@ -139,6 +141,8 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     cache = os.path.join(HERE, 'cache', a.shot)
     tag = ('final' + ('_' + os.path.basename(a.outdir.rstrip('/')) if a.outdir else '')) if a.final else (a.out or 'test')
+    if os.environ.get('MT3D_BLENDER'):          # several renders may share one checkout on a farm node: own files each
+        tag += f'_{frames[0]}-{frames[-1]}'
     exr_dir = os.path.join(cache, f'exr_{tag}')
     os.makedirs(exr_dir, exist_ok=True)
     samples = a.samples or (shot.SAMPLES if a.final else max(16, shot.SAMPLES // 2))
@@ -218,8 +222,9 @@ def main():
     th = threading.Thread(target=poster, daemon=True)
     with open(log_path, 'w') as log:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        with open(LOCK, 'w') as fh:
-            fh.write(str(proc.pid))
+        if not os.environ.get('MT3D_BLENDER'):
+            with open(LOCK, 'w') as fh:
+                fh.write(str(proc.pid))
         started = False
         for line in proc.stdout:
             log.write(line)

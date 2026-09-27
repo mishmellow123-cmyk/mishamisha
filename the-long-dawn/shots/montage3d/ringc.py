@@ -248,10 +248,12 @@ def prep(frames, cache):
     info = dict(shot=SHOT, tex=os.path.join(ADIR, 'inscription_outer.png'),
                 tex_in=os.path.join(ADIR, 'inscription_inner.png'))
     redo = bool(os.environ.get('MT3D_RERING'))
-    if SHOT in ('find_a', 'find_b'):
+    if SHOT == 'find_a':
         p = os.path.join(d, 'snowpit.bin')
         if not os.path.exists(p) or redo:
-            _snow_pit(p)
+            tmp = f'{p}.{os.getpid()}.tmp'                     # atomic: renders sharing a farm node read it too
+            _snow_pit(tmp)
+            os.replace(tmp, p)
         info['snow'] = p
     if SHOT == 'find_b':
         vd = os.path.join(d, 'vision')
