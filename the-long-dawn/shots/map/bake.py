@@ -470,15 +470,31 @@ def relief(tag='h', ppd=4.0):
     np.save(os.path.join(geo.CACHE, f'relief_{int(ppd)}.npy'), h.astype(np.float32))
 
 
-def pyramid(tag, ppd, levels=6, workers=2):
+ROI = (-66.0, 76.0, -30.0, 60.0)   # X0, X1, Y0, Y1: all any camera of C18 or bar 71 can see, with margin
+
+
+def pyramid(tag, ppd, levels=6, workers=2, roi=None):
+    """The mip pyramid of the whole texture; with roi=(X0, X1, Y0, Y1) only the tiles that touch it are baked
+    (the rest stay dark: no camera of the map's shots looks there)."""
     from multiprocessing import Pool
     W, H = tex_dims(ppd)
-    print('level 0', W, H, f'{ppd} px/deg')
+    print('level 0', W, H, f'{ppd} px/deg', 'roi', roi)
     feats()
     glyph_bank()
+    labels()
     mm = np.lib.format.open_memmap(level_path(tag, 0), mode='w+', dtype=np.uint8, shape=(H, W, 3))
+    mm[:] = np.round(l2s(s2l(TABLE)) * 255).astype(np.uint8)
     del mm
     tiles = [(ty, tx) for ty in range((H + TILE - 1) // TILE) for tx in range((W + TILE - 1) // TILE)]
+    if roi is not None:
+        def touches(ty, tx):
+            x0 = geo.TEX_X0 + tx * TILE / ppd
+            x1 = x0 + TILE / ppd
+            y1 = geo.TEX_Y1 - ty * TILE / ppd
+            y0 = y1 - TILE / ppd
+            return x1 > roi[0] and x0 < roi[1] and y1 > roi[2] and y0 < roi[3]
+        tiles = [t for t in tiles if touches(*t)]
+    print('tiles', len(tiles), flush=True)
     jobs = [(tag, ppd, tiles[k::workers], W, H) for k in range(workers)]
     t0 = time.time()
     with Pool(workers) as pool:
@@ -501,7 +517,8 @@ if __name__ == '__main__':
     if sys.argv[1] == 'pyramid':
         tag = sys.argv[2] if len(sys.argv) > 2 else 'full'
         ppd = float(sys.argv[3]) if len(sys.argv) > 3 else LEVEL0_PPD
-        pyramid(tag, ppd)
+        workers = int(sys.argv[4]) if len(sys.argv) > 4 else 2
+        pyramid(tag, ppd, workers=workers, roi=ROI if 'roi' in sys.argv else None)
     elif sys.argv[1] == 'preview':
         if sys.argv[2] == 'world':
             ppd = float(sys.argv[3])

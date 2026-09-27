@@ -1,0 +1,46 @@
+{
+ "name": "map_l2_c18",
+ "branch": "claude/render-map-l2-c18",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow",
+  "cd shots/map && NUMBA_NUM_THREADS=8 python3 terra.py",
+  "cd shots/map && NUMBA_NUM_THREADS=8 python3 features.py",
+  "cd shots/map && (python3 -c \"import bake, os, sys; sys.exit(0 if os.path.exists(bake.level_path('full', 5)) else 1)\" || NUMBA_NUM_THREADS=1 python3 bake.py pyramid full 48 8 roi)",
+  "cd shots/map && NUMBA_NUM_THREADS=8 python3 -c \"import relay; print(relay.Relay().summary())\"",
+  "cd shots/map && NUMBA_NUM_THREADS=4 python3 road.py frames --frames 4300,5640 --scale 0.25 --out /tmp/map_l2_warm"
+ ],
+ "render": [
+  "cd shots/map && NUMBA_NUM_THREADS=1 python3 road.py frames --frames 4160-4479 --out ../../renders/map_C",
+  "cd shots/map && NUMBA_NUM_THREADS=1 python3 road.py frames --frames 5600-5679 --out ../../renders/map_C",
+  "cd shots/map && NUMBA_NUM_THREADS=1 python3 road.py x1 --center 1130,485 --frames 4150-4185 --out ../../renders/x1_map_C",
+  "cd shots/map && NUMBA_NUM_THREADS=1 python3 road.py x1 --center 960,402 --frames 5594-5640 --out ../../renders/x1_map_C71"
+ ],
+ "outputs": [
+  {
+   "out_dir": "renders/map_C",
+   "frames": "4160-4479"
+  },
+  {
+   "out_dir": "renders/map_C",
+   "frames": "5600-5679"
+  },
+  {
+   "out_dir": "renders/x1_map_C",
+   "frames": "4150-4185"
+  },
+  {
+   "out_dir": "renders/x1_map_C_matte",
+   "frames": "4150-4185"
+  },
+  {
+   "out_dir": "renders/x1_map_C71",
+   "frames": "5594-5640"
+  },
+  {
+   "out_dir": "renders/x1_map_C71_matte",
+   "frames": "5594-5640"
+  }
+ ],
+ "ship": "jpg",
+ "push_every": 300
+}
