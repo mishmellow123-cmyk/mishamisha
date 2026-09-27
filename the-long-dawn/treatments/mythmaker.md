@@ -346,4 +346,86 @@ Every line gets 5–7 s and a picture that breathes. Past about six minutes, a f
 | 335–343 | **THE VIGIL.** The real sun breaks on the ridge, and the lanterns pale in the daylight. The child jumps up and runs downhill in the sun, lantern swinging, laughing. The elder watches. | A flute plays the call and the answer together for the first time. The chord is left open (add9). | — | Once you can see, you can run. The answer to the first question. |
 | 343–350 | Fade to black. The title kindles in place. | The last call and answer. | **THE LONG DAWN** | Bookended by black, like the opening card. |
 
-<!-- NEXT: A(5) text, A(8) -->
+## A(5) The complete on-screen text
+
+**The typography.**
+- **The story lines:** Cormorant italic in the lower third.
+- **The opening card and the lines on black:** centred.
+- **The vows:** carved in Cinzel and never captioned.
+
+| s | text |
+|---|---|
+| 1–8.5 | *A story they might tell of us, a lifetime from now.* (centred, on black) |
+| 21–26 | *Why does the dawn take so long?* |
+| 28–34 | *Because once, we tried to hurry it.* |
+| 44–50.5 | *We fed a new kind of fire everything we had ever written.* |
+| 66–70 / 70.5–74.5 | *And it began to think.* · *No one could see how.* (one row, two beats) |
+| 83–89 | *Wherever its light fell, things grew.* |
+| 103–109 | *Whoever held it alone would hold the world.* |
+| 114–121 / 117.5–121 | *First the makers raced for it.* · *Then the kingdoms.* |
+| 128–134 | *And every step closer paid in gold.* |
+| 143–149 | *Each said: if not us, someone worse.* |
+| 188–200 | *Many in the race said it should slow.* (on black) |
+| 193.5–200 | *None would slow alone.* (on black, below) |
+| 213–219 | *Then the people lit the hills.* |
+| 246–251 | *In that light, the runners saw the edge.* |
+| 251.5–255 | *And each other.* |
+| 268–286 (carved) | NO SINGLE HAND SHALL HOLD IT · NO FASTER THAN WE CAN SEE · NO FORGE IN THE DARK · WHAT IT GIVES, IT GIVES TO ALL |
+| 318–325 / 321–325 | *It rose slowly,* · *and it rose on everyone.* |
+| 343–349 | THE LONG DAWN |
+
+**Kept from draft 1**, where the red-team found them precise and fair:
+- *everything we had ever written*;
+- *if not us, someone worse*;
+- the builders' couplet;
+- the four vows.
+
+**Cut from draft 1:**
+- ***The companies raced for it, then the countries.*** Newspaper nouns, and the one place the legend spoke like an op-ed.
+- ***So someone else lit a beacon.*** One person, where the turn is now the people.
+- ***In time, the race was over.*** The picture now says it.
+- ***Who lit the first one?*** A lone-hero question. In A the answer is "everyone", and a line cannot say that without turning into a poster.
+
+**New:**
+- the vigil question and its answer;
+- the gift;
+- the gold;
+- the turn to the people;
+- *saw the edge, and each other*;
+- the dawn couplet.
+
+## A(8) Why it is neither forced nor on the nose
+
+**One register, and every fact turned into an image.** Draft 1 was uneven because it mixed legend with newspaper nouns. v3 speaks only the legend's words: the fire, the makers, the kingdoms, the people, the hills. Every literal fact becomes an image:
+- **the incentive** is gold spraying from the runners' feet;
+- **power outrunning understanding** is the circle of light shrinking as the fire grows;
+- **the point of no return** is a cornice nobody can see;
+- **public pressure** is the lit hills;
+- **mutual verification** is *they saw each other*.
+
+Three precise tells stay in words, and they are enough to make the mapping unmistakable to anyone living through these years:
+- *everything we had ever written*;
+- *No one could see how*;
+- *if not us, someone worse*.
+
+A real legend could say every one of them.
+
+**Coherent, not forced.** The danger and the answer are the same physical fact: darkness. In draft 1 the beacons had no power over the fire. Here light is exactly what the race cannot survive, and exactly what anyone can make. Because every image follows from that one rule, the film never has to explain itself. No line states the moral; there is no *"it was never the fire, it was the race"*. The structure does it: the fire is a gift in the first act, the race nearly ends the world in the second, and in the third the same fire, carried slowly, becomes the dawn.
+
+**Honest dread:**
+- *every step closer paid in gold*;
+- a heartbeat's sight of the world burning for ever;
+- 25 seconds on black.
+
+**Earned hope:**
+- a generation-long dawn that the walkers chose;
+- a flourishing shown as fields, towns and lights on the Moon, not as a slogan;
+- no victory cry, no cymbal.
+
+**Fair to the builders.** *Each said* is true of every runner. The couplet reports what they said and what they did, not what they felt. When they see, they come down and put their fires in first: neither heroes nor villains.
+
+**No lone hero.** The first flame is an unseen pair of hands, and then everyone. The only institution shown is a stone table under the stars. No treaty is signed, no flag is shown, no inspector, no machine appears. The north star is there only as its shape: in the open, together, at the pace of sight, shared.
+
+**The one line at risk.** *First the makers raced for it. Then the kingdoms.* is A's most literal line. It earns its place because it names both actors, blames neither, and gets the order right. If cold viewers of the animatic (§9) call it on the nose, cut it: the race still reads.
+
+<!-- NEXT: CUT B -->
