@@ -1,26 +1,24 @@
 # ACCORD v3 (ACCORD-v3, 27 Sep): cut C only, C frames 4480-5679 -> `renders/accord_C3/f_%05d.png`
 
-## >>> ACCORD-3 STATE (27 Sep ~20:45Z; usage ends ~21:25Z, RESUME ~23:30Z) <<<
-**JOB READY sent: `cloud/jobs/accord3_ac4.json`** = AC4 BRING OUT THE RING, C 4800-5119 -> `renders/accord_C`
-(CROWD_REQUIRED=1). Check stills `_local_logs/review/accord3/f_04960.jpg`, `f_05040.jpg`. If approved, launch with
-`cd ~/mishamisha && python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/accord3_ac4.json --nodes 2`.
-Its code = tip 9ebc8df; later commits (677fd72+) touch only the hearth fire (P2/P3), never P1 frames.
-**Plates:**
-* P1 4480-4799 (the descent): ACCORD-CROWD's rivers + crowd via their hook; needs their sign-off, then a job like ac4.
-* P1 4800-5119 (AC4): good with nitpicks (flat stone a little pale/tray-like; ash bits read as pills; the gilded
-  hand's short sleeve is a smooth pale tube) -> cheap re-render later.
-* P2 5120-5379 (AC2): NOT ready. Her arm (sleeve wrist->elbow->shoulder) reads; the hand closes on the Ring; the
-  fire = `scene3.p2_flames` (a low flame where each torch touched + a runner that climbs the stone into a crown
-  round her fist; tight hollow). Pass 4 read as smoke; 677fd72 made it translucent + brighter (look2 test pending:
-  `renders/_farmtest/accord3_look2/`). Still to judge: does the crown read as fire round her fist from above?
-* P3 5520-5679 (bar 70): the staging works (oblique behind her shoulder, the dips ripple round the circle, steep;
-  drawn back lit; the crane to top-down). Pass 4's cooler flames made the fire on the stone too weak; 677fd72:
-  CALM_I 24, hotter, coal glow up (look2 test pending). The top-down end (5590+) still shows the glowing stone top.
-* AC3 composite (5360-5519): waits for MONTAGE-3D's melt (`renders/ring_C/f_05360..`, their ringC jobs).
-**Next on resume (in order):** (1) read `renders/_farmtest/accord3_look2/` (P2 5215-5330, P3 5540-5590); if good,
-JOB READY `accord3_p2` (5120-5379) and `accord3_p3` (5520-5679) as copies of accord3_ac4.json; (2) if not: P2 =
-fewer, taller crown flames with a darker gap between them; P3 = a smaller coal heap + flames more opaque at the
-root; (3) the nitpicks above; (4) AC3 once the melt lands.
+## >>> ACCORD-3 STATE (27 Sep ~20:50Z; usage ends ~21:25Z, RESUME ~23:30Z) <<<
+**JOB READY sent for all three plates** (check stills in `_local_logs/review/accord3/`); launch each ONLY once the
+director approves, from ~/mishamisha: `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/<job>.json --nodes 2`
+* `accord3_ac4` = AC4 BRING OUT THE RING, C 4800-5119 (stills f_04960, f_05040). Nitpicks: the flat stone a little
+  pale/tray-like; ash bits read as pills; the gilded hand's short sleeve is a smooth pale tube.
+* `accord3_p2` = AC2 THE BEARER, C 5120-5379 (stills f_05160, f_05260): her arm in a real sleeve closes on the Ring;
+  the fire runs in from every torch and stands up as a crown round her fist (`scene3.p2_flames`, calm_density mode
+  1), white by 5379. Nitpick: the flame texture is a little fluffy (cloud-like).
+* `accord3_p3` = bar 70 THE FIRE REMAINS, C 5520-5679 (stills f_05556, f_05580). Nitpicks: from straight above
+  (5590+) the stone's top glows; the figures are a little clay-like. Renders with ACCORD-CROWD's P3 crowd baked in
+  (CROWD_REQUIRED=1): if their walk-out changes, re-run p3.
+* All jobs render at the branch tip when their units start: after approval, push NOTHING that changes these plates
+  until their frames have landed (`farm.py status`; frames land in `renders/accord_C/`).
+* P1 4480-4799 (the descent) = ACCORD-CROWD's rivers + crowd through their hook: needs their sign-off, then a job
+  like accord3_ac4 over 4480-4799.
+* AC3 composite (5360-5519): waits for MONTAGE-3D's melt (`renders/ring_C/f_05360..`).
+**Next on resume:** (1) `farm.py status`: check what landed in `renders/accord_C/` (4800-5379, 5520-5679), look
+at a contact sheet, relaunch with `--missing` if anything is short; (2) the nitpicks above as cheap re-renders;
+(3) AC3 once the melt lands; (4) the descent job once ACCORD-CROWD signs off.
 **Farm:** look-dev `farm.py the-long-dawn/cloud/jobs/accord3_look.json --test 12` (edit its frame list); CROWD=0 in a
 look-dev render line skips the crowd; ~7-10 s/frame per cpu-8 node at full res. Frames land in
 `renders/_farmtest/<job>/`. Hand/Ring crop helper: scratchpad `handcrop.py` (lost on reboot; trivial to redo).
