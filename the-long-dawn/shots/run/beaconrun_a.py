@@ -120,8 +120,8 @@ def fires_table():
 # settling at the seventh lighter's eye (A15's plate, watchers_a.plate) by 4230 and holding there. The seventh
 # summit rises into frame as we come down. Pitch opens from looking down over the ranges to the plate's -1.8.
 T_SETTLE = 4230
-BACK0, UP0 = 120.0, 75.0
-PITCH0, HFOV0 = -6.5, 44.0
+BACK0, UP0 = 170.0, 50.0                         # the start: 170 m back along the plate's axis, 50 m over it
+YAW0, PITCH0, HFOV0 = -26.0, -4.0, 34.0          # a longer lens in the glide (the red team: higher, slower, longer)
 _PLATE = None
 
 
@@ -156,16 +156,49 @@ def camera(f, W=1920, H=804):
     if ov is not None:
         x, y, z, yaw, pitch, hfov = ov
         return RC.RCam(np.array([x, y, z]), yaw, pitch, 0.0, hfov, W, H)
-    pos1, yaw, pitch1, hfov1 = end_cam()
-    fw = np.array([math.sin(math.radians(yaw)), 0.0, math.cos(math.radians(yaw))])
+    pos1, yaw1, pitch1, hfov1 = end_cam()
+    fw = np.array([math.sin(math.radians(yaw1)), 0.0, math.cos(math.radians(yaw1))])
     pos0 = pos1 - fw * BACK0 + np.array([0.0, UP0, 0.0])
     e = _ease((f - FR0) / float(T_SETTLE - FR0))
+    yaw = YAW0 + (yaw1 - YAW0) * _ease(((f - FR0) / float(T_SETTLE - FR0)) ** 1.2)
     # the height comes down a little later than the travel (a glider flares at the end): no dive at the start
     eh = _ease(((f - FR0) / float(T_SETTLE - FR0)) ** 1.15)
     pos = pos0 + (pos1 - pos0) * np.array([e, eh, e])
     pitch = PITCH0 + (pitch1 - PITCH0) * _ease(((f - FR0) / float(T_SETTLE - FR0)) ** 1.3)
     hfov = HFOV0 + (hfov1 - HFOV0) * e
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
+
+
+# ------------------------------------------------------------------ the catch: a warm flare ---
+FLARE_RISE, FLARE_DECAY, FLARE_LEN = 2.0, 9.0, 60
+
+
+def flare_env(u):
+    if u < 0.0 or u >= FLARE_LEN:
+        return 0.0
+    return min(u / FLARE_RISE, 1.0) * math.exp(-max(u - FLARE_RISE, 0.0) / FLARE_DECAY)
+
+
+def draw_flares(img, zb, scam, f, pxs, fogp):
+    """Each chain fire, as it catches, flares: the tinder and the first blaze throw a burst of light into the air
+    around the summit (a soft warm bloom, never a streak), so a far catch reads as an event at festival size. The
+    bloom is sized in metres when near and never smaller than a readable few pixels far off."""
+    import fire2 as F2
+    for x, y, z, fi, sz, sd in CHAIN:
+        env = flare_env(f - fi)
+        if env <= 0.0:
+            continue
+        Hf = NA.fire_dims(sz)[0]
+        P = np.array([x, y + 0.5 * Hf, z])
+        sx, sy, zc = scam.project(P)
+        if zc <= 1.0:
+            continue
+        ppm = scam.f / zc
+        tr = NA.fire_trans(scam.pos, P, fogp, WD)
+        e = env * tr
+        s1 = max(1.2 * Hf * ppm, 10.0 * pxs)
+        F2.halo(img, zb, sx, sy, s1, 0.035 * e, z=zc, zbias=max(3.0, 0.004 * zc), col=F2.AURA_COL)
+        F2.halo(img, zb, sx, sy, 3.2 * s1, 0.006 * e, z=zc, zbias=max(3.0, 0.004 * zc), col=F2.AURA_COL)
 
 
 # ------------------------------------------------------------------ the frame ---
@@ -211,6 +244,7 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     import watchers_a as WA
     WA.draw_figures(fr.img, fr.zb, scam, f, LT, (Lk, amb, S, fogp, Q), CH=CHAIN)
     NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD)     # each dimmed by the air in front
+    draw_flares(fr.img, fr.zb, scam, f, pxs, fogp)
     # a near catch throws a short burst of orange sparks that arc and fall (H5): fires 5 and 7
     for k in (4, 6):
         x, y, z, fi, sz, sd = CHAIN[k]

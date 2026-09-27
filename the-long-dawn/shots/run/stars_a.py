@@ -128,6 +128,10 @@ def static(scale, ss):
     PI.render_terrain(fr, 0, FD.terrain_rows(), WD.night_light(), np.zeros((0, 8)))   # H1's moonlit night
     scam = fr.src
     stars = FD._STARS if FD._STARS is not None else SK.make_stars(16000, 101, lum_scale=6.0)
+    # (v2) the Milky Way as stars, not smoke: a dense faint layer on the galactic plane (80% of 90k within ~9 deg)
+    MW = FD.milky_way()
+    dense = SK.make_stars(90000, 202, lum_scale=2.2, band=(MW[:3], 0.16), band_frac=0.8)
+    stars = {k: np.concatenate([stars[k], dense[k]]) for k in stars}
     # the frame's own stars, ranked by brightness (the eye finds the brightest first)
     d = stars['dir']
     x = d[:, 0] * scam.right[0] + d[:, 2] * scam.right[2]
@@ -165,7 +169,7 @@ def render(frame, scale=1.0, ss=1.5):
     GP[2] = 0.0                                  # no glow at all: it is behind us
     GP[16] = 0.0                                 # a clear sky, no deck
     GP[20:26] *= sky_k(u)
-    GP[26] = 0.09 * mw_k(u)
+    GP[26] = 0.06 * mw_k(u)                      # the smooth glow under the dense stars (A2 uses 0.09 with none)
     scam = fr.src
     C = scam.params()
     skl0, skld, skl = st['skl']
