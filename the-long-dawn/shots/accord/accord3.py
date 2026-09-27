@@ -580,6 +580,22 @@ def sheet(frames, scale, out, cols=2, tag=''):
     print(out, flush=True)
 
 
+# ================================================================ the crowd ===
+# ACCORD-CROWD: the rivers of torches, the crowd round the stones, bar 70's walk-out and the land beyond the stones
+# plug in here (shots/accord/crowd/crowd3.py; NOTES "ACCORD-CROWD"). CROWD=0 renders without them (fast council
+# look-dev); a crowd failure never takes a frame down unless CROWD_REQUIRED=1 (finals).
+if os.environ.get('CROWD', '1') != '0':
+    try:
+        if os.path.join(HERE, 'crowd') not in sys.path:
+            sys.path.insert(0, os.path.join(HERE, 'crowd'))
+        import crowd3 as _CR
+        _CR.install(sys.modules[__name__])
+    except Exception as _e:
+        if os.environ.get('CROWD_REQUIRED') == '1':
+            raise
+        print('accord3: crowd3 not installed:', repr(_e)[:200], flush=True)
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('cmd', choices=['still', 'range', 'sheet'])
