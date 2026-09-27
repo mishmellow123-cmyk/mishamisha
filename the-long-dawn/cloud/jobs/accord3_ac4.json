@@ -1,0 +1,14 @@
+{
+ "name": "accord3_ac4",
+ "branch": "claude/render-accord3-ac4",
+ "setup": [
+  "NUMBA_NUM_THREADS=8 python3 shots/accord/accord3.py still 4960 --scale 0.15"
+ ],
+ "render": [
+  "CROWD_REQUIRED=1 NUMBA_NUM_THREADS=2 python3 shots/accord/accord3.py range --frames 4800-5119 --outdir renders/accord_C"
+ ],
+ "out_dir": "renders/accord_C",
+ "frames": "4800-5119",
+ "push_every": 300,
+ "ship": "jpg"
+}
