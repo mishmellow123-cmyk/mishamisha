@@ -18,9 +18,17 @@
 - **E15 comp (director, ~19:00Z):** C4 is split at 700; C 700-1039 = `book_C` (page-only) + `embers_C3_e15`
   added (`T(add=...)`: a frame counts only when both layers have it; the X1 test stands in until then).
   EMBERS-C should dim its e15 under C-T2 (text 580-716, so 700-716) and C-T5a (920-1030).
-- **Local renders frozen (~19:00Z, the Mac thrashing):** the B master test waits in renderq until the thaw.
-- **Watcher (`edit/refresh_watch.sh`):** re-armed after the B test passes; one refresh per settled landing:
-  animatics, the kit, then the incremental masters for the cuts that changed.
+- **B master test (19:02-19:09Z, after 916 s in the queue): the chain works.** 5,440 f and 10,880,000 samples
+  exact; no black, no flashes; true peak -1.30 dBTP, -16.1 LUFS; AAC screener -1.22 dBTP; 405 s cold for 15
+  segments (13 fps at full res on a loaded Mac); 99.5 MB mov + 43 MB mp4. One defect found and fixed: the
+  picture read `bt709/unknown/unknown` (x264 wrote only the matrix), so the join now stamps full BT.709 VUI with
+  `h264_metadata` (no re-encode).
+- **Animatics now use the same engine** (`animatic.sh` -> `deliver.py --profile animatic`, `animatic_clean` with
+  CLEAN=1; `OLD=1` = the old assemble.py path): refreshes re-encode only the shots that changed.
+- **Watcher armed 19:13Z** (`_local_logs/animatic/watch_1913.log`): its first refresh is all three films
+  (fallback_A/fallback_C/dusk_B since its 15:47Z baseline): the animatics (cold on the engine), the kit, then the
+  masters (B re-joined with the VUI fix; A, A ALT and C built cold, ~25 min of slots). The render queue held ~45
+  jobs at 19:10Z, so the refresh waits its turn. Re-arm it after each refresh.
 
 ## Delivery chain (edit/deliver.py, edit/deliver.sh)
 
