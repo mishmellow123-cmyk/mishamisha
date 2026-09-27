@@ -215,9 +215,29 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
   use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact. In this world
   `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
 
-# >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION) - report 27 Sep <<<
-## >>> NOW (RUN-C-3, 27 Sep 20:20Z): JOB READY SENT for the 45 ink jobs (runC_reveal_a..o, runC_scroll_a..j,
-## runC_illum_a..t; 1040 frames; code = branch tip, last RUN-C push 60dffb0). Awaiting the director's launch.
+# >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION, R13b RING FALLS) - report 27 Sep <<<
+## >>> STATE FOR RESUME (RUN-C-3, 27 Sep ~20:50Z; usage window ends 21:25Z, resume ~23:30Z) <<<
+* **C16/C17/C24 FINALS: APPROVED + RUNNING on the farm** (director launched all 45 runC jobs, `--nodes 15`; log
+  `~/mishamisha/_local_logs/jobs/runC_finals_farm.log`; frames land in `renders/runC_{reveal,scroll,illum}/`).
+  At 20:32Z 286/1040 landed, no failures. All three final-code checks reviewed CLEAN (reveal 114, scroll 236,
+  illum 2640; also scroll 240 catch + illum 2490; scroll 256-295 frame-to-frame diffs smooth, no pops).
+  ON RESUME: `grep -c` the log for GAVE UP / failed; count landed frames (reveal 240, scroll 320, illum 480);
+  any missing -> `python3 the-long-dawn/cloud/farm.py <job>.json --missing --nodes 1-3` (after asking main).
+* **R13b THE RING FALLS part b (C 2840-2959): BUILT, look-dev on the farm at 20:48Z.** New driver
+  `shots/run/ringfall_ink.py` (eb22781) + jobs `cloud/jobs/runC_ringfall_{a,b,c}.json` (40 f each ->
+  `renders/runC_ringfall/`). Test frames 2850/2885/2899/2903/2935 land in `renders/_farmtest/runC_ringfall_*`
+  (log `scratchpad/rc4/farm_rf.log`). If JOB READY was not sent before the window closed: look at those, fix,
+  push, send JOB READY runC_ringfall_{a,b,c}. Design: keeper's summit at night (cool multiplied wash, moon out of
+  frame upper left per E13a), the cairn drawn in ink at keeper.CAIRN, the Ring a drawn falling star (gold head,
+  tapering broken tail between two fine lines) on an even screen path (FALL z=200 ease 0.8), strike on 2900 beside
+  the cairn: gold bloom (0.5 s), 7 short sparks (2 f), steam plume (pale strands) leaning downwind to 2959.
+  Hand-offs: IN from EMBERS-C2 E13a (spark falling down-right, cold moon upper left); OUT to MONTAGE-3D-4 C14
+  find_a (a Blender macro of the band in a clean snow hollow; only the read must match).
+* FREEZE until the C16/C17/C24 finals have all landed: no pushes to inkpass/render_ink/ink_aov/ink_final.
+* Polish list for after the finals (cheap re-renders): the mid-size fire's slight crown silhouette (reveal
+  ~100-200), the leftmost short tongue a lobe; C17 wash patches; triangle summits accepted by the director.
+## (older) NOW (RUN-C-3, 27 Sep 20:20Z): JOB READY SENT for the 45 ink jobs (runC_reveal_a..o, runC_scroll_a..j,
+## runC_illum_a..t; 1040 frames; code = branch tip, last RUN-C push 60dffb0). Launched ~20:25Z.
 * Sheet: `_local_logs/review/runC_ink.jpg` (built by `scratchpad/rc3/sheet4.py` from `renders/_farmtest/`).
 * Gate PASS on the farm: 0.336 scroll / 0.341 reveal. Farm cost 34/36/42-44 s per frame per process (illum/scroll/reveal).
 * FREEZE: no RUN-C render-code pushes while the finals run (nodes fetch the tip before every unit).
@@ -535,6 +555,11 @@ handback_b's first crane frame; coordinating with RUN-B-3). **Live status:**
   cairn's function** (I draw `bset.rubble_cairn()` at `bset.CAIRN` and `beacon_base()` cold until then).
 * Read-only imports: bworld (G-buffer per locked camera), bset (path_at, CAIRN, BEACON, night_params,
   match_horizon if present, person2), vigil (moon_at(F0) = az 80 el 14; `draw_sky` if present, frozen at f 1360).
+* **bworld h_rock STEP (for RUN-B-3):** a 0.35-0.37 m VERTICAL step in `h_rock` on the NE crest ~24-26 m from the top
+  (dtop 23.9-26.1), e.g. at x -5435.86, z 32012.46 the height jumps +0.349 m between x and x+0.05 (same at fp 0.067 and
+  0.01; `knoll()` there is 1.5 m LOWER than h_rock, so it comes from another row: the NE ridge `bridge` / dome?). Seen
+  edge-on (any low or side-on view of the crest) it renders as a row of dark vertical posts, a FENCE along the crest
+  (normals ny 0.14, lit by ambient only). My wide avoids it (behind her, from above); the vigil may see it too.
 * FYI: `bset.path_at(s)` for s < ~30 is the straight chord from LIP to the first crest point and floats up to ~1.3 m
   above the rounded crest (s 12: path y 299.90, ground 298.65). Anything walking the last 30 m (the vigil's
   travellers and child) floats unless put `on_ground()`.
