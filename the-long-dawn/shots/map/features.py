@@ -42,7 +42,7 @@ def map_fields():
     W = int(360 * FPPD)
     H = int(np.ceil((geo.MAP_Y1 - geo.MAP_Y0) * FPPD))
     out = {}
-    for k in ('E', 'Er', 'rug', 'rain'):
+    for k in ('E', 'Er', 'rug', 'rain', 'moist'):
         out[k] = geo.on_grid(k, geo.MAP_X0, geo.MAP_Y1, FPPD, W, H)
     out['elev'] = out['E']
     Y = geo.MAP_Y1 - (np.arange(H) + 0.5) / FPPD
@@ -350,7 +350,7 @@ def build(seed=11):
     # peaks only in the ranges: on their crests and their steep fronts
     crest = smoothstep(R2, pr(R2, 55), pr(R2, 97))
     front = smoothstep(Gr, pr(Gr, 60), pr(Gr, 98))
-    M = np.maximum(crest, 0.85 * front) * smoothstep(Er, 1.3, 2.8) * smoothstep(elev, 1.6, 3.2)
+    M = np.maximum(crest, 0.85 * front) * smoothstep(Er, 2.6, 4.4) * smoothstep(elev, 2.4, 4.0)
     M *= inland * free
     M = cv2.GaussianBlur(M.astype(np.float32), (0, 0), 0.8)
     glyphs = []           # (Y, kind, X, s, param, seed)
@@ -373,7 +373,7 @@ def build(seed=11):
     allland = landm > 0.5
     Hf = np.maximum(smoothstep(R1, float(np.percentile(R1[allland], 80)), float(np.percentile(R1[allland], 97))),
                     0.8 * smoothstep(Gr, float(np.percentile(Gr[allland], 78)), float(np.percentile(Gr[allland], 95))))
-    Hf = Hf * smoothstep(elev, 0.9, 1.6) + 0.55 * smoothstep(elev, 1.5, 2.4) * (1.0 - smoothstep(Er, 2.0, 3.0))
+    Hf = Hf * smoothstep(elev, 0.9, 1.6) + 0.4 * smoothstep(elev, 1.6, 2.6) * (1.0 - smoothstep(Er, 3.2, 4.2))
     Hf *= (1 - smoothstep(M, 0.2, 0.4)) * (1.0 - F['moor'])
     Hf *= inland * free
     Hf = cv2.GaussianBlur(Hf.astype(np.float32), (0, 0), 1.0)
@@ -397,11 +397,11 @@ def build(seed=11):
     patch = cv2.resize(patch, (W, H), interpolation=cv2.INTER_CUBIC)
     patch = (patch - patch.mean()) / (patch.std() + 1e-6)
     woods = smoothstep(patch, -0.55, 0.15)
-    wetl = smoothstep(rain, 0.95, 1.6)
+    moist = F['moist']
     north = smoothstep(Yg, 46.0, 54.0)
-    Fb = wetl * (1.0 - smoothstep(elev, 2.4, 3.2)) * (1.0 - north)
-    Fc = smoothstep(rain, 0.75, 1.3) * np.maximum(smoothstep(elev, 2.3, 3.0) * (1.0 - smoothstep(elev, 5.2, 6.2)),
-                                                  north * (1.0 - smoothstep(elev, 4.5, 5.5)))
+    Fb = smoothstep(moist, 0.48, 0.66) * (1.0 - smoothstep(elev, 2.2, 3.0)) * (1.0 - north)
+    Fc = smoothstep(moist, 0.36, 0.52) * np.maximum(smoothstep(elev, 2.1, 2.9) * (1.0 - smoothstep(elev, 5.0, 6.0)),
+                                                    north * (1.0 - smoothstep(elev, 4.5, 5.5)))
     Ff = np.maximum(Fb, Fc) * woods * inland * free * (1.0 - F['moor'])
     Ff *= (1 - smoothstep(M, 0.15, 0.3)) * (1 - smoothstep(Hf, 0.45, 0.7))
     Ff = cv2.GaussianBlur(Ff.astype(np.float32), (0, 0), 0.8)
@@ -462,7 +462,7 @@ def build(seed=11):
             keep.append(g)
         glyphs = keep + added
     # ---- desert stipple (plain dots, weighted)
-    Dz = (1.0 - smoothstep(rain, 0.22, 0.5)) * (1.0 - smoothstep(elev, 2.6, 3.6))
+    Dz = (1.0 - smoothstep(F['moist'], 0.17, 0.29)) * (1.0 - smoothstep(elev, 2.6, 3.6))
     Dz = cv2.GaussianBlur(Dz.astype(np.float32), (0, 0), 1.2)
     Dz = Dz * inland * free * (1 - smoothstep(M, 0.1, 0.3))
     n = 200000

@@ -65,6 +65,66 @@ def feats():
     return _FEAT, _COAST, _LAKES, _RIVERS
 
 
+# ------------------------------------------------------------ the labels ---
+
+_LAB = None
+
+
+def labels():
+    """The map's few words, in the book hand (MAP-L's invented script, pen.Hand; never Latin, never Tengwar): each
+    one word laid along a curve (terra.LABELS), its letters' up turned with the curve and its broad nib with them.
+    Returns a pen stroke pack in page space (x = X, y = -Y) for pen.raster."""
+    global _LAB
+    if _LAB is not None:
+        return _LAB
+    import pen
+    import terra
+    S = pen.Strokes()
+    for lab in getattr(terra, 'LABELS', ()):
+        _label(S, **lab)
+    _LAB = S.pack()
+    return _LAB
+
+
+def _label(S, pts, n=6, xh=0.36, gap=0.5, seed=1, dens=0.9):
+    import pen
+    C = pen.resample(pen.catmull(np.asarray(pts, np.float64), 12), 0.01)
+    sC = pen.arclen(C)
+    T = np.gradient(C, axis=0)
+    T /= np.linalg.norm(T, axis=1)[:, None] + 1e-12
+    Nn = np.stack([-T[:, 1], T[:, 0]], 1)                    # the letters' up (left of the way the word runs)
+    h = pen.Hand(seed=seed, xh=xh, nib=0.22, thin=0.035, gap=gap, dens=dens)
+    tmp = pen.Strokes()
+    w = h.word(n)
+    xr = h.write_word(tmp, w, 0.0, 0.0)
+    s0 = 0.5 * (sC[-1] - xr)
+    for P, R, D, N in zip(tmp.P, tmp.R, tmp.D, tmp.N):
+        s_ = np.clip(s0 + P[:, 0], 0, sC[-1])
+        cx = np.interp(s_, sC, C[:, 0])
+        cy = np.interp(s_, sC, C[:, 1])
+        tx = np.interp(s_, sC, T[:, 0])
+        ty = np.interp(s_, sC, T[:, 1])
+        up = -P[:, 1]
+        mx = cx - ty * up
+        my = cy + tx * up
+        # the nib turns with the line: page-text (nx, ny down) -> map (along T, and down = -N) -> page (x, -y)
+        k = len(P) // 2
+        nx, ny = N
+        vx = nx * tx[k] + ny * ty[k]
+        vy = nx * ty[k] - ny * tx[k]
+        S.add(np.stack([mx, -my], 1), R, D, 0.0, 0.0, pen.INK, nib=(vx, -vy))
+
+
+def draw_labels(A, X0, Y1, ppd):
+    import pen
+    lab = labels()
+    if len(lab['T0']) == 0:
+        return
+    H, W = A.shape
+    C, _ = pen.raster(lab, 1e9, float(ppd), H, W, layer=pen.INK, ox=X0, oy=-Y1)
+    np.maximum(A, np.clip(C, 0, 1), out=A)
+
+
 # ------------------------------------------------------- glyph geometry ---
 
 def glyph_bank():
@@ -294,6 +354,7 @@ def bake_region(X0, Y1, W, H, ppd, pad=None):
     ink.dots(A, dots, rad, np.full(len(dots), 0.8), Xp, Yp, ppd)
     Wsh = np.zeros((Hp, Wp), np.float32)
     draw_glyphs(A, Xp, Yp, ppd, Wsh)
+    draw_labels(A, Xp, Yp, ppd)
     A = np.maximum(A, rip)
     # the rose sits on the sea: its paper disc erases ripples and wash beneath
     for disc, solids, st in rose_items:

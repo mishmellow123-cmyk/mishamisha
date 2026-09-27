@@ -32,91 +32,109 @@ from numba import njit, prange
 import geo
 from noise import fbm, gnoise
 
-VER = 1
+VER = 2
 D = 0.1                      # hydrology / relief grid (map degrees per cell)
 DF = 0.05                    # coast grid
 X0, X1 = geo.MAP_X0, geo.MAP_X1
 Y0, Y1 = geo.MAP_Y0, geo.MAP_Y1
 
 # ================================================================== DESIGN ===
-# The heart of the map: the ring of stones on the High Moor.
+# The heart of the map: the ring of stones on the High Moor, at the centre of the sheet.
 RING = (0.0, 18.0)
-MOOR = dict(c=(0.0, 18.0), r=6.0, h=2.2)
+MOOR = dict(c=(0.0, 18.0), r=5.2, h=1.6)
 # Her beacon: the high knee of her range (the ink Run's range), where it bends.
 BEACON = (13.0, 8.0)
 
-# Land silhouettes (closed polygons, map degrees), the signed distance of their union is the land's skeleton.
-HEART = [  # the great continent; its west coast faces the great western sea
-    (-17, 64), (-21, 56), (-18, 49), (-23, 43), (-19, 37), (-25, 30), (-23, 24), (-18, 20), (-21, 11), (-27, 6),
-    (-25, -1), (-19, -7), (-12, -12), (-6, -19), (4, -23), (16, -21), (27, -26), (38, -24), (47, -30), (58, -27),
-    (66, -33), (74, -28), (84, -24), (95, -27), (104, -20), (109, -9), (116, -3), (113, 8), (121, 17), (118, 28),
-    (126, 36), (121, 47), (111, 55), (104, 66), (92, 71), (78, 76), (63, 81), (48, 79), (35, 83), (22, 78),
-    (10, 74), (-2, 71), (-10, 68)]
-SOUTHLAND = [  # across the southern sea
-    (28, -48), (40, -44), (55, -47), (70, -43), (86, -46), (100, -52), (108, -60), (60, -64), (30, -62), (22, -55)]
-FARWEST = [  # a far shore across the great western sea, at the sheet's edge
-    (-178, 42), (-166, 47), (-158, 40), (-161, 28), (-154, 17), (-160, 6), (-170, -4), (-178, -8)]
-EASTISLE = [(140, 22), (149, 30), (155, 22), (151, 9), (143, 12)]
-POLYS = [HEART, SOUTHLAND, FARWEST, EASTISLE]
+# Land silhouettes (closed polygons, map degrees). The great continent fills the east of the sheet and runs off
+# its north, east and south edges; its west coast faces the great western sea. A far shore at the west edge.
+HEART = [
+    (-6, 106), (-12, 95), (-9, 86), (-16, 78), (-22, 70), (-19, 61), (-24, 53), (-20, 47),
+    (-19, 43), (-25, 44), (-31, 42), (-34, 38), (-33, 34), (-29, 34.5), (-23, 37),      # the hook in the north-west
+    (-20, 33), (-25, 29), (-26, 24), (-21, 21), (-16, 18.5), (-15, 14.5), (-20, 11.5),   # the bulge, the western bay
+    (-26, 8.5), (-31, 5), (-36, 1), (-37, -3), (-32, -3.5), (-25, -4.5), (-19, -8),     # the long south-west cape
+    (-12, -13), (-6, -18), (3, -21), (11, -19), (19, -24), (27, -23), (35, -28), (42, -30),
+    (47, -25), (52, -18), (58, -14), (65, -17), (70, -25), (72, -38), (76, -52), (74, -72),  # the southern gulf
+    (125, -72), (192, -72), (192, 110),
+    (64, 110), (61, 88), (56, 77), (47, 73), (38, 75), (32, 83), (28, 110),               # the northern sound
+    (-6, 110)]
+FARWEST = [(-196, 58), (-178, 52), (-168, 45), (-171, 33), (-163, 22), (-167, 10), (-176, 1), (-182, -6), (-196, -8)]
+SEA_ISLE = [(-66, 31), (-58, 33), (-51, 27), (-52, 18), (-57, 11), (-64, 13), (-68, 21)]     # the great western isle
+POLYS = [HEART, FARWEST, SEA_ISLE]
 
-# Sea capsules cut into the land: (x0, y0, x1, y1, half-width). Firths, a bay, a gulf.
+# Sea capsules cut into the land: (x0, y0, x1, y1, half-width). The firth under the hook, the western bay's inner
+# water, a gulf on the south coast, sounds in the far east and north.
 SEAS = [
-    (-19.0, 33.2, -8.5, 33.9, 1.1),      # the long firth in the north-west
-    (-23.0, 15.8, -14.5, 16.4, 3.6),     # the western bay, where the great river meets the sea
-    (60.0, -30.0, 63.0, -18.0, 3.2),     # a southern gulf
-    (104.0, 30.0, 114.0, 31.0, 2.4),     # an eastern firth
-    (40.0, 76.0, 44.0, 66.0, 2.0),       # a northern sound
+    (-21.0, 33.6, -10.5, 34.4, 1.0),     # the long firth
+    (-19.5, 16.0, -15.2, 16.2, 1.8),     # the western bay, where the west river meets the sea
+    (8.0, -21.0, 9.0, -15.0, 1.6),       # a south-coast inlet
+    (120.0, 40.0, 150.0, 44.0, 3.0),     # an eastern sound
+    (96.0, -40.0, 110.0, -30.0, 4.0),    # a southern bay beyond the gulf
+    (140.0, -20.0, 170.0, -26.0, 5.0),
 ]
-# Island seeds: (x, y, radius). Chains off the headlands, a scatter in the bay, a large isle offshore.
+# Island seeds: (x, y, radius). Grown by the same fractal as the coasts, so none is round.
 ISLES = [
-    (-29.5, 28.6, 1.3), (-32.5, 29.9, 0.9), (-35.2, 31.2, 1.6), (-38.6, 30.4, 0.8), (-41.0, 32.6, 1.1),
-    (-31.0, 11.0, 2.3), (-34.5, 8.2, 1.1), (-36.4, 14.4, 0.8),
-    (-20.2, 17.4, 0.45), (-18.6, 14.6, 0.35),
-    (-29.0, 1.0, 0.9), (-31.8, -3.0, 1.4), (-27.4, -7.2, 0.7),
-    (-60.0, 22.0, 6.0), (-56.0, 12.0, 3.0), (-72.0, 30.0, 2.2), (-80.0, 8.0, 3.0), (-95.0, 24.0, 1.8),
-    (-110.0, 10.0, 2.6), (-125.0, 30.0, 1.6), (-130.0, 0.0, 2.2), (-45.0, -20.0, 3.4), (-48.0, 50.0, 3.5),
-    (10.0, -30.0, 2.0), (126.0, -12.0, 3.0), (132.0, 58.0, 4.0), (-20.0, 72.0, 2.5),
+    (-30.5, 26.0, 1.0), (-34.0, 23.5, 1.5), (-37.5, 26.5, 0.8), (-33.0, 19.0, 0.7), (-40.5, 21.5, 1.2),
+    (-41.0, 5.0, 1.6), (-43.5, 0.5, 0.9), (-39.0, -7.0, 1.2), (-45.0, 9.5, 0.7),
+    (-37.0, 44.0, 1.3), (-40.0, 40.0, 0.8), (-18.0, 16.8, 0.35),
+    (-80.0, 6.0, 2.2), (-88.0, 30.0, 1.6), (-100.0, 14.0, 2.4), (-112.0, 34.0, 1.4), (-118.0, 4.0, 2.0),
+    (-130.0, 22.0, 3.0), (-142.0, 40.0, 1.6), (-148.0, 8.0, 2.2), (-80.0, 44.0, 2.4), (-95.0, -12.0, 3.0),
+    (-60.0, -20.0, 2.6), (-120.0, -30.0, 2.0), (-70.0, 60.0, 3.0), (-40.0, 64.0, 2.0), (-30.0, 80.0, 3.4),
+    (-5.0, -30.0, 1.8), (20.0, -36.0, 2.2), (58.0, -40.0, 2.4), (62.0, -55.0, 2.0),
 ]
 
 # Ranges: spines of (x, y, crest height, half-width). The crest height drops where a pass crosses.
 RANGES = {
     # HER RANGE (the ink Run's range): the west arm climbs from the south-west to the knee (her beacon), the east
-    # arm runs east-south-east from it, long and high, off the sheet's heart toward the east.
-    'hers_w': [(-7.0, -6.0, 1.6, 2.0), (-3.0, -3.0, 3.8, 2.6), (1.5, 0.5, 5.4, 2.8), (6.0, 3.6, 6.4, 3.0),
-               (9.5, 6.0, 7.4, 3.2), (13.0, 8.0, 8.6, 3.4)],
-    'hers_e': [(13.0, 8.0, 8.6, 3.4), (16.5, 7.4, 7.8, 3.3), (20.0, 6.4, 7.2, 3.2), (23.5, 5.6, 7.6, 3.3),
-               (27.0, 5.0, 7.0, 3.3), (30.0, 4.9, 3.2, 2.6), (33.0, 5.2, 6.8, 3.2), (37.5, 6.0, 7.6, 3.4),
-               (43.0, 7.8, 7.0, 3.4), (50.0, 10.0, 6.6, 3.2), (58.0, 12.6, 6.2, 3.0), (67.0, 14.0, 5.8, 3.0),
-               (76.0, 17.6, 4.8, 2.8), (84.0, 22.0, 3.4, 2.4), (90.0, 26.0, 1.8, 2.0)],
+    # arm runs east-south-east from it, long and high, then swings north-east across the continent.
+    'hers_w': [(-8.0, -7.0, 1.8, 1.8), (-4.0, -3.4, 4.0, 2.2), (0.5, 0.4, 5.6, 2.4), (5.0, 3.6, 6.4, 2.5),
+               (9.0, 6.2, 7.6, 2.6), (13.0, 8.0, 8.8, 2.8)],
+    'hers_e': [(13.0, 8.0, 8.8, 2.8), (16.5, 7.3, 8.0, 2.7), (20.0, 6.4, 7.4, 2.6), (23.5, 5.6, 7.8, 2.7),
+               (27.0, 5.0, 7.0, 2.7), (30.0, 4.9, 3.0, 2.0), (33.0, 5.2, 6.8, 2.6), (37.5, 6.0, 7.8, 2.8),
+               (43.0, 7.8, 7.2, 2.8), (50.0, 10.4, 6.6, 2.7), (57.0, 13.6, 6.0, 2.6), (64.0, 18.0, 6.4, 2.7),
+               (70.0, 24.0, 5.4, 2.6), (75.0, 31.0, 3.0, 2.2), (80.0, 38.0, 5.8, 2.6), (86.0, 46.0, 6.2, 2.7),
+               (93.0, 53.0, 5.0, 2.5), (100.0, 58.0, 2.0, 2.0)],
     # the northern range, along the far side of the plains; a pass north of the moor
-    'north': [(-14.0, 40.0, 2.4, 2.2), (-8.5, 38.8, 4.8, 2.6), (-2.5, 38.4, 5.6, 2.8), (3.0, 37.6, 2.6, 2.4),
-              (8.0, 38.6, 5.4, 2.8), (14.0, 40.4, 6.0, 3.0), (20.0, 43.0, 5.2, 2.8), (26.0, 46.4, 4.2, 2.6),
-              (31.0, 50.8, 2.4, 2.2)],
-    # the western coast hills, broken, down the headland and toward the bay
-    'coast': [(-21.0, 30.5, 2.0, 1.8), (-18.0, 27.5, 3.4, 2.0), (-15.5, 24.0, 3.0, 2.0), (-14.0, 21.0, 1.6, 1.8)],
-    # a short range in the south-east of the camera's sheet, across the southern lowlands
-    'south': [(24.0, -8.0, 1.8, 2.0), (30.0, -10.5, 4.8, 2.6), (37.0, -12.0, 5.6, 2.8), (44.0, -12.5, 4.6, 2.6),
-              (50.0, -15.0, 2.0, 2.0)],
-    # beyond the camera: the far north, the east, the south lands, the far west
-    'farnorth': [(20.0, 58.0, 2.0, 2.4), (32.0, 60.0, 6.0, 3.2), (46.0, 58.0, 6.8, 3.2), (60.0, 60.0, 6.2, 3.2),
-                 (74.0, 64.0, 5.0, 3.0), (86.0, 66.0, 2.0, 2.4)],
-    'fareast': [(92.0, 44.0, 2.0, 2.4), (98.0, 34.0, 5.8, 3.0), (104.0, 22.0, 6.4, 3.2), (106.0, 8.0, 5.6, 3.0),
-                (102.0, -6.0, 4.0, 2.6), (96.0, -16.0, 2.0, 2.2)],
-    'southland': [(34.0, -54.0, 2.0, 2.4), (50.0, -52.0, 5.6, 3.0), (66.0, -50.0, 6.4, 3.2), (82.0, -52.0, 5.2, 3.0),
-                  (96.0, -56.0, 2.2, 2.4)],
-    'farwest': [(-172.0, 36.0, 2.0, 2.2), (-166.0, 26.0, 4.6, 2.8), (-168.0, 12.0, 4.2, 2.8), (-174.0, 2.0, 2.0, 2.2)],
-    'westisle': [(-63.0, 25.0, 2.4, 1.8), (-60.0, 21.0, 4.0, 2.0), (-57.0, 17.0, 2.6, 1.8)],
+    'north': [(-12.0, 39.0, 2.2, 1.8), (-7.0, 39.6, 4.6, 2.2), (-1.5, 40.4, 5.2, 2.3), (3.5, 40.0, 2.4, 2.0),
+              (8.5, 40.8, 5.0, 2.3), (14.5, 42.4, 5.6, 2.4), (21.0, 45.0, 5.0, 2.3), (27.0, 48.6, 4.0, 2.2),
+              (32.0, 53.0, 2.2, 1.8)],
+    # the hills down the long south-west cape
+    'cape': [(-19.0, 5.0, 1.4, 1.6), (-24.0, 2.6, 2.8, 1.8), (-29.0, 0.6, 3.2, 1.8), (-34.0, -1.4, 1.8, 1.6)],
+    # the hook's own hills
+    'hook': [(-21.0, 41.0, 1.6, 1.4), (-26.5, 41.6, 3.0, 1.6), (-31.0, 38.8, 2.6, 1.5), (-31.5, 35.5, 1.4, 1.2)],
+    # beyond the camera: the south, the far north, the east, the far west and the western isle
+    'south': [(6.0, -11.0, 1.8, 1.8), (14.0, -13.0, 4.8, 2.3), (22.0, -15.0, 5.4, 2.4), (30.0, -17.0, 4.4, 2.2),
+              (37.0, -21.0, 1.8, 1.8)],
+    'farnorth': [(8.0, 62.0, 2.0, 2.0), (16.0, 66.0, 5.6, 2.6), (24.0, 70.0, 6.0, 2.6), (28.0, 78.0, 4.8, 2.4),
+                 (26.0, 88.0, 2.0, 2.0)],
+    'eastwall': [(110.0, 70.0, 2.0, 2.0), (116.0, 58.0, 6.0, 2.8), (122.0, 44.0, 6.6, 2.9), (126.0, 30.0, 6.0, 2.8),
+                 (124.0, 16.0, 5.0, 2.6), (118.0, 4.0, 2.0, 2.0)],
+    'southeast': [(84.0, -20.0, 2.0, 2.0), (94.0, -14.0, 5.4, 2.6), (106.0, -12.0, 6.2, 2.8), (120.0, -16.0, 5.6, 2.7),
+                  (134.0, -8.0, 4.4, 2.4), (146.0, 2.0, 2.0, 2.0)],
+    'farwest': [(-176.0, 44.0, 2.0, 1.8), (-172.0, 34.0, 4.4, 2.4), (-173.0, 20.0, 4.0, 2.4), (-178.0, 6.0, 1.8, 1.8)],
+    'westisle': [(-63.0, 27.0, 2.4, 1.6), (-59.0, 22.0, 4.0, 1.9), (-58.0, 16.0, 2.6, 1.6)],
 }
 # hill country (x, y, radius, strength): low rolling uplands where the fire finds hills to stand on
-HILLS = [(-10.0, 8.0, 5.0, 1.0), (-12.0, 26.0, 5.5, 0.9), (22.0, 20.0, 6.0, 0.9), (35.0, 30.0, 7.0, 0.8),
-         (-6.0, -12.0, 6.0, 0.9), (8.0, -12.0, 5.0, 0.8), (48.0, 32.0, 8.0, 0.8), (62.0, 30.0, 8.0, 0.9),
-         (70.0, -12.0, 8.0, 0.9), (80.0, 50.0, 8.0, 0.8), (6.0, 56.0, 7.0, 0.8), (-6.0, 50.0, 5.0, 0.8)]
-# basins (x, y, rx, ry, depth): depressions the fill turns into lakes
-BASINS = [(19.0, 15.0, 4.2, 1.3, 1.1), (31.0, 25.5, 2.8, 2.0, 0.9), (-7.0, 30.0, 2.0, 1.3, 0.8),
-          (56.0, 38.0, 3.2, 2.2, 1.0), (40.0, 58.0, 2.6, 1.6, 0.8)]
+HILLS = [(-10.0, 5.0, 4.0, 0.7), (-12.0, 25.5, 4.5, 0.7), (21.0, 19.5, 4.5, 0.8), (37.0, 30.0, 6.0, 0.7),
+         (-3.0, -12.0, 5.0, 0.8), (26.0, -4.0, 4.0, 0.7), (48.0, 34.0, 7.0, 0.8), (62.0, 32.0, 7.0, 0.9),
+         (86.0, 12.0, 8.0, 0.8), (80.0, -8.0, 7.0, 0.8), (100.0, 30.0, 8.0, 0.8), (140.0, 30.0, 9.0, 0.8),
+         (150.0, 60.0, 9.0, 0.8), (70.0, 60.0, 8.0, 0.8), (0.0, 58.0, 7.0, 0.8), (-12.0, 50.0, 5.0, 0.7),
+         (160.0, -40.0, 9.0, 0.8), (110.0, -50.0, 8.0, 0.8)]
+# river valleys cut to a steady fall (x, y) from source to mouth, half-width: the great rivers run in them
+VALLEYS = [
+    ('west', [(17.0, 13.4), (10.0, 12.0), (4.0, 11.4), (-2.0, 11.8), (-7.0, 13.2), (-11.5, 15.2), (-16.0, 16.2)], 1.6),
+    ('north', [(6.0, 36.6), (1.0, 33.5), (-4.0, 31.0), (-9.0, 32.0), (-13.0, 34.0)], 1.3),
+    ('south', [(3.0, -3.0), (-2.0, -7.0), (-5.0, -12.0), (-7.5, -17.5)], 1.2),
+    ('east', [(23.0, 40.5), (26.0, 34.0), (29.5, 28.0)], 1.1),
+]
+# basins (x, y, rx, ry, depth): the few lakes (the knee's lake, the desert's salt lake, a tarn in the north-west)
+BASINS = [(19.4, 14.2, 3.0, 1.0, 1.2), (31.0, 26.0, 2.3, 1.6, 1.0), (-6.5, 31.4, 1.4, 0.8, 0.8),
+          (58.0, 42.0, 3.4, 2.0, 1.2), (96.0, 40.0, 3.0, 2.0, 1.0), (140.0, 50.0, 3.0, 2.0, 1.0),
+          (10.0, 60.0, 2.4, 1.4, 0.9)]
 
-RIVER_T = 1500.0               # a channel drains at least this much rain (cells x rainfall)
+RIVER_T = 1800.0             # a channel drains at least this much rain (cells x rainfall)
 WIND = 12.0                  # the rain comes from the great western sea, a little south of west (degrees)
+REACH = 42.0                 # map degrees of land over which the sea's moisture fades to a third
+WRING = 0.24                 # how much of the moisture every unit of climb wrings out
 
 
 # ============================================================== geometry ===
@@ -210,9 +228,10 @@ def _catmull(P, n):
 # =========================================================== noise kernels ===
 
 @njit(cache=True, parallel=True)
-def _coast_noise(xs, ys, fine):
-    """The coast's fractal: domain-warped fBm in map degrees of 'inlandness'. fine=True returns only the octaves
-    finer than ~1.5 degrees (evaluated on the fine coast grid), fine=False only the coarser ones."""
+def _coast_noise(xs, ys, band):
+    """The coast's fractal, in map degrees of 'inlandness', on a domain-warped plane. band 0: the coarse octaves
+    (bays and capes tens of degrees across), 1: the middle ones (a few degrees), 2: the fine ones (the pen's
+    scale, evaluated on the fine coast grid)."""
     H, W = len(ys), len(xs)
     out = np.empty((H, W), np.float32)
     for i in prange(H):
@@ -223,11 +242,12 @@ def _coast_noise(xs, ys, fine):
             wy = fbm(x * 0.035 + 7.1, y * 0.035 - 3.3, 12, 3, 2.0, 0.5) * 16.0
             xx = x + wx
             yy = y + wy
-            if fine:
-                v = 1.3 * fbm(xx * 0.55, yy * 0.55, 23, 2, 2.1, 0.55) + 0.55 * fbm(xx * 1.7, yy * 1.7, 24, 2, 2.1, 0.55) \
-                    + 0.2 * gnoise(xx * 4.6, yy * 4.6, 25)
+            if band == 0:
+                v = 12.0 * fbm(xx * 0.028, yy * 0.028, 21, 2, 2.0, 0.5) + 5.0 * fbm(xx * 0.085, yy * 0.085, 22, 2, 2.0, 0.5)
+            elif band == 1:
+                v = 2.4 * fbm(xx * 0.26, yy * 0.26, 23, 2, 2.1, 0.55) + 1.0 * fbm(xx * 0.75, yy * 0.75, 24, 2, 2.1, 0.55)
             else:
-                v = 7.5 * fbm(xx * 0.05, yy * 0.05, 21, 2, 2.0, 0.5) + 3.6 * fbm(xx * 0.17, yy * 0.17, 22, 2, 2.0, 0.5)
+                v = 0.42 * fbm(xx * 2.0, yy * 2.0, 25, 2, 2.1, 0.55) + 0.14 * gnoise(xx * 5.5, yy * 5.5, 26)
             out[i, j] = v
     return out
 
@@ -258,41 +278,80 @@ def _relief_noise(xs, ys, out_r, out_h):
 
 # ================================================================ relief ===
 
+CAM_BOX = (-45.0, 50.0, -18.0, 52.0)     # the region the camera ever sees (+ margin): the design holds here
+
+
 def relief(d):
-    """(S, E, E_range): the land field S (+ land, map degrees of inlandness), elevation E and the range part."""
+    """(S, E, Er, sdf): the land field S (+ land, map degrees of inlandness), elevation E, the ranges' part Er,
+    and the silhouettes' signed distance."""
     xs, ys = grid(d)
     X, Y = np.meshgrid(xs.astype(np.float32), ys.astype(np.float32))
     sdf = poly_sdf(d)
-    S = sdf + _coast_noise(xs, ys, False)
+    # the coarse fractal is gentler where the camera looks, so the designed coast (the hook, the bay, the cape)
+    # keeps its shape there; the middle and fine octaves make it intricate everywhere
+    bx0, bx1, by0, by1 = CAM_BOX
+    inbox = (np.clip((X - bx0) / 12.0, 0, 1) * np.clip((bx1 - X) / 12.0, 0, 1) *
+             np.clip((Y - by0) / 12.0, 0, 1) * np.clip((by1 - Y) / 12.0, 0, 1))
+    n0 = _coast_noise(xs, ys, 0)
+    n1 = _coast_noise(xs, ys, 1)
+    S = sdf + n0 * (1.0 - 0.7 * inbox) + n1
     for (ax, ay, bx, by, w) in SEAS:
         dd, _ = _seg_d(X, Y, ax, ay, bx, by)
         S -= np.clip(w - dd, 0, None) * 2.4 + 3.0 * np.exp(-(dd / w) ** 2)
+    rs = np.random.default_rng(404)
     for (cx, cy, r) in ISLES:
-        dd = np.hypot(X - cx, Y - cy)
-        S = np.maximum(S, (r - dd) * 1.6 + 0.8 * np.exp(-(dd / r) ** 2) * r)
+        # a low dome, drawn out along a random bearing, that the middle octaves bite into: no isle is round
+        a, el = rs.uniform(0, math.pi), rs.uniform(0.55, 1.0)
+        u = ((X - cx) * math.cos(a) + (Y - cy) * math.sin(a)) / (r / el)
+        v = (-(X - cx) * math.sin(a) + (Y - cy) * math.cos(a)) / (r * el)
+        q = np.hypot(u, v)
+        Si = r * (1.0 - q * q) + 0.95 * r * n1 / 2.4
+        S = np.maximum(S, np.where(q < 2.2, Si, -1e3))
     Hc, Wc = range_fields(xs, ys)
     ridg = np.empty(X.shape, np.float32)
     roll = np.empty(X.shape, np.float32)
     _relief_noise(xs, ys, ridg, roll)
     # the ranges: a sharp crest along the spine, spurs from the ridged noise off it
-    Er = Hc * (0.5 + 0.62 * ridg) + 0.9 * Wc * np.maximum(ridg - 0.55, 0) * Hc / 3.0
+    Er = Hc * (0.52 + 0.58 * ridg) + 0.8 * Wc * np.maximum(ridg - 0.55, 0) * Hc / 3.0
     # the ranges push the land out where they meet the sea (headlands, island chains)
-    S = S + 0.55 * Er
-    inland = np.clip(sdf / 10.0, 0, 1)
-    E = 0.25 + 0.6 * inland ** 0.7 + 0.25 * roll * (0.4 + 0.6 * inland)
+    S = S + 0.5 * Er
+    # lowland: rising gently from the coast, a little roll
+    E = 0.2 + 1.15 * (1.0 - np.exp(-np.maximum(sdf, 0.0) / 9.0)) + 0.1 * roll
     for (cx, cy, r, k) in HILLS:
         dd = np.hypot(X - cx, Y - cy) / r
-        E += k * np.clip(1 - dd, 0, 1) ** 1.3 * (1.2 + 0.9 * (ridg - 0.5) + 0.6 * roll)
-    # the High Moor: a broad, open upland; flat on top, a gentle rim of downs
+        E += k * np.clip(1 - dd, 0, 1) ** 1.2 * (1.25 + 0.9 * (ridg - 0.5) + 0.5 * roll)
+    # the High Moor: a broad, open, lobed upland; flat on top, a gentle rim of downs
     mc, mr, mh = MOOR['c'], MOOR['r'], MOOR['h']
-    dm = np.hypot(X - mc[0], (Y - mc[1]) * 1.1) / mr
-    top = 1.0 - np.clip((dm - 0.55) / 0.45, 0, 1)
+    dm = np.hypot(X - mc[0], (Y - mc[1]) * 1.12) / mr * (1.0 + 0.16 * n1 / 2.4)
+    top = 1.0 - np.clip((dm - 0.5) / 0.5, 0, 1)
     top = top * top * (3 - 2 * top)
-    E += mh * top + 0.35 * np.exp(-((dm - 0.78) / 0.12) ** 2) * (0.7 + 0.6 * ridg) + 0.12 * roll * top
+    E += mh * top + 0.3 * np.exp(-((dm - 0.82) / 0.1) ** 2) * (0.6 + 0.8 * ridg) + 0.06 * roll * top
+    E = E + Er
     for (cx, cy, rx, ry, dep) in BASINS:
         dd = np.hypot((X - cx) / rx, (Y - cy) / ry)
         E -= dep * np.clip(1 - dd * dd, 0, 1)
-    E = E + Er
+    # the great rivers' valleys, cut to a steady fall from source to mouth
+    for (name, pts, w) in VALLEYS:
+        Q = _catmull(np.asarray(pts, np.float64), 10)
+        L = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(Q, axis=0).T))])
+        x0_, x1_ = Q[:, 0].min() - 3 * w, Q[:, 0].max() + 3 * w
+        y0_, y1_ = Q[:, 1].min() - 3 * w, Q[:, 1].max() + 3 * w
+        ix = np.where((xs >= x0_) & (xs <= x1_))[0]
+        iy = np.where((ys >= y0_) & (ys <= y1_))[0]
+        sx = X[iy[0]:iy[-1] + 1, ix[0]:ix[-1] + 1]
+        sy = Y[iy[0]:iy[-1] + 1, ix[0]:ix[-1] + 1]
+        best = np.full(sx.shape, 1e9, np.float32)
+        sl = np.zeros(sx.shape, np.float32)
+        for k in range(len(Q) - 1):
+            dd, t = _seg_d(sx, sy, Q[k, 0], Q[k, 1], Q[k + 1, 0], Q[k + 1, 1])
+            m = dd < best
+            best = np.where(m, dd, best)
+            sl = np.where(m, L[k] + t * (L[k + 1] - L[k]), sl)
+        u = sl / L[-1]
+        floor = 1.25 * (1.0 - u) + 0.12 * u
+        sub = E[iy[0]:iy[-1] + 1, ix[0]:ix[-1] + 1]
+        carve = floor + 0.35 * (best / w) ** 2
+        E[iy[0]:iy[-1] + 1, ix[0]:ix[-1] + 1] = np.where(best < 2.2 * w, np.minimum(sub, carve), sub)
     return S.astype(np.float32), E.astype(np.float32), Er.astype(np.float32), sdf
 
 
@@ -372,8 +431,11 @@ def priority_flood(E, land, eps):
             if a < 0 or b < 0 or a >= H or b >= W or done[a, b]:
                 continue
             done[a, b] = True
-            if F[a, b] <= F[i, j] + eps:
-                F[a, b] = F[i, j] + eps
+            h = (a * 73856093) ^ (b * 19349663)
+            h = (h ^ (h >> 13)) * 1274126177
+            e = eps * (0.2 + 1.6 * ((h & 0xFFFF) / 65536.0))
+            if F[a, b] <= F[i, j] + e:
+                F[a, b] = F[i, j] + e
             n = _heap_push(hk, hv, n, F[a, b], a * W + b)
     rec = np.full(N, -1, np.int64)
     for i in range(H):
@@ -423,42 +485,42 @@ def accumulate(F, rec, wgt, land):
 
 
 def rain(E, land, d):
-    """Rain carried from the great western sea (a little south of west), wrung out by the heights. Returns the
-    rainfall per cell, smoothed (0..~1.5)."""
-    a = math.radians(WIND)
+    """The air from the great western sea (a little south of west): it carries the sea's moisture inland, losing
+    it with distance (REACH) and wringing it out wherever the ground climbs (WRING). Returns (moist 0..1: what the
+    air still carries, smoothed: it decides woods, plains and desert; rain: the relative rainfall that feeds the
+    rivers)."""
     H, W = E.shape
-    # rotate so the wind blows along +x
     M = cv2.getRotationMatrix2D((W / 2.0, H / 2.0), -WIND, 1.0)
     Er = cv2.warpAffine(E, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
     Lr = cv2.warpAffine(land.astype(np.float32), M, (W, H), flags=cv2.INTER_LINEAR, borderValue=0)
-    P = _rain_sweep(Er, Lr, d)
+    Mo, Pr = _moist_sweep(Er, Lr, d, REACH, WRING)
     Minv = cv2.invertAffineTransform(M)
-    P = cv2.warpAffine(P, Minv, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
-    P = cv2.GaussianBlur(P, (0, 0), 1.2 / d)
-    return np.clip(P, 0, 4.0) * land
+    Mo = cv2.warpAffine(Mo, Minv, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    Pr = cv2.warpAffine(Pr, Minv, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    Mo = cv2.GaussianBlur(Mo, (0, 0), 1.5 / d)
+    Pr = cv2.GaussianBlur(Pr, (0, 0), 0.8 / d)
+    return (np.clip(Mo, 0, 1) * land).astype(np.float32), (np.clip(Pr, 0, 4.0) * land).astype(np.float32)
 
 
 @njit(cache=True, parallel=True)
-def _rain_sweep(E, L, d):
-    """March each row with the wind: the air takes up the sea's moisture, and over land it rains out a little
-    everywhere and much more where the ground rises into it. Rainfall is in units of the wet lowland's."""
+def _moist_sweep(E, L, d, reach, wring):
     H, W = E.shape
-    P = np.zeros((H, W), np.float32)
-    base = 0.0026 * d / 0.1
+    Mo = np.zeros((H, W), np.float32)
+    Pr = np.zeros((H, W), np.float32)
     for i in prange(H):
         m = 1.0
         for j in range(W):
             if L[i, j] < 0.5:
-                m += (1.0 - m) * 0.05 * d / 0.1
+                m += (1.0 - m) * min(1.0, 0.08 * d / 0.1)
+                Mo[i, j] = m
                 continue
-            up = 0.0
+            climb = 0.0
             if j > 0:
-                up = max(E[i, j] - E[i, j - 1], 0.0) / d
-            r = m * (base + 0.0012 * d / 0.1 * max(E[i, j] - 1.0, 0.0) + 0.0105 * d / 0.1 * min(up, 6.0))
-            r = min(r, m)
-            m -= r
-            P[i, j] = r / base
-    return P
+                climb = max(E[i, j] - E[i, j - 1], 0.0)
+            m *= math.exp(-d / reach - wring * climb)
+            Mo[i, j] = m
+            Pr[i, j] = m * (0.6 + 1.6 * min(climb / d, 3.0))
+    return Mo, Pr
 
 
 def rivers_from(F, rec, A, land, lake, d, thresh, min_len):
@@ -537,13 +599,19 @@ def world():
     land &= ~small[lab]
     E = np.where(land, np.maximum(E, 0.05), 0.0).astype(np.float32)
     print('relief', round(time.time() - t0, 1), 's', flush=True)
-    P = rain(E, land, D)
+    MO, P = rain(E, land, D)
     F, rec = priority_flood(E.astype(np.float64), land, 1e-5)
     depth = (F - E) * land
-    lake = (depth > 0.06) & land
+    lake = (depth > 0.05) & land
     n, lab, st, _ = cv2.connectedComponentsWithStats(lake.astype(np.uint8), connectivity=8)
     keep = np.zeros(n, bool)
-    keep[1:] = st[1:, 4] >= 45
+    keep[1:] = st[1:, 4] >= 900                       # a great natural lake
+    xs_, ys_ = grid(D)
+    for (cx, cy, rx, ry, dep) in BASINS:              # the designed ones
+        i = int(round((Y1 - cy) / D - 0.5))
+        j = int(round((cx - X0) / D - 0.5))
+        if 0 <= i < lab.shape[0] and 0 <= j < lab.shape[1] and lab[i, j] > 0:
+            keep[lab[i, j]] = True
     lake = keep[lab]
     wgt = (0.25 + P).astype(np.float64) * land
     A = accumulate(F, rec, wgt, land)
@@ -556,9 +624,9 @@ def world():
     rug = np.clip(np.hypot(gx, gy) * 0.1, 0, 2.0) * land
     coast = coast_rings()
     lakes = lake_rings(lake)
-    _W = dict(S=S, E=E, Er=Er, land=land, rain=P.astype(np.float32), acc=A.astype(np.float32), rug=rug.astype(np.float32),
-              lake=lake, coast=coast, lakes=lakes, rivers=rv)
-    np.savez_compressed(path, S=S, E=E, Er=Er, land=land, rain=P.astype(np.float32), acc=A.astype(np.float32),
+    _W = dict(S=S, E=E, Er=Er, land=land, rain=P.astype(np.float32), moist=MO, acc=A.astype(np.float32),
+              rug=rug.astype(np.float32), lake=lake, coast=coast, lakes=lakes, rivers=rv)
+    np.savez_compressed(path, S=S, E=E, Er=Er, land=land, rain=P.astype(np.float32), moist=MO, acc=A.astype(np.float32),
                         rug=rug.astype(np.float32), lake=lake,
                         coast=_objs(coast), lakes=_objs(lakes), rivers=_objs(rv))
     print('world', round(time.time() - t0, 1), 's', flush=True)
@@ -574,7 +642,7 @@ def coast_field(xs, ys, d_coarse=D):
     fy = ((yc[0] - ys) / d_coarse).astype(np.float32)
     mx, my = np.meshgrid(fx, fy)
     Sc = cv2.remap(S, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
-    return Sc + _coast_noise(xs, ys, True)
+    return Sc + _coast_noise(xs, ys, 2)
 
 
 _SC = None
