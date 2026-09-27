@@ -1,20 +1,19 @@
-"""The relay (MAP, cut C, rev 3): hill by hill, the peoples answer.
+"""The relay (MAP, cut C, rev 4 on the INVENTED world): hill by hill, the peoples answer.
 
-The unit of the spread is a flame. From the first beacon on the Himalaya the fire passes from summit
-to summit along the inked ranges: every fire lights ONE fire further along its line, a drawn peak (or
-the crown of a drawn hill) at an irregular distance, so some peaks are skipped and the gaps vary.
-The fire runs as lines of beacons, never as a tree of threads, and nothing is drawn between them.
+The unit of the spread is a flame. The map opens on her range (the ink Run's range) with her beacon burning on its
+high knee and the Run's seven fires already lit along its east arm, the seventh still blooming (the burn-through
+from C17 opens on it). From there the fire passes from summit to summit: every fire lights ONE fire further along
+its line, a drawn peak (or the crown of a drawn hill) at an irregular distance, so some heights are skipped and the
+gaps vary. The fire runs as lines of beacons, never as a tree of threads, and nothing is drawn between them.
 
-* The great lines (ROUTES) follow real ranges out of the frame in every direction: west through the
-  Karakoram, the Hindu Kush, the Elburz and Anatolia to the Aegean; east through the Hengduan, the
-  Qinling and the Taihang to Korea and Japan; south across the plain to the Ghats and Sri Lanka;
-  through Arabia to the Horn; down the Levant to Ethiopia; north along the Tian Shan and the Altai...
-* A line leaves from an older fire of its parent line only once that fire's own line has passed on
-  two more hops, so a tip never forks; no fire but the first beacon passes the fire on more than twice.
+* The great lines (ROUTES, map XY) run along the invented world's ranges, down its great rivers (beacon hills
+  stand along their banks) and along its coasts (on the headlands), out of the frame in every direction.
+* A line leaves from an older fire of its parent line only once that fire's own line has passed on two more
+  hops, so a tip never forks; no fire but the first beacon passes the fire on more than twice.
 * Short side lines (1-3 fires) climb to drawn peaks beside the great lines, later still.
 * Nothing flies over the sea: a strait is crossed by a pause and then a fire on the far shore.
 
-Deterministic; cached in renders/map_C/cache/relay_<seed>.npz. Times are v2 global frames.
+Deterministic; cached in renders/map_C/cache_w/relay_<seed>.npz. Times are v2 global frames (C18: 4160 = 1920).
 """
 import heapq
 import math
@@ -26,73 +25,54 @@ from scipy.spatial import cKDTree
 import bake
 import features as ft
 import geo
+import terra
 
-T0 = 1920.0                            # the first beacon flares
-EVEREST = (27.99, 86.93)
-REGION = (-34.0, 160.0, -22.0, 76.0)   # X0, X1, Y0, Y1 (map degrees): the relay runs this far
+T0 = 1920.0                            # the map opens (C 4160); the answer begins
+REGION = (-62.0, 84.0, -34.0, 64.0)   # X0, X1, Y0, Y1 (map degrees): the relay runs this far (well off the frame)
 T_STOP = 2100.0                        # nothing catches after this
 
 KIND_PEAK, KIND_HILL = 0, 1
 
-# name, parent line, branch point (lat, lon) on the parent line, delay after the parent's fire there
-# catches (frames), then (lat, lon) waypoints along the ranges. The first three leave the first beacon
-# at the old first landings (1946, 1951, 1954).
-ROUTES = [
-    ('west', None, None, 1946.0,
-     [(29.4, 83.6), (30.4, 79.8), (32.3, 77.3), (34.4, 75.6), (35.9, 74.4), (36.2, 71.4), (35.1, 68.0),
-      (34.6, 63.5), (36.2, 59.2), (36.4, 53.0), (38.3, 46.8), (39.6, 42.2), (38.6, 36.8), (37.4, 32.2),
-      (38.6, 27.8), (40.1, 22.4), (42.3, 18.0), (45.5, 13.0)]),
-    ('east', None, None, 1951.0,
-     [(27.8, 89.3), (28.3, 92.5), (29.6, 95.0), (28.6, 99.0), (30.6, 102.8), (33.3, 106.3), (35.2, 110.5),
-      (37.4, 113.8), (40.3, 117.2), (40.6, 121.8), (40.4, 125.6), (38.0, 127.6), (35.6, 128.6), (33.8, 130.6),
-      (34.5, 133.5), (35.5, 137.5), (37.5, 140.5)]),
-    ('south', None, None, 1954.0,
-     [(23.6, 84.8), (21.2, 84.4), (18.6, 83.0), (17.0, 81.6), (15.3, 79.3), (13.3, 78.9), (11.4, 76.9),
-      (10.0, 77.2), (8.6, 77.4), (7.2, 80.7)]),
-    ('india_w', 'south', (23.6, 84.5), 12.0,
-     [(24.3, 81.8), (23.9, 78.6), (22.3, 76.3), (20.3, 73.9), (17.6, 73.8), (15.2, 74.3), (12.8, 75.4)]),
-    ('aravalli', 'india_w', (23.9, 77.5), 10.0,
-     [(24.6, 74.6), (25.8, 73.8), (27.2, 75.6), (28.4, 76.9)]),
-    ('southeast', 'east', (28.0, 91.0), 11.0,
-     [(25.6, 91.6), (24.6, 93.6), (22.2, 93.6), (19.6, 94.5), (17.0, 96.6), (14.2, 98.5), (10.5, 99.0),
-      (6.5, 100.8), (3.0, 102.0)]),
-    ('indochina', 'east', (28.6, 99.0), 12.0,
-     [(25.8, 100.9), (22.4, 103.2), (19.2, 104.9), (16.4, 107.2), (13.4, 108.3), (10.5, 107.6)]),
-    ('china_se', 'east', (33.3, 106.3), 13.0,
-     [(31.2, 109.6), (29.2, 112.8), (27.4, 116.0), (26.2, 118.6), (25.2, 121.0)]),
-    ('north', 'west', (35.9, 74.4), 10.0,
-     [(38.4, 74.8), (40.9, 76.6), (42.3, 80.1), (43.1, 84.0), (43.4, 88.0), (45.8, 90.4), (48.4, 88.6),
-      (50.4, 91.4), (51.8, 96.5), (53.5, 101.0)]),
-    ('mongolia', 'north', (45.8, 90.4), 12.0,
-     [(47.4, 95.5), (47.6, 99.8), (48.2, 104.2), (48.7, 108.6), (49.5, 113.5)]),
-    ('southwest', 'west', (34.4, 75.6), 8.0,
-     [(32.6, 72.8), (30.9, 69.8), (28.8, 68.5), (27.0, 67.4), (26.2, 63.5), (26.9, 59.5), (27.0, 57.0),
-      (25.2, 56.3), (23.1, 57.7), (21.0, 58.8), (18.6, 56.4), (17.2, 54.0), (15.9, 49.5), (15.2, 45.8),
-      (13.6, 44.0), (12.5, 43.3), (11.3, 42.6), (10.2, 44.8), (9.9, 47.5), (8.5, 49.2)]),
-    ('ethiopia', 'southwest', (12.5, 43.3), 9.0,
-     [(11.2, 40.4), (9.4, 39.4), (7.2, 38.2), (4.5, 37.5), (1.5, 36.8)]),
-    ('eritrea', 'ethiopia', (11.2, 40.4), 10.0,
-     [(13.4, 39.4), (15.4, 38.8), (17.6, 37.8), (20.2, 36.6)]),
-    ('zagros', 'southwest', (27.0, 57.0), 6.0,
-     [(28.6, 54.0), (30.2, 51.8), (32.0, 49.8), (34.0, 47.8), (36.0, 46.2)]),
-    ('caucasus', 'west', (39.6, 42.2), 11.0,
-     [(41.4, 44.2), (42.8, 43.6), (43.3, 41.0), (44.2, 39.0), (45.0, 36.0), (46.5, 33.5)]),
-    ('levant', 'west', (38.6, 37.5), 9.0,
-     [(36.4, 36.4), (34.3, 36.2), (32.2, 35.4), (29.9, 35.5), (28.5, 34.0), (26.4, 33.4), (23.6, 34.8),
-      (20.6, 36.4)]),
-    ('hejaz', 'levant', (29.9, 35.5), 9.0,
-     [(27.6, 36.6), (25.0, 38.0), (22.4, 39.9), (19.8, 41.6), (17.4, 43.2), (15.4, 44.2)]),
-]
+# THE RUN'S SEVEN: lit along her range's east arm before the map opens (C17 catches them at C 3880-4120; on this
+# clock that is ~1773-1899), the seventh still blooming as the burn-through opens the map.
+CHAIN = [(16.3, 7.3), (19.2, 6.6), (22.1, 5.9), (25.0, 5.3), (28.2, 5.0), (31.6, 5.1), (34.8, 5.6)]
+CHAIN_T = [1800.0, 1818.0, 1836.0, 1854.0, 1872.0, 1890.0, 1918.0]
+
+# name, parent line, branch point (x, y) on the parent line, delay after the parent's fire there catches (frames),
+# then (x, y) waypoints. A line with no parent leaves from its start fire: 'hers' (her beacon) or 'seventh'.
+ROUTES = []            # filled by routes() from the world (see below)
+PACE = {}
 
 
-# per-line pace (hop delay factor): the eastern lines run a little slower and the western a little
-# faster, so the fire reaches every edge of the last framing at about the same time
-PACE = {'east': 1.4, 'china_se': 1.45, 'indochina': 1.35, 'southeast': 1.25, 'north': 1.1, 'mongolia': 1.2,
-        'west': 0.9, 'southwest': 0.85, 'zagros': 0.85, 'caucasus': 0.9, 'levant': 0.9}
+def ll2xy(x, y):
+    """(compatibility) waypoints are map XY already."""
+    return np.array([float(x), float(y)])
 
 
-def ll2xy(lat, lon):
-    return np.array([float(geo.lon2x(lon)), float(geo.yproj(lat))])
+def origin(top, kind, size):
+    """Her beacon: the summit of the biggest drawn peak on her range's knee (terra.BEACON)."""
+    b = np.array(terra.BEACON)
+    d = np.hypot(top[:, 0] - b[0], top[:, 1] - b[1])
+    m = (kind == KIND_PEAK) & (d < 1.8)
+    if not m.any():
+        return b.astype(np.float64)
+    i = np.where(m)[0][int(np.argmax(size[m] - 0.4 * d[m]))]
+    return top[i].astype(np.float64)
+
+
+def routes():
+    """The great lines, from the invented world's design (see terra.RANGES and the NOTES): (name, parent,
+    branch point or start fire, delay or first catch, waypoints). Filled in once."""
+    global ROUTES, PACE
+    if ROUTES:
+        return ROUTES
+    R = terra.RANGES
+    east = [(x, y) for (x, y, h, w) in R['hers_e']][2:] + [(98.0, 30.0)]
+    ROUTES = [
+        ('east', None, 'hers', 0.0, east),
+    ]
+    PACE = {}
+    return ROUTES
 
 
 def seg_dist(p, Q):
@@ -110,7 +90,7 @@ def hop_delay(t):
 
 
 class Relay:
-    KEYS = ('P', 'kind', 'size', 'gain', 'phase', 't_ign', 'parent', 'line', 'side')
+    KEYS = ('P', 'kind', 'size', 'gain', 'phase', 't_ign', 'parent', 'line', 'side', 'chain')
 
     def __init__(self, seed=5, cache=True):
         path = os.path.join(geo.CACHE, f'relay_{seed}.npz')
@@ -120,13 +100,16 @@ class Relay:
                 setattr(self, k, d[k])
             return
         self.rng = np.random.default_rng(seed)
+        routes()
         self._sites()
         self._spread()
         lit = np.isfinite(self.t_ign)
         remap = np.cumsum(lit) - 1
         for k in self.KEYS:
-            setattr(self, k, getattr(self, k)[lit])
+            if k != 'chain':
+                setattr(self, k, getattr(self, k)[lit])
         self.parent = np.where(self.parent >= 0, remap[np.maximum(self.parent, 0)], -1)
+        self.chain = remap[self.chain]
         if cache:
             np.savez(path, **{k: getattr(self, k) for k in self.KEYS})
 
@@ -146,7 +129,7 @@ class Relay:
         top = np.asarray(top, np.float64)
         X0, X1, Y0, Y1 = REGION
         ok = (top[:, 0] > X0) & (top[:, 0] < X1) & (top[:, 1] > Y0) & (top[:, 1] < Y1)
-        org = ll2xy(*EVEREST)
+        org = origin(top, kind[idx], G[idx, 3])
         ok &= np.hypot(top[:, 0] - org[0], top[:, 1] - org[1]) > 0.9
         idx, top = idx[ok], top[ok]
         n = len(idx) + 1
@@ -195,7 +178,13 @@ class Relay:
         started = [False] * len(ROUTES)
         lanes = {}                             # each great line's range polyline (its corridor)
         for k, (name, parent, bp, _, wpts) in enumerate(ROUTES):
-            Q = np.array([P[0] if bp is None else ll2xy(*bp)] + [ll2xy(*w) for w in wpts])
+            if bp is None or bp == 'hers':
+                q0 = P[0]
+            elif isinstance(bp, str):
+                q0 = np.array(CHAIN[int(bp[1:]) - 1])
+            else:
+                q0 = ll2xy(*bp)
+            Q = np.array([q0] + [ll2xy(*w) for w in wpts])
             u = np.linspace(0, 1, 6)[:-1]
             lanes[k] = np.concatenate([Q[m][None, :] * (1 - u[:, None]) + Q[m + 1][None, :] * u[:, None]
                                        for m in range(len(Q) - 1)] + [Q[-1:]])
@@ -316,21 +305,47 @@ class Relay:
             c = ks[0]
             return t[c] <= tnow and any(t[g] <= tnow for g in children[c])
 
-        # the first beacon has burned since the cold mountain
+        # her beacon has burned since the cold mountain
         t[0] = T0 - 300.0
         claimed[0] = True
         for k in tree.query_ball_point(P[0], 1.2):
             if k:
                 blocked[k] = True
+        # the Run's seven, already lit along her range's east arm; the seventh still blooming
+        run = names.index('east')
+        chain = [0]
+        prev = 0
+        for (cx, cy), tc in zip(CHAIN, CHAIN_T):
+            c = np.array([cx, cy])
+            best, bd = None, 1e9
+            for j in tree.query_ball_point(c, 1.6):
+                if claimed[j] or self.kind[j] != KIND_PEAK:
+                    continue
+                dd = float(np.hypot(*(P[j] - c))) - 0.15 * self.size[j]
+                if dd < bd:
+                    best, bd = j, dd
+            if best is None:
+                continue
+            v = P[best] - P[prev]
+            claim(best, tc, prev, v / (np.linalg.norm(v) + 1e-12), run, 0)
+            heap.pop()                      # the chain passed the fire on in C17, not here
+            chain.append(best)
+            prev = best
+        heapq.heapify(heap)
+        self.chain = np.array(chain, np.int64)
+        seventh = chain[-1]
+        heapq.heappush(heap, (t[seventh], 0, seventh))       # the east line runs on from the seventh
+        started[run] = True
         for r, (name, parent, bp, t_first, _) in enumerate(ROUTES):
-            if parent is None:
+            if parent is None and r != run:
                 started[r] = True
-                g = wps[r][0] - P[0]
+                src = 0 if bp in (None, 'hers') else chain[int(bp[1:])]
+                g = wps[r][0] - P[src]
                 g /= np.linalg.norm(g)
-                got = pick(0, g, wps[r][0], rmax=6.5, amin=0.6, jump=True)
+                got = pick(src, g, wps[r][0], rmax=6.5, amin=0.6, jump=True)
                 if got is not None:
                     j, u, L, wl = got
-                    claim(j, t_first, 0, u, r, 0)
+                    claim(j, t_first, src, u, r, 0)
         while heap:
             tn, ev, i = heapq.heappop(heap)
             if ev == 0 and not side[i]:
@@ -340,7 +355,7 @@ class Relay:
                 for r, (name, parent, bp, delay, _) in enumerate(ROUTES):
                     if started[r] or parent is None or names.index(parent) != line[i]:
                         continue
-                    if np.hypot(*(ll2xy(*bp) - P[i])) < 3.0:
+                    if isinstance(bp, str) or np.hypot(*(ll2xy(*bp) - P[i])) < 3.0:
                         started[r] = True
                         heapq.heappush(heap, (tn + delay * rng.uniform(0.9, 1.2), 1, i * 64 + r))
                 # now and then a short side line answers into the ranges beside it, later still

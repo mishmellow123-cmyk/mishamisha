@@ -1,16 +1,21 @@
 """C18 · THE MAP ANSWERS · THE ROAD (P4) on the locked bar map: C frames 4160-4480 -> renders/map_C/.
+MAP-L2: drawn on the INVENTED world (terra.py); no real place is on the sheet.
 
-map_C revision 3 (the relay of fires along the ranges; `render.py`, `relay.py`) retimed from its v2 168 frames onto
-C18's four bars, with THE ROAD (REV 1): one slow dotted route walks from her beacon's glyph (the first fire, on the
-high Himalaya) west along the ranges to a ring of stones drawn where the great ranges meet (the Pamir knot, a
-crossroads and no one's capital), and reaches it on bar 56 b3 (4440) while the beacons race. The camera ends
-centred on the drawn ring, a little pushed in, for the match to THE COUNCIL's ring of stones (C19, 4480).
+The map opens on her range (the ink Run's range): her beacon burns on its high knee and the Run's seven fires stand
+lit along its east arm, the seventh still blooming where C17's burn-through opens the sheet. The relay (`relay.py`)
+carries the fire on along the ranges, down the great rivers and along the coasts, off the frame on every side. And
+THE ROAD (REV 1): one fine pen line leaves her beacon's glyph, comes down off the range, crosses the valley and its
+river, and climbs to the ring of stones on the High Moor at the heart of the map (a high place that belongs to no
+one), reaching it on bar 56 b3 (4440) while the beacons race. The camera cranes up and back from the chain, west
+over the land to the great western sea, and ends centred on the drawn ring, a little pushed in, for the match to
+THE COUNCIL's ring of stones (C19, 4480).
 
     python road.py frames --frames 4160-4479            # delivery (renders/map_C, C numbering)
     python road.py frames --frames 4170,4300,4440,4479 --scale 0.5 --out DIR
-    python road.py x1 --center 960,300 --frames 4150-4185 --out renders/x1_map_C
-        # X1 onto the map: the seventh beacon's bloom burns through the drawn sky. Writes the burn's glow (RGB) and
-        # a keep-matte (1 = the ink run still shows); EDIT: out = run*keep + map*(1-keep) + glow
+    python road.py x1 --center 1130,485 --frames 4150-4185 --out renders/x1_map_C
+        # X1 onto the map: the seventh beacon's bloom (RUN-C's C17 seventh at local 310-319 stands at 1130,485)
+        # burns through the drawn sky. Writes the burn's glow (RGB) and a keep-matte (1 = the ink run still shows);
+        # EDIT: out = run*keep + map*(1-keep) + glow
 
 T10 (4190-4320) sits over the lower third, which the relay hushes as before.
 """
@@ -31,13 +36,27 @@ import geo  # noqa: E402
 import render as MAP  # noqa: E402
 import pen  # noqa: E402
 import burn as BURN  # noqa: E402
+import terra  # noqa: E402
 
 F0, F1 = 4160, 4480
 ARRIVE = 4440                                   # bar 56 b3: the road reaches the ring
 T10 = (4190, 4320)
-RING_LL = (38.4, 73.2)                          # the Pamir knot (lat, lon)
-ROUTE_LL = [(27.99, 86.93), (28.3, 84.9), (28.9, 82.6), (29.9, 80.6), (31.2, 78.7), (32.6, 77.2), (34.1, 76.0),
-            (35.4, 75.0), (36.5, 74.5), (37.6, 73.8), (38.25, 73.3)]
+SEVENTH_SCREEN = (1130.0, 485.0)                 # C17's seventh beacon on screen as the burn-through opens
+def _key(t, col, log=False):
+    ks = [(k[0], math.log(k[col]) if log else k[col]) for k in CAM_KEYS]
+    v = MAP.spline(t, ks)
+    return math.exp(v) if log else v
+
+
+def camera_at(t, ring, W=1920, H=804):
+    """The crane (v2 clock): from the Run's chain on her range, up and back and west over the land to the great
+    western sea; from 2010 it drifts to the ring of stones, and from 2040 it pushes in on it for the match to C19."""
+    k = smooth((t - 2010.0) / 77.0)
+    tx, ty = _key(t, 1), _key(t, 2)
+    tx += (ring[0] - tx) * k
+    ty += (ring[1] - ty) * k
+    w = _key(t, 3, True) * (1.0 - 0.72 * smooth((t - 2040.0) / 47.0) ** 1.3)
+    return MAP.Cam(tx, ty, w, _key(t, 4), _key(t, 5), W, H)
 
 
 def v2(f):
@@ -56,26 +75,15 @@ def smooth_arr(x):
 class RoadShot(MAP.Shot):
     def __init__(self, tag='full'):
         super().__init__(tag)
-        rx, ry = geo.ll2map(*RING_LL)
-        self.ring = np.array([float(rx), float(ry)])
-        pts = np.array([geo.ll2map(la, lo) for la, lo in ROUTE_LL], np.float64)
-        pts[0] = self.P[0]                                  # from her beacon's glyph itself
-        c = pen.catmull(pts, 10)
-        c = pen.resample(c, 0.02)
+        self.ring = np.array(terra.RING, np.float64)
+        c = road_path(self.P[0], self.ring)                 # from her beacon's glyph itself
         rng = np.random.default_rng(17)
         n = pen.normals(c)
         s = pen.arclen(c)
-        c = c + n * (0.12 * np.sin(s * 1.7) + 0.05 * np.sin(s * 4.3))[:, None]     # a road bends with the land
+        taper = np.clip(s / 0.8, 0, 1) * np.clip((s[-1] - s) / 0.8, 0, 1)
+        c = c + n * ((0.08 * np.sin(s * 1.7) + 0.03 * np.sin(s * 4.3)) * taper)[:, None]   # a road bends with the land
         self.route = c
         self.rs = pen.arclen(c)
-        # dashes along it, each a short pull of the pen
-        L = self.rs[-1]
-        self.dash = []
-        q = 0.0
-        while q < L - 0.2:
-            a, b = q, min(q + 0.2 + 0.04 * rng.random(), L)
-            self.dash.append((a, b))
-            q = b + 0.14 + 0.03 * rng.random()
         # the ring of stones: eleven stones round a flat one
         self.stones = []
         for k in range(11):
@@ -90,31 +98,7 @@ class RoadShot(MAP.Shot):
         return smooth((t - (a - 6)) / 6.0) * (1 - smooth((t - b - 1) / 6.0))
 
     def camera(self, t, W, H):
-        # map_C rev 3's crane, ending centred on the ring of stones and pushed in a little, for the match
-        k = smooth((t - 2010.0) / 77.0)
-        tx, ty = self._tx(t), self._ty(t)
-        tx += (self.ring[0] - tx) * k
-        ty += (self.ring[1] - ty) * k
-        w = self._width(t) * (1.0 - 0.72 * smooth((t - 2040.0) / 47.0) ** 1.3)
-        return MAP.Cam(tx, ty, w, self._tilt(t), self._head(t), W, H)
-
-    # map_C rev 3's own keys (v2 clock), so the push can be layered on them
-    def _width(self, t):
-        return math.exp(MAP.spline(t, [(1905, math.log(42.0)), (1920, math.log(42.0)), (1950, math.log(54.0)),
-                                       (1985, math.log(66.0)), (2025, math.log(73.5)), (2060, math.log(76.5)),
-                                       (2100, math.log(79.5))]))
-
-    def _tx(self, t):
-        return MAP.spline(t, [(1905, 76.0), (1920, 76.0), (1950, 73.0), (1985, 69.0), (2025, 66.0), (2060, 65.0), (2100, 64.0)])
-
-    def _ty(self, t):
-        return MAP.spline(t, [(1905, 25.5), (1920, 25.5), (1950, 24.5), (1985, 25.0), (2025, 26.5), (2060, 27.0), (2100, 27.0)])
-
-    def _tilt(self, t):
-        return MAP.spline(t, [(1905, 46.0), (1920, 46.0), (1950, 43.0), (1985, 38.0), (2025, 33.0), (2060, 31.0), (2100, 30.5)])
-
-    def _head(self, t):
-        return MAP.spline(t, [(1905, -7.0), (1920, -7.0), (1950, -6.0), (1985, -4.5), (2025, -3.5), (2060, -3.0), (2100, -3.0)])
+        return camera_at(t, self.ring, W, H)
 
     # -------------------------------------------------------------- ink ---
     def ink_layer(self, cam, f):
@@ -329,6 +313,10 @@ class RoadShot(MAP.Shot):
 INK = np.array([0.02, 0.012, 0.008], np.float32)
 GOLD_ALB = np.array([0.95, 0.66, 0.24], np.float32)       # shell gold laid in the glyph
 POOL_C = 0.4                                             # the fires' pools on the paper (rev 3 had 1.0)
+# (v2 frame, target x, target y, width, tilt, heading): open on the chain, crane up and back and west
+CAM_KEYS = [(1905, 20.5, 3.2, 44.0, 46.0, -6.0), (1920, 20.5, 3.2, 44.0, 46.0, -6.0), (1950, 17.0, 4.5, 54.0, 43.0, -5.0),
+            (1985, 11.0, 6.5, 66.0, 38.0, -4.0), (2025, 5.5, 8.0, 74.0, 33.0, -3.5), (2060, 3.5, 8.5, 77.0, 31.0, -3.0),
+            (2100, 2.5, 8.5, 80.0, 30.5, -3.0)]
 
 
 # ============================================================ C23 bar 71 ===
@@ -338,31 +326,26 @@ BREATH = 5673               # the 275 ms breath before the sunrise (C24, 5680)
 RUN = (5603.0, 5663.0)      # the flames leave the council fire, and the last hearth is reached
 
 
-def _sample2d(field, LA, LO):
-    import cv2
-    H, W = field.shape
-    x = ((LO + 180.0) / 360.0 * W - 0.5).astype(np.float32)
-    y = ((90.0 - LA) / 180.0 * H - 0.5).astype(np.float32)
-    return cv2.remap(np.asarray(field, np.float32), x, y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
-
-
-def road_tree(ring, n_dest=22, seed=71, step=0.2, span=(27.0, 20.0)):
-    """The roads home: the shortest-path tree over the drawn land from the ring of stones to n_dest hearth
-    places in the lowlands (low ground, gentle slopes, never across water), so the roads share their trunks,
-    fork and go round the ranges by the passes. Returns (chains, hearths): chains are dicts of polyline `c`,
-    arc `rs`, start distance `d0`, served hearth count `n`; hearths are (x, y, arrival distance)."""
-    from scipy.sparse import coo_matrix
-    from scipy.sparse.csgraph import dijkstra
-    F = geo.fields()
-    xs = np.arange(ring[0] - span[0], ring[0] + span[0] + 1e-9, step)
-    ys = np.arange(ring[1] - span[1], ring[1] + span[1] + 1e-9, step)
+def cost_grid(cx, cy, span, step):
+    """The walking cost of the invented land around (cx, cy): slope and height cost, rivers are forded (a
+    penalty, so a road crosses them and does not follow them), open water is not crossed. Returns xs, ys, X, Y,
+    cost, land."""
+    xs = np.arange(cx - span[0], cx + span[0] + 1e-9, step)
+    ys = np.arange(cy - span[1], cy + span[1] + 1e-9, step)
     X, Y = np.meshgrid(xs, ys)
-    LA, LO = geo.ilat(Y), geo.x2lon(X)
-    land = _sample2d(F['land'], LA, LO)
-    elev = _sample2d(F['elev'], LA, LO)
-    rug = _sample2d(F['rug'], LA, LO)
-    cost = 1.0 + 2.6 * np.clip(rug, 0, 1.5) + 0.22 * np.clip(elev, 0, 9) + 80.0 * (land < 0.5)
-    ny, nx = X.shape
+    Fw = geo.fields()
+    land = geo.sample(Fw['land'].astype(np.float32), X, Y) * (1.0 - geo.sample(Fw['lake'].astype(np.float32), X, Y))
+    elev = geo.sample('E', X, Y)
+    rug = geo.sample('rug', X, Y)
+    acc = geo.sample('acc', X, Y)
+    river = np.clip(np.log(np.maximum(acc, 1.0) / terra.RIVER_T) + 0.6, 0, 1.5)
+    cost = 1.0 + 2.6 * np.clip(rug, 0, 1.5) + 0.22 * np.clip(elev, 0, 9) + 3.0 * river + 80.0 * (land < 0.5)
+    return xs, ys, X, Y, cost, land
+
+
+def _graph(cost, step):
+    from scipy.sparse import coo_matrix
+    ny, nx = cost.shape
     idx = np.arange(nx * ny).reshape(ny, nx)
     ra, rb, rw = [], [], []
     for dy, dx in ((0, 1), (1, 0), (1, 1), (1, -1)):
@@ -375,6 +358,45 @@ def road_tree(ring, n_dest=22, seed=71, step=0.2, span=(27.0, 20.0)):
         rb.append(b.ravel())
         rw.append(L * 0.5 * (ca + cb))
     G = coo_matrix((np.concatenate(rw), (np.concatenate(ra), np.concatenate(rb))), shape=(nx * ny, nx * ny)).tocsr()
+    return idx, G
+
+
+def road_path(a, b, step=0.1):
+    """THE ROAD's line from her beacon (a) to the ring (b): the cheapest walk over the invented land (down off the
+    range by its gentlest fall, across the valley, a ford, up onto the moor), smoothed as a hand draws it."""
+    from scipy.sparse.csgraph import dijkstra
+    cx, cy = 0.5 * (a[0] + b[0]), 0.5 * (a[1] + b[1])
+    span = (abs(a[0] - b[0]) / 2 + 6.0, abs(a[1] - b[1]) / 2 + 6.0)
+    xs, ys, X, Y, cost, _ = cost_grid(cx, cy, span, step)
+    idx, G = _graph(cost, step)
+    ia = int(idx[int(round((a[1] - ys[0]) / step)), int(round((a[0] - xs[0]) / step))])
+    ib = int(idx[int(round((b[1] - ys[0]) / step)), int(round((b[0] - xs[0]) / step))])
+    dist, pred = dijkstra(G, directed=False, indices=ia, return_predecessors=True)
+    path = [ib]
+    while path[-1] != ia and path[-1] >= 0:
+        path.append(int(pred[path[-1]]))
+    path = path[::-1]
+    XYf = np.column_stack([X.ravel(), Y.ravel()])
+    P = XYf[path]
+    P[0], P[-1] = a, b
+    keep = list(range(0, len(P), 6))
+    if keep[-1] != len(P) - 1:
+        keep.append(len(P) - 1)
+    c = pen.catmull(P[keep], 10)
+    return pen.resample(c, 0.02)
+
+
+def road_tree(ring, n_dest=22, seed=71, step=0.2, span=(27.0, 20.0)):
+    """The roads home: the shortest-path tree over the drawn land from the ring of stones to n_dest hearth
+    places in the lowlands (low ground, gentle slopes, never across open water), so the roads share their trunks,
+    fork and go round the ranges by the passes. Returns (chains, hearths): chains are dicts of polyline `c`,
+    arc `rs`, start distance `d0`, served hearth count `n`; hearths are (x, y, arrival distance)."""
+    from scipy.sparse.csgraph import dijkstra
+    xs, ys, X, Y, cost, land = cost_grid(ring[0], ring[1], span, step)
+    elev = geo.sample('E', X, Y)
+    rug = geo.sample('rug', X, Y)
+    idx, G = _graph(cost, step)
+    ny, nx = X.shape
     src = int(idx[int(round((ring[1] - ys[0]) / step)), int(round((ring[0] - xs[0]) / step))])
     dist, pred = dijkstra(G, directed=False, indices=src, return_predecessors=True)
     dist = dist.reshape(ny, nx)
@@ -469,8 +491,8 @@ class FireRemains(RoadShot):
 
     def camera(self, t, W, H):
         k = self.kk(self.f)
-        w = self._width(2087.0) * 0.28 * (1.0 + 1.05 * k)
-        return MAP.Cam(self.ring[0], self.ring[1], w, self._tilt(2087.0) + 3.0 * k, self._head(2087.0), W, H)
+        w = _key(2087.0, 3, True) * 0.28 * (1.0 + 1.05 * k)
+        return MAP.Cam(self.ring[0], self.ring[1], w, _key(2087.0, 4) + 3.0 * k, _key(2087.0, 5), W, H)
 
     def room_gain(self, t):
         return 1.0 + 1.6 * smooth((self.f - 5618.0) / 45.0)       # warm and steady: the room's hearth returns
@@ -631,7 +653,7 @@ def main():
     ap.add_argument('--frames', default='')
     ap.add_argument('--out', default=os.path.join(geo.ROOT, 'renders', 'map_C'))
     ap.add_argument('--scale', type=float, default=1.0)
-    ap.add_argument('--center', default='960,300')
+    ap.add_argument('--center', default='%d,%d' % SEVENTH_SCREEN)
     a = ap.parse_args()
     fr = frames_of(a.frames)
     if a.what == 'x1':

@@ -1,0 +1,24 @@
+# MAP-L2 (lane MAP): C18 THE MAP ANSWERS + THE ROAD, and C23 bar 71 THE ROADS OUT, on an INVENTED world
+
+# >>> STATE AT HANDOFF (MAP-L2 splits the MAP half off MAP/BOOK, 27 Sep ~19:00Z local) <<<
+* MAP-L keeps the BOOK (book.py, pages.py, pen.py, redbook.py, book_c.py, ringpage.py and `NOTES.md`). MAP-L2 owns the map
+  files: geo.py, features.py, rivers.py, sheet.py, bake.py, relay.py, render.py, road.py (+ the rev-2 legacy webmap.py,
+  answer.py, places_globe.py). fire.py, ink.py, noise.py and burn.py are shared: only small, noted commits. These notes are
+  the map half's; `NOTES.md` stays MAP-L's (two lanes in one folder: never commit the other lane's file).
+* THE BLOCKER (MAP-L, on import): C18's and bar 71's map was our REAL EARTH (her beacon on Everest, road.py 27.99/86.93;
+  the council ring at the Pamir knot; India, Arabia, the Gulf and the Caspian legible at 4300-4440). It breaks H5 #2
+  (LANDSCAPES, NOT LANDMARKS) and the north star, and a council drawn in Central Asia is a geopolitical statement.
+  Real-world inputs at handoff: geo.py (Natural Earth 50m land, the Earth normal map as elevation, Blue Marble biomes and
+  lakes), rivers.py (80 real rivers), features.HILL_RANGES (Indian hill ranges), relay.ROUTES + EVEREST (real ranges),
+  road.RING_LL/ROUTE_LL, sheet.ROSE_C (South Pacific), webmap/places_globe (real cities, ocean leaps).
+* Nothing of the map was ever rendered in v3: `renders/map_C` holds only the v2 real-Earth frames 1920-2087 (MAP v2's
+  delivery, superseded) and the real-Earth caches in `renders/map_C/cache` (807 MB). Both v3 jobs are HELD;
+  `cloud/jobs/map_v3_road.json` must NOT be launched (real Earth).
+* THE JOB: keep the engine (Cam/Sheet/LightGrid, the bake, the hand, the parchment, the fire relay, the pen-line Road,
+  FireRemains), and replace the real-world inputs with an INVENTED CONTINENT in the same map-degree frame. Brief (director,
+  27 Sep): a whole world in the spirit of a hand-drawn map in an old book (ranges and passes, rivers from flow
+  accumulation, forests, plains, a desert, coasts, islands, a great western sea); no real coastline, range, river or city;
+  not Middle-earth's shapes; her beacon's range stands in for the ink Run's range; the ring of stones near the heart of the
+  map on a high place that belongs to no one; any labels sparse, in the BOOK HAND (pen.Hand), never readable.
+  Beats: C18 (4160-4479, arrive 56b3 = 4440), C23 bar 71 (5600-5679). Delivery renders/map_C in C numbering.
+  FIRST: one still of the whole invented sheet to main EARLY (geography approval before the bake).

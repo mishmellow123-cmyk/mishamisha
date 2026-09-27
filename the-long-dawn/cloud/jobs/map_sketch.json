@@ -1,0 +1,14 @@
+{
+ "name": "map_sketch",
+ "branch": "claude/render-map-sketch",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow",
+  "cd shots/map && NUMBA_NUM_THREADS=8 python3 terra.py"
+ ],
+ "render": [
+  "cd shots/map && NUMBA_NUM_THREADS=8 python3 sketch.py --frames 1-6 --out renders/map_sketch"
+ ],
+ "out_dir": "renders/map_sketch",
+ "frames": "1-6",
+ "ship": "jpg"
+}

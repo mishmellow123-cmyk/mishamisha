@@ -1,12 +1,18 @@
 """The drawing: every ink mark on the map as vector data in map coordinates.
 
-* coasts, lakes, rivers (polylines, hand-wobbled, pressure-varied)
+* coasts, lakes, rivers (polylines, hand-wobbled, pressure-varied), all from the INVENTED world (terra.py)
 * glyphs in painter's order (north first, so nearer marks overlap farther ones), each a paper
   fill (occluder) + pen strokes: mountains (profile peaks, shaded east face), hills (hatched
   arcs), trees (round-crowned and conifers), and desert stipple
 * the compass rose and the border are built in bake.py (they are frame furniture)
 
-Everything is seeded and cached in renders/map_C/cache/features.npz.
+Where the marks go comes from the invented world's relief and climate: peaks on the crests and fronts of its ranges,
+hills in its hill country and round the High Moor's rim (the moor itself stays open paper, the ring of stones at
+its heart), woods where the rain from the great western sea falls, conifers high up and in the north, stipple in
+the desert in the lee, and beacon hills along the great rivers and on the headlands, so the answering fires have
+heights to stand on along the ranges, the rivers and the coasts. Nothing stands on a river or in a lake.
+
+Everything is seeded and cached in renders/map_C/cache_w/features_<seed>.npz.
 """
 import math
 import os
@@ -18,25 +24,9 @@ from scipy.spatial import cKDTree
 import geo
 import ink
 from noise import wobble1d
-from rivers import RIVERS, SIZE as RIVER_SIZE
 
 FPPD = 8.0           # resolution of the map-space placement rasters (px per map degree)
-
-# Hill country the relief proxy misses (the old, low edges of the Deccan and the Indus hills), traced
-# by hand as (lat, lon) waypoints like the rivers. Hill marks are set along them wherever nothing else
-# is drawn, so the answering fires have heights to stand on there too.
-HILL_RANGES = {
-    'western_ghats': [(21.2, 73.9), (19.5, 73.6), (17.5, 73.8), (15.5, 74.1), (13.8, 75.0), (12.3, 75.7),
-                      (11.2, 76.6), (10.2, 77.1), (8.6, 77.3)],
-    'eastern_ghats': [(21.6, 85.3), (20.0, 84.0), (18.4, 83.0), (17.0, 81.6), (15.3, 79.2), (13.6, 79.0), (12.4, 78.4)],
-    'vindhya': [(24.3, 74.9), (23.9, 77.0), (24.2, 79.4), (24.6, 81.8), (24.4, 83.5)],
-    'satpura': [(21.7, 74.3), (21.9, 76.3), (22.4, 78.2), (22.6, 80.4)],
-    'aravalli': [(24.2, 72.6), (25.3, 73.6), (26.4, 74.6), (27.5, 76.0), (28.3, 76.9)],
-    'chota_nagpur': [(23.6, 84.2), (23.3, 85.6), (23.9, 86.6)],
-    'sri_lanka': [(7.6, 80.6), (7.0, 80.8), (6.5, 80.6)],
-    'sulaiman': [(32.0, 70.2), (30.8, 69.8), (29.6, 69.2), (28.5, 68.2)],
-    'kirthar': [(27.6, 67.3), (26.5, 67.4), (25.6, 67.6)],
-}
+RIVER_BIG = 6.0      # a great river (beacon hills along it) drains at least this many times terra.RIVER_T
 
 
 def smoothstep(x, a, b):
@@ -47,35 +37,43 @@ def smoothstep(x, a, b):
 # ------------------------------------------------------------ map fields ---
 
 def map_fields():
-    """Placement rasters in map space (FPPD px per degree), from the equirect fields."""
-    f = geo.fields()
+    """Placement rasters in map space (FPPD px per degree) from the invented world."""
+    import terra
     W = int(360 * FPPD)
     H = int(np.ceil((geo.MAP_Y1 - geo.MAP_Y0) * FPPD))
-    X = geo.MAP_X0 + (np.arange(W) + 0.5) / FPPD
-    Y = geo.MAP_Y1 - (np.arange(H) + 0.5) / FPPD
-    lon = geo.x2lon(X)
-    lat = geo.ilat(Y)
-    ex = ((lon + 180.0) / 360.0 * geo.EQ_W - 0.5).astype(np.float32)
-    ey = ((90.0 - lat) / 180.0 * geo.EQ_H - 0.5).astype(np.float32)
-    mx, my = np.meshgrid(ex, ey)
     out = {}
-    for k, v in f.items():
-        out[k] = cv2.remap(v, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
-    out['lat'] = np.repeat(lat[:, None], W, 1).astype(np.float32)
-    out['lon'] = np.repeat(lon[None, :], H, 0).astype(np.float32)
-    # precise land mask in map space
+    for k in ('E', 'Er', 'rug', 'rain'):
+        out[k] = geo.on_grid(k, geo.MAP_X0, geo.MAP_Y1, FPPD, W, H)
+    out['elev'] = out['E']
+    Y = geo.MAP_Y1 - (np.arange(H) + 0.5) / FPPD
+    X = geo.MAP_X0 + (np.arange(W) + 0.5) / FPPD
+    out['Y'] = np.repeat(Y[:, None], W, 1).astype(np.float32)
+    # precise land mask in map space, from the drawn coasts, lakes cut out
     m = np.zeros((H, W), np.uint8)
-    for ll, hole in geo.land_rings():
-        xy = geo.to_map_ring(ll)
+    for xy, hole in geo.land_rings():
         for c in geo.wrap_copies(xy):
-            pts = np.stack([(c[:, 0] - geo.MAP_X0) * FPPD, (geo.MAP_Y1 - c[:, 1]) * FPPD], 1)
+            pts = np.stack([(c[:, 0] - geo.MAP_X0) * FPPD - 0.5, (geo.MAP_Y1 - c[:, 1]) * FPPD - 0.5], 1)
             cv2.fillPoly(m, [np.round(pts * 16).astype(np.int32)], 0 if hole else 255, cv2.LINE_AA, shift=4)
+    for xy in geo.lakes():
+        pts = np.stack([(xy[:, 0] - geo.MAP_X0) * FPPD - 0.5, (geo.MAP_Y1 - xy[:, 1]) * FPPD - 0.5], 1)
+        cv2.fillPoly(m, [np.round(pts * 16).astype(np.int32)], 0, cv2.LINE_AA, shift=4)
     out['landm'] = m.astype(np.float32) / 255.0
+    # water: the drawn rivers and lakes with a margin (nothing is drawn standing on them)
+    wet = np.zeros((H, W), np.uint8)
+    for P, R, _ in river_lines():
+        pts = np.stack([(P[:, 0] - geo.MAP_X0) * FPPD - 0.5, (geo.MAP_Y1 - P[:, 1]) * FPPD - 0.5], 1)
+        cv2.polylines(wet, [np.round(pts * 16).astype(np.int32)], False, 255, 3, cv2.LINE_AA, shift=4)
+    for xy in geo.lakes():
+        pts = np.stack([(xy[:, 0] - geo.MAP_X0) * FPPD - 0.5, (geo.MAP_Y1 - xy[:, 1]) * FPPD - 0.5], 1)
+        cv2.polylines(wet, [np.round(pts * 16).astype(np.int32)], True, 255, 3, cv2.LINE_AA, shift=4)
+    out['wet'] = cv2.GaussianBlur(wet.astype(np.float32) / 255.0, (0, 0), 0.8)
+    # the High Moor: its open top (no woods, no hills) and the ring's own clearing
+    mc, mr = terra.MOOR['c'], terra.MOOR['r']
+    dm = np.hypot(X[None, :] - mc[0], (Y[:, None] - mc[1]) * 1.1) / mr
+    out['moor'] = (1.0 - smoothstep(dm, 0.42, 0.62)).astype(np.float32)
+    dr = np.hypot(X[None, :] - terra.RING[0], Y[:, None] - terra.RING[1])
+    out['clear'] = smoothstep(dr, 1.1, 1.8).astype(np.float32)
     return out, W, H
-
-
-def _greenland(lat, lon):
-    return (lat > 59.5) & (lon > -74) & (lon < -10) & ~((lon > -26) & (lat < 67))
 
 
 # --------------------------------------------------------------- placing ---
@@ -325,11 +323,11 @@ def build(seed=11):
         return load(path)
     rng = np.random.default_rng(seed)
     F, W, H = map_fields()
-    lat, lon = F['lat'], F['lon']
+    Yg = F['Y']
     landm = F['landm']
     inland = cv2.erode((landm > 0.5).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(np.float32)
-    rug, elev = F['rug'], F['elev']
-    gl = _greenland(lat, lon)
+    rug, elev, Er, rain = F['rug'], F['elev'], F['Er'], F['rain']
+    free = (1.0 - smoothstep(F['wet'], 0.05, 0.35)) * F['clear']
     # ---- relief structure: range crests (Hessian ridge strength) and range fronts (coarse slope)
     P = FPPD
 
@@ -343,38 +341,43 @@ def build(seed=11):
         l1 = tr / 2 - np.sqrt(np.maximum(tr * tr / 4 - det, 0))
         return np.maximum(-l1, 0) * (sig * P) ** 2
 
-    R2 = ridge(elev, 1.2)
-    R1 = ridge(elev, 0.5)
+    R2 = ridge(elev, 1.0)
+    R1 = ridge(elev, 0.45)
     Eg = cv2.GaussianBlur(elev, (0, 0), 0.6 * P)
     gx = cv2.Sobel(Eg, cv2.CV_32F, 1, 0, ksize=3)
     gy = cv2.Sobel(Eg, cv2.CV_32F, 0, 1, ksize=3)
     Gr = np.sqrt(gx * gx + gy * gy) * P * 0.6
-    onl = landm > 0.5
-    pr = lambda a, q: float(np.percentile(a[onl], q))
-    crest = smoothstep(R2, pr(R2, 90), pr(R2, 99.2))
-    front = smoothstep(Gr, pr(Gr, 91), pr(Gr, 99.5))
-    M = np.maximum(crest, front) * smoothstep(elev, 0.7, 2.6) * smoothstep(rug, 0.12, 0.35)
-    M *= inland * (~gl) * (lat < 80)
+    rng_m = Er > 1.5
+    pr = lambda a, q, m=rng_m: float(np.percentile(a[m], q))
+    # peaks only in the ranges: on their crests and their steep fronts
+    crest = smoothstep(R2, pr(R2, 55), pr(R2, 97))
+    front = smoothstep(Gr, pr(Gr, 60), pr(Gr, 98))
+    M = np.maximum(crest, 0.85 * front) * smoothstep(Er, 1.3, 2.8) * smoothstep(elev, 1.6, 3.2)
+    M *= inland * free
     M = cv2.GaussianBlur(M.astype(np.float32), (0, 0), 0.8)
     glyphs = []           # (Y, kind, X, s, param, seed)
     mount = Placer(0.66, 0.5)
-    cand, val = _candidates(M, 0.3, rng, 50000, W, H)
+    cand, val = _candidates(M, 0.3, rng, 60000, W, H)
     order = np.argsort(-(val + rng.normal(0, 0.06, len(val))))
     for i in order:
         x, y = cand[i]
         m = float(val[i])
         e = float(_sample(elev, np.array([[x, y]]))[0])
-        s = 0.85 + 0.55 * min(m, 1.0) + 0.5 * float(smoothstep(e, 2.0, 8.0))
+        s = 0.8 + 0.5 * min(m, 1.0) + 0.6 * float(smoothstep(e, 3.0, 8.5))
         if mount.ok(x, y, s):
-            # the whole foot must be on land
-            if _sample(landm, np.array([[x - 0.45 * s, y], [x + 0.45 * s, y]])).min() < 0.5:
+            # the whole foot must be on land, and dry
+            foot = np.array([[x - 0.45 * s, y], [x + 0.45 * s, y], [x, y]])
+            if _sample(landm, foot).min() < 0.5 or _sample(free, foot).min() < 0.5:
                 continue
             mount.add(x, y, s)
             glyphs.append((y, 0, x, s, m, int(rng.integers(1 << 30))))
-    # ---- hills: lesser ridges and hill country, sparse, never a carpet
-    Hf = np.maximum(smoothstep(R1, pr(R1, 82), pr(R1, 97)), 0.8 * smoothstep(Gr, pr(Gr, 80), pr(Gr, 94)))
-    Hf *= smoothstep(rug, 0.1, 0.3) * (1 - smoothstep(M, 0.2, 0.4))
-    Hf *= inland * (~gl) * (lat < 78)
+    # ---- hills: lesser ridges, the ranges' foothills, hill country and the moor's rim; sparse, never a carpet
+    allland = landm > 0.5
+    Hf = np.maximum(smoothstep(R1, float(np.percentile(R1[allland], 80)), float(np.percentile(R1[allland], 97))),
+                    0.8 * smoothstep(Gr, float(np.percentile(Gr[allland], 78)), float(np.percentile(Gr[allland], 95))))
+    Hf = Hf * smoothstep(elev, 0.9, 1.6) + 0.55 * smoothstep(elev, 1.5, 2.4) * (1.0 - smoothstep(Er, 2.0, 3.0))
+    Hf *= (1 - smoothstep(M, 0.2, 0.4)) * (1.0 - F['moor'])
+    Hf *= inland * free
     Hf = cv2.GaussianBlur(Hf.astype(np.float32), (0, 0), 1.0)
     hills = Placer(0.95, 0.75)
     cand, val = _candidates(Hf, 0.22, rng, 50000, W, H)
@@ -386,53 +389,68 @@ def build(seed=11):
             continue
         s = 0.5 + 0.3 * min(hv, 1.0) + rng.uniform(-0.05, 0.08)
         if hills.ok(x, y, s, (mount,)):
-            if _sample(landm, np.array([[x - 0.45 * s, y], [x + 0.45 * s, y]])).min() < 0.5:
+            foot = np.array([[x - 0.45 * s, y], [x + 0.45 * s, y], [x, y]])
+            if _sample(landm, foot).min() < 0.5 or _sample(free, foot).min() < 0.5:
                 continue
             hills.add(x, y, s)
             glyphs.append((y, 1, x, s, hv, int(rng.integers(1 << 30))))
-    # ---- forests: round crowns where the Blue Marble is forested; conifers in the boreal belt
-    boreal = smoothstep(lat, 47.0, 53.0) * (1 - smoothstep(lat, 63.0, 69.0)) * (lon > -170)
-    patch = cv2.GaussianBlur(rng.random((H // 8, W // 8)).astype(np.float32), (0, 0), 1.5)
+    # ---- woods where the rain falls: round crowns in the lowlands, conifers high up and in the north
+    patch = cv2.GaussianBlur(rng.random((H // 8, W // 8)).astype(np.float32), (0, 0), 1.3)
     patch = cv2.resize(patch, (W, H), interpolation=cv2.INTER_CUBIC)
     patch = (patch - patch.mean()) / (patch.std() + 1e-6)
-    Ft = np.clip(F['forest'] * 1.25, 0, 1) * (lat < 55)
-    Fb = boreal * np.clip(0.55 + 0.35 * patch, 0, 1) * (1 - F['desert'])
-    Ff = np.maximum(Ft, Fb * 0.85) * inland * (~gl)
+    woods = smoothstep(patch, -0.55, 0.15)
+    wetl = smoothstep(rain, 0.95, 1.6)
+    north = smoothstep(Yg, 46.0, 54.0)
+    Fb = wetl * (1.0 - smoothstep(elev, 2.4, 3.2)) * (1.0 - north)
+    Fc = smoothstep(rain, 0.75, 1.3) * np.maximum(smoothstep(elev, 2.3, 3.0) * (1.0 - smoothstep(elev, 5.2, 6.2)),
+                                                  north * (1.0 - smoothstep(elev, 4.5, 5.5)))
+    Ff = np.maximum(Fb, Fc) * woods * inland * free * (1.0 - F['moor'])
     Ff *= (1 - smoothstep(M, 0.15, 0.3)) * (1 - smoothstep(Hf, 0.45, 0.7))
     Ff = cv2.GaussianBlur(Ff.astype(np.float32), (0, 0), 0.8)
+    conf = Fc / np.maximum(Fb + Fc, 1e-3)
     trees = Placer(0.72, 0.62)
-    cand, val = _candidates(Ff, 0.3, rng, 90000, W, H)
+    cand, val = _candidates(Ff, 0.3, rng, 110000, W, H)
     order = rng.permutation(len(cand))
     for i in order:
         x, y = cand[i]
         fv = float(val[i])
         if rng.random() > (fv - 0.3) * 2.2:
             continue
-        la = float(geo.ilat(y))
-        con = la > 47.0 + rng.uniform(-3, 3) or float(_sample(elev, np.array([[x, y]]))[0]) > 3.0
+        con = float(_sample(conf, np.array([[x, y]]))[0]) > 0.5 + rng.uniform(-0.15, 0.15)
         s = rng.uniform(0.3, 0.38) if not con else rng.uniform(0.3, 0.4)
         if trees.ok(x, y, s, (mount, hills)):
             trees.add(x, y, s)
             glyphs.append((y, 3 if con else 2, x, s, fv, int(rng.integers(1 << 30))))
-    # ---- the hand-traced hill country, set last with its own seed so every other mark stays exactly
-    # where it was; a hill mark replaces any tree it would stand on
+    # ---- beacon hills along the great rivers and on the headlands, set last with their own seed so every other
+    # mark stays where it was; a hill replaces any tree it would stand on
     rh = np.random.default_rng(seed + 101)
     added = []
-    for pts in HILL_RANGES.values():
-        ll = np.array(pts, np.float64)
-        R = ink.resample(ink.chaikin(geo.ll2map(ll[:, 0], ll[:, 1]), 2), 0.05)
-        Ls = ink.arclen(R)
-        u = np.arange(rh.uniform(0.0, 0.4), Ls[-1], 0.72)
-        for uj in u + rh.uniform(-0.18, 0.18, len(u)):
-            k = int(np.clip(np.searchsorted(Ls, uj), 1, len(R) - 1))
-            tg = R[k] - R[k - 1]
+
+    def try_hill(x, y, s):
+        sd = int(rh.integers(1 << 30))
+        foot = np.array([[x - 0.45 * s, y], [x + 0.45 * s, y], [x, y]])
+        if hills.ok(x, y, s, (mount,)) and _sample(landm, foot).min() >= 0.5 and _sample(free, foot).min() >= 0.5:
+            hills.add(x, y, s)
+            added.append((y, 1, x, s, 0.6, sd))
+            return True
+        return False
+    import terra
+    for Pr, Rr, fl in river_lines():
+        if fl < RIVER_BIG * terra.RIVER_T:
+            continue
+        Ls = ink.arclen(Pr)
+        side = 1.0 if rh.random() < 0.5 else -1.0
+        for uj in np.arange(rh.uniform(0.8, 1.6), Ls[-1] - 0.6, 2.3) + rh.uniform(-0.3, 0.3):
+            k = int(np.clip(np.searchsorted(Ls, uj), 1, len(Pr) - 1))
+            tg = Pr[k] - Pr[k - 1]
             tg /= np.linalg.norm(tg) + 1e-12
-            x, y = R[k] + np.array([-tg[1], tg[0]]) * rh.uniform(-0.35, 0.35)
-            s = rh.uniform(0.55, 0.8)
-            sd = int(rh.integers(1 << 30))
-            if hills.ok(x, y, s, (mount,)) and _sample(landm, np.array([[x - 0.45 * s, y], [x + 0.45 * s, y]])).min() >= 0.5:
-                hills.add(x, y, s)
-                added.append((y, 1, x, s, 0.6, sd))
+            nv = np.array([-tg[1], tg[0]])
+            for off in (side * rh.uniform(0.5, 0.75), -side * rh.uniform(0.5, 0.75)):
+                if try_hill(*(Pr[k] + nv * off), rh.uniform(0.55, 0.75)):
+                    side = -side
+                    break
+    for Pc in headlands(landm):
+        try_hill(Pc[0], Pc[1], rh.uniform(0.55, 0.72))
     if added:
         A = np.array([(g[2], g[0], g[3]) for g in added])
         tr = cKDTree(A[:, :2])
@@ -446,17 +464,54 @@ def build(seed=11):
             keep.append(g)
         glyphs = keep + added
     # ---- desert stipple (plain dots, weighted)
-    D = F['desert'] * inland * (1 - smoothstep(M, 0.1, 0.3))
-    n = 160000
-    cand, val = _candidates(D, 0.08, rng, n, W, H)
+    Dz = (1.0 - smoothstep(rain, 0.22, 0.5)) * (1.0 - smoothstep(elev, 2.6, 3.6))
+    Dz = cv2.GaussianBlur(Dz.astype(np.float32), (0, 0), 1.2)
+    Dz = Dz * inland * free * (1 - smoothstep(M, 0.1, 0.3))
+    n = 200000
+    cand, val = _candidates(Dz, 0.08, rng, n, W, H)
     keep = rng.random(len(cand)) < np.clip((val - 0.08) * 1.6, 0, 1)
     dots = cand[keep]
-    # thin dots that fall on glyphs (they'd be hidden anyway; saves time)
     dots = dots[rng.random(len(dots)) < 0.6]
     glyphs.sort(key=lambda g: -g[0])
     G = np.array(glyphs, np.float64)
     np.savez_compressed(path, glyphs=G, dots=dots)
     return load(path)
+
+
+def headlands(landm, spacing=2.6, seed=31):
+    """Points just inland of the capes and headlands of the larger coasts (where a coast fire would stand)."""
+    rng = np.random.default_rng(seed)
+    out = []
+    for xy, hole in geo.land_rings():
+        if hole or len(xy) < 200:
+            continue
+        P = ink.resample(ink.chaikin(xy, 2, closed=True), 0.1, closed=True)
+        n = len(P)
+        if n < 60:
+            continue
+        k = 12                                           # +-1.2 degrees
+        a = np.roll(P, k, 0) - P
+        b = np.roll(P, -k, 0) - P
+        # a cape: the coast turns back on itself around this point, bulging seaward
+        ang = np.arctan2(a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0], (a * b).sum(1))
+        orient = np.sign(np.sum(P[:, 0] * np.roll(P[:, 1], -1) - np.roll(P[:, 0], -1) * P[:, 1]))
+        conv = -ang * orient
+        cand = np.where(conv > 0.9)[0]
+        cand = cand[np.argsort(-conv[cand])]
+        taken = []
+        for i in cand:
+            p = P[i]
+            if any(np.hypot(*(p - q)) < spacing for q in taken):
+                continue
+            tg = P[(i + 1) % n] - P[i - 1]
+            tg /= np.linalg.norm(tg) + 1e-12
+            inw = np.array([-tg[1], tg[0]]) * orient
+            q = p + inw * rng.uniform(0.45, 0.65)
+            if _sample(landm, q[None, :])[0] < 0.6:
+                continue
+            taken.append(p)
+            out.append(q)
+    return out
 
 
 def load(path):
@@ -486,8 +541,8 @@ def coast_lines(step=0.04, seed=3):
         return [(P[off[i]:off[i + 1]], bool(hole[i])) for i in range(len(off) - 1)]
     out = []
     rng = np.random.default_rng(seed)
-    for ll, hole in geo.land_rings():
-        xy = geo.to_map_ring(ll)
+    for xy, hole in geo.land_rings():
+        xy = np.asarray(xy, np.float64)
         if len(xy) < 4:
             continue
         xy = ink.chaikin(xy[:-1] if np.allclose(xy[0], xy[-1]) else xy, 1, closed=True)
@@ -501,7 +556,7 @@ def coast_lines(step=0.04, seed=3):
         L = s[-1] + step
         # closed wobble: sines with integer cycles around the ring
         wv = np.zeros(len(xy))
-        for k, (wl, a) in enumerate(((0.9, 0.022), (0.33, 0.011), (0.15, 0.005))):
+        for k, (wl, a) in enumerate(((0.9, 0.018), (0.33, 0.009), (0.15, 0.004))):
             cyc = max(1, int(round(L / wl)))
             wv += a * np.sin(2 * np.pi * cyc * s / L + rng.random() * 6.283)
         xy = xy + nrm * wv[:, None]
@@ -516,9 +571,8 @@ def coast_lines(step=0.04, seed=3):
 def lake_lines(step=0.04, seed=4):
     out = []
     rng = np.random.default_rng(seed)
-    for ll in geo.lakes():
-        xy = geo.to_map_ring(ll)
-        xy = ink.chaikin(xy, 2, closed=True)
+    for xy in geo.lakes():
+        xy = ink.chaikin(np.asarray(xy, np.float64), 2, closed=True)
         xy = ink.resample(xy, step, closed=True)
         if len(xy) < 5:
             continue
@@ -528,28 +582,129 @@ def lake_lines(step=0.04, seed=4):
     return out
 
 
+_RIV = None
+
+
+def _land_window(x0, y0, x1, y1, ppd):
+    """Land (1) / sea or lake (0) raster of a small window from the drawn coasts and lakes."""
+    W = int(math.ceil((x1 - x0) * ppd))
+    H = int(math.ceil((y1 - y0) * ppd))
+    m = np.zeros((H, W), np.uint8)
+    for xy, hole in geo.land_rings():
+        if xy[:, 0].max() < x0 or xy[:, 0].min() > x1 or xy[:, 1].max() < y0 or xy[:, 1].min() > y1:
+            continue
+        pts = np.stack([(xy[:, 0] - x0) * ppd - 0.5, (y1 - xy[:, 1]) * ppd - 0.5], 1)
+        cv2.fillPoly(m, [np.round(pts * 16).astype(np.int32)], 0 if hole else 1, cv2.LINE_8, shift=4)
+    for xy in geo.lakes():
+        if xy[:, 0].max() < x0 or xy[:, 0].min() > x1 or xy[:, 1].max() < y0 or xy[:, 1].min() > y1:
+            continue
+        pts = np.stack([(xy[:, 0] - x0) * ppd - 0.5, (y1 - xy[:, 1]) * ppd - 0.5], 1)
+        cv2.fillPoly(m, [np.round(pts * 16).astype(np.int32)], 0, cv2.LINE_8, shift=4)
+    return m
+
+
 def river_lines(seed=5):
-    """[(polyline map XY, radius array)] from source to mouth."""
-    out = []
+    """[(polyline map XY, radius array, peak flow)] from source to mouth (or to the river it joins): the
+    invented world's channel network, smoothed out of its grid, meandering, cut at the drawn coast and at the
+    lakes, and every tributary's end set on the river it joins. Cached."""
+    global _RIV
+    if _RIV is not None:
+        return _RIV
+    path = os.path.join(geo.CACHE, f'rivers_{seed}.npz')
+    if os.path.exists(path):
+        d = np.load(path)
+        P, R, off, fl = d['P'], d['R'], d['off'], d['fl']
+        _RIV = [(P[off[i]:off[i + 1]], R[off[i]:off[i + 1]], float(fl[i])) for i in range(len(off) - 1)]
+        return _RIV
+    import terra
     rng = np.random.default_rng(seed)
-    for name, pts in RIVERS.items():
-        ll = np.array(pts, np.float64)
-        xy = geo.ll2map(ll[:, 0], ll[:, 1])
-        xy = ink.chaikin(xy, 3)
-        xy = ink.resample(xy, 0.03)
-        L = ink.arclen(xy)
-        # meanders: bigger wiggles upstream, a lazier swing downstream
-        u = L / max(L[-1], 1e-6)
-        mw = wobble1d(L, int(rng.integers(1 << 30)), 0.9, 0.05) + wobble1d(L, int(rng.integers(1 << 30)), 0.25, 0.018)
-        t = np.gradient(xy, axis=0)
+    raw = sorted(geo.rivers(), key=lambda r: -float(np.max(r[1])))
+    sm = []
+    for (xy, flow, sea) in raw:
+        xy = np.asarray(xy, np.float64)
+        n = len(xy)
+        # out of the grid: a moving average (ends pinned), then corner cutting
+        k = 4
+        pad = np.vstack([np.repeat(xy[:1], k, 0), xy, np.repeat(xy[-1:], k, 0)])
+        ker = np.ones(2 * k + 1) / (2 * k + 1)
+        q = np.stack([np.convolve(pad[:, 0], ker, 'valid'), np.convolve(pad[:, 1], ker, 'valid')], 1)
+        q[0], q[-1] = xy[0], xy[-1]
+        q = ink.resample(ink.chaikin(q, 2), 0.03)
+        f = np.interp(np.linspace(0, 1, len(q)), np.linspace(0, 1, n), np.asarray(flow, np.float64))
+        sm.append([q, f, bool(sea)])
+    # every tributary ends on the river it joins (the nearest point of a larger river)
+    for i, (q, f, sea) in enumerate(sm):
+        if sea:
+            continue
+        best = None
+        for j in range(i):
+            Q = sm[j][0]
+            d = np.hypot(Q[:, 0] - q[-1, 0], Q[:, 1] - q[-1, 1])
+            m = int(np.argmin(d))
+            if d[m] < 0.6 and (best is None or d[m] < best[0]):
+                best = (d[m], Q[m])
+        if best is not None:
+            q = np.vstack([q, best[1][None, :]])
+            sm[i][0] = ink.resample(q, 0.03)
+            sm[i][1] = np.concatenate([f, f[-1:]])
+            sm[i][1] = np.interp(np.linspace(0, 1, len(sm[i][0])), np.linspace(0, 1, len(f) + 1), sm[i][1])
+    out = []
+    for (q, f, sea) in sm:
+        L = ink.arclen(q)
+        # meanders: bigger wiggles upstream, a lazier swing downstream (not at the joins or the mouth)
+        mw = wobble1d(L, int(rng.integers(1 << 30)), 0.9, 0.04) + wobble1d(L, int(rng.integers(1 << 30)), 0.25, 0.014)
+        t = np.gradient(q, axis=0)
         t /= np.linalg.norm(t, axis=1)[:, None] + 1e-12
         nrm = np.stack([-t[:, 1], t[:, 0]], 1)
         env = np.clip(np.minimum(L, L[-1] - L) / 0.4, 0, 1)
-        xy = xy + nrm * (mw * env)[:, None]
-        sz = RIVER_SIZE.get(name, 0.6)
-        rad = (0.010 + 0.02 * sz * u ** 0.6) * (0.9 + 0.2 * np.sin(L * 3.1 + rng.random() * 6))
-        out.append((xy, rad, name))
-    return out
+        q = q + nrm * (mw * env)[:, None]
+        if sea:
+            # to the drawn coast: extend a little and cut where the water begins
+            dv = q[-1] - q[-8]
+            dv /= np.linalg.norm(dv) + 1e-12
+            q = np.vstack([q, q[-1] + dv[None, :] * np.linspace(0.03, 0.6, 20)[:, None]])
+        # cut at the coast and at the lakes (a river is not drawn across open water)
+        x0, y0 = q[:, 0].min() - 0.2, q[:, 1].min() - 0.2
+        x1, y1 = q[:, 0].max() + 0.2, q[:, 1].max() + 0.2
+        ppd = 40.0
+        m = _land_window(x0, y0, x1, y1, ppd)
+        ci = np.clip(((q[:, 0] - x0) * ppd).astype(int), 0, m.shape[1] - 1)
+        ri = np.clip(((y1 - q[:, 1]) * ppd).astype(int), 0, m.shape[0] - 1)
+        on = m[ri, ci] > 0
+        # split into runs on land
+        runs, cur = [], []
+        for k in range(len(q)):
+            if on[k]:
+                cur.append(k)
+            elif cur:
+                runs.append(cur)
+                cur = []
+        if cur:
+            runs.append(cur)
+        fl_full = np.interp(np.arange(len(q)), np.arange(len(f)), f) if len(f) != len(q) else f
+        for rn in runs:
+            if len(rn) < 4:
+                continue
+            a, b = rn[0], rn[-1]
+            if b < len(q) - 1:
+                b += 1                           # reach the shore
+            if a > 0:
+                a -= 1
+            seg = q[a:b + 1]
+            fs = fl_full[min(a, len(fl_full) - 1):min(b + 1, len(fl_full))]
+            if len(fs) < len(seg):
+                fs = np.concatenate([fs, np.repeat(fs[-1:] if len(fs) else [terra.RIVER_T], len(seg) - len(fs))])
+            if ink.arclen(seg)[-1] < 0.5:
+                continue
+            u = np.clip(np.sqrt(fs / terra.RIVER_T) / 8.0, 0, 1)
+            rad = (0.008 + 0.03 * u ** 0.85) * (0.92 + 0.16 * np.sin(ink.arclen(seg) * 3.1 + rng.random() * 6))
+            out.append((seg, rad, float(np.max(fs))))
+    P = np.concatenate([o[0] for o in out])
+    R = np.concatenate([o[1] for o in out])
+    off = np.cumsum([0] + [len(o[0]) for o in out])
+    np.savez_compressed(path, P=P, R=R, off=off, fl=np.array([o[2] for o in out]))
+    _RIV = None
+    return river_lines(seed)
 
 
 if __name__ == '__main__':
