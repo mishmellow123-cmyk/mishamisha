@@ -1177,17 +1177,23 @@ def _land_pass(rgb, depth, oid, cam, PR, CA, MS, x0, cell2, PMC, PMF):
                     grid_sample(PMC, -PMC_R, -PMC_R, PMC_CELL, px, py)
                 n1 = fbm2(px * 0.045 + 1.3, py * 0.045, 331, 4, 2.1, 0.55, fp * 0.045)
                 n2 = fbm2(px * 0.6, py * 0.6 + 2.0, 332, 3, 2.2, 0.5, fp * 0.6)
+                n3 = fbm2(px * 0.011 - 4.0, py * 0.011 + 2.2, 333, 4, 2.1, 0.5, fp * 0.011)
+                # the open moor: dry grass and old heath, paler than the trodden council ground under the moon
+                g = 1.0 + 0.9 * n3 + 0.45 * n1 + 0.30 * n2
+                nr = mix(nr, 0.068 * g, w)
+                ng = mix(ng, 0.063 * g, w)
+                nb = mix(nb, 0.050 * g, w)
                 # heather and scrub in dark blotches, bare earth where the gathering has trodden the heath flat
                 heath = sstep(0.02, 0.16, n1) * (1.0 - pm)
-                nr = mix(nr, 0.021 * (1.0 + 0.5 * n2), 0.65 * heath)
-                ng = mix(ng, 0.019 * (1.0 + 0.5 * n2), 0.65 * heath)
-                nb = mix(nb, 0.017 * (1.0 + 0.5 * n2), 0.65 * heath)
+                nr = mix(nr, 0.030 * (1.0 + 0.5 * n2), 0.60 * heath)
+                ng = mix(ng, 0.026 * (1.0 + 0.5 * n2), 0.60 * heath)
+                nb = mix(nb, 0.024 * (1.0 + 0.5 * n2), 0.60 * heath)
                 trod = sstep(19.0, 12.5, r) * (0.55 + 0.45 * sstep(-0.1, 0.2, n2))
                 nr = mix(nr, 0.050 * (1.0 + 0.4 * n2), 0.7 * trod)
                 ng = mix(ng, 0.045 * (1.0 + 0.4 * n2), 0.7 * trod)
                 nb = mix(nb, 0.037 * (1.0 + 0.4 * n2), 0.7 * trod)
                 # the worn roads: pale, dry, trodden earth
-                ea = 0.058 * (1.0 + 0.35 * n2)
+                ea = 0.078 * (1.0 + 0.35 * n2)
                 nr = mix(nr, ea * 1.00, 0.85 * pm)
                 ng = mix(ng, ea * 0.88, 0.85 * pm)
                 nb = mix(nb, ea * 0.70, 0.85 * pm)
@@ -1423,7 +1429,7 @@ def _shade_fig(px, py, pz, vx, vy, vz, mat, CF, i, fp, PR, LT, OC, igc, igf, TL,
         cb += ab * f * TL[k, 6]
     # the far crowd's glow from all round
     ef = grid_sample(EF, efx0, efx0, efc, px, py)
-    ka = ef * (0.35 + 0.30 * max(nz, 0.0)) * ao
+    ka = ef * (0.12 + 0.28 * max(nz, 0.0)) * ao
     cr += ar * ka * 1.0
     cg += ag * ka * 0.56
     cb += ab * ka * 0.16
