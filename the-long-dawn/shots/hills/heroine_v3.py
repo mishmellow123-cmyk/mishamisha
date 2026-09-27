@@ -356,13 +356,21 @@ class DeadEmber:
         lc = lc * (1 - b) + down * b
         back = smoothstep(self.KNOCK + 4, self.KNOCK + 24, f)
         grip = lc + np.array([0.030, 0.050, 0.020])
-        steady = self.POT + np.array([0.118, 0.105, 0.020])       # the pot's right belly: clear of the mouth
+        if self.CRAFTED:
+            # HEROINE-L (H5: "a lidded vessel held by a hand"): back from the knock, her far glove wraps the pot's belly on
+            # the lens side (screen left, where the far arm comes down from), fingers round the front: the hold reads
+            steady = self.POT + np.array([-0.030, 0.070, 0.092])
+            fs, ps = nrm([-0.80, -0.05, -0.55]), nrm([0.30, 0.0, -0.95])
+            cs_ = np.array([0.50, 0.56, 0.62, 0.66])
+        else:
+            steady = self.POT + np.array([0.118, 0.105, 0.020])       # the pot's right belly: clear of the mouth
+            fs, ps = nrm([-0.20, -0.95, -0.10]), nrm([-0.97, 0.05, -0.20])
+            cs_ = np.array([0.30, 0.34, 0.40, 0.46])
         p['hand_f'] = tuple(grip * (1 - back) + steady * back)
         fg, pg = nrm([-0.45, -0.75, -0.40]), nrm([0.05, -0.90, -0.40])
-        fs, ps = nrm([-0.20, -0.95, -0.10]), nrm([-0.97, 0.05, -0.20])
         p['fdir_f'] = tuple(nrm(fg * (1 - back) + fs * back))
         p['palm_f'] = tuple(nrm(pg * (1 - back) + ps * back))
-        p['curl_f'] = tuple(np.array([0.55, 0.62, 0.70, 0.74]) * (1 - back) + np.array([0.30, 0.34, 0.40, 0.46]) * back)
+        p['curl_f'] = tuple(np.array([0.55, 0.62, 0.70, 0.74]) * (1 - back) + cs_ * back)
         p['thumb_f'] = 0.55 * (1 - back) + 0.25 * back
         p['spread_f'] = 0.15 * back
         # H5: the vessel is HELD: her near gloved hand is round the pot's belly on the lens side throughout (it steadies
@@ -523,6 +531,10 @@ class DeadEmber:
             # fired clay, not husk: broad mottling, a faint burnish, almost no bump
             Mt[H3.M_CLAY, 3] = 0.70
             Mt[H3.M_CLAY, 12:15] = [24.0, 0.20, 0.03]
+            # the ground beside her graded down into the night (H5: no pale blue shape in frame); the leather catches
+            # the moon along its edges, so the holding hand reads against her dark coat
+            Mt[H3.M_SNOW, 0:3] = Mt[H3.M_SNOW, 0:3] * 0.40
+            Mt[H3.M_GLOVE, 8] = 1.6
         res = H3.render(cam, B, Hp, L, env, XP, ENV, None, M=Mt, ss=(3 if scale > 0.75 else 2),
                         sil=dict(skin=1.0, eyes=1.0, cap=0.6, cap_brim=0.6, hair=0.6))
         img = np.zeros((cam.H, cam.W, 3), np.float32)

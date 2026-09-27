@@ -406,6 +406,10 @@ V3_ROAR_SIL = 0.92               # at the roar her fire-lit groups go rim-only: 
 V3_ROAR2 = False
 H1C = False
 H1C_GLOVE = (0.030, 0.021, 0.016, 0.34)   # dark thin leather: albedo, roughness (MONTAGE-3D's glove is near-black)
+H1C_POV = True    # H1-C through her own eyes (MONTAGE-3D's find is her look down, find_b a palm-up POV): the head is
+                  # never drawn, the backs of her gloves are dark against the strike and the ember, her breath streams
+                  # from the lens (the 19:55Z telephoto test failed: the take's sleeves read as giant mottled gourds)
+H1C_POV_HFOV = 50.0
 RISE1_V3 = _kp(pelvis=(0.93, 0.74, 0.0), lean=6.0, chest=-2.0, neck=8.0, head=24.0, head_yaw=-38.0, shrug=0.7,
                hand_n=(0.60, 1.30, -0.13), hand_f=(0.72, 0.95, 0.20), foot_n=(0.52, 0.06, -0.20),
                foot_f=(1.13, 0.06, 0.10), knee_f=(-1.0, 0.2, 0.0), toe_f=(-1.0, -0.1, 0.0), sole_f=(0.0, 1.0, 0.0),
@@ -669,6 +673,16 @@ H1C_HFOV = 12.8
 
 def camera_c(f, scale):
     t = f / FPS
+    if H1C_POV:
+        # between her eyes, looking where she looks (the flint and the tinder; up with the first flame after the catch)
+        p = yw2_pose(f)
+        an = hero_anchors(f)
+        pos = an['head'].p(0.095, 0.012)
+        tgt = np.asarray(p['look_at'], np.float64)
+        cam = Camera(pos, hfov=H1C_POV_HFOV, scale=scale)
+        yaw, pitch = cam.look_at(tgt)
+        focus = float(np.linalg.norm(TINDER - pos))
+        return Camera(pos, yaw=yaw, pitch=pitch, hfov=H1C_POV_HFOV, scale=scale), focus, 0.0
     hand = np.array([0.0016 * fnoise1(t * 0.7, 1.0), 0.0012 * fnoise1(t * 0.6, 2.0), 0.0])
     s3 = STRIKES[2]
     coax = smoothstep(s3 + 8, s3 + 40, f) * (1 - smoothstep(CATCH - 6, CATCH + 30, f))
@@ -1228,6 +1242,10 @@ class FirstBeacon:
             hsdf3.gloves(B, H) if V3_H5 else hsdf3.gloves(B, H, inflate=0.0009)
             if V3_H5:
                 hsdf3.wardrobe_v3(B, F, an['J'], an['scarf_anchor'], scarf_pts=self.scarf.at(f), t=t)
+            if H1C and H1C_POV:
+                for g in B.groups:                  # the lens is her eyes: no head
+                    if g['name'] in ('skin', 'eyes', 'hood', 'hair', 'cap', 'cap_brim'):
+                        g['prims'] = []
             sil = V3_SIL
             if rw > 0:
                 sil = dict(V3_SIL)
@@ -1240,6 +1258,9 @@ class FirstBeacon:
             if H1C:
                 M3[hsdf3.M_GLOVE, 0:3] = H1C_GLOVE[:3]
                 M3[hsdf3.M_GLOVE, 3] = H1C_GLOVE[3]
+                # the sleeves close to the lens: dark undyed woven wool (the hood's weave), not the coat's 2 cm mottle
+                M3[hero.M_COAT, 0:3] = (0.040, 0.035, 0.031)
+                M3[hero.M_COAT, 11:15] = (3, 520.0, 0.22, 0.10)
             res = hsdf3.render(cam, B, H, L, env, M=M3, ss=(3 if scale > 0.75 else 2), sil=sil)
             res = None if res is None else res[:5]
             Ls = L.copy()
@@ -1360,7 +1381,7 @@ class FirstBeacon:
                     rad_m = 0.008 + 0.045 * a_
                     dens = 0.085 * math.exp(-a_ / 0.6) * min(1.0, a_ / 0.08)
                 sx, sy, z = cam.project(pos)
-                if z <= 0.05:
+                if z <= (0.09 if (H1C and H1C_POV) else 0.05):    # POV: the breath shows once it leaves the lens
                     continue
                 Ls = np.zeros(3)
                 for (sp, I, c) in srcs:
