@@ -5,8 +5,8 @@
   "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
  ],
  "render": [
-  "python3 shots/hills/render.py --shot beacon_v3 --frames 1200-1439 --step 2 --workers 2 --out renders/hills_v3 --skip-existing",
-  "python3 shots/hills/render.py --shot beacon_v3 --frames 1201-1439 --step 2 --workers 2 --out renders/hills_v3 --skip-existing"
+  "python3 shots/hills/render.py --shot beacon_v3_rekey --frames 1200-1439 --step 2 --workers 2 --out renders/hills_v3 --skip-existing",
+  "python3 shots/hills/render.py --shot beacon_v3_rekey --frames 1201-1439 --step 2 --workers 2 --out renders/hills_v3 --skip-existing"
  ],
  "out_dir": "renders/hills_v3",
  "frames": "1200-1439",

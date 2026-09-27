@@ -451,6 +451,9 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
                 eye = min(1.0, max(0.0, (1.25 - de) / 0.55))
                 eye = eye * eye * (3.0 - 2.0 * eye)
                 glow = glow * (0.08 + 0.92 * eye) * (0.6 + 0.4 * eye)
+                if XP[32] > 0.0:
+                    # the last red point: a pinprick left in the eye after the rest has greyed
+                    glow += XP[32] * math.exp(-(de / 0.30) ** 2) / max(gain, 1e-3) * 0.12
                 ash = ash * (1.0 - 0.8 * eye) + (1.0 - eye) * 0.25 * (1.0 - XP[19])
                 ar = 0.022
                 ag = 0.019

@@ -33,7 +33,12 @@ def make_shot(name):
     if name == 'beacon':
         import beacon
         return beacon.FirstBeacon()
-    if name == 'beacon_v3':               # BIBLE_V3 B7: the flint take re-keyed (gloves, the head a rim-lit silhouette)
+    if name == 'beacon_v3':               # BIBLE_V3: the flint take re-keyed (B7: gloves, the head a rim-lit silhouette)
+        import beacon                     # AND on the locked sheets' master timing (src 1200-1555, strike 1 = 1236)
+        beacon.V3_REKEY = True
+        beacon.use_master_timing()
+        return beacon.FirstBeacon()
+    if name == 'beacon_v3_rekey':         # the re-key alone on the accepted v2b timing (renders/hills_v3, 00:42Z)
         import beacon
         beacon.V3_REKEY = True
         return beacon.FirstBeacon()
