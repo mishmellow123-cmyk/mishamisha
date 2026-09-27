@@ -1,0 +1,1017 @@
+{
+ "cut": "A",
+ "fps": 24,
+ "frames": 6480,
+ "shots": [
+  {
+   "sec": "A1",
+   "f0": 0,
+   "f1": 80,
+   "code": "A1",
+   "name": "BLACK",
+   "owner": "EDIT",
+   "desc": "Black. Wind rises from silence.",
+   "takes": [],
+   "kind": "black",
+   "bars": [
+    1,
+    1
+   ]
+  },
+  {
+   "sec": "A2",
+   "f0": 80,
+   "f1": 560,
+   "code": "R1",
+   "name": "FALSE DAWN",
+   "owner": "RUN-A",
+   "desc": "Midnight ridge: a cold white glow swells under the far horizon, silvers the cloud, puts out the nearest stars.",
+   "takes": [
+    {
+     "stem": "falsedawn",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/falsedawn_A",
+      "renders/falsedawn_v3"
+     ]
+    },
+    {
+     "stem": "run",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_A",
+      "renders/run_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    2,
+    7
+   ]
+  },
+  {
+   "sec": "A3",
+   "f0": 560,
+   "f1": 960,
+   "code": "E1",
+   "name": "INTO THE LIGHT \u00b7 GLYPHS",
+   "owner": "EMBERS",
+   "desc": "The push goes into the glow to white; letters of every script drift in, then spiral and compress.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    8,
+    12
+   ]
+  },
+  {
+   "sec": "A4",
+   "f0": 960,
+   "f1": 1040,
+   "code": "E1",
+   "name": "THE POINT",
+   "owner": "EMBERS",
+   "desc": "The spiral collapses to a blinding point; a held breath.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    13,
+    13
+   ]
+  },
+  {
+   "sec": "A5",
+   "f0": 1040,
+   "f1": 1440,
+   "code": "E2 \u00b7 E3",
+   "name": "IGNITION \u00b7 THE PROMISE",
+   "owner": "EMBERS",
+   "desc": "The thinking fire, ice-white with a gold edge, breathing too evenly; its light shows a valley of embers, then not.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    14,
+    18
+   ]
+  },
+  {
+   "sec": "A6",
+   "f0": 1440,
+   "f1": 1840,
+   "code": "E5-A",
+   "name": "THE TOWERS \u00b7 TWO GIANTS",
+   "owner": "EMBERS",
+   "desc": "Forge-towers rise, lit only on the face to the fire; from bar 22 b3.5 two giants outgrow the rest, black to each other.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    19,
+    23
+   ]
+  },
+  {
+   "sec": "A7",
+   "f0": 1840,
+   "f1": 2400,
+   "code": "E6",
+   "name": "THE EDGE",
+   "owner": "EMBERS",
+   "desc": "On every beat the towers surge; the ground falls into a crater of fire; the gilded lean in and the rim crumbles.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    24,
+    30
+   ]
+  },
+  {
+   "sec": "A8",
+   "f0": 2400,
+   "f1": 2640,
+   "code": "E7-A",
+   "name": "THE BRINK \u00b7 OVER THE RIM",
+   "owner": "EMBERS",
+   "desc": "A torn vortex strips the tower tops; the rim gives way; a crown falls; the camera tips over into white.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    31,
+    33
+   ]
+  },
+  {
+   "sec": "A9",
+   "f0": 2640,
+   "f1": 2800,
+   "code": "E4",
+   "name": "THE DEAD VALLEY",
+   "owner": "EMBERS",
+   "desc": "Out of the white: the promise's valley again, grey and unlit, cinder under falling ash.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    34,
+    35
+   ]
+  },
+  {
+   "sec": "A10",
+   "f0": 2800,
+   "f1": 3120,
+   "code": "E9",
+   "name": "BLACK \u00b7 THE EMBER",
+   "owner": "EMBERS",
+   "desc": "Black. One ember drifts down and hangs, flickering. It does not die.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    36,
+    39
+   ]
+  },
+  {
+   "sec": "A11",
+   "f0": 3120,
+   "f1": 3360,
+   "code": "X2",
+   "name": "DARK ADAPTATION",
+   "owner": "EDIT (+ RUN-A star plate)",
+   "desc": "Out of the black the stars come back: a few, then many, then the Milky Way; the ember one light among them.",
+   "takes": [
+    {
+     "stem": "stars",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/stars_A",
+      "renders/stars_v3"
+     ]
+    },
+    {
+     "stem": "x2",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/x2_A",
+      "renders/x2_v3"
+     ]
+    }
+   ],
+   "kind": "x2",
+   "bars": [
+    40,
+    42
+   ]
+  },
+  {
+   "sec": "A12",
+   "f0": 3360,
+   "f1": 3600,
+   "code": "H1-A",
+   "name": "THE FIRST FIRE",
+   "owner": "HEROINE",
+   "desc": "Tinder, gloves, sparks, breath: three strikes, a long blow, the catch. The face never lit.",
+   "takes": [
+    {
+     "stem": "h1_v3h5",
+     "off": -2124,
+     "mode": "exact",
+     "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1200,
+      1555
+     ],
+     "folders": [
+      "renders/h1_v3h5"
+     ]
+    },
+    {
+     "stem": "h1_v3",
+     "off": -2124,
+     "mode": "exact",
+     "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/h1_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    43,
+    45
+   ]
+  },
+  {
+   "sec": "A13",
+   "f0": 3600,
+   "f1": 3680,
+   "code": "H1-A",
+   "name": "THE ROAR",
+   "owner": "HEROINE",
+   "desc": "The roar on the downbeat; the pull-back from her summit begins.",
+   "takes": [
+    {
+     "stem": "h1_v3h5",
+     "off": -2124,
+     "mode": "exact",
+     "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1200,
+      1555
+     ],
+     "folders": [
+      "renders/h1_v3h5"
+     ]
+    },
+    {
+     "stem": "h1_v3",
+     "off": -2124,
+     "mode": "exact",
+     "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/h1_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    46,
+    46
+   ]
+  },
+  {
+   "sec": "A13",
+   "f0": 3680,
+   "f1": 3800,
+   "code": "R2-A",
+   "name": "EVERY RIDGE",
+   "owner": "RUN-A",
+   "desc": "On every ridge to the horizon fires catch in the same breath; the cold glow pulses beyond; red under the cloud.",
+   "takes": [
+    {
+     "stem": "reveal",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/reveal_A",
+      "renders/reveal_v3"
+     ]
+    },
+    {
+     "stem": "run",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_A",
+      "renders/run_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    47,
+    48
+   ]
+  },
+  {
+   "sec": "A13",
+   "f0": 3800,
+   "f1": 3860,
+   "code": "M5",
+   "name": "KARST",
+   "owner": "MONTAGE-3D-2",
+   "desc": "Weathered rock towers in a mist sea; a beacon on a crown flares on bar 48 b3.75.",
+   "takes": [
+    {
+     "stem": "montage3d_v3/karst_slow",
+     "off": -3800,
+     "mode": "exact",
+     "note": "Blender KARST at 2/3 speed, pre-H5 (pines, pillar profile)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/montage3d_v3/karst_slow"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    48,
+    49
+   ]
+  },
+  {
+   "sec": "A13",
+   "f0": 3860,
+   "f1": 3920,
+   "code": "M5",
+   "name": "DESERT",
+   "owner": "MONTAGE-3D-2",
+   "desc": "A dune crest under the Milky Way; a robed figure; her stone beacon catches on bar 49 b3; she looks out.",
+   "takes": [
+    {
+     "stem": "montage3d_v3/desert",
+     "off": -3860,
+     "mode": "exact",
+     "note": "Blender DESERT (H5 fixes)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/montage3d_v3/desert"
+     ]
+    },
+    {
+     "stem": "montage",
+     "off": -2340,
+     "mode": "layered",
+     "note": "Blender DESERT montage_v2 1520-1579, pre-H5 (framing, footprints)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/montage_A",
+      "renders/montage_v3",
+      "renders/montage_v2",
+      "renders/montage"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    49,
+    49
+   ]
+  },
+  {
+   "sec": "A14",
+   "f0": 3920,
+   "f1": 4240,
+   "code": "R3",
+   "name": "THE BEACON RUN",
+   "owner": "RUN-A",
+   "desc": "Following her look, fires link across the ranges every two beats, seven of them; the red under-glow pulses.",
+   "takes": [
+    {
+     "stem": "beaconrun",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/beaconrun_A",
+      "renders/beaconrun_v3"
+     ]
+    },
+    {
+     "stem": "run",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_A",
+      "renders/run_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    50,
+    53
+   ]
+  },
+  {
+   "sec": "A15",
+   "f0": 4240,
+   "f1": 4400,
+   "code": "R16",
+   "name": "THE WATCHERS",
+   "owner": "RUN-A + HILLS",
+   "desc": "Behind a backlit watcher at the seventh fire, looking to the cold glow; small figures on far ridges, eyelines only.",
+   "takes": [
+    {
+     "stem": "watchers",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/watchers_A",
+      "renders/watchers_v3"
+     ]
+    },
+    {
+     "stem": "run",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_A",
+      "renders/run_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    54,
+    55
+   ]
+  },
+  {
+   "sec": "A16",
+   "f0": 4400,
+   "f1": 4720,
+   "code": "E10",
+   "name": "TOWERS IN THE LIGHT",
+   "owner": "EMBERS",
+   "desc": "Far ridge fires light the towers' backs; the surges stop; the two giants open their shutters to each other first.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    56,
+    59
+   ]
+  },
+  {
+   "sec": "A17",
+   "f0": 4720,
+   "f1": 4880,
+   "code": "E10",
+   "name": "THE FIRE, SEEN",
+   "owner": "EMBERS",
+   "desc": "The camera walks down to the calm fire; small lights come to the rim; it gathers into one small heart.",
+   "takes": [
+    {
+     "stem": "embers_A3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, A timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_A3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    60,
+    61
+   ]
+  },
+  {
+   "sec": "A18",
+   "f0": 4880,
+   "f1": 5840,
+   "code": "R6",
+   "name": "THE CROSSING",
+   "owner": "RUN-A",
+   "desc": "One take: the great lantern on poles; forty roped bearers on a knife-edge above the cloud; the sky wheels.",
+   "takes": [
+    {
+     "stem": "crossing",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/crossing_A",
+      "renders/crossing_v3"
+     ]
+    },
+    {
+     "stem": "run",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_A",
+      "renders/run_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    62,
+    73
+   ]
+  },
+  {
+   "sec": "A19",
+   "f0": 5840,
+   "f1": 6240,
+   "code": "R7",
+   "name": "THE BLUE HOUR",
+   "owner": "RUN-A",
+   "desc": "The lantern set down among the watch-fires; they sit and unrope; the east pales to rose; hearth smoke below.",
+   "takes": [
+    {
+     "stem": "bluehour",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/bluehour_A",
+      "renders/bluehour_v3"
+     ]
+    },
+    {
+     "stem": "run",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_A",
+      "renders/run_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    74,
+    78
+   ]
+  },
+  {
+   "sec": "A20",
+   "f0": 6240,
+   "f1": 6480,
+   "code": "X3",
+   "name": "TITLE",
+   "owner": "EDIT over RUN-A",
+   "desc": "THE LONG DAWN kindles in the rose sky, holds, crumbles into rising sparks; fade to black from bar 81 b3.8.",
+   "takes": [
+    {
+     "stem": "bluehour",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/bluehour_A",
+      "renders/bluehour_v3"
+     ]
+    },
+    {
+     "stem": "run",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_A",
+      "renders/run_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    79,
+    81
+   ]
+  }
+ ],
+ "text": [
+  {
+   "id": "T1",
+   "line": "At first it looked like morning.",
+   "f_in": 200,
+   "f_out": 320,
+   "set": "lower",
+   "locked": "At first it looked like morning."
+  },
+  {
+   "id": "T2",
+   "line": "We fed it everything we knew.",
+   "f_in": 700,
+   "f_out": 840,
+   "set": "lower",
+   "locked": "We fed it everything we had ever written."
+  },
+  {
+   "id": "T4",
+   "line": "It could show us anything, except itself.",
+   "f_in": 1140,
+   "f_out": 1270,
+   "set": "lower",
+   "locked": "It could show us anything, except itself."
+  },
+  {
+   "id": "T5",
+   "line": "Whoever held it first, they said, would hold the world.",
+   "f_in": 1460,
+   "f_out": 1610,
+   "set": "lower",
+   "locked": "Whoever held it first, they said, would hold the world."
+  },
+  {
+   "id": "T6a",
+   "line": "First the forges raced for it.",
+   "f_in": 1640,
+   "f_out": 1800,
+   "set": "row",
+   "locked": "First the forges raced for it."
+  },
+  {
+   "id": "T6b",
+   "line": "Then the kingdoms.",
+   "f_in": 1720,
+   "f_out": 1800,
+   "set": "row",
+   "locked": "Then the kingdoms."
+  },
+  {
+   "id": "T7",
+   "line": "The closer they came, the more it paid.",
+   "f_in": 1848,
+   "f_out": 1944,
+   "set": "lower",
+   "locked": "Every step closer paid."
+  },
+  {
+   "id": "T8",
+   "line": "No one dared to be second.",
+   "f_in": 1960,
+   "f_out": 2060,
+   "set": "lower",
+   "locked": "No one dared to be second."
+  },
+  {
+   "id": "T9",
+   "line": "Whoever won, there would have been no morning.",
+   "f_in": 2670,
+   "f_out": 2790,
+   "set": "lower",
+   "locked": "There would have been no morning after it."
+  },
+  {
+   "id": "T10a",
+   "line": "Even those who raced were afraid.",
+   "f_in": 2880,
+   "f_out": 3060,
+   "set": "black_top",
+   "locked": "Many who raced said it should slow."
+  },
+  {
+   "id": "T10b",
+   "line": "None would slow alone.",
+   "f_in": 2950,
+   "f_out": 3060,
+   "set": "black_bottom",
+   "locked": "None would slow alone."
+  },
+  {
+   "id": "T11",
+   "line": "So the rest of us lit fires, to see by.",
+   "f_in": 3210,
+   "f_out": 3340,
+   "set": "lower",
+   "locked": "So the rest of us lit fires, to see by."
+  },
+  {
+   "id": "T13",
+   "line": "It took longer than anyone wanted.",
+   "f_in": 5200,
+   "f_out": 5320,
+   "set": "lower",
+   "locked": "It took longer than anyone wanted."
+  },
+  {
+   "id": "T14",
+   "line": "No one got there first.",
+   "f_in": 6080,
+   "f_out": 6200,
+   "set": "lower",
+   "locked": "No one got there first."
+  },
+  {
+   "id": "title",
+   "line": "THE LONG DAWN",
+   "f_in": 6260,
+   "f_out": 6440,
+   "set": "title",
+   "locked": "THE LONG DAWN"
+  }
+ ],
+ "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first"
+}

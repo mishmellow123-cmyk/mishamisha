@@ -1,0 +1,631 @@
+{
+ "cut": "B",
+ "fps": 24,
+ "frames": 5440,
+ "shots": [
+  {
+   "sec": "B1",
+   "f0": 0,
+   "f1": 640,
+   "code": "R8",
+   "name": "DUSK",
+   "owner": "RUN-B",
+   "desc": "The range at sunset above the cloud sea; the light leaves the peaks lowest first; one last red point goes out.",
+   "takes": [
+    {
+     "stem": "dusk",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/dusk_B",
+      "renders/dusk_v3"
+     ]
+    },
+    {
+     "stem": "run_b_tests/dusk_motion",
+     "off": 0,
+     "mode": "exact",
+     "note": "quarter-res motion test, pre-H5 (triangle peak)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_b_tests/dusk_motion"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    1,
+    8
+   ]
+  },
+  {
+   "sec": "B2",
+   "f0": 640,
+   "f1": 880,
+   "code": "H4",
+   "name": "THE CLIMB",
+   "owner": "HEROINE + RUN-B",
+   "desc": "Blue night: a tiny figure on a snow arete carries a clay fire-pot, the only warm point; then close behind her.",
+   "takes": [
+    {
+     "stem": "climb",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/climb_B",
+      "renders/climb_v3"
+     ]
+    },
+    {
+     "stem": "heroine",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/heroine_B",
+      "renders/heroine_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    9,
+    11
+   ]
+  },
+  {
+   "sec": "B3",
+   "f0": 880,
+   "f1": 1120,
+   "code": "H5",
+   "name": "THE DEAD EMBER",
+   "owner": "HEROINE",
+   "desc": "The summit cairn: she lifts the lid on one red eye of ember; it greys to ash under her breath. Hands only.",
+   "takes": [
+    {
+     "stem": "deadember",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/deadember_B",
+      "renders/deadember_v3"
+     ]
+    },
+    {
+     "stem": "heroine",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/heroine_B",
+      "renders/heroine_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    12,
+    14
+   ]
+  },
+  {
+   "sec": "B4",
+   "f0": 1120,
+   "f1": 1360,
+   "code": "H1-B",
+   "name": "THE FIRST FIRE",
+   "owner": "HEROINE (EDIT crop)",
+   "desc": "Match cut on the last red point to the first spark: three strikes, a long blow, the catch. Hands, tinder, sparks.",
+   "takes": [
+    {
+     "stem": "h1_v3h5",
+     "off": 116,
+     "mode": "exact",
+     "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
+     "crop": [
+      0.1,
+      0.26,
+      0.36,
+      0.36
+     ],
+     "grade": "B",
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1200,
+      1555
+     ],
+     "folders": [
+      "renders/h1_v3h5"
+     ]
+    },
+    {
+     "stem": "h1_v3",
+     "off": 116,
+     "mode": "exact",
+     "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
+     "crop": [
+      0.1,
+      0.26,
+      0.36,
+      0.36
+     ],
+     "grade": "B",
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/h1_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    15,
+    17
+   ]
+  },
+  {
+   "sec": "B5",
+   "f0": 1360,
+   "f1": 1372,
+   "code": "H1-B",
+   "name": "THE ROAR",
+   "owner": "HEROINE (EDIT crop)",
+   "desc": "The roar on the downbeat, in the hands-and-tinder crop.",
+   "takes": [
+    {
+     "stem": "h1_v3h5",
+     "off": 116,
+     "mode": "exact",
+     "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
+     "crop": [
+      0.1,
+      0.26,
+      0.36,
+      0.36
+     ],
+     "grade": "B",
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1200,
+      1555
+     ],
+     "folders": [
+      "renders/h1_v3h5"
+     ]
+    },
+    {
+     "stem": "h1_v3",
+     "off": 116,
+     "mode": "exact",
+     "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
+     "crop": [
+      0.1,
+      0.26,
+      0.36,
+      0.36
+     ],
+     "grade": "B",
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/h1_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    18,
+    18
+   ]
+  },
+  {
+   "sec": "B5",
+   "f0": 1372,
+   "f1": 1520,
+   "code": "R2-B",
+   "name": "THE REVEAL",
+   "owner": "RUN-B",
+   "desc": "Moonlit silver, no red but the scarf: she is tiny on her summit above a silver cloud sea under the Milky Way.",
+   "takes": [
+    {
+     "stem": "reveal",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/reveal_B",
+      "renders/reveal_v3"
+     ]
+    },
+    {
+     "stem": "vigil",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/vigil_B",
+      "renders/vigil_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    18,
+    19
+   ]
+  },
+  {
+   "sec": "B6",
+   "f0": 1520,
+   "f1": 2000,
+   "code": "R9",
+   "name": "THE VIGIL \u00b7 FIRST HOURS",
+   "owner": "RUN-B + HILLS",
+   "desc": "The locked frame: her shelf, the cairn, her small figure by the fire. Stars wheel; she feeds it; nothing answers.",
+   "takes": [
+    {
+     "stem": "vigil",
+     "off": 0,
+     "mode": "v3",
+     "note": "RUN-B THE VIGIL",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/vigil_B",
+      "renders/vigil_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    20,
+    25
+   ]
+  },
+  {
+   "sec": "B7",
+   "f0": 2000,
+   "f1": 2480,
+   "code": "R9",
+   "name": "THE VIGIL \u00b7 NOTHING ANSWERS",
+   "owner": "RUN-B + HILLS",
+   "desc": "Hours pass in the same frame: snow, then clear stars, then fog; she shields the flame. Nothing answers.",
+   "takes": [
+    {
+     "stem": "vigil",
+     "off": 0,
+     "mode": "v3",
+     "note": "RUN-B THE VIGIL",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/vigil_B",
+      "renders/vigil_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    26,
+    31
+   ]
+  },
+  {
+   "sec": "B8",
+   "f0": 2480,
+   "f1": 2640,
+   "code": "R9",
+   "name": "THE VIGIL \u00b7 SOMEONE HAS SEEN",
+   "owner": "RUN-B",
+   "desc": "In her frame (the far-peak cutaway is CUT): the night holds its breath; far off, a pinprick.",
+   "takes": [
+    {
+     "stem": "vigil",
+     "off": 0,
+     "mode": "v3",
+     "note": "RUN-B THE VIGIL",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/vigil_B",
+      "renders/vigil_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    32,
+    33
+   ]
+  },
+  {
+   "sec": "B9",
+   "f0": 2640,
+   "f1": 3120,
+   "code": "R9",
+   "name": "THE VIGIL \u00b7 THE FIRST ANSWERS",
+   "owner": "RUN-B + HILLS",
+   "desc": "A pinprick answers from the far horizon; a traveller climbs in, takes flame, carries it down; village lights.",
+   "takes": [
+    {
+     "stem": "vigil",
+     "off": 0,
+     "mode": "v3",
+     "note": "RUN-B THE VIGIL",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/vigil_B",
+      "renders/vigil_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    34,
+    39
+   ]
+  },
+  {
+   "sec": "B10",
+   "f0": 3120,
+   "f1": 3280,
+   "code": "R9",
+   "name": "THE VIGIL \u00b7 FIRE ANSWERS FIRE",
+   "owner": "RUN-B",
+   "desc": "In her frame (cutaway CUT): a nearer far fire flares in answer to hers.",
+   "takes": [
+    {
+     "stem": "vigil",
+     "off": 0,
+     "mode": "v3",
+     "note": "RUN-B THE VIGIL",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/vigil_B",
+      "renders/vigil_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    40,
+    41
+   ]
+  },
+  {
+   "sec": "B11",
+   "f0": 3280,
+   "f1": 3600,
+   "code": "R9",
+   "name": "THE VIGIL \u00b7 THE WORLD COMES",
+   "owner": "RUN-B + HILLS",
+   "desc": "Torches thread down the NE arete; more far peaks burn; the valleys brighten under the cloud.",
+   "takes": [
+    {
+     "stem": "vigil",
+     "off": 0,
+     "mode": "v3",
+     "note": "RUN-B THE VIGIL",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/vigil_B",
+      "renders/vigil_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    42,
+    45
+   ]
+  },
+  {
+   "sec": "B12",
+   "f0": 3600,
+   "f1": 3840,
+   "code": "R9",
+   "name": "THE VIGIL \u00b7 THE CHILD",
+   "owner": "RUN-B + HILLS",
+   "desc": "A traveller's child stays; she feeds the beacon; the child sits against her and falls asleep.",
+   "takes": [
+    {
+     "stem": "vigil",
+     "off": 0,
+     "mode": "v3",
+     "note": "RUN-B THE VIGIL",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/vigil_B",
+      "renders/vigil_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    46,
+    48
+   ]
+  },
+  {
+   "sec": "B13",
+   "f0": 3840,
+   "f1": 5200,
+   "code": "R11",
+   "name": "THE HAND-BACK",
+   "owner": "RUN-B + HILLS",
+   "desc": "One take: the crane to the range alight; the east greys; the sun walks in; beacons pale, hers last; the hand-off.",
+   "takes": [
+    {
+     "stem": "handback",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/handback_B",
+      "renders/handback_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    49,
+    65
+   ]
+  },
+  {
+   "sec": "B14",
+   "f0": 5200,
+   "f1": 5440,
+   "code": "X3",
+   "name": "TITLE",
+   "owner": "EDIT over RUN-B",
+   "desc": "THE LONG DAWN kindles in the dawn sky and fades into the light.",
+   "takes": [
+    {
+     "stem": "handback",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/handback_B",
+      "renders/handback_v3"
+     ]
+    },
+    {
+     "stem": "dawntitle",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/dawntitle_B",
+      "renders/dawntitle_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    66,
+    68
+   ]
+  }
+ ],
+ "text": [
+  {
+   "id": "title",
+   "line": "THE LONG DAWN",
+   "f_in": 5220,
+   "f_out": 5400,
+   "set": "title",
+   "locked": "THE LONG DAWN"
+  }
+ ],
+ "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first"
+}

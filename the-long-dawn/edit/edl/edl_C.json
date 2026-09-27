@@ -1,0 +1,1471 @@
+{
+ "cut": "C",
+ "fps": 24,
+ "frames": 7200,
+ "shots": [
+  {
+   "sec": "C1",
+   "f0": 0,
+   "f1": 80,
+   "code": "C1",
+   "name": "BLACK \u00b7 THE HEARTH",
+   "owner": "EDIT",
+   "desc": "Black; a hearth crackles; a heavy page turns.",
+   "takes": [],
+   "kind": "black",
+   "bars": [
+    1,
+    1
+   ]
+  },
+  {
+   "sec": "C2",
+   "f0": 80,
+   "f1": 320,
+   "code": "P1",
+   "name": "THE RED BOOK",
+   "owner": "MAP",
+   "desc": "An old red-bound book open by a hearth: flowing unknown script, small drawings; then a sheaf of blank leaves.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    2,
+    4
+   ]
+  },
+  {
+   "sec": "C3",
+   "f0": 320,
+   "f1": 560,
+   "code": "P2",
+   "name": "INK PAGE \u00b7 THE MOUNTAIN",
+   "owner": "MAP",
+   "desc": "The leaves riffle back; a pen draws a mountain with a fire in its throat and in it a small gold ring.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    5,
+    7
+   ]
+  },
+  {
+   "sec": "C4",
+   "f0": 560,
+   "f1": 880,
+   "code": "E15 \u00b7 X1",
+   "name": "LETTERS TO FIRE",
+   "owner": "MAP + EMBERS",
+   "desc": "A dense leaf darkens; its letters glow, lift as sparks, pour into one point; a fire catches and burns the page open.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    },
+    {
+     "stem": "x1_letters_C_test",
+     "off": -560,
+     "mode": "video",
+     "note": "MAP-v3 X1 motion test (half-res mp4, C 560-906)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": "edit/cache/x1_letters_C_test.mp4",
+     "need": null,
+     "folders": [
+      "edit/cache/x1_letters_C_test.mp4"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    8,
+    11
+   ]
+  },
+  {
+   "sec": "C5",
+   "f0": 880,
+   "f1": 1040,
+   "code": "E15",
+   "name": "THE FIRE, ALONE",
+   "owner": "MAP + EMBERS",
+   "desc": "The fire burns alone in the black, gold and calm, a few letters still legible in it; the burnt rim glows.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    },
+    {
+     "stem": "x1_letters_C_test",
+     "off": -560,
+     "mode": "video",
+     "note": "MAP-v3 X1 motion test (half-res mp4, C 560-906)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": "edit/cache/x1_letters_C_test.mp4",
+     "need": null,
+     "folders": [
+      "edit/cache/x1_letters_C_test.mp4"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    12,
+    13
+   ]
+  },
+  {
+   "sec": "C6",
+   "f0": 1040,
+   "f1": 1440,
+   "code": "E5-C",
+   "name": "THE FORGING",
+   "owner": "EMBERS",
+   "desc": "Forge-towers of every realm rise round the fire, none tallest; its light is beaten into a band: the Ring.",
+   "takes": [
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    14,
+    18
+   ]
+  },
+  {
+   "sec": "C7",
+   "f0": 1440,
+   "f1": 1680,
+   "code": "E11",
+   "name": "THE RACE UNDER THE RING",
+   "owner": "EMBERS",
+   "desc": "A hush; gold falls from the Ring into the nearest windows; then the towers surge and walls of red rise.",
+   "takes": [
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    19,
+    21
+   ]
+  },
+  {
+   "sec": "C8",
+   "f0": 1680,
+   "f1": 1920,
+   "code": "P2",
+   "name": "INK PAGE \u00b7 THE DEEP",
+   "owner": "MAP",
+   "desc": "An ember edge sweeps the race away to parchment; the pen draws pillared halls down a gilt vein; a red glow wakes.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": [
+      "hold",
+      "embers_C3",
+      1679
+     ],
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    22,
+    24
+   ]
+  },
+  {
+   "sec": "C9",
+   "f0": 1920,
+   "f1": 1992,
+   "code": "E12",
+   "name": "THE EYE (burn-through)",
+   "owner": "MAP + EMBERS",
+   "desc": "The glow burns through the page into the storm, which resolves into a lidless Eye over all the towers.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": [
+      "same",
+      "embers_C3"
+     ],
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    },
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    25,
+    25
+   ]
+  },
+  {
+   "sec": "C9",
+   "f0": 1992,
+   "f1": 2080,
+   "code": "E12",
+   "name": "THE EYE ONTO NOTHING",
+   "owner": "EMBERS",
+   "desc": "On bar 26 b1 its slit opens for the first time, onto empty black: no one is behind it.",
+   "takes": [
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    25,
+    26
+   ]
+  },
+  {
+   "sec": "C10",
+   "f0": 2080,
+   "f1": 2320,
+   "code": "M4",
+   "name": "THE MIRROR (optional)",
+   "owner": "MONTAGE",
+   "desc": "Built only if a lane frees up: a stone basin of dark water; ripples carry the lands burning; a drop; a golden dawn.",
+   "takes": [
+    {
+     "stem": "mirror",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/mirror_C",
+      "renders/mirror_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    27,
+    29
+   ]
+  },
+  {
+   "sec": "C11",
+   "f0": 2320,
+   "f1": 2480,
+   "code": "E8-C",
+   "name": "THE GRASP THAT CANNOT HOLD",
+   "owner": "EMBERS",
+   "desc": "A claw of embers descends and closes on the Ring; the crust glows and cracks; the band slips through and falls.",
+   "takes": [
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    30,
+    31
+   ]
+  },
+  {
+   "sec": "C12",
+   "f0": 2480,
+   "f1": 2720,
+   "code": "C12",
+   "name": "BLACK \u00b7 THE OLD LAW",
+   "owner": "EDIT",
+   "desc": "Black. Far away, a cock crows once (bar 34 b4).",
+   "takes": [],
+   "kind": "black",
+   "bars": [
+    32,
+    34
+   ]
+  },
+  {
+   "sec": "C13",
+   "f0": 2720,
+   "f1": 2840,
+   "code": "E13",
+   "name": "THE RING FALLS",
+   "owner": "EMBERS",
+   "desc": "Out of the black a gold glint tumbles slowly, its letters faintly awake, down through cloud.",
+   "takes": [
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    35,
+    36
+   ]
+  },
+  {
+   "sec": "C13",
+   "f0": 2840,
+   "f1": 2960,
+   "code": "R13",
+   "name": "THE RING FALLS \u00b7 THE STAR",
+   "owner": "RUN-C",
+   "desc": "Over a moonlit range drawn in ink it streaks like a falling star and strikes the snow by an old cairn: steam.",
+   "takes": [
+    {
+     "stem": "ringfall",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/ringfall_C",
+      "renders/ringfall_v3"
+     ]
+    },
+    {
+     "stem": "run",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/run_C",
+      "renders/run_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    36,
+    37
+   ]
+  },
+  {
+   "sec": "C14",
+   "f0": 2960,
+   "f1": 3000,
+   "code": "H1-C",
+   "name": "FLINT",
+   "owner": "HEROINE",
+   "desc": "Dark, her breath, the scarf. Strike 1 on bar 38 b2: a spark in the dark.",
+   "takes": [
+    {
+     "stem": "h1_v3h5",
+     "off": -1744,
+     "mode": "exact",
+     "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
+     "crop": null,
+     "grade": "C",
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1200,
+      1555
+     ],
+     "folders": [
+      "renders/h1_v3h5"
+     ]
+    },
+    {
+     "stem": "h1_v3",
+     "off": -1744,
+     "mode": "exact",
+     "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
+     "crop": null,
+     "grade": "C",
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/h1_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    38,
+    38
+   ]
+  },
+  {
+   "sec": "C14",
+   "f0": 3000,
+   "f1": 3080,
+   "code": "H2",
+   "name": "THE FIND",
+   "owner": "MONTAGE-3D-2 (Blender)",
+   "desc": "Strike 2's spark shows a gold band in a melted hollow by her knee; she stops; her gloved hand closes on it.",
+   "takes": [
+    {
+     "stem": "ring",
+     "off": 0,
+     "mode": "v3",
+     "note": "MONTAGE-3D-2 Blender Ring",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/ring_C",
+      "renders/ring_v3"
+     ]
+    },
+    {
+     "stem": "montage3d_v3/find_a",
+     "off": 0,
+     "mode": "exact",
+     "note": "MONTAGE-3D-2 Blender Ring (find_a)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/montage3d_v3/find_a"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    38,
+    39
+   ]
+  },
+  {
+   "sec": "C14",
+   "f0": 3080,
+   "f1": 3150,
+   "code": "H2",
+   "name": "THE FIND \u00b7 THE VISION",
+   "owner": "MONTAGE-3D-2 (Blender)",
+   "desc": "She opens her hand: for two seconds forge-towers bow toward her on the polished band; she closes her fist.",
+   "takes": [
+    {
+     "stem": "ring",
+     "off": 0,
+     "mode": "v3",
+     "note": "MONTAGE-3D-2 Blender Ring",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/ring_C",
+      "renders/ring_v3"
+     ]
+    },
+    {
+     "stem": "montage3d_v3/find_b",
+     "off": 0,
+     "mode": "exact",
+     "note": "MONTAGE-3D-2 Blender Ring (find_b)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/montage3d_v3/find_b"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    39,
+    40
+   ]
+  },
+  {
+   "sec": "C14",
+   "f0": 3150,
+   "f1": 3360,
+   "code": "H1-C",
+   "name": "FLINT \u00b7 THE CATCH",
+   "owner": "HEROINE",
+   "desc": "She strikes again (bar 40 b3.9); a long blow; the kindling catches (bar 42 b2.8). Hands only.",
+   "takes": [
+    {
+     "stem": "h1_v3h5",
+     "off": -1884,
+     "mode": "exact",
+     "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
+     "crop": null,
+     "grade": "C",
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1200,
+      1555
+     ],
+     "folders": [
+      "renders/h1_v3h5"
+     ]
+    },
+    {
+     "stem": "h1_v3",
+     "off": -1884,
+     "mode": "exact",
+     "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
+     "crop": null,
+     "grade": "C",
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/h1_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    40,
+    42
+   ]
+  },
+  {
+   "sec": "C15",
+   "f0": 3360,
+   "f1": 3600,
+   "code": "H2",
+   "name": "THE FIRE TEST",
+   "owner": "MONTAGE-3D-2 (Blender)",
+   "desc": "The roar. The Ring on the tip of her C-shaped fire-steel in the flames, unmarked; it will not fall; she draws it out.",
+   "takes": [
+    {
+     "stem": "ring",
+     "off": 0,
+     "mode": "v3",
+     "note": "MONTAGE-3D-2 Blender Ring",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/ring_C",
+      "renders/ring_v3"
+     ]
+    },
+    {
+     "stem": "montage3d_v3/fire",
+     "off": 0,
+     "mode": "exact",
+     "note": "MONTAGE-3D-2 Blender Ring (fire)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/montage3d_v3/fire"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    43,
+    45
+   ]
+  },
+  {
+   "sec": "C16",
+   "f0": 3600,
+   "f1": 3840,
+   "code": "R2-C",
+   "name": "THE REVEAL",
+   "owner": "RUN-C",
+   "desc": "Her fire, small on the vast range drawn in ink.",
+   "takes": [
+    {
+     "stem": "runC_reveal",
+     "off": -3600,
+     "mode": "exact",
+     "note": "RUN-C ink final",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/runC_reveal"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    46,
+    48
+   ]
+  },
+  {
+   "sec": "C17",
+   "f0": 3840,
+   "f1": 4160,
+   "code": "R12",
+   "name": "THE LIVING INK RUN",
+   "owner": "RUN-C",
+   "desc": "A lateral track at beacon height like a scroll unrolling; seven beacons bloom like gold leaf, every two beats.",
+   "takes": [
+    {
+     "stem": "runC_scroll",
+     "off": -3840,
+     "mode": "exact",
+     "note": "RUN-C ink final",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/runC_scroll"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    49,
+    52
+   ]
+  },
+  {
+   "sec": "C18",
+   "f0": 4160,
+   "f1": 4480,
+   "code": "P4",
+   "name": "THE MAP ANSWERS \u00b7 THE ROAD",
+   "owner": "MAP",
+   "desc": "The bloom burns through onto the map: fire runs hill by hill off the sheet; a slow route reaches a ring of stones.",
+   "takes": [
+    {
+     "stem": "map_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 map (C timeline)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/map_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    53,
+    56
+   ]
+  },
+  {
+   "sec": "C19",
+   "f0": 4480,
+   "f1": 4800,
+   "code": "AC1",
+   "name": "THE COUNCIL",
+   "owner": "ACCORD",
+   "desc": "From above, slowly orbiting: rivers of torches converge on a ring of stones; one small figure in a red scarf.",
+   "takes": [
+    {
+     "stem": "accord",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/accord_C",
+      "renders/accord_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    57,
+    60
+   ]
+  },
+  {
+   "sec": "C20",
+   "f0": 4800,
+   "f1": 5120,
+   "code": "AC4",
+   "name": "BRING OUT THE RING",
+   "owner": "ACCORD",
+   "desc": "She sets the Ring on the stone; the orbit; every hand holds a torch and none reaches; one gilded, scarred hand.",
+   "takes": [
+    {
+     "stem": "accord",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/accord_C",
+      "renders/accord_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    61,
+    64
+   ]
+  },
+  {
+   "sec": "C21",
+   "f0": 5120,
+   "f1": 5360,
+   "code": "AC2",
+   "name": "THE BEARER",
+   "owner": "ACCORD + HEROINE",
+   "desc": "The torches come down; top-down and close, her gloved hand goes back to the Ring; the fire rises round her fist.",
+   "takes": [
+    {
+     "stem": "accord",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/accord_C",
+      "renders/accord_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    65,
+    67
+   ]
+  },
+  {
+   "sec": "C22",
+   "f0": 5360,
+   "f1": 5520,
+   "code": "AC3 \u00b7 H3",
+   "name": "THE UNMAKING",
+   "owner": "MONTAGE-3D-2 / ACCORD",
+   "desc": "In the white heart her fingers are forced open; the Ring drops, slumps, runs to a bead; its letters flare and go out.",
+   "takes": [
+    {
+     "stem": "ring",
+     "off": 0,
+     "mode": "v3",
+     "note": "MONTAGE-3D-2 Blender Ring",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/ring_C",
+      "renders/ring_v3"
+     ]
+    },
+    {
+     "stem": "montage3d_v3/melt",
+     "off": 0,
+     "mode": "exact",
+     "note": "MONTAGE-3D-2 Blender Ring (melt)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/montage3d_v3/melt"
+     ]
+    },
+    {
+     "stem": "accord",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/accord_C",
+      "renders/accord_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    68,
+    69
+   ]
+  },
+  {
+   "sec": "C23",
+   "f0": 5520,
+   "f1": 5600,
+   "code": "AC",
+   "name": "THE FIRE REMAINS \u00b7 THE STONE",
+   "owner": "ACCORD",
+   "desc": "Out of the white the fire everyone lit settles warm and steady on the stone where the Ring was; torches dip.",
+   "takes": [
+    {
+     "stem": "accord",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/accord_C",
+      "renders/accord_v3"
+     ]
+    },
+    {
+     "stem": "fireremains",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/fireremains_C",
+      "renders/fireremains_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    70,
+    70
+   ]
+  },
+  {
+   "sec": "C23",
+   "f0": 5600,
+   "f1": 5680,
+   "code": "P4 \u00b7 X1",
+   "name": "THE FIRE REMAINS \u00b7 ROADS OF FIRE",
+   "owner": "MAP",
+   "desc": "Burn-through to the map: from the ring of stones many roads run outward as small flames; hearth glyphs kindle.",
+   "takes": [
+    {
+     "stem": "map_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 map (C timeline)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/map_C"
+     ]
+    },
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    },
+    {
+     "stem": "fireremains",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/fireremains_C",
+      "renders/fireremains_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    71,
+    71
+   ]
+  },
+  {
+   "sec": "C24",
+   "f0": 5680,
+   "f1": 6160,
+   "code": "R15",
+   "name": "THE ILLUMINATION",
+   "owner": "RUN-C",
+   "desc": "The sun breaks over the drawn world's eastern ranges; wherever its light touches, the ink fills with colour.",
+   "takes": [
+    {
+     "stem": "runC_illum",
+     "off": -3282,
+     "mode": "exact",
+     "note": "RUN-C ink final",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/runC_illum"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    72,
+    77
+   ]
+  },
+  {
+   "sec": "C25",
+   "f0": 6160,
+   "f1": 6400,
+   "code": "P2",
+   "name": "THE YEAR OF PLENTY",
+   "owner": "MAP",
+   "desc": "The red book again, the hearth low: a silver-barked tree in golden flower alone in a field; hearth smoke beyond.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    78,
+    80
+   ]
+  },
+  {
+   "sec": "C26",
+   "f0": 6400,
+   "f1": 6720,
+   "code": "P2",
+   "name": "THE HAVENS",
+   "owner": "MAP",
+   "desc": "A harbour at dusk: a grey swan-prowed ship slips out; coast fires catch in farewell; her bound hand raises a light.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    81,
+    84
+   ]
+  },
+  {
+   "sec": "C27",
+   "f0": 6720,
+   "f1": 6960,
+   "code": "P1",
+   "name": "THE LAST PAGES",
+   "owner": "MAP",
+   "desc": "The page turns: blank; and the next. The scorched edges have healed.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    85,
+    87
+   ]
+  },
+  {
+   "sec": "C28",
+   "f0": 6960,
+   "f1": 7200,
+   "code": "X3",
+   "name": "TITLE",
+   "owner": "EDIT over MAP",
+   "desc": "THE LONG DAWN burns onto the blank page in fire-letters and cools to ink.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    88,
+    90
+   ]
+  }
+ ],
+ "text": [
+  {
+   "id": "T1",
+   "line": "In the old story, a Dark Lord forges the Ring in secret.",
+   "f_in": 400,
+   "f_out": 540,
+   "set": "ink",
+   "locked": "In the old story, a Dark Lord forges the Ring in secret."
+  },
+  {
+   "id": "T2",
+   "line": "Ours was kindled from every tale we had ever told.",
+   "f_in": 580,
+   "f_out": 716,
+   "set": "fire",
+   "locked": "Ours was kindled from every tale we had ever told."
+  },
+  {
+   "id": "T5a",
+   "line": "In ours, there was no Dark Lord.",
+   "f_in": 920,
+   "f_out": 1030,
+   "set": "fire",
+   "locked": "In ours, there was no Dark Lord."
+  },
+  {
+   "id": "T5b",
+   "line": "Only the smiths of every realm, each racing to be first.",
+   "f_in": 1056,
+   "f_out": 1190,
+   "set": "fire",
+   "locked": "Only the smiths of every realm, each racing to be first."
+  },
+  {
+   "id": "T6",
+   "line": "Each said: better us than them.",
+   "f_in": 1446,
+   "f_out": 1550,
+   "set": "fire",
+   "locked": "Each said: better us than our enemies."
+  },
+  {
+   "id": "T7",
+   "line": "They delved deeper every year, for the gold ran deeper still.",
+   "f_in": 1710,
+   "f_out": 1850,
+   "set": "ink",
+   "locked": "They delved deeper every year, for every stroke paid."
+  },
+  {
+   "id": "T8a",
+   "line": "In the old story, the Ring is unmade in the fire that forged it.",
+   "f_in": 2500,
+   "f_out": 2680,
+   "set": "fire_black_top",
+   "locked": "In the old story, the Ring is unmade in the fire that forged it."
+  },
+  {
+   "id": "T8b",
+   "line": "Ours was forged at every forge at once.",
+   "f_in": 2590,
+   "f_out": 2680,
+   "set": "fire_black_bottom",
+   "locked": "Ours was forged at every forge at once."
+  },
+  {
+   "id": "T9",
+   "line": "She called for aid.",
+   "f_in": 3640,
+   "f_out": 3760,
+   "set": "ink",
+   "locked": "She called for aid."
+  },
+  {
+   "id": "T10",
+   "line": "And hill by hill, the peoples answered.",
+   "f_in": 4190,
+   "f_out": 4320,
+   "set": "fire",
+   "locked": "And hill by hill, the peoples answered."
+  },
+  {
+   "id": "T11",
+   "line": "Even the wise could not see all ends.",
+   "f_in": 4900,
+   "f_out": 5030,
+   "set": "fire",
+   "locked": "Even the wise could not see all ends."
+  },
+  {
+   "id": "T12",
+   "line": "The one who carried it could not let it go.",
+   "f_in": 5130,
+   "f_out": 5260,
+   "set": "fire",
+   "locked": "The one who carried it could not let it go."
+  },
+  {
+   "id": "T14",
+   "line": "The last pages were left for us.",
+   "f_in": 6790,
+   "f_out": 6930,
+   "set": "ink_page",
+   "locked": "The last pages were left for us."
+  },
+  {
+   "id": "title",
+   "line": "THE LONG DAWN",
+   "f_in": 6980,
+   "f_out": 7160,
+   "set": "title",
+   "locked": "THE LONG DAWN"
+  }
+ ],
+ "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first"
+}
