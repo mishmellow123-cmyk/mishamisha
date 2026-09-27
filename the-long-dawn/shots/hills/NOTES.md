@@ -20,7 +20,8 @@ Sheets: `review/v3/heroine_v3_sheet1.jpg`, `heroine_v3_sheet2.jpg`, `heroine_v3_
 * H3 (hand forced open): not attempted (REVISION 1: optional, last). H4 climb, H6 silhouettes: not started.
 
 **Remaining weaknesses.** Glove fingers a touch thick and smooth at 1:1 (inflate 0.9 mm; a seam would help); the
-pot is CG-clean (no wobble, chips or soot streaks); the frozen melt pool is pure black; the Ring here is ring.py's
+pot was CG-clean (now a hand-thrown tilt, heavier shoulder, chipped lip: not yet seen at full res); the melt pool is
+frosted slate ice (it was a black void); the Ring here is ring.py's
 band (the Blender bake-off may replace it); H1 keeps the v2b timing (the v3 retime waits on the bar maps).
 
 **RENDER_SPEC (for the director; one 4-core box per job, 2 processes x 2 workers, ship jpg):**
@@ -35,11 +36,10 @@ band (the Blender bake-off may replace it); H1 keeps the v2b timing (the v3 reti
 **Review sheet:** `review/v3/heroine_v3_sheet1.jpg` (H1 v2b vs re-key; H1 re-key strike + roar; B dead ember lid-off
 and greyed).
 
-**RUNNING (launched 00:42Z, local 4-core box): H1 RE-KEY full render.** `cloud/jobs/h1_v3_rekey.json` run by
+**DONE (00:42-01:13Z, local 4-core box, 7.6 s/frame wall): H1 RE-KEY full render, 240/240 JPEGs pushed.** `cloud/jobs/h1_v3_rekey.json` run by
 `cloud/run_job.py` from the detached worktree `/home/user/h1job` (commit 216d9f1): src 1200-1439 -> `renders/hills_v3`,
 JPEGs pushed every 5 min to branch **`claude/render-h1-v3-rekey`** (created by hand at 00:57: a detached-HEAD worktree
-cannot push to a branch that does not exist yet; the runner's first rounds failed on that). ~1.5-2 h at full res.
-Runner log: `/home/user/h1job/the-long-dawn/cloud_logs/h1_v3_rekey_runner.log`. If the box died: pull that branch,
+cannot push to a branch that does not exist yet; the runner's first rounds failed on that). Runner log: `/home/user/h1job/the-long-dawn/cloud_logs/h1_v3_rekey_runner.log`. If the box died: pull that branch,
 copy its jpgs' frame numbers out, and relaunch the same job on any box (`--skip-existing` only sees local PNGs).
 * What it is: `render.py --shot beacon_v3` = the accepted v2b take (timing, poses, camera, scarf, breath, sparks,
   fire, world) with `beacon.V3_REKEY = True`: her hands in dark leather gloves (`hsdf3.gloves`: M_GLOVE, +0.9 mm,
