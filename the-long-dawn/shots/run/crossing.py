@@ -1173,7 +1173,12 @@ def work(args):
     look = PI.look
     for f in frames:
         t0 = time.time()
-        img = look.finish(render(f - off, scale=scale, ss=ss, variant=variant), **FINISH)
+        try:
+            img = look.finish(render(f - off, scale=scale, ss=ss, variant=variant), **FINISH)
+        except Exception:
+            import traceback
+            print(f'frame {f} FAILED\n' + traceback.format_exc(), flush=True)
+            raise
         look.save_png(look.frame_path(out, f), img)
         print(f'frame {f} {time.time() - t0:.1f}s', flush=True)
 

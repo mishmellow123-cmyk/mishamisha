@@ -744,7 +744,12 @@ def _work(args):
     numba.set_num_threads(max(1, min(threads, numba.config.NUMBA_NUM_THREADS)))
     for f in frames:
         t0 = time.time()
-        img = PI.look.finish(render(f - CUT0, scale, ss), **FINISH)
+        try:
+            img = PI.look.finish(render(f - CUT0, scale, ss), **FINISH)
+        except Exception:
+            import traceback
+            print(f'frame {f} FAILED\n' + traceback.format_exc(), flush=True)
+            raise
         PI.look.save_png(PI.look.frame_path(out, f), img)
         print(f'frame {f} {time.time() - t0:.1f}s', flush=True)
 
