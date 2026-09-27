@@ -1,4 +1,20 @@
 # >>> RUN-A (A . FALSE DAWN R1, THE CROSSING R6, THE BLUE HOUR R7; next THE WATCHERS R16) - report 27 Sep ~16:05Z <<<
+
+## PAUSED 27 Sep ~16:35Z (director: usage window end). Nothing is rendering. RESUME HERE
+**State.** Everything in this lane is committed and pushed (7c7338c on `claude/v3-runA` and
+`claude/run-a-crossing-greybox-ub8wbz`). THE CROSSING, FALSE DAWN (arc) and THE BLUE HOUR are ready to render on the
+cloud; the jobs are written and not launched (the director launches): `crossing_a_1..8`, `falsedawn_a_1..4`,
+`bluehour_a_1..5` (RENDER_SPEC below). H5 items 1-8 are DONE; item 9 (R16 THE WATCHERS) is not built.
+**Next steps, in order.**
+1. First `git pull --rebase origin claude/long-dawn-v2`; if the rebase rewrites this lane's commits, push with
+   `--force-with-lease=<branch>:<old sha>` (both branches hold only this lane's commits on top of upstream).
+2. If jobs were launched: read `cloud_logs/<job>_status.txt` for any silent job, then review the shipped jpgs in
+   `renders/crossing_A`, `falsedawn_A`, `bluehour_A` (a contact sheet per shot) and fix anything that reads wrong.
+3. R16 THE WATCHERS (backlit silhouettes only): build it in `shots/run/` from the same kit (`sdfppl.traveller`,
+   `bluehour.sitter` and `cowl`, the crossing's keeper staging), write its job files and name its fallback.
+4. Blue-hour polish if time allows: cloaks less like smooth clay (stronger fold normals and mottle), less rose on
+   bar 74, the lantern ~0.1 m further right (it overlaps the right bearer's edge at the end), and the fine wavy lines
+   in the snow of the lantern's pool.
 **THE CROSSING** (`shots/run/crossing.py`, figures `sdfppl.py`), **FALSE DAWN** (`falsedawn.py`) and **THE BLUE HOUR**
 (`bluehour.py`, new) carry every H5 call in RUN-A's area (checklist below) and are ready to render on the cloud:
 finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has been launched by this lane.
