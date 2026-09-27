@@ -159,12 +159,14 @@ def camera(f, W=1920, H=804):
     pos1, yaw1, pitch1, hfov1 = end_cam()
     fw = np.array([math.sin(math.radians(yaw1)), 0.0, math.cos(math.radians(yaw1))])
     pos0 = pos1 - fw * BACK0 + np.array([0.0, UP0, 0.0])
-    e = _ease((f - FR0) / float(T_SETTLE - FR0))
-    yaw = YAW0 + (yaw1 - YAW0) * _ease(((f - FR0) / float(T_SETTLE - FR0)) ** 1.2)
+    # Motion blur samples either side of a frame; clamp before fractional powers at the first frame.
+    u = min(max((f - FR0) / float(T_SETTLE - FR0), 0.0), 1.0)
+    e = _ease(u)
+    yaw = YAW0 + (yaw1 - YAW0) * _ease(u ** 1.2)
     # the height comes down a little later than the travel (a glider flares at the end): no dive at the start
-    eh = _ease(((f - FR0) / float(T_SETTLE - FR0)) ** 1.15)
+    eh = _ease(u ** 1.15)
     pos = pos0 + (pos1 - pos0) * np.array([e, eh, e])
-    pitch = PITCH0 + (pitch1 - PITCH0) * _ease(((f - FR0) / float(T_SETTLE - FR0)) ** 1.3)
+    pitch = PITCH0 + (pitch1 - PITCH0) * _ease(u ** 1.3)
     hfov = HFOV0 + (hfov1 - HFOV0) * e
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
 
