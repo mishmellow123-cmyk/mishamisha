@@ -511,6 +511,11 @@ jobs never change under the director. dusk.py already has v2 WIP (fog 1.15e-4, w
   Nitpicks queued for after 23:30Z: the fire-basket plinth (bset.beacon_base) still uses triangle-fan stones (faint
   seams) -> rebuild with bfig.add_stone as bprops.beacon_base3 (tell RUN-B2: shared with the vigil); RUN-B2's
   bset.summit_snow(G) (old snow + sparse stones on the boss) to switch on together in vigil + crane + settled.
+* 20:52Z: full-res farm stills landed (renders/_farmtest/handback_b_{dawn_a,dawn_b,crane_a}); they confirm the
+  look. Farm speeds: settled ~18 s/frame, crane ~96 s/frame per node. Waiting on the director's approval to launch
+  the five hand-back jobs (`python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/handback_b_{dawn_a,dawn_b,night,crane_a,crane_b}.json --nodes 3`).
+  DUSK v2: job cloud/jobs/dusk_b2.json (out renders/dusk_B2) written; baseline test (v2 WIP on b15, frames
+  0/320/575/600) queued on the farm -> renders/_farmtest/dusk_b2 (log _local_logs/runB/farm_dusk2_t1.log).
 
 # >>> RUN-B STATE AT HANDOFF 3 (new agent RUN-B-3, 27 Sep ~19:10Z) <<<
 **Inherited:** PAUSE 2 state below (DUSK v1 done in renders/dusk_B; hand-back/vigil/reveal coded and tested; jobs
