@@ -138,6 +138,7 @@ class C3Sched:
         return 0.0
 
     def tower_rise_glow(self, t):
+        self._t = t
         return 1.0 - 0.7 * float(smoothstep(T_TOWERS + 70, T_TOWERS + 130, t))
 
     def tower_grow(self, t):
@@ -146,15 +147,45 @@ class C3Sched:
     def tower_extra(self, towers, i, t):
         return 0.0
 
+    _t = 0.0
+    _ash = {}
+
+    def ashlar_k(self, t):
+        """THE FORGING (to 1420): the forges are ashlar stone (no seam grid, no window-cell grid: a lit grid reads
+        as offices at night); blended back to the race's look by 1440, so C7 (already rendered) is unchanged"""
+        return 1.0 - float(smoothstep(T_RACE - 20, T_RACE, t)) if t < T_RACE else 0.0
+
     def seam_k(self, i):
-        """the floor and bay seams, dimmed (a lit grid reads as offices at night): the forges' bands and edges,
-        their throats and the fire in the joints carry them; the far ring dimmer still"""
-        return 0.4 if i < 8 else 0.2
+        old = 0.4 if i < 8 else 0.2
+        return old * (1.0 - self.ashlar_k(self._t))
+
+    def masonry(self, i, pl, t):
+        """(tone per crust point, window-openings kill 0..1): irregular ashlar. Courses of uneven height, joints
+        staggered course by course (no continuous vertical line), each stone its own tone, the joints darker"""
+        b = self.ashlar_k(t)
+        if b <= 0.0:
+            return None
+        if i not in self._ash:
+            r = rng(4400 + i)
+            yb = np.cumsum(r.uniform(0.5, 1.15, 260)) - 30.0
+            self._ash[i] = (yb, r.uniform(0, 3.0, 262), r.uniform(1.0, 2.3, 262), r.uniform(0.7, 1.2, (262, 64)))
+        yb, off, wid, tone = self._ash[i]
+        y = pl[:, 1]
+        c = np.clip(np.searchsorted(yb, y), 1, len(yb) - 1)
+        dy = np.minimum(y - yb[c - 1], yb[c] - y)
+        u = np.arctan2(pl[:, 2], pl[:, 0]) * 2.3 + off[c]
+        q = u / wid[c]
+        blk = np.floor(q).astype(np.int64)
+        fr = q - blk
+        du = np.minimum(fr, 1.0 - fr) * wid[c]
+        j = np.maximum(np.exp(-(dy / 0.05) ** 2), np.exp(-(du / 0.06) ** 2))
+        tn = tone[c, blk % 64] * (1.0 - 0.6 * j)
+        return 1.0 + b * (tn - 1.0), b
 
     def shutter(self, i, t, pl):
         """facade windows: dim embers (a grid of lit windows reads as offices at night); they flare a little on the
-        race's beats"""
-        return 0.12 + 0.35 * self.race(t) * self.beat_pulse(t)
+        race's beats. THE FORGING: none (the throats still burn: scene_b keeps them)"""
+        return (0.12 + 0.35 * self.race(t) * self.beat_pulse(t)) * (1.0 - self.ashlar_k(t))
 
 
 SCHED = C3Sched()

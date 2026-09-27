@@ -1235,6 +1235,9 @@ class Towers:
                 if kind == 0:                                        # the crust: a glowing coal, ash patches, rims
                     key = g['key'][idx]
                     opening = np.where(key >= 0, 0.12, 1.0)
+                    mz = SCHED.masonry(i, pt['pl'], t) if (SCHED is not None and hasattr(SCHED, 'masonry')) else None
+                    if mz is not None:                                # (C3: ashlar stones, no window-cell grid)
+                        opening = 1.0 - mz[1] * (1.0 - opening)
                     ash = smoothstep(0.2, 0.85, 0.35 * nz + 0.65 * nzv)  # glowing coal vs cooler ash, streaked upward
                     grain = 0.85 + 0.3 * rnd
                     L = 0.09 * (0.3 + 1.4 * ash) * (0.8 + 0.4 * nz2) * grain * fl * opening * (1 + 3.0 * base) * heat
@@ -1272,6 +1275,8 @@ class Towers:
                             colE = colE + np.array([1.0, 0.62, 0.33])[None, :] * (bl * lb * face)[:, None]
                     if gild > 0 and not getattr(SCHED, 'gold_overlay', False):
                         colE = colE + _gold_runs(pt['pl'], t, gild, fside, face)
+                    if mz is not None:
+                        colE = colE * mz[0][:, None]
                     self._splat(ctx, i, pt, colE, a, np.clip(ndv, 0.05, 1.0), z, fpx, np.sqrt(a / np.pi) * 1.7)
                     continue
                 if kind == 4:                                        # fire in the joints (masonry / mullions / fissures)
