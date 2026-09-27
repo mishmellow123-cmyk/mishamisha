@@ -133,7 +133,7 @@ def _band_from_start(b_start):
     return np.r_[n, c, b_start[6:8]]
 
 
-def _band_world(az_c, el_c, az_2, el_2, width=0.13, seed=117.0):
+def _band_world(az_c, el_c, az_2, el_2, width=0.065, seed=117.0):     # 0.13 read as a cloud bank
     """A band with its galactic centre at (az_c, el_c) passing through (az_2, el_2) at the vigil's start."""
     def dv(az, el):
         a, e = math.radians(az), math.radians(el)

@@ -31,7 +31,7 @@ import bfig as BF           # noqa: E402  (RUN-B-3's B figure light: sun-side ri
 import bprops as BP         # noqa: E402  (RUN-B-3's cairn3 / child3, shared with the hand-back)
 import keeper as KP         # noqa: E402  (generic star trails)
 import vigil as VG          # noqa: E402  (the night's moon, sky wheel, band)
-from mt import fire as F, figure as FG   # noqa: E402
+from mt import fire as F, figure as FG, sky as SK   # noqa: E402
 from mt.noise import smoothstep   # noqa: E402
 
 CM = PI.CM
@@ -41,7 +41,7 @@ CR = BW.CR_B
 FPS = 24.0
 TESTS = os.path.join(CM.ROOT, 'renders', 'run_b_tests')
 F0, F1 = 1360, 1520
-BAND_GAIN = 0.26             # the Milky Way over her summit (director: stronger; it sits by the moon's glow)
+BAND_GAIN = 0.22             # the Milky Way over her summit (director: stronger; it sits by the moon's glow)
 
 HER = BS.STAND
 _fd = BS.BEACON - HER
@@ -95,6 +95,9 @@ class Reveal:
         self.W, self.H = int(round(1920 * scale)), int(round(804 * scale))
         az, el = VG.moon_at(VG.F0)
         self.moon = BS.moon_vec(el, az)
+        Rm = KP._rotmat(KP.POLE, VG.theta(VG.F0))
+        n_world = Rm @ VG.BAND[0:3]
+        self.band_stars = SK.make_stars(9000, 202, lum_scale=2.2, band=(n_world, 0.05), band_frac=1.0)
 
     def render(self, f):
         t = f / FPS
@@ -119,6 +122,9 @@ class Reveal:
         zb = dist.copy()
         sky = (dist > 1e8).astype(np.float32)
         VG.draw_sky(img, G, scam, sky, f, 1.0, self.ss, th=VG.theta(VG.F0), band_gain=BAND_GAIN)
+        # the Milky Way's own stars: a dense field of faint stars along the band (it must read as stars, not cloud)
+        SK.splat_stars(img, scam, self.band_stars, sky, t=t, gain=self.ss * self.ss * 1.4,
+                       scale=scam.f / (0.5 * 1920 / math.tan(math.radians(22.0))))
         # the summit: the cairn, the beacon roaring up, her
         md = self.moon
         lights = [dict(pos=BS.BEACON + np.array([0, 1.3, 0]), col=F.FIRE_LIGHT, I=1.8 * lv * F.flicker(t, 3), r0=0.5),
