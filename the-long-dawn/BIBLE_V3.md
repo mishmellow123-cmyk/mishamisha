@@ -43,6 +43,10 @@ The director accepted the v3 red-team (`review/v3_redteam.md`, read §§1, 2, 5)
 # (race) AND *Even the wise could not see all ends.* (council): only one "Even the wise". The Ring close-up bake-off is the BLENDER lane
 # (MONTAGE-3D-2), not MOTION-LAB; MOTION-LAB keeps R&D + the challenger slot for A's fire.
 
+# B DECISION (06:40Z): THE LIFETIME FAILED its gate (two fresh critics: a slideshow; no one could say why she returns) → B = THE VIGIL,
+# one night in RUN-B's summit set (shelf + NE arête), same 68 bars; M2/M3 cutaways CUT (game-screen and LOTR torch-thrust reads);
+# the far answer only as pinpricks in her frame; H1 in B cropped to hands, tinder and sparks. Showpieces: HAND-BACK #1, DUSK.
+
 # REVISION 1 · LOCKED BEAT SHEETS
 
 *SHOWRUNNER-REV, 27 Sep. Production and the composer lock to these sheets and to `music/v3/barmap_{A,B,C}.json`.
