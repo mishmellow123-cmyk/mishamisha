@@ -235,7 +235,7 @@ def composite_valley(img1, D1, img2, D2, x0, y0, C, VP, KN, out_alpha):
 
 @njit(fastmath=True, cache=True)
 def _splat_over(img, zb, sx, sy, z, rpx, a0, col, zbias):
-    """Soft discs composited OVER the image (not added), depth-tested: thin smoke."""
+    """Soft discs composited OVER the image (not added), depth-tested (zbias: one per disc): thin smoke."""
     H, W = img.shape[0], img.shape[1]
     for k in range(sx.shape[0]):
         R = rpx[k] * 2.2 + 1.0
@@ -245,7 +245,7 @@ def _splat_over(img, zb, sx, sy, z, rpx, a0, col, zbias):
         yb = int(min(H, sy[k] + R + 1))
         for py in range(ya, yb):
             for px in range(xa, xb):
-                if zb[py, px] < z[k] - zbias:
+                if zb[py, px] < z[k] - zbias[k]:
                     continue
                 u = (px + 0.5 - sx[k]) / rpx[k]
                 v = (py + 0.5 - sy[k]) / rpx[k]
@@ -504,7 +504,7 @@ def people():
                (-4.8, -5.2), (3.8, -4.4), (-0.8, -6.8), (3.0, 5.4), (-6.2, -1.6)]
     poses = ['knees'] * 9 + ['cross'] * 5 + ['back'] * 4 + ['side'] * 4 + ['lie'] * 2
     for (cf, cr) in centres:
-        n = int(rng.integers(2, 5))
+        n = int(rng.integers(3, 6))
         for m in range(n):
             for _try in range(30):
                 f_ = cf + rng.normal() * 0.8
