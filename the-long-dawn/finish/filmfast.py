@@ -237,14 +237,20 @@ def _kernel_b(src, le, ee, acc, hal, noise, gamt, gtab, l2, l3, le_min, le_span,
                     fb2 = val
             s0, s1, s2 = src[y, x, 0], src[y, x, 1], src[y, x, 2]
             fl = (fb0, fb1, fb2)
-            sl = (s0, s1, s2)
+            a0 = _dec(s0)
+            a1 = _dec(s1)
+            a2 = _dec(s2)
+            al = (a0, a1, a2)
+            yy = 0.2126 * a0 + 0.7152 * a1 + 0.0722 * a2          # below the renders' film-base black: untouched
+            tw = min(max((yy - 0.2 * lift) / (0.8 * lift), 0.0), 1.0)
+            mw = mix * tw * tw * (3 - 2 * tw)
             o0 = 0.0
             o1 = 0.0
             o2 = 0.0
             for c in range(3):
                 f = lift + (1.0 - lift) * _dec(fl[c])
-                a = _dec(sl[c])
-                v = _enc(a + mix * (f - a))
+                a = al[c]
+                v = _enc(a + mw * (f - a))
                 if c == 0:
                     o0 = v
                 elif c == 1:

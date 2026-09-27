@@ -360,7 +360,7 @@ class Look:
         if self.black_lift > 0:                          # the source's film-base black (look.finish lift)
             f = self.black_lift + (1.0 - self.black_lift) * f
         a = _srgb_decode(src)
-        out = _srgb_encode(a + min(self.mix, 1.0) * (f - a))
+        out = _srgb_encode(a + (min(self.mix, 1.0) * floor_weight(a))[..., None] * (f - a))
         if self.fire_guard or self.fire_restore > 0:     # on the final colour: the rule holds for what ships
             out = fire_hue(src, out, lin709, self.fire_restore if self.fire_restore > 0 else 0.0)
         return np.clip(out, 0, 1)
@@ -377,6 +377,14 @@ class Look:
         amp = 0.045 * self.grain_amt * np.sqrt(np.clip(lum, 0, 1)) * (1.15 - np.clip(lum, 0, 1))
         noise = 0.8 * g[..., None] + 0.35 * gc
         return _srgb_encode(lin * np.exp(amp[..., None] * noise))
+
+
+def floor_weight(lin):
+    """1 at and above the renders' own film-base black (look.finish's lift, linear 0.004), fading to 0 at a fifth of
+    it: whatever an edit grade, a fade or a slate took below the floor stays exactly as it was (never lifted)."""
+    y = lin @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    t = np.clip((y - 0.2 * LIFT) / (0.8 * LIFT), 0.0, 1.0)
+    return (t * t * (3 - 2 * t)).astype(np.float32)
 
 
 def _hue_sat(rgb):

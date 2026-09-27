@@ -1,6 +1,6 @@
 # FINISH (lane FINISH): the films' photographic finish
 
-## >>> STATE AT HANDOFF (FINISH, 27 Sep ~19:50Z; new lane, first agent) <<<
+## >>> STATE AT HANDOFF (FINISH, 27 Sep ~20:20Z; new lane, first agent) <<<
 
 - **Brief (director, ~19:10Z):** the finish = tone curve, film print emulation, grain, halation, with spektrafilm
   (github.com/andreavolpato/spektrafilm, v0.3.3, GPLv3 code, CC BY-SA 4.0 LUTs). (1) design the insertion point;
@@ -9,11 +9,35 @@
   approves ONE look: integrate it into EDIT's delivery chain (edit/deliver.sh, assemble.py) as the final per-frame
   stage for all masters, coordinated with EDIT-2 via a "FINISH" block in edit/NOTES_v3.md; (4) the credit line in
   edit/CREDITS.md.
-- **Done so far:** spektrafilm v0.3.3 in its own venv `~/.venvs/finish` (Python 3.13; NOT the shared longdawn venv);
-  3-LUT bundles for Vision3 500T / 250D / 50D x 2383 / 2393 baked at 65^3 (`finish/bake_luts.sh`, ~35 s each; cubes
-  git-ignored); `finish/filmfinish.py` (the runtime: numpy + cv2 + numba, runs in the edit's venv, never imports
-  spektrafilm); `finish/lookdev.py` (hero before/after pairs, contact sheets, flicker check).
-- **Waiting on:** the director's pick of ONE look from the sheets; then the integration (step 3).
+- **Done:** (1) design below; (2) sheets + pairs + PICK page + fire-hue table + flicker check in
+  `_local_logs/review/finish/`; (4) `edit/CREDITS.md`; the FINISH block in `edit/NOTES_v3.md` (the integration plan
+  for EDIT-2). Code: `finish/filmfinish.py` (reference), `finish/filmfast.py` (delivery path, numba, matches the
+  reference to 0.14 of an 8-bit code), `finish/stage.py` (the edit stage: per-take mode, `Finisher`, `code_id()` for
+  deliver's cache key), `finish/lookdev.py`, `finish/picker.py`, `finish/bake_luts.sh`. Commit bbc30bd + later.
+- **WAITING ON THE DIRECTOR:** the pick of ONE look (recommended: `500T_2383_fire`). Then (3): wire `stage.Finisher`
+  into `assemble.Ctx.picture` behind a `finish` profile flag (masters on, animatics off) and `stage.code_id()` into
+  `deliver._code_hash()`; test one short shot at full res through `deliver.py`; tell EDIT-2.
+- **Venvs:** spektrafilm lives ONLY in `~/.venvs/finish` (py3.13) for the LUT bake; the edit stage runs in
+  `~/.venvs/longdawn` (numpy/cv2/numba) and never imports spektrafilm. LUTs: `finish/luts/` (git-ignored; re-bake
+  with `finish/bake_luts.sh`, ~35 s a stock; the farm is not needed for any of this).
+
+## Look-dev results (27 Sep ~20:10Z)
+
+- **Flicker (48 frames, A 1600-1647, embers_A3 moving, `500T_2383_fire` through the delivery path):** the finish adds
+  at most 0.16% frame-to-frame mean-luminance change (mean 0.05%) on top of the source's own (up to 4.8%); out/src
+  ratio std 0.003. No flicker. Grain renews every frame (high-pass frame-to-frame correlation 0.48 = the source's
+  own texture; grain alone would be 0).
+- **Fire hue** (`fire_hue.txt`, mean hue of warm bright pixels): the `_fire` looks hold every fire at or below the
+  source's hue (0.3-3 deg MORE orange, saturation +0.05-0.10); plain `500T_2383` drifts up to +2.4 deg yellow (the
+  per-pixel 2-deg cap with a soft edge), so it is not recommended.
+- **Tone:** mid-grey unchanged; the print's toe deepens 0.08-0.2 (e.g. 0.10 -> 0.084); the renders' film-base black
+  (display 0.052) is held (-> 0.054); anything an edit grade or fade took below it is left untouched.
+- **Grain** at 0.6 of spektrafilm's physical default (13 um a pixel): 2-3 codes RMS in 8-bit mid-tones; 85% of the
+  field shared by the three layers (the first try, 70% shared at 1.0, read as coloured video noise on the skies).
+- **Known colour cost:** the film cools B's dusk mauve toward lavender (sky R-G 0.072 -> 0.042 with 500T, 0.056
+  with 250D). If DUSK's Belt of Venus must keep its pink, use 250D or add a hue hold on pinks (cheap).
+- **C:** MAP-L's book and map (`book_C`, `map_C`) and C's H1 are Hill-curved: full finish. RUN-C's ink (`runC_*`)
+  is plain sRGB: grain only (`ink_grain`); running the film on it darkens and oranges the parchment (C5/C6 show it).
 
 ## Findings that change the brief
 
@@ -47,28 +71,31 @@
   2. **Film:** ACEScg -> ACEScct -> L1 (film log exposure) -> **halation** in linear exposure (spektrafilm's model:
      red 0.05 / green 0.015 / blue 0, 65 um first bounce at 13 um per pixel, 3 bounces decaying 0.5, energy
      conserving) -> L2 (negative density) -> **grain** in density (spektrafilm's particle statistics, Gaussian limit,
-     dye-cloud blur 0.65 px, 70% of the field shared by the three layers) -> L3 (print + scan to sRGB).
+     dye-cloud blur 0.65 px, 85% of the field shared by the three layers, 0.6 of the physical amount) -> L3
+     (print + scan to sRGB).
   3. **Print grey balance:** per-channel 1-D curves that make the neutral scale neutral (2383's base prints warm and
      its toe cool) and let the print's white (0.88 as baked) reach display white above mid-grey. Mid-grey unchanged.
-  4. **Fire rule (orange-gold):** where the source is warm, the result's hue may never move more than 2 deg toward
-     yellow of the source; `_fire` looks also turn it 40% back toward the scene's own emission hue (the linear ratio
+  4. **Fire rule (orange-gold), on the FINAL colour:** where the source is warm, the result's hue may never move more
+     than 2 deg toward yellow of the source; `_fire` looks also turn it 40% back toward the scene's own emission hue (the linear ratio
      before the Hill curve), never redder than 22 deg.
-  5. **Restraint:** the source's film-base black (the 0.004 lift) is kept, and the film result is blended with the
-     source in linear light (mix 0.75 in the first sheets).
+  5. **Restraint:** the source's film-base black (the 0.004 lift) is kept, the film result is blended with the
+     source in linear light (mix 0.75), and anything below the renders' floor (an edit grade, a fade) is untouched.
 - **Rejected for today: (b) linear EXR out of look.py for future renders.** Almost every final is already rendered or
   rendering to 8-bit display frames; switching only future renders would give two looks in one film, and EXR at
   1920x804 is ~9 MB a frame (disk and farm transport both say no). A film curve inside look.py for new renders has the
   same two-looks problem. If a re-render wave ever happens, `look.finish(..., curve='linear')` + EXR would let FINISH
   skip the inversion; nothing else would change.
-- **Cost:** ~2-4 s a frame on the loaded Mac in the look-dev path (numpy); the delivery version will fuse the per-pixel
-  steps into numba kernels (target well under 0.5 s a frame) before it goes into deliver.py.
+- **Cost:** reference path (numpy) 2-4 s a frame; delivery path (`filmfast.py`, two numba kernels) ~0.85 CPU-s a
+  frame at 1920x804 on the loaded Mac, so a cold rebuild of all four masters is ~4.5 CPU-hours (~1.5 h on 3 slots),
+  once; after that the chain stays incremental. The farm cannot help: the frames live on this Mac, not in git.
 
 ## Look-dev (step 2)
 
 - Heroes (`finish/lookdev.py` HEROES), taken from the edit itself (`assemble.Ctx.picture`, clean, full res):
   A: embers_A3 f1160, f1700, f1400 (towers); H1 re-key (h1_v3h5 src 1480, A f3604); KARST v3 (A f3830); DESERT v3
   (A f3890). B: dusk_B f120, f330, f600; B's H1 crop (strike 3, catch) and roar crop (B f1178, f1316, f1364).
-  C: X1 letters test (f700); map_C f1960, f2060; dawn_C f2450, f2600; H1 in C's parchment grade (f3044).
+  C: MAP-L's v3 book_C farm tests f175, f728 (the letters kindle), f6600 (the Havens page); H1-C's catch in the
+  parchment grade (C f3316); RUN-C's ink farm tests reveal_h f114, illum_d f2480 (C's finals are not on the Mac).
 - Looks: `500T_2383` (fire guard only), `500T_2383_fire`, `250D_2383_fire`, `500T_2393_fire`; C's ink pages:
   `ink_grain` (grain only) vs `500T_2383`.
 - Outputs: `_local_logs/review/finish/sheet_{A,B,C}.jpg`, `pairs/<hero>_<look>.jpg` (full-res crops, BEFORE | AFTER),

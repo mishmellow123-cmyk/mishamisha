@@ -111,9 +111,10 @@ def run(heroes, looks_film, looks_ink, overrides=None):
     os.makedirs(OUT, exist_ok=True)
     cache = {}
     looks = {}
+    import filmfast
     for n in sorted(set(looks_film) | set(looks_ink)):
-        looks[n] = FF.make(n, **(overrides or {}))
-        print(f'look {n}: EV gain {np.log2(looks[n].gain):+.2f}', flush=True)
+        looks[n] = filmfast.Fast(FF.make(n, **(overrides or {})))          # the delivery path itself
+        print(f'look {n}: EV gain {np.log2(looks[n].look.gain):+.2f}', flush=True)
     rows = {}
     for hero in heroes:
         hid, cut, f, lab, box, fam = hero[:6]
