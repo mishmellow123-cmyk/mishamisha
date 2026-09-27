@@ -370,7 +370,7 @@ def _unit(v):
 
 
 def walker(sc, feet, w, phase, rgb, lantern=None, staff=False, pack=True, height=1.0, lean=0.08, hood=True,
-           carry=None, arm_out=0.0, carry_side=1.0):
+           carry=None, arm_out=0.0, carry_side=1.0, lantern_side=1.0):
     """A roped walker in a hooded parka, seen at any angle. feet: ground point under the pelvis; w: walking
     direction (horizontal unit); phase: walk-cycle phase (radians). lantern: None, or 'hand' -> returns the
     lantern's world position (it hangs from the leading hand, swinging with the step). carry: None, or
@@ -434,22 +434,25 @@ def walker(sc, feet, w, phase, rgb, lantern=None, staff=False, pack=True, height
     else:
         # the lantern hand leads a little; the other hand holds a staff or swings
         sw = 0.20 * math.sin(phase + math.pi)
-        hand_l = shR + (w * (0.18 + 0.1 * sw) - up * 0.52 - s * (0.06 + arm_out)) * h
-        el_l = shR + (w * 0.05 - up * 0.27 - s * 0.05) * h
-        sc.cone(shR, el_l, 0.058 * h, 0.05 * h, 0, 0.02)
+        # the lantern hand: right (lantern_side > 0) or left; the other hand holds a staff or swings
+        sl = -s if lantern_side > 0 else s
+        shA, shB = (shR, shL) if lantern_side > 0 else (shL, shR)
+        hand_l = shA + (w * (0.18 + 0.1 * sw) - up * 0.52 + sl * (0.06 + arm_out)) * h
+        el_l = shA + (w * 0.05 - up * 0.27 + sl * 0.05) * h
+        sc.cone(shA, el_l, 0.058 * h, 0.05 * h, 0, 0.02)
         sc.cone(el_l, hand_l, 0.05 * h, 0.044 * h, 0, 0.02)
         if staff:
-            hand_s = shL + (w * 0.22 - up * 0.38 + s * 0.08) * h
-            el_s = shL + (w * 0.02 - up * 0.26 + s * 0.08) * h
-            sc.cone(shL, el_s, 0.058 * h, 0.05 * h, 0, 0.02)
+            hand_s = shB + (w * 0.22 - up * 0.38 - sl * 0.08) * h
+            el_s = shB + (w * 0.02 - up * 0.26 - sl * 0.08) * h
+            sc.cone(shB, el_s, 0.058 * h, 0.05 * h, 0, 0.02)
             sc.cone(el_s, hand_s, 0.05 * h, 0.044 * h, 0, 0.02)
-            tip = feet + w * (0.55 + 0.15 * math.sin(phase)) * h + s * 0.2 * h
+            tip = feet + w * (0.55 + 0.15 * math.sin(phase)) * h - sl * 0.2 * h
             sc.cone(hand_s + up * 0.25 * h, tip, 0.016, 0.014, 2, 0.0)
         else:
             sw2 = -sw
-            hand_s = shL + (w * (0.12 * sw2) - up * 0.55 + s * 0.05) * h
-            el_s = shL + (w * 0.03 * sw2 - up * 0.28 + s * 0.04) * h
-            sc.cone(shL, el_s, 0.058 * h, 0.05 * h, 0, 0.02)
+            hand_s = shB + (w * (0.12 * sw2) - up * 0.55 - sl * 0.05) * h
+            el_s = shB + (w * 0.03 * sw2 - up * 0.28 - sl * 0.04) * h
+            sc.cone(shB, el_s, 0.058 * h, 0.05 * h, 0, 0.02)
             sc.cone(el_s, hand_s, 0.05 * h, 0.044 * h, 0, 0.02)
         if lantern == 'hand':
             # hanging lantern: a small pendulum lagging the hand

@@ -230,9 +230,9 @@ def glow_params(design, I):
     GP[13] = math.radians(13.0)
     GP[14] = math.radians(42.0)
     GP[15] = DESIGNS.index(design)
-    GP[16] = {'arc': 0.40, 'cone': 0.30, 'veil': 0.75}[design]
+    GP[16] = {'arc': 0.95, 'cone': 0.30, 'veil': 0.75}[design]
     GP[17] = 0.032
-    GP[18] = {'arc': -0.30, 'cone': -0.34, 'veil': -0.14}[design]
+    GP[18] = {'arc': -0.22, 'cone': -0.34, 'veil': -0.14}[design]
     GP[19] = 5500.0
     GP[20:23] = lin('#04071A') * 0.9
     GP[23:26] = lin('#141C3C') * 0.8

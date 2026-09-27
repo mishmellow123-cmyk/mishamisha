@@ -9,6 +9,12 @@ under-glow are must-haves).*
 * `scratchpad/bg_fd.sh` (00:58Z): FALSE DAWN, three designs at 0.5 scale (frames 160, 300, 420) ->
   `renders/falsedawn_A/half/{arc,cone,veil}`, then the arc at full res -> `renders/falsedawn_A/full_arc`.
 * **Do not edit `crossing.py` while the chain runs**: later stages start new processes that import it.
+* 01:03Z changes (picked up by `grey_q_few` and `grey_h`, NOT by `grey_q`): about half the walkers carry the lantern
+  on the far side (their bodies silhouette against their own light: less "string of lights"); the rope much subtler
+  (it had been stringing the lights together like a festoon); the red under-glow +50% and deeper red (it now reads
+  as a dull smoulder along the horizon band). FALSE DAWN arc: a thicker high deck silvered from beneath (the bible's
+  "silvers the undersides of high cloud"); `scratchpad/bg_fd2.sh` renders it to `renders/falsedawn_A/full_arc2`
+  (full res, frames 300, 420) and `half_arc2` (8 frames across the swell).
 * NEXT on resume: contact sheets from grey_q / grey_h / half (-> review/v3/*.jpg); judge main vs fewer-larger at 0.5
   scale; the fixes below; commit + push `claude/v3-runA`; hand the director the RENDER_SPEC.
 

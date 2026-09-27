@@ -319,7 +319,7 @@ def underglow(t):
     a = sky_angle(t)
     T = _ug_table()
     out = []
-    col = np.array([1.0, 0.20, 0.055]) * 1.0
+    col = np.array([1.0, 0.16, 0.035]) * 1.5
     for x, z, rad, a_out, g, ph in T:
         live = 1.0 - smoothstep(a_out - 3.5, a_out, a)
         if live <= 0.0:
@@ -604,7 +604,7 @@ def build_scene(t, cfg):
         ph = walk_phase(S_[i], i)
         o = SP.walker(sc, P[i], Wd[i], ph, pal[int(_hh(k, 11) * len(pal))], lantern='hand',
                       staff=_hh(k, 12) < 0.35, pack=_hh(k, 13) < 0.8, height=0.93 + 0.14 * _hh(k, 14),
-                      lean=0.06 + 0.08 * _hh(k, 15))
+                      lean=0.06 + 0.08 * _hh(k, 15), lantern_side=1.0 if _hh(k, 16) < 0.45 else -1.0)
         waists.append(o['waist'])
         top = o['lantern']
         I = small_lantern_I(k, t)
@@ -651,11 +651,11 @@ def draw_rope(img, zb, scam, waists, lights, md, mf):
             l2 = np.sum((pts - li[None, :3]) ** 2, axis=1)
             cols += li[3:6][None] * (li[6] / (l2 + li[7] ** 2))[:, None] * 0.6
         cols += np.array([0.42, 0.52, 0.72])[None] * 0.25 * mf
-        cols *= np.array([0.16, 0.12, 0.08])[None]
+        cols *= np.array([0.16, 0.12, 0.08])[None] * 0.35
         for m in range(len(pts) - 1):
             zz = 0.5 * (z[m] + z[m + 1])
             wpx = max(0.012 * scam.f / zz, 0.5)
-            a_ = min(0.012 * scam.f / zz / 0.5, 1.0)
+            a_ = min(0.012 * scam.f / zz / 0.5, 1.0) ** 1.5
             c = 0.5 * (cols[m] + cols[m + 1]) * a_
             # rope: dark line (occluding) plus its lit colour
             _rope_seg(img, zb, sx[m], sy[m], sx[m + 1], sy[m + 1], zz, wpx, c, a_ * 0.85)
