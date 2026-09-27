@@ -1,4 +1,4 @@
-# >>> HEROINE-v3 (2026-09-27, lane `heroine`, branch claude/v3-heroine): STATE AT 01:08Z (WIP) <<<
+# >>> HEROINE-v3 (2026-09-27, lane `heroine`, branch claude/v3-heroine): STATE AT 01:10Z (WIP) <<<
 
 **Read with BIBLE_V3 REVISION 1** (director, 00:40Z): H1 re-key (B7: face never lit or in focus; tinder, gloves,
 sparks, breath, scarf; head a rim-lit silhouette at most); FIRE TEST = Bag End (the Ring on the tip of her steel IN
@@ -55,8 +55,13 @@ blunt dark fingers descend like a claw. The full-res stills in sheet 2 predate t
 * camera raised to ~45 deg down (`Find.camera`): her gloved hand now reads as a SILHOUETTE against the moonlit snow
   (no detail needed = no doll), and the Ring's letters warm as her fingers come near (`near`, 3612-3668) and light
   the glove and the hollow from below: the temptation is the key light;
-* still to do: a natural thumb-and-index pinch (the silhouette at 3640 is a clamp-like mass), the frozen pool is
-  pure black (give it the snow lip's reflection and a little frost), her dark body band at the top edge.
+* VERDICT 01:09Z: the hand closing FAILS (at 3630-3645 with the shoulders lowered so she can reach, the glove
+  silhouette breaks into floating finger segments: a claw read) -> FALLBACK NOW per the rule: the Find is the band in
+  the hollow (flash reveal 3557+ and the letters' glow; `find_3560.png` re-rendered full res with the fixes), then cut
+  to her closed fist (H1 close-up / the fire test). Next attempt, if the hand is wanted back: a pinch posed in the
+  hand lab (`hero.hand` curls ~(0.40, 0.70, 0.85, 0.92), thumb 0.6, fdir (-0.6,-0.75,0.1), palm (-0.55,0.45,0.7) read
+  as a clean C-shaped pinch against snow) with the wrist placed so the hand is not foreshortened, and the arm
+  entering from frame right; the pool is pure black (give it the lip's reflection and some frost).
 
 **RENDER_SPECs (not launched; each waits on its look being approved):** `cloud/jobs/h5_deadember_b.json` (B 960-1199 ->
 `renders/heroine_B`), `h2_find_c.json` (C 3557-3683 -> `renders/heroine_C`), `h2_firetest_c.json` (C 4040-4183);
