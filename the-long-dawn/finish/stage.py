@@ -18,7 +18,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 os.environ.setdefault('NUMBA_CACHE_DIR', os.path.join(HERE, '.numba'))
 
-LOOK = os.environ.get('FINISH_LOOK', '500T_2383_fire')      # the director's pick goes here
+LOOK = os.environ.get('FINISH_LOOK', '250D_2383_fire')      # the director's pick (27 Sep ~20:35Z)
 INK_LOOK = 'ink_grain'
 INK_PREFIXES = ('runC_',)                                  # stems whose frames are plain sRGB (no Hill curve)
 

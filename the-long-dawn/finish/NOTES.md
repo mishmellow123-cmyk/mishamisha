@@ -14,9 +14,19 @@
   for EDIT-2). Code: `finish/filmfinish.py` (reference), `finish/filmfast.py` (delivery path, numba, matches the
   reference to 0.14 of an 8-bit code), `finish/stage.py` (the edit stage: per-take mode, `Finisher`, `code_id()` for
   deliver's cache key), `finish/lookdev.py`, `finish/picker.py`, `finish/bake_luts.sh`. Commit bbc30bd + later.
-- **WAITING ON THE DIRECTOR:** the pick of ONE look (recommended: `500T_2383_fire`). Then (3): wire `stage.Finisher`
-  into `assemble.Ctx.picture` behind a `finish` profile flag (masters on, animatics off) and `stage.code_id()` into
-  `deliver._code_hash()`; test one short shot at full res through `deliver.py`; tell EDIT-2.
+- **DIRECTOR'S PICK (27 Sep ~20:35Z): `250D_2383_fire`, blend 0.75, grain 0.5 (what he approved by eye; the finer
+  250D grain was his reason: the rose/Belt-of-Venus pink is load-bearing across the trilogy and 500T cooled it to
+  lavender), C's ink grain only.** `finish/stage.py` LOOK = `250D_2383_fire`.
+- **Wiring (step 3), `finish/wire_edit.py`** (idempotent anchored edits to edit/assemble.py + edit/deliver.py):
+  `assemble._init(..., finish=None)` wraps the worker Ctx's `picture` with `_finishing()` (no Ctx method changes, so
+  deliver's frame-code hash and every existing segment key stay valid); `deliver.PROFILES['master']['finish']=True`;
+  master segments with rendered frames are keyed with `_finish_id()` (look + `stage.code_id()`); new renders are
+  finished at once; the old unfinished segments are a BACKLOG finished `FINISH_BUDGET` frames (default 1200) per film
+  per run, so the one-time ~4.5 CPU-h spreads over the watcher's refreshes; `FINISH_ALL=1` clears it in one run. The
+  log line and the build stats carry `finish backlog N segments (F f) left`. Animatics: no finish.
+- **Sanity check before the wiring goes live (director):** a finished B master built by the wired copies
+  (`the-long-dawn/.finish_wire/`, a throwaway test dir) into a scratch folder, then EDIT's own QC; and the banding
+  check on the darkest night skies through the real master encode (`_local_logs/review/finish/qc/`).
 - **Venvs:** spektrafilm lives ONLY in `~/.venvs/finish` (py3.13) for the LUT bake; the edit stage runs in
   `~/.venvs/longdawn` (numpy/cv2/numba) and never imports spektrafilm. LUTs: `finish/luts/` (git-ignored; re-bake
   with `finish/bake_luts.sh`, ~35 s a stock; the farm is not needed for any of this).
@@ -35,7 +45,12 @@
 - **Grain** at 0.6 of spektrafilm's physical default (13 um a pixel): 2-3 codes RMS in 8-bit mid-tones; 85% of the
   field shared by the three layers (the first try, 70% shared at 1.0, read as coloured video noise on the skies).
 - **Known colour cost:** the film cools B's dusk mauve toward lavender (sky R-G 0.072 -> 0.042 with 500T, 0.056
-  with 250D). If DUSK's Belt of Venus must keep its pink, use 250D or add a hue hold on pinks (cheap).
+  with 250D): the reason the director picked 250D.
+- **Halation strength:** ours is spektrafilm's schema default (red 0.05, green 0.015 at 65 um), about 3x its
+  Vision3 'cine, strong anti-halation' preset (0.015 / 0.005 at 50 um: rem-jet all but kills it). Kept, because it
+  is what the director approved on the sheets; drop to the preset if a red rim ever reads as a glow fringe.
+- **Bitrate:** at the master's CRF 14 the finished embers shot came out SMALLER (16.2 vs 17.7 Mb/s): the print toe
+  swallows the renders' dither noise; the grain at 0.5 costs less than it saves.
 - **C:** MAP-L's book and map (`book_C`, `map_C`) and C's H1 are Hill-curved: full finish. RUN-C's ink (`runC_*`)
   is plain sRGB: grain only (`ink_grain`); running the film on it darkens and oranges the parchment (C5/C6 show it).
 
