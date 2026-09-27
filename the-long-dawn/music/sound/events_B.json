@@ -1,0 +1,463 @@
+[
+ {
+  "id": "B.wind.dusk",
+  "kind": "bed",
+  "t0": 0.0,
+  "t1": 27.5,
+  "level": -37.0,
+  "gain": -6.8,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "B.wind.climb",
+  "kind": "bed",
+  "t0": 23.333,
+  "t1": 37.5,
+  "level": -40.9,
+  "gain": -8.8,
+  "src": [
+   "fs:725630",
+   "fs:754256"
+  ]
+ },
+ {
+  "id": "B.spindrift",
+  "kind": "bed",
+  "t0": 26.667,
+  "t1": 36.667,
+  "level": -44.8,
+  "gain": 0.8,
+  "src": [
+   "fs:754256"
+  ]
+ },
+ {
+  "id": "B.wind.ember",
+  "kind": "bed",
+  "t0": 35.833,
+  "t1": 57.5,
+  "level": -47.7,
+  "gain": -17.0,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "B.fire.reveal",
+  "kind": "bed",
+  "t0": 54.833,
+  "t1": 64.167,
+  "level": -65.1,
+  "gain": -35.6,
+  "src": [
+   "fs:595483",
+   "fs:681366",
+   "fs:681367"
+  ]
+ },
+ {
+  "id": "B.wind.night1",
+  "kind": "bed",
+  "t0": 55.833,
+  "t1": 84.167,
+  "level": -44.4,
+  "gain": -15.7,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "B.fire.vigil",
+  "kind": "bed",
+  "t0": 63.333,
+  "t1": 202.5,
+  "level": -68.1,
+  "gain": -38.0,
+  "src": [
+   "fs:595483",
+   "fs:681366",
+   "fs:681367"
+  ]
+ },
+ {
+  "id": "B.wind.life",
+  "kind": "bed",
+  "t0": 82.5,
+  "t1": 160.833,
+  "level": -47.0,
+  "gain": -16.6,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "B.storm.year_2",
+  "kind": "bed",
+  "t0": 82.917,
+  "t1": 90.417,
+  "level": -35.6,
+  "gain": -4.4,
+  "src": [
+   "fs:754256"
+  ]
+ },
+ {
+  "id": "B.snow.year_2",
+  "kind": "bed",
+  "t0": 83.333,
+  "t1": 90.0,
+  "level": -34.7,
+  "gain": 16.4,
+  "src": [
+   "fs:754256"
+  ]
+ },
+ {
+  "id": "B.wind.far_peak_1",
+  "kind": "bed",
+  "t0": 103.333,
+  "t1": 110.0,
+  "level": -49.8,
+  "gain": -19.3,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "B.wind.far_peak_2",
+  "kind": "bed",
+  "t0": 130.0,
+  "t1": 136.667,
+  "level": -49.3,
+  "gain": -15.8,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "B.wind.high",
+  "kind": "bed",
+  "t0": 159.167,
+  "t1": 177.083,
+  "level": -41.2,
+  "gain": -10.9,
+  "src": [
+   "fs:725630",
+   "fs:754256"
+  ]
+ },
+ {
+  "id": "B.air.dawn",
+  "kind": "bed",
+  "t0": 176.667,
+  "t1": 226.667,
+  "level": -51.5,
+  "gain": -21.4,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "B.lid",
+  "kind": "event",
+  "t": 38.3333,
+  "level": -45.5,
+  "gain": -22.9,
+  "clip_start_s": 38.2333,
+  "hit_offset_s": 0.1,
+  "src": [
+   "fs:453789"
+  ]
+ },
+ {
+  "id": "B.blow_ember",
+  "kind": "event",
+  "t": 40.8333,
+  "level": -38.9,
+  "gain": -18.6,
+  "clip_start_s": 40.7933,
+  "hit_offset_s": 0.04,
+  "src": [
+   "fs:848421",
+   "fs:273979",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "B.ember_hiss",
+  "kind": "event",
+  "t": 44.5833,
+  "level": -46.6,
+  "gain": -25.6,
+  "clip_start_s": 44.2833,
+  "hit_offset_s": 0.3,
+  "src": [
+   "fs:660297"
+  ]
+ },
+ {
+  "id": "B.strike1",
+  "kind": "event",
+  "t": 46.6667,
+  "level": -36.4,
+  "gain": -7.9,
+  "clip_start_s": 46.5767,
+  "hit_offset_s": 0.09,
+  "src": [
+   "fs:499027"
+  ]
+ },
+ {
+  "id": "B.strike2",
+  "kind": "event",
+  "t": 47.875,
+  "level": -37.5,
+  "gain": -10.5,
+  "clip_start_s": 47.785,
+  "hit_offset_s": 0.09,
+  "src": [
+   "fs:499027"
+  ]
+ },
+ {
+  "id": "B.strike3",
+  "kind": "event",
+  "t": 49.0833,
+  "level": -39.9,
+  "gain": -15.3,
+  "clip_start_s": 48.9933,
+  "hit_offset_s": 0.09,
+  "src": [
+   "fs:499027"
+  ]
+ },
+ {
+  "id": "B.blow_tinder",
+  "kind": "event",
+  "t": 50.1667,
+  "level": -38.6,
+  "gain": -17.6,
+  "clip_start_s": 50.1187,
+  "hit_offset_s": 0.048,
+  "src": [
+   "fs:848421",
+   "fs:273979",
+   "fs:273979",
+   "fs:406648",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.catch",
+  "kind": "event",
+  "t": 54.8333,
+  "level": -61.5,
+  "gain": -24.1,
+  "clip_start_s": 54.2333,
+  "hit_offset_s": 0.6,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.roar",
+  "kind": "event",
+  "t": 56.6667,
+  "level": -30.0,
+  "gain": -5.2,
+  "clip_start_s": 56.0267,
+  "hit_offset_s": 0.64,
+  "src": [
+   "fs:595483",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "B.feed.stone_1",
+  "kind": "event",
+  "t": 81.6667,
+  "level": -42.1,
+  "gain": -23.1,
+  "clip_start_s": 81.6167,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.stone_2",
+  "kind": "event",
+  "t": 88.3333,
+  "level": -43.8,
+  "gain": -25.2,
+  "clip_start_s": 88.2833,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.stone_3",
+  "kind": "event",
+  "t": 95.0,
+  "level": -43.3,
+  "gain": -25.3,
+  "clip_start_s": 94.95,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.stone_5",
+  "kind": "event",
+  "t": 101.6667,
+  "level": -44.8,
+  "gain": -15.1,
+  "clip_start_s": 101.6167,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.stone_8",
+  "kind": "event",
+  "t": 115.0,
+  "level": -45.1,
+  "gain": -23.8,
+  "clip_start_s": 114.95,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.stone_12",
+  "kind": "event",
+  "t": 121.6667,
+  "level": -45.2,
+  "gain": -26.6,
+  "clip_start_s": 121.6167,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.stone_20",
+  "kind": "event",
+  "t": 128.3333,
+  "level": -44.9,
+  "gain": -25.9,
+  "clip_start_s": 128.2833,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.stone_30",
+  "kind": "event",
+  "t": 141.6667,
+  "level": -40.6,
+  "gain": -11.2,
+  "clip_start_s": 141.6167,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.stone_45",
+  "kind": "event",
+  "t": 148.3333,
+  "level": -42.5,
+  "gain": -23.1,
+  "clip_start_s": 148.2833,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.feed.y60_strikes",
+  "kind": "event",
+  "t": 153.3333,
+  "level": -44.0,
+  "gain": -25.5,
+  "clip_start_s": 153.2833,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "B.traveller",
+  "kind": "event",
+  "t": 120.0,
+  "level": -61.1,
+  "gain": -30.7,
+  "clip_start_s": 119.7,
+  "hit_offset_s": 0.3,
+  "src": [
+   "fs:595483",
+   "el:B_torch_02"
+  ]
+ },
+ {
+  "id": "B.his_fire",
+  "kind": "event",
+  "status": "SKIP",
+  "why": "THE VIGIL: the far answer is a pinprick kilometres off; no sound carries (her own flare on bar 40 b2 is B.x.flare)"
+ },
+ {
+  "id": "B.birds",
+  "kind": "event",
+  "t": 213.3333,
+  "level": -28.4,
+  "gain": -14.0,
+  "clip_start_s": 212.9333,
+  "hit_offset_s": 0.4,
+  "src": [
+   "fs:725219"
+  ]
+ },
+ {
+  "id": "B.birds2",
+  "kind": "event",
+  "t": 221.25,
+  "level": -34.3,
+  "gain": -5.6,
+  "clip_start_s": 220.95,
+  "hit_offset_s": 0.3,
+  "src": [
+   "fs:725219"
+  ]
+ },
+ {
+  "id": "B.x.flare",
+  "kind": "event",
+  "t": 130.8333,
+  "level": -42.9,
+  "gain": -24.0,
+  "clip_start_s": 130.7833,
+  "hit_offset_s": 0.05,
+  "src": [
+   "fs:734628",
+   "fs:595483"
+  ]
+ }
+]

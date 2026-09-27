@@ -27,7 +27,8 @@ FIRE_CLOSE = [("fs:681366", 1.0, 82.5, 1.0), ("fs:681367", 0.5, 21.5, 0.4)]  # a
 FIRE_WOOD = [("fs:595483", 12.0, 90.0, 1.0)]                # a wood fire, established
 
 # ---------------------------------------------------------------- the feeds: a wood knock, then the fire answers
-KNOCKS = [0.416, 3.162, 5.627, 2.136]                       # fs:734628 (dry logs), knock times in the source
+KNOCKS = [0.455, 3.250, 5.625, 2.136]                       # fs:734628 (dry logs): each knock's LOUDEST contact
+                                                            # (a log lands in bounces; the first touch comes early)
 BURSTS = [26.5, 20.0, 25.75, 10.0]                          # fs:595483 crackle swells (dB over its bed: 10, 5, 7, 13)
 
 
@@ -48,7 +49,8 @@ RECIPES = {
     "B.wind.climb": dict(src=WIND + GUSTS, seg=(6, 12), xf=2.0, hp=80),
     "B.spindrift": dict(src=STORMBED, seg=(5, 10), xf=1.5, hp=2600, lp=12000, trim=-2.0),
     "B.wind.ember": dict(src=WIND, seg=(10, 18), xf=3.0, hp=50, trim=-1.0),
-    "B.lid": dict(src=("fs:453789", 12.022), pre=0.03, post=0.55, hp=110, fo=0.12),
+    "B.lid": dict(src=("fs:453789", 12.097), pre=0.1, post=0.5, hp=110, fo=0.12),   # the knock (its first touch is
+                                                                                       # 70 ms before, like a real lid)
     "B.blow_ember": dict(layers=[                            # two breathy blows (real breath, the mic pops cut)
         dict(src=("fs:848421", 2.62), pre=0.04, post=1.55, hp=400, fo=0.35, g=0.0, dt=0.0),
         dict(src=("fs:273979", 3.12), pre=0.04, post=1.3, hp=400, fo=0.4, g=-2.0, dt=1.75),
@@ -59,7 +61,10 @@ RECIPES = {
     **FL.take("B", blow_id="B.blow_tinder"),               # THE FLINT TAKE: the same recordings in A, B and C
     "B.fire.reveal": dict(layers=[dict(src=FIRE_WOOD, seg=(10, 18), xf=2.5, g=0.0),      # the fire's body ...
                                   dict(src=FIRE_CLOSE, seg=(8, 16), xf=2.0, g=-2.0)],  # ... and its crackle
-                          hp=70, trim=-1.5),       # under her CALL (bar 18 b3): B's first half stays 6 LU down
+                          hp=70,
+                          # the reveal pulls the camera back 520 m (reveal.py): the fire recedes under her CALL
+                          # (bar 18 b3), which also keeps B's first half 6 LU under the film's loudest
+                          env=[(0.0, 0.0), (2.6, 0.0), (4.0, -4.0), (6.0, -10.0), (8.5, -14.0)]),
     "B.wind.night1": dict(src=WIND, seg=(10, 20), xf=3.0, hp=45),
     # ---------------------------------------------------------------- B6-B12: THE VIGIL (one night, the locked frame)
     "B.fire.vigil": dict(layers=[dict(src=FIRE_WOOD, seg=(12, 22), xf=3.0, g=0.0),
@@ -84,8 +89,10 @@ RECIPES = {
                                 dict(src=STORMBED, seg=(6, 10), xf=2.0, g=-9.0)],      # a little of the storm's
                         hp=120, shelves=[("highshelf", 3000, 3.0)]),                   # air, brighter
     "B.air.dawn": dict(src=[("fs:725630", 108.0, 150.0, 1.0)], seg=(12, 20), xf=4.0, hp=60, lp=2500, trim=-3.0),
-    "B.birds": dict(src=("fs:725219", 15.94), pre=0.4, post=12.8, hp=1800, lp=11000, fo=1.0, dist=0.4),
-    "B.birds2": dict(src=("fs:725219", 79.52), pre=0.3, post=4.0, hp=1800, lp=11000, fo=0.8, dist=0.7),
+    "B.birds": dict(src=("fs:725219", 15.94), pre=0.4, post=12.8, hp=1800, lp=11000, fo=1.0, dist=0.4,
+                    peak_room=4.0, trim=2.0),          # a real song's notes carry far more peak than a synthesized one
+    "B.birds2": dict(src=("fs:725219", 79.52), pre=0.3, post=4.0, hp=1800, lp=11000, fo=0.8, dist=0.7,
+                     peak_room=4.0, trim=2.0),
 }
 
 EXTRA_BEDS = []
@@ -94,7 +101,9 @@ EXTRA_EVENTS = [
 ]
 RECIPES["B.x.flare"] = dict(feed(10, big=True), level_from="B.feed.stone_20", trim=2.0)
 
-RECIPES["B.roar"] = dict(FL.ROAR, trim=-1.5)                 # under the reveal: B's first half stays 6 LU down
+# the roar blooms and settles within ~3 s: the reveal pulls back 520 m and the fire bed carries on, receding under
+# her CALL; a long real tail here pushed B's first half over its rule (6 LU under the film's loudest)
+RECIPES["B.roar"] = dict(layers=[dict(ly, post=3.0, fo=1.6) for ly in FL.ROAR["layers"]], trim=-1.5)
 
 SPACE = dict(distance="forest20", outdoor="forest20", event_send=0.10, bed_send=0.0, wet_hp=150, wet_lp=9000,
              stem_hp=25)

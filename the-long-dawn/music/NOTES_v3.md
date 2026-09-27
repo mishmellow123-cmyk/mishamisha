@@ -9,7 +9,8 @@
 | B fallback | `music/out/v3/fallback_B.wav` (stems `fallback_B_score.wav`, `fallback_B_sfx.wav`) | **DONE 11:45Z**: battery all PASS (level map 14/14, sync 5/5, notes 0, clicks 0) | - |
 | C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | **DONE 18:54Z**: battery all PASS (level map 28/28, sync 7/7, notes 0, clicks 0). Fix: the ride (C2 bar-2 horn -6.5 dB, C12 piano -4.5 dB) + C11's race drone now falls away after the slip into C12's black (its tail was C12's peak, -6.4 LU) | COMPOSER-A |
 | A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`; review copy `score_A.wav`) | **FINAL 20:35Z** (render 6): battery ALL PASS: level map 20/20, rules 3/3 (the brink A's loudest, the edge -1.5 LU under it; the blue hour -5.7 LU under it; the first fire -15.5 LU), centroid arc 5/5, sync 55/55, notes 0, clicks 0, -16.07 LUFS, TP -1.29 dBTP, 12,960,000 samples | COMPOSER-A |
-| C score | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | in progress (the current file is usable temp): render 3 20:21Z = level map 27/28, rules 3/3, sync 47/50; render 4 queued 20:30Z | COMPOSER-C |
+| C score | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | in progress (the current file is usable temp): render 4 20:48Z = level map 28/28, rules 3/3, sync 47/50 (probe fix); render 5 running 20:55Z | COMPOSER-C |
+| B with REAL effects (SOUND) | `music/out/v3/sound_B.wav` (stems `sound_B_score.wav` = final_B's score through the same master, `sound_B_sfx.wav` = `sfx_B.wav`) | **PASS 21:10Z**: battery all PASS (level map 14/14, dawn -2.3 LU, first half -6.1 LU, sync 25/25, notes 0, clicks 0); effects hits on their frames 15/15 (strikes 0.0-0.1 ms). 48 kHz/24-bit, 10,880,000 samples, -16.05 LUFS, TP -1.30 | SOUND |
 
 All masters: 48 kHz / 24-bit / stereo WAV, exactly the cut's length (A 6,480 f = 12,960,000 samples; B 5,440 f =
 10,880,000; C 7,200 f = 14,400,000), -16 LUFS integrated, true peak <= -1.2 dBTP, from silence to silence, with
@@ -17,13 +18,14 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
 
 ## SOUND (real effects lane, from 19:00Z): THE INTERFACE + STATE (COMPOSER-A, COMPOSER-C, EDIT: please read)
 **STATE AT 21:15Z (SOUND):**
-- **B: nearly there.** `out/v3/sound_B.wav` = final_B's pre-master score + REAL effects, mastered by `render_v3.master()`.
-  The battery: level map 14/14, sync 25/25 (all parts measured), dawn rule PASS, notes 0, TP -1.30. The last two
-  items were the first-half rule (-5.7 LU against a -6.0 limit) and a limiter click at 58.81 s, both caused by the
-  roar under her CALL. The fix is being rendered now (roar -1.5 dB, reveal fire -1.5 dB, plus an effects-only peak
-  guard pre-master: the effects duck, never the score, wherever they would push the master's limiter).
-  Next: run `python sound_v3.py B` and read `analysis/v3/sound_B/report.txt`. When everything passes, send main "B
-  PASSES" and update the MASTERS table with a SOUND row.
+- **B: PASSES.** `out/v3/sound_B.wav` = final_B's pre-master score + the REAL effects, mastered by `render_v3.master()`.
+  The battery: level map 14/14, dawn -2.3 LU, first half -6.1 LU (limit -6.0; the score alone is -6.5 there), sync
+  25/25, notes 0, clicks 0, TP -1.30, -16.05 LUFS. The effects' own hits land on their frames (lid, 3 strikes, 10
+  feeds, her flare: 15/15 within 10 ms). The deliverable effects stem is `out/v3/sfx_B.wav`. Fixes on the way: the
+  roar settles within 3 s; the reveal fire recedes with the 520 m pull-back under her CALL; an effects-only peak guard
+  keeps the effects out of the master's limiter (74 ms ducked); bed caps no longer misread a sparse synthesized
+  crackle; knocks are aligned on their loudest contact.
+  **For EDIT:** use `sound_B.wav` in place of `final_B.wav` once the director approves (same length, same score).
 - **The flint take (shared by A, B, C):** `src/sound_flint_v3.py`. Real strikes (Freesound 499027, CC0), breath,
   catch and roar, used by all three cuts, each at its own cue level.
 - **C:** `src/sound_recipes_C.py` is drafted, covering every cue plus COMPOSER-C's own effects (pen, burns, drop, cock,
@@ -136,6 +138,15 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
   * Tool: `src/who_v3.py <cut> <name> t0 t1 ...` ranks the parts by loudness in a window (from the part cache).
 
 ## COMPOSER-C (cut C) · STATE
+- **20:50Z: render 4 battery**: level map **28/28**, rules 3/3, notes 0, clicks 0, breaths 44-56 dB deep, master
+  lim GR 6.2 dB; sync 47/50. The 3 misses were the PROBE, not the music (FFT per part: every harmonic series is
+  right, no wrong notes): low violas, the bassoon and a cello's D2 have almost no fundamental, and a solo violin's
+  vibrato leaves the +-60-cent band, so `arrive:<midi>` jumps. Added to `analyze_v3.py` (additive: a new kind,
+  no existing kind changed) **`arrivew`**: the same arrival on the part's broadband envelope, for entries out of
+  their own silence; crescendo blooms are probed by their onset (`bloom`). On all 35 soft entries the two probes
+  agree within 40 ms except those. **Render 5 (20:55Z)**: the trims from those probes, the dawn -0.5 dB (its rule
+  was at -2.1 of -2.0), the slit's tam-tam/violins -1.5 dB (fewer stacked peaks), the Run's line and timpani -2 dB
+  under the horn calls. The blaze now rises from 8 to ~5.6 LU under C21's orchestra; the Havens' sea 7 LU under.
 - **20:25Z: render 3 battery**: level map 27/28 (C13 0.2 LU over: the glass streak meets the hiss in the snow),
   rules 3/3, sync 47/50 (three misses of 50-90 ms, per-layer trims set), notes 0, clicks 0; master GR 11 dB at
   the slit (down from 13), 6 at a race surge. Effects now own their moments (the roar +2 LU over the music, the

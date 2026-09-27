@@ -405,7 +405,9 @@ def match_gain(y, ref, kind, trim=0.0, peak_room=0.0):
         return (ref + trim) - (loud_int(y) if kind == "bed" else loud_max(y))
     L = levels(y)
     if kind == "bed":
-        return min(ref["I"] + trim - L["I"], ref["S3"] + 1.0 + trim - L["S3"])
+        # the loudest 3 s may not pass the design's loudest 3 s by more than 1 dB; a sparse synthesized crackle
+        # can read LOWER on its loudest 3 s than its gated integrated loudness, so the cap never sits under I + 3
+        return min(ref["I"] + trim - L["I"], max(ref["S3"], ref["I"] + 3.0) + 1.0 + trim - L["S3"])
     return min(ref["M"] + trim - L["M"], ref["S3"] + trim - L["S3"], ref["pk"] + peak_room + trim - L["pk"])
 
 
@@ -426,6 +428,11 @@ def build(cut, only=None, verbose=True):
     irs_dist = space_irs(R.SPACE.get("distance", "forest20"))
     beds = [dict(b) for b in bm.d.get("ambience", [])] + [dict(b, extra=True) for b in R.EXTRA_BEDS]
     evs = [dict(e) for e in bm.d.get("sfx", [])] + [dict(e, extra=True) for e in R.EXTRA_EVENTS]
+    if hasattr(R, "extra_cues"):                      # a composer's own in-memory effects (e.g. score_v3_C's C+.*)
+        have = {x["id"] for x in beds + evs}
+        fx, amb = R.extra_cues(bm)
+        evs += [dict(e) for e in fx if e["id"] not in have]
+        beds += [dict(b) for b in amb if b["id"] not in have]
     for b in beds:
         if b.get("extra"):
             b["t0"], b["t1"] = _resolve_t(b["t0"], sync), _resolve_t(b["t1"], sync)
@@ -583,8 +590,12 @@ def peak_guard(score, sfx, G, ceil_db=-2.3, floor_db=-10.0):
     a = np.exp(-1.0 / (0.12 * SR))
     sm = signal.lfilter([1 - a], [1, -a], gr)                             # the release
     gr = np.minimum(gr, sm)
+    idx = np.where(over)[0]
+    brk = np.where(np.diff(idx) > int(0.05 * SR))[0]
+    spans = [(idx[a] / SR, idx[b] / SR) for a, b in zip(np.r_[0, brk + 1], np.r_[brk, len(idx) - 1])]
     print(f"  peak guard: {int(over.sum())} samples ({over.sum() / SR * 1000:.0f} ms) would drive the limiter; "
-          f"effects ducked there by up to {-gr.min():.1f} dB")
+          f"effects ducked there by up to {-gr.min():.1f} dB, at " +
+          ", ".join(f"{a:.2f}-{b:.2f} s" for a, b in spans[:8]) + (" ..." if len(spans) > 8 else ""))
     return (sfx * db(gr).astype(np.float32)[:, None]).astype(np.float32)
 
 

@@ -7,43 +7,38 @@ Licences allowed: **CC0** and **CC-BY** (attribution below). NonCommercial and S
 
 | id | used in | licence | author | recording | source file |
 |---|---|---|---|---|---|
-| [172630](https://freesound.org/s/172630/) | C | CC0 | e__ | kilauea-lava-01.wav | original |
+| [172630](https://freesound.org/s/172630/) | A,C | CC0 | e__ | kilauea-lava-01.wav | original |
 | [185608](https://freesound.org/s/185608/) | C | CC0 | kubawolanin | Metal tick 4 | original |
 | [185609](https://freesound.org/s/185609/) | C | CC0 | kubawolanin | Metal tick 3 | original |
 | [194635](https://freesound.org/s/194635/) | C | CC-BY 4.0 | qubodup | Water on Coal | original |
 | [194905](https://freesound.org/s/194905/) | C | CC0 | marcoman89 | Quill pen writing on hard paper various speed.wav | original |
 | [197900](https://freesound.org/s/197900/) | C | CC0 | Millavsb | two drops.WAV | original |
-| [273979](https://freesound.org/s/273979/) | B,C | CC0 | superEGsonic | inhale/exhale.wav | original |
-| [388947](https://freesound.org/s/388947/) | C | CC-BY 4.0 | Australopithecusman | Very Old Book Page Turns;cracking | original |
-| [406648](https://freesound.org/s/406648/) | B,C | CC0 | tlcolbe | Blowing Out Candle_more airy.wav | original |
+| [273979](https://freesound.org/s/273979/) | A,B,C | CC0 | superEGsonic | inhale/exhale.wav | original |
+| [406648](https://freesound.org/s/406648/) | A,B,C | CC0 | tlcolbe | Blowing Out Candle_more airy.wav | original |
 | [426208](https://freesound.org/s/426208/) | C | CC-BY 4.0 | kev_durr | Fire Torch_whoosh 1 (medium speed).wav | original |
 | [453789](https://freesound.org/s/453789/) | B | CC0 | kyles | ceramic clay pot lid hits.flac | original |
-| [481077](https://freesound.org/s/481077/) | C | CC0 | khenshom | Book - Handling and flipping through pages.wav | original |
 | [482119](https://freesound.org/s/482119/) | C | CC0 | paulroh | cock_hahn.wav | original |
-| [499027](https://freesound.org/s/499027/) | B,C | CC0 | 16FThumaF | 05_Flint and steel.wav | original |
-| [525029](https://freesound.org/s/525029/) | C | CC0 | bruno.auzet | sea from cliff.wav | ? |
+| [499027](https://freesound.org/s/499027/) | A,B,C | CC0 | 16FThumaF | 05_Flint and steel.wav | original |
 | [528662](https://freesound.org/s/528662/) | C | CC0 | Soonus | Paper Burn.wav | original |
 | [541035](https://freesound.org/s/541035/) | C | CC-BY 3.0 | Clearwavsound | Hot Knife Quenched in Water | original |
 | [558823](https://freesound.org/s/558823/) | IR | CC0 | Nox_Sound | IR_Forest_20m_Stereo.wav | original |
-| [595483](https://freesound.org/s/595483/) | B,C | CC0 | SavReese | Fire being started and crackling.wav | original |
-| [648860](https://freesound.org/s/648860/) | C | CC0 | emainta | Sea Waves Against Rocks | ? |
+| [595483](https://freesound.org/s/595483/) | A,B,C | CC0 | SavReese | Fire being started and crackling.wav | original |
 | [660297](https://freesound.org/s/660297/) | B | CC0 | Ambient-X | Campfire deer camp - hot air leaking from wet wood - part 3.wav | original |
-| [681366](https://freesound.org/s/681366/) | B,C | CC0 | SKrafft | Campfire (Position 1) | original |
+| [681366](https://freesound.org/s/681366/) | A,B,C | CC0 | SKrafft | Campfire (Position 1) | original |
 | [681367](https://freesound.org/s/681367/) | B | CC0 | SKrafft | Campfire (Position 2) | original |
 | [725219](https://freesound.org/s/725219/) | B | CC0 | Sacha.Julien | Robin song, good Quality, Forest south of France | original |
-| [725630](https://freesound.org/s/725630/) | B,C | CC0 | nicotep | Larrun_Mountains_MedWind | original |
+| [725630](https://freesound.org/s/725630/) | A,B,C | CC0 | nicotep | Larrun_Mountains_MedWind | original |
 | [734628](https://freesound.org/s/734628/) | B | CC0 | Vrymaa | Wood logs - woodshed | original |
-| [754256](https://freesound.org/s/754256/) | B,C | CC0 | HECKFRICKER | Winter Snowstorm Ambience | original |
+| [754256](https://freesound.org/s/754256/) | A,B,C | CC0 | HECKFRICKER | Winter Snowstorm Ambience | original |
 | [766658](https://freesound.org/s/766658/) | C | CC0 | blaastaal | murmuring | original |
 | [816200](https://freesound.org/s/816200/) | IR | CC0 | Sadiquecat | I&R Esperaza's church - Mic at entrence Pop at Altar - ECM999 | original |
 | [816203](https://freesound.org/s/816203/) | IR | CC0 | Sadiquecat | I&R Esperaza's church - center - OKM1 | original |
-| [848421](https://freesound.org/s/848421/) | B,C | CC-BY 4.0 | MarinaDCI | Inhale and blow (Soprar) | original |
+| [848421](https://freesound.org/s/848421/) | A,B,C | CC-BY 4.0 | MarinaDCI | Inhale and blow (Soprar) | original |
 | [870180](https://freesound.org/s/870180/) | C | CC0 | bassimat | Water Poured onto a Burning Fireplace – Hissing Steam and Sizzling Embers | original |
 
 ### Attribution (CC-BY)
 
 - "Water on Coal" by qubodup (https://freesound.org/s/194635/), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Edited: trimmed, filtered, levelled and mixed.
-- "Very Old Book Page Turns;cracking" by Australopithecusman (https://freesound.org/s/388947/), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Edited: trimmed, filtered, levelled and mixed.
 - "Fire Torch_whoosh 1 (medium speed).wav" by kev_durr (https://freesound.org/s/426208/), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Edited: trimmed, filtered, levelled and mixed.
 - "Hot Knife Quenched in Water" by Clearwavsound (https://freesound.org/s/541035/), licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). Edited: trimmed, filtered, levelled and mixed.
 - "Inhale and blow (Soprar)" by MarinaDCI (https://freesound.org/s/848421/), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Edited: trimmed, filtered, levelled and mixed.
@@ -53,14 +48,14 @@ Licences allowed: **CC0** and **CC-BY** (attribution below). NonCommercial and S
 Licence: https://sonniss.com/gdc-bundle-license/ (royalty-free, commercial use, no attribution required; no AI/ML training).  Harvested picks (trimmed 48 kHz / 24-bit copies; the bundles were deleted after use):
 
 - `douse.wav` (harvested, not used yet): Ivo Vicic - Campfire - Bonfire FX: "42 Campfire, Putting Out Fire, Water from Bottle, Variation, Close.wav" (0-12 s, 48 kHz/24-bit copy)
-- `eye_of_the_storm.wav` (harvested, not used yet): 344 Audio - Extreme Winds Vol. 1: "WINDDsgn_EXT, Eye Of The Storm_344 Audio_Extreme Winds Vol 1.wav" (20-80 s, 48 kHz/24-bit copy)
-- `flicking_pages.wav` (harvested, not used yet): 344 Audio - Antique Books: "PAPRMisc_Antique Books Flicking Through Pages 11_344 Audio_Antiques - Books.wav" (0-2 s, 48 kHz/24-bit copy)
-- `oil_flare.wav` (harvested, not used yet): Ivo Vicic - Campfire FX - Ambisonic (AmbiX decoded to two cardioids at +-60 deg): "Camp fire, crackling, putting oil in fire, close, night_B-format, Ambix.wav" (0-60 s, 48 kHz/24-bit copy)
+- `eye_of_the_storm.wav` (used: A): 344 Audio - Extreme Winds Vol. 1: "WINDDsgn_EXT, Eye Of The Storm_344 Audio_Extreme Winds Vol 1.wav" (20-80 s, 48 kHz/24-bit copy)
+- `flicking_pages.wav` (used: C): 344 Audio - Antique Books: "PAPRMisc_Antique Books Flicking Through Pages 11_344 Audio_Antiques - Books.wav" (0-2 s, 48 kHz/24-bit copy)
+- `oil_flare.wav` (used: A): Ivo Vicic - Campfire FX - Ambisonic (AmbiX decoded to two cardioids at +-60 deg): "Camp fire, crackling, putting oil in fire, close, night_B-format, Ambix.wav" (0-60 s, 48 kHz/24-bit copy)
 - `page_a4_rattle.wav` (harvested, not used yet): Cinematic Sound Design - Paper Foley: "A4 Printing Paper Rattle Page Turn Tail.wav" (0-1 s, 48 kHz/24-bit copy)
 - `page_glossy_muted.wav` (harvested, not used yet): Cinematic Sound Design - Paper Foley: "Encyclopedia Glossy Page Turn Muted.wav" (0-1 s, 48 kHz/24-bit copy)
-- `pine_branches.wav` (harvested, not used yet): Ivo Vicic - Campfire - Bonfire FX: "24 Campfire, Dropping Fresh Pine Branches in Fire, Crackling, Sizzling Strong, Close 02.wav" (8-95 s, 48 kHz/24-bit copy)
-- `slow_page_turns.wav` (harvested, not used yet): 344 Audio - Antique Books: "PAPRMisc_Antique Books Slow Page Turns 6_344 Audio_Antiques - Books.wav" (0-14 s, 48 kHz/24-bit copy)
-- `soft_waves_cliffs.wav` (harvested, not used yet): Just Sound Effects - Rocky Coast of Norway: "WATRWave_Soft Waves Cliffs_JSE_RCoN_Stereo.wav" (0-120 s, 48 kHz/24-bit copy)
+- `pine_branches.wav` (used: A): Ivo Vicic - Campfire - Bonfire FX: "24 Campfire, Dropping Fresh Pine Branches in Fire, Crackling, Sizzling Strong, Close 02.wav" (8-95 s, 48 kHz/24-bit copy)
+- `slow_page_turns.wav` (used: C): 344 Audio - Antique Books: "PAPRMisc_Antique Books Slow Page Turns 6_344 Audio_Antiques - Books.wav" (0-14 s, 48 kHz/24-bit copy)
+- `soft_waves_cliffs.wav` (used: C): Just Sound Effects - Rocky Coast of Norway: "WATRWave_Soft Waves Cliffs_JSE_RCoN_Stereo.wav" (0-120 s, 48 kHz/24-bit copy)
 
 ## ElevenLabs generations (every one, used or not)
 

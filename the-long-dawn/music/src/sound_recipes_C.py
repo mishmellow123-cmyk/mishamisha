@@ -12,13 +12,12 @@ HEARTH = [("fs:681366", 1.0, 82.5, 1.0)]                    # a small wood fire,
 FIRE = [("fs:595483", 12.0, 90.0, 1.0)]                      # a wood fire, established
 STORM = [("fs:754256", 2.0, 182.0, 1.0)]                     # a real snowstorm's gusts
 WIND = [("fs:725630", 0.5, 150.0, 1.0)]                      # moderate mountain wind (Schoeps ORTF)
-SEA = [("fs:525029", 2.0, 166.0, 1.0)]                       # 1 m waves on rocks under a 10 m cliff (ORTF)
-WASH = [("fs:648860", 2.0, 88.0, 1.0)]                       # a quieter sea against rocks
+SEA = [("sn:soft_waves_cliffs", 0.5, 119.5, 1.0)]            # JSE: soft waves at the cliffs of a northern coast
 LAVA = [("fs:172630", 1.0, 57.5, 1.0)]                       # molten rock seething (the melt, the blaze's weight)
 PAPER = "fs:528662"                                          # a sheet of paper burning, 65 s
 QUILL = "fs:194905"                                          # a quill on hard paper, various speeds
-PAGES = "fs:388947"                                          # a very old book's pages turning (CC-BY 4.0)
-FLIP = "fs:481077"                                           # a book handled, pages flipped (CC0)
+PAGES = "sn:slow_page_turns"                                 # 344 Audio: an antique book's pages, turned slowly
+FLIP = "sn:flicking_pages"                                   # 344 Audio: the same books, flicked through
 
 
 def page(src, hit, pre=0.5, post=1.0, **kw):
@@ -44,9 +43,9 @@ def flare(src_t, dist, stretch=1.0):
 RECIPES = {
     # ---------------------------------------------------------------- the storyteller's hearth, the book
     "C.hearth.open": dict(src=HEARTH, seg=(10, 18), xf=2.5, hp=80, lp=9000, width=0.7),
-    "C.page_turn_0": page(PAGES, 3.179, pre=0.85, post=0.7),
-    "C.riffle": page(FLIP, 35.812, pre=1.1, post=1.9),
-    "C.page_turn": page(PAGES, 25.367, pre=0.2, post=0.5),
+    "C.page_turn_0": page(PAGES, 7.028, pre=0.6, post=0.9),
+    "C.riffle": page(FLIP, 0.607, pre=0.5, post=1.25),
+    "C.page_turn": page(PAGES, 0.705, pre=0.6, post=1.0),
     "C+.pen.mountain": pen(14.0, 2.4),
     "C+.pen.T1": pen(9.15, 1.0),
     "C+.pen.deep": pen(17.3, 9.0),
@@ -65,7 +64,9 @@ RECIPES = {
     "C.fire.forge": dict(layers=[dict(src=FIRE, seg=(10, 18), xf=2.5, g=0.0),
                                  dict(src=LAVA, seg=(8, 14), xf=2.0, g=-8.0)], hp=50),
     "C.storm.eye": dict(src=STORM, seg=(6, 10), xf=1.5, hp=60),
-    "C+.drop": dict(src=("fs:197900", 0.40), pre=0.02, post=0.45, hp=300, fo=0.1),
+    "C+.drop": dict(layers=[dict(src=("fs:197900", 0.40), pre=0.02, post=0.45, hp=300, fo=0.1, g=0.0, dt=0.0),
+                            dict(src=("fs:197900", 0.10), pre=0.02, post=0.25, hp=300, fo=0.1, g=-8.0, dt=0.44)]),
+                            # the strike on f2200 exactly; the bead falling back ~f2210.6 (MIRROR, 21:10Z)
     "C+.cock": dict(src=("fs:482119", 0.12), pre=0.1, post=2.2, hp=400, lp=3500, fo=0.5, dist=0.85, width=0.3),
     "C.wind.fall": dict(src=WIND, seg=(10, 18), xf=3.0, hp=50),
     "C.snow_hiss": dict(layers=[
@@ -104,12 +105,11 @@ RECIPES = {
     "C.air.dawn": dict(src=[("fs:725630", 108.0, 150.0, 1.0)], seg=(12, 20), xf=4.0, hp=60, lp=2500, trim=-3.0),
     # ---------------------------------------------------------------- plenty, the Havens, the last pages
     "C.hearth.end": dict(src=HEARTH, seg=(10, 18), xf=2.5, hp=80, lp=9000, width=0.7),
-    "C.page.plenty": page(PAGES, 4.791, pre=0.35, post=0.8),
-    "C.sea": dict(layers=[dict(src=SEA, seg=(12, 20), xf=3.0, g=0.0),
-                          dict(src=WASH, seg=(12, 20), xf=3.0, g=-8.0)], hp=40, lp=9000),
-    "C.page.havens": page(PAGES, 8.499, pre=0.3, post=0.6),
-    "C.page.blank": page(PAGES, 21.151, pre=0.3, post=0.6),
-    "C.page.blank_2": page(FLIP, 38.940, pre=0.2, post=0.6),
+    "C.page.plenty": page(PAGES, 2.799, pre=0.6, post=0.9),
+    "C.sea": dict(src=SEA, seg=(14, 24), xf=3.5, hp=40, lp=10000),
+    "C.page.havens": page(PAGES, 9.016, pre=0.6, post=0.9),
+    "C.page.blank": page(PAGES, 12.443, pre=0.6, post=0.9),
+    "C.page.blank_2": page(PAGES, 4.887, pre=0.45, post=0.8),
 }
 
 EXTRA_BEDS = [
@@ -122,6 +122,8 @@ EXTRA_EVENTS = [
 RECIPES["C.x.murmur"] = dict(src=[("fs:766658", 4.0, 150.0, 1.0)], seg=(12, 20), xf=3.0, hp=150, lp=2200,
                              width=0.8, level_from="C.hearth.council", trim=-6.0)
 RECIPES["C.x.catch"] = dict(FL.CATCH, level_from="C.blow", trim=1.0)
+RECIPES.pop("C.catch", None)                                  # C's sheet has no catch cue: C.x.catch is it
+RECIPES["C+.sea.near"] = dict(src=SEA, seg=(14, 24), xf=3.5, hp=40, width=1.0)   # the Havens, nearer the water
 
 SPACE = dict(distance="forest20", outdoor="forest20", event_send=0.08, bed_send=0.0, wet_hp=150, wet_lp=9000,
              stem_hp=25)
