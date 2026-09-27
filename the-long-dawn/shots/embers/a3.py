@@ -417,6 +417,9 @@ class TimelineA3(TL.Timeline):
             import edge
             return edge.emit_ash(self, ctx)
         lp, lc, lpw = self.light(t)
+        if t >= T_EDGE - 2:
+            import edge
+            ctx.tl_crater = edge._crater(self)       # the crater joins the occluder (edge._extra_occluders)
         self.towers.prepare(ctx)
         self.dust.emit(ctx)
         self.smoke.emit(ctx, lp, lc, lpw)

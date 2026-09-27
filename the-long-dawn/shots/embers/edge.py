@@ -27,8 +27,15 @@ FALL_TOWER = 4        # the gilded tower whose crown breaks off (never a giant's
 C_MOLT = np.array([1.0, 0.72, 0.3])
 
 
-def crater_y(r):
-    return B.GROUND - DEPTH * smoothstep(R_RIM, R_RIM - WALL, r)
+def rim_r(a):
+    """the crater's lip radius at azimuth a: irregular, torn (a perfect circle read as a well)"""
+    return R_RIM * (1.0 + 0.07 * np.sin(3 * a + 1.3) + 0.045 * np.sin(5 * a + 0.4) + 0.03 * np.sin(11 * a + 2.1)
+                    + 0.015 * np.sin(23 * a + 0.7))
+
+
+def crater_y(r, a=None):
+    rr = R_RIM if a is None else rim_r(a)
+    return B.GROUND - DEPTH * smoothstep(rr, rr - WALL, r)
 
 
 # ---------------------------------------------------------------- schedule (added to a3.A3Sched)
@@ -121,7 +128,37 @@ def _vortex_shape(self, vx, t, e, P0, P1, rr):
     return e, P0 + d, P1 + d
 
 
+CRATER_ID = 100
+
+
+def _extra_occluders(self, towers, ctx):
+    """THE EDGE: the crater's wall, the plain round it and the ground plates (until they fall) join the occluder,
+    so the near wall hides the far one and the ground hides what lies below it (splats are otherwise additive)"""
+    t = ctx.t
+    if t < A.T_EDGE - 2 or t >= A.T_WHITE:
+        return None
+    cr = ctx.tl_crater if hasattr(ctx, 'tl_crater') else None
+    if cr is None:
+        return None
+    P, N, Ar = [], [], []
+    k = max(1, len(cr.w_p) // 160000)
+    P.append(cr.w_p[::k]); N.append(cr.w_n[::k])
+    Ar.append(np.full(len(cr.w_p[::k]), 1700.0 / len(cr.w_p) * k))
+    kp = max(1, len(cr.p_p) // 90000)
+    P.append(cr.p_p[::kp]); N.append(np.broadcast_to(np.array([0.0, 1.0, 0.0]), (len(cr.p_p[::kp]), 3)))
+    Ar.append(np.full(len(cr.p_p[::kp]), 6060.0 / len(cr.p_p) * kp))
+    G, x, fall = cr._ground(t)
+    keep = fall < 1.0
+    if keep.any():
+        P.append(G[keep]); N.append(np.broadcast_to(np.array([0.0, 1.0, 0.0]), (int(keep.sum()), 3)))
+        Ar.append(np.full(int(keep.sum()), np.pi * R_RIM ** 2 / len(G)))
+    P = np.concatenate(P).astype(np.float64)
+    return P, np.concatenate(N).astype(np.float64), np.concatenate(Ar).astype(np.float64), \
+        np.full(len(P), CRATER_ID, np.int32)
+
+
 BEAT_F = 20.0
+A.A3Sched.extra_occluders = _extra_occluders
 A.A3Sched.vortex_shape = _vortex_shape
 A.A3Sched.shutter = _shutter
 A.A3Sched.back_light = _back_light
@@ -137,8 +174,8 @@ class Crater:
         r = rng(seed)
         # the ground inside the ring: plates that crack and fall away from the centre out
         n = 70000
-        rr = R_RIM * np.sqrt(r.random(n))
         a = r.uniform(0, 2 * np.pi, n)
+        rr = rim_r(a) * np.sqrt(r.random(n))
         self.g_p = np.stack([rr * np.cos(a), np.full(n, B.GROUND), rr * np.sin(a)], 1)
         ns = 46
         sr = R_RIM * np.sqrt(r.random(ns))
@@ -158,9 +195,9 @@ class Crater:
         self.g_E = r.lognormal(0, 0.4, n)
         # the wall: ember rock with molten veins, lit from below (dense: a solid wall, not a wire basket)
         m = 320000
-        wr = R_RIM - WALL * r.random(m) ** 0.8
         wa = r.uniform(0, 2 * np.pi, m)
-        wy = crater_y(wr) + r.normal(0, 0.25, m)
+        wr = rim_r(wa) - WALL * r.random(m) ** 0.8
+        wy = crater_y(wr, wa) + r.normal(0, 0.25, m) + 0.9 * np.sin(5.0 * wa + 0.02 * wr * 40.0) * r.random(m)
         self.w_p = np.stack([wr * np.cos(wa), wy, wr * np.sin(wa)], 1)
         self.w_n = np.stack([-np.cos(wa), np.full(m, 0.6), -np.sin(wa)], 1)
         self.w_n /= np.linalg.norm(self.w_n, axis=1, keepdims=True)
@@ -170,23 +207,23 @@ class Crater:
         self.w_a = wa
         # the floor: molten, churning
         k = 60000
-        fr_ = (R_RIM - WALL + 1.5) * np.sqrt(r.random(k))
         fa = r.uniform(0, 2 * np.pi, k)
+        fr_ = (rim_r(fa) - WALL + 1.5) * np.sqrt(r.random(k))
         self.f_p = np.stack([fr_ * np.cos(fa), np.full(k, FLOOR_Y) + r.normal(0, 0.2, k), fr_ * np.sin(fa)], 1)
         self.f_E = r.lognormal(0, 0.5, k)
         # the plain the forges stand on: dark crust round the crater, lit where it meets the pit, fine cracks
         g2 = 150000
-        pr = R_RIM + (46.0 - R_RIM) * r.random(g2) ** 1.6
         pa = r.uniform(0, 2 * np.pi, g2)
+        pr = rim_r(pa) + (46.0 - rim_r(pa)) * r.random(g2) ** 1.6
         self.p_p = np.stack([pr * np.cos(pa), np.full(g2, B.GROUND) + r.normal(0, 0.05, g2), pr * np.sin(pa)], 1)
         cr = vnoise(self.p_p * np.array([0.3, 0.0, 0.3]), 1.0, (7.1, 0.0, 2.3), 2)[:, 0]
         self.p_crack = np.exp(-(cr / 0.05) ** 2)
-        self.p_r = pr
+        self.p_r = pr - rim_r(pa) + R_RIM
         self.p_E = r.lognormal(0, 0.35, g2)
         # the rim's lip: a line of heat along the edge
         q = 9000
         la = r.uniform(0, 2 * np.pi, q)
-        self.l_p = np.stack([R_RIM * np.cos(la), np.full(q, B.GROUND) + r.normal(0, 0.08, q), R_RIM * np.sin(la)], 1)
+        self.l_p = np.stack([rim_r(la) * np.cos(la), np.full(q, B.GROUND) + r.normal(0, 0.08, q), rim_r(la) * np.sin(la)], 1)
         self.l_a = la
         # debris crumbling off the rim under the gilded towers (from bar 26), and the collapse at 2440
         ndb = 9000
@@ -230,15 +267,15 @@ class Crater:
         e = self.g_E * (0.05 + 1.6 * self.g_seam * pre + 0.25 * smoothstep(0.0, 8.0, x) * smoothstep(DEPTH, 4.0, fall))
         e = e * alive * heat
         col = look.blackbody(np.clip(0.4 + 0.25 * self.g_seam * pre + 0.15 * smoothstep(0, 10, fall), 0, 0.8))
-        ctx.fr.splat(P0, P1, 0.05, e, col, ctx.cam0, ctx.cam1, zref=30.0)
+        ctx.fr.splat(P0, P1, 0.05, e, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
         if open_k <= 0:
             return
         # the wall: lit from the molten floor below, veins of fire
         up = smoothstep(B.GROUND, FLOOR_Y, self.w_p[:, 1])
-        e = self.w_E * (0.06 + 1.1 * up ** 1.5 + 5.0 * self.w_vein * (0.3 + 0.7 * up)) * open_k * heat * 0.45
+        e = self.w_E * (0.45 + 1.6 * up + 5.0 * self.w_vein * (0.45 + 0.55 * up)) * open_k * heat * 0.6
         col = look.blackbody(np.clip(0.34 + 0.26 * up + 0.14 * self.w_vein, 0, 0.85))
         col = col * (1 - 0.4 * red) + (B.C_RED * 0.6 + B.C_CRIMSON * 0.4) * 0.4 * red
-        ctx.fr.splat(self.w_p, self.w_p, 0.16, e, col, ctx.cam0, ctx.cam1, zref=30.0)
+        ctx.fr.splat(self.w_p, self.w_p, 0.16, e, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
         # the floor: molten fire, churning (the glare the towers lean over)
         w = vnoise(self.f_p * 0.18 + np.array([0.0, 0.0, 0.01 * t]), 1.0, (0, 0, 0), 2)[:, 0]
         e = self.f_E * (0.7 + 0.6 * w) * 16.0 * open_k * heat * (1 + 0.8 * float(smoothstep(A.T_BRINK, A.T_WHITE, t)))
@@ -255,10 +292,10 @@ class Crater:
         edge_l = np.exp(-(self.p_r - R_RIM) / 2.5) * open_k
         e = self.p_E * (0.012 + 1.3 * edge_l + 0.25 * self.p_crack * (0.3 + 0.7 * np.exp(-(self.p_r - R_RIM) / 12.0))) * heat
         col = look.blackbody(np.clip(0.33 + 0.2 * edge_l + 0.08 * self.p_crack, 0, 0.8))
-        ctx.fr.splat(self.p_p, self.p_p, 0.14, e, col, ctx.cam0, ctx.cam1, zref=30.0)
+        ctx.fr.splat(self.p_p, self.p_p, 0.14, e, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
         # the lip of the rim
         el = 3.5 * open_k * (0.6 + 0.4 * np.sin(3 * self.l_a + 0.2 * t)) * heat
-        ctx.fr.splat(self.l_p, self.l_p, 0.05, el, look.blackbody(0.55), ctx.cam0, ctx.cam1, zref=30.0)
+        ctx.fr.splat(self.l_p, self.l_p, 0.05, el, look.blackbody(0.55), ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
         # debris: the rim crumbling under the gilded towers
         self._debris(ctx)
 
@@ -269,7 +306,7 @@ class Crater:
         tw = ctx.tl.towers
         base = np.array([tw.base(i) for i in range(8)])
         ang = np.arctan2(base[:, 2], base[:, 0])[self.d_tw]
-        src = np.stack([R_RIM * np.cos(ang), np.full(len(ang), B.GROUND), R_RIM * np.sin(ang)], 1) + self.d_off
+        src = np.stack([rim_r(ang) * np.cos(ang), np.full(len(ang), B.GROUND), rim_r(ang) * np.sin(ang)], 1) + self.d_off
 
         def pos(tq):
             a = np.maximum(tq - self.d_t0, 0.0)
@@ -332,10 +369,10 @@ def camera(tl, t):
         # the dark near ground
         a = _orbit_az(t)
         k_in = float(smootherstep(A.T_EDGE, A.T_EDGE + 90, t))
-        r = lerp(31.0, 60.0, k_in)
-        y = lerp(10.0, 36.0, k_in)
-        ty = lerp(3.0, -16.0, k_in)
-        hf = lerp(56.0, 60.0, k_in)
+        r = lerp(31.0, 46.0, k_in)
+        y = lerp(10.0, 30.0, k_in)
+        ty = lerp(3.0, -12.0, k_in)
+        hf = lerp(56.0, 62.0, k_in)
         # THE BRINK: tilt up with the updraft as it roars out of the fire, then back down to the rim
         up = float(smoothstep(A.T_BRINK, A.T_BRINK + 26, t)) * (1.0 - float(smoothstep(A.T_RIM_GIVES + 8, A.T_TIP - 24, t)))
         ty = ty + 40.0 * up

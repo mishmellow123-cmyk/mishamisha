@@ -1116,6 +1116,13 @@ class Towers:
                 oI.append(np.full(len(a), i, np.int32))
             cur.append(dict(h=h, parts=parts))
         self.cur = cur
+        if SCHED is not None and hasattr(SCHED, 'extra_occluders'):
+            ex = SCHED.extra_occluders(self, ctx)          # v3 A: THE EDGE's crater wall and plain are solid too
+            if ex is not None:
+                oP.append(ex[0])
+                oN.append(ex[1])
+                oA.append(ex[2])
+                oI.append(ex[3])
         if oP:
             A = np.concatenate(oA)
             from core import build_occluder

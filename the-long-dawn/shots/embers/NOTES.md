@@ -13,8 +13,14 @@ growing out of the top; cut on bar 23 to behind giant 2 with glare), lit forge-s
 giants black above the ring with shutters shut. BRINK: the vortex is REMOVED from A (a3 emit); `edge.Updraft` (a
 pillar of flame + torn-off embers, 2400-2470 roar, subsides by the tip) + StripEmbers dragged in and up (no spiral).
 
+**11:40Z: THE EDGE now reads** (scratchpad e3/b4.jpg): the crater joins the occluder (`edge._extra_occluders`
+via `SCHED.extra_occluders` in Towers.prepare; crater splats carry myid=CRATER_ID), an irregular torn rim
+(`edge.rim_r`), hot walls lit from the molten floor, a dark plain whose edge glows; the orbit r 46 y 30 ty -12 looks
+down into the pit with the fire in the upper frame. Still open: the BRINK updraft reads as a curtain of gold grains,
+and the rim collapse (2440) / crown fall (2480) are not yet legible at contact-sheet size.
+
 **NEXT (in order):**
-1. THE EDGE crater must read as SOLID rock (now a translucent "glass cylinder": splats are additive and only tower
+1. (DONE 11:40Z, see above) THE EDGE crater must read as SOLID rock (now a translucent "glass cylinder": splats are additive and only tower
    crust feeds the occluder). Add a SCHED hook in Towers.prepare (e.g. `SCHED.extra_occluders(ctx)` -> P, N, A, ids)
    and feed it edge.Crater's wall (w_p, w_n) and plain (p_p, up normals) so the near wall hides the far wall and the
    plain hides what is under it. Then re-light: plain edge glow, wall gradient to the molten floor (already coded).
