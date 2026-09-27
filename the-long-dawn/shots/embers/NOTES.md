@@ -79,50 +79,29 @@
 # >>> EMBERS-A3 (split off EMBERS-A2, 27 Sep ~19:30Z): A16 TOWERS IN THE LIGHT + A17 THE FIRE, SEEN (4400-4879,
 # one take) + both in the _alt_codedtowers ALT. Owner file: turn.py (+ cloud/jobs/embers_A3_turn.json, _alt_turn.json).
 # Shared modules untouched so far (a3.py/edge.py/scene_b.py hooks are installed from turn.py on import). <<<
-## EMBERS-A3 STATE (27 Sep ~19:55Z)
-* Renders: NOTHING delivered yet for 4400-4879 (renders/embers_A3 has 1040-1839 + EMBERS-2/A2's shots).
-* turn.py v1 (unreviewed, farm look-dev next): one take 4400-4879. Camera: outside the ring behind giant 2 / forge 1
-  (the watchers' look, low, r 62 -> 44 slow push), A17 walks on through the gap between giant 2 and forge 1 (az 1.53)
-  to the rim; the heart is centred (959.5, 401.5) at 4879 (verified by projection), z ~18, hfov 50.
-  Layers: RidgeWorld (14 clusters of 1-5 fires on knife-edge ridgelines 65-360 out, crest glints only near the fires,
-  never a ring; its fires' directions light the backs), TowerLight (backs lit by the far fires + each opened tower's
-  facade light on the others: the giants lit by each other), Shutters (every window cell on the facing faces opens
-  bottom-up in a wave, 0.32 f/unit of height for the giants, a breath of flare, then steady), Beams (motes in the
-  pit's haze, the giants' light crosses in ~8 f), SmallLights (from the towers down their faces, from the hills in
-  strings, stopping at the rim in knots), Heart (the crossing's heart: sigmas 10/26/114 px, peaks 30/0.9/0.05,
-  (0.80,0.92,1.00), 7 slow filaments), world_light (the fire's light on the world draws back into the heart).
-  Hooks (t >= 4400 only): shutter (scene_b windows off once open), back_light 0, fire_centre y -7 (the crater's mouth,
-  as THE EDGE), fire_scale 2.0 -> 0.28 over 4800-4868, power (hands its light to the heart), the crater as occluder.
-  Opening order: giants 4480; then 3, 7, 1, 5, 4, 0 on the beats 4560-4660.
-* Look-dev on the FARM only: `farm.py cloud/jobs/embers_A3_turn.json --test 8 --frames ...`; per-frame camera trials:
-  TURN_CAMS='{"4400": [r, az, y, ty, hf]}' env in a test job's command.
-* Dependencies: edge.py (EMBERS-2) Crater/GoldRuns/PitEmbers/rim_r are used as-is; the crater's brink factor is 1 after
-  2640, so in A16 it starts bright and calms (edge `calm`) by 4700.
-
-# >>> EMBERS-2 (A7 THE EDGE + A8 THE BRINK only: edge.py; A3/A4/A9/A10 = EMBERS-A2, A16/A17 = EMBERS-A3 (turn.py),
-# C = EMBERS-C/-C2) -- STATE 27 Sep ~20:35Z: look-dev on the farm; edge jobs still HELD until new check stills <<<
-* Tests: `farm.py cloud/jobs/embers_A3_edge.json --test K --frames ... --detach` -> renders/_farmtest/embers_A3_edge/.
-  PUSH FIRST (nodes render the branch tip). Shared files (render.py, a3.py, scene_b.py): stage only my hunks
-  (scratchpad e4/stage_hunk.py builds the blob from HEAD + one replacement) and commit the index.
-* Shots (render.SHOTS_V3 A3): (1840,2460) THE EDGE + brink part 1, (2460,2520) the crown, (2520,2640) over the rim.
-* THE EDGE `_cam_edge`: one steady orbit r 27, y -8 (6 above the rim), az 2.93->3.25 rel ALPHA_C (the widest gap,
-  forges 4|5 framing), hf 88, SHIFT LENS (`lens_fall` fall 0.22: towers stay upright). Opens level on the fire over
-  the intact ground, tilts down with the falling plates (1848-1904). 2400-2459: the frame lifts to a slightly
-  upward, level-ish view (ty = y+4.2, hf 96) keeping the far lip at the bottom for the collapse (2440, jolt 0.22).
-* A8 crown `_cam_crown` (2460-2519): long lens (hf 38->48) from outside at r 70->61, az a7+0.05, level with the
-  crown; CrownBreak: seam of fire 2464-2480, throat through the parapet, gold glint round the silhouette, the
-  updraft's glare behind (a glow at the crown's height), raw broken faces after the break. FallingCrown: turns about
-  its own centre, drifts 11 in over the pit, CROWN_G 0.042: passes the lip ~2530, swallowed by the lake ~2544.
-  The forge's height freezes at the break (edge._height). StripEmbers x0.12 in this shot.
-* Over the rim `_cam_fall` (2520-2639): at the lip in the 7|0 gap, pitch 34->64 deg (slow), then falls toward the
-  lake's heart (ease-in); post() whites out 2600-2640.
-* Crater: bowl DEPTH 30 / BOWL_P 2.3 / LAKE 4.5, lip at the forges' feet (`_set_rim`), terraced strata lit from
-  below (w_strata, LAYER_H 3.2), WALL_RAMP, veins, pit haze (AIR_E), few pit embers, Chunks (crumble from 2000,
-  collapse 2440), heat shimmer. GoldRuns overlay (A3Sched.gold_overlay): broad rivulets, bright heads + trails per
-  beat. near_fade on tower embers/sparks. Fire (a3): settles to y -9, scale 2.0 -> 1.4 in 1846-1910, swells at 2400.
-* Farm tests so far: ft1 (EDGE ok-ish, crown illegible: black on black), ft2 (EDGE reads: bowl, dark lower third,
-  fire over it; 2446 smeared by the old tilt/shake; crown still dark; rim POV whip-blurred) -> fixes in 57a0dec.
-* NB: my render.py commit 1c3b512 carried EMBERS-A2's uncommitted TEXT window for T2 (700-840): it is theirs.
+## EMBERS-A3 STATE (27 Sep ~20:50Z) -- RESUME HERE (~23:30Z)
+* 20:52Z: JOB READY sent for embers_A3_turn + embers_A3_alt_turn (check stills: review/embers_A3_check/turn/ and
+  turn/alt_codedtowers/). On approval: `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/embers_A3_turn.json
+  --nodes 1` (and the _alt_turn job), from ~/mishamisha. If they're not launched when you resume, check `farm.py status`
+  and renders/embers_A3 (4400-4879) first; `--missing` renders only what's absent.
+* NEXT after 23:30Z (in order): (1) make the giants' opening unmistakable (brighter, larger window slits on the
+  facing faces, or a beat where the camera sees giant 6's facade closer); (2) the small lights at the rim visible in
+  the walk (brighter, and more of them on the far rim in frame); (3) a few ridge fires nearer the frame's middle;
+  (4) optional: the heart's inner structure (a hint of filaments), the giants' full height once.
+* Code: turn.py v3 (commit d84bf48), pushed. Jobs: cloud/jobs/embers_A3_turn.json (MAIN 4400-4879 ->
+  renders/embers_A3) + embers_A3_alt_turn.json (ALT 4400-4879 -> renders/embers_A3_alt_codedtowers), 4 lanes each.
+  Farm look-dev frames: renders/_farmtest/embers_A3_turn{,_lab}/ (v1 = leopard wash, rejected by me; lab = camera
+  variants 4400-4405/4530-4533; v3 check = 4400,4460,4500,4580,4660,4760,4830,4879).
+* v3 design: one take, the camera looking in through the gap between forge 1 and giant 2 (az 1.56, r 58 -> 42,
+  y 12, hfov 66: forge 1's back left, giant 2's back right, the fire and giant 6 in the gap, the crater glow below),
+  then (A17) walking down through that gap to the rim (r 17.5, y -10.5) with the heart centred at 4879. The light
+  finds the structure (edges/bands/seams/joints as warm lines, an even dim crust sheen: v1's crust wash read as
+  leopard print). Washes fade into the night as the fire gathers (night(), world_light 0.15 at the end).
+* Lab-verified (v2 lab sheet): the backs' bands and edges catch the far fires' warm light; ridge fires read as small
+  clusters at the frame edges; the heart centred and at the crossing's size.
+* KNOWN NITPICKS (for a cheap re-render after 23:30Z if the director wants): the shutters opening is readable only
+  as the facing facades brightening at this distance (the window slits are small); no shot of the giants' full height;
+  ridge fires are small and mostly at the edges; the heart is a plain white disc (no inner filaments).
 
 # >>> EMBERS-A2 (split off A, 27 Sep ~18:50Z): A3 GLYPHS, A4 THE POINT, A9 THE DEAD VALLEY, A10 THE EMBER,
 # A16 TOWERS IN THE LIGHT, A17 THE FIRE, SEEN (+ A16/A17 in the _alt_codedtowers ALT). EMBERS-2 keeps A7/A8 (edge.py).
