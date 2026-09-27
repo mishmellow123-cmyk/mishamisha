@@ -196,9 +196,9 @@ def draw_flares(img, zb, scam, f, pxs, fogp):
         ppm = scam.f / zc
         tr = NA.fire_trans(scam.pos, P, fogp, WD)
         e = env * tr
-        s1 = max(1.2 * Hf * ppm, 10.0 * pxs)
-        F2.halo(img, zb, sx, sy, s1, 0.035 * e, z=zc, zbias=max(3.0, 0.004 * zc), col=F2.AURA_COL)
-        F2.halo(img, zb, sx, sy, 3.2 * s1, 0.006 * e, z=zc, zbias=max(3.0, 0.004 * zc), col=F2.AURA_COL)
+        s1 = min(max(1.2 * Hf * ppm, 14.0 * pxs), 90.0 * pxs)
+        F2.halo(img, zb, sx, sy, s1, 0.08 * e, z=zc, zbias=max(3.0, 0.004 * zc), col=F2.AURA_COL)
+        F2.halo(img, zb, sx, sy, 3.0 * s1, 0.012 * e, z=zc, zbias=max(3.0, 0.004 * zc), col=F2.AURA_COL)
 
 
 # ------------------------------------------------------------------ the frame ---
