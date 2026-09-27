@@ -1,11 +1,3 @@
-> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
-> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
-> - The fire-basket plinth shows triangle-fan seams.
-> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
-> - The dark speckles on B's snow read as dalmatian spots (climb 700).
->
-> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
-
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
 ## RUN-A2 STATE AT PAUSE (27 Sep ~20:55Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
@@ -74,54 +66,46 @@
   A14 (`beaconrun_a.py`, RUN-A-L) imports it, plus `watchers_a.plate/draw_figures/extra_fires`.
 * **Check stills:** `_local_logs/review/runA/runA3_reveal_*.jpg`.
 
-## RUN-A-L STATE AT THE USAGE GAP (27 Sep ~20:45Z; resume ~23:30Z). RESUME HERE
+## RUN-A-L STATE AT THE USAGE GAP (27 Sep ~20:55Z; resume ~23:30Z). RESUME HERE
 **Mine:** A2 FALSE DAWN (`falsedawn.py`), A11 X2 (`stars_a.py`) and A14 BEACON RUN (`beaconrun_a.py` +
-`beaconrun_a_chain.npy`). The final farm jobs are one per shot, `falsedawn_a`, `stars_a` and `beaconrun_a`; launch
-with `farm.py <job> --nodes 3`, ONLY after the director approves JOB READY. The farm requests are in
-`~/.cache/ldfarm/req/`; check `farm.py status`.
-* **A11 X2** (cut 3120-3359 -> `stars_A`):
-  * v1 look-dev: the sequence works (ember, a few stars, more, then the Milky Way). But the band read as smoke over a
-    sparse field.
-  * v2 (7d5c4d9) adds 90k faint stars on the galactic plane and lowers the smooth glow to 0.06. Its look-dev is
-    request `...starsalook-71354`.
-  * The ember starts at EMBERS' measured centroid (958.6, 547.5) at 3120 and eases to (960, 548).
-  * NEXT: check the v2 sheet, then JOB READY `stars_a` (1 node, cheap).
-* **APPROVED and RENDERING:** `falsedawn_a` (main launched it with --nodes 6; log `_local_logs/jobs/falsedawn_a_farm.log`).
-  `stars_a` is JOB READY (sent 20:48Z).
-* **Post-23:30 list (director + mine), cheap re-renders:**
-  * A2: skew and notch the left sierra's highest spire (x ~430 at full res, a near-symmetric "perfect triangle").
-  * A2: vary the widths and lean of the foreground needles (lower centre), and add a broken crest or two.
-  * A2: the mackerel deck reads as flat streaks.
-  * A2: the cloud-sea strip at the bottom is dark.
-  * THE CLOUD SEA for all A nights (see below).
-* **A2 FALSE DAWN** (cut 80-559 -> `falsedawn_A`):
-  * In: FD_WALL v2 (a fractal far crest, 46 km, az -15). A thin moon key (FD_MOON=1: az -59 el 21, I 0.28) for
-    moonlit snow and aerial depth. glow_haze (0.25 share, no rays: the rays made vertical slabs, fixed in 049265c).
-    Anti-streak snow.
-  * The A/B test showed the moon version has far better depth than the glow key; the slab bug was then fixed.
-  * Re-test: request `...falsedawnalook-72930` (380, 500).
-  * NEXT: if clean, JOB READY `falsedawn_a` (--nodes 3).
-  * Still weak: the mackerel deck reads as flat streaks, and the strip of cloud sea at the bottom is dark and flat.
-* **A14 BEACON RUN** (cut 3920-4239 -> `beaconrun_A`):
-  * The chain is fixed (`beaconrun_a_chain.npy`: the seventh on RUN-A3's brink). Near fires 1/3/5 are size 1, at
-    1.07 km, 530 m and 190 m. Far fires 2/4/6 are great beacons (2.7), at 18.5, 9.3 and 5.2 km. Fire 7 is a hearth
-    (0.6) on RUN-A3's cairn.
-  * The camera glides from 170 m back / 50 m up (hfov 34, pitch -4, yaw -26) into A15's plate
-    (watchers_a.plate(CHAIN[6])) by 4230, then holds.
-  * Each catch flares (draw_flares). The lighters come from watchers_a.draw_figures (RUN-A3).
-  * The v1 look-dev failed at full frame: 2-5 px fires, and a flame towering over the seventh watcher. v2 (7d5c4d9)
-    fixes both; its look-dev is request `...starsalook-71354`.
-  * NEXT: check the v2 sheet and a low-res motion test, then JOB READY.
-* **THE ONE A NIGHT CLOUD SEA** (director): the knob grid was INCONCLUSIVE, because its camera looked into a crag. The
-  knob sets barely change the look. I told RUN-A3 to keep CLOUD at the world values and not to re-render A13 yet.
-  * The likely fix is geometry: an additive cumuliform relief for A's cloud sea. That is a leading CR row, like RUN-A2's
-    hole rows, which h_cloud_cr applies: 25-40 m cauliflower tops at a 90-150 m scale. Add a softer-wrap override if
-    needed.
-  * Test it from an A13-like high view over the sea. Then set nighta.CLOUD and re-render A13, A14 and A2 once.
-  * `nighta.night_light()` (RUN-A3) holds the CLOUD knobs. RUN-A-L owes
-  RUN-A3 the final values from the knob grid (`beaconrun_a_cloud`, request `...beaconrunacloud-64823`: 6 static
-  views 3920-3925 with NIGHT_CLOUD sets). The sets are listed in the job file. A13 will be re-rendered with them.
-* **Helpers:** `_local_logs/runA/pick_chain.py` (the chain picker), `_local_logs/runA/commit_runA.py` (commits).
+`beaconrun_a_chain.npy`). The final jobs are one per shot: `falsedawn_a`, `stars_a` and `beaconrun_a`. Launch only
+after the director approves JOB READY. Farm requests are in `~/.cache/ldfarm/req/`; see `farm.py status`.
+
+**APPROVED, queued or rendering on the farm (main launched them; do NOT relaunch):**
+* `falsedawn_a` (A2, 80-559 -> `renders/falsedawn_A`): request `0927-164717-falsedawna-78995`, 6 nodes, log
+  `_local_logs/jobs/falsedawn_a_farm.log`. Its units start after 17fbae4, so they carry the far wall's cliff fix.
+* `stars_a` (A11, 3120-3359 -> `renders/stars_A`): request `0927-164957-starsa-81073`, bundled with climb_b.
+* ON RESUME: run a contact sheet of each landed final (`look.find_frame`) and check for bad or missing frames. If
+  frames are missing: `farm.py <job> --missing`, but ask the director first.
+
+**A14 BEACON RUN: NOT READY.** The v2 look-dev is in `renders/_farmtest/beaconrun_a_look2/`:
+* Fixed: a vertical cliff on the far wall that read as a building (unequal ridge flank widths, 17fbae4).
+* RUN-A3 (sent): the seventh fire's cairn reads as stacked cubes, and the lighter merges into a dark pillar under
+  the flame. Asked them to offset the lighter 0.6-0.8 m so the flame rims one shoulder, and to make the stones
+  irregular.
+* Mine, next:
+  1. The glide fires still read small, and the catch flare is too weak. Raise draw_flares (peak 0.035 -> ~0.08, min
+     sigma 10 -> 14 px). Consider size 1.6 for near fires 1 and 3.
+  2. A motion test: the full range at scale 0.33, every 2nd frame, on the farm. Check the landing into the plate
+     and that a fire is always in frame.
+  3. Then JOB READY `beaconrun_a` (~320 frames; time a frame first).
+* The chain (fixed, sent to RUN-A3) and the camera are as in the block below.
+
+**THE ONE A NIGHT CLOUD SEA** (director): the knob grid was inconclusive. Its camera looked into a crag, and the knob
+sets barely changed the look.
+* I told RUN-A3: keep nighta.CLOUD at the world values, and don't re-render A13 for the cloud sea yet.
+* Plan: geometry. An additive cumuliform relief for A's cloud sea: a leading CR row type, like RUN-A2's hole rows,
+  applied in `world.h_cloud_cr`, giving 25-40 m cauliflower tops at a 90-150 m scale, plus a softer-wrap override
+  if needed.
+* Test it from an A13-like high view over the sea, set nighta.CLOUD, then re-render A13 (RUN-A3), A14 and A2 once.
+
+**Post-23:30 A2 list (cheap re-render, then approval):**
+* Skew and notch the left sierra's highest spire (x ~430 at full res, the "perfect triangle").
+* Vary the widths and lean of the foreground needles and add a broken crest or two.
+* The flat mackerel deck.
+* The dark cloud-sea strip (with the cloud-sea fix).
+
+**Check stills** for the JOB READYs sent: `_local_logs/review/runA/jobready/`.
 
 ## SPLIT (director approved ~19:05Z; RUN-A3 split off ~19:15Z for A13 + A15)
 * **RUN-A-L:** A2 FALSE DAWN (`falsedawn.py`), A11 X2 (`stars_a.py`, new), A13 R2-A REVEAL, A14 BEACON RUN and A15
@@ -253,6 +237,14 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
 * Lessons: background renders on the session box do not survive a usage pause (the box is frozen, then rebooted);
   use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact. In this world
   `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
+
+> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
+> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
+> - The fire-basket plinth shows triangle-fan seams.
+> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
+> - The dark speckles on B's snow read as dalmatian spots (climb 700).
+>
+> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
 
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION, R13b RING FALLS) - report 27 Sep <<<
 ## >>> STATE FOR RESUME (RUN-C-3, 27 Sep ~20:50Z; usage window ends 21:25Z, resume ~23:30Z) <<<
