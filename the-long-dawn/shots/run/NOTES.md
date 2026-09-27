@@ -229,6 +229,17 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
 * Gate PASS on the farm: 0.336 scroll / 0.341 reveal. Farm cost 34/36/42-44 s per frame per process (illum/scroll/reveal).
 * FREEZE: no RUN-C render-code pushes while the finals run (nodes fetch the tip before every unit).
 * Pending: final-code check frames reveal 114 / scroll 236 / illum 2640 (`rc3/farm4.log`) -> look, flag to main.
+* **NEXT ITEM (director 20:30Z): R13b THE RING FALLS, part b - NOT BUILT.** C13 bar 36 b3 -> end of bar 37 = cut-C
+  2840-2959 (120 f): the streak 2840-2899, the strike on 37 b2 = 2900 "in the snow beside an old cairn", flash,
+  hiss, steam plume to 2959. IN (EMBERS-C2 E13a, `shots/embers/c_fall.py`, NOTES l.76): at 2840 a small warm spark,
+  a few px, short trail, falling down-right of centre, nothing else warm, moonlight cold blue-white from the upper
+  left. OUT (MONTAGE-3D-4 C14 find_a, `shots/montage3d/ringc.py` `_find_a`): a Blender macro close-up of the band
+  in a clean snow hollow, low cold moon (15 deg, behind right), strike-2's flash just off frame upper left; not in
+  the keeper world, so only the read must match (snow on HER summit, a cairn by it). Plan: a NEW driver file
+  (never touching the running finals' files) on the same ink pass at night (cool wash, moon upper left): keeper's
+  summit (C16's) with keeper.CAIRN; the Ring a drawn gold head + tapering broken tail smeared per shutter sample;
+  a brief gold bloom on the snow (no starburst), an inked steam plume (ink_plumes' strands). Farm look-dev ->
+  JOB READY (3-4 jobs). MONTAGE-3D-4 not reachable by name: asked the director to relay.
 * Next polish (after the finals land, re-render only what changes): C17's sepia wash patches still read as soft
   blobs at full-frame size; triangle summits (shared terrain); the leftmost short tongue on near fires is a lobe.
 
@@ -431,6 +442,29 @@ boiling metric).
 
 ---
 
+# >>> RUN-B-3 STATE AT PAUSE (27 Sep ~21:15Z, account usage ends; RESUME ~23:30Z) <<<
+**Lane:** RUN-B-3 = THE HAND-BACK (3840-5199) + DUSK v2. RUN-B2 (agent adab49d5d24d90ffb) owns THE VIGIL + THE REVEAL.
+**Code (all pushed; last edfa370):** bworld b15 (sand-pile fix); handback_b.py (person2 + sleeve_arm arms,
+child3, cairn3, all via bfig.render; vigil join: fire light, vigil BAND/BAND_GAIN, STAR_GAIN, horizon_match,
+finish_at eases vigil.FINISH -> ours by 4160; child_pos()); NEW bfig.py (B's shared figure light: rim only on
+sun-facing edges = the director's "kill the uniform halo"; red wool translucency; cloak folds; STONE primitive;
+snow caps) and bprops.py (cairn3, child3), shared with RUN-B2 (it adopts them in the vigil/reveal).
+**Jobs (cloud/jobs):** handback_b_dawn_a (4240-4719), handback_b_dawn_b (4720-5199) = JOB READY sent 19:5xZ, then
+the director HELD them for the figure pass (done in edfa370); handback_b_night (4080-4239), handback_b_crane_a
+(3840-3959), handback_b_crane_b (3960-4079) = HELD until the 3839/3840 join matches RUN-B2's vigil still.
+Each ~18-30 min on 1 cpu-8 node (farm: `python3 the-long-dawn/cloud/farm.py <job.json> --nodes N`).
+**Look-dev:** farm test farm_hbb_t3 (3840/4300/4880/4976/5100 -> renders/_farmtest/handback_b_*) was queued behind
+~64 units at 20:35Z; local half-res hbb_t15 (same frames) running. See the live status line below for the verdict.
+**NEXT on RESUME:** (1) review hbb_t15 / _farmtest stills (figures: human silhouettes, child reads red, no halo,
+cairn stones with snow caps) -> JOB READY / launch dawn_a+b if approved; (2) match the join with RUN-B2's 3839
+still -> JOB READY night + crane_a/b (re-check the crane's first bar: RUN-B2 moved the vigil camera to WSW
+looking ENE, CAM_BEAR 62 / YAW 70; the set points are frozen on the old axes); (3) DUSK v2 into renders/dusk_B2
+(director's three notes: scale via haze + 3-4 layered far ridgelines + rock bands on her massif; the flat blue
+valleys must read as a textured cloud sea with wisps; the last red point several px, clearly rose). Gate any
+terrain change for DUSK behind DUSK-only switches (P[3] cloud relief; a DUSK-only CR row) so approved hand-back
+jobs never change under the director. dusk.py already has v2 WIP (fog 1.15e-4, wisps(), knoll-top glint).
+**Live status:** (updated below as things land)
+
 # >>> RUN-B STATE AT HANDOFF 3 (new agent RUN-B-3, 27 Sep ~19:10Z) <<<
 **Inherited:** PAUSE 2 state below (DUSK v1 done in renders/dusk_B; hand-back/vigil/reveal coded and tested; jobs
 written, none READY). **Director's order for this agent:** (1) hand-back: fix the smooth middle-distance mountain
@@ -486,7 +520,19 @@ handback_b's first crane frame; coordinating with RUN-B-3). **Live status:**
 * Travellers: vigil-only way down the ENE slope (vpath), seven looks, their own torchlight, fewer at once.
 * REVEAL: held beat on the roar (20 m), log-distance pull from the cello's CALL (1398) to 700 m WNW +45 m (1506),
   hfov 44->50, the summit low-left, the Milky Way (BAND posed for this wide, gain 0.16) from the right horizon.
-* 20:25Z look-dev of both (vigil_b_look 18 f + reveal_b_look 6 f) running on the farm.
+* 20:25Z look-dev of both (vigil_b_look 18 f + reveal_b_look 6 f) submitted to the farm (queue backed up ~25 min).
+* 20:30Z local quarter-res check (vg2_q, rev2_q): the WSW frame works (cairn / her / fire separate on the crest,
+  the cloud sea + rock islands, the far skyline answers, torch-bearers, fog veils, villages); open: the far answers
+  along the skyline may read as an even string of lights at full res (judge at half res), the Milky Way is not in
+  the vigil's frame (it is posed for the reveal; fine), the cairn read as a pagoda (-> cairn3). Reveal: the band now
+  strong across the last wide, the fire a warm point; but from 700 m level the plateau still read as a dune -> the
+  end moved to 240 m / +24 m (like f1450, which read as a snowy summit crest); the roar held through the cut (1372).
+* Vigil retimed to barmap_B sync (c0e9f69): 'traveller' 2880 = the first torch takes; three together bar 38 b3;
+  'year_60' 3600 = the child tops the path with its parent; 'child_points' 2560 = a faint unsure far light before
+  the answer takes on 2720; feeds on every stone_N (1960 ... 3560) and y60_strikes (3680); she sits on y60_sits.
+* 957a2d8: vigil + reveal use RUN-B-3's bfig.render (no uniform halo) + bprops.cairn3; the child = bprops.child3
+  once wrapped in her shawl, placed by handback_b.child_pos(). Finals written: cloud/jobs/vigil_b.json (1520-3839,
+  --nodes 3 -> 3 units of ~775 f) and reveal_b.json (1360-1519, --nodes 2); old vigil_b_a/b + reveal_b_a/b deleted.
 
 ## FROM HEROINE-B (B2 THE CLIMB, B 640-879 -> renders/climb_B; `shots/hills/climb_b.py`), 27 Sep ~20:05Z
 * Per the director, THE CLIMB uses B's shared keeper: `bset.person2('stand', arms=False, staff=False, age=0.85)` plus
