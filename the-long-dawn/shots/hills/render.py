@@ -33,6 +33,10 @@ def make_shot(name):
     if name == 'beacon':
         import beacon
         return beacon.FirstBeacon()
+    if name == 'beacon_v3':               # BIBLE_V3 B7: the flint take re-keyed (gloves, the head a rim-lit silhouette)
+        import beacon
+        beacon.V3_REKEY = True
+        return beacon.FirstBeacon()
     if name == 'coda':
         import coda
         return coda.Coda()

@@ -31,8 +31,8 @@ PEXP = 3.2
 
 # materials 0-10 are heroine_sdf's; the v3 props follow
 (M_SKIN, M_EYE, M_HAIR, M_COAT, M_SCARF, M_CLOTH, M_BOOT, M_STEEL, M_FLINT, M_NAIL, M_KNIT) = range(11)
-M_GOLD, M_CLAY, M_EMBER, M_SNOW, M_ICE, M_COAL, M_IRON, M_ASH = range(11, 19)
-NMAT3 = 19
+M_GOLD, M_CLAY, M_EMBER, M_SNOW, M_ICE, M_COAL, M_IRON, M_ASH, M_GLOVE = range(11, 20)
+NMAT3 = 20
 NCOL = 24
 # material columns: 0-15 as heroine_sdf (albedo, rough, F0, wrap, sheen, trans, rim, amb, metal, tex type,
 # tex scale, tex amp, bump, spare); 16 emission type (1 = ember/coal cracks); 17 env reflection gain;
@@ -52,6 +52,7 @@ def material_table3():
     M[M_COAL, :15] = [0.030, 0.027, 0.025, 0.85, 0.030, 0.10, 0.0, 0.0, 0.4, 1.0, 0.0, 0, 0.0, 0.0, 0.25]
     M[M_IRON, :15] = [0.045, 0.040, 0.036, 0.55, 0.120, 0.0, 0.0, 0.0, 0.8, 1.0, 0.6, 1, 120.0, 0.35, 0.15]
     M[M_ASH, :15] = [0.21, 0.20, 0.19, 0.98, 0.020, 0.40, 0.25, 0.0, 0.5, 1.0, 0.0, 1, 300.0, 0.25, 0.20]
+    M[M_GLOVE, :15] = [0.105, 0.056, 0.036, 0.40, 0.040, 0.10, 0.22, 0.0, 0.7, 1.0, 0.0, 1, 260.0, 0.14, 0.16]
     M[M_EMBER, 16] = 1.0
     M[M_COAL, 16] = 1.0
     M[M_GOLD, 17] = 1.0
@@ -64,14 +65,16 @@ def material_table3():
 
 # ------------------------------------------------------------- the band ---
 
-def band(B, c, Rw, R, tb, hb):
-    """Append the Ring's band to the current group. Rw rows = world->local (row 1 = the ring's axis)."""
+def band(B, c, Rw, R, tb, hb, rnd=0.0):
+    """Append the Ring's band to the current group. Rw rows = world->local (row 1 = the ring's axis). rnd > 0: a
+    rounded-rectangle section (ring.py's band); rnd = 0: tolkien.py's superellipse section."""
     row = B._row(T_BAND, 0.0, 0)
     row[5:8] = c
     row[11:20] = np.asarray(Rw, np.float64).reshape(-1)
     row[20] = tb
     row[21] = hb
     row[22] = R
+    row[23] = rnd
     B.cur['prims'].append((row, np.r_[np.asarray(c, np.float64), R + tb + hb * 0.2 + 0.002]))
     return B
 
@@ -88,6 +91,14 @@ def _sd_band(P, i, px, py, pz):
     tb = P[i, 20]
     hb = P[i, 21]
     a = abs(y)
+    rnd = P[i, 23]
+    if rnd > 0.0:
+        # ring.py's band: a rounded rectangle revolved round the axis (exact)
+        qx = q - tb + rnd
+        qy = a - hb + rnd
+        ox = max(qx, 0.0)
+        oy = max(qy, 0.0)
+        return math.sqrt(ox * ox + oy * oy) + min(max(qx, qy), 0.0) - rnd
     # superellipse |q/tb|^p + |y/hb|^p = 1 (approximate distance, scaled by the short semi-axis: safe)
     f = ((q / tb) ** PEXP + (a / hb) ** PEXP) ** (1.0 / PEXP) - 1.0
     if f > 0.6:
@@ -223,6 +234,31 @@ def ins_sample(INS, XP, x, y, z, fp):
     """Coverage 0..1 of the inscription at a ring-local point (axis = local y). fp = pixel footprint (m).
     Line 1 on the outer face, read from outside; line 2 on the inner face, mirrored (tolkien.py's layout)."""
     R = XP[14]
+    if XP[53] > 0.5:
+        # ring.py's layout: one strip once round the band (u), across its width (v); the inner face mirrored
+        tb = XP[15]
+        rr = math.sqrt(x * x + z * z)
+        qq = rr - R
+        fade = min(1.0, max(0.0, (abs(qq) / tb - 0.35) / 0.40))
+        if fade <= 0.0:
+            return 0.0
+        u = math.atan2(z, x) / 6.2831853
+        if qq < 0.0:
+            u = 0.37 - u
+        u = u - math.floor(u)
+        v = 0.5 - y / (2.0 * XP[16])
+        if v < 0.0 or v > 1.0:
+            return 0.0
+        lf = math.log(max(1.0, XP[48] * fp * 1.3)) / 0.6931472
+        nlev = int(XP[52])
+        l0 = min(int(lf), nlev - 1)
+        l1 = min(l0 + 1, nlev - 1)
+        fr = min(max(lf - l0, 0.0), 1.0)
+        s0 = 2.0 ** l0
+        s1 = 2.0 ** l1
+        c0 = _bilin(INS, l0, u * XP[41] / s0, v * XP[40] / s0)
+        c1 = _bilin(INS, l1, u * XP[41] / s1, v * XP[40] / s1)
+        return (c0 * (1 - fr) + c1 * fr) * fade
     em = XP[48]
     if em <= 0.0:
         return 0.0
@@ -469,6 +505,11 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
     if env[12] > 0.0:
         ao = calc_ao3(P, G, cand, nc, px + nx * 0.0005, py + ny * 0.0005, pz + nz * 0.0005, nx, ny, nz, env[12])
     metal_col = metal > 0.0 and m != M_STEEL
+    # rim-only groups (G col 9 = strength): the warm near sources (soft_k != 0) reach them only at grazing angles
+    sil = G[g, 9] if G.shape[1] > 9 else 0.0
+    rimw = 1.0
+    if sil > 0.0:
+        rimw = (1.0 - sil) + sil * (1.0 - ndv) ** 4
     for q in range(nl):
         lx = L[q, 0] - px
         ly = L[q, 1] - py
@@ -498,6 +539,8 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
         if m == M_SKIN and sh < 1.0:
             shr = sh + (1.0 - sh) * 0.10
             shg = sh + (1.0 - sh) * 0.02
+        if sil > 0.0 and L[q, 7] != 0.0:
+            E *= rimw
         Er = L[q, 3] * E
         Eg = L[q, 4] * E
         Eb = L[q, 5] * E
@@ -575,9 +618,10 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
         b += env[5] * rim * (0.35 + ab * 2.0)
     up = 0.5 + 0.5 * ny
     amb = M[m, 9] * ao
-    r += amb * ar * (env[6] * up + env[9] * (1.0 - up) * (1.0 - up)) * (1.0 - metal)
-    gg += amb * ag * (env[7] * up + env[10] * (1.0 - up) * (1.0 - up)) * (1.0 - metal)
-    b += amb * ab * (env[8] * up + env[11] * (1.0 - up) * (1.0 - up)) * (1.0 - metal)
+    bw = (1.0 - up) * (1.0 - up) * rimw
+    r += amb * ar * (env[6] * up + env[9] * bw) * (1.0 - metal)
+    gg += amb * ag * (env[7] * up + env[10] * bw) * (1.0 - metal)
+    b += amb * ab * (env[8] * up + env[11] * bw) * (1.0 - metal)
     # ---- what the surface mirrors: the environment map (night, snow, fire, the vision)
     if refl > 0.0 and XP[25] > 0.5:
         rx = 2.0 * ndv * nx - vx
@@ -763,10 +807,21 @@ def render_region3(cam, P, G, BS, M, L, nl, env, H, XP, ENV, INS, tile_off, tile
                     depth[j, i] = dmin
 
 
-def render(cam, B, H, lights, env, XP, ENV, INS, M=None, ss=3, pad=6, region=None):
+def render(cam, B, H, lights, env, XP=None, ENV=None, INS=None, M=None, ss=3, pad=6, region=None, sil=None):
     """Sphere-trace a Builder. Returns (Y0, X0, rgb_premul, alpha, depth, group) or None. region = (x0, y0, x1, y1)
-    clips the traced rectangle (render px)."""
+    clips the traced rectangle (render px). sil = {group name: 0..1}: rim-only strength under the warm sources."""
     P, G, BS = B.arrays()
+    if sil:
+        col = np.zeros((len(G), 1))
+        for gi, g in enumerate(B.groups):
+            col[gi, 0] = sil.get(g['name'], 0.0)
+        G = np.c_[G, col]
+    if XP is None:
+        XP = np.zeros(64)
+    if ENV is None:
+        ENV = np.zeros((1, 2, 4, 3), np.float32)
+    if INS is None:
+        INS = np.zeros((1, 2, 2), np.float32)
     if M is None:
         M = material_table3()
     sx, sy, z = cam.project(BS[:, :3])
@@ -795,6 +850,30 @@ def render(cam, B, H, lights, env, XP, ENV, INS, M=None, ss=3, pad=6, region=Non
     render_region3(cam.params(), P, G, BS, M, Lg, len(Lg), np.asarray(env, np.float64), H,
                    np.asarray(XP, np.float64), ENV, INS, off, idx, allidx, X0, Y0, w, h, TS, ss, rgb, a, d, gb)
     return Y0, X0, rgb.astype(np.float32), a.astype(np.float32), d.astype(np.float32), gb
+
+
+def gloves(B, H=None, inflate=0.0009):
+    """Her hands as leather gloves: the hand groups get M_GLOVE and grow by `inflate` (m), the nails go, and the
+    cold flush on knuckles and fingertips is switched off (H[40] = 0)."""
+    for g in B.groups:
+        if g['name'] in ('hand_n', 'hand_f'):
+            g['mat'] = M_GLOVE
+            g['band'] = 0.003
+            for row, bs in g['prims']:
+                typ = int(row[0])
+                if typ == 0 or typ == 2:
+                    row[8:11] += inflate
+                    if typ == 2:
+                        row[20] += inflate
+                elif typ == 1:
+                    row[20] += inflate
+                    row[21] += inflate
+                bs[3] += inflate
+        elif g['name'] in ('hand_n_nails', 'hand_f_nails'):
+            g['prims'] = []
+    if H is not None:
+        H[40] = 0.0
+    return B
 
 
 def group_index(B, name):
@@ -881,4 +960,53 @@ def ring_xp(XP, centre, rows, R, tb, hb, glow=0.0, engrave=1.0):
     XP[50] = 2 * math.pi * (R + tb)
     XP[51] = 2 * math.pi * (R - tb)
     XP[52] = lay['levels']
+    return XP
+
+
+_INSA = {}
+
+
+def inscription_accord(levels=6):
+    """(INS (L, h, w), (h, w)): accord/ring.py's inscription strip (its own invented script, seed 1914) with a 2x mip
+    chain; cached in shots/hills/cache."""
+    if 'a' in _INSA:
+        return _INSA['a']
+    import importlib.util
+    import os
+    import cv2
+    here = os.path.dirname(os.path.abspath(__file__))
+    cache = os.path.join(here, 'cache', 'ring_inscription_accord_v3.npz')
+    if os.path.exists(cache):
+        cov = np.load(cache)['cov']
+    else:
+        spec = importlib.util.spec_from_file_location('ring_accord_ins', os.path.join(here, '..', 'accord', 'ring.py'))
+        RG = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(RG)
+        cov = RG.inscription(RG.STRIP_W, RG.STRIP_H).astype(np.float32)
+        os.makedirs(os.path.dirname(cache), exist_ok=True)
+        np.savez_compressed(cache, cov=cov)
+    lv = [cov]
+    for _ in range(levels - 1):
+        a = lv[-1]
+        lv.append(cv2.resize(a, (max(1, a.shape[1] // 2), max(1, a.shape[0] // 2)), interpolation=cv2.INTER_AREA))
+    stack = np.zeros((levels,) + cov.shape, np.float32)
+    for k, a in enumerate(lv):
+        stack[k, :a.shape[0], :a.shape[1]] = a
+    _INSA['a'] = (stack, cov.shape)
+    return _INSA['a']
+
+
+def ring_xp_accord(XP, centre, rows, R, tb, hb, glow=0.0, engrave=1.0):
+    """The Ring's XP slots with ring.py's inscription layout (XP[53] = 1)."""
+    stack, (hh, ww) = inscription_accord()
+    XP[1] = 1.0
+    XP[2:5] = centre
+    XP[5:14] = np.asarray(rows, np.float64).reshape(-1)
+    XP[14], XP[15], XP[16] = R, tb, hb
+    XP[17] = glow
+    XP[18] = engrave
+    XP[40], XP[41] = hh, ww
+    XP[48] = ww / (2 * math.pi * (R + tb))          # texels per metre round the outer face
+    XP[52] = stack.shape[0]
+    XP[53] = 1.0
     return XP
