@@ -51,6 +51,11 @@ DESIGN (as rendered):
 # >>> EMBERS-C3 (27 Sep ~20:35Z, took over from EMBERS-C): E15 LETTERS TO FIRE, E5-C THE FORGING, E11 THE RACE, and the
 # canonical Ring (ringsolid.py) + gold flame (cflame.py). EMBERS-C2 owns E12 / E8-C / E13a (c2.py etc.). <<<
 ## STATE AT HANDOFF (EMBERS-C3, 27 Sep 21:15Z; the account idles ~21:25Z-23:30Z). READ THIS FIRST.
+**UPDATE 23:50Z: JOB READY embers_C3_e15 SENT** (C 700-1039, 340 f; pass 3 reviewed: _farmtest/embers_C3_e15_p3,
+review/embers_C3_check/SHEET_E15_pass3.jpg). Sparks = tributary streams, one hooked stream down the trunk at the end
+(no radial, no spiral, no bird); C5 letters = three charred letters dark in the flame's body. Waiting for approval;
+the director launches it (farm.py the-long-dawn/cloud/jobs/embers_C3_e15.json --nodes 2). Then: sheet 700-1039 every
+20 f composited over MAP's book_C when that lands. Nitpick: a short right arm at 776. ALL THREE C SHOTS ARE THEN IN.
 **UPDATE 23:45Z (resumed on the new account):** forging 1040-1439 (relaunch) and the race 1440-1679 LANDED in full; the
 director reviews them in the cut. E15 letters test 2 read as letters but overhung the flame (black 'wire' on the halo);
 33f1ca2 moves the word inside the body (19 %, at 37 %), inks only where the flame is bright, adds a glowing charred rim,
