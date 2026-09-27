@@ -1,3 +1,53 @@
+# >>> HEROINE-v3 REPORT 2 (2026-09-27 ~05:30Z; after the LOCKED beat sheets, director commit 99e9bfb) <<<
+
+The locked sheets moved every heroine shot; all are re-keyed to them. REPORT 1 (01:15Z) follows below for history.
+
+**H1 on the MASTER TIMING, all cuts (must-have).** `beacon.use_master_timing()` rebinds the take's timing constants:
+strike 2 +29, strike 3 +58, the long blow +84..+180 (three breaths), the catch +196, the roar +240 (on a downbeat); the
+accepted post-catch poses are stretched 42 -> 44 frames to the roar and shifted +116 after it; four frame literals
+became constants with identical v2b values, so `--shot beacon` is unchanged. `render.py --shot beacon_v3` = this timing
++ the B7 re-key; src 1200-1555, strike 1 = src 1236 -> `renders/h1_v3`, JPEGs to branch **`claude/render-h1-v3-master`**
+(`cloud/jobs/h1_v3_master.json`; RUNNING on this box since 05:09Z, ~1-1.5 h; log
+`/home/user/h1m/the-long-dawn/cloud_logs/h1_v3_master_runner.log`). Verified at half res: 1265 (strike 2), 1334/1400
+(the blow), 1436/1456 (catch, small flame), 1478 (roar), 1500/1555 (pull-back): face dark throughout.
+Edit mapping (src -> cut): A src 1236 = A 3360 (+2124); B src 1236 = B 1120 (-116); C src 1236 = C 2980 (+1744) through
+strike 2 (C 3009), the find inserts, then src 1294 (strike 3) = C 3178 (+1884) through the roar (src 1476 = C 3360).
+The 00:42Z re-key on the v2b timing (`renders/hills_v3`, branch `claude/render-h1-v3-rekey`, `--shot beacon_v3_rekey`)
+is now only the fallback.
+
+**B THE DEAD EMBER (H5), B 880-1119.** Re-keyed and restaged: her FAR gloved hand lifts the lid away from the lens and
+sets it down beyond the pot on the knock (bar 12 b3 = 920), then rests on the pot's belly clear of the mouth; the red
+eye 920-980; from bar 13 b2 (980) she blows, a breath of hope, then the eye greys (1000-1100); the last red point on bar
+14 b4 (1100), out by 1116; the camera drifts 1040-1100 so that point sits exactly where H1's first spark is born
+(full-res px 757, 256): the match cut on bar 15 b1. Quarter-res motion test `review/v3/heroine_v3_deadember_mt2.jpg`:
+the lid lift is clean now. Fixed since: the ash poking through the wall, the soot (M_COAL greyed to ash) now dark.
+Verdict: PASS (beats its fallback). Stills: `renders/heroine_B/stills/deadember_{936,1100}.png`.
+
+**C THE FIRE TEST (H2, Bag End), C 3392-3599.** Locked frame on the fire; her fist brings the steel in (3392-3404), the
+Ring lies on its tip in the flames from bar 43 b3 (3400); on bar 44 b3 (3480) the steel dips and rolls, the Ring slides
+toward the edge and does not fall; on bar 45 b3 (3560) she draws it out of frame right. PASS. Still `firetest_3484.png`.
+
+**C THE FIND (H2), C 3009-3059.** Strike 2 (C 3009) finds the band in the melted hollow; the insert is the fallback
+(the band alone, `Find.HAND = False`); the edit cuts to her closed fist for bar 39 b2. The vision on the band (towers
+bowing, bar 39 b3.5) is a Ring close-up: the Blender bake-off lane's. Still `find_3012.png`.
+
+**B THE CLIMB (H4), B 640-879.** The close from behind (bar 11 b1) FAILED in five framings (the pot is hidden by her
+body from behind; from the side the frame is a dark mass; the stand-in arete reads as a roof) -> the sheet's FALLBACK:
+the wide alone, her figure <= 60 px with the pot's glow the only warm point, on RUN-B's plate. This lane supplies
+`heroine_v3.climb_layer(cam, f, world_pos, heading_deg)`: the trudging, gloved figure with the glowing clay pot as an
+RGBA + depth layer for any camera (B's moon; the pot's light; the scarf and hair in the wind); `climb_wide_test` is a
+crude stand-in wide for scale only.
+
+**RENDER_SPEC (one 4-core box each, 2 processes x 2 workers, `--step 2`, ship jpg; `render.py --shot <name>`):**
+* `cloud/jobs/h1_v3_master.json` (beacon_v3): RUNNING here, see above.
+* `cloud/jobs/h5_deadember_b.json` (deadember): B 880-1119 -> `renders/heroine_B`, ~1 h. Ready.
+* `cloud/jobs/h2_firetest_c.json` (firetest): C 3392-3599 -> `renders/heroine_C`, ~50 min. Ready.
+* `cloud/jobs/h2_find_c.json` (find): C 3009-3059 -> `renders/heroine_C`, ~15 min. Ready.
+
+**Remaining weaknesses.** The glove fingers are a touch thick at 1:1; the dead ember's snow wedge between her knee and
+body is a hard shape; the Ring is ring.py's band (the bake-off may replace it); H3 not attempted (optional); the
+climb's close is the fallback; H6 belongs to HILLS on the locked sheet.
+
 # >>> HEROINE-v3 REPORT (2026-09-27 ~01:15Z, lane `heroine`, code on branch claude/v3-heroine) <<<
 
 **What it is.** (1) **H1 RE-KEYED** (BIBLE_V3 REVISION 1, red-team B7) and rendered in full: the accepted v2b flint take

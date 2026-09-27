@@ -339,10 +339,10 @@ class DeadEmber:
         lc = lc * (1 - b) + down * b
         back = smoothstep(self.KNOCK + 4, self.KNOCK + 24, f)
         grip = lc + np.array([0.030, 0.050, 0.020])
-        steady = self.POT + np.array([0.050, 0.080, 0.085])
+        steady = self.POT + np.array([0.118, 0.105, 0.020])       # the pot's right belly: clear of the mouth
         p['hand_f'] = tuple(grip * (1 - back) + steady * back)
         fg, pg = nrm([-0.45, -0.75, -0.40]), nrm([0.05, -0.90, -0.40])
-        fs, ps = nrm([-0.55, -0.30, -0.78]), nrm([-0.35, 0.05, -0.93])
+        fs, ps = nrm([-0.20, -0.95, -0.10]), nrm([-0.97, 0.05, -0.20])
         p['fdir_f'] = tuple(nrm(fg * (1 - back) + fs * back))
         p['palm_f'] = tuple(nrm(pg * (1 - back) + ps * back))
         p['curl_f'] = tuple(np.array([0.55, 0.62, 0.70, 0.74]) * (1 - back) + np.array([0.30, 0.34, 0.40, 0.46]) * back)
@@ -373,12 +373,12 @@ class DeadEmber:
         B.torus(c + [0, 0.137, 0], np.eye(3), 0.041, 0.0078, 0.0088, k=0.010)                  # rim
         B.ell(c + [0, 0.070, 0], np.array([0.069, 0.059, 0.069]), op=1, k=0.004)               # hollow
         B.cone(c + [0, 0.100, 0], c + [0, 0.190, 0], 0.0335, 0.0335, op=1, k=0.004)            # mouth
-        B.ell(c + [0.030, 0.143, -0.028], np.array([0.009, 0.007, 0.008]), op=1, k=0.002)       # an old chip in the lip
+        B.ell(c + [0.026, 0.1475, -0.030], np.array([0.0055, 0.0040, 0.0050]), op=1, k=0.0015)   # an old chip in the lip
         # soot: the lip blackened by years of carried fire
-        B.group('soot', H3.M_COAL, band=0.002)
+        B.group('soot', H3.M_BOOT, band=0.002)          # dark soot (M_COAL would grey to ash with no fire in it)
         B.torus(c + [0, 0.1395, 0], np.eye(3), 0.0395, 0.0056, 0.0066, k=0.0)
         B.group('ash', H3.M_ASH, disp=1, amp=0.0012, scale=160.0, band=0.004)
-        B.ell(c + [0, 0.080, 0], np.array([0.066, 0.026, 0.066]))
+        B.ell(c + [0, 0.080, 0], np.array([0.058, 0.026, 0.058]))
         B.group('ember', H3.M_EMBER, disp=1, amp=0.0016, scale=150.0, band=0.004)
         e = c + np.array([0.006, 0.107, 0.018])
         B.ell(e, np.array([0.0135, 0.0085, 0.011]), R=np.stack([nrm([1, 0.1, 0.3]), nrm([-0.1, 1, 0]), nrm([-0.3, 0, 1])]))
@@ -536,18 +536,35 @@ def fire_env(inten=1.0):
 
 
 class FireTest:
-    """C 168.3-174.3 s (frames 4040-4183). Bag End: after the roar she holds the Ring into her beacon on the tip of her
-    steel. It hangs there in the flames, unmarked, its letters awake, not even warm. Her gloved hand trembles; the
-    steel dips once toward the coals; she cannot let it fall; she draws it back (4160+)."""
-    F0, F1 = 4040, 4183
+    """C · THE FIRE TEST (Bag End) on the locked sheet: C frames 3392-3599 (the roar is H1's, bar 43 b1 = 3360). Her
+    gloved fist brings her steel into the beacon (3392-3404) and on bar 43 b3 (3400) the Ring lies on its tip in the
+    flames, unmarked, letters awake, not even warm; her hand trembles. On bar 44 b3 (3480) the steel tips (it dips and
+    rolls), the Ring slides toward the edge and should fall into the fire, and does not: she cannot let it; she levels
+    it (3500). On bar 45 b3 (3560) she draws it out of the fire (out of frame right by ~3590)."""
+    F0, F1 = 3392, 3599
     HFOV = 40.0
+    TIP = 3480
+    OUT = 3560
+
+    def ref_ring(self):
+        """Where the Ring rests during the hold (3440): the locked camera frames it."""
+        if not hasattr(self, '_ref'):
+            p, dip, back = self.pose(3440)
+            an = hero.build_figure(p, 3440 / FPS)[3]
+            tip, d, n = self.steel(hero.Builder(), an, dip)
+            self._ref = self.ring_on_tip(tip, d, n)[0]
+        return self._ref
+
+    def tipping(self, f):
+        return smoothstep(self.TIP - 6, self.TIP + 4, f) * (1 - smoothstep(self.TIP + 10, self.TIP + 26, f))
 
     def pose(self, f):
         t = f / FPS
-        tremble = 0.0015 * fnoise1(t * 9.0, 7.0, 2) + 0.0008 * fnoise1(t * 17.0, 9.0, 1)
-        dip = 0.012 * smoothstep(4100, 4118, f) * (1 - smoothstep(4122, 4140, f))
-        back = smoothstep(4160, 4183, f)
-        wrist = np.array([0.370 + 0.08 * back, 1.245 - dip + tremble, 0.010])
+        tremble = (0.0015 * fnoise1(t * 9.0, 7.0, 2) + 0.0008 * fnoise1(t * 17.0, 9.0, 1)) * (1 + 1.5 * self.tipping(f))
+        dip = 0.010 * self.tipping(f)
+        enter = 1 - smoothstep(self.F0, self.F0 + 12, f)
+        back = smoothstep(self.OUT - 4, self.OUT + 30, f)
+        wrist = np.array([0.370 + 0.10 * enter + 0.16 * back, 1.245 - dip + tremble + 0.02 * back, 0.010])
         p = dict(
             pelvis=(0.80, 0.63, 0.0), yaw=0.0, lean=10.0, chest=4.0, twist=6.0, neck=16.0, head=20.0, head_yaw=0.0,
             head_roll=0.0, shrug=0.4,
@@ -563,9 +580,9 @@ class FireTest:
         )
         return p, dip, back
 
-    def steel(self, B, anc, dip):
-        """Her steel held like a key: pinched between thumb and curled index, its bar pointing into the fire. Returns
-        the tip and the bar's direction."""
+    def steel(self, B, anc, dip, roll=0.0):
+        """Her steel held like a key: pinched between thumb and curled index, its bar pointing into the fire, rolled by
+        `roll` (deg) when it tips. Returns the tip, the bar's direction and its top face normal."""
         hf = anc['hand_f']
         a = hf['a']
         up = np.array([0.0, 1.0, 0.0])
@@ -573,19 +590,19 @@ class FireTest:
         p0 = hf['thumb'] + a * 0.004 - hf['n'] * 0.004
         p1 = p0 + d * 0.085
         side = nrm(np.cross(d, up))
-        R = np.stack([d, nrm(np.cross(side, d)), side])
+        n = nrm(np.cross(side, d))
+        if roll:
+            n = hero.rot_about(n, d, roll)
+            side = nrm(np.cross(d, n))
+        R = np.stack([d, n, side])
         B.group('steel', H3.M_IRON, band=0.001)
         B.box(0.5 * (p0 + p1), np.array([0.0425, 0.0035, 0.0075]), R=R, rnd=0.0012)
-        return p1, d
+        return p1, d, n
 
-    def ring_on_tip(self, tip, d):
-        """Bag End: the Ring lies flat on the end of the flat steel, balanced; a tilt of her wrist would tip it into
-        the coals."""
+    def ring_on_tip(self, tip, d, n, slide=0.0):
+        """Bag End: the Ring lies flat on the end of the flat steel, balanced; `slide` (m) moves it toward the edge."""
         R, tb, hb, rnd = ring_dims()
-        up = np.array([0.0, 1.0, 0.0])
-        side = nrm(np.cross(d, up))
-        n = nrm(np.cross(side, d))                     # the steel's top face normal
-        centre = tip - d * 0.009 + n * (0.0035 + hb)
+        centre = tip - d * (0.009 - slide) + n * (0.0035 + hb)
         rows = H3.ring_frame(n, ref=d)
         return centre, rows
 
@@ -619,9 +636,12 @@ class FireTest:
         t = f / FPS
         p, dip, back = self.pose(f)
         B, F, Hp, anc, hair = figure(p, t, hair_dir=(0.8, -0.3))
-        tip, d = self.steel(B, anc, dip)
-        ring_c, rows = self.ring_on_tip(tip, d)
-        cam, focus = self.camera(f, scale, ring_c)
+        tp = self.tipping(f)
+        tip, d, n = self.steel(B, anc, dip, roll=9.0 * tp)
+        ref = self.ref_ring()
+        ring_c, rows = self.ring_on_tip(tip, d, n, slide=0.0055 * smoothstep(self.TIP - 2, self.TIP + 8, f)
+                                        * (1 - 0.35 * smoothstep(self.TIP + 14, self.TIP + 30, f)))
+        cam, focus = self.camera(f, scale, ref)            # a locked frame: the steel moves through it
         cam, focus, nodof = debug_cam(cam, focus, scale)
         add_ring(B, ring_c, rows)
         self.wood(B)
@@ -665,14 +685,15 @@ class FireTest:
 
 
 class Find:
-    """C 148.2-153.5 s (frames 3557-3683). Low on the snow by her near knee. 3557 the second strike: its flash (from the
+    """C 148.2-153.5 s (frames 3557-3135). Low on the snow by her near knee. 3557 the second strike: its flash (from the
     flint ~1 m above) finds a gold band in a melted hollow, sparks rain and die on the snow; dark again, the band's
-    letters are faintly awake (its own light, 3562+); 3600 her gloved near hand comes down out of the dark, 3640 the
-    fingers close on it, 3660 lift it away."""
-    F0, F1 = 3557, 3683
+    letters are faintly awake (its own light, 3562+); 3052 her gloved near hand comes down out of the dark, 3092 the
+    fingers close on it, 3112 lift it away."""
+    F0, F1 = 3009, 3059
     HOL = np.array([0.33, 0.0, -0.40])
+    SHIFT = 3009 - 3557              # the locked sheet: strike 2 on C 3009 (bar 38 b2 + 29)
     HFOV = 42.0
-    STRIKE = 3557
+    STRIKE = 3009
     FLINT = np.array([0.32, 1.08, -0.07])
 
     HAND = False            # the hand closing on the band failed its test (claw read): the shot is the band alone
@@ -680,12 +701,12 @@ class Find:
     def reach(self, f):
         if not self.HAND:
             return 0.0
-        return smoothstep(3600, 3640, f) * (1 - smoothstep(3660, 3683, f))
+        return smoothstep(3052, 3092, f) * (1 - smoothstep(3112, 3135, f))
 
     def pose(self, f):
         t = f / FPS
         r = self.reach(f)
-        close = smoothstep(3636, 3650, f)
+        close = smoothstep(3088, 3102, f)
         W = self.HOL + np.array([0.058, 0.052, 0.018]) + np.array([0.10, 0.45, 0.10]) * (1 - r)
         p = dict(
             pelvis=(0.76, 0.42, -0.05), yaw=0.0, lean=72.0, chest=14.0, twist=0.0, neck=8.0, head=22.0, head_yaw=0.0,
@@ -708,7 +729,7 @@ class Find:
         R, tb, hb, rnd = ring_dims()
         rest = self.HOL + np.array([0.004, -0.0075 + hb * 0.9 + 0.002, 0.002])
         rows_rest = H3.ring_frame(nrm([0.18, 1.0, -0.12]), ref=(1.0, 0.0, 0.0))
-        lift = smoothstep(3650, 3683, f)
+        lift = smoothstep(3102, 3135, f)
         if lift <= 0.0:
             return rest, rows_rest
         hn = anc['hand_n']
@@ -737,7 +758,7 @@ class Find:
         flash = math.exp(-d / 2.4) if d >= 0 else 0.0
         # the letters, faintly awake in the dark; they warm as her fingers come near (the temptation is beautiful)
         # and light her glove from below, then dim in her closed hand
-        near = smoothstep(3612, 3646, f) * (1 - smoothstep(3650, 3668, f)) if self.HAND else 0.0
+        near = smoothstep(3064, 3098, f) * (1 - smoothstep(3102, 3120, f)) if self.HAND else 0.0
         awake = 0.05 + 0.03 * math.sin(t * 2.3) + 0.45 * near
         XP = np.zeros(64)
         ring_xp(XP, ring_c, rows, glow=awake)
@@ -790,6 +811,211 @@ class Find:
             splat_streak(img, float(px), float(py), float(sx), float(sy), max(0.6, 1.1 * cam.scale), en, en * 0.55, en * 0.2)
 
 
+# ================================================================ B H4 ====
+
+class Climb:
+    """B · THE CLIMB (H4) on the locked sheet, bars 9-11 (B 640-879). 640-799 is the wide: RUN-B's arête plate with her
+    figure at 60 px or less, from `climb_layer()` (any camera, any place on the ridge). 800-879 (bar 11 b1) is this
+    shot: closer, behind her, the red scarf and the clay pot's glow ahead of her as she trudges up a snow arête in
+    the blue night; spindrift. Never her face: she walks away from the lens."""
+    F0, F1 = 800, 879
+    SLOPE = math.tan(math.radians(20.0))
+    SPEED = 0.26                      # m/s up the crest: a slow, heavy trudge
+    STEP = 1.30                       # s per stride pair
+    HFOV = 36.0
+    MOON = nrm([-0.45, 0.50, 0.74])   # B's moon ahead and to her left: her silhouette gets a silver edge
+    WIND = np.array([-1.0, 0.1])      # blowing from her right (+x) across the crest
+    REACH = 40.0
+    WIDE = False
+
+    def ground(self, x, z):
+        return self.SLOPE * z - 0.9 * abs(x) ** 1.6
+
+    def walker(self, t):
+        """(pelvis xyz, pose dict, pot centre) for the trudge at time t (s)."""
+        zc = self.SPEED * t
+        ph = (t / self.STEP) % 1.0
+        # feet: left (near, -x) plants on the half cycle, right on the whole; each lifts and swings forward
+        def foot(off, side):
+            q = (ph + off) % 1.0
+            base = math.floor(t / self.STEP + off) * self.SPEED * self.STEP - 0.10 * side * 0
+            swing = smoothstep(0.55, 1.0, q)
+            z = base + self.SPEED * self.STEP * (swing - 0.5) + 0.05
+            y = self.ground(0.0, z) + 0.06 + 0.08 * math.sin(math.pi * swing) * (q > 0.55)
+            return np.array([0.085 * side, y, z])
+        fl, fr = foot(0.0, -1.0), foot(0.5, 1.0)
+        bob = 0.025 * math.cos(4 * math.pi * ph)
+        pel = np.array([0.012 * math.sin(2 * math.pi * ph), self.ground(0.0, zc) + 0.90 + bob, zc])
+        fwd = np.array([0.0, 0.0, 1.0])
+        pot = pel + np.array([0.0, 0.30, 0.30])
+        p = dict(
+            pelvis=tuple(pel), yaw=-90.0, lean=16.0, chest=8.0, twist=2.0 * math.sin(2 * math.pi * ph), neck=10.0,
+            head=24.0, head_yaw=0.0, head_roll=2.0 * math.sin(2 * math.pi * ph), shrug=0.5,
+            hand_n=tuple(pot + np.array([-0.080, -0.030, -0.005])), hand_f=tuple(pot + np.array([0.080, -0.030, -0.005])),
+            elbow_n=(-0.6, -1.0, -0.3), elbow_f=(0.6, -1.0, -0.3),
+            fdir_n=tuple(nrm([0.35, -0.2, 0.9])), palm_n=(1.0, 0.1, 0.0),
+            fdir_f=tuple(nrm([-0.35, -0.2, 0.9])), palm_f=(-1.0, 0.1, 0.0),
+            curl_n=(0.45, 0.5, 0.55, 0.6), curl_f=(0.45, 0.5, 0.55, 0.6), thumb_n=0.3, thumb_f=0.3,
+            foot_n=tuple(fl), foot_f=tuple(fr), knee_n=tuple(fwd + [0, 0.3, 0]), knee_f=tuple(fwd + [0, 0.3, 0]),
+            toe_n=tuple(fwd), toe_f=tuple(fwd), sole_n=(0.0, 1.0, 0.0), sole_f=(0.0, 1.0, 0.0),
+            hem=0.35, breath=math.sin(2 * math.pi * t / 2.6), tools='none', rock=None,
+            expr=dict(squint=0.7), look_at=tuple(pel + np.array([0.0, 0.9, 3.0])),
+        )
+        return pel, p, pot
+
+    def build(self, t, with_ridge=True):
+        pel, p, pot = self.walker(t)
+        B, F, Hp, anc, hair = figure(p, t, hair_dir=(0.9, -0.3), scarf=False)
+        # the scarf's tail streams off to her left in the wind from the back of her neck
+        sa = anc['scarf_anchor']
+        # the wind comes from her right (-x): the tail streams to her left, toward the lens; a 2-D chain in x-y at a
+        # z just behind her neck, like the accepted take's tail
+        tail = static_chain(np.array([sa[0], sa[1]]), (0.70, -0.55), 10, 0.072, droop=0.30, sway=(0.05, 0.10),
+                            seed=1.0 - 3.1 * t)
+        B.group('scarf')
+        hero.scarf_tail(B, tail, t, z0=sa[2] - 0.03)
+        # the clay fire-pot in both hands, lid on; the ember's light leaks from under the lid and a vent
+        c = pot - np.array([0.0, 0.075, 0.0])
+        B.group('pot', H3.M_CLAY, disp=1, amp=0.0011, scale=55.0, band=0.005)
+        B.ell(c + [0, 0.070, 0], np.array([0.079, 0.068, 0.077]))
+        B.cone(c + [0, 0.112, 0], c + [0, 0.136, 0], 0.050, 0.044, k=0.014)
+        B.torus(c + [0, 0.137, 0], np.eye(3), 0.041, 0.0078, 0.0088, k=0.010)
+        B.group('lid', H3.M_CLAY, disp=1, amp=0.0006, scale=90.0, band=0.004)
+        B.ell(c + [0, 0.150, 0], np.array([0.049, 0.0100, 0.049]))
+        B.ell(c + [0, 0.162, 0], np.array([0.011, 0.009, 0.011]), k=0.008)
+        glow_at = c + np.array([0.0, 0.160, 0.035])
+        if with_ridge:
+            # the arete: a sharp snow crest rising ahead, flanks falling away at ~40 deg
+            B.group('snow', H3.M_SNOW, disp=1, amp=0.045, scale=1.1, band=0.12)
+            up = nrm([0.0, 1.0, -self.SLOPE])
+            for sg in (-1.0, 1.0):
+                nrm_ = nrm([sg * 0.84, 1.0, -self.SLOPE])
+                R = np.stack([nrm_, nrm(np.cross(nrm_, [0.0, 0.0, 1.0])), nrm(np.cross(nrm(np.cross(nrm_, [0.0, 0.0, 1.0])), nrm_))])
+                B.plane(np.array([0.0, self.SLOPE * pel[2], pel[2]]), R, op=(0 if sg < 0 else 2), reach=self.REACH)
+            # rocks breaking the crest ahead and on the flanks
+            B.group('rocks', H3.M_FLINT, disp=1, amp=0.02, scale=3.0, band=0.05)
+            rng = np.random.default_rng(31)
+            for k in range(7):
+                z = pel[2] + 1.2 + 1.3 * k + rng.uniform(-0.3, 0.3)
+                x = rng.normal(0.0, 0.35)
+                c = np.array([x, self.ground(x, z) + 0.02, z])
+                Rr = H3.ring_frame(nrm([rng.normal(0, 0.3), 1.0, rng.normal(0, 0.3)]), ref=(1.0, 0.0, 0.2))
+                B.box(c, np.array([0.18, 0.10, 0.14]) * rng.uniform(0.6, 1.5), R=Rr, rnd=0.05)
+        return B, Hp, anc, pel, pot, glow_at
+
+    def camera(self, f, scale):
+        t = f / FPS
+        pel = self.walker(t)[0]
+        # close, behind her left shoulder: her back, the scarf blowing toward us, the pot's glow at her front-left
+        back = 1.35 + 0.18 * (t - self.F0 / FPS)           # she draws away a little: the camera trails slower
+        pos = pel + np.array([1.10, 0.38, -back * 0.85])
+        tgt = pel + np.array([0.02, 0.36, 0.34])
+        cam = Camera(pos, hfov=self.HFOV, scale=scale)
+        yaw, pitch = cam.look_at(tgt)
+        return Camera(pos, yaw=yaw, pitch=pitch, hfov=self.HFOV, scale=scale), float(np.linalg.norm(tgt - pos))
+
+    def sky(self, cam):
+        """The blue night behind her: a gradient, stars, the moon's glow; sampled per pixel from the env map."""
+        H_, W_ = cam.H, cam.W
+        env = night_env(moon=1.0)
+        ys, xs = np.mgrid[0:H_, 0:W_]
+        d = np.stack([(xs + 0.5 - cam.cx) / cam.f, -(ys + 0.5 - cam.cy) / cam.f, np.ones_like(xs, np.float64)], -1)
+        d = d @ cam.R.T
+        d /= np.linalg.norm(d, axis=-1, keepdims=True)
+        u = ((np.arctan2(d[..., 0], d[..., 2]) / (2 * np.pi) + 0.5) * env.shape[1]).astype(int) % env.shape[1]
+        v = (np.arccos(np.clip(d[..., 1], -1, 1)) / np.pi * env.shape[0]).astype(int).clip(0, env.shape[0] - 1)
+        img = env[v, u] * 1.6
+        rng = np.random.default_rng(77)
+        n = int(2600 * cam.scale ** 2)
+        sx, sy = rng.uniform(0, W_, n), rng.uniform(0, H_ * 0.75, n)
+        mag = rng.random(n) ** 6
+        for x, y, m in zip(sx, sy, mag):
+            splat_gauss(img, float(x), float(y), max(0.5, 0.7 * cam.scale), 0.5 * m + 0.02, 0.55 * m + 0.02, 0.7 * m + 0.03)
+        return img.astype(np.float32)
+
+    def render(self, f, scale=0.5):
+        t = f / FPS
+        cam, focus = self.camera(f, scale)
+        cam, focus, nodof = debug_cam(cam, focus, scale)
+        B, Hp, anc, pel, pot, glow_at = self.build(t)
+        XP = np.zeros(64)
+        XP[25], XP[26] = 1.0, 1.0
+        ENV = env_stack(night_env(moon=1.0))
+        warm = 0.060 * (1.0 + 0.12 * fnoise1(t * 3.0, 5.0, 2))
+        L = [moon_light(0.20, self.MOON),
+             light(glow_at, (1.0, 0.36, 0.08), warm, 0.02, 4.0)]
+        env = hero.env_vec(rim_dir=self.MOON, rim=np.array([0.14, 0.18, 0.28]), amb=np.array([0.006, 0.009, 0.016]),
+                           bounce=np.array([0.012, 0.015, 0.022]), ao=0.03)
+        img = self.sky(cam)
+        res = H3.render(cam, B, Hp, L, env, XP, ENV, None, ss=(3 if scale > 0.75 else 2),
+                        sil=dict(skin=1.0, eyes=1.0, cap=0.3, cap_brim=0.3, hair=0.3))
+        depth = comp(img, res)
+        fire.add_glow(img, cam, glow_at + np.array([0.0, 0.02, 0.0]), 0.12, 0.004)
+        if self.WIDE:
+            # at 60 px the pot is a point: its warm glow is the one warm thing in the frame
+            fire.add_glow(img, cam, glow_at, 0.18, 0.30, col=(1.0, 0.42, 0.12))
+        self._spindrift(img, cam, t)
+        if not nodof:
+            img = dof(img, depth, focus, K=cam.f * 0.004)
+        return finish(img, exposure=float(os.environ.get('V3_EXPO', 1.5)))
+
+    def _spindrift(self, img, cam, t):
+        """Snow grains torn off the crest, streaking across in the wind, silver in the moon."""
+        rng = np.random.default_rng(12)
+        n = 900
+        P0 = rng.uniform([-3.0, 0.0, -2.0], [3.0, 2.2, 6.0], (n, 3))
+        ph = rng.random(n)
+        pel = self.walker(t)[0]
+        from core import splat_streak
+        for k in range(n):
+            x = (P0[k, 0] - 6.5 * t - 3.0 * ph[k]) % 6.0 - 3.0
+            p = np.array([x, self.ground(0.0, pel[2] + P0[k, 2]) + P0[k, 1] * (0.3 + 0.7 * ph[k]) + 0.1, pel[2] + P0[k, 2]])
+            q = p + np.array([0.20, 0.0, 0.0])
+            sx, sy, z = cam.project(p)
+            qx, qy, _ = cam.project(q)
+            if z < 0.3:
+                continue
+            e = 0.9 * cam.scale ** 2 / max(z, 0.5) * (0.3 + ph[k])
+            splat_streak(img, float(qx), float(qy), float(sx), float(sy), max(0.45, 0.6 * cam.scale), e * 0.55, e * 0.65, e * 0.85)
+
+
+def climb_layer(cam, f, world_pos, heading_deg=0.0, glow=1.0, ss=3):
+    """Her climbing figure (with the glowing pot) as an RGBA + depth layer for RUN-B's wide (B 640-799): placed at
+    `world_pos` (the point on the crest under her) facing `heading_deg` (0 = +z in RUN-B's frame), in any camera.
+    Lit by B's moon and the pot. Returns hsdf3.render's tuple (Y0, X0, rgb, a, depth, group)."""
+    cl = Climb()
+    t = f / FPS
+    B, Hp, anc, pel, pot, glow_at = cl.build(t, with_ridge=False)
+    a = math.radians(heading_deg)
+    Ry = np.array([[math.cos(a), 0.0, math.sin(a)], [0.0, 1.0, 0.0], [-math.sin(a), 0.0, math.cos(a)]])
+    off = np.asarray(world_pos, np.float64) - np.array([pel[0], cl.ground(0.0, pel[2]), pel[2]])
+    for g in B.groups:
+        for row, bs in g['prims']:
+            for sl in ((5, 8), (8, 11)) if int(row[0]) == 1 else ((5, 8),):
+                pass
+    # move the whole figure: world = Ry @ (p - pel_ground) + world_pos
+    base = np.array([pel[0], cl.ground(0.0, pel[2]), pel[2]])
+    for g in B.groups:
+        for row, bs in g['prims']:
+            typ = int(row[0])
+            row[5:8] = Ry @ (row[5:8] - base) + world_pos
+            if typ == 1:
+                row[8:11] = Ry @ (row[8:11] - base) + world_pos
+                if row[23] != 0.0:
+                    row[11:14] = Ry @ row[11:14]
+                    row[14:17] = Ry @ row[14:17]
+            else:
+                Rw = row[11:20].reshape(3, 3) @ Ry.T
+                row[11:20] = Rw.reshape(-1)
+            bs[:3] = Ry @ (bs[:3] - base) + world_pos
+    Hp[40] = 0.0
+    glow_w = Ry @ (glow_at - base) + world_pos
+    L = [moon_light(0.55, Climb.MOON), light(glow_w, (1.0, 0.36, 0.08), 0.010 * glow, 0.02, 4.0)]
+    env = hero.env_vec(rim_dir=Climb.MOON, rim=np.array([0.14, 0.18, 0.28]), amb=np.array([0.006, 0.009, 0.016]),
+                       bounce=np.array([0.012, 0.015, 0.022]), ao=0.03)
+    return H3.render(cam, B, Hp, L, env, ss=ss, sil=dict(skin=1.0, eyes=1.0, cap=0.3, cap_brim=0.3, hair=0.3))
+
+
 def inscription_ins():
     return H3.inscription_accord()[0]
 
@@ -799,7 +1025,24 @@ class DeadEmberPOV(DeadEmber):
     HFOV = 40.0
 
 
-SHOTS = dict(deadember=DeadEmber, deadember_pov=DeadEmberPOV, firetest=FireTest, find=Find)
+class ClimbWideTest(Climb):
+    """A stand-in for RUN-B's wide (B 640-799) to judge her figure at <= 60 px on a ridge: the plate is RUN-B's."""
+    REACH = 400.0
+    WIDE = True
+    HFOV = 30.0
+
+    def camera(self, f, scale):
+        t = f / FPS
+        pel = self.walker(t)[0]
+        pos = pel + np.array([-38.0, 14.0, -72.0])
+        tgt = pel + np.array([0.0, 2.0, 8.0])
+        cam = Camera(pos, hfov=self.HFOV, scale=scale)
+        yaw, pitch = cam.look_at(tgt)
+        return Camera(pos, yaw=yaw, pitch=pitch, hfov=self.HFOV, scale=scale), float(np.linalg.norm(tgt - pos))
+
+
+SHOTS = dict(deadember=DeadEmber, deadember_pov=DeadEmberPOV, firetest=FireTest, find=Find, climb=Climb,
+             climb_wide_test=ClimbWideTest)
 
 
 def main():
