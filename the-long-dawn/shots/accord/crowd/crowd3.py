@@ -1428,7 +1428,9 @@ def _shade_fig(px, py, pz, vx, vy, vz, mat, CF, i, fp, PR, LT, OC, igc, igf, TL,
         if f <= 0.0:
             continue
         if q < 0:
-            f *= _self_vis(px + nx * 0.006, py + ny * 0.006, pz + nz * 0.006, TL[k, 0], TL[k, 1], TL[k, 2], CF, i)
+            # a bearer's own torch on its bearer: accord3's convention (P_OWNK), with its own body's soft shadow
+            f *= PR[SH.P_OWNK] * _self_vis(px + nx * 0.006, py + ny * 0.006, pz + nz * 0.006, TL[k, 0], TL[k, 1],
+                                           TL[k, 2], CF, i)
         f *= fall * ao
         cr += ar * f * TL[k, 4]
         cg += ag * f * TL[k, 5]
