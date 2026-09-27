@@ -144,7 +144,7 @@ def _band_world(az_c, el_c, az_2, el_2, width=0.13, seed=117.0):
     return _band_from_start(np.r_[n, c, width, seed])
 
 
-BAND = _band_world(92.0, 2.0, 25.0, 12.0)      # the reveal's last wide: from the horizon right of her summit, arching
+BAND = _band_world(95.0, 2.0, 20.0, 15.0)      # the reveal's last wide: from the horizon right of her summit, arching
 #                                                  up over it (low in the ENE at the vigil's start, then it wheels away)
 BAND_GAIN = 0.10
 STAR_GAIN = 1.6             # the low sky of a locked frame reads empty at the catalogue's own gain
@@ -254,8 +254,10 @@ class Vigil:
         self.cam_yaw = VCAM['yaw']
         self.fr = PI.Frame(self.tc, ss)
         scam = self.fr.src
-        self.P = np.array([scam.pos[0], scam.pos[2], 0.0, 0.0])
-        p = os.path.join(CACHE, f'vig_G_{BW.VERSION}_{cam_key()}_{scale:.3f}_{ss:.2f}.npy')
+        # the cloud sea is frozen at the crane's own first time (handback_b builds the crane with t = frame/24), so
+        # its billows are the same at the join (3839/3840)
+        self.P = np.array([scam.pos[0], scam.pos[2], F1 / FPS, 0.0])
+        p = os.path.join(CACHE, f'vig_G_{BW.VERSION}_{cam_key()}_t{F1 / FPS:.0f}_{scale:.3f}_{ss:.2f}.npy')
         if os.path.exists(p):
             self.G = np.load(p)
         else:
@@ -340,9 +342,10 @@ class Vigil:
         LP[32], LP[33], LP[34] = a, b, w
         LP[23] *= 1.0 - 0.75 * st - 0.45 * fg
         LP[45] *= 1.0 - 0.8 * st
-        # the fire lights the summit (a point light at the basket)
+        # the fire lights the summit (a point light at the basket); over bar 48 it settles to the hand-back's full fire
         lv = fire_level(f)
-        LP[36] = 9.0 * lv * F.flicker(f / FPS, 3)
+        join = smoothstep(bar(47, 3), bar(48, 4), f)
+        LP[36] = 9.0 * (lv + (1.0 - lv) * join) * F.flicker(f / FPS, 3)
         LP[37:40] = BS.BEACON + np.array([0.0, 1.3, 0.0])
         LP[40:43] = np.array(F.FIRE_LIGHT)
         LP[43] = 40.0

@@ -41,7 +41,7 @@ CR = BW.CR_B
 FPS = 24.0
 TESTS = os.path.join(CM.ROOT, 'renders', 'run_b_tests')
 F0, F1 = 1360, 1520
-BAND_GAIN = 0.16             # the Milky Way over her summit (director: stronger)
+BAND_GAIN = 0.26             # the Milky Way over her summit (director: stronger; it sits by the moon's glow)
 
 HER = BS.STAND
 _fd = BS.BEACON - HER
@@ -50,7 +50,7 @@ BACK_AZ = FACE_AZ + 180.0
 F_HOLD, F_SETTLE = 1398, 1506        # the pull starts on the cello's CALL (bar 18 b3 = 1400), settles by bar 19 b3.5
 START = dict(az=BACK_AZ + 30.0, dist=20.0, up=2.5, hfov=44.0, uv=(0.58, 0.60))   # behind her LEFT shoulder: the
 # fire stands to her left, as in H1-B's last roar frame (straight behind her, the flame rose out of her head)
-END = dict(az=250.0, dist=130.0, up=20.0, hfov=50.0, uv=(0.42, 0.72))   # at 700 m level the broad summit
+END = dict(az=250.0, dist=130.0, up=20.0, hfov=50.0, uv=(0.42, 0.86))   # the crest low: sky + band over it   # at 700 m level the broad summit
 # plateau read as a sand dune (so did 240 m); at ~130 m, a little above, it reads as a snowy summit crest (stony boss, the cairn,
 # her, the fire) against the silver cloud sea, and the sky above the horizon keeps half the frame for the band.
 # WSW of the top looking ENE: the ground beyond drops straight to the cloud sea, the fire sits just right of her,
