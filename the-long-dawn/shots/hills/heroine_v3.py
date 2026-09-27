@@ -199,6 +199,17 @@ def comp(bg, res):
     return depth
 
 
+def debug_cam(cam, focus, scale):
+    """V3_CAM='px,py,pz,tx,ty,tz,hfov' overrides the camera (and switches DOF off) for layout checks."""
+    v = os.environ.get('V3_CAM')
+    if not v:
+        return cam, focus, False
+    q = [float(x) for x in v.split(',')]
+    c = Camera(q[:3], hfov=q[6], scale=scale)
+    yaw, pitch = c.look_at(q[3:6])
+    return Camera(q[:3], yaw=yaw, pitch=pitch, hfov=q[6], scale=scale), focus, True
+
+
 # ------------------------------------------------------------ the figure ---
 
 def static_chain(anchor, direction, n, seg, droop=0.3, sway=(0.0, 0.0), seed=0.0):
@@ -255,7 +266,8 @@ class DeadEmber:
     blow 1 1040-1062 (the ember brightens a little: hope), blow 2 1072-1092 (nothing); it greys 1060-1130; the
     breath hangs 1092-1150; still to 1199."""
     F0, F1 = 960, 1199
-    POT = np.array([0.34, 0.0, -0.03])
+    POT = np.array([0.34, 0.10, -0.03])       # on the cairn's flat foot-stone (top at 0.10 m)
+    HFOV = 38.0
 
     def __init__(self):
         pass
@@ -287,9 +299,11 @@ class DeadEmber:
             hem=0.05, breath=math.sin(2 * math.pi * t / 3.6) * (1 - blow),
         )
         # the near hand: on the lid's knob, lifting it off and holding it aside, tilted toward her
-        rest = self.POT + np.array([0.0, 0.140, 0.0])
-        held = self.POT + np.array([0.075, 0.215, -0.135])
-        lc = rest * (1 - u) + held * u
+        rest = self.POT + np.array([0.0, 0.150, 0.0])
+        held = self.POT + np.array([0.035, 0.150, -0.150])
+        lift = self.POT + np.array([0.0, 0.215, -0.02])
+        lc = (rest * (1 - smoothstep(0, 0.45, u)) + lift * smoothstep(0, 0.45, u)) * (1 - smoothstep(0.35, 1.0, u)) \
+            + held * smoothstep(0.35, 1.0, u)
         p['hand_n'] = tuple(lc + np.array([0.030, 0.050, -0.010]))
         p['fdir_n'] = tuple(nrm([-0.70, -0.55, 0.30]))
         p['palm_n'] = tuple(nrm([0.20, -0.85, 0.35]))
@@ -301,48 +315,54 @@ class DeadEmber:
 
     # ---- props
     def pot(self, B, lid_c, lid_u):
+        """A round-bellied clay fire-pot (~15 cm), its lip sooted; ash inside with one ember; the lid in her hand."""
         c = self.POT
         B.group('pot', H3.M_CLAY, disp=1, amp=0.0006, scale=90.0, band=0.004)
-        B.ell(c + [0, 0.066, 0], np.array([0.070, 0.064, 0.070]))
-        B.ell(c + [0, 0.012, 0], np.array([0.050, 0.014, 0.050]), k=0.02)                      # foot
-        B.torus(c + [0, 0.122, 0], np.eye(3), 0.046, 0.0085, 0.0105, k=0.016)                  # rim
-        B.cone(c + [0, 0.098, 0], c + [0, 0.122, 0], 0.052, 0.049, k=0.012)                   # shoulder to neck
-        B.ell(c + [0, 0.070, 0], np.array([0.060, 0.056, 0.060]), op=1, k=0.004)               # hollow
-        B.cone(c + [0, 0.090, 0], c + [0, 0.170, 0], 0.0395, 0.0395, op=1, k=0.004)            # mouth
-        # soot: the rim blackened by years of carried fire (a thin dark skin just inside and over the lip)
+        B.ell(c + [0, 0.070, 0], np.array([0.079, 0.068, 0.079]))
+        B.ell(c + [0, 0.012, 0], np.array([0.052, 0.014, 0.052]), k=0.02)                      # foot
+        B.cone(c + [0, 0.112, 0], c + [0, 0.136, 0], 0.050, 0.044, k=0.014)                   # neck
+        B.torus(c + [0, 0.137, 0], np.eye(3), 0.041, 0.0078, 0.0088, k=0.010)                  # rim
+        B.ell(c + [0, 0.070, 0], np.array([0.069, 0.059, 0.069]), op=1, k=0.004)               # hollow
+        B.cone(c + [0, 0.100, 0], c + [0, 0.190, 0], 0.0335, 0.0335, op=1, k=0.004)            # mouth
+        # soot: the lip blackened by years of carried fire
         B.group('soot', H3.M_COAL, band=0.002)
-        B.torus(c + [0, 0.1245, 0], np.eye(3), 0.0445, 0.0062, 0.0072, k=0.0)
+        B.torus(c + [0, 0.1395, 0], np.eye(3), 0.0395, 0.0056, 0.0066, k=0.0)
         B.group('ash', H3.M_ASH, disp=1, amp=0.0012, scale=160.0, band=0.004)
-        B.ell(c + [0, 0.062, 0], np.array([0.0575, 0.024, 0.0575]))
+        B.ell(c + [0, 0.066, 0], np.array([0.066, 0.026, 0.066]))
         B.group('ember', H3.M_EMBER, disp=1, amp=0.0016, scale=150.0, band=0.004)
-        e = c + np.array([-0.006, 0.086, 0.004])
+        e = c + np.array([-0.004, 0.094, 0.003])
         B.ell(e, np.array([0.0135, 0.0085, 0.011]), R=np.stack([nrm([1, 0.1, 0.3]), nrm([-0.1, 1, 0]), nrm([-0.3, 0, 1])]))
         B.ell(e + [0.009, -0.002, 0.004], np.array([0.0075, 0.0060, 0.0070]), k=0.004)
         B.ell(e + [-0.008, -0.003, -0.005], np.array([0.0060, 0.0045, 0.0055]), k=0.004)
         # the lid: a shallow clay dome with a knob, lifted in her near hand and tipped toward her
-        ax = nrm(np.array([0.0, 1.0, 0.0]) * (1 - lid_u) + nrm([0.55, 0.55, -0.62]) * lid_u)
+        ax = nrm(np.array([0.0, 1.0, 0.0]) * (1 - lid_u) + nrm([0.30, 0.55, -0.78]) * lid_u)
         Rl = H3.ring_frame(ax, ref=(1.0, 0.0, 0.0))
         B.group('lid', H3.M_CLAY, disp=1, amp=0.0006, scale=90.0, band=0.004)
-        B.ell(lid_c, np.array([0.054, 0.0105, 0.054]), R=Rl)
+        B.ell(lid_c, np.array([0.049, 0.0100, 0.049]), R=Rl)
         B.ell(lid_c + ax * 0.012, np.array([0.011, 0.009, 0.011]), R=Rl, k=0.008)
-        B.ell(lid_c - ax * 0.011, np.array([0.044, 0.008, 0.044]), R=Rl, op=1, k=0.004)
+        B.ell(lid_c - ax * 0.010, np.array([0.040, 0.008, 0.040]), R=Rl, op=1, k=0.004)
         return e
 
     def camera(self, f, scale):
         t = f / FPS
-        pos = np.array([1.02 + 0.004 * fnoise1(t * 0.5, 3.0), 1.14 + 0.003 * fnoise1(t * 0.4, 5.0), -0.80])
-        tgt = self.POT + np.array([0.035, 0.12, 0.0])
-        cam = Camera(pos, hfov=30.0, scale=scale)
+        pos = np.array([0.31 + 0.003 * fnoise1(t * 0.5, 3.0), 0.80 + 0.002 * fnoise1(t * 0.4, 5.0), -0.40])
+        tgt = self.POT + np.array([0.02, 0.10, -0.05])
+        hf = self.HFOV
+        cam = Camera(pos, hfov=hf, scale=scale)
         yaw, pitch = cam.look_at(tgt)
-        return Camera(pos, yaw=yaw, pitch=pitch, hfov=30.0, scale=scale), float(np.linalg.norm(tgt - pos))
+        return Camera(pos, yaw=yaw, pitch=pitch, hfov=hf, scale=scale), float(np.linalg.norm(self.POT + [0, 0.13, 0] - pos))
 
     def render(self, f, scale=0.5):
         t = f / FPS
         cam, focus = self.camera(f, scale)
+        cam, focus, nodof = debug_cam(cam, focus, scale)
         p, lid_c, lid_u, blow = self.pose(f)
-        B, F, Hp, anc, hair = figure(p, t, scarf_dir=(0.35, -0.9), hair_dir=(0.2, -1.0))
+        B, F, Hp, anc, hair = figure(p, t, scarf_dir=(0.20, -1.0), hair_dir=(0.30, -0.95), scarf_n=10)
         epos = self.pot(B, lid_c, lid_u)
-        snow_ground(B, self.POT + [0.1, 0.0, 0.0], reach=1.6)
+        snow_ground(B, np.array([0.40, 0.0, 0.0]), reach=1.6)
+        B.group('stone', H3.M_FLINT, disp=1, amp=0.004, scale=18.0, band=0.02)
+        Rs = np.stack([nrm([1.0, 0.03, 0.12]), nrm([-0.03, 1.0, 0.0]), nrm([-0.12, 0.0, 1.0])])
+        B.box(np.array([0.33, 0.045, -0.02]), np.array([0.19, 0.055, 0.15]), R=Rs, rnd=0.03)
         life = self.life(f)
         XP = np.zeros(64)
         XP[19] = life
@@ -364,8 +384,9 @@ class DeadEmber:
         depth = comp(img, res)
         # breath: from her hidden mouth down into the pot's glow, then hanging in the moonlight
         self._breath(img, cam, f, anc, epos, life, lid_u)
-        img = dof(img, depth, focus, K=cam.f * 0.010, near_split=focus * 0.8)
-        return finish(img, exposure=1.35)
+        if not nodof:
+            img = dof(img, depth, focus, K=cam.f * 0.010, near_split=focus * 0.8)
+        return finish(img, exposure=float(os.environ.get('V3_EXPO', 1.35)))
 
     def _breath(self, img, cam, f, anc, epos, life, lid_u):
         import heroine_sdf as hsd
