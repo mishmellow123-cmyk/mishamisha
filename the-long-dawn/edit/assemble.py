@@ -107,6 +107,8 @@ def locate(take, cut, variant, f):
     if take['mode'] == 'video':
         n = video_frames(take)
         return ((('video', os.path.join(ROOT, take['video']), src), False) if 0 <= src < n else (None, False))
+    if take.get('add') and not index(os.path.join(RENDERS, take['add'])).get(src):
+        return None, False                                    # an additive layer must be there as well
     for d in chain(take, cut, variant):
         p = index(d).get(src)
         if p:
@@ -217,6 +219,11 @@ class Ctx:
                 under = self.under(take.get('under'), f)
                 if m is not None and under is not None:
                     img = np.clip(img + (1 - m)[..., None] * under, 0, 1)
+        if take.get('add'):                                       # e.g. EMBERS' fire added over MAP's page
+            ap = index(os.path.join(RENDERS, take['add'])).get(f + take['off'])
+            layer = self.read(ap) if ap else None
+            if layer is not None:
+                img = np.clip(img + layer, 0, 1)
         if take.get('grade'):
             img = grade(img, take['grade'])
         return img
@@ -577,8 +584,8 @@ def coverage(cut, variant=None):
             status, src = 'EDIT proxy', 'edit star field (RUN-A plate pending)'
         elif plan['kind'] == 'slate':
             status, src = 'SLATE', 'expects ' + ', '.join(
-                os.path.relpath(chain(t, cut, None)[0], ROOT) if t['mode'] != 'video' else t['video']
-                for t in shot['takes'][:2])
+                (os.path.relpath(chain(t, cut, None)[0], ROOT) + (f" + renders/{t['add']}" if t.get('add') else ''))
+                if t['mode'] != 'video' else t['video'] for t in shot['takes'][:2])
         else:
             full = plan['have'] == n
             status = 'RENDERED' if full else f"PARTIAL {plan['have']}/{n}"

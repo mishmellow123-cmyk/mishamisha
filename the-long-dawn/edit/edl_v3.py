@@ -27,11 +27,14 @@ def bf(bar, beat=1.0):
     return int(round((bar - 1) * BAR + (beat - 1) * BEAT))
 
 
-def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=None, video=None, need=None):
+def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=None, video=None, need=None,
+      add=None):
     """need=(a, b): the take is used only once its folder holds every src frame a..b (a shared take such as H1
-    switches over in one piece, never frame by frame while a render is still landing)."""
+    switches over in one piece, never frame by frame while a render is still landing).
+    add='<folder>': an additive layer in the same src numbering (renders/<folder>/), added after the matte comp;
+    a frame counts as rendered only when the add layer has it too."""
     return dict(stem=stem, off=off, mode=mode, note=note, crop=crop, grade=grade, matte=matte, under=under,
-                video=video, need=need)
+                video=video, need=need, add=add)
 
 
 def S(sec, f0, f1, code, name, owner, desc, takes=(), kind='takes'):
@@ -66,6 +69,14 @@ BOOK = dict(matte='book_C_matte')
 
 def book(note='MAP-v3 book engine', **kw):
     return T('book_C', 0, 'exact', note, **dict(BOOK, **kw))
+
+
+def book_e15():
+    return book('MAP-L page (page-only) + EMBERS-C E15 fire, additive', add='embers_C3_e15')
+
+
+X1_TEST = T('x1_letters_C_test', -560, 'video', 'MAP-v3 X1 motion test (half-res mp4, C 560-906)',
+            video='edit/cache/x1_letters_C_test.mp4')
 
 
 def ring(shot):
@@ -192,14 +203,16 @@ C = [
       [book()]),
     S('C3', 320, 560, 'P2', 'INK PAGE · THE MOUNTAIN', 'MAP',
       'The leaves riffle back; a pen draws a mountain with a fire in its throat and in it a small gold ring.', [book()]),
-    S('C4', 560, 880, 'E15 · X1', 'LETTERS TO FIRE', 'MAP + EMBERS',
-      "A dense leaf darkens; its letters glow, lift as sparks, pour into one point; a fire catches and burns the page open.",
-      [book(), T('x1_letters_C_test', -560, 'video', 'MAP-v3 X1 motion test (half-res mp4, C 560-906)',
-                 video='edit/cache/x1_letters_C_test.mp4')]),
+    S('C4', 560, 700, 'E15 · X1', 'LETTERS TO FIRE', 'MAP',
+      'A dense leaf darkens; its letters glow, lift as sparks and pour into one point.',
+      [book(), X1_TEST]),
+    # director 27 Sep ~19:00Z: C 700-1039 = EMBERS-C's E15 fire added over MAP-L's page (book_C page-only there):
+    # out = book_rgb + (1 - matte) * black + e15
+    S('C4', 700, 880, 'E15 · X1', 'LETTERS TO FIRE · THE FIRE CATCHES', 'MAP + EMBERS',
+      'At that point a fire catches and burns the page open; the burnt rim glows.', [book_e15(), X1_TEST]),
     S('C5', 880, 1040, 'E15', 'THE FIRE, ALONE', 'MAP + EMBERS',
       'The fire burns alone in the black, gold and calm, a few letters still legible in it; the burnt rim glows.',
-      [book(), T('x1_letters_C_test', -560, 'video', 'MAP-v3 X1 motion test (half-res mp4, C 560-906)',
-                 video='edit/cache/x1_letters_C_test.mp4')]),
+      [book_e15(), X1_TEST]),
     S('C6', 1040, 1440, 'E5-C', 'THE FORGING', 'EMBERS',
       'Forge-towers of every realm rise round the fire, none tallest; its light is beaten into a band: the Ring.', EMB_C),
     S('C7', 1440, 1680, 'E11', 'THE RACE UNDER THE RING', 'EMBERS',

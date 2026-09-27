@@ -83,6 +83,8 @@ def frame_sources(cut, variant, plan, f):
     if isinstance(p, tuple):                              # a video take: the file and the index in it
         return [f'{_stat(p[1])}#{p[2]}']
     out = [_stat(p)]
+    if take.get('add'):
+        out.append(_stat(AS.index(os.path.join(AS.RENDERS, take['add']))[f + take['off']]))
     if take.get('matte'):
         mp = AS.index(os.path.join(AS.RENDERS, take['matte'])).get(f + take['off'])
         out.append(_stat(mp) if mp else 'matte:none')
@@ -104,7 +106,7 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table):
     h = hashlib.sha1()
     take = plan['take']
     tdesc = None if take is None else {k: take.get(k) for k in ('stem', 'off', 'mode', 'crop', 'grade', 'matte',
-                                                                  'under', 'video', 'note')}
+                                                                  'under', 'video', 'note', 'add')}
     head = [ENGINE, code, prof['scale'], prof['clean'], prof['crf'], prof['preset'], cut, i,
             {k: shot[k] for k in ('sec', 'f0', 'f1', 'code', 'name', 'owner', 'desc', 'kind')},
             plan['kind'], tdesc, plan['have'], bool(plan['alt'])]

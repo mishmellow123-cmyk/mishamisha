@@ -15,6 +15,10 @@
   `EDIT_Q=1` (set for their children), so a caller cannot bypass the queue and nothing nests.
 - **Delivery chain (NEW, `edit/deliver.py` + `edit/deliver.sh`):** see "## Delivery chain" below. First test: B's
   master, queued 18:45Z behind three other lanes' jobs.
+- **E15 comp (director, ~19:00Z):** C4 is split at 700; C 700-1039 = `book_C` (page-only) + `embers_C3_e15`
+  added (`T(add=...)`: a frame counts only when both layers have it; the X1 test stands in until then).
+  EMBERS-C should dim its e15 under C-T2 (text 580-716, so 700-716) and C-T5a (920-1030).
+- **Local renders frozen (~19:00Z, the Mac thrashing):** the B master test waits in renderq until the thaw.
 - **Watcher (`edit/refresh_watch.sh`):** re-armed after the B test passes; one refresh per settled landing:
   animatics, the kit, then the incremental masters for the cuts that changed.
 
@@ -123,13 +127,13 @@
 
 | lane | shots | folder (numbering) |
 |---|---|---|
-| EMBERS | A3-A10, A16-A17; C6-C7, C9, C11, C13a | `embers_A3` (+`_alt_codedtowers`), `embers_C3` (cut frames); `embers_C3_half` as a stand-in |
+| EMBERS | A3-A10, A16-A17; C6-C7, C9, C11, C13a; C4b-C5 fire | `embers_A3` (+`_alt_codedtowers`), `embers_C3` (cut frames); `embers_C3_half` as a stand-in; **`embers_C3_e15` (C 700-1039, added over MAP's page)** |
 | RUN-A | A2, A13 R2-A, A14, A15, A18, A19-A20 | `falsedawn_A`, `reveal_A`, `beaconrun_A`, `watchers_A`, `crossing_A`, `bluehour_A`, or `run_A` (A frames) |
 | RUN-B | B1, B5 R2-B, B6-B12, B13-B14 | `dusk_B`, `reveal_B`, `vigil_B`, `handback_B` (B frames; the cloud jobs already use these) |
 | RUN-C | C13b, C16, C17, C24 | `ringfall_C`/`run_C` (C frames); `runC_reveal` (-3600), `runC_scroll` (-3840), `runC_illum` (+2398-5680) |
 | HEROINE | H1 all cuts; B2, B3 | `h1_v3h5` then `h1_v3` (src 1200-1555; strike 1 = 1236, roar = 1476); `climb_B`/`deadember_B`/`heroine_B` (B frames) |
 | MONTAGE-3D-2 | A13 KARST, DESERT; C14 find, C15 fire test, C22 melt | `montage3d_v3/karst_slow` (0-59); `montage3d_v3/desert` or `montage_v2` 1520-1579; `ring_C` or `montage3d_v3/{find_a,find_b,fire,melt}` (C frames) |
-| MAP | C2-C5, C8, C9 head, C18, C23 bar 71, C25-C28 | `book_C` + `book_C_matte`; `map_C` 4160-4479 and 5600-5679 (C frames) |
+| MAP | C2-C5, C8, C9 head, C18, C23 bar 71, C25-C28 | `book_C` + `book_C_matte` (**page-only at C 700-1039**: EMBERS-C's `embers_C3_e15` is added over it: book_rgb + (1 - matte) * black + e15); `map_C` 4160-4479 and 5600-5679 (C frames) |
 | ACCORD | C19-C23 bar 70 | `accord_C` (C frames 4480-5599) |
 
 Heroine note: the RENDER_SPEC on `claude/v3-heroine` puts THE DEAD EMBER at "B 960-1199" (pre-lock numbering); the

@@ -38,6 +38,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/falsedawn_A",
       "renders/falsedawn_v3"
@@ -54,6 +55,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/run_A",
       "renders/run_v3"
@@ -86,6 +88,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -117,6 +120,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -148,6 +152,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -179,6 +184,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -210,6 +216,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -241,6 +248,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -272,6 +280,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -303,6 +312,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -334,6 +344,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/stars_A",
       "renders/stars_v3"
@@ -350,6 +361,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/x2_A",
       "renders/x2_v3"
@@ -385,6 +397,7 @@
       1200,
       1555
      ],
+     "add": null,
      "folders": [
       "renders/h1_v3h5"
      ]
@@ -400,6 +413,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/h1_v3"
      ]
@@ -434,6 +448,7 @@
       1200,
       1555
      ],
+     "add": null,
      "folders": [
       "renders/h1_v3h5"
      ]
@@ -449,6 +464,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/h1_v3"
      ]
@@ -480,6 +496,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/reveal_A",
       "renders/reveal_v3"
@@ -496,6 +513,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/run_A",
       "renders/run_v3"
@@ -528,6 +546,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/montage3d_v3/karst_slow"
      ]
@@ -559,6 +578,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/montage3d_v3/desert"
      ]
@@ -574,6 +594,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/montage_A",
       "renders/montage_v3",
@@ -608,6 +629,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/beaconrun_A",
       "renders/beaconrun_v3"
@@ -624,6 +646,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/run_A",
       "renders/run_v3"
@@ -656,6 +679,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/watchers_A",
       "renders/watchers_v3"
@@ -672,6 +696,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/run_A",
       "renders/run_v3"
@@ -704,6 +729,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -735,6 +761,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/embers_A3"
      ]
@@ -766,6 +793,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/crossing_A",
       "renders/crossing_v3"
@@ -782,6 +810,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/run_A",
       "renders/run_v3"
@@ -814,6 +843,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/bluehour_A",
       "renders/bluehour_v3"
@@ -830,6 +860,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/run_A",
       "renders/run_v3"
@@ -862,6 +893,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/bluehour_A",
       "renders/bluehour_v3"
@@ -878,6 +910,7 @@
      "under": null,
      "video": null,
      "need": null,
+     "add": null,
      "folders": [
       "renders/run_A",
       "renders/run_v3"
