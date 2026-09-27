@@ -21,21 +21,26 @@ START, END, IGN = 1520, 1579, 1540
 SAMPLES = 96
 FPS = 24.0
 HFOV = 42.0
+# v3 (H5): plain cloak, randomised ripples, small half-filled prints. DESERT_V2=1 rebuilds the accepted v2.
+V3 = not os.environ.get('DESERT_V2')
 EYE = 1.62                              # camera height over the sand
-CAM_X0, CAM_X1 = 0.35, 1.35             # truck right
-PITCH0, YAW0 = 5.2, 3.0
+CAM_X0, CAM_X1 = 0.2, 1.2               # truck right (the camera stands on a high point of the crest)
+PITCH0, YAW0 = 2.5, 0.5
 # the wind blows toward -x (over each crest into its slip face), a little +y
 WIND = (-0.985, 0.17)
-MOON_AZ, MOON_EL, MOON_I = 118.0, 24.0, 1.35
-# hero crest: (y, x, H) control points (PCHIP). The summit plateau at y~32 carries the beacon.
-HERO_CREST = [(-80.0, 9.0, 4.4), (-40.0, 3.6, 5.0), (-15.0, 0.9, 5.6), (0.0, -1.0, 6.0), (8.0, -2.3, 6.5),
-              (15.0, -2.1, 7.4), (22.0, -0.2, 8.6), (28.0, 2.2, 9.6), (32.0, 3.8, 10.0), (37.0, 5.7, 9.8),
-              (45.0, 8.5, 9.1), (60.0, 13.6, 7.7), (90.0, 21.0, 6.2), (140.0, 30.0, 5.2), (250.0, 43.0, 4.6),
-              (500.0, 62.0, 4.2), (1000.0, 88.0, 3.8)]
+MOON_AZ, MOON_EL, MOON_I = 100.0, 17.0, 2.3
+# hero crest: (y, x, H) control points (PCHIP). The camera stands near a high point of the crest; the crest
+# dips through a saddle (so we look down on it and see the moon-shadow beyond it) and climbs to the summit
+# plateau at y~32, which carries the beacon and rises above the horizon.
+HERO_CREST = [(-190.0, 17.0, 0.3), (-130.0, 13.0, 3.0), (-80.0, 9.0, 5.0), (-40.0, 3.4, 6.2), (-15.0, 0.6, 7.2), (0.0, -0.8, 7.5), (6.0, -1.6, 7.2),
+              (12.0, -2.0, 6.3), (18.0, -1.4, 5.8), (23.0, 0.2, 6.6), (27.0, 1.8, 8.1), (30.0, 3.0, 9.4),
+              (32.0, 3.8, 10.0), (35.0, 5.0, 9.8), (42.0, 7.6, 9.0), (60.0, 13.6, 7.4), (90.0, 21.0, 6.0),
+              (140.0, 30.0, 5.0), (250.0, 43.0, 4.4), (500.0, 62.0, 4.0), (1000.0, 88.0, 3.2), (1500.0, 110.0, 0.4)]
+HERO_Y = (-185.0, 1480.0)                # rows of the hero mesh (the dune dies away at the far end)
 SUMMIT_Y = 32.0
-PLATEAU_R = 3.2
+PLATEAU_R = 2.1
 # far dunes: (x offset at y=0, H0, sinuosity amp, wavelength, phase, seed)
-FAR_DUNES = [(-52.0, 6.5, 6.0, 170.0, 0.4, 1), (-118.0, 9.0, 9.0, 230.0, 2.1, 2), (-196.0, 12.5, 12.0, 300.0, 4.0, 3),
+FAR_DUNES = [(-39.0, 9.0, 6.0, 190.0, 0.4, 1), (-96.0, 11.0, 10.0, 230.0, 2.1, 2), (-170.0, 14.0, 12.0, 300.0, 4.0, 3),
              (-286.0, 8.5, 10.0, 260.0, 1.2, 4), (-392.0, 14.0, 16.0, 380.0, 5.1, 5), (-520.0, 10.5, 14.0, 330.0, 3.3, 6),
              (-680.0, 16.0, 20.0, 450.0, 0.9, 7), (-880.0, 12.0, 18.0, 420.0, 2.7, 8), (-1120.0, 18.0, 26.0, 520.0, 4.4, 9),
              (78.0, 6.0, 5.0, 150.0, 3.9, 10), (150.0, 8.0, 8.0, 210.0, 1.7, 11), (236.0, 10.0, 11.0, 280.0, 5.6, 12),
@@ -101,8 +106,11 @@ def _pchip(pts):
 def base_z(x, y):
     """The dune field's floor: broad undulation + earth curvature (seen from the origin)."""
     import numpy as np
+    roll = (0.55 * np.sin(x / 21.0 + 0.3 * np.sin(y / 37.0)) * np.sin(y / 29.0 + 1.1)
+            + 0.35 * np.sin((0.8 * x - 0.6 * y) / 13.0 + 2.2) * np.sin((0.6 * x + 0.8 * y) / 41.0))
+    near = np.clip((np.hypot(x, y) - 6.0) / 30.0, 0.0, 1.0)
     return (2.2 * np.sin(x / 170.0 + 0.7) * np.sin(y / 230.0 + 1.3) + 1.4 * np.sin((x + 0.6 * y) / 410.0 + 2.0)
-            - (x * x + y * y) / (2.0 * 6.371e6))
+            + roll * near - (x * x + y * y) / (2.0 * 6.371e6))
 
 
 def profile(wp, H):
@@ -123,7 +131,10 @@ def hero_height(x, y, fns=None):
     """Terrain height of the hero dune (with the summit plateau) at points (x, y) -- no floor."""
     import numpy as np
     fx, dfx, fh = fns or _hero_fns()
-    xc, dx, H = fx(y), dfx(y), fh(y)
+    y = np.asarray(y, np.float64)
+    yc = np.clip(y, HERO_CREST[0][0], HERO_CREST[-1][0])
+    xc, dx = fx(yc), dfx(yc)
+    H = np.maximum(fh(yc), 0.0) * (y <= HERO_CREST[-1][0]) * (y >= HERO_CREST[0][0])
     wp = (x - xc) / np.sqrt(1.0 + dx * dx)
     h = profile(wp, H)
     return _plateau(x, y, h, fns)
@@ -134,11 +145,11 @@ def _plateau(x, y, h, fns=None):
     import numpy as np
     fx, dfx, fh = fns or _hero_fns()
     sx, sh = float(fx(SUMMIT_Y)), float(fh(SUMMIT_Y))
-    r = np.hypot(x - sx, (y - SUMMIT_Y) * 0.8)
-    u = np.clip((PLATEAU_R * 1.9 - r) / (PLATEAU_R * 0.9), 0.0, 1.0)
+    r = np.hypot(x - sx - 0.35, (y - SUMMIT_Y) * 0.85)
+    u = np.clip((PLATEAU_R * 1.6 - r) / (PLATEAU_R * 0.7), 0.0, 1.0)
     u = u * u * (3 - 2 * u)
-    dome = sh - 0.22 - 0.035 * r * r
-    return h + u * (np.minimum(dome, h + 0.25) - h) * (h > sh - 2.5)
+    dome = sh - 0.25 - 0.04 * r * r
+    return h + u * (np.minimum(dome, h + 0.55) - h) * (h > sh - 3.0)
 
 
 def ground_at(x, y):
@@ -289,8 +300,10 @@ RELEASE = 1540.5
 
 
 def robe_body(J, t, wind_l, gust):
-    """A long hooded desert robe (mat 0), a wrapped scarf whose tail streams downwind (mat 1), skin
-    (hands, mat 2). wind_l: unit wind in figure-local xy. All one smooth SDF body."""
+    """A long hooded desert robe (mat 0), a wrapped scarf whose end streams downwind (mat 1), skin (hands,
+    mat 2) -- one smooth SDF body. The skirt is two continuous tapered cones (stacked ellipsoids read as
+    rings), pressed against the legs on the windward side and billowing out downwind at the hem.
+    wind_l: unit wind in figure-local xy."""
     import numpy as np
     import figures as FG
     V, cone, ell = FG.V, FG.cone, FG.ell
@@ -299,69 +312,128 @@ def robe_body(J, t, wind_l, gust):
     pel, sp, ch, nk, hd = J['pelvis'], J['spine'], J['chest'], J['neck'], J['head']
     wx, wy = wind_l
     W = np.array([wx, wy, 0.0])
-
-    def flap(z, ph):
-        # the hem whips: a travelling wave downwind, stronger toward the hem and in gusts
-        a = gust * (0.45 + 0.55 * max(0.0, 1.0 - z / 0.9))
-        return a * (0.035 * math.sin(2 * math.pi * 2.3 * t + ph - 5.0 * z) + 0.015 * math.sin(2 * math.pi * 5.1 * t + 2 * ph))
-
-    # torso: chest / belly / hips (robe over the body, loose)
-    P.append(ell(ch + Rc @ V(0, 0.01, -0.02), (0.185, 0.14, 0.16), Rc, k=0.08, mat=0))
-    P.append(ell(sp + Rc @ V(0, 0.01, 0.0), (0.18, 0.14, 0.15), Rc, k=0.09, mat=0))
-    P.append(ell(pel + Rp @ V(0, 0.0, 0.02), (0.2, 0.155, 0.14), Rp, k=0.1, mat=0))
-    # skirt of the robe: sections between the legs, flaring to the hem, blown downwind (pressed flat on
-    # the windward side, bellying out on the lee side)
+    up = np.array([0.0, 0.0, 1.0])
+    ph = 2 * math.pi * t
+    # torso under the loose robe, a soft waist
+    P.append(ell(ch + Rc @ V(0, 0.005, -0.02), (0.18, 0.13, 0.16), Rc, k=0.07, mat=0))
+    P.append(ell(sp + Rc @ V(0, 0.005, 0.0), (0.162, 0.122, 0.14), Rc, k=0.08, mat=0))
+    P.append(ell(pel + Rp @ V(0, 0.0, 0.02), (0.188, 0.142, 0.12), Rp, k=0.09, mat=0))
+    # skirt: hips -> knees -> hem, following the stance, blown downwind
     kn = 0.5 * (J['l_knee'] + J['r_knee'])
     an = 0.5 * (J['l_ankle'] + J['r_ankle'])
-    spread = np.linalg.norm(J['l_ankle'][:2] - J['r_ankle'][:2])
-    for z_u, (rx, ry, rz) in ((0.72, (0.21, 0.165, 0.13)), (0.52, (0.225, 0.18, 0.13)), (0.33, (0.245, 0.195, 0.12)),
-                              (0.16, (0.265, 0.21, 0.1)), (0.06, (0.285, 0.225, 0.06))):
-        # interpolate the section centre between pelvis, knees and ankles by height
-        if z_u > kn[2]:
-            u = (z_u - kn[2]) / max(pel[2] - kn[2], 1e-3)
-            c = kn + (pel - kn) * min(max(u, 0.0), 1.0)
-        else:
-            u = (z_u - an[2]) / max(kn[2] - an[2], 1e-3)
-            c = an + (kn - an) * min(max(u, 0.0), 1.0)
-        c = np.array([c[0], c[1], z_u])
-        lower = max(0.0, 1.0 - z_u / 0.8)
-        blow = gust * lower * (0.06 + 0.03 * math.sin(2 * math.pi * 1.7 * t + 3.0 * z_u))
-        c = c + W * (blow + flap(z_u, 0.0))
-        rxx = rx + 0.25 * spread * lower
-        P.append(ell(c, (rxx, ry, rz), None, k=0.12, mat=0))
+    spread = float(np.linalg.norm(J['l_ankle'][:2] - J['r_ankle'][:2]))
+    hip_c = pel + Rp @ V(0, 0.0, -0.06)
+    knee_c = np.array([kn[0], kn[1], kn[2]]) + W * gust * (0.035 + 0.012 * math.sin(ph * 1.7 + 0.5))
+    hem_c = np.array([an[0], an[1], 0.05]) + W * gust * (0.085 + 0.025 * math.sin(ph * 2.1 + 1.3))
+    P.append(cone(hip_c, knee_c, 0.195, 0.228 + 0.2 * spread, k=0.1, mat=0))
+    P.append(cone(knee_c, hem_c, 0.228 + 0.2 * spread, 0.285 + 0.25 * spread, k=0.08, mat=0))
+    # the downwind billow of the hem: a flattened lobe that flaps
+    fl = math.sin(ph * 2.4) * 0.5 + math.sin(ph * 4.3 + 1.1) * 0.25
+    bill_c = hem_c + W * (0.16 + 0.04 * fl) * gust + up * (0.2 + 0.03 * fl)
+    Rb = FG._R_from(np.array([W[0], W[1], 0.35]), up)
+    P.append(ell(bill_c, (0.13, 0.08 + 0.015 * fl, 0.2), Rb, k=0.1, mat=0))
     # sleeves (wide, a little bell at the cuff), hands
-    for s in ('l', 'r'):
-        P.append(cone(J[s + '_sh'], J[s + '_el'], 0.072, 0.07, k=0.06, mat=0))
-        cuff = J[s + '_wr'] + (J[s + '_el'] - J[s + '_wr']) * 0.05 + W * 0.015 * gust
-        P.append(cone(J[s + '_el'], cuff, 0.07, 0.085, k=0.03, mat=0))
-        P.append(cone(J[s + '_wr'] + (J[s + '_hand'] - J[s + '_wr']) * 0.2, J[s + '_hand'], 0.034, 0.03, k=0.015,
-                      mat=2))
-    # shoulders / yoke
-    P.append(cone(J['l_sh'] + Rc @ V(0.02, 0, 0.0), J['r_sh'] + Rc @ V(-0.02, 0, 0.0), 0.078, 0.078, k=0.08, mat=0))
-    # wrapped scarf round the neck (mat 1) + its tail streaming downwind from the back of the neck
-    P.append(ell(nk + Rc @ V(0, 0.0, -0.01), (0.11, 0.1, 0.075), Rc, k=0.04, mat=1))
-    a0 = nk + Rc @ V(0.03, -0.07, -0.03)
-    prev = a0
-    down = np.array([0.0, 0.0, -1.0])
-    for i in range(1, 9):
-        s_ = i / 8.0
-        L = 0.085
-        wob = gust * (0.16 * s_) * math.sin(2 * math.pi * 2.6 * t - 4.2 * s_) + 0.04 * s_ * math.sin(
-            2 * math.pi * 6.3 * t - 7.0 * s_)
-        perp = np.array([-wy, wx, 0.0])
-        d = W * (0.75 + 0.2 * gust) + down * (0.45 - 0.35 * gust) + perp * wob + np.array([0, 0, 0.35 * wob])
-        d /= np.linalg.norm(d)
-        p = prev + d * L
-        P.append(cone(prev, p, 0.05 * (1 - 0.45 * s_) + 0.012, 0.05 * (1 - 0.45 * (s_ + 0.125)) + 0.012, k=0.02,
-                      mat=1))
-        prev = p
-    # head + hood: a deep hood (dome + peak + drape to the shoulders), face opening carved
+    for s_ in ('l', 'r'):
+        P.append(cone(J[s_ + '_sh'], J[s_ + '_el'], 0.07, 0.068, k=0.06, mat=0))
+        cuff = J[s_ + '_wr'] + (J[s_ + '_el'] - J[s_ + '_wr']) * 0.08 + W * 0.012 * gust
+        P.append(cone(J[s_ + '_el'], cuff, 0.068, 0.082, k=0.03, mat=0))
+        P.append(cone(J[s_ + '_wr'] + (J[s_ + '_hand'] - J[s_ + '_wr']) * 0.2, J[s_ + '_hand'], 0.033, 0.029,
+                      k=0.015, mat=2))
+    P.append(cone(J['l_sh'] + Rc @ V(0.02, 0, 0.0), J['r_sh'] + Rc @ V(-0.02, 0, 0.0), 0.075, 0.075, k=0.08, mat=0))
+    # scarf wrapped round the neck (a streaming scarf end read as a thin outstretched arm from behind)
+    P.append(ell(nk + Rc @ V(0, 0.0, -0.01), (0.105, 0.098, 0.07), Rc, k=0.04, mat=1))
+    # head + deep hood (dome + soft peak + drape to the shoulders), face opening carved
     P.append(cone(ch + Rc @ V(0, 0, 0.02), nk + Rc @ V(0, 0.01, 0.04), 0.06, 0.055, k=0.03, mat=2))
     P.append(ell(hd, (0.076, 0.092, 0.105), Rh, k=0.02, mat=2))
-    P.append(ell(hd + Rh @ V(0, -0.02, 0.02), (0.112, 0.128, 0.132), Rh, k=0.02, mat=0))
-    P.append(ell(hd + Rh @ V(0, -0.07, 0.08) + W * 0.015 * gust, (0.06, 0.07, 0.07), Rh, k=0.05, mat=0))
-    P.append(cone(hd + Rh @ V(0, -0.06, -0.03), nk + Rc @ V(0, -0.085, -0.06), 0.095, 0.105, k=0.07, mat=0))
-    P.append(ell(hd + Rh @ V(0, 0.118, -0.012), (0.066, 0.05, 0.088), Rh, k=0.02, mat=2, op=1))
+    P.append(ell(hd + Rh @ V(0, -0.025, 0.02), (0.118, 0.135, 0.138), Rh, k=0.02, mat=0))
+    P.append(ell(hd + Rh @ V(0, -0.085, 0.085) + W * 0.012 * gust, (0.058, 0.07, 0.066), Rh, k=0.06, mat=0))
+    P.append(cone(hd + Rh @ V(0, -0.07, -0.03), nk + Rc @ V(0, -0.09, -0.07), 0.1, 0.112, k=0.07, mat=0))
+    P.append(ell(hd + Rh @ V(0, 0.125, -0.012), (0.066, 0.05, 0.088), Rh, k=0.02, mat=2, op=1))
+    return P
+
+
+def cloak_body(J, t, wind_l, gust):
+    """H5: a plain cloak with the wind in its folds (no hood, no robe, no regional dress, no figurine).
+    mat 0 tunic and trousers, mat 1 the cloak and its rolled collar, mat 2 hair, mat 3 leather (gloves, boots).
+    The cloak hangs from the shoulders round the back, open at the front, to mid-calf. It is built from
+    overlapping fold tubes, so its surface is corrugated like heavy wool. Each fold is pushed downwind more
+    toward the hem and more on the windward side, and flaps with its own phase, so a wave runs across the
+    folds and the hem is scalloped. The bare head is dark (never a lit face); a knot of hair lifts downwind."""
+    import numpy as np
+    import figures as FG
+    V, cone, ell = FG.V, FG.cone, FG.ell
+    P = []
+    Rp, Rc, Rh = J['R_pelvis'], J['R_chest'], J['R_head']
+    pel, sp, ch, nk, hd = J['pelvis'], J['spine'], J['chest'], J['neck'], J['head']
+    W = np.array([wind_l[0], wind_l[1], 0.0])
+    ph = 2 * math.pi * t
+    # tunic: a lean torso
+    P.append(ell(ch + Rc @ V(0, 0.005, -0.02), (0.158, 0.112, 0.15), Rc, k=0.06, mat=0))
+    P.append(ell(sp + Rc @ V(0, 0.005, 0.0), (0.142, 0.104, 0.13), Rc, k=0.07, mat=0))
+    P.append(ell(pel + Rp @ V(0, 0.0, 0.01), (0.165, 0.122, 0.11), Rp, k=0.07, mat=0))
+    # legs (trousers) and boots
+    for s_ in ('l', 'r'):
+        P.append(cone(J[s_ + '_hip'], J[s_ + '_knee'], 0.078, 0.058, k=0.04, mat=0))
+        P.append(cone(J[s_ + '_knee'], J[s_ + '_ankle'] + V(0, 0, 0.12), 0.057, 0.046, k=0.03, mat=0))
+        P.append(cone(J[s_ + '_ankle'] + V(0, 0, 0.16), J[s_ + '_ankle'], 0.05, 0.047, k=0.02, mat=3))
+        P.append(cone(J[s_ + '_heel'] + V(0, 0, 0.03), J[s_ + '_toe'] + V(0, 0, 0.025), 0.045, 0.036, k=0.03, mat=3))
+    # sleeves and gloved hands
+    for s_ in ('l', 'r'):
+        P.append(cone(J[s_ + '_sh'], J[s_ + '_el'], 0.058, 0.05, k=0.04, mat=0))
+        P.append(cone(J[s_ + '_el'], J[s_ + '_wr'], 0.05, 0.04, k=0.03, mat=0))
+        P.append(cone(J[s_ + '_wr'] + (J[s_ + '_hand'] - J[s_ + '_wr']) * 0.15, J[s_ + '_hand'], 0.032, 0.027,
+                      k=0.015, mat=3))
+    P.append(cone(J['l_sh'] + Rc @ V(0.02, 0, 0.0), J['r_sh'] + Rc @ V(-0.02, 0, 0.0), 0.062, 0.062, k=0.07, mat=0))
+    # neck, bare dark head, a knot of hair at the nape lifting downwind
+    P.append(cone(ch + Rc @ V(0, 0, 0.02), nk + Rc @ V(0, 0.01, 0.04), 0.052, 0.046, k=0.03, mat=2))
+    P.append(ell(hd, (0.074, 0.09, 0.104), Rh, k=0.02, mat=2))
+    knot = hd + Rh @ V(0, -0.085, -0.05)
+    P.append(ell(knot, (0.04, 0.045, 0.04), Rh, k=0.02, mat=2))
+    tail = knot + W * (0.07 + 0.02 * math.sin(ph * 3.1)) * gust + V(0, 0, -0.03 + 0.015 * math.sin(ph * 2.2))
+    P.append(cone(knot, tail, 0.028, 0.01, k=0.02, mat=2))
+    # the cloak's rolled collar (a cowl round the neck and shoulders, never a hood)
+    P.append(ell(nk + Rc @ V(0, -0.01, -0.035), (0.125, 0.105, 0.05), Rc, k=0.05, mat=1))
+    # the cloak: one continuous sheet (~3 cm of wool), a grid of flattened ellipsoids from the shoulders round
+    # the back to a hem at mid-calf, open at the front. Folds = the sheet undulating in and out round the
+    # body; the wind billows the whole sheet downwind (more toward the hem and on the lee side) and a flap
+    # wave runs across it.
+    N, M = 27, 8
+    z_hem = 0.36
+    G = np.zeros((N, M, 3))
+    for i in range(N):
+        a = math.radians(-116.0 + 232.0 * i / (N - 1))
+        sa, ca = math.sin(a), math.cos(a)
+        outward = Rc @ V(sa, -ca, 0.0)
+        lee = max(0.0, float(outward @ W))
+        top = ch + Rc @ V(0.17 * sa, -(0.11 * ca + 0.03), 0.07)
+        hip = pel + Rp @ V(0.225 * sa, -(0.18 * ca + 0.04), -0.03)
+        hem = np.array([hip[0] * 1.1, hip[1] * 1.1, z_hem])
+        fold = 0.02 * math.sin(i * 0.95 + 0.6) + 0.008 * math.sin(i * 2.1 + 1.1)
+        for j in range(M):
+            v = j / (M - 1)
+            if v < 0.45:
+                q = top + (hip - top) * (v / 0.45)
+            else:
+                q = hip + (hem - hip) * ((v - 0.45) / 0.55)
+            g = v ** 1.4
+            flap = 0.045 * math.sin(ph * 2.3 - i * 0.3 - j * 0.5) + 0.02 * math.sin(ph * 4.3 - i * 0.55 + 0.7)
+            q = q + outward * (fold * (0.4 + 0.6 * v) + 0.02 * lee * g) + W * gust * g * (0.27 + 0.03 * lee)
+            q = q + W * flap * g + np.array([0.0, 0.0, 0.07 * g * gust * (0.5 + lee)])
+            G[i, j] = q
+    for i in range(N):
+        for j in range(M - 1):
+            p0, p1 = G[i, j], G[i, j + 1]
+            c = 0.5 * (p0 + p1)
+            ax = p1 - p0
+            L = float(np.linalg.norm(ax)) + 1e-9
+            ax /= L
+            tg = G[min(i + 1, N - 1), j] - G[max(i - 1, 0), j]
+            tg = tg - ax * float(tg @ ax)
+            tg /= float(np.linalg.norm(tg)) + 1e-9
+            nm = np.cross(ax, tg)
+            Rm = np.stack([tg, nm, ax], 1)
+            wd = 0.032 + 0.026 * (j / (M - 1))
+            P.append(ell(c, (wd, 0.014, 0.6 * L), Rm, k=0.03, mat=1))
     return P
 
 
@@ -394,6 +466,8 @@ def _figure_frames(frames, cache, beacon, root, yaw, basket_top):
     wl /= np.linalg.norm(wl)
     basket = to_local(np.array(basket_top) + np.array([0, 0, -0.12]))
     torch, step = {}, {}
+    only = os.environ.get('MT3D_FIGONLY')                # tests: mesh only these frames (+ the first)
+    only = None if not only else {int(x) for x in only.split(',')} | {START - 1}
     for f in frames:
         J, gust, t = fig_frame(f, wl)
         back = 0.42 * FG.ease((f - 1540.5) / 5.0)
@@ -422,12 +496,15 @@ def _figure_frames(frames, cache, beacon, root, yaw, basket_top):
         sh = FG.ease((f - 1540.0) / 3.0) * (1 - FG.ease((f - 1552.0) / 14.0))
         if sh > 1e-3:
             face = J['head'] + J['R_head'] @ np.array([0.04, 0.17, 0.0])
-            FG.ik_arm(J, 'l', J['l_hand'] * (1 - sh) + face * sh, pole=(-0.6, -0.2, -0.9))
+            FG.ik_arm(J, 'l', J['l_hand'] * (1 - sh) + face * sh, pole=(-0.2, 0.75, -0.65))
         torch[str(f)] = [list(map(float, grip)), list(map(float, tdir))]
         step[str(f)] = -back
         path = os.path.join(d, f'robe_{f:05d}.bin')
+        if only is not None and f not in only:
+            continue
         if not os.path.exists(path) or os.environ.get('MT3D_REFIG'):
-            Vv, Q, M = FG.mesh_sdf(robe_body(J, t, wl, gust), h=0.011, disp=(0.004, 7.0, 19.0, 3.0 * t))
+            body = cloak_body(J, t, wl, gust) if V3 else robe_body(J, t, wl, gust)
+            Vv, Q, M = FG.mesh_sdf(body, h=0.007 if V3 else 0.011, disp=(0.003, 7.0, 19.0, 3.0 * t))
             FG.write_mesh(path, Vv, Q, M)
     return dict(fig_dir=d, fig_torch=torch, fig_step=step)
 
@@ -452,7 +529,7 @@ def prep(frames, cache):
 
     stamp = os.path.join(geo, 'meshes.json')
     if redo or not os.path.exists(stamp):
-        add('hero', dune_meshes('hero', fns, -60.0, 1000.0, 10.0, cam=cam, near_dy=0.08, kdy=0.01, first=0.015,
+        add('hero', dune_meshes('hero', fns, HERO_Y[0], HERO_Y[1], 10.0, cam=cam, near_dy=0.08, kdy=0.01, first=0.015,
                                 ratio=1.1, plateau=True))
         for k, d in enumerate(FAR_DUNES):
             f2 = _far_fns(d)
@@ -482,7 +559,7 @@ def prep(frames, cache):
     info['summit'] = [sx, SUMMIT_Y, float(ground_at(sx, SUMMIT_Y))]
     # arc length along the hero crest (mesh rows start at y=-60): footprints from 6 m behind the camera
     # to 1.2 m short of the figure
-    yy = np.linspace(-60.0, 60.0, 4801)
+    yy = np.linspace(HERO_Y[0], 60.0, 9801)
     xx = fns[0](yy)
     uu = np.concatenate([[0.0], np.cumsum(np.hypot(np.diff(xx), np.diff(yy)))])
     info['path_u'] = [float(np.interp(-6.0, yy, uu)), float(np.interp(fig_xy[1] - 1.2, yy, uu))]
@@ -567,17 +644,18 @@ def build(job):
     md = moon_dir(opts.get('moon_az'), opts.get('moon_el'))
     # ------------------------------------------------------------------ atmosphere / sky
     hz = C.hexlin('#27335E')
-    C.atmos_group(dict(a=0.0, Hs=100.0, h0=0.0, u=1.0 / 14000.0, amb=tuple(c * 1.05 for c in hz),
+    C.atmos_group(dict(a=0.0, Hs=100.0, h0=0.0, u=1.0 / 7000.0, amb=tuple(c * 1.1 for c in hz),
                        moon_dir=md, fwd=0.8, fwd_pow=3.0))
     core = sky_dir(-14.0, 2.5)         # the galactic core, low over the dunes left of the summit
     G = Vector(core).cross(Vector(sky_dir(38.0, 62.0))).normalized()
     C.sky_world(dict(zenith=C.hexlin('#070B1C'), horizon=hz, below=tuple(c * 0.8 for c in hz), moon_dir=md, moon_I=0.0,
-                     halo=(0.02, 0.35), halo2=(0.012, 1.1), hglow=((0.05, 0.05, 0.07), 7.0),
+                     halo=(0.02, 0.35), halo2=(0.012, 1.1), hglow=((0.07, 0.075, 0.1), 9.0),
                      stars=dict(gain=0.5, ext0=0.02, ext1=0.25, band=(tuple(G), 0.2, 2.5)),
                      milky=dict(pole=tuple(G), core=core, width=0.15, core_pow=4.0, gain=opts.get('mw_gain', 0.05),
                                 core_gain=2.8, dust=0.85),
                      light_gain=0.9))
-    C.sun('moon', md, C.MOON, MOON_I * opts.get('moon_gain', 1.0), angle_deg=0.6, volume=0.5)
+    C.sun('moon', md, C.MOON, MOON_I * opts.get('moon_gain', 1.0), angle_deg=0.6, volume=0.5,
+          shadow=bool(opts.get('moon_shadow', True)))
     # ------------------------------------------------------------------ camera
     cam = C.make_camera('CAM', hfov=HFOV, clip=(0.1, 60000.0))
     czt = D['cam_z']
@@ -625,12 +703,17 @@ def build(job):
                    wind=(2.6 * WIND[0], 2.6 * WIND[1]), dens=1.2, albedo=0.3)
     FK.glow_haze('beacon_haze', fb + Vector((0, 0, 0.9)), 7.0, density=0.006, aniso=0.35, flat=0.7)
     # ------------------------------------------------------------------ blowing sand
-    _streamers(C, FK, new_material, D, opts)
+    if opts.get('streamers'):          # dropped: too faint to read at full res (kept as an option)
+        _streamers(C, FK, new_material, D, opts)
     # ------------------------------------------------------------------ figure
     rx_, ry_, rz_ = D['figure_root']
     yaw = D['figure_yaw']
-    fmat = FGk.figure_material('robe', [(0.05, 0.034, 0.024), (0.09, 0.03, 0.022), (0.05, 0.032, 0.024),
-                                        (0.03, 0.03, 0.03)], sheen=0.5, sheen_tint=(1.0, 0.85, 0.7), folds=0.5)
+    if V3:     # tunic, plain undyed wool cloak, dark hair, leather
+        fmat = FGk.figure_material('robe', [(0.045, 0.036, 0.029), (0.06, 0.05, 0.042), (0.018, 0.015, 0.013),
+                                            (0.03, 0.022, 0.016)], sheen=0.45, sheen_tint=(1.0, 0.88, 0.75), folds=0.3)
+    else:
+        fmat = FGk.figure_material('robe', [(0.05, 0.034, 0.024), (0.09, 0.03, 0.022), (0.05, 0.032, 0.024),
+                                            (0.03, 0.03, 0.03)], sheen=0.5, sheen_tint=(1.0, 0.85, 0.7), folds=0.5)
     fwd = Vector((-math.sin(math.radians(yaw)), math.cos(math.radians(yaw)), 0.0))
     seq = FGk.MeshSeq('robe', D['fig_dir'], fmat, Matrix.Identity(4), START - 1)
     torch = FGk.torch_obj('torch')
@@ -660,6 +743,10 @@ def build(job):
         tl.location = P + Vector((0.05, 0, 0.2))
         tl.keyframe_insert('location', frame=f)
         C.key(tl.data, 'energy', f, 30.0 * tt.get(f, 1.0) * (1.0 if f < IGN else 0.0))
+    for nm in opts.get('hide', []):                   # debug: hide objects by name prefix
+        for ob in bpy.data.objects:
+            if ob.name.startswith(nm):
+                ob.hide_render = True
     return dict(fire_base=list(fb))
 
 
@@ -687,25 +774,57 @@ def _sand_materials(C, new_material, D):
         col = nb.colscale(alb, tone)
         height = None
         if kind in ('wind', 'hero_wind', 'ground'):
-            # ripples: crests perpendicular to the wind, ~11 cm apart, sinuous, with defects; asymmetric
-            # profile (gentle stoss, steep lee); fade out where a ripple spans < ~3 px
+            # ripples (H5: never combed). A two-scale domain warp bends the crests (+-25 deg over metres) and
+            # makes them split and merge; two families (8 and 13 cm, 18 deg apart) take over from each other
+            # in patches, so the wavelength and direction wander; the amplitude breathes; asymmetric profile
+            # (gentle stoss, steep lee); gone before a ripple spans < ~5 px (no shimmer)
             wx, wy = WIND
-            along = nb.add(nb.mul(px, -wx), nb.mul(py, -wy))
-            warp = nb.noise(P, scale=0.35, detail=2.0, rough=0.5)
-            ph = nb.div(nb.add(along, nb.mul(nb.sub(warp.outputs['Fac'], 0.5), 0.9)), 0.11)
-            fr = nb.math('FRACT', ph)
-            prof = nb.mn(nb.div(fr, 0.72), nb.div(nb.sub(1.0, fr), 0.28))
-            amp_n = nb.noise(P, scale=0.08, detail=2.0)
-            amp = nb.mul(nb.madd(amp_n.outputs['Fac'], 1.0, 0.25), 0.012)
+            along = nb.add(nb.mul(px, -wx), nb.mul(py, -wy))          # (the megaripples below use it)
+            w1 = nb.noise(P, scale=0.22, detail=1.0, rough=0.5)
+            w2 = nb.noise(P, scale=1.3, detail=2.0, rough=0.5)
+            Pw = nb.vadd(nb.vadd(P, nb.vscale(nb.vsub(w1.outputs['Color'], (0.5, 0.5, 0.5)), 1.6)),
+                         nb.vscale(nb.vsub(w2.outputs['Color'], (0.5, 0.5, 0.5)), 0.16))
+            qx, qy, _ = nb.sep(Pw)
+            fams = []
+            for lam, rot in ((0.083, -0.18), (0.13, 0.14)):
+                cr, sr = math.cos(rot), math.sin(rot)
+                dx, dy = -(wx * cr - wy * sr), -(wx * sr + wy * cr)
+                ph = nb.div(nb.add(nb.mul(qx, dx), nb.mul(qy, dy)), lam)
+                fr = nb.math('FRACT', ph)
+                fams.append(nb.mn(nb.div(fr, 0.72), nb.div(nb.sub(1.0, fr), 0.28)))
+            mix = nb.sstep(0.38, 0.62, nb.noise(P, scale=0.09, detail=2.0, rough=0.5).outputs['Fac'])
+            prof = nb.mixf(mix, fams[0], fams[1])
+            amp_n = nb.noise(P, scale=0.11, detail=3.0, rough=0.6)
+            amp = nb.mul(nb.mx(nb.madd(amp_n.outputs['Fac'], 1.6, -0.35), 0.0), 0.011)
             pxsize = nb.mul(dist, 2.0 * math.tan(math.radians(HFOV / 2)) / 1920.0)
-            fade = nb.sstep(0.035, 0.012, pxsize)
+            fade = nb.sstep(0.022, 0.009, pxsize)          # gone before a ripple spans < ~5 px (no shimmer)
             height = nb.mul(nb.mul(prof, amp), fade)
-            if kind == 'hero_wind':
-                # the knife edge stays smooth: ripples die out in the last ~0.4 m below the crest
+            # megaripples / wind streaks (1.3-2.4 m): the texture that still reads on far dune flanks. H5: never
+            # combed, so they get their own large domain warp (+-35 deg bends over tens of metres), two spacings
+            # that take over from each other in patches, and an amplitude that comes and goes
+            m1 = nb.noise(P, scale=0.012, detail=1.0, rough=0.5)
+            m2 = nb.noise(P, scale=0.07, detail=2.0, rough=0.5)
+            Pm = nb.vadd(nb.vadd(P, nb.vscale(nb.vsub(m1.outputs['Color'], (0.5, 0.5, 0.5)), 26.0)),
+                         nb.vscale(nb.vsub(m2.outputs['Color'], (0.5, 0.5, 0.5)), 2.4))
+            mx_, my_, _ = nb.sep(Pm)
+            fam2 = []
+            for lam, rot in ((1.3, 0.22), (2.4, -0.16)):
+                cr, sr = math.cos(rot), math.sin(rot)
+                dx, dy = -(wx * cr - wy * sr), -(wx * sr + wy * cr)
+                fr2 = nb.math('FRACT', nb.div(nb.add(nb.mul(mx_, dx), nb.mul(my_, dy)), lam))
+                fam2.append(nb.mn(nb.div(fr2, 0.75), nb.div(nb.sub(1.0, fr2), 0.25)))
+            prof2 = nb.mixf(nb.sstep(0.4, 0.6, nb.noise(P, scale=0.008, detail=2.0).outputs['Fac']), fam2[0], fam2[1])
+            amp2 = nb.mul(nb.madd(nb.noise(P, scale=0.02, detail=3.0, rough=0.6).outputs['Fac'], 2.2, -0.75),
+                          0.03 if kind == 'hero_wind' else 0.07)
+            fade2 = nb.sstep(0.5, 0.2, pxsize)
+            height = nb.add(height, nb.mul(nb.mul(prof2, nb.mx(amp2, 0.0)), fade2))
+            if kind in ('hero_wind', 'wind'):
+                # H5: ripples fade toward the crest (wind-swept, smooth over the last few metres, gone at the brink)
                 uv = nb.n('ShaderNodeUVMap')
                 uv.uv_map = 'crest'
                 cu, cw, _ = nb.sep(uv.outputs['UV'])
-                height = nb.mul(height, nb.sstep(0.05, 0.45, cw))
+                height = nb.mul(height, nb.mul(nb.sstep(0.05, 3.2, cw), nb.madd(nb.sstep(3.2, 9.0, cw), 0.25, 0.75)))
+            if kind == 'hero_wind':
                 fp = _footprints(nb, cu, cw, D['path_u'])
                 height = nb.add(height, fp)
                 # trampled sand round the beacon
@@ -734,25 +853,45 @@ def _sand_materials(C, new_material, D):
 
 
 def _footprints(nb, cu, cw, path_u):
-    """Bump height of a line of footprints in UV (u along the crest, w across), from behind the camera
-    to the summit: alternating left/right prints 0.36 m apart, a path wandering 0.3-0.8 m below the
-    brink; each print a sloped-wall pit with a kicked-out rim, the toe dug deeper (climbing)."""
-    STEP = 0.36
+    """Bump height of a line of footprints in UV (u along the crest, w across), from behind the camera to the
+    summit (H5: small, irregular, half-filled, a real gait). An uphill walk in soft sand: steps of ~0.30 m
+    (+-15%), left and right ~0.09 m either side of a path that wanders 0.3-0.8 m below the brink; each print
+    ~25 x 10 cm, toed out a little, its toe dug deeper (climbing) and its sand kicked out downhill; the wind
+    has half filled every one (soft rounded walls, a shallow floor, a few almost gone)."""
+    STEP = 0.30
     u0, u1 = path_u                     # arc length of the path along the hero crest (behind camera .. figure)
     k = nb.math('FLOOR', nb.div(nb.sub(cu, u0), STEP))
-    uc = nb.madd(k, STEP, u0 + STEP * 0.5)
+    jit = nb.white(nb.comb(k, 0.0, 0.0), dims='3D')
+    j1, j2, j3 = nb.sep(jit.outputs['Color'])
+    jit2 = nb.white(nb.comb(k, 7.0, 3.0), dims='3D')
+    j4, j5, j6 = nb.sep(jit2.outputs['Color'])
+    uc = nb.add(nb.madd(k, STEP, u0 + STEP * 0.5), nb.mul(nb.sub(j1, 0.5), 0.15))
     side = nb.sub(nb.mul(nb.math('MODULO', k, 2.0), 2.0), 1.0)
     path = nb.madd(nb.math('SINE', nb.mul(uc, 0.21)), 0.16, 0.52)
-    jit = nb.white(nb.comb(k, 0.0, 0.0), dims='3D')
-    wc = nb.add(nb.add(path, nb.mul(side, 0.095)), nb.mul(nb.sub(nb.sep(jit.outputs['Color'])[0], 0.5), 0.05))
-    du = nb.sub(cu, nb.add(uc, nb.mul(nb.sub(nb.sep(jit.outputs['Color'])[1], 0.5), 0.06)))
-    dw = nb.sub(cw, wc)
-    e = nb.length(nb.comb(nb.div(du, 0.15), nb.div(dw, 0.065), 0.0))
-    pit = nb.sstep(1.0, 0.55, e)
-    rim = nb.mul(nb.sstep(1.45, 1.05, e), nb.sstep(0.85, 1.05, e))
-    toe = nb.madd(nb.div(du, 0.15), 0.35, 1.0)
+    wc = nb.add(nb.add(path, nb.mul(side, nb.madd(j5, 0.04, 0.07))), nb.mul(nb.sub(j2, 0.5), 0.07))
+    du0 = nb.sub(cu, uc)
+    dw0 = nb.sub(cw, wc)
+    # toe-out: each foot turned 4-14 deg outward
+    ang = nb.mul(side, nb.madd(j3, 0.17, 0.07))
+    ca, sa = nb.math('COSINE', ang), nb.math('SINE', ang)
+    du = nb.add(nb.mul(du0, ca), nb.mul(dw0, sa))
+    dw = nb.sub(nb.mul(dw0, ca), nb.mul(du0, sa))
+    L = nb.madd(j4, 0.05, 0.10)                        # half length 10-15 cm
+    Wd = nb.madd(j2, 0.02, 0.045)                      # half width 4.5-6.5 cm
+    e0 = nb.length(nb.comb(nb.div(du, L), nb.div(dw, Wd), 0.0))
+    # a ragged outline: the walls have slumped unevenly
+    rag = nb.noise(nb.comb(nb.mul(du, 14.0), nb.mul(dw, 14.0), nb.mul(k, 3.7)), scale=1.0, detail=2.0)
+    e = nb.add(e0, nb.mul(nb.sub(rag.outputs['Fac'], 0.5), 0.55))
+    fill = nb.madd(j6, 0.75, 0.2)                      # how much the wind has filled it (0.2 .. 0.95)
+    pit = nb.math('POWER', nb.sstep(1.05, 0.25, e), 1.6)
+    toe = nb.madd(nb.div(du, L), 0.45, 1.0)
+    depth = nb.mul(nb.sub(1.0, fill), 0.042)
+    rim = nb.mul(nb.mul(nb.sstep(1.6, 1.1, e), nb.sstep(0.9, 1.15, e)), nb.sstep(0.0, 0.05, dw0))   # downhill kick
+    # the scuff: sand pushed downhill by the climbing foot, a soft smear below the print
+    sc = nb.length(nb.comb(nb.div(du, nb.mul(L, 0.9)), nb.div(nb.sub(dw0, nb.mul(Wd, 2.6)), nb.mul(Wd, 2.2)), 0.0))
+    scuff = nb.mul(nb.sstep(1.0, 0.2, sc), nb.mul(nb.sub(1.0, fill), 0.006))
     inside = nb.mul(nb.sstep(u0, u0 + 0.5, cu), nb.sstep(u1, u1 - 0.5, cu))
-    return nb.mul(nb.add(nb.mul(nb.mul(pit, toe), -0.045), nb.mul(rim, 0.012)), inside)
+    return nb.mul(nb.add(nb.add(nb.mul(nb.mul(pit, toe), nb.mul(depth, -1.0)), nb.mul(rim, 0.004)), scuff), inside)
 
 
 def _streamers(C, FK, new_material, D, opts):
@@ -760,10 +899,10 @@ def _streamers(C, FK, new_material, D, opts):
     over the slip face, torn into wisps (advected noise), fading as it spreads. Lit by moon and fire."""
     import bpy
     sx, sy, sh = D['summit']
-    V = [(x, y, z) for z in (-1.5, 3.5) for y in (-16.0, 16.0) for x in (-9.0, 1.0)]
+    V = [(x, y, z) for z in (-3.0, 3.0) for y in (-11.0, 11.0) for x in (-9.0, 1.2)]
     F = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
     ob = C.mesh_obj('streamers', V, F, smooth=False)
-    ob.location = (sx, sy - 6.0, sh)
+    ob.location = (sx, sy, sh)
     m, nb = new_material('streamers_m')
     t = FK.time_value(nb)
     P = nb.geo().outputs['Position']
@@ -771,23 +910,25 @@ def _streamers(C, FK, new_material, D, opts):
     # distance downwind of the crest (the crest runs ~ along y here, tilted)
     xc = nb.madd(nb.sub(py, sy), 0.36, sx)
     down = nb.mul(nb.sub(xc, px), 1.0)                      # metres downwind (toward -x) of the brink
-    zc = nb.madd(nb.pw(nb.sub(py, sy), 2.0), -0.012, sh)    # crest height falls away from the summit
+    dy = nb.sub(py, sy)
+    # the crest falls away from the summit: steeply toward the camera side (-y), gently beyond
+    zc = nb.sub(sh, nb.mul(nb.pw(dy, 2.0), nb.madd(nb.math('SIGN', dy), -0.027, 0.047)))
     above = nb.sub(pz, nb.sub(zc, nb.mul(nb.mx(down, 0.0), 0.35)))
     # sheet: rises a little as it leaves the brink, thickens and thins out downwind
     thick = nb.madd(nb.mx(down, 0.0), 0.12, 0.12)
     sheet = nb.exp(nb.mul(nb.pw(nb.div(nb.sub(above, nb.mul(nb.mx(down, 0.0), 0.08)), thick), 2.0), -1.0))
-    reach = nb.mul(nb.sstep(-0.3, 0.4, down), nb.exp(nb.mul(nb.mx(down, 0.0), -0.28)))
-    ends = nb.sstep(16.0, 8.0, nb.math('ABSOLUTE', nb.sub(py, sy)))
+    reach = nb.mul(nb.sstep(-0.3, 0.4, down), nb.exp(nb.mul(nb.mx(down, 0.0), -0.45)))
+    ends = nb.sstep(6.0, 2.0, nb.math('ABSOLUTE', dy))
     adv = nb.comb(nb.madd(t, 3.2, px), nb.madd(t, -0.5, py), pz)
     n1 = nb.noise(nb.comb(nb.mul(nb.sep(adv)[0], 0.5), nb.mul(nb.sep(adv)[1], 1.5), nb.mul(pz, 1.5)), scale=1.4,
                   detail=4.0, rough=0.6, dims='4D', w=nb.mul(t, 0.7))
-    wisp = nb.pw(nb.clamp01(nb.madd(n1.outputs['Fac'], 2.6, -1.05)), 1.4)
-    dens = nb.mul(nb.mul(nb.mul(nb.mul(sheet, reach), ends), wisp), opts.get('streamer_dens', 0.35))
+    wisp = nb.pw(nb.clamp01(nb.madd(n1.outputs['Fac'], 3.2, -1.45)), 1.6)
+    dens = nb.mul(nb.mul(nb.mul(nb.mul(sheet, reach), ends), wisp), opts.get('streamer_dens', 1.2))
     pv = nb.n('ShaderNodeVolumePrincipled')
     nb.set(pv.inputs['Density'], dens)
-    pv.inputs['Color'].default_value = (0.75, 0.66, 0.55, 1.0)
+    pv.inputs['Color'].default_value = (0.95, 0.88, 0.78, 1.0)
     pv.inputs['Absorption Color'].default_value = (0.0, 0.0, 0.0, 1.0)
-    pv.inputs['Anisotropy'].default_value = 0.55
+    pv.inputs['Anisotropy'].default_value = 0.1
     nb.output(volume=pv)
     ob.data.materials.append(m)
     ob.visible_shadow = False

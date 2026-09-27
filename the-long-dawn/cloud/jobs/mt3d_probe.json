@@ -1,0 +1,19 @@
+{
+ "name": "mt3d_probe",
+ "branch": "claude/render-mt3d-probe",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "(apt-get update -qq && apt-get install -y -qq libxrender1 libxxf86vm1 libxfixes3 libxi6 libxkbcommon0 libsm6 libgl1 libegl1 libegl-mesa0 libgl1-mesa-dri libgbm1 > /tmp/apt.log 2>&1 && echo apt ok) || echo 'apt unavailable (continuing: Cycles CPU needs none of it)'",
+  "python3 -m venv $HOME/bpyenv && $HOME/bpyenv/bin/pip install -q bpy==4.5.14",
+  "$HOME/bpyenv/bin/python -c \"import bpy; print('bpy', bpy.app.version_string)\""
+ ],
+ "render": [
+  "cd shots/montage3d && (EGL_PLATFORM=surfaceless MT3D_PROBE=1 MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=fire_still timeout 1800 python3 render.py ring3d --final --force --frames 100 --samples 64 --outdir renders/montage3d_v3/probe_eevee; MT3D_PROBE=1 MT3D_ENGINE=CYCLES MT3D_DEVICE=CPU MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=fire_still timeout 2400 python3 render.py ring3d --final --force --frames 100 --samples 64 --outdir renders/montage3d_v3/probe_cycles)"
+ ],
+ "outputs": [
+  {"out_dir": "renders/montage3d_v3/probe_eevee", "frames": "100"},
+  {"out_dir": "renders/montage3d_v3/probe_cycles", "frames": "100"}
+ ],
+ "push_every": 120,
+ "ship": "jpg"
+}

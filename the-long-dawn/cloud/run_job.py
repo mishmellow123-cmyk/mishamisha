@@ -39,8 +39,29 @@ def frames_of(spec):
     return sorted(set(out))
 
 
+LOG = []
+
+
 def log(msg):
-    print(time.strftime('%H:%M:%S'), msg, flush=True)
+    line = time.strftime('%H:%M:%S') + ' ' + str(msg)
+    LOG.append(line)
+    print(line, flush=True)
+
+
+def write_status(name, procs=()):
+    """cloud_logs/<name>_status.txt: this runner's log plus the tail of each render log, pushed with every batch so the
+    director can see a job's state from its branch (cloud sessions can't be attached to)."""
+    out = ['host: ' + ' '.join(os.uname()) + f' | cpus {os.cpu_count()}'] + LOG[-200:]
+    for i, (_, cmd, lf) in enumerate(procs):
+        try:
+            tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+        except OSError:
+            tail = []
+        out += ['', f'--- render[{i}] {cmd}'] + tail
+    rel = os.path.join('cloud_logs', f'{name}_status.txt')
+    with open(os.path.join(HERE, rel), 'w') as f:
+        f.write('\n'.join(out) + '\n')
+    return rel
 
 
 def sh(cmd, **kw):
@@ -56,7 +77,7 @@ def git_push(paths, branch, n_total, n_done):
         sh(f'git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m '
            f'"cloud render {os.path.basename(branch)}: {n_done}/{n_total} frames"', check=True)
     for attempt in range(4):
-        r = sh(f'git push -q origin HEAD:{branch}', capture_output=True, text=True)
+        r = sh(f'git push -q origin HEAD:refs/heads/{branch}', capture_output=True, text=True)
         if r.returncode == 0:
             return True
         log(f'push failed (attempt {attempt + 1}): {r.stderr.strip()[-300:]}')
@@ -80,13 +101,19 @@ def main():
     for cmd in job.get('setup', []):
         log(f'setup: {cmd}')
         t = time.time()
-        r = sh(cmd)
+        r = sh(cmd, capture_output=True, text=True)
+        sys.stdout.write(r.stdout or ''); sys.stderr.write(r.stderr or '')
         if r.returncode != 0:
+            for line in ((r.stdout or '') + (r.stderr or '')).splitlines()[-40:]:
+                log('  | ' + line)                   # the failing command's own output, so the status log shows why
             log(f'ERROR setup failed (exit {r.returncode}): {cmd}')
             log('JOB ENDED (setup failed)')
+            git_push([write_status(name)], branch, len(want), 0)
             sys.exit(2)
         log(f'setup ok in {time.time() - t:.0f}s')
     import cv2                                   # only after setup: a fresh machine gets opencv from the setup step
+    log('SETUP DONE; starting renders')
+    git_push([write_status(name)], branch, len(want), 0)   # heartbeat: the branch exists from here on
 
     procs = []
     for i, cmd in enumerate(job['render']):
@@ -120,6 +147,7 @@ def main():
                     src = os.path.join(HERE, d, f'f_{f:05d}.png'); dst = src[:-4] + '.jpg'
                     cv2.imwrite(dst, cv2.imread(src), [cv2.IMWRITE_JPEG_QUALITY, 95, cv2.IMWRITE_JPEG_SAMPLING_FACTOR, cv2.IMWRITE_JPEG_SAMPLING_FACTOR_444])
             paths = [os.path.join(d, f'f_{f:05d}' + ('.jpg' if ship_jpg else '.png')) for d, f in ready]
+            paths.append(write_status(name, procs))
             if git_push(paths, branch, len(want), done):
                 pushed.update(ready)
                 push_failures = 0
@@ -140,6 +168,7 @@ def main():
             missing = [f'{d.split("/")[-1]}:{f}' for d, f in want if (d, f) not in pushed]
             if missing:
                 log(f'JOB ENDED (missing {len(missing)}: {missing[:40]}{"..." if len(missing) > 40 else ""})')
+                git_push([write_status(name, procs)], branch, len(want), len(pushed))
                 sys.exit(1)
             log(f'JOB COMPLETE: {len(pushed)} frames pushed to {branch} in {(time.time() - t0) / 60:.1f} min')
             return

@@ -1,0 +1,5 @@
+host: Linux vm 6.18.44-fc-v42 #1 SMP PREEMPT_DYNAMIC @0 x86_64 | cpus 4
+15:35:22 JOB h1_v3_h5_roar: 82 frames -> renders/h1_v3h5, pushing to claude/render-h1-v3-h5
+15:35:22 setup: python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless
+15:35:23 setup ok in 1s
+15:35:23 SETUP DONE; starting renders

@@ -10,6 +10,9 @@ import scene_b as B
 import scene_c as C
 
 
+GRASP_FLASH = False
+
+
 class Timeline:
     def __init__(self):
         self._cache = {}
@@ -65,9 +68,9 @@ class Timeline:
             pos, tgt = C.cam_globe(t)
             return Camera(pos, tgt, hfov=40.0, focus=float(np.linalg.norm(pos)) - 0.8, aperture=0.004)
         if t < 1040:
-            pos, tgt = C.cam_grasp(t)
-            Cc = B.crown_centre(960.0)
-            return Camera(pos, tgt, hfov=62.0, focus=float(np.linalg.norm(Cc - pos)), aperture=0.25)
+            pos, tgt = C.cam_grasp_v3(t)            # v3: above the descending claw (C only; A has no grasp)
+            Cc = C.grip_point()
+            return Camera(pos, tgt, hfov=58.0, focus=float(np.linalg.norm(Cc - pos)), aperture=0.18)
         pos, tgt = C.cam_silence(t)
         return Camera(pos, tgt, hfov=50.0, focus=6.0, aperture=0.03)
 
@@ -91,6 +94,14 @@ class Timeline:
 
     def emit(self, ctx):
         t = ctx.t
+        if 960 <= t < 1040:
+            from core import Frame
+            ctx.fr_hand = Frame(ctx.scale)
+            ctx.fr_cov = Frame(ctx.scale)
+            ctx.fr_rim = Frame(ctx.scale)
+            for fr_ in (ctx.fr_hand, ctx.fr_cov, ctx.fr_rim):
+                fr_.prm[:] = ctx.fr.prm
+                fr_.prm[6] = 1e9      # the hand keeps its own radiance and a solid silhouette: no depth fog
         if t < 481:
             self.glow.emit(ctx)
             self.embers.emit(ctx)
@@ -120,13 +131,6 @@ class Timeline:
         if 880 <= t < 960:
             self.globe.emit(ctx)
         if 960 <= t < 1040:
-            from core import Frame
-            ctx.fr_hand = Frame(ctx.scale)
-            ctx.fr_cov = Frame(ctx.scale)
-            ctx.fr_rim = Frame(ctx.scale)
-            for fr_ in (ctx.fr_hand, ctx.fr_cov, ctx.fr_rim):
-                fr_.prm[:] = ctx.fr.prm
-                fr_.prm[6] = 1e9      # the hand keeps its own radiance and a solid silhouette: no depth fog
             self.hand.emit(ctx, ctx.fr_hand, ctx.fr_cov)
         if t >= 1040:
             self.ember.emit(ctx)
@@ -156,8 +160,9 @@ class Timeline:
             ab = cv2.GaussianBlur(alpha, (0, 0), 7.0 * ctx.scale)
             outer = np.clip((1.0 - ab) * 2.4, 0.0, 1.0)
             hdr += ctx.fr_rim.resolve() * (0.18 + 0.82 * outer)[..., None]
-        if 1035 <= f < 1040:
-            # white-red flash as the fingers close (1036-1039)
+        if 1035 <= f < 1040 and GRASP_FLASH:
+            # white-red flash as the fingers close (1036-1039) -- v1/v2 only: the v3 grasp (C) ends as the band
+            # slips out of the failing claw and falls away, with no flash
             k = {1035: 0.03, 1036: 0.14, 1037: 0.38, 1038: 0.7, 1039: 1.0}[int(f)]
             u, v, z = ctx.cam.project(B.crown_centre(960.0)[None, :], W, H)
             y, x = np.mgrid[0:H, 0:W].astype(np.float32)
