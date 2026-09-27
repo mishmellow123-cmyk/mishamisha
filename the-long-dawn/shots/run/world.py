@@ -157,7 +157,12 @@ def crag(x, z, fp, CR, k, hcur):
     # envelope bound (warp can move u,v by <= 0.2 L; detail adds <= 0.55 det min(m, 2L))
     m0 = _facet_m(u, v, n, seed) - shelf
     mb = max(m0 - 0.34 * L * 1.5 * 1.414, 0.0)
-    ub = top - _drop(mb, L, shi, slo) + 0.6 * det * min(max(m0, 0.0) + 0.4 * L, 2.0 * L)
+    # (v3, additive) col 14 > 0 widens this bound: the ribs below can add up to ~0.74 det min(m, 2L), which the
+    # v2 factor 0.6 undershoots on big, detailed crags (it skipped them on their lower flanks: small cliffs that
+    # the column marcher draws as vertical stripes). 0 keeps the v2 bound exactly.
+    bf = 0.6 if CR[k, 14] <= 0.0 else CR[k, 14]
+    ub = top - _drop(mb, L, shi, slo) + bf * det * min(max(m0, 0.0) + 0.4 * L, 2.0 * L) + (0.0 if CR[k, 14] <= 0.0
+                                                                                         else 0.5 * CR[k, 9])
     if ub < hcur - CR[k, 9]:
         return -1e5
     # irregular facets: a gentle domain warp
@@ -183,11 +188,13 @@ def crag(x, z, fp, CR, k, hcur):
     a = det * min(m + 0.25 * shelf, 2.0 * L)
     h += a * ((rg - 0.45) + 0.35 * (rg2 - 0.45))
     if shelf > 0.0 and m < 0.8 * L:
-        # the summit: broken slabs and boulders, not a table
+        # the summit: broken slabs and boulders, not a table ((v3, additive) col 15 in (0, 1] buries them under
+        # wind-packed snow, 1 = a smooth shelf; 0 keeps v2)
+        sb = 1.0 - CR[k, 15]
         o3 = _lod(3.0, fp, 1.0, 7.0)
-        h += 0.55 * fbm2(x * 0.45, z * 0.45, o3, seed + 4) * smoothstep(0.8 * L, 0.2 * L, m)
+        h += sb * 0.55 * fbm2(x * 0.45, z * 0.45, o3, seed + 4) * smoothstep(0.8 * L, 0.2 * L, m)
         o4 = _lod(1.2, fp, 1.0, 6.0)
-        h += 0.35 * (ridged2(x * 0.9 + 1.7, z * 0.9 - 0.3, o4, seed + 6) - 0.45) * smoothstep(0.8 * L, 0.1 * L, m)
+        h += sb * 0.35 * (ridged2(x * 0.9 + 1.7, z * 0.9 - 0.3, o4, seed + 6) - 0.45) * smoothstep(0.8 * L, 0.1 * L, m)
     return h
 
 
@@ -216,7 +223,10 @@ def ridge(x, z, fp, CR, k, hcur):
     # envelope bound before paying for noise (warp <= 9 m)
     w0 = CR[k, 6] if (dx * ez - dz * ex) > 0.0 else CR[k, 7]
     db = max(d0 - 9.0, 0.0)
-    ub = yc - slope * db * (db / w0) ** (p - 1.0) + 0.6 * det * min(slope * db + 6.0, 90.0) + 4.0
+    # (v3, additive) col 14 > 0 widens this bound as in crag(): the ribs can add ~0.74 det min(drop + 6, 90)
+    bf = 0.6 if CR[k, 14] <= 0.0 else CR[k, 14]
+    ub = yc - slope * db * (db / w0) ** (p - 1.0) + bf * det * min(slope * db + 6.0, 90.0) + 4.0 \
+        + (0.0 if CR[k, 14] <= 0.0 else 0.5 * CR[k, 9])
     if ub < hcur - CR[k, 9]:
         return -1e5
     # wandering crest: warp the query point
@@ -479,6 +489,7 @@ def soft_shadow(P, CR, x, y, z, lx, ly, lz, t0, tmax, nsteps, k, fp):
 #  5 cloud shadow floor | 6 alpenglow (0 night) | 7 sheen | 8 cloud trough dark | 9 cloud albedo
 # 10 rock albedo scale | 11 key-light shadow k (far) | 12 fog in-scatter toward key: gain
 # 13 cloud ambient gain | 14 sun-disc (0 = moon) | 15 cloud self-shadow strength | 16 bounce fill
+# 18 (v3, additive) anti-streak: > 0 samples the fine snow noise in a height-skewed domain (0 = the v2 look)
 
 
 @njit(parallel=True, fastmath=True, cache=True)
@@ -593,7 +604,14 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                         nmx = -(hmx - h0) / em
                         nmz = -(hmz - h0) / em
                         nmy = 1.0 / math.sqrt(nmx * nmx + nmz * nmz + 1.0)
-                        sf = gnoise2(x / 9.0, z / 9.0, 75) * 0.06 + gnoise2(x * 0.9, z * 0.9, 76) * 0.035
+                        if Q[18] > 0.0:
+                            # ADDITIVE (v3): sample the fine snow noise in a height-skewed domain so steep faces
+                            # do not show it stretched down the fall line (the "combed" streak tell)
+                            sk = Q[18] * h0
+                            sf = gnoise2((x + 0.8 * sk) / 9.0, (z - 0.6 * sk) / 9.0, 75) * 0.06 \
+                                + gnoise2((x + 0.8 * sk) * 0.9, (z - 0.6 * sk) * 0.9, 76) * 0.035
+                        else:
+                            sf = gnoise2(x / 9.0, z / 9.0, 75) * 0.06 + gnoise2(x * 0.9, z * 0.9, 76) * 0.035
                         sv = 0.42 * ny + 0.33 * nmy + 0.25 * nsy + sn * 0.6 + sf
                         sneat = smoothstep(Q[3], Q[4], sv)
                         snow = snow + (sneat - snow) * wf
@@ -740,3 +758,83 @@ def night_light():
     Q[13] = 1.5
     Q[16] = 0.10
     return Lk, amb, S, fogp, Q
+
+
+# ------------------------------------------------------- the red under-glow ---
+# ADDITIVE (v3, RUN-A): the race's red seen through the cloud deck. A post-pass over a shaded frame: for every
+# cloud-sea pixel it adds emission from a table of glowing patches (UG rows: x, z, radius, r, g, b, noise
+# scale, trough bias), brightest in the troughs where the deck is thinnest, attenuated by the same aerial
+# perspective as shade(). Callers that never call it see no change.
+
+@njit(parallel=True, fastmath=True, cache=True)
+def cloud_glow(C, D, P, CR, UG, fogp, out):
+    H, W = D.shape
+    for j in prange(H):
+        for i in range(W):
+            d = D[j, i]
+            if d >= 1e29:
+                continue
+            fxx, fzz, rxx, rzz = C[3], C[4], C[5], C[6]
+            f, cx, cyy = C[7], C[8], C[9]
+            xo = i + 0.5 - cx
+            dxh = fxx * f + rxx * xo
+            dzh = fzz * f + rzz * xo
+            hl = math.sqrt(dxh * dxh + dzh * dzh)
+            vy = cyy - (j + 0.5)
+            sl = vy / hl
+            dxh /= hl
+            dzh /= hl
+            x = C[0] + dxh * d
+            z = C[2] + dzh * d
+            # cheap reject: no patch reaches this point
+            acc = 0.0
+            for k in range(UG.shape[0]):
+                qx = x - UG[k, 0]
+                qz = z - UG[k, 1]
+                if qx * qx + qz * qz < 6.25 * UG[k, 2] * UG[k, 2]:
+                    acc = 1.0
+                    break
+            if acc == 0.0:
+                continue
+            dist = d * math.sqrt(1.0 + sl * sl)
+            fp = dist / C[7]
+            hc = h_cloud(x, z, fp, P[2])
+            if hc < h_near(x, z, fp):
+                continue
+            if hc < h_rock(x, z, fp, CR):
+                continue
+            trough = smoothstep(CLOUD_Y + 120.0, CLOUD_Y - 110.0, hc)
+            er = 0.0
+            eg = 0.0
+            eb = 0.0
+            for k in range(UG.shape[0]):
+                qx = x - UG[k, 0]
+                qz = z - UG[k, 1]
+                r2 = (qx * qx + qz * qz) / (UG[k, 2] * UG[k, 2])
+                if r2 > 6.25:
+                    continue
+                ns = UG[k, 6]
+                nz = 0.55 + 0.45 * fbm2(x / ns + k * 3.1, z / ns - k * 1.7, 3.0, 51 + k)
+                g = math.exp(-r2 * 1.6) * nz * (UG[k, 7] + (1.0 - UG[k, 7]) * trough)
+                er += UG[k, 3] * g
+                eg += UG[k, 4] * g
+                eb += UG[k, 5] * g
+            yw = hc - ((x - P[0]) ** 2 + (z - P[1]) ** 2) / (2.0 * R_EARTH)
+            yc = C[1]
+            tau = height_fog_tau(dist, yc, yw, fogp[0], fogp[1])
+            tau += height_fog_tau(dist, yc - CLOUD_Y, yw - CLOUD_Y, fogp[2], fogp[3])
+            # the glow lights the cloud-top mist in front of it too, so it survives the haze far better than the
+            # deck's own reflected light (softened transmittance)
+            tr = math.exp(-0.3 * tau)
+            out[j, i, 0] += er * tr
+            out[j, i, 1] += eg * tr
+            out[j, i, 2] += eb * tr
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def heights(xs, zs, fp, CR, out):
+    """ADDITIVE (v3): terrain height (no cloud, no curvature) at many points."""
+    for k in prange(xs.shape[0]):
+        h = h_near(xs[k], zs[k], fp)
+        hf = h_rock(xs[k], zs[k], fp, CR)
+        out[k] = hf if hf > h else h
