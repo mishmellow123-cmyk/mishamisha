@@ -6,10 +6,10 @@
   "NUMBA_NUM_THREADS=8 python3 shots/accord/accord3.py still 5560 --scale 0.15"
  ],
  "render": [
-  "NUMBA_NUM_THREADS=2 python3 shots/accord/accord3.py range --frames 4660,4840,4960,5040,5100,5160,5250,5300,5548,5566,5590,5625 --outdir renders/accord_C"
+  "NUMBA_NUM_THREADS=2 python3 shots/accord/accord3.py range --frames 4700,4840,4960,5040,5160,5210,5260,5330,5540,5556,5574,5600 --outdir renders/accord_C"
  ],
  "out_dir": "renders/accord_C",
- "frames": "4660,4840,4960,5040,5100,5160,5250,5300,5548,5566,5590,5625",
+ "frames": "4700,4840,4960,5040,5160,5210,5260,5330,5540,5556,5574,5600",
  "push_every": 300,
  "ship": "jpg"
 }

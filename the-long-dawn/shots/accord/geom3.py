@@ -171,13 +171,13 @@ def sd_charcoal(px, py, pz):
             orr = math.sqrt(ox * ox + oy * oy)
             if orr < ASH_R0 + 0.015 or orr > ASH_R1 - 0.01:
                 continue
-            pd = 0.22 + 0.40 * sstep(ASH_R1, ASH_R0 + 0.05, orr)
+            pd = 0.10 + 0.22 * sstep(ASH_R1, ASH_R0 + 0.05, orr)
             if hash2i(cx, cy, 501) > pd:
                 continue
             h4 = hash2i(cx, cy, 504)
-            rx = 0.005 + 0.019 * h4 * h4
-            ry = rx * (0.50 + 0.40 * hash2i(cx, cy, 505))
-            rz = rx * (0.35 + 0.30 * hash2i(cx, cy, 506))
+            rx = 0.004 + 0.013 * h4 * h4
+            ry = rx * (0.45 + 0.40 * hash2i(cx, cy, 505))
+            rz = rx * (0.22 + 0.22 * hash2i(cx, cy, 506))
             yaw = 6.2832 * hash2i(cx, cy, 507)
             c = math.cos(yaw)
             sn = math.sin(yaw)
@@ -190,7 +190,7 @@ def sd_charcoal(px, py, pz):
                 continue
             dd = sd_ellipsoid(x, y, z, rx, ry, rz)
             # broken, faceted
-            dd += 0.12 * rx * (vnoise2(x / rx * 2.2 + 3.0 * h4, y / rx * 2.2 + z / rx * 1.5, 508) - 0.5)
+            dd += 0.30 * rx * (vnoise2(x / rx * 2.6 + 3.0 * h4, y / rx * 2.6 + z / rx * 1.5, 508) - 0.5)
             if dd < d:
                 d = dd
     return d
@@ -684,14 +684,14 @@ def gilt_crust(u, v, w, J):
     backs of the first three fingers; the leather shows round it and between the tongues."""
     if w < -0.030:
         return 0.0
-    du = (u - 0.046) / 0.050
-    dv = (v + 0.004) / 0.036
+    du = (u - 0.060) / 0.034
+    dv = (v + 0.006) / 0.023
     rr = math.sqrt(du * du + dv * dv)
-    lob = 0.30 * (vnoise2(u * 36.0 + 3.1, v * 36.0, 601) - 0.5) + 0.12 * (vnoise2(u * 105.0, v * 105.0 + 1.7, 602) - 0.5)
+    lob = 0.55 * (vnoise2(u * 40.0 + 3.1, v * 40.0, 601) - 0.5) + 0.20 * (vnoise2(u * 110.0, v * 110.0 + 1.7, 602) - 0.5)
     sheet = sstep(0.0, 0.10, 1.0 - rr + lob) * sstep(-0.012, 0.004, w)
     # tongues over the knuckles, along the backs of the proximal phalanges (index long, middle, ring short)
     tg = 0.0
-    for f in range(1, 4):
+    for f in range(1, 3):
         ax = J[f, 0, 0]
         ay = J[f, 0, 1]
         az = J[f, 0, 2]
@@ -705,7 +705,7 @@ def gilt_crust(u, v, w, J):
         # the dorsal side of the segment (the curl turns it with the finger)
         nx = -ez
         nz = ex
-        ln = (0.95, 0.75, 0.40)[f - 1] * el
+        ln = (0.85, 0.45, 0.0)[f - 1] * el
         ox = ax + nx * 0.0055 - ex * 0.012
         oz = az + nz * 0.0055 - ez * 0.012
         dd, hh = _seg_dist(u, v, w, ox, ay - ey * 0.012, oz, ax + ex * ln + nx * 0.0055, ay + ey * ln, az + ez * ln + nz * 0.0055)
@@ -810,7 +810,7 @@ def sd_hand(px, py, pz, HD, J):
     if HD[14] > 0.0 and d < 0.006:
         c = gilt_crust(u, v, w, J) * HD[14]
         if c > 0.0:
-            bump = 0.55 + 0.45 * vnoise2(u * 260.0, v * 260.0 + w * 180.0, 604)
+            bump = 0.35 + 0.65 * vnoise2(u * 230.0, v * 230.0 + w * 170.0, 604) + 0.35 * (vnoise2(u * 700.0, v * 700.0, 605) - 0.5)
             lip = sstep(0.15, 0.45, c) * sstep(0.95, 0.55, c)
             d -= 0.0016 * c * bump + 0.0007 * lip
             if c > 0.35:

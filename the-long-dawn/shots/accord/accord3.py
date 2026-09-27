@@ -85,8 +85,9 @@ def inscription_mips():
 
 # ================================================================ state ===
 
-HAZE = 0.006                            # smoke haze density (single scattering of every light)
+HAZE = 0.0025                           # smoke haze density (single scattering of every light): a clear night
 _WIND = np.array([0.40, -0.16])     # a steady breeze: every flame streams the same way
+TORCH_I = 12.0                      # torch flame emission (22 whited them to cotton under ACES)
 
 
 def flames_and_lights(t, Fa):
@@ -108,11 +109,11 @@ def flames_and_lights(t, Fa):
         ln = np.linalg.norm(lean)
         if ln > 1.6:
             lean *= 1.6 / ln
-        FL[i] = (base[0], base[1], base[2], hf[i], 0.088, lean[0], lean[1], 22.0, 3.7 * i + 1.3, lit[i])
+        FL[i] = (base[0], base[1], base[2], hf[i], 0.088, lean[0], lean[1], TORCH_I, 3.7 * i + 1.3, lit[i])
         if lit[i] > 0.01:
             # the light pumps with the flame's own height (flame3.torch_flicker, same seed)
             fl = FL3.torch_flicker(3.7 * i + 1.3, float(t), resources()['noise3']) / 0.98
-            I = 1.25 * lit[i] * (0.55 + 0.45 * fl)
+            I = 1.0 * lit[i] * (0.55 + 0.45 * fl)
             c = SC.FIRE_HOT
             L.append([base[0] + lean[0] * 0.08, base[1] + lean[1] * 0.08, base[2] + 0.22, 0.09,
                       I * c[0], I * c[1], I * c[2], float(i)])
@@ -136,13 +137,20 @@ def hearth_state(t):
     CF = np.zeros((1, FL3.CF_N))
     if fs.get('p3', 0.0) > 0.0:
         CF, nmain = SC.calm_flames(t)
-        HP[FL3.HP_P3] = 1.0
+        HP[FL3.HP_P3] = 2.0
         HP[FL3.HP_NMAIN] = nmain
         HP[FL3.HP_I] = CALM_I
+    elif fs['on'] > 0.0:
+        # AC2: the crown of flames round her fist (the same flame machinery as bar 70)
+        CF, nmain = SC.p2_flames(t)
+        HP[FL3.HP_P3] = 1.0
+        HP[FL3.HP_NMAIN] = 0
+        HP[FL3.HP_I] = P2_I * fs['on']
     return fs, HP, CF
 
 
-CALM_I = 17.0           # bar 70: the fire that remains (emission scale of flame3.calm_density)
+CALM_I = 11.0           # bar 70: the fire that remains (emission scale of flame3.calm_density)
+P2_I = 12.0             # AC2: the fire everyone lit
 
 
 def calm_lights(t, fs, CF):
@@ -159,10 +167,10 @@ def calm_lights(t, fs, CF):
     for k in range(5):
         a = 2 * math.pi * k / 5 + 0.3
         I = I0 * 0.13
-        L.append([0.13 * math.cos(a), 0.13 * math.sin(a), zt + 0.36 + 0.10 * (k % 2), 0.16,
+        L.append([0.13 * math.cos(a), 0.13 * math.sin(a), zt + 0.36 + 0.10 * (k % 2), 0.30,
                   I * col[0], I * col[1], I * col[2], -1.0])
     I = I0 * 0.30
-    L.append([0.0, 0.0, zt + 0.55, 0.20, I * col[0], I * col[1], I * col[2], -1.0])
+    L.append([0.0, 0.0, zt + 0.55, 0.32, I * col[0], I * col[1], I * col[2], -1.0])
     # the log ring: low, redder
     cl = np.array([1.0, 0.42, 0.10])
     for k in range(6):
@@ -258,7 +266,7 @@ def build(t, cam=None, scale=1.0):
     PR[SH.P_SKI] = 1.0
     PR[SH.P_SKR:SH.P_SKB + 1] = SC.NIGHT_MID
     PR[SH.P_NL] = len(Lt)
-    PR[SH.P_OWNK] = 0.6
+    PR[SH.P_OWNK] = 0.35
     burn = smooth(ramp(t, SC.FIRE_CATCH, SC.FIRE_CATCH + 30)) if t >= SC.FIRE_CATCH else 0.0
     PR[SH.P_EMB] = burn * fs['on']
     PR[SH.P_EMBW] = fs['white']
@@ -462,7 +470,7 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
     return rgb, dict(depth=depth, oid=oid, cam=cam, st=st)
 
 
-GLINT_K = 30.0       # the Ring's glint: energy per unit of torch irradiance at the band (full-res pixels)
+GLINT_K = 45.0       # the Ring's glint: energy per unit of torch irradiance at the band (full-res pixels)
 
 
 def ring_glint(rgb, st, cam, depth, t, scale):
@@ -497,13 +505,14 @@ def ring_glint(rgb, st, cam, depth, t, scale):
     energy = GLINT_K * E * on * vis * (7.6 / max(dist, 0.5)) ** 2 * scale * scale
     if energy <= 1e-4:
         return rgb
-    sig = max(0.85 * scale, 0.55)
-    r = int(math.ceil(3 * sig)) + 1
-    ys, xs = np.mgrid[iy - r:iy + r + 1, ix - r:ix + r + 1]
-    g = np.exp(-((xs + 0.5 - gx) ** 2 + (ys + 0.5 - gy) ** 2) / (2 * sig * sig)) / (2 * math.pi * sig * sig)
-    ok = (ys >= 0) & (ys < Hd) & (xs >= 0) & (xs < Wd)
-    col = np.array([1.0, 0.80, 0.42], np.float32)
-    rgb[ys[ok], xs[ok]] += (energy * g[ok])[:, None].astype(np.float32) * col
+    # a tight hot core and a soft gold halo round it (the core whites under the tonemap; the halo stays gold)
+    for sig, frac, col in ((max(1.0 * scale, 0.6), 0.80, np.array([1.0, 0.82, 0.46], np.float32)),
+                           (max(4.5 * scale, 1.5), 0.20, np.array([1.0, 0.66, 0.24], np.float32))):
+        r = int(math.ceil(3 * sig)) + 1
+        ys, xs = np.mgrid[iy - r:iy + r + 1, ix - r:ix + r + 1]
+        g = np.exp(-((xs + 0.5 - gx) ** 2 + (ys + 0.5 - gy) ** 2) / (2 * sig * sig)) / (2 * math.pi * sig * sig)
+        ok = (ys >= 0) & (ys < Hd) & (xs >= 0) & (xs < Wd)
+        rgb[ys[ok], xs[ok]] += (frac * energy * g[ok])[:, None].astype(np.float32) * col
     return rgb
 
 

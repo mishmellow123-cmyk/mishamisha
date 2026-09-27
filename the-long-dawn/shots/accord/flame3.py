@@ -13,8 +13,8 @@ from nbcore import FM, clamp, sstep, mix, tex3
 
 FL_N = 10
 HP_T, HP_ON, HP_H, HP_WHITE, HP_SPREAD, HP_HOLLOW, HP_CONV, HP_CALM, HP_FX, HP_FY, HP_FZ, HP_I = range(12)
-HP_P3 = 12          # 1 = bar 70: the fire that remains (calm_density over the CF flames)
-HP_NMAIN = 13       # CF rows [0, nmain) stand on the stone; the rest lick along the logs
+HP_P3 = 12          # the CF flames drive the fire (calm_density): 1 = P2's crown round her fist, 2 = bar 70 (calm)
+HP_NMAIN = 13       # CF rows [0, nmain) stand on the stone; the rest lick along the logs (bar 70)
 HP_N = 14
 CF_N = 8            # calm-fire flames: x, y, z0, Hf, Rf, sx, sy, seed (Hf and the sway are per frame)
 
@@ -398,10 +398,11 @@ def calm_density(x, y, z, HP, CF, ncf, n3):
     r2 = x * x + y * y
     k0 = 0
     k1 = ncf
-    if z > 0.62:
-        k1 = nmain                  # the log flames stand below ~0.6 m
-    if r2 > 0.30:
-        k0 = nmain                  # the flames on the stone stand within ~0.55 m of its centre
+    if HP[HP_P3] > 1.5:
+        if z > 0.62:
+            k1 = nmain              # the log flames stand below ~0.6 m
+        if r2 > 0.30:
+            k0 = nmain              # the flames on the stone stand within ~0.55 m of its centre
     for k in range(k0, k1):
         Hf = CF[k, 3]
         qz = z - CF[k, 2]
@@ -450,6 +451,14 @@ def calm_density(x, y, z, HP, CF, ncf, n3):
     AL = 0.62 + 1.45 * sstep(0.0, 1.0, ub)
     AF = 0.30 + 0.42 * uu
     e = best + AL * (2.0 * nl - 1.0) * 1.5 - AF * (nf - 0.40)
+    # P2: a clear hollow round her fist (the fire rises AROUND it) until the white takes it
+    hol = HP[HP_HOLLOW]
+    if hol > 0.0:
+        fx = x - HP[HP_FX]
+        fy = y - HP[HP_FY]
+        fz = z - HP[HP_FZ]
+        dh = math.sqrt(fx * fx + fy * fy + 0.35 * fz * fz)
+        e -= hol * 1.1 * sstep(0.24, 0.09, dh)
     d = sstep(0.0, 0.10, e)
     if d <= 0.0:
         return 0.0, 0.0
@@ -500,7 +509,8 @@ def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps, CF, ncf):
     H = HP[HP_H]
     if H <= 0.0 or HP[HP_ON] <= 0.0:
         return
-    p3 = HP[HP_P3] > 0.5
+    p3 = HP[HP_P3] > 0.5            # the CF flames (P2's crown or bar 70's calm fire)
+    calm = HP[HP_P3] > 1.5
     Rb = 1.02
     z0 = -0.02
     z1 = H
@@ -510,7 +520,7 @@ def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps, CF, ncf):
     if p3:
         for k in range(ncf):
             top = CF[k, 2] + CF[k, 3] * 1.25
-            if k < int(HP[HP_NMAIN]):
+            if calm and k < int(HP[HP_NMAIN]):
                 zc1 = max(zc1, top)
             else:
                 zl1 = max(zl1, top)
@@ -585,7 +595,7 @@ def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps, CF, ncf):
                     er += e * cr
                     eg += e * cg
                     eb += e * cb
-                    tr *= math.exp(-d * ds * (1.6 if p3 else 5.0) * (1.0 - wh))
+                    tr *= math.exp(-d * ds * (2.6 if p3 else 5.0) * (1.0 - wh))
                     if tr < 0.01:
                         break
             out[y, x, 0] = out[y, x, 0] * tr + er

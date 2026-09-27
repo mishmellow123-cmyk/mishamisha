@@ -111,6 +111,10 @@ FIG_BREATH_PH = _rng.uniform(0, 2 * np.pi, NFIG)
 FIG_DOWN_DT = _rng.uniform(-1.5, 1.5, NFIG)       # the torches come down together (tiny human spread)
 FIG_DIP_DT = _rng.uniform(-3.0, 3.0, NFIG)        # bar 70: each dips a moment apart
 FIG_WALK_V = _rng.uniform(1.05, 1.35, NFIG)
+# bar 70: the dips ripple round the circle from the far side (the fire passes round the council), ~5528-5552
+_ord = np.argsort(((np.degrees(FIG_PSI[:13]) - 7.0) % 360.0))
+P3_DIP = np.zeros(13)
+P3_DIP[_ord] = 5528.0 + 1.9 * np.arange(13) + _rng.uniform(-1.2, 1.2, 13)
 
 
 # ============================================================== the stones ===
@@ -299,14 +303,15 @@ def emissary_state(i, t):
         hand = np.array([0.28, side * 0.10, 0.92 * hs])
         tor = _unit([0.10, -side * 0.03, 1.0])
         lit = 0.0
-        t0 = 5534 + FIG_DIP_DT[i]
+        t0 = P3_DIP[i]
         u = smoother(ramp(t, t0, t0 + 14))                      # lean in
         v = smoother(ramp(t, t0 + 20, t0 + 34))                 # draw back, lit
         kneel = 0.34 * u * (1 - v)
         lean = math.radians(38.0) * u * (1 - v)
-        # the head of the spent torch goes into the flank of the fire on the stone
-        tip = to_local(i, np.array([0.24 * math.cos(FIG_PSI[i]), 0.24 * math.sin(FIG_PSI[i]), 0.56]), pos=pos)
-        tor_dn = _unit([0.84, -side * 0.02, -0.54])
+        # the head of the spent torch is lowered into the flank of the fire on the stone, steeply (a taper to a
+        # flame, never a spit)
+        tip = to_local(i, np.array([0.25 * math.cos(FIG_PSI[i]), 0.25 * math.sin(FIG_PSI[i]), 0.62]), pos=pos)
+        tor_dn = _unit([0.60, -side * 0.02, -0.80])
         hand_dn = tip - 0.44 * tor_dn
         w_ = u * (1 - v)
         hand = hand * (1 - w_) + hand_dn * w_
@@ -725,6 +730,50 @@ def white_level(t):
     return 0.0
 
 
+def p2_flames(t):
+    """AC2 (flame3.calm_density rows, mode 1): the fire everyone lit. Each torch catches the laid fuel where it
+    touched (r ~0.62 at its bearer's azimuth) and the flame leaps up there; the fire runs round the fuel between
+    them; every flame leans in over her fist and climbs as the fire grows; the white takes it from ~5318.
+    Returns (CF, 0)."""
+    fs = fire_state(t)
+    if fs['on'] <= 0.0:
+        return np.zeros((1, 8)), 0
+    fist = hand_fist_pos(max(t, HAND_CLOSE))
+    Ts = t / 24.0
+    grow = fs['H']
+    rng = np.random.default_rng(66)
+    rows = []
+
+    def pump(seed, big):
+        return (1.0 + big * (0.085 * math.sin(2 * math.pi * 3.1 * Ts + seed) + 0.060 * math.sin(2 * math.pi * 1.37 * Ts + 2.1 * seed)
+                             + 0.045 * math.sin(2 * math.pi * 0.53 * Ts + 3.3 * seed)))
+
+    def add(a, r, age, Hs, Rf, seed):
+        g = ease_out(clamp01(age / 12.0), 2.0)
+        if g <= 0.0:
+            return
+        x, y = r * math.cos(a), r * math.sin(a)
+        dx, dy = fist[0] - x, fist[1] - y
+        D = math.hypot(dx, dy) + 1e-9
+        Hh = Hs * (0.35 + 0.65 * g) * max(grow, 0.25) * pump(seed, 1.0)
+        # lean in over her fist: the top of the flame reaches ~conv of the way to it
+        k = fs['conv'] * 0.95 * D / max(Hh, 0.2)
+        sw = 0.08 * math.sin(2 * math.pi * 0.61 * Ts + seed)
+        rows.append((x, y, 0.03, Hh, Rf * (0.6 + 0.4 * g), k * dx / D + 0.10 + sw, k * dy / D - 0.04, seed))
+
+    for k in range(NEM):
+        a = FIG_PSI[k]
+        tc = FIRE_CATCH + 0.5 * FIG_DOWN_DT[k]
+        add(a, 0.62, t - tc, rng.uniform(0.85, 1.10), 0.115, 3.1 + 1.9 * k)
+        # the fire runs round the fuel to meet its neighbour's
+        a2 = a + 0.5 * ((FIG_PSI[(k + 1) % NEM] - a) % (2 * math.pi))
+        add(a2, 0.56 + 0.10 * rng.uniform(), t - tc - 7.0 * (1.0 - 0.6 * fs['spread']), rng.uniform(0.60, 0.85), 0.100,
+            41.0 + 2.3 * k)
+    if not rows:
+        return np.zeros((1, 8)), 0
+    return np.array(rows, np.float64), 0
+
+
 def calm_flames(t):
     """Bar 70 (flame3.calm_density rows: x, y, z0, Hf, Rf, sx, sy, seed): the fire that remains, standing on the
     stone where the Ring was. A tall heart and a crown of flames rise from the coals on the stone; low flames lick
@@ -865,7 +914,7 @@ def camera(t, scale=1.0):
         return _cam_look(C, T, Uh, scale)
     if p == 2:
         phi = math.degrees(PSI_HER) + 90.0 + 0.035 * (t - P2[0])
-        h = float(np.exp(np.interp(t, [5120, 5160, 5230, 5379], np.log([2.60, 2.05, 1.92, 1.72]))))
+        h = float(np.exp(np.interp(t, [5120, 5160, 5230, 5300, 5379], np.log([2.80, 2.25, 2.35, 2.60, 2.75]))))
         f = hand_fist_pos(max(t, 5160)) if t > 5150 else ring_rest()
         k = smooth(ramp(t, 5120, 5170))
         tgt = np.array([0.0, 0.0, 0.30]) * (1 - k) + np.array([f[0] * 0.55, f[1] * 0.55, 0.36]) * k

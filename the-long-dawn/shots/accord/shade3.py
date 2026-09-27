@@ -185,7 +185,7 @@ def ground_albedo(x, y, fp, PR):
     if r < ASH_R1 + 0.12:
         # fine grey wood ash with a ragged edge: palest at the rim where it is oldest, sootier toward the stone
         ash = sstep(ASH_R1 + 0.09, ASH_R1 - 0.04, r + 0.06 * n3)
-        a = 0.056 * (1.0 + 0.35 * n3 + 0.22 * n4) * (0.72 + 0.40 * sstep(ASH_R0, ASH_R1, r))
+        a = 0.036 * (1.0 + 0.35 * n3 + 0.22 * n4) * (0.72 + 0.40 * sstep(ASH_R0, ASH_R1, r))
         # charcoal dust worked into it in soft drifts (never blots)
         dust = sstep(-0.10, 0.20, fbm2(x * 5.0 + 3.1, y * 5.0, 15, 3, 2.1, 0.5, fp * 5.0))
         a *= 1.0 - 0.45 * dust
@@ -512,9 +512,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         ab = a * 0.95
         rim = sstep(-0.05, -0.005, G._flat2d(px, py)) * sstep(STONE_TOP - 0.10, STONE_TOP - 0.02, pz)
         lich = sstep(0.10, 0.24, fbm2(px * 11.0 + 2.0, py * 11.0, 83, 4, 2.0, 0.5, fp * 11.0)) * rim
-        ar = mix(ar, 0.115, lich * 0.6)
-        ag = mix(ag, 0.112, lich * 0.6)
-        ab = mix(ab, 0.092, lich * 0.6)
+        ar = mix(ar, 0.040, lich * 0.25)
+        ag = mix(ag, 0.040, lich * 0.25)
+        ab = mix(ab, 0.036, lich * 0.25)
         soot = sstep(0.20, 0.02, pz) * (1.0 - 0.3 * nz)
         # after the fire has burned on it (P2 from the catch, bar 70) its top is fire-blackened
         soot = max(soot, 0.8 * PR[P_EMB] * sstep(0.35, 0.65, vnoise2(px * 9.0, py * 9.0, 98) + 0.3))
@@ -531,13 +531,13 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             bed = sstep(0.30, 0.21, rr_ + 0.035 * (vnoise2(px * 14.0, py * 14.0, 88) - 0.5)) \
                 * sstep(STONE_TOP - 0.06, STONE_TOP - 0.025, pz)
             if bed > 0.0:
-                c1 = vnoise2(px * 34.0 + T * 0.003, py * 34.0, 89)
+                c1 = vnoise2(px * 30.0 + T * 0.003, py * 30.0, 89)
                 c2 = vnoise2(px * 11.0 - T * 0.004, py * 11.0 + 3.0, 90)
-                c3 = vnoise2(px * 95.0, py * 95.0 - T * 0.005, 99)
-                seam = sstep(0.09, 0.0, abs(c1 - 0.5)) * (0.6 + 0.4 * c3)
-                heat = (0.40 + 0.60 * sstep(0.28, 0.02, rr_)) * (0.55 + 0.45 * c2)
-                crust = sstep(0.62, 0.40, c2 + 0.25 * c3)
-                glow = bed * co * heat * (0.22 * (1.0 - crust) + 1.25 * seam + 0.10)
+                c3 = vnoise2(px * 85.0, py * 85.0 - T * 0.005, 99)
+                heat = (0.40 + 0.60 * sstep(0.28, 0.02, rr_)) * (0.60 + 0.40 * c2)
+                # the coals glow through where the black crust has broken (soft patches, a finer grain in them)
+                open_ = sstep(0.52, 0.72, 0.65 * c1 + 0.35 * c2) * (0.7 + 0.3 * c3)
+                glow = bed * co * heat * (0.08 + 0.85 * open_)
                 ar = mix(ar, 0.004, bed)
                 ag = mix(ag, 0.0036, bed)
                 ab = mix(ab, 0.0035, bed)
@@ -604,9 +604,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             ag = mix(a * 0.90, cha * 0.97, ch)
             ab = mix(a * 0.80, cha * 0.95, ch)
             wash = sstep(0.7, 0.95, nz) * sstep(0.62, 0.80, vnoise2(px * 60.0, py * 60.0, 92)) * ch
-            ar = mix(ar, 0.050, wash * 0.6)
-            ag = mix(ag, 0.049, wash * 0.6)
-            ab = mix(ab, 0.047, wash * 0.6)
+            ar = mix(ar, 0.030, wash * 0.25)
+            ag = mix(ag, 0.029, wash * 0.25)
+            ab = mix(ab, 0.028, wash * 0.25)
             eb_ = PR[P_EMB]
             if eb_ > 0.0:
                 cr_ = vnoise2(px * 120.0 + T * 0.03, py * 120.0 + pz * 60.0, 86)
@@ -691,7 +691,7 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         h = max(0.002, fp * 0.5)
         nx, ny, nz = normal_stone(px, py, pz, S, j, h)
         seed = S[j, S_SEED]
-        a = S[j, S_ALB]
+        a = S[j, S_ALB] * 0.34
         ln = fbm2(px * 3.0 + seed, py * 3.0 + pz * 2.0, 51, 4, 2.1, 0.55, fp * 3.0)
         g = 1.0 + 0.6 * ln + 0.25 * fbm2(px * 25.0 + pz * 11.0, py * 25.0, 52, 3, 2.2, 0.5, fp * 25.0)
         ar = a * g
@@ -749,9 +749,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         ag = ag * wv * (1.0 + 0.8 * dust) + 0.0035 * dust
         ab = ab * wv * (1.0 + 0.6 * dust) + 0.003 * dust
     elif mat == M_TORCH:
-        ar = 0.0070
-        ag = 0.0058
-        ab = 0.0052
+        ar = 0.0042
+        ag = 0.0036
+        ab = 0.0034
         sheen = 0.0
         tl = F[i, F_TLIT]
         if tl > 0.0:
