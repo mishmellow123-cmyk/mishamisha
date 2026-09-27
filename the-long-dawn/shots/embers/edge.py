@@ -723,11 +723,13 @@ def _cam_crown(tl, t):
     gap = a7 - 0.39                                  # the gap beside it (toward the giant 6): the way over the rim
     top = tw.top(FALL_TOWER, min(t, A.T_CROWN))
     cc = fc.centre(t)
-    ks = [(T_CUT_CROWN, np.array([33.0, a7 - 0.30, top[1] - 9.0]), 50.0),
-          (A.T_CROWN + 26, np.array([26.0, a7 - 0.33, top[1] - 24.0]), 58.0),
-          (A.T_TIP, np.array([19.5, gap, B.GROUND + 5.0]), 70.0),
-          (A.T_TIP + 40, np.array([11.0, gap + 0.02, B.GROUND - 8.0]), 80.0),
-          (A.T_WHITE, np.array([3.0, gap + 0.05, B.GROUND - 16.0]), 90.0)]
+    # from outside the ring, level with the crown, just off the forge's axis: the crenellated crown in silhouette
+    # against the updraft (half the frame height); then in after it, beside the forge, through the gap, over the lip
+    ks = [(T_CUT_CROWN, np.array([58.0, a7 - 0.15, top[1] - 5.0]), 56.0),
+          (A.T_CROWN + 20, np.array([40.0, a7 - 0.22, top[1] - 18.0]), 60.0),
+          (A.T_TIP, np.array([22.0, a7 - 0.36, B.GROUND + 6.0]), 70.0),
+          (A.T_TIP + 40, np.array([12.0, gap, B.GROUND - 10.0]), 80.0),
+          (A.T_WHITE, np.array([4.0, gap + 0.04, B.GROUND - 18.0]), 90.0)]
     tt = [k[0] for k in ks]
     j = int(np.clip(np.searchsorted(tt, t) - 1, 0, len(ks) - 2))
     w = float(smootherstep(tt[j], tt[j + 1], t))
