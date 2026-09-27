@@ -494,4 +494,38 @@ A wordless myth lasts as long as its images can hold the eye. B has five movemen
 
 The frames on the hill take the rest. B is shorter than A and C because nothing has to be read. Past about 4½ minutes, a film without words starts asking the eye for patience instead of giving it wonder.
 
-<!-- NEXT: B(4) beat sheet, B(5), B(8) -->
+## B(4) Beat sheet (seconds; no text column: B has none)
+
+| t | picture | sound & music | conveys |
+|---|---|---|---|
+| 0–24 | **THE HILL AT DUSK** (hills_v2 intro, no text, with the red-team's torch-lit rims and the ring kept off the figures). The elder, the child, festival fires lighting on far hills. The elder turns to a standing rock beside the cairn and raises her torch to it. | Plain flute: the film's own voice. Wind. | A storyteller about to tell. |
+| 24–46 | **THE SHADOW-PLAY** (NEW). On the torchlit rock, cut-paper shadows. People huddle at tiny fires under a starless sky. A star falls onto the highest peak and burns there: a real white-gold flame inside the shadow world. Where its light falls, shadow-trees blossom. | Frame drum and flute. A soft shimmer where the star lands. | Rules 1 and 2: the gift, and a fire unlike any other. |
+| 46–64 | Peoples climb toward it from every side. The elder's own hand enters the torchlight. Its shadow looms over them, huge, and closes on the star-fire. Real fire bursts through the fingers and eats the shadow world; the rock face itself burns. | A low cluster building under the climb. The grab: a roar. | Rule 3: whoever grasps it alone is burned. |
+| 64–92 | **THE BURNING** (NEW, 3-D). Moonlit ranges. From the summit, a wall of fire runs down the ridges and into the valleys, faster than anything can run. The camera flees ahead of it down a valley. Small figures run. A storm of sparks, a red sky, smoke swallowing the stars. The fire overtakes the camera at 91. | Brass swells under a roar; the sound design leads. Cut to nothing. | Dread made physical: the world burning, for ever. |
+| 92–108 | **ASH.** Black, slowly lifting to an ash plain under a smoke-dark sky, ash falling like snow. In the ash, one coal still glows. A hand enters, and at its wrist, the fringe of a red scarf. | Silence, then wind. | Ruin, and one chance left. |
+| 108–134 | **MANY HANDS** (hills_v2 heroine, blowing and catch, EXTENDED). She cups the coal and blows; the wind tears at it. Other hands close in from every side: a gloved hand, an old one, a child's, strangers', until a ring of cupped hands shields one small flame. It catches at 122, and faces appear around it, lit from below. | Breath. When it catches, a solo cello plays the call. | No lone hero: many hands save the fire. |
+| 134–150 | They set the coal in an iron cradle on poles. A roped line starts up the dark mountain, feeding it one stick at a time. On the first ridge they light a beacon from it. | The processional: half-time, low strings and frame drum. A horn answers from a far peak. | Carried slowly, and in plain sight. |
+| 150–176 | **THE KNIFE-EDGE** (NEW, 3-D, one 26 s shot). The roped line crosses a snow arête between two cloud seas, spindrift streaming off the crest. Four carry the cradle; the fire in it is bigger now. A gust. Someone slips, the rope snaps taut, and the line holds, crouched, until the gust passes. They go on. | The music thins to wind and one high violin harmonic. Two beats of silence at the slip. The processional resumes. | Crossing the dangerous threshold together, at the pace of sight. |
+| 176–194 | **THE VIEW BACK** (run_v2 with the red-team's fixes). The Beacon Run flies back down the range: every ridge they passed is burning. From far valleys, other lines of light are climbing toward the summit. | Horn calls answered from peak to peak. | Everyone could see where the fire was, and everyone came. |
+| 194–208 | **THE SUMMIT**, before dawn, in pre-dawn blue. Hundreds around the great fire, now too big for any cradle: white-gold, humming. Everyone takes hold: poles, ropes, bare hands. | The orchestra gathers. No organ. | The fire has grown past what any few can carry. |
+| 208–216 | **THE RAISING** (NEW, 3-D). They lift together. It rises slowly out of their hands. The camera pulls back about 30 km in one move, and as the rising fire meets the eastern ridge it becomes the sun, breaking at 216 (dawn_C, no eagles). | The brass chorale swells. At 216 the theme's answer resolves to the tonic for the first time in B. No cymbal. | The fire no hand could hold becomes the light that belongs to everyone. |
+| 216–230 | **THE FIRST DAWN.** Gold floods the ranges and the cloud sea. The night's beacon smoke rises into sunlight. As the light moves down, the ash-grey valleys turn green: grass, then blossom (dawn_C EXTENDED with a greening time-lapse). | Full, open strings. | Abundance, not just survival. |
+| 230–252 | **THE SCARF** (hills_v2 coda, EXTENDED). The elder unwinds the red scarf and winds it round the child, then puts the torch in the child's hands. The child lights the beacon (the catch), and fires answer across the hills. | Flute alone. A faint echo of three flint strikes as the scarf passes (the critic's m4). | The carrying goes on. |
+| 252–260 | The title kindles in place in the clear night sky above the answering fires. Fade. | The final chord. | |
+
+## B(5) On-screen text
+The title only: **THE LONG DAWN**, 252–259, kindling in place in empty sky (the red-team's fix: no particle logo reveal, and the ring line kept clear). No render in B calms a text band.
+
+## B(8) Why it is neither forced nor on the nose
+**B points only at itself.** Its images are archetypes, not stand-ins for anything current: a hand, a coal, a rope, a mountain, the sun. Nothing in it maps to a company, a country or a law. Its truths are the ones folktales have always carried: grab and be burned; carry it together; don't run on the knife-edge; the gift that no one holds belongs to everyone. That is how the north star reaches B, as old wisdom. Anyone who watches A or C afterwards will feel the rhyme. B never asks them to.
+
+**Nothing is forced, because every event is obeying a rule the shadow-play has stated.** The grab burns because rule 3 said so. The carrying is slow because of rule 2. The ending is a letting-go because only the sky can hold a fire that size. The audience knows the rules before the film needs them, so the turn feels found rather than imposed.
+
+**The cringe risks, and their guards:**
+- **The raising could turn into sun-god kitsch.** Guard: no beams from heaven, no choir, the figures small in a vast world, and a real sun rising in real atmosphere.
+- **The scarf handover could turn cute.** Guard: it is a practical gesture on a cold night, and the child does not look at the camera.
+- **The shadow-play could look like a paper-cut template.** Guard: real torch flicker, rough rock, penumbra that obeys physics, and the one real flame.
+
+**The balance** in a wordless cut is between spectacle and intimacy. B alternates them: the shadows, then the world burning; the hands, then the knife-edge; the crowd, then the sun; then a scarf.
+
+<!-- NEXT: (6) shared shot list -->
