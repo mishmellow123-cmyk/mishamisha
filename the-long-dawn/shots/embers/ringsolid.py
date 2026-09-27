@@ -36,7 +36,7 @@ R_MID = R_IN + 0.5 * THICK
 R_OUT = R_IN + THICK
 SQ = 2.8
 F0_GOLD = np.array([1.0, 0.766, 0.336])          # gold's specular colour (linear)
-C_LETTER = np.array([1.0, 0.36, 0.07])            # the letters in fire: deep orange-red, never white
+C_LETTER = np.array([1.0, 0.3, 0.045])            # the letters in fire: deep orange-red, never white
 
 
 def sgnpow(x, p):

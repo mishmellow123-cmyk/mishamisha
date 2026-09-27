@@ -265,7 +265,7 @@ def ring_letters(t):
         return 0.0
     flare = math.exp(-max(t - (T_WRITE + 14), 0.0) / 16.0)
     settle = 1.0 - 0.8 * float(smoothstep(T_RISE, T_RACE + 20, t))
-    return 7.0 * (0.45 + 0.55 * flare) * settle
+    return 2.4 * (0.5 + 0.5 * flare) * settle
 
 
 def ring_env(tl, t):

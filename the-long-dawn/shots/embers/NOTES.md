@@ -1,3 +1,65 @@
+# >>> EMBERS-A2 (split off A, 27 Sep ~18:50Z): A3 GLYPHS, A4 THE POINT, A9 THE DEAD VALLEY, A10 THE EMBER,
+# A16 TOWERS IN THE LIGHT, A17 THE FIRE, SEEN (+ A16/A17 in the _alt_codedtowers ALT). EMBERS-2 keeps A7/A8 (edge.py).
+# Owner files: glyphs3.py (A3/A4), aftermath.py (A9/A10), turn.py (A16/A17), new modules only; a3.py/render.py/
+# scene_b.py hooks in small noted commits. <<<
+## STATE AT HANDOFF (EMBERS-A2 takes over, 27 Sep ~18:55Z)
+* Renders: renders/embers_A3 has only A5+A6 (1040-1839, approved); NOTHING exists for my ranges (560-1039,
+  2640-3119, 4400-4879). The EDL (edit/NOTES_v3.md) expects all of them in renders/embers_A3, A cut numbering.
+* Code as found: a3.Promise mode='dead' (grey points, very dim in the 07:54Z sheet e3/v1.jpg), edge.Ash,
+  edge.LivingEmber (a speck), edge.RidgeFires / SmallLights / cam_light / _shutter / _back_light (first pass: A16
+  opened almost black, shutters only on the fire side, backs lit by a uniform outward term). The glyphs exist only
+  as v2 src 300-480 (scene_a: torch embers -> glyph field -> 3-arm galaxy spiral -> point with lens streak): the
+  torch, the galaxy arms and the streak must all go (H5: no screensaver). render.SHOTS_V3['A3'] has no 560-1040.
+* Continuity to honour: A5 f1040 opens on a soft white disc at px (960, ~225) (the point must land there);
+  A17 f4879 -> THE CROSSING f4880 (crossing.py: the lantern heart centred at (960, 402), core r ~10 px, glow ~26 px,
+  ice-white [0.80, 0.92, 1.00]); A10's ember -> A11 X2 (EDIT proxy draws the ember at (0.5 W, 0.60 H));
+  T10a/b centred on black at y 372 / 440 (2880-3060): the ember must stay clear of them.
+* Glyph fonts: the atlas caches renders/embers/cache/glyphs.npz (v1) + renders/embers_v2/cache/glyphs_v2.npz are NOT
+  in git; farm jobs rebuild from fonts: `apt-get install -y fonts-noto-core fonts-noto-cjk` in setup.
+
+# >>> EMBERS-C (cut C's embers shots; EMBERS-2 keeps A). Owner files: c3.py, scene_c.py, tolkien.py (+ new C-only
+# modules). Shared (core.py, towers*.py, render.py, scene_b.py): small, noted commits only. <<<
+## EMBERS-C STATE (27 Sep ~19:20Z)
+* NEW MODULES (mine): `ringsolid.py` THE RING as a solid canonical band (z-buffered raster of the superellipse band,
+  SQ 2.8, outer R 2.25 x width; polished gold = Schlick Fresnel x an environment of spherical-Gaussian lobes + point
+  bodies (fire, forge throats, lit smoke); the canonical inscription as emission through assets/ring strips with
+  mips; heat white->yellow->gold; th_range for a band still being laid; `merge_occluder` joins it to the splat
+  occluder so splats behind it vanish; `visibility` hides it behind towers). Verified standalone (scratchpad
+  ec/ringtest1.jpg: reads as a real gold ring, letters legible). `cflame.py` C's fire: ONE natural gold flame
+  (stateless gas particles, buoyant, necking to one tip, curl of noise, tip flamelets, calm sparks; surface
+  brightness constant across scale). `e15.py` E15's layer -> renders/embers_C3_e15 (own driver; imports MAP-L's
+  committed shots/map/book_c.py once for its camera, seeds, heart and flame track; cached by MAP's sources).
+* c3.py REWRITTEN for C6/C7: C's own tower layout (8 forges r~17.5 + 10 far r 31-39, heights all alike, the surge
+  lead passing round: none taller, no pair), fire on the ground at the centre (HF 6.5), the band beaten out on the
+  anvil strokes 1200-1300 (thread of light from the flame's tip to a white-hot front running round 1202-1238, a
+  spark burst per stroke, throats pulse), cooling to gold by 1320, letters burning up 1320-1346, the Ring rising
+  1360-1470 to hang tilted over the towers; the hush's slow drops and the race's gold rain (ballistic molten beads
+  from the band's rim into the forges' windows, windows flare); GroundGlow; new cameras (CAM_C6). EYE/GRASP still
+  the old src path (to be rebuilt). variant.fire_side_only() now includes C3 (A's approved charcoal look).
+* CONTRACT (director APPROVED 19:0xZ): MAP-L's book_C 560-1039 is page only (fire=None, xl kept); EMBERS-C delivers
+  renders/embers_C3_e15 (C 700-1039) additive; EDIT wired it (8974648); dim the lower third at 700-716 (T2's tail)
+  and 920-1030 (T5a): done in e15.TEXT. E5-C's first frame at 1040 must continue E15's flame from MAP's camera
+  (TODO: derive CAM_C6's 1040 key from MAP's camera: 46 deg above, the flame ~49% of frame height).
+* Tests: local renderq (1 slot) until FARM is announced; then `cloud/farm.py cloud/jobs/embers_C3_forge.json --test`.
+## STATE AT HANDOFF (EMBERS-C takes over C, 27 Sep ~18:45Z)
+* Shots (C frames; deliver to renders/embers_C3 in C numbering): E15 LETTERS TO FIRE C4-C5 560-1039 (particles + fire;
+  MAP owns the page + X1), E5-C THE FORGING C6 1040-1439, E11 THE RACE C7 1440-1679, E12 THE EYE ONTO NOTHING C9
+  1920-2079 (MAP burns through at its head, 1920-1991), E8-C THE GRASP C11 2320-2479, E13a THE RING FALLS C13 2720-2839
+  (RUN-C takes the streak from 2840).
+* Renders: renders/embers_C3 is EMPTY. renders/embers_C3_half = 960 half-res frames (1040-1679, 1920-2079, 2320-2479)
+  made 07:20Z, BEFORE the H5 calls and before A's charcoal-crust towers: the animatic's stand-in only. Its problems:
+  the fire forks (1040), towers are the old mottled crust, the Ring is a thin hoop that reads as a HALO round the fire
+  (1220-1330) and a ring-toss hoop over the towers, gold rain reads as glitter, THE EYE and THE GRASP still sit in the
+  blue-white galaxy spiral (Winamp) with a film-like cat's eye and a wireframe claw. E13a and E15 were never built here.
+* E15: MAP-v3 already built its own sparks + flame in its book engine (`Kindling`, claude/v3-map d74bd7b, not merged
+  here; review/v3/map_X1_letters_to_fire.jpg on that branch) and exports `review/v3/x1_letters.json` for EMBERS (6140
+  spark seeds: screen xy at the LIFT camera (f720), lift + arrive frames; the heart's screen track + flame px per
+  frame). The animatic still plays MAP's older test (edit/cache/x1_letters_C_test.mp4: dot field at 740-770, a
+  three-tongued flame at 830). The director now gives the particles and the fire to EMBERS; MAP keeps page + X1.
+* Ring: must carry the canonical inscription (assets/ring/, 16-bit coverage; canonical band: outer R = 2.25 x width,
+  thickness 0.44 x width; ringc.py R_IN 9.4 THICK 2.3 WIDTH 5.2 mm). tolkien.py's band is R 5 x width 1.0 (a hoop:
+  part of the halo read) with the superseded inscription.py script.
+
 # >>> EMBERS-2 PAUSED 27 Sep ~16:40Z (director: usage window end). RESUME 20:00Z: continue the EDGE/BRINK pass <<<
 EXACT STATE (source committed; NOTHING rendering; the edge jobs are still HELD, not yet updated):
 * DONE in code (edge.py / scene_b.py / a3.py), lab-verified at 0.3 scale:
