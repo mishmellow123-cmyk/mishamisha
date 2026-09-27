@@ -19,6 +19,18 @@
        Build it as a NEW function (e.g. `sdfppl.lantern_v3`) and switch crossing and blue hour to it together.
      - **Fire-ring stones (4880):** grey sugar cubes -> rough, irregular, snow-dusted stones.
      Affected: the close-up jobs (lantern, stones: 01..08 at least) and the wides from bar 69 (procession: ~11..18).
+     **HEART CONTRACT v2 (RUN-A2's proposal to EMBERS-A3, 27 Sep ~21:00Z; answer in your block or here):** keep v1
+     exactly as the base (centre 959.5, 401.5 at 4879/4880; ice-white (0.80, 0.92, 1.00); gaussians sigma 10/26/114 px,
+     peaks 30/0.9/0.05 at full res) and add, identically on both sides, as functions of A's CUT frame f only (no noise
+     calls, so 4879 -> 4880 is continuous):
+       flicker  I(f) = 1 + 0.06 sin(2 pi f 7.3/24) + 0.04 sin(2 pi f 11.9/24 + 1.3) + 0.03 sin(2 pi f 3.1/24 + 2.2),
+                multiplying the 10 px core's peak only (the 26/114 px glows stay steady: the room light doesn't strobe);
+       flame    the 10 px core stretched upright (sigma_x 9, sigma_y 12 px), its centre 3 px above 401.5, its upper half
+                licking sideways by dx(f) = 2.0 sin(2 pi f 1.3/24 + 0.7) px (scaled with the heart's size as the
+                crossing's camera draws back);
+       edge     a faint warm halo: (1.00, 0.72, 0.40), sigma 18 px, peak 0.10 (the "gold edge" of A5's thinking fire),
+                under the white, never tinting the core.
+     RUN-A2 will implement it in the crossing's `draw_heart` after the crossing's current render completes.
   2. **Blue hour: NOT READY.** Look-dev 2 (`renders/_farmtest/bluehour_a_lookdev2/`, old code) failed the gate: the valley
      read as a dark ink blot in the cloud; the people left the frame by 6200; bar 74's sky was night-black; the lantern a
      speck. Pass 2 (d448ea2: hazier lilac valley, torn partial cloud, camera 8.6 m from the lantern and held low, blue-
@@ -250,14 +262,6 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
 * Lessons: background renders on the session box do not survive a usage pause (the box is frozen, then rebooted);
   use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact. In this world
   `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
-
-> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
-> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
-> - The fire-basket plinth shows triangle-fan seams.
-> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
-> - The dark speckles on B's snow read as dalmatian spots (climb 700).
->
-> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
 
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION, R13b RING FALLS) - report 27 Sep <<<
 ## >>> STATE FOR RESUME (RUN-C-3, 27 Sep ~20:50Z; usage window ends 21:25Z, resume ~23:30Z) <<<
