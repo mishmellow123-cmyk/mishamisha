@@ -40,7 +40,7 @@ TZ = float(_S[2] + 1.0)
 TOP_Y = 301.5
 RIDGE_AZ = 40.0                         # the NE ridge
 NCR = 16
-VERSION = 'b11'                           # bump when the terrain changes (cache keys)
+VERSION = 'b15'                           # bump when the terrain changes (cache keys)
 
 # row layout (type in col 12)
 #  dome  (0): 0 cx | 1 cz | 2 top | 3 R (reaches the cloud) | 4 p profile | 5 aniso | 6 angle | 7 seed | 8 lobe
@@ -215,6 +215,34 @@ def field(x, z, fp, hcur):
     dx = x - (TX + 5200.0 * 0.4226)
     dz = z - (TZ + 5200.0 * 0.9063)
     h -= 520.0 * math.exp(-(dx * dx + dz * dz) / (2.0 * 3600.0 * 3600.0))
+    # b12: the upper ground's own spurs and gullies. A smooth mid-distance dome read as a sand pile; the shoulder
+    # reads as a mountain because its ridged spurs steepen into rock. The same soft-ridged relief, on the ground
+    # above the cloud (fading in with height), off within 1.7-2.8 km of her (her massif is art-directed).
+    if h > CLOUD_Y + 10.0 and rd > 1700.0:
+        og = _lod(1150.0, fp, 0.0, 5.0)
+        if og > 0.0:
+            A = smoothstep(CLOUD_Y + 10.0, CLOUD_Y + 240.0, h) * smoothstep(1700.0, 2800.0, rd)
+            rg = soft_ridged2(x / 1150.0 - 4.7, z / 1150.0 + 2.3, og, 287, 0.03, 1.9, 0.46)
+            h += 150.0 * A * (rg - 0.40)
+            # strata: long, gently dipping cliff bands (a steep riser = rock by the snow rule, a gentler tread =
+            # snow). The mask is broad (~2 km) so a band runs on for a kilometre or two and then breaks (never a
+            # short dash); bands vary in thickness and some are missing. d >= 0, = 0 at each band's ends.
+            ob = _lod(90.0, fp, 0.0, 1.0)
+            if ob > 0.0:
+                mk = gnoise2(x / 2100.0 + 1.7, z / 2100.0 - 3.3, 288) + 0.30 * gnoise2(x / 700.0, z / 700.0, 289)
+                Ab = 0.80 * ob * A * smoothstep(-0.15, 0.20, mk)
+                if Ab > 0.0:
+                    P = 64.0
+                    hb = h - 0.07 * (x * 0.4226 + z * 0.9063) + 10.0 * gnoise2(x / 700.0 - 1.9, z / 700.0 + 0.4, 286)
+                    q = hb / P
+                    q += 0.75 * gnoise2(q * 0.37 + 0.5, 0.37, 290)      # irregular spacing (monotonic in hb)
+                    n = int(math.floor(q))
+                    f = q - n
+                    hn = _h01(n + 1000, 7, 11)
+                    if hn > 0.34:
+                        wr = 0.18 + 0.20 * _h01(n + 1000, 3, 5)
+                        st = smoothstep(0.0, wr, f)
+                        h += Ab * P * (st - f) * (0.7 + 0.3 * hn)
     return h
 
 
@@ -597,6 +625,16 @@ def gbuffer(C, D, P, CR, hx, hz, nsteps, tmax, snow_bias, G, kstep, MD, mk):
                 if dtop >= 9.0 and dtop < 400.0 and snow > 0.5:
                     st_ = gnoise2(x / 1.3, z / 1.3, 93) + 0.45 * gnoise2(x / 0.45, z / 0.45, 94)
                     snow = snow * (1.0 - 0.75 * smoothstep(0.60, 0.70, st_) * (1.0 - smoothstep(60.0, 400.0, dtop)))
+                # b14: wind-scoured crests (mid distance): convex ground sheds its snow and the stones show through
+                if dtop > 1500.0:
+                    ec = max(fp * 6.0, 40.0)
+                    fc3 = fp * 3.0
+                    hc0 = h_rock(x, z, fc3, CR)
+                    hc1 = h_rock(x + ec, z, fc3, CR) + h_rock(x - ec, z, fc3, CR)
+                    hc2 = h_rock(x, z + ec, fc3, CR) + h_rock(x, z - ec, fc3, CR)
+                    conv = (4.0 * hc0 - hc1 - hc2) / ec
+                    sc = smoothstep(0.10, 0.28, conv + 0.06 * patch) * smoothstep(1500.0, 2600.0, dtop)
+                    snow *= 1.0 - 0.85 * sc
                 # rock tone: strata (horizontal) and broad patches
                 rv = 0.80 + 0.35 * (0.5 + 0.5 * gnoise2(h0 / 7.0 + x / 300.0, z / 300.0, 81))
                 rv *= 0.88 + 0.24 * (0.5 + 0.5 * patch)

@@ -278,7 +278,7 @@ def dawn_params(e, grey, pix_ang):
     LP[8] = 0.0026
     LP[9] = 0.95
     LP[10] = 2.2
-    LP[12] = 0.25
+    LP[12] = 0.12                     # a softer crust sheen (a strong one read as a lake under the sun)
     gd = np.array([L[0], 0.10, L[2]])
     LP[13:16] = gd / np.linalg.norm(gd)
     LP[16:19] = lin('#FFB98A') * 0.030 * up
@@ -304,7 +304,7 @@ def dawn_params(e, grey, pix_ang):
     fc = lin('#6F83B8') * (0.10 + 0.22 * up) * max(grey, 0.3)
     wc = lin('#FFC58A') * 0.7 * up
     fogp = np.zeros(16)
-    fogp[:8] = [5.0e-5, 1 / 1500.0, 2.0e-4, 1 / 150.0, 0.6, fc[0], fc[1], fc[2]]
+    fogp[:8] = [5.0e-5, 1 / 1500.0, 2.6e-4, 1 / 220.0, 0.6, fc[0], fc[1], fc[2]]    # valley haze: a deeper layer
     fogp[8] = 10.0
     fogp[9:12] = wc
     fogp[12:15] = L
@@ -488,7 +488,7 @@ class HandBack:
                   emissive_gain=0.95 * fire_lvl + 0.05, write_depth=True, zbias=0.3)
         base = BS.BEACON + np.array([0.0, fb, 0.0])
         F2.flame(img, zb, scam, base, 0.85, 0.34, t, seed=4, I=12.0 * (0.04 + 0.96 * fire_lvl), lean=0.2, zbias=0.5,
-                 tongues=5, warp=1.2)
+                 tongues=5, warp=1.2, absorb=0.7 * fire_lvl)      # a dying flame must not leave dark "ears" in the sun
         bx, by, bz = scam.project(base + np.array([0, 0.6, 0]))
         F2.halo(img, zb, bx, by, 5.0 * scam.f / bz, 0.005 * fire_lvl, z=bz, zbias=3.0)
         if her_sun > 0.3:              # in full sun her fire is only a shimmer of heat
