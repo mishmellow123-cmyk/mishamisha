@@ -1,17 +1,26 @@
-# >>> HEROINE-B STATE (27 Sep ~20:50Z; B2 THE CLIMB only, B 640-879 -> renders/climb_B) <<<
-**Code (committed 4b7e740, pushed):** `shots/hills/climb_b.py` (mine), job `cloud/jobs/climb_b.json` (640-879, full res,
-ss 1.5, ship jpg; the farm splits it). Read-only deps: RUN-B's bworld/bset/vigil/pipe/rcam/keeper/fire2, bfig + bprops
-(committed edfa370), handback_b.sleeve_arm; HEROINE-L's heroine/hsdf3/heroine_v3 only for `CLIMB_FIG=h` (old 3-D look).
-* WIDE 640-799: locked, 115 m behind her right shoulder, 14 m above her feet, hfov 30; she is 50-52 px on the crest
-  (s 34 -> 32 m below the lip), the pot at her right hip; the summit's cold beacon + cairn3 on the skyline (x ~1255);
-  bworld's far ranges beyond. CLOSE 800-879: 20 m behind her right shoulder (25 deg), 2.2 m up, hfov 32; she is
-  270-290 px, walking up toward the lip; the beacon + cairn on the skyline right; her long moon shadow.
-* Her = `keeper_carry()`: bset.person2('stand', arms=False, age 0.9) drawn by bfig.render (FG.render fallback) +
-  our sleeved arms (handback_b.sleeve_arm) + the pot (B3's crafted vessel in profile, a glowing leak under the lid)
-  + heel lifts; the shawl rows re-layered on top. Moon = vigil moon_at(F0) (az 80, el 14); sky = vigil.draw_sky frozen
-  at f 1360; bset.match_horizon; RUN-B FINISH (exp 1.15, bloom 0.06/1.2, vignette 0.22).
-* Light: her moon shadow on the snow (capsules, re-shaded without the moon), the pot's warm pool (POOL) + a warm core
-  and halo; spindrift = PUFF (backlit veil) + GRAIN (sparkle) per shot (class dicts).
+# >>> HEROINE-B STATE (27 Sep ~20:57Z, before the usage gap; B2 THE CLIMB only, B 640-879 -> renders/climb_B) <<<
+**JOB READY climb_b sent to main ~20:50Z** (240 f, full res, ss 1.5, ship jpg; ~25 min on 2 cpu-8 nodes). On approval:
+`python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/climb_b.json --nodes 2` (from ~/mishamisha). If it ran
+while I was idle: check `renders/climb_B` has 640-879 (`farm.py ... --missing` fills gaps), then contact-sheet it.
+**Code: `shots/hills/climb_b.py` at cd9fbb1 (pushed)**; job `cloud/jobs/climb_b.json`. Deps (read-only): RUN-B's bworld,
+bset (person2, CAIRN, BEACON, path_at, night_params, match_horizon), vigil (moon_at(F0) az 80 el 14; draw_sky frozen
+at 1360), pipe, rcam, keeper, fire2, bfig + bprops (committed edfa370; cairn3), handback_b.sleeve_arm; HEROINE-L's
+heroine / hsdf3 / heroine_v3 only for `CLIMB_FIG=h` (the old 3-D figure, superseded by the director's call).
+* WIDE 640-799: locked, 115 m behind her right shoulder, 14 m above her feet, hfov 30. She is 50-52 px on the crest
+  (s 34 -> 32 m below the lip), the pot at her right hip with a warm core + halo; the summit (cold beacon + cairn3) on
+  the skyline; the far ranges beyond. No moon shadow here (it aliases on the grazing crest).
+* CLOSE 800-879: locked, 20 m behind her right shoulder (25 deg off her back), 2.2 m up, hfov 32. She is 270-290 px,
+  walking up toward the lip; the beacon + cairn3 on the skyline right; her long moon shadow; ground drift grains;
+  the pot's warm pool on the snow (only her body shadows it).
+* Her = `keeper_carry()`: bset.person2('stand', arms=False, age 0.9) + sleeved arms + the pot (B3's vessel in profile,
+  a leak of light under the lid, the chip) + heel lifts; drawn by bfig.render (FG.render fallback).
+* bworld's crest RISER (0.36 m vertical step ~25 m below the top, reported to RUN-B-3 in shots/run/NOTES.md) is patched
+  in OUR G-buffer copy only (`Shot.patch_risers`): near-vertical ground pixels near the summit get the up-normal.
+**Check stills:** renders/_farmtest/climb_b/ (700/760/840, before the glow fix), climb_b_v2/ (720/850, glow fix),
+climb_b_v3/ (760/850, + pool + riser patch; landing ~21:00Z); half res: renders/heroine_tests/climb_t4/.
+**Nitpicks for after 23:30Z (cheap re-render):** the pot reads weakly in the close (a bigger warm halo, or hold it a
+little further out); spindrift in the wide is faint (the view faces away from the moon: back-scatter); the foreground
+snow's dark stone specks are RUN-B's texture; if RUN-B-3 fixes the riser, `patch_risers` becomes a no-op.
 **Rejected wides (don't retry):** side-on or low views of the crest show bworld's 0.36 m h_rock STEP ~25 m below the
 top as a fence of dark posts (told RUN-B-3 in shots/run/NOTES.md); the 3-D hsdf figure (the director wants B's
 shared keeper); a low NW-flank view hides the summit behind the dome.
