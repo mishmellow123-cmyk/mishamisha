@@ -1,6 +1,6 @@
 # MONTAGE-3D — notes
 
-## >>> CANONICAL RING INSCRIPTION (published 10:40Z, letterforms revised 10:58Z per the director; APPROVED; RING ONLY, not the book): HEROINE, EMBERS, ACCORD-v3 match THIS <<<
+## >>> CANONICAL RING INSCRIPTION (published ~10:25Z, letterforms revised ~10:35Z per the director; APPROVED; RING ONLY, not the book): HEROINE, EMBERS, ACCORD-v3 match THIS <<<
 * **Texture:** `the-long-dawn/assets/ring/inscription_outer.png` (9040x640) and `inscription_inner.png` (7264x640),
   16-bit grey, white = letter coverage. Mapping + proportions: `assets/ring/inscription.json`. Specimen:
   `assets/ring/inscription_specimen.png`. Generator at any resolution: `shots/montage3d/ring_script.py`
@@ -14,24 +14,23 @@
   One fixed sequence: never re-randomise. The metal is plain when cold; the letters exist only in fire (emission
   through this mask, deep orange-red, never white).
 
-## >>> STATE (12:35Z): LOCAL FINALS RUNNING (director-approved narrow task); Ring rebuild waits for the 15:00Z RESUME <<<
-* **Running:** `cache/finals_v3.sh` (log `cache/finals_v3.out`): KARST v3 slow (60 fr, 96 spp) ->
-  `renders/montage3d_v3/karst_slow/f_00000-00059` (the v2 pine frames there were deleted first), then DESERT v3
-  (`MT3D_REFIG=1`: all 64 cloak meshes rebuilt) -> `renders/montage3d_v3/desert/f_00000-00059` (`--out-offset 1520`).
-  Per-shot logs `cache/karst/final_v3_run.log`, `cache/desert/final_v3_run.log`. ~50 min + ~85 min.
-* **Verified full-res stills (my gate):** KARST `tests/t_k3_full/f_00030.png`: weathered rock towers (stacks, spires,
-  split, slab) with strata and rounded shoulders, no pines, no fluted columns, no China read; the hero is a broad flat
-  summit (taper 0.1) with its highest lobe toward the camera, so the beacon and her silhouette stand ON it. Fixed
-  on the way: a lit crate-like block behind the beacon (bites + a back lobe), tiny crown (figure 12 m down the wall).
-  DESERT `tests/t_des8f/f_01545.png`: the plain cloak reads (a sheet with vertical folds, billowing downwind;
-  the tube version read as a grass skirt), bare dark head; ripples and megaripples warped and mixed (the megaripples
-  were still combed stripes on the left dune: fixed with their own large warp + two spacings); prints small, ragged,
-  partly filled, with a downhill scuff.
-* **Probe:** `mt3d_probe` launched by the director (cloud session_01JYJ7jHKrczNMo7LzYBKm8N); its frames come back
-  through the importer to `renders/montage3d_v3/probe_{eevee,cycles}/`.
-* **Next (15:00Z RESUME):** read the probe; build the three Ring shots (plan below) in Cycles; cloud jobs.
+## >>> STATE (13:12Z): KARST v3 + DESERT v3 FINALS DONE (local); the Ring rebuild waits for the 15:00Z RESUME <<<
+* **KARST v3 FINAL:** `renders/montage3d_v3/karst_slow/f_00000-00059` (60 fr, 2/3 speed, flare on 15, 96 spp, 62 min,
+  no post failures, only diff spike = the flare). Review sheet `_local_logs/review/montage3d_karst_v3.jpg`.
+* **DESERT v3 FINAL:** `renders/montage3d_v3/desert/f_00000-00059` (= src 1520-1579 at speed, the catch on 20, 71 min,
+  all 64 cloak meshes rebuilt; only diff spike = the catch). Review sheet `_local_logs/review/montage3d_desert_v3.jpg`.
+* **Remaining weaknesses:** KARST: the spires left of centre are a little alike; the hero summit is a flat table
+  (needed so she and the beacon stand on it). DESERT: at 1:1 the cloaked figure is smooth CG and the prints can
+  read hoof-like, so WIDE FRAMING ONLY (as the H5 call says); her "flinch" reads as a hand held out to the fire.
+* **Superseded and deleted:** the v2 karst_slow frames (pines). `renders/montage_v2` (v2 KARST 1640-1679, DESERT
+  1520-1579, CITY) is left in place for the director (v2 is superseded by H5; say if it should go).
+* **Verified stills kept for reference:** `tests/t_k3_full/f_00030.png`, `tests/t_des8f/f_01545.png`,
+  `tests/t_cyc1/f_00100.png` (Cycles/Metal ring), `tests/ring_final_*` (the protected bake-off stills).
+* **Probe:** `mt3d_probe` launched by the director (session_01JYJ7jHKrczNMo7LzYBKm8N) -> `renders/montage3d_v3/
+  probe_{eevee,cycles}/` via the importer. **Next (15:00Z RESUME):** read the probe; build the three Ring shots (plan
+  below) in Cycles; cloud jobs.
 
-## >>> STATE (paused 11:40Z; history, plans still valid) <<<
+## >>> STATE (paused ~10:45Z; history, plans still valid) <<<
 **Delivery folders (EDIT-v3 EDL convention):** KARST -> `renders/montage3d_v3/karst_slow/f_00000-00059`;
 DESERT -> `renders/montage3d_v3/desert/f_00000-00059` (= src 1520-1579 at speed); THE RING -> `renders/ring_C/`
 in C frame numbering (find 3000-3149, fire test 3360-3599, melt 5360-5519).
