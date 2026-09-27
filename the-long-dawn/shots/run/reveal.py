@@ -2,7 +2,7 @@
 from H1-B's roar at 1372.
 
 A held beat on the roar (her dark shape by the fire as it roars up and settles, a slight drift back), then from the
-cello's CALL (bar 18 b3) one long pull back and up in log distance (20 m -> 240 m) that settles on the last wide by
+cello's CALL (bar 18 b3) one long pull back and up in log distance (20 m -> 130 m) that settles on the last wide by
 bar 19 b3.5: moonlit silver, her summit low left with the fire a single warm point, the cloud sea to the horizon
 with its rock islands, and the Milky Way rising from the horizon right of her summit. No red anywhere but her shawl
 and the fire. Nothing answers yet. The sky is the vigil's own (frozen here: this is real time), so the vigil's
@@ -48,10 +48,13 @@ _fd = BS.BEACON - HER
 FACE_AZ = math.degrees(math.atan2(_fd[0], _fd[2]))        # she faces the fire
 BACK_AZ = FACE_AZ + 180.0
 F_HOLD, F_SETTLE = 1398, 1506        # the pull starts on the cello's CALL (bar 18 b3 = 1400), settles by bar 19 b3.5
-START = dict(dist=20.0, up=2.5, hfov=44.0, uv=(0.55, 0.60))
-END = dict(az=282.0, dist=240.0, up=24.0, hfov=50.0, uv=(0.42, 0.74))   # at 700 m level the broad summit
-# plateau read as a sand dune; at ~240 m, a little above, it reads as a snowy summit crest (stony boss, the cairn,
-# her, the fire) against the silver cloud sea, and the sky above the horizon keeps half the frame for the band
+START = dict(az=BACK_AZ + 30.0, dist=20.0, up=2.5, hfov=44.0, uv=(0.58, 0.60))   # behind her LEFT shoulder: the
+# fire stands to her left, as in H1-B's last roar frame (straight behind her, the flame rose out of her head)
+END = dict(az=250.0, dist=130.0, up=20.0, hfov=50.0, uv=(0.42, 0.72))   # at 700 m level the broad summit
+# plateau read as a sand dune (so did 240 m); at ~130 m, a little above, it reads as a snowy summit crest (stony boss, the cairn,
+# her, the fire) against the silver cloud sea, and the sky above the horizon keeps half the frame for the band.
+# WSW of the top looking ENE: the ground beyond drops straight to the cloud sea, the fire sits just right of her,
+# and the last wide shares the vigil's axis (its locked frame is the same view from 55 m: the cut is a push-in).
 
 
 def _smoother(u):
@@ -68,8 +71,8 @@ def pull(frame):
 def camera(frame, W, H):
     s = pull(frame)
     dist = START['dist'] * (END['dist'] / START['dist']) ** s
-    daz = (END['az'] - BACK_AZ + 540.0) % 360.0 - 180.0
-    az = BACK_AZ + daz * s
+    daz = (END['az'] - START['az'] + 540.0) % 360.0 - 180.0
+    az = START['az'] + daz * s
     up = START['up'] + (END['up'] - START['up']) * s ** 1.3
     piv = BS.BEACON + (BS.TOP - BS.BEACON) * s
     pos = piv + BS.dirxz(az) * dist + np.array([0.0, up, 0.0])
@@ -100,6 +103,7 @@ class Reveal:
         scam = fr.src
         P = np.array([scam.pos[0], scam.pos[2], t, 0.0])
         G = BW.build(scam, P, CR, None, dmax=180000.0, moons=[self.moon], mk=10.0)
+        BS.summit_snow(G)                       # old snow on her summit (the frost speckle read as a beach)
         LP, SN, amb, fogp = BS.night_params(self.moon, 1.0 / scam.f, horizon_match=True)
         LP[32], LP[33], LP[34] = 0, 0, 0.0
         # the roar: up on bar 18 b1, still roaring at the cut from H1-B (1372), settling over ~2 s

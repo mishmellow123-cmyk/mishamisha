@@ -614,6 +614,28 @@ def moon_vec(el_deg, az_deg):
     return BW.sun_vec(el_deg, az_deg)
 
 
+def summit_snow(G, r0=15.0):
+    """G-buffer post-pass (RUN-B2, additive): her summit boss as old snow with sparse fist-to-knee stones, instead of
+    the fine frost speckle that reads as a pebble beach under firelight. In place; call after bworld.build."""
+    from mt.noise import gnoise2
+    X, Z = G[..., BW.G_X], G[..., BW.G_Z]
+    fl = G[..., BW.G_FLAG]
+    d = np.hypot(X - BW.TX, Z - BW.TZ)
+    m = (fl == 1.0) & (d < r0 + 5.0)
+    if not m.any():
+        return G
+    x, z, dm = X[m].astype(np.float64), Z[m].astype(np.float64), d[m]
+    n = np.array([gnoise2(a / 0.8, b / 0.8, 301) + 0.45 * gnoise2(a / 0.3, b / 0.3, 302) for a, b in zip(x, z)])
+    stone = np.clip((n - 0.52) / 0.08, 0.0, 1.0)
+    ny = G[..., BW.G_NY][m]
+    steep = np.clip((0.86 - ny) / 0.10, 0.0, 1.0)            # boulder flanks stay rock
+    new = (0.93 - 0.85 * np.maximum(stone, steep)).astype(G.dtype)
+    w = 1.0 - np.clip((dm - (r0 - 5.0)) / 10.0, 0.0, 1.0)
+    s = G[..., BW.G_SNOW]
+    s[m] = s[m] * (1.0 - w) + new * w
+    return G
+
+
 def match_horizon(SN, fogp):
     """The far haze converges to the sky's own horizon colour, so the cloud sea's far edge melts into the sky (a fog
     brighter than the horizon sky left a hard, ragged seam along the horizon). In place; RUN-B2, additive."""

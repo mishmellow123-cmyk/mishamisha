@@ -144,7 +144,8 @@ def _band_world(az_c, el_c, az_2, el_2, width=0.13, seed=117.0):
     return _band_from_start(np.r_[n, c, width, seed])
 
 
-BAND = _band_world(120.0, 3.0, 70.0, 40.0)     # the reveal's last wide: rising from the horizon right of her summit
+BAND = _band_world(92.0, 2.0, 25.0, 12.0)      # the reveal's last wide: from the horizon right of her summit, arching
+#                                                  up over it (low in the ENE at the vigil's start, then it wheels away)
 BAND_GAIN = 0.10
 STAR_GAIN = 1.6             # the low sky of a locked frame reads empty at the catalogue's own gain
 
