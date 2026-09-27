@@ -1,0 +1,15 @@
+{
+ "name": "watchers_a_look",
+ "branch": "claude/render-watchers-a-look",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "W15_P7=-1004,-193.3,-508 W15_OWN_CAM=1 NUMBA_NUM_THREADS=4 python3 shots/run/watchers_a.py --frames 4240 --scale 0.12 --out warm_watchers_a"
+ ],
+ "render": [
+  "W15_P7=-1004,-193.3,-508 W15_OWN_CAM=1 python3 shots/run/watchers_a.py --range 4240-4399 --procs 4 --skip"
+ ],
+ "out_dir": "renders/watchers_A",
+ "frames": "4240-4399",
+ "push_every": 300,
+ "ship": "jpg"
+}
