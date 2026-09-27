@@ -481,6 +481,14 @@ valleys must read as a textured cloud sea with wisps; the last red point several
 terrain change for DUSK behind DUSK-only switches (P[3] cloud relief; a DUSK-only CR row) so approved hand-back
 jobs never change under the director. dusk.py already has v2 WIP (fog 1.15e-4, wisps(), knoll-top glint).
 **Live status:** (updated below as things land)
+* 20:50Z: local half-res stills renders/run_b_tests/hbb_t15/{3840,4300,4880,4976,5100} look right (no halo, soft
+  silhouettes with folds, the hand-off reads, the child is a child in red, the cairn = snow-capped stones).
+  JOB READY sent for ALL FIVE hand-back jobs (dawn_a, dawn_b, night, crane_a, crane_b), join A/B flagged as
+  pending RUN-B2's 3839 (renders/run_b_tests/b2_check_local/f_03839). If the director approved: check
+  `python3 the-long-dawn/cloud/farm.py status` and renders/handback_B (frames stream back as they land).
+  Nitpicks queued for after 23:30Z: the fire-basket plinth (bset.beacon_base) still uses triangle-fan stones (faint
+  seams) -> rebuild with bfig.add_stone as bprops.beacon_base3 (tell RUN-B2: shared with the vigil); RUN-B2's
+  bset.summit_snow(G) (old snow + sparse stones on the boss) to switch on together in vigil + crane + settled.
 
 # >>> RUN-B STATE AT HANDOFF 3 (new agent RUN-B-3, 27 Sep ~19:10Z) <<<
 **Inherited:** PAUSE 2 state below (DUSK v1 done in renders/dusk_B; hand-back/vigil/reveal coded and tested; jobs
