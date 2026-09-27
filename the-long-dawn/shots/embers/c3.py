@@ -28,6 +28,7 @@ import tolkien as TK
 import ringsolid as RS
 import cflame as CF
 import eye3 as EYE
+import grasp3 as GR
 
 BAR, BEAT = 80, 20
 
@@ -717,6 +718,7 @@ class TimelineC3(TL.Timeline):
     csparks = property(lambda s: s._get('csparks', CF.Sparks))
     forge = property(lambda s: s._get('forge', ForgeFX))
     gold_rain = property(lambda s: s._get('gold_rain', lambda: GoldRain(s)))
+    grasp = property(lambda s: s._get('grasp', GR.Grasp))
     ground = property(lambda s: s._get('ground', GroundPool))
 
     def src(self):
@@ -730,6 +732,8 @@ class TimelineC3(TL.Timeline):
             return 'sched'
         if T_EYE - 1 <= t < T_EYE_END + 1:
             return 'eye'
+        if T_GRASP - 1 <= t < T_GRASP_END + 1:
+            return 'grasp'
         return 'src'
 
     def camera(self, t):
@@ -739,6 +743,8 @@ class TimelineC3(TL.Timeline):
         use_sched()
         if self.mode(t) == 'eye':
             return EYE.camera(t, AZ0)
+        if self.mode(t) == 'grasp':
+            return GR.camera(t)
         pos, tgt, hf = cam_c(t)
         if t >= T_FORGE - 20:
             Rot, C, sc = ring_frame(t)
@@ -771,6 +777,8 @@ class TimelineC3(TL.Timeline):
             return self.src().render_opts(int(round(self.srct(f))))
         if self.mode(f) == 'eye':
             return dict(bokeh_pow=0.0, bokeh_cap=1.0, fog_start=70.0, fog_len=90.0, near=0.3)
+        if self.mode(f) == 'grasp':
+            return dict(bokeh_pow=0.0, bokeh_cap=1.0, near=0.3)
         return dict(bokeh_pow=0.25, bokeh_cap=1.6, fog_start=60.0, fog_len=80.0, near=0.3)
 
     def emit(self, ctx):
@@ -786,6 +794,8 @@ class TimelineC3(TL.Timeline):
                 ctx.c3 = (f, t0, t1)
             return
         use_sched()
+        if self.mode(t) == 'grasp':
+            return self.grasp.emit(ctx)
         lp, lc, lpw = self.light(t)
         if self.mode(t) == 'eye':
             # C9: the forges of the race, red, every one leaning toward the Eye; their embers and smoke rise into
@@ -817,6 +827,8 @@ class TimelineC3(TL.Timeline):
         t = ctx.t
         p = ctx.fr.prm
         H, W = hdr.shape[:2]
+        if self.mode(t) == 'grasp':
+            return self.grasp.post(ctx, hdr)
         if self.mode(t) == 'eye':
             lay = np.zeros_like(hdr)
             zc = float((EYE.eye_centre() - ctx.cam.pos) @ ctx.cam.R[2])
@@ -854,5 +866,8 @@ class TimelineC3(TL.Timeline):
         if self.mode(f) == 'eye':
             return dict(exposure=1.0, bloom_strength=0.16, bloom_threshold=0.75, streak_strength=0.0,
                         vignette_amount=0.3)
+        if self.mode(f) == 'grasp':
+            return dict(exposure=1.0, bloom_strength=0.14, bloom_threshold=0.7, streak_strength=0.0,
+                        vignette_amount=0.25)
         return dict(exposure=1.0, bloom_strength=0.14, bloom_threshold=0.7, streak_strength=0.0,
                     vignette_amount=0.25)

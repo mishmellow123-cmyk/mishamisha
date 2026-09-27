@@ -744,7 +744,12 @@ T_SLIP = 1020.0                        # the band slips out between the fingers 
 RING_G = 0.1                           # the fall's gravity (units / frame^2)
 
 
+GRIP_OVERRIDE = None                   # EMBERS-C (grasp3.py): the grip point in C's own grasp world
+
+
 def grip_point():
+    if GRIP_OVERRIDE is not None:
+        return np.asarray(GRIP_OVERRIDE, np.float64).copy()
     return B.crown_centre(960.0)
 
 
@@ -939,14 +944,19 @@ def anat_cracks(P, own, sk, A_rest, R_rest):
             along = (P - c) @ ax
             lat = np.linalg.norm((P - c) - along[:, None] * ax[None, :], axis=1)
             band = np.exp(-(lat / 0.05) ** 2)
+            # EMBERS-C: only across the back (knuckle wrinkles) and the front (flexion creases), never round the
+            # sides (a full band round a finger reads as a ring worn on it)
+            sx = R_rest[j][:, 0]
+            side = np.abs((P - c) @ sx) / np.maximum(lat, 1e-6)
+            band = band * np.exp(-(side / 0.55) ** 2)
             for off in ((-0.012, 0.012) if node != '_mcp' else (0.0,)):
                 cre = np.maximum(cre, amp * np.exp(-((along - off) / 0.0042) ** 2) * band * (is_f | ~is_arm))
     # the palm's three lines, and the wrist
     pal = (~is_f) & (~is_t) & (~is_arm) & (z > 0.0)
     for L_ in PALM_LINES:
         cre = np.maximum(cre, np.exp(-(_poly_dist(P, L_) / 0.006) ** 2) * pal)
-    for yw in (0.015, -0.02):
-        cre = np.maximum(cre, 0.8 * np.exp(-((y - yw) / 0.005) ** 2) * (~is_f) * (~is_t))
+    for yw in (0.015, -0.02):     # (EMBERS-C: the wrist creases on the palm side only: round it they read as a cuff)
+        cre = np.maximum(cre, 0.8 * np.exp(-((y - yw) / 0.005) ** 2) * (~is_f) * (~is_t) * (z > 0.01))
     sharp = np.clip(np.maximum(sharp, cre), 0, 1)
     soft = np.clip(np.maximum(soft, 0.6 * np.sqrt(cre)), 0, 1)
     return sharp, soft, plate, cre

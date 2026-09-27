@@ -1,3 +1,27 @@
+# >>> EMBERS-C2 (split off EMBERS-C, 27 Sep ~19:15Z): C9 E12 THE EYE ONTO NOTHING (1920-2079), C11 E8-C THE GRASP
+# THAT CANNOT HOLD (2320-2479), C13a E13a THE RING FALLS (2720-2839). EMBERS-C keeps E15, E5-C, E11 + the Ring/flame. <<<
+## EMBERS-C2 STATE (27 Sep ~19:55Z)
+* Owner files (new): `c2.py` (bar grid, `Router`, `storm_layer`/`plane_coords`: the 2.5-D storm as billboard planes),
+  `c_eye.py` (E12), `c_grasp.py` (E8-C), `c_fall.py` (E13a). Shared touch: `render.py` (small, noted): `--cut C3`
+  wraps c3.TimelineC3 in `c2.Router`, which sends C 1920-2079 / 2320-2479 / 2720-2839 to my shots (only those listed
+  in `c2.ENABLED`; the rest stay on c3's stand-ins) and SHOTS_V3['C3'] gains (2720, 2840). c3.py/scene_c/tolkien untouched.
+* Uses EMBERS-C's canonical Ring (`ringsolid.render`, assets/ring) and C's tower layout (`c3.layout_towers`, schedule
+  subclassed from `c3.C3Sched`, held past 1680). c3's src-warp Eye/Grasp stand-ins are superseded by these.
+* E12: the storm over every forge resolves (1936-1990) into the BOOK's Eye (glazed, yellow as a cat's, rimmed with
+  fire; no tower under it, no horns): 3 storm planes (behind + 2 in front: parallax), the Eye as a disc in its plane
+  (`_eye`: wavy fibre bundles, crypts, collarette, dark limbus, flame rim, the closed seam; the glaze = the forges'
+  throats reflected low on it + the rim fire as an arc), every tower bends toward it (`EyeSched.tower_post`). 2000:
+  the slit opens onto true black (nothing behind shows: no storm, no glaze, embers drawn in go out). Camera: C3
+  azimuth AZ0+0.1 (no tower under the Eye, no symmetric pair), r 158 -> 127 (push from 2000).
+* E8-C: the claw is a SOLID (sphere-traced SDF of scene_c.HandSkel's anatomy, gaunter, talon tips; `_march`), shaded
+  as charcoal crust with ember pores + scene_c.anat_cracks in the rest pose; the Ring's gold as a point light and a
+  leak along the finger seams; heat spreads out from the grip from 2400; the band sits in the grip's hollow (found
+  from the SDF: ~0.09 L) and slips out between middle and ring fingers at 2440, then falls (ballistic, tumbling).
+* E13a: out of black the band catches the moon (the only light it takes), tumbling; we fall with it looking down
+  onto a moonlit cloud deck, through it (veil), and it falls away from us: a small warm spark moving down-right.
+* HANDOVER to RUN-C (R13b, 2840): the Ring is a small warm spark (a few px, short trail), falling down and to the
+  right of frame centre; nothing else warm in frame; moonlight cold blue-white from the upper left.
+* Look-dev: scratchpad ec2/ (lab.py renders my layers without the tower geometry). Full tests on the FARM.
 # >>> EMBERS-A3 (split off EMBERS-A2, 27 Sep ~19:30Z): A16 TOWERS IN THE LIGHT + A17 THE FIRE, SEEN (4400-4879,
 # one take) + both in the _alt_codedtowers ALT. Owner file: turn.py (+ cloud/jobs/embers_A3_turn.json, _alt_turn.json).
 # Shared modules untouched so far (a3.py/edge.py/scene_b.py hooks are installed from turn.py on import). <<<
@@ -67,6 +91,28 @@
 
 # >>> EMBERS-C (cut C's embers shots; EMBERS-2 keeps A). Owner files: c3.py, scene_c.py, tolkien.py (+ new C-only
 # modules). Shared (core.py, towers*.py, render.py, scene_b.py): small, noted commits only. <<<
+## EMBERS-C -> EMBERS-C2 (27 Sep ~20:00Z; the director's split: C2 owns E12, E8-C, E13a; I keep E15, E5-C, E11
+## and the shared Ring (ringsolid.py) + gold flame (cflame.py) assets). My look-dev on C2's shots, to fold in:
+* `eye3.py` (committed; c3 'eye' mode, dead once c2.Router takes 1920-2079): a screen-space sky on a plane facing
+  the lens. What worked (scratchpad ec/eye_sheet4.jpg, verified at 0.5 scale): angular noise on circles (cos, sin)
+  so there is no atan2 seam; time only advects along log r (the storm and the fibres are drawn INWARD, nothing
+  turns: no spiral); the iris as a STROMA of fire (the angle itself domain-warped, crypts, a collarette) -- straight
+  radial fibres read as a starburst/warp-speed, isotropic noise as a lava cookie; the storm drawn in by CONTRACTING
+  its Cartesian texture (exp(0.006 t)), never radial streaks (they read as a vortex/sunburst); the slit = a hairline
+  seam that opens 2000-2009 onto pure black with the pit's inner wall lit for a hand's breadth, thin uneven lips.
+  Open: the storm is still dim at 1930; the rim is a clean circle.
+* `grasp3.py` (committed; c3 'grasp' mode): sphere-traced scene_c hand SDF (numba `_march` with an AA fringe from
+  the ray's closest approach), shaded charcoal lit by the Ring's gold from inside the grip, anat_cracks re-mapped to
+  the rest pose per pixel (owner bone -> rest frame), the Ring = ringsolid depth-composited with the claw, a leak
+  glow only through the gaps (x (1 - claw alpha)). Findings (ec/grasp_t3.jpg): a face-on Ring reads as a halo (38
+  degree three-quarter view instead); env must be warm-gold or the band goes copper; pre-failure the tendons must
+  stay faint (they read as wires); the blaze must keep the plates charcoal (else a paper lantern); full knuckle bands
+  read as rings WORN on the fingers (scene_c.anat_cracks now keeps only back/front arcs; wrist creases palm-side);
+  camera 126->112 from the grip, el 24->19, hfov 52, target 7 above the grip; fall g 0.13/frame^2 out of frame.
+* `ringfall3.py` (committed, not wired): first test (ec/fall_t1.jpg) shows the Ring far too big (camera 9 units:
+  it should be a glint), gold goes olive under a blue-grey moon (keep a warm term in the env), the fbm clouds read
+  as fur/brushed. The handover proposal for RUN-C stands: at 2839 a ~20 px glint just below centre, falling.
+
 ## EMBERS-C STATE (27 Sep ~19:20Z)
 * NEW MODULES (mine): `ringsolid.py` THE RING as a solid canonical band (z-buffered raster of the superellipse band,
   SQ 2.8, outer R 2.25 x width; polished gold = Schlick Fresnel x an environment of spherical-Gaussian lobes + point
