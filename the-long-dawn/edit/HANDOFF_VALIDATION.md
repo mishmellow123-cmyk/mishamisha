@@ -1,4 +1,4 @@
-# Temporary handback: render failures, picture readiness and A14
+# Temporary handback: render failures, picture readiness and A-world rendering
 
 Prepared 27 September 2026 against `claude/long-dawn-v2` at
 `07d5dca6d6111ad2fb5ec4e0b40008e5b22072ec`, in an isolated checkout on
@@ -24,6 +24,7 @@ No full film or Blender shot was rendered during validation. The original laptop
 uncommitted diff contents and latest masters were unavailable to this checkout.
 Local CPU render checks subsequently exercised A14 frames 3920, 4208 and 4239 at 960×402. Separate
 visual studies live on `codex/long-dawn-visual-study`; they are proposals, outside this technical patch.
+The terrain-bound fix below was also rendered at A15 frames 4280, 4360 and 4399 at 960×402.
 
 ## Changes
 
@@ -32,6 +33,22 @@ visual studies live on `codex/long-dawn-visual-study`; they are proposals, outsi
 number and raised `TypeError`. Holding that sample at the first pose fixes the crash. Every valid
 integer pose and in-range shutter sample retains exactly the original camera arrays (959 samples).
 The formerly failing frame now completes through the actual render/finish/PNG path.
+
+`falsedawn.terrain_hmax()` derives a conservative ceiling from A's terrain layers and smooth-union
+envelopes (currently 2784.5 m). A2, A11, A14 and A15 now pass that ceiling to the marcher. The previous
+700 m bound cut a straight edge through A15's distant ridge: at output pixel (724,120) in frame 4360,
+the actual marcher returned sky where the far wall lies roughly 47 km away. The regression preserves
+all source rows because the marcher reuses preceding foreground hits. In its 25-column strip, the
+new ceiling recovers the ridge, exactly matches a separately rendered 3000 m diagnostic, and preserves
+all formerly finite depths. Restoring 700 m makes the regression fail. Three final A15 renders remove
+the cutoff without changing camera, terrain geometry or lighting. Independent source review checked
+the bound's positive displacement and smooth-union terms. This establishes the ceiling, not an exhaustive
+proof of ray-march correctness. Full images are not asserted byte-identical to the diagnostic.
+
+The shared `pipe.render_terrain()` default remains 700 m for other terrain recipes. Fixed ceilings in
+crossing, bluehour, reveal_a, bh_probe and hills/beacon remain an unverified investigation list; their
+presence alone does not establish clipping. The 900 m and configurable-ceiling worlds were also left
+unchanged. In particular, `reveal_a.py` retains the original laptop's ownership.
 
 `shots/montage3d/render.py` now returns failure when Blender fails, post-processing raises, or requested frame
 notifications do not result in successful post-processing. It drains the poster queue before checking the
@@ -71,7 +88,7 @@ behavior remains an existing limitation outside this correction.
 
 ## Validation
 
-32 focused tests passed: 11 driver tests, 6 PNG I/O tests, 12 readiness tests and 3 A14 camera tests. Shell syntax and whitespace
+36 focused tests passed: 11 driver tests, 6 PNG I/O tests, 12 readiness tests and 7 RUN tests. Shell syntax and whitespace
 checks passed. The driver suite against the original `07d5dca` implementation produced 10 failures and one
 passing control. The PNG suite against that original helper failed four tests (five failure records,
 including two subcases), with two controls passing. Bypassing provisional-source reporting made both the
@@ -97,7 +114,7 @@ Run from the repository root in the project Python environment:
 python -B -m unittest discover -s the-long-dawn/shots/montage3d/tests -p test_render_exit.py -v
 python -B -m unittest discover -s the-long-dawn/lib/tests -p test_look_io.py -v
 python -B -m unittest discover -s the-long-dawn/edit/tests -p test_picture_readiness.py -v
-python -B -m unittest discover -s the-long-dawn/shots/run/tests -p test_beaconrun_camera.py -v
+python -B -m unittest discover -s the-long-dawn/shots/run/tests -p 'test_*.py' -v
 bash -n the-long-dawn/edit/refresh_watch.sh
 git diff --check
 ```
