@@ -335,9 +335,9 @@ def shade_leather(px, py, pz, nx, ny, nz, vx, vy, vz, u, v, w, gilt, fp, PR, LT,
         pul = 0.8 + 0.2 * math.sin(PR[P_T] * 0.21 + u * 60.0)
         e = cracks * live * 1.5 * pul
         return cr + e * 1.0, cg + e * 0.24, cb + e * 0.035
-    ar = 0.026
-    ag = 0.018
-    ab = 0.014
+    ar = 0.0115
+    ag = 0.0092
+    ab = 0.0082
     wr = fbm2(u * 900.0 + w * 300.0, v * 900.0, 91, 3, 2.1, 0.5, fp * 900.0)
     gk = 1.0 + 0.30 * wr
     # the three points: stitched seams between the knuckles and the wrist on the back
@@ -506,7 +506,8 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         a = 0.032 * (1.0 + 0.55 * ln) * (1.0 + 0.45 * sstep(0.30, 0.05, rw_) * sstep(STONE_TOP - 0.02, STONE_TOP, pz))
         crk = sstep(0.008, 0.0, abs(0.62 * px + 0.78 * py - 0.05 + 0.03 * math.sin(9.0 * px - 4.0 * py))) * sstep(STONE_TOP - 0.04, STONE_TOP - 0.01, pz)
         a *= 1.0 - 0.45 * crk
-        a *= 1.0 + 0.22 * sstep(0.05, 0.16, gr) - 0.12 * sstep(-0.05, -0.16, gr)
+        a *= 1.0 + 0.10 * sstep(0.05, 0.16, gr) - 0.06 * sstep(-0.05, -0.16, gr)
+        a *= 0.62 + 0.38 * sstep(STONE_TOP - 0.05, STONE_TOP - 0.015, pz)
         pit = 0.0
         ar = a * 1.03
         ag = a * 1.00
@@ -541,9 +542,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
                 ar = mix(ar, 0.004, bed)
                 ag = mix(ag, 0.0036, bed)
                 ab = mix(ab, 0.0035, bed)
-                ce_r = 5.5 * glow
-                ce_g = 5.5 * glow * 0.27
-                ce_b = 5.5 * glow * 0.04
+                ce_r = 1.7 * glow
+                ce_g = 1.7 * glow * 0.22
+                ce_b = 1.7 * glow * 0.025
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.0, False, -1.0,
                               PR, LT, OC, igc, igf, 1.0)
         sr, sg, sb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 22.0, PR, LT, OC, -1.0)
@@ -614,9 +615,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
                 pat = sstep(0.40, 0.70, vnoise2(along * 9.0 + LG[kb_, 8], ang * 1.3, 88))
                 glow = (0.9 * crack * (0.4 + 0.6 * pat) + 0.25 * pat) * eb_ * ch * sstep(0.80, 0.45, rr)
                 wh = PR[P_EMBW]
-                er += 7.0 * glow * (1.0 + 1.5 * wh)
-                eg += 7.0 * glow * (0.28 + 0.5 * wh)
-                eb += 7.0 * glow * (0.04 + 0.3 * wh)
+                er += 2.6 * glow * (1.0 + 1.5 * wh)
+                eg += 2.6 * glow * (0.24 + 0.5 * wh)
+                eb += 2.6 * glow * (0.03 + 0.3 * wh)
         else:
             # charcoal: black, a faint silvery sheen on its broken faces
             a = 0.011 * (1.0 + 0.5 * vnoise2(px * 200.0, py * 200.0, 93))
@@ -662,9 +663,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         ao = clamp(1.0 - 0.6 * occ, 0.2, 1.0)
         if mat == M_CLOTH:
             wv = 1.0 + 0.2 * fbm2(u * 300.0, v * 300.0 + w * 200.0, 97, 3, 2.2, 0.5, fp * 300.0)
-            ar = 0.014 * wv
-            ag = 0.012 * wv
-            ab = 0.011 * wv
+            ar = 0.0085 * wv
+            ag = 0.0074 * wv
+            ab = 0.0070 * wv
             cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, PR[P_SHEEN], False, -1.0,
                                   PR, LT, OC, igc, igf, ao)
         else:

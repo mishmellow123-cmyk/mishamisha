@@ -133,8 +133,8 @@ def torch_density(qx, qy, qz, FL, k, T, n3):
         return 0.0, 0.0
     # hottest in the middle third (the luminous heart), cooler at the roots round the head, orange-red tips
     tax = sstep(-0.30, 0.22, u) * (1.0 - sstep(0.42, 1.05, u))
-    temp = clamp(0.15 + 0.95 * tax * (1.0 - 0.45 * min(rho / R, 1.0)) + 0.55 * (nl - 0.5)
-                 + 0.14 * sstep(0.0, 0.6, e), 0.0, 1.0)
+    temp = clamp(0.10 + 0.78 * tax * (1.0 - 0.45 * min(rho / R, 1.0)) + 0.50 * (nl - 0.5)
+                 + 0.12 * sstep(0.0, 0.6, e), 0.0, 1.0)
     # the luminous sheet: emission peaks where the flame surface folds (limb-bright tongues, crisp edges)
     sh = (e - 0.14) / 0.16
     d = d * (0.30 + 0.70 * math.exp(-sh * sh))
@@ -458,14 +458,14 @@ def calm_density(x, y, z, HP, CF, ncf, n3):
         fy = y - HP[HP_FY]
         fz = z - HP[HP_FZ]
         dh = math.sqrt(fx * fx + fy * fy + 0.35 * fz * fz)
-        e -= hol * 1.1 * sstep(0.24, 0.09, dh)
+        e -= hol * 1.2 * sstep(0.135, 0.055, dh)
     d = sstep(0.0, 0.10, e)
     if d <= 0.0:
         return 0.0, 0.0
     # hot over the coals (the roots), cooling through the body, the torn tips dull red
     troot = 1.0 - sstep(0.02, 0.85, uu)
-    temp = clamp(0.20 + 0.78 * troot * (1.0 - 0.40 * min(rb, 1.0)) + 0.50 * (nl - 0.5)
-                 + 0.14 * sstep(0.0, 0.6, e), 0.0, 1.0)
+    temp = clamp(0.12 + 0.66 * troot * (1.0 - 0.40 * min(rb, 1.0)) + 0.46 * (nl - 0.5)
+                 + 0.12 * sstep(0.0, 0.6, e), 0.0, 1.0)
     # the luminous sheet: emission peaks where the flame surface folds (limb-bright tongues, crisp edges)
     sh = (e - 0.14) / 0.16
     d = d * (0.30 + 0.70 * math.exp(-sh * sh))

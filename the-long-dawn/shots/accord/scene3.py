@@ -731,14 +731,16 @@ def white_level(t):
 
 
 def p2_flames(t):
-    """AC2 (flame3.calm_density rows, mode 1): the fire everyone lit. Each torch catches the laid fuel where it
-    touched (r ~0.62 at its bearer's azimuth) and the flame leaps up there; the fire runs round the fuel between
-    them; every flame leans in over her fist and climbs as the fire grows; the white takes it from ~5318.
-    Returns (CF, 0)."""
+    """AC2 (flame3.calm_density rows, mode 1): the fire everyone lit rises AROUND HER FIST. Each torch catches the
+    laid fuel where it touched (r ~0.62 at its bearer's azimuth): a low flame leaps up there, bent in toward her
+    fist. From it a runner runs in along the fuel to the stone, climbs onto it and stands up beside her fist; the
+    thirteen runners arrive from every side at once and grow into one crown of fire round the fist (a clear hollow
+    at its heart, where the fist is). The white takes it from ~5318. Returns (CF, 0)."""
     fs = fire_state(t)
     if fs['on'] <= 0.0:
         return np.zeros((1, 8)), 0
     fist = hand_fist_pos(max(t, HAND_CLOSE))
+    fx, fy = fist[0], fist[1]
     Ts = t / 24.0
     grow = fs['H']
     rng = np.random.default_rng(66)
@@ -748,27 +750,31 @@ def p2_flames(t):
         return (1.0 + big * (0.085 * math.sin(2 * math.pi * 3.1 * Ts + seed) + 0.060 * math.sin(2 * math.pi * 1.37 * Ts + 2.1 * seed)
                              + 0.045 * math.sin(2 * math.pi * 0.53 * Ts + 3.3 * seed)))
 
-    def add(a, r, age, Hs, Rf, seed):
-        g = ease_out(clamp01(age / 12.0), 2.0)
-        if g <= 0.0:
-            return
-        x, y = r * math.cos(a), r * math.sin(a)
-        dx, dy = fist[0] - x, fist[1] - y
-        D = math.hypot(dx, dy) + 1e-9
-        Hh = Hs * (0.35 + 0.65 * g) * max(grow, 0.25) * pump(seed, 1.0)
-        # lean in over her fist: the top of the flame reaches ~conv of the way to it
-        k = fs['conv'] * 0.95 * D / max(Hh, 0.2)
-        sw = 0.08 * math.sin(2 * math.pi * 0.61 * Ts + seed)
-        rows.append((x, y, 0.03, Hh, Rf * (0.6 + 0.4 * g), k * dx / D + 0.10 + sw, k * dy / D - 0.04, seed))
-
     for k in range(NEM):
         a = FIG_PSI[k]
         tc = FIRE_CATCH + 0.5 * FIG_DOWN_DT[k]
-        add(a, 0.62, t - tc, rng.uniform(0.85, 1.10), 0.115, 3.1 + 1.9 * k)
-        # the fire runs round the fuel to meet its neighbour's
-        a2 = a + 0.5 * ((FIG_PSI[(k + 1) % NEM] - a) % (2 * math.pi))
-        add(a2, 0.56 + 0.10 * rng.uniform(), t - tc - 7.0 * (1.0 - 0.6 * fs['spread']), rng.uniform(0.60, 0.85), 0.100,
-            41.0 + 2.3 * k)
+        age = t - tc
+        g = ease_out(clamp01(age / 10.0), 2.0)
+        if g <= 0.0:
+            continue
+        sd = 3.1 + 1.9 * k
+        x, y = 0.62 * math.cos(a), 0.62 * math.sin(a)
+        dx, dy = fx - x, fy - y
+        D = math.hypot(dx, dy) + 1e-9
+        # the catch: a low flame where the torch touched, bent in toward her fist (the ring behind stays low)
+        Hh = (0.24 + 0.12 * min(grow, 1.3)) * (0.4 + 0.6 * g) * pump(sd, 1.0) * rng.uniform(0.85, 1.15)
+        kk = 0.45 * D / max(Hh, 0.15)
+        rows.append((x, y, 0.03, Hh, 0.085, kk * dx / D + 0.08, kk * dy / D - 0.03, sd))
+        # the runner: in along the fuel, onto the stone, up beside her fist (one flame of the crown)
+        u = smoother(clamp01((age - 2.0) / 20.0))
+        if u > 0.0:
+            ca, sa = dx / D, dy / D
+            ex, ey = fx - 0.155 * ca, fy - 0.155 * sa            # its place on the crown, on its bearer's side
+            px_, py_ = x + (ex - x) * u, y + (ey - y) * u
+            z0 = 0.03 + (G.STONE_TOP - 0.045) * smooth(clamp01((u - 0.45) / 0.4))
+            Hc = (0.20 + 1.00 * u * max(grow - 0.25, 0.0)) * pump(sd + 7.0, 1.1) * rng.uniform(0.88, 1.12)
+            lean_in = 0.10 + 0.10 * u                            # over the fist a little, never onto it
+            rows.append((px_, py_, z0, Hc, 0.075 + 0.045 * u, lean_in * ca + 0.05, lean_in * sa - 0.02, sd + 19.0))
     if not rows:
         return np.zeros((1, 8)), 0
     return np.array(rows, np.float64), 0
