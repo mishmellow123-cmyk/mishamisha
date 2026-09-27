@@ -5,11 +5,11 @@
   "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
  ],
  "render": [
-  "python3 shots/hills/render.py --shot find --frames 3557-3683 --step 2 --workers 2 --out renders/heroine_C --skip-existing",
-  "python3 shots/hills/render.py --shot find --frames 3558-3683 --step 2 --workers 2 --out renders/heroine_C --skip-existing"
+  "python3 shots/hills/render.py --shot find --frames 3557-3620 --step 2 --workers 2 --out renders/heroine_C --skip-existing",
+  "python3 shots/hills/render.py --shot find --frames 3558-3620 --step 2 --workers 2 --out renders/heroine_C --skip-existing"
  ],
  "out_dir": "renders/heroine_C",
- "frames": "3557-3683",
+ "frames": "3557-3620",
  "push_every": 300,
  "ship": "jpg"
 }

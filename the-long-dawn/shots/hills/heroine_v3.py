@@ -632,14 +632,18 @@ class Find:
     STRIKE = 3557
     FLINT = np.array([0.32, 1.08, -0.07])
 
+    HAND = False            # the hand closing on the band failed its test (claw read): the shot is the band alone
+
     def reach(self, f):
+        if not self.HAND:
+            return 0.0
         return smoothstep(3600, 3640, f) * (1 - smoothstep(3660, 3683, f))
 
     def pose(self, f):
         t = f / FPS
         r = self.reach(f)
         close = smoothstep(3636, 3650, f)
-        W = self.HOL + np.array([0.058, 0.052, 0.018]) + np.array([0.03, 0.24, 0.04]) * (1 - r)
+        W = self.HOL + np.array([0.058, 0.052, 0.018]) + np.array([0.10, 0.45, 0.10]) * (1 - r)
         p = dict(
             pelvis=(0.76, 0.42, -0.05), yaw=0.0, lean=72.0, chest=14.0, twist=0.0, neck=8.0, head=22.0, head_yaw=0.0,
             head_roll=0.0, shrug=0.1,
@@ -690,7 +694,7 @@ class Find:
         flash = math.exp(-d / 2.4) if d >= 0 else 0.0
         # the letters, faintly awake in the dark; they warm as her fingers come near (the temptation is beautiful)
         # and light her glove from below, then dim in her closed hand
-        near = smoothstep(3612, 3646, f) * (1 - smoothstep(3650, 3668, f))
+        near = smoothstep(3612, 3646, f) * (1 - smoothstep(3650, 3668, f)) if self.HAND else 0.0
         awake = 0.05 + 0.03 * math.sin(t * 2.3) + 0.45 * near
         XP = np.zeros(64)
         ring_xp(XP, ring_c, rows, glow=awake)

@@ -1,10 +1,36 @@
-# >>> HEROINE-v3 (2026-09-27, lane `heroine`, branch claude/v3-heroine): STATE AT 01:10Z (WIP) <<<
+# >>> HEROINE-v3 REPORT (2026-09-27 ~01:15Z, lane `heroine`, code on branch claude/v3-heroine) <<<
 
-**Read with BIBLE_V3 REVISION 1** (director, 00:40Z): H1 re-key (B7: face never lit or in focus; tinder, gloves,
-sparks, breath, scarf; head a rim-lit silhouette at most); FIRE TEST = Bag End (the Ring on the tip of her steel IN
-her beacon, unmarked, letters awake, not even warm; she cannot let it fall); Ring close-ups go to a Blender bake-off
-(`ring.py` = fallback), so this lane does hands, pose and light; H3 (hand forced open) is optional/last; H5 dead
-ember and H4 climb stay.
+**What it is.** (1) **H1 RE-KEYED** (BIBLE_V3 REVISION 1, red-team B7) and rendered in full: the accepted v2b flint take
+with her hands in leather gloves and her head a rim-lit silhouette at every phase (no lit face anywhere), src
+1200-1439 -> `renders/hills_v3`, 240 JPEGs on branch `claude/render-h1-v3-rekey` (`render.py --shot beacon_v3`).
+(2) **Risk test #5 (people)** stills: B THE DEAD EMBER (H5), C THE FIRE TEST as Bag End (H2), C THE FIND (H2); code in
+`shots/hills/heroine_v3.py` on a fork of the heroine tracer (`hsdf3.py`) so nothing accepted can change.
+Sheets: `review/v3/heroine_v3_sheet1.jpg`, `heroine_v3_sheet2.jpg`, `heroine_v3_sheet3.jpg` (final stills),
+`heroine_v3_h1_contact.jpg` (the re-keyed take, every 12th frame).
+
+**Verdicts against the fallbacks.**
+* H1 re-key: PASS (a re-key, not a crop: the composition, timing and every other element are the accepted take).
+* FIRE TEST (Bag End): PASS. The Ring lies on the tip of her steel in the flames, balanced, gold and unmarked, its
+  letters burning; her gloved fist holds it there (tremble, one dip toward the coals, drawn back). Beats its fallback.
+* DEAD EMBER: PASS with notes. Seen high on her left, looking into the clay fire-pot (her head above frame): the lid
+  off, one red eye in a char crust, her breath, the eye greying to ash. Beats its fallback on legibility.
+* FIND: SPLIT. The band in the melted hollow, found by the strike's flash and faintly awake in the dark: PASS (and
+  it is the bible's fallback image). Her gloved hand closing on it: FAIL (at the reach the glove silhouette breaks
+  into a claw) -> FALLBACK taken: the band in the hollow, then cut to her closed fist.
+* H3 (hand forced open): not attempted (REVISION 1: optional, last). H4 climb, H6 silhouettes: not started.
+
+**Remaining weaknesses.** Glove fingers a touch thick and smooth at 1:1 (inflate 0.9 mm; a seam would help); the
+pot is CG-clean (no wobble, chips or soot streaks); the frozen melt pool is pure black; the Ring here is ring.py's
+band (the Blender bake-off may replace it); H1 keeps the v2b timing (the v3 retime waits on the bar maps).
+
+**RENDER_SPEC (for the director; one 4-core box per job, 2 processes x 2 workers, ship jpg):**
+* `cloud/jobs/h1_v3_rekey.json`: DONE on this box (see above).
+* `cloud/jobs/h2_firetest_c.json`: C 4040-4183 (144 fr) -> `renders/heroine_C` (`--shot firetest`), ~60-90 s/frame/
+  core, ~45 min. Ready.
+* `cloud/jobs/h5_deadember_b.json`: B 960-1199 (240 fr) -> `renders/heroine_B` (`--shot deadember`), ~1 h. Ready after
+  one look at a 24-frame motion test (the lid lift 984-1024 has not been seen in motion).
+* `cloud/jobs/h2_find_c.json`: C 3557-3620 (64 fr) -> `renders/heroine_C` (`--shot find`), the fallback version
+  (`Find.HAND = False`: the flash reveal, the sparks dying, the letters' glow; no hand), ~25 min. Ready.
 
 **Review sheet:** `review/v3/heroine_v3_sheet1.jpg` (H1 v2b vs re-key; H1 re-key strike + roar; B dead ember lid-off
 and greyed).
