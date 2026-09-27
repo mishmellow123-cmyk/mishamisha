@@ -3,7 +3,7 @@ The hour-5 critic (`_local_logs/review/h5/H5_CRITIC.md`) is accepted in the main
 1. **HUMANS: silhouette or gloved hands only.** Never a lit face, never a bare hand close. No modern wardrobe: a hood or wool cowl, not a
    knit beanie; the red scarf stays, as a woven wool shawl. Un-accept H1 v2b. Thin leather gloves. Flint sparks short, orange, falling and
    curving. The flinch (f1366): head turned away, forearm across the face, weight back. THE CROSSING: the uphill bearer's feet are planted in
-   frame (no dangling legs). Bag End: TONGS (as in the book), no "nail file", no glow fringe round the hand. Any figure that must be read is
+   frame (no dangling legs). The fire test (C15, at her beacon): the Ring on the tip of her C-shaped fire-steel, the one she strikes with (tongs only if a shot is ever at a hearth, as in the book); never the flat "nail file" bar; no glow fringe round the hand. Any figure that must be read is
    ≥40 px; B's locked frame keeps H6's 60–120 px.
 2. **ONE RULE FOR REAL-WORLD SIGNALS: LANDSCAPES, NOT LANDMARKS.** No identifiable real place, monument, building type, product or regional
    dress in any frame; variety comes from biome, weather, light and hour.
@@ -27,7 +27,7 @@ The hour-5 critic (`_local_logs/review/h5/H5_CRITIC.md`) is accepted in the main
      superseded.
 4. **C · THE FIRE REMAINS** replaces C23 THE EYE FALLS: bars 70–71 (f5520–5680), and it is no longer optional.
    - Out of the unmaking's white, the fire everyone lit settles, warm and steady, on the council stone where the Ring was. Every torch dips
-     into it.
+     into it. Bar 70 = the council plate (ACCORD-v3: the white settles to a steady warm fire on the stone; the torches dip and turn away); bar 71 = the burn-through to the map (MAP).
    - A burn-through to the map: from the ring of stones many roads run outward, each a small moving flame, and hearth glyphs kindle where
      they arrive (the Road, reversed). Without this, the melt reads as "we destroyed the fire".
    - The melt: darker, a crisp drop, letters that stay letters until they go out, no donut rim. The numba fallback becomes an ink ring on
