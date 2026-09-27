@@ -1,5 +1,72 @@
 # MONTAGE-3D — notes
 
+## >>> STATE AT HANDOFF (MONTAGE-3D-4 -> successor, 27 Sep ~20:40Z) <<<
+**Brief:** C's Ring close-ups, gloved hands included (brief3_MONTAGE3D2.md + COMMON.md): C14 THE FIND, C15 THE FIRE TEST,
+C22 THE MELT. Cycles, canonical script of fire (`assets/ring/`), delivery `renders/ring_C/f_%05d` (C numbering; EDIT's
+`ring()` reads it) + `renders/ring_C_mask/` (the melt's band mask for ACCORD's AC3). **JOB READY NOT SENT YET**: round 2
+still has the FIXes below. `renders/ring_C/` is EMPTY (no finals). No process of this lane is running.
+
+**SCOPE CHANGE (director, ~20:30Z): ALL of C14 is now ours.** HEROINE's two H1-C approaches failed their gate. Build C14
+(2960-3359) as ONE hands-only sequence in Blender, with the same gloved hands and C-steel as C15, on H1's master timing
+(C numbering): strike 1 = 2980 (bar 38 b2), strike 2 = 3009 (+29; its spark shows the band = find_a), the hand closes
+3060, opens 3090, the vision 3090-3138, the fist 3140 (find_b), strike 3 = 3178 (bar 40 b3.9), the long blow ~3204-3300,
+the catch = 3316 (bar 42 b2.8), the roar = 3360 (= C15's first frame). So NEW shots: strike 1 (2960-2999) and strike 3 ->
+blow -> catch (3150-3359): her gloved fists, the C-steel striking a flint, short orange falling sparks into the tinder
+in her basket, her breath, the catch; hands, sparks, tinder only (no face, no bare hand). Tell EDIT (EDIT-2) when they
+exist: its C14 rows 2960-3000 and 3150-3360 still point at HEROINE's h1_v3h5.
+
+**Files:** `ringc.py` (RING_SHOT=find_a|find_b|fire|melt; all four implemented), `glove.py` (the leather glove rig),
+`render.py` (driver; `post_aux` hook; PREP_ONLY_FRAMES preps only the frames rendered, +-1; farm-safe: no Mac GPU lock
+and a per-range job tag under MT3D_BLENDER). Jobs: `cloud/jobs/ringC_{find_a_1-3,find_b_1-3,fire_1-8,melt_1-6}.json`
+(<= 30 frames each, Cycles 128 spp, MT3D_NOISE 0.03; the melt jobs also ship ring_C_mask) and `ringC_look.json` (4 lanes,
+one per shot: all look-dev frames on ONE GPU node, one kernel JIT). THE FARM (COMMON.md), from ~/mishamisha, PUSH FIRST:
+`python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/ringC_look.json --frames 3017,3112,... --test <K>` ->
+`renders/_farmtest/ringC_look/{ring_C,ring_C_mask}/`. farm.py picks the h100 GPU pool itself (the command names
+MT3D_BLENDER). Measured: 12-27 s/frame full res at 128 spp (23 frames in 5.9 min, $0.74; 29 in 13 min when queued).
+Finals ONLY after the director's OK: `farm.py the-long-dawn/cloud/jobs/ringC_<shot>_<k>.json --nodes 1-3`.
+Round-2 look frames (the latest, commit fd59b71): `renders/_farmtest/ringC_look/ring_C/f_{3017,3080,3112,3141,3147,3372,
+3450,3488,3530,3572,3580,3586,3597,5362,5363,5366,5400,5424,5438,5470,5500}.jpg`.
+
+**Verdicts, round 2 (farm, full res):**
+* **find_a 3000-3079: PASS** (3009 flash reveal, 3017 sparks on the snow and the ice, the band in a clean pit with a
+  level meltwater disc (the 0.6 mm step that drew a double jagged glint is fixed), the glove low from the left 3033-3060).
+* **find_b 3080-3149: vision PASS, fist FIX.** 3112: the band in the cupped leather palm, five forge-towers of C6's kind
+  glowing on its far inner face and bowing toward her: reads. FIX: the fist frames (3080-3084, 3141-3149) are near black:
+  raise `fill` (opts, now 1.3; try ~6) and/or lighten the leather here; the fist must read as a gloved fist.
+* **fire 3360-3599: the hang and the tip PASS, the catch FAIL.** 3450/3488/3530: the band hangs on the C-steel's long arm
+  in the flames, letters awake, the lip; it slides to the lip and holds; the arm's end glows dull red; her right fist a
+  dark leather shape (matte now). FIX 1: at 3372 (the roar) a lump of her fist pokes in lower left: start the grip off
+  frame (`grip()` before 3384: offset -0.11 -> ~-0.25). FIX 2 (the big one): the catch 3560-3599 = her LEFT hand huge,
+  soft and rubbery in the foreground (a DOLL read). Restage: keep the lens on the steel as she draws it out toward frame
+  left; her left glove comes in from the left edge at the band's scale, in focus, dark and fire-rimmed, and plucks the band
+  off the lip, closing on it (or tip it into a palm framed small and sharp). FIX 3: the backdrop is a flat bright flame
+  wall; break it with darker gaps and more depth (fewer, dimmer bgfire cards; smoke).
+* **melt 5360-5519: the H5 points PASS** (dark, never overexposed; a crisp 3-frame drop from above + a bounce; the letters
+  stay letters (wake 5368, flare 5420, out 5440) while the far side runs into the bead; never a flat ring, no donut; white
+  from 5476 to near-white by 5519). FIX: (a) the bead has a pinched crease on its right side (the arc-to-dome mapping in
+  `_melt_positions` seams at us = +-1: blend the end caps into the dome); (b) the molten metal reads as orange candy
+  (lower `hot`, keep it a mirror of the fire: gold, not orange plastic); (c) the stone reads as flat asphalt: char, a
+  crack, ash, one or two coals in the foreground.
+
+**Next steps, in order:** (1) the FIXes above (find_b fill; fire grip start, the catch restage, the backdrop; melt bead
+crease, hot, stone), one farm `--test` round on `ringC_look.json`, look at every frame at full res + crops; (2) one
+full-res check still per shot -> SendMessage main `JOB READY ringC_<shot>_1..N: ...` with the stills (est. 20 jobs, 550
+frames, ~2.5-4 GPU-h on the farm); (3) the new C14 hands shots (strike 1, strike 3 -> blow -> catch) in ringc.py as new
+RING_SHOTs with their own jobs; (4) after finals land: check every frame (decode, flicker, a contact sheet), tell ACCORD
+(AC3 uses `renders/ring_C/f_05360-05519` + `renders/ring_C_mask/`) and EDIT; delete `renders/_farmtest/ringC_look/`.
+
+**For RUN-C (R13b: the Ring's fall over the ink range strikes the snow beside the old cairn on her summit, C 2900):**
+* The "old cairn" is the BEACON's dry-stone base (she kneels there to strike), NOT keeper.CAIRN (B's counting cairn is
+  2.7 m from her knee). The hollow (the strike point): `keeper.shelf_pt(0.45, 0.45)`, on the snow at the foot of the
+  beacon's base on her side: ~0.41 m from KNEEL = shelf_pt(0.05, 0.35) (by her knee), ~0.47 m from BEACON =
+  shelf_pt(0.9, 0.6). The pit it melts: 3.6 cm radius at the top, 1.2 cm deep, a 1.9 cm disc of refrozen meltwater.
+* The moon: use keeper's own (world.MOON_DIR = s1's (-0.80, 0.36, 0.48): screen-left of keeper's lens, 21 deg up). The
+  find conforms to it: find_a is shot INTO the moon (it sits ~16 deg right of the lens axis), cheated down to 15 deg in
+  the close-up so the pit's rim shades the band until the flash; colour (0.55, 0.66, 1.0). find_a's local frame (x right,
+  y into frame, z up) is free: turn it so +y faces the moon's bearing. TODO for us: move find_a's `flash_pos` (now
+  (-0.20, 0.05, 0.25), up-left beyond) to the beacon's actual side in that frame (about left and toward the lens).
+
+
 ## >>> MONTAGE-MELT (C22 THE MELT, C 5360-5519; lane split off MONTAGE-3D-4 by the director, 27 Sep ~19:15Z) <<<
 * **STATE (20:40Z, before the usage gap; resume ~23:30Z):** `meltc.py` BUILT and committed (2085ecf). Full-res key
   frames rendering on the farm (`cache/meltc_farm_k1.log`) -> `renders/_farmtest/meltC/ring_C/f_{05363,05400,05421,
