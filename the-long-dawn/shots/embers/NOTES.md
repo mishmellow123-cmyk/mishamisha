@@ -1,3 +1,49 @@
+# >>> EMBERS-2 PAUSED 27 Sep ~16:40Z (director: usage window end). RESUME 20:00Z: continue the EDGE/BRINK pass <<<
+EXACT STATE (source committed; NOTHING rendering; the edge jobs are still HELD, not yet updated):
+* DONE in code (edge.py / scene_b.py / a3.py), lab-verified at 0.3 scale:
+  - THE CRATER is a deep BOWL (DEPTH 30, profile BOWL_P 2.3, molten lake LAKE 4.5 at FLOOR_Y) whose LIP RUNS AT THE
+    FORGES' FEET (`_set_rim(towers)`: each tower's innermost foot point - 0.45; torn bays between them), so the towers
+    stand on spurs of the lip. Wall: charcoal under the lip, blazing toward the lake (u**1.5), fissures, ledges, and
+    MOLTEN VEINS running down into the lake (they converge in perspective: this is what makes the bowl read). Lake:
+    white gold under drifting dark rafts. Glowing pit air (`AIR_E` blobs) + H/H2 glows. The old thin lip line and the
+    edge-glow band are gone; the plain is dark crust lit by the fire (`fire_light`) with slabs + seams near the lip.
+  - `Chunks`: rigid crust slabs break off the lip under the gilded towers on the beat from bar 26 and all at once at
+    2440, tumbling into the pit (they join the occluder). `PitEmbers` rise out of the lake. Heat shimmer: `_shimmer`
+    in post (screen-space refraction masked to the bowl's opening + the column above it).
+  - The fire SETTLES INTO THE CRATER'S MOUTH (a3 fire_centre: y -> -12 over 1846-1910, +5 at the brink) so the bowl,
+    the fire and the far towers fit one low frame.
+  - GILDING (scene_b._gold_runs): on every beat liquid gold pours from the crown in rivulets with bright heads,
+    staggered like drips, over a gilt skin; gilded towers lose 60% of the fire's light (the gold carries them), the
+    farthest go dark (lit x0.1, heat x0.1). `_gild` starts at the first downbeat. NOT YET CHECKED IN A CROP.
+  - The falling crown's normals turn with it (`tower_post_n` hook in scene_b Towers.prepare). Dust x0.3 in THE EDGE.
+* NOT DONE: edge.camera still has the OLD orbit (r46 y30 looking down). The lab camera findings (scratchpad e4/,
+  a6.jpg): the bowl reads from LOW and CLOSE: r 25-28, y -8/-9 (5-6 above ground), ty ~ -18/-20, hfov 90-96,
+  with the near towers as black framing silhouettes and the near lip + near ground dark in the lower third.
+  Best so far: 28,3.09,-8,-18,90 (r,az rel ALPHA_C,y,ty,hf) but there the giants hide behind the near towers.
+  A geometry scan (e4/scan.py) says the giants stand clear on opposite sides with a clear centre at az -1.0
+  (r 28-30, hf 90: giants at x 0.30 and 0.87) or az -1.56 / -2.46 (hf 80). Test those next.
+NEXT STEPS:
+ 1. Restart the lab (e4/labsrv.py, ~2.5 min to build; then e4/req.sh NAME json renders in seconds; see its
+    docstring) and pick the orbit: ~0.25 rad, steady, centred on the best az above; lower third dark (text band
+    y 0.70-0.87) during T7/T8 (1848-2060). Then write it into edge.camera (THE EDGE) and add the CUT at 1840 to
+    render.SHOTS_V3['A3'] ((1760,1840),(1840,2640)...): A6's last frames are unaffected.
+ 2. Check the gilding in a 0.6-scale crop of a far gilded tower (towers 1, 7, 2, 6 gilded; 0, 3, 5 dark).
+ 3. THE BRINK staging: updraft (keep), the lip giving way at 2440 (Chunks burst), HERO crown 2480-2520 (tower 7,
+    bigger in frame: camera ~35-55 from it, hf ~50-60, visible ~24 frames tumbling into the glare), then tip over the
+    rim and fall after it to white at 2640.
+ 4. Check stills (4-5, full res) -> review/embers_A3_check/edge2/ -> SendMessage main -> JOB READY for
+    embers_A3_edge + embers_A3_alt_edge (1840-2639).
+ 5. Then A9, A10, A16, A17 (the crater is visible in A16/A17 too: check it), then C's shots.
+
+# STATE AT HANDOFF (EMBERS-2 takes over, 27 Sep ~15:15Z)
+* A5 (1040-1439) + A6 MAIN (1440-1839) are DONE in the cloud and imported: renders/embers_A3 has 1040-1839 (jpg);
+  renders/embers_A3_alt_codedtowers has the ALT 1440-1839. Nothing of A7+ is rendered.
+* HELD: cloud/jobs/embers_A3_edge.json + embers_A3_alt_edge.json (1840-2639) wait for the EDGE/BRINK pass below.
+* Order of work (director, brief2): (1) EDGE/BRINK pass (bowl geography, liquid gilding, crumbling rim, hero
+  crown) -> 4-5 check stills -> JOB READY for MAIN+ALT; (2) A9, A10, A16, A17; (3) C: E15 (+MAP), E5-C FORGING
+  (many towers, no pair, canonical Ring script from assets/ring/), E11, E12, E8-C, E13a -> renders/embers_C3.
+* Cloud jobs that render E1 GLYPHS need `apt-get install -y fonts-noto-core fonts-noto-cjk` in their setup.
+
 # >>> PAUSED 27 Sep ~11:55Z (director: usage at the window's end). RESUME 15:00Z: the EDGE/BRINK pass <<<
 
 ## DIRECTOR'S NOTES (resume_notes/embers.txt, verbatim) -- apply these first

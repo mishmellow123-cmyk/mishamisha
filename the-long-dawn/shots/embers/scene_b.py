@@ -876,18 +876,32 @@ class TowersV1:
 
 
 C_MOLTEN = np.array([1.0, 0.74, 0.28])
+C_GOLD = np.array([1.0, 0.8, 0.42])
+C_GOLD_HOT = np.array([1.0, 0.93, 0.72])
 
 
 def _gold_runs(pl, t, g, fside, face):
-    """v3 A (THE EDGE): molten gold running down a gilded tower's fire-facing face -- rivulets that stream downward
-    over a gilt skin (radiance, added to the crust's own)"""
-    q = pl * np.array([1.6, 0.11, 1.6]) + np.array([0.0, 0.28 * t / 10.0, 0.0])
-    f = vnoise(q, 1.0, (7.1, 0.0, 3.3), 2)[:, 0]
-    runs = smoothstep(0.15, 0.55, f)
-    skin = 0.18 + 0.82 * runs
+    """v3 A (THE EDGE): on every surge liquid gold pours from the crown and runs down the fire-facing face in
+    rivulets, each with a bright bead at its head, staggered like drips; behind them the face stays gilt (a gleaming
+    skin that thickens as the race goes on). Radiance, added to the crust's own."""
+    import bisect
+    dtop = 66.0 - pl[:, 1]
+    beats = getattr(SCHED, 'beats', None) or []
+    j = bisect.bisect_right(beats, t) - 1
+    age = (t - beats[j]) if j >= 0 else 99.0
+    n = vnoise(np.stack([pl[:, 2] * 1.25, pl[:, 0] * 0.55, np.zeros(len(pl), pl.dtype)], 1), 1.0, (7.1, 0.0, 3.3), 2)[:, 0]
+    riv = smoothstep(0.12, 0.42, n)
+    v = 1.0 + 1.4 * smoothstep(-0.4, 0.4, vnoise(np.stack([pl[:, 2] * 0.45, pl[:, 0] * 0.3, np.zeros(len(pl), pl.dtype)], 1),
+                                                   1.0, (2.3, 5.0, 1.7), 1)[:, 0])
+    front = v * age
+    behind = smoothstep(0.6, -0.6, dtop - front)
+    fresh = math.exp(-age / 16.0)
+    head = np.exp(-((dtop - front) / 1.1) ** 2) * fresh
+    skin = 0.22 + 0.3 * smoothstep(-0.2, 0.3, n)
+    run = riv * (0.35 + 1.1 * behind * (0.45 + 0.55 * fresh))
     fs = np.clip(fside, 0, 2.5) if np.ndim(fside) else fside
-    L = 0.55 * g * skin * fs * face
-    return C_MOLTEN[None, :] * L[:, None]
+    k = g * fs * face
+    return C_GOLD[None, :] * (k * (skin + run))[:, None] + C_GOLD_HOT[None, :] * (k * 2.6 * riv * head)[:, None]
 
 
 def _tw_colours(T):
@@ -1104,6 +1118,8 @@ class Towers:
                                    N=_krot(self.nworld(i, g['n'][idx]), t), pl=pl)
                 if SCHED is not None and hasattr(SCHED, 'tower_post'):
                     pp = parts[kind]
+                    if hasattr(SCHED, 'tower_post_n'):
+                        pp['N'] = SCHED.tower_post_n(self, i, pp['N'], pp['P'], t)     # (the falling crown turns)
                     pp['P0'] = SCHED.tower_post(self, i, pp['P0'], ctx.t0)
                     pp['P1'] = SCHED.tower_post(self, i, pp['P1'], ctx.t1)
                     pp['P'] = SCHED.tower_post(self, i, pp['P'], t)
@@ -1194,10 +1210,10 @@ class Towers:
                     crown = np.exp(-np.maximum(dtop - 0.25, 0.0) / 1.1) * (0.75 + 0.25 * np.sin(2.1 * t + 7.0 * ph))
                 keep = ftop * smoothstep(-0.3, 0.4, yl)              # thin at the very top; nothing underground
                 heat = (1 + 2.5 * wave) * surge
-                gild = 0.0
+                gild, dark = 0.0, 0.0
                 if SCHED is not None and hasattr(SCHED, 'gild'):
                     gild, dark = SCHED.gild(i, t)
-                    heat = heat * (1.0 - 0.75 * dark)
+                    heat = heat * (1.0 - 0.9 * dark)
                 if FS:
                     # v3 (A): lit only on the face turned to the fire, black toward the others; the fire side is
                     # alive (director: brighter joints and vents, heat shimmer, crust that catches the light)
@@ -1242,6 +1258,9 @@ class Towers:
                     if FS:
                         lit = lit * FIRE_SIDE_LIT * 0.5 * (0.75 + 0.5 * rnd)    # charcoal: a dark sheen, fine grain
                     lit = lit * np.clip(hot / 0.3, 0, 1) ** 2          # roofs (hot 0.2) stay dark tile
+                    if gild > 0 or dark > 0:
+                        # (A, THE EDGE) the gilded wear gold, not the fire's light; the farthest go dark
+                        lit = lit * (1.0 - 0.6 * min(gild, 1.0)) * (1.0 - 0.9 * dark)
                     face = smoothstep(-0.02, 0.1, ndv) * keep
                     colE = (col * L[:, None] + lcol[None, :] * lit[:, None]) * face[:, None]
                     if SCHED is not None and hasattr(SCHED, 'back_light'):

@@ -18,24 +18,72 @@ from core import Camera, smoothstep, smootherstep, lerp, catmull, rng, vnoise, e
 import scene_b as B
 import a3 as A
 
-R_RIM = 13.6          # the crater's lip (the forges stand on it: their bases are at 16.8-19.2)
-WALL = 5.0            # the wall falls over this much radius
-DEPTH = 24.0          # the molten floor, below the ground
-FLOOR_Y = B.GROUND - DEPTH
+R_RIM = 15.2          # the lip's mean radius; it runs at the forges' feet (_set_rim), so they stand ON it
+DEPTH = 30.0          # the bowl's bottom, below the ground (a deep pit: the fall at the brink is long)
+LAKE = 4.5            # the molten lake fills the bowl's bottom this deep
+BOWL_P = 2.3          # the wall's profile: steep under the lip, flattening into the lake
+FLOOR_Y = B.GROUND - DEPTH + LAKE          # the lake's surface
+S_LAKE = (LAKE / DEPTH) ** (1.0 / BOWL_P)  # the lake's radius / the lip's
 GILD_W = {2: 1.0, 6: 1.0, 1: 0.85, 4: 0.9, 7: 0.8, 0: 0.15, 3: 0.2, 5: 0.1}   # the nearest (gilded) vs the farthest
-FALL_TOWER = 7        # the gilded tower whose crown breaks off (never a giant's): on the far rim, in the orbit's view
+FALL_TOWER = 7        # the gilded tower whose crown breaks off (never a giant's)
 C_MOLT = np.array([1.0, 0.72, 0.3])
+AIR_E = 300.0
+_RIM = {}             # the lip's anchors at the forges' feet (set by _set_rim when the crater is built)
+
+
+def _set_rim(towers):
+    """the lip runs just inside each forge's foot (its innermost point at ground level at full height), so every
+    tower stands on a spur of the lip, and the rim is torn back into bays between them"""
+    aa, rr, ww = [], [], []
+    h_of = lambda i: towers.height(i, A.T_WHITE - 1)
+    lean0 = towers.lean
+    towers.lean = 0.0
+    for i in range(8):
+        h = h_of(i)
+        p = np.concatenate([towers.G[i][k]['p'] for k in range(5) if len(towers.G[i][k]['p'])])
+        y0 = towers.TW2.HMAX - h
+        p = p[(p[:, 1] >= y0) & (p[:, 1] < y0 + 3.0)]
+        w = towers.world(i, p.astype(np.float32), h)
+        r = np.hypot(w[:, 0], w[:, 2])
+        a = np.arctan2(w[:, 2], w[:, 0])
+        da = (a - towers.ang[i] + np.pi) % (2 * np.pi) - np.pi
+        aa.append(float(towers.ang[i]))
+        rr.append(float(r.min()) - 0.45)
+        ww.append(float(np.abs(da).max()))
+    towers.lean = lean0
+    _RIM.update(a=np.array(aa), r=np.array(rr), w=np.array(ww))
+
+
+def _wrap(d):
+    return (d + np.pi) % (2 * np.pi) - np.pi
+
+
+def _near_foot(a):
+    """1 at a forge's foot, 0 in the bays between them"""
+    a = np.asarray(a, np.float64)
+    d = _wrap(a[..., None] - _RIM['a'])
+    return np.exp(-(d / (_RIM['w'] * 1.15)) ** 4).max(-1)
 
 
 def rim_r(a):
-    """the crater's lip radius at azimuth a: irregular, torn (a perfect circle read as a well)"""
-    return R_RIM * (1.0 + 0.07 * np.sin(3 * a + 1.3) + 0.045 * np.sin(5 * a + 0.4) + 0.03 * np.sin(11 * a + 2.1)
-                    + 0.015 * np.sin(23 * a + 0.7))
+    """the lip's radius at azimuth a: spurs at the forges' feet, torn bays between them (never a clean circle)"""
+    a = np.asarray(a, np.float64)
+    torn = (0.035 * np.sin(7 * a + 1.3) + 0.024 * np.sin(12 * a + 0.4) + 0.015 * np.sin(23 * a + 2.1)
+            + 0.008 * np.sin(47 * a + 0.7) + 0.004 * np.sin(97 * a + 1.9))
+    if not _RIM:
+        return R_RIM * (1.0 + torn)
+    d = _wrap(a[..., None] - _RIM['a'])
+    w = np.exp(25.0 * (np.cos(d) - 1.0))
+    base = (w * _RIM['r']).sum(-1) / np.maximum(w.sum(-1), 1e-12)
+    near = _near_foot(a)
+    bay = 2.4 * (1.0 - near) * (0.75 + 0.25 * np.sin(5 * a + 0.9))
+    return (base + bay) * (1.0 + torn * (1.0 - 0.9 * near))
 
 
 def crater_y(r, a=None):
     rr = R_RIM if a is None else rim_r(a)
-    return B.GROUND - DEPTH * smoothstep(rr, rr - WALL, r)
+    s = np.clip(np.asarray(r, np.float64) / rr, 0.0, 1.0)
+    return np.maximum(B.GROUND - DEPTH * (1.0 - s ** BOWL_P), FLOOR_Y)
 
 
 # ---------------------------------------------------------------- schedule (added to a3.A3Sched)
@@ -44,11 +92,12 @@ def _gild(self, i, t):
     if i >= 8 or t < A.T_EDGE - 5:
         return 0.0, (0.35 * self.race(t) if i >= 8 else 0.0)
     w = GILD_W[i]
-    base = float(smoothstep(A.T_EDGE, A.T_EDGE + 320, t))
+    # the gold pours on every surge from the first downbeat (scene_b._gold_runs); the skin thickens as it goes on
+    base = float(smoothstep(A.T_EDGE, A.T_EDGE + 40, t)) * (0.7 + 0.3 * float(smoothstep(A.T_EDGE, A.T_BRINK, t)))
     if t >= A.T_LIGHT:
         base *= 1.0 - 0.8 * float(smoothstep(A.T_STOP, A.T_HOLDS, t))        # the gilding cools
-    g = (w * base * (1.0 + 0.9 * self.beat_pulse(t))) if w >= 0.5 else 0.0
-    dark = (1.0 - w) * float(smoothstep(A.T_EDGE + 80, A.T_BRINK, t)) if w < 0.5 else 0.0
+    g = (w * base * (1.0 + 0.35 * self.beat_pulse(t))) if w >= 0.5 else 0.0
+    dark = (1.0 - w) * float(smoothstep(A.T_EDGE + 20, A.T_EDGE + 200, t)) if w < 0.5 else 0.0
     if t >= A.T_LIGHT:
         dark *= 1.0 - float(smoothstep(A.T_OPEN_OTHERS, A.T_HOLDS, t))
     return g, dark
@@ -89,6 +138,20 @@ def _tower_post(self, towers, i, P, tq):
     R, pivot, off = fc.state(tq)
     P[above] = ((P[above] - pivot) @ R.T + pivot + off).astype(P.dtype)
     return P
+
+
+def _tower_post_n(self, towers, i, N, P, tq):
+    """the falling crown's normals turn with it (its lit face follows the fire as it tumbles)"""
+    if i != FALL_TOWER or tq < A.T_CROWN or tq >= A.T_LIGHT or _CROWN[0] is None:
+        return N
+    fc = _CROWN[0]
+    above = P[:, 1] > fc.cut_y(tq)
+    if not above.any():
+        return N
+    R, _, _ = fc.state(tq)
+    N = N.copy()
+    N[above] = (N[above] @ R.T).astype(N.dtype)
+    return N
 
 
 def _shutter(self, i, t, pl):
@@ -143,24 +206,19 @@ def _extra_occluders(self, towers, ctx):
     cr = ctx.tl_crater if hasattr(ctx, 'tl_crater') else None
     if cr is None:
         return None
-    P, N, Ar = [], [], []
-    k = max(1, len(cr.w_p) // 160000)
-    P.append(cr.w_p[::k]); N.append(cr.w_n[::k])
-    Ar.append(np.full(len(cr.w_p[::k]), 1700.0 / len(cr.w_p) * k))
-    kp = max(1, len(cr.p_p) // 90000)
-    P.append(cr.p_p[::kp]); N.append(np.broadcast_to(np.array([0.0, 1.0, 0.0]), (len(cr.p_p[::kp]), 3)))
-    Ar.append(np.full(len(cr.p_p[::kp]), 6060.0 / len(cr.p_p) * kp))
-    G, x, fall = cr._ground(t)
-    keep = fall < 1.0
-    if keep.any():
-        P.append(G[keep]); N.append(np.broadcast_to(np.array([0.0, 1.0, 0.0]), (int(keep.sum()), 3)))
-        Ar.append(np.full(int(keep.sum()), np.pi * R_RIM ** 2 / len(G)))
-    P = np.concatenate(P).astype(np.float64)
-    return P, np.concatenate(N).astype(np.float64), np.concatenate(Ar).astype(np.float64), \
-        np.full(len(P), CRATER_ID, np.int32)
+    P, N, Ar = cr.occluders(t)
+    return P.astype(np.float64), N.astype(np.float64), Ar.astype(np.float64), np.full(len(P), CRATER_ID, np.int32)
+
+
+def _dust_k(self, t):
+    k = float(smoothstep(A.T_TOWERS, A.T_TOWERS + 80, t))
+    if A.T_EDGE <= t < A.T_WHITE:
+        k *= 1.0 - 0.7 * float(smoothstep(A.T_EDGE, A.T_EDGE + 30, t))
+    return k
 
 
 BEAT_F = 20.0
+A.A3Sched.dust_k = _dust_k
 A.A3Sched.extra_occluders = _extra_occluders
 A.A3Sched.vortex_shape = _vortex_shape
 A.A3Sched.shutter = _shutter
@@ -168,21 +226,30 @@ A.A3Sched.back_light = _back_light
 A.A3Sched.gild = _gild
 A.A3Sched.tower_lean = _tower_lean
 A.A3Sched.tower_post = _tower_post
+A.A3Sched.tower_post_n = _tower_post_n
 
 
 # ---------------------------------------------------------------- the crater
 
 class Crater:
-    def __init__(self, seed=909):
+    """THE EDGE's crater of fire: a deep bowl whose lip runs at the forges' feet. The ground inside the ring cracks
+    and falls away plate by plate (1840); the wall is ember rock, charcoal under the lip and hotter with depth, torn
+    by seams of fire; a lake of molten light churns at the bottom (dark rafts on white gold); heat and embers rise
+    out of it. The plain round it is dark crust lit by the fire above, fractured near the lip, and from bar 26 the
+    lip crumbles under the gilded towers: chunks of crust break off and tumble into the glow (Chunks)."""
+
+    def __init__(self, tl=None, seed=909):
+        if tl is not None and not _RIM:
+            _set_rim(tl.towers)
         r = rng(seed)
         # the ground inside the ring: plates that crack and fall away from the centre out
         n = 70000
         a = r.uniform(0, 2 * np.pi, n)
         rr = rim_r(a) * np.sqrt(r.random(n))
         self.g_p = np.stack([rr * np.cos(a), np.full(n, B.GROUND), rr * np.sin(a)], 1)
-        ns = 46
-        sr = R_RIM * np.sqrt(r.random(ns))
+        ns = 52
         sa = r.uniform(0, 2 * np.pi, ns)
+        sr = rim_r(sa) * np.sqrt(r.random(ns))
         seeds = np.stack([sr * np.cos(sa), sr * np.sin(sa)], 1)
         d = ((self.g_p[:, None, [0, 2]] - seeds[None, :, :]) ** 2).sum(-1)
         o = np.argsort(d, 1)
@@ -196,49 +263,80 @@ class Crater:
         self.c_spin = r.uniform(0.02, 0.06, ns)
         self.c_ctr = np.stack([seeds[:, 0], np.full(ns, B.GROUND), seeds[:, 1]], 1)
         self.g_E = r.lognormal(0, 0.4, n)
-        # the wall: ember rock with molten veins, lit from below (dense: a solid wall, not a wire basket)
-        m = 320000
+        # the wall, uniform over its surface (importance-sampled along the profile): ember rock, lit from below
+        m = 380000
+        sg = np.linspace(S_LAKE * 0.97, 1.0, 400)
+        dens = sg * np.sqrt(1.0 + (DEPTH * BOWL_P * sg ** (BOWL_P - 1.0) / R_RIM) ** 2)
+        cdf = np.concatenate([[0.0], np.cumsum(0.5 * (dens[1:] + dens[:-1]) * np.diff(sg))])
+        s = np.interp(r.random(m) * cdf[-1], cdf, sg)
         wa = r.uniform(0, 2 * np.pi, m)
-        wr = rim_r(wa) - WALL * r.random(m) ** 0.8
-        wy = crater_y(wr, wa) + r.normal(0, 0.25, m) + 0.9 * np.sin(5.0 * wa + 0.02 * wr * 40.0) * r.random(m)
-        self.w_p = np.stack([wr * np.cos(wa), wy, wr * np.sin(wa)], 1)
-        self.w_n = np.stack([-np.cos(wa), np.full(m, 0.6), -np.sin(wa)], 1)
+        R = rim_r(wa)
+        wr = s * R
+        wy = B.GROUND - DEPTH * (1.0 - s ** BOWL_P)
+        # knuckles of rock: the wall is not a smooth funnel
+        lump = vnoise(np.stack([wr * np.cos(wa), wy, wr * np.sin(wa)], 1) * 0.22, 1.0, (3.1, 0.7, 5.2), 3)[:, 0]
+        wr = wr * (1.0 + 0.05 * lump)
+        self.w_p = np.stack([wr * np.cos(wa), wy + 0.12 * r.normal(0, 1, m), wr * np.sin(wa)], 1)
+        slope = DEPTH * BOWL_P * s ** (BOWL_P - 1.0) / R
+        self.w_n = np.stack([-slope * np.cos(wa), np.ones(m), -slope * np.sin(wa)], 1)
         self.w_n /= np.linalg.norm(self.w_n, axis=1, keepdims=True)
-        vein = vnoise(self.w_p * np.array([0.35, 0.9, 0.35]), 1.0, (1.3, 2.2, 0.4), 2)[:, 0]
-        self.w_vein = np.exp(-(vein / 0.07) ** 2)
-        self.w_E = r.lognormal(0, 0.45, m)
+        self.w_u = np.clip((B.GROUND - wy) / (B.GROUND - FLOOR_Y), 0.0, 1.0)      # 0 at the lip, 1 at the lake
+        cr1 = vnoise(self.w_p * np.array([0.42, 0.75, 0.42]), 1.0, (1.3, 2.2, 0.4), 2)[:, 0]
+        cr2 = vnoise(self.w_p * np.array([1.1, 1.6, 1.1]), 1.0, (8.3, 1.2, 4.4), 1)[:, 0]
+        self.w_seam = np.exp(-(cr1 / 0.06) ** 2) + 0.45 * np.exp(-(cr2 / 0.05) ** 2)
+        self.w_plate = smoothstep(0.02, 0.2, np.abs(cr1))            # the crust plates between the fissures
+        # molten veins running down the wall into the lake (in perspective they converge on the bottom: a bowl)
+        arc = wa * R_RIM
+        vv = vnoise(np.stack([arc * 0.55, wy * 0.07, np.zeros(m)], 1), 1.0, (4.4, 9.1, 0.0), 2)[:, 0]
+        self.w_vein = np.exp(-(vv / 0.045) ** 2) * smoothstep(0.05, 0.5, self.w_u)
+        # ledges: the wall steps down in broken terraces, each lip lit from the lake below
+        led = (wy + 1.3 * lump) / 3.1
+        self.w_ledge = np.exp(-(((led % 1.0) - 0.15) / 0.07) ** 2)
+        self.w_E = r.lognormal(0, 0.22, m)
         self.w_a = wa
-        # the floor: molten, churning
-        k = 60000
+        self.w_s = s
+        # the lake: molten, churning; dark rafts of crust drift on white gold
+        k = 90000
         fa = r.uniform(0, 2 * np.pi, k)
-        fr_ = (rim_r(fa) - WALL + 1.5) * np.sqrt(r.random(k))
-        self.f_p = np.stack([fr_ * np.cos(fa), np.full(k, FLOOR_Y) + r.normal(0, 0.2, k), fr_ * np.sin(fa)], 1)
-        self.f_E = r.lognormal(0, 0.5, k)
-        # the plain the forges stand on: dark crust round the crater, lit where it meets the pit, fine cracks
-        g2 = 150000
+        fr_ = rim_r(fa) * S_LAKE * 1.03 * np.sqrt(r.random(k))
+        self.f_p = np.stack([fr_ * np.cos(fa), np.full(k, FLOOR_Y) + r.normal(0, 0.08, k), fr_ * np.sin(fa)], 1)
+        self.f_E = r.lognormal(0, 0.35, k)
+        self.f_r = fr_ / (rim_r(fa) * S_LAKE)
+        # the plain the forges stand on: dark crust lit by the fire above; near the lip it is fractured into slabs
+        # whose seams glow (a physical edge, not a line)
+        g2 = 190000
         pa = r.uniform(0, 2 * np.pi, g2)
-        pr = rim_r(pa) + (46.0 - rim_r(pa)) * r.random(g2) ** 1.6
-        self.p_p = np.stack([pr * np.cos(pa), np.full(g2, B.GROUND) + r.normal(0, 0.05, g2), pr * np.sin(pa)], 1)
+        rp = rim_r(pa)
+        pr = rp + 70.0 * r.random(g2) ** 2.2
+        self.p_p = np.stack([pr * np.cos(pa), np.full(g2, B.GROUND) + r.normal(0, 0.04, g2), pr * np.sin(pa)], 1)
+        self.p_d = pr - rp                                              # distance back from the lip
         cr = vnoise(self.p_p * np.array([0.3, 0.0, 0.3]), 1.0, (7.1, 0.0, 2.3), 2)[:, 0]
         self.p_crack = np.exp(-(cr / 0.05) ** 2)
-        self.p_r = pr - rim_r(pa) + R_RIM
+        # slabs along the lip: cells elongated along the rim, 1-2.5 units
+        u_ = pa * rp / 1.6
+        v_ = self.p_d / 1.1
+        cell = vnoise(np.stack([u_, v_ * 1.7, np.zeros(g2)], 1), 1.0, (2.9, 6.1, 0.0), 1)[:, 0]
+        self.p_slab = np.exp(-(cell / 0.07) ** 2) * np.exp(-self.p_d / 4.5)
         self.p_E = r.lognormal(0, 0.35, g2)
-        # the rim's lip: a line of heat along the edge
-        q = 9000
-        la = r.uniform(0, 2 * np.pi, q)
-        self.l_p = np.stack([rim_r(la) * np.cos(la), np.full(q, B.GROUND) + r.normal(0, 0.08, q), rim_r(la) * np.sin(la)], 1)
-        self.l_a = la
-        # debris crumbling off the rim under the gilded towers (from bar 26), and the collapse at 2440
+        # the plain's occluder: uniform in area out to r 95
+        go = 110000
+        oa = r.uniform(0, 2 * np.pi, go)
+        orr = np.sqrt(r.uniform(0, 1, go)) * 95.0
+        keep = orr > rim_r(oa)
+        self.o_p = np.stack([orr * np.cos(oa), np.full(go, B.GROUND), orr * np.sin(oa)], 1)[keep]
+        self.o_A = np.pi * 95.0 ** 2 / go
+        # fine debris off the rim under the gilded towers (from bar 26), and a burst at the collapse (2440)
         ndb = 9000
         self.d_tw = r.choice([i for i in range(8) if GILD_W[i] >= 0.5], ndb)
         self.d_t0 = np.where(r.random(ndb) < 0.55, r.uniform(A.T_CRUMBLE, A.T_WHITE, ndb),
                              A.T_RIM_GIVES + r.exponential(14.0, ndb))
         self.d_t0 = np.where((self.d_t0 > A.T_WHITE), A.T_WHITE - r.uniform(1, 30, ndb), self.d_t0)
-        self.d_off = r.normal(0, 1, (ndb, 3)) * np.array([2.2, 0.4, 2.2])
+        self.d_off = r.normal(0, 1, (ndb, 3)) * np.array([1.6, 0.3, 1.6])
         self.d_v = r.normal(0, 1, (ndb, 3)) * np.array([0.05, 0.03, 0.05]) + np.array([0.0, 0.05, 0.0])
         self.d_E = r.lognormal(0, 0.7, ndb)
         self.d_hot = r.random(ndb)
-        print('crater: ground', n, 'wall', m, 'floor', k)
+        self.chunks = Chunks(tl)
+        print('crater: ground', n, 'wall', m, 'lake', k, 'plain', g2)
 
     def _ground(self, t):
         P = self.g_p.copy()
@@ -255,13 +353,22 @@ class Crater:
         P[:, 1] -= fall
         return P, x, fall
 
+    def fire_light(self, P, t):
+        """the thinking fire's light on the ground (it hangs over the pit): cosine over distance squared"""
+        F = B.crown_centre(t)
+        d = F[None, :] - P
+        dist = np.linalg.norm(d, axis=1)
+        return np.clip(d[:, 1] / dist, 0, 1) / (1.0 + (dist / 14.0) ** 2)
+
     def emit(self, ctx, lp):
         t = ctx.t
         if t < A.T_EDGE - 2 or (A.T_WHITE <= t < A.T_LIGHT):
             return
         red = B.redness(t)
         open_k = float(smootherstep(A.T_EDGE + 4, A.T_EDGE + 46, t))
-        heat = 1.0 + 0.5 * B.beat_pulse(t)
+        heat = 1.0 + 0.45 * B.beat_pulse(t)
+        brink = float(smoothstep(A.T_BRINK, A.T_WHITE, t))
+        calm = float(smoothstep(A.T_STOP, A.T_HOLDS, t)) if t >= A.T_LIGHT else 0.0
         # the ground plates: cracks glow before they part, then the plates drop into the glow
         P0, _, _ = self._ground(ctx.t0)
         P1, x, fall = self._ground(ctx.t1)
@@ -271,53 +378,92 @@ class Crater:
         e = e * alive * heat
         col = look.blackbody(np.clip(0.4 + 0.25 * self.g_seam * pre + 0.15 * smoothstep(0, 10, fall), 0, 0.8))
         ctx.fr.splat(P0, P1, 0.05, e, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
+        # the plain round the crater: dark crust lit by the fire above; slabs along the lip with glowing seams,
+        # fine cracks of fire further back
+        fl = self.fire_light(self.p_p, t)
+        near = np.exp(-self.p_d / 6.0)
+        e = self.p_E * (0.004 + 0.55 * fl + (1.1 * self.p_slab + 0.22 * self.p_crack * near) * (0.35 + 0.65 * open_k)) * heat
+        col = look.blackbody(np.clip(0.33 + 0.22 * self.p_slab + 0.08 * self.p_crack, 0, 0.8))
+        col = col * (1 - 0.35 * red) + B.C_RED * 0.35 * red
+        ctx.fr.splat(self.p_p, self.p_p, 0.13, e, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
         if open_k <= 0:
             return
-        # the wall: lit from the molten floor below, veins of fire
-        up = smoothstep(B.GROUND, FLOOR_Y, self.w_p[:, 1])
-        e = self.w_E * (0.45 + 1.6 * up + 5.0 * self.w_vein * (0.45 + 0.55 * up)) * open_k * heat * 0.6
-        col = look.blackbody(np.clip(0.34 + 0.26 * up + 0.14 * self.w_vein, 0, 0.85))
-        col = col * (1 - 0.4 * red) + (B.C_RED * 0.6 + B.C_CRIMSON * 0.4) * 0.4 * red
-        ctx.fr.splat(self.w_p, self.w_p, 0.16, e, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
-        # the floor: molten fire, churning (the glare the towers lean over)
-        w = vnoise(self.f_p * 0.18 + np.array([0.0, 0.0, 0.01 * t]), 1.0, (0, 0, 0), 2)[:, 0]
-        e = self.f_E * (0.7 + 0.6 * w) * 16.0 * open_k * heat * (1 + 0.8 * float(smoothstep(A.T_BRINK, A.T_WHITE, t)))
-        col = look.blackbody(np.clip(0.6 + 0.12 * w, 0, 0.9))
-        ctx.fr.splat(self.f_p, self.f_p, 0.12, e, col, ctx.cam0, ctx.cam1, zref=30.0)
-        H = np.array([[0.0, FLOOR_Y + 2.0, 0.0]])
-        ctx.fr.splat(H, H, np.array([14.0]), np.array([9.0e4 * open_k * heat]), look.blackbody(0.6)[None, :],
+        # the wall: charcoal under the lip, hotter with depth, seams of fire, the terraces' lips lit from below
+        u = self.w_u
+        glow = u ** 1.5                                 # charcoal under the lip, blazing toward the lake
+        seam = self.w_seam
+        e = self.w_E * (0.01 + 3.2 * glow * (1.0 - 0.45 * self.w_plate) + seam * (0.08 + 7.0 * glow + 0.6 * u)
+                        + 1.2 * self.w_ledge * u + 6.0 * self.w_vein * (0.3 + u))
+        e = e * open_k * heat * (1.0 + 0.6 * brink) * (1.0 - 0.5 * calm)
+        col = look.blackbody(np.clip(0.3 + 0.42 * u ** 0.8 + 0.1 * seam * u, 0, 0.86))
+        col = col * (1 - 0.35 * red) + (B.C_RED * 0.6 + B.C_CRIMSON * 0.4) * 0.35 * red
+        # the fire, hanging just above the lip, lights the rock under the far lip from the front (cool gold over
+        # the lake's orange: the bowl's shape reads)
+        F = B.crown_centre(t)
+        dv = F[None, :] - self.w_p
+        dd = np.linalg.norm(dv, axis=1)
+        lam = np.clip((self.w_n * dv).sum(1) / np.maximum(dd, 1e-6), 0, 1)
+        fl = 0.9 * lam ** 1.5 / (1.0 + (dd / 12.0) ** 2) * (1.0 - u) * open_k
+        col = (col * e[:, None] + look.blackbody(0.6)[None, :] * (fl * self.w_E)[:, None]) / np.maximum(e + fl * self.w_E, 1e-9)[:, None]
+        e = e + fl * self.w_E
+        ctx.fr.splat(self.w_p, self.w_p, 0.24, e * 1.8, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
+        # the lake: white gold under drifting dark rafts, churning (the glare the towers lean over)
+        q = self.f_p * np.array([0.3, 0.0, 0.3])
+        drift = np.array([0.012 * t, 0.0, -0.007 * t])
+        w = vnoise(q + drift, 1.0, (0, 0, 0), 2)[:, 0]
+        raft = smoothstep(0.08, 0.2, vnoise(self.f_p * np.array([0.55, 0.0, 0.55]) + 1.6 * drift, 1.0, (5.5, 0.0, 1.1), 1)[:, 0])
+        edge = smoothstep(0.75, 1.03, self.f_r)
+        e = self.f_E * (0.6 + 0.5 * w) * (1.0 - 0.9 * raft) * 11.0 * open_k * heat * (1 + 1.2 * brink) * (1.0 - 0.5 * calm)
+        e = e * (1.0 - 0.5 * edge)
+        col = look.blackbody(np.clip(0.66 + 0.12 * w - 0.2 * raft, 0, 0.92))
+        ctx.fr.splat(self.f_p, self.f_p, 0.11, e, col, ctx.cam0, ctx.cam1, zref=30.0)
+        # the air in the pit, lit by the lake: soft blobs rising and flickering, brightest low down; seen over the
+        # near lip it is the glare the near rim and the towers stand against
+        if not hasattr(self, 'air_p'):
+            ra = rng(933)
+            na = 700
+            aa = ra.uniform(0, 2 * np.pi, na)
+            rr_ = rim_r(aa) * np.sqrt(ra.random(na)) * 0.95
+            self.air_p = np.stack([rr_ * np.cos(aa), ra.uniform(FLOOR_Y, B.GROUND + 14.0, na), rr_ * np.sin(aa)], 1)
+            self.air_r = ra.uniform(3.0, 7.0, na)
+            self.air_ph = ra.uniform(0, 2 * np.pi, na)
+            self.air_v = ra.uniform(0.03, 0.09, na)
+        ay = (self.air_p[:, 1] - FLOOR_Y + self.air_v * t) % (B.GROUND + 14.0 - FLOOR_Y) + FLOOR_Y
+        AP = np.stack([self.air_p[:, 0], ay, self.air_p[:, 2]], 1)
+        hu = np.clip((ay - FLOOR_Y) / (B.GROUND + 14.0 - FLOOR_Y), 0, 1)
+        fl = 0.75 + 0.25 * np.sin(0.21 * t + self.air_ph)
+        ea = AIR_E * (1.0 - hu) ** 1.3 * smoothstep(0.0, 0.08, hu) * fl * open_k * heat * (1 + 0.8 * brink) * (1 - 0.5 * calm)
+        ca = look.blackbody(np.clip(0.62 - 0.14 * hu, 0, 0.9))
+        ctx.fr.splat(AP, AP, self.air_r, ea, ca, ctx.cam0, ctx.cam1, profile=1, zref=30.0, rmax=900.0)
+        # the pit's light rising out of it: the glowing air over the bowl (the glare the towers stand against)
+        H = np.array([[0.0, FLOOR_Y + 3.0, 0.0]])
+        ctx.fr.splat(H, H, np.array([11.0]), np.array([5.0e4 * open_k * heat * (1 + brink)]), look.blackbody(0.62)[None, :],
                      ctx.cam0, ctx.cam1, profile=1, rmax=1400.0)
-        # the pit's glow rising out of it: warm air over the crater (the glare the towers lean over)
-        H2 = np.array([[0.0, B.GROUND + 2.0, 0.0]])
-        ctx.fr.splat(H2, H2, np.array([12.0]), np.array([6.0e4 * open_k * heat]), look.blackbody(0.56)[None, :],
+        H2 = np.array([[0.0, B.GROUND + 3.0, 0.0]])
+        ctx.fr.splat(H2, H2, np.array([15.0]), np.array([3.0e4 * open_k * heat * (1 + brink)]), look.blackbody(0.55)[None, :],
                      ctx.cam0, ctx.cam1, profile=1, rmax=1400.0)
-        # the plain round the crater: dark, its edge lit by the pit, fine cracks of fire
-        edge_l = np.exp(-(self.p_r - R_RIM) / 2.5) * open_k
-        e = self.p_E * (0.012 + 1.3 * edge_l + 0.25 * self.p_crack * (0.3 + 0.7 * np.exp(-(self.p_r - R_RIM) / 12.0))) * heat
-        col = look.blackbody(np.clip(0.33 + 0.2 * edge_l + 0.08 * self.p_crack, 0, 0.8))
-        ctx.fr.splat(self.p_p, self.p_p, 0.14, e, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
-        # the lip of the rim; from 2440 it breaks away under the gilded towers and drops into the pit
-        el = 3.5 * open_k * (0.6 + 0.4 * np.sin(3 * self.l_a + 0.2 * t)) * heat
-        L0, L1 = self._lip(ctx.t0), self._lip(ctx.t1)
-        ctx.fr.splat(L0, L1, 0.05, el, look.blackbody(0.55), ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
-        # debris: the rim crumbling under the gilded towers
+        # fine debris off the crumbling rim; the chunks
         self._debris(ctx)
+        self.chunks.emit(ctx)
 
-    def _lip(self, tq):
-        """lip points; those under a gilded tower break away at the rim's collapse and fall inward"""
-        if tq < A.T_RIM_GIVES:
-            return self.l_p
-        if not hasattr(self, 'l_gild'):
-            ang_g = np.array([2 * np.pi * i / 8 + B.TOWER_ANG0 for i in range(8) if GILD_W[i] >= 0.5])
-            d = np.abs((self.l_a[:, None] - ang_g[None, :] + np.pi) % (2 * np.pi) - np.pi).min(1)
-            rr = rng(977)
-            self.l_gild = d < 0.22 + 0.06 * rr.random(len(d))
-            self.l_dl = rr.uniform(0.0, 7.0, len(d))
-        x = np.maximum(tq - A.T_RIM_GIVES - self.l_dl, 0.0) * self.l_gild
-        P = self.l_p.copy()
-        inward = -np.stack([np.cos(self.l_a), np.zeros_like(self.l_a), np.sin(self.l_a)], 1)
-        P += inward * (0.12 * x)[:, None] + np.array([0.0, -1.0, 0.0]) * (0.05 * x * x)[:, None]
-        return P
+    def occluders(self, t):
+        """the wall, the plain and the ground plates (until they fall) for the occluder"""
+        P, N, Ar = [], [], []
+        k = max(1, len(self.w_p) // 170000)
+        P.append(self.w_p[::k]); N.append(self.w_n[::k])
+        area = 2.4 * np.pi * R_RIM ** 2
+        Ar.append(np.full(len(self.w_p[::k]), area / len(self.w_p[::k])))
+        P.append(self.o_p); N.append(np.broadcast_to(np.array([0.0, 1.0, 0.0]), (len(self.o_p), 3)))
+        Ar.append(np.full(len(self.o_p), self.o_A))
+        G, x, fall = self._ground(t)
+        keep = fall < 1.0
+        if keep.any():
+            P.append(G[keep]); N.append(np.broadcast_to(np.array([0.0, 1.0, 0.0]), (int(keep.sum()), 3)))
+            Ar.append(np.full(int(keep.sum()), np.pi * R_RIM ** 2 / len(G)))
+        cP, cN, cA = self.chunks.occluders(t)
+        if len(cP):
+            P.append(cP); N.append(cN); Ar.append(cA)
+        return np.concatenate(P), np.concatenate(N), np.concatenate(Ar)
 
     def _debris(self, ctx):
         t = ctx.t
@@ -339,7 +485,111 @@ class Crater:
             return
         e = self.d_E * on * (0.4 + 2.2 * self.d_hot ** 3) * smoothstep(0.0, 2.0, a) * 1.6
         col = look.blackbody(np.clip(0.4 + 0.35 * self.d_hot, 0, 0.85))
-        ctx.fr.splat(S0[on], S1[on], 0.06, e[on], col[on], ctx.cam0, ctx.cam1, zref=30.0)
+        ctx.fr.splat(S0[on], S1[on], 0.05, e[on], col[on], ctx.cam0, ctx.cam1, zref=30.0)
+
+
+class Chunks:
+    """the rim crumbling under the gilded towers: slabs of crust break off the lip and tumble into the glow. From
+    bar 26 one here and there on the beat; on bar 31 b3 (2440) the lip gives way under the gilded ones at once.
+    Each chunk is a rigid block: a charcoal top, raw broken faces that glow, hottest underneath."""
+
+    def __init__(self, tl, seed=931):
+        r = rng(seed)
+        gild = [i for i in range(8) if GILD_W[i] >= 0.5]
+        angs = np.array([2 * np.pi * i / 8 + B.TOWER_ANG0 for i in range(8)])
+        items = []
+        # the slow crumble: on beats from bar 26, under the gilded towers
+        for tb in np.arange(A.T_CRUMBLE, A.T_BRINK, A.BEAT):
+            for i in gild:
+                if r.random() < 0.35 + 0.4 * (tb - A.T_CRUMBLE) / (A.T_BRINK - A.T_CRUMBLE):
+                    items.append((tb + r.uniform(0, 8), angs[i] + r.normal(0, 0.09), r.uniform(0.5, 1.1)))
+        # the collapse: the lip gives way under the gilded towers
+        for i in gild:
+            for j in range(9):
+                items.append((A.T_RIM_GIVES + r.exponential(5.0), angs[i] + r.normal(0, 0.12), r.uniform(0.8, 1.9)))
+        # and in the brink's storm, more of it keeps going
+        for j in range(40):
+            i = gild[r.integers(len(gild))]
+            items.append((r.uniform(A.T_RIM_GIVES + 10, A.T_WHITE - 10), angs[i] + r.normal(0, 0.14), r.uniform(0.5, 1.4)))
+        items.sort()
+        self.n = n = len(items)
+        self.td = np.array([x[0] for x in items])
+        self.a = np.array([x[1] for x in items])
+        self.sz = np.array([x[2] for x in items])
+        rr = rim_r(self.a)
+        inw = -np.stack([np.cos(self.a), np.zeros(n), np.sin(self.a)], 1)
+        self.inw = inw
+        self.o = np.stack([rr * np.cos(self.a), np.full(n, B.GROUND), rr * np.sin(self.a)], 1) + inw * (0.45 * self.sz)[:, None] \
+            + np.array([0.0, -0.35, 0.0]) * self.sz[:, None]
+        self.v = inw * r.uniform(0.02, 0.07, n)[:, None] + np.array([0.0, 0.015, 0.0])
+        self.ax = r.normal(0, 1, (n, 3))
+        self.ax /= np.linalg.norm(self.ax, axis=1, keepdims=True)
+        self.spin = r.uniform(0.02, 0.07, n) * np.where(r.random(n) < 0.5, -1, 1)
+        # the block's points: an irregular slab (along the rim x, down y, inward z in its own frame)
+        m = 260
+        self.m = m
+        L = np.stack([self.sz * r.uniform(1.1, 1.9, n), self.sz * r.uniform(0.5, 0.9, n), self.sz * r.uniform(0.8, 1.3, n)], 1)
+        face = r.integers(0, 6, (n, m))
+        q = r.uniform(-0.5, 0.5, (n, m, 3))
+        ax_ = face // 2
+        sgn = np.where(face % 2 == 0, -0.5, 0.5)
+        np.put_along_axis(q, ax_[:, :, None], sgn[:, :, None], 2)
+        q = q + r.normal(0, 0.04, (n, m, 3))
+        self.q = q * L[:, None, :]
+        self.top = (face == 3)                                  # +y: the old crust
+        self.under = (face == 2)                                # -y: the hottest broken face
+        self.qE = r.lognormal(0, 0.5, (n, m))
+        # local frame: x along the rim, y up, z inward
+        tan = np.stack([-np.sin(self.a), np.zeros(n), np.cos(self.a)], 1)
+        self.F = np.stack([tan, np.tile([0.0, 1.0, 0.0], (n, 1)), inw], 1)      # rows: x, y, z axes in world
+
+    def _pose(self, tq):
+        x = np.maximum(tq - self.td, 0.0)
+        ang = self.spin * x * (1.0 + 0.02 * x)
+        c, s = np.cos(ang)[:, None, None], np.sin(ang)[:, None, None]
+        ax = self.ax
+        K = np.zeros((self.n, 3, 3))
+        K[:, 0, 1], K[:, 0, 2], K[:, 1, 0] = -ax[:, 2], ax[:, 1], ax[:, 2]
+        K[:, 1, 2], K[:, 2, 0], K[:, 2, 1] = -ax[:, 0], -ax[:, 1], ax[:, 0]
+        R = np.eye(3)[None] + s * K + (1 - c) * (K @ K)
+        pos = self.o + self.v * x[:, None] + np.array([0.0, -0.5 * 0.05, 0.0]) * (x * x)[:, None]
+        return R, pos, x
+
+    def world(self, tq):
+        R, pos, x = self._pose(tq)
+        W = np.einsum('nmk,nkj->nmj', self.q, self.F)            # block frame -> world axes
+        W = np.einsum('nij,nmj->nmi', R, W) + pos[:, None, :]
+        return W, x
+
+    def occluders(self, t):
+        if t < A.T_CRUMBLE:
+            return np.zeros((0, 3)), np.zeros((0, 3)), np.zeros(0)
+        W, x = self.world(t)
+        on = (x > 0) & (W[:, :, 1].mean(1) > FLOOR_Y)
+        if not on.any():
+            return np.zeros((0, 3)), np.zeros((0, 3)), np.zeros(0)
+        P = W[on].reshape(-1, 3)
+        Nn = np.broadcast_to(np.array([0.0, 1.0, 0.0]), P.shape)
+        Ar = np.repeat((self.sz[on] ** 2 * 5.0 / self.m), self.m)
+        return P, Nn, Ar
+
+    def emit(self, ctx):
+        t = ctx.t
+        if t < A.T_CRUMBLE:
+            return
+        W0, _ = self.world(ctx.t0)
+        W1, x = self.world(ctx.t1)
+        on = (x > 0) & (W1[:, :, 1].mean(1) > FLOOR_Y - 1.0)
+        if not on.any():
+            return
+        hot = np.where(self.under, 1.0, np.where(self.top, 0.0, 0.55))[on]
+        lit = 1.0 - smoothstep(0.0, 2.0, x[on])[:, None] * 0.0
+        depth = np.clip((B.GROUND - W1[on][:, :, 1]) / (B.GROUND - FLOOR_Y), 0, 1)
+        e = self.qE[on] * (0.02 + 1.7 * hot ** 1.5 * (0.6 + 1.4 * depth)) * lit
+        T = 0.36 + 0.25 * hot + 0.15 * depth
+        col = look.blackbody(np.clip(T, 0, 0.85).reshape(-1)).reshape(-1, 3)
+        ctx.fr.splat(W0[on].reshape(-1, 3), W1[on].reshape(-1, 3), 0.07, e.reshape(-1), col, ctx.cam0, ctx.cam1,
+                     zref=30.0, myid=CRATER_ID)
 
 
 # ---------------------------------------------------------------- the falling crown (A8)
@@ -476,7 +726,7 @@ def cam_light(t):
 # ---------------------------------------------------------------- emit hooks
 
 def _crater(tl):
-    return tl._get('crater', Crater)
+    return tl._get('crater', lambda: Crater(tl))
 
 
 def emit_before_towers(tl, ctx, lp, lc, lpw):
@@ -486,6 +736,11 @@ def emit_before_towers(tl, ctx, lp, lc, lpw):
 
 def emit_after(tl, ctx, lp, lc, lpw):
     t = ctx.t
+    if A.T_EDGE <= t < A.T_WHITE:
+        k = float(smoothstep(A.T_EDGE + 10, A.T_EDGE + 60, t))
+        tl._get('pit_embers', PitEmbers).emit(ctx, k * (1.0 + 1.5 * float(smoothstep(A.T_BRINK, A.T_WHITE, t))))
+    elif t >= A.T_LIGHT:
+        tl._get('pit_embers', PitEmbers).emit(ctx, 0.8 - 0.5 * float(smoothstep(A.T_STOP, A.T_HOLDS, t)))
     if A.T_BRINK <= t < A.T_WHITE:
         tl._get('updraft', Updraft).emit(ctx)
         tl._get('strip_embers', lambda: StripEmbers(tl)).emit(ctx)
@@ -497,8 +752,51 @@ def emit_after(tl, ctx, lp, lc, lpw):
             tl._get('small_lights', lambda: SmallLights(tl)).emit(ctx)
 
 
+_SHIM_W = np.array([[0.021, 0.19, 0.61], [0.034, -0.12, 1.37], [-0.017, 0.27, 2.9], [0.046, 0.08, 4.1],
+                    [-0.029, -0.21, 5.3], [0.011, 0.35, 0.2]])
+
+
+def _shimmer(ctx, hdr, amp):
+    """heat haze over the pit: the air above the bowl ripples, rising (screen-space refraction, masked to the
+    bowl's opening and the column of hot air over it)"""
+    H, W = hdr.shape[:2]
+    cam = ctx.cam
+    a = np.linspace(0, 2 * np.pi, 240, endpoint=False)
+    R = rim_r(a)
+    P = np.stack([R * np.cos(a), np.full(len(a), B.GROUND), R * np.sin(a)], 1)
+    u, v, z = cam.project(P, W, H)
+    if (z <= 0.5).any():
+        return hdr
+    import cv2
+    m = np.zeros((H, W), np.float32)
+    cv2.fillPoly(m, [np.stack([u, v], 1).astype(np.int32)], 1.0)
+    acc = m.copy()
+    step = max(1, int(0.05 * H))
+    for kk in range(1, 9):
+        sh = np.zeros_like(m)
+        sh[:H - kk * step] = m[kk * step:]
+        acc = np.maximum(acc, sh * (0.86 ** kk))
+    acc = cv2.GaussianBlur(acc, (0, 0), 0.025 * W)
+    if acc.max() <= 1e-3:
+        return hdr
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    s = 1920.0 / W
+    xs, ys = xx * s, yy * s
+    t = ctx.t
+    dx = np.zeros((H, W), np.float32)
+    dy = np.zeros((H, W), np.float32)
+    for kx, ky, ph in _SHIM_W:
+        dx += np.sin(kx * xs + ky * ys + 0.31 * t + ph).astype(np.float32)
+        dy += np.sin(0.8 * ky * xs - 1.3 * kx * ys + 0.37 * t + 1.7 * ph).astype(np.float32)
+    k = (amp / s / len(_SHIM_W) ** 0.5) * acc
+    return cv2.remap(hdr, xx + dx * k, yy + dy * k, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
 def post(tl, ctx, hdr):
     t = ctx.t
+    if A.T_EDGE + 30 <= t < A.T_WHITE - 30 or A.T_LIGHT <= t < A.T_SEEN:
+        amp = 2.2 + 2.0 * float(smoothstep(A.T_BRINK, A.T_BRINK + 40, t)) if t < A.T_WHITE else 1.2
+        hdr = _shimmer(ctx, hdr, amp)
     if A.T_WHITE - 40 <= t < A.T_WHITE:
         # falling into the fire: the frame goes white on the downbeat (the IMPACT)
         k = float(smoothstep(A.T_WHITE - 40, A.T_WHITE - 1, t)) ** 1.6
@@ -551,6 +849,47 @@ class StripEmbers:
         e = self.E * g * (1 - u) ** 0.6 * smoothstep(0.0, 0.08, u) * 10.0 * ok
         col = look.blackbody(np.clip(0.5 + 0.25 * smoothstep(0.45, 0.8, u) - 0.15 * smoothstep(0.85, 1.0, u), 0, 0.9))
         ctx.fr.splat(P0[ok], P1[ok], 0.03, e[ok], col[ok], ctx.cam0, ctx.cam1, zref=30.0)
+
+
+
+class PitEmbers:
+    """embers boiling up out of the lake on the heat, swirling, thinning and reddening as they cool above the lip
+    (THE EDGE); in the brink's updraft they are dragged in toward the column and up, faster"""
+
+    def __init__(self, seed=961):
+        r = rng(seed)
+        n = 26000
+        a = r.uniform(0, 2 * np.pi, n)
+        s = np.sqrt(r.random(n)) * 1.05
+        rl = rim_r(a) * S_LAKE * s
+        self.src = np.stack([rl * np.cos(a), np.full(n, FLOOR_Y + 0.3), rl * np.sin(a)], 1)
+        self.ph = r.random(n)
+        self.life = r.uniform(80.0, 190.0, n)
+        self.vy = r.uniform(0.1, 0.3, n)
+        self.sw = r.uniform(0, 2 * np.pi, (n, 3))
+        self.amp = r.uniform(0.6, 2.4, n)
+        self.E = r.lognormal(0, 0.8, n)
+        self.T = r.uniform(0.48, 0.74, n)
+
+    def pos(self, tq):
+        age = ((tq / self.life + self.ph) % 1.0) * self.life
+        u = age / self.life
+        brink = float(smoothstep(A.T_BRINK, A.T_BRINK + 30, tq)) if tq < A.T_WHITE else 0.0
+        y = self.src[:, 1] + self.vy * age * (1.0 + 0.004 * age) * (1.0 + 1.6 * brink)
+        sp = (0.3 + 0.7 * u) * self.amp
+        x = self.src[:, 0] * (1.0 + 0.25 * u - 0.7 * brink * u) + sp * np.sin(0.05 * age + self.sw[:, 0])
+        z = self.src[:, 2] * (1.0 + 0.25 * u - 0.7 * brink * u) + sp * np.sin(0.043 * age + self.sw[:, 1])
+        return np.stack([x, y, z], 1), u, age
+
+    def emit(self, ctx, gain=1.0):
+        t = ctx.t
+        P0, _, _ = self.pos(ctx.t0)
+        P1, u, age = self.pos(ctx.t1)
+        ok = age > 0.6
+        cool = smoothstep(B.GROUND - 4.0, B.GROUND + 22.0, P1[:, 1])
+        e = self.E * gain * (1 - u) ** 1.3 * smoothstep(0.0, 0.06, u) * (1.0 - 0.6 * cool) * 2.2 * ok
+        col = look.blackbody(np.clip(self.T - 0.14 * cool, 0, 0.9))
+        ctx.fr.splat(P0[ok], P1[ok], 0.02, e[ok], col[ok], ctx.cam0, ctx.cam1, zref=30.0)
 
 
 class Updraft:

@@ -102,7 +102,9 @@ class A3Sched:
     def fire_centre(self, t):
         y = 0.0
         if t >= T_EDGE and t < T_LIGHT:
-            y = 2.0 * float(smoothstep(T_EDGE, T_BRINK, t))      # it hangs over the pit; at the brink it swells
+            # EMBERS-2: as the ground falls away it settles into the crater's mouth, just above the lip, so the towers
+            # lean in over the edge to reach it; at the brink it swells up out of the pit
+            y = -12.0 * float(smootherstep(T_EDGE + 6, T_EDGE + 70, t)) + 5.0 * float(smoothstep(T_BRINK, T_BRINK + 60, t))
         return np.array([0.0, y, 0.0])
 
     def fire_scale(self, t):
