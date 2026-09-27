@@ -1,3 +1,96 @@
+# MAP-v3 (lane `map`): THE RED BOOK, the four ink pages, the burn-throughs, THE MAP ANSWERS
+
+## STATE (paused 27 Sep 16:35Z for the usage window; resume ~20:00Z)
+**Complete and pushed** (d74bd7b on `claude/v3-map` and `claude/map-red-book-deep-yurk7k`, rebased on
+`claude/long-dawn-v2`): every H5 call in the lane, both script notes and the X1 notes (log below); review sheets in
+`review/v3/` (`map_X1_letters_to_fire.jpg/.mp4`, `map_C22_ring_page.jpg`, `map_C23_fire_remains.jpg`,
+`map_C18_road.jpg`, `map_P1_redbook_set.jpg`, `map_P2_pages_pencil_ink.jpg`, `map_P2_pages_scans.jpg`);
+`review/v3/x1_letters.json` re-exported. **No renders are running**, locally or on the cloud: both jobs wait for the
+director (`cloud/jobs/map_v3_book.json` 2472 frames incl. the C22 fallback 5360-5519; `cloud/jobs/map_v3_road.json`
+400 frames incl. bar 71 5600-5679, plus the two X1 layers).
+**Next (on resume, in order):**
+1. `git pull --rebase origin claude/long-dawn-v2`; read any new director notes at the top of `BIBLE_V3.md`.
+2. If the jobs have run: check `cloud_logs/map_v3_book_status.txt` / `map_v3_road_status.txt`, spot-check shipped jpgs
+   (C4 streams 740-790, the C22 fall 5365-5374, bar 71's hearths, C18's end on the ring).
+3. Polish, if time allows: a rounder bead (C22), the fall visible a little longer, bar 71's roads kept off the small
+   hill glyphs; a half-res playback check of C22 and bar 71 (only stills so far).
+4. Re-run `python3 the-long-dawn/cloud/verify_session.py`; push to both branches; 5-line summary.
+
+## H5 LOG (27 Sep ~15:50Z) · the director's H5 CALLS, the two script notes and the X1 notes: all applied
+- [x] **C is the book:** the words "Red Book" appear nowhere on screen (no titling is drawn in any page or plate; checked).
+- [x] **One inscription on both rings:** the Ring drawn in the book carries the canonical script of fire from `assets/ring`
+  (MONTAGE-3D, rev e7083c6), outer face and inner face (`ringpage.strip`).
+- [x] **THE BOOK HAND** (script note): a human calligraphic hand of its own, and deliberately not the Ring's. `pen.BOOK`:
+  16 unjoined letters built from the lying wave, the open wedge, the low heavy fall, the feather's fork, the small coil,
+  the lozenge and the nib's own lozenge dot; no stems, bowls, arches, cups, hooks or accent marks; no two waves or two
+  wedges side by side (they read as m/n). Nothing reads as l, u, y or any Latin letter, nor Tengwar, runes or the Ring's
+  teardrops (specimens checked at glyph size and at page size). Every page, the C4 leaf and the gilt initial use it.
+- [x] **X1 letters to fire** (director's notes on f560-906): (1) the script glows AS LETTERS first, in the Ring's fire
+  colour (deep orange-red core, never white; `book.py` fire channel), legible; a peel then runs in from the rim, word by
+  word and stroke by stroke (each stroke flares and goes out as its sparks leave it), and the sparks are drawn to the
+  page's heart by a draught: they descend a gently uneven slope (distance plus a smooth noise, turned only sideways), a
+  flow with no turning in it (so never a spiral), whose streamlines gather into curving streams that merge like rivulets
+  and quicken near the heart; trails 0.035 s, capped at 0.28 cm (`Kindling._fly`). No dot field at any frame. (2) The
+  catch is ONE flame, gold and calm (`fire.flame` gains an additive `fray` kwarg; cool -0.22). (3) The burn-through onto
+  black with the fire in the hole is untouched. Motion test re-rendered (half res, 560-906).
+- [x] **THE RING CLOSE-UP FALLBACK = the ink ring on the page** (`ringpage.py`; frames via `book_c.py`, shot
+  `ring_melt`, C22 5360-5519 -> `renders/book_C`): a band of gold leaf drawn in pen in three-quarter view, the inscription
+  cut in it, hatching that follows the form, on a page by a drawn hearth fire (living ink tongues with gold laid in them,
+  an ember bed). 5366 the Ring drops in from above the frame, crisp (eight frames, a nine-sample shutter); it slumps in
+  the heat, darker; 5420 its letters flare once, still letters; 5440 they go out; the gold runs forward (the hole slides
+  back to a slit and closes, never a round hole: no donut) into a bead; 5490 the hearth flares to white by 5519. Stills
+  for the find and the fire test (`python3 ringpage.py stills`; letters awake and unmarked in the fire).
+- [x] **THE DEEP:** the gold seam thicker, tapered, gilt and branching. **THE HAVENS:** the ship redrawn swan-prowed at the
+  plates' line weight. **One gilt initial** (the last spread, a letter of the new hand in gold leaf, penwork tendrils).
+  **Page-edge striation.** **Mount Doom:** the dotted route dropped (the door stays).
+- [x] **THE ROAD on the map:** a fine continuous pen line that grows as the pen goes (a swell and thinning of pressure, the
+  last half-degree wet, a bead of ink at the nib); the ring of stones drawn as stones. **C's beacons hand-inked** at the
+  terrain's line weight with shell gold laid in and a live flame the glyph's own size inside; pools cut to 0.4, no halo.
+- [x] **C23 THE FIRE REMAINS, bar 71** (5600-5679 -> `renders/map_C`): out of the council fire on the ring's stone the
+  roads run outward (a shortest-path tree over the land from the ring to 22 lowland hearths: 5 trunks forking round the
+  ranges by the passes), a small moving flame at every road's head; a hearth glyph kindles where each arrives, gold laid
+  in it; the war-beacons settle low and the room warms; a breath dim at 5668-5676 before the sunrise. The X1 from
+  ACCORD's plate: `road.py x1 --center 960,402 --frames 5594-5640` (opens 5600, centred on the council fire).
+
+## REPORT (MAP-v3, updated 27 Sep ~15:50Z) · on the LOCKED bar map (`music/v3/barmap_C.json`)
+**What it is.** C's book as one 2.5-D engine, all shots numbered on C's own timeline (src frame = C frame):
+| shot | C frames | what happens | code |
+|---|---|---|---|
+| C2 THE RED BOOK | 80-319 | the drift over the last written leaves (the book hand, a mountain, a ring and a ship drawn small, the one gilt initial); from bar 4 b1 the blank recto and the striated sheaf of leaf-edges | `book_c.shot_red_book` |
+| C3 THE MOUNTAIN | 320-559 | the leaves riffle back (12 leaves, motion-blurred); the pen draws the fire, the gilt ring on bar 5 b3, then the mountain round it (no route); caption band left clear for T1 | `shot_mountain`, `pages.Mountain(SCHED_C3)` |
+| C4+C5 LETTERS TO FIRE (X1a/E15) | 560-1039 | the leaf turns to a leaf dense with the book hand; the hearth sinks; 9b4 the letters glow as letters in the Ring's fire colour; 10b1 the peel runs in from the rim and the sparks stream down to the page's heart in curving, merging streams; 11b1 one calm gold flame catches; 11b3 it burns the page open; C5 the fire alone | `Kindling`, `burn.hold_params` |
+| C8 THE DEEP (+C9 burn) | 1680-1991 | an ember edge sweeps the race away (X1 reversed); the pen draws the halls level by level on the dividing tick down the thick, branching gilt seam; 1920 the glow burns through (into the Eye) | `shot_deep`, `burn.sweep_params` |
+| C18 THE MAP ANSWERS · THE ROAD (P4) | 4160-4479 | map_C rev 3 retimed to four bars, the beacons now hand-inked flame glyphs with gold laid in; THE ROAD a fine pen line drawn from her beacon's glyph west to the ring of stones, arriving on bar 56 b3; ends centred on the ring for the match to C19; `road.py x1` burns through onto the map | `road.py` |
+| C22 (FALLBACK) THE UNMAKING as the ink ring | 5360-5519 | the Ring drawn on the page drops into a drawn fire, slumps, its letters flare (5420) and go out (5440), it runs into a bead, white by 5519 | `ringpage.py`, `shot_ring_melt` |
+| C23 THE FIRE REMAINS, bar 71 | 5600-5679 | the burn-through from the council plate onto the map; the roads run out from the ring, a small flame at each head, and hearths kindle where they arrive | `road.FireRemains` |
+| C25-C28 THE LAST PAGES | 6160-7199 | THE YEAR OF PLENTY draws itself (the tree alone, the smoke of many hearths); 81b1 the leaf turns: THE HAVENS (coast fires, the swan-ship, the roundel of her bound hand raising the lamp; 84b1 the ship slides west); blank leaves; the edges heal by T14; the blank recto for the title | `shot_last_pages` |
+
+**The risk test: PASSED against its fallbacks** (unchanged). This pass: the X1 motion test re-rendered and checked frame to
+frame (no pops; the only large differences are the motion-blurred leaf turn at 574-579 and the densest streams at 761-766,
+smooth); the ring fallback checked on its beats; bar 71 and C18 checked as stills.
+Sheets (`review/v3/`): `map_P1_redbook_set.jpg`, `map_P2_pages_pencil_ink.jpg`, `map_P2_pages_scans.jpg` (the four pages
+flat, and the new hand), `map_X1_letters_to_fire.jpg` + `map_X1_letters_to_fire.mp4`, `map_C22_ring_page.jpg`,
+`map_C18_road.jpg`, `map_C23_fire_remains.jpg`, `map_C_book_timeline.jpg` (older timeline sheet).
+
+**RENDER_SPEC** (director launches; one machine type per job, 4 procs x 1 thread, `"ship": "jpg"`):
+* `cloud/jobs/map_v3_book.json`: 2472 frames -> `renders/book_C/` + `renders/book_C_matte/` (80-319, 320-559, 560-1039,
+  1680-1991, 5360-5519, 6160-7199), ~3 s/frame on 4 threads (~12 s per 1-thread proc): ~2 h 15 on one 4-core box. The
+  C22 fallback builds a 130 px/cm page texture per frame (+~1 GB RSS while that shot renders; the fall's eight frames
+  take nine shutter samples each). EMBERS' handoff `review/v3/x1_letters.json` regenerated for the new sparks
+  (`python3 book_c.py export --out DIR`).
+* `cloud/jobs/map_v3_road.json`: 400 frames -> `renders/map_C/` (4160-4479 and 5600-5679) + two X1 layers
+  (`renders/x1_map_C/` 4150-4185 at 960,300; `renders/x1_map_C71/` 5594-5640 at 960,402, each with its `_matte` keep).
+  Setup bakes the sheet if the cache is missing (~16 min on 4 cores); frames ~2-4 s.
+* Comp (EDIT): book layer `out = rgb + (1 - matte) * next shot`. The map X1s: `out = plate * keep + map * (1 - keep) +
+  glow` (C18: the Run's seventh beacon over the map; C23: ACCORD's council plate over the map). The C22 fallback is a
+  full-frame book shot ending in white (bar 70 opens in white).
+
+**Weaknesses (next pass).** The bead is a drawn dome and could be rounder; the ring's fall is fast (eight frames by
+design) and only its last four are fully in frame; the Plenty crown still reads a little like cotton balls; the Havens
+roundel reads as a gesture more than a hand; the book hand has no ascenders (a band texture; accepted, it is not Latin);
+bar 71's roads are pen lines over the terrain glyphs (they go round the ranges by the passes, but cross small hills);
+motion is judged on the X1 mp4 and on stills for the rest.
+
 # MAP (cut C) — THE WORLD ANSWERS, told on a map
 
 ## Revision 2 (2026-09-26): fire, not fibre — per critic_tone.md §B2 / critic_framing.md m8, m9

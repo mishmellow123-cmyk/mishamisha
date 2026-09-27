@@ -158,11 +158,12 @@ def _ramp(T):
 
 
 @njit(cache=True)
-def flame(img, bx, by, h, ux, uy, t, seed, gain, wide):
+def flame(img, bx, by, h, ux, uy, t, seed, gain, wide, cool=0.0, fray=1.0):
     """A small living flame standing at screen (bx, by): height h px, up direction (ux, uy) (unit,
-    screen coords), time t (frames), brightness gain; wide scales the girth. The body is a warped
-    teardrop whose upper part breaks into licking tongues; colour runs from a yellow heart through
-    orange to a red, fraying tip."""
+    screen coords), time t (frames), brightness gain; wide scales the girth; cool (0..1) lowers its
+    temperature (a fire that has burned down is redder; negative is a hotter, golder flame). The body is a
+    warped teardrop whose upper part breaks into licking tongues (fray scales them: below 1 a calmer, single
+    flame); colour runs from a yellow heart through orange to a red, fraying tip."""
     H, W = img.shape[0], img.shape[1]
     if h < 0.3:
         return
@@ -190,8 +191,8 @@ def flame(img, bx, by, h, ux, uy, t, seed, gain, wide):
             vv = min(max(v, 0.0), 1.2)
             # warp: the body leans and licks, more toward the tip
             wu = u - (sway * vv * vv * hh / max(wmax, 0.5)) \
-                - 0.55 * vv * vv * gnoise(vv * 2.2 - t * 0.33, ph, 73) \
-                - 0.25 * vv * gnoise(vv * 5.0 - t * 0.6, ph + 3.0, 74)
+                - 0.55 * fray * vv * vv * gnoise(vv * 2.2 - t * 0.33, ph, 73) \
+                - 0.25 * fray * vv * gnoise(vv * 5.0 - t * 0.6, ph + 3.0, 74)
             if v < 0.0:
                 rad = math.sqrt(max(1.0 - (v / 0.14) ** 2, 0.0)) * 0.66
             else:
@@ -199,8 +200,8 @@ def flame(img, bx, by, h, ux, uy, t, seed, gain, wide):
             # the upper third frays into tongues
             n1 = gnoise(wu * 1.7 + ph, vv * 3.4 - t * 0.55, 77)
             n2 = gnoise(wu * 3.6 - ph, vv * 6.5 - t * 0.9, 78)
-            rad *= 1.0 + (0.7 * n1 + 0.35 * n2) * vv
-            tip = vv - 0.55 - 0.45 * n1 - 0.2 * n2
+            rad *= 1.0 + (0.7 * n1 + 0.35 * n2) * vv * fray
+            tip = vv - 0.55 - (0.45 * n1 + 0.2 * n2) * fray
             d = (rad - abs(wu)) * max(wmax, 0.5) / aa
             if d <= -2.5:
                 continue
@@ -213,7 +214,7 @@ def flame(img, bx, by, h, ux, uy, t, seed, gain, wide):
             # a yellow heart low in the body; orange flanks; a red, fraying top
             hc = min(max(core / 0.75, 0.0), 1.0)
             heart = hc * hc * (3.0 - 2.0 * hc) * math.exp(-((vv - 0.3) / 0.34) ** 2)
-            T = 0.16 + 0.66 * heart + 0.2 * core * (1.0 - vv) - 0.2 * vv
+            T = 0.16 + 0.66 * heart + 0.2 * core * (1.0 - vv) - 0.2 * vv - 0.22 * cool
             if v < 0.0:
                 T *= 1.0 + 1.5 * v          # the root of the flame is a little cooler
             r_, g_, b_ = _ramp(T)
