@@ -625,7 +625,7 @@ class Find:
     fingers close on it, 3660 lift it away."""
     F0, F1 = 3557, 3683
     HOL = np.array([0.33, 0.0, -0.40])
-    HFOV = 30.0
+    HFOV = 34.0
     STRIKE = 3557
     FLINT = np.array([0.32, 1.08, -0.07])
 
@@ -636,14 +636,14 @@ class Find:
         t = f / FPS
         r = self.reach(f)
         close = smoothstep(3636, 3650, f)
-        W = self.HOL + np.array([0.070, 0.070, 0.030]) + np.array([0.02, 0.22, 0.04]) * (1 - r)
+        W = self.HOL + np.array([0.078, 0.082, 0.012]) + np.array([0.02, 0.22, 0.04]) * (1 - r)
         p = dict(
             pelvis=(0.80, 0.48, -0.02), yaw=0.0, lean=66.0, chest=16.0, twist=0.0, neck=8.0, head=22.0, head_yaw=0.0,
             head_roll=0.0, shrug=0.1,
             hand_n=tuple(W), elbow_n=(0.3, -0.2, -1.0),
-            fdir_n=tuple(nrm([-0.55, -0.72, -0.40])), palm_n=tuple(nrm([0.25, -0.45, 0.85])),
-            curl_n=tuple(np.array([0.22, 0.62, 0.80, 0.88]) * (1 - close) + np.array([0.62, 0.80, 0.90, 0.94]) * close),
-            thumb_n=0.30 + 0.30 * close, spread_n=0.05, thumbout_n=0.45 * (1 - close),
+            fdir_n=tuple(nrm([-0.55, -0.80, -0.10])), palm_n=tuple(nrm([-0.75, 0.35, -0.30])),
+            curl_n=tuple(np.array([0.18, 0.80, 0.90, 0.95]) * (1 - close) + np.array([0.55, 0.88, 0.94, 0.97]) * close),
+            thumb_n=0.25 + 0.30 * close, spread_n=0.0, thumbout_n=0.40 * (1 - close),
             hand_f=(0.55, 0.62, 0.10), elbow_f=(0.3, -1.0, 0.4), fdir_f=(-0.6, -0.6, -0.2), palm_f=(0.3, 0.2, -1.0),
             curl_f=(0.9, 0.9, 0.9, 0.9), thumb_f=0.7,
             foot_n=(0.40, 0.05, -0.22), knee_n=(-1.0, 0.5, 0.0), toe_n=(-1.0, 0.0, 0.0), sole_n=(0.0, 1.0, 0.0),
@@ -668,8 +668,8 @@ class Find:
 
     def camera(self, f, scale):
         t = f / FPS
-        pos = self.HOL + np.array([-0.030, 0.095, -0.30]) + np.array([0.0015 * fnoise1(t * 0.6, 2.0), 0.001 * fnoise1(t * 0.5, 4.0), 0])
-        tgt = self.HOL + np.array([0.010, 0.012, 0.0])
+        pos = self.HOL + np.array([-0.050, 0.250, -0.255]) + np.array([0.0015 * fnoise1(t * 0.6, 2.0), 0.001 * fnoise1(t * 0.5, 4.0), 0])
+        tgt = self.HOL + np.array([0.020, 0.010, 0.030])
         cam = Camera(pos, hfov=self.HFOV, scale=scale)
         yaw, pitch = cam.look_at(tgt)
         return Camera(pos, yaw=yaw, pitch=pitch, hfov=self.HFOV, scale=scale), float(np.linalg.norm(tgt - pos))
@@ -685,14 +685,17 @@ class Find:
         snow_ground(B, self.HOL + np.array([0.2, 0.0, 0.0]), reach=3.0, hollow=(self.HOL, 0.045, 0.030))
         d = f - self.STRIKE
         flash = math.exp(-d / 2.4) if d >= 0 else 0.0
-        awake = 0.05 + 0.03 * math.sin(t * 2.3)                # the letters, faintly awake in the dark
+        # the letters, faintly awake in the dark; they warm as her fingers come near (the temptation is beautiful)
+        # and light her glove from below, then dim in her closed hand
+        near = smoothstep(3612, 3646, f) * (1 - smoothstep(3650, 3668, f))
+        awake = 0.05 + 0.03 * math.sin(t * 2.3) + 0.45 * near
         XP = np.zeros(64)
         ring_xp(XP, ring_c, rows, glow=awake)
         XP[25], XP[26] = 1.0, 1.0
         # the night the band mirrors: sky, the moon behind her, the snow, her dark figure above
         ENV = env_stack(night_env(moon=1.0, fig_dirs=((np.array([0.35, 0.9, 0.3]), 0.55),)) + 0.0)
         L = [moon_light(0.30),
-             light(ring_c + np.array([0.0, 0.004, 0.0]), (1.0, 0.36, 0.07), 0.000025 * awake / 0.05, 0.008, 4.0)]
+             light(ring_c + np.array([0.0, 0.006, 0.0]), (1.0, 0.40, 0.10), 0.00004 * awake / 0.05, 0.008, 4.0)]
         if flash > 0.01:
             L.append(light(self.FLINT + [0.015, 0.015, -0.045], (1.0, 0.82, 0.58), 0.30 * flash, 0.05, 0.0))
         env = hero.env_vec(rim_dir=MOON_DIR, rim=np.array([0.08, 0.11, 0.18]), amb=np.array([0.004, 0.006, 0.012]),
