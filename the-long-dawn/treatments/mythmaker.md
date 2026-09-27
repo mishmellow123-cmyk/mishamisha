@@ -148,4 +148,99 @@ C is the longest cut on purpose. The producers asked for the old tale throughout
 | 372–386 | The elder takes a pen from her coat and lays it in the gutter of the first blank page, then folds the child's hands over the book. She looks west, where the sea catches the first light. | A solo horn plays the call; the strings answer. | — | *The last pages are for you:* the tale passes on to a new hand. |
 | 386–400 | The title is inked stroke by stroke across the first blank page, and the dawn warms the paper. Fade. | The last call and answer. The final chord is left open. | **THE LONG DAWN** | |
 
-<!-- NEXT: C(5) full text, C(8) -->
+## C(5) The complete on-screen text
+
+**The typography.**
+- **Chapter cards:** Cinzel small caps with a roman numeral, centred on the page.
+- **Narration:** Cormorant Garamond italic in the lower third.
+- **The frame's two speakers:** set the same way; they are never captioned by name.
+- **The one rule for names:** Middle-earth names appear only in the chapter cards, which are the old tale's own headings. The narration never names anything from Middle-earth except the Ring.
+
+| s | text |
+|---|---|
+| 0–4 | I · A LONG-EXPECTED PARTY |
+| 20–24.5 | *Is it a true story?* |
+| 26–31 | *We're in the same tale still.* |
+| 40–44 | II · THE SHADOW OF THE PAST |
+| 46–54 | *In the latter days, we gathered every word we had ever written,* / *and kindled from them a fire that could think.* (line 2 enters at 49) |
+| 63.5–69 | *It was the fairest light ever made.* |
+| 74–80 | *And the smiths of every realm raced to master it.* |
+| 81.5–88 | *In the dark, each began to forge a Ring to hold it alone.* |
+| 100–104 | III · THE BRIDGE OF KHAZAD-DÛM |
+| 106–112 | *Every fathom deeper, the silver ran richer.* |
+| 114–120 | *They delved too greedily, and too deep,* |
+| 131–138 | *and woke a fire that could burn the world for ever.* |
+| 156–164 | *In the old story, the Ring was unmade in the fire that forged it.* (on black) |
+| 160.5–164 | *This fire could not be unmade.* (on black, below) |
+| 165–169 | IV · THE MUSTER OF ROHAN |
+| 178–184 | *It was not the great who lit the first beacon.* |
+| 204–211 | *And hill by hill, the peoples who trusted no one answered.* |
+| 225–229 | V · THE COUNCIL OF ELROND |
+| 233–240 | *The fire could not be hidden, and it could not be unmade.* |
+| 268–274 | *The Ring was unmade in a fire everyone had lit.* |
+| 279–286 | *And they carried the fire together, no faster than the smallest could walk.* |
+| 290–294 | VI · THE FIELD OF CORMALLEN |
+| 334–340 | *It was a marvellous year.* |
+| 345–349 | VII · THE GREY HAVENS |
+| 356–360 | *Did everything sad come untrue?* |
+| 363–366 | *Not yet.* |
+| 386–398 | THE LONG DAWN (inked on the blank page) |
+
+**Reading speed.**
+- The fastest single line is 2.1 words per second; the pair on black runs at 2.5. The red-team measured the limit at 3.5.
+- No line starts before the previous one has faded, except the deliberate pairs.
+- Nothing is on screen while the Eye forms, while the Ring melts, or while the sun breaks.
+
+**Borrowed words, for a legal check.**
+- Seven chapter titles.
+- Four short book phrases:
+  - *We're in the same tale still* (Sam, "The Stairs of Cirith Ungol");
+  - *delved too greedily and too deep* (Gandalf, "A Journey in the Dark");
+  - *a marvellous year* ("The Grey Havens");
+  - *everything sad … come untrue* (Sam, "The Field of Cormallen"), bent into the past tense.
+- None is longer than seven words, and none comes from the films' dialogue.
+- *One Ring to rule them all* is gone: the burning inscription already quotes it for everyone who knows it.
+
+## C(8) Why it is neither forced nor on the nose
+
+**Applicability, not allegory.** Tolkien "cordially disliked" allegory and preferred applicability, which "resides in the freedom of the reader". C is built on that distinction. Only two lines are ours alone: *every word we had ever written* and *a fire that could think*. Every other line is true of the old tale and of ours at once, and the viewer does the mapping. Nothing names our world: no machine, no company, no country, no policy. Those two lines make the mapping unmistakable; the other eighteen give it back to the book.
+
+**Every reference does a job in the story.** Each chapter is a beat that our tale needs and that the old tale performs better than invention could:
+- **the Party** is the frame;
+- **the Shadow of the Past** is the origin and the temptation;
+- **the Bridge** is the incentive and the dread;
+- **the Muster** is the public answer;
+- **the Council** is the deal;
+- **Cormallen** is the eucatastrophe;
+- **the Havens** is the handing-on.
+
+The rule for any further reference: if it can be cut without losing a story beat, cut it. That keeps C from being a checklist.
+
+**Love without parody:**
+- no film dialogue, no borrowed melody, no meme quote;
+- no costume: no ears or feet. The peoples are silhouettes and gestures, like a tall figure and a short, broad one laying their torches in together;
+- the grey figure on the bridge is a pinpoint of light;
+- the Balrog is never shown as a creature;
+- the eagles are far away, small, and carry news, not people. The critics' rescue-from-above trap is closed.
+
+**No side is taken:**
+- "the free peoples" is gone;
+- *each* realm forges a Ring in the dark;
+- the Eye is what the Ring makes of any holder, never a place;
+- the peoples who answer are "the peoples who trusted no one", which includes the rivals.
+
+This closes the framing critic's blocker.
+
+**Tolkien's own moral is kept exactly.** The Council of Elrond's lesson was that no hand at all should wield the Ring. So in C no hand holds it: it lies in the hearth, untouched, and melts. The fire is what gets carried, and it is carried by all. That is the gift the producers asked for, not the power the book forbade.
+
+**The north star, felt:**
+- secrecy is the Enemy's method (the forge in the dark);
+- the turn comes from the small, not the great;
+- two old rivals move first and the others join them;
+- the pace is set by the smallest;
+- what is unmade is the Ring, not the fire: pace, not prohibition;
+- the dawn falls on every land, and the next thing shown is plenty.
+
+**No triumph.** "Not yet" and a book of blank pages are the Grey Havens' own note: the victory is real, something is still owed, and the tale is not finished. The last image is a pen handed on, not a sword raised.
+
+<!-- NEXT: CUT A -->
