@@ -28,6 +28,7 @@ from noise import fbm, gnoise, vnoise  # noqa: E402
 import burn as BURN  # noqa: E402
 
 M_NONE, M_TABLE, M_LEATHER, M_PAGE_L, M_PAGE_R, M_EDGE, M_SPINE, M_BAND = 0, 1, 2, 3, 4, 5, 6, 7
+M_LEAF_F, M_LEAF_B = 8, 9      # a turning leaf: its front (the recto it was) and its back (the next verso)
 NCH = 6          # page texture channels: ink, wet, gilt, pencil, fire (glowing ink), ghost (scorched letters)
 NG = 16          # G-buffer channels
 
@@ -277,8 +278,35 @@ def _arc_u(a, tab, da):
     return tab[i] * (1 - f) + tab[i + 1] * f
 
 
+@njit(cache=True)
+def leaf_hit(ox, oy, oz, dx, dy, dz, LX, LZ, halfH, tmax):
+    """The nearest crossing (t, s index + fraction) of a ray with the turning leaf, a sheet extruded along y
+    whose cross-section is the polyline (LX, LZ). Returns (t, k + u) or (-1, 0)."""
+    best = -1.0
+    bs = 0.0
+    for k in range(len(LX) - 1):
+        ex = LX[k + 1] - LX[k]
+        ez = LZ[k + 1] - LZ[k]
+        den = dx * ez - dz * ex
+        if abs(den) < 1e-12:
+            continue
+        qx = LX[k] - ox
+        qz = LZ[k] - oz
+        t = (qx * ez - qz * ex) / den
+        u = (qx * dz - qz * dx) / den
+        if u < 0.0 or u > 1.0 or t <= 1e-4 or t >= tmax:
+            continue
+        if abs(oy + dy * t) > halfH:
+            continue
+        if best < 0.0 or t < best:
+            best = t
+            bs = k + u
+    return best, bs
+
+
 @njit(cache=True, parallel=True)
-def trace_kernel(G, P, ck, uL, uR, da, cam_pos, cam_r, cam_u, cam_f, F, W, H, zmax, L_pos, L_rad, table_far):
+def trace_kernel(G, P, ck, uL, uR, da, cam_pos, cam_r, cam_u, cam_f, F, W, H, zmax, L_pos, L_rad, table_far,
+                 LX, LZ):
     """G-buffer: 0 mat, 1 depth, 2-4 position, 5-7 normal, 8 u, 9 v, 10 footprint (cm/px), 11 shadow,
     12 ao, 13-15 view dir."""
     PW, PH = P[0], P[1]
@@ -313,7 +341,7 @@ def trace_kernel(G, P, ck, uL, uR, da, cam_pos, cam_r, cam_u, cam_f, F, W, H, zm
             while tc < t1:
                 tc = min(tc + step, t1)
                 hc, mc = height(ox + dx * tc, oy + dy * tc, P, ck)
-                if oz + dz * tc - hc <= 0.0:
+                if oz + dz * tc - hc <= 1e-7 or tc >= t1:
                     a = tp
                     b = tc
                     for _ in range(16):
@@ -329,6 +357,45 @@ def trace_kernel(G, P, ck, uL, uR, da, cam_pos, cam_r, cam_u, cam_f, F, W, H, zm
                 tp = tc
             px = ox + dx * th
             py = oy + dy * th
+            if len(LX) > 1:
+                tl, sl = leaf_hit(ox, oy, oz, dx, dy, dz, LX, LZ, 0.5 * PH, th if (hit and py <= table_far) else 1e9)
+                if tl > 0.0:
+                    k = int(sl)
+                    fu = sl - k
+                    ex = LX[k + 1] - LX[k]
+                    ez = LZ[k + 1] - LZ[k]
+                    el = math.sqrt(ex * ex + ez * ez) + 1e-12
+                    nx = -ez / el
+                    nz = ex / el
+                    side = M_LEAF_F
+                    if nx * dx + nz * dz > 0.0:          # we see the back of the leaf
+                        nx = -nx
+                        nz = -nz
+                        side = M_LEAF_B
+                    qx = ox + dx * tl
+                    qy = oy + dy * tl
+                    qz = oz + dz * tl
+                    G[i, j, 0] = side
+                    G[i, j, 1] = tl * (dx * cam_f[0] + dy * cam_f[1] + dz * cam_f[2])
+                    G[i, j, 2] = qx
+                    G[i, j, 3] = qy
+                    G[i, j, 4] = qz
+                    G[i, j, 5] = nx
+                    G[i, j, 6] = 0.0
+                    G[i, j, 7] = nz
+                    G[i, j, 10] = tl / F / math.sqrt(max(abs(dx * nx + dz * nz), 0.1))
+                    s_arc = sl / (len(LX) - 1) * P[0]
+                    G[i, j, 8] = s_arc if side == M_LEAF_F else P[0] - s_arc
+                    G[i, j, 9] = 0.5 * PH - qy
+                    # light: the leaf's own side toward the hearth, or light through the paper
+                    lx = L_pos[0] - qx
+                    lz = L_pos[2] - qz
+                    ly = L_pos[1] - qy
+                    ld = math.sqrt(lx * lx + ly * ly + lz * lz)
+                    tb, _ = leaf_hit(qx + nx * 1e-3, qy, qz + nz * 1e-3, lx / ld, ly / ld, lz / ld, LX, LZ, 0.5 * PH, 1e9)
+                    G[i, j, 11] = 1.0 if tb < 0.0 else 0.2
+                    G[i, j, 12] = 1.0
+                    continue
             if not hit or py > table_far:
                 continue
             pz, m = height(px, py, P, ck)
@@ -387,6 +454,10 @@ def trace_kernel(G, P, ck, uL, uR, da, cam_pos, cam_r, cam_u, cam_f, F, W, H, zm
                 sh = sh * sh * (3 - 2 * sh)
             else:
                 sh = 0.0
+            if len(LX) > 1 and sh > 0.0:
+                tb, _ = leaf_hit(px, py, pz + 2e-3, lx, ly, lz, LX, LZ, 0.5 * PH, 1e9)
+                if tb > 0.0:
+                    sh *= 0.12 + 0.1 * min(tb / 6.0, 1.0)       # a thin leaf: the shadow is soft and warm
             G[i, j, 11] = sh
             # ambient occlusion from the local field
             hs = 0.0
@@ -473,7 +544,8 @@ def paper(u, v, fp, PW, PH, seed, age, fore_right):
 
 @njit(cache=True, parallel=True)
 def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_col, amb_col, env_col,
-                 texL, metaL, ppcL, texR, metaR, ppcR, seedL, seedR, age, burnL, burnR, xl, t):
+                 texL, metaL, ppcL, texR, metaR, ppcR, seedL, seedR, age, burnL, burnR, xl, t,
+                 texF, metaF, ppcF, texB, metaB, ppcB):
     """Colour (linear HDR) and coverage of the book layer. burnL/burnR: burn fields per page (burn.py);
     xl: extra point lights (n x 6: position, colour) without shadows (a fire on the page)."""
     H, W = out.shape[0], out.shape[1]
@@ -508,15 +580,24 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
             er, eg, eb = 0.0, 0.0, 0.0          # emission
             cov = 1.0
             wrap = 0.0
-            if m == M_PAGE_L or m == M_PAGE_R:
+            trans = 0.0
+            if m == M_PAGE_L or m == M_PAGE_R or m == M_LEAF_F or m == M_LEAF_B:
                 u, v = G[i, j, 8], G[i, j, 9]
-                right = m == M_PAGE_R
+                right = m == M_PAGE_R or m == M_LEAF_F
                 sd = seedR if right else seedL
+                if m == M_LEAF_F or m == M_LEAF_B:
+                    sd = sd + 5.0
                 pr, pg, pb, fib = paper(u, v, fp, PW, PH, sd, age, right)
-                if right:
+                if m == M_PAGE_R:
                     tex(texR, metaR, ppcR, u, v, fp, tv)
-                else:
+                elif m == M_PAGE_L:
                     tex(texL, metaL, ppcL, u, v, fp, tv)
+                elif m == M_LEAF_F:
+                    tex(texF, metaF, ppcF, u, v, fp, tv)
+                else:
+                    tex(texB, metaB, ppcB, u, v, fp, tv)
+                if m == M_LEAF_F or m == M_LEAF_B:
+                    trans = 0.3
                 ink = min(tv[0], 1.25)
                 wet = tv[1]
                 gilt = min(tv[2], 1.0)
@@ -565,8 +646,8 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     metal = gilt
                     rough = rough * (1 - gilt) + 0.22 * gilt
                 # burn fields: browning, char, the hole, the glowing edge
-                bf = burnR if right else burnL
-                if bf[0] > 0.0:
+                bf = burnR if m == M_PAGE_R else burnL
+                if (m == M_PAGE_R or m == M_PAGE_L) and bf[0] > 0.0:
                     brown, char, hole, edge, pool = BURN.field(bf, u, v, t)
                     ar = ar * (1 - 0.62 * brown) * (1 - 0.96 * char)
                     ag = ag * (1 - 0.82 * brown) * (1 - 0.97 * char)
@@ -665,6 +746,9 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 mc = (mr, mg, mb)[c]
                 Lc = L_col[c] * fall * sh
                 d_ = alb * (1.0 - metal) * (Lc * dif + fill_col[c] * ndf + amb_col[c] * ao)
+                if trans > 0.0 and ndl < 0.0:
+                    # light through the thin leaf from behind: a warm glow in the paper
+                    d_ += trans * alb * L_col[c] * fall * (-ndl) * (0.6 + 0.4 * alb)
                 s_ = (spec * (1.0 - metal) + mc * metal) * Lc * spd
                 # gold leaf: a mirror of the warm room plus the broad scatter of crinkled, burnished leaf
                 e_ = metal * mc * (env_col[c] * envk * ao * 2.2 + 0.55 * Lc * max(ndl, 0.0) + 0.9 * amb_col[c] * ao)
@@ -702,12 +786,19 @@ def flicker(t, seed=0, amt=0.1):
 
 
 def render(book, cam, light, texL, texR, t, fill=None, amb=(0.012, 0.009, 0.007), env=(0.9, 0.5, 0.22),
-           burnL=None, burnR=None, xlights=None, age=1.0, table_far=40.0):
-    """One frame of the book: returns (hdr HxWx3, alpha HxW, G-buffer)."""
+           burnL=None, burnR=None, xlights=None, age=1.0, table_far=40.0, leaf=None):
+    """One frame of the book: returns (hdr HxWx3, alpha HxW, G-buffer). leaf = (phi, texF, texB) turns the
+    right-hand leaf over: phi 0 (lying on the right) .. 1 (lying on the left); texR is then the page beneath it."""
     W, H = cam.W, cam.H
     G = np.zeros((H, W, NG), np.float64)
+    if leaf is not None and 0.0 < leaf[0] < 1.0:
+        LX, LZ = leaf_curve(book, leaf[0])
+        texF, texB = leaf[1], leaf[2]
+    else:
+        LX = LZ = np.zeros(0)
+        texF = texB = texR
     trace_kernel(G, book.params, book.ck, book.uL, book.uR, book.da, cam.pos, cam.r, cam.u, cam.f, cam.F,
-                 W, H, book.zmax(), light.pos, light.radius, table_far)
+                 W, H, book.zmax(), light.pos, light.radius, table_far, LX, LZ)
     out = np.zeros((H, W, 3), np.float64)
     alpha = np.ones((H, W), np.float64)
     fd = np.array([0.35, -0.5, 0.8]) if fill is None else np.asarray(fill[0], np.float64)
@@ -719,8 +810,29 @@ def render(book, cam, light, texL, texR, t, fill=None, amb=(0.012, 0.009, 0.007)
     shade_kernel(out, alpha, G, book.params, cam.pos, light.pos, light.col, light.radius, fd, fc,
                  np.asarray(amb, np.float64), np.asarray(env, np.float64),
                  texL.data, texL.meta, float(texL.ppc), texR.data, texR.meta, float(texR.ppc),
-                 float(book.seed), float(book.seed + 17), float(age), bL, bR, xl, float(t))
+                 float(book.seed), float(book.seed + 17), float(age), bL, bR, xl, float(t),
+                 texF.data, texF.meta, float(texF.ppc), texB.data, texB.meta, float(texB.ppc))
     return out.astype(np.float32), alpha.astype(np.float32), G
+
+
+def leaf_curve(book, phi, N=160, lag=0.55):
+    """Cross-section (x, z) of the right-hand leaf turning over, at progress phi: every part of the leaf rotates
+    from the slope of the right block's top to the mirrored slope of the left block's, the part near the spine
+    leading and the free edge lagging, so the leaf lifts, arches and curls over, then settles."""
+    s = np.linspace(0.0, book.PW, N + 1)
+    aR = np.interp(s, book.uR, book.a_tab)
+    zR = np.array([_top(a, book.TR, book.bt, book.zg, book.xr, book.dome, book.PW) for a in aR])
+    angR = np.arctan2(np.gradient(zR), np.gradient(aR))
+    aL = np.interp(s, book.uL, book.a_tab)
+    zL = np.array([_top(a, book.TL, book.bt, book.zg, book.xr, book.dome, book.PW) for a in aL])
+    angL = np.pi - np.arctan2(np.gradient(zL), np.gradient(aL))
+    g = np.clip(phi * (1.0 + lag) - lag * (s / book.PW), 0.0, 1.0)
+    g = g * g * (3 - 2 * g)
+    ang = angR * (1 - g) + angL * g
+    ds = np.diff(s)
+    x = np.concatenate([[0.0], np.cumsum(np.cos(0.5 * (ang[1:] + ang[:-1])) * ds)])
+    z = book.zg + np.concatenate([[0.0], np.cumsum(np.sin(0.5 * (ang[1:] + ang[:-1])) * ds)]) + 0.004
+    return x.astype(np.float64), z.astype(np.float64)
 
 
 def dof(hdr, depth, cam, strength):
