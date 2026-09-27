@@ -51,6 +51,13 @@ DESIGN (as rendered):
 # >>> EMBERS-C3 (27 Sep ~20:35Z, took over from EMBERS-C): E15 LETTERS TO FIRE, E5-C THE FORGING, E11 THE RACE, and the
 # canonical Ring (ringsolid.py) + gold flame (cflame.py). EMBERS-C2 owns E12 / E8-C / E13a (c2.py etc.). <<<
 ## STATE AT HANDOFF (EMBERS-C3, 27 Sep 21:15Z; the account idles ~21:25Z-23:30Z). READ THIS FIRST.
+**UPDATE 21:15Z (FINAL for this session):** ashlar TEST 2 PASSED the gate (sheet: _local_logs/review/embers_C/
+SHEET_E5C_ashlar2_vs_before.jpg): the window-dot, seam and joint grids are gone; the forge bands and edges remain on dark
+mottled stone (banded stacks, not offices). RELAUNCHED by me 21:14Z (director pre-approved): request
+0927-171411-embersC3forging-96038 = embers_C3_forging --frames 1040-1439 --nodes 3 -> renders/embers_C3. AT 23:30Z:
+(1) check it completed (farm.py status; `--missing` if short), sheet 1040-1439 every 20 f against the gates; (2) the race
+(main's 0927-165049) 1440-1679 complete?; (3) nitpick: a vertical rib mid-face at 1380 (kind 2 EDGE) could go too;
+(4) E15 letters test 2 (_farmtest/embers_C3_e15_letters2) -> JOB READY embers_C3_e15.
 **UPDATE 21:14Z (supersedes the lines below where they differ):**
 * main's final (request 0927-165049-embersC3forging-81662 = forging + race, 640 f) was 376/640 at 21:12Z. The race frames are
   good. Its forging frames carry the grid, and its last units may carry the 2adb619 joint-kill: they get REPLACED either way.
