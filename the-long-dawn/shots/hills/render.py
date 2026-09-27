@@ -37,6 +37,9 @@ def make_shot(name):
         import beacon
         beacon.V3_REKEY = True
         return beacon.FirstBeacon()
+    if name in ('deadember', 'find', 'firetest'):   # BIBLE_V3 H5 / H2 close-ups (frames = seconds x 24 in the cut)
+        import heroine_v3
+        return heroine_v3.SHOTS[name]()
     if name == 'coda':
         import coda
         return coda.Coda()
