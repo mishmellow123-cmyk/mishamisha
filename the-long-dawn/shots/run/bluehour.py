@@ -222,9 +222,10 @@ def composite_valley(img1, D1, img2, D2, x0, y0, C, VP, KN, out_alpha):
             m = _hole_mask(x, z, VP, KN) * VP[9]
             if m <= 0.0:
                 continue
-            n1 = fbm2(x / 1300.0 + 3.1, z / 1300.0, 4.0, 211)
-            n2 = fbm2(x / 380.0 - VP[10] * 0.004, z / 380.0, 3.0, 212)
-            a = 1.0 - m * (1.22 + 0.62 * n1 + 0.22 * n2)
+            # torn, partial cloud: banks and gaps at two scales, never one clean hole (it read as an ink blot)
+            n1 = fbm2(x / 700.0 + 3.1, z / 700.0, 4.0, 211)
+            n2 = fbm2(x / 180.0 - VP[10] * 0.004, z / 180.0, 3.0, 212)
+            a = 1.0 - m * (0.62 + 1.05 * n1 + 0.45 * n2)
             a = min(max(a, 0.0), 1.0)
             a = a * a * (3.0 - 2.0 * a)
             out_alpha[J, I] = a
@@ -398,13 +399,13 @@ def sky_params(t):
     k = dawn_k(t)
     SPa = np.zeros(16)
     SPa[0:3] = sun_dir(t)
-    SPa[3:6] = lin('#17285F') * (0.36 + 0.34 * k)          # deep blue overhead
-    SPa[6:9] = lin('#4E5B8E') * (0.24 + 0.26 * k)          # lilac-blue horizon away from the east
+    SPa[3:6] = lin('#17285F') * (0.58 + 0.30 * k)          # deep blue overhead (bar 74 is the blue hour, not night)
+    SPa[6:9] = lin('#4E5B8E') * (0.40 + 0.26 * k)          # lilac-blue horizon away from the east
     SPa[9:12] = lin('#E39A86') * (0.03 + 0.92 * k)         # rose, low in the east, only from bar 75 b1
     SPa[12] = 0.035 + 0.02 * k
     SPa[13] = 0.55
     SPa[14] = 0.02 + 0.08 * k
-    SPa[15] = 0.030 * (1.0 - 0.5 * k)                      # the cold pallor that comes before the rose
+    SPa[15] = 0.055 * (1.0 - 0.5 * k)                      # the cold pallor that comes before the rose
     return SPa
 
 
@@ -438,8 +439,9 @@ def light_valley(t):
     Q[19] = SNOW_LINE
     Q[0] *= 0.55                                 # the key is weaker down there, under the remaining cloud
     amb = amb * 0.80
-    fogc = lin('#66729F') * (0.17 + 0.12 * k)
-    fogp2 = np.array([2.6e-5, 1 / 1500.0, 1.6e-5, 1 / 140.0, 1.2, fogc[0], fogc[1], fogc[2], 120.0])
+    # the valley air is the cloud's own lilac-grey (a darker fog read as a black hole in the cloud sea)
+    fogc = lin('#7F88B8') * (0.52 + 0.25 * k)
+    fogp2 = np.array([6.0e-5, 1 / 1500.0, 1.6e-5, 1 / 140.0, 1.2, fogc[0], fogc[1], fogc[2], 120.0])
     return Lk, amb, S, fogp2, Q
 
 
@@ -534,9 +536,11 @@ def people():
 # camera keys (shot bar, f, r, eye height, yaw offset from VY, pitch, hfov): from bar 76 b1 it drifts toward the
 # edge and rises a little (a bearer stepping up onto the rise), which opens the valley past the edge; A20 lifts to
 # the rose sky over the valley for the title
-CAM_KEYS = [(74.0, -12.0, 0.8, 1.62, -4.0, -6.0, 54.0), (75.95, -11.6, 0.9, 1.64, -3.6, -6.2, 54.0),
-            (79.0, -5.0, 2.6, 2.60, 3.0, -7.2, 52.0), (80.4, -4.3, 2.8, 2.90, 4.0, 1.2, 52.0),
-            (82.0, -4.1, 2.85, 2.95, 4.2, 1.6, 52.0)]
+# (a first pass drifted into the gathering and rose to 2.6 m: by T14's last frame the people had left the frame)
+# (from 12 m back the set-down lantern was a speck behind the people: now 8.6 m, on the clear corridor to it)
+CAM_KEYS = [(74.0, -8.6, 1.3, 1.58, -3.0, -8.0, 54.0), (75.95, -8.4, 1.4, 1.60, -2.6, -7.6, 54.0),
+            (79.0, -7.6, 2.4, 1.90, 3.0, -5.5, 52.0), (80.4, -7.4, 2.5, 2.00, 3.5, -1.8, 52.0),
+            (82.0, -7.3, 2.55, 2.02, 3.6, -1.4, 52.0)]
 
 
 FIRES = [(-3.8, -8.4), (1.4, 7.8)]              # two watch-fires beside the gathering (f, r from the lantern)
@@ -554,7 +558,7 @@ def build_scene(t):
     hc = np.array([1.00, 0.74, 0.40])
     br = X.breath(t)
     SP.great_lantern(sc, heart, math.radians(X.YAW_E) + 0.3, hc, 0.55 * br, scale=X.LANT_K)
-    lights.append([heart[0], heart[1], heart[2], hc[0], hc[1], hc[2], 2.4 * br, 0.35])
+    lights.append([heart[0], heart[1], heart[2], hc[0], hc[1], hc[2], 4.2 * br, 0.35])
     # the poles laid down, the rope coiled beside it
     sc.begin(rgb=(0.07, 0.05, 0.035))
     for o in (-0.22, 0.22):
