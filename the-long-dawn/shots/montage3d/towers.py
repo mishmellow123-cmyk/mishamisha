@@ -31,7 +31,7 @@ def style_for(seed, R0, top):
     return str(rng.choice(['stack', 'split', 'spire', 'slab'], p=[0.35, 0.3, 0.2, 0.15]))
 
 
-def _lobes(style, R0, zb, zt, rng):
+def _lobes(style, R0, zb, zt, rng, front=None):
     """Sub-blocks (theta_c, half_width, radius, ztop, taper, edge_sharp) for karstgen._pillar_r."""
     H = zt - zb
     if style == 'split':
@@ -43,6 +43,8 @@ def _lobes(style, R0, zb, zt, rng):
     th0 = rng.uniform(0, 2 * math.pi)
     gaps = rng.uniform(0.6, 1.4, n)
     ths = th0 + np.cumsum(gaps) / gaps.sum() * 2 * math.pi
+    if front is not None:                                # the highest sub-block faces this way (the hero's beacon)
+        ths = ths - ths[0] + front
     L = []
     for k in range(n):
         hw = (2 * math.pi / n) * rng.uniform(0.30, 0.52)
@@ -67,11 +69,13 @@ def _lobes(style, R0, zb, zt, rng):
     return np.array(L, np.float64)
 
 
-def _profile(style, u, th, rng):
+def _profile(style, u, th, rng, taper=None):
     """Radius multiplier over (height u 0..1, angle th): an irregular taper plus waists and bulges that are
     ONE-SIDED (an undercut on one face, a buttress on another), so the two sides of a silhouette never mirror
     each other (a symmetric neck reads as a bottle or a chess piece)."""
-    if style == 'stack':
+    if taper is not None:
+        rng.uniform(0.0, 1.0)                            # keep the random stream the same
+    elif style == 'stack':
         taper = rng.uniform(0.28, 0.45)
     elif style == 'slab':
         taper = rng.uniform(0.15, 0.3)
@@ -112,15 +116,15 @@ def _beds(z, R0, rng, bed_len):
     return mult, notch * min(0.9, 0.035 * R0)
 
 
-def tower_mesh(cx, cy, R0, zb, zt, seed, nt, dz, z_lo, z_hi=None, dcap=None, style=None, lean=None, cap=0.10,
-               rock=1.0, bed_len=None, keep=None):
+def tower_mesh(cx, cy, R0, zb, zt, seed, nt, dz, z_lo, z_hi=None, dcap=None, style=None, lean=None, cap=0.16,
+               rock=1.0, bed_len=None, keep=None, shoulder=None, bites=True, taper=None):
     """A tower meshed only on the visible window [z_lo, z_hi] (nt around, dz between rows). Returns (V float32
     Nx3, Q int32 Mx4 with -1 for triangles, veg float32 N: a little moss affinity in the bedding notches)."""
     import karstgen as KG
     rng = np.random.default_rng(int(abs(seed) * 1000) % (2 ** 31))
     style = style or style_for(seed, R0, zt - zb)
     H = zt - zb
-    BL = _lobes(style, R0, zb, zt, rng)
+    BL = _lobes(style, R0, zb, zt, rng, front=None if keep is None else keep[0])
     bed_len = bed_len or float(rng.uniform(3.2, 7.5)) * (R0 / 10.0) ** 0.3
     prm = np.array([R0, zb, zt, 0.14, 0.08, 97.0, 0.004, 0.66], np.float64)  # lumpy section, almost no fluting
     th = np.linspace(0, 2 * math.pi, nt, endpoint=False)
@@ -131,23 +135,28 @@ def tower_mesh(cx, cy, R0, zb, zt, seed, nt, dz, z_lo, z_hi=None, dcap=None, sty
     TH, Z = np.meshgrid(th, z)
     R = np.empty_like(TH)
     VEG = np.empty_like(TH)
-    KG._pillar_r(TH, Z, prm, BL, float(seed % 97), R, VEG)
     u = np.clip((z - zb) / H, 0.0, 1.0)
-    prof = _profile(style, u, th, rng)
+    prof = _profile(style, u, th, rng, taper)
+    if taper is not None:                                # a broad summit: the sub-blocks barely narrow either
+        BL[:, 4] = np.minimum(BL[:, 4], 0.4 * taper + 0.02)
+    KG._pillar_r(TH, Z, prm, BL, float(seed % 97), R, VEG)
     bm, notch = _beds(z, R0, rng, bed_len)
     # the beds wander a little round the tower (a bed is never a perfect ring)
     wav = 1.0 + 0.025 * np.sin(TH * 2 + rng.uniform(0, 6.28)) * np.sin(Z / (2.3 * bed_len) + rng.uniform(0, 6.28))
     R = R * prof * bm[:, None] * wav - notch[:, None]
+    # weathered shoulders: the top rounds off (a cut-flat top reads as a stump or a column)
+    shoulder = rng.uniform(0.2, 0.45) if shoulder is None else shoulder
+    R = R * (1.0 - shoulder * np.clip((u - 0.8) / 0.2, 0.0, 1.0) ** 2)[:, None]
     # a broken crown: wedges bitten out of the top edge, so the summit is stepped and jagged, never a flat cap
     bite = np.zeros_like(th)
     for _ in range(int(rng.integers(2, 5))):
         c0, wdt = rng.uniform(0, 2 * math.pi), rng.uniform(0.25, 0.9)
         d = np.abs(np.arctan2(np.sin(th - c0), np.cos(th - c0))) / wdt
-        bite = np.maximum(bite, np.clip(1.0 - d, 0.0, 1.0) ** 0.6 * rng.uniform(0.3, 0.7))
+        bite = np.maximum(bite, np.clip(1.0 - d, 0.0, 1.0) ** 0.6 * rng.uniform(0.35, 0.8) * (1.0 if bites else 0.0))
     if keep is not None:                                 # (angle, half-width): leave this side of the crown whole
         dk = np.abs(np.arctan2(np.sin(th - keep[0]), np.cos(th - keep[0]))) / keep[1]
         bite = bite * np.clip(dk - 0.6, 0.0, 1.0)
-    top_u = np.clip((u - 0.86) / 0.14, 0.0, 1.0) ** 1.3
+    top_u = np.clip((u - 0.8) / 0.2, 0.0, 1.0) ** 1.3
     R = R * (1.0 - top_u[:, None] * bite[None, :])
     R = np.maximum(R, 0.1 * R0)
     if lean is None:

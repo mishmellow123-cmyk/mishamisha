@@ -397,7 +397,7 @@ def cloak_body(J, t, wind_l, gust):
     # the back to a hem at mid-calf, open at the front. Folds = the sheet undulating in and out round the
     # body; the wind billows the whole sheet downwind (more toward the hem and on the lee side) and a flap
     # wave runs across it.
-    N, M = 19, 8
+    N, M = 27, 8
     z_hem = 0.36
     G = np.zeros((N, M, 3))
     for i in range(N):
@@ -408,7 +408,7 @@ def cloak_body(J, t, wind_l, gust):
         top = ch + Rc @ V(0.17 * sa, -(0.11 * ca + 0.03), 0.07)
         hip = pel + Rp @ V(0.225 * sa, -(0.18 * ca + 0.04), -0.03)
         hem = np.array([hip[0] * 1.1, hip[1] * 1.1, z_hem])
-        fold = 0.024 * math.sin(i * 1.35 + 0.6) + 0.01 * math.sin(i * 2.9 + 1.1)
+        fold = 0.02 * math.sin(i * 0.95 + 0.6) + 0.008 * math.sin(i * 2.1 + 1.1)
         for j in range(M):
             v = j / (M - 1)
             if v < 0.45:
@@ -416,8 +416,8 @@ def cloak_body(J, t, wind_l, gust):
             else:
                 q = hip + (hem - hip) * ((v - 0.45) / 0.55)
             g = v ** 1.4
-            flap = 0.05 * math.sin(ph * 2.3 - i * 0.45 - j * 0.5) + 0.025 * math.sin(ph * 4.3 - i * 0.8 + 0.7)
-            q = q + outward * (fold * (0.4 + 0.6 * v) + 0.05 * lee * g) + W * gust * g * (0.26 + 0.1 * lee)
+            flap = 0.045 * math.sin(ph * 2.3 - i * 0.3 - j * 0.5) + 0.02 * math.sin(ph * 4.3 - i * 0.55 + 0.7)
+            q = q + outward * (fold * (0.4 + 0.6 * v) + 0.02 * lee * g) + W * gust * g * (0.27 + 0.03 * lee)
             q = q + W * flap * g + np.array([0.0, 0.0, 0.07 * g * gust * (0.5 + lee)])
             G[i, j] = q
     for i in range(N):
@@ -432,8 +432,8 @@ def cloak_body(J, t, wind_l, gust):
             tg /= float(np.linalg.norm(tg)) + 1e-9
             nm = np.cross(ax, tg)
             Rm = np.stack([tg, nm, ax], 1)
-            wd = 0.036 + 0.004 * (j / (M - 1))
-            P.append(ell(c, (wd, 0.014, 0.62 * L), Rm, k=0.018, mat=1))
+            wd = 0.032 + 0.026 * (j / (M - 1))
+            P.append(ell(c, (wd, 0.014, 0.6 * L), Rm, k=0.03, mat=1))
     return P
 
 
@@ -466,6 +466,8 @@ def _figure_frames(frames, cache, beacon, root, yaw, basket_top):
     wl /= np.linalg.norm(wl)
     basket = to_local(np.array(basket_top) + np.array([0, 0, -0.12]))
     torch, step = {}, {}
+    only = os.environ.get('MT3D_FIGONLY')                # tests: mesh only these frames (+ the first)
+    only = None if not only else {int(x) for x in only.split(',')} | {START - 1}
     for f in frames:
         J, gust, t = fig_frame(f, wl)
         back = 0.42 * FG.ease((f - 1540.5) / 5.0)
@@ -498,6 +500,8 @@ def _figure_frames(frames, cache, beacon, root, yaw, basket_top):
         torch[str(f)] = [list(map(float, grip)), list(map(float, tdir))]
         step[str(f)] = -back
         path = os.path.join(d, f'robe_{f:05d}.bin')
+        if only is not None and f not in only:
+            continue
         if not os.path.exists(path) or os.environ.get('MT3D_REFIG'):
             body = cloak_body(J, t, wl, gust) if V3 else robe_body(J, t, wl, gust)
             Vv, Q, M = FG.mesh_sdf(body, h=0.007 if V3 else 0.011, disp=(0.003, 7.0, 19.0, 3.0 * t))
@@ -775,6 +779,7 @@ def _sand_materials(C, new_material, D):
             # in patches, so the wavelength and direction wander; the amplitude breathes; asymmetric profile
             # (gentle stoss, steep lee); gone before a ripple spans < ~5 px (no shimmer)
             wx, wy = WIND
+            along = nb.add(nb.mul(px, -wx), nb.mul(py, -wy))          # (the megaripples below use it)
             w1 = nb.noise(P, scale=0.22, detail=1.0, rough=0.5)
             w2 = nb.noise(P, scale=1.3, detail=2.0, rough=0.5)
             Pw = nb.vadd(nb.vadd(P, nb.vscale(nb.vsub(w1.outputs['Color'], (0.5, 0.5, 0.5)), 1.6)),
@@ -794,13 +799,23 @@ def _sand_materials(C, new_material, D):
             pxsize = nb.mul(dist, 2.0 * math.tan(math.radians(HFOV / 2)) / 1920.0)
             fade = nb.sstep(0.022, 0.009, pxsize)          # gone before a ripple spans < ~5 px (no shimmer)
             height = nb.mul(nb.mul(prof, amp), fade)
-            # megaripples / wind streaks (~1.7 m, sinuous): the texture that still reads on far dune flanks
-            warp2 = nb.noise(P, scale=0.03, detail=2.0, rough=0.5)
-            ph2 = nb.div(nb.add(along, nb.mul(nb.sub(warp2.outputs['Fac'], 0.5), 6.0)), 1.7)
-            fr2 = nb.math('FRACT', ph2)
-            prof2 = nb.mn(nb.div(fr2, 0.75), nb.div(nb.sub(1.0, fr2), 0.25))
-            amp2 = nb.mul(nb.madd(nb.noise(P, scale=0.015, detail=2.0).outputs['Fac'], 1.2, -0.1),
-                          0.03 if kind == 'hero_wind' else 0.075)
+            # megaripples / wind streaks (1.3-2.4 m): the texture that still reads on far dune flanks. H5: never
+            # combed, so they get their own large domain warp (+-35 deg bends over tens of metres), two spacings
+            # that take over from each other in patches, and an amplitude that comes and goes
+            m1 = nb.noise(P, scale=0.012, detail=1.0, rough=0.5)
+            m2 = nb.noise(P, scale=0.07, detail=2.0, rough=0.5)
+            Pm = nb.vadd(nb.vadd(P, nb.vscale(nb.vsub(m1.outputs['Color'], (0.5, 0.5, 0.5)), 26.0)),
+                         nb.vscale(nb.vsub(m2.outputs['Color'], (0.5, 0.5, 0.5)), 2.4))
+            mx_, my_, _ = nb.sep(Pm)
+            fam2 = []
+            for lam, rot in ((1.3, 0.22), (2.4, -0.16)):
+                cr, sr = math.cos(rot), math.sin(rot)
+                dx, dy = -(wx * cr - wy * sr), -(wx * sr + wy * cr)
+                fr2 = nb.math('FRACT', nb.div(nb.add(nb.mul(mx_, dx), nb.mul(my_, dy)), lam))
+                fam2.append(nb.mn(nb.div(fr2, 0.75), nb.div(nb.sub(1.0, fr2), 0.25)))
+            prof2 = nb.mixf(nb.sstep(0.4, 0.6, nb.noise(P, scale=0.008, detail=2.0).outputs['Fac']), fam2[0], fam2[1])
+            amp2 = nb.mul(nb.madd(nb.noise(P, scale=0.02, detail=3.0, rough=0.6).outputs['Fac'], 2.2, -0.75),
+                          0.03 if kind == 'hero_wind' else 0.07)
             fade2 = nb.sstep(0.5, 0.2, pxsize)
             height = nb.add(height, nb.mul(nb.mul(prof2, nb.mx(amp2, 0.0)), fade2))
             if kind in ('hero_wind', 'wind'):
@@ -850,10 +865,10 @@ def _footprints(nb, cu, cw, path_u):
     j1, j2, j3 = nb.sep(jit.outputs['Color'])
     jit2 = nb.white(nb.comb(k, 7.0, 3.0), dims='3D')
     j4, j5, j6 = nb.sep(jit2.outputs['Color'])
-    uc = nb.add(nb.madd(k, STEP, u0 + STEP * 0.5), nb.mul(nb.sub(j1, 0.5), 0.09))
+    uc = nb.add(nb.madd(k, STEP, u0 + STEP * 0.5), nb.mul(nb.sub(j1, 0.5), 0.15))
     side = nb.sub(nb.mul(nb.math('MODULO', k, 2.0), 2.0), 1.0)
     path = nb.madd(nb.math('SINE', nb.mul(uc, 0.21)), 0.16, 0.52)
-    wc = nb.add(nb.add(path, nb.mul(side, nb.madd(j5, 0.03, 0.075))), nb.mul(nb.sub(j2, 0.5), 0.04))
+    wc = nb.add(nb.add(path, nb.mul(side, nb.madd(j5, 0.04, 0.07))), nb.mul(nb.sub(j2, 0.5), 0.07))
     du0 = nb.sub(cu, uc)
     dw0 = nb.sub(cw, wc)
     # toe-out: each foot turned 4-14 deg outward
@@ -861,15 +876,22 @@ def _footprints(nb, cu, cw, path_u):
     ca, sa = nb.math('COSINE', ang), nb.math('SINE', ang)
     du = nb.add(nb.mul(du0, ca), nb.mul(dw0, sa))
     dw = nb.sub(nb.mul(dw0, ca), nb.mul(du0, sa))
-    L = nb.madd(j4, 0.025, 0.115)                      # half length 11.5-14 cm
-    e = nb.length(nb.comb(nb.div(du, L), nb.div(dw, 0.052), 0.0))
-    fill = nb.madd(j6, 0.55, 0.3)                      # how much the wind has filled it (0.3 .. 0.85)
+    L = nb.madd(j4, 0.05, 0.10)                        # half length 10-15 cm
+    Wd = nb.madd(j2, 0.02, 0.045)                      # half width 4.5-6.5 cm
+    e0 = nb.length(nb.comb(nb.div(du, L), nb.div(dw, Wd), 0.0))
+    # a ragged outline: the walls have slumped unevenly
+    rag = nb.noise(nb.comb(nb.mul(du, 14.0), nb.mul(dw, 14.0), nb.mul(k, 3.7)), scale=1.0, detail=2.0)
+    e = nb.add(e0, nb.mul(nb.sub(rag.outputs['Fac'], 0.5), 0.55))
+    fill = nb.madd(j6, 0.75, 0.2)                      # how much the wind has filled it (0.2 .. 0.95)
     pit = nb.math('POWER', nb.sstep(1.05, 0.25, e), 1.6)
     toe = nb.madd(nb.div(du, L), 0.45, 1.0)
     depth = nb.mul(nb.sub(1.0, fill), 0.042)
     rim = nb.mul(nb.mul(nb.sstep(1.6, 1.1, e), nb.sstep(0.9, 1.15, e)), nb.sstep(0.0, 0.05, dw0))   # downhill kick
+    # the scuff: sand pushed downhill by the climbing foot, a soft smear below the print
+    sc = nb.length(nb.comb(nb.div(du, nb.mul(L, 0.9)), nb.div(nb.sub(dw0, nb.mul(Wd, 2.6)), nb.mul(Wd, 2.2)), 0.0))
+    scuff = nb.mul(nb.sstep(1.0, 0.2, sc), nb.mul(nb.sub(1.0, fill), 0.006))
     inside = nb.mul(nb.sstep(u0, u0 + 0.5, cu), nb.sstep(u1, u1 - 0.5, cu))
-    return nb.mul(nb.add(nb.mul(nb.mul(pit, toe), nb.mul(depth, -1.0)), nb.mul(rim, 0.004)), inside)
+    return nb.mul(nb.add(nb.add(nb.mul(nb.mul(pit, toe), nb.mul(depth, -1.0)), nb.mul(rim, 0.004)), scuff), inside)
 
 
 def _streamers(C, FK, new_material, D, opts):

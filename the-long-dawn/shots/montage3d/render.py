@@ -73,6 +73,9 @@ def acquire_lock():
             pass
 
 
+OUT_OFFSET = 0          # --out-offset: output frame = shot frame - offset (e.g. DESERT 1520-1579 -> 0-59)
+
+
 def post_frame(shot, f, exr_dir, out_dir, scene, keep_exr):
     p = os.path.join(exr_dir, f'f_{f:05d}.exr')
     ch = exr.read_exr(p)
@@ -95,7 +98,7 @@ def post_frame(shot, f, exr_dir, out_dir, scene, keep_exr):
         col = (1.0, 1.0, 1.0) if im8.dtype != np.uint8 else (255, 255, 255)
         cv2.putText(im8, txt, (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.4, col, 3, cv2.LINE_AA)
         img = im8
-    look.save_png(look.frame_path(out_dir, f), img)
+    look.save_png(look.frame_path(out_dir, f - OUT_OFFSET), img)
     if not keep_exr:
         os.remove(p)
 
@@ -116,7 +119,10 @@ def main():
     ap.add_argument('--opts', default='{}', help='json dict passed to the shot build')
     ap.add_argument('--post-only', action='store_true', help='re-finish existing EXRs (needs --keep-exr run)')
     ap.add_argument('--save-blend', default=None)
+    ap.add_argument('--out-offset', type=int, default=0, help='output frame = shot frame - this')
     a = ap.parse_args()
+    global OUT_OFFSET
+    OUT_OFFSET = a.out_offset
     shot = importlib.import_module(a.shot)
     if a.frames:
         frames = [int(x) for x in a.frames.split(',')]

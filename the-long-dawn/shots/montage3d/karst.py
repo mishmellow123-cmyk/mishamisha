@@ -57,10 +57,10 @@ NFAR_VAR = 10
 V3 = not os.environ.get('KARST_V2')
 # the mid towers keep v2's places and layers, with varied, broader proportions (no forest of columns)
 MIDS3 = [((-70, 300), 14, 52, 21.1), ((-160, 430), 30, 64, 22.7), ((95, 360), 13, 36, 23.3),
-         ((10, 470), 9, 78, 24.9), ((175, 520), 24, 92, 25.1), ((-45, 650), 36, 44, 26.3),
-         ((-240, 770), 18, 118, 27.7), ((80, 780), 16, 60, 28.1), ((240, 880), 34, 120, 29.9),
+         ((10, 470), 14, 62, 24.9), ((175, 520), 24, 92, 25.1), ((-45, 650), 36, 44, 26.3),
+         ((-240, 770), 24, 100, 27.7), ((80, 780), 16, 60, 28.1), ((240, 880), 34, 120, 29.9),
          ((-110, 1000), 26, 80, 31.3), ((150, 1150), 40, 54, 32.9), ((-310, 1250), 28, 140, 33.7),
-         ((40, 250), 8.0, 24, 34.1), ((-5, 360), 7.5, 40, 35.9)]
+         ((40, 250), 9.0, 24, 34.1), ((-5, 360), 10.0, 36, 35.9)]
 FAR3 = [(12.0, 60.0), (18.0, 40.0), (9.0, 75.0), (22.0, 55.0), (14.0, 30.0), (10.0, 90.0), (26.0, 45.0),
         (15.0, 70.0), (20.0, 60.0), (11.0, 50.0)]
 FINISH = dict(exposure=1.0, bloom_strength=0.08, bloom_threshold=0.8, streak_strength=0.0, vignette_amount=0.25)
@@ -237,7 +237,7 @@ def prep(frames, cache):
     nverts = [0]
 
     def make(name, cx, cy, R0, zt, seed, nt, dz, z_lo, z_hi=None, dcap=None, zb=-60.0, dens_ledge=0.08,
-             crown_trees=True, cap=0.22, rock=0.0, style=None, keep=None):
+             crown_trees=True, cap=0.22, rock=0.0, style=None, keep=None, tw=None):
         path = os.path.join(geo, f'{name}.bin')
         tpath = os.path.join(geo, f'{name}_trees.json')
         d = math.hypot(cx - CAM0[0], cy - CAM0[1])
@@ -248,7 +248,7 @@ def prep(frames, cache):
         else:
             if V3:
                 V, Q, veg = TW.tower_mesh(cx, cy, R0, zb, zt, seed, nt, dz, z_lo, z_hi=z_hi, dcap=dcap,
-                                          style=style, keep=keep)
+                                          style=style, keep=keep, **(tw or {}))
             else:
                 V, Q, veg = _pillar_mesh(cx, cy, R0, zb, zt, seed, nt, dz, z_lo, z_hi=z_hi, dcap=dcap, cap=cap,
                                          rock=rock)
@@ -279,7 +279,7 @@ def prep(frames, cache):
     to_cam = math.atan2(CAM0[1] - h['c'][1], CAM0[0] - h['c'][0])
     make('hero', h['c'][0], h['c'][1], h['R0'], h['zt'], h['seed'], h['nt'], h['dz'], h['z_lo'], dcap=h['dcap'],
          zb=h['zb'], dens_ledge=0.12, crown_trees=False, cap=h['cap'], rock=h['rock'], style='stack',
-         keep=(to_cam, 1.3))
+         keep=(to_cam, 1.3), tw=dict(bites=False, shoulder=0.07, cap=0.1, rock=0.9, taper=0.1))
     n = NEAR_L
     make('nearL', n['c'][0], n['c'][1], n['R0'], n['zt'], n['seed'], n['nt'], n['dz'], n['z_lo'], z_hi=n['z_hi'],
          zb=n['zb'], dens_ledge=0.12)
@@ -304,7 +304,7 @@ def prep(frames, cache):
     toward = (np.array(CAM0[:2]) - hc)
     toward /= np.linalg.norm(toward)
     side = np.array([toward[1], -toward[0]])
-    b_xy = hc + toward * HERO['R0'] * 0.38 + side * 1.2
+    b_xy = hc + toward * HERO['R0'] * (0.30 if V3 else 0.38) + side * (1.0 if V3 else 1.2)
     Vh = _load_xyz(os.path.join(geo, 'hero.bin'))
 
     def top_z(xy, r=1.0, dflt=None):
