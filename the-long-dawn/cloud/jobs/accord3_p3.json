@@ -1,0 +1,14 @@
+{
+ "name": "accord3_p3",
+ "branch": "claude/render-accord3-p3",
+ "setup": [
+  "NUMBA_NUM_THREADS=8 python3 shots/accord/accord3.py still 5560 --scale 0.15"
+ ],
+ "render": [
+  "CROWD_REQUIRED=1 NUMBA_NUM_THREADS=2 python3 shots/accord/accord3.py range --frames 5520-5679 --outdir renders/accord_C"
+ ],
+ "out_dir": "renders/accord_C",
+ "frames": "5520-5679",
+ "push_every": 300,
+ "ship": "jpg"
+}
