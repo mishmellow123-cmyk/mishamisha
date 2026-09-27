@@ -1,32 +1,27 @@
 # FINISH (lane FINISH): the films' photographic finish
 
-## >>> STATE AT HANDOFF (FINISH, 27 Sep ~20:20Z; new lane, first agent) <<<
+## >>> STATE AT HANDOFF (FINISH, 27 Sep ~21:00Z): the brief is DONE; the finish is LIVE in the masters <<<
 
-- **Brief (director, ~19:10Z):** the finish = tone curve, film print emulation, grain, halation, with spektrafilm
-  (github.com/andreavolpato/spektrafilm, v0.3.3, GPLv3 code, CC BY-SA 4.0 LUTs). (1) design the insertion point;
-  (2) before/after pairs + contact sheets of six hero frames per film in `_local_logs/review/finish/`, 2-3 stock/print
-  pairs at restrained strength; fires ORANGE-GOLD, never yellow; a 48-frame flicker check; (3) after the director
-  approves ONE look: integrate it into EDIT's delivery chain (edit/deliver.sh, assemble.py) as the final per-frame
-  stage for all masters, coordinated with EDIT-2 via a "FINISH" block in edit/NOTES_v3.md; (4) the credit line in
-  edit/CREDITS.md.
-- **Done:** (1) design below; (2) sheets + pairs + PICK page + fire-hue table + flicker check in
-  `_local_logs/review/finish/`; (4) `edit/CREDITS.md`; the FINISH block in `edit/NOTES_v3.md` (the integration plan
-  for EDIT-2). Code: `finish/filmfinish.py` (reference), `finish/filmfast.py` (delivery path, numba, matches the
-  reference to 0.14 of an 8-bit code), `finish/stage.py` (the edit stage: per-take mode, `Finisher`, `code_id()` for
-  deliver's cache key), `finish/lookdev.py`, `finish/picker.py`, `finish/bake_luts.sh`. Commit bbc30bd + later.
-- **DIRECTOR'S PICK (27 Sep ~20:35Z): `250D_2383_fire`, blend 0.75, grain 0.5 (what he approved by eye; the finer
-  250D grain was his reason: the rose/Belt-of-Venus pink is load-bearing across the trilogy and 500T cooled it to
-  lavender), C's ink grain only.** `finish/stage.py` LOOK = `250D_2383_fire`.
-- **Wiring (step 3), `finish/wire_edit.py`** (idempotent anchored edits to edit/assemble.py + edit/deliver.py):
-  `assemble._init(..., finish=None)` wraps the worker Ctx's `picture` with `_finishing()` (no Ctx method changes, so
-  deliver's frame-code hash and every existing segment key stay valid); `deliver.PROFILES['master']['finish']=True`;
-  master segments with rendered frames are keyed with `_finish_id()` (look + `stage.code_id()`); new renders are
-  finished at once; the old unfinished segments are a BACKLOG finished `FINISH_BUDGET` frames (default 1200) per film
-  per run, so the one-time ~4.5 CPU-h spreads over the watcher's refreshes; `FINISH_ALL=1` clears it in one run. The
-  log line and the build stats carry `finish backlog N segments (F f) left`. Animatics: no finish.
-- **Sanity check before the wiring goes live (director):** a finished B master built by the wired copies
-  (`the-long-dawn/.finish_wire/`, a throwaway test dir) into a scratch folder, then EDIT's own QC; and the banding
-  check on the darkest night skies through the real master encode (`_local_logs/review/finish/qc/`).
+- **The look (director, ~20:35Z): `250D_2383_fire`, blend 0.75, grain 0.5, halation as on the sheets, C's ink grain
+  only.** 250D over 500T because the rose is load-bearing across the trilogy (B's alpenglow and Belt of Venus, A's
+  "east pales to rose", C's illumination wash) and 500T cooled it toward lavender; 250D's finer grain also holds up
+  better in the dark night fields. `finish/stage.py` LOOK.
+- **Live in the delivery chain (commit f855ea5):** `edit/assemble.py` `_init(..., finish)` + `_finishing()`;
+  `edit/deliver.py` master profile `finish=True`, finished segment keys, the budgeted backlog, the QC's finish line.
+  All applied by `finish/wire_edit.py` (idempotent, anchored; re-run it if EDIT ever rewrites those functions). The
+  FINISH block in `edit/NOTES_v3.md` tells EDIT-2 (commit 74ca341).
+- **Sanity check before wiring (director's condition): PASSED.** A finished B master through the wired chain: EDIT's
+  QC all PASS but the known slate WARN (lengths exact, bt709 1920x804, no black, 0 flashes, -1.30 dBTP, -16.1 LUFS);
+  `_local_logs/review/finish/qc/B_finished_master_QC.txt`, `B_master_before_after_finish.jpg`. Darkest night skies
+  through the CRF 14 encode: no banding (`qc/banding_darkest_skies.{jpg,txt}`; `finish/banding.py`).
+- **Cost now:** ~5,700 rendered frames (A 2,320, B 952, C 2,453), ~76 CPU-min (~25 min on the 3 pool workers) on the
+  next master build, which is a cold rebuild anyway after EDIT's 16834cf; after that each new render is finished as
+  its segment is encoded. `FINISH_BUDGET` only matters when a look/code change leaves unfinished twins cached.
+- **Open / for whoever picks this up:** (1) the H9 kit's stills are unfinished (h9_kit.py builds its own Ctx; one
+  line gives it the finish, EDIT-2's call); (2) a look change (any edit to filmfinish/filmfast/stage or the LUTs)
+  re-keys every finished segment and, since no unfinished twins exist by then, re-encodes them all in one run: batch
+  look tweaks; (3) C's ink finals (`runC_*`) are not on the Mac yet: their grain-only path was tested on RUN-C's farm
+  tests only; (4) our halation is ~3x spektrafilm's Vision3 rem-jet preset (kept: approved by eye).
 - **Venvs:** spektrafilm lives ONLY in `~/.venvs/finish` (py3.13) for the LUT bake; the edit stage runs in
   `~/.venvs/longdawn` (numpy/cv2/numba) and never imports spektrafilm. LUTs: `finish/luts/` (git-ignored; re-bake
   with `finish/bake_luts.sh`, ~35 s a stock; the farm is not needed for any of this).
