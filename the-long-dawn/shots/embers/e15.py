@@ -1,6 +1,6 @@
 """EMBERS-C: E15 LETTERS TO FIRE (C4-C5, C frames 700-1039): the sparks and the fire over MAP-L's page.
 
-    python e15.py FRAMES [--scale 0.5] [--out DIR]          (FRAMES as render.py: "700-1039", "720,760", "700-1039:4")
+    python e15.py --frames FRAMES [--scale 0.5] [--out DIR]   (FRAMES as render.py: "700-1039", "720,760", "700-1039:4")
 
 Output renders/embers_C3_e15 (C numbering): additive light on black. EDIT: out = book_rgb + (1 - matte) * black + e15
 (the director's contract, 27 Sep). MAP-L's book_C is the page only: the letters glowing AS letters, each stroke's
@@ -211,7 +211,7 @@ class E15:
         self.D = map_data()
         self.page = Page(self.D)
         self.dr = Draught(self.D)
-        self.flame = CF.Flame()
+        self.tip_sparks = CF.Sparks()
         self.heart = to_e(self.D['heart_w'])
         self._glyphs = None
 
@@ -248,7 +248,7 @@ class E15:
         dying = 1.0 - smoothstep(dr.die_at[idx] - 0.12, dr.die_at[idx], prog)
         near = 1.0 + 0.8 * smoothstep(0.75, 1.0, prog)
         arrive = 1.0 - smoothstep(0.93, 1.0, prog)
-        e = dr.E[idx] * born * fl * dying * near * arrive * (1.0 + 2.5 * flare) * 0.022
+        e = dr.E[idx] * born * fl * dying * near * arrive * (1.0 + 2.5 * flare) * 6.0
         T = np.clip(dr.col_t[idx] + 0.12 * flare + 0.08 * smoothstep(0.6, 1.0, prog) - 0.2 * (1.0 - dying), 0.35, 0.95)
         col = look.blackbody(T)
         rw = 0.006 * dr.sz[idx]
@@ -270,7 +270,7 @@ class E15:
         H = np.array([C, C, C])
         fl = 1.0 + 0.12 * math.sin(1.9 * t) + 0.07 * math.sin(4.3 * t + 1.0)
         rr = np.array([0.03 + 0.06 * e, 0.16 + 0.2 * e, 0.6])
-        ee = np.array([2.2, 1.2, 0.5]) * e * fl * 0.35
+        ee = np.array([60.0, 150.0, 200.0]) * e * fl
         col = np.array([[1.0, 0.82, 0.5], [1.0, 0.55, 0.18], [1.0, 0.4, 0.1]])
         ctx.fr.splat(H, H, rr, ee, col, ctx.cam0, ctx.cam1, profile=1)
 
@@ -326,7 +326,7 @@ class E15:
         # they burn away from below as the flame takes them
         yl = -G[:, 1]
         burn = smoothstep(944 + 10 * (yl + 0.3), 960 + 10 * (yl + 0.3), t)
-        e = k * (1.0 - burn) * 0.0065 * (1.0 + 0.15 * math.sin(2.3 * t))
+        e = k * (1.0 - burn) * 2.2 * (1.0 + 0.15 * math.sin(2.3 * t))
         col = np.array([1.0, 0.86, 0.55])
         ctx.fr.splat(P0, P1, 0.012, np.full(len(G), e), col, ctx.cam0, ctx.cam1)
 
@@ -348,15 +348,33 @@ class E15:
         self.ember_glow(ctx)
         h = self.flame_h(float(f))
         if h > 0.01:
-            import c3
-            bright = c3.fire_bright(float(f))
-            self.flame.emit(ctx, self.heart, FLAME_CM, bright=bright, height=h / FLAME_CM, calm=1.0,
-                            sparks=float(smoothstep(T_FIRE + 20, T_FIRE + 60, f)))
+            self.tip_sparks.emit(ctx, self.heart, h, amount=float(smoothstep(T_FIRE + 20, T_FIRE + 60, f)))
         self.letters_in_flame(ctx)
         hdr = fr.resolve()
         hdr = np.nan_to_num(hdr, nan=0.0, posinf=0.0, neginf=0.0)
+        if h > 0.01:
+            # the flame itself (cflame.draw; c3 draws the same flame from 1040): on MAP's flame track
+            import c3
+            bright = c3.fire_bright(float(f)) * (1.0 + 0.35 * math.exp(-max(f - T_FIRE, 0.0) / 8.0))
+            cam = ctx.cam
+            u, v, _ = cam.project(np.stack([self.heart, self.heart + np.array([0.0, h, 0.0])]), 1920, 804)
+            fl = np.zeros_like(hdr)
+            CF.draw(fl, (u[0], v[0]), (u[1], v[1]), float(f), bright=bright, calm=1.0, scale=scale)
+            if k > 0:
+                fl = fl * band_rows(fl.shape[0], scale, 0.62 * k)[:, None, None]
+            hdr = hdr + fl
         return look.finish(hdr, exposure=1.0, bloom_strength=0.14, bloom_threshold=0.7, vignette_amount=0.0,
                            lift=0.0)
+
+
+def band_rows(H, scale, k):
+    """the text band's calm (render.band_k's profile: y 560-700 full-res, soft 45 px edges), per row"""
+    y = np.arange(H, dtype=np.float32) / scale
+    a = np.clip((y - (560 - 45)) / 90.0, 0, 1)
+    a = a * a * (3 - 2 * a)
+    b = np.clip((y - (700 - 45)) / 90.0, 0, 1)
+    b = b * b * (3 - 2 * b)
+    return (1.0 - k * a * (1.0 - b)).astype(np.float32)
 
 
 def parse_frames(s):
@@ -376,10 +394,12 @@ def parse_frames(s):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('frames')
+    ap.add_argument('frames', nargs='?')
+    ap.add_argument('--frames', dest='frames_opt', default=None, help='same as the positional (farm.py rewrites it)')
     ap.add_argument('--scale', type=float, default=1.0)
     ap.add_argument('--out', default=OUT)
     a = ap.parse_args()
+    a.frames = a.frames_opt or a.frames
     import variant
     variant.set_cut('C3')
     L = E15()

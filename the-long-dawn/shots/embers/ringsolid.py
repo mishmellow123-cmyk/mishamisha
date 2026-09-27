@@ -43,10 +43,11 @@ def sgnpow(x, p):
     return np.sign(x) * np.abs(x) ** p
 
 
-def section(psi):
-    """superellipse section: radial offset r, axial y, and the unit normal (nr, ny) in the (r, y) plane"""
+def section(psi, sec=(1.0, 1.0)):
+    """superellipse section: radial offset r, axial y, and the unit normal (nr, ny) in the (r, y) plane.
+    sec = (radial, axial) scale of the section (the forging beats a thin thread out into the full band)"""
     c, s = np.cos(psi), np.sin(psi)
-    a, b = 0.5 * THICK, 0.5 * WIDTH
+    a, b = 0.5 * THICK * sec[0], 0.5 * WIDTH * sec[1]
     r = a * sgnpow(c, 2.0 / SQ)
     y = b * sgnpow(s, 2.0 / SQ)
     nr = np.sign(r) * np.abs(r / a) ** (SQ - 1.0) / a
@@ -55,9 +56,9 @@ def section(psi):
     return r, y, nr / ln, ny / ln
 
 
-def local_points(theta, psi):
+def local_points(theta, psi, sec=(1.0, 1.0)):
     """ring-local positions and normals for parameters (theta round the axis, psi round the section)"""
-    r, y, nr, ny = section(psi)
+    r, y, nr, ny = section(psi, sec)
     c, s = np.cos(theta), np.sin(theta)
     rad = R_MID + r
     P = np.stack([rad * c, y, rad * s], -1)
@@ -241,14 +242,16 @@ class RingState:
         self.glow_col = np.array([1.0, 0.62, 0.22])
         self.exposure = 1.0         # multiplies the reflection
         self.alpha = 1.0            # overall opacity (fade in/out)
+        self.sec = (1.0, 1.0)       # section scale (radial, axial): the forging beats it out to (1, 1)
+        self.hammer = 0.0           # hammer marks in the hot metal (0..1)
 
 
-def _frame_samples(cam, W, H, Rot, C, scale, nt, npp, th_range=None):
+def _frame_samples(cam, W, H, Rot, C, scale, nt, npp, th_range=None, sec=(1.0, 1.0)):
     th0, th1 = (0.0, 2.0 * np.pi) if th_range is None else th_range
     th = np.linspace(th0, th1, nt + 1)
     ps = np.linspace(-np.pi, np.pi, npp + 1)
     T, Pp = np.meshgrid(th, ps, indexing='ij')
-    Pl, _ = local_points(T, Pp)
+    Pl, _ = local_points(T, Pp, sec)
     Pw = C[None, None, :] + scale * np.einsum('ij,abj->abi', Rot, Pl)
     d = (Pw - cam.pos) @ cam.R.T
     return T, Pp, d
@@ -274,7 +277,7 @@ def render(cam, W, H, Rot, C, scale, st, env, ss=None, nt=None, npp=None, pad=4,
         nt = max(int(nt * (th_range[1] - th_range[0]) / (2 * np.pi)), 4)
     if npp is None:
         npp = int(np.clip(rpx * 0.25, 24, 96))
-    T, Pp, d = _frame_samples(cam, W, H, Rot, C, scale, nt, npp, th_range)
+    T, Pp, d = _frame_samples(cam, W, H, Rot, C, scale, nt, npp, th_range, st.sec)
     z = d[..., 2]
     if (z <= 0.05).all():
         return rgb, alpha, depth
@@ -322,7 +325,7 @@ def render(cam, W, H, Rot, C, scale, st, env, ss=None, nt=None, npp=None, pad=4,
 
 def shade(th, ps, cam, f, ss, Rot, C, scale, st, env):
     """HDR colour of band samples (theta, psi): polished gold reflecting env, the forge's heat, the letters"""
-    Pl, Nl = local_points(th, ps)
+    Pl, Nl = local_points(th, ps, st.sec)
     Pw = C[None, :] + scale * Pl @ Rot.T
     Nw = Nl @ Rot.T
     V = cam.pos[None, :] - Pw
@@ -334,14 +337,19 @@ def shade(th, ps, cam, f, ss, Rot, C, scale, st, env):
     # its own faint ember-light, stronger toward grazing (a warm skin, never a flat black)
     if st.glow > 0:
         col = col + st.glow_col[None, :] * (st.glow * (0.35 + 0.65 * (1.0 - ndv) ** 2))[:, None]
-    # the forge's heat: white -> yellow -> gold, emissive
+    # the forge's heat: white -> yellow -> orange -> dull red -> cold gold, emissive; hammer marks in the hot metal
     if st.heat is not None:
         hk = np.clip(st.heat(th), 0.0, 1.0)
         if hk.max() > 0:
-            hot = (np.array([1.0, 0.97, 0.9])[None, :] * _ss(0.55, 1.0, hk)[:, None]
-                   + np.array([1.0, 0.8, 0.38])[None, :] * (_ss(0.15, 0.55, hk) * (1 - _ss(0.55, 1.0, hk)))[:, None]
-                   + np.array([1.0, 0.45, 0.1])[None, :] * (_ss(0.0, 0.15, hk) * (1 - _ss(0.15, 0.55, hk)))[:, None])
-            col = col * (1.0 - 0.85 * _ss(0.2, 0.7, hk))[:, None] + hot * (hk ** 1.6 * 9.0)[:, None]
+            if st.hammer > 0:
+                from core import snoise
+                q = np.stack([np.cos(th) * 9.0, np.sin(th) * 9.0, ps * 1.3], 1)
+                hk = np.clip(hk * (1.0 - st.hammer * 0.28 * (0.5 + 0.5 * snoise(q, 1.0, (3.0, 1.0, 7.0), 2))), 0, 1)
+            hot = (np.array([1.0, 0.96, 0.86])[None, :] * _ss(0.72, 1.0, hk)[:, None]
+                   + np.array([1.0, 0.78, 0.34])[None, :] * (_ss(0.42, 0.72, hk) * (1 - _ss(0.72, 1.0, hk)))[:, None]
+                   + np.array([1.0, 0.42, 0.08])[None, :] * (_ss(0.18, 0.42, hk) * (1 - _ss(0.42, 0.72, hk)))[:, None]
+                   + np.array([0.55, 0.1, 0.02])[None, :] * (_ss(0.0, 0.18, hk) * (1 - _ss(0.18, 0.42, hk)))[:, None])
+            col = col * (1.0 - 0.8 * _ss(0.15, 0.6, hk))[:, None] + hot * (hk ** 2.2 * 5.5 + 0.15 * hk)[:, None]
     # the letters: emission through the canonical strips
     if st.letters > 0:
         outer = np.cos(ps) >= 0.0

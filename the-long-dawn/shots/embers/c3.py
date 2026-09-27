@@ -195,10 +195,10 @@ def layout_towers(tw):
     order = r.permutation(n)
     tw.t_rise = T_TOWERS + 8.0 + 120.0 * (order / max(n - 1, 1)) ** 0.9 + r.uniform(-4, 4, n)
     nb = len(RACE_BEATS)
-    J = r.uniform(1.3, 1.8, (n, nb))
+    J = r.uniform(0.9, 1.3, (n, nb))
     lead = r.permutation(np.tile(np.arange(n), 2))[:nb]     # the lead passes round: one tower per beat, never a pair
     for b_, l_ in enumerate(lead):
-        J[l_, b_] += 0.9
+        J[l_, b_] += 0.7
     tw.J = J
     tw.dly = r.uniform(0.0, 2.5, n)
     return tw
@@ -211,7 +211,7 @@ def ring_frame(t):
     it turns slowly (the letters travel); from 1360 it rises above the towers and tilts to hang over them."""
     cam_az = cam_azimuth(t)
     rise = float(smootherstep(T_RISE, T_RACE + 30, t))
-    y = G + HF + 3.4 + (17.0 - (G + HF + 3.4)) * rise + 0.8 * float(smoothstep(T_SURGE, T_RACE_END, t))
+    y = G + RING_Y0 + (RING_Y1 - RING_Y0) * rise + 3.0 * float(smoothstep(T_SURGE, T_RACE_END, t))
     y += 0.12 * math.sin(0.05 * t)                      # it breathes in the heat
     C = np.array([0.0, y, 0.0])
     # axis: horizontal, turned ~40 degrees off the line of sight (so its hole and its thickness both show) ->
@@ -230,6 +230,9 @@ def ring_on(t):
 
 
 FRONT_T = (T_FORGE + 2.0, T_FORGE + 38.0)          # the white-hot front runs once round the circle
+SHAPE_STROKES = [x for x in STROKES if x >= T_FORGE + 40]   # once the circle is closed, these beat it into a band
+RING_Y0 = HF + 3.8                                # the band is forged just above the flame's tip ...
+RING_Y1 = 38.0                                    # ... and rises to hang over the crowns (above ground)
 
 
 def ring_theta_range(t):
@@ -240,25 +243,32 @@ def ring_theta_range(t):
 
 
 def ring_heat(t):
-    """fn(theta) -> 0..1: white-hot where the front has just passed, cooling behind it, re-heated a little on
-    every anvil stroke; cold gold by ~1320"""
+    """fn(theta) -> 0..1: the thread is laid white-hot at the running front and glows yellow-orange behind it while
+    it is beaten; every stroke re-heats it for a moment; after the last stroke it cools through orange and dull red
+    to gold (cold by ~1322, when the letters burn up out of the metal)"""
     th0, th1 = ring_theta_range(t)
-    k0 = float(smoothstep(FRONT_T[0], FRONT_T[1], t))
     strike = 0.0
     for tb in STROKES:
         x = t - tb
-        if 0 <= x < 16:
-            strike = max(strike, math.exp(-x / 3.5))
+        if 0 <= x < 18:
+            strike = max(strike, math.exp(-x / 4.0))
+    beaten = float(smoothstep(T_FORGE - 2, T_FORGE + 6, t)) * (1.0 - float(smoothstep(T_WRITE - 24, T_WRITE + 2, t)))
+    cooling = 1.0 - float(smoothstep(T_WRITE - 24, T_WRITE + 2, t))
 
     def f(th):
         frac = np.clip(((th - th0) % (2 * np.pi)) / (2 * np.pi), 0, 1)
         laid = FRONT_T[0] + (FRONT_T[1] - FRONT_T[0]) * frac                  # when the front passed here
         age = np.maximum(t - laid, 0.0)
-        cool = np.exp(-age / 34.0)                                          # white -> yellow -> gold
-        h = 0.2 + 0.8 * cool
-        h = h * (1.0 - float(smoothstep(T_FORGE + 60, T_WRITE, t)))        # cold by the letters
-        return np.clip(h + 0.28 * strike * (1.0 - 0.6 * float(smoothstep(T_FORGE + 60, T_WRITE, t))), 0, 1)
+        front = np.exp(-age / 5.0)                                          # white just behind the front
+        h = 0.6 * beaten + 0.4 * front + 0.3 * strike * cooling
+        return np.clip(h, 0, 1)
     return f
+
+
+def ring_sec(t):
+    """the band's section scale: a drawn thread of light, beaten out stroke by stroke into the full band"""
+    k = sum(float(smoothstep(tb, tb + 5.0, t)) for tb in SHAPE_STROKES) / max(len(SHAPE_STROKES), 1)
+    return (0.3 + 0.7 * k, 0.22 + 0.78 * k)
 
 
 def ring_write(t):
@@ -282,7 +292,7 @@ def ring_letters(t):
 def ring_env(tl, t):
     """what the gold mirrors: the fire below, the forge throats around, the lit smoke above, the red of the race"""
     red = B.redness(t)
-    e = RS.Env(above=(0.012, 0.006, 0.003), horizon=(0.09, 0.04, 0.016), below=(0.05, 0.02, 0.008))
+    e = RS.Env(above=(0.05, 0.024, 0.01), horizon=(0.32, 0.15, 0.055), below=(0.22, 0.09, 0.03))
     fb = fire_bright(t)
     e.point(FIRE_ROOT + np.array([0.0, 0.45 * HF, 0.0]), np.array([30.0, 19.0, 8.0]) * fb, 1.6)
     tw = tl.towers
@@ -304,9 +314,11 @@ def ring_env(tl, t):
 def ring_state(t):
     st = RS.RingState()
     st.heat = ring_heat(t) if t < T_WRITE + 10 else None
+    st.hammer = 1.0 - float(smoothstep(T_WRITE - 10, T_WRITE + 4, t))
+    st.sec = ring_sec(t)
     st.write = ring_write(t)
     st.letters = ring_letters(t)
-    st.glow = 0.02
+    st.glow = 0.05
     st.exposure = 1.0
     st.alpha = 1.0
     return st
@@ -393,9 +405,9 @@ class ForgeFX:
             P1 = thread(ctx.t1)
             fpx = ctx.cam.f_px(1920)
             z = max(float((P1.mean(0) - ctx.cam.pos) @ ctx.cam.R[2]), 1.0)
-            E = self.th_E * k * 0.9 * (0.4 + 0.6 * self.th_u) * (fpx / z) * 0.02
-            col = np.array([1.0, 0.93, 0.78])
-            ctx.fr.splat(P0, P1, 0.045, E, col, ctx.cam0, ctx.cam1, profile=1)
+            E = self.th_E * k * 3.5 * (0.5 + 0.5 * self.th_u) * (fpx / z) * 0.02
+            col = np.array([1.0, 0.9, 0.7])
+            ctx.fr.splat(P0, P1, 0.03, E, col, ctx.cam0, ctx.cam1, profile=1)
         # --- the front: a white glare where the band is being laid
         if FRONT_T[0] <= t < FRONT_T[1] + 4:
             th0, th1 = ring_theta_range(t)
@@ -550,51 +562,91 @@ class GoldRain:
 
 # ============================================================ the ground ===
 
-class GroundGlow:
-    """the fire lights the ground it burns on: cinders and ash on a dark plain, warm near the fire"""
+def occ_vis(fr, z, H, W):
+    """visibility (H, W) of a surface at camera depth z against the frame's occluder (towers + the Ring)"""
+    if fr.occ is None:
+        return np.ones((H, W), np.float32)
+    import cv2
+    Z, A = fr.occ[0][0], fr.occ[1][0]
+    Zf = cv2.resize(Z, (Z.shape[1] * 2, Z.shape[0] * 2), interpolation=cv2.INTER_NEAREST)[:H, :W]
+    Af = cv2.resize(A, (A.shape[1] * 2, A.shape[0] * 2), interpolation=cv2.INTER_LINEAR)[:H, :W]
+    zz = z if np.ndim(z) == 0 else z
+    return np.where(zz <= Zf + 0.3, 1.0, 1.0 - Af).astype(np.float32)
 
-    def __init__(self, seed=515, n=60000):
+
+class GroundPool:
+    """the fire lights the ground it burns on: a warm pool fading into the dark, cinders and ash in it; a screen-space
+    shader of the ground plane (hidden behind the towers and the Ring), not a field of points"""
+
+    def __init__(self, seed=515):
+        import cv2
         r = rng(seed)
-        rr = 9.0 * np.sqrt(r.random(n)) ** 1.15
-        a = r.uniform(0, 2 * np.pi, n)
-        self.p = np.stack([rr * np.cos(a), np.full(n, G + 0.02), rr * np.sin(a)], 1)
-        self.nz = 0.5 + 0.5 * np.clip(snoise(self.p, 0.9, (3.0, 1.0, 7.0), 2) * 1.5, -1, 1)
-        self.E = r.lognormal(0, 0.5, n)
-        self.rr = rr
+        n = 512
+        tex = np.zeros((n, n), np.float32)
+        for k, (cells, amp) in enumerate(((8, 0.5), (32, 0.3), (128, 0.2))):
+            g = r.random((cells, cells)).astype(np.float32)
+            tex += amp * cv2.resize(g, (n, n), interpolation=cv2.INTER_CUBIC)
+        spk = (r.random((n, n)) > 0.985).astype(np.float32) * r.uniform(0.5, 1.5, (n, n)).astype(np.float32)
+        self.tex = tex
+        self.spk = cv2.GaussianBlur(spk, (0, 0), 0.8)
+        self.span = 24.0                        # the texture covers [-span, span]^2 of ground
 
-    def emit(self, ctx):
-        t = ctx.t
+    def draw(self, out, cam, fr, scale, t):
+        import cv2
+        H, W = out.shape[:2]
         fb = fire_bright(t) * float(smoothstep(T_TOWERS, T_TOWERS + 50, t))   # (E15's fire burns in the black)
         if fb <= 0:
             return
-        fpx = ctx.cam.f_px(1920)
-        z = np.maximum((self.p - ctx.cam.pos) @ ctx.cam.R[2], 0.5)
-        lit = 1.0 / (1.0 + (self.rr / 2.4) ** 2)
-        a = (9.0 * 9.0 * np.pi / len(self.p))
-        V = ctx.cam.pos[None, :] - self.p
-        ndv = np.clip(V[:, 1] / np.maximum(np.linalg.norm(V, axis=1), 1e-6), 0.05, 1.0)
-        e = 0.9 * fb * lit * (0.25 + 0.75 * self.nz ** 2) * self.E * a * ndv * (fpx / z) ** 2
-        col = np.array([1.0, 0.55, 0.22])
-        ctx.fr.splat(self.p, self.p, 0.09, e, col, ctx.cam0, ctx.cam1, profile=1, zref=0.0)
+        f = cam.f_px(W)
+        xs = ((np.arange(W, dtype=np.float32) - (W - 1) / 2.0) / f)[None, :]
+        ys = (((H - 1) / 2.0 - np.arange(H, dtype=np.float32)) / f)[:, None]
+        R = cam.R
+        dy = xs * R[0, 1] + ys * R[1, 1] + R[2, 1]
+        hit = dy < -1e-4
+        if not hit.any():
+            return
+        sd = np.where(hit, (G - cam.pos[1]) / np.where(hit, dy, -1.0), 0.0)            # camera depth to the ground
+        px = cam.pos[0] + sd * (xs * R[0, 0] + ys * R[1, 0] + R[2, 0])
+        pz = cam.pos[2] + sd * (xs * R[0, 2] + ys * R[1, 2] + R[2, 2])
+        d = np.sqrt(px * px + pz * pz)
+        near = hit & (d < self.span)
+        if not near.any():
+            return
+        u = ((px / self.span) * 0.5 + 0.5) * (self.tex.shape[1] - 1)
+        v = ((pz / self.span) * 0.5 + 0.5) * (self.tex.shape[0] - 1)
+        um = np.where(near, u, 0).astype(np.float32)
+        vm = np.where(near, v, 0).astype(np.float32)
+        tx = cv2.remap(self.tex, um, vm, cv2.INTER_LINEAR)
+        sp = cv2.remap(self.spk, um, vm, cv2.INTER_LINEAR)
+        pool = 1.0 / (1.0 + (d / 2.8) ** 2)                                           # lit by the fire
+        emb = np.exp(-d / 1.6)                                                         # the ember bed at its root
+        L = fb * (0.26 * pool * (0.35 + 0.9 * tx) + 0.9 * emb * (0.4 + 0.8 * tx) + 0.5 * pool * sp)
+        L = np.where(near, L, 0.0) * smoothstep(self.span, self.span * 0.6, d)
+        vis = occ_vis(fr, sd, H, W)
+        L = (L * vis).astype(np.float32)
+        out[..., 0] += L * 1.0
+        out[..., 1] += L * 0.5
+        out[..., 2] += L * 0.2
 
 
 # ================================================================ cameras ===
 
 CAM_C6 = [  # (frame, radius, azimuth offset, height above ground, target height above ground, hfov)
     (1040, E15_R, 0.00, E15_Y, 0.0, 38.0),  # the gold fire alone: E15's (MAP's) view, 46 degrees above
-    (1070, 26.5, 0.02, 28.5, 0.6, 40.0),
-    (1120, 30.0, 0.06, 36.0, 2.0, 48.0),    # the forges of every realm rise round it, seen from above
-    (1180, 33.0, 0.10, 42.0, 3.0, 54.0),
-    (1215, 30.0, 0.14, 36.0, 6.0, 52.0),    # its light drawn out: the camera swoops down to the band
-    (1260, 22.0, 0.18, 22.0, 9.0, 48.0),
-    (1300, 16.0, 0.21, 12.5, 10.0, 42.0),   # beaten into a band
-    (1340, 14.0, 0.23, 10.8, 10.2, 38.0),   # the inscription burns up out of the metal
-    (1390, 17.0, 0.24, 13.0, 17.0, 46.0),   # the Ring rises above the towers
-    (1440, 25.0, 0.28, 17.0, 23.5, 56.0),
-    (1500, 29.0, 0.32, 18.5, 25.0, 58.0),   # the hush
-    (1560, 31.0, 0.36, 19.5, 25.5, 60.0),
-    (1620, 32.5, 0.40, 20.5, 25.5, 62.0),   # the race
-    (1680, 34.0, 0.44, 21.5, 25.5, 64.0),
+    (1066, 24.0, 0.01, 15.0, 2.5, 42.0),    # descending as the first forges rise
+    (1105, 27.0, 0.03, 4.5, 7.0, 50.0),     # low, outside the forges' ring, in a gap: they rise round the fire
+    (1150, 28.0, 0.05, 3.5, 9.0, 54.0),
+    (1195, 25.0, 0.07, 5.0, 10.0, 50.0),
+    (1240, 18.0, 0.09, 7.5, 10.5, 42.0),    # pushing in through the gap to the band being beaten
+    (1290, 14.0, 0.11, 9.0, 10.4, 36.0),
+    (1330, 11.5, 0.12, 9.6, 10.2, 32.0),    # the letters burn up out of the metal
+    (1360, 12.5, 0.13, 9.0, 12.0, 36.0),
+    (1400, 20.0, 0.15, 8.0, 24.0, 52.0),    # the Ring rises above the towers: pull back and tilt up with it
+    (1445, 28.0, 0.17, 14.0, 31.0, 60.0),
+    (1500, 33.0, 0.19, 19.0, 31.5, 62.0),   # the hush: the Ring over the crowns
+    (1560, 34.0, 0.21, 20.0, 32.0, 64.0),
+    (1620, 34.5, 0.23, 20.5, 33.0, 65.0),   # the race
+    (1680, 35.0, 0.25, 21.0, 34.0, 66.0),
 ]
 
 
@@ -657,10 +709,10 @@ class TimelineC3(TL.Timeline):
         return layout_towers(tw)
 
     towers = property(lambda s: s._get('towers', s._towers))
-    cflame = property(lambda s: s._get('cflame', CF.Flame))
+    csparks = property(lambda s: s._get('csparks', CF.Sparks))
     forge = property(lambda s: s._get('forge', ForgeFX))
     gold_rain = property(lambda s: s._get('gold_rain', lambda: GoldRain(s)))
-    ground = property(lambda s: s._get('ground', GroundGlow))
+    ground = property(lambda s: s._get('ground', GroundPool))
 
     def src(self):
         if self._src is None:
@@ -721,34 +773,47 @@ class TimelineC3(TL.Timeline):
         ctx.ring_rgb = ring_layer(self, ctx)            # the Ring hides what is behind it (occluder)
         self.dust.emit(ctx)
         self.smoke.emit(ctx, lp, lc, lpw)
-        self.ground.emit(ctx)
         self.towers.emit(ctx, lp, lc, lpw)
         self.tembers.emit(ctx)
         self.tsmoke.emit(ctx, lp, lc, lpw)
         self.walls.emit(ctx)
-        self.sparks.emit(ctx)
-        self.cflame.emit(ctx, FIRE_ROOT, FLAME_S, bright=fire_bright(t), height=FLAME_H,
-                         calm=1.0 - 0.5 * SCHED.race(t))
-        tip = FIRE_ROOT + np.array([0.0, 0.95 * HF, 0.0]) + self.cflame.lean(t) * FLAME_S * FLAME_H ** 2
+        # (no white spark sprays in C: the surges show in the throats, the climbing heat and the gold rain)
+        self.csparks.emit(ctx, FIRE_ROOT, HF, bright=fire_bright(t), amount=1.0)
+        tip = FIRE_ROOT + np.array([0.0, 0.92 * HF, 0.0])
         self.forge.emit(ctx, tip)
         self.gold_rain.emit(ctx)
 
     def post(self, ctx, hdr):
         if hasattr(ctx, 'c3'):
             return self.src().post(ctx, hdr)
+        t = ctx.t
+        p = ctx.fr.prm
+        H, W = hdr.shape[:2]
+        band = None
+        if p[10] > 0:                                       # calm the text band as the splats are calmed
+            y = np.arange(H, dtype=np.float32)
+            a = np.clip((y - (p[8] - p[11])) / (2 * p[11]), 0, 1)
+            a = a * a * (3 - 2 * a)
+            b = np.clip((y - (p[9] - p[11])) / (2 * p[11]), 0, 1)
+            b = b * b * (3 - 2 * b)
+            band = (1.0 - p[10] * a * (1.0 - b))[:, None, None].astype(np.float32)
+        lay = np.zeros_like(hdr)
+        cam = ctx.cam
+        # the ground the fire burns on (hidden behind the towers and the Ring)
+        self.ground.draw(lay, cam, ctx.fr, ctx.scale, t)
+        # the flame (cflame: the same flame E15 hands over at 1039)
+        pts = np.stack([FIRE_ROOT, FIRE_ROOT + np.array([0.0, HF, 0.0]), FIRE_ROOT + np.array([0.0, 0.4 * HF, 0.0])])
+        u, v, z = cam.project(pts, 1920, 804)
+        if z[0] > 0.3 and z[1] > 0.3:
+            vis = occ_vis(ctx.fr, float(z[2]), H, W)
+            CF.draw(lay, (u[0], v[0]), (u[1], v[1]), t, bright=fire_bright(t), calm=1.0 - 0.5 * SCHED.race(t),
+                    vis=vis, scale=ctx.scale)
         rgb = getattr(ctx, 'ring_rgb', None)
         if rgb is not None:
-            p = ctx.fr.prm
-            if p[10] > 0:                                   # calm the text band as the splats are calmed
-                H = hdr.shape[0]
-                y = np.arange(H, dtype=np.float32)
-                a = np.clip((y - (p[8] - p[11])) / (2 * p[11]), 0, 1)
-                a = a * a * (3 - 2 * a)
-                b = np.clip((y - (p[9] - p[11])) / (2 * p[11]), 0, 1)
-                b = b * b * (3 - 2 * b)
-                rgb = rgb * (1.0 - p[10] * a * (1.0 - b))[:, None, None]
-            hdr = hdr + rgb
-        return hdr
+            lay = lay + rgb
+        if band is not None:
+            lay = lay * band
+        return hdr + lay
 
     def finish_opts(self, f):
         if self.mode(f) == 'src':

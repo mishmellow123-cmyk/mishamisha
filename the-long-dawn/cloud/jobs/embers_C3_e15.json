@@ -6,10 +6,10 @@
   "cd shots/embers && python3 e15.py 700 --scale 0.1 --out /tmp/e15_warm"
  ],
  "render": [
-  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py 700-1039:4",
-  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py 701-1039:4",
-  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py 702-1039:4",
-  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py 703-1039:4"
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py --frames 700-1039:4",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py --frames 701-1039:4",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py --frames 702-1039:4",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 e15.py --frames 703-1039:4"
  ],
  "out_dir": "renders/embers_C3_e15",
  "frames": "700-1039",

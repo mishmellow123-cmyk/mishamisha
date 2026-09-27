@@ -1,157 +1,216 @@
 """EMBERS-C: C's fire -- ONE natural flame, gold and calm (E15's catch, C5's fire alone, E5-C and E11).
 
-Flame-local units: the root at the origin, +Y up, height 1; the caller places and scales it (`Flame.emit(ctx, C,
-scale, ...)`). Stateless: every frame is a pure function of t, so any frame renders alone.
+A screen-space procedural flame, drawn about its own axis (the root's screen point -> the projection of the point
+straight above it), so it is the same flame from any camera and at any size (surface brightness is independent of
+its size on screen). The first particle version read as a glowing drop; a real flame is a shape with a life:
 
-Each particle is gas born on the root disc that rises for one breath of the flame: buoyant (it quickens as it
-climbs), drawn in toward the axis (the flame necks to ONE tip), wrinkled by a turbulent field that travels up the
-flame (faint at the root, stronger toward the tip, where small flamelets break off and die), and bent by a slow
-draught. Its heat falls with age and away from the axis: a white-gold root, a gold body, deep orange at the rim
-and the tip, red where the flamelets die. A soft body glow, and a few calm sparks off the tip. Never a fork.
+* a teardrop body with a rounded root, tapering to ONE tip (never a fork: the tip region is a single tongue whose
+  outline is torn by noise, so small flamelets break off it and die, but no two tongues stand side by side);
+* domain-warped, upward-advected fbm: licks climb the flame, the outline wavers more toward the tip, the body carries
+  brighter sheets and darker gaps;
+* a heat field: a white-gold core low in the body, gold, orange at the rim, deep red at the torn tips;
+* a slow lean in the draught; a soft glow round it.
 
-Brightness is set as SURFACE brightness (each particle's energy follows its share of the flame's projected area),
-so the flame looks the same whether it is 60 px or 600 px tall.
+Every frame is a pure function of (frame, root, axis, height): E15 (C 800-1039) and C6 (from 1040) draw the same
+flame, so the handover is continuous by construction. `Sparks` adds a few calm sparks off the tip (3-D splats).
 """
 import math
 
 import numpy as np
+from numba import njit, prange
 
-from core import rng, vnoise, snoise, smoothstep
-
-C_ROOT = np.array([1.0, 0.93, 0.76])
-C_BODY = np.array([1.0, 0.75, 0.33])
-C_RIM = np.array([1.0, 0.47, 0.12])
-C_DEEP = np.array([0.86, 0.21, 0.045])
-
-RB = 0.16            # root radius (flame heights)
-RISE = 30.0          # frames for gas to climb from the root to the tip (calm)
+from core import rng, vnoise, smoothstep, perlin3
 
 
-def heat_col(h):
-    """0..1 heat -> colour: deep red -> orange rim -> gold body -> white-gold root"""
-    h = np.clip(h, 0.0, 1.0)[:, None]
-    a = np.clip(h / 0.3, 0, 1)
-    b = np.clip((h - 0.3) / 0.35, 0, 1)
-    c = np.clip((h - 0.65) / 0.35, 0, 1)
-    col = C_DEEP + (C_RIM - C_DEEP) * a
-    col = col + (C_BODY - C_RIM) * b
-    col = col + (C_ROOT - C_BODY) * c
-    return col
+@njit(fastmath=True, cache=True, inline='always')
+def _fbm(x, y, z, octaves):
+    a = 0.5
+    s = 0.0
+    for o in range(octaves):
+        s += a * perlin3(x, y, z)
+        x = x * 2.03 + 1.7
+        y = y * 2.03 - 3.1
+        z = z * 2.03 + 0.9
+        a *= 0.5
+    return s
 
 
-class Flame:
-    def __init__(self, seed=801, n=90000, rise=RISE, wide=1.0):
+@njit(fastmath=True, cache=True, inline='always')
+def _ss(a, b, x):
+    t = (x - a) / (b - a)
+    if t < 0.0:
+        t = 0.0
+    elif t > 1.0:
+        t = 1.0
+    return t * t * (3.0 - 2.0 * t)
+
+
+@njit(fastmath=True, cache=True, inline='always')
+def _ramp(T, out):
+    """temperature 0..1 -> colour (deep red, orange, gold, white-gold)"""
+    if T < 0.25:
+        k = T / 0.25
+        out[0] = 0.72 * k
+        out[1] = 0.17 * k
+        out[2] = 0.035 * k
+    elif T < 0.5:
+        k = (T - 0.25) / 0.25
+        out[0] = 0.72 + 0.28 * k
+        out[1] = 0.17 + 0.31 * k
+        out[2] = 0.035 + 0.085 * k
+    elif T < 0.78:
+        k = (T - 0.5) / 0.28
+        out[0] = 1.0
+        out[1] = 0.48 + 0.3 * k
+        out[2] = 0.12 + 0.22 * k
+    else:
+        k = (T - 0.78) / 0.22
+        if k > 1.0:
+            k = 1.0
+        out[0] = 1.0
+        out[1] = 0.78 + 0.16 * k
+        out[2] = 0.34 + 0.46 * k
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def _flame(out, VIS, x0, y0, ax, ay, H, t, calm, bright, lean, seed, xlo, xhi, ylo, yhi, glow):
+    """draw one flame into out (h, w, 3) float32 (additive), within [xlo, xhi) x [ylo, yhi); VIS (h, w): visibility"""
+    px = -ay
+    py = ax
+    vs = 0.052 + 0.02 * (1.0 - calm)           # how fast the licks climb (flame heights per frame)
+    rise = t * vs
+    wig = 1.25 - 0.3 * calm
+    col = np.zeros(3)
+    for iy in prange(ylo, yhi):
+        c = np.zeros(3)
+        for ix in range(xlo, xhi):
+            vis = VIS[iy, ix]
+            if vis <= 0.0:
+                continue
+            dx = ix - x0
+            dy = iy - y0
+            s = (dx * ax + dy * ay) / H
+            w = (dx * px + dy * py) / H
+            # the soft glow round the body (drawn wherever we look)
+            gs = s - 0.33
+            g2 = (gs * gs) / 0.16 + (w * w) / 0.07
+            gl = glow * math.exp(-g2 * 1.4)
+            if s < -0.3 or s > 1.7 or w > 0.75 or w < -0.75:
+                if gl > 1e-4:
+                    out[iy, ix, 0] += 1.0 * gl * bright * vis
+                    out[iy, ix, 1] += 0.55 * gl * bright * vis
+                    out[iy, ix, 2] += 0.2 * gl * bright * vis
+                continue
+            sc = s if s > 0.0 else 0.0
+            # large licks and the draught
+            n1 = _fbm(w * 2.1 + seed, s * 1.7 - rise, t * 0.021 + seed * 0.37, 3)
+            n2 = _fbm(w * 5.3 - seed, s * 4.2 - rise * 1.7, t * 0.047 + 11.3, 3)
+            amp = (0.018 + 0.19 * sc ** 1.6) * wig
+            ww = w - lean * sc * sc + amp * n1 * 1.7
+            ss = s + 0.11 * n2 * sc
+            # the body: rounded root, widest low, one tapering tip
+            if ss < -0.11:
+                hw = 0.0
+            else:
+                a = (ss + 0.11) / 0.32
+                if a > 1.0:
+                    a = 1.0
+                b = 1.0 - ss
+                if b < 0.0:
+                    b = 0.0
+                hw = 0.172 * math.sqrt(a) * b ** 0.82
+            edge = hw * (1.0 + 0.3 * n2)
+            aw = abs(ww)
+            dens = 0.0
+            if edge > 1e-4 and aw < edge:
+                dens = _ss(edge, edge * 0.42, aw)
+            tip = 1.0 - _ss(0.58, 1.06, ss + 0.3 * n1 + 0.08 * n2)
+            root = _ss(-0.14, -0.03, ss)
+            dens = dens * tip * root
+            if dens > 1e-4:
+                core = 0.0
+                if hw > 1e-4:
+                    q = ww / (0.5 * hw + 1e-3)
+                    core = math.exp(-q * q) * (1.0 - sc) ** 1.6 * _ss(-0.1, 0.12, ss)
+                tex = 0.72 + 0.62 * n2
+                heat = dens * (1.0 - 0.52 * sc) * tex
+                if heat < 0.0:
+                    heat = 0.0
+                T = 0.18 + 0.62 * heat + 0.34 * core - 0.2 * sc
+                if T > 1.0:
+                    T = 1.0
+                if T < 0.0:
+                    T = 0.0
+                _ramp(T, c)
+                E = bright * (1.15 * heat ** 1.25 + 2.6 * core * dens) * vis
+                out[iy, ix, 0] += c[0] * E
+                out[iy, ix, 1] += c[1] * E
+                out[iy, ix, 2] += c[2] * E
+            if gl > 1e-4:
+                out[iy, ix, 0] += 1.0 * gl * bright * vis
+                out[iy, ix, 1] += 0.55 * gl * bright * vis
+                out[iy, ix, 2] += 0.2 * gl * bright * vis
+
+
+def lean_at(t):
+    """the draught's slow lean of the upper flame (flame heights, signed, screen-across)"""
+    return 0.07 * math.sin(0.019 * t + 0.4) + 0.035 * math.sin(0.053 * t + 2.1)
+
+
+def draw(hdr, root_px, tip_px, t, bright=1.0, calm=1.0, vis=None, glow=0.06, seed=3.7, scale=1.0):
+    """draw the flame into hdr (H, W, 3) float32 in place. root_px / tip_px: FULL-RES screen points of the root and
+    of the nominal tip (the flame's height); scale: the frame's render scale. vis: (H, W) visibility or None."""
+    Hh, Ww = hdr.shape[:2]
+    x0, y0 = root_px[0] * scale, root_px[1] * scale
+    dx, dy = (tip_px[0] - root_px[0]) * scale, (tip_px[1] - root_px[1]) * scale
+    Hpx = math.hypot(dx, dy)
+    if Hpx < 1.5 or bright <= 0:
+        return hdr
+    ax, ay = dx / Hpx, dy / Hpx
+    ext = 1.8 * Hpx
+    xlo = int(max(math.floor(x0 - ext), 0))
+    xhi = int(min(math.ceil(x0 + ext), Ww))
+    ylo = int(max(math.floor(y0 - ext), 0))
+    yhi = int(min(math.ceil(y0 + ext), Hh))
+    if xhi <= xlo or yhi <= ylo:
+        return hdr
+    if vis is None:
+        vis = np.ones((Hh, Ww), np.float32)
+    _flame(hdr, vis, float(x0), float(y0), float(ax), float(ay), float(Hpx), float(t), float(calm), float(bright),
+           float(lean_at(t)), float(seed), xlo, xhi, ylo, yhi, float(glow))
+    return hdr
+
+
+class Sparks:
+    """a few calm sparks off the tip, short and orange, curving as they rise and die (3-D splats)"""
+
+    def __init__(self, seed=802, n=320):
         r = rng(seed)
-        self.n = n
-        self.rise = rise
-        self.wide = wide
-        rr = np.sqrt(r.random(n))
-        self.r0 = rr
-        self.a0 = r.uniform(0, 2 * np.pi, n)
         self.ph = r.random(n)
-        self.sp = r.uniform(0.82, 1.22, n)
-        # gas near the axis reaches the tip; the rim burns out lower (so the flame tapers to one point)
-        self.reach = (1.0 - 0.45 * rr ** 2) * r.uniform(0.88, 1.05, n)
-        self.E = r.lognormal(0, 0.3, n)
-        self.sz = r.uniform(0.75, 1.3, n)
-        self.flk = r.random(n)
-        # calm sparks off the tip
-        ns = 420
-        self.s_ph = r.random(ns)
-        self.s_v = r.uniform(0.006, 0.011, ns)
-        self.s_a = r.uniform(0, 2 * np.pi, ns)
-        self.s_d = r.normal(0, 1, (ns, 2))
-        self.s_E = r.lognormal(0, 0.6, ns)
+        self.v = r.uniform(0.007, 0.012, n)
+        self.a = r.uniform(0, 2 * np.pi, n)
+        self.d = r.normal(0, 1, (n, 2))
+        self.E = r.lognormal(0, 0.6, n)
 
-    # ------------------------------------------------------------------ gas
-    def lean(self, t):
-        """the draught: a slow lean of the upper flame (flame units per unit height^2)"""
-        return np.array([0.06 * math.sin(0.021 * t + 0.3) + 0.028 * math.sin(0.057 * t + 1.7), 0.0,
-                         0.045 * math.sin(0.017 * t + 2.2) + 0.02 * math.sin(0.049 * t + 0.4)])
-
-    def gas(self, t, calm=1.0):
-        """positions (flame units), cycle position u, heat, emission weight"""
-        u = (t * self.sp / self.rise + self.ph) % 1.0
-        y = self.reach * (0.2 * u + 0.8 * u ** 1.45)
-        g = (1.0 + 0.62 * np.sin(0.5 * np.pi * np.clip(u / 0.3, 0, 1))) * (1.0 - u) ** 0.66
-        rho = RB * self.wide * self.r0 * g
-        tw = self.a0 + 0.35 * u
-        P = np.stack([rho * np.cos(tw), y, rho * np.sin(tw)], 1)
-        # turbulence travelling up the flame: wrinkles climb it; stronger toward the tip
-        amp = (0.016 + (0.075 + 0.05 * (1 - calm)) * y ** 1.7)
-        Q = P * np.array([1.0, 0.8, 1.0]) + np.array([0.0, -0.045 * t, 0.013 * t])
-        D = vnoise(Q, 2.3, (1.7, 3.1, 0.2), 2)
-        P = P + D * amp[:, None] * np.array([1.0, 0.45, 1.0])
-        # flamelets: near the tip a few tear off and rise on their own
-        tear = (self.flk > 0.72) & (u > 0.62)
-        if tear.any():
-            k = np.clip((u - 0.62) / 0.38, 0, 1)
-            P[tear, 1] += 0.18 * k[tear] ** 1.5
-            P[tear, 0] += 0.05 * np.sin(9.0 * self.flk[tear] + 0.11 * t) * k[tear]
-        P = P + self.lean(t)[None, :] * (y ** 2)[:, None]
-        heat = (1.0 - u) ** 1.1 * (1.0 - 0.5 * self.r0 ** 2)
-        heat = np.where(tear, heat * 0.6, heat)
-        w = self.E * smoothstep(0.0, 0.05, u) * (1.0 - smoothstep(0.78, 1.0, u))
-        w = np.where(tear, w * 0.7, w)
-        return P, u, heat, w
-
-    # ----------------------------------------------------------------- emit
-    def emit(self, ctx, C, scale, bright=1.0, height=1.0, calm=1.0, fr=None, glow=1.0, sparks=1.0, Rot=None,
-             zref=0.0, myid=-1):
-        """splat the flame rooted at world point C, `scale` world units tall (x height, 0..1, as it catches)"""
-        if height <= 0.002 or bright <= 0:
+    def emit(self, ctx, root, height, bright=1.0, amount=1.0):
+        """root: world point of the flame's root; height: the flame's height (world units)"""
+        if amount <= 0 or height <= 0:
             return
-        fr = fr if fr is not None else ctx.fr
-        cam = ctx.cam
-        f = cam.f_px(1920)
-        z = max(float((np.asarray(C) - cam.pos) @ cam.R[2]), 0.05)
-        px = f * scale * height / z                         # the flame's height on screen, px
-        n = int(np.clip(px * 150, 6000, self.n))
-        sl = slice(0, n)
-        Rm = np.eye(3) if Rot is None else Rot
+        from look import blackbody
 
-        def world(t):
-            P, u, heat, w = self.gas(t, calm)
-            P = P[sl]
-            P = P * np.array([height ** 0.85, height, height ** 0.85])
-            return np.asarray(C) + (P * scale) @ Rm.T, u[sl], heat[sl], w[sl]
-        P0, u0, _, _ = world(ctx.t0)
-        P1, u1, heat, w = world(ctx.t1)
-        ok = u1 >= u0                                      # skip gas reborn inside the shutter
-        # surface brightness: each particle carries its share of the flame's projected area
-        area = 0.42 * (scale * height) ** 2 * (f / z) ** 2 / n
-        E = bright * area * w * (0.2 + 0.8 * heat ** 0.85) * 1.6 * ok
-        col = heat_col(heat * (0.85 + 0.15 * height))
-        rw = 0.028 * scale * max(height, 0.2) * self.sz[sl]
-        fr.splat(P0, P1, rw, E, col, ctx.cam0, ctx.cam1, profile=1, zref=zref, myid=myid)
-        # the body's glow (a soft light round it)
-        if glow > 0:
-            Cg = np.asarray(C) + (np.array([0.0, 0.33 * height, 0.0]) * scale) @ Rm.T
-            H = np.array([Cg, Cg])
-            rg = np.array([0.34, 0.9]) * scale * max(height, 0.25)
-            eg = np.array([2.6, 1.3]) * glow * bright * (f * scale * max(height, 0.25) / z) ** 2 * 0.02
-            fr.splat(H, H, rg, eg, np.array([[1.0, 0.72, 0.34], [1.0, 0.55, 0.2]]), ctx.cam0, ctx.cam1, profile=1,
-                     zref=zref, myid=myid)
-        # a few calm sparks off the tip
-        if sparks > 0 and height > 0.5:
-            def spk(t):
-                k = (self.s_ph + self.s_v * t) % 1.0
-                tip = np.array([0.0, 0.92 * height, 0.0]) + self.lean(t) * height ** 2
-                y = tip[1] + k * 1.6
-                spr = 0.03 + 0.28 * k
-                x = tip[0] + self.s_d[:, 0] * spr + 0.05 * np.sin(6.0 * k + self.s_a)
-                zz = tip[2] + self.s_d[:, 1] * spr
-                Ps = np.stack([x, y, zz], 1)
-                Ps = Ps + vnoise(Ps + np.array([0, -0.02 * t, 0]), 1.3, (5.0, 1.0, 2.0), 1) * (0.1 * k)[:, None]
-                return np.asarray(C) + (Ps * scale) @ Rm.T, k
-            S0, k0 = spk(ctx.t0)
-            S1, k1 = spk(ctx.t1)
-            okk = k1 >= k0
-            es = self.s_E * (1 - k1) ** 1.6 * 0.9 * sparks * bright * okk * smoothstep(0.0, 0.06, k1)
-            cs = heat_col(0.75 - 0.6 * k1)
-            fr.splat(S0, S1, 0.0035 * scale, es, cs, ctx.cam0, ctx.cam1, zref=zref, myid=myid)
-
-    def light(self, C, scale, bright=1.0, height=1.0):
-        """(position, colour, power) of the flame as a light for the towers"""
-        return (np.asarray(C) + np.array([0.0, 0.35 * scale * height, 0.0]), np.array([1.0, 0.76, 0.4]),
-                bright * height)
+        def pos(t):
+            k = (self.ph + self.v * t) % 1.0
+            y = 0.9 * height + k * 1.5 * height
+            spr = 0.02 * height + 0.22 * height * k
+            x = self.d[:, 0] * spr + 0.05 * height * np.sin(6.0 * k + self.a)
+            z = self.d[:, 1] * spr
+            P = np.asarray(root)[None, :] + np.stack([x, y, z], 1)
+            P = P + vnoise(P * (1.0 / max(height, 1e-3)) + np.array([0, -0.02 * t, 0]), 1.3, (5.0, 1.0, 2.0), 1) \
+                * (0.12 * height * k)[:, None]
+            return P, k
+        P0, k0 = pos(ctx.t0)
+        P1, k1 = pos(ctx.t1)
+        ok = k1 >= k0
+        e = self.E * (1 - k1) ** 1.6 * 6.0 * amount * bright * ok * smoothstep(0.0, 0.08, k1)
+        col = blackbody(np.clip(0.72 - 0.35 * k1, 0.3, 1.0))
+        ctx.fr.splat(P0, P1, 0.004 * height, e, col, ctx.cam0, ctx.cam1)
