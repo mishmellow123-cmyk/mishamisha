@@ -21,7 +21,7 @@ f2440 (looking up at the flaring fire, sparks falling) is the strongest of the s
   2440, crowns raining sparks, FALL_TOWER=7 breaks at 2480 with the camera following (`FallingCrown.centre`,
   `CrownTrail`), over the rim to white at 2640.
 * Check stills: the-long-dawn/review/embers_A3_check/{v3 (A6, approved), edge (EDGE/BRINK, held)}.
-* A background contact sheet of A9/A10/A16/A17 (scratchpad e3/v1.jpg) was launched at 11:53Z; not yet reviewed.
+* Contact sheet of A9/A10/A16/A17 as they stand: FINISHED at scratchpad e3/v1.jpg (0.3 scale), not yet reviewed.
 
 ## NEXT STEPS (the EDGE/BRINK pass, in the director's order)
 1. GEOGRAPHY: the crater must read as a deep glowing BOWL of molten light (heat shimmer, embers rising out of it),
