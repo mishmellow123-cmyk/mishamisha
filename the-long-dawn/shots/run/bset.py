@@ -117,7 +117,8 @@ M = np.vstack([M,
                [0.10, 0.098, 0.092, 1.0, 0.1, 10.0, 0.05, 0, 0, 0, 0],      # 17 darker granite
                [0.060, 0.034, 0.022, 0.8, 0.5, 14.0, 0.02, 0, 0, 0, 0],     # 18 rusted, sooted iron
                [0.022, 0.018, 0.016, 0.9, 0.2, 10.0, 0.10, 0, 0, 0, 0],     # 19 soft leather (gloves, boots)
-               [0.24, 0.018, 0.014, 1.2, 0.0, 8.0, 0.16, 0, 0, 0, 0]])      # 20 the shawl's darker weave
+               [0.24, 0.018, 0.014, 1.2, 0.0, 8.0, 0.16, 0, 0, 0, 0],       # 20 the shawl's darker weave
+               [0.020, 0.019, 0.018, 1.0, 0.0, 8.0, 0.12, 0, 0, 0, 0]])     # 21 a cloak's fold shadow (RUN-B2)
 
 
 def _rot(v, a):
@@ -249,14 +250,16 @@ def person(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=Fa
 
 
 def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=False, walk=0.0, wind=1.0,
-            reach=0.0, build=0.5, hood=0, pack=0, coat=1.0, cloak=14, lean_to=1.0):
+            reach=0.0, build=0.5, hood=0, pack=0, coat=1.0, cloak=14, lean_to=1.0, arms=True, weary=None):
     """Style 2 (RUN-B2): a person seen from behind at 40-120 px. A ROUNDED wool cowl that falls into the shoulders
     (never a pointed tip: a row of pointed hoods read as Nazguls), a stoop that lowers the head and rounds the back
     (never a sideways tilt), the red woven shawl draped as a triangle down the back from shoulder to shoulder with
     two darker woven chevrons and a ragged fringe (never a red box), a heavy cloak to mid-calf (travellers: coat to
     the knee, legs walking), gloves, a staff taller than her. Travellers vary: build 0..1 (slight..broad), hood 0 =
     cowl up / 1 = cowl down (a round head over a wool wrap) / 2 = a deep cowl with a fur edge, pack 0 none / 1 a
-    rolled bundle / 2 a frame pack. lean_to: +1 the work (fire, child) is screen-right, -1 screen-left.
+    corded load. lean_to: +1 the work (fire, child) is screen-right, -1 screen-left. arms=False leaves the arms
+    out (another lane attaches its own at pts['sh_L'] / pts['sh_R']). weary 0..1 (default: the sit pose's all-night
+    hunch): the head bowed, the back rounded.
     pose: stand | look | walk | kneel | feed | sit | shield | reach.  Returns (Drawing, pts)."""
     d = FG.Drawing()
     d.new_group()
@@ -264,15 +267,18 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
     sc = 0.60 if child else (0.95 + 0.10 * build)
     ws = (1.12 if child else 1.0) * (0.90 + 0.28 * build)
     stoop = 0.0 if child else 0.30 * age ** 1.3
+    if weary is None:
+        weary = 0.8 if (pose == 'sit' and not child) else 0.0
+    stoop = min(stoop + 0.25 * weary, 0.6)
     s = lean_to
-    kneel = pose in ('kneel', 'feed')
+    kneel = pose in ('kneel', 'feed', 'shield')
     sit = pose == 'sit'
     ph = walk * 2 * math.pi
     wk = 1.0 if pose == 'walk' else 0.0
     # body landmarks (metres, feet at the origin)
     if kneel:
         hip = np.array([0.0, 0.46])
-        tilt = s * (0.30 + (0.18 if pose == 'feed' else 0.0))       # the torso leans toward the work
+        tilt = s * (0.30 + (0.18 if pose == 'feed' else 0.0) + (0.10 if pose == 'shield' else 0.0))
     elif sit:
         hip = np.array([0.0, 0.30])
         tilt = s * 0.06
@@ -285,7 +291,7 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
     torso = 0.44 * sc * (1.0 - 0.10 * stoop)
     sho = hip + up * torso                                  # shoulder line centre
     shw = 0.20 * ws * sc / 0.95                               # half shoulder width
-    head = sho + up * (0.17 * sc - 0.10 * stoop) + side * (0.02 * s * stoop)
+    head = sho + up * (0.17 * sc - 0.10 * stoop - 0.05 * weary) + side * (0.02 * s * stoop)
     # legs and boots
     if kneel:
         kn = hip + np.array([0.18 * s, -0.40 * sc])
@@ -314,8 +320,12 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
     else:
         hem_y = hip[1] - (0.62 if coat >= 1.0 else 0.40) * sc
         flare = 0.05 * wind + 0.03 * math.sin(ph) * wk
-        d.trap(np.array([flare, hem_y]), sho + up * 0.01, (0.27 if coat >= 1.0 else 0.23) * ws * sc, shw * 0.96,
-               rnd=0.04, k=0.06, mat=cloak, fuzz=0.010, ff=14.0)
+        hw = (0.27 if coat >= 1.0 else 0.23) * ws * sc
+        d.trap(np.array([flare, hem_y]), sho + up * 0.01, hw, shw * 0.96, rnd=0.04, k=0.06, mat=cloak, fuzz=0.010,
+               ff=14.0)
+        # the weight of wet wool: fuller over the hips, the hem heavy and a little uneven
+        d.ellipse(np.array([flare * 0.6, hem_y + 0.34 * sc]), hw * 0.98, 0.30 * sc, k=0.08, mat=cloak)
+        d.ellipse(np.array([flare, hem_y + 0.03]), hw * 1.02, 0.05 * sc, k=0.05, mat=cloak, fuzz=0.012, ff=10.0)
     # rounded shoulders and, with age, a rounded back
     d.ellipse(sho - up * 0.02, shw * 1.05, 0.085 * sc, ang=-tilt, k=0.07, mat=cloak)
     if stoop > 0.05:
@@ -325,11 +335,14 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
     hands = {}
     shL = sho - side * shw * 0.92
     shR = sho + side * shw * 0.92
-    for sh, sg in ((shL, -1), (shR, 1)):
+    for sh, sg in (((shL, -1), (shR, 1)) if arms else ()):
         work = (sg == s)
-        if pose == 'shield':
-            e = sh + np.array([0.26 * sg + 0.12 * s, -0.08]) * sc
-            w = e + np.array([0.18 * sg + 0.14 * s, -0.10]) * sc
+        if pose == 'shield' and work:                      # the arm out round the fire, holding the cloak
+            e = sh + np.array([0.26 * s, -0.04]) * sc
+            w = e + np.array([0.22 * s, -0.16]) * sc
+        elif pose == 'shield':
+            e = sh + np.array([0.10 * s, -0.22]) * sc
+            w = e + np.array([0.18 * s, -0.08]) * sc
         elif kneel and work:
             e = sh + np.array([0.20 * s, -0.20]) * sc
             w = e + np.array([0.20 * s, -0.12 - (0.08 if pose == 'feed' else 0.0)]) * sc
@@ -353,7 +366,12 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
         d.capsule(e, w, 0.058 * sc, 0.048 * sc, k=0.04, mat=cloak)
         d.ellipse(w + np.array([0.0, -0.035 * sc]), 0.040 * sc, 0.048 * sc, k=0.02, mat=19)
         hands['L' if sg < 0 else 'R'] = w
-    if staff and not child:
+        if pose == 'shield' and work:                      # the cloak drawn out from the shoulder to the hand
+            d.tri(sh + up * 0.02, w, np.array([w[0] + 0.05 * s, 0.03]), rnd=0.02, k=0.05, mat=cloak, fuzz=0.008,
+                  ff=16.0)
+            d.tri(sh + up * 0.02, np.array([w[0] + 0.05 * s, 0.03]), np.array([sh[0], 0.03]), rnd=0.02, k=0.05,
+                  mat=cloak)
+    if staff and not child and arms:
         hs = hands['R' if s < 0 else 'L']
         tip = np.array([hs[0] - 0.05 * s, 0.0])
         top = np.array([hs[0] - 0.01 * s, head[1] + 0.16])
@@ -361,20 +379,19 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
             top = hs + np.array([-0.30 * s, 0.55])
             tip = hs + np.array([0.25 * s, -0.30])
         d.capsule(top, tip, 0.019, 0.016, mat=4)
-    if torch:
+    if torch and arms:
         hr = hands['R' if s > 0 else 'L']
         th = hr + np.array([0.08 * s, 0.50]) * sc
         d.capsule(hr - np.array([0.0, 0.05]), th, 0.018, 0.022, mat=4)
         hands['torch'] = th
-    # packs
+    # packs, in the body's own silhouette (a separate outlined shape read as a disc): a bundle riding over one
+    # shoulder, or a corded load high on the back that shows above the shoulders
     if pack == 1:
-        d.new_group()
-        pc = sho - up * 0.20 * sc
-        d.capsule(pc - side * 0.18 * sc, pc + side * 0.18 * sc, 0.085 * sc, 0.085 * sc, k=0.02, mat=4, fuzz=0.006)
+        pc = sho + up * 0.04 + side * (-0.12 * s) * sc
+        d.ellipse(pc, 0.13 * sc, 0.12 * sc, ang=-tilt + 0.5 * s, k=0.04, mat=4, fuzz=0.010, ff=18.0)
     elif pack == 2:
-        d.new_group()
-        d.trap(sho - up * 0.42 * sc, sho + up * 0.04, 0.17 * sc, 0.15 * sc, rnd=0.04, k=0.02, mat=0, fuzz=0.006)
-        d.capsule(sho + up * 0.06 - side * 0.12 * sc, sho + up * 0.06 + side * 0.12 * sc, 0.035, 0.035, mat=4)
+        pc = sho + up * 0.02 * sc
+        d.ellipse(pc, 0.19 * sc, 0.11 * sc, ang=-tilt, k=0.05, mat=0, fuzz=0.012, ff=16.0)
     # the head: a rounded cowl flowing into the shoulders (or cowl down: a round head over a wool wrap)
     d.new_group()
     hr_ = 0.108 * sc * (1.10 if child else 1.0)
@@ -390,23 +407,27 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
             d.ellipse(head + side * (0.10 * s) - up * 0.035, 0.028, 0.045, mat=15)
     if shawl:
         d.new_group()
-        # the red woven shawl: over both shoulders, its point hanging down the back
-        L_ = sho - side * shw * 1.05 + up * 0.02
-        R_ = sho + side * shw * 1.05 + up * 0.02
-        tip_ = sho - up * (0.36 * sc) + side * (0.03 * wind * (0 if kneel else 1))
-        d.tri(L_, R_, tip_, rnd=0.025, k=0.03, mat=13, fuzz=0.007, ff=34.0)
-        d.capsule(L_ + up * 0.005, R_ + up * 0.005, 0.045 * sc, 0.045 * sc, k=0.04, mat=13)
-        for q, wq in ((0.30, 0.013), (0.62, 0.011)):             # two darker woven chevrons
-            a_ = L_ + (tip_ - L_) * q
-            b_ = R_ + (tip_ - R_) * q
-            m_ = 0.5 * (a_ + b_) - up * (0.30 * (1.0 - q) * 0.36 * sc)
-            d.chain(np.array([a_, m_, b_]), wq * sc / 0.95, wq * sc / 0.95, mat=20)
-        # the fringe at the point: a few short tassels
-        for i in range(5):
-            u = (i - 2) / 2.0
-            p0 = tip_ + side * 0.05 * u + up * (0.035 * abs(u))
-            d.capsule(p0, p0 - up * 0.05 + side * 0.01 * wind, 0.012, 0.008, mat=13)
-    return d, dict(hands=hands, head=head, torch=hands.get('torch'))
+        # the red woven shawl: over both shoulders and down over the upper arms, its point low on the back
+        Lt = sho - side * shw * 1.12 + up * 0.035
+        Rt = sho + side * shw * 1.12 + up * 0.035
+        La = sho - side * shw * 1.16 - up * (0.20 + 0.04 * s) * sc
+        Ra = sho + side * shw * 1.16 - up * (0.20 - 0.04 * s) * sc
+        drift = side * (0.04 * wind * (0.0 if kneel else 1.0))
+        tip_ = sho - up * (0.50 * sc) + drift + side * (0.03 * s)
+        for tr in ((Lt, Rt, tip_), (Lt, La, tip_), (Rt, Ra, tip_)):
+            d.tri(tr[0], tr[1], tr[2], rnd=0.02, k=0.02, mat=13, fuzz=0.006, ff=36.0)
+        d.capsule(Lt, Rt, 0.040 * sc, 0.040 * sc, k=0.03, mat=13)
+        # one faint woven stripe across the shoulders
+        d.capsule(Lt - up * 0.06 * sc + side * 0.02, Rt - up * 0.06 * sc - side * 0.02, 0.010 * sc, 0.010 * sc,
+                  mat=20)
+        # the fringe: short tassels along the lower edges toward the point
+        for i in range(9):
+            u = i / 8.0
+            p0 = (La + (tip_ - La) * u) if u <= 0.5 else (tip_ + (Ra - tip_) * (u - 0.5) * 2.0)
+            if i == 4:
+                p0 = tip_
+            d.capsule(p0, p0 - up * 0.045 + drift * 0.3, 0.011, 0.007, mat=13)
+    return d, dict(hands=hands, head=head, torch=hands.get('torch'), sh_L=shL, sh_R=shR)
 
 
 def child_asleep(wake=0.0, reach=0.0):

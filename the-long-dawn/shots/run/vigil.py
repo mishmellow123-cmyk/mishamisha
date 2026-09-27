@@ -60,6 +60,12 @@ F_TRAV3_IN = bar(38)
 F_VILLAGE = bar(39)
 F_FLARE, F_HIS = bar(40, 2), bar(41)
 F_CHILD_IN, F_SIT, F_SHAWL = bar(46), bar(48), bar(48, 2)
+F_JOIN_FIGS = bar(48, 2) + 30          # from here the hand-back draws the pair (the crane starts from this frame)
+
+
+def HB_MOON_END():
+    import handback_b as HB
+    return HB.MOON_END
 
 
 # ------------------------------------------------------------------ sky + weather ---
@@ -208,9 +214,18 @@ class Vigil:
             os.replace(tmp, p)
         self.dist = self.G[..., BW.G_DIST].astype(np.float32)
         self.sky = (self.dist > 1e8).astype(np.float32)
+        self.hb = self._handback()
         self.peaks = self._answers()
         self.vill = self._villages()
         self.rng = np.random.default_rng(5)
+
+    def _handback(self):
+        try:
+            import handback_b as HB
+            return HB.HandBack(self.scale, self.ss, figures=True)
+        except Exception as e:          # the join needs it; the rest of the vigil does not
+            print('vigil: no hand-back instance:', e, flush=True)
+            return None
 
     # the far answers: the hand-back's beacon catalogue (every summit well above the cloud, all round her), those
     # this frame sees; the one on her line of sight answers first (bar 35), the rest one by one to bar 46. At the
@@ -247,11 +262,7 @@ class Vigil:
             else:
                 u = i / max(n - 1, 1)
                 t_on[k] = bar(36, 3) + (bar(46) - bar(36, 3)) * u ** 0.7 + rng.normal() * 20
-        try:
-            chosen = set(HB.HandBack(self.scale, self.ss, figures=False).chosen)
-        except Exception as e:          # the hand-back's schedule is only needed for the join's brightness
-            print('vigil: no hand-back schedule:', e, flush=True)
-            chosen = set()
+        chosen = set(self.hb.chosen) if self.hb is not None else set()
         return dict(idx=vis, P=Bc[vis], sx=sx[vis], sy=sy[vis], z=z[vis], dist=dd[vis],
                     t_on=np.array([t_on[k] for k in vis]), first=first, chosen=chosen)
 
@@ -392,6 +403,9 @@ class Vigil:
         go(F_FLARE - 26, BS.KNEEL, 'feed', 18)                # her light flares
         go(F_FLARE + 30, BS.STAND, 'look', 18)
         go(bar(42), BS.SEAT, 'sit', 22)                       # the young carry the flame down; she sits
+        for q in (bar(43, 3), bar(45, 3), bar(47, 1)):        # and gets up to feed it each hour
+            go(q - 30, BS.KNEEL, 'feed', 16)
+            go(q + 34 if q != bar(47, 1) else F_SIT - 22, BS.SEAT, 'sit', 22)
         ev.sort(key=lambda e: e[0])
         self._track = ev
         return ev
@@ -419,118 +433,163 @@ class Vigil:
 
     def summit(self, img, zb, scam, f, t, md, lv):
         night_amb = lin('#27335E') * 0.45
+        join = smoothstep(bar(47, 3), bar(48, 4), f)          # into the hand-back's exact fire and light
         moon_I = 0.5 * (1.0 - 0.75 * storm(f) - 0.4 * fog(f))
-        fire_I = 1.8 * lv * F.flicker(t, 3)
+        moon_I = moon_I + (0.45 - moon_I) * join
+        fl3 = F.flicker(t, 3)
+        fire_I = 1.8 * (lv + (1.0 - lv) * join) * fl3
         lights = [dict(pos=BS.BEACON + np.array([0, 1.3, 0]), col=F.FIRE_LIGHT, I=fire_I, r0=0.5),
                   dict(dir=md, col=lin('#A7BCE0'), I=moon_I)]
         FG.render(img, zb, scam, BS.rubble_cairn(), BS.CAIRN, lights, amb=night_amb, mats=BS.M, t=t,
                   write_depth=True, zbias=0.3)
         back, front, fb = BS.beacon_base()
+        eg = 0.3 + 0.7 * min(lv, 1.0)
         FG.render(img, zb, scam, back, BS.BEACON, lights, amb=night_amb, mats=BS.M, t=t,
-                  emissive_gain=0.3 + 0.7 * min(lv, 1.0), write_depth=True, zbias=0.3)
+                  emissive_gain=eg + (1.0 - eg) * join, write_depth=True, zbias=0.3)
         base = BS.BEACON + np.array([0.0, fb, 0.0])
         wind = 0.2 + 0.9 * storm(f)
-        F2.flame(img, zb, scam, base, 0.75 + 0.45 * min(lv, 1.4), 0.40, t, seed=4, I=12.0 * min(lv, 1.5), lean=wind,
-                 zbias=0.5, tongues=5, warp=1.2)
+        # the vigil's fire, settling into the hand-back's (0.85 / 0.34 / I 12 / lean 0.2 / absorb 0.7) by the crane
+        hf = 0.75 + 0.45 * min(lv, 1.4)
+        fI = 12.0 * min(lv, 1.5)
+        F2.flame(img, zb, scam, base, hf + (0.85 - hf) * join, 0.40 + (0.34 - 0.40) * join, t, seed=4,
+                 I=fI + (12.0 - fI) * join, lean=wind + (0.2 - wind) * join, zbias=0.5, tongues=5, warp=1.2,
+                 absorb=0.7 * join)
         bx, by, bz = scam.project(base + np.array([0, 0.6, 0]))
-        F2.halo(img, zb, bx, by, 5.0 * scam.f / bz, 0.006 * lv, z=bz, zbias=3.0)
+        F2.halo(img, zb, bx, by, 5.0 * scam.f / bz, 0.006 * lv + (0.005 - 0.006 * lv) * join, z=bz, zbias=3.0)
         FG.render(img, zb, scam, front, BS.BEACON, lights, amb=night_amb, mats=BS.M, t=t, write_depth=False,
                   zbias=0.3)
         # travellers on the path (behind/beside her: drawn before her)
         self.travellers(img, zb, scam, f, t, lights, night_amb)
-        # the child (bars 46-48): comes up with a traveller, stays, sits against her, sleeps in her shawl
-        shawl_on_child = smoothstep(F_SHAWL, F_SHAWL + 30, f)
+        # her, and from bar 46 the traveller's child: at the crane the hand-back draws the pair itself
+        if f >= F_JOIN_FIGS and self.hb is not None:
+            hl = [dict(dir=np.array([0.0, -1.0, 0.0]), col=np.array([1.0, 0.62, 0.36]), I=0.0),
+                  dict(pos=BS.BEACON + np.array([0, 1.3, 0]), col=F.FIRE_LIGHT, I=1.8 * fl3, r0=0.5),
+                  dict(dir=HB_MOON_END(), col=lin('#A7BCE0'), I=0.45)]
+            self.hb.figures_at(img, zb, scam, 3840, t, hl, night_amb)
+            return
+        give = smoothstep(F_SHAWL - 6, F_SHAWL + 24, f)       # she wraps the child in her shawl
         if f >= F_CHILD_IN:
-            cpos, cpose = self.child_at(f)
-            if cpose == 'sit':
-                if shawl_on_child >= 0.5:
-                    cd, _ = BS.child_asleep(0.0)
-                else:
-                    cd, _ = BS.person('sit', age=0.0, shawl=False, staff=False, child=True)
-                FG.render(img, zb, scam, cd, cpos, lights, amb=night_amb, mats=BS.M, t=t, write_depth=False,
-                          zbias=0.3)
-            else:
-                cd, _ = BS.person('walk', age=0.0, shawl=False, staff=False, child=True, walk=(f / 18.0) % 1.0)
-                FG.render(img, zb, scam, cd, cpos, lights, amb=night_amb, mats=BS.M, t=t, write_depth=False,
-                          zbias=0.3)
+            self.child(img, zb, scam, f, t, lights, night_amb, give)
         pose, pos, ex = self.her_state(f)
-        kw = dict(age=0.85, shawl=shawl_on_child < 0.5, staff=pose in ('look', 'walk'), wind=0.5 + 1.2 * storm(f),
-                  walk=ex.get('walk', 0.0) % 1.0)
-        d, pts = BS.person('kneel' if pose == 'feed' else pose, **kw)
+        kw = dict(age=0.9, shawl=give < 0.5, staff=pose in ('look', 'walk', 'sit'),
+                  wind=(0.4 if pose == 'sit' else 0.5) + 1.2 * storm(f), walk=ex.get('walk', 0.0) % 1.0,
+                  reach=math.sin(math.pi * give) * 0.9 if pose == 'sit' else 0.0)
+        d, pts = BS.person2('kneel' if pose == 'feed' else pose, **kw)
         FG.render(img, zb, scam, d, pos, lights, amb=night_amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
         if pose == 'feed':
             q = ex.get('feed', 99)
             if 0 <= q < 26:            # sparks as the wood takes
-                n = 14
                 rng = np.random.default_rng(int(f))
-                for i in range(n):
+                for i in range(14):
                     age = (q + rng.random() * 6) / 26.0
                     p = base + np.array([rng.normal(0, 0.12), 0.3 + 1.6 * age + rng.random() * 0.2, rng.normal(0, 0.12)])
                     sx, sy, sz = scam.project(p)
                     F2.glow(img, zb, sx, sy, 0.5 * self.ss, 0.5 * self.ss * self.ss * (1.0 - age), z=sz, zbias=0.5,
                             col=np.array([1.0, 0.55, 0.2]))
 
-    def child_at(self, f):
-        # climbs the last of the path behind a traveller from bar 46, stays by her (bar 47 b3), sits against her (48)
-        arrive = bar(47, 3)
+    def child_pos(self):
+        """Where the child sits against her: the hand-back's place for it (so the crane starts from this frame)."""
+        if self.hb is not None:
+            import handback_b as HB
+            side = self.hb._side()
+            fw = BS.dirxz(HB._sun_az() + HB.SET_TURN)
+            return BS.on_ground(BS.SEAT + side * 0.78 - fw * 0.20)
+        return BS.on_ground(BS.SEAT + BS.RIGHT * 0.6)
+
+    def child(self, img, zb, scam, f, t, lights, amb, give):
+        """Bar 46: the child comes up the path beside a traveller; stays by her (bar 47); sits against her (bar 48);
+        is wrapped in her shawl and falls asleep."""
+        arrive = bar(47, 1) + 10
+        cp = self.child_pos()
         if f < arrive:
-            s = 14.0 * (1.0 - (f - F_CHILD_IN) / float(arrive - F_CHILD_IN))
-            return BS.path_at(max(s, 0.0)) + BS.RIGHT * 0.5, 'walk'
-        if f < F_SIT:
-            u = (f - arrive) / float(F_SIT - arrive)
-            p = BS.LIP + (BS.on_ground(BS.SEAT + BS.RIGHT * 0.6) - BS.LIP) * u
-            return BS.on_ground(p), 'walk'
-        return BS.on_ground(BS.SEAT + BS.RIGHT * 0.6), 'sit'
+            s = 14.0 * (1.0 - (f - F_CHILD_IN) / float(arrive - F_CHILD_IN - 50))
+            if s > 0.0:
+                p = BS.path_at(s) + BS.RIGHT * 0.55
+            else:
+                u = min((f - (arrive - 50)) / 50.0, 1.0)
+                p = BS.LIP + (cp - BS.LIP) * u
+            d, _ = BS.person2('walk', age=0.0, shawl=False, staff=False, child=True, walk=(f / 16.0) % 1.0)
+        elif f < F_SIT:
+            u = min((f - arrive) / 30.0, 1.0)
+            p = cp
+            d, _ = BS.person2('stand' if u >= 1.0 else 'walk', age=0.0, shawl=False, staff=False, child=True,
+                              walk=(f / 16.0) % 1.0)
+        else:
+            p = cp
+            if give >= 0.5 and self.hb is not None:
+                d, _ = BS.child_asleep(0.0)
+            else:
+                d, _ = BS.person2('sit', age=0.0, shawl=give > 0.5, staff=False, child=True)
+        FG.render(img, zb, scam, d, BS.on_ground(p), lights, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
+
+    # the travellers: (arrival frame, looks). They come up the last of the NE path with unlit torches, light them
+    # at the basket and go home down the ridge: the thread of torches grows through the night.
+    LOOKS = [dict(build=0.85, hood=0, pack=1, coat=0.6, cloak=0),
+             dict(build=0.25, hood=1, pack=0, coat=0.6, cloak=14),
+             dict(build=0.60, hood=2, pack=2, coat=1.0, cloak=0),
+             dict(build=0.45, hood=0, pack=0, coat=1.0, cloak=14),
+             dict(build=0.95, hood=1, pack=2, coat=0.6, cloak=14),
+             dict(build=0.15, hood=0, pack=1, coat=0.6, cloak=0),
+             dict(build=0.70, hood=2, pack=0, coat=0.6, cloak=14)]
+    TRIPS = [(bar(36), 1), (bar(38), 3), (bar(40, 3), 2), (bar(42), 3), (bar(43, 2), 2), (bar(44, 2), 3),
+             (bar(45, 2), 2), (bar(46), 1)]            # the last is the child's parent
 
     def travellers(self, img, zb, scam, f, t, lights, amb):
-        """Up the last of the NE path with unlit torches, a torch lit at the basket, and down again: the torches go
-        home down the ridge, a thread of lights that grows through the night (bars 36-48)."""
-        trips = [(F_TRAV1_IN, 1), (F_TRAV3_IN, 3), (bar(40, 3), 2), (bar(42), 3), (bar(43, 2), 2),
-                 (bar(44, 2), 3), (bar(45, 2), 2), (bar(45, 4), 1)]
         ss = self.ss
+        fg = fog(f)
         UP, AT = 100, 44
-        for k0, (t0, n) in enumerate(trips):
+        n_look = 0
+        for k0, (t0, n) in enumerate(self.TRIPS):
             for m in range(n):
+                look = self.LOOKS[(n_look + 3 * k0) % len(self.LOOKS)]
+                n_look += 1
                 s0 = t0 + m * 24
                 if f < s0:
                     continue
+                side_off = BS.RIGHT * (0.45 * m - 0.2)
                 if f < s0 + UP:                               # the last 14 m of the climb, unlit
                     u = (f - s0) / float(UP)
-                    p = BS.path_at(14.0 * (1.0 - u)) + BS.RIGHT * (0.4 * m)
+                    p = BS.path_at(14.0 * (1.0 - u)) + side_off
                     lit = False
                     walk = (f - s0) / 22.0
+                    pose = 'walk'
                 elif f < s0 + UP + AT:                        # to the basket; the torch takes
                     u = (f - s0 - UP) / float(AT)
-                    tgt = BS.on_ground(BS.BEACON + BS.RIGHT * (0.9 + 0.4 * m) + BS.FWD * 0.3)
+                    tgt = BS.on_ground(BS.BEACON + BS.RIGHT * (0.95 + 0.45 * m) + BS.FWD * 0.35)
                     p = BS.on_ground(BS.LIP + (tgt - BS.LIP) * min(u * 2.0, 1.0))
                     lit = u > 0.55
                     walk = (f - s0) / 22.0 if u < 0.5 else 0.0
+                    pose = 'walk' if u < 0.5 else 'stand'
                 else:                                         # home: walking, then a light going down the ridge
                     g = f - s0 - UP - AT
                     s = 0.12 * g + 0.0045 * g * g
                     if s > 1300.0:
                         continue
-                    p = BS.path_at(s) + BS.RIGHT * (0.3 * m)
+                    p = BS.path_at(s) + side_off * 0.6
                     lit = True
                     walk = g / 22.0
+                    pose = 'walk'
                 dd = np.linalg.norm(p - scam.pos)
-                if dd < 160.0:
-                    d, pts = BS.person('walk', age=0.2, shawl=False, staff=False, torch=True, walk=walk % 1.0, cloak=0)
-                    FG.render(img, zb, scam, d, p, lights, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
-                    rgt = np.array([scam.right[0], 0.0, scam.right[2]])
+                rgt = np.array([scam.right[0], 0.0, scam.right[2]])
+                fl = F.flicker(t + 0.53 * (k0 * 3 + m), k0 * 3 + m + 11)
+                if dd < 220.0:
+                    d, pts = BS.person2(pose, age=0.2, shawl=False, staff=False, torch=True, walk=walk % 1.0, **look)
                     tp = p + np.array([0.0, pts['torch'][1], 0.0]) + rgt * pts['torch'][0]
+                    lk = list(lights)
+                    if lit:                                    # the torch lights its bearer
+                        lk.append(dict(pos=tp + np.array([0.0, 0.15, 0.0]), col=F.FIRE_LIGHT, I=0.55 * fl, r0=0.25))
+                    FG.render(img, zb, scam, d, p, lk, amb=amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
                 else:
                     tp = p + np.array([0.0, 1.7, 0.0])
                 if lit:
                     sx, sy, sz = scam.project(tp)
-                    fl = F.flicker(t + 0.53 * (k0 * 3 + m), k0 * 3 + m + 11)
-                    if dd < 160.0:
+                    if dd < 220.0:
                         F2.flame(img, zb, scam, tp, 0.30, 0.12, t + m, seed=9 + m, I=5.0, lean=0.3, zbias=0.3,
                                  tongues=3, warp=1.0)
                     en = 6.0 * fl * ss * ss * min(1.0, 300.0 / dd) ** 0.6
                     F2.glow(img, zb, sx, sy, 0.7 * ss, en, z=sz, zbias=sz * 0.02, col=np.array([1.0, 0.55, 0.2]))
-                    F2.halo(img, zb, sx, sy, 2.5 * ss, 0.01 * min(1.0, 400.0 / dd), z=sz, zbias=sz * 0.02,
-                            col=np.array([1.0, 0.45, 0.12]))
+                    F2.halo(img, zb, sx, sy, (2.5 + 9.0 * fg) * ss, (0.01 + 0.03 * fg) * min(1.0, 400.0 / dd),
+                            z=sz, zbias=sz * 0.02, col=np.array([1.0, 0.45, 0.12]))
 
     def snow(self, img, scam, f, st):
         """Driving snow in the squall: fine, short, thin streaks blowing across the frame (left to right, falling),
