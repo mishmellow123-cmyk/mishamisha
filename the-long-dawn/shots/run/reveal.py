@@ -51,15 +51,16 @@ def _ease_out(u):
 
 def camera(frame, W, H):
     u = _ease_out((frame - F0) / float(F1 - 1 - F0))
-    # start: 7 m behind her at eye height; end: 520 m out (WNW of the top), level with the top
+    # start: 7 m behind her at eye height; end: 650 m out (WNW of the top) and 70 m above it, so the summit sits
+    # low in the frame against a wide silver cloud sea (level with the top it read as a dark mound on a plain)
     p0 = HER + BS.dirxz(BACK_AZ) * 7.0 + np.array([0.0, 1.5, 0.0])
-    p1 = BS.TOP + BS.dirxz(BACK_AZ - 8.0) * 520.0 + np.array([0.0, 6.0, 0.0])
+    p1 = BS.TOP + BS.dirxz(BACK_AZ - 4.0) * 650.0 + np.array([0.0, 70.0, 0.0])
     # a curved path: out first, then up
-    pos = p0 + (p1 - p0) * np.array([u, u ** 1.6, u])
+    pos = p0 + (p1 - p0) * np.array([u, u ** 1.3, u])
     tgt0 = BS.BEACON + np.array([0.0, 0.9, 0.0])
     tgt1 = BS.TOP + np.array([0.0, 1.0, 0.0])
     tgt = tgt0 + (tgt1 - tgt0) * u
-    hfov = 46.0 - 8.0 * u
+    hfov = 46.0 - 4.0 * u
     d = tgt - pos
     bear = math.degrees(math.atan2(d[0], d[2]))
     el = math.degrees(math.atan2(d[1], math.hypot(d[0], d[2])))
@@ -99,7 +100,7 @@ class Reveal:
         zb = dist.copy()
         sky = (dist > 1e8).astype(np.float32)
         ang = VG.sky_angle(VG.F0) - math.radians(VG.STAR_DEG / (VG.F1 - VG.F0)) * (VG.F0 - f)
-        BW.add_band(G, KP._rotmat(KP.POLE, ang), VG.BAND, 0.07, 1.0, img)
+        BW.add_band(G, KP._rotmat(KP.POLE, ang), VG.BAND, 0.14, 1.0, img)      # stronger (director)
         KP.draw_stars(img, scam, sky, ang - 0.0008, ang, 1.6 * self.ss * self.ss, K=3)
         # the summit: the cairn, the beacon roaring up, her
         md = self.moon
@@ -116,6 +117,13 @@ class Reveal:
                  warp=1.3)
         bx, by, bz = scam.project(base + np.array([0, 0.6, 0]))
         F2.halo(img, zb, bx, by, 5.0 * scam.f / bz, 0.006 * lv, z=bz, zbias=3.0)
+        # far away the fire must still read as a warm POINT (director): a distance-sized core and a small halo
+        far = smoothstep(40.0, 260.0, bz)
+        if far > 0.0:
+            F2.glow(img, zb, bx, by, 1.1 * self.ss, 26.0 * far * lv * self.ss * self.ss, z=bz, zbias=bz * 0.02,
+                    col=np.array([1.0, 0.62, 0.26]))
+            F2.halo(img, zb, bx, by, 5.0 * self.ss, 0.05 * far * lv, z=bz, zbias=bz * 0.02,
+                    col=np.array([1.0, 0.50, 0.18]))
         FG.render(img, zb, scam, front, BS.BEACON, lights, amb=amb_f, mats=BS.M, t=t, write_depth=False, zbias=0.3)
         # her: weight back from the roar, then standing, looking at her fire
         d, _ = BS.person('look', age=0.85, shawl=True, staff=True, wind=0.5)
