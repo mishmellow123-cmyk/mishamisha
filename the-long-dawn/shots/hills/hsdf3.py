@@ -442,6 +442,19 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
         else:
             glow, ash = ember_emit(px, py, pz, XP[24], XP[19], 1.3)
             gain = XP[20]
+            if XP[31] > 0.0:
+                # one eye: the red core shows only through a hole in the char crust round XP[21:24], radius XP[31]
+                dx = px - XP[21]
+                dy = py - XP[22]
+                dz = pz - XP[23]
+                de = math.sqrt(dx * dx + dy * dy + dz * dz) / XP[31]
+                eye = min(1.0, max(0.0, (1.25 - de) / 0.55))
+                eye = eye * eye * (3.0 - 2.0 * eye)
+                glow = glow * (0.08 + 0.92 * eye) * (0.6 + 0.4 * eye)
+                ash = ash * (1.0 - 0.8 * eye) + (1.0 - eye) * 0.25 * (1.0 - XP[19])
+                ar = 0.022
+                ag = 0.019
+                ab = 0.017
         ar = ar * (1 - ash) + 0.42 * ash
         ag = ag * (1 - ash) + 0.40 * ash
         ab = ab * (1 - ash) + 0.38 * ash
