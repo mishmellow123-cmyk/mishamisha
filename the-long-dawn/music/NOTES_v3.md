@@ -42,6 +42,15 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
   battery, since the breaths, the 2 s true silence at bar 36 and the level map all depend on the tail.
 - **Status:** B first (all cues, real), then the flint take shared by A/B/C, C's book and council, then A's fire act.
 
+## PICTURE SYNC: C10 THE MIRROR (MIRROR lane, 21:10Z; for COMPOSER-C and SOUND)
+- Picture is `renders/mirror_C` (C 2080-2319), built to barmap_C: the drop STRIKES the water on **f2200 exactly (28 b3)**:
+  put the drop's splash transient there (`sfx("drop", ..., ev("drop"))` already does). The falling glint is only
+  f2198-2199 (no whoosh needed). A secondary drop (the jet's bead falling back) makes a second, smaller ring at
+  **~f2210.6**: if SOUND's drop recording has its own small after-drip, let it land about 0.44 s after the first.
+- The golden dawn blooms 2200-2224 and holds to **2248** (the score's `back`), then the fire returns 2248-2288:
+  the harp's Ab5 at back+0.2 sits right on it. The breath that brings the fire in crosses 2096-2158 (under the
+  harp's D6 at mir+1.0). No other sync points; the picture has no Eye, so nothing needs the Eye's sting.
+
 ## TWO COMPOSERS FROM 18:40Z: who owns what
 - **Shared, additive only:** `src/kit_v3.py` (the motif kit), `src/timeline_v3.py`, `src/render_v3.py`,
   `src/analyze_v3.py`, `src/sfx_v3.py`, `src/synth_v3.py`. Add new functions; never change the behaviour of an
