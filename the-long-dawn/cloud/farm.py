@@ -7,6 +7,7 @@
     python3 the-long-dawn/cloud/farm.py status          # the queue, the farm nodes, spend, token expiry
     python3 the-long-dawn/cloud/farm.py cancel <request>
     python3 the-long-dawn/cloud/farm.py stop-idle       # stop every farm node that nothing is using
+    python3 the-long-dawn/cloud/farm.py shutdown        # stop the whole fleet (killing the daemon does NOT)
 
 One shared queue: every farm.py call is a REQUEST to a single farm daemon on this Mac (started on demand, gone
 after 5 idle minutes). The daemon drives the whole node pool: --test requests go ahead of finals, each request
@@ -80,6 +81,7 @@ REQDIR = os.path.join(CACHE, 'req')
 DONEDIR = os.path.join(CACHE, 'done')
 DLOCK = os.path.join(CACHE, 'daemon.lock')
 DLOG = os.path.join(CACHE, 'daemon.log')
+SHUTDOWN_FLAG = os.path.join(CACHE, 'shutdown')
 DPID = os.path.join(CACHE, 'daemon.pid')
 DAEMON_IDLE_EXIT = int(os.environ.get('LDFARM_DAEMON_IDLE_EXIT', '300'))
 MISSION = os.environ.get('LDFARM_MISSION', 'long-dawn-render-farm')
@@ -91,7 +93,7 @@ FINAL_SHARE = float(os.environ.get('LDFARM_FINAL_SHARE', '0.34'))   # running fi
 FINAL_AGING_S = int(os.environ.get('LDFARM_FINAL_AGING_S', '300'))   # finals never wait longer than this behind tests
 MAX_QUEUED = int(os.environ.get('LDFARM_MAX_QUEUED', '4'))      # nodes per pool waiting in a capacity queue
 MAX_BOOTING = int(os.environ.get('LDFARM_MAX_BOOTING', '4'))  # nodes creating/queued/waking at once
-MAX_SPILL = int(os.environ.get('LDFARM_MAX_SPILL', '10'))    # extra h100-1 nodes that take CPU units while cpu-8 has no room
+MAX_SPILL = int(os.environ.get('LDFARM_MAX_SPILL', '13'))    # extra h100-1 nodes that take CPU units while cpu-8 has no room
 MAX_STREAM = int(os.environ.get('LDFARM_MAX_ENDPOINTS', '15'))
 TEST_RESERVE = int(os.environ.get('LDFARM_TEST_RESERVE', '2'))  # slots finals leave free so look-dev never waits long
 SPEND_WARN = float(os.environ.get('LDFARM_SPEND_WARN', '150'))
@@ -1072,7 +1074,7 @@ class Scheduler:
         for pool in POOLS:
             waiting = [nd for nd in self.nodes.values() if nd.pool is pool and nd.state == 'booting' and nd.queued]
             cpu_w = sorted((nd for nd in waiting if nd.kind == 'cpu'), key=lambda nd: nd.t_queued or 0)
-            keep = 2 if self.spilling() else MAX_QUEUED
+            keep = 1 if self.spilling() else MAX_QUEUED      # while spilling, queue slots go mostly to h100
             extra = cpu_w[keep:] + [nd for nd in waiting if nd.kind == 'gpu'][max(0, MAX_QUEUED - min(len(cpu_w), keep)):]
             for nd in extra:
                 nd.say(f'{nd.name}: leaving the capacity queue ({len(waiting)} of this pool\'s nodes were waiting)')
@@ -1139,7 +1141,7 @@ class Scheduler:
             if need['cpu'] and self.spilling():
                 gpu_live = sum(1 for nd in live if nd.kind == 'gpu')
                 spare = max(0, len(idle('gpu')) - len(gpu_own))
-                spill = max(0, min(need['cpu'] - spare, MAX_GPU + MAX_SPILL - gpu_live - need['gpu']))
+                spill = max(0, min(need['cpu'] - spare, (MAX_GPU + MAX_SPILL) * len(POOLS) - gpu_live - need['gpu']))
                 need['gpu'] += spill
                 need['cpu'] = min(need['cpu'], 1)          # keep probing cpu-8 with one create at a time
             has_test = any(u['_prio'] == 0 for u in self.queue)
@@ -1734,10 +1736,9 @@ def cmd_daemon():
         return                                      # another daemon has the pool
     with open(DPID, 'w') as fh:
         fh.write(str(os.getpid()))
-    upgrade = threading.Event()
-    signal.signal(signal.SIGTERM, lambda *a: STOP.set())
-    signal.signal(signal.SIGINT, lambda *a: STOP.set())
-    signal.signal(signal.SIGUSR1, lambda *a: (upgrade.set(), STOP.set()))
+    upgrade = threading.Event()             # any signal = exit and KEEP the fleet (the next daemon adopts it);
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGUSR1, signal.SIGHUP):   # only `farm.py shutdown` stops nodes
+        signal.signal(sig, lambda *a: (upgrade.set(), STOP.set()))
     log(f'farm daemon {os.getpid()} up (streaming nodes {MAX_STREAM}, test reserve {TEST_RESERVE})')
     sched = Scheduler()
     idle_since = time.time()
@@ -1758,6 +1759,10 @@ def cmd_daemon():
             for req in list(sched.reqs.values()):
                 if req.state not in TERMINAL and os.path.exists(req.cancelp):
                     sched.cancel(req)
+            if os.path.exists(SHUTDOWN_FLAG):
+                os.remove(SHUTDOWN_FLAG)
+                log('shutdown requested (farm.py shutdown): stopping every farm node')
+                break
             sched.step()
             if sched.active() or sched.nodes:
                 idle_since = time.time()
@@ -1975,6 +1980,9 @@ def main():
         return cmd_stop_idle()
     if cmd == 'cancel' and len(argv) == 2:
         return cmd_cancel(argv[1])
+    if cmd == 'shutdown':                          # the one way to stop the whole fleet (requests are cancelled)
+        open(SHUTDOWN_FLAG, 'w').close()
+        return print('farm: shutdown requested; the daemon stops every node within a few seconds')
     if cmd == 'daemon':
         ensure_venv()
         return cmd_daemon()
