@@ -34,7 +34,41 @@
   state (moon or not, glow intensity, under-glow table). R16 starts from R3's last position (the shot delta), so its
   first frame matches A14's last.
 
-## SPLIT (director approved ~19:05Z): two agents in this department
+## RUN-A-L STATE (live, 27 Sep ~19:50Z): A2 FALSE DAWN, A11 X2, A14 BEACON RUN
+* **Split, third lane:** RUN-A3 took A13 and A15 at ~19:15Z. RUN-A-L keeps A2, A11 and A14 and owns `falsedawn.py`,
+  `stars_a.py` and `beaconrun_a.py`, plus their jobs. The shared A night is `nighta.py` (RUN-A3's kit: glow, the red
+  under the cloud, fires), and A14 imports it.
+* **A11 X2** (`stars_a.py` -> `stars_A`, cut 3120-3359):
+  * Status: written, with the look-dev job `stars_a_look` (3 views) on the farm. The final is `stars_a.json`, one
+    node, a few minutes.
+  * Look: stars return brightest first (3 on bar 40 b1, all by bar 42 b1) and the Milky Way last. The camera looks
+    away from the moon (az 110, pitch 12), and the ranges come up faintly moonlit.
+  * The ember continues EMBERS' at (960, 548) per the director, with its core and halo fitted to EMBERS' A10 frame
+    3119 (HDR core 8.08, sigma 1 px; halo 0.26 exp(-r/10 px)) and EMBERS' flicker clock (u = f - 2800).
+  * CHECK when `embers_A3` 3119 lands: measure its centroid, and set X2_EMB_X/Y if it is off by 1 px or more. My
+    scratch render put it at (958.6, 547.5).
+* **A14 BEACON RUN** (`beaconrun_a.py` -> `beaconrun_A`, cut 3920-4239):
+  * Status: renderer written (the Run world + FD_RANGE + FD_WALL, `light()` = night_light + the crossing's terrain
+    fixes). Look-dev `beaconrun_a_look` is on the farm: 4 labelled static candidate views near A2's ridge toward az -30.
+  * Design:
+    * Ignitions: 3960, 4000, ..., 4200.
+    * Near and far alternate, so fire 2 is the far answer on bar 51 b1.
+    * Every fire stays ahead of a slow, high glider on a long lens.
+    * The camera settles about 60 m behind fire 7, which catches beside the watcher who lit it.
+    * The A13 fires already burn far off. Her cluster is at az -10, 32 km, in front of the far wall.
+  * A15 imports from here: `light()`, `CR`, `FIRES` and `end_cam()`. Tell RUN-A3 when the picks are final.
+* **A2 FALSE DAWN** (`falsedawn.py`), the director's H5 look:
+  * Horizon: a great far wall of knife-edge peaks (`FD_WALL`, 46 km, az -15, crests 1.3-2.3 km) over the uniform
+    needles.
+  * Aerial depth: fogp[0] 1e-4.
+  * Cloud sea: cloud-top mist 3.6e-4; cloud ambient gain 3.2 (brighter than rock); troughs 0.72; anti-streak snow.
+  * Look-dev `falsedawn_a_look` (cut 240, 380, 500 at half res) is on the farm. The old `falsedawn_a_1..4` jobs predate
+    this; I'll re-cut them into farm jobs of 45 minutes or less once the look is approved.
+* **The farm on this Mac:** set numba threads with `numba.set_num_threads(min(threads, numba.config.NUMBA_NUM_THREADS))`
+  and never touch `os.environ['NUMBA_NUM_THREADS']` after numba loads, because the node sets it and a change raises.
+  crossing.py and bluehour.py (RUN-A2) have the old pattern.
+
+## SPLIT (director approved ~19:05Z; RUN-A3 split off ~19:15Z for A13 + A15)
 * **RUN-A-L:** A2 FALSE DAWN (`falsedawn.py`), A11 X2 (`stars_a.py`, new), A13 R2-A REVEAL, A14 BEACON RUN and A15
   WATCHERS. Folders: `falsedawn_A`, `stars_A`, `reveal_A`, `beaconrun_A` and `watchers_A`.
 * **RUN-A2:** A18 THE CROSSING, A19 THE BLUE HOUR and A20's title sky (`bluehour_A` 6240-6479). Owns `crossing.py`,
