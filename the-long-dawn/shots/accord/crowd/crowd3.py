@@ -61,7 +61,7 @@ import geom3 as G  # noqa: E402
 import shade3 as SH  # noqa: E402
 import flame3 as FL3  # noqa: E402
 import nbcore  # noqa: E402
-from nbcore import FM, clamp, sstep, mix, vnoise2, fbm2, grid_sample  # noqa: E402
+from nbcore import FM, clamp, sstep, mix, vnoise2, fbm2, grid_sample, tex3  # noqa: E402
 
 # ================================================================ constants ===
 T_FREEZE = 4760.0          # the rivers have arrived, or stop where they stand (the crowd is off screen after ~4690)
@@ -803,7 +803,7 @@ def state(t, prev=True):
     TL[:, 3] = 0.09
     TL[:, 4:7] = I[:, None] * FIRE_HOT[None, :]
     TL[:, 7] = -5.0                                     # owner: not one of accord3's figures
-    return dict(t=t, plate=plate_of(t), CF=F, FL=FLr, TL=TL, lit=lit, x=x, y=y, top=top)
+    return dict(t=t, plate=plate_of(t), CF=F, FL=FLr, TL=TL, lit=lit, x=x, y=y, top=top, seed=L['fseed'])
 
 
 def lit_fraction(cs):
@@ -1820,6 +1820,86 @@ def _airlight(img, depth, cam, TL, nt, sigma, hmin, lam, reach):
                 img[y, x, 2] += sigma * v * TL[k, 6]
 
 
+SMOKE_SIG = 0.010          # torch smoke: its in-scatter of its own flame (radiance per unit of torch intensity)
+SMOKE_K = 0.25             # the smoke is splatted at this fraction of the frame's resolution
+
+
+@njit(parallel=True, **FM)
+def _plumes(buf, dmin, cam, k, TL, nt, SEED, wx, wy, T, n3, sig):
+    """Torch smoke: from each lit torch a soft plume drifts downwind and rises, wavering in the eddies, lit by its
+    own flame (brightest just above it). Gaussian puffs at the buffer's resolution, hidden behind nearer surfaces."""
+    Hb = buf.shape[0]
+    Wb = buf.shape[1]
+    f = cam[12] * k
+    cx = cam[13] * k
+    cy = cam[14] * k
+    NB = 7
+    for i in range(nt):
+        I = TL[i, 4]
+        if I <= 1e-4:
+            continue
+        sd = SEED[i]
+        for b in range(NB):
+            sp = (b + 0.5) / NB
+            Lp = 3.4
+            wob = 0.45 * sp
+            ox = TL[i, 0] + wx * Lp * sp + wob * (tex3(n3, sd * 3.1, sp * 5.0 - T * 0.05, 1.3) - 0.5) * 2.0
+            oy = TL[i, 1] + wy * Lp * sp + wob * (tex3(n3, 7.7, sd * 3.1 + sp * 5.0 - T * 0.05, 2.1) - 0.5) * 2.0
+            oz = TL[i, 2] + 0.22 + 1.15 * sp
+            rad = 0.14 + 0.50 * sp
+            e = I * sig / (1.0 + (Lp * sp / 0.55) ** 2) * (1.0 - 0.45 * sp)
+            vx = ox - cam[0]
+            vy = oy - cam[1]
+            vz = oz - cam[2]
+            zc = vx * cam[9] + vy * cam[10] + vz * cam[11]
+            if zc <= 0.2:
+                continue
+            xs = cx + f * (vx * cam[3] + vy * cam[4] + vz * cam[5]) / zc
+            ys = cy - f * (vx * cam[6] + vy * cam[7] + vz * cam[8]) / zc
+            R = max(f * rad / zc, 0.35)
+            rb = 2.6 * R + 1.0
+            x0 = max(int(xs - rb), 0)
+            x1 = min(int(xs + rb) + 1, Wb)
+            y0 = max(int(ys - rb), 0)
+            y1 = min(int(ys + rb) + 1, Hb)
+            if x1 <= x0 or y1 <= y0:
+                continue
+            dist = math.sqrt(vx * vx + vy * vy + vz * vz)
+            # a puff smaller than a pixel keeps its light (area-normalised below one pixel)
+            amp = e * min(1.0, (R / 0.6) ** 2) if R < 0.6 else e
+            for y in prange(y0, y1):
+                for x in range(x0, x1):
+                    if dmin[y, x] < dist - rad:
+                        continue
+                    dd = ((x + 0.5 - xs) ** 2 + (y + 0.5 - ys) ** 2) / (2.0 * R * R)
+                    if dd > 6.0:
+                        continue
+                    g = amp * math.exp(-dd)
+                    buf[y, x, 0] += g * 1.00
+                    buf[y, x, 1] += g * 0.60
+                    buf[y, x, 2] += g * 0.30
+
+
+def smoke(rgb, depth, cam, cs, t, idx):
+    """The torches' smoke over the frame (a quarter-resolution splat, softened and added)."""
+    TL = cs['TL']
+    if len(idx) == 0 or SMOKE_SIG <= 0.0:
+        return
+    Hd, Wd = depth.shape
+    hb, wb = max(int(Hd * SMOKE_K), 1), max(int(Wd * SMOKE_K), 1)
+    k = wb / float(Wd)
+    dmin = cv2.resize(depth, (wb, hb), interpolation=cv2.INTER_NEAREST)
+    dmin = cv2.erode(dmin, np.ones((3, 3), np.uint8))
+    buf = np.zeros((hb, wb, 3), np.float32)
+    wd = wind()
+    wn = float(np.linalg.norm(wd)) + 1e-9
+    seeds = np.ascontiguousarray(cs['seed'][idx])
+    _plumes(buf, dmin, cam, k, np.ascontiguousarray(TL[idx]), len(idx), seeds, wd[0] / wn, wd[1] / wn, float(t),
+            world()['n3'], SMOKE_SIG)
+    buf = cv2.GaussianBlur(buf, (0, 0), 0.8)
+    rgb += cv2.resize(buf, (Wd, Hd), interpolation=cv2.INTER_LINEAR)
+
+
 def flames(rgb, depth, cam, cs, t):
     """The crowd's torch flames and the firelight in their smoke."""
     W = world()
@@ -1833,6 +1913,8 @@ def flames(rgb, depth, cam, cs, t):
     FLv = np.ascontiguousarray(FL[idx])
     TLv = np.ascontiguousarray(TL[idx])
     _airlight(rgb, depth, cam, TLv, TLv.shape[0], haze(), 0.06, 0.35, 1.6)
+    if os.environ.get('CROWD_SMOKE', '1') != '0':
+        smoke(rgb, depth, cam, cs, t, idx)
     _flames(rgb, depth, cam, FLv, FLv.shape[0], float(t), W['n3'], 0.85)
 
 
