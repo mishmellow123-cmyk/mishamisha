@@ -153,6 +153,8 @@ def main():
     t0 = time.time()
     spr_dir = os.path.join(cache, 'sprites')
     all_frames = list(range(shot.START - 2, shot.END + 3))
+    if getattr(shot, 'PREP_ONLY_FRAMES', False):          # a cloud job renders part of a shot: prep only its frames
+        all_frames = list(range(min(frames) - 2, max(frames) + 3))
     specs = shot.flame_specs()
     for spec in specs:
         need = [f for f in all_frames if not os.path.exists(os.path.join(spr_dir, f'{spec.name}_{f:05d}.exr'))]

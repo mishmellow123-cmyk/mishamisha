@@ -1,5 +1,50 @@
 # MONTAGE-3D — notes
 
+## >>> STATE (MONTAGE-3D-3, paused ~16:36Z by the director; RESUME 20:00Z) <<<
+* **Built (committed):** `ringc.py` (the v3 Ring shots, RING_SHOT=find_a|find_b|fire|melt, Cycles, C numbering,
+  `PREP_ONLY_FRAMES` so a cloud job preps only its own frames) + `glove.py` (her thin leather glove: a ~330-vert
+  subdivision cage + armature with DQS, poses keyed as bone rotations -> true deformation blur, no per-frame meshes;
+  seams, pebble grain, palm creases in rest coords; `tests/t_glove.py` = clay/leather turnarounds) + `render.py`
+  (prep limited to the rendered frames when the shot sets PREP_ONLY_FRAMES).
+* **find_a (3000-3079) WORKS in tests** (`tests/t_fa7/sheet.jpg` half-res key frames; `tests/t_fa8`, `t_fa9*` full-res):
+  moonlit night snow (moon 0.26 from behind, sky 0.04), a clean shallow pit (r 3.6 cm, 1.2 cm deep) with a wet
+  translucent ice disc (no manhole), the Ring lying on it; strike 2 = flash from above left on 3009 + five short
+  orange sparks streaking down (motion blur), one dies glowing on the ice beside the band (lights it to ~3055);
+  her LEFT glove enters from the frame's left edge LOW over the snow (3033-3050, never from above), the fingers
+  reach into the pit past the band, curl and draw it into the fist (3055-3060), the fist lifts away left.
+  Just applied, NOT yet re-checked: dead sparks move off (a black bead hung in the air at 3017), softer disc edge
+  (the ice channel ramp), Burley SSS. **Timing (local Metal ~= cloud CPU, calibrated 70 vs 71 s on the probe):**
+  full-res 64 spp: random-walk SSS 204 s -> Burley 110 s -> Burley + MT3D_NOISE=0.03 80 s (3017, the heaviest).
+* **Next (in order):** (1) look at `tests/t_fa9/f_03017.png` vs `t_fa9b` (noise 0.03): is 0.03 clean enough?
+  (2) find_b (`_find_b`: palm-up POV, fist opens 3081-3090, the vision strip `_vision_strip` on the INNER face
+  over u 0.30-0.70 -> rotate the band so that arc faces the camera, fist 3140); (3) fire (`_fire`: C-shaped steel =
+  a flat 7x3.5 mm bar bent into a C, her right fist below-left out of the flames, the Ring hanging on the upper arm's
+  tip in the flames; the tip glows red over 3400-3560 while the gold stays cool; tips 3480, slides to the very tip,
+  holds; 3560 drawn out, tipped off into her LEFT palm (which enters bottom-left) and the fist closes: a rhyme with
+  the melt's drop); (4) melt (`_melt`: deform the band mesh per frame via `band_mesh` params so the letters ride
+  the metal; drop + bounce 5360-5372, hot 5380+, slump 5390-5440 into one bead, flare 5420, out 5440, white by
+  5519; AOV 'ringmask' -> post writes renders/ring_C_mask for ACCORD's AC3 composite); (5) one full-res still per
+  shot; (6) cloud jobs (16: find 5 x ~30, fire 6 x 40 or 8 x 30, melt 5 x 32; setup = mt3d_probe's; render =
+  `cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_DEVICE=CPU MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=<shot>
+  python3 render.py ringc --final --force --outdir renders/ring_C --range a-b`); (7) JOB READY to main with stills.
+
+## >>> STATE AT HANDOFF (MONTAGE-3D-3 fresh lane, 27 Sep 15:25Z) <<<
+* **Taken over by MONTAGE-3D-3.** Brief: `_local_logs/handoff/brief2_MONTAGE3D2.md` + the 15:20Z task: C's three Ring
+  close-ups rebuilt to the H5 calls and rendered in CYCLES IN THE CLOUD (4-6 jobs of ~30 frames per shot, the
+  `cloud/jobs/mt3d_probe.json` pattern: pip bpy==4.5.14 in its own venv; every job pushes `cloud_logs/<job>_status.txt`).
+* **On disk (checked 15:22Z, no MONTAGE-3D process running):** KARST v3 + DESERT v3 finals (60 fr each) in
+  `renders/montage3d_v3/{karst_slow,desert}`; the probe stills `renders/montage3d_v3/probe_{eevee,cycles}/f_00100.jpg`
+  (cloud Cycles CPU 71 s/frame, EEVEE 151 s); the canonical inscription `assets/ring/` (APPROVED); the protected
+  bake-off stills `tests/ring_final_{find,fire,melt}`. `renders/montage_v2` kept as it is (fallbacks).
+* **Delivery:** `renders/ring_C/f_%05d` in C numbering: find_a 3000-3079, find_b 3080-3149, fire 3360-3599, melt
+  5360-5519 (EDIT's EDL `ring()` reads `ring_C` first). Sync (music/v3/barmap_C.json): strike2 3009, hand_closes 3060,
+  vision 3090, fist 3140, roar 3360, steel 3400, steel_tips 3480, fist_again 3560, white_heart 5360,
+  letters_flare 5420, unmade 5440; P3 needs (near) full white by 5519 (ACCORD).
+* **H5 calls to apply (all Ring):** find = a clean snow pit, meltwater/ice sheen on the disc, never a rust-yellow stain;
+  her thin leather glove enters from the SIDE; lit only by the spark-flash (no jewellery-ad fill). Fire test = the Ring
+  on the tip of her C-shaped fire-steel in the beacon's flames, unmarked, letters awake, no glow fringe. Melt = dark,
+  never overexposed; a crisp drop; letters stay letters until they go out; no doubled rim.
+
 ## >>> CANONICAL RING INSCRIPTION (published ~10:25Z, letterforms revised ~10:35Z per the director; APPROVED; RING ONLY, not the book): HEROINE, EMBERS, ACCORD-v3 match THIS <<<
 * **Texture:** `the-long-dawn/assets/ring/inscription_outer.png` (9040x640) and `inscription_inner.png` (7264x640),
   16-bit grey, white = letter coverage. Mapping + proportions: `assets/ring/inscription.json`. Specimen:
