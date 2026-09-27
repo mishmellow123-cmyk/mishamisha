@@ -19,6 +19,11 @@ from pen import INK, PENCIL, GILT, Strokes, hand, hatch, line, stipple, catmull,
 PW, PH = 20.0, 29.0
 
 
+def smooth_(x):
+    x = np.clip(x, 0.0, 1.0)
+    return x * x * (3 - 2 * x)
+
+
 def _poly_inside(P):
     """Vectorised point-in-polygon for a closed polyline P (N,2)."""
     P = np.asarray(P, np.float64)
@@ -44,7 +49,7 @@ def billows(c, w, rng, grow=(0.5, 1.05), step=0.4, jitter=0.4, res=0.01):
         i = min(np.searchsorted(s, q), len(c) - 1)
         nrm = pen.normals(c)[i]
         for k in range(2):
-            r = w[i] * rng.uniform(*grow) * (0.62 if k else 1.0)
+            r = w[i] * (grow[0] + (grow[1] - grow[0]) * rng.random() ** 1.8) * (0.62 if k else 1.0)
             off = nrm * w[i] * rng.uniform(-jitter, jitter) + (nrm * w[i] * 0.55 * (1 if rng.random() < 0.5 else -1) if k else 0)
             circles.append((c[i, 0] + off[0], c[i, 1] + off[1], r))
         q += step * w[i] * rng.uniform(0.7, 1.2) + 0.08
@@ -144,13 +149,24 @@ class Mountain:
 
     # --- the cone
     def half_width(self, h, phi=0.0):
-        """Half-width at height fraction h (0 base .. 1 rim), with ridges by azimuth phi."""
+        """Half-width at height fraction h (0 base .. 1 rim), with ridges by azimuth phi. MAP-L: "a great cone on
+        a huge base": a broad base whose outer flank climbs to a shelf, then the steep concave cone; the two sides
+        differ (the left shelf higher and wider), and the flanks are uneven, never a clean triangle."""
         h = np.clip(h, 0.0, 1.0)
-        base = self.Wt + (self.Wb - self.Wt) * (1.0 - h) ** 1.55
-        # a shoulder on the left low down, the right flank a little steeper
-        sh = 0.3 * np.exp(-((h - 0.28) / 0.12) ** 2) * (np.asarray(phi) < 0)
+        phi = np.asarray(phi, np.float64)
+        right = (phi > 0).astype(np.float64)
+        hb = 0.31 - 0.07 * right                     # the shelf
+        Wm = self.Wb * (0.52 - 0.05 * right)         # the cone's half-width at the shelf
+        T = 0.85 - 0.25 * right                      # the shelf's depth
+        hc = np.clip((h - hb) / (1.0 - hb), 0, 1)
+        cone = self.Wt + (Wm - self.Wt) * (1.0 - hc) ** 1.3
+        a = np.clip(h / (0.85 * hb), 0, 1)
+        outer = (self.Wb - Wm - T) * (1.0 - a) ** 0.9
+        terr = T * (1.0 - smooth_((h - 0.85 * hb) / (0.22 * hb)))
+        base = cone + outer + terr
+        une = 0.07 * np.sin(h * 8.0 + self.rphase[3] + 2.1 * right) + 0.04 * np.sin(h * 21.0 + self.rphase[4] + right)
         rid = 0.035 * np.sin(5.0 * phi + self.rphase[0]) + 0.02 * np.sin(11.0 * phi + self.rphase[1])
-        return base * (1.0 + rid * (0.3 + h)) + sh * (1.0 - h) - 0.18 * (np.asarray(phi) > 0) * h * (1 - h)
+        return base * (1.0 + rid * (0.3 + h)) + une * (0.35 + 0.65 * (1.0 - h))
 
     def surf(self, h, phi):
         """Page point of the surface at height h, azimuth phi (0 faces us, +-pi/2 the silhouettes)."""
@@ -200,11 +216,11 @@ class Mountain:
     def plume(self):
         """Centreline and half-width of the smoke, out of the throat, up, and away to the right."""
         bx0, by0, bx1, by1 = self.box
-        c = catmull([(self.Xc + 0.05, self.Ys - 0.9), (self.Xc + 0.25, self.Ys - 1.5), (self.Xc + 1.1, by0 + 1.3),
-                     (self.Xc + 3.0, by0 + 1.05), (self.Xc + 5.2, by0 + 1.2), (bx1 - 0.6, by0 + 1.45)], 12)
+        c = catmull([(self.Xc + 0.05, self.Ys - 0.8), (self.Xc + 0.12, self.Ys - 1.3), (self.Xc + 0.5, by0 + 1.4),
+                     (self.Xc + 1.7, by0 + 1.05), (self.Xc + 3.5, by0 + 1.1), (self.Xc + 5.4, by0 + 1.35), (bx1 - 0.7, by0 + 1.55)], 12)
         c = resample(c, 0.05)
         t = arclen(c) / arclen(c)[-1]
-        w = (0.28 + 0.7 * t ** 0.7) * (1.0 - 0.45 * np.clip((t - 0.75) / 0.25, 0, 1))
+        w = (0.24 + 0.6 * t ** 0.6) * (1.0 - 0.45 * np.clip((t - 0.78) / 0.22, 0, 1))
         return c, w
 
     SCHED = dict(frame=(0.0, 0.07), cons=(0.07, 0.15), sil=(0.1, 0.24), fire=(0.24, 0.34), ring=(0.34, 0.4),
@@ -229,7 +245,7 @@ class Mountain:
         dens = 0.55 if pencil else 0.95
         fx, fy = self.ring
         c_pl, w_pl = self.plume()
-        circles, outl = billows(c_pl, w_pl, np.random.default_rng(self.seed + 5))
+        circles, outl = billows(c_pl, w_pl, np.random.default_rng(self.seed + 5), grow=(0.38, 1.08), step=0.45, jitter=0.45)
         cx_ = np.array([q[0] for q in circles])
         cy_ = np.array([q[1] for q in circles])
         cr_ = np.array([q[2] for q in circles])
@@ -454,8 +470,8 @@ class Mountain:
                     pp, rd, dd = hand(pts, 0.013, int(rng.integers(1 << 30)), taper=(0.05, 0.2), dens=0.9, thin_end=0.2)
                     S.add(pp, rd, dd, layer=lay)
                 # shading: short curved strokes inside the lower right of the puff
-                for q in range(int(6 + 22 * r)):
-                    rr_ = r * rng.uniform(0.5, 0.93)
+                for q in range(int(8 + 34 * r)):
+                    rr_ = r * rng.uniform(0.45, 0.93)
                     a0 = rng.uniform(-0.2, 1.8)
                     aa = np.linspace(a0, a0 + rng.uniform(0.25, 0.5), 8)
                     pts = np.column_stack([x + rr_ * np.cos(aa), y + rr_ * np.sin(aa)])
