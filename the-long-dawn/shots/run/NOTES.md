@@ -6,33 +6,56 @@
   as cloth (elliptical, sharp-creased folds, wind billow and hem lift, flutter, SDF occlusion, wool rim). BLUE HOUR: about 40
   seated, unroped bearers round the set-down lantern, all turned to the east (no lit faces); a valley revealed through the
   thinning cloud sea with thin grey-blue hearth columns; the rose only from bar 75 b1. A20: the same take continues 6240-6479.
-* **Nothing rendered yet, no job ready.** `farm.py` is not in the repo yet (jobs will be cut to <= 45 min when it lands).
-* **~15:45Z.** Committed + pushed: 46153c1 (crossing look pass 1 + cloth sdfppl), b8964e7 (worker NUMBA fix + world.py
-  ADDITIVE: `hole_row`/`cloud_thin`/`h_cloud_cr` (col 12 = -5 rows, read only when they LEAD the table), Q[19] snow
-  line -> fields and woods, fogp[8] caps the low mist below the cloud top), 297446f (`bh_probe.py`: top-down map +
-  cloudless view of the valley east of the shoulder). `bluehour.py` REWRITTEN (not yet committed): 640 frames
-  (A19 + A20), ~42 seated people (`sdfppl.seated`, six poses), two-pass valley (cloudless sub-window pass under a
-  thinning cloud), river + hearth smoke + hearth glows, rose only from bar 75 b1, camera lift for the title in A20.
-  Farm tests queued: `crossing_a_lookdev` (6 half-res stills) and `bluehour_a_probe` (valley placement: set VY,
-  V_FWD0/1, V_HALFW, CAM_YAW0/1 in bluehour.py from it).
+* **No final render yet, no JOB READY yet.** Farm look-dev only (renders/_farmtest/crossing_a_*, bluehour_a_*).
+* **~16:00Z, all committed + pushed** (46153c1, b8964e7, 297446f, dffa1bf, a92fde6):
+  * `sdfppl.py`: v3 CLOTH (default; `cloth=False` = the v2 figure): elliptical cloak and cape bells, creased uneven
+    folds, wind billow + lee hem lift + flutter (`wind` = world vector toward the lee, |v| = hem billow in m), SDF crease
+    occlusion, a back-lit wool rim, fibre-streak albedo, a hood brim flush with the cowl. New `seated()` (six poses:
+    knees, cross, back, side, kneel, lie; lean adult proportions; for any lane's seated figures).
+  * `crossing.py`: headwind down the arete with travelling gusts (fires lean downwind); trails open with the wheel
+    (bar 66 b1) and grow to 36 deg concentric arcs about the pole (LAT 6, pole ~1/4 down the wide); the great
+    knife-edge range 7 km north under the pole (GR_KNOTS), the right third open sea for the red under-glow; haze
+    1e-4; opening camera H0 at the crest's height (the uphill bearer's boots in frame).
+    Look-dev 1 (half res) PASSED on trails, range and cloth read; fixed since: the far range's pyramid (cut), the
+    hood's snout, the hidden red. Pending: `crossing_a_closeup` (full res 4880/5000/5100) + wides re-test.
+  * `world.py` ADDITIVE (every other table unchanged, one comparison per call): -5 hole rows and -6 `valley_row`
+    carves (both read only while they LEAD the table), Q[19] snow line (fields and woods below), fogp[8] low-mist cap.
+  * `bluehour.py` rebuilt for A19 + A20 (640 f): ~42 seated people round the set-down lantern facing the dawn; a
+    glacial valley carved toward the rose (VAL_KNOTS 5.6-34 km) seen through the thinning cloud (cloudless sub-window
+    pass under torn cloud), river, ~60 hearth columns and glows; the gathering placed from the shoulder's measured
+    edge (`edge_f`), camera keys CAM_KEYS (rises 1.6 -> 2.6 m as it drifts, so the valley opens past the edge; A20
+    lifts to the rose for the title at y 360). Pending: `bluehour_a_lookdev` (5 half-res stills).
+  * `cloud/jobs/make_runA2_jobs.py`: writes the finals (<= 40 min per cpu-8 node, no --skip) once s/frame is measured.
 
-## RUN-A3 STATE AT HANDOFF (split off RUN-A-L 27 Sep ~19:15Z: A13 R2-A THE REVEAL, A15 R16 THE WATCHERS)
-* **Owns:** `reveal_a.py` (A13, cut 3680-3799 -> `renders/reveal_A`), `watchers_a.py` (A15, cut 4240-4399 ->
-  `renders/watchers_A`), and their farm jobs `reveal_a_*`, `watchers_a_*`. Uses `sdfppl.py` read-only (figure requests go
-  to RUN-A2 through this block), `world.py` additive-only, `falsedawn.py`'s glow model read-only (RUN-A-L's).
-* **Nothing rendered, no job ready.** Found: H1's take ends at src 1555 (= cut 3679) with the camera AT REST 46 m behind
-  her, 5 m up, looking north, hfov 66; she stands right of the basket facing away, ~55 px tall. The landed
-  `h1_v3h5` 1476-1555 predate HEROINE-L's roar2 re-polish (job `h1_v3_roar2` will overwrite them).
-* **A13 plan.** The reveal CONTINUES H1's take with H1's own renderer (`shots/hills/beacon.py`, imported read-only and
-  configured exactly as render.py's `beacon_v3_roar2`; src = cut - 2124, so 3680-3799 = src 1556-1675), the take's
-  simulations extended past 1555, and two runtime hooks (never editing beacon.py): the camera (H1's own up to 1555, then a
-  slow crane back, up and left from rest) and the world layer (H1's, plus the A night: dozens of summit fires catching
-  together, the cold glow at az -30 breathing once a bar, dull red patches under the cloud sea on the beat). It ends on her
-  small silhouette (>= 40 px) turned toward the far horizon, the glow beyond the ranges. Source-hash guards fail loudly if
-  beacon.py's camera or world layer change under it.
-* **A15 needs from RUN-A-L (A14 BEACON RUN):** the seventh fire's world position, A14's last camera (cut 4239) and the light
-  state (moon or not, glow intensity, under-glow table). R16 starts from R3's last position (the shot delta), so its
-  first frame matches A14's last.
+## RUN-A3 STATE (live, 27 Sep ~20:15Z): A13 R2-A THE REVEAL, A15 R16 THE WATCHERS
+* **Owns:** `reveal_a.py` + `reveal_a_fires.npy` (A13, cut 3680-3799 -> `renders/reveal_A`), `watchers_a.py` +
+  `watchers_a_extra.npy` + `watchers_a_figs.npy` (A15, cut 4240-4399 -> `renders/watchers_A`), `nighta.py` (A's night kit:
+  A13-A15 and A14 import it), jobs `reveal_a_1`, `watchers_a_look`. Uses `sdfppl.py` read-only (figure requests go to
+  RUN-A2 through this block), `world.py` untouched, `falsedawn.glow_at` read-only.
+* **The shared night (`nighta.py`, agreed with RUN-A-L):** moonlit (`world.night_light`, s1's moon az -59 el 21); the cold
+  glow = falsedawn's arc at az -30, el_s -3.2, no deck, I(f) = I0 (0.14) x (1 + 0.07 sin(2 pi f / 80)), A2's star kill, a
+  0.35 share in the far haze; the red under the cloud = 150 world-fixed patches (seed 4613) for `world.cloud_glow` in
+  crossing's orange-red, pulsing on every beat (cut f % 20 == 0: 2-frame rise, exp(-dt/9) decay, floor 0.55); fires =
+  beacons.py's recipe (`fire_layer`, `fires_layer` with haze transmittance, `lt_rows`, `pl_rows`, `ignition_sparks`).
+  All times are A cut frames.
+* **A13 (built, look-dev on the farm).** Continues H1's take with H1's own renderer (`shots/hills/beacon.py` imported
+  read-only, configured as render.py's `beacon_v3_roar2`; src = cut - 2124), the take's simulations extended past src
+  1555 (spindrift keeps the take's own draw), two runtime hooks with md5 source guards (camera: H1's formula to 1555, then a
+  quintic crane from rest to (8.2, 14, -59.2) local, yaw -14, pitch -4.5, hfov 60; world layer: H1's plus the A night,
+  faded in over 3680-3728 because H1's frames never had it). 83 summit fires (four distance bands 0.3-80 km; line of sight
+  incl. her summit grid): those in H1's last frame (+60 px) catch 3684-3740 at random, never in a wave from her; the pan
+  brings the rest in already burning. Ends on her silhouette at 46 px (probe), the glow at x 482.
+  **Continuity verified:** farm cut 3680 vs `h1_v3h5` 1555 = mean abs diff 0.64/255 (only her roar2 wardrobe and the fire's
+  flicker differ).
+* **A15 (built, look-dev on the farm).** A14's chain (RUN-A-L, bb4d7a4): the seventh at (-1004, -194.4, -508), my brink.
+  A15's plate = `watchers_a.plate(CHAIN[6])` = A14's END_CAM: eye level 1.65 m over the seventh lighter's ground, 14.5 m
+  behind them, yaw -23 (the glow's core in the left third), pitch -1.8, hfov 40; the lighter ~320 px, right third,
+  silhouetted against the seventh fire 1.2 m beyond; a 1.2 m push easing in from rest. Figures: the lighters of chain fires
+  7/5/3/1 (crouched at their own catch, risen by +22, turned to the glow by +36) and 4 EXTRA watch-fires 1.3-1.7 km out
+  (already burning). A14 draws the same figures through `draw_figures` (before the fires) and stacks EXTRA.
+  **Open:** the chain lighters are small at A14's distances (fire 5's ~25 px, fire 3's ~9 px): judge on the look-dev.
+* **Next:** review both look-devs at full res (composition + 1:1 crops; the four gate questions), fix, then JOB READY
+  (reveal_a_1: 120 frames; watchers: 160 frames split in <= 45-min jobs).
 
 ## RUN-A-L STATE (live, 27 Sep ~19:50Z): A2 FALSE DAWN, A11 X2, A14 BEACON RUN
 * **Split, third lane:** RUN-A3 took A13 and A15 at ~19:15Z. RUN-A-L keeps A2, A11 and A14 and owns `falsedawn.py`,
