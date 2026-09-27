@@ -80,14 +80,22 @@
 # one take) + both in the _alt_codedtowers ALT. Owner file: turn.py (+ cloud/jobs/embers_A3_turn.json, _alt_turn.json).
 # Shared modules untouched so far (a3.py/edge.py/scene_b.py hooks are installed from turn.py on import). <<<
 ## EMBERS-A3 STATE (27 Sep ~20:50Z) -- RESUME HERE (~23:30Z)
-* 20:52Z: JOB READY sent for embers_A3_turn + embers_A3_alt_turn (check stills: review/embers_A3_check/turn/ and
-  turn/alt_codedtowers/). On approval: `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/embers_A3_turn.json
-  --nodes 1` (and the _alt_turn job), from ~/mishamisha. If they're not launched when you resume, check `farm.py status`
-  and renders/embers_A3 (4400-4879) first; `--missing` renders only what's absent.
-* NEXT after 23:30Z (in order): (1) make the giants' opening unmistakable (brighter, larger window slits on the
-  facing faces, or a beat where the camera sees giant 6's facade closer); (2) the small lights at the rim visible in
-  the walk (brighter, and more of them on the far rim in frame); (3) a few ridge fires nearer the frame's middle;
-  (4) optional: the heart's inner structure (a hint of filaments), the giants' full height once.
+* 20:55Z: APPROVED (director). main launched BOTH finals itself (--nodes 2; log _local_logs/jobs/embers_A3_turn_farm.log)
+  -> renders/embers_A3 4400-4879 + renders/embers_A3_alt_codedtowers 4400-4879. Do NOT relaunch them; on resume, check
+  the log and that both folders hold 4400-4879 (use `--missing` only if the director says so).
+* NEXT after 23:30Z, for a cheap re-render (MAIN + ALT, same jobs):
+  (1) DIRECTOR: the tower edges and floor lines read as strings of fairy lights (a laugh risk at 4460 and 4879).
+      Break up the continuous dotted edge/seam lines so they read as ember-lit stone or charcoal crust, not bulbs on
+      a wire: in TowerLight, modulate kinds 2/1/4 along their length with a low-frequency break-up (gaps, uneven
+      heat, some lengths dark), fewer and finer points; check scene_b's own edge/seam shading does the same in my
+      range (fire_side_only look), or damp it there from turn.py with a hook.
+  (2) DIRECTOR: the 4879 heart gets a living core instead of a plain disc. RUN-A2's lantern at 4880 must match it,
+      so AGREE THE HEART'S LOOK WITH RUN-A2 (via NOTES: shots/run/NOTES.md and this block) before either of us changes
+      it. Current contract: centre 959.5,401.5; ice-white (0.80,0.92,1.00); gaussian sigmas 10/26/114 px, peaks
+      30/0.9/0.05 (crossing.draw_heart at 4880).
+  (3) the giants' opening unmistakable (brighter, larger window slits on the facing faces, or giant 6's facade closer);
+  (4) the small lights at the rim visible in the walk; (5) a few ridge fires nearer the frame's middle;
+  (6) optional: the giants' full height once.
 * Code: turn.py v3 (commit d84bf48), pushed. Jobs: cloud/jobs/embers_A3_turn.json (MAIN 4400-4879 ->
   renders/embers_A3) + embers_A3_alt_turn.json (ALT 4400-4879 -> renders/embers_A3_alt_codedtowers), 4 lanes each.
   Farm look-dev frames: renders/_farmtest/embers_A3_turn{,_lab}/ (v1 = leopard wash, rejected by me; lab = camera
