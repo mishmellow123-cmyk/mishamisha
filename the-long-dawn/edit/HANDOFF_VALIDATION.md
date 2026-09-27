@@ -1,4 +1,4 @@
-# Temporary handback: render failures and picture readiness
+# Temporary handback: render failures, picture readiness and A14
 
 Prepared 27 September 2026 against `claude/long-dawn-v2` at
 `07d5dca6d6111ad2fb5ec4e0b40008e5b22072ec`, in an isolated checkout on
@@ -22,8 +22,16 @@ current output inventory.
 No production checkout, render process, cloud node, shot design or media asset was changed by this patch.
 No full film or Blender shot was rendered during validation. The original laptop's current farm receipts,
 uncommitted diff contents and latest masters were unavailable to this checkout.
+Local CPU render checks subsequently exercised A14 frames 3920, 4208 and 4239 at 960×402. Separate
+visual studies live on `codex/long-dawn-visual-study`; they are proposals, outside this technical patch.
 
 ## Changes
+
+`shots/run/beaconrun_a.py` clamps camera progress before its fractional powers. The first valid frame
+3920 samples camera time 3919.825 for motion blur; previously the negative progress became a complex
+number and raised `TypeError`. Holding that sample at the first pose fixes the crash. Every valid
+integer pose and in-range shutter sample retains exactly the original camera arrays (959 samples).
+The formerly failing frame now completes through the actual render/finish/PNG path.
 
 `shots/montage3d/render.py` now returns failure when Blender fails, post-processing raises, or requested frame
 notifications do not result in successful post-processing. It drains the poster queue before checking the
@@ -63,11 +71,14 @@ behavior remains an existing limitation outside this correction.
 
 ## Validation
 
-29 focused tests passed: 11 driver tests, 6 PNG I/O tests and 12 readiness tests. Shell syntax and whitespace
+32 focused tests passed: 11 driver tests, 6 PNG I/O tests, 12 readiness tests and 3 A14 camera tests. Shell syntax and whitespace
 checks passed. The driver suite against the original `07d5dca` implementation produced 10 failures and one
 passing control. The PNG suite against that original helper failed four tests (five failure records,
 including two subcases), with two controls passing. Bypassing provisional-source reporting made both the
 C6 take and C9 under-layer regressions fail. The C9 regression also failed before its under-layer fix.
+The original A14 camera fails both boundary tests; its in-range motion comparison passes. A separate
+small-depth-plane sweep exercised real motion-blur callbacks across 1,640 valid frames in six RUN paths
+without finding another exception or nonfinite velocity. This checks camera evaluation, not rendered movies.
 
 Independent review confirmed unchanged compositor code and all five picture-pipeline hashes, and compared
 all 35 C fixture segment keys against the baseline source-tracking implementation: identical. The tests
@@ -86,6 +97,7 @@ Run from the repository root in the project Python environment:
 python -B -m unittest discover -s the-long-dawn/shots/montage3d/tests -p test_render_exit.py -v
 python -B -m unittest discover -s the-long-dawn/lib/tests -p test_look_io.py -v
 python -B -m unittest discover -s the-long-dawn/edit/tests -p test_picture_readiness.py -v
+python -B -m unittest discover -s the-long-dawn/shots/run/tests -p test_beaconrun_camera.py -v
 bash -n the-long-dawn/edit/refresh_watch.sh
 git diff --check
 ```
