@@ -140,7 +140,10 @@ def build_wall():
     for k in range(len(pts) - 1):
         a, b = pts[k], pts[k + 1]
         w = rng.uniform(300.0, 380.0)
-        rows.append(WD.ridge_row(a, b, wl=w, wr=w * rng.uniform(0.8, 1.1), seed=331 + k, k=60.0, detail=0.22,
+        _ = rng.uniform(0.8, 1.1)                # (kept: the rng stream, so every other draw is unchanged)
+        # wl == wr: world.ridge picks the flank width by side, so unequal widths make the height jump along each
+        # segment's extension line beyond its end cap, which stands as a sheer cliff (it read as a building)
+        rows.append(WD.ridge_row(a, b, wl=w, wr=w, seed=331 + k, k=60.0, detail=0.22,
                                  slope=rng.uniform(1.10, 1.45)))
         rows[-1][14] = 0.95
         rows[-1][13] = 4200.0                    # the flanks reach the cloud sea (~1.3 km out) before the cut
