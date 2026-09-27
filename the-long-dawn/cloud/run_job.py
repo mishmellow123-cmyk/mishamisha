@@ -12,6 +12,7 @@ Job file (JSON):
     outputs     instead of out_dir + frames, several: [{"out_dir": ..., "frames": ...}, ...]
     shape       optional [height, width] every frame must have (default [804, 1920])
     push_every  seconds between batch pushes (default 300)
+    ship        "jpg" to push JPEG q95 4:4:4 instead of PNG (v3 default for heavy shots)
 
 Frames are written atomically by lib/look.save_png, so any f_*.png that exists is complete. Each one is
 decoded before it's pushed (a bad frame is reported and deleted so it can't reach the edit). Progress
@@ -70,6 +71,7 @@ def main():
     want = [(o['out_dir'], f) for o in outs for f in frames_of(o['frames'])]
     shape = tuple(job.get('shape', [804, 1920]))
     push_every = job.get('push_every', 300)
+    ship_jpg = job.get('ship') == 'jpg'        # ship JPEG q95 4:4:4 (~1/4 the size) instead of PNG
     os.makedirs(os.path.join(HERE, 'cloud_logs'), exist_ok=True)
     for o in outs:
         os.makedirs(os.path.join(HERE, o['out_dir']), exist_ok=True)
@@ -113,7 +115,11 @@ def main():
                 ready.append(t)
         done = len(pushed) + len(ready)
         if ready and (time.time() - last_push >= push_every or not running or done == len(want)):
-            paths = [os.path.join(d, f'f_{f:05d}.png') for d, f in ready]
+            if ship_jpg:
+                for d, f in ready:
+                    src = os.path.join(HERE, d, f'f_{f:05d}.png'); dst = src[:-4] + '.jpg'
+                    cv2.imwrite(dst, cv2.imread(src), [cv2.IMWRITE_JPEG_QUALITY, 95, cv2.IMWRITE_JPEG_SAMPLING_FACTOR, cv2.IMWRITE_JPEG_SAMPLING_FACTOR_444])
+            paths = [os.path.join(d, f'f_{f:05d}' + ('.jpg' if ship_jpg else '.png')) for d, f in ready]
             if git_push(paths, branch, len(want), done):
                 pushed.update(ready)
                 push_failures = 0

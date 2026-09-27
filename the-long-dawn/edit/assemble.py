@@ -52,7 +52,7 @@ def smooth(x):
 
 def _path(dept, f):
     for d in (f'{dept}_{CUT}', f'{dept}_v2', dept):
-        p = look.frame_path(os.path.join(ROOT, 'renders', d), f)
+        p = look.find_frame(os.path.join(ROOT, 'renders', d), f)
         if os.path.exists(p):
             return p
     return None

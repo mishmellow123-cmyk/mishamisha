@@ -188,6 +188,15 @@ def frame_path(shot_dir, frame):
     return os.path.join(shot_dir, f'f_{frame:05d}.png')
 
 
+def find_frame(shot_dir, frame):
+    """Existing frame file for readers: the PNG if present, else the cloud-shipped JPEG (q95, 4:4:4)."""
+    p = os.path.join(shot_dir, f'f_{frame:05d}.png')
+    if os.path.exists(p):
+        return p
+    j = p[:-4] + '.jpg'
+    return j if os.path.exists(j) else p
+
+
 def preview_mp4(shot_dir, out_mp4, start, end, scale=960):
     """Quick H.264 preview of global frames [start, end) for review."""
     subprocess.run([
