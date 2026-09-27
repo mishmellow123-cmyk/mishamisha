@@ -241,9 +241,7 @@ def camera(W=1920, H=804):
 
 
 def cam_key():
-    if all(abs(VCAM[k] - getattr(BS, n)) < 1e-9 for k, n in zip(_VK, ('CAM_BEAR', 'CAM_DIST', 'CAM_UP', 'CAM_YAW',
-                                                                       'PITCH', 'HFOV'))):
-        return 'bs'
+    """The locked frame's numbers (in every cache name, so a moved camera never loads a stale G-buffer)."""
     return 'c' + '_'.join(f'{VCAM[k]:g}' for k in _VK)
 
 
@@ -409,12 +407,12 @@ class Vigil:
             if k == K['first'] and f < K['t_on'][i] + 30:     # bar 33: someone out there kindles a small light
                 seen = smoothstep(F_SEEN - 4, F_SEEN + 20, f)
                 unsure = 0.55 + 0.45 * math.sin(f * 0.21) * math.sin(f * 0.077 + 1.0)
-                on = max(on, 0.16 * seen * unsure)
+                on = max(on, 0.30 * seen * unsure)
             near = min(2500.0 / K['dist'][i], 1.0)
             big_hb = 1.8 if k in K['chosen'] else 1.0
             big = big_hb
-            if k == K['first']:                               # "the answer, nearer": it flares on bar 41
-                big = max(big_hb, 1.3 + 1.4 * smoothstep(F_HIS - 6, F_HIS + 30, f))
+            if k == K['first']:                               # the first answer: the brightest far light; it
+                big = max(big_hb, 2.3 + 1.2 * smoothstep(F_HIS - 6, F_HIS + 30, f))     # flares on bar 41
             big = big + (big_hb - big) * join
             wx = 0.25 + 0.75 * clear
             en = 7.0 * big * on * fl * (0.4 + 0.6 * near) * ss * ss * wx
@@ -429,7 +427,6 @@ class Vigil:
         if getattr(self, '_track', None) is not None:
             return self._track
         LIPV = BS.on_ground(BS.STAND + BS.FWD * 1.6 + BS.RIGHT * 0.9)
-        SHIELD = BS.on_ground(BS.KNEEL + BS.RIGHT * -0.25)
         ev = [(F0, BS.STAND, 'look')]
 
         def go(f0, dst, pose, walk=24):
@@ -442,23 +439,24 @@ class Vigil:
                 continue
             if q == bar(25, 3):                               # the squall comes: she feeds, then shields it
                 go(q - 40, BS.KNEEL, 'feed', 20)
-                ev.append((q + 30, SHIELD, 'shield'))
-                go(bar(27, 3) - 40, BS.KNEEL, 'feed', 16)
-                ev.append((bar(28, 1) + 20, BS.KNEEL, 'feed'))
+                ev.append((q + 30, BS.KNEEL, 'shield'))
+                ev.append((bar(27, 3) - 16, BS.KNEEL, 'feed'))     # still kneeling: from shielding to feeding it
                 go(bar(28, 1) + 40, BS.STAND, 'look', 20)
                 continue
             if q == bar(27, 3):
                 continue
-            if q == bar(35, 3):                               # she has seen the answer: to the fire, feeds it
+            if q == bar(35, 3):                               # she sees the answer: hails it, then feeds her fire
+                ev.append((F_FIRST_ANSWER + 2, LIPV, 'hail'))        # the staff up, until she hurries to feed it
                 go(q - 16, BS.KNEEL, 'feed', 16)
                 go(q + 34, BS.STAND, 'look', 22)
                 continue
             go(q - 40, BS.KNEEL, 'feed', 20)
+            if q == bar(39, 3):                               # she stays at the fire and builds it up to the flare
+                continue
             go(q + 30, BS.STAND, 'look', 20)
             if q == bar(31, 3):                               # bars 32-35: at the lip, searching the black horizon
                 go(bar(32) + 10, LIPV, 'look', 26)
-        go(F_FLARE - 26, BS.KNEEL, 'feed', 18)                # her light flares
-        go(F_FLARE + 30, BS.STAND, 'look', 18)
+        go(F_FLARE + 30, BS.STAND, 'look', 18)                # her light has flared: she stands and watches
         go(bar(42), BS.SEAT, 'sit', 22)                       # the young carry the flame down; she sits
         for q in (bar(43, 3), bar(45, 3), bar(47, 1)):        # and gets up to feed it each hour
             go(q - 30, BS.KNEEL, 'feed', 16)
@@ -483,10 +481,11 @@ class Vigil:
             p = prev[1] + (nxt[1] - prev[1]) * min(max(u, 0.0), 1.0)
             return 'walk', BS.on_ground(p), dict(walk=(f - cur[0]) / 26.0)
         pos = cur[1] if cur[1] is not None else BS.STAND
+        ex = dict(since=f - cur[0])
         if cur[2] == 'feed':
             q = min(FEEDS + [F_FLARE], key=lambda x: abs(x - f))
-            return 'feed', pos, dict(feed=(f - q))
-        return cur[2], pos, {}
+            ex['feed'] = f - q
+        return cur[2], pos, ex
 
     def summit(self, img, zb, scam, f, t, md, lv):
         night_amb = lin('#27335E') * 0.45
@@ -528,11 +527,21 @@ class Vigil:
         if f >= F_CHILD_IN:
             self.child(img, zb, scam, f, t, lights, night_amb, give)
         pose, pos, ex = self.her_state(f)
-        kw = dict(age=0.9, shawl=give < 0.5, staff=pose in ('look', 'walk', 'sit'),
+        kw = dict(age=0.9, shawl=give < 0.5, staff=pose in ('look', 'walk', 'sit', 'hail'),
                   wind=(0.4 if pose == 'sit' else 0.5) + 1.2 * storm(f), walk=ex.get('walk', 0.0) % 1.0,
                   reach=math.sin(math.pi * give) * 0.9 if pose == 'sit' else 0.0)
         d, pts = BS.person2('kneel' if pose == 'feed' else pose, **kw)
-        BF.render(img, zb, scam, d, pos, lights, amb=night_amb, t=t, write_depth=False, zbias=0.3)
+        since = ex.get('since', 99)
+        p_prev = self.her_state(f - since - 1)[0] if since < 8 else pose
+        if since < 8 and p_prev != pose and 'walk' not in (p_prev, pose):   # a pose change: an 8-frame crossfade
+            d0, _ = BS.person2('kneel' if p_prev == 'feed' else p_prev, **dict(kw, staff=p_prev in ('look', 'sit', 'hail')))
+            ia = img.copy()
+            BF.render(ia, zb.copy(), scam, d0, pos, lights, amb=night_amb, t=t, write_depth=False, zbias=0.3)
+            BF.render(img, zb, scam, d, pos, lights, amb=night_amb, t=t, write_depth=False, zbias=0.3)
+            w = smoothstep(0.0, 8.0, since)
+            img[:] = ia * (1.0 - w) + img * w
+        else:
+            BF.render(img, zb, scam, d, pos, lights, amb=night_amb, t=t, write_depth=False, zbias=0.3)
         if pose == 'feed':
             q = ex.get('feed', 99)
             if 0 <= q < 26:            # sparks as the wood takes
@@ -656,27 +665,33 @@ class Vigil:
                             z=sz, zbias=sz * 0.02, col=np.array([1.0, 0.45, 0.12]))
 
     def snow(self, img, scam, f, st):
-        """Driving snow in the squall: fine, short, thin streaks blowing across the frame (left to right, falling),
-        nearer flakes a little longer and brighter; never big bars."""
+        """Driving snow in the squall: fine short streaks blowing across the frame (left to right, falling), nearer
+        flakes longer, brighter and softer; the flakes passing near her fire catch its warm light."""
         import cv2
         rng = np.random.default_rng(99)
         W, H = scam.W, scam.H
         k = W / 1920.0
-        n = int(2600 * st)
+        n = int(4200 * st)
         x0 = rng.random(n) * W * 1.3 - 0.15 * W
         y0 = rng.random(n) * H
-        z = 0.6 + rng.random(n) ** 1.5 * 5.0                   # nearer (small z) = faster, longer, brighter
-        spd = (22.0 / z) * k
+        z = 0.5 + rng.random(n) ** 1.6 * 5.0                   # nearer (small z) = faster, longer, brighter
+        spd = (26.0 / z) * k
         x = (x0 + spd * f) % (W * 1.3) - 0.15 * W
-        y = (y0 + spd * 0.45 * f) % H
-        L = np.minimum(spd * 0.55, 26.0 * k)
-        a = (0.05 + 0.16 / z) * st
+        y = (y0 + spd * 0.42 * f + 3.0 * np.sin(f * 0.11 + x0 * 0.01)) % H
+        L = np.minimum(spd * 0.60, 30.0 * k)
+        a = (0.08 + 0.30 / z) * st
         lay = np.zeros((H, W), np.float32)
         for i in range(n):
-            cv2.line(lay, (int(x[i]), int(y[i])), (int(x[i] + L[i]), int(y[i] + 0.45 * L[i])), float(a[i]), 1,
+            th = 2 if z[i] < 0.9 else 1
+            cv2.line(lay, (int(x[i]), int(y[i])), (int(x[i] + L[i]), int(y[i] + 0.42 * L[i])), float(a[i]), th,
                      cv2.LINE_AA)
-        lay = cv2.GaussianBlur(lay, (0, 0), 0.6 * max(k * 1.5, 0.5))
-        img += lay[..., None] * lin('#9FB0D0')[None, None, :] * 0.5
+        lay = cv2.GaussianBlur(lay, (0, 0), 0.7 * max(k * 1.5, 0.5))
+        bx, by, bz = scam.project(BS.BEACON + np.array([0.0, 1.0, 0.0]))
+        yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+        warm = np.exp(-(((xx - bx) ** 2 + (yy - by) ** 2) / (0.09 * W) ** 2)) * min(fire_level(f), 1.2)
+        col = lin('#9FB0D0')[None, None, :] * 0.55 * (1.0 - warm[..., None]) + \
+            np.array(F.FIRE_LIGHT, np.float32)[None, None, :] * 1.4 * warm[..., None]
+        img += lay[..., None] * col
 
     def fog_glow(self, img, scam, f, fg, lv):
         """In the fog the fire makes a great soft sphere of light round the summit."""

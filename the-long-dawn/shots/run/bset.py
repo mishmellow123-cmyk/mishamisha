@@ -264,7 +264,8 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
     corded load. lean_to: +1 the work (fire, child) is screen-right, -1 screen-left. arms=False leaves the arms
     out (another lane attaches its own at pts['sh_L'] / pts['sh_R']). weary 0..1 (default: the sit pose's all-night
     hunch): the head bowed, the back rounded.
-    pose: stand | look | walk | kneel | feed | sit | shield | reach.  Returns (Drawing, pts)."""
+    pose: stand | look | walk | kneel | feed | sit | shield | reach | hail (the staff raised high).
+    Returns (Drawing, pts)."""
     d = FG.Drawing()
     d.new_group()
     k = 0.03
@@ -356,6 +357,9 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
         elif (pose == 'reach' or reach > 0.0) and work:
             e = sh + np.array([(0.16 + 0.08 * reach) * s, -0.20 - 0.05 * reach]) * sc
             w = e + np.array([(0.14 + 0.10 * reach) * s, -0.13 - 0.04 * reach]) * sc
+        elif pose == 'hail' and staff and not child and sg == -s:     # the staff raised high: she hails the far light
+            e = sh + np.array([-0.10 * s, 0.12]) * sc
+            w = e + np.array([-0.02 * s, 0.24]) * sc
         elif staff and not child and sg == -s:
             e = sh + np.array([-0.06 * s, -0.24]) * sc
             w = e + np.array([-0.05 * s, -0.08]) * sc
@@ -382,6 +386,9 @@ def person2(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=F
         if kneel or sit:
             top = hs + np.array([-0.30 * s, 0.55])
             tip = hs + np.array([0.25 * s, -0.30])
+        elif pose == 'hail':
+            top = hs + np.array([-0.04 * s, 0.62])
+            tip = hs + np.array([0.03 * s, -0.95])
         d.capsule(top, tip, 0.019, 0.016, mat=4)
     if torch and arms:
         hr = hands['R' if s > 0 else 'L']
