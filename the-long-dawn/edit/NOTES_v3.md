@@ -15,6 +15,15 @@
   `EDIT_Q=1` (set for their children), so a caller cannot bypass the queue and nothing nests.
 - **Delivery chain (NEW, `edit/deliver.py` + `edit/deliver.sh`):** see "## Delivery chain" below. First test: B's
   master, queued 18:45Z behind three other lanes' jobs.
+- **19:54Z: all four masters exist** (`_local_logs/delivery/`): A 155 MB (606 s cold), A ALT (1 of 23 segments
+  encoded: 88 s), C 237 MB (718 s cold), B 99.5 MB (19:09Z). Every technical check PASSES: exact lengths, full
+  BT.709, black runs only where planned, flashes <= 1/s, true peak -1.30 dBTP, -16.0 LUFS, AAC screeners <=
+  -1.15 dBTP; RESULT WARN only for slates. Sound: A = COMPOSER-A's `final_A.wav` (landed 19:14Z, re-rendered
+  19:37Z), B = `final_B.wav`, C = COMPOSER-C's `final_C.wav` (19:30Z). The A ember is at (960, 548) in the master.
+  Colour verified end to end (a decoded master frame vs its source: mean |d| ~2 at CRF 14 with no hue bias; the
+  -2/255 offset first seen was the QC decode's default swscale flags, now accurate_rnd). Watcher re-armed 19:59Z
+  (new signature format, so its first refresh is all films: B's animatic with dusk_B, A re-muxed on the newer
+  final_A, all animatic segments once under the per-kind keys).
 - **~19:25Z:** A11's X2 proxy ember sits still at (960, 548) = (0.5 W, 0.68 H), where EMBERS-A2's A10 ember rests
   at the cut (their A9/A10 final is on the farm into `embers_A3` 2640-3119), until RUN-A-L's X2 plate lands.
   Segment keys are now per kind (frame code for all; slate code only where slates show; X2 code only for A11;
