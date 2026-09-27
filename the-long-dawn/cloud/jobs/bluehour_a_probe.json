@@ -1,0 +1,11 @@
+{
+ "name": "bluehour_a_probe",
+ "branch": "claude/render-bluehour-a-probe",
+ "setup": [],
+ "render": [
+  "python3 shots/run/bh_probe.py --frames 1,2,3"
+ ],
+ "out_dir": "renders/bluehour_A/probe",
+ "frames": "1,2,3",
+ "ship": "jpg"
+}
