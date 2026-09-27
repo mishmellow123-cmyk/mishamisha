@@ -101,9 +101,10 @@ def params(e, pix_ang, u=0.0):
     LP[33] = -1
     LP[44] = 1.0
     amb = lin('#5A6CA8') * 0.30
-    fogc = lin('#6E6E9C') * 0.40                             # the far air: the Earth's shadow, a little lavender
+    # the far air takes the horizon sky's own colour, so each farther range fades a step further into the sky
+    fogc = (lin('#8792BF') * 0.44 * (1.0 - 0.45 * u) + lin('#56628F') * 0.30 * 0.45 * u) * 0.95
     fogp = np.zeros(16)
-    fogp[:8] = [7.2e-5, 1 / 2600.0, 4.0e-5, 1 / 160.0, 0.0, fogc[0], fogc[1], fogc[2]]
+    fogp[:8] = [8.5e-5, 1 / 2800.0, 4.0e-5, 1 / 160.0, 0.0, fogc[0], fogc[1], fogc[2]]
     fogp[8] = 8.0
     fogp[9:12] = fogc
     fogp[12:15] = L
@@ -144,6 +145,10 @@ class DuskShot:
         cap = -math.sin(math.radians(e_her + margin)) - 0.0011
         G[..., BW.G_C0] = np.where(rock & ~hers, np.minimum(c0, cap), c0)
         G[..., BW.G_TROUGH] = np.where(hers, 2.0, G[..., BW.G_TROUGH])        # tag her summit (hero)
+        # the glint: the knoll's top (within 26 m of her top, on the lit side) goes out together with its last pixel
+        top_ = hers & (dxz < 26.0) & (G[..., BW.G_Y] > BW.TOP_Y - 9.0)
+        if top_.any():
+            G[..., BW.G_C0] = np.where(top_, max(float(c0[hers].max()), float(c0[top_].max())), G[..., BW.G_C0])
         self.her_mask = hers
 
     def dark_el(self):
@@ -250,7 +255,7 @@ def main():
     else:
         frames = [int(x) for x in (a.frames or '0,240,480,600').split(',')]
     if a.skip:
-        frames = [f for f in frames if look.find_frame(out, f) is None]
+        frames = [f for f in frames if not os.path.exists(look.find_frame(out, f))]   # find_frame never returns None
     for f in frames:
         t1 = time.time()
         img = look.finish(shot.render(f), **FINISH)
