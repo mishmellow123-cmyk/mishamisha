@@ -1,0 +1,14 @@
+{
+ "name": "stars_a",
+ "branch": "claude/render-stars-a",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "python3 shots/run/stars_a.py --range 3120-3359 --procs 8 --skip"
+ ],
+ "out_dir": "renders/stars_A",
+ "frames": "3120-3359",
+ "push_every": 300,
+ "ship": "jpg"
+}
