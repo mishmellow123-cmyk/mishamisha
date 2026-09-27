@@ -83,22 +83,37 @@ def describe(film, a, b):
 
 
 def seg_keys(film, idx):
+    """Per shot, the keys its master segment may have now: unfinished, and (rendered shots, when the masters
+    carry the film finish) finished; the FINISH backlog may still hold the unfinished one."""
     code = D._code_hash()
     prof = D.PROFILES['master']
     table = AS.titles.text_table(film.cut)
-    return [D.segment_key(film.cut, None, prof, i, film.shots[i], film.plans[i], code, table) for i in idx]
+    fin = D._finish_id() if prof.get('finish') else None
+    out = []
+    for i in idx:
+        s, pl = film.shots[i], film.plans[i]
+        ks = {D.segment_key(film.cut, None, prof, i, s, pl, code, table)}
+        if fin and pl['kind'] == 'take' and pl['have'] > 0:
+            ks.add(D.segment_key(film.cut, None, prof, i, s, pl, code, table, fin))
+        out.append(ks)
+    return out
+
+
+def master_segments(film, idx):
+    man = os.path.join(D.DELIVERY, 'cache', 'master', 'manifests.json')
+    segs = json.load(open(man)).get(f'{film.cut}_master', []) if os.path.exists(man) else []
+    return [os.path.basename(segs[i])[:-5] if i < len(segs) else None for i in idx]
 
 
 def master_current(film, idx, keys):
-    """Was the film's master built from exactly these segments (else it is older than the renders)?"""
-    man = os.path.join(D.DELIVERY, 'cache', 'master', 'manifests.json')
-    segs = json.load(open(man)).get(f'{film.cut}_master', []) if os.path.exists(man) else []
-    return all(i < len(segs) and os.path.basename(segs[i]) == k + '.h264' for i, k in zip(idx, keys))
+    """Was the film's master built from these renders (else it is older than them: wait for it)?"""
+    return all(m in ks for m, ks in zip(master_segments(film, idx), keys))
 
 
-def key(keys, audio):
+def key(film, idx, audio):
+    """What the preview is cut from: the master's own segments for these shots (finish included) and the sound."""
     st = os.stat(audio) if os.path.isfile(audio) else None
-    return json.dumps([keys, audio, st.st_mtime_ns if st else 0])
+    return json.dumps([master_segments(film, idx), audio, st.st_mtime_ns if st else 0])
 
 
 def export(mov, a, b, path):
@@ -140,7 +155,7 @@ def main():
                 if name in man and os.path.exists(path):
                     keep.add(name)
                 continue
-            k = key(keys, audio)
+            k = key(film, idx, audio)
             if man.get(name, {}).get('key') != k or not os.path.exists(path):
                 export(mov, a, b, path)
                 if name not in man:
