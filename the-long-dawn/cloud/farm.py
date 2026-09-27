@@ -87,10 +87,11 @@ PORT = 8700
 MAX_CPU = int(os.environ.get('LDFARM_MAX_CPU', '30'))
 MAX_GPU = int(os.environ.get('LDFARM_MAX_GPU', '2'))
 SSH_GPU_AFTER_S = int(os.environ.get('LDFARM_SSH_GPU_AFTER_S', '180'))  # M4 Metal takes Cycles units after this wait
+FINAL_SHARE = float(os.environ.get('LDFARM_FINAL_SHARE', '0.34'))   # running finals keep ~1 node in 3
 FINAL_AGING_S = int(os.environ.get('LDFARM_FINAL_AGING_S', '300'))   # finals never wait longer than this behind tests
 MAX_QUEUED = int(os.environ.get('LDFARM_MAX_QUEUED', '4'))      # nodes per pool waiting in a capacity queue
 MAX_BOOTING = int(os.environ.get('LDFARM_MAX_BOOTING', '4'))  # nodes creating/queued/waking at once
-MAX_SPILL = int(os.environ.get('LDFARM_MAX_SPILL', '6'))    # extra h100-1 nodes that take CPU units while cpu-8 has no room
+MAX_SPILL = int(os.environ.get('LDFARM_MAX_SPILL', '10'))    # extra h100-1 nodes that take CPU units while cpu-8 has no room
 MAX_STREAM = int(os.environ.get('LDFARM_MAX_ENDPOINTS', '15'))
 TEST_RESERVE = int(os.environ.get('LDFARM_TEST_RESERVE', '2'))  # slots finals leave free so look-dev never waits long
 SPEND_WARN = float(os.environ.get('LDFARM_SPEND_WARN', '150'))
@@ -578,17 +579,17 @@ class Job:
             conc = len(items) if sum(i['d'] for i in items) <= 2 * cpu_limit else max(1, round(cpu_limit / d_avg))
             if self.gpu:
                 conc = min(conc, max(1, len(self.spec['render'])))
-            out.append(self._unit(j, [dict(cmd=i['cmd']) for i in items], frames_u, conc, retry_of))
+            out.append(self._unit(j, [dict(cmd=i['cmd']) for i in items], frames_u, conc, retry_of, d=d_avg))
         return out
 
-    def _unit(self, j, items, frames, conc, retry_of):
+    def _unit(self, j, items, frames, conc, retry_of, d=2):
         uid = f'{self.tag}-{self.name}-{j}' + (f'-r{retry_of}.{next(UNIT_SERIAL)}' if retry_of else '')
         outputs = [dict(key=o['key'], out_dir=o['out_dir'], frames=sorted(set(o['frames']) & set(frames)))
                    for o in self.outputs]
         outputs = [o for o in outputs if o['frames']]
         return dict(id=re.sub(r'[^A-Za-z0-9_.-]', '_', uid), job=self.name, setup=self.setup, items=items,
                     concurrency=conc, outputs=outputs, shape=list(self.shape), env={},
-                    _job=self, _retry=retry_of or 0)
+                    _job=self, _retry=retry_of or 0, _d=max(1, round(d)))
 
 
 # ------------------------------------------------------------------ one node: boot, agent, endpoint
@@ -978,7 +979,7 @@ class Scheduler:
             if not j.want:
                 req.log(f'[{j.name}] nothing to render (every wanted frame is already here?)')
         units = plan_units(jobs, req.args)
-        req.total = sum(len(set(o['frames']) & j.want) for j in jobs for o in j.outputs)
+        req.total = sum(len(set(o['frames']) & j.want) for j in jobs for o in j.outputs) + len(req.landed_set)
         req.units_total = req.units_open = len(units)
         req.budget = req.args.nodes or (1 if req.args.test is not None else max(1, len(units)))
         if not units:
@@ -1071,8 +1072,8 @@ class Scheduler:
         out, taken = [], {}
         now = time.time()
 
-        def eff(u):                                 # aging: a final queued 5+ min competes with tests, FIFO
-            return 0 if u['_prio'] == 0 or now - u['_req'].submitted > FINAL_AGING_S else 1
+        def eff(u):                                 # choose() applies the finals guarantees
+            return u['_prio']
         for u in sorted(self.queue, key=lambda u: (ukind(u) != node_kind, eff(u), u['_seq'])):
             r = u['_req']
             if ukind(u) not in kinds or r.cancelled:
@@ -1322,23 +1323,39 @@ class Scheduler:
         finally:
             nd.ticking = False
 
+    def choose(self, nd, disp):
+        """Tests first, with two guarantees for finals: an approved final's first unit starts within FINAL_AGING_S,
+        and running finals keep about 1 node in 3 (FINAL_SHARE). Within a class: FIFO, with warm-setup affinity
+        among the next 3 in line."""
+        if not disp:
+            return None
+        now = time.time()
+        tests = [u for u in disp if u['_prio'] == 0]
+        finals = [u for u in disp if u['_prio'] == 1]
+        running = [x.unit for x in self.nodes.values() if x.unit]
+        fin_run = sum(1 for u in running if u['_prio'] == 1)
+        unstarted = [u for u in finals if u['_req'].t_start is None and now - u['_req'].submitted > FINAL_AGING_S]
+        if unstarted:
+            pick = unstarted
+        elif finals and (not tests or fin_run < max(1, round((len(running) + 1) * FINAL_SHARE))):
+            pick = finals
+        else:
+            pick = tests or finals
+        tier = pick[:3]
+        return next((u for u in tier if u['_job'].name == nd.last_job), tier[0])
+
     def dispatch(self, nd):
         with self.lock:
-            disp = self.dispatchable(nd.kind, bpy=getattr(nd, 'bpy', False))
-            finals_running = sum(1 for x in self.nodes.values() if x.unit and x.unit['_prio'] == 1)
-            if finals_running >= MAX_STREAM - TEST_RESERVE:
-                disp = [u for u in disp if u['_prio'] == 0]
-            if not disp:
-                u = None
-            else:
-                tier = disp[:3]                     # warm-setup affinity, but only within the next 3 in line
-                u = next((u for u in tier if u['_job'].name == nd.last_job), tier[0])   # warm setup first
+            u = self.choose(nd, self.dispatchable(nd.kind, bpy=getattr(nd, 'bpy', False)))
+            if u is not None:
                 self.queue.remove(u)
                 nd.unit = u
         if u is None:
             nd.stop('no queued work')
             return
         spec = {k: v for k, v in u.items() if not k.startswith('_')}
+        if not u['_job'].gpu and nd.cpu > KINDS['cpu']['cpu']:     # a bigger node than planned for: use its cores
+            spec['concurrency'] = min(len(spec['items']), max(spec['concurrency'], nd.cpu // u.get('_d', 2)))
         try:
             nd.agent('POST', '/unit', spec, timeout=30)
         except Exception as e:                      # noqa: BLE001
@@ -1385,6 +1402,16 @@ class Scheduler:
                 req.log(f'      | {ln[:200]}')
         for ln in (us.get('setup_tail') or [])[-15:]:
             req.log(f'      setup| {ln[:200]}')
+        if missing and not us.get('fail_tails') and not us.get('setup_tail'):
+            for i in range(min(2, len(u['items']))):   # exit 0 but no frames: show what the process said
+                try:
+                    lines = nd.agent('GET', f'/log/{u["id"]}/item_{i}.log?n=40', timeout=20).get('lines', [])
+                except Exception:                   # noqa: BLE001
+                    lines = []
+                key = [ln for ln in lines if any(w in ln for w in ('Error', 'error', 'Traceback', 'exit ', 'rror:'))]
+                req.log(f'    process {i} exited 0 but its frames never appeared; its log says:')
+                for ln in (key or lines)[-12:]:
+                    req.log(f'      | {ln[:200]}')
         with self.lock:
             nd.unit = None
             req.units_open -= 1
