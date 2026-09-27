@@ -9,11 +9,34 @@
 | B fallback | `music/out/v3/fallback_B.wav` (stems `fallback_B_score.wav`, `fallback_B_sfx.wav`) | **DONE 11:45Z**: battery all PASS (level map 14/14, sync 5/5, notes 0, clicks 0) | - |
 | C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | **DONE 19:10Z**: battery all PASS (level map 28/28, sync 7/7, notes 0, clicks 0). Fix: the ride (C2 bar-2 horn -6.5 dB, C12 piano -4.5 dB) + C11's race drone now falls away after the slip into C12's black (its tail was C12's peak, -6.4 LU) | COMPOSER-A |
 | A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`) | render 4 (20:40Z) battery ALL PASS (level map 20/20, rules 3/3, centroid 5/5, sync 55/55); a balance pass (render 5) is rendering: use the file once this row says FINAL | COMPOSER-A |
-| C score | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | in progress: render 2 20:00Z = level map 28/28, rules 3/3, sync 45/50 (usable temp); render 3 queued 20:10Z (sync, peaks, effects balance) | COMPOSER-C |
+| C score | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | in progress (the current file is usable temp): render 3 20:21Z = level map 27/28, rules 3/3, sync 47/50; render 4 queued 20:30Z | COMPOSER-C |
 
 All masters: 48 kHz / 24-bit / stereo WAV, exactly the cut's length (A 6,480 f = 12,960,000 samples; B 5,440 f =
 10,880,000; C 7,200 f = 14,400,000), -16 LUFS integrated, true peak <= -1.2 dBTP, from silence to silence, with
 stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
+
+## SOUND (real effects lane, from 19:00Z): THE INTERFACE (COMPOSER-A, COMPOSER-C, EDIT: please read)
+- **What:** SOUND is replacing the synthesized effects with REAL recordings: Freesound (CC0 / CC-BY), the Sonniss GDC
+  2026 bundle, and ElevenLabs only for the gaps. Every cue of the locked cue sheets keeps its id, time, fades and envelope,
+  and **its level is matched to your synthesized design of the same cue** (beds by integrated K-loudness, events by their
+  loudest 400 ms), then trimmed by ear-proxies (analysis). Credits: `music/SFX_CREDITS.md`. Source: `src/sound_v3.py`
+  (engine), `src/sound_recipes_<cut>.py` (what plays), `src/ir_v3.py` (MEASURED impulse responses).
+- **Files per cut (48 kHz, exact length):**
+  - `out/v3/sfxpre_<cut>.wav` is the real effects in the PRE-master domain, as float32 (what `render_v3.master()` takes).
+  - `out/v3/sound_<cut>.wav` is the master, `sound_<cut>_score.wav` + `sound_<cut>_sfx.wav`. It is made by YOUR `render_v3.master()`,
+    run on the saved `cache/v3/premaster_score_final_<cut>.npy` plus the real effects, so it has the same -16 LUFS / <= -1.2
+    dBTP chain, and the battery (`analysis/v3/sound_<cut>/`) is run on it.
+  - `out/v3/sfx_<cut>.wav` is a copy of `sound_<cut>_sfx.wav`, the deliverable effects stem.
+- **For COMPOSER-A / COMPOSER-C:** nothing changes in your renders unless you opt in. When your final is locked, tell me
+  (or just re-run `python sound_v3.py <cut>`, about 2 minutes): it re-masters your newest pre-master score with the real
+  effects and runs your battery. The cue sheets stay locked. Where the picture changed (B is THE VIGIL), the
+  recipe says why, e.g. `B.his_fire` is silent (the far answer is a pinprick) and `B.x.flare` is added (her flare, 40 b2).
+- **Reverb (director, 20:00Z):** the synthesized hall in `mix.make_ir` is a machine tell. A MEASURED stone church is ready:
+  `ir_v3.irs("church")` (Freesound CC0, balloon IR, T30 about 2.2 s mid, highs shorter), in the same 4-IR, energy-normalised form
+  as `mix.make_ir`. Voxengo's free set is NOT measured (it was made with Impulse Modeler), so it is not used. The proposed
+  opt-in is `LONGDAWN_HALL=church` in `render_v3.hall_ir()`. It re-mixes the score only (the parts cache is dry, so it is not busted),
+  and then the battery must be re-run. **Not wired yet: SOUND asks COMPOSER-A/C to agree here first.**
+- **Status:** B first (all cues, real), then the flint take shared by A/B/C, C's book and council, then A's fire act.
 
 ## TWO COMPOSERS FROM 18:40Z: who owns what
 - **Shared, additive only:** `src/kit_v3.py` (the motif kit), `src/timeline_v3.py`, `src/render_v3.py`,
@@ -50,14 +73,24 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
     -16.04 LUFS, TP -1.29 dBTP). Fix: sparse beats dense in the sixteenths (only violas + second violins double;
     cellos and first violins keep eighths), softer brass call. Kept as `out/v3/_keep_A_r4/` (+ its analysis in
     `analysis/v3/_keep_A_r4/`).
-  * Render 5 (20:55Z, running): a balance pass, because per-part loudness showed story lines buried: the promise's
-    line 8 dB under the bloom (the bloom now leaves its register), the violas' CALL 4 dB under its Bb pad, the
-    watchers' corrupted call ~8 dB under the string hold, the Run's far answers under the D pedal, the crossing's
-    cycle 10 dB over the walk and the call, the dawn's ANSWER and HOME under the pad and basses. If render 5 fails
-    anything, restore render 4 from `_keep_A_r4` (it passes) and report.
+  * Render 5 (20:55Z): the balance worked (per-part loudness: every story line now leads its window: the
+    promise's line level with the bloom's top, the violas' CALL 1.8 dB over its pad, the first ANSWER leading the
+    Run, the watchers' corrupted call over the hold, the dawn's ANSWER and HOME on top). But the master gain rose
+    0.7 dB with the brink pinned at the limiter, so A2, A3 and A10 crept 0.2-0.5 LU over their bands, and run fire
+    1's CALL arrived +56 ms. Lesson: the level map is relative to a limited anchor, so every quieter pass lifts all
+    the untouched sections; keep ~1 LU of margin.
+  * Render 6 (21:10Z, running): `RIDE` A2 -1.5, A3 -1.5, A4 -2.8, A7 -2.4, A10 -5, A16 -1, A17 -0.8; trim run fire 1.
   * Tool: `scratchpad/who.py <cut> <name> t0 t1 ...` ranks the parts by loudness in a window (from the part cache).
 
 ## COMPOSER-C (cut C) · STATE
+- **20:25Z: render 3 battery**: level map 27/28 (C13 0.2 LU over: the glass streak meets the hiss in the snow),
+  rules 3/3, sync 47/50 (three misses of 50-90 ms, per-layer trims set), notes 0, clicks 0; master GR 11 dB at
+  the slit (down from 13), 6 at a race surge. Effects now own their moments (the roar +2 LU over the music, the
+  dips, the seethe, the burns within 5 LU); still weak: the blaze (the design was sub-bass: redesigned mid-range,
+  calibrated to ~4 LU under C21's orchestra at its peak), the Havens' sea (a nearer layer added), the cold ticks.
+  Lines over the foundation (per-part probe): basses lighter, solo violin +6 dB, the dawn's line forward.
+  **Render 4 queued 20:30Z** behind A: those + no low tremolo at the slit (the arco carries it), the tam-tam's
+  bloom later in its wash, the Run's timpani/basses under the horn calls, C26 -3.
 - **20:05Z: render 2 battery**: level map **28/28 PASS**, all 3 rules PASS (everything after the Eye >= 1.8 LU
   under the slit; the dawn -3.1 LU; the prologue -9.4 LU), sfx -25.7 LUFS vs score -16.0 (B-like), notes 0, clicks
   0; sync 45/50 (the misses: two crescendo blooms probed as arrivals, and entries the attack table over-reads:

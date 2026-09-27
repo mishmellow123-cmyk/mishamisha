@@ -146,7 +146,7 @@ def tamswell(part, total_n):
         vel = _vel(part, nt)
         dur_s = nt["dur"] * BEAT_S
         rel = float(nt["kw"].get("rel", 5.0))
-        k0 = int(0.18 * SR)
+        k0 = int(0.35 * SR)                     # well past the mallet: the wash only, no strike
         m = int(dur_s * SR)
         wash = g[k0:k0 + m][::-1].copy()
         if len(wash) < m:
@@ -395,9 +395,26 @@ def d_roads(rng, dur=3.2, count=6):
     return FX.fade(y, 0.05, 0.2), 0
 
 
+def d_blaze(rng, dur, grow=9.0):
+    """the fire everyone lit rising around her fist: a rushing roar whose brightness and crackle grow with it (the bed
+    rises by `grow` dB)"""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    u = t / dur
+    # a wide band of rushing flame that opens upward as it grows (a mid-range roar: the sub-bass rumble of the first
+    # design measured 15 dB quieter to the ear at the same RMS), a little low weight, and a crackle that thickens
+    roar = FX.sweep_filter(FX.pink(rng, n), "band", 380 + 1500 * u ** 1.3, q=0.45)
+    roar = roar + FX.sos_filter(FX.brown(rng, n), "low", 200) * 0.2
+    roar = roar * (1 + 0.35 * FX.smooth_rand(rng, n, 5.0, 1))
+    cr = FX.crackle(rng, dur, rate=30, level=0.9, pops=0.5, breath=0.0)[:n]
+    env = 10 ** ((grow * u - grow) / 20)
+    y = (roar * 0.9 + cr[:len(roar)] * (0.4 + 0.6 * u)[:, None]) * env[:, None]
+    return FX.fade(y.astype(np.float32), 0.3, 0.15), 0
+
+
 # ---------------------------------------------------------------------------
 # registration
 # ---------------------------------------------------------------------------
 synth_v3.VOICES.update(hharm=hharm, anvil=anvil, tamswell=tamswell, glassfall=glassfall)
 sfx_v3.DESIGNS.update(pen=d_pen, burn=d_burn, coldtick=d_coldtick, seethe=d_seethe, cock=d_cock, drop=d_drop,
-                      dip=d_dip, roads=d_roads)
+                      dip=d_dip, roads=d_roads, blaze=d_blaze)
