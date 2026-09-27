@@ -9,6 +9,14 @@ EXACT STATE:
 * Crown test at 6e78762 (2466, 2478, 2488, 2498, 2510; request 0927-165213-embersA3edge-82690, re-queued 21:02Z)
   lands in renders/_farmtest/embers_A3_edge/. REVIEW IT FIRST on resume. Earlier crown tests failed (black on black,
   hidden in sparks, framed 6 units off because of the forge's lean). Fix inside 2460-2519 only if it still fails.
+CROWN TEST RESULT (21:10Z, at 61e5669 = what the finals render): the forge is now centred and the seam of fire
+  and the tip read, but it is NOT yet a hero. What is framed (the top 9 units) reads as a dark slab of stack with
+  a small glowing parapet on top, and other forges' spark clouds still fill the frame. Fix, confined to 2460-2519,
+  then `--frames 2460-2519` for MAIN and ALT (pre-approved):
+  - make the crown the crenellated parapet itself: cut ~4-5 units below the top (FallingCrown.cut_y), a tighter
+    lens (hf 38 -> ~26), so the crenellations fill ~half the frame;
+  - gild it: gold glint x3 (CrownBreak rim term 2.2 -> ~6), throat brighter, a bigger/brighter updraft glare behind;
+  - StripEmbers and the other forges' crown sparks OFF in this shot (0 instead of x0.12).
 NEXT (post-23:30Z list; cheap re-renders):
  1. The crown hero, 2460-2519 (above).
  2. At 2532 there are white squiggle "worm" trails at the top and right edges (probably CrownTrail/StripEmbers
