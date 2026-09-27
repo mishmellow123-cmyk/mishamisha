@@ -300,7 +300,7 @@ class DeadEmber:
     hangs. The camera drifts (1040-1100) so that last point sits where H1's first spark is born (the match cut on
     bar 15 b1)."""
     F0, F1 = 880, 1119
-    POT = np.array([0.36, 0.28, -0.02])       # on the cairn's lowest course (top at 0.28 m)
+    POT = np.array([0.46, 0.66, -0.03])       # H5: HELD, cradled on her near palm in front of her chest (was on the cairn)
     HFOV = 38.0
     POV = False
     MOON = np.array([0.20, 0.62, -0.76]) / np.linalg.norm([0.20, 0.62, -0.76])   # B's moon: high on her left
@@ -345,7 +345,7 @@ class DeadEmber:
         # no arm crosses the frame), then comes back to steady the pot's rim
         rest = self.POT + np.array([0.0, 0.150, 0.0])
         lift = self.POT + np.array([0.012, 0.215, 0.040])
-        down = self.POT + np.array([0.030, 0.012, 0.172])
+        down = self.POT + np.array([0.060, -0.200, 0.230])      # set down on the cairn stone below, out of frame
         a = smoothstep(0.0, 0.5, u)
         b = smoothstep(0.5, 1.0, u)
         lc = rest * (1 - a) + lift * a
@@ -361,10 +361,15 @@ class DeadEmber:
         p['curl_f'] = tuple(np.array([0.55, 0.62, 0.70, 0.74]) * (1 - back) + np.array([0.30, 0.34, 0.40, 0.46]) * back)
         p['thumb_f'] = 0.55 * (1 - back) + 0.25 * back
         p['spread_f'] = 0.15 * back
-        # her near hand rests on her thigh throughout
-        p['hand_n'] = (0.66, 0.43, -0.13)
-        p['fdir_n'] = tuple(nrm([-0.80, -0.55, 0.10]))
-        p['palm_n'] = tuple(nrm([0.10, -1.0, 0.10]))
+        # H5: the vessel is HELD: her near gloved hand is round the pot's belly on the lens side throughout (it steadies
+        # the pot as the lid comes off, and keeps hold while she blows)
+        p['hand_n'] = tuple(self.POT + np.array([0.070, -0.030, -0.060]))
+        p['fdir_n'] = tuple(nrm([-0.80, 0.12, 0.50]))
+        p['palm_n'] = tuple(nrm([0.0, 1.0, 0.05]))
+        p['curl_n'] = (0.30, 0.34, 0.40, 0.46)
+        p['thumb_n'] = 0.20
+        p['spread_n'] = 0.10
+        p['elbow_n'] = (0.5, -1.0, -0.6)
         p['tools'] = 'none'
         p['rock'] = None
         p['expr'] = dict(purse=blow, blink=0.6, brow=0.2)
@@ -430,8 +435,10 @@ class DeadEmber:
             pos = an['head'].p(0.070, 0.000, 0.0)
             tgt = self.POT + np.array([-0.035, 0.120, 0.005])
         else:
-            pos = np.array([0.35, 0.98, -0.44])
-            tgt = self.POT + np.array([0.020, 0.110, 0.0])
+            # H5: about 45 deg down (40), from her front-left so her dark coat and knees fill the frame behind the pot
+            # (no snow wedge), her head well above the frame
+            tgt = self.POT + np.array([0.020, 0.095, 0.0])
+            pos = tgt + np.array([-0.56, 0.56, -0.18])
         pos = pos + np.array([0.004 * fnoise1(t * 0.6, 3.0), 0.003 * fnoise1(t * 0.5, 5.0), 0.0])
         w = smoothstep(1040, 1100, f) if not self.POV else 0.0
         if w > 0.0:
@@ -485,6 +492,9 @@ class DeadEmber:
         img = np.zeros((cam.H, cam.W, 3), np.float32)
         img[:] = np.array([0.004, 0.006, 0.012], np.float32)
         depth = comp(img, res)
+        # H5: no bright snow shapes behind her: the far ground (well behind the focus) graded down into the night
+        far = np.clip((depth - (focus + 0.25)) / 0.35, 0.0, 1.0)
+        img *= (1 - 0.55 * far)[..., None]
         # breath: from her hidden mouth down into the pot's glow, then hanging in the moonlight
         self._breath(img, cam, f, anc, epos, life, open_)
         if not nodof:
@@ -510,18 +520,18 @@ class DeadEmber:
                     k = min(1.0, a_ / 0.35)
                     pos = mouth + d * (1 - (1 - k) ** 2) + np.array([0.03, 0.02, -0.01]) * max(0.0, a_ - 0.35)
                     rad_m = 0.010 + 0.040 * min(a_, 0.9)
-                    dens = 0.035 * math.exp(-a_ / 0.7) * min(1.0, a_ / 0.06)
+                    dens = 0.085 * math.exp(-a_ / 0.8) * min(1.0, a_ / 0.06)
                 else:
                     pos = mouth + np.array([-0.03, -0.10, -0.02]) * (1 - math.exp(-a_ / 0.5)) + \
                         np.array([0.05, 0.03, -0.03]) * a_
                     rad_m = 0.02 + 0.05 * a_
-                    dens = 0.05 * math.exp(-a_ / 1.4) * min(1.0, a_ / 0.2)
+                    dens = 0.11 * math.exp(-a_ / 1.6) * min(1.0, a_ / 0.2)
                 sx, sy, z = cam.project(pos)
                 if z <= 0.05:
                     continue
                 d2 = float(np.sum((pos - epos) ** 2)) + 0.002
-                Ls = np.array([1.0, 0.30, 0.06]) * 0.0026 * (0.02 + life ** 1.6) * lid_u / d2 * 0.25 + \
-                    MOON_COL * 0.010
+                Ls = np.array([1.0, 0.30, 0.06]) * 0.0026 * (0.02 + life ** 1.6) * lid_u / d2 * 1.2 + \
+                    MOON_COL * 0.14
                 sig = max(0.8, cam.f * rad_m / z * 0.6)
                 hsd.splat_fog(img, float(sx), float(sy), sig, dens, Ls[0], Ls[1], Ls[2],
                               float(fs * 0.37 + q), f / FPS * 0.6, max(2.0, sig * 1.1))
@@ -747,8 +757,13 @@ class Find:
     FLINT = np.array([0.32, 1.08, -0.07])
 
     HAND = False            # the hand closing on the band failed its test (claw read): the shot is the band alone
+    # H5 calls: if her glove is in this shot it comes in from the SIDE (frame right, low over the snow, palm down),
+    # never a gauntlet descending from above; it slides in over the last beats and the edit cuts to her closed fist
+    HAND_SIDE = os.environ.get('V3_FIND_HAND', 'side') == 'side'     # V3_FIND_HAND=none: the band alone
 
     def reach(self, f):
+        if self.HAND_SIDE:
+            return smoothstep(3036, 3058, f)
         if not self.HAND:
             return 0.0
         return smoothstep(3052, 3092, f) * (1 - smoothstep(3112, 3135, f))
@@ -756,15 +771,22 @@ class Find:
     def pose(self, f):
         t = f / FPS
         r = self.reach(f)
-        close = smoothstep(3088, 3102, f)
-        W = self.HOL + np.array([0.058, 0.052, 0.018]) + np.array([0.10, 0.45, 0.10]) * (1 - r)
+        close = 0.0 if self.HAND_SIDE else smoothstep(3088, 3102, f)
+        if self.HAND_SIDE:
+            W = self.HOL + np.array([0.19, 0.040, 0.0]) + np.array([0.21, 0.012, -0.02]) * (1 - r)
+            hand = dict(hand_n=tuple(W), elbow_n=(1.0, 0.25, -0.35), fdir_n=tuple(nrm([-1.0, -0.12, 0.05])),
+                        palm_n=(0.1, -1.0, 0.1), curl_n=(0.50, 0.58, 0.64, 0.70), thumb_n=0.45, spread_n=0.0,
+                        thumbout_n=0.05)
+        else:
+            W = self.HOL + np.array([0.058, 0.052, 0.018]) + np.array([0.10, 0.45, 0.10]) * (1 - r)
+            hand = dict(hand_n=tuple(W), elbow_n=(0.3, -0.2, -1.0),
+                        fdir_n=tuple(nrm([-0.60, -0.75, 0.10])), palm_n=tuple(nrm([-0.55, 0.45, 0.70])),
+                        curl_n=tuple(np.array([0.30, 0.62, 0.82, 0.90]) * (1 - close) +
+                                     np.array([0.62, 0.84, 0.92, 0.96]) * close),
+                        thumb_n=0.45 + 0.30 * close, spread_n=0.0, thumbout_n=0.25 * (1 - close))
         p = dict(
             pelvis=(0.76, 0.42, -0.05), yaw=0.0, lean=72.0, chest=14.0, twist=0.0, neck=8.0, head=22.0, head_yaw=0.0,
-            head_roll=0.0, shrug=0.1,
-            hand_n=tuple(W), elbow_n=(0.3, -0.2, -1.0),
-            fdir_n=tuple(nrm([-0.60, -0.75, 0.10])), palm_n=tuple(nrm([-0.55, 0.45, 0.70])),
-            curl_n=tuple(np.array([0.30, 0.62, 0.82, 0.90]) * (1 - close) + np.array([0.62, 0.84, 0.92, 0.96]) * close),
-            thumb_n=0.45 + 0.30 * close, spread_n=0.0, thumbout_n=0.25 * (1 - close),
+            head_roll=0.0, shrug=0.1, **hand,
             hand_f=(0.55, 0.62, 0.10), elbow_f=(0.3, -1.0, 0.4), fdir_f=(-0.6, -0.6, -0.2), palm_f=(0.3, 0.2, -1.0),
             curl_f=(0.9, 0.9, 0.9, 0.9), thumb_f=0.7,
             foot_n=(0.40, 0.05, -0.22), knee_n=(-1.0, 0.5, 0.0), toe_n=(-1.0, 0.0, 0.0), sole_n=(0.0, 1.0, 0.0),
@@ -826,11 +848,41 @@ class Find:
         res = H3.render(cam, B, Hp, L, env, XP, ENV, inscription_ins(), ss=(3 if scale > 0.75 else 2),
                         sil=dict(skin=1.0, eyes=1.0, cap=0.85, cap_brim=0.85, hair=0.85))
         depth = comp(img, res)
+        self._sheen(img, B, res, t)
         if 0 <= d < 30:
             self._sparks(img, cam, f)
         if not nodof:
             img = dof(img, depth, focus, K=cam.f * 0.0035)
         return finish(img, exposure=float(os.environ.get('V3_EXPO', 1.6)))
+
+    def _sheen(self, img, B, res, t):
+        """H5: a skin of meltwater on the frozen disc. Seen this steeply it mirrors the moonlit far lip of the hollow: a
+        pale cold sheen strongest along the far edge (the grazing side), fading toward us, with a slow ripple and one
+        brighter line where the lip's reflection meets the water."""
+        if res is None:
+            return
+        y0, x0, _, a_, _, grp = res
+        gi = H3.group_index(B, 'ice')
+        m = np.zeros(img.shape[:2], np.float32)
+        m[y0:y0 + a_.shape[0], x0:x0 + a_.shape[1]] = a_ * (grp == gi)
+        on = m > 0.5
+        cols = np.where(on.any(0))[0]
+        if len(cols) < 4:
+            return
+        H_ = img.shape[0]
+        top = np.argmax(on, 0).astype(np.float32)
+        bot = (H_ - 1 - np.argmax(on[::-1], 0)).astype(np.float32)
+        ys = np.arange(H_, dtype=np.float32)[:, None]
+        span = np.maximum(bot - top, 1.0)[None, :]
+        u = np.clip((ys - top[None, :]) / span, 0.0, 1.0)                 # 0 at the far edge .. 1 at the near
+        g = (1 - u) ** 5.0 + 0.45 * np.exp(-((u - 0.06) / 0.030) ** 2)   # the grazing gradient + the lip's line
+        rng = np.random.default_rng(5)
+        nz = cv2.GaussianBlur(rng.normal(0, 1, img.shape[:2]).astype(np.float32), (0, 0), img.shape[1] / 90.0)
+        nz = nz / (np.abs(nz).max() + 1e-6)
+        xx = np.arange(img.shape[1], dtype=np.float32)[None, :]
+        rip = 1 + 0.18 * np.sin(xx * 0.045 * 960 / img.shape[1] + ys * 0.09 * 960 / img.shape[1] + t * 1.3) + 0.25 * nz
+        col = np.array([0.020, 0.025, 0.034], np.float32)
+        img += (m * g * rip)[..., None] * col[None, None]
 
     def _sparks(self, img, cam, f):
         """A few of the strike's sparks fall into the frame and die on the snow round the hollow."""

@@ -389,9 +389,10 @@ V3_FLOOR = (0.50, 0.28)          # dark adaptation before / after the catch (v2b
 V3_CLOSE_EXPO = 1.45             # the close-up's exposure (eased to the accepted 1.05 over the reveal)
 V3_CLOSE_SKY = (0.85, 5.0)       # the close-up sky gain (v2b 0.45)
 V3_RIM = 2.0                     # her cold rim and sky fill
-FLINCH_V3 = _kp(pelvis=(0.87, 0.60, 0.0), lean=-15.0, chest=-8.0, neck=10.0, head=30.0, head_yaw=-55.0, shrug=1.0,
-                hand_n=(0.51, 1.21, -0.11), hand_f=(0.66, 0.98, 0.10), look=(1.4, 0.7, 1.0),
+FLINCH_V3 = _kp(pelvis=(0.90, 0.60, 0.0), lean=-18.0, chest=-10.0, neck=12.0, head=36.0, head_yaw=-85.0, shrug=1.0,
+                hand_n=(0.51, 1.21, -0.11), hand_f=(0.74, 0.96, 0.14), look=(1.4, 0.7, 1.0),
                 squint=1.0, blink=1.0, mouth=0.2, brow=-1.0, **_GUARD)
+V3_ROAR_SIL = 0.92               # at the roar her fire-lit groups go rim-only: a dark shape against the flare
 RISE1_V3 = _kp(pelvis=(0.93, 0.74, 0.0), lean=6.0, chest=-2.0, neck=8.0, head=24.0, head_yaw=-38.0, shrug=0.7,
                hand_n=(0.60, 1.30, -0.13), hand_f=(0.72, 0.95, 0.20), foot_n=(0.52, 0.06, -0.20),
                foot_f=(1.13, 0.06, 0.10), knee_f=(-1.0, 0.2, 0.0), toe_f=(-1.0, -0.1, 0.0), sole_f=(0.0, 1.0, 0.0),
@@ -535,14 +536,25 @@ def yw2_pose(f):
         J = hero.skeleton(q)
         Fh = hero.head_frame(J['atlas'], J['hf'], J['hu'])
         if V3_H5:
-            # H5: the near forearm across her face (hand at its far side, palm out to the heat), head turned away
-            guard = Fh.p(0.080, 0.020, -0.050)
+            # H5 (director, 15:15Z): the near FOREARM ACROSS HER FACE, level, between the flare and her head: the elbow
+            # thrown out toward the fire at eye height, the wrist at the brow on the fire side, the gloved hand
+            # across the front of the hood (palm to the heat); her head turned right away; her weight back
+            up = np.array([0.0, 1.0, 0.0])
+            fd = FIRE_BASE + np.array([0.0, 0.55, 0.0]) - Fh.C
+            fd = nrm_(fd - np.dot(fd, up) * up)                     # toward the fire, level
+            cs = np.array([0.0, 0.0, -1.0])                         # the lens side
+            guard = Fh.C + fd * 0.065 + up * 0.025 - cs * 0.040
+            gd = smoothstep(ROAR - 1, ROAR + 1.5, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))   # the hand's aim leads
             def _mix(a, b):
-                return tuple(nrm_(np.asarray(a, np.float64) * (1 - gw) + np.asarray(b, np.float64) * gw))
-            p['fdir_n'] = _mix(p['fdir_n'], -Fh.W + 0.25 * Fh.V)
-            p['palm_n'] = _mix(p['palm_n'], Fh.U)
-            p['elbow_n'] = _mix(p['elbow_n'], Fh.W + 0.6 * Fh.V)
-            p['curl_n'] = tuple(np.asarray(p['curl_n']) * (1 - gw) + np.array([0.25, 0.30, 0.35, 0.40]) * gw)
+                return tuple(nrm_(np.asarray(a, np.float64) * (1 - gd) + np.asarray(b, np.float64) * gd))
+            # the hand carries on along the forearm, round behind the hood (never a hand held up in the air)
+            p['fdir_n'] = _mix(p['fdir_n'], -fd * 0.60 - cs * 0.80 + up * 0.05)
+            p['palm_n'] = _mix(p['palm_n'], -fd)                   # the back of the hand and forearm to the heat
+            p['elbow_n'] = _mix(p['elbow_n'], fd * 1.0 + cs * 0.35 + up * 0.50)
+            p['curl_n'] = tuple(np.asarray(p['curl_n']) * (1 - gd) + np.array([0.35, 0.42, 0.50, 0.55]) * gd)
+            p['thumbout_n'] = p['thumbout_n'] * (1 - gd) + 0.02 * gd              # the thumb tucked in, no fin
+            p['thumb_n'] = p['thumb_n'] * (1 - gd) + 0.55 * gd
+            p['spread_n'] = p['spread_n'] * (1 - gd)
         else:
             guard = Fh.p(0.07, 0.0, 0.0) + np.array([-0.12, -0.065, -0.07])
         hn = hn * (1 - gw) + guard * gw
@@ -1118,13 +1130,18 @@ class FirstBeacon:
         if em_e > 0:
             L.append([TINDER[0], TINDER[1] + 0.006, TINDER[2] - 0.02, 0.070 * em_e, 0.023 * em_e, 0.0050 * em_e,
                       0.010, -12.0])
+        # H5 (director, 15:15Z): at the roar the flare must not light her front into a smooth doll: she is FLAGGED
+        # from the fire's key (it only rims her edges) and stays a dark shape against it
+        rw = 0.0
+        if V3_H5 and f >= ROAR - 1:
+            rw = smoothstep(ROAR - 1, ROAR + 1, f) * (1 - 0.5 * smoothstep(ROAR + 40, ROAR + 75, f))
         if lv > 0:
             if f < ROAR:
                 I = lv * flick
                 L.append([TINDER[0], TINDER[1] + 0.03 + 0.06 * lv, TINDER[2] - 0.02,
                           0.30 * I, 0.135 * I, 0.036 * I, 0.03 + 0.04 * lv, -8.0])
             else:
-                I = min(lv, 2.5) * flick
+                I = min(lv, 2.5) * flick * (1 - 0.45 * rw)
                 L.append([FIRE_BASE[0], FIRE_BASE[1] + 0.55, FIRE_BASE[2] - 0.05, 0.75 * I, 0.34 * I, 0.095 * I,
                           0.28, 3.0])
         if reveal > 0.05:
@@ -1134,7 +1151,7 @@ class FirstBeacon:
             c = np.array([0.55, 0.70, 0.95]) * mi
             p0 = np.array([0.9, 1.0, 0.0]) + d * 100.0
             L.append([p0[0], p0[1], p0[2], c[0], c[1], c[2], 0.0, 0.0])
-        warm = (0.9 * lv * flick if f < ROAR else 0.35 * min(lv, 2.5) * flick)
+        warm = (0.9 * lv * flick if f < ROAR else 0.35 * min(lv, 2.5) * flick) * (1 - 0.85 * rw)
         rg = V3_RIM if V3_H5 else 1.0
         env = hero.env_vec(rim_dir=(0.55, 0.42, 0.72), rim=np.array([0.070, 0.100, 0.180]) * (1.0 + 1.0 * reveal) * rg,
                            amb=np.array([0.0035, 0.0050, 0.0100]) * (1.0 + 4.0 * reveal) * (1.0 + 0.5 * (rg - 1.0)),
@@ -1145,8 +1162,13 @@ class FirstBeacon:
             hsdf3.gloves(B, H) if V3_H5 else hsdf3.gloves(B, H, inflate=0.0009)
             if V3_H5:
                 hsdf3.wardrobe_v3(B, F, an['J'], an['scarf_anchor'], scarf_pts=self.scarf.at(f), t=t)
+            sil = V3_SIL
+            if rw > 0:
+                sil = dict(V3_SIL)
+                for gname in ('hood', 'coat', 'hand_sleeves', 'hand_n', 'hand_f', 'legs', 'boots', 'scarf'):
+                    sil[gname] = V3_ROAR_SIL * rw * (0.85 if gname == 'scarf' else 1.0)
             res = hsdf3.render(cam, B, H, L, env, M=hsdf3.material_table3(), ss=(3 if scale > 0.75 else 2),
-                               sil=V3_SIL)
+                               sil=sil)
             res = None if res is None else res[:5]
             Ls = L.copy()
             Ls[Ls[:, 7] != 0.0, 3:6] *= V3_STRAND_WARM
