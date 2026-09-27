@@ -30,7 +30,8 @@ look-dev render line skips the crowd; ~7-10 s/frame per cpu-8 node at full res. 
   the bar-70 relight wave + walk-out, torchlight grids, the land, figures, flames, smoke), `crowd/accord3c.py` (driver),
   `crowd/crowdmap.py` (top-down map, no render). accord3.py carries the guarded hook (crowd installs on import;
   `CROWD=0` off; `CROWD_REQUIRED=1` finals).
-* **Looks:** look 1 `renders/_farmtest/crowd3_look_v1/`, look 2 `.../crowd3_look_v2/` (check sheet
+* **Looks:** look 3 CONFIRMED the fixes (`renders/_farmtest/crowd3_look_v3/`, sheet `renders/accord_C/tests/crowd/check_look3.jpg`,
+  sent to the director 20:50Z). Look 2 `.../crowd3_look_v2/` (check sheet
   `renders/accord_C/tests/crowd/check_look2.jpg`). Look 3 (the fixes since look 2: the R_FAR road bug, irregular crowd,
   no scallop capes, land folds, small heather) = farm request `0927-163255-crowd3look-69903` -> lands in
   `renders/_farmtest/crowd3_look/` (frames 4480..4690, 5556, 5566, 5580..5640).
