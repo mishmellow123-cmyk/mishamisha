@@ -1,0 +1,19 @@
+{
+ "name": "b2_check",
+ "branch": "claude/render-b2-check",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "NUMBA_NUM_THREADS=8 python3 shots/run/vigil.py --build --scale 0.5 --ss 1.5"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=2 python3 shots/run/vigil.py --frames 1520,2060,2730,3230,3500,3839 --scale 0.5 --ss 1.5 --out renders/run_b_tests/b2_check",
+  "NUMBA_NUM_THREADS=2 python3 shots/run/reveal.py --frames 1372,1420,1450,1480,1519 --scale 0.5 --ss 1.5 --out renders/run_b_tests/b2_check"
+ ],
+ "out_dir": "renders/run_b_tests/b2_check",
+ "frames": "1372,1420,1450,1480,1519,1520,2060,2730,3230,3500,3839",
+ "shape": [
+  402,
+  960
+ ],
+ "ship": "jpg"
+}

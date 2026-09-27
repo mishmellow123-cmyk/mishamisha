@@ -511,6 +511,22 @@ Heavy renders as cloud jobs of <= 45 min each; the director launches them when c
 
 ## RUN-B2 (split off RUN-B ~19:25Z: B5 THE REVEAL + B6-B12 THE VIGIL; owns vigil.py, reveal.py; RUN-B-3 keeps
 ## handback_b.py + dusk; bworld.py/bset.py shared, additive only)
+**>>> RUN-B2 STATE AT PAUSE (27 Sep ~20:50Z; usage gap to ~23:30Z) <<<**
+* CODE (all pushed, tip 6d7714f): vigil.py (the WSW locked frame, the hand-back's sky/beacons/villages, the join at
+  3839 = handback_b's crane frame 3840 incl. HandBack.figures_at from 3810, barmap_B sync, the hail, squall, fog,
+  travellers on the ENE way, the child), reveal.py (held roar behind her left shoulder -> log pull to 130 m WSW on
+  the vigil's axis, the Milky Way arching over her summit, bset.summit_snow), bset.py (person2 incl. 'hail',
+  summit_snow, match_horizon, night_params(horizon_match), CAM_* WSW with SET axes frozen at 31).
+* JOBS (farm): cloud/jobs/vigil_b.json (1520-3839 -> renders/vigil_B, suggest --nodes 3, ~30-45 min) and
+  reveal_b.json (1360-1519 -> renders/reveal_B, --nodes 2-3, ~30 min). Check stills: renders/run_b_tests/
+  b2_check_local (local, half res) and renders/_farmtest/b2_check (farm, 11 f). JOB READY sent? see live status.
+* NEXT on resume: (1) if the director approved: launch `python3 the-long-dawn/cloud/farm.py
+  the-long-dawn/cloud/jobs/vigil_b.json --nodes 3` (and reveal_b.json --nodes 2) from ~/mishamisha, then review the
+  landed frames (contact sheets every ~200 f; the join 3839 vs renders/handback_B 3840); (2) nitpicks list below.
+* NITPICKS (cheap re-renders later): summit_snow is reveal-only (the vigil/crane join must change together: offer
+  to RUN-B-3); the far answers at full res may read as an even skyline string (a distance falloff, shared with
+  handback_b.layers); the fog hours are a flat veil (drifting wisps would help); stars sparse at half res.
+
 **STATE AT HANDOFF (RUN-B2, 27 Sep ~19:30Z):** vigil.py + reveal.py as committed in 118eafd (tested at quarter/half
 on b11; no renders in renders/vigil_B or reveal_B). Jobs vigil_b_a/b + reveal_b_a/b written, NOT READY. Open: reveal
 end frame (the summit read as a smooth dark sand dune; the fire not a warm point; band weak; a hard ragged seam at the
