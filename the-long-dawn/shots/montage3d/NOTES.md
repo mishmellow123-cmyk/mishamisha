@@ -1,10 +1,30 @@
 # MONTAGE-3D — notes
 
+## >>> LAST-HOUR UPDATE (MONTAGE-3D-4, 27 Sep ~21:00Z): find_a APPROVED + LAUNCHED; find_b JOB READY sent <<<
+* **find_a (3000-3079): APPROVED by the director, launched by main** (`ringC_find_a_{1,2,3}`, --nodes 3, log
+  `_local_logs/jobs/ringC_find_a_farm.log`) -> `renders/ring_C/f_03000-03079`. When it lands: decode + contact-sheet
+  check. Director's praise: 3017 is the hero frame. Director's POLISH notes (a re-render of only the touched frames):
+  (a) **3033-3060 the glove** reads as a smooth dark mass ("a seal's back"): a thin warm rim from the embers on the finger
+  ridges and knuckles so the digits separate, and a seam or stitch line catching light; it must read as a gloved hand at
+  a glance. (b) **3009-3013 under strike 2's warm flash** the snow goes mauve-brown (suede/sand): keep the snow
+  cold-white, warmth only in the specular and the sparks (e.g. the flash lamp's diffuse down / specular up, or a cooler
+  flash colour with the warm sparks kept).
+* **find_b (3080-3149): JOB READY SENT ~20:58Z** (`ringC_find_b_{1,2,3}`), awaiting approval. The fist fix is pushed
+  (d7ad5ed): the night fill 1.3 -> 16 on the closed fist only (key k 1 -> 0.025 over the vision, so the vision frames are
+  unchanged). Tested on the farm: `renders/_farmtest/ringC_look/ring_C/f_{03080,03146}.jpg` (mean 50-55/255, was 9: grained
+  leather, curled fingers, readable). Polish (not blocking): the bookends are tight (three fingers fill the frame);
+  cam_dists (0.20, 0.112, 0.165) -> ~(0.28, 0.112, 0.24) would show the whole fist.
+* Farm note: a NEW GPU node spends ~6-7 min on the Cycles kernel JIT (416 s for one frame on ldf-g09); warm nodes
+  render at 12-27 s/frame.
+* **Left for the 23:29Z successor (director):** the fire-test catch (FIX 2 below) and the other fire/melt FIXes; the
+  C14 hands-only sequence (strike 1 2960-2999; strike 3 -> blow -> catch 3150-3359); RUN-C's R13b data is below.
+
 ## >>> STATE AT HANDOFF (MONTAGE-3D-4 -> successor, 27 Sep ~20:40Z) <<<
 **Brief:** C's Ring close-ups, gloved hands included (brief3_MONTAGE3D2.md + COMMON.md): C14 THE FIND, C15 THE FIRE TEST,
 C22 THE MELT. Cycles, canonical script of fire (`assets/ring/`), delivery `renders/ring_C/f_%05d` (C numbering; EDIT's
-`ring()` reads it) + `renders/ring_C_mask/` (the melt's band mask for ACCORD's AC3). **JOB READY NOT SENT YET**: round 2
-still has the FIXes below. `renders/ring_C/` is EMPTY (no finals). No process of this lane is running.
+`ring()` reads it) + `renders/ring_C_mask/` (the melt's band mask for ACCORD's AC3). JOB READY: find_a APPROVED and
+rendering; find_b sent (see the LAST-HOUR UPDATE above); fire + melt still have the FIXes below. No local process of
+this lane is running.
 
 **SCOPE CHANGE (director, ~20:30Z): ALL of C14 is now ours.** HEROINE's two H1-C approaches failed their gate. Build C14
 (2960-3359) as ONE hands-only sequence in Blender, with the same gloved hands and C-steel as C15, on H1's master timing
