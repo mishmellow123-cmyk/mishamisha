@@ -1,3 +1,16 @@
+# >>> HEROINE-v3 STATE (2026-09-27 ~16:05Z; PAUSED for the usage window, RESUME ~20:00Z) <<<
+**Exact state.** Nothing of this lane is rendering (the roar job finished 15:46Z; no process left running). Everything is
+committed and pushed to `claude/v3-heroine` (= `claude/heroine-character-work-0o4wv2`). H1 is DONE for all three cuts:
+356/356 JPEGs on `claude/render-h1-v3-h5` (head c55be10, the roar fix included). The C close-ups (the find with the side
+glove and the meltwater sheen, the fire test on the C-steel) and B's dead ember (restaged, B 880-1119) are verified as
+stills; their jobs are written and NOT launched (director launches): `cloud/jobs/h2_firetest_c.json`,
+`cloud/jobs/h2_find_c.json`, `cloud/jobs/h5_deadember_b.json` (-> `renders/deadember_B`). The bar-63 hand-off is RUN-B's.
+**Next steps on RESUME:** (1) `git pull --rebase origin claude/long-dawn-v2`; (2) for each close-up job the director has
+launched, read its `cloud_logs/<job>_status.txt` on its branch, then check the landed frames (decode, luma, a contact
+sheet in `review/v3/`) against the stills in REPORT 4; (3) polish if asked: H1's far-hand steel to the C-steel at the
+roar (~6 frames), the find's hard dark foreground (her knee), the dead ember's near glove (dark on dark), the fire
+test's sleeve-cuff weave.
+
 # >>> HEROINE-v3 REPORT 4 (2026-09-27 ~16:00Z; the director's H1 review + scope change) <<<
 
 **H1 roar fix (director 15:15Z): DONE and RENDERED.** At the roar (src 1476-1510) the flare no longer lights her into a
