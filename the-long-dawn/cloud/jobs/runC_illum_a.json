@@ -6,10 +6,10 @@
   "NUMBA_NUM_THREADS=4 python3 shots/run/ink_final.py --shot illum --frames 2398 --scale 0.25 --threads 4 --out warm"
  ],
  "render": [
-  "python3 shots/run/ink_final.py --shot illum --range 2398-2477 --procs 2 --threads 2 --skip"
+  "python3 shots/run/ink_final.py --shot illum --range 2398-2421 --procs 2 --threads 2 --skip"
  ],
  "out_dir": "renders/runC_illum",
- "frames": "2398-2477",
+ "frames": "2398-2421",
  "push_every": 300,
  "ship": "jpg"
 }

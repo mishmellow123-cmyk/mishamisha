@@ -1,0 +1,26 @@
+{
+ "name": "runC_gate",
+ "branch": "claude/render-runC-gate",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "cd shots/run && NUMBA_NUM_THREADS=8 python3 runc_gate.py"
+ ],
+ "outputs": [
+  {
+   "out_dir": "renders/run_c_tests/gate_report",
+   "frames": "0"
+  },
+  {
+   "out_dir": "renders/run_c_tests/scroll_g",
+   "frames": "232-239"
+  },
+  {
+   "out_dir": "renders/run_c_tests/reveal_g",
+   "frames": "108-115"
+  }
+ ],
+ "push_every": 300,
+ "ship": "jpg"
+}

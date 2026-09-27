@@ -285,7 +285,8 @@ XT2 = 0.30              # F2 (the diagonal shadow hatching) is laid where the to
 XT1MAX = 0.62           # F1 (contours) densify no further than this tone: the shadows are carried by F2
 XKAP = 0.36             # F1's tilt toward the camera (tan 20 deg)
 MACRO_K = 40.0          # the macro form's smoothing (page pixels)
-HSMOOTH = 2.5           # the contour field's smoothing footprint (page pixels)
+HSMOOTH = 5.0           # the contour field's smoothing footprint (page pixels): 2.5 left a pixel-scale tremor
+                        # on every line at 1:1 (the fractal crag), which read as a filter, not a burin
 
 
 # ------------------------------------------------------------ cloud sea ---
@@ -580,49 +581,43 @@ def flame_sdf(px, py, H, t, seed, n):
     (y up): n fat tapering tongues rising from one base, overlapping at the root and parting into curling tips
     (crisp notches between them), leaning with a common wind; plus the detached tip fragments. The tongues sway
     as a slow wave running up them."""
+    # (27 Sep, the 1:1 crops) the old glyph was a fan of straight cones on a round base, glossy-shaded: a crown, an
+    # icon. Now: the woodcut flame. Each tongue has a full body and a long drawn tip that hooks back over (an S);
+    # one tongue leads, the others are lower and splay outward; they merge fluidly at the root. The second return
+    # is the engraver's flow line (a nested line inside the two leading tongues), not an offset of the union
+    # (which zigzagged at every notch). No detached droplets.
     rng = np.random.default_rng(seed)
-    wind = 0.05 + 0.05 * rng.uniform()
-    bs = np.linspace(-0.22, 0.22, n) + 0.035 * rng.standard_normal(n)
-    s = np.linspace(0.0, 1.0, 24)
+    wind = 0.07 + 0.06 * rng.uniform()
+    bs = np.linspace(-0.19, 0.19, n) + 0.03 * rng.standard_normal(n)
+    s = np.linspace(0.0, 1.0, 28)
     sd = np.full(px.shape, 1e9)
-    tips = []
+    flow = np.full(px.shape, 1e9)
     order = np.argsort(np.abs(bs))
     for rank_, i in enumerate(order):
         b = bs[i]
-        cen = 1.0 - min(abs(b) / 0.26, 1.0)
-        h = (0.40 + 0.58 * cen ** 1.5) * (0.85 + 0.25 * rng.uniform())
-        if rank_ == 0:
-            h = max(h, 0.96)
-        l = wind + 0.45 * b + 0.05 * rng.standard_normal()
-        w = (0.13 + 0.07 * cen) * (0.85 + 0.3 * rng.uniform())
+        cen = 1.0 - min(abs(b) / 0.24, 1.0)
+        h = 1.0 if rank_ == 0 else (0.28 + 0.42 * cen ** 1.2) * (0.75 + 0.45 * rng.uniform())
+        side = 1.0 if b >= 0 else -1.0
+        l = wind + 0.60 * b + 0.04 * rng.standard_normal()
+        w = (0.16 + 0.06 * cen) * (0.85 + 0.3 * rng.uniform())
         ph = rng.uniform(0, 6.283)
         fr = 0.55 + 0.35 * rng.uniform()
-        hh = h * (1.0 + 0.05 * math.sin(6.283 * 0.8 * fr * t + ph))
-        curl = (0.04 + 0.04 * rng.uniform()) * (1 if rng.uniform() < 0.5 else -1)
-        cu = b + l * s ** 1.4 + curl * np.sin(math.pi * s ** 1.3) * s ** 1.5
-        cu = cu + 0.07 * hh * s ** 1.3 * np.sin(6.283 * fr * t - 3.4 * s + ph)
+        hh = h * (1.0 + 0.06 * math.sin(6.283 * 0.8 * fr * t + ph))
+        curl = (0.13 + 0.08 * rng.uniform()) * (side if rank_ else (1.0 if rng.uniform() < 0.5 else -1.0))
+        cu = b + l * s ** 1.3 + curl * np.sin(math.pi * s ** 1.2) * s ** 2 - 0.6 * curl * s ** 3
+        cu = cu + 0.09 * hh * s ** 1.4 * np.sin(6.283 * fr * t - 3.0 * s + ph)
         cv = hh * s
         d, u = _seg_dist(px / H, py / H, cu, cv)
-        prof = w * np.clip(1.0 - u, 0, 1) ** 1.25
-        sd = _smin(sd, (d - prof) * H, 0.012 * H)
-        tips.append((cu[-1] * H, cv[-1] * H, hh, ph, fr))
-    # a low base so the tongues stand on one fire
-    eb = np.sqrt((px / (0.27 * H)) ** 2 + ((py - 0.05 * H) / (0.08 * H)) ** 2)
-    sd = _smin(sd, (eb - 1.0) * 0.08 * H, 0.02 * H)
-    frag = np.full(px.shape, 1e9)
-    for (tx, ty, hh, ph, fr) in sorted(tips, key=lambda r: -r[1])[:2]:
-        cyc = (t * (0.7 + 0.3 * fr) + ph / 6.283) % 1.0
-        r0 = 0.04 * H * (1.0 - cyc) ** 0.7
-        if r0 < 0.4:
-            continue
-        fx = tx + 0.10 * H * cyc * (1 if ph > 3 else -1)
-        fy = ty + 0.06 * H + 0.35 * H * cyc
-        sg = np.linspace(0.0, 1.0, 8)
-        cu = fx + 0.02 * H * np.sin(3.0 * sg + ph)
-        cv = fy + 3.2 * r0 * sg
-        dd, uu = _seg_dist(px, py, cu, cv)
-        frag = np.minimum(frag, dd - r0 * np.clip(1.0 - uu, 0, 1) ** 1.2 * np.sqrt(np.clip(0.2 + 3.0 * uu, 0, 1)))
-    return sd, frag
+        prof = w * np.clip(1.0 - u, 0, 1) ** 1.6 * (1.0 + 2.0 * u)     # full body, long drawn tip
+        sdi = (d - prof) * H
+        sd = _smin(sd, sdi, 0.035 * H)
+        if rank_ < 2 and hh > 0.45:
+            fl = np.abs(d - 0.42 * prof) * H
+            flow = np.minimum(flow, np.where((u > 0.20) & (u < 0.78), fl, 1e9))
+    # the base: low and broad, resting on its fuel
+    eb = np.sqrt((px / (0.30 * H)) ** 2 + ((py - 0.05 * H) / (0.085 * H)) ** 2)
+    sd = _smin(sd, (eb - 1.0) * 0.085 * H, 0.03 * H)
+    return sd, flow
 
 
 def smoke_line(px, py, H, t, seed, k):
@@ -631,10 +626,10 @@ def smoke_line(px, py, H, t, seed, k):
     rng = np.random.default_rng(seed * 31 + k)
     ph = rng.uniform(0, 6.283)
     s = np.linspace(0.0, 1.0, 40)
-    drift = (0.35 + 0.25 * rng.uniform()) * (1 if k % 2 == 0 else 0.6)
-    amp = 0.10 + 0.06 * rng.uniform()
-    cu = (0.02 + drift * s ** 1.5 + amp * s * np.sin(6.283 * (1.2 * s - 0.22 * t) + ph)) * H
-    cv = (0.95 + 0.10 * k + 1.9 * s) * H
+    drift = (0.30 + 0.20 * rng.uniform()) * (1 if k % 2 == 0 else 0.6)
+    amp = 0.14 + 0.08 * rng.uniform()
+    cu = (0.02 + drift * s ** 1.5 + amp * s * np.sin(6.283 * (1.1 * s - 0.22 * t) + ph)) * H
+    cv = (0.92 + 0.08 * k + 1.05 * s) * H          # a short curl above the tip (the long threads read as scratches)
     return _seg_dist(px, py, cu, cv)
 
 
@@ -649,6 +644,7 @@ def ink_flames(R, B, kpx, pp):
     fa = np.zeros((H, W), np.float32)
     fc = np.zeros((H, W, 3), np.float32)
     la = np.zeros((H, W), np.float32)
+    lf = np.zeros((H, W), np.float32)             # the pen's farness (aerial perspective) where it drew
     dist = A[..., 1]
     g_hi, g_mid = s2l(GOLD_HI), s2l(GOLD)
     rows = []
@@ -684,36 +680,39 @@ def ink_flames(R, B, kpx, pp):
         py = (sy - (yy + 0.5)).ravel()
         seed = int(b[5]) * 7 + 3
         n = 3 if Hp < 22.0 * kpx else (5 if Hp < 70.0 * kpx else 7)
-        sd, frag = flame_sdf(px, py, Hp, t, seed, n)
+        sd, flow = flame_sdf(px, py, Hp, t, seed, n)
         sd = sd.reshape(yy.shape)
-        frag = frag.reshape(yy.shape)
-        sda = np.minimum(sd, frag)
+        flow = flow.reshape(yy.shape)
+        sda = sd
         # the land in front hides the fire (a nearer ridge); the fire's own summit does not
         vis = (dist[y0:y1, x0:x1] > fd - max(3.0, 0.004 * fd)).astype(np.float32)
         vis = cv2.GaussianBlur(vis, (0, 0), 0.6 * kpx) if min(vis.shape) > 3 else vis
         inside = np.clip(0.5 - sda / kpx, 0, 1) * vis
-        # the gold wash: paler within the inner line, a deeper gold at the root; never an emoji red
+        # the gold wash, laid flat as a brush lays it: pale gold, a little deeper toward the root, pooling darker
+        # along the edge where it dried and taking the paper's grain; no modelled highlight (that read as a glossy
+        # icon); never an emoji red
         v = np.clip(((sy - (yy + 0.5)) / Hp), 0, 1)
-        PXc = (xx + 0.5 - sx) / Hp
-        core = np.exp(-((PXc - 0.03) / 0.13) ** 2 - ((v - 0.30) / 0.22) ** 2) * np.clip(-sd / (0.06 * Hp + kpx), 0, 1)
-        root = np.clip((0.22 - v) / 0.22, 0, 1) ** 1.5
-        col = g_mid[None, None] * (1 - core[..., None]) + g_hi[None, None] * core[..., None]
-        col = col * (1 - 0.55 * root[..., None]) + s2l(GOLD_LO)[None, None] * (0.55 * root[..., None])
-        a = inside * (0.80 + 0.12 * np.clip(pp[y0:y1, x0:x1, 1] * 0.5 + 0.5, 0, 1))
+        grain = np.clip(pp[y0:y1, x0:x1, 1] * 0.5 + 0.5, 0, 1)
+        root = np.clip((0.30 - v) / 0.30, 0, 1) ** 1.3
+        pool = np.exp(-(np.maximum(-sd, 0.0) / (0.035 * Hp + 0.8 * kpx)) ** 2) * inside
+        col = g_mid[None, None] * 0.62 + g_hi[None, None] * 0.38
+        col = col * (1 - 0.45 * root[..., None]) + g_mid[None, None] * (0.45 * root[..., None])
+        col = col * (1 - 0.30 * pool[..., None]) + s2l(GOLD_LO)[None, None] * (0.30 * pool[..., None])
+        col = col * (0.95 + 0.10 * grain)[..., None]
+        a = inside * (0.72 + 0.14 * grain)
         fa[y0:y1, x0:x1] = np.maximum(fa[y0:y1, x0:x1], a)
         m = (a > 0)[..., None]
         fc[y0:y1, x0:x1] = np.where(m, col, fc[y0:y1, x0:x1])
-        # the pen: the outer line with a few lifts; nested inner lines following the tongues (the engraver's
-        # flame), lighter; the lifts are fixed to the flame, not the screen
+        # the pen: the outer line at the terrain's weight, pressing and lifting along its length; the flow line
+        # inside the leading tongues, lighter and broken; the lifts are fixed to the flame, not the screen
         lift = np.sin(px.reshape(yy.shape) / Hp * 9.0 + seed) * np.sin(py.reshape(yy.shape) / Hp * 7.0 + 2 * seed)
         pen = np.clip((lift + 0.75) / 0.3, 0, 1)
-        ln = np.clip(0.5 * pw + 0.5 - np.abs(sda), 0, 1) * (0.55 + 0.45 * pen)
+        prs = 0.75 + 0.25 * np.sin(py.reshape(yy.shape) / Hp * 11.0 + 0.7 * seed)
+        ln = np.clip(0.5 * pw * prs + 0.5 - np.abs(sda), 0, 1) * (0.45 + 0.55 * pen)
         lni = np.zeros_like(ln)
-        up = np.clip((v - 0.22) / 0.20, 0, 1)            # inner lines only where the tongues part, not at the root
         if Hp > 24.0 * kpx:
-            lni = np.maximum(lni, np.clip(0.35 * pw + 0.5 - np.abs(sd + 0.07 * Hp), 0, 1) * 0.55 * pen * up)
-        if Hp > 70.0 * kpx:
-            lni = np.maximum(lni, np.clip(0.30 * pw + 0.5 - np.abs(sd + 0.15 * Hp), 0, 1) * 0.45 * pen * up)
+            brk2 = np.clip((np.sin(py.reshape(yy.shape) / Hp * 17.0 + seed) + 0.35) / 0.3, 0, 1)
+            lni = np.clip(0.30 * pw + 0.5 - flow, 0, 1) * 0.55 * brk2 * np.clip(-sd / (1.5 * kpx), 0, 1)
         # the fuel: a few crossed strokes under a near fire
         fuel = np.zeros_like(ln)
         if Hp > 45.0 * kpx:
@@ -733,12 +732,16 @@ def ink_flames(R, B, kpx, pp):
                 u = u.reshape(yy.shape)
                 wv = pw * 0.8 * (1.0 - 0.8 * u)
                 brk = 0.5 + 0.5 * np.sin(6.283 * (u * (3.0 + k) - 0.35 * t) + seed)
-                sm = np.maximum(sm, np.clip(0.5 * wv + 0.5 - dd, 0, 1) * np.clip(1.0 - u, 0, 1) ** 0.7
-                                * (brk > 0.25) * 0.55 * min((size - 0.6) / 0.3, 1.0))
+                sm = np.maximum(sm, np.clip(0.5 * wv + 0.5 - dd, 0, 1) * np.clip(1.0 - u, 0, 1) ** 1.1
+                                * (brk > 0.25) * 0.45 * min((size - 0.6) / 0.3, 1.0))
         fuel = fuel * np.clip(1.0 - inside * 1.5, 0, 1)             # the fire stands in front of its fuel
         l_all = np.maximum.reduce([ln, lni, sm, fuel]) * vis
+        iy, ix = int(min(max(sy + 2.0 * kpx, 0), H - 1)), int(min(max(sx, 0), W - 1))
+        farf = float(np.clip(1.0 - A[iy, ix, 12], 0.0, 1.0)) * 0.7
+        upd = l_all > la[y0:y1, x0:x1]
+        lf[y0:y1, x0:x1] = np.where(upd, farf, lf[y0:y1, x0:x1])
         la[y0:y1, x0:x1] = np.maximum(la[y0:y1, x0:x1], l_all)
-    return fa, fc, la
+    return fa, fc, la, lf
 
 
 def fire_soft(A, B, frame, campos):
@@ -761,7 +764,139 @@ def fire_soft(A, B, frame, campos):
     return np.where(land, g, 0.0).astype(np.float32)
 
 
+HFIELD_SIG = 1.5        # the line-placing fields' smoothing along the surface (page px)
+WASH_LO, WASH_HI, WASH_BLUR = 0.30, 0.85, 2.5     # the sepia shadow wash's ramp on the macro shadow, and its blur
+if os.environ.get('RUNC_WASH'):                     # look-dev A/B on the farm: RUNC_WASH=lo,hi,blur
+    WASH_LO, WASH_HI, WASH_BLUR = [float(v) for v in os.environ['RUNC_WASH'].split(',')]
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def _surf_blur(F, D, land, sig, out):
+    """Separable Gaussian of the fields F (H, W, K) along the land's surface: a neighbour counts only if it is land
+    at nearly the same depth (a silhouette is never crossed). Non-land pixels are copied."""
+    H, W, K = F.shape
+    r = int(math.ceil(2.0 * sig))
+    tmp = np.empty_like(F)
+    inv = 1.0 / (2.0 * sig * sig)
+    for j in prange(H):
+        for i in range(W):
+            d0 = D[j, i]
+            if land[j, i] < 0.5:
+                for k in range(K):
+                    tmp[j, i, k] = F[j, i, k]
+                continue
+            acc0 = 0.0
+            acc1 = 0.0
+            acc2 = 0.0
+            ws = 0.0
+            for o in range(-r, r + 1):
+                q = i + o
+                if q < 0 or q >= W or land[j, q] < 0.5:
+                    continue
+                dd = (D[j, q] - d0) / (0.03 * d0)
+                if dd > 1.0 or dd < -1.0:
+                    continue
+                wgt = math.exp(-o * o * inv) * (1.0 - dd * dd)
+                acc0 += wgt * F[j, q, 0]
+                acc1 += wgt * F[j, q, 1]
+                acc2 += wgt * F[j, q, 2]
+                ws += wgt
+            tmp[j, i, 0] = acc0 / ws
+            tmp[j, i, 1] = acc1 / ws
+            tmp[j, i, 2] = acc2 / ws
+    for j in prange(H):
+        for i in range(W):
+            d0 = D[j, i]
+            if land[j, i] < 0.5:
+                for k in range(K):
+                    out[j, i, k] = F[j, i, k]
+                continue
+            acc0 = 0.0
+            acc1 = 0.0
+            acc2 = 0.0
+            ws = 0.0
+            for o in range(-r, r + 1):
+                q = j + o
+                if q < 0 or q >= H or land[q, i] < 0.5:
+                    continue
+                dd = (D[q, i] - d0) / (0.03 * d0)
+                if dd > 1.0 or dd < -1.0:
+                    continue
+                wgt = math.exp(-o * o * inv) * (1.0 - dd * dd)
+                acc0 += wgt * tmp[q, i, 0]
+                acc1 += wgt * tmp[q, i, 1]
+                acc2 += wgt * tmp[q, i, 2]
+                ws += wgt
+            out[j, i, 0] = acc0 / ws
+            out[j, i, 1] = acc1 / ws
+            out[j, i, 2] = acc2 / ws
+
+
+@njit(parallel=True, cache=True)
+def _deteeth(A, w, near, out):
+    """The ray march at a grazing crest hits in some pixel columns and misses in the next, so a far ridge's crest
+    comes back as a comb of 1-4 px columns (land, cloud, land ...) that the outliner would draw as organ-pipe bars.
+    A running median of the depth along each row (2w+1 taps) keeps every edge and every smooth run and removes
+    only runs of w pixels or fewer; each outlier pixel takes all its channels from the nearest pixel in reach whose
+    depth is the median's. Pixels nearer than `near` m (the summit she stands on) are left alone."""
+    H, W, C = A.shape
+    for j in prange(H):
+        buf = np.empty(2 * w + 1, np.float64)
+        for i in range(W):
+            for c in range(C):
+                out[j, i, c] = A[j, i, c]
+        # pass 1 (erode first): a sliver of w px or fewer that stands NEARER than both its neighbours is a crest the
+        # march only half-sampled; it takes the far side's data (each half from its own side). A median alone
+        # filled the densest comb solid and stood a flat-topped chimney on the ridge.
+        i = 1
+        while i < W - 1:
+            d = A[j, i, 1]
+            if d >= near and A[j, i - 1, 1] > d * 1.05:
+                k = i + 1
+                while k < W and k - i <= w and abs(A[j, k, 1] - d) <= 0.10 * d:
+                    k += 1
+                if k < W and k - i <= w and A[j, k, 1] > A[j, k - 1, 1] * 1.05:
+                    for q in range(i, k):
+                        s = i - 1 if 2 * (q - i) < (k - i) else k
+                        for c in range(C):
+                            out[j, q, c] = A[j, s, c]
+                    i = k
+                    continue
+            i += 1
+        # pass 2: a running median of the eroded depth fills the thin far slits left inside a solid face
+        row = out[j].copy()
+        for i in range(w, W - w):
+            d = row[i, 1]
+            if d < near:
+                continue
+            for q in range(2 * w + 1):
+                buf[q] = row[i - w + q, 1]
+            buf.sort()
+            med = buf[w]
+            if abs(d - med) <= 0.04 * med:
+                continue
+            src = -1
+            for o in range(1, w + 1):
+                if abs(row[i - o, 1] - med) <= 0.02 * med:
+                    src = i - o
+                    break
+                if abs(row[i + o, 1] - med) <= 0.02 * med:
+                    src = i + o
+                    break
+            if src >= 0:
+                for c in range(C):
+                    out[j, i, c] = row[src, c]
+
+
+def deteeth(A, kpx):
+    out = np.empty_like(A)
+    _deteeth(A, max(3, int(round(2.5 * kpx))), 300.0, out)
+    return out
+
+
 def compose(R, prm=None, B=None, plate=None, CR=None):
+    R = dict(R)
+    R['A'] = deteeth(R['A'], R.get('kpx', R['A'].shape[1] / 1920.0))
     A = R['A']
     H, W = A.shape[:2]
     kpx = R.get('kpx', W / 1920.0)            # (a crop at production scale passes its true kpx)
@@ -786,16 +921,25 @@ def compose(R, prm=None, B=None, plate=None, CR=None):
     p = np.array([kpx, 6.2, t, 10.0, 3.6, SALT], np.float64)
     hat = np.zeros((H, W, 2), np.float32)
     D = A[..., 1]
-    ghx, ghy = sgrad(hsm, D)
+    # (1:1 crops) every hatch line carried a pixel-scale sawtooth: on rough rock the hit point's plan position (x, z)
+    # jumps from pixel to pixel (micro-occlusion), and the cross-contour field inherits it. The fields that PLACE
+    # the lines (height, x, z) are smoothed along the surface (depth-aware, never across a silhouette) at ~1.5 page
+    # px: a screen blur of world-anchored fields is shift-invariant, so the lines still ride the rock.
+    Fh = np.ascontiguousarray(np.stack([hsm, A[..., 2], A[..., 4]], axis=2).astype(np.float32))
+    Fb = np.empty_like(Fh)
+    _surf_blur(Fh, D.astype(np.float32), (A[..., 0] < 1.5).astype(np.float32), HFIELD_SIG * kpx, Fb)
+    hsb = np.ascontiguousarray(Fb[..., 0])
+    Ah = np.ascontiguousarray(np.stack([A[..., 0], A[..., 1], Fb[..., 1], A[..., 3], Fb[..., 2]], axis=2))
+    ghx, ghy = sgrad(hsb, D)
     ya = math.radians(SHOT_YAW.get(R.get('shot', ''), 0.0))
     rx, rz = math.cos(ya), -math.sin(ya)
-    gpx, gpy = sgrad(A[..., 2].astype(np.float64) * rx + A[..., 4].astype(np.float64) * rz, D)
+    gpx, gpy = sgrad(Ah[..., 2].astype(np.float64) * rx + Ah[..., 4].astype(np.float64) * rz, D)
     fx, fz = math.sin(ya), math.cos(ya)
-    gcx, gcy = sgrad(A[..., 2].astype(np.float64) * fx + A[..., 4].astype(np.float64) * fz, D)
+    gcx, gcy = sgrad(Ah[..., 2].astype(np.float64) * fx + Ah[..., 4].astype(np.float64) * fz, D)
     G = np.ascontiguousarray(np.stack([ghx, ghy, gpx, gpy, gcx, gcy], axis=2))
     xp = np.array([kpx, XSP1, XSP2, math.cos(XB), math.sin(XB), rx, rz, SALT, cam[12], XT2, XKAP, fx, fz, XT1MAX],
                   np.float64)
-    xhatch(A, T, G, hsm, xp, hat)
+    xhatch(Ah, T, G, hsb, xp, hat)
     gs = screen_grad(A[..., 5], np.rint(A[..., 0]))
     cl = np.zeros((H, W, 2), np.float32)
     cloud(A, Tc, gs, cam, p, cl)
@@ -809,7 +953,7 @@ def compose(R, prm=None, B=None, plate=None, CR=None):
         R = dict(R)
         R['E'] = np.zeros_like(R['E'])          # the fires are drawn (ink_flames), not rendered
         R['a'] = np.zeros_like(R['a'])
-        fl_a, fl_c, fl_l = ink_flames(R, B, kpx, pp)
+        fl_a, fl_c, fl_l, fl_f = ink_flames(R, B, kpx, pp)
     pl_l = pl_w = None
     if plate is not None:
         R = dict(R)
@@ -821,8 +965,9 @@ def compose(R, prm=None, B=None, plate=None, CR=None):
     base = s2l(PAPER)[None, None] * (1 - 0.55 * tt) + s2l(PAPER_DARK)[None, None] * (0.55 * tt)
     base = base * (1.0 + 0.06 * pp[..., 1])[..., None]
     # ---- sepia wash in the shadows (a brush, soft-edged)
-    wash = np.clip((Tw - 0.30) / 0.55, 0, 1) * 0.26 + np.clip(Tc - 0.45, 0, 1) * 0.25
-    wash = cv2.GaussianBlur(wash.astype(np.float32), (0, 0), 2.5 * kpx)
+    wash = np.clip((Tw - WASH_LO) / (WASH_HI - WASH_LO), 0, 1)
+    wash = wash * wash * (3 - 2 * wash) * 0.26 + np.clip(Tc - 0.45, 0, 1) * 0.25
+    wash = cv2.GaussianBlur(wash.astype(np.float32), (0, 0), WASH_BLUR * kpx)
     wcol = base * (s2l(WASH) / s2l(PAPER))[None, None]
     rgb = base * (1 - wash[..., None]) + wcol * wash[..., None]
     # ---- the catch's bloom: a gold wash laid on the rock the fire lights (world-anchored: the light's own reach),
@@ -858,12 +1003,14 @@ def compose(R, prm=None, B=None, plate=None, CR=None):
         rgb = sun_ink(R, rgb, pp, kpx)
     if pl_l is not None:
         rgb = rgb * (1 - pl_w[..., None]) + (rgb * (s2l(WASH) / s2l(PAPER))[None, None] * 0.85) * pl_w[..., None]
-        pcol = s2l(INK)[None, None] * 0.55 + s2l(INK_LIGHT)[None, None] * 0.45
+        pcol = s2l(INK)[None, None] * 0.25 + s2l(INK_LIGHT)[None, None] * 0.75
         rgb = rgb * (1 - pl_l[..., None]) + pcol * pl_l[..., None]
     # ---- the fires, drawn: the gold wash, then the pen
     if fl_a is not None:
         rgb = rgb * (1 - fl_a[..., None]) + fl_c * fl_a[..., None]
-        rgb = rgb * (1 - 0.92 * fl_l[..., None]) + s2l(INK)[None, None] * (0.92 * fl_l[..., None])
+        fcl = s2l(INK)[None, None] * (1 - fl_f[..., None]) + s2l(INK_LIGHT)[None, None] * fl_f[..., None]
+        fla = 0.88 * fl_l * (1.0 - 0.35 * fl_f)
+        rgb = rgb * (1 - fla[..., None]) + fcl * fla[..., None]
     E = R['E']
     lum = E @ np.array([0.2126, 0.7152, 0.0722], np.float32)
     mx = np.maximum(E.max(axis=2), 1e-5)
@@ -1024,21 +1171,24 @@ def ink_plumes(R, kpx):
         dc, uc = _seg_dist(qx, qy, sx, sy)
         rw = np.interp(uc, sgm, rp)
         fade = np.clip(uc / 0.06, 0, 1) * (1.0 - uc) ** 0.6
-        wash = np.clip(1.0 - dc / np.maximum(rw, 0.8 * kpx), 0, 1) ** 1.5 * fade * 0.30
+        wash = np.clip(1.0 - dc / np.maximum(rw, 0.8 * kpx), 0, 1) ** 1.5 * fade * 0.22
         wa[y0:y1, x0:x1] = np.maximum(wa[y0:y1, x0:x1], wash.reshape(yy.shape) * vis)
         # two strands winding round the column, the curl running up it
         ph = rng.uniform(0, 6.283)
         nx_, ny_ = np.gradient(sy), -np.gradient(sx)
         nn = np.maximum(np.sqrt(nx_ ** 2 + ny_ ** 2), 1e-6)
         nx_, ny_ = nx_ / nn, ny_ / nn
-        for side in (-1.0, 1.0):
-            wob = side * 0.55 + 0.45 * np.sin(6.283 * (2.2 * sgm - 0.12 * t) + ph + (0 if side > 0 else 2.3))
+        # (1:1 crops) two dark strands either side of a thin column read as a staple or a crack: a thin plume is
+        # ONE pale strand winding across its column; a broad one keeps two
+        for side in ((-1.0, 1.0) if rp.max() > 3.0 * kpx else (0.0,)):
+            wob = side * 0.55 + (0.45 if side else 0.85) * np.sin(6.283 * (2.2 * sgm - 0.12 * t) + ph + (0 if side >= 0 else 2.3))
             ux = sx + nx_ * rp * wob
             uy = sy + ny_ * rp * wob
             dl, ul = _seg_dist(qx, qy, ux, uy)
-            pw = kpx * (0.95 - 0.40 * ul)
+            pw = kpx * (0.75 - 0.35 * ul)
             brk = (np.sin(6.283 * (ul * 5.0 - 0.2 * t) + ph + side) > -0.65)
-            ln = np.clip(0.5 * pw + 0.5 - dl, 0, 1) * brk * np.clip(ul / 0.04, 0, 1) * (1.0 - ul) ** 0.7 * 0.95
+            ln = (np.clip(0.5 * pw + 0.5 - dl, 0, 1) * brk * np.clip(ul / 0.04, 0, 1) * (1.0 - ul) ** 0.9 * 0.60
+                  * np.clip((0.80 - ul) / 0.18, 0, 1))      # the strands give out before the plume bends over
             la[y0:y1, x0:x1] = np.maximum(la[y0:y1, x0:x1], ln.reshape(yy.shape) * vis)
     return la, wa
 
@@ -1067,8 +1217,8 @@ def sun_ink(R, rgb, pp, kpx):
     out = out * (1 - 0.35 * pool[..., None]) + s2l(GOLD)[None, None] * (0.35 * pool[..., None])
     # the pen circle, lifted near the top left where it began and ended
     gap = np.clip((np.abs(np.angle(np.exp(1j * (th + 2.2)))) - 0.10) / 0.12, 0, 1)
-    pw = 1.05 * kpx
-    ring = np.clip(0.5 * pw + 0.5 - np.abs(r - rr), 0, 1) * gap * sky
+    pw = 0.80 * kpx * (0.85 + 0.30 * np.sin(2.0 * th + 1.1) ** 2)         # the pen presses and eases round it
+    ring = np.clip(0.5 * pw + 0.5 - np.abs(r - rr), 0, 1) * gap * sky * 0.80
     # the rays: fine ruled lines, alternately long and short, never touching the disc
     N = 44
     k = np.floor((th + math.pi) / (2 * math.pi) * N + 0.5)
@@ -1087,8 +1237,8 @@ def sun_ink(R, rgb, pp, kpx):
     pr = 0.55 * kpx * (1.0 - 0.6 * along)
     ray = np.clip(0.5 * pr + 0.5 - dperp, 0, 1) * onray * brk * (1.0 - along) ** 0.6 * 0.75 * sky
     ink = np.maximum(ring, ray)
-    icol = s2l(INK)[None, None] * (1 - 0.4 * (ray > ring)[..., None]) + s2l(INK_LIGHT)[None, None] * (0.4 * (ray > ring)[..., None])
-    return out * (1 - 0.85 * ink[..., None]) + icol * (0.85 * ink[..., None])
+    icol = s2l(INK)[None, None] * 0.35 + s2l(INK_LIGHT)[None, None] * 0.65
+    return out * (1 - 0.80 * ink[..., None]) + icol * (0.80 * ink[..., None])
 
 
 def render_file(shot, frame, scale, outscale=None, tag=''):
