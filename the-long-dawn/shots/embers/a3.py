@@ -384,16 +384,36 @@ def emit_haze(ctx):
 
 import timeline as TL  # noqa: E402
 
+T_GLYPHS = bar(8)           # 560 A3 INTO THE LIGHT . GLYPHS (glyphs3.py; A4 THE POINT 960-1040 too)
+
+
+def _mine(t):
+    """EMBERS-A2's shots own modules: A3/A4 (glyphs3), A9/A10 (aftermath), A16/A17 (turn); None = the rest"""
+    if t < T_IGN:
+        import glyphs3
+        return glyphs3
+    if T_WHITE <= t < T_LIGHT:
+        import aftermath
+        return aftermath
+    if t >= T_LIGHT:
+        import turn
+        return turn
+    return None
+
 
 class TimelineA3(TL.Timeline):
     def __init__(self):
         install()
         import edge  # noqa: F401  (adds THE EDGE's schedule hooks: gilding, lean, the falling crown)
+        import turn  # noqa: F401  (EMBERS-A2: A16's hooks over edge's for t >= T_LIGHT: shutters, ridge light)
         super().__init__()
 
     promise = property(lambda s: s._get('promise', Promise))
 
     def camera(self, t):
+        m = _mine(t)
+        if m is not None:
+            return m.camera(self, t)
         if t < T_EDGE:
             pos, tgt, hf = cam_a5a6(t)
             focus = float(np.linalg.norm(B.crown_centre(t) - pos))
@@ -403,6 +423,9 @@ class TimelineA3(TL.Timeline):
         return edge.camera(self, t)
 
     def render_opts(self, f):
+        m = _mine(f)
+        if m is not None:
+            return m.render_opts(self, f)
         if T_PROMISE - 10 <= f < T_TOWERS + 40 or T_DEAD - 30 <= f < T_BLACK:
             return dict(bokeh_pow=0.25, bokeh_cap=1.6, fog_start=260.0, fog_len=320.0, near=0.3)
         if f >= T_BLACK and f < T_LIGHT:
@@ -411,6 +434,9 @@ class TimelineA3(TL.Timeline):
 
     def emit(self, ctx):
         t = ctx.t
+        m = _mine(t)
+        if m is not None:
+            return m.emit(self, ctx)
         if T_BLACK <= t < T_LIGHT:
             import edge
             return edge.emit_black(self, ctx)
@@ -443,12 +469,18 @@ class TimelineA3(TL.Timeline):
             edge.emit_after(self, ctx, lp, lc, lpw)
 
     def post(self, ctx, hdr):
+        m = _mine(ctx.t)
+        if m is not None:
+            return m.post(self, ctx, hdr)
         if ctx.t >= T_EDGE - 40:
             import edge
             return edge.post(self, ctx, hdr)
         return hdr
 
     def finish_opts(self, f):
+        m = _mine(f)
+        if m is not None:
+            return m.finish_opts(self, f)
         streak = 0.0             # v3 (H5): no anamorphic lens streak at the ignition
         bloom = 0.15
         if T_BLACK <= f < T_LIGHT:
