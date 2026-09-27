@@ -565,4 +565,46 @@ Sources use src numbering unless marked v2. "Red-team" means `review/picture_red
 | M2 | Desert, ice, karst, city, sea | ● | | | REUSE + fix | `montage` 1520–1759 and `montage_v2` city 1680–1719 (and karst once final), with aurora saturation −35%, no torch held aloft, and irregular coast fires with their reflections. | Low. |
 | G1 | The world answers: Earth at night, fires spreading hill by hill | ● | | | REUSE + fix | `globe_v2` 1760–1927, without the `F_LEAP` comets, with a 3:1 spread of fire sizes and cooler cities (red-team TOP 8 #1). | Low–medium: `fires.py` parameters, about 170 frames. |
 
-<!-- NEXT: (6) part 2 -->
+## The mountain world, ink, the accord, the book, the title
+| ID | shot | A | B | C | status | source / technique | feasibility & risk |
+|---|---|---|---|---|---|---|---|
+| R1 | THE BEACON RUN | | ● | ● | REUSE + fix · EXTEND | `run_v2` (v2 1520–1679), with the red-team's fixes: every beat beacon a flame at least 25 px tall with lit smoke and a pool of light, snow set by slope, flown higher and slower, cloud sea with relief. B: re-timed as the view back down the route. C: under the ink pass (P7). | Medium; the fixes are already specified. |
+| R2 | THE BURNING | | ● | | NEW | MOUNTAIN (Blender). The fire front is an animated emission mask on the land mesh, driven by a numba front-propagation on the heightfield so the fire runs uphill fastest. Flame cards ride the front. Smoke volumes, spark streaks (`sparks.py`), a red sky, and a fleeing camera (`campath.py`). | High. Fallback: E4 + E5 re-graded to B's palette, or a longer burn-through of the shadow-play. |
+| R3 | **THE KNIFE-EDGE** (26 s): B's showpiece | | ● | | NEW | MOUNTAIN. A designed arête in `mtn/land.py` between two cloud seas (`cloud.py`). Twelve roped figures (SDF to mesh, as in `montage3d`, with a verlet rope). The cradle's fire from `beacon.py` flame cards and a light. Spindrift particles. One camera move. | Medium–high. The world, the clouds, the fire and the moonlight already exist. The figures are the risk; keep them in silhouette against the moonlit cloud sea. |
+| R4 | **THE RAISING**: B's showpiece | | ● | | NEW | MOUNTAIN + dawn_C. About 300 instanced figures around a great fire (volume glow and flame cards). The fire lifts, and one 30 km pull-back is solved so that its screen position meets the sun's at 216. `shot_dawn.py` already solves the sun's elevation for each camera. | High, because the match is the trick. First test in grey-box. |
+| R5 | Dawn in the east | | ● | ● | REUSE · EXTEND | `dawn_C` (v2 2400–2655, `shots/run/dawn.py`). C: eagles per the tone critic's M12 (at most 4% of frame width, gliding, one pass, never across the sun), and the ink-to-watercolour flood (P7 → P6). B: no eagles, plus a greening time-lapse (valley albedo animated from ash-grey to green, blossom points). | Low (the render is ready). The greening is medium. |
+| R6 | The walk: a gold cradle on many shoulders along a night ridge | ● | | ● | NEW | MOUNTAIN. A ridge camera, and figures of different sizes carrying the cradle, the smallest in front. A: natural night, a line of lights following. C: nine walkers under P7. One build serves both cuts. | Medium. |
+| R7 | The ash plain | | ● | | NEW | 2.5D: an ash plain under a smoke sky, falling ash, and E9's ember as the last coal. | Low. |
+| D1 | **THE GENERATION DAWN**: A's showpiece | ● | | | NEW | A dawn_C-style camera rising over a valley of the mountain world. The land material animates across "years" from wild to fields, orchards, roads and warm towns (procedural masks). The sky layer comes from HILLS `sky.py`: the orbital ring drawn arc by arc, the Moon's lights appearing. The sun is solved to clear the horizon at 332. | High. Fallback: dawn_C's sunrise with a sky-only time-lapse. |
+| P1 | The map | | | ● | REUSE + fix | `map_C` (v2 1920–2087), with the red-team's regional ending: one child per hop, flame glyphs, no forked tips, ink ship-lines for sea crossings, hatching kept legible. | Medium. |
+| P2 | **THE LIVING MAP**: C's showpiece | | | ● | NEW | MAP. The parchment's own relief (the Frankot–Chellappa elevation in `geo.py`) is extruded into a 3-D heightfield that carries the map's inked glyphs as its texture. It hands off to R1's ink mountains, and plays in reverse for the climb back to the map. | Medium–high. Unique to C. |
+| P3 | **THE DELVING**: C's showpiece | | | ● | NEW | Blender pillared halls (instanced columns, arches, stairs, shafts) rendered through P7. Emissive silver veins brighten with depth. A vertical camera plunge. | Medium–high. |
+| P4 | THE WAKING and the bridge | | | ● | NEW | Blender volume smoke with fire inside it (never a creature). A thin stone arch over the abyss, and a tiny grey figure with a pinpoint of light. The page catches fire (K3). | High, as a taste risk: a monster. Guard: scale, darkness, no face, no eyes. |
+| P5 | The ink bloom around the thinking fire | | | ● | NEW | Procedural line animation: L-system vines, wheat and a flowering tree, drawn stroke by stroke with `ink.py`'s capsule strokes. | Low–medium. |
+| P6 | THE YEAR OF PLENTY | | | ● | NEW | A watercolour simulation over the map and drawings (pigment diffusing along the paper tooth, darkened edges, granulation), with line animation of orchards, fields, a young silver tree and children. | Medium. |
+| P7 | The NPR ink pass (a technique) | | | ● | NEW | A post-process on Blender EXR passes (depth, normals, AO, object id). Lines are extracted from depth and normal discontinuities, with a hand wobble. Hatching strokes follow the fall line (the map's own hatching), with density from luminance. Paper tooth and stains are multiplied in. Fire passes are composited untouched, in HDR colour. | Medium. Risk: a "Photoshop filter". Guard: strokes follow the terrain, not the screen, and are used with restraint. First test on one Run frame. |
+| X1 | Rivers of torches converging | ● | | ● | REUSE | `accord` 1912–2010. | None. |
+| X2 | The compact (A) | ● | | | EXTEND | `accord_A`: camera 10–15° off vertical with a slow orbit, blue-black ambient, real flame torches. The runners' white fires meet the people's orange ones in the hearth and turn gold. The four vows as now. | Medium (red-team TOP 8 #8). |
+| X3 | The Council (C) | | | ● | EXTEND + NEW | `accord_C` with X2's camera and grade. Emissaries of different heights and builds; a tall figure and a short, broad one step forward first. NEW: the Ring melts (the band slumps into the ash; its letters flare and go out). No vows. | Medium. |
+| K1 | The Red Book: the chapters handwritten in many scripts, the blank pages, the pen | | | ● | NEW | Part of H8 (Blender). | Medium. |
+| K2 | Chapter cards | | | ● | NEW | `titles.py`: Cinzel small caps and a roman numeral, set on the page. | Low. |
+| K3 | Fire on the page | | | ● | NEW | Edit: ember renders composited over parchment. Black becomes scorched paper, the fire is screen-blended, and the page edges char and glow. | Low–medium. |
+| T1 | The title, kindling in place | ● | ● | ● | EXTEND | `edit/ember_title.py`, per the red-team: kindles in place, streaked embers, the ring line kept clear. A: on black. B: in the night sky over the fires. C: inked on the blank page, warmed by the dawn. | Low. |
+
+**Dropped from every cut:**
+- the orbital sunrise (the keynote slide);
+- the crown (A's prize is now the summit; B has none);
+- the dead-overhead "coin" accord;
+- C's carved vows (C unmakes the Ring instead);
+- C's quoted caption.
+
+**What reuse buys.** A reuses about 45% of its running time from existing renders, B about 30%, and C about 35% (counting the ember and map footage it recomposites). Each cut still gets its own look, because A's ember and real-night world, B's shadow and land, and C's ink never share a grade.
+
+**The showpieces**, two per cut:
+- A: E3 and D1;
+- B: R3 and R4;
+- C: P2 and P3.
+
+All six build on engines the departments already have.
+
+<!-- NEXT: (7) music, (9) risks -->
