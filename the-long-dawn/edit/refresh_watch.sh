@@ -1,16 +1,21 @@
 #!/bin/bash
-# THE LONG DAWN v3: wait for new picture or a new master, let it settle, rebuild what changed, then exit.
-# Run it in the background (one refresh per run; re-arm after each):  bash edit/refresh_watch.sh
-#   - polls every 60 s: frames found per cut (the EDL's own lookup, ALT included) + each cut's audio file and mtime
+# THE LONG DAWN v3: keep the animatics, the H9 kit and the masters fresh as renders and scores land.
+# Run it in the background:  bash edit/refresh_watch.sh      (ONCE=1: exit after one refresh)
+#   - polls every 60 s: which take each shot plays, its frames and its folders' mtimes (ALT included) + each cut's
+#     sound master and its mtime
 #   - a change must hold still for 3 polls (or has waited 30 min: a progress refresh); masters are snapshotted
 #     once settled, so a COMPOSER render in progress cannot tear the sound
 #   - then, for the cuts that changed: edit/animatic.sh, edit/h9_kit.sh, edit/deliver.sh (incremental masters + QC),
-#     each through the render queue; exits (MAX_H hours idle: exits too)
+#     each through the render queue, and it goes on watching
+#   - it EXITS (waking whoever launched it) only when a step fails, a QC says FAIL, a film's master becomes
+#     complete (no slates left), or nothing changes for MAX_H hours (default 6). Log: one block per refresh.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 source ~/.venvs/longdawn/env.sh
 STATE=edit/cache/refresh_watch.sig
-MAX_H="${MAX_H:-4}"
+MAX_H="${MAX_H:-6}"
+DELIV="$HOME/mishamisha/_local_logs/delivery"
+RUN=edit/cache/refresh_watch.run
 sig() {
   python3 - <<'EOF'
 import os, sys
@@ -44,25 +49,54 @@ for c in 'ABC':
     print(f'{c}:{have}+{alt}:{audio}')
 EOF
 }
+complete() {  # the masters whose QC says complete (no slates), one name per line
+  python3 -c "
+import glob, json, os
+for p in sorted(glob.glob(os.path.join('$DELIV', '*_QC.json'))):
+    try:
+        if json.load(open(p)).get('complete'): print(os.path.basename(p)[:-8])
+    except Exception: pass"
+}
+step() {  # run one rebuild step, keep its output for the checks, print the lines that matter
+  "$@" > "$RUN" 2>&1; local rc=$?
+  cat "$RUN" >> "$RUN.all"
+  grep -E '^\*\*|^wrote|warning|RESULT|^\[FAIL\]|H9 kit|Traceback|Error|failed' "$RUN" | cut -c1-170
+  return $rc
+}
 now=$(sig) || exit 1
 [ -s "$STATE" ] || echo "$now" > "$STATE"
 last=$(cat "$STATE")
-t0=$(date +%s); seen=""; stable=0; since=0
+done0=$(complete)
 while :; do
-  cur=$(sig) || { sleep 60; continue; }
-  if [ "$cur" != "$last" ]; then
-    [ -z "$seen" ] && since=$(date +%s)
-    if [ "$cur" = "$seen" ]; then stable=$((stable + 1)); else stable=0; fi
-    seen="$cur"
-    if [ "$stable" -ge 3 ] || [ $(( $(date +%s) - since )) -ge 1800 ]; then break; fi
-  elif [ $(( $(date +%s) - t0 )) -ge $(( MAX_H * 3600 )) ]; then
-    echo "refresh_watch: nothing new in ${MAX_H} h ($(date -u +%H:%MZ))"; exit 0
+  t0=$(date +%s); seen=""; stable=0; since=0
+  while :; do
+    cur=$(sig) || { sleep 60; continue; }
+    if [ "$cur" != "$last" ]; then
+      [ -z "$seen" ] && since=$(date +%s)
+      if [ "$cur" = "$seen" ]; then stable=$((stable + 1)); else stable=0; fi
+      seen="$cur"
+      if [ "$stable" -ge 3 ] || [ $(( $(date +%s) - since )) -ge 1800 ]; then break; fi
+    elif [ $(( $(date +%s) - t0 )) -ge $(( MAX_H * 3600 )) ]; then
+      echo "refresh_watch: nothing new in ${MAX_H} h ($(date -u +%H:%MZ))"; exit 0
+    fi
+    sleep 60
+  done
+  cuts=$(diff <(echo "$last" | tr ' ' '\n') <(echo "$cur" | tr ' ' '\n') | sed -n 's/^> \([ABC]\):.*/\1/p' | sort -u | tr '\n' ' ')
+  echo "== refresh_watch: $(date -u +%H:%MZ) changed: ${cuts}"
+  : > "$RUN.all"
+  export CUTS="${cuts% }"
+  fail=0
+  step bash edit/animatic.sh || fail=1
+  step bash edit/h9_kit.sh || fail=1
+  step bash edit/deliver.sh || fail=1
+  unset CUTS
+  echo "$cur" > "$STATE"; last="$cur"
+  if [ "$fail" = "1" ] || grep -q 'RESULT: FAIL' "$RUN.all"; then
+    echo "refresh_watch: a step or a QC FAILED ($(date -u +%H:%MZ)); see $RUN.all"; exit 2
   fi
-  sleep 60
+  done1=$(complete)
+  new=$(comm -13 <(echo "$done0") <(echo "$done1") | tr '\n' ' ')
+  if [ -n "${new// /}" ]; then echo "refresh_watch: COMPLETE (no slates left): $new($(date -u +%H:%MZ))"; exit 0; fi
+  done0="$done1"
+  [ "${ONCE:-0}" = "1" ] && exit 0
 done
-cuts=$(diff <(echo "$last" | tr ' ' '\n') <(echo "$cur" | tr ' ' '\n') | sed -n 's/^> \([ABC]\):.*/\1/p' | sort -u | tr '\n' ' ')
-echo "refresh_watch: $(date -u +%H:%MZ) changed: ${cuts}| was: $(echo $last) | now: $(echo $cur)"
-CUTS="${cuts% }" bash edit/animatic.sh | grep -E '^\*\*|wrote|warning' | cut -c1-160
-bash edit/h9_kit.sh | tail -1
-CUTS="${cuts% }" bash edit/deliver.sh | grep -E '^RESULT|^\[FAIL\]|^wrote|encode' | cut -c1-160
-echo "$cur" > "$STATE"
