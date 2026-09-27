@@ -118,7 +118,7 @@ def _flame(out, VIS, x0, y0, ax, ay, H, t, calm, bright, lean, seed, xlo, xhi, y
                 b = 1.0 - ss
                 if b < 0.0:
                     b = 0.0
-                hw = 0.172 * math.sqrt(a) * b ** 0.82
+                hw = 0.205 * math.sqrt(a) * b ** 0.82
             edge = hw * (1.0 + 0.3 * n2)
             aw = abs(ww)
             dens = 0.0
@@ -131,7 +131,10 @@ def _flame(out, VIS, x0, y0, ax, ay, H, t, calm, bright, lean, seed, xlo, xhi, y
                 core = 0.0
                 if hw > 1e-4:
                     q = ww / (0.5 * hw + 1e-3)
-                    core = math.exp(-q * q) * (1.0 - sc) ** 1.6 * _ss(-0.1, 0.12, ss)
+                    om = 1.0 - sc
+                    if om < 0.0:
+                        om = 0.0
+                    core = math.exp(-q * q) * om ** 1.6 * _ss(-0.1, 0.12, ss)
                 tex = 0.72 + 0.62 * n2
                 heat = dens * (1.0 - 0.52 * sc) * tex
                 if heat < 0.0:

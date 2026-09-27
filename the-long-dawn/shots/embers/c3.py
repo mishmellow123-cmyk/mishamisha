@@ -146,6 +146,11 @@ class C3Sched:
     def tower_extra(self, towers, i, t):
         return 0.0
 
+    def shutter(self, i, t, pl):
+        """facade windows: dim embers (a grid of lit windows reads as offices at night); they flare a little on the
+        race's beats"""
+        return 0.12 + 0.35 * self.race(t) * self.beat_pulse(t)
+
 
 SCHED = C3Sched()
 
@@ -238,7 +243,7 @@ def ring_on(t):
 FRONT_T = (T_FORGE + 2.0, T_FORGE + 38.0)          # the white-hot front runs once round the circle
 SHAPE_STROKES = [x for x in STROKES if x >= T_FORGE + 40]   # once the circle is closed, these beat it into a band
 RING_Y0 = HF + 3.8                                # the band is forged just above the flame's tip ...
-RING_Y1 = 38.0                                    # ... and rises to hang over the crowns (above ground)
+RING_Y1 = 36.0                                    # ... and rises to hang over the crowns (above ground)
 
 
 def ring_theta_range(t):
@@ -265,8 +270,8 @@ def ring_heat(t):
         frac = np.clip(((th - th0) % (2 * np.pi)) / (2 * np.pi), 0, 1)
         laid = FRONT_T[0] + (FRONT_T[1] - FRONT_T[0]) * frac                  # when the front passed here
         age = np.maximum(t - laid, 0.0)
-        front = np.exp(-age / 5.0)                                          # white just behind the front
-        h = 0.6 * beaten + 0.4 * front + 0.3 * strike * cooling
+        front = np.exp(-age / 4.0)                                          # white just behind the front
+        h = 0.52 * beaten + 0.48 * front + 0.4 * strike * cooling
         return np.clip(h, 0, 1)
     return f
 
@@ -411,9 +416,9 @@ class ForgeFX:
             P1 = thread(ctx.t1)
             fpx = ctx.cam.f_px(1920)
             z = max(float((P1.mean(0) - ctx.cam.pos) @ ctx.cam.R[2]), 1.0)
-            E = self.th_E * k * 3.5 * (0.5 + 0.5 * self.th_u) * (fpx / z) * 0.02
-            col = np.array([1.0, 0.9, 0.7])
-            ctx.fr.splat(P0, P1, 0.03, E, col, ctx.cam0, ctx.cam1, profile=1)
+            E = self.th_E * k * 3.0 * (0.5 + 0.5 * self.th_u) * (fpx / z) * 0.02
+            col = np.array([1.0, 0.8, 0.45])
+            ctx.fr.splat(P0, P1, 0.06 * (1.3 - 0.6 * self.th_u), E, col, ctx.cam0, ctx.cam1, profile=1)
         # --- the front: a white glare where the band is being laid
         if FRONT_T[0] <= t < FRONT_T[1] + 4:
             th0, th1 = ring_theta_range(t)
@@ -462,9 +467,9 @@ class ForgeFX:
             S1 = spos(ctx.t1)
             u = (t - tb) / self.s_life[idx]
             cold = float(smoothstep(T_FORGE + 60, T_WRITE, t))
-            es = self.s_E[idx] * (1 - u) ** 1.4 * (3.0 - 1.4 * cold)
-            cs = look.blackbody(np.clip(0.9 - 0.5 * u - 0.1 * cold, 0.35, 1.0))
-            ctx.fr.splat(S0, S1, 0.01, es, cs, ctx.cam0, ctx.cam1)
+            es = self.s_E[idx] * (1 - u) ** 1.4 * (16.0 - 7.0 * cold)
+            cs = look.blackbody(np.clip(0.78 - 0.4 * u - 0.1 * cold, 0.35, 1.0))
+            ctx.fr.splat(S0, S1, 0.012, es, cs, ctx.cam0, ctx.cam1)
 
 
 # ============================================================= gold rain ===
@@ -639,20 +644,20 @@ class GroundPool:
 
 CAM_C6 = [  # (frame, radius, azimuth offset, height above ground, target height above ground, hfov)
     (1040, E15_R, 0.00, E15_Y, 0.0, 38.0),  # the gold fire alone: E15's (MAP's) view, 46 degrees above
-    (1066, 24.0, 0.01, 15.0, 2.5, 42.0),    # descending as the first forges rise
-    (1105, 27.0, 0.03, 4.5, 7.0, 50.0),     # low, outside the forges' ring, in a gap: they rise round the fire
-    (1150, 28.0, 0.05, 3.5, 9.0, 54.0),
-    (1195, 25.0, 0.07, 5.0, 10.0, 50.0),
-    (1240, 18.0, 0.09, 7.5, 10.5, 42.0),    # pushing in through the gap to the band being beaten
-    (1290, 14.0, 0.11, 9.0, 10.4, 36.0),
-    (1330, 11.5, 0.12, 9.6, 10.2, 32.0),    # the letters burn up out of the metal
-    (1360, 12.5, 0.13, 9.0, 12.0, 36.0),
-    (1400, 20.0, 0.15, 8.0, 24.0, 52.0),    # the Ring rises above the towers: pull back and tilt up with it
-    (1445, 28.0, 0.17, 14.0, 31.0, 60.0),
-    (1500, 33.0, 0.19, 19.0, 31.5, 62.0),   # the hush: the Ring over the crowns
-    (1560, 34.0, 0.21, 20.0, 32.0, 64.0),
-    (1620, 34.5, 0.23, 20.5, 33.0, 65.0),   # the race
-    (1680, 35.0, 0.25, 21.0, 34.0, 66.0),
+    (1066, 26.0, 0.00, 14.0, 3.0, 42.0),    # descending as the first forges rise
+    (1105, 29.0, 0.00, 4.0, 5.0, 50.0),     # low, outside the forges' ring, in the gap: they rise round the fire
+    (1160, 31.0, 0.00, 3.5, 6.5, 52.0),
+    (1200, 34.0, 0.00, 7.0, 7.5, 46.0),     # the flame and, above it, its light drawn out into a band
+    (1250, 30.0, 0.00, 8.0, 8.5, 44.0),
+    (1300, 25.0, 0.00, 9.0, 9.6, 42.0),     # beaten on the strokes
+    (1335, 16.0, 0.00, 10.4, 10.3, 40.0),   # cold gold: the letters burn up out of the metal
+    (1362, 14.0, 0.00, 9.0, 12.0, 42.0),
+    (1400, 11.5, 0.01, 5.5, 22.0, 56.0),    # the Ring rises above the towers: we go in under it
+    (1440, 10.0, 0.02, 3.8, 31.0, 66.0),
+    (1500, 9.5, 0.03, 3.2, 34.5, 70.0),     # the hush: the Ring overhead among the crowns
+    (1560, 9.2, 0.04, 3.0, 35.5, 72.0),
+    (1620, 9.0, 0.05, 3.0, 36.0, 72.0),     # the race
+    (1680, 9.0, 0.06, 3.0, 36.5, 72.0),
 ]
 
 

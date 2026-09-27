@@ -349,7 +349,7 @@ def shade(th, ps, cam, f, ss, Rot, C, scale, st, env):
                    + np.array([1.0, 0.78, 0.34])[None, :] * (_ss(0.42, 0.72, hk) * (1 - _ss(0.72, 1.0, hk)))[:, None]
                    + np.array([1.0, 0.42, 0.08])[None, :] * (_ss(0.18, 0.42, hk) * (1 - _ss(0.42, 0.72, hk)))[:, None]
                    + np.array([0.55, 0.1, 0.02])[None, :] * (_ss(0.0, 0.18, hk) * (1 - _ss(0.18, 0.42, hk)))[:, None])
-            col = col * (1.0 - 0.8 * _ss(0.15, 0.6, hk))[:, None] + hot * (hk ** 2.2 * 5.5 + 0.15 * hk)[:, None]
+            col = col * (1.0 - 0.8 * _ss(0.15, 0.6, hk))[:, None] + hot * (hk ** 2.6 * 3.4 + 0.12 * hk)[:, None]
     # the letters: emission through the canonical strips
     if st.letters > 0:
         outer = np.cos(ps) >= 0.0

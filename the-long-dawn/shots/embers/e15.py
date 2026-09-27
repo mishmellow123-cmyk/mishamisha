@@ -155,17 +155,17 @@ class Draught:
             done |= rr < 0.1
             rhat = -dx / np.maximum(rr, 1e-6)[:, None]
             # eddies: the curl of a noise stream-function (divergence-free)
-            Q = np.stack([P[:, 0] * 0.33, P[:, 1] * 0.33, tph * 0.02], 1)
+            Q = np.stack([P[:, 0] * 0.2, P[:, 1] * 0.2, tph * 0.02], 1)
             e = 0.02
             a1 = snoise(Q + np.array([e, 0, 0]), 1.0, (0, 0, 0), 2)
             a2 = snoise(Q - np.array([e, 0, 0]), 1.0, (0, 0, 0), 2)
             b1 = snoise(Q + np.array([0, e, 0]), 1.0, (0, 0, 0), 2)
             b2 = snoise(Q - np.array([0, e, 0]), 1.0, (0, 0, 0), 2)
-            dpsi_du = (a1 - a2) / (2 * e) * 0.33
-            dpsi_dv = (b1 - b2) / (2 * e) * 0.33
+            dpsi_du = (a1 - a2) / (2 * e) * 0.2
+            dpsi_dv = (b1 - b2) / (2 * e) * 0.2
             curl = np.stack([dpsi_dv, -dpsi_du], 1)
-            amp = 2.6 * np.clip((rr - 0.4) / 5.0, 0.0, 1.0)
-            speed = 2.4 + 16.0 / (rr + 1.4)                          # cm / s: quicker near the heart
+            amp = 6.0 * np.clip((rr - 0.3) / 4.0, 0.0, 1.0)            # big lazy curves, straightening near the heart
+            speed = 2.2 + 9.0 / (rr + 1.0)                           # cm / s: quicker near the heart
             v = rhat * speed[:, None] + curl * amp[:, None]
             if k < 18:                                               # the pop fades into the draught
                 v = v + kick * (1.0 - k / 18.0) * 3.0
@@ -248,10 +248,10 @@ class E15:
         dying = 1.0 - smoothstep(dr.die_at[idx] - 0.12, dr.die_at[idx], prog)
         near = 1.0 + 0.8 * smoothstep(0.75, 1.0, prog)
         arrive = 1.0 - smoothstep(0.93, 1.0, prog)
-        e = dr.E[idx] * born * fl * dying * near * arrive * (1.0 + 2.5 * flare) * 6.0
+        e = dr.E[idx] * born * fl * dying * near * arrive * (1.0 + 2.5 * flare) * 11.0
         T = np.clip(dr.col_t[idx] + 0.12 * flare + 0.08 * smoothstep(0.6, 1.0, prog) - 0.2 * (1.0 - dying), 0.35, 0.95)
         col = look.blackbody(T)
-        rw = 0.006 * dr.sz[idx]
+        rw = 0.008 * dr.sz[idx]
         ctx.fr.splat(P0, P1, rw, e, col, ctx.cam0, ctx.cam1)
         # short trails: where each was a moment ago
         for lag, g in ((0.9, 0.5), (1.9, 0.22)):
@@ -280,7 +280,7 @@ class E15:
         if self._glyphs is None:
             sys.path.insert(0, MAPDIR)
             import pen
-            h = pen.Hand(seed=77, xh=0.34)
+            h = pen.Hand(seed=77, xh=0.22)
             S = pen.Strokes()
             x = 0.0
             words = [h.word(3), h.word(2)]
@@ -316,7 +316,7 @@ class E15:
 
         def place(tq):
             rise = 0.012 * (tq - 882.0)
-            y0 = np.where(lid == 0, 1.45, 0.95) * sc_ + rise                # two short lines, one above the other
+            y0 = np.where(lid == 0, 1.0, 0.62) * sc_ + rise                 # two short lines low in the body
             x = G[:, 0]
             y = -G[:, 1] + y0
             wob = vnoise(np.column_stack([x, y, np.full(len(x), 0.02 * tq)]), 1.2, (2.0, 5.0, 1.0), 1)
@@ -327,8 +327,8 @@ class E15:
         yl = -G[:, 1]
         burn = smoothstep(944 + 10 * (yl + 0.3), 960 + 10 * (yl + 0.3), t)
         e = k * (1.0 - burn) * 2.2 * (1.0 + 0.15 * math.sin(2.3 * t))
-        col = np.array([1.0, 0.86, 0.55])
-        ctx.fr.splat(P0, P1, 0.012, np.full(len(G), e), col, ctx.cam0, ctx.cam1)
+        col = np.array([1.0, 0.93, 0.72])
+        ctx.fr.splat(P0, P1, 0.009, np.full(len(G), e), col, ctx.cam0, ctx.cam1)
 
     # ------------------------------------------------------------- frame
     def render(self, f, scale=1.0):
