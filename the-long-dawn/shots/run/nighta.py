@@ -314,8 +314,10 @@ def fire_layer(img, zb, scam, pos, f_ign, f, size=1.0, seed=0, pxs=1.0, smoke=Tr
                                               (2.5 if size > 1.8 else 0.8) * size * light * fl, albedo=0.25,
                                               amb=(0.004, 0.005, 0.009), zbias=zbias)
     e = light * fl * trans
-    sig1 = max(7.0 * ppm, 2.2 * pxs)
-    sig2 = max(30.0 * ppm, 9.0 * pxs)
+    # the air glow round a fire, capped on screen: near a fire (tens of metres) a 7 m / 30 m world-sized halo would
+    # wash the whole frame warm through everything behind it; beacons at their usual distances are unchanged
+    sig1 = min(max(7.0 * ppm, 2.2 * pxs), 90.0 * pxs)
+    sig2 = min(max(30.0 * ppm, 9.0 * pxs), 260.0 * pxs)
     F2.halo(img, zb, sx, sy - 0.4 * Hf * ppm, sig1, 0.018 * pk * e, z=z, zbias=zbias)
     F2.halo(img, zb, sx, sy - 0.4 * Hf * ppm, sig2, 0.0016 * pk * e, z=z, zbias=zbias)
     F2.flame(img, zb, scam, base, Hf, Rb * sz, t, seed=int(seed) * 7 + 3, I=(24.0 + 6.0 * min(size - 1.0, 1.7) / 1.7)

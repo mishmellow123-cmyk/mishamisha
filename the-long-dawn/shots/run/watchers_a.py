@@ -128,7 +128,7 @@ def lighter_spot(P, lat=0.8):
 # on our side of the fire and 0.7 m to its right, so the flames show just left of the figure and rim it.
 PLATE_YAW = 7.0
 WATCHER_BEARING = 7.3
-FIRE_GAP = (1.35, 0.14)
+FIRE_GAP = (1.2, 0.55)
 
 
 def _plate_axes():
@@ -192,22 +192,22 @@ def lighter_scene(sc, f, P, lat, seed):
 
 
 def hearth_scene(sc, P, seed, scale=1.0):
-    """The seventh fire's beacon cairn, like hers: dry stones in five uneven courses, no mortar, tapering to a top about
-    1.02 m up where the fire burns (nighta's recipe stands a fire's base on a cairn). There before the catch (A14)."""
+    """The seventh fire's low cairn: dry stones in three uneven courses, no mortar, to about 0.64 m, where nighta's recipe
+    puts a size-0.6 fire's base (0.45 x its 1.44 m flame). There before the catch (A14)."""
     rng = np.random.default_rng(int(seed))
     base = np.asarray(P[:3], np.float64)
     sc.begin(rgb=(0.050, 0.047, 0.045))
-    courses, top = 5, 1.02 * scale
+    courses, top = 3, 0.64 * scale
     for c in range(courses):
         y0 = top * c / courses
-        rr = (0.60 - 0.24 * c / (courses - 1)) * scale
-        n = 10 - c
+        rr = (0.44 - 0.14 * c / (courses - 1)) * scale
+        n = 11 - 2 * c
         for m in range(n):
             a_ = 2.0 * math.pi * (m + 0.5 * (c % 2)) / n + rng.uniform(-0.12, 0.12)
             hs = top / courses * rng.uniform(0.95, 1.30)
             q = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rr * rng.uniform(0.92, 1.06) \
                 + UP * (y0 + 0.5 * hs)
-            sc.box(q, (rng.uniform(0.12, 0.19) * scale, 0.5 * hs, rng.uniform(0.10, 0.15) * scale),
+            sc.box(q, (rng.uniform(0.09, 0.15) * scale, 0.5 * hs, rng.uniform(0.08, 0.12) * scale),
                    yaw=a_ + math.pi / 2 + rng.uniform(-0.25, 0.25), pitch=rng.uniform(-0.12, 0.12),
                    rnd=0.022 * scale, mat=5, k=0.0)
     sc.end()
