@@ -1,0 +1,14 @@
+{
+ "name": "mirror_C",
+ "branch": "claude/render-mirror-C",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless"
+ ],
+ "render": [
+  "python3 shots/mirror/mirror.py --frames 2080-2319 --threads 8 --ss 1.5"
+ ],
+ "out_dir": "renders/mirror_C",
+ "frames": "2080-2319",
+ "push_every": 300,
+ "ship": "jpg"
+}
