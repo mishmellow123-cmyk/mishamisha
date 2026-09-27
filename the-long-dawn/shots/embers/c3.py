@@ -159,6 +159,9 @@ class C3Sched:
         old = 0.4 if i < 8 else 0.2
         return old * (1.0 - self.ashlar_k(self._t))
 
+    def joint_k(self, i):
+        return 1.0 - self.ashlar_k(self._t)
+
     def masonry(self, i, pl, t):
         """(tone per crust point, window-openings kill 0..1): irregular ashlar. Courses of uneven height, joints
         staggered course by course (no continuous vertical line), each stone its own tone, the joints darker"""
@@ -168,7 +171,7 @@ class C3Sched:
         if i not in self._ash:
             r = rng(4400 + i)
             yb = np.cumsum(r.uniform(0.5, 1.15, 260)) - 30.0
-            self._ash[i] = (yb, r.uniform(0, 3.0, 262), r.uniform(1.0, 2.3, 262), r.uniform(0.7, 1.2, (262, 64)))
+            self._ash[i] = (yb, r.uniform(0, 3.0, 262), r.uniform(1.0, 2.3, 262), r.uniform(0.5, 1.3, (262, 64)))
         yb, off, wid, tone = self._ash[i]
         y = pl[:, 1]
         c = np.clip(np.searchsorted(yb, y), 1, len(yb) - 1)
@@ -179,7 +182,7 @@ class C3Sched:
         fr = q - blk
         du = np.minimum(fr, 1.0 - fr) * wid[c]
         j = np.maximum(np.exp(-(dy / 0.05) ** 2), np.exp(-(du / 0.06) ** 2))
-        tn = tone[c, blk % 64] * (1.0 - 0.6 * j)
+        tn = tone[c, blk % 64] * (1.0 - 0.75 * j)
         return 1.0 + b * (tn - 1.0), b
 
     def shutter(self, i, t, pl):

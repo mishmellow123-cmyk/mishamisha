@@ -1287,6 +1287,8 @@ class Towers:
                         hot = 0.55 + 0.45 * hot
                     L = (0.6 * far * (0.2 + 0.8 * hot ** 2) * patch * (0.8 + 0.4 * nz2) * fl * (1 + 3.0 * base) * heat
                          * vgr + 2.0 * front) * fside + 0.9 * crown
+                    if SCHED is not None and hasattr(SCHED, 'joint_k'):
+                        L = L * SCHED.joint_k(i)         # (C3: the facade's regular joint grid reads as offices)
                     T = 0.34 + 0.16 * nz + 0.1 * hot + 0.22 * base
                     col = _tw_colours(T)
                     col = col * (1 - 0.7 * red) + C_RED * 0.7 * red
