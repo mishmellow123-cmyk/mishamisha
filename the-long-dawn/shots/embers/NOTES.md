@@ -1,3 +1,45 @@
+# >>> EMBERS-2 PAUSED 27 Sep ~21:05Z (usage gap to ~23:30Z). A7 THE EDGE + A8 THE BRINK (edge.py): APPROVED, RENDERING <<<
+# (scope: A7/A8 only. A3/A4/A9/A10 = EMBERS-A2, A16/A17 = EMBERS-A3 (turn.py), C = EMBERS-C3 / EMBERS-C2)
+EXACT STATE:
+* APPROVED by the director (~21:00Z) and launched BY MAIN: embers_A3_edge (MAIN -> renders/embers_A3) and
+  embers_A3_alt_edge (ALT -> renders/embers_A3_alt_codedtowers), 1840-2639, --nodes 4, at tip 6e78762 (has the
+  crown-lean fix). Log: _local_logs/jobs/embers_A3_edge_farm.log. Check stills: review/embers_A3_check/edge2/.
+* FREEZE (director): push nothing that changes 1840-2639 while they render, except a crown fix confined to
+  2460-2519; then `farm.py cloud/jobs/embers_A3_edge.json --frames 2460-2519` (and the ALT job) is PRE-APPROVED.
+* Crown test at 6e78762 (2466, 2478, 2488, 2498, 2510; request 0927-165213-embersA3edge-82690, re-queued 21:02Z)
+  lands in renders/_farmtest/embers_A3_edge/. REVIEW IT FIRST on resume. Earlier crown tests failed (black on black,
+  hidden in sparks, framed 6 units off because of the forge's lean). Fix inside 2460-2519 only if it still fails.
+NEXT (post-23:30Z list; cheap re-renders):
+ 1. The crown hero, 2460-2519 (above).
+ 2. At 2532 there are white squiggle "worm" trails at the top and right edges (probably CrownTrail/StripEmbers
+    streaks near the lens in the rim POV, or debris). Kill them (near_fade for those layers).
+ 3. At 2430 the heat shimmer makes tower edges and the lower slab wobble like a glitch. Keep the shimmer in the air,
+    off hard edges (mask it by the pit glow / occluder depth; weaker once the frame lifts at the brink).
+ 4. The glowing crack net on the bowl wall is close to a regular lattice. Break it up (vary LAYER_H by azimuth,
+    domain-warp w_strata, fewer and uneven veins).
+ 5. The gilding reads as gold glitter, not runs. Make broader rivulets with dark gaps and visible descending heads
+    (GoldRuns), and fewer crust sparkles on gilded faces.
+DESIGN (as rendered):
+* Shots (render.SHOTS_V3 A3): (1840,2460) THE EDGE + brink part 1, (2460,2520) the crown, (2520,2640) over the rim.
+* `_cam_edge`: one steady orbit r 27, y -8 (6 above the rim), az 2.93->3.25 rel ALPHA_C (the widest gap, forges
+  4|5 framing), hf 88, SHIFT LENS (`lens_fall`, fall 0.22: towers upright). Opens level on the fire over the intact
+  ground, tilts down with the falling plates (1848-1904). 2400-2459: lifts to a level-ish frame (hf 96) keeping the
+  far lip at the bottom for the collapse (2440, jolt 0.22).
+* `_cam_crown` (2460-2519): long lens (hf 38->48) from outside, r 70->61, az a7+0.05, level with the crown.
+  CrownBreak: seam of fire 2464-2480, throat through the parapet, gold glint round the silhouette, the updraft's
+  glare behind, raw broken faces after the break. FallingCrown: true centre includes the lean (`_c_lean`); turns
+  about it, drifts 11 in, CROWN_G 0.042: past the lip ~2530, swallowed by the lake ~2544. The forge's height freezes
+  at the break (edge._height). StripEmbers x0.12 and a thin CrownTrail in this shot.
+* `_cam_fall` (2520-2639): at the lip in the 7|0 gap, pitch 34->64 deg, then an ease-in fall toward the lake's
+  heart; post() whites out 2600-2640.
+* Crater: bowl DEPTH 30 / BOWL_P 2.3 / LAKE 4.5, lip at the forges' feet (`_set_rim`), terraced strata lit from
+  below, WALL_RAMP, veins, pit haze (AIR_E), Chunks (crumble from 2000, collapse 2440), shimmer (post). GoldRuns
+  overlay; near_fade on tower embers/sparks. Fire (a3.py): settles to y -9, scale 2.0 -> 1.4 (1846-1910), swells
+  at 2400.
+* Workflow: farm tests `farm.py cloud/jobs/embers_A3_edge.json --test K --frames ... --detach` (push first). For
+  shared files, stage only my hunks (scratchpad e4/stage_hunk.py) and commit the index. Another lane's NOTES commit
+  once dropped this block: re-check it is still here after other lanes commit NOTES.md.
+
 # >>> EMBERS-C3 (27 Sep ~20:35Z, took over from EMBERS-C): E15 LETTERS TO FIRE, E5-C THE FORGING, E11 THE RACE, and the
 # canonical Ring (ringsolid.py) + gold flame (cflame.py). EMBERS-C2 owns E12 / E8-C / E13a (c2.py etc.). <<<
 ## STATE AT HANDOFF (EMBERS-C3, 27 Sep ~21:15Z; the account idles ~21:25Z-23:30Z). READ THIS FIRST.
