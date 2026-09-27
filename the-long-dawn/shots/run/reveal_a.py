@@ -304,6 +304,13 @@ def world_layer(cam, f, t, reveal):
     D = np.zeros((Hl, Wl))
     WD.march(P, Wd['CR'], C, 0.2, 90000.0, 0.0035, 0.35, 700.0, 9, D)
     Lk, amb, S, fogp, Q = Wd['light']
+    if ramp > 0.0:
+        # into the shared A night's cloud sea and aerial depth (nighta.night_light) with the rest of the night; never
+        # the snow knobs (Q[18] skews the snow noise's domain: blended, the texture would slide), so H1's ranges keep
+        # their snow exactly
+        knobs = dict(NA.cloud_values())
+        knobs['f0'] = NA.TERRAIN['f0']
+        Q, fogp = NA.apply_knobs(Q, fogp, knobs, ramp)
     out = np.zeros((Hl, Wl, 3), np.float32)
     zb = np.zeros((Hl, Wl), np.float32)
     di = np.zeros((Hl, Wl), np.float32)
