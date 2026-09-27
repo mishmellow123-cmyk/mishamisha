@@ -43,7 +43,7 @@ FPS, SR = 24, 48000
 DELIVERY = os.path.expanduser('~/mishamisha/_local_logs/delivery')
 ENGINE = 'x5.1'                                        # bump when the encode itself changes
 PROFILES = {
-    'master': dict(scale=1.0, clean=True, crf=14, preset='slow', out=DELIVERY),
+    'master': dict(scale=1.0, clean=True, crf=14, preset='slow', out=DELIVERY, finish=True),   # FINISH
     'animatic': dict(scale=0.5, clean=False, crf=23, preset='medium', out=AS.ANIMATIC_DIR),
     'animatic_clean': dict(scale=0.5, clean=True, crf=23, preset='medium', out=AS.ANIMATIC_DIR),
 }
@@ -116,7 +116,14 @@ def frame_sources(cut, variant, plan, f):
     return out
 
 
-def segment_key(cut, variant, prof, i, shot, plan, code, table):
+def _finish_id():
+    """FINISH: the finish's identity (the look, its code, its baked LUTs) for the master segments' keys."""
+    sys.path.insert(0, os.path.join(ROOT, 'finish'))
+    import stage
+    return f'{stage.LOOK}:{stage.code_id()}'
+
+
+def segment_key(cut, variant, prof, i, shot, plan, code, table, fin=None):
     h = hashlib.sha1()
     take = plan['take']
     tdesc = None if take is None else {k: take.get(k) for k in ('stem', 'off', 'mode', 'crop', 'grade', 'matte',
@@ -131,6 +138,8 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table):
             cut, i,
             {k: shot[k] for k in ('sec', 'f0', 'f1', 'code', 'name', 'owner', 'desc', 'kind')},
             plan['kind'], tdesc, plan['have'], bool(plan['alt'])]
+    if fin:                                                   # FINISH: finished segments carry the finish's identity
+        head.append(['finish', fin])
     h.update(json.dumps(head, sort_keys=True, default=str).encode())
     title = shot['kind'] == 'title'
     if title and cut == 'B':                                  # B's stand-in sky is dusk_B's first frame
@@ -163,17 +172,32 @@ def build_video(cut, variant, profile, workers, log):
     shots = EDL.EDL[cut]
     plans = [AS.plan_shot(s, cut, variant) for s in shots]
     code, table = _code_hash(), titles.text_table(cut)
-    segs, todo = [], []
+    fin = _finish_id() if prof.get('finish') else None       # FINISH (see finish/wire_edit.py)
+    budget = None if os.environ.get('FINISH_ALL') == '1' else int(os.environ.get('FINISH_BUDGET', '1200'))
+    segs, todo, backlog = [], [], []
     for i, (s, pl) in enumerate(zip(shots, plans)):
-        p = os.path.join(cache, segment_key(cut, variant, prof, i, s, pl, code, table) + '.h264')
+        sfin = fin if (pl['kind'] == 'take' and pl['have'] > 0) else None
+        p = os.path.join(cache, segment_key(cut, variant, prof, i, s, pl, code, table, sfin) + '.h264')
+        if sfin and not os.path.exists(p):
+            q = os.path.join(cache, segment_key(cut, variant, prof, i, s, pl, code, table) + '.h264')
+            n = s['f1'] - s['f0']
+            if os.path.exists(q):                             # only the finish is missing: the backlog, on a budget
+                if budget is not None and budget <= 0:          # (overshoots by at most one segment: always progress)
+                    backlog.append(n)
+                    segs.append(q)
+                    continue
+                if budget is not None:
+                    budget -= n
         segs.append(p)
         if not os.path.exists(p):
             todo.append((i, s, p))
     t0 = time.time()
     nf = sum(s['f1'] - s['f0'] for _, s, _ in todo)
-    log(f'{name_of(cut, variant, profile)}: {len(shots)} segments, {len(todo)} to encode ({nf} f)')
+    log(f'{name_of(cut, variant, profile)}: {len(shots)} segments, {len(todo)} to encode ({nf} f)'
+        + (f'; finish {fin}, backlog {len(backlog)} segments ({sum(backlog)} f) left' if fin else ''))
     if todo:
-        with Pool(workers, initializer=AS._init, initargs=(cut, variant, prof['scale'], prof['clean'])) as pool:
+        with Pool(workers, initializer=AS._init,
+                  initargs=(cut, variant, prof['scale'], prof['clean'], bool(fin))) as pool:
             for i, s, p in todo:
                 tmp = p + '.part'
                 proc = subprocess.Popen(encode_cmd(W, H, prof, tmp), stdin=subprocess.PIPE)
@@ -184,7 +208,8 @@ def build_video(cut, variant, profile, workers, log):
                     raise SystemExit(f'encode failed: {cut} {s["sec"]} {s["code"]}')
                 os.replace(tmp, p)
                 log(f'  {s["sec"]:>4} {s["code"]:<9} {s["f0"]:>5}-{s["f1"]:<5} {time.time() - t0:5.0f}s')
-    return segs, dict(segments=len(shots), encoded=len(todo), frames_encoded=nf, seconds=round(time.time() - t0, 1))
+    return segs, dict(segments=len(shots), encoded=len(todo), frames_encoded=nf, seconds=round(time.time() - t0, 1),
+                      finish=fin, finish_backlog_segments=len(backlog), finish_backlog_frames=sum(backlog))
 
 
 def join_and_mux(segs, audio, out_path, profile, cut):
@@ -446,6 +471,12 @@ def qc(cut, variant, mov, mp4, audio_label, build):
               ', '.join(proxies))
     check('INFO', 'build', f"{build['encoded']} of {build['segments']} segments encoded "
                            f"({build['frames_encoded']:,} f) in {build['seconds']:.0f} s")
+    if build.get('finish'):                                   # FINISH: the film finish and what is still unfinished
+        nb = build.get('finish_backlog_segments', 0)
+        check('WARN' if nb else 'INFO', 'finish',
+              f"{build['finish']}" + (f"; {nb} segments ({build.get('finish_backlog_frames', 0):,} f) still "
+                                      f"unfinished (the budgeted backlog; FINISH_ALL=1 clears it)" if nb else
+                                      '; every rendered frame finished'))
     head = (f"THE LONG DAWN v3 · {cut} · {FILM[cut]}{' · ALT (coded towers)' if variant else ''} · master QC · "
             f"{time.strftime('%d %b %H:%MZ', time.gmtime())}\n{mov} ({os.path.getsize(mov) / 1e6:.1f} MB)"
             f"{'  +  ' + os.path.basename(mp4) if mp4 else ''}\nRESULT: {worst}"

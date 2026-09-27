@@ -107,7 +107,7 @@ D_BUILD_NEW = '''    code, table = _code_hash(), titles.text_table(cut)
             q = os.path.join(cache, segment_key(cut, variant, prof, i, s, pl, code, table) + '.h264')
             n = s['f1'] - s['f0']
             if os.path.exists(q):                             # only the finish is missing: the backlog, on a budget
-                if budget is not None and budget < n:
+                if budget is not None and budget <= 0:          # (overshoots by at most one segment: always progress)
                     backlog.append(n)
                     segs.append(q)
                     continue
@@ -128,10 +128,24 @@ D_STATS_OLD = '''    return segs, dict(segments=len(shots), encoded=len(todo), f
 D_STATS_NEW = '''    return segs, dict(segments=len(shots), encoded=len(todo), frames_encoded=nf, seconds=round(time.time() - t0, 1),
                       finish=fin, finish_backlog_segments=len(backlog), finish_backlog_frames=sum(backlog))'''
 
+D_QC_OLD = """    check('INFO', 'build', f"{build['encoded']} of {build['segments']} segments encoded "
+                           f"({build['frames_encoded']:,} f) in {build['seconds']:.0f} s")
+"""
+D_QC_NEW = """    check('INFO', 'build', f"{build['encoded']} of {build['segments']} segments encoded "
+                           f"({build['frames_encoded']:,} f) in {build['seconds']:.0f} s")
+    if build.get('finish'):                                   # FINISH: the film finish and what is still unfinished
+        nb = build.get('finish_backlog_segments', 0)
+        check('WARN' if nb else 'INFO', 'finish',
+              f"{build['finish']}" + (f"; {nb} segments ({build.get('finish_backlog_frames', 0):,} f) still "
+                                      f"unfinished (the budgeted backlog; FINISH_ALL=1 clears it)" if nb else
+                                      '; every rendered frame finished'))
+"""
+
 if __name__ == '__main__':
     patch(os.path.join(EDIT, 'assemble.py'), [(A_INIT_OLD, A_INIT_NEW, 'def _finishing(ctx, look=None):')])
     patch(os.path.join(EDIT, 'deliver.py'), [(D_PROF_OLD, D_PROF_NEW, 'finish=True),   # FINISH'),
                                               (D_KEY_OLD, D_KEY_NEW, 'def _finish_id():'),
                                               (D_HEAD_OLD, D_HEAD_NEW, "head.append(['finish', fin])"),
                                               (D_BUILD_OLD, D_BUILD_NEW, "FINISH_BUDGET"),
-                                              (D_STATS_OLD, D_STATS_NEW, 'finish_backlog_frames=')])
+                                              (D_STATS_OLD, D_STATS_NEW, 'finish_backlog_frames='),
+                                              (D_QC_OLD, D_QC_NEW, "check('WARN' if nb else 'INFO', 'finish',")])

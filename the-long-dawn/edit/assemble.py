@@ -541,9 +541,28 @@ def click_track(cut):
 _CTX = None
 
 
-def _init(cut, variant, scale, clean):
+def _init(cut, variant, scale, clean, finish=None):
     global _CTX
     _CTX = Ctx(cut, variant, scale, clean)
+    if finish:                                                # FINISH (finish/stage.py): the masters' film finish
+        _CTX.picture = _finishing(_CTX, None if finish is True else finish)
+
+
+def _finishing(ctx, look=None):
+    """FINISH: the last picture stage (finish/stage.py; lane FINISH). It runs after the take frame (crop, per-cut
+    grade, book matte, add layers) and before titles and burn-ins. Slates, black and EDIT proxies pass untouched.
+    Grain is seeded per (cut, cut frame)."""
+    sys.path.insert(0, os.path.join(ROOT, 'finish'))
+    import stage
+    fin = stage.Finisher(look)
+    picture = Ctx.picture.__get__(ctx)
+
+    def finished(f):
+        img, shot, status, src = picture(f)
+        if src is not None and not status.startswith('SLATE'):
+            img = fin(img, src, ctx.cut, f)
+        return img, shot, status, src
+    return finished
 
 
 def _job(f):
