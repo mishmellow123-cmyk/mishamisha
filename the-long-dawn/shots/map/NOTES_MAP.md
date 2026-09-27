@@ -12,8 +12,16 @@
   Awaiting approval of the geography. v4 sketch verdict (mine): desert light and ragged (fixed), moor open (fixed),
   labels present and small; relay too sparse (88 fires: coast/desert branch lines never started) -> fixed in 7bf1b43
   (branch radius 5, side lines 0.3); the parchment kernel's centre crease (sheet.parchment) moved to the thirds.
-* FARM: `map_l2_c18 --test 6` started 20:43Z on ldf-g01 with the PRE-FIX code (v4) -> renders/_farmtest/map_l2_c18/
-  (C18 + bar 71 frames + X1). Unreviewed at 20:50Z. The v5 fixes are pushed, so any new run takes them.
+* GEOGRAPHY APPROVED by the director (sketch v4, 20:5xZ): "the inked widest view is lovely ... nothing reads as a
+  real coastline". His crease note (f_00004's long straight line) = the kernel's centre fold, moved to the thirds in
+  7bf1b43 (the widest frame spans Y -5..38, so no crease is in any C18 frame now; verify on the finals).
+* FINAL LAUNCHED 20:56Z by me on the director's instruction: `caffeinate -i python3 the-long-dawn/cloud/farm.py
+  the-long-dawn/cloud/jobs/map_l2_c18.json --nodes 1` (run 0927-165627-mapl2c18-85418; 1 unit, 416 frames:
+  C18 4160-4479 + bar 71 5600-5679 -> renders/map_C, X1 4150-4185 -> renders/x1_map_C(+_matte), X1 5594-5640 ->
+  renders/x1_map_C71(+_matte)); log: scratchpad `terra/farm_c18_final.log`. Code at 88a6e61 (world v5).
+* The look-dev test `map_l2_c18 --test 6` (v4 code, before the fixes) was still in setup at 20:57Z -> _farmtest.
+* FIRST THING ON RESUME: `python3 the-long-dawn/cloud/farm.py status`; check which frames landed in renders/map_C
+  (4160-4479, 5600-5679); `--missing` re-runs anything that failed. Then review as below.
 * NEXT (on resume): (1) review renders/_farmtest/map_l2_c18 (fires, the Road, light, labels; 4160 opening + X1 match;
   4440 arrival; 4479 end on the ring; bar 71 roads/hearths); (2) if the director approved JOB READY, the final is
   `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/map_l2_c18.json --nodes 1` (maybe already run by the
