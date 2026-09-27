@@ -23,7 +23,7 @@ WALL = 5.0            # the wall falls over this much radius
 DEPTH = 24.0          # the molten floor, below the ground
 FLOOR_Y = B.GROUND - DEPTH
 GILD_W = {2: 1.0, 6: 1.0, 1: 0.85, 4: 0.9, 7: 0.8, 0: 0.15, 3: 0.2, 5: 0.1}   # the nearest (gilded) vs the farthest
-FALL_TOWER = 4        # the gilded tower whose crown breaks off (never a giant's)
+FALL_TOWER = 7        # the gilded tower whose crown breaks off (never a giant's): on the far rim, in the orbit's view
 C_MOLT = np.array([1.0, 0.72, 0.3])
 
 
@@ -60,8 +60,11 @@ def _tower_lean(self, t):
     else:
         base = 0.07 * float(smoothstep(A.T_EDGE, A.T_EDGE + 400, t)) + 0.02 * float(smoothstep(A.T_BRINK, A.T_WHITE, t))
     lean = np.zeros(18)
+    lurch = float(smoothstep(A.T_RIM_GIVES, A.T_RIM_GIVES + 9, t)) if t < A.T_LIGHT else 0.0
     for i in range(8):
         lean[i] = base * (0.35 + 0.9 * GILD_W[i])
+        if GILD_W[i] >= 0.5:
+            lean[i] += 0.045 * lurch * GILD_W[i]          # the rim gives way under the gilded ones: they lurch in
     return lean
 
 
@@ -293,11 +296,28 @@ class Crater:
         e = self.p_E * (0.012 + 1.3 * edge_l + 0.25 * self.p_crack * (0.3 + 0.7 * np.exp(-(self.p_r - R_RIM) / 12.0))) * heat
         col = look.blackbody(np.clip(0.33 + 0.2 * edge_l + 0.08 * self.p_crack, 0, 0.8))
         ctx.fr.splat(self.p_p, self.p_p, 0.14, e, col, ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
-        # the lip of the rim
+        # the lip of the rim; from 2440 it breaks away under the gilded towers and drops into the pit
         el = 3.5 * open_k * (0.6 + 0.4 * np.sin(3 * self.l_a + 0.2 * t)) * heat
-        ctx.fr.splat(self.l_p, self.l_p, 0.05, el, look.blackbody(0.55), ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
+        L0, L1 = self._lip(ctx.t0), self._lip(ctx.t1)
+        ctx.fr.splat(L0, L1, 0.05, el, look.blackbody(0.55), ctx.cam0, ctx.cam1, zref=30.0, myid=CRATER_ID)
         # debris: the rim crumbling under the gilded towers
         self._debris(ctx)
+
+    def _lip(self, tq):
+        """lip points; those under a gilded tower break away at the rim's collapse and fall inward"""
+        if tq < A.T_RIM_GIVES:
+            return self.l_p
+        if not hasattr(self, 'l_gild'):
+            ang_g = np.array([2 * np.pi * i / 8 + B.TOWER_ANG0 for i in range(8) if GILD_W[i] >= 0.5])
+            d = np.abs((self.l_a[:, None] - ang_g[None, :] + np.pi) % (2 * np.pi) - np.pi).min(1)
+            rr = rng(977)
+            self.l_gild = d < 0.22 + 0.06 * rr.random(len(d))
+            self.l_dl = rr.uniform(0.0, 7.0, len(d))
+        x = np.maximum(tq - A.T_RIM_GIVES - self.l_dl, 0.0) * self.l_gild
+        P = self.l_p.copy()
+        inward = -np.stack([np.cos(self.l_a), np.zeros_like(self.l_a), np.sin(self.l_a)], 1)
+        P += inward * (0.12 * x)[:, None] + np.array([0.0, -1.0, 0.0]) * (0.05 * x * x)[:, None]
+        return P
 
     def _debris(self, ctx):
         t = ctx.t
@@ -333,6 +353,16 @@ class FallingCrown:
     def cut_y(self, t):
         return B.GROUND + self.tw.height(FALL_TOWER, A.T_CROWN) - 9.0
 
+    def centre(self, t):
+        """world centre of the crown (before the break: the top of its tower)"""
+        tw = self.tw
+        top = tw.top(FALL_TOWER, min(t, A.T_CROWN))
+        c = top - np.array([0.0, 4.5, 0.0])
+        if t < A.T_CROWN:
+            return tw.top(FALL_TOWER, t) - np.array([0.0, 4.5, 0.0])
+        R, pivot, off = self.state(t)
+        return (c - pivot) @ R.T + pivot + off
+
     def state(self, t):
         """rigid transform applied to the crown's points (world): (R, pivot, offset)"""
         x = max(t - A.T_CROWN, 0.0)
@@ -341,13 +371,13 @@ class FallingCrown:
         inward = -b / max(np.linalg.norm(b[[0, 2]]), 1e-6)
         inward[1] = 0.0
         pivot = np.array([b[0], self.cut_y(t), b[2]])
-        ang = 0.004 * x * x + 0.02 * x                              # it tips over into the pit
+        ang = min(0.0022 * x * x + 0.012 * x, 2.4)                  # it tips over, into the pit (then tumbles)
         axis = np.cross(np.array([0.0, 1.0, 0.0]), inward)
         axis /= np.linalg.norm(axis)
         c, s = math.cos(ang), math.sin(ang)
         K = np.array([[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]])
         R = np.eye(3) + s * K + (1 - c) * (K @ K)
-        off = inward * (0.05 * x * x * 0.6 + 0.3 * x) + np.array([0.0, -0.5 * 0.07 * max(x - 6.0, 0.0) ** 2, 0.0])
+        off = inward * min(0.012 * x * x + 0.1 * x, 11.0) + np.array([0.0, -0.5 * 0.085 * max(x - 5.0, 0.0) ** 2, 0.0])
         return R, pivot, off
 
 
@@ -374,13 +404,20 @@ def camera(tl, t):
         ty = lerp(3.0, -12.0, k_in)
         hf = lerp(56.0, 62.0, k_in)
         # THE BRINK: tilt up with the updraft as it roars out of the fire, then back down to the rim
-        up = float(smoothstep(A.T_BRINK, A.T_BRINK + 26, t)) * (1.0 - float(smoothstep(A.T_RIM_GIVES + 8, A.T_TIP - 24, t)))
+        up = float(smoothstep(A.T_BRINK, A.T_BRINK + 18, t)) * (1.0 - float(smoothstep(A.T_BRINK + 26, A.T_RIM_GIVES + 6, t)))
         ty = ty + 40.0 * up
         hf = hf + 6.0 * up
         y = y - 14.0 * up
         r = r - 8.0 * float(smoothstep(A.T_BRINK, A.T_TIP, t))
         pos = np.array([r * math.cos(a), y, r * math.sin(a)])
         tgt = np.array([0.0, ty, 0.0])
+        w = float(smoothstep(A.T_CROWN - 28, A.T_CROWN - 8, t)) * (1.0 - float(smoothstep(A.T_TIP + 2, A.T_TIP + 22, t)))
+        if w > 0 and hasattr(tl, 'towers'):
+            if _CROWN[0] is None:
+                _CROWN[0] = FallingCrown(tl.towers)
+            cc = _CROWN[0].centre(t)
+            tgt = lerp(tgt, cc, w)                       # find the crown as it breaks, follow it down into the pit
+            hf = lerp(hf, 50.0, w)
         if t >= A.T_TIP - 24:
             # over the rim: in over the lip after the falling crown and on into the swollen fire, to white
             u = float(ease_in(np.clip((t - (A.T_TIP - 24)) / (A.T_WHITE - (A.T_TIP - 24)), 0, 1), 1.6))
@@ -452,6 +489,8 @@ def emit_after(tl, ctx, lp, lc, lpw):
     if A.T_BRINK <= t < A.T_WHITE:
         tl._get('updraft', Updraft).emit(ctx)
         tl._get('strip_embers', lambda: StripEmbers(tl)).emit(ctx)
+    if A.T_CROWN <= t < A.T_WHITE and _CROWN[0] is not None:
+        tl._get('crown_trail', CrownTrail).emit(ctx)
     if t >= A.T_LIGHT:
         tl._get('ridge_fires', RidgeFires).emit(ctx)
         if t >= A.T_SEEN - 60:
@@ -605,6 +644,38 @@ class Updraft:
 
 def SCHED_fire(t):
     return A.SCHED.fire_scale(t)
+
+
+class CrownTrail:
+    """the falling crown burns: embers shed along its path, hot, falling slower than it (they hang in its wake)"""
+
+    def __init__(self, seed=989):
+        r = rng(seed)
+        n = 5000
+        self.t0 = A.T_CROWN + r.uniform(0.0, 40.0, n)
+        self.off = r.normal(0, 1, (n, 3)) * np.array([1.4, 2.2, 1.4])
+        self.v = r.normal(0, 1, (n, 3)) * 0.06 + np.array([0.0, 0.02, 0.0])
+        self.E = r.lognormal(0, 0.7, n)
+        self.T = r.uniform(0.5, 0.8, n)
+
+    def emit(self, ctx):
+        t = ctx.t
+        fc = _CROWN[0]
+        if not hasattr(self, 'grid'):
+            ts = np.arange(A.T_CROWN, A.T_WHITE + 1.0, 1.0)
+            self.grid_t = ts
+            self.grid = np.array([fc.centre(float(x)) for x in ts])
+        def at(tq):
+            tb = np.minimum(self.t0, tq)
+            B0 = np.stack([np.interp(tb, self.grid_t, self.grid[:, k]) for k in range(3)], 1)
+            a = np.maximum(tq - self.t0, 0.0)
+            return B0 + self.off + self.v * a[:, None] + np.array([0.0, -0.012, 0.0]) * (a * a)[:, None], a
+        P0, _ = at(ctx.t0)
+        P1, a = at(ctx.t1)
+        on = (t > self.t0)
+        e = self.E * on * np.exp(-a / 26.0) * 9.0
+        m = e > 1e-4
+        ctx.fr.splat(P0[m], P1[m], 0.05, e[m], look.blackbody(self.T[m]), ctx.cam0, ctx.cam1, zref=30.0)
 
 
 class RidgeFires:

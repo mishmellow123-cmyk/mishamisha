@@ -1,0 +1,18 @@
+{
+ "name": "embers_A3_alt_edge",
+ "branch": "claude/render-embers-A3-alt-edge",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow",
+  "cd shots/embers && python3 render.py 1840 --cut A3 --alt-towers --scale 0.1 --out /tmp/embers_warm"
+ ],
+ "render": [
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1840-2639:4 --cut A3 --alt-towers",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1841-2639:4 --cut A3 --alt-towers",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1842-2639:4 --cut A3 --alt-towers",
+  "cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1843-2639:4 --cut A3 --alt-towers"
+ ],
+ "out_dir": "renders/embers_A3_alt_codedtowers",
+ "frames": "1840-2639",
+ "push_every": 300,
+ "ship": "jpg"
+}

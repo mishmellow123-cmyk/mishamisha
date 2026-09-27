@@ -23,6 +23,12 @@ billow noise with dark gaps, hot at the root; x16). Still open: the rim collapse
 FALL_TOWER=4) need a legibility check at 0.5 scale; the tip over the rim to white (2520-2640) reads (b4 2530-2610).
 Then a full-res check still pair (2000 THE EDGE, 2450 THE BRINK) -> director -> cloud job 1840-2639 (+ ALT: the
 giants appear in THE EDGE too, so the ALT job must cover 1840-2639 as well).
+**11:51Z BRINK staging** (e3/b10.jpg): updraft 2400-2440 (camera up), down to the rim for its collapse at 2446 (the
+gilded towers lurch, `edge._tower_lean`; the lip under them breaks and drops, `Crater._lip`), up to the crowns raining
+stripped sparks (2470-2488), FALL_TOWER=7 (gilded, not a giant, on the far rim) breaks at 2480 and the camera
+follows it down (`FallingCrown.centre`, CrownTrail embers), then over the rim to white. First pass: the crown is
+small and quick in frame. Jobs written: cloud/jobs/embers_A3_edge.json (MAIN 1840-2639) and
+embers_A3_alt_edge.json (ALT 1840-2639).
 
 **NEXT (in order):**
 1. (DONE 11:40Z, see above) THE EDGE crater must read as SOLID rock (now a translucent "glass cylinder": splats are additive and only tower
