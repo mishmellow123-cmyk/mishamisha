@@ -34,7 +34,8 @@ T_LIGHT, T_STOP, T_OPEN_G, T_OPEN_O = A.T_LIGHT, A.T_STOP, A.T_OPEN_GIANTS, A.T_
 T_HOLDS, T_SEEN, T_HEART, T_END = A.T_HOLDS, A.T_SEEN, A.T_HEART, A.T_END
 GIANTS = tuple(A.GIANTS)
 OPEN_ORDER = (3, 7, 1, 5, 4, 0)       # one per beat from 4560: from the giants' neighbours round to the two that meet
-FIRE_Y = -7.0                          # the fire stays in the crater's mouth, where THE EDGE left it
+FIRE_Y = 0.0                           # calm, the fire hangs free over the pit again, as in A5/A6 (THE EDGE had
+                                       # drawn it down into the crater's mouth)
 C_WIN = look.blackbody(0.64)           # a forge's own light, its shutters open
 C_RIDGE = look.blackbody(0.5)          # the far fires' light
 C_LAMP = look.blackbody(0.6)           # the small lights
@@ -134,14 +135,14 @@ def _polar(r, a, y):
 # one take: (frame, radius, azimuth, height, target y, hfov). From outside the ring behind giant 2 and forge 1 (the
 # watchers' look), a slow push; A17 walks on, down through the gap between them (az ~1.53) to the rim.
 CAM = [
-    (4400, 62.0, 1.660, -8.0, -3.0, 60.0),
-    (4480, 57.0, 1.660, -7.4, -2.6, 60.0),
-    (4560, 52.5, 1.655, -6.8, -2.4, 60.0),
-    (4640, 48.5, 1.645, -6.0, -2.4, 59.0),
-    (4720, 44.0, 1.630, -5.2, -3.0, 58.0),
-    (4780, 32.0, 1.585, -6.6, -5.0, 55.0),
-    (4840, 22.0, 1.545, -9.2, -6.2, 51.5),
-    (4880, 17.5, 1.530, -10.5, -6.6, 50.0),
+    (4400, 64.0, 1.620, 9.0, 3.0, 64.0),
+    (4480, 50.0, 1.640, 8.0, 2.0, 63.0),
+    (4560, 42.0, 1.660, 8.0, 1.0, 62.0),
+    (4640, 38.0, 1.670, 7.0, 1.0, 61.0),
+    (4720, 35.0, 1.660, 6.0, 0.5, 60.0),
+    (4780, 27.0, 1.600, 0.0, 0.0, 57.0),
+    (4840, 21.0, 1.550, -6.0, 0.0, 53.0),
+    (4880, 17.5, 1.530, -10.5, 0.0, 50.0),
 ]
 _LAB = {}
 if os.environ.get('TURN_CAMS'):
@@ -315,11 +316,16 @@ class RidgeWorld:
 
 class TowerLight:
     """A16/A17: light the forge-stacks never had. Their backs catch the far fires (irregular: brighter toward the
-    clusters). Once a tower opens, its light falls on the others' faces; the two giants, black toward each other all
-    through the race, are lit by each other for the first time. Drawn as its own layer on the crust points."""
+    clusters); once a tower opens, its light falls on the others' faces, and the two giants, black toward each other
+    all through the race, are lit by each other for the first time. The light finds the STRUCTURE (the approved
+    charcoal look): edges, bands, seams and joints catch it as thin warm lines, the crust only an even, dim sheen
+    (a lit crust with any grain reads as leopard print). Drawn as its own layer over the towers' points."""
 
-    K_BACK = 0.05
-    K_OPEN = 0.9
+    # per kind: (gain on the far fires' light, gain on the open towers' light, splat width, min geo term, face lo, hi)
+    KINDS = {0: (0.018, 0.035, None, 0.05, -0.02, 0.1),
+             2: (0.30, 0.55, 0.03, 0.6, -0.5, -0.1),
+             1: (0.22, 0.45, 0.022, 0.25, -0.02, 0.12),
+             4: (0.16, 0.35, 0.03, 0.15, -0.02, 0.12)}
 
     def emit(self, ctx, tl, rw):
         tw = tl.towers
@@ -330,81 +336,84 @@ class TowerLight:
         cpos = cam.pos
         fwd = cam.R[2]
         fpx = cam.f_px(1920)
-        kb = self.K_BACK * float(smoothstep(T_LIGHT - 2, T_LIGHT + 16, t))
+        kb = float(smoothstep(T_LIGHT - 2, T_LIGHT + 16, t))
         # the open facades as vertical line lights: samples up each opened tower's fire-facing face
-        src, srcI, srcN = [], [], []
+        src, srcI, srcN, srcT = [], [], [], []
         for i in range(8):
-            o = opened(i, t)
-            if o <= 0.0 or tw.cur[i] is None:
+            if t < t_open(i) or tw.cur[i] is None:
                 continue
             d = _face_dir(tw, i)
             b = tw.base(i)
-            h = tw.height(i, t)
-            top = B.GROUND + h
+            top = B.GROUND + tw.height(i, t)
             ys = np.linspace(B.GROUND + 3.0, top - 3.0, 7)
-            # the wave: the lower windows open first
             hk = np.clip((t - t_open(i) - 0.32 * (ys - B.GROUND) * (1.0 if i in GIANTS else 0.5)) / 8.0, 0.0, 1.0)
             for y_, k_ in zip(ys, hk):
-                if k_ <= 0:
-                    continue
-                src.append(np.array([b[0], y_, b[2]]) + d * 3.2)
-                srcI.append(k_ * (1.6 if i in GIANTS else 1.0))
-                srcN.append(d)
-        src, srcI, srcN = np.array(src), np.array(srcI), np.array(srcN)
+                if k_ > 0:
+                    src.append(np.array([b[0], y_, b[2]]) + d * 3.2)
+                    srcI.append(k_ * (1.6 if i in GIANTS else 1.0))
+                    srcN.append(d)
+                    srcT.append(i)
+        src, srcI, srcN, srcT = np.array(src), np.array(srcI), np.array(srcN), np.array(srcT)
         for i in range(8):
             c = tw.cur[i]
             if c is None:
                 continue
-            pt = c['parts'][0]
-            idx = pt['idx']
-            if len(idx) == 0:
-                continue
-            g = tw.G[i][0]
-            P, N = pt['P'], pt['N']
-            V = cpos[None, :] - P
-            dist = np.linalg.norm(V, axis=1)
-            ndv = (N * V).sum(1) / np.maximum(dist, 1e-6)
-            vis = (ndv > -0.02) & (P[:, 1] > B.GROUND - 0.3)
-            if not vis.any():
-                continue
-            P, N, ndv = P[vis], N[vis], ndv[vis]
-            sel = idx[vis]
-            nz2, rnd = g['nz2'][sel], g['rnd'][sel]
-            grain = (0.55 + 0.9 * nz2) * (0.8 + 0.4 * rnd)
-            # the far fires on the backs (and on any face turned out to them)
-            Eb = rw.irradiance(N.astype(np.float32), t) * kb * grain
-            colE = np.outer(Eb, C_RIDGE)
-            # the open towers' light (not its own)
-            if len(src):
-                own = np.linalg.norm(src[:, [0, 2]] - tw.base(i)[[0, 2]][None, :], axis=1) < 6.0
-                if (~own).any():
-                    S_ = src[~own].astype(np.float32)
-                    I_ = srcI[~own].astype(np.float32)
-                    D_ = srcN[~own].astype(np.float32)
+            G = tw.G[i]
+            other = srcT != i if len(src) else np.zeros(0, bool)
+            S_ = src[other].astype(np.float32) if other.any() else None
+            if S_ is not None:
+                I_ = srcI[other].astype(np.float32)
+                D_ = srcN[other].astype(np.float32)
+            for kind, (gb, go, rwk, gmin, f0, f1) in self.KINDS.items():
+                pt = c['parts'][kind]
+                idx = pt['idx']
+                if len(idx) == 0:
+                    continue
+                P, N = pt['P'], pt['N']
+                V = cpos[None, :] - P
+                dist = np.linalg.norm(V, axis=1)
+                ndv = (N * V).sum(1) / np.maximum(dist, 1e-6)
+                yl = P[:, 1] - B.GROUND
+                face = smoothstep(f0, f1, ndv) * smoothstep(-0.3, 0.4, yl)
+                vis = face > 0.01
+                if not vis.any():
+                    continue
+                P, N, ndv, face = P[vis], N[vis], ndv[vis], face[vis]
+                sel = idx[vis]
+                rnd = G[kind]['rnd'][sel]
+                if kind == 0:
+                    grain = 0.9 + 0.2 * rnd                         # an even sheen: no blotches at any scale
+                else:
+                    grain = (0.55 + 0.9 * G[kind]['nz2'][sel]) * (0.8 + 0.4 * rnd)
+                Nf = N.astype(np.float32)
+                Eb = rw.irradiance(Nf, t) * (gb * kb) * grain
+                colE = np.outer(Eb, C_RIDGE)
+                if S_ is not None:
                     Eo = np.zeros(len(P), np.float32)
                     for c0 in range(0, len(P), 20000):
                         Pc = P[c0:c0 + 20000].astype(np.float32)
-                        Nc = N[c0:c0 + 20000].astype(np.float32)
+                        Nc = Nf[c0:c0 + 20000]
                         L = S_[None, :, :] - Pc[:, None, :]
                         dL = np.sqrt((L * L).sum(2))
                         Lh = L / np.maximum(dL, 1e-6)[:, :, None]
-                        lam = np.clip((Nc[:, None, :] * Lh).sum(2), 0, 1)
+                        lam = np.clip((Nc[:, None, :] * Lh).sum(2), 0, 1) if kind != 2 else 0.5 + 0.5 * np.clip(
+                            (Nc[:, None, :] * Lh).sum(2), -1, 1)
                         emi = np.clip(-(D_[None, :, :] * Lh).sum(2), 0, 1) ** 0.7
                         Eo[c0:c0 + 20000] = (lam * emi * I_[None, :] / (1.0 + (dL / 24.0) ** 2)).sum(1)
-                    colE = colE + np.outer(Eo * self.K_OPEN * grain, C_WIN)
-            face = smoothstep(-0.02, 0.1, ndv)
-            colE = colE * face[:, None]
-            z = np.maximum((P - cpos[None, :]) @ fwd, 0.3)
-            a = g['a'][sel] / pt['q']
-            pa = a * np.clip(ndv, 0.05, 1.0) * (fpx / z) ** 2
-            colE = colE * pa[:, None]
-            E = colE.max(1)
-            m = E > 1e-7
-            if not m.any():
-                continue
-            rwid = np.sqrt(a / np.pi) * 1.7
-            ctx.fr.splat(pt['P0'][vis][m], pt['P1'][vis][m], rwid[m], E[m], colE[m] / E[m][:, None], ctx.cam0,
-                         ctx.cam1, zref=0.0, myid=i, profile=1)
+                    colE = colE + np.outer(Eo * go * grain, C_WIN)
+                colE = colE * face[:, None]
+                z = np.maximum((P - cpos[None, :]) @ fwd, 0.3)
+                a = G[kind]['a'][sel] / pt['q']
+                geo = np.clip(ndv, gmin, 1.0) if kind != 2 else np.full(len(P), gmin)
+                pa = a * geo * (fpx / z) ** 2
+                colE = colE * pa[:, None]
+                E = colE.max(1)
+                m = E > 1e-7
+                if not m.any():
+                    continue
+                rwid = np.sqrt(a / np.pi) * 1.7 if rwk is None else np.full(len(P), rwk)
+                ctx.fr.splat(pt['P0'][vis][m], pt['P1'][vis][m], rwid[m], E[m], colE[m] / E[m][:, None], ctx.cam0,
+                             ctx.cam1, zref=0.0, myid=i, profile=1)
 
 
 # ================================================================ the shutters
@@ -612,11 +621,7 @@ class SmallLights:
 
 class Heart:
     """A17 bar 61: the fire gathers into one small, intense heart (THE CROSSING's lantern heart at 4880): an ice-white
-    core, a glow, a faint halo, and a few slow filaments curling close round it, as in the lantern."""
-
-    def __init__(self, seed=4407):
-        r = rng(seed)
-        self.fil = [(r.uniform(0, 6.28), r.uniform(-0.9, 0.9), r.uniform(0.05, 0.11)) for _ in range(7)]
+    core, a glow and a faint halo, at the crossing's sizes; the flame's own filaments and motes draw in round it."""
 
     def emit(self, ctx):
         t = ctx.t
@@ -637,21 +642,6 @@ class Heart:
         # r ~ 2 sigma for the gaussian splat
         ctx.fr.splat(Hs, Hs, 2.0 * sig, Ee, np.repeat(C_HEART[None, :], 3, 0), ctx.cam0, ctx.cam1, profile=1,
                      zref=0.0, rmax=520.0, occ=False)
-        # the filaments: slow curling threads round the core (world size from the crossing's lantern: r 0.05-0.11
-        # m at ~285 px/m -> px)
-        ppm = 285.0
-        pts, es = [], []
-        for a0, tilt, rr in self.fil:
-            u = np.linspace(0, 1, 28)
-            a = a0 + 2.2 * u + 0.15 * (t / 24.0)
-            rad = rr * (0.4 + 0.6 * np.sin(np.pi * u)) * ppm * px
-            q = np.stack([np.cos(a) * rad, ((u - 0.5) * 0.16 * ppm + tilt * 0.03 * ppm * np.sin(a)) * px,
-                          np.sin(a) * rad], 1)
-            pts.append(H[None, :] + q)
-            es.append(0.9 * np.sin(np.pi * u) ** 2)
-        Pf = np.concatenate(pts)
-        ef = np.concatenate(es) * k * 6.0
-        ctx.fr.splat(Pf, Pf, 1.2 * px, ef, C_HEART, ctx.cam0, ctx.cam1, zref=0.0, occ=False)
 
 
 # ================================================================ emit
@@ -692,9 +682,20 @@ def emit(tl, ctx):
     tl.tembers.emit(ctx)
     tl.tsmoke.emit(ctx, lp, lc, lpw)
     tl.sparks.emit(ctx)
-    tl.fire.emit(ctx)
+    g = gather(t)
+    keep_t, keep_d = list(B.FLAME_TONGUES), B.MIND_TONGUE_DIM
+    try:
+        if g > 0:
+            th, H, W, lean, om, ph = B.FLAME_TONGUES[0]
+            B.FLAME_TONGUES[0] = (th, H * (1.0 - 0.72 * g), W * (1.0 - 0.3 * g), lean * (1.0 - g), om, ph)
+            B.MIND_TONGUE_DIM = keep_d + (1.0 - keep_d) * g
+        tl.fire.emit(ctx)
+    finally:
+        B.FLAME_TONGUES[:] = keep_t
+        B.MIND_TONGUE_DIM = keep_d
     emit_haze(ctx, wl)
-    tl.fsparks.emit(ctx)
+    if t < T_HEART + 30:
+        tl.fsparks.emit(ctx)
     tl._get('gold_runs', edge.GoldRuns).emit(ctx, tl)
     tl._get('pit_embers', edge.PitEmbers).emit(ctx, 0.8 - 0.5 * float(smoothstep(T_STOP, T_HOLDS, t)))
     rw.emit(ctx)
