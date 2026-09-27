@@ -92,7 +92,7 @@ WAVE_V = 0.14              # m per frame: the flame passes torch to torch outwar
 Q_RMAX = 50.0              # the queues on the roads (P3) reach this far out
 # light
 TORCH_I = 1.25             # = accord3.flames_and_lights (a torch's light, before its flicker)
-FLAME_I = 16.0             # accord3's council torches use 22; the crowd's are a touch lower so cores stay yellow
+FLAME_I = 12.0             # fallback only: the crowd's flames follow accord3.TORCH_I
 FIRE_HOT = SC.FIRE_HOT
 CROWD_SEED = 20260927
 MAXF_RENDER = 6000
@@ -145,6 +145,12 @@ def _accord3():
 def wind():
     A3 = _accord3()
     return np.asarray(A3._WIND, np.float64) if A3 is not None and hasattr(A3, '_WIND') else np.array([0.40, -0.16])
+
+
+def flame_i():
+    """The torch flames' emission: accord3's TORCH_I (the crowd's torches are the same torches)."""
+    A3 = _accord3()
+    return float(A3.TORCH_I) if A3 is not None and hasattr(A3, 'TORCH_I') else FLAME_I
 
 
 def haze():
@@ -790,7 +796,7 @@ def state(t, prev=True):
     FLr[:, 3] = L['hf']
     FLr[:, 4] = 0.088
     FLr[:, 5:7] = lean_xy
-    FLr[:, 7] = FLAME_I
+    FLr[:, 7] = flame_i()
     FLr[:, 8] = L['fseed']
     FLr[:, 9] = lit
     fl = np.array([FL3.torch_flicker(float(L['fseed'][i]), t, n3) for i in range(len(x))]) / 0.98 \
@@ -1900,7 +1906,7 @@ def smoke(rgb, depth, cam, cs, t, idx):
     rgb += cv2.resize(buf, (Wd, Hd), interpolation=cv2.INTER_LINEAR)
 
 
-def flames(rgb, depth, cam, cs, t):
+def flames(rgb, depth, cam, cs, t, alpha=0.85):
     """The crowd's torch flames and the firelight in their smoke."""
     W = world()
     TL = cs['TL']
@@ -1915,7 +1921,7 @@ def flames(rgb, depth, cam, cs, t):
     _airlight(rgb, depth, cam, TLv, TLv.shape[0], haze(), 0.06, 0.35, 1.6)
     if os.environ.get('CROWD_SMOKE', '1') != '0':
         smoke(rgb, depth, cam, cs, t, idx)
-    _flames(rgb, depth, cam, FLv, FLv.shape[0], float(t), W['n3'], 0.85)
+    _flames(rgb, depth, cam, FLv, FLv.shape[0], float(t), W['n3'], float(alpha))
 
 
 # ================================================================ the plug-in ===
@@ -2023,7 +2029,7 @@ def install(A3=None):
         try:
             import time as _t
             t0_ = _t.time()
-            flames(img, depth, cam, _frame(float(T)), float(T))
+            flames(img, depth, cam, _frame(float(T)), float(T), alpha)
             _tick('flames', t0_)
         except Exception:
             _failed('crowd flames')
