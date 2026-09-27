@@ -32,5 +32,7 @@ def giants():
 
 
 def fire_side_only():
-    """A: every tower is lit only on the face turned to the fire, black toward the others (BIBLE_V3 A7 / E5)"""
-    return CUT in ('A', 'A3')
+    """A: every tower is lit only on the face turned to the fire, black toward the others (BIBLE_V3 A7 / E5).
+    C3 (EMBERS-C, director 27 Sep: "use A's approved forge family: charcoal crust, banded stacks, glowing throats")
+    takes the same look"""
+    return CUT in ('A', 'A3', 'C3')
