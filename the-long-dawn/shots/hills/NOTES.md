@@ -1,4 +1,4 @@
-# >>> HEROINE-v3 (2026-09-27, lane `heroine`, branch claude/v3-heroine): STATE AT 01:06Z (WIP) <<<
+# >>> HEROINE-v3 (2026-09-27, lane `heroine`, branch claude/v3-heroine): STATE AT 01:08Z (WIP) <<<
 
 **Read with BIBLE_V3 REVISION 1** (director, 00:40Z): H1 re-key (B7: face never lit or in focus; tinder, gloves,
 sparks, breath, scarf; head a rim-lit silhouette at most); FIRE TEST = Bag End (the Ring on the tip of her steel IN
@@ -49,9 +49,14 @@ the set; hands/pose/light read; glove reads as dark suede/leather. Weak: glove f
 hollow with a slumped lip, a frozen melt pool, the Ring lying tilted on it with its letters faintly awake; the strike
 flash (3557) and a few sparks dying on the snow; her gloved near hand comes down and closes on it (3600-3660). Verdict:
 the band-in-the-hollow reads (= the bible's fallback image, and it is good); the hand closing is NOT there yet: four
-blunt dark fingers descend like a claw (want a thumb-and-index pinch seen obliquely). The full-res stills predate two
-fixes made after them: the lip's brown tint (the skin-style translucency tint was on the snow: M_SNOW trans -> 0) and
-the hard dark band at the top (the snow plane's clip edge: reach 1.2 -> 3 m).
+blunt dark fingers descend like a claw. The full-res stills in sheet 2 predate these fixes (01:06Z, tested at 0.4):
+* the brown/green stains on the snow were heroine_sdf's skin wrap (red wraps furthest) applied to snow: new
+  materials now wrap neutrally, snow wraps blue deepest (H1's materials 0-10 unchanged);
+* camera raised to ~45 deg down (`Find.camera`): her gloved hand now reads as a SILHOUETTE against the moonlit snow
+  (no detail needed = no doll), and the Ring's letters warm as her fingers come near (`near`, 3612-3668) and light
+  the glove and the hollow from below: the temptation is the key light;
+* still to do: a natural thumb-and-index pinch (the silhouette at 3640 is a clamp-like mass), the frozen pool is
+  pure black (give it the snow lip's reflection and a little frost), her dark body band at the top edge.
 
 **RENDER_SPECs (not launched; each waits on its look being approved):** `cloud/jobs/h5_deadember_b.json` (B 960-1199 ->
 `renders/heroine_B`), `h2_find_c.json` (C 3557-3683 -> `renders/heroine_C`), `h2_firetest_c.json` (C 4040-4183);

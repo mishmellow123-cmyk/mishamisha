@@ -524,6 +524,14 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
         wr = wrap
         wg = wrap * 0.55
         wb = wrap * 0.35
+        if m == M_SNOW:
+            # snow scatters blue deepest (the skin rule above would stain its terminators brown)
+            wr = wrap * 0.80
+            wg = wrap * 0.90
+            wb = wrap
+        elif m >= 11 and m != M_GLOVE:
+            wg = wrap
+            wb = wrap
         dr = max(0.0, (ndl + wr) / (1.0 + wr))
         dg = max(0.0, (ndl + wg) / (1.0 + wg))
         db = max(0.0, (ndl + wb) / (1.0 + wb))
