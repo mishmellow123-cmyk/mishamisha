@@ -88,12 +88,16 @@ RING_SHOTs with their own jobs; (4) after finals land: check every frame (decode
 
 
 ## >>> MONTAGE-MELT (C22 THE MELT, C 5360-5519; lane split off MONTAGE-3D-4 by the director, 27 Sep ~19:15Z) <<<
-* **STATE (20:40Z, before the usage gap; resume ~23:30Z):** `meltc.py` BUILT and committed (2085ecf). Full-res key
-  frames rendering on the farm (`cache/meltc_farm_k1.log`) -> `renders/_farmtest/meltC/ring_C/f_{05363,05400,05421,
-  05436,05444,05458}` = the check stills; sheet `_local_logs/review/melt_keys.jpg`. NEXT: JOB READY meltC to the
-  director; on approval `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/meltC.json --nodes 2` (160 fr,
-  Cycles h100 192 spp, -> `renders/ring_C` + `renders/ring_C_mask`). Then review the full run (contact sheet every
-  8 frames + the 5436-5460 run frame by frame) and delete `tests/t_mc*`.
+* **STATE (21:05Z, before the usage gap; resume ~23:30Z):** `meltc.py` built and pushed (46b8014). The six
+  full-res farm keys PASSED my check -> `renders/_farmtest/meltC/ring_C/f_{05363,05400,05421,05436,05444,05458}.jpg`
+  (+ `_mask`); 1:1 sheet `_local_logs/review/melt_keys.jpg`. **JOB READY meltC sent to the director at 21:02Z**
+  (160 fr, 5360-5519, 192 spp, -> `renders/ring_C` + `renders/ring_C_mask`). If approved and not yet launched:
+  `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/meltC.json --nodes 3` (~35-45 min; `--missing` to
+  resume). The job renders through `melt_local.py` (exits non-zero when a frame is missing: render.py exits 0 on a
+  Blender failure, which hid the first farm run's crash, a scalar-vs-vector bug in the char material, now fixed).
+  **On resume:** (1) check `renders/ring_C` has all 160 + the masks (`farm.py status`); (2) contact sheet every 8
+  frames + the run 5436-5460 frame by frame; look at the fall (5360-5366) and the rattle for pops; (3) the nitpicks
+  below as a cheap re-render if the director wants; (4) tell ACCORD-3 the plates are in (their NOTES).
 * **MONTAGE-3D-4 keeps** THE FIND, THE FIRE TEST, `ringc.py`, `glove.py`: MONTAGE-MELT never edits them. `ringc.py`'s
   `_melt` (RING_SHOT=melt) and `cloud/jobs/ringC_melt_1..6.json` are the pre-split draft: SUPERSEDED, never launch.
 * **Delivery:** `renders/ring_C/f_05360..05519` (C numbering; EDIT's C22 reads `ring_C` first) + `renders/ring_C_mask/`
@@ -113,8 +117,10 @@ RING_SHOTs with their own jobs; (4) after finals land: check every frame (decode
   film's bonfire sprites; sooty ash-dusted stone (dull, no worktop sheen). Tools: `tests/t_meltprev.py` (numpy
   preview of the geometry through the real camera, seconds), `melt_local.py` (render.py with its own lock),
   `MELT_PREVIEW=1` (Workbench motion check).
-* **Known nitpicks (cheap re-render later):** the surrounding fire is the weakest part (ACCORD's council fire will
-  partly replace it in AC3); two frames of the run (5447-5448) show a soft crumple where the bulbs meet.
+* **Known nitpicks (cheap re-render later):** the blurred burning kindling behind reads a little lava-orange (tone the
+  char glow down, `_char_mat` x4.0 -> ~2, and the kB/kC sprite gains); two frames of the run (5447-5448) show a soft
+  crumple where the bulbs meet (smooth kv along the arc in `_profile`); ACCORD's council fire partly replaces the
+  surround in AC3 anyway.
 * **H5 calls (all mine):** darker, never overexposed; a crisp drop; letters that STAY letters until they go out; NO
   doubled rim (glazed donut / dentures); no plughole (no ring seen flat from above with a dark hole).
 * **Sync (music/v3/barmap_C.json):** 5360 the white heart, her fingers forced open (ACCORD's P2 handle), the drop;
