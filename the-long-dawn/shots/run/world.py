@@ -740,3 +740,83 @@ def night_light():
     Q[13] = 1.5
     Q[16] = 0.10
     return Lk, amb, S, fogp, Q
+
+
+# ------------------------------------------------------- the red under-glow ---
+# ADDITIVE (v3, RUN-A): the race's red seen through the cloud deck. A post-pass over a shaded frame: for every
+# cloud-sea pixel it adds emission from a table of glowing patches (UG rows: x, z, radius, r, g, b, noise
+# scale, trough bias), brightest in the troughs where the deck is thinnest, attenuated by the same aerial
+# perspective as shade(). Callers that never call it see no change.
+
+@njit(parallel=True, fastmath=True, cache=True)
+def cloud_glow(C, D, P, CR, UG, fogp, out):
+    H, W = D.shape
+    for j in prange(H):
+        for i in range(W):
+            d = D[j, i]
+            if d >= 1e29:
+                continue
+            fxx, fzz, rxx, rzz = C[3], C[4], C[5], C[6]
+            f, cx, cyy = C[7], C[8], C[9]
+            xo = i + 0.5 - cx
+            dxh = fxx * f + rxx * xo
+            dzh = fzz * f + rzz * xo
+            hl = math.sqrt(dxh * dxh + dzh * dzh)
+            vy = cyy - (j + 0.5)
+            sl = vy / hl
+            dxh /= hl
+            dzh /= hl
+            x = C[0] + dxh * d
+            z = C[2] + dzh * d
+            # cheap reject: no patch reaches this point
+            acc = 0.0
+            for k in range(UG.shape[0]):
+                qx = x - UG[k, 0]
+                qz = z - UG[k, 1]
+                if qx * qx + qz * qz < 6.25 * UG[k, 2] * UG[k, 2]:
+                    acc = 1.0
+                    break
+            if acc == 0.0:
+                continue
+            dist = d * math.sqrt(1.0 + sl * sl)
+            fp = dist / C[7]
+            hc = h_cloud(x, z, fp, P[2])
+            if hc < h_near(x, z, fp):
+                continue
+            if hc < h_rock(x, z, fp, CR):
+                continue
+            trough = smoothstep(CLOUD_Y + 120.0, CLOUD_Y - 110.0, hc)
+            er = 0.0
+            eg = 0.0
+            eb = 0.0
+            for k in range(UG.shape[0]):
+                qx = x - UG[k, 0]
+                qz = z - UG[k, 1]
+                r2 = (qx * qx + qz * qz) / (UG[k, 2] * UG[k, 2])
+                if r2 > 6.25:
+                    continue
+                ns = UG[k, 6]
+                nz = 0.55 + 0.45 * fbm2(x / ns + k * 3.1, z / ns - k * 1.7, 3.0, 51 + k)
+                g = math.exp(-r2 * 1.6) * nz * (UG[k, 7] + (1.0 - UG[k, 7]) * trough)
+                er += UG[k, 3] * g
+                eg += UG[k, 4] * g
+                eb += UG[k, 5] * g
+            yw = hc - ((x - P[0]) ** 2 + (z - P[1]) ** 2) / (2.0 * R_EARTH)
+            yc = C[1]
+            tau = height_fog_tau(dist, yc, yw, fogp[0], fogp[1])
+            tau += height_fog_tau(dist, yc - CLOUD_Y, yw - CLOUD_Y, fogp[2], fogp[3])
+            # the glow lights the cloud-top mist in front of it too, so it survives the haze far better than the
+            # deck's own reflected light (softened transmittance)
+            tr = math.exp(-0.3 * tau)
+            out[j, i, 0] += er * tr
+            out[j, i, 1] += eg * tr
+            out[j, i, 2] += eb * tr
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def heights(xs, zs, fp, CR, out):
+    """ADDITIVE (v3): terrain height (no cloud, no curvature) at many points."""
+    for k in prange(xs.shape[0]):
+        h = h_near(xs[k], zs[k], fp)
+        hf = h_rock(xs[k], zs[k], fp, CR)
+        out[k] = hf if hf > h else h
