@@ -430,15 +430,15 @@ class E15:
         gy = -G[:, 1]
         gy = gy - 0.5 * (gy.max() + gy.min())
         wide = max(float(gx.max() - gx.min()), 1e-6)
-        sc_ = 0.2 / wide                                   # the word spans 20 % of the flame's height (its body)
-        yc = 0.43 + 0.0016 * (t - 882.0)                   # it rises slowly with the licks
+        sc_ = 0.27 / wide                                  # the word spans the body (27 % of the flame's height) ...
+        yc = 0.45 + 0.0016 * (t - 882.0)                   # it rises slowly with the licks
         fx = gx * sc_
-        fy = yc + gy * sc_
+        fy = yc + gy * sc_ * 2.4                           # ... and the heat draws its letters up tall (legible)
         X = x0 + (ax * fy + px * fx) * Hp
         Y = y0 + (ay * fy + py * fx) * Hp
         burn = smoothstep(944 + 60 * (fy - yc + 0.1), 962 + 60 * (fy - yc + 0.1), t)   # from below
         m = np.zeros((H, W), np.uint8)
-        th = max(1, int(round(0.011 * Hp)))
+        th = max(2, int(round(0.017 * Hp)))
         seg_ok = (1.0 - burn) > 0.5
         pts = np.stack([X, Y], 1)
         for a_ in range(len(pts) - 1):
