@@ -1,3 +1,11 @@
+> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
+> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
+> - The fire-basket plinth shows triangle-fan seams.
+> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
+> - The dark speckles on B's snow read as dalmatian spots (climb 700).
+>
+> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
+
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
 ## RUN-A2 STATE AT PAUSE (27 Sep ~21:00Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
@@ -286,6 +294,9 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
   illum 2640; also scroll 240 catch + illum 2490; scroll 256-295 frame-to-frame diffs smooth, no pops).
   ON RESUME: `grep -c` the log for GAVE UP / failed; count landed frames (reveal 240, scroll 320, illum 480);
   any missing -> `python3 the-long-dawn/cloud/farm.py <job>.json --missing --nodes 1-3` (after asking main).
+* **21:14Z:** finals scroll 320/320 + illum 480/480 COMPLETE; reveal 137/240 rendering (937/1040), no failures.
+  R13b LAUNCHED by main at 20:53Z (request 0927-165243-mirrorC-83107 with MIRROR's mirror_C; log
+  `~/mishamisha/_local_logs/jobs/mirror_ringfall_farm.log`), queued at 21:14Z.
 * **R13b THE RING FALLS part b (C 2840-2959): JOB READY SENT 20:53Z** (runC_ringfall_{a,b,c}, 3 x 40 f ->
   `renders/runC_ringfall/`; code `shots/run/ringfall_ink.py` at 136272f; strip `_local_logs/review/
   runC_ringfall.jpg`). ON RESUME: if the director launched it, check it landed (120 frames) and look at 2840,
