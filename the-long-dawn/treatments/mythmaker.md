@@ -113,4 +113,39 @@ C is the longest cut on purpose. The producers asked for the old tale throughout
 | 150–155 | The page burns through to white. | Everything in one hit, then cut to silence. | — | The brink. |
 | 155–165 | Black. One ember drifts down and dims. | Solo piano: the call, broken off. | 156–164 **In the old story, the Ring was unmade in the fire that forged it.** · 160.5–164 **This fire could not be unmade.** | Where our tale leaves the old one. |
 
-<!-- NEXT: C(4) chapters IV-VII -->
+### IV · THE MUSTER OF ROHAN (165–225)
+| t | picture | sound & music | text | conveys |
+|---|---|---|---|---|
+| 165–169 | Page turn. Card. | Wind. | IV · THE MUSTER OF ROHAN | In the old tale, a people answering the call of one it had long mistrusted. |
+| 169–185 | The first beacon: the heroine's flint, sparks, her breath, the catch, the roar (hills_v2). The ink-wash pass covers everything except the fire and the skin it lights, so she looks like a living illustration. The pull-back reveals a drawn mountain world, lit in colour only where her fire reaches. | Three flint strikes in silence, then a single horn: the call. | 178–184 **It was not the great who lit the first beacon.** | Elrond's small hands: the turn begins with ordinary people. |
+| 185–203 | **THE BEACONS OF GONDOR.** The Beacon Run flies peak to peak (run_v2 with the red-team fixes) under C's ink pass. The land is pen-and-wash; each beacon is full-colour fire with lit smoke, and each flares on its beat. | The horn call passed from peak to peak, each phrase farther and more reverberant. Strings in a driving 6/8. | — | The most loved image in the book, and the answer spreading. |
+| 203–215 | **THE LIVING MAP.** The camera climbs and the 3-D ink mountains sink back into the parchment until we are over the map (map_C). Fire runs along the drawn ranges, rivers and coasts. The ending stays regional and close enough that the hatching still reads. | The horn line joined by the whole brass section, pianissimo. | 204–211 **And hill by hill, the peoples who trusted no one answered.** | Every people, rivals included, and it took time. |
+| 215–225 | The fires on the map draw together toward one point. Dissolve to rivers of torchlight converging on a ring of standing stones (accord, src 1912–2010). | The strings settle. | — | The peoples gather. |
+
+### V · THE COUNCIL OF ELROND (225–290)
+| t | picture | sound & music | text | conveys |
+|---|---|---|---|---|
+| 225–229 | Card. | Solo cello. | V · THE COUNCIL OF ELROND | |
+| 229–245 | The stone table seen 10–15° off vertical with a slow orbit, in blue darkness (the red-team's fix). The emissaries differ in height and build. The gold Ring lies askew in the cold, grey hearth (accord_C). | Cello theme; the strings enter. | 233–240 **The fire could not be hidden, and it could not be unmade.** | The Council's syllogism with one premise changed. |
+| 245–258 | A tall, slender figure and a short, broad one step forward together and lay their torches in first. Then everyone. The flames merge into one gold fire around the Ring. | No hits. The harmony turns toward the major. | — | Two old rivals move first and the others join them: an elf and a dwarf, for anyone who has read the book. |
+| 258–268 | The Ring glows, softens and sags into the ash. Its letters flare once and go out. Cut: the Eye, its iris fibres unravelling and the slit closing on darkness. | The Ring motif descends and dissolves into the theme. | — | The will to hold the fire alone is unmade; the fire is not. |
+| 268–275 | The gold fire at the table's centre. Every hand is empty and withdrawn. | Sustained strings. | 268–274 **The Ring was unmade in a fire everyone had lit.** | Unmade by all, not at the enemy's forge. |
+| 275–290 | The emissaries set the fire in an iron cradle on poles and lift it together. Nine of them walk out along a ridge under the stars, drawn in ink, small, the smallest in front setting the pace (NEW). | The theme as a slow walking march, pizzicato low strings. | 279–286 **And they carried the fire together, no faster than the smallest could walk.** | Carried together, at the pace of the smallest, in the open. |
+
+### VI · THE FIELD OF CORMALLEN (290–345)
+| t | picture | sound & music | text | conveys |
+|---|---|---|---|---|
+| 290–294 | Card. | | VI · THE FIELD OF CORMALLEN | |
+| 294–318 | Far off, the walkers reach the edge of the ranges. The sky lightens slowly: the dawn is long. At 312 the sun breaks over the eastern ranges (dawn_C). From the sun outward, watercolour floods the ink world: gold on the cloud sea, rose on the snow, blue in the valleys. | A long crescendo that never climaxes in a cymbal. The theme in full for the first time, with the brass chorale as C's choral colour. | — | The eucatastrophe, earned and unhurried. |
+| 318–330 | Far and small, a loose group of eagles glides once across the distant ranges, never across the sun and never toward us: messengers, not rescuers. | The theme's answer passed to the horns. | — | The news goes to every land. |
+| 330–345 | **THE YEAR OF PLENTY** (NEW, watercolour over the map and drawings). Orchards blossom along the drawn rivers. Fields ripen. A young silver-barked tree grows in a field. Bread on tables, children in the grass. | Woodwinds: the Party dance returns in the orchestra. | 334–340 **It was a marvellous year.** | Abundance, not only survival. The line is Tolkien's own word for the Shire's year after the war. |
+
+### VII · THE GREY HAVENS (345–400)
+| t | picture | sound & music | text | conveys |
+|---|---|---|---|---|
+| 345–349 | Card. | | VII · THE GREY HAVENS | |
+| 349–372 | Under the lantern tree at first light, the festival fires pale. The child, half asleep over the book, turns to the last pages. They are blank. | The distant dance, now tired and sweet. | 356–360 *(child)* **Did everything sad come untrue?** · 363–366 *(elder)* **Not yet.** | Sober hope: the flourishing is real and unfinished. The question is Sam's at Cormallen, bent into the past tense. |
+| 372–386 | The elder takes a pen from her coat and lays it in the gutter of the first blank page, then folds the child's hands over the book. She looks west, where the sea catches the first light. | A solo horn plays the call; the strings answer. | — | *The last pages are for you:* the tale passes on to a new hand. |
+| 386–400 | The title is inked stroke by stroke across the first blank page, and the dawn warms the paper. Fade. | The last call and answer. The final chord is left open. | **THE LONG DAWN** | |
+
+<!-- NEXT: C(5) full text, C(8) -->
