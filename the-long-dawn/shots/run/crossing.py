@@ -23,7 +23,7 @@ import sys
 import time
 
 import numpy as np
-from numba import njit, prange
+from numba import njit
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -164,7 +164,7 @@ S_L0 = None                                   # arc length of the lantern at fra
 def variant_cfg(variant):
     if variant == 'few':
         return dict(n=12, gap=4.2, jit=0.5, r1=52.0, dT=12.0, hfov1=46.0, h1=1.6, r0=5.5)
-    return dict(n=40, gap=2.6, jit=0.35, r1=85.0, dT=22.0, hfov1=48.0, h1=2.5, r0=5.5)
+    return dict(n=40, gap=2.6, jit=0.35, r1=64.0, dT=17.0, hfov1=48.0, h1=2.2, r0=5.5)
 
 
 def _hh(i, j=0):
@@ -254,6 +254,11 @@ def breath(t):
 
 
 # ------------------------------------------------------------------ camera ---
+def _ss(x):
+    x = min(max(x, 0.0), 1.0)
+    return x * x * (3.0 - 2.0 * x)
+
+
 def _sm(x):
     x = min(max(x, 0.0), 1.0)
     return x * x * x * (x * (6 * x - 15) + 10)
@@ -278,8 +283,10 @@ def camera(frame, W=1920, H=804, cfg=None):
     cfg = cfg or variant_cfg('main')
     t = frame / FPS
     L = heart_pos(t)
-    e1 = _sm((t - 2.5) / 27.0)
-    e2 = _sm((t - 2.0) / 26.0)
+    # the draw-back starts within a second of the match cut (a cubic ease: it is under way by 3 s) and settles at
+    # 26 s; the swing from behind to side-on runs alongside it
+    e1 = _ss((t - 1.0) / 25.0)
+    e2 = _ss((t - 1.0) / 24.0)
     r = cfg['r0'] * (cfg['r1'] / cfg['r0']) ** e1
     beta = math.radians(14.0 + 60.0 * e2)
     h = 1.25 + (cfg['h1'] - 1.25) * e1 ** 1.3
@@ -287,7 +294,7 @@ def camera(frame, W=1920, H=804, cfg=None):
     T = L - E3 * cfg['dT'] * e1 - UP * 0.3 * e1
     d = T - pos
     yaw = math.degrees(math.atan2(d[0], d[2]))
-    pitch = math.degrees(math.atan2(d[1], math.hypot(d[0], d[2]))) + 5.0 * e1
+    pitch = math.degrees(math.atan2(d[1], math.hypot(d[0], d[2]))) + 3.0 * e1
     hfov = 32.0 + (cfg['hfov1'] - 32.0) * e1
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
 
@@ -334,7 +341,6 @@ def underglow(t):
 def wf_positions():
     out = []
     for u in WF_U:
-        p = uv(u, 5.5)
         # the top of the little rock step
         best = None
         for dv in np.linspace(-2.5, 2.5, 11):
@@ -491,7 +497,8 @@ def draw_sky(fr, t, pxs):
     st = stars()
     a = sky_angle(t)
     mask = (fr.dist > 1e8).astype(np.float32)
-    expo = min(a, 10.0) * smoothstep(0.0, 6.0, a)         # degrees of arc in each trail
+    expo = min(a, 6.0) * smoothstep(0.0, 6.0, a)          # degrees of arc in each trail (short: the sky
+    # turns, it is not a star-trail photograph)
     M = 2 if expo < 0.05 else int(8 + 16 * min(expo / 10.0, 1.0))
     angs = a - expo * (1.0 - np.linspace(0.0, 1.0, M))
     D = st['dir']
@@ -521,7 +528,7 @@ def draw_sky(fr, t, pxs):
         return
     # the head (current position) stays a point; the arc behind it is the exposure, fading with age
     wage = np.exp(-(1.0 - np.linspace(0.0, 1.0, M)) * 1.6)[None, :]
-    seg_e = lum[:, None] * ext * wage * 0.45 * (0.4 + 0.6 * min(expo / 8.0, 1.0))
+    seg_e = lum[:, None] * ext * wage * 0.36 * (0.4 + 0.6 * min(expo / 5.0, 1.0))
     _trails(fr.img, mask, sx.astype(np.float64), sy.astype(np.float64), seg_e[:, :-1].astype(np.float64), col,
             float(sig))
     SK._splat(fr.img, sx[:, -1].astype(np.float64), sy[:, -1].astype(np.float64), (head * 0.6).astype(np.float64),
@@ -698,23 +705,21 @@ def draw_trail(img, zb, scam, t, cfg, gain):
     """The faint trail of light the line leaves on the path behind it (opens with the long exposure)."""
     if gain <= 0.0:
         return
+    # only BEHIND the last walker, on the trodden snow: between the walkers a lit line reads as a wire
     S_ = line_s(t, cfg)
-    s_head = S_[1]
-    ss = np.arange(s_head - 260.0, s_head - 0.5, 0.5)
-    I = np.zeros(len(ss))
-    for sk in S_[1:]:
-        dlt = sk - ss
-        I += np.where(dlt > 0, smoothstep(0.6, 3.2, dlt) * np.exp(-dlt / 55.0), 0.0)
-    I = I / 8.0
+    s_tail = S_[-1]
+    ss = np.arange(s_tail - 150.0, s_tail - 0.8, 0.4)
+    dlt = s_tail - ss
+    I = np.exp(-dlt / 45.0) * smoothstep(1.0, 5.0, dlt)
     P, _ = at(ss)
-    P = P + UP * 0.72
+    P = P + UP * 0.05
     sx, sy, z = scam.project(P)
     col = np.array([1.0, 0.62, 0.30])
     for m in range(len(ss) - 1):
         if z[m] < 0.5 or I[m] <= 1e-4:
             continue
         e = gain * 0.5 * (I[m] + I[m + 1])
-        w = max(0.05 * scam.f / z[m], 0.6)
+        w = max(0.22 * scam.f / z[m], 0.6)
         _aa_line(img, zb, float(sx[m]), float(sy[m]), float(sx[m + 1]), float(sy[m + 1]), float(z[m]), float(w),
                  float(col[0] * e), float(col[1] * e), float(col[2] * e), 0.4)
 
@@ -829,7 +834,7 @@ def render(frame, scale=1.0, ss=1.5, variant='main', trail=True):
     SP.render(fr.img, fr.zb, C, Pr, Ob, np.array(lights, np.float64), moon, light[1] * 1.3, light[3], scam.pos[1])
     a = sky_angle(t)
     if trail:
-        draw_trail(fr.img, fr.zb, scam, t, cfg, 0.06 * smoothstep(4.0, 16.0, a))
+        draw_trail(fr.img, fr.zb, scam, t, cfg, 0.10 * smoothstep(4.0, 16.0, a))
     draw_rope(fr.img, fr.zb, scam, waists, lights, md, mf)
     draw_fires(fr.img, fr.zb, scam, t)
     draw_small_glows(fr.img, fr.zb, scam, lant)

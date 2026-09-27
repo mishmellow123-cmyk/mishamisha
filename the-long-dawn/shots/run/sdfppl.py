@@ -397,7 +397,6 @@ def walker(sc, feet, w, phase, rgb, lantern=None, staff=False, pack=True, height
     w = _unit([w[0], 0.0, w[2]])
     s = np.cross(up, w)            # left of the walker
     h = height
-    sn, cs = math.sin(phase), math.cos(phase)
     bob = 0.018 * h * math.cos(2 * phase)
     pel = feet + up * (0.93 * h + bob)
     fwd_lean = w * math.sin(lean) + up * math.cos(lean)

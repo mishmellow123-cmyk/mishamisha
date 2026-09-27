@@ -122,7 +122,7 @@ def glow_at(dx, dy, dz, GP, SKL0, SKLD, SKL):
                         loc += SKL[kk]
                     loc /= 11.0
                     blk = min(max((pk - loc - 0.0006) / 0.0030, 0.0), 1.0)
-                    fade = math.exp(-dl / 0.22)
+                    fade = math.exp(-dl / 0.22) * math.exp(-(daz / 0.45) ** 2)   # rays only near the source
                     g *= 1.0 - GP[11] * blk * fade
     elif d < 1.5:
         # a leaning pyramid of pale light (the zodiacal cone)
@@ -179,9 +179,12 @@ def sky_pass(img, dist, trans, C, GP, MW, SKL0, SKLD, SKL, cam_y, t):
                 fp = tt * pix / max(dy + 0.02, 0.02)
                 o1 = min(max(math.log2(max(2600.0 / max(fp * 2.0, 1e-3), 1.0)), 1.0), 6.0)
                 o2 = min(max(math.log2(max(700.0 / max(fp * 2.0, 1e-3), 1.0)), 0.0), 4.0)
-                n1 = fbm2(x / 2600.0 + 0.00002 * t, z / 2600.0, o1, 171)
+                # altocumulus in waves: cells stretched across a wind direction, in banks with clear gaps
+                ua = 0.80 * x + 0.60 * z
+                va = -0.60 * x + 0.80 * z
+                n1 = fbm2(ua / 4200.0 + 0.00002 * t, va / 1500.0, o1, 171)
                 n2 = fbm2(x / 700.0, z / 700.0, o2, 172) if o2 > 0.5 else 0.0
-                cov = GP[18] + 0.60 * fbm2(x / 42000.0 + 3.0, z / 42000.0, 3.0, 173)
+                cov = GP[18] + 0.95 * fbm2(x / 30000.0 + 3.0, z / 30000.0, 3.0, 173)
                 dens = min(max((n1 + 0.4 * n2 + cov + 0.05) / 0.75, 0.0), 1.0) ** 1.5
                 # far off the deck thins into streaks, and fades out toward the horizon
                 dens *= min(max((dy - 0.03) / 0.12, 0.0), 1.0)
@@ -196,7 +199,8 @@ def sky_pass(img, dist, trans, C, GP, MW, SKL0, SKLD, SKL, cam_y, t):
                     if daz < -math.pi:
                         daz += 2 * math.pi
                     wz = 0.85 if GP[15] < 0.5 else (0.45 if GP[15] < 1.5 else 1.3)
-                    Lc = GP[2] * GP[16] * math.exp(-(daz / wz) ** 2) * (0.35 + 0.65 * math.exp(-el / 0.35))
+                    # grazing light from below the horizon: cloud high overhead gets little of it
+                    Lc = GP[2] * GP[16] * math.exp(-(daz / wz) ** 2) * (0.10 + 0.90 * math.exp(-el / 0.13))
                     cosg = math.cos(daz) * math.cos(el)
                     ph = 0.25 + 2.2 * max(cosg, 0.0) ** 6
                     silver = a * math.exp(-0.9 * tau) * ph * 1.8 + 0.30 * a
@@ -218,10 +222,10 @@ def glow_params(design, I):
     GP[0] = math.radians(GLOW_AZ)
     GP[1] = math.radians(EL_S)
     GP[2] = I
-    col = np.array([0.80, 0.90, 1.00])          # the mind palette: ice-white, a breath of cyan
+    col = np.array([0.72, 0.88, 1.00])          # the mind palette: ice-white, a breath of cyan
     GP[3:6] = col
     GP[6] = math.radians(44.0)
-    GP[7] = math.radians(6.0)
+    GP[7] = math.radians(5.0)
     GP[8] = 0.7
     GP[9] = math.radians(30.0)
     GP[10] = math.radians(2.6)
@@ -234,8 +238,8 @@ def glow_params(design, I):
     GP[17] = 0.032
     GP[18] = {'arc': -0.22, 'cone': -0.34, 'veil': -0.14}[design]
     GP[19] = 5500.0
-    GP[20:23] = lin('#04071A') * 0.9
-    GP[23:26] = lin('#141C3C') * 0.8
+    GP[20:23] = lin('#030822') * 1.0
+    GP[23:26] = lin('#101A40') * 0.8
     GP[26] = 0.09
     if design == 'veil':
         GP[8] = 1.0

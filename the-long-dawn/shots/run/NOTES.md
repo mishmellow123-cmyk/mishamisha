@@ -1,27 +1,15 @@
 # RUN-A (lane runA) REPORT: THE CROSSING greybox (risk test #3) + FALSE DAWN stills
-*27 Sep, 01:00Z. Revision 1 absorbed (A 4:30; R4 cut; A ends in the blue hour, no sun disc; FALSE DAWN and the red
-under-glow are must-haves).*
+*27 Sep, 05:30Z (resumed after the block). Revision 1 absorbed (A 4:30; R4 cut; A ends in the blue hour, no sun disc;
+FALSE DAWN and the red under-glow are must-haves).*
 
-## STATE AT THE BLOCK (01:20Z to 05:00Z): renders running on this box
-* 01:07Z: `grey_q` at 92/960 (~7 frames/min; the close-up frames are the slow ones). Expect `grey_q` about 02:30Z,
-  `grey_q_few` about 02:50Z, `grey_h` running past 05:00Z (partial at resume is fine; judge the wides first).
-* Pushed: `claude/v3-runA` and `claude/run-a-crossing-greybox-ub8wbz` at 0b1e3c9 (code, job files, two review sheets).
-* 01:06Z: cloth folds and mottle in the SDF shader; the front bearer in near-black wool (the one figure the lantern
-  must light from the camera's side).
-* `scratchpad/bg_chain.sh` (launched 00:52Z): `renders/crossing_A/grey_q` (0.25 scale, all 960 frames) ->
-  `grey_q_few` (the fallback: 12 larger walkers, every 2nd frame) -> `grey_h` (0.5 scale, 960 frames). Each stage
-  writes an mp4 to `review/v3/crossing_greybox_{q,q_fewer_larger,h}.mp4`. Log: `scratchpad/bg_chain.log`.
-* `scratchpad/bg_fd.sh` (00:58Z): FALSE DAWN, three designs at 0.5 scale (frames 160, 300, 420) ->
-  `renders/falsedawn_A/half/{arc,cone,veil}`, then the arc at full res -> `renders/falsedawn_A/full_arc`.
-* **Do not edit `crossing.py` while the chain runs**: later stages start new processes that import it.
-* 01:03Z changes (picked up by `grey_q_few` and `grey_h`, NOT by `grey_q`): about half the walkers carry the lantern
-  on the far side (their bodies silhouette against their own light: less "string of lights"); the rope much subtler
-  (it had been stringing the lights together like a festoon); the red under-glow +50% and deeper red (it now reads
-  as a dull smoulder along the horizon band). FALSE DAWN arc: a thicker high deck silvered from beneath (the bible's
-  "silvers the undersides of high cloud"); `scratchpad/bg_fd2.sh` renders it to `renders/falsedawn_A/full_arc2`
-  (full res, frames 300, 420) and `half_arc2` (8 frames across the swell).
-* NEXT on resume: contact sheets from grey_q / grey_h / half (-> review/v3/*.jpg); judge main vs fewer-larger at 0.5
-  scale; the fixes below; commit + push `claude/v3-runA`; hand the director the RENDER_SPEC.
+**Verdict.** THE CROSSING greybox PASSES against its fallback with one change of framing: keep all 40 walkers but end
+the draw-back at 64 m (figures ~54 px at full res), so the line reads as people carrying lights, not LED dots, and
+runs on out of frame. The fewer-larger fallback (`--variant few`) reads as people even more plainly and shows the
+pole-bearers as an iconic silhouette, but it plays as a small party, not "about forty". FALSE DAWN: the **arc** wins.
+
+**Lesson for every lane:** background renders on the session's own box do NOT run through a usage block. The box is
+frozen while the session is idle and rebooted at resume (here the chain stopped at 01:13Z at frame 140/960). Anything
+that must render while we wait goes to cloud jobs.
 
 ## THE CROSSING (R6): what is built (`shots/run/crossing.py`, `shots/run/sdfppl.py`, additive `world.py`)
 * **Set.** A knife-edge arete (8 `ridge_row` segments, a wandering crest, flanks falling ~60 deg to the cloud sea
@@ -30,66 +18,66 @@ under-glow are must-haves).*
   the world's sunrise azimuth); the camera stays on the south side and never gets ahead of the lantern.
 * **People.** 2 hooded bearers carry the great lantern (hexagonal, iron and glass, pierced roof, finial ring) hung
   from a crossbar between two poles on their shoulders; 40 roped walkers (packs, a third with staffs, varied heights
-  and gait), each with a small orange hand-lantern that swings with the step. Walk cycles follow the distance
-  actually walked (no foot sliding); the spacing breathes like an accordion. All 3-D SDF (`sdfppl.py`), depth-tested
-  into the terrain, lit by every lantern (inverse square) plus the moon; no faces anywhere (hoods, seen from behind
-  or side-on at 20-45 px).
-* **Pace.** 0.45 m/s: one 0.375 m step per beat at 72 BPM. The great lantern is a 2.6-unit point light: its pool on
-  the snow is a few paces across. The camera draws back (5.5 m -> 85 m, exponential, eased), swings from behind the
-  rear bearer to side-on, and settles at crest level.
+  and gait), each with a small orange hand-lantern swinging with the step, about half of them on the far side so
+  the body silhouettes against its own light. Walk cycles follow the distance actually walked (no foot sliding); the
+  spacing breathes like an accordion. All 3-D SDF (`sdfppl.py`), depth-tested into the terrain, lit by every lantern
+  (inverse square) plus the moon, cloth with hanging folds and mottle; no faces anywhere (hoods, seen from behind or
+  side-on).
+* **Pace.** 0.45 m/s: one 0.375 m step per beat at 72 BPM. The great lantern is a 2.6-unit point light whose pool on
+  the snow is a few paces across. The camera draws back 5.5 m -> 64 m (exponential in distance, a cubic ease from
+  1 s to 26 s: under way by 3 s, 15 m at 12 s), swings from behind the rear bearer to side-on and settles at crest
+  level for the last 14 s (the walking wide: fires fed, red going out, moon setting).
 * **Two clocks.** The people keep real time. The sky keeps a faster clock that eases in once the draw-back is under
-  way (46 deg of sky, about three hours): stars become arcs about a low pole (latitude 8 deg, so the pole sits inside
-  the wide), the moon sets behind the arete (backlight at first, darkness by the end), the watch-fires burn low and
-  are fed (flare) on that clock, 34 far watch-fires on the islands do the same, the red under the cloud goes out
-  patch by patch, the lantern's fire warms from ice-white to gold, and a faint trail of light opens on the path
-  behind the line.
+  way (46 deg of sky, about three hours): stars become short arcs about a low pole (latitude 8 deg, pole in frame;
+  arcs capped at 6 deg so it reads as the sky turning, not a star-trail photograph); the moon sets behind the arete
+  (backlight first, darkness by the end: the dark hour before the blue hour); the watch-fires burn low and are fed;
+  34 island watch-fires do the same; the red under the cloud goes out patch by patch; the lantern's fire warms from
+  ice-white toward gold.
 * **The red under-glow (must-have)** is a reusable ADDITIVE post-pass, `world.cloud_glow(C, D, P, CR, UG, fogp, out)`:
   emission on cloud-sea pixels from a patch table (x, z, radius, rgb, noise scale, trough bias), brightest in the
   troughs, lighting the cloud-top mist in front of it. Existing callers are untouched (also added: `world.heights`).
-  In the crossing the only visible cloud sea is the band under the horizon beyond ~15 km (the arete hides the rest),
-  so the patches sit 14-48 km out and read as a dull red smoulder along the horizon, going out one by one.
+  From the arete only the band under the horizon beyond ~15 km is visible, so the patches sit 14-48 km out and read
+  as a dull red smoulder along the horizon between the islands, going out one by one. R3/R2 can call it as is.
 
-## Risk test result (quarter-scale stills; motion greybox rendering)
-* **Composition: PASS.** Close-up match cut on the heart from behind the rear bearer; the draw-back; the wide at crest
-  level with the line silhouetted against the islands, the cloud band and the sky; the star trails arcing about
-  the pole read as "the sky wheels" (first version read as warp-speed streaks; fixed with a low pole in frame,
-  shorter arcs, compressed star brightness).
-* **The line: NOT YET PASSED at 0.25 scale.** From above, the first wide read as LED dots, as the bible predicted.
-  With the camera lowered to crest level (figures ~43 px at full res, backlit by the moon and the far cloud) it
-  reads as people walking in the half-wide, but the final wide still leans "string of lights" at 0.25 scale.
-  Judge on `grey_h` (0.5 scale) against `grey_q_few` (12 larger walkers). If main still reads as dots: ship the
-  fewer-larger variant (`--variant few`: 12 walkers, camera at 52 m).
-* **Lantern's pool: PASS** (visible warm pool on the crest in the wides). **Rope: weak** (sub-pixel; reads only
-  near lanterns). **Trails: too faint to judge**; keep subtle. **Red under-glow: faint**, needs +50% and one patch
-  nearer the frame centre.
-* **Weaknesses to fix before any full render:** the bearers in the first 5 s are mannequin-grey where the lantern
-  lights them (cloth needs fold normals and noise albedo, a darker grade); the heart needs its filament detail tuned
-  at full res; the far islands read a little flat.
+## Risk test, item by item (0.25 scale motion at 12 fps; 0.5 scale 5-s wide at 24 fps; review/v3/runA_crossing_*)
+* **Composition: PASS.** Match cut on the heart from behind the rear bearer; the draw-back; the side-on wide at crest
+  level with the line against the islands, the cloud band and the sky.
+* **The line: PASS at 64 m** (0.5 scale). From above (first try) it read as LED dots; at 85 m it leaned "string of
+  lights"; at 64 m every light has a hooded figure with a pack over it and a pool on the snow, and the rope sags
+  between them. Fallback kept: `--variant few` (12 walkers, camera at 52 m).
+* **Lantern's pool: PASS.** **Rope: PASS, subtle** (a thin sagging line; brighter it strings the lights like a festoon).
+* **Wheeling sky: PASS** after two fixes (warp-speed streaks -> low pole in frame; full star-trail circles read as a
+  wallpaper -> 6 deg arcs, fainter).
+* **Trails: DROPPED in this framing.** Between walkers a lit line reads as a wire; behind the tail (on the trodden
+  snow, code kept) it is off-frame at 64 m. Recommend the trail be seen, if anywhere, in the blue-hour shot.
+* **Remaining weaknesses:** the close-up bearers are still smooth-limbed (hands are capsules; OK at 5.5 m in a
+  backlit frame, not closer); the arete's lower flank is a large dark area in the wide; the far islands read a
+  little flat; the red smoulder can read as a last band of sunset if graded warmer (keep it deep red, patchy).
 
 ## FALSE DAWN (R1): three still designs (`shots/run/falsedawn.py --design {arc,cone,veil}`)
-Moonless midnight from the Dawn-C vantage over the foothills, looking at the world's sunrise azimuth; the Milky
-Way rising from the left horizon; a high altocumulus deck; stars and the Milky Way attenuated by the glow's local
-brightness (they go out near it); terrain lit from just over the horizon so the far peaks rim and cast long shadow.
-* **arc**: a wide low arch, cold white with a breath of cyan, soft shadow rays fanning up from the far peaks.
-* **cone**: a leaning pyramid of pale light (the zodiacal light, the astronomer's own "false dawn").
-* **veil**: no visible source, only the deck lit from beneath and a thin line on the skyline.
-* **WINNER: arc.** It is the only one that reads as morning come too early: the rays come from a point below the
-  horizon, which no city makes and a moon rarely does, and it is too broad to be a moonrise. The cone reads as a
-  searchlight or sci-fi beacon. The veil reads as cloud lit by a city (light pollution). Keep the rays soft and
-  few (a "studio logo" read appears as soon as they are crisp).
+Moonless midnight from the Dawn-C vantage over the foothills, looking at the world's sunrise azimuth; the Milky Way
+rising from the left horizon; a high altocumulus deck; stars and the Milky Way attenuated by the glow's local
+brightness (they go out near it); terrain lit from just over the horizon so the far peaks rim.
+* **arc (WINNER)**: a wide low arch, ice-white with a breath of cyan, soft shadow rays fanning up from the far peaks
+  near the source, the undersides of a banded altocumulus deck silvered. It is the only design that reads as morning
+  come too early: rays from a point below the horizon, which no city makes, and too broad for a moonrise.
+  `review/v3/runA_falsedawn_arc_swell.jpg` (f160 starry midnight, f300 swell, f420 peak) and
+  `runA_falsedawn_arc_full_f420.jpg` (full res).
+* **cone**: a leaning pyramid of pale light (the zodiacal light). Reads as a searchlight or sci-fi beacon.
+* **veil**: only the deck lit from beneath. Reads as cloud lit by a city (light pollution).
+* `review/v3/runA_falsedawn_three_designs.jpg` compares them (first pass, before the arc's refinements: banded deck,
+  darker zenith, rays limited to the source).
 
-* Full-res arc (review/v3/runA_falsedawn_arc_full_f420.jpg, the glow's peak): reads as dawn come too early. Next pass:
-  keep the zenith darker at the peak (it greys out, losing "midnight"), break up the evenly scattered deck wisps
-  (a procedural tell), keep a few stars high in the frame.
-
-## RENDER_SPEC (director launches; do NOT launch before the look is approved at 0.5 scale)
+## RENDER_SPEC (director launches; greybox look approved by this lane, not yet by the producers)
 * THE CROSSING: `cloud/jobs/crossing_a_{1..8}.json`, 120 frames each, `python3 shots/run/crossing.py --range A-B
-  --procs 4 --skip` -> `renders/crossing_A/f_%05d` (shot-local 0-959; 1920x804; ship jpg). One machine type.
-  Estimated cost: 3-10 min/frame single-thread at full res (close-up frames 0-300 heaviest), ~80 box-hours
-  single-thread; about 2-3 h wall on 8 four-core boxes. Fallback variant: add `--variant few`.
-* FALSE DAWN: `cloud/jobs/falsedawn_a_{1..4}.json`, `python3 shots/run/falsedawn.py --design arc --range A-B --procs
-  4 --skip` -> `renders/falsedawn_A/f_%05d` (shot-local 0-479). Far terrain only (Dawn-C cost, 2-4 min/frame).
+  --procs 4 --skip` -> `renders/crossing_A/f_%05d` (shot-local 0-959; 1920x804, ss 1.5; ship jpg). One machine type.
+  Measured: 0.25 scale ss 1.0 ~20 s/frame (close-ups) and 0.5 scale ss 1.0 ~15 s/frame (wides), single-thread; so full
+  res ss 1.5 ~12 min (close-ups) to ~2.5 min (wides) single-thread, ~80 worker-hours: about 2.5 h wall on 8 four-core
+  boxes. Fallback: add `--variant few`.
+* FALSE DAWN: `cloud/jobs/falsedawn_a_{1..4}.json`, `python3 shots/run/falsedawn.py --design arc --range A-B --procs 4
+  --skip` -> `renders/falsedawn_A/f_%05d` (shot-local 0-479). Measured ~1 min/frame single-thread at full res.
 * Data that must be committed: `shots/run/crossing_fires.npy` (the island fires), plus the Run's summits/beacons.
+* Frame numbering is shot-local because the bar map was not locked; the edit maps 0-959 and 0-479 onto A's timeline.
 
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION) - report 27 Sep <<<
 ## PAUSED 27 Sep ~10:40Z (director's usage pacing). Nothing is rendering. RESUME HERE
