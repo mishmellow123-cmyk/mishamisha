@@ -27,6 +27,7 @@ import scene_b as B
 import tolkien as TK
 import ringsolid as RS
 import cflame as CF
+import eye3 as EYE
 
 BAR, BEAT = 80, 20
 
@@ -79,7 +80,7 @@ RACE_BEATS = [float(x) for x in range(T_SURGE, T_RACE_END, BEAT)]   # 1560 .. 16
 class C3Sched:
     """what scene_b's functions return on C's timeline (THE FORGING and THE RACE)"""
     ign = float(T_FIRE)
-    end = float(T_RACE_END)
+    end = float(T_EYE_END)                    # the towers stand on through THE EYE (C9)
     tower_rise = float(T_TOWERS)
     vortex_t0 = 1e9
     beats = list(RACE_BEATS)                  # the towers surge on these (scene_b.BEATS)
@@ -98,6 +99,8 @@ class C3Sched:
         return float(smoothstep(T_TOWERS + 20, T_TOWERS + 120, t))
 
     def redness(self, t):
+        if t >= T_EYE - 20:
+            return 0.7
         return 0.55 * float(smoothstep(T_SURGE, T_RACE_END + 40, t))
 
     def beat_pulse(self, t):
@@ -129,6 +132,8 @@ class C3Sched:
         return 0.0
 
     def tower_lean(self, t):
+        if t >= T_EYE - 20:          # C9: every tower leans toward the Eye
+            return 0.11 * float(smoothstep(T_EYE + 5, T_EYE + 70, t)) + 0.03 * float(smoothstep(T_SLIT, T_EYE_END, t))
         return 0.0
 
     def tower_rise_glow(self, t):
@@ -721,13 +726,19 @@ class TimelineC3(TL.Timeline):
         return self._src
 
     def mode(self, t):
-        return 'sched' if t < T_RACE_END else 'src'
+        if t < T_RACE_END:
+            return 'sched'
+        if T_EYE - 1 <= t < T_EYE_END + 1:
+            return 'eye'
+        return 'src'
 
     def camera(self, t):
         if self.mode(t) == 'src':
             use_src()
             return self.src().camera(self.srct(t))
         use_sched()
+        if self.mode(t) == 'eye':
+            return EYE.camera(t, AZ0)
         pos, tgt, hf = cam_c(t)
         if t >= T_FORGE - 20:
             Rot, C, sc = ring_frame(t)
@@ -746,6 +757,11 @@ class TimelineC3(TL.Timeline):
 
     def light(self, t):
         red = B.redness(t)
+        if self.mode(t) == 'eye':
+            # C9: the forges are lit from above by the Eye's fire (their faces toward it), red from the storm
+            storm, rim, iris, slit_w, flare, _ = EYE.state(t)
+            col = np.array([1.0, 0.55, 0.22]) * 0.6 + look.hexrgb(look.PALETTE['race_red']) * 0.4
+            return EYE.eye_centre(), col, 60.0 * (0.35 + 0.65 * rim) * (1.0 + 0.6 * flare)
         col = np.array([1.0, 0.76, 0.4])
         col = col * (1 - 0.6 * red) + look.hexrgb(look.PALETTE['race_red']) * 0.6 * red
         return FIRE_ROOT + np.array([0.0, 0.4 * HF, 0.0]), col, 60.0 * fire_bright(t)
@@ -753,6 +769,8 @@ class TimelineC3(TL.Timeline):
     def render_opts(self, f):
         if self.mode(f) == 'src':
             return self.src().render_opts(int(round(self.srct(f))))
+        if self.mode(f) == 'eye':
+            return dict(bokeh_pow=0.0, bokeh_cap=1.0, fog_start=70.0, fog_len=90.0, near=0.3)
         return dict(bokeh_pow=0.25, bokeh_cap=1.6, fog_start=60.0, fog_len=80.0, near=0.3)
 
     def emit(self, ctx):
@@ -769,6 +787,16 @@ class TimelineC3(TL.Timeline):
             return
         use_sched()
         lp, lc, lpw = self.light(t)
+        if self.mode(t) == 'eye':
+            # C9: the forges of the race, red, every one leaning toward the Eye; their embers and smoke rise into
+            # the storm (the sky is drawn in post, behind them)
+            self.towers.prepare(ctx)
+            self.dust.emit(ctx)
+            self.smoke.emit(ctx, lp, lc, lpw)
+            self.towers.emit(ctx, lp, lc, lpw)
+            self.tembers.emit(ctx)
+            self.tsmoke.emit(ctx, lp, lc, lpw)
+            return
         self.towers.prepare(ctx)
         ctx.ring_rgb = ring_layer(self, ctx)            # the Ring hides what is behind it (occluder)
         self.dust.emit(ctx)
@@ -789,6 +817,11 @@ class TimelineC3(TL.Timeline):
         t = ctx.t
         p = ctx.fr.prm
         H, W = hdr.shape[:2]
+        if self.mode(t) == 'eye':
+            lay = np.zeros_like(hdr)
+            zc = float((EYE.eye_centre() - ctx.cam.pos) @ ctx.cam.R[2])
+            EYE.draw(lay, ctx.cam, t, vis=occ_vis(ctx.fr, zc, H, W))
+            return hdr + lay
         band = None
         if p[10] > 0:                                       # calm the text band as the splats are calmed
             y = np.arange(H, dtype=np.float32)
@@ -818,5 +851,8 @@ class TimelineC3(TL.Timeline):
     def finish_opts(self, f):
         if self.mode(f) == 'src':
             return self.src().finish_opts(int(round(self.srct(f))))
+        if self.mode(f) == 'eye':
+            return dict(exposure=1.0, bloom_strength=0.16, bloom_threshold=0.75, streak_strength=0.0,
+                        vignette_amount=0.3)
         return dict(exposure=1.0, bloom_strength=0.14, bloom_threshold=0.7, streak_strength=0.0,
                     vignette_amount=0.25)
