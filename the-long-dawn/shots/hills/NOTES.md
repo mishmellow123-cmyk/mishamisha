@@ -1,4 +1,35 @@
-# >>> HEROINE-v3 REPORT 3 / STATE (2026-09-27 ~10:50Z; the DIRECTOR'S H5 CALLS; paused for usage pacing, RESUME ~15:00Z) <<<
+# >>> HEROINE-v3 REPORT 4 / STATE (2026-09-27 ~15:40Z; the director's H1 review + scope change) <<<
+
+**H1 roar fix (director 15:15Z) -> DONE in code, re-rendering.** At the roar (src 1476-1510) the flare no longer lights her
+into a smooth brown doll: from ROAR-1 she is FLAGGED from the fire's key (its light on her x0.55, the warm bounce x0.15,
+and her hood, coat, sleeves, gloves, legs and shawl go rim-only, `V3_ROAR_SIL` 0.92), so she is a dark shape against
+the flare with a thin warm edge; easing to half by ROAR+75. The recoil is re-posed (`FLINCH_V3` + the V3 guard in
+`yw2_pose`): the near FOREARM lies level ACROSS HER FACE between the flare and her head (the elbow thrown out toward the
+fire at eye height, the wrist at the brow, the hand carried on round behind the hood, the thumb tucked: no hand held up
+in the air), her head turned right away (head_yaw -85, chin down 36), her weight back (lean -18, pelvis +3 cm). The
+pull-back frames (1500, 1530) are unchanged in the wide. Job `cloud/jobs/h1_v3_h5_roar.json` (src 1474-1555, 82 frames)
+running on this box from 15:35Z into `renders/h1_v3h5`, pushing to **`claude/render-h1-v3-h5`** on top of the 356-frame set
+(the same branch: frames 1474-1555 are replaced; 1200-1473 are unchanged). Then the take is done for all three cuts.
+
+**Scope change (director):** the bar-63 hand-off is RUN-B's own shot (silhouette figures at hand-back scale): no hands
+from this lane. Priorities: the roar fix (above), then C's hands (the find, the fire test) with the canonical Ring.
+
+**C with the canonical Ring.** Every Ring here reads `assets/ring` (MONTAGE-3D's script of fire, the revised letterforms
+of e7083c6: lean, flickering tips, uneven bellies, a spur) at the canonical band proportions; checked close on the fire
+test (letters upright on the outer face, read left to right; the inner face readable through the band; deep orange-red).
+* THE FIRE TEST (C 3392-3599): the C-shaped fire-steel, the Ring on its up-turned tip in the flames, no glow fringe
+  round the hand (REPORT 3). `cloud/jobs/h2_firetest_c.json` ready.
+* THE FIND (C 3009-3059): the clean pit with a **meltwater sheen** on the frozen disc (the moonlit far lip mirrored along
+  the grazing far edge, a slow ripple; composited on the ice group), no stain; **her glove comes in from the SIDE** (frame
+  right, low over the snow, palm down, fingers loosely curled) over the last beats, 3036-3058, and the edit cuts to her
+  closed fist; `V3_FIND_HAND=none` gives the band alone. `cloud/jobs/h2_find_c.json` ready.
+* B THE DEAD EMBER (B 880-1119, locked numbering) restaged: about 45 deg down (40), from her front-left; **the pot is HELD**,
+  cradled on her near gloved palm in front of her chest (her dark coat and red shawl fill the frame behind it: **no snow
+  wedge**; the far ground graded down); her far glove lifts the lid off the mouth (888-904) and sets it down below (the
+  knock, 920); the breath is **visible** (denser, moon- and ember-lit) on the blow (982) and hangs (1030); the last red
+  point on 1100 still drifts onto H1's spark (the match cut). `cloud/jobs/h5_deadember_b.json` -> `renders/deadember_B`.
+
+# >>> HEROINE-v3 REPORT 3 (2026-09-27 ~10:50Z; the DIRECTOR'S H5 CALLS; superseded where REPORT 4 says so) <<<
 
 **State.** H1 with every H5 call is **RENDERED**: `cloud/jobs/h1_v3_h5.json` (`render.py --shot beacon_v3`, src 1200-1555
 master numbering, strike 1 = 1236, roar = 1476) -> `renders/h1_v3h5`, **356/356 JPEGs on branch `claude/render-h1-v3-h5`**
