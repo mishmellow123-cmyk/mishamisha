@@ -1,3 +1,26 @@
+# >>> STATE AT HANDOFF (MAP-L takes over, 27 Sep ~18:45Z local; MAP-v3's cloud session is unreachable) <<<
+* Imported from `claude/v3-map` (bfe5d4e) by explicit path onto `claude/long-dawn-v2` (f3aa4ee): all of shots/map's
+  book/page/X1/road/ring-page engines, both held jobs and EMBERS' `review/v3/x1_letters.json`. Review sheets are in
+  `~/mishamisha/_local_logs/review/map_v3/` (not in the repo). Nothing of MAP-v3's was ever rendered: renders/book_C and
+  renders/map_C (v3) do not exist yet; both jobs are still HELD.
+* BLOCKER FOUND ON IMPORT: C18 and bar 71's map was our REAL EARTH (her beacon on Everest, the council ring at the Pamir
+  knot; India, Arabia, the Gulf, the Caspian legible at 4300-4440). Breaks H5 #2 and the north star. **SPLIT APPROVED by
+  the director:** MAP-L2 rebuilds the MAP on an invented continent (C18 THE ROAD, bar 71 THE ROADS OUT; road.py incl.
+  its two map X1s, relay.py, render.py, geo/features/rivers/webmap/answer/bake/sheet; job map_v3_road). fire.py and
+  ink.py are shared: small, noted commits only.
+* **MAP-L owns the BOOK:** C2 P1 THE RED BOOK; the P2 pages C3 MOUNTAIN, C8 DEEP, C25 PLENTY, C26 HAVENS, C27 LAST
+  PAGES; the PAGE side of C4 LETTERS TO FIRE and the book X1s (C4's burn onto black, C8's sweep, C9's burn-through,
+  C27's healing edges); EMBERS-C owns C4's particles and fire; C22's ink-ring fallback; C28 the title burn-on, in book
+  space (EDIT's flat title overlay for C to be dropped). Files: book.py, book_c.py, burn.py, pages.py, pen.py,
+  redbook.py, ringpage.py; job map_v3_book.
+* H5 calls already applied by MAP-v3 (verified on the sheets): no "Red Book" on screen; one inscription (assets/ring);
+  the new book hand; X1 notes; the ink-ring fallback; the Deep's seam; the swan ship; a gilt initial; edge striation;
+  no dotted route on the Mountain; the Road as a pen line; hand-inked beacons.
+* MAP-L's own review of the inherited sheets (still to do): the gilt initial reads as a framed gold diamond, not an
+  illumination; the Plenty crown reads as cotton balls; the Havens roundel reads as a gesture, not her bound hand; the
+  Mountain is a near-perfect cone (H5 "perfect triangle peak"); the C22 ink-ring fallback's flames read as paper
+  cut-outs. C4 needs a page-only layer for EMBERS-C.
+
 # MAP-v3 (lane `map`): THE RED BOOK, the four ink pages, the burn-throughs, THE MAP ANSWERS
 
 ## STATE (paused 27 Sep 16:35Z for the usage window; resume ~20:00Z)
