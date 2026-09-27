@@ -21,18 +21,23 @@ sys.path.insert(0, os.path.join(HERE, '..', '..', 'lib'))
 import look  # noqa: E402
 import geo  # noqa: E402
 import fire  # noqa: E402
-from webmap import MapWeb, T0  # noqa: E402
-from answer import Answer, T_CUT  # noqa: E402
+from relay import Relay, T0  # noqa: E402
 from noise import gnoise  # noqa: E402
 
 cv2.setNumThreads(2)
 OUT = os.path.join(geo.ROOT, 'renders', 'map_C')
 FIRST, LAST = 1920, 2087
-TEXT_IN, TEXT_OUT = 1960, 2040          # cut C's line ("And all the peoples answered.") sits over the map here
+TEXT_IN, TEXT_OUT = 1960, 2040          # cut C's line ("And hill by hill, the peoples answered.") sits over the map here
+POOL = 1.0                              # the answering fires' light on the paper
 
 
 def smooth(x):
     x = min(1.0, max(0.0, x))
+    return x * x * (3 - 2 * x)
+
+
+def smooth_arr(x):
+    x = np.clip(x, 0.0, 1.0)
     return x * x * (3 - 2 * x)
 
 
@@ -75,6 +80,7 @@ class Cam:
 
     def __init__(self, tx, ty, width, tilt, heading, W, H, hfov=38.0):
         self.W, self.H = W, H
+        self.width = width
         th, ps = math.radians(tilt), math.radians(heading)
         self.F = (W / 2.0) / math.tan(math.radians(hfov) / 2.0)
         D = (width / 2.0) / math.tan(math.radians(hfov) / 2.0)
@@ -212,7 +218,8 @@ class LightGrid:
 
     KERNEL = ((0.45, 0.5), (1.4, 0.35), (4.0, 0.16), (10.0, 0.06))
 
-    def __init__(self, cam, cells=420):
+    def __init__(self, cam, cells=420, ps=1.0):
+        self.ps = ps                        # pool scale: the pools grow as the camera pulls back
         W, H = cam.W, cam.H
         xs = np.array([0, W, W, 0, W / 2, W / 2, 0, W], np.float64)
         ys = np.array([0, 0, H, H, 0, H, H / 2, H / 2], np.float64)
@@ -243,13 +250,15 @@ class LightGrid:
             np.add.at(self.G, (jy[ok], jx[ok]), (pw[ok] * w[ok][:, None]).astype(np.float32))
 
     def irradiance(self):
+        # G holds power per cell: blurring spreads it (the blur kernel sums to one), and dividing by the
+        # cell area gives irradiance per square map-degree, whatever the cell size
         E = np.zeros_like(self.G)
         for sig, wt in self.KERNEL:
-            s = sig / self.cell
+            s = sig * self.ps / self.cell
             if s < 0.35:
-                E += self.G * (wt / (2 * math.pi * sig * sig)) * (self.cell ** 2 / 1.0)
+                E += self.G * (wt / self.cell ** 2)
             else:
-                E += cv2.GaussianBlur(self.G, (0, 0), s) * (wt / (2 * math.pi * sig * sig)) * (self.cell ** 2)
+                E += cv2.GaussianBlur(self.G, (0, 0), s) * (wt / self.cell ** 2)
         A = np.array([[1 / self.cell, 0, -self.X0 / self.cell - 0.5], [0, -1 / self.cell, self.Y1 / self.cell - 0.5], [0, 0, 1.0]])
         T = A @ self.cam.Hinv
         return cv2.warpPerspective(E, T, (self.cam.W, self.cam.H), flags=cv2.INTER_LINEAR | cv2.WARP_INVERSE_MAP,
@@ -268,22 +277,8 @@ PAL = None
 def pal():
     global PAL
     if PAL is None:
-        PAL = dict(white=lin('#FFF4DC'), hot=lin('#FFC873'), gold=lin('#FFA93A'), amber=lin('#EE7E1C'),
-                   deep=lin('#C2410C'), ember=lin('#8E2A08'), light=np.array([1.0, 0.62, 0.3]))
+        PAL = dict(gold=lin('#FFA93A'), light=np.array([1.0, 0.62, 0.3]))
     return PAL
-
-
-def fire_col(tau):
-    """Colour of a burned thread tau frames after the fire passed (linear, unit-ish)."""
-    p = pal()
-    tau = np.asarray(tau, np.float64)[..., None]
-    a = np.clip(tau / 2.5, 0, 1)
-    b = np.clip((tau - 2.5) / 10.0, 0, 1)
-    c = np.clip((tau - 12.0) / 30.0, 0, 1)
-    col = p['hot'] * (1 - a) + p['gold'] * a
-    col = col * (1 - b) + p['amber'] * b
-    col = col * (1 - c) + p['deep'] * c
-    return col
 
 
 # ================================================================== shot ===
@@ -291,67 +286,33 @@ def fire_col(tau):
 class Shot:
     def __init__(self, tag='full'):
         self.sheet = Sheet(tag)
-        self.web = MapWeb()
-        w = self.web
-        # fire, not fibre: no new threads after T_CUT, no loop-closing cross-links
-        self.akeep, t_cut = w.cut(T_CUT)
-        w.t_ign = t_cut
-        w.t_ign[0] = T0 - 60.0              # the first beacon already burns (small) as the shot opens
-        self.ans = Answer(w.P, t_cut)
-        # per-arc inverse of the head motion: frame at which the head passed u
-        self.tpass = []
-        for k in range(len(w.ai)):
-            ts = np.linspace(w.tl[k], w.ta[k], 48)
-            us = np.array([w.head_u(k, tt) for tt in ts])
-            us[-1] = 1.0
-            self.tpass.append((us, ts))
-        rng = np.random.default_rng(3)
-        self.nphase = rng.random(len(w.P)) * 1000.0
-        self.aphase = rng.random(len(w.ai)) * 2 * np.pi
-        self.aper = rng.uniform(55.0, 110.0, len(w.ai))
-        self.gseed = rng.integers(0, 1 << 20, len(w.ai))
-        # every beacon on the sheet: the web's (lit before the cut) and the answering ones
-        lit = np.where(np.isfinite(w.t_ign))[0]
-        a = self.ans
-        self.bP = np.concatenate([w.P[lit], a.P])
-        self.bt = np.concatenate([w.t_ign[lit], a.t_ign])
-        kd = w.kind[lit]
-        # which of the web's beacons stand on a height, a shore or a river (they keep burning)
-        import bake as _bake
-        import features as _ft
-        gb = _bake.glyph_bank()
-        mi = np.where(gb['kind'] == 0)[0]
-        summ = np.array([gb['sP'][gb['sO'][gb['gS'][g]]:gb['sO'][gb['gS'][g] + 1]].max(axis=0) for g in mi])
-        from scipy.spatial import cKDTree as _T
-        d_peak = _T(summ).query(w.P[lit])[0]
-        riv = np.concatenate([R for R, _, _ in _ft.river_lines()])
-        d_riv = _T(riv).query(w.P[lit])[0]
-        cst = np.concatenate([R for R, h in _ft.coast_lines() if not h])
-        d_cst = _T(cst).query(w.P[lit])[0]
-        on_peak = d_peak < 1.4
-        on_feat = on_peak | (d_riv < 0.6) | (d_cst < 0.6)
-        base = np.where(on_peak, 1.3, np.where(on_feat, 0.9, 0.85))
-        abase = a.size * np.select([a.kind == 0, a.kind == 1, a.kind == 2], [1.0, 0.9, 0.85], 0.85)
-        self.bsize = np.concatenate([base * rng.uniform(0.8, 1.2, len(lit)), abase])
-        self.bsize[np.where(lit == 0)[0]] = 2.0 / 0.45     # the first beacon: 2 map-degrees of flame
-        # relay fires out in the open burn down once they have passed the fire on;
-        # the beacons on heights, shores and rivers keep burning
-        self.bdwindle = np.concatenate([~on_feat & (lit != 0), np.zeros(len(a.P), bool)])
-        self.borg = np.concatenate([lit == 0, np.zeros(len(a.P), bool)])
-        self.bphase = np.concatenate([self.nphase[lit], a.phase])
-        self.bid = np.concatenate([lit, 5000 + np.arange(len(a.P))])
-        self._spark_bank(rng)
+        r = Relay()
+        self.P = r.P
+        self.t_ign = r.t_ign.copy()
+        self.t_ign[0] = T0 - 60.0          # the first beacon already burns (small) as the shot opens
+        n = len(self.P)
+        self.org = np.arange(n) == 0
+        self.size = r.size.copy()
+        self.size[0] = 2.0 / 0.45          # the first beacon: 2 map-degrees of flame
+        # fire to fire: brightness about 3:1 across the settled fires (a wider spread than the relay's own),
+        # and each settles to its own level
+        self.gain = 1.0 + (r.gain - 1.0) * 1.5
+        self.rest = 0.28 + 0.3 * ((r.phase * 0.618034) % 1.0)
+        self.phase = r.phase.copy()
+        self.phase[0] = np.random.default_rng(3).random() * 1000.0     # the first beacon's flame, as before
+        self._spark_bank(np.random.default_rng(3))
 
     # ------------------------------------------------------------ camera ---
     def camera(self, t, W, H):
-        # log-width keys: close on the Himalaya, then a steady crane up and back to the whole sheet
+        # log-width keys: close on the Himalaya, then a slow crane up and back to the region, which
+        # it never leaves: the fire runs off the frame on every side
         lw = spline(t, [(1905, math.log(42.0)), (1920, math.log(42.0)), (1950, math.log(54.0)),
-                        (1985, math.log(120.0)), (2025, math.log(290.0)), (2060, math.log(368.0)),
-                        (2100, math.log(372.0))])
-        tx = spline(t, [(1905, 76.0), (1920, 76.0), (1950, 73.0), (1985, 52.0), (2025, 14.0), (2060, 0.5), (2100, 0.0)])
-        ty = spline(t, [(1905, 25.5), (1920, 25.5), (1950, 24.5), (1985, 22.0), (2025, 16.0), (2060, 12.5), (2100, 12.0)])
-        tilt = spline(t, [(1905, 46.0), (1920, 46.0), (1950, 43.0), (1985, 35.0), (2025, 22.0), (2060, 13.0), (2100, 12.0)])
-        head = spline(t, [(1905, -7.0), (1920, -7.0), (1950, -6.0), (1985, -3.5), (2025, -1.0), (2060, 0.0), (2100, 0.0)])
+                        (1985, math.log(66.0)), (2025, math.log(73.5)), (2060, math.log(76.5)),
+                        (2100, math.log(79.5))])
+        tx = spline(t, [(1905, 76.0), (1920, 76.0), (1950, 73.0), (1985, 69.0), (2025, 66.0), (2060, 65.0), (2100, 64.0)])
+        ty = spline(t, [(1905, 25.5), (1920, 25.5), (1950, 24.5), (1985, 25.0), (2025, 26.5), (2060, 27.0), (2100, 27.0)])
+        tilt = spline(t, [(1905, 46.0), (1920, 46.0), (1950, 43.0), (1985, 38.0), (2025, 33.0), (2060, 31.0), (2100, 30.5)])
+        head = spline(t, [(1905, -7.0), (1920, -7.0), (1950, -6.0), (1985, -4.5), (2025, -3.5), (2060, -3.0), (2100, -3.0)])
         return Cam(tx, ty, math.exp(lw), tilt, head, W, H)
 
     def calm(self, t):
@@ -367,36 +328,9 @@ class Shot:
 
     # ------------------------------------------------------------ sparks ---
     def _spark_bank(self, rng):
-        """Deterministic sparks: shed along every burning thread, burst at every ignition."""
-        w = self.web
-        K, U, LIFE, V = [], [], [], []
-        for k in range(len(w.ai)):
-            if w.ak[k] == 1 or not self.akeep[k]:
-                continue
-            n = int(max(3, w.plen[k] / 0.45))
-            K.append(np.full(n, k))
-            U.append(np.sort(rng.random(n)))
-            LIFE.append(rng.uniform(5.0, 13.0, n))
-            V.append(np.column_stack([rng.normal(0, 0.022, n), rng.normal(0, 0.022, n), rng.uniform(0.03, 0.075, n)]))
-        self.sk = np.concatenate(K)
-        self.su = np.concatenate(U)
-        self.slife = np.concatenate(LIFE)
-        self.sv = np.concatenate(V)
-        self.st = np.zeros(len(self.sk))
-        for k in np.unique(self.sk):
-            m = self.sk == k
-            us, ts = self.tpass[k]
-            self.st[m] = np.interp(self.su[m], us, ts)
-        self.sP = np.zeros((len(self.sk), 2))
-        for k in np.unique(self.sk):
-            m = self.sk == k
-            path = w.paths[k]
-            uu = np.linspace(0, 1, len(path))
-            self.sP[m, 0] = np.interp(self.su[m], uu, path[:, 0])
-            self.sP[m, 1] = np.interp(self.su[m], uu, path[:, 1])
-        # ignition bursts at every beacon (and a steady fountain from the first one)
-        n = 9
-        nb = len(self.bP)
+        """Deterministic sparks: a burst as every fire catches, and the first beacon's stream."""
+        n = 7
+        nb = len(self.P)
         self.bi = np.repeat(np.arange(nb), n)
         self.bdt = rng.uniform(0.0, 3.0, nb * n)
         self.blife = rng.uniform(8.0, 18.0, nb * n)
@@ -418,55 +352,36 @@ class Shot:
         self.of_v = np.column_stack([np.cos(ang) * sp, np.sin(ang) * sp, rng.uniform(0.08, 0.2, m2)])
 
     def draw_sparks(self, cam, t, emis, scale, hush):
-        w = self.web
         p = pal()
         segs0, segs1, I = [], [], []
 
-        def fly(P0, v, age, life):
+        def fly(P0, v, age):
             # rise, drift, slow down (air drag); a little curl
-            a = age
-            drag = (1.0 - np.exp(-a / 6.0)) * 6.0
+            drag = (1.0 - np.exp(-age / 6.0)) * 6.0
             pos = P0 + v * drag[:, None]
-            pos[:, 2] += 0.004 * a * a / (1.0 + 0.1 * a)
+            pos[:, 2] += 0.004 * age * age / (1.0 + 0.1 * age)
             return pos
 
-        # thread sparks
-        age = t - self.st
-        m = (age >= 0) & (age < self.slife)
+        # a burst as each fire catches
+        age = t - (self.t_ign[self.bi] + self.bdt)
+        m = (age >= 0) & (age < self.blife) & (~self.org[self.bi])
         if m.any():
-            P0 = np.column_stack([self.sP[m], np.full(m.sum(), 0.02)])
+            P0 = np.column_stack([self.P[self.bi[m]], np.full(m.sum(), 0.15)])
             a = age[m]
-            segs0.append(fly(P0, self.sv[m], np.maximum(a - 0.9, 0), self.slife[m]))
-            segs1.append(fly(P0, self.sv[m], a, self.slife[m]))
-            I.append(5.0 * (1 - a / self.slife[m]) ** 1.5)
-        # ignition bursts
-        tb = self.bt[self.bi] + self.bdt
-        age = t - tb
-        m = (age >= 0) & (age < self.blife) & (~self.borg[self.bi])
-        if m.any():
-            P0 = np.column_stack([self.bP[self.bi[m]], np.full(m.sum(), 0.15)])
-            a = age[m]
-            segs0.append(fly(P0, self.bv[m], np.maximum(a - 0.9, 0), self.blife[m]))
-            segs1.append(fly(P0, self.bv[m], a, self.blife[m]))
-            I.append(4.0 * (1 - a / self.blife[m]) ** 1.5)
+            segs0.append(fly(P0, self.bv[m], np.maximum(a - 0.9, 0)))
+            segs1.append(fly(P0, self.bv[m], a))
+            I.append(4.0 * float(np.clip(54.0 / cam.width, 0.35, 1.0)) * (1 - a / self.blife[m]) ** 1.5)
         # the first beacon: a steady stream, and the fountain of the flare
-        O = np.array([w.P[0, 0], w.P[0, 1], 0.5])
-        age = t - self.oi_t
-        m = (age >= 0) & (age < self.oi_life)
-        if m.any():
-            a = age[m]
-            P0 = np.repeat(O[None, :], m.sum(), 0)
-            segs0.append(fly(P0, self.oi_v[m], np.maximum(a - 0.9, 0), self.oi_life[m]))
-            segs1.append(fly(P0, self.oi_v[m], a, self.oi_life[m]))
-            I.append(3.5 * (1 - a / self.oi_life[m]) ** 1.3)
-        age = t - (T0 + self.of_dt)
-        m = (age >= 0) & (age < self.of_life)
-        if m.any():
-            a = age[m]
-            P0 = np.repeat(O[None, :], m.sum(), 0)
-            segs0.append(fly(P0, self.of_v[m], np.maximum(a - 0.9, 0), self.of_life[m]))
-            segs1.append(fly(P0, self.of_v[m], a, self.of_life[m]))
-            I.append(7.0 * (1 - a / self.of_life[m]) ** 1.3)
+        O = np.array([self.P[0, 0], self.P[0, 1], 0.5])
+        for tt, life, v, k in ((self.oi_t, self.oi_life, self.oi_v, 3.5), (T0 + self.of_dt, self.of_life, self.of_v, 7.0)):
+            age = t - tt
+            m = (age >= 0) & (age < life)
+            if m.any():
+                a = age[m]
+                P0 = np.repeat(O[None, :], m.sum(), 0)
+                segs0.append(fly(P0, v[m], np.maximum(a - 0.9, 0)))
+                segs1.append(fly(P0, v[m], a))
+                I.append(k * (1 - a / life[m]) ** 1.3)
         if not segs0:
             return
         A = np.concatenate(segs0)
@@ -490,200 +405,59 @@ class Shot:
         st = np.arange(0, 2 * n + 1, 2, dtype=np.int64)
         fire.add_lines(emis, xs, ys, col, sig, st, np.ones(2 * n))
 
-    # -------------------------------------------------------------- fire ---
-    def draw_web(self, cam, t, emis, scorch, grid, scale, hush):
-        w = self.web
+    # ------------------------------------------------------------- fires ---
+    def draw_fires(self, cam, t, emis, scorch, grid, scale, hush):
+        """Every lit fire: a living flame on its summit that flares as it catches and then settles,
+        its own pool of light on the paper, and the singe under it. No threads, no dots."""
         p = pal()
-        act = np.where(self.akeep & (w.tl <= t))[0]
-        xs, ys, cols, sig, starts = [], [], [], [], [0]
-        sxs, sys_, scol, ssig, sst = [], [], [], [], [0]
-        heads = []
-        lx, ly, lp = [], [], []
-        for k in act:
-            uh = w.head_u(k, t)
-            if uh <= 0:
-                continue
-            path = w.paths[k]
-            n = len(path)
-            m = int(math.ceil(uh * (n - 1)))
-            u = np.linspace(0, 1, n)[:m + 1]
-            u[-1] = min(u[-1], uh)
-            if len(u) < 2:
-                continue
-            uu = np.linspace(0, 1, n)
-            P2 = np.stack([np.interp(u, uu, path[:, 0]), np.interp(u, uu, path[:, 1])], 1)
-            hh = np.interp(u, uu, w.heights[k])
-            us, ts = self.tpass[k]
-            tau = t - np.interp(u, us, ts)
-            leap = w.ak[k] == 1
-            cross = w.ak[k] == 3
-            L = w.plen[k]
-            gain = 0.7 if cross else 1.0
-            if not leap:
-                P3 = np.column_stack([P2, np.full(len(u), 0.02)])
-                uv, z = cam.project(P3)
-                sc = cam.F / z * scale
-                # embers are uneven along the line and breathe slowly
-                sd = float(self.gseed[k] % 997)
-                gran = np.array([0.55 + 0.6 * gnoise(uj * L / 0.22 + sd, t * 0.06, 31) for uj in u])
-                gran = np.clip(gran, 0.15, 1.2)
-                # the burn cools: a hot front, embers, then only the scorch in the paper
-                hot = 2.4 * np.exp(-tau / 1.3)
-                ember = (1.2 * np.exp(-tau / 8.0) + 0.3 * np.exp(-tau / 38.0)) * gran
-                I = (hot + ember) * gain
-                col = fire_col(tau) * I[:, None]
-                wd = (0.018 + 0.022 * np.exp(-tau / 4.0)) * sc
-                g = np.minimum(1.0, (wd / 0.6) ** 0.45)
-                xs.append(uv[:, 0]); ys.append(uv[:, 1]); cols.append(col * g[:, None]); sig.append(np.maximum(wd, 0.6))
-                starts.append(starts[-1] + len(u))
-                # scorch: a brown line and a singed halo develop behind the fire
-                s_amt = 0.7 * np.clip((tau - 0.5) / 10.0, 0, 1) ** 0.7 * (0.75 if cross else 1.0)
-                s_amt = s_amt * np.minimum(1.0, (0.045 * sc / 0.5) ** 0.5)
-                sxs.append(uv[:, 0]); sys_.append(uv[:, 1]); scol.append(np.repeat(s_amt[:, None], 3, 1))
-                ssig.append(np.maximum(0.045 * sc, 0.5)); sst.append(sst[-1] + len(u))
-                sxs.append(uv[:, 0]); sys_.append(uv[:, 1]); scol.append(np.repeat(0.22 * s_amt[:, None], 3, 1))
-                ssig.append(np.maximum(0.16 * sc, 0.6)); sst.append(sst[-1] + len(u))
-                # light cast by the fresh part of the thread onto the paper
-                sel = np.arange(0, len(u), max(1, len(u) // max(2, int(L / 0.7))))
-                lx.append(P2[sel, 0]); ly.append(P2[sel, 1])
-                lw_ = (0.5 * np.exp(-tau[sel] / 3.0) + 0.1 * np.exp(-tau[sel] / 20.0)) * gain
-                lp.append(lw_[:, None] * p['light'][None, :] * (L / max(len(sel), 1)))
-                if uh < 1.0:
-                    heads.append((P2[-1], 0.0, False, k))
-            else:
-                # a spark flies over the sea; behind it a comet tail; after landing the arc fades
-                P3 = np.column_stack([P2, hh + 0.02])
-                uv, z = cam.project(P3)
-                sc = cam.F / z * scale
-                back = (u[-1] - u) * L
-                if uh < 1.0:
-                    I = 14.0 * np.exp(-back / 0.8) + 2.2 * np.exp(-back / 4.0)
-                    heads.append((P2[-1], hh[-1], True, k))
-                else:
-                    age = t - w.ta[k]
-                    I = (3.0 * np.exp(-back / 6.0) + 0.8) * math.exp(-age / 6.0)
-                col = fire_col(np.maximum(tau, 0) * 0.4) * I[:, None]
-                wd = 0.03 * sc
-                g = np.minimum(1.0, (wd / 0.6) ** 0.45)
-                xs.append(uv[:, 0]); ys.append(uv[:, 1]); cols.append(col * g[:, None]); sig.append(np.maximum(wd, 0.6))
-                starts.append(starts[-1] + len(u))
-                # below it on the paper: a dotted sea-route of embers that scorch
-                G3 = np.column_stack([P2, np.full(len(u), 0.02)])
-                guv, gz = cam.project(G3)
-                gsc = cam.F / gz * scale
-                dash = np.clip((np.sin(u * L / 0.6 * 2 * np.pi) - 0.1) * 3.0, 0, 1)
-                gt = tau - 3.0
-                gI = (4.0 * np.exp(-np.maximum(gt, 0) / 4.0) + 0.45) * (gt > 0) * dash
-                gw = 0.022 * gsc
-                gg = np.minimum(1.0, (gw / 0.6) ** 0.45)
-                xs.append(guv[:, 0]); ys.append(guv[:, 1]); cols.append(fire_col(np.maximum(gt, 0)) * (gI * gg)[:, None])
-                sig.append(np.maximum(gw, 0.6)); starts.append(starts[-1] + len(u))
-                s_amt = 0.55 * np.clip((gt - 1.0) / 12.0, 0, 1) * dash
-                sxs.append(guv[:, 0]); sys_.append(guv[:, 1]); scol.append(np.repeat(s_amt[:, None], 3, 1))
-                ssig.append(np.maximum(0.045 * gsc, 0.5)); sst.append(sst[-1] + len(u))
-        if xs:
-            X = np.concatenate(xs).astype(np.float64)
-            Y = np.concatenate(ys).astype(np.float64)
-            C = np.concatenate(cols).astype(np.float64)
-            S = np.concatenate(sig).astype(np.float64)
-            if hush is not None:
-                C = C * hush(Y)[:, None]
-            st = np.asarray(starts, np.int64)
-            one = np.ones(len(X))
-            fire.add_lines(emis, X, Y, C, S, st, one)
-            fire.add_lines(emis, X, Y, C * 0.03, S * 4.0, st, one)
-        if sxs:
-            fire.add_lines(scorch, np.concatenate(sxs).astype(np.float64), np.concatenate(sys_).astype(np.float64),
-                           np.concatenate(scol).astype(np.float64), np.concatenate(ssig).astype(np.float64),
-                           np.asarray(sst, np.int64), np.ones(sum(len(a) for a in sxs)))
-        if lx:
-            grid.add(np.concatenate(lx), np.concatenate(ly), np.concatenate(lp))
-        self.draw_heads(cam, t, emis, grid, heads, scale, hush)
-        self.draw_nodes(cam, t, emis, scorch, grid, scale, hush)
-        self.draw_sparks(cam, t, emis, scale, hush)
-
-    def draw_heads(self, cam, t, emis, grid, heads, scale, hush):
-        if not heads:
+        lit = np.where(self.t_ign <= t)[0]
+        if not len(lit):
             return
-        p = pal()
-        P = np.array([[h[0][0], h[0][1], h[1] + 0.03] for h in heads])
-        uv, z = cam.project(P)
-        sc = cam.F / z * scale
-        leap = np.array([h[2] for h in heads])
-        mul = np.ones(len(P)) if hush is None else hush(uv[:, 1])
-        pk = np.where(leap, 18.0, 7.0) * mul
-        fire.splat_points(emis, uv[:, 0].copy(), uv[:, 1].copy(), np.outer(pk, p['hot']), np.maximum(0.03 * sc, 0.55))
-        fire.splat_points(emis, uv[:, 0].copy(), uv[:, 1].copy(), np.outer(pk * 0.03, p['gold']), np.maximum(0.25 * sc, 1.0))
-        # a little licking flame rides the front of each burning thread
-        up, upl = cam.up2d(P)
-        for i in range(len(heads)):
-            if leap[i]:
-                continue
-            hp = 0.3 * upl[i] * scale
-            if hp > 1.5:
-                fire.flame(emis, uv[i, 0], uv[i, 1], hp, up[i, 0], up[i, 1], t * 1.9, int(heads[i][3]) * 7 + 3,
-                           2.4 * mul[i] * min(1.0, (hp - 1.5) / 1.0), 0.9)
-        grid.add(P[~leap, 0], P[~leap, 1], np.outer(np.full((~leap).sum(), 1.4), p['light']))
-        # leaping sparks light the sea beneath them (height-dependent pool)
-        self.leap_light = [(P[i], 2.5) for i in range(len(P)) if leap[i]]
-
-    def draw_nodes(self, cam, t, emis, scorch, grid, scale, hush):
-        """Every lit beacon: a small living flame of its own size, a pool of light, soot."""
-        p = pal()
-        m = self.bt <= t
-        if not m.any():
-            return
-        lit = np.where(m)[0]
-        age = t - self.bt[lit]
-        org = self.borg[lit]
-        size = self.bsize[lit]
-        # relay fires burn down after they have passed the fire on
-        dw = self.bdwindle[lit]
-        size = np.where(dw, size * (1.0 - 0.8 * np.clip((age - 12.0) / 36.0, 0, 1)), size)
-        grow = np.clip(age / 7.0, 0, 1)
-        grow = grow * grow * (3 - 2 * grow)
-        flare = np.exp(-age / 4.0) * np.clip(age / 1.5, 0, 1)
+        age = t - self.t_ign[lit]
+        org = self.org[lit]
+        size = self.size[lit]
+        ph = self.phase[lit]
+        catch = smooth_arr(age / 2.5)
+        flare = np.exp(-age / 6.0) * np.clip(age / 1.2, 0, 1)
         fo = self.flare(t)
         flare = np.where(org, 1.5 * fo, flare)
-        ph = self.bphase[lit]
+        # the newest fires flare; the older ones settle to a lower, steady burn
+        rest = self.rest[lit]
+        settle = np.where(org, 1.0, rest + (1.0 - rest) * np.exp(-age / 24.0))
         fl = 1.0 + 0.12 * np.sin(t * 0.5 + ph) + 0.07 * np.sin(t * 1.3 + 2 * ph)
-        h0 = 0.45 * size
-        hgt = h0 * (grow * fl + 0.6 * flare)
-        P = np.column_stack([self.bP[lit], np.zeros(len(lit))])
+        body = catch * settle * fl
+        hgt = np.where(org, 0.45, 0.8) * size * (body + 0.8 * flare)
+        P = np.column_stack([self.P[lit], np.zeros(len(lit))])
         uv, z = cam.project(P)
         sc = cam.F / z * scale
         up, upl = cam.up2d(P)
         # physical height on the paper, but never smaller on screen than a readable flame
-        floor = 2.2 * np.minimum(size, 2.4) ** 1.5 * scale * (grow * fl + 0.6 * flare)
+        floor = 19.0 * scale * np.minimum(size, 2.0) ** 0.8 * (0.4 * catch + 0.6 * body + 0.7 * flare)
         hp = np.maximum(hgt * upl * scale, floor)
         mul = np.ones(len(lit)) if hush is None else hush(uv[:, 1])
-        # flash of ignition
-        fk = np.exp(-age / 2.0) * (age >= 0) * (~org)
-        fire.splat_points(emis, uv[:, 0].copy(), uv[:, 1].copy(), np.outer(6.0 * fk * mul * np.minimum(size, 1.3), p['hot']),
-                          np.maximum(0.05 * sc, 0.55))
-        fire.splat_points(emis, uv[:, 0].copy(), uv[:, 1].copy(),
-                          np.outer(0.7 * np.exp(-age / 6.0) * (~org) * mul + 0.25 * org * (1 + fo), p['gold']),
-                          np.maximum(0.45 * sc, 1.0))
-        # flame sprites (a crossfade to a dot only for the very smallest)
-        xf = np.clip((hp - 1.4) / 0.8, 0.0, 1.0)
-        for i in np.where(xf > 0.0)[0]:
-            g = (1.5 if org[i] else 2.4) * mul[i] * xf[i] * min(1.0, 0.55 + 0.45 * size[i])
+        W, H = cam.W, cam.H
+        vis = (uv[:, 0] > -80) & (uv[:, 0] < W + 80) & (uv[:, 1] > -80) & (uv[:, 1] < H + 120)
+        for i in np.where(vis & (hp > 0.3))[0]:
+            if org[i]:
+                g, cool = 1.5 * mul[i], 0.0
+            else:
+                g = 1.15 * self.gain[lit[i]] * (0.55 + 0.45 * settle[i]) * (1.0 + 1.2 * flare[i]) * catch[i] * mul[i]
+                cool = (1.0 - settle[i]) / 0.7          # burned down: lower and redder
             fire.flame(emis, uv[i, 0], uv[i, 1], hp[i], up[i, 0], up[i, 1], t + ph[i],
-                       int(self.bid[lit[i]]) * 13 + 1, g, 1.3 if org[i] else 1.0)
-        sm = xf < 1.0
-        if sm.any():
-            # the smallest fires are points of light, as bright as they are big; a relay that
-            # has burned down is a dull red ember
-            c = uv[sm]
-            q = grow[sm] * fl[sm] * mul[sm] * (1.0 - xf[sm]) * np.minimum(size[sm], 1.2) ** 1.5
-            ember = np.clip((0.55 - size[sm]) / 0.3, 0, 1)[:, None]
-            col = p['gold'][None, :] * (1 - ember) + p['ember'][None, :] * 0.6 * ember
-            fire.splat_points(emis, c[:, 0].copy(), c[:, 1].copy(), 3.2 * q[:, None] * col, np.full(sm.sum(), 0.55))
-        # soot ring under every beacon
-        fire.splat_points(scorch, uv[:, 0].copy(), uv[:, 1].copy(), np.outer(0.3 * grow, np.ones(3)), np.maximum(0.2 * sc, 0.6))
-        pw = (hgt / 0.45) * (1.0 + 2.0 * flare) * fl
-        pw = np.where(org, pw * 5.0, pw)
-        grid.add(self.bP[lit, 0], self.bP[lit, 1], np.outer(2.6 * pw, p['light']))
+                       int(lit[i]) * 13 + 1, g, 1.3 if org[i] else 1.6, cool)
+        # the first beacon's own soft glow (as it always had)
+        o = np.where(org)[0]
+        if len(o):
+            fire.splat_points(emis, uv[o, 0].copy(), uv[o, 1].copy(), np.outer(0.25 * (1 + fo) * mul[o], p['gold']),
+                              np.maximum(0.45 * sc[o], 1.0))
+        # the singe under every fire
+        fire.splat_points(scorch, uv[:, 0].copy(), uv[:, 1].copy(), np.outer(0.3 * catch, np.ones(3)),
+                          np.maximum(0.2 * sc, 0.6))
+        # each fire's own pool of light on the paper (the first beacon's pool is its flare light, below)
+        # a fire throws its light wide as it catches; settled, it lights only the summit it stands on
+        pw = size * self.gain[lit] * (0.9 * body + 2.2 * flare)
+        a = ~org
+        grid.add(self.P[lit[a], 0], self.P[lit[a], 1], np.outer(POOL * pw[a], p['light']))
 
     # ------------------------------------------------------------- frame ---
     def hush_fn(self, t, H):
@@ -707,10 +481,10 @@ class Shot:
         nrm = self.sheet.normals(cam)
         emis = np.zeros((H, W, 3), np.float32)
         scorch = np.zeros((H, W, 3), np.float32)
-        grid = LightGrid(cam)
-        self.leap_light = []
+        grid = LightGrid(cam, ps=float(np.clip((cam.width / 54.0) ** 0.5, 1.0, 1.2)))
         hush = self.hush_fn(t, H)
-        self.draw_web(cam, t, emis, scorch, grid, scale, hush)
+        self.draw_fires(cam, t, emis, scorch, grid, scale, hush)
+        self.draw_sparks(cam, t, emis, scale, hush)
         # the paper browns where the fire has passed
         s = np.clip(scorch[..., :1], 0, 1)
         burnt = np.array([0.32, 0.18, 0.09], np.float32)
@@ -740,22 +514,20 @@ class Shot:
         pool = 0.05 + 0.95 * np.exp(-(py_[:, None] ** 2 + px_[None, :] ** 2) / (2 * sgp ** 2)).astype(np.float32)
         flick = 1.0 + 0.035 * math.sin(t * 0.41) + 0.025 * math.sin(t * 1.13 + 1.0) + 0.02 * gnoise(t * 0.2, 0.5, 9)
         # the hearth burns down as the world's own fire takes over
-        room = 0.52 * flick * lerp(1.0, 0.42, smooth((t - 2005.0) / 55.0)) * (1.0 - 0.3 * smooth((t - 2060.0) / 27.0))
+        # (it burns down further than it used to: at the end the map is warm only where fire touches it)
+        room = 0.52 * flick * lerp(1.0, 0.17, smooth((t - 1995.0) / 65.0)) * (1.0 - 0.3 * smooth((t - 2060.0) / 27.0))
         room *= lerp(0.8, 1.0, smooth((t - 1935.0) / 30.0))
         E = (room * rel * pool)[..., None] * np.array([1.0, 0.6, 0.3], np.float32)[None, None, :]
-        E += np.array([0.014, 0.024, 0.05], np.float32)[None, None, :]             # cool night fill (moonlight)
+        moon = lerp(1.0, 4.4, smooth((t - 1995.0) / 60.0))
+        E += moon * np.array([0.014, 0.024, 0.05], np.float32)[None, None, :]      # cool night fill (moonlight)
         # the first beacon's flare floods the peaks around it, then settles to a steady pool
         fo = self.flare(t)
-        ox, oy = self.web.P[0]
+        ox, oy = self.P[0]
         r2 = (X - ox) ** 2 + (Y - oy) ** 2
         big = (0.34 * fo) * np.exp(-r2 / (2 * 6.5 ** 2)) + (0.10 + 0.22 * fo) * np.exp(-r2 / (2 * 2.2 ** 2))
-        big *= 1.0 - 0.6 * smooth((t - 1990.0) / 40.0)
+        big *= 1.1 * (1.0 - 0.4 * smooth((t - 1990.0) / 40.0))     # (the first fire stays the source)
         E += big[..., None] * np.array([1.0, 0.62, 0.3], np.float32)[None, None, :]
         Ef = grid.irradiance()
-        for (Pl, pw) in self.leap_light:
-            h = max(Pl[2], 0.3)
-            r2 = (X - Pl[0]) ** 2 + (Y - Pl[1]) ** 2
-            Ef += (pw * h / (r2 + h * h) ** 1.5)[..., None] * pal()['light'][None, None, :].astype(np.float32)
         if hush is not None:
             Ef *= hush((np.arange(H) + 0.5))[:, None, None].astype(np.float32)
         hdr = alb * (E + Ef) + emis

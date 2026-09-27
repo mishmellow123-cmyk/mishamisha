@@ -206,14 +206,24 @@ class Mountain:
         w = (0.28 + 0.7 * t ** 0.7) * (1.0 - 0.45 * np.clip((t - 0.75) / 0.25, 0, 1))
         return c, w
 
-    def build(self, mode='ink', t0=0.0, t1=8.0):
-        """Strokes for the plate, drawn on across [t0, t1] (mode 'ink' or 'pencil')."""
+    SCHED = dict(frame=(0.0, 0.07), cons=(0.07, 0.15), sil=(0.1, 0.24), fire=(0.24, 0.34), ring=(0.34, 0.4),
+                 hatch=(0.4, 0.7), smoke=(0.58, 0.78), sky=(0.72, 0.9), ground=(0.84, 1.0))
+    # C3 (locked): the pen begins after the riffle; the fire and the ring come first (the ring on bar 5 b3)
+    SCHED_C3 = dict(frame=(0.0, 0.03), cons=(0.0, 0.03), fire=(0.02, 0.07), ring=(0.07, 0.085), sil=(0.09, 0.22),
+                    hatch=(0.2, 0.55), smoke=(0.45, 0.68), sky=(0.6, 0.85), ground=(0.78, 1.0))
+
+    def build(self, mode='ink', t0=0.0, t1=8.0, sched=None):
+        """Strokes for the plate, drawn on across [t0, t1] (mode 'ink' or 'pencil'); sched maps each section
+        (frame, cons, sil, fire, ring, hatch, smoke, sky, ground) to its window as fractions of [t0, t1]."""
         rng = np.random.default_rng(self.seed)
         S = Strokes()
         lay = INK if mode == 'ink' else PENCIL
         pencil = mode == 'pencil'
         bx0, by0, bx1, by1 = self.box
+        sched_ = dict(self.SCHED)
+        sched_.update(sched or {})
         T = lambda a, b: (t0 + (t1 - t0) * a, t0 + (t1 - t0) * b)
+        TS = lambda key: T(*sched_[key])
         W = (lambda w: w * 1.15) if pencil else (lambda w: w)
         dens = 0.55 if pencil else 0.95
         fx, fy = self.ring
@@ -238,7 +248,7 @@ class Mountain:
                 S.add(pp, rr, dd, layer=lay)
         else:
             frame_rules(S, self.box, self.seed + 1, layer=lay)
-        _window(S, k, *T(0.0, 0.07), overlap=0.3)
+        _window(S, k, *TS('frame'), overlap=0.3)
 
         # pencil construction: the axis, the horizon, the base and rim ellipses, the smoke's puffs
         if pencil:
@@ -255,7 +265,7 @@ class Mountain:
                 pp, rr, dd = hand(q, 0.012, int(rng.integers(1 << 30)), slow=(3.0, 0.012), dens=0.22,
                                   thin_end=0.6, taper=(0.1, 0.1))
                 S.add(pp, rr, dd, layer=lay)
-            _window(S, k, *T(0.07, 0.15), overlap=0.3)
+            _window(S, k, *TS('cons'), overlap=0.3)
 
         # 2. the silhouette: bold on the shadow side, broken on the lit side
         k = len(S)
@@ -277,7 +287,7 @@ class Mountain:
         rim = np.array([[self.Xc - self.Wt, self.Ys], [self.Xc - 0.35, self.Ys + 0.1],
                         [self.Xc - 0.1, self.Ys + 0.17], [self.Xc + 0.2, self.Ys + 0.14], [self.Xc + self.Wt, self.Ys]])
         line(S, rim, W(0.03), self.seed + 31, dens=dens, layer=lay, lift=(3, 4))
-        _window(S, k, *T(0.1 if not pencil else 0.15, 0.24), overlap=0.1)
+        _window(S, k, *TS('sil'), overlap=0.1)
 
         # 3. the fire in the throat: tall tongues of flame; the ring among them
         k = len(S)
@@ -319,7 +329,7 @@ class Mountain:
             pp, rr, dd = hand(np.array([p0, p1]), W(0.01), int(rng.integers(1 << 30)), taper=(0.04, 0.15),
                               dens=dens * 0.75, thin_end=0.15)
             S.add(pp, rr, dd, layer=lay)
-        _window(S, k, *T(0.24, 0.34), overlap=0.3)
+        _window(S, k, *TS('fire'), overlap=0.3)
 
         # the ring: gold leaf, outlined in fine ink
         k = len(S)
@@ -337,7 +347,7 @@ class Mountain:
                 pp, rr, dd = hand(q, 0.006, self.seed + 61, slow=(1.0, 0.002), dens=0.8, thin_end=0.9,
                                   taper=(0, 0), fast=(0.2, 0.0008))
                 S.add(pp, rr, dd, layer=INK)
-        _window(S, k, *T(0.34, 0.4))
+        _window(S, k, *TS('ring'))
 
         # 4. hatching on the cone
         k = len(S)
@@ -410,7 +420,7 @@ class Mountain:
                     S.add(pp, rr, dd, layer=lay)
         idx = list(range(k, len(S)))
         idx.sort(key=lambda i: S.P[i][:, 1].min())
-        _window(S, k, *T(0.4, 0.7), overlap=0.93, order=[i - k for i in idx])
+        _window(S, k, *TS('hatch'), overlap=0.93, order=[i - k for i in idx])
 
         # 5. the smoke: puffs outlined, the billows inside drawn where one rolls over another, the undersides hatched
         k = len(S)
@@ -460,7 +470,7 @@ class Mountain:
                             pp, rd, dd = hand(pts, 0.0075, int(rng.integers(1 << 30)), taper=(0.03, 0.06), dens=0.8,
                                               thin_end=0.25)
                             S.add(pp, rd, dd, layer=lay)
-        _window(S, k, *T(0.58, 0.78), overlap=0.6)
+        _window(S, k, *TS('smoke'), overlap=0.6)
 
         # 6. the sky: ruled lines, denser toward the top, stopping short of the mountain, the smoke and the glow
         k = len(S)
@@ -528,7 +538,7 @@ class Mountain:
                 q = np.array([[bx0 + 0.4, yy], [bx0 + 4.5 + rng.random() * 2, yy + 0.02]])
                 pp, rd, dd = hand(q, 0.016, int(rng.integers(1 << 30)), slow=(3.0, 0.015), dens=0.3, thin_end=0.4)
                 S.add(pp, rd, dd, layer=lay)
-        _window(S, k, *T(0.72, 0.9), overlap=0.8)
+        _window(S, k, *TS('sky'), overlap=0.8)
 
         # 7. the far ranges, the plain, the road and the door, rocks in the foreground
         k = len(S)
@@ -601,7 +611,7 @@ class Mountain:
                 hatch(S, _poly_inside(poly), lambda x, y, cx=cx, r_=r_: (x - cx) / (r_ * 1.4) * 0.5 + 0.55,
                       (cx - r_ * 1.5, cy - r_, cx + r_ * 1.5, cy + 0.05), -60, 0.045, 0.45, 0.009,
                       int(rng.integers(1 << 30)), dens=0.85, seg=(0.2, 0.6))
-        _window(S, k, *T(0.84, 1.0), overlap=0.85)
+        _window(S, k, *TS('ground'), overlap=0.85)
         return S
 
     def gilt_glint_time(self, t0, t1):
@@ -1232,29 +1242,18 @@ class Plenty:
                     S.add(pp, rd, dd, layer=lay)
                     pp, rd, dd = hand(np.array([[x_, y_], [x_, y_ + 0.08]]), 0.01, int(rng.integers(1 << 30)), dens=0.9)
                     S.add(pp, rd, dd, layer=lay)
-            # cottages: gabled roofs, small windows, a chimney each with a thread of smoke rising straight up
-            for (cx, kk, w_) in ((bx0 + 10.4, 0, 0.55), (bx0 + 11.3, 0, 0.45), (bx0 + 12.6, 1, 0.6), (bx0 + 13.7, 0, 0.5),
-                                 (bx0 + 1.2, 0, 0.45)):
-                gy_ = float(self.hills(np.array([cx]), kk)[0]) + 0.28
-                h_ = 0.3 * w_ / 0.5
-                body = np.array([[cx - w_ / 2, gy_], [cx - w_ / 2, gy_ - h_], [cx + w_ / 2, gy_ - h_], [cx + w_ / 2, gy_]])
-                roof = np.array([[cx - w_ / 2 - 0.06, gy_ - h_], [cx - 0.05, gy_ - h_ - 0.3 * w_ / 0.5],
-                                 [cx + w_ / 2 + 0.06, gy_ - h_]])
-                line(S, body, 0.012, int(rng.integers(1 << 30)), dens=0.95, layer=lay, lift=(4, 5), smooth=0)
-                line(S, roof, 0.014, int(rng.integers(1 << 30)), dens=0.95, layer=lay, lift=(4, 5), smooth=0)
-                hatch(S, _poly_inside(roof), lambda x, y: np.ones_like(x), (cx - w_, gy_ - h_ - 0.4, cx + w_, gy_ - h_),
-                      70, 0.03, 0.0, 0.007, int(rng.integers(1 << 30)), dens=0.85, seg=(0.2, 0.5))
-                chx = cx + 0.22 * w_
-                chy = gy_ - h_ - 0.14 * w_ / 0.5
-                line(S, np.array([[chx, chy + 0.04], [chx, chy - 0.12], [chx + 0.06, chy - 0.12], [chx + 0.06, chy + 0.01]]),
-                     0.01, int(rng.integers(1 << 30)), dens=0.95, layer=lay, lift=(3, 4), smooth=0)
-                sm = np.array([[chx + 0.03, chy - 0.16 - 0.35 * q] for q in range(7)])
-                sm[:, 0] += 0.05 * np.sin(np.arange(7) * 1.3)
-                pp, rd, dd = hand(catmull(sm, 6), 0.007, int(rng.integers(1 << 30)), dens=0.75, thin_end=0.1, taper=(0.02, 0.8))
+            # the smoke of many hearths, rising straight in the still air from beyond the hills (no houses drawn)
+            for m, (cx, kk) in enumerate(((bx0 + 9.6, 0), (bx0 + 10.9, 0), (bx0 + 12.4, 1), (bx0 + 13.8, 0), (bx0 + 1.4, 0),
+                                          (bx0 + 3.2, 1), (bx0 + 11.7, 0), (bx0 + 14.4, 1))):
+                gy_ = float(self.hills(np.array([cx]), kk)[0]) - 0.02
+                if not free(np.array([cx]), np.array([gy_]))[0]:
+                    continue
+                n_ = 8 + m % 3
+                sm = np.array([[cx + 0.06 * math.sin(q * 1.2 + m), gy_ - 0.3 * q] for q in range(n_)])
+                sm[:, 0] += np.linspace(0, 0.25 + 0.1 * (m % 2), n_) ** 1.5
+                pp, rd, dd = hand(catmull(sm, 6), 0.0075, int(rng.integers(1 << 30)), dens=0.72, thin_end=0.1,
+                                  taper=(0.05, 0.9))
                 S.add(pp, rd, dd, layer=lay)
-                for wx in (cx - 0.12 * w_ / 0.5, cx + 0.1 * w_ / 0.5):
-                    q = np.array([[wx, gy_ - 0.55 * h_], [wx + 0.001, gy_ - 0.54 * h_]])
-                    S.add(q, np.array([0.02, 0.02]), np.array([0.9, 0.9]), layer=lay)
         _window(S, k, *T(0.45, 0.8), overlap=0.9)
 
         # the near field: long grass, a few wild flowers; the tree's shadow falling to the right
@@ -1462,7 +1461,7 @@ class Havens:
         # the flame glyphs on the heights (ink now; they kindle as fire in the shot)
         k = len(S)
         self.fires = []
-        for m, fxp in enumerate(np.linspace(bx0 + 9.9, bx1 - 0.7, 6)):
+        for m, fxp in enumerate(np.linspace(bx0 + 10.3, bx1 - 1.0, 3)):
             fy_ = float(self.coast(np.array([fxp]))[0]) - 0.02
             hh = 0.34 + 0.1 * rng.random()
             fl = [(fxp - 0.1, fy_), (fxp - 0.12, fy_ - 0.35 * hh), (fxp - 0.02, fy_ - 0.7 * hh), (fxp + 0.03, fy_ - hh),

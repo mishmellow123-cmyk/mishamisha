@@ -22,6 +22,22 @@ from rivers import RIVERS, SIZE as RIVER_SIZE
 
 FPPD = 8.0           # resolution of the map-space placement rasters (px per map degree)
 
+# Hill country the relief proxy misses (the old, low edges of the Deccan and the Indus hills), traced
+# by hand as (lat, lon) waypoints like the rivers. Hill marks are set along them wherever nothing else
+# is drawn, so the answering fires have heights to stand on there too.
+HILL_RANGES = {
+    'western_ghats': [(21.2, 73.9), (19.5, 73.6), (17.5, 73.8), (15.5, 74.1), (13.8, 75.0), (12.3, 75.7),
+                      (11.2, 76.6), (10.2, 77.1), (8.6, 77.3)],
+    'eastern_ghats': [(21.6, 85.3), (20.0, 84.0), (18.4, 83.0), (17.0, 81.6), (15.3, 79.2), (13.6, 79.0), (12.4, 78.4)],
+    'vindhya': [(24.3, 74.9), (23.9, 77.0), (24.2, 79.4), (24.6, 81.8), (24.4, 83.5)],
+    'satpura': [(21.7, 74.3), (21.9, 76.3), (22.4, 78.2), (22.6, 80.4)],
+    'aravalli': [(24.2, 72.6), (25.3, 73.6), (26.4, 74.6), (27.5, 76.0), (28.3, 76.9)],
+    'chota_nagpur': [(23.6, 84.2), (23.3, 85.6), (23.9, 86.6)],
+    'sri_lanka': [(7.6, 80.6), (7.0, 80.8), (6.5, 80.6)],
+    'sulaiman': [(32.0, 70.2), (30.8, 69.8), (29.6, 69.2), (28.5, 68.2)],
+    'kirthar': [(27.6, 67.3), (26.5, 67.4), (25.6, 67.6)],
+}
+
 
 def smoothstep(x, a, b):
     t = np.clip((np.asarray(x, np.float64) - a) / (b - a), 0.0, 1.0)
@@ -398,6 +414,37 @@ def build(seed=11):
         if trees.ok(x, y, s, (mount, hills)):
             trees.add(x, y, s)
             glyphs.append((y, 3 if con else 2, x, s, fv, int(rng.integers(1 << 30))))
+    # ---- the hand-traced hill country, set last with its own seed so every other mark stays exactly
+    # where it was; a hill mark replaces any tree it would stand on
+    rh = np.random.default_rng(seed + 101)
+    added = []
+    for pts in HILL_RANGES.values():
+        ll = np.array(pts, np.float64)
+        R = ink.resample(ink.chaikin(geo.ll2map(ll[:, 0], ll[:, 1]), 2), 0.05)
+        Ls = ink.arclen(R)
+        u = np.arange(rh.uniform(0.0, 0.4), Ls[-1], 0.72)
+        for uj in u + rh.uniform(-0.18, 0.18, len(u)):
+            k = int(np.clip(np.searchsorted(Ls, uj), 1, len(R) - 1))
+            tg = R[k] - R[k - 1]
+            tg /= np.linalg.norm(tg) + 1e-12
+            x, y = R[k] + np.array([-tg[1], tg[0]]) * rh.uniform(-0.35, 0.35)
+            s = rh.uniform(0.55, 0.8)
+            sd = int(rh.integers(1 << 30))
+            if hills.ok(x, y, s, (mount,)) and _sample(landm, np.array([[x - 0.45 * s, y], [x + 0.45 * s, y]])).min() >= 0.5:
+                hills.add(x, y, s)
+                added.append((y, 1, x, s, 0.6, sd))
+    if added:
+        A = np.array([(g[2], g[0], g[3]) for g in added])
+        tr = cKDTree(A[:, :2])
+        keep = []
+        for g in glyphs:
+            if g[1] in (2, 3):
+                near = tr.query_ball_point((g[2], g[0]), 1.2)
+                if any(abs(g[2] - A[i, 0]) < 0.5 * (A[i, 2] + g[3]) * 0.8 and
+                       -0.4 * g[3] < g[0] - A[i, 1] < 0.55 * A[i, 2] for i in near):
+                    continue
+            keep.append(g)
+        glyphs = keep + added
     # ---- desert stipple (plain dots, weighted)
     D = F['desert'] * inland * (1 - smoothstep(M, 0.1, 0.3))
     n = 160000

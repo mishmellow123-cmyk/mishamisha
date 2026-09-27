@@ -22,12 +22,30 @@ from numba import njit
 from noise import fbm, gnoise
 
 
-def edge_params(side, depth, pivot, p=1.2, seed=12, brown=1.4, char=0.2, edge=0.03, PW=20.0, PH=29.0):
-    """Mode 2: the book's outer edges burned `depth` cm in (fore-edge, head and foot; never the gutter), healing
-    to clean paper by `pivot` seconds. side: 'R' (fore-edge at u = PW) or 'L' (fore-edge at u = 0)."""
+def edge_params(side, depth, pivot, p=1.2, seed=12, brown=1.4, char=0.2, edge=0.03, PW=20.0, PH=29.0, start=0.0):
+    """Mode 2: the book's outer edges burned `depth` cm in (fore-edge, head and foot; never the gutter), holding
+    until `start` and healing to clean paper by `pivot` seconds. side: 'R' (fore-edge at u = PW) or 'L'."""
     b = np.zeros(16)
-    speed = depth / max(pivot, 1e-3) ** p
-    b[:] = (1.0, PW, PH, 0.0, speed, p, 0.35, 0.6, seed, brown, char, edge, 2.0, 1.0, pivot, 1.0 if side == 'R' else -1.0)
+    b[:] = (1.0, PW, PH, start, depth, p, 0.35, 0.6, seed, brown, char, edge, 2.0, 1.0, pivot, 1.0 if side == 'R' else -1.0)
+    return b
+
+
+def sweep_params(direction, t_start, dur, span=(-4.0, 34.0), seed=31, brown=1.6, char=0.3, edge=0.035):
+    """Mode 3: an ember edge sweeping across the page along `direction` (page cm, unit), from span[0] to span[1]
+    (projections of page points on the direction) over dur seconds, leaving parchment behind it; ahead of the
+    edge is the shot before (the hole)."""
+    b = np.zeros(16)
+    d = np.asarray(direction, np.float64)
+    d = d / np.linalg.norm(d)
+    b[:] = (1.0, d[0], d[1], t_start, span[0], span[1], 0.45, 0.35, seed, brown, char, edge, 3.0, dur, 0.0, 1.0)
+    return b
+
+
+def hold_params(origin, t_start, r_max, tau, amp=0.45, freq=0.35, seed=4, brown=2.6, char=0.32, edge=0.035, lead=1.3):
+    """Mode 4: burn open from a point, the hole growing quickly and easing out toward r_max (the frame's edge),
+    where the burnt rim stays, glowing like a hearth's embers."""
+    b = np.zeros(16)
+    b[:] = (1.0, origin[0], origin[1], t_start, r_max, tau, amp, freq, seed, brown, char, edge, 4.0, lead, 0.0, 1.0)
     return b
 
 
@@ -43,6 +61,10 @@ def params(origin, t_start, speed=1.2, p=1.6, amp=0.35, freq=0.45, seed=1, brown
 def radius(bf, t):
     """Front radius (cm) at time t (negative before the hole opens)."""
     dt = t - bf[3]
+    if bf[12] > 3.5:
+        if dt <= 0.0:
+            return -1.0 + dt * 0.1
+        return bf[4] * (1.0 - math.exp(-dt / bf[5]))
     if bf[12] > 0.5:
         dt = bf[14] - t          # heal: time runs backward from the pivot
     if dt <= 0.0:
@@ -69,12 +91,14 @@ def field(bf, u, v, t):
     """(brown, char, hole, edge, pool) at page cm (u, v), time t."""
     if bf[0] <= 0.0:
         return 0.0, 0.0, 0.0, 0.0, 0.0
-    if bf[12] > 1.5:
+    if bf[12] > 2.5 and bf[12] < 3.5:
+        return sweep_field(bf, u, v, t)
+    if bf[12] > 1.5 and bf[12] < 2.5:
         return edge_field(bf, u, v, t)
     R = radius(bf, t)
     d = dist(bf, u, v)
     # heat runs ahead: the browning disc grows from `lead` seconds before the hole
-    dt = t - bf[3] if bf[12] < 0.5 else bf[14] - t
+    dt = t - bf[3] if (bf[12] < 0.5 or bf[12] > 3.5) else bf[14] - t
     heat = min(max((dt + bf[13]) / max(bf[13], 1e-3), 0.0), 1.0)
     Rb = max(R, 0.0) + bf[9] * heat * (0.6 + 0.4 * heat)
     sdf = d - max(R, -0.5)
@@ -121,7 +145,8 @@ def edge_field(bf, u, v, t):
     s = int(bf[8])
     f = bf[7]
     d += 0.45 * fbm(u * f, v * f, 331 + s, 3, 2.0, 0.5) + 0.08 * gnoise(u * f * 8.0, v * f * 8.0, 333 + s) + 0.3
-    R = bf[4] * max(bf[14] - t, 0.0) ** bf[5]
+    k = min(max((bf[14] - t) / max(bf[14] - bf[3], 1e-3), 0.0), 1.0)
+    R = bf[4] * k ** bf[5]
     if R <= 0.0:
         return 0.0, 0.0, 0.0, 0.0, 0.0
     sdf = d - R
@@ -138,3 +163,38 @@ def edge_field(bf, u, v, t):
     gone = min(max(0.5 - sdf / 0.012, 0.0), 1.0)
     char = max(char, 0.85 * gone)
     return brown, char, 0.0, 0.0, 0.0
+
+
+@njit(cache=True)
+def sweep_field(bf, u, v, t):
+    """Mode 3: an ember edge sweeps across; behind it the parchment (scorched fresh, cooling to clean), ahead of
+    it the hole onto the shot before."""
+    x = (t - bf[3]) / max(bf[13], 1e-3)
+    x = min(max(x, 0.0), 1.0)
+    front = bf[4] + (bf[5] - bf[4]) * (x * x * (3.0 - 2.0 * x))
+    s = int(bf[8])
+    f = bf[7]
+    d = u * bf[1] + v * bf[2]
+    d += 0.9 * fbm(u * f, v * f, 341 + s, 3, 2.0, 0.5) + 0.12 * gnoise(u * f * 7.0, v * f * 7.0, 343 + s) + \
+        0.035 * gnoise(u * f * 26.0, v * f * 26.0, 345 + s)
+    sdf = front - d                      # > 0 behind the edge (parchment), < 0 ahead (the shot before)
+    hole = min(max(0.5 - sdf / 0.012, 0.0), 1.0)
+    char = 0.0
+    brown = 0.0
+    edge = 0.0
+    pool = 0.0
+    if sdf > -0.02:
+        w = bf[10]
+        if sdf < w:
+            char = (1.0 - max(sdf, 0.0) / w) ** 0.8
+        if sdf < bf[9]:
+            y = 1.0 - max(sdf, 0.0) / bf[9]
+            brown = y * y
+        we = bf[11]
+        if sdf < 5.0 * we:
+            hot = 0.5 + 0.5 * gnoise(u * 5.0 - t * 0.8, v * 5.0 + t * 0.6, 351 + s)
+            hot = max(hot, 0.0) ** 1.6
+            e = math.exp(-((sdf - 0.25 * we) / we) ** 2)
+            edge = e * (0.15 + 1.1 * hot)
+        pool = math.exp(-max(sdf, 0.0) / 0.5) * (1.0 - hole)
+    return brown, char, hole, edge, pool

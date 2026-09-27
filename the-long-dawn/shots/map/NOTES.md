@@ -1,37 +1,40 @@
 # MAP-v3 (lane `map`): THE RED BOOK, the four ink pages, the burn-throughs, THE MAP ANSWERS
 
-## STATE (2026-09-27 01:09Z; read this first)
-* Branch base `b5fd34e` (BIBLE_V3 Revision 1), lane branch `claude/v3-map`. Revision 1 applied: X1a LETTERS TO FIRE
-  (the page's ink letters glow in reading order, lift off as sparks, pour into a flame standing on the paper, whose
-  heat browns and burns the page open onto the next shot) replaces C's glyph spiral/ignition; P3 cut; plenty page
-  without round doors; Havens page shows her bound hand raising the small light; map_C gets THE ROAD.
-* **A local full-res render is running in the background on the MAP box** (started 01:08Z, 4 procs x 1 thread,
-  `cloud/jobs/map_v3_book.json`'s render commands): 1000 frames into `renders/book_C/` (+ `renders/book_C_matte/`),
-  logs in the session scratchpad `renderlog/`. It is a MOTION TEST of the current look (not yet director-approved);
-  when I resume: check it finished, make half-res preview mp4s per shot and judge motion (hatching shimmer, the
-  letters' wave, sparks, burn edge, camera pace).
-* Shots (shot-local src numbering, `redbook.SHOTS`): prologue 1000-1319 (C2), mountain 2000-2239 (C3), x1
-  3000-3159 (C4), deep 4000-4279 (C9 + the burn into the Eye). Comp: `out = rgb + (1 - matte) * next`.
-* Code (`shots/map/`): `pen.py`, `book.py`, `burn.py`, `pages.py`, `redbook.py` (see the files' docstrings).
-  Stills: `python3 redbook.py stills --out DIR`; X1 tests: `python3 redbook.py x1 --frames ... --scale 0.5`;
-  frames: `python3 redbook.py frames --frames A-B --out renders/book_C`. Needs Pillow.
-* Known look issues to fix next: the prologue's "sheaf" end framing (the fore-edge is in shadow: add a bounce
-  light from the right, frame the thick right block); the red binding barely reads in the wide; the Deep's
-  halls repeat (vary arches/capitals per level); the Mountain's smoke puffs are a little regular; the flame is
-  a touch pale; the Deep heal-in hole is small (fine) and its red glow could be stronger earlier.
-* THE YEAR OF PLENTY (`pages.Plenty`) second draft: a young tree whose crown is one leafy ovoid of clusters with
-  windows of sky, curved limbs hidden behind the leaves, gilt flowers on the lit side; patchwork fields with slanted
-  boundaries and hedges; orchard; sheaves tied at the neck; cottages with chimney smoke; birds. No round doors.
-  Still to do: the clusters read a little like cotton balls (vary size/shape, add tonal shading on the lower
-  right of the crown), the trunk is thin and forks high, the far fields are busy. Not yet seen in the book.
-* THE HAVENS (`pages.Havens`, verso) first draft: engraved dusk sky and sea, the evening star, the ship (animated
-  west via `ship_strokes(dx)`), six flame glyphs on the heights, a roundel of her bound hand raising a small lamp.
-  Not yet good: the land has no shoreline (its cliff strokes and the sea lines overlap in a grid on the right),
-  the sail reads as a crescent, and the roundel's hand does not read as a hand yet (needs a proper profile
-  with separate fingers round the lamp). Next pass before any Havens still is shown.
-* Not started: the epilogue book shots (page turns, healing, blank
-  pages, the title page), P4 map_C + THE ROAD (map_fix branch code), smoke over the burns, review sheets and
-  the final report (this section becomes that report).
+## REPORT (MAP-v3, 27 Sep 05:25Z) · on the LOCKED bar map (`music/v3/barmap_C.json`)
+**What it is.** C's book as one 2.5-D engine, all shots numbered on C's own timeline (src frame = C frame):
+| shot | C frames | what happens | code |
+|---|---|---|---|
+| C2 THE RED BOOK | 80-319 | the drift over the last written leaves (the flowing invented hand, a mountain, a ring and a ship drawn small); from bar 4 b1 the blank recto and the sheaf of leaf-edges | `book_c.shot_red_book` |
+| C3 THE MOUNTAIN | 320-559 | the leaves riffle back (12 leaves, motion-blurred); the pen draws the fire, the gilt ring on bar 5 b3 (1.62-1.66 s), its letters kindle faintly in the drawn fire, then the mountain grows round it; caption band left clear for T1 | `shot_mountain`, `pages.Mountain(SCHED_C3)` |
+| C4+C5 LETTERS TO FIRE (X1a/E15) | 560-1039 | the leaf turns to a leaf dense with script; the hearth sinks until the page is almost dark; 9b4 the letters glow like the Ring's; 10b1 they lift as sparks drawn down together to the page's heart (no spiral); 11b1 the fire catches; 11b3 it burns the page open; C5 the fire alone, the burnt rim settling at the frame's edges | `Kindling`, `burn.hold_params` |
+| C8 THE DEEP (+C9 burn) | 1680-1991 | an ember edge sweeps the race away down the frame leaving parchment (X1 reversed); the pen draws the halls level by level on the dividing tick (quarters, eighths from 1760, sixteenths from 1840) and the camera follows it down the gilt vein; the red glow grows, the paper browns; 1920 the glow burns through (into the Eye) | `shot_deep`, `burn.sweep_params` |
+| C18 THE MAP ANSWERS · THE ROAD (P4) | 4160-4479 | map_C rev 3 (the relay of fires, from `claude/fix-map_fix`) retimed to four bars; THE ROAD: a slow dashed route from her beacon's glyph west along the ranges to a ring of stones at the Pamir knot, arriving on bar 56 b3; the camera ends centred on the ring for the match to C19; `road.py x1` gives the burn-through onto the map as glow + keep-matte | `road.py` |
+| C25-C28 THE LAST PAGES | 6160-7199 | the hearth low, the edges scorched; THE YEAR OF PLENTY draws itself (no doors, no houses: the tree alone in the field, the smoke of many hearths beyond); 81b1 the leaf turns: THE HAVENS (coast fires 81b3, 82b3, 83b3; the stern light answers; the roundel: her bound hand raising the lamp; 84b1 the ship slides west off the page); 85b1 blank, 85b3 the next; the edges heal by T14; the blank recto held for the title | `shot_last_pages` |
+
+**The risk test: PASSED against its fallbacks** (P2's "clip-art → pencil first, judged against map_C's close-ups"; X1's
+"the letters glow and X1 burns through from their glow"). The Mountain and the Deep read as engraved pen drawings on a real
+page (tonal sky and flank hatching, puffed smoke, carved dark halls down a gilt vein), not clip-art; pencil → ink sheets are
+in `review/v3/`. The book set reads as an old red book by a hearth, and the letters-to-fire burn-through reads in 8 frames.
+Sheets: `review/v3/map_P1_redbook_set.jpg`, `map_P2_pages_pencil_ink.jpg`, `map_P2_pages_scans.jpg`,
+`map_X1_letters_to_fire.jpg`, `map_C_book_timeline.jpg`, `map_C18_road.jpg`; motion test `map_X1_letters_to_fire.mp4`.
+
+**RENDER_SPEC** (director launches; one machine type per job, 4 procs x 1 thread, `"ship": "jpg"`):
+* `cloud/jobs/map_v3_book.json`: 2312 frames `renders/book_C/` + `renders/book_C_matte/` (80-319, 320-559, 560-1039,
+  1680-1991, 6160-7199), ~3 s/frame on 4 threads (~12 s per 1-thread proc): ~2 h on one 4-core box, ~1.2 GB RSS per proc.
+  Setup also writes `renders/book_C/x1_letters.json` (EMBERS: every spark's seed and the heart's screen track).
+* `cloud/jobs/map_v3_road.json`: 320 frames `renders/map_C/f_04160..04479` + the X1 onto the map
+  (`renders/x1_map_C/` glow and `_matte` keep, 4150-4185, centred at 960,300: change `--center` to the seventh beacon's
+  bloom). Setup bakes the sheet if the cache is missing (~16 min on 4 cores); frames ~4 s.
+* Comp (EDIT): book layer `out = rgb + (1 - matte) * next shot` (both display-referred). The next shots: C4/C5 → E5-C,
+  C8's head ← E11 (the race shows ahead of the sweeping edge), C8's tail → E12. Lines are EDIT's: T1 in the Mountain's
+  caption band (page y 12.8-14.2 cm, under the plate), T2 over the darkening dense leaf, T7 on the Deep, T14 on the first
+  healed blank page, the title on the last blank recto.
+
+**Weaknesses (next pass).** The Plenty tree's crown still reads a little like cotton balls; the Havens roundel's hand is
+legible as a gesture more than as a hand; the flame is three tongues of `fire.flame` (EMBERS' fire may replace it); the
+riffle is dark and fast (reads as motion, not as pages); the Deep's halls repeat one design per level; the invented hand
+has a few Latin-looking letters (l, u, y) at small sizes; motion is judged on the X1 mp4 only (the drift, riffle and
+descent were checked as frame sequences, not as playback).
 
 # MAP (cut C) — THE WORLD ANSWERS, told on a map
 
