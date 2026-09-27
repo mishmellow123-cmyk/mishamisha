@@ -1,5 +1,54 @@
 # ACCORD v3 (ACCORD-v3, 27 Sep): cut C only, C frames 4480-5679 -> `renders/accord_C3/f_%05d.png`
 
+## ACCORD-3 WORKING STATE (27 Sep ~19:25Z; renders go to THE FARM now, see COMMON.md)
+* **Crowd handed over.** ACCORD-CROWD (director's split, 18:50Z) owns the rivers, the crowd and the walk-out. My
+  plain3 draft is deleted and accord3 is back to `igz` grids / P_WI 0 / default P_IGC_*/P_IGF_* until their hooks
+  land; shade3's P_CROWD/P_WI terms untouched. **Accepted:** her walk-in: `scene3.her_state` takes
+  `crowd3.her_walkin(t)` for t < 4760 (guarded import of `crowd/crowd3.py`; without it she stands in her place).
+* **Built this session (pushed, fbb822b):**
+  - Bar 70's fire that remains: `flame3.calm_density` (CF flames from `scene3.calm_flames(t)`: a tall heart + 5 on
+    the coals on the stone's top, 16 thin tongues along the burning logs; one shared tongue/crinkle field sized to
+    the owning flame; translucent), tight 2-interval march; `accord3.calm_lights` in the flame body (CALM_LIGHT 9);
+    coal bed on the stone (`shade3` P_COAL); ash sooted darker, deep-red sparse embers, log glow along the checks;
+    haze x0.35 in P3; P3 camera oblique behind her right shoulder (P3_PHI0 187, tilt 39 -> 5 by 5604, h 3.25 -> 62);
+    the bearers stand 0.40 m closer (P3_STEP) and dip into the fire's flank.
+  - Hands: `geom3.sd_hand` arm mode (HD[16:24]: elbow/shoulder; wool sleeve with creases wrist -> elbow -> her
+    shoulder; `scene3.set_arm`), her P2 pose relaxed per finger, she leans in 34 deg over the hearth (kneels at
+    1.00 m); stitched points + sheen on the leather; the gilded crust = `geom3.gilt_crust` (lobed sheet + tongues
+    along 3 fingers, raised 1.6 mm with a bead) shaded as metal (no diffuse, sharp + broad spec, cracks, live embers).
+  - The Ring's glint (`accord3.ring_glint`, P1 only): sum of torch irradiance at the band, gold, after the lens.
+* **Look-dev:** `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/accord3_look.json --test 12` (from
+  ~/mishamisha) -> `renders/_farmtest/accord3_look/`; frames 4660,4840,4960,5040,5100,5160,5250,5300,5548,5566,
+  5590,5625. Fire alone locally (light): `python shots/accord/firelook3.py out.jpg 5548,5566`.
+
+## ACCORD-CROWD (crowd lane, split off 27 Sep ~18:50Z): the interface with ACCORD-3
+* **Split.** ACCORD-3 keeps the hearth, the Ring, the gloves, the beats and the inner council (scene3's 13 + her).
+  ACCORD-CROWD has everyone else: the rivers of torches (AC1's descent), the crowd's ring round the stones, its torches
+  through AC4/AC2, the bar-70 walk-out, and the land beyond the stones (r > 9 m: worn roads, gentle relief).
+* **Module:** `shots/accord/crowd/crowd3.py`, in its own subfolder so its edits never flush accord3's numba cache (it
+  keeps its own stamp over `accord/*.py` + `crowd/*.py`).
+* **Hooks in accord3.py** (the only lines ACCORD-CROWD adds to your files; each is a no-op if crowd3 fails to import;
+  `CROWD_REQUIRED=1` makes that fatal, for final renders):
+  1. `build(t)`: `st['CR'] = CR.state(t)`; `OC` gains `CR.occluders(...)` (crowd capsules within ~6 m of the fire, P3
+     only); `PR[P_CROWD]` is scaled by `CR.lit_fraction(...)` (1 in P1; 0 once the crowd's torches are down).
+  2. `render_frame`: `igc, igf = CR.ground_light(...)` (the crowd's torchlight on the ground, with each bearer's own
+     shadow and the stones' shadows; it fills PR[P_WI], P_IGC_*, P_IGF_*) goes to render_surfaces in place of `igz`;
+     after the AA pass `CR.composite(...)` (the land beyond r 9 m re-toned by ratio, so no seam with shade3's ground;
+     then the crowd's figures, z-tested and anti-aliased over your frame); after `FL3.torch_flames`, `CR.flames(...)`
+     (their volumetric flames through flame3.torch_density, supersampled when small, and their airlight).
+* **Layout and beats (C numbering).** Roads (trunks with merging tributaries) end in aisles between the stones.
+  4480-4700 the rivers converge and the arrivals settle in ranks round the stones (r 8.4-14 m; nobody inside the
+  stones but your 14). Through AC4/AC2 every crowd hand holds a lit torch upright and nobody moves toward the centre.
+  5120-5200 the crowd's torches come down with yours (P_CROWD fades). **Bar 70 (proposed; asked of the director):**
+  after the white the crowd has closed in round the fire (front rank r ~2.6 m, behind your council at 1.32 m), its
+  torches spent; your 13 dip at ~5534 and draw back lit; then the flame passes torch to torch outward (front rank
+  ~5566, the stones ~5610, r 12 m ~5640): each bearer dips toward the lit torch in front, draws back lit, turns and
+  walks out along the roads, so the lights stream OUTWARD under MAP's burn-through (5600-5640).
+* **Asks of ACCORD-3:** (a) keep shade3's `P_CROWD`/`P_WI`/igf/igc terms as they are (the crowd now drives them);
+  (b) her walk-in: she arrives along the road from screen-right at 4480 (MAP's Road comes from the east) and crosses
+  the open floor to her place by ~4700. `CR.her_walkin(t)` gives pos/ang/walk/phase for t < 4730. You own her, so wire
+  it into `her_state` if you agree.
+
 ## STATE AT HANDOFF (27 Sep 18:40Z, ACCORD-3 taking over from ACCORD-2; brief = `_local_logs/handoff/brief3_ACCORD.md`)
 * **On disk:** v3 engine pushed (118eafd + e0ea266). No ACCORD render process running. Test stills only, in
   `renders/accord_C/tests/` (sheets a-e = ACCORD-2's last look: 4840/4960/5040/5100/5160/5180/5540-5595).
