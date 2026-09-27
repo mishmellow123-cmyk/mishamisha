@@ -104,7 +104,7 @@ def params(e, pix_ang, u=0.0):
     # the far air takes the horizon sky's own colour, so each farther range fades a step further into the sky
     fogc = (lin('#8792BF') * 0.44 * (1.0 - 0.45 * u) + lin('#56628F') * 0.30 * 0.45 * u) * 0.95
     fogp = np.zeros(16)
-    fogp[:8] = [8.5e-5, 1 / 2800.0, 4.0e-5, 1 / 160.0, 0.0, fogc[0], fogc[1], fogc[2]]
+    fogp[:8] = [1.15e-4, 1 / 3600.0, 4.0e-5, 1 / 160.0, 0.0, fogc[0], fogc[1], fogc[2]]
     fogp[8] = 8.0
     fogp[9:12] = fogc
     fogp[12:15] = L
@@ -221,6 +221,8 @@ class DuskShot:
         LP, SK, amb, fogp = params(e, 1.0 / scam.f, min(max(frame / float(SYNC_LAST), 0.0), 1.2))
         out = np.zeros((scam.H, scam.W, 3), np.float32)
         BW.shade(self.G, LP, SK, amb, fogp, float(scam.pos[1]), out)
+        e_low = self.chosen[0][0] if self.chosen else self.e_her + 1.0
+        out = wisps(out, self.G, scam.pos, e, e_low, 1.0 / scam.f)
         fr = self.fr
         fr.img = out
         dist = self.G[..., BW.G_DIST]
@@ -228,6 +230,49 @@ class DuskShot:
         fr.dist = dist
         img, _, _ = PI.to_target(fr)
         return img
+
+
+from numba import njit, prange   # noqa: E402
+from mt.noise import fbm2 as _fbm2   # noqa: E402
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def _fbm_arr(u, v, out):
+    for i in prange(u.shape[0]):
+        out[i] = _fbm2(u[i], v[i], 4.0, 311)
+
+
+def wisps(img, G, cam_pos, e, e_low, pix):
+    """A few thin wisps of cloud just above the cloud sea: streaks drawn out along the wind, sky-lit lavender, and
+    rose while the sun still reaches their height (they go blue with the lowest tops). Vectorised over the G-buffer."""
+    dy = G[..., BW.G_DY]
+    dist = G[..., BW.G_DIST]
+    yw = BW.CLOUD_Y + 200.0
+    with np.errstate(divide='ignore', invalid='ignore'):
+        t = (yw - cam_pos[1]) / dy
+    ok = (dy < -1e-4) & (t > 0) & (t < dist) & (t < 90000.0)
+    if not ok.any():
+        return img
+    t = np.where(ok, t, 0.0)
+    # the curved Earth drops the plane with distance: one correction step
+    t2 = (yw - cam_pos[1] - t * t / (2 * BW.R_EARTH)) / np.where(ok, dy, -1.0)
+    t = np.where(ok, np.minimum(t2, dist), 0.0)
+    x = cam_pos[0] + G[..., BW.G_DX] * t
+    z = cam_pos[2] + G[..., BW.G_DZ] * t
+    jj, ii = np.nonzero(ok)
+    xs, zs = x[jj, ii], z[jj, ii]
+    ca, sa = math.cos(math.radians(30.0)), math.sin(math.radians(30.0))
+    u = (xs * ca + zs * sa) / 3200.0
+    v = (-xs * sa + zs * ca) / 700.0
+    n = np.zeros(len(u))
+    _fbm_arr(u.astype(np.float64), v.astype(np.float64), n)
+    d = np.clip((n - 0.18) / 0.35, 0.0, 1.0)
+    d = d * d * (3 - 2 * d) * np.clip(1.0 - t[jj, ii] / 90000.0, 0.0, 1.0) ** 0.5
+    lit = min(max((e - (e_low - 0.35)) / 0.5, 0.0), 1.0)
+    col = lin('#6E78A8') * 0.40 * (1.0 - lit) + (lin('#F2A6B4') * 0.55 * lit + lin('#6E78A8') * 0.30 * lit)
+    a = 0.32 * d
+    img[jj, ii, :] = img[jj, ii, :] * (1.0 - a[:, None]) + col[None, :] * a[:, None]
+    return img
 
 
 FINISH = dict(exposure=1.05, bloom_strength=0.05, bloom_threshold=1.2, streak_strength=0.0, vignette_amount=0.22)

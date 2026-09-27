@@ -85,7 +85,8 @@ def inscription_mips():
 
 # ================================================================ state ===
 
-_WIND = np.array([0.22, -0.10])
+HAZE = 0.006                            # smoke haze density (single scattering of every light)
+_WIND = np.array([0.40, -0.16])     # a steady breeze: every flame streams the same way
 
 
 def flames_and_lights(t, Fa):
@@ -95,24 +96,25 @@ def flames_and_lights(t, Fa):
     Fp = SC.figures(t - 1.0)
     headp = SC.torch_heads(t - 1.0, Fp)
     rng = np.random.default_rng(11)
-    hf = 0.36 * rng.uniform(0.88, 1.12, SC.NEM)
+    hf = 0.44 * rng.uniform(0.88, 1.12, SC.NEM)
     FL = np.zeros((SC.NEM, FL3.FL_N))
     L = []
     for i in range(SC.NEM):
         top = heads[i, 0:3]
         ax = heads[i, 3:6]
-        base = top - 0.09 * ax / (np.linalg.norm(ax) + 1e-9)
+        base = top - 0.03 * ax / (np.linalg.norm(ax) + 1e-9)
         vel = (top - headp[i, 0:3]) * 24.0
         lean = _WIND - 0.35 * vel[:2]
         ln = np.linalg.norm(lean)
         if ln > 1.6:
             lean *= 1.6 / ln
-        FL[i] = (base[0], base[1], base[2], hf[i], 0.080, lean[0], lean[1], 26.0, 3.7 * i + 1.3, lit[i])
+        FL[i] = (base[0], base[1], base[2], hf[i], 0.088, lean[0], lean[1], 22.0, 3.7 * i + 1.3, lit[i])
         if lit[i] > 0.01:
-            fl = 1.0 + 0.06 * math.sin(t * 0.9 + 3.1 * i) + 0.04 * math.sin(t * 1.7 + i) + 0.03 * math.sin(t * 2.9 + 2 * i)
-            I = 1.25 * lit[i] * fl
+            # the light pumps with the flame's own height (flame3.torch_flicker, same seed)
+            fl = FL3.torch_flicker(3.7 * i + 1.3, float(t), resources()['noise3']) / 0.98
+            I = 1.25 * lit[i] * (0.55 + 0.45 * fl)
             c = SC.FIRE_HOT
-            L.append([base[0] + lean[0] * 0.04, base[1] + lean[1] * 0.04, base[2] + 0.11, 0.07,
+            L.append([base[0] + lean[0] * 0.08, base[1] + lean[1] * 0.08, base[2] + 0.22, 0.09,
                       I * c[0], I * c[1], I * c[2], float(i)])
     return FL, L
 
@@ -130,7 +132,7 @@ def hearth_state(t):
     HP[FL3.HP_CALM] = fs['calm']
     f = SC.hand_fist_pos(max(t, SC.HAND_CLOSE))
     HP[FL3.HP_FX:FL3.HP_FZ + 1] = f
-    HP[FL3.HP_I] = 42.0 * fs['on'] * (1.0 - 0.25 * fs['calm'])
+    HP[FL3.HP_I] = 16.0 * fs['on'] * (1.0 - 0.35 * fs['calm'])
     return fs, HP
 
 
@@ -154,7 +156,7 @@ def hearth_lights(t, fs):
         z = 0.25 + 0.2 * fs['H']
         I = base * on * fl / n * 1.6
         L.append([r * math.cos(a), r * math.sin(a), z, 0.22, I * col[0], I * col[1], I * col[2], -1.0])
-    I = base * 0.55
+    I = base * 0.55 * (1.0 - 0.5 * fs['calm'])
     L.append([0.0, 0.0, 0.35 + 0.45 * fs['H'], 0.3, I * col[0], I * col[1], I * col[2], -1.0])
     return L
 
@@ -387,9 +389,12 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
         rgb = rgb * 1.0
         rgb += cv2.GaussianBlur(fb, (0, 0), 0.7 * max(scale, 0.5))
     rgb = heat_haze(rgb, t, cam, scale, fs, window)
+    # the firelight in the thin smoke haze over the council
+    LTa = st['LT']
+    FL3.airlight(rgb, depth, cam, LTa, int(st['PR'][SH.P_NL]), HAZE, 0.06, 0.35)
     # the torch flames (after the haze so they stay crisp)
     FLm = st['FL']
-    FL3.torch_flames(rgb, depth, cam, FLm, FLm.shape[0], float(t), R['noise3'], 0.25)
+    FL3.torch_flames(rgb, depth, cam, FLm, FLm.shape[0], float(t), R['noise3'], 0.85)
     # sparks
     SP = FL3.sparks(t, fs)
     if SP.shape[0]:

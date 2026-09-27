@@ -40,7 +40,7 @@ TZ = float(_S[2] + 1.0)
 TOP_Y = 301.5
 RIDGE_AZ = 40.0                         # the NE ridge
 NCR = 16
-VERSION = 'b9'                           # bump when the terrain changes (cache keys)
+VERSION = 'b11'                           # bump when the terrain changes (cache keys)
 
 # row layout (type in col 12)
 #  dome  (0): 0 cx | 1 cz | 2 top | 3 R (reaches the cloud) | 4 p profile | 5 aniso | 6 angle | 7 seed | 8 lobe
@@ -187,6 +187,15 @@ def field(x, z, fp, hcur):
         h = CLOUD_Y + 3291.0 * (1.0 - math.exp(-1.5 * u)) / 1.5
     else:
         h = CLOUD_Y + 3291.0 * u
+    # worn crests are not smooth: blocky outcrops and tors along the upper ground (never needles)
+    oc = _lod(420.0, fp, 0.0, 5.0)
+    if oc > 0.0:
+        up = smoothstep(CLOUD_Y + 60.0, CLOUD_Y + 520.0, h)
+        if up > 0.0:
+            cr = soft_ridged2(x / 420.0 + 3.1, z / 420.0 - 7.7, oc, 271, 0.02, 2.0, 0.5)
+            dtx = x - TX
+            dtz = z - TZ
+            h += 30.0 * (cr - 0.45) * up * smoothstep(350.0, 900.0, math.sqrt(dtx * dtx + dtz * dtz))
     # the far ranges stand in layers round her: warped rings of low ground (cloud-filled) between them
     rx = x - TX
     rz = z - TZ
@@ -309,8 +318,8 @@ def knoll(x, z, fp):
     h = TOP_Y - 0.030 * d ** 1.62
     o = _lod(5.0, fp, 0.0, 4.0)
     if o > 0.0:
-        rim = smoothstep(4.0, 9.0, d) * (1.0 - smoothstep(30.0, 60.0, d))
-        h += 0.55 * rim * (fbm2(x / 5.0 + 0.3, z / 5.0 - 1.7, o, 301) + 0.2)
+        rim = smoothstep(4.0, 9.0, d) * (1.0 - smoothstep(14.0, 30.0, d))
+        h += 0.40 * rim * (fbm2(x / 5.0 + 0.3, z / 5.0 - 1.7, o, 301) + 0.2)
         o2 = _lod(1.4, fp, 0.0, 4.0)
         if o2 > 0.0:
             h += 0.08 * fbm2(x / 1.4, z / 1.4, o2, 302) * (0.3 + 0.7 * smoothstep(2.5, 6.0, d))
@@ -570,7 +579,7 @@ def gbuffer(C, D, P, CR, hx, hz, nsteps, tmax, snow_bias, G, kstep, MD, mk):
                 patch = gnoise2(x / 1100.0, z / 1100.0, 73)
                 sv = nsy + 0.035 * patch + 0.03 * band + snow_bias
                 snow = smoothstep(0.56, 0.66, sv)
-                wf = smoothstep(4.0, 0.5, fp)
+                wf = smoothstep(4.0, 0.5, fp) * smoothstep(420.0, 1500.0, math.sqrt((x - TX) ** 2 + (z - TZ) ** 2))
                 if wf > 0.0:
                     sf = 0.05 * gnoise2(x / 3.0, z / 3.0, 75) + 0.03 * gnoise2(x * 1.1, z * 1.1, 76)
                     sv2 = 0.55 * ny + 0.45 * nsy + 0.05 * patch + sf + snow_bias
@@ -580,10 +589,14 @@ def gbuffer(C, D, P, CR, hx, hz, nsteps, tmax, snow_bias, G, kstep, MD, mk):
                 dtz = z - TZ
                 dtop = math.sqrt(dtx * dtx + dtz * dtz)
                 if dtop < 40.0:
-                    # frost and old snow in the grain of the stones (fine), never blotches
+                    # the summit boss: frost-shattered stones dusted with old snow (fine grain, never blotches)
                     fine = gnoise2(x / 0.45, z / 0.45, 91) * 0.6 + gnoise2(x / 0.17, z / 0.17, 92) * 0.4
-                    frost = 0.18 + 0.30 * smoothstep(-0.2, 0.6, fine) + 0.25 * smoothstep(0.93, 0.99, ny)
-                    snow = snow + (min(frost, 0.75) - snow) * (1.0 - smoothstep(18.0, 40.0, dtop))
+                    frost = 0.30 + 0.35 * smoothstep(-0.2, 0.6, fine)
+                    snow = snow + (min(frost, 0.75) - snow) * (1.0 - smoothstep(9.0, 14.0, dtop))
+                # below the boss: wind-packed snow with a few stones showing through (sparse, small)
+                if dtop >= 9.0 and dtop < 400.0 and snow > 0.5:
+                    st_ = gnoise2(x / 1.3, z / 1.3, 93) + 0.45 * gnoise2(x / 0.45, z / 0.45, 94)
+                    snow = snow * (1.0 - 0.75 * smoothstep(0.60, 0.70, st_) * (1.0 - smoothstep(60.0, 400.0, dtop)))
                 # rock tone: strata (horizontal) and broad patches
                 rv = 0.80 + 0.35 * (0.5 + 0.5 * gnoise2(h0 / 7.0 + x / 300.0, z / 300.0, 81))
                 rv *= 0.88 + 0.24 * (0.5 + 0.5 * patch)

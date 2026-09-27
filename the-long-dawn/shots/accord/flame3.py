@@ -16,11 +16,11 @@ HP_T, HP_ON, HP_H, HP_WHITE, HP_SPREAD, HP_HOLLOW, HP_CONV, HP_CALM, HP_FX, HP_F
 HP_N = 14
 
 # a real flame's colour: deep orange at the cool edges -> orange -> yellow -> near-white in the core
-RAMP = np.array([[0.00, 0.50, 0.090, 0.012],
-                 [0.25, 0.90, 0.250, 0.035],
-                 [0.50, 1.00, 0.470, 0.090],
-                 [0.75, 1.00, 0.700, 0.260],
-                 [1.00, 1.00, 0.900, 0.620]])
+RAMP = np.array([[0.00, 0.45, 0.060, 0.008],
+                 [0.25, 0.85, 0.190, 0.022],
+                 [0.50, 1.00, 0.400, 0.060],
+                 [0.75, 1.00, 0.640, 0.190],
+                 [1.00, 1.00, 0.860, 0.520]])
 
 
 @njit(inline='always', **FM)
@@ -53,42 +53,88 @@ def _fbm3(n3, x, y, z, oct_):
     return n / tot
 
 
+@njit(inline='always', **FM)
+def _turb3(n3, x, y, z, oct_, gain):
+    """Turbulence: sum of |noise - 0.5| octaves, sharp creases where the flame sheet folds (0..~1)."""
+    n = 0.0
+    amp = 1.0
+    tot = 0.0
+    for o in range(oct_):
+        n += amp * abs(tex3(n3, x + 13.1 * o, y - 7.7 * o, z + 3.3 * o) - 0.5)
+        tot += amp
+        amp *= gain
+        x *= 2.13
+        y *= 2.13
+        z *= 1.97
+    return 2.0 * n / tot
+
+
+@njit(**FM)
+def torch_flicker(seed, T, n3):
+    """The whole flame pumps (5-6 Hz) and breathes (~1 Hz): the height factor (also drives its light)."""
+    Ts = T / 24.0
+    f1 = tex3(n3, seed * 3.7, 5.0 + seed, Ts * 5.5)
+    f2 = tex3(n3, 9.0 + seed, seed * 2.1, Ts * 1.1)
+    return 0.80 + 0.28 * f1 + 0.14 * f2
+
+
 @njit(**FM)
 def torch_density(qx, qy, qz, FL, k, T, n3):
-    """A torch flame in its own frame (q relative to the base). Returns (density, temperature)."""
+    """A torch flame, q relative to its base (world axes: a flame rises straight up and bends downwind).
+    Returns (density, temperature): crisp torn tongues that rise faster than the flame and twist, wrapped
+    round the head below, a hot core just above the head, detached flamelets burning out at the top."""
     lit = FL[k, 9]
-    Hf = FL[k, 3] * (0.35 + 0.65 * lit)
-    Rf = FL[k, 4] * (0.55 + 0.45 * lit)
     seed = FL[k, 8]
     Ts = T / 24.0
-    # the flame's height breathes and flickers
-    fl = 0.86 + 0.14 * math.sin(Ts * 7.3 + seed) * math.sin(Ts * 3.1 + 2.0 * seed) + 0.08 * math.sin(Ts * 13.7 + seed)
-    Hf *= fl
+    Hf = FL[k, 3] * (0.35 + 0.65 * lit) * torch_flicker(seed, T, n3)
+    Rf = FL[k, 4] * (0.55 + 0.45 * lit)
     u = qz / Hf
-    if u < -0.25 or u > 1.05:
+    if u < -0.34 or u > 1.3:
         return 0.0, 0.0
     uc = max(u, 0.0)
-    # the tongue bends downwind with height
-    cx = FL[k, 5] * Hf * uc ** 1.5
-    cy = FL[k, 6] * Hf * uc ** 1.5
-    x = qx - cx
-    y = qy - cy
+    # it bends downwind with height and sways slowly
+    sx = FL[k, 5] + 0.40 * (tex3(n3, seed * 5.0, 17.0, Ts * 1.6) - 0.5)
+    sy = FL[k, 6] + 0.40 * (tex3(n3, 31.0, seed * 5.0, Ts * 1.6) - 0.5)
+    bend = Hf * uc ** 1.6
+    x = qx - sx * bend
+    y = qy - sy * bend
     rho = math.sqrt(x * x + y * y)
-    # teardrop envelope, wide round the head, a point at the top
-    ub = (u + 0.25) / 1.25
-    R = Rf * 1.45 * ub ** 0.45 * (1.0 - ub) ** 0.85
-    if R <= 1e-5 or rho > R * 1.9:
+    # the envelope: wrapped round the head below, widest just above it, drawn up to a point
+    if u < 0.18:
+        w = (u - 0.18) / 0.52
+        env = math.sqrt(max(1.0 - w * w, 0.0))
+    else:
+        w = (u - 0.18) / 0.90
+        env = max(1.0 - w, 0.0) ** 0.75
+    R = Rf * max(env, 0.16)
+    if rho > R * 2.8 + 0.015:
         return 0.0, 0.0
-    sc = 1.0 / (0.045 + 0.02 * uc)
-    rise = 2.6 * Ts
-    wx = tex3(n3, x * sc * 0.5 + seed, y * sc * 0.5, (qz - rise * 0.5) * sc * 0.3) - 0.5
-    wy = tex3(n3, x * sc * 0.5, y * sc * 0.5 + seed, (qz - rise * 0.5) * sc * 0.3 + 4.0) - 0.5
-    n = _fbm3(n3, (x + wx * 0.03) * sc + seed * 3.0, (y + wy * 0.03) * sc, (qz - rise * 0.35) * sc * 0.55, 3)
-    e = 1.0 - rho / R + 0.9 * (n - 0.5) - 0.55 * uc * uc
-    d = sstep(0.0, 0.35, e)
+    # twist the field, then tear it into a few big tongues (rising faster than the flame) with crinkled edges
+    ang = 2.0 * uc + seed + 0.6 * Ts
+    ca = math.cos(ang)
+    sa = math.sin(ang)
+    xr = x * ca - y * sa
+    yr = x * sa + y * ca
+    rise = 1.7 * Ts
+    scl = 1.0 / 0.065
+    wx = tex3(n3, xr * scl * 0.5 + 3.0 * seed, yr * scl * 0.5, (qz - rise * 0.8) * scl * 0.25) - 0.5
+    wy = tex3(n3, xr * scl * 0.5, yr * scl * 0.5 + 3.0 * seed, (qz - rise * 0.8) * scl * 0.25 + 7.0) - 0.5
+    nl = _fbm3(n3, (xr + 0.08 * wx) * scl + seed * 7.0, (yr + 0.08 * wy) * scl, (qz - rise) * scl * 0.36, 3)
+    scf = 1.0 / 0.022
+    nf = _turb3(n3, (xr + 0.05 * wx) * scf + 40.0, (yr + 0.05 * wy) * scf, (qz - 1.25 * rise) * scf * 0.5, 2, 0.55)
+    AL = 0.55 + 1.35 * sstep(0.0, 1.0, u)
+    AF = 0.30 + 0.45 * uc
+    e = 1.0 - rho / R + AL * (2.0 * nl - 1.0) * 1.5 - AF * (nf - 0.40) - 2.6 * max(u - 0.82, 0.0)
+    d = sstep(0.0, 0.10, e)
     if d <= 0.0:
         return 0.0, 0.0
-    temp = clamp(0.95 * (1.0 - uc) ** 1.2 * (1.0 - 0.6 * rho / R) + 0.35 * (n - 0.5) + 0.1, 0.0, 1.0)
+    # hottest in the middle third (the luminous heart), cooler at the roots round the head, orange-red tips
+    tax = sstep(-0.30, 0.22, u) * (1.0 - sstep(0.42, 1.05, u))
+    temp = clamp(0.15 + 0.95 * tax * (1.0 - 0.45 * min(rho / R, 1.0)) + 0.55 * (nl - 0.5)
+                 + 0.14 * sstep(0.0, 0.6, e), 0.0, 1.0)
+    # the luminous sheet: emission peaks where the flame surface folds (limb-bright tongues, crisp edges)
+    sh = (e - 0.14) / 0.16
+    d = d * (0.30 + 0.70 * math.exp(-sh * sh))
     return d, temp
 
 
@@ -107,29 +153,50 @@ def _proj(cam, x, y, z):
 
 @njit(parallel=True, **FM)
 def torch_flames(img, depth, cam, FL, nfl, T, n3, alpha):
-    """Ray-march every torch flame inside its own screen box and add it to img (with a little soot)."""
+    """Ray-march every torch flame through its own world box (tight for the top-down camera) and add it to img
+    (with a little soot absorption). ~7 mm steps along each ray."""
     Hd = img.shape[0]
     Wd = img.shape[1]
     f = cam[12]
     for k in range(nfl):
         if FL[k, 9] <= 0.002 or FL[k, 7] <= 0.0:
             continue
-        Hf = FL[k, 3] * 1.15
-        mx = FL[k, 0] + FL[k, 5] * Hf * 0.5
-        my = FL[k, 1] + FL[k, 6] * Hf * 0.5
-        mz = FL[k, 2] + Hf * 0.40
-        Rb = Hf * 0.62 + FL[k, 4] * 1.5 + math.sqrt(FL[k, 5] ** 2 + FL[k, 6] ** 2) * Hf * 0.5
-        xs, ys, zc = _proj(cam, mx, my, mz)
-        if zc <= 0.0:
+        Hmax = FL[k, 3] * 1.25
+        Rm = FL[k, 4] * 1.9 + 0.02
+        lx = FL[k, 5]
+        ly = FL[k, 6]
+        bx0 = FL[k, 0] + min(0.0, (lx - 0.22) * Hmax) - Rm
+        bx1 = FL[k, 0] + max(0.0, (lx + 0.22) * Hmax) + Rm
+        by0 = FL[k, 1] + min(0.0, (ly - 0.22) * Hmax) - Rm
+        by1 = FL[k, 1] + max(0.0, (ly + 0.22) * Hmax) + Rm
+        bz0 = FL[k, 2] - 0.36 * Hmax
+        bz1 = FL[k, 2] + 1.3 * Hmax
+        # the screen box of the world box
+        xa = 1e9
+        xb = -1e9
+        ya = 1e9
+        yb = -1e9
+        ok = True
+        for c in range(8):
+            px = bx1 if (c & 1) else bx0
+            py = by1 if (c & 2) else by0
+            pz = bz1 if (c & 4) else bz0
+            xs, ys, zc = _proj(cam, px, py, pz)
+            if zc <= 0.0:
+                ok = False
+                break
+            xa = min(xa, xs)
+            xb = max(xb, xs)
+            ya = min(ya, ys)
+            yb = max(yb, ys)
+        if not ok:
             continue
-        rp = f * Rb / max(zc - Rb, 0.05)
-        x0 = max(int(xs - rp) - 1, 0)
-        x1 = min(int(xs + rp) + 2, Wd)
-        y0 = max(int(ys - rp) - 1, 0)
-        y1 = min(int(ys + rp) + 2, Hd)
+        x0 = max(int(xa) - 1, 0)
+        x1 = min(int(xb) + 2, Wd)
+        y0 = max(int(ya) - 1, 0)
+        y1 = min(int(yb) + 2, Hd)
         if x1 <= x0 or y1 <= y0:
             continue
-        nsteps = int(min(max(rp * 0.8, 10.0), 40.0))
         I = FL[k, 7]
         for y in prange(y0, y1):
             for x in range(x0, x1):
@@ -142,19 +209,33 @@ def torch_flames(img, depth, cam, FL, nfl, T, n3, alpha):
                 dx /= l
                 dy /= l
                 dz /= l
-                ocx = cam[0] - mx
-                ocy = cam[1] - my
-                ocz = cam[2] - mz
-                b = ocx * dx + ocy * dy + ocz * dz
-                c = ocx * ocx + ocy * ocy + ocz * ocz - Rb * Rb
-                disc = b * b - c
-                if disc <= 0.0:
+                # ray / box slab test
+                ta = 0.01
+                tb = depth[y, x]
+                if abs(dx) > 1e-9:
+                    t0_ = (bx0 - cam[0]) / dx
+                    t1_ = (bx1 - cam[0]) / dx
+                    ta = max(ta, min(t0_, t1_))
+                    tb = min(tb, max(t0_, t1_))
+                elif cam[0] < bx0 or cam[0] > bx1:
                     continue
-                sq = math.sqrt(disc)
-                ta = max(-b - sq, 0.01)
-                tb = min(-b + sq, depth[y, x])
+                if abs(dy) > 1e-9:
+                    t0_ = (by0 - cam[1]) / dy
+                    t1_ = (by1 - cam[1]) / dy
+                    ta = max(ta, min(t0_, t1_))
+                    tb = min(tb, max(t0_, t1_))
+                elif cam[1] < by0 or cam[1] > by1:
+                    continue
+                if abs(dz) > 1e-9:
+                    t0_ = (bz0 - cam[2]) / dz
+                    t1_ = (bz1 - cam[2]) / dz
+                    ta = max(ta, min(t0_, t1_))
+                    tb = min(tb, max(t0_, t1_))
+                elif cam[2] < bz0 or cam[2] > bz1:
+                    continue
                 if tb <= ta:
                     continue
+                nsteps = int(min(max((tb - ta) / 0.007, 16.0), 110.0))
                 ds = (tb - ta) / nsteps
                 jit = (52.9829189 * ((0.06711056 * x + 0.00583715 * y + 0.1731 * (T % 7.0)) % 1.0)) % 1.0
                 er = 0.0
@@ -169,14 +250,57 @@ def torch_flames(img, depth, cam, FL, nfl, T, n3, alpha):
                     d, temp = torch_density(qx, qy, qz, FL, k, T, n3)
                     if d > 0.0:
                         cr, cg, cb = ramp(temp)
-                        e = I * d * (0.12 + temp ** 2.2) * ds * tr
+                        e = I * d * (0.05 + temp ** 2.6) * ds * tr
                         er += e * cr
                         eg += e * cg
                         eb += e * cb
-                        tr *= math.exp(-d * ds * 9.0 * (0.3 + qz / FL[k, 3]))
+                        tr *= math.exp(-d * ds * 7.0)
+                        if tr < 0.01:
+                            break
                 img[y, x, 0] = img[y, x, 0] * (1.0 - alpha * (1.0 - tr)) + er
                 img[y, x, 1] = img[y, x, 1] * (1.0 - alpha * (1.0 - tr)) + eg
                 img[y, x, 2] = img[y, x, 2] * (1.0 - alpha * (1.0 - tr)) + eb
+
+
+@njit(parallel=True, **FM)
+def airlight(img, depth, cam, LT, nl, sigma, hmin, lam):
+    """Firelight scattered by the smoke round each flame: for each light (isotropic point source) the in-scatter
+    integral along the ray, 1/(h^2 + (t - t0)^2) from 0 to the surface depth, weighted by the smoke's falloff
+    away from its flame (1 / (1 + (h/lam)^2)), so each torch wears its own soft halo."""
+    Hd = img.shape[0]
+    Wd = img.shape[1]
+    f = cam[12]
+    for y in prange(Hd):
+        for x in range(Wd):
+            sx = (x + 0.5 - cam[13]) / f
+            sy = -(y + 0.5 - cam[14]) / f
+            dx = cam[9] + sx * cam[3] + sy * cam[6]
+            dy = cam[10] + sx * cam[4] + sy * cam[7]
+            dz = cam[11] + sx * cam[5] + sy * cam[8]
+            l = math.sqrt(dx * dx + dy * dy + dz * dz)
+            dx /= l
+            dy /= l
+            dz /= l
+            tm = min(depth[y, x], 60.0)
+            er = 0.0
+            eg = 0.0
+            eb = 0.0
+            for k in range(nl):
+                lx = LT[k, 0] - cam[0]
+                ly = LT[k, 1] - cam[1]
+                lz = LT[k, 2] - cam[2]
+                t0 = lx * dx + ly * dy + lz * dz
+                hx = lx - t0 * dx
+                hy = ly - t0 * dy
+                hz = lz - t0 * dz
+                h = math.sqrt(hx * hx + hy * hy + hz * hz + hmin * hmin)
+                v = (math.atan((tm - t0) / h) - math.atan(-t0 / h)) / h / (1.0 + (h / lam) ** 2)
+                er += v * LT[k, 4]
+                eg += v * LT[k, 5]
+                eb += v * LT[k, 6]
+            img[y, x, 0] += sigma * er
+            img[y, x, 1] += sigma * eg
+            img[y, x, 2] += sigma * eb
 
 
 # ================================================================= the hearth ===
@@ -184,13 +308,14 @@ def torch_flames(img, depth, cam, FL, nfl, T, n3, alpha):
 @njit(**FM)
 def hearth_density(x, y, z, HP, ANG, nang, n3):
     """The fire everyone lit. From the ring of laid fuel round the stone the flames catch where the torches
-    touched it and run together; they rise and lean in over the stone, hollow round her fist until the
-    heart goes white; out of the white (calm) it settles to one warm, steady fire on the stone."""
+    touched it and run together; they rise in torn tongues and lean in over the stone, hollow round her fist
+    until the heart goes white; calm (bar 70): the burning logs' flames lean in and meet over the stone as one
+    steady, warm fire. Returns (density, temperature)."""
     H = HP[HP_H]
     if H <= 0.0 or HP[HP_ON] <= 0.0:
         return 0.0, 0.0
     u = z / H
-    if u <= -0.02 or u >= 1.0:
+    if u <= -0.02 or u >= 1.15:
         return 0.0, 0.0
     uc = max(u, 0.0)
     T = HP[HP_T]
@@ -209,24 +334,30 @@ def hearth_density(x, y, z, HP, ANG, nang, n3):
     ign = max(ign, calm)
     if ign <= 0.0:
         return 0.0, 0.0
-    # the sheet of flame: rising from r ~ 0.62 and leaning in over the stone as it climbs
-    conv = HP[HP_CONV]
-    r_src = 0.62 * (1.0 - conv * uc ** 0.75) * (1.0 - calm) + 0.18 * calm * (1.0 - 0.8 * uc)
-    wdt = (0.20 + 0.10 * (1.0 - uc)) * (1.0 - calm) + (0.34 * (1.0 - 0.55 * uc)) * calm
-    sw = HP[HP_SPREAD]
-    # swirl, and the noise that tears the sheet into tongues
-    ang = 0.55 * uc + 0.12 * Ts
+    # the sheet of flame rises from the laid fuel (r ~ 0.6) and leans in over the stone as it climbs;
+    # calm: the flames lean in and meet over the stone
+    conv = HP[HP_CONV] * (1.0 - calm) + 0.92 * calm
+    r_src = 0.62 * (1.0 - conv * uc ** 0.75) * (1.0 - calm) + 0.56 * (1.0 - conv * uc ** 0.6) * calm
+    wdt = (0.17 + 0.10 * (1.0 - uc)) * (1.0 - calm) + (0.15 + 0.12 * (1.0 - uc)) * calm
+    rr = abs(r - r_src) / max(wdt, 1e-3)
+    if rr > 3.2:
+        return 0.0, 0.0
+    # twist slowly, then tear the sheet into big tongues (rising faster than the fire) with crinkled edges
+    ang = 0.45 * uc + 0.10 * Ts
     ca = math.cos(ang)
     sa = math.sin(ang)
     xr = x * ca - y * sa
     yr = x * sa + y * ca
-    sc = 7.5
-    rise = 3.0 * Ts
-    wx = tex3(n3, xr * sc * 0.4 + 5.0, yr * sc * 0.4, (z - rise * 0.6) * sc * 0.18) - 0.5
-    wy = tex3(n3, xr * sc * 0.4, yr * sc * 0.4 + 9.0, (z - rise * 0.6) * sc * 0.18 + 4.0) - 0.5
-    n = _fbm3(n3, (xr + wx * 0.16) * sc, (yr + wy * 0.16) * sc, (z - rise) * sc * 0.42, 4)
-    rr = abs(r - r_src) / max(wdt, 1e-3)
-    e = 1.0 - rr + 1.1 * (n - 0.5) - 0.9 * uc ** 1.4
+    rise = 2.1 * Ts
+    scl = 1.0 / 0.11
+    wx = tex3(n3, xr * scl * 0.5 + 5.0, yr * scl * 0.5, (z - rise * 0.7) * scl * 0.22) - 0.5
+    wy = tex3(n3, xr * scl * 0.5, yr * scl * 0.5 + 9.0, (z - rise * 0.7) * scl * 0.22 + 4.0) - 0.5
+    nl = _fbm3(n3, (xr + 0.12 * wx) * scl, (yr + 0.12 * wy) * scl, (z - rise) * scl * 0.34, 3)
+    scf = 1.0 / 0.035
+    nf = _turb3(n3, (xr + 0.08 * wx) * scf + 40.0, (yr + 0.08 * wy) * scf, (z - 1.3 * rise) * scf * 0.5, 2, 0.55)
+    AL = 0.45 + 1.25 * sstep(0.0, 1.0, u)
+    AF = 0.25 + 0.40 * uc
+    e = 1.0 - rr + AL * (2.0 * nl - 1.0) * 1.5 - AF * (nf - 0.40) - 2.4 * max(u - 0.80, 0.0)
     # hollow round her fist until the white
     fx = x - HP[HP_FX]
     fy = y - HP[HP_FY]
@@ -234,14 +365,17 @@ def hearth_density(x, y, z, HP, ANG, nang, n3):
     hol = HP[HP_HOLLOW]
     if hol > 0.0:
         dh = math.sqrt(fx * fx + fy * fy + 0.5 * fz * fz)
-        e -= hol * 0.9 * sstep(0.26, 0.08, dh)
-    d = sstep(0.0, 0.3, e) * ign * sstep(-0.02, 0.05, u)
-    # the base glows as one body where the fuel burns
-    base = sstep(0.12, 0.0, z) * ign * sstep(0.30, 0.0, abs(r - (0.62 * (1.0 - calm) + 0.15 * calm)) - 0.1)
-    d = max(d, 0.6 * base)
+        e -= hol * 0.8 * sstep(0.20, 0.07, dh)
+    d = sstep(0.0, 0.10, e) * ign * sstep(-0.02, 0.04, u)
     if d <= 0.0:
         return 0.0, 0.0
-    temp = clamp(0.85 * (1.0 - uc) ** 1.3 + 0.45 * (n - 0.5) + 0.25 * base + 0.12, 0.0, 1.0)
+    # hot at the roots in the fuel, orange in the body, red at the torn tips; calm is a little cooler
+    troot = 1.0 - sstep(0.05, 0.75, u)
+    temp = clamp((0.30 + 0.72 * troot * (1.0 - 0.45 * min(rr, 1.0)) + 0.50 * (nl - 0.5)
+                  + 0.14 * sstep(0.0, 0.6, e)) * (1.0 - 0.12 * calm), 0.0, 1.0)
+    # the luminous sheet: emission peaks where the flame surface folds
+    sh = (e - 0.14) / 0.16
+    d = d * (0.30 + 0.70 * math.exp(-sh * sh))
     return d, temp
 
 
@@ -313,12 +447,13 @@ def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps):
                         cr = mix(cr, 1.0, wh * 0.75)
                         cg = mix(cg, 0.96, wh * 0.75)
                         cb = mix(cb, 0.88, wh * 0.75)
-                    e = I * d * (0.08 + temp ** 2.6) * ds * tr * (1.0 + 4.0 * wh)
+                    e = I * d * (0.05 + t2 ** 2.6) * ds * tr * (1.0 + 4.0 * wh)
                     er += e * cr
                     eg += e * cg
                     eb += e * cb
-                    zr = pz / H
-                    tr *= math.exp(-d * ds * 2.2 * zr * (1.0 - wh))
+                    tr *= math.exp(-d * ds * 5.0 * (1.0 - wh))
+                    if tr < 0.01:
+                        break
             out[y, x, 0] = out[y, x, 0] * tr + er
             out[y, x, 1] = out[y, x, 1] * tr + eg
             out[y, x, 2] = out[y, x, 2] * tr + eb

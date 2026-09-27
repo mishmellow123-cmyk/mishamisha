@@ -51,21 +51,21 @@ def _ease_out(u):
 
 def camera(frame, W, H):
     u = _ease_out((frame - F0) / float(F1 - 1 - F0))
-    # start: 7 m behind her at eye height; end: 300 m out (WNW of the top), 40 m above it
+    # start: 7 m behind her at eye height; end: 520 m out (WNW of the top), level with the top
     p0 = HER + BS.dirxz(BACK_AZ) * 7.0 + np.array([0.0, 1.5, 0.0])
-    p1 = BS.TOP + BS.dirxz(BACK_AZ - 8.0) * 300.0 + np.array([0.0, 40.0, 0.0])
+    p1 = BS.TOP + BS.dirxz(BACK_AZ - 8.0) * 520.0 + np.array([0.0, 6.0, 0.0])
     # a curved path: out first, then up
     pos = p0 + (p1 - p0) * np.array([u, u ** 1.6, u])
     tgt0 = BS.BEACON + np.array([0.0, 0.9, 0.0])
     tgt1 = BS.TOP + np.array([0.0, 1.0, 0.0])
     tgt = tgt0 + (tgt1 - tgt0) * u
-    hfov = 46.0 + 6.0 * u
+    hfov = 46.0 - 8.0 * u
     d = tgt - pos
     bear = math.degrees(math.atan2(d[0], d[2]))
     el = math.degrees(math.atan2(d[1], math.hypot(d[0], d[2])))
     fpx = 0.5 * W / math.tan(math.radians(hfov) * 0.5)
     # the target sits a little right of centre and low (the sky and the band get the room)
-    su, sv = 0.5 + 0.10 * u, 0.55 + 0.18 * u
+    su, sv = 0.5 + 0.08 * u, 0.55 + 0.10 * u
     yaw = bear - math.degrees(math.atan((su - 0.5) * W / fpx))
     pitch = el + math.degrees(math.atan((sv - 0.5) * H / fpx))
     return RC.RCam(pos, yaw, pitch, 0.0, hfov, W, H)
@@ -99,7 +99,7 @@ class Reveal:
         zb = dist.copy()
         sky = (dist > 1e8).astype(np.float32)
         ang = VG.sky_angle(VG.F0) - math.radians(VG.STAR_DEG / (VG.F1 - VG.F0)) * (VG.F0 - f)
-        BW.add_band(G, KP._rotmat(KP.POLE, ang), VG.BAND, 0.05, 1.0, img)
+        BW.add_band(G, KP._rotmat(KP.POLE, ang), VG.BAND, 0.07, 1.0, img)
         KP.draw_stars(img, scam, sky, ang - 0.0008, ang, 1.6 * self.ss * self.ss, K=3)
         # the summit: the cairn, the beacon roaring up, her
         md = self.moon

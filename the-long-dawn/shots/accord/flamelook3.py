@@ -24,7 +24,7 @@ def cam_look(C, T, f, W, H):
     return np.concatenate([C, R, U, Fw, [f, W / 2, H / 2]])
 
 
-def render(views, frames, out, lean=(0.22, -0.10), Hf=0.36, Rf=0.08, I=26.0):
+def render(views, frames, out, lean=(0.40, -0.16), Hf=0.44, Rf=0.088, I=40.0):
     n3 = nbcore.make_noise3(64, 7)
     W, H = 240, 300
     tiles = []
@@ -35,7 +35,7 @@ def render(views, frames, out, lean=(0.22, -0.10), Hf=0.36, Rf=0.08, I=26.0):
             depth = np.full((H, W), 1e6, np.float32)
             FL = np.array([[0.0, 0.0, 0.0, Hf, Rf, lean[0], lean[1], I, 1.3, 1.0]])
             cam = cam_look(C, T, 900.0, W, H)
-            FL3.torch_flames(img, depth, cam, FL, 1, float(f), n3, 0.25)
+            FL3.torch_flames(img, depth, cam, FL, 1, float(f), n3, 0.85)
             im = look.finish(img, exposure=1.2, bloom_strength=0.07, bloom_threshold=0.9, vignette_amount=0.0)
             row.append((np.clip(im, 0, 1) * 255).astype(np.uint8)[..., ::-1])
         tiles.append(np.concatenate(row, 1))
@@ -45,5 +45,6 @@ def render(views, frames, out, lean=(0.22, -0.10), Hf=0.36, Rf=0.08, I=26.0):
 
 if __name__ == '__main__':
     side = ((0.0, -1.6, 0.18), (0.0, 0.0, 0.18))
+    q = ((0.0, -1.6 * math.cos(math.radians(45)), 0.18 + 1.6 * math.sin(math.radians(45))), (0.0, 0.0, 0.14))
     top = ((0.0 + 1.6 * math.sin(math.radians(12)), 0.0, 1.6 * math.cos(math.radians(12))), (0.0, 0.0, 0.1))
-    render([side, top], [4960, 4963, 4970], sys.argv[1] if len(sys.argv) > 1 else 'flamelook.jpg')
+    render([side, q, top], [4960, 4962, 4964, 4970], sys.argv[1] if len(sys.argv) > 1 else 'flamelook.jpg')

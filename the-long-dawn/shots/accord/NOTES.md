@@ -1,5 +1,59 @@
 # ACCORD v3 (ACCORD-v3, 27 Sep): cut C only, C frames 4480-5679 -> `renders/accord_C3/f_%05d.png`
 
+## >>> PAUSED 27 Sep ~18:00Z (ACCORD-2; director: usage window end; RESUME 20:00Z). No render running. <<<
+**Done this session (source committed + pushed; test stills only, in `renders/accord_C/tests/`):**
+1. Torch flames rebuilt (`flame3.torch_density/torch_flames`): big tongues (fBm) + crinkle (turbulence), shell
+   emission, hot middle third, flicker `torch_flicker()` shared with the torch's light; tight world-box march;
+   Hf 0.44, Rf 0.088, I 22; a breeze `_WIND` (0.40,-0.16); the lit head glows as fuel under the flame (no corn cob).
+   Look-dev: `python shots/accord/flamelook3.py out.jpg`. Airlight haze `flame3.airlight` (HAZE 0.006, lam 0.35 m).
+2. Hearth: faceted 7-face slab (`FLAT_A/FLAT_D`, chips, frost crack, dark granite, STONE_TOP now 0.30), irregular
+   sunk kerb field stones, charcoal scattered by 4.5 cm cells (`sd_charcoal`), 8 star-fire logs (bark furrows + char
+   crackle keyed on each log's axis), kindling, soft grey ash, ground contact AO, ground relief/turf/pebbles.
+   **Bug fixed:** `sd_hearth` returned 1e9 where no part was evaluated (rays leapt out: the "dotted"/cow-print
+   artefacts) and false-hit its bound from far cameras (black disc at 5595): now a safe bound with a 1.2 cm margin.
+3. Figures: `_hood3` (close hood, seam, peak/liripipe/capuchin) + a sloping capelet (the collar torus = the
+   "mushroom brim" is gone); no velvet edge-glow; no olive/green cloth; her shawl a clinging madder wool drawn up
+   round her neck (SCARF 0.070,0.008,0.010); rounder darker fists; the hearth rim light scales with albedo (figures
+   no longer go white in the fire).
+4. **Gilded hand = figure 0** (broad black mantle, beside her); `scene3.gilt_find_cam`: 4990-5042 the orbit descends
+   to 1.4 m from the knuckles, 34 deg off vertical, from the back-of-hand side; exposure stops down; the hero glove's
+   cloak sleeve ends short; the gold is specular (diffuse 0.10). P1 orbit before 4990 is unchanged (4480 match kept).
+5. P2 camera low over the slab (2.6 -> 1.72 m; her head out of frame, only her arm enters); exposure stops down as
+   the torches come down; torch light centre = flame base + 0.22 m.
+6. Bar 70: calm fire converges over the stone, soft ember bed (no glitter), per-lump charcoal glow, fire-blackened slab.
+7. Hearth fire density rebuilt (tongues + crinkle + shell, hot roots): IN PROGRESS. Look-dev:
+   `python shots/accord/firelook3.py out.jpg 5210,5300,5560,5580` (fire volume alone, ~1 min incl. compile).
+**Verdict of the last stills (half res):** 4840 reads (she kneels and reaches) but the Ring is invisible (needs a
+glint/closer); 4960 decent but brownish-muddy; 5040 the hand is framed large but reads as a "gold brick" (fingers,
+partial crust over leather, ember cracks needed); P2 5160 slab OK now, her glove a puppet hand, ash blown out;
+bar 70 staging works (every torch dips in, draws back lit, turns, walks out) but the fire is a pale flat disc.
+**NEXT (in order):** (1) finish the hearth fire in firelook3 (P2: less white, orange tongues, the hollow; P3:
+denser convergence so the fire covers the stone, warm orange-gold); (2) the gilded glove's read; (3) her glove in
+P2; (4) the Ring's glint at 4840; (5) the crowd + rivers of torches for AC1's descent 4480-4700 (NOT STARTED:
+P1 above ~10 m is still an empty plain); (6) cloud jobs `cloud/jobs/accord3_*.json` (ship jpg) + JOB READY + check
+stills; (7) AC3 composite once `renders/ring_C/f_05360..` exist (MONTAGE-3D-2's melt: not yet rendered).
+Numba: any edit to any *.py in this folder recompiles everything (~2 min on the first still).
+Delete when superseded: `renders/accord_C3/` (the previous agent's first look), `renders/accord_C/tests/*`.
+
+
+## STATE AT HANDOFF (27 Sep 15:15Z, ACCORD-2 taking over from ACCORD-v3; brief = `_local_logs/handoff/brief2_ACCORD.md`)
+* **On disk:** v3 engine committed + pushed (7442e33, a951565): `accord3.py`, `scene3.py`, `geom3.py`, `shade3.py`,
+  `flame3.py`, `flamelook3.py`. v2 files untouched (`ring.py`'s `inscription()` is imported by MONTAGE-3D-2: never change it).
+  Only renders: the first-look stills `renders/accord_C3/tests/still_4960_*` (NOT festival grade). No v3 frames in
+  `renders/accord_C/` yet (that folder holds v2's src 1912-2247 = the bible's AC1 fallback; do not collide: v3 is 4480+).
+  No ACCORD render processes running. No log_ACCORD.md exists. The H5 critic has no ACCORD items (the council was
+  not reviewed); the H5 CALLS that bite here: silhouettes + gloved hands only, the shawl is woven wool, the canonical
+  Ring (`assets/ring/inscription_outer.png`), C23 = THE FIRE REMAINS (bar 70 = ours, 5520-5599 + handle to 5679).
+* **Director calls (brief2):** naturalistic night render, NO ink filter; EDIT note: a 12-16 f dissolve at 4480 with MAP's
+  inked ring holding over the lit stones; bar 70 unmistakably warm (the fire lives on, shared, leaves with the torches);
+  the gilded hand readable in one beat; real volumetric torch flames.
+* **MONTAGE-3D-2's melt (5360-5519) does not exist yet** (their Ring rebuild resumes 15:00Z; delivery `renders/ring_C/`).
+  AC3 composite waits for it.
+* **ACCORD-2's order of work:** the first-look fix list below (flames, hoods, torch head + fists, ash + stone + kerb,
+  shawl), then test stills 4840 -> 5040 -> AC2 (P2) -> bar 70 (P3); then the crowd + rivers of torches; cloud jobs
+  (JOB READY + check stills); the AC3 composite once `renders/ring_C/f_05360..` exist.
+
+
 ## >>> PAUSED 27 Sep ~11:05Z (director: usage pacing; RESUME in the 15:00Z window) <<<
 **Where it stands.** The v3 engine is written, committed (7442e33) and renders (numba, CPU): `accord3.py` (driver:
 still / range / sheet), `scene3.py` (timeline, cameras P1/P2/P3, the roster of 13 + her, poses, the hand rig, the Ring,

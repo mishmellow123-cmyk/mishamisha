@@ -52,7 +52,7 @@ FIRE_MID = lin(look.PALETTE['fire_mid'])
 FIRE_CORE = lin(look.PALETTE['fire_core'])
 MOON = lin(look.PALETTE['moonlight'])
 NIGHT_MID = lin(look.PALETTE['night_mid'])
-SCARF = lin(look.PALETTE['scarf_red']) * np.array([0.62, 0.9, 0.9])
+SCARF = np.array([0.070, 0.008, 0.010])          # madder-dyed wool: a deep, slightly brown red
 
 
 def clamp01(x):
@@ -90,9 +90,9 @@ FIG_PSI = np.concatenate([_slots, [PSI_HER]])
 FIG_R = np.concatenate([R_EM + _rng.uniform(-0.05, 0.10, NEM), [R_EM - 0.02]])
 #                   0     1     2     3     4     5     6     7     8     9    10    11    12   her
 FIG_TYPE = np.array([1, 5, 0, 3, 1, 1, 5, 0, 1, 3, 1, 0, 5, 1])
-FIG_HS = np.array([1.04, 1.08, 0.98, 1.00, 0.94, 1.10, 1.02, 0.93, 1.06, 0.97, 1.12, 0.96, 1.00, 0.83])
-FIG_WS = np.array([1.02, 0.96, 1.05, 1.10, 0.94, 1.18, 1.00, 0.98, 1.04, 1.00, 1.02, 1.06, 0.96, 0.86])
-FIG_CAPE = np.array([0.36, 0.00, 0.40, 0.34, 0.00, 0.44, 0.30, 0.38, 0.00, 0.36, 0.40, 0.00, 0.32, 0.30])
+FIG_HS = np.array([1.10, 1.08, 0.98, 1.00, 0.94, 1.04, 1.02, 0.93, 1.06, 0.97, 1.12, 0.96, 1.00, 0.83])
+FIG_WS = np.array([1.18, 0.96, 1.05, 1.10, 0.94, 1.02, 1.00, 0.98, 1.04, 1.00, 1.02, 1.06, 0.96, 0.86])
+FIG_CAPE = np.array([0.44, 0.00, 0.40, 0.34, 0.00, 0.36, 0.30, 0.38, 0.00, 0.36, 0.40, 0.00, 0.32, 0.30])
 FIG_TRAIN = np.array([0.24, 0.16, 0.22, 0.20, 0.14, 0.30, 0.18, 0.26, 0.20, 0.18, 0.28, 0.16, 0.20, 0.12])
 FIG_BOW = np.radians([6, 4, 5, 3, 8, 5, 4, 18, 6, 7, 3, 9, 5, 10])
 FIG_SIDE = np.array([-1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, 1, -1], np.float64)
@@ -102,11 +102,11 @@ _CL = {'charcoal': (0.0135, 0.0130, 0.0126), 'umber': (0.0200, 0.0142, 0.0102), 
        'olive': (0.0150, 0.0158, 0.0112), 'bluegrey': (0.0112, 0.0130, 0.0175), 'oxblood': (0.0215, 0.0105, 0.0085),
        'black': (0.0102, 0.0100, 0.0098), 'grey': (0.0170, 0.0168, 0.0164), 'brown': (0.0175, 0.0130, 0.0100),
        'blackgreen': (0.0100, 0.0118, 0.0102)}
-FIG_CLOTH = [_CL[k] for k in ('charcoal', 'umber', 'charcoal', 'wool', 'olive', 'black', 'bluegrey', 'grey',
-                              'oxblood', 'umber', 'charcoal', 'brown', 'blackgreen', 'charcoal')]
-FIG_CLOTH2 = [_CL[k] for k in ('umber', 'umber', 'grey', 'brown', 'olive', 'black', 'bluegrey', 'wool',
-                               'oxblood', 'brown', 'black', 'brown', 'blackgreen', 'charcoal')]
-GILDED = 5                   # the forge that grasped: a broad figure in a heavy black mantle
+FIG_CLOTH = [_CL[k] for k in ('black', 'umber', 'charcoal', 'wool', 'brown', 'charcoal', 'bluegrey', 'grey',
+                              'umber', 'umber', 'charcoal', 'brown', 'black', 'charcoal')]
+FIG_CLOTH2 = [_CL[k] for k in ('black', 'umber', 'grey', 'brown', 'charcoal', 'umber', 'bluegrey', 'wool',
+                               'brown', 'brown', 'black', 'brown', 'charcoal', 'charcoal')]
+GILDED = 0                   # the forge that grasped: a broad figure in a heavy black mantle, beside her
 FIG_BREATH_PH = _rng.uniform(0, 2 * np.pi, NFIG)
 FIG_DOWN_DT = _rng.uniform(-1.5, 1.5, NFIG)       # the torches come down together (tiny human spread)
 FIG_DIP_DT = _rng.uniform(-3.0, 3.0, NFIG)        # bar 70: each dips a moment apart
@@ -152,44 +152,50 @@ def stones():
 # ============================================================== the hearth ===
 
 def hearth_parts():
-    """Kerb stones, laid logs and sticks, charcoal lumps (deterministic)."""
+    """Kerb stones (irregular field stones, sunk), laid logs and sticks, a few big charcoal chunks (deterministic)."""
     rng = np.random.default_rng(31)
     KB = np.zeros((G.NKERB, 9))
+    base = np.sort(rng.uniform(0, 2 * np.pi, G.NKERB) * 0.35 + np.arange(G.NKERB) * 2 * np.pi / G.NKERB * 0.65)
     for k in range(G.NKERB):
-        a = k * 2 * np.pi / G.NKERB + rng.uniform(-0.05, 0.05)
-        r = G.KERB_R + rng.uniform(-0.03, 0.03)
-        rx, ry, rz = rng.uniform(0.075, 0.11), rng.uniform(0.055, 0.08), rng.uniform(0.045, 0.075)
-        yaw = a + math.pi / 2 + rng.uniform(-0.3, 0.3)
-        KB[k] = (r * math.cos(a), r * math.sin(a), rz * 0.55, rx, ry, rz, math.cos(yaw), math.sin(yaw),
-                 rng.uniform(0, 10))
-    logs = []
-    # nine split logs laid like spokes round the stone, half-burnt, their inner ends charred
-    for k in range(9):
-        a = k * 2 * np.pi / 9 + rng.uniform(-0.12, 0.12) + 0.3
-        r0, r1 = rng.uniform(0.42, 0.47), rng.uniform(0.74, 0.84)
-        tw = rng.uniform(-0.25, 0.25)
-        ra = rng.uniform(0.030, 0.045)
-        logs.append((r0 * math.cos(a), r0 * math.sin(a), ra * 0.8, r1 * math.cos(a + tw * 0.3),
-                     r1 * math.sin(a + tw * 0.3), ra * 0.85, ra * 0.8, ra, rng.uniform(0, 6.28), 0))
-    # kindling laid across the spokes
-    for k in range(16):
-        a = rng.uniform(0, 2 * np.pi)
-        r = rng.uniform(0.48, 0.78)
-        L = rng.uniform(0.10, 0.22)
+        a = base[k]
+        r = G.KERB_R + rng.uniform(-0.05, 0.05)
+        big = rng.uniform(0, 1)
+        rx = 0.065 + 0.075 * big ** 1.5
+        ry = rx * rng.uniform(0.60, 0.85)
+        rz = rx * rng.uniform(0.55, 0.85)
         yaw = a + math.pi / 2 + rng.uniform(-0.6, 0.6)
+        KB[k] = (r * math.cos(a), r * math.sin(a), rz * rng.uniform(0.15, 0.45), rx, ry, rz, math.cos(yaw),
+                 math.sin(yaw), rng.uniform(0, 10))
+    logs = []
+    # eight split logs pushed in toward the stone like a star fire, half-burnt at their inner ends
+    angs = np.arange(8) * 2 * np.pi / 8 + rng.uniform(-0.28, 0.28, 8) + 0.3
+    for k in range(8):
+        a = angs[k]
+        r0, r1 = rng.uniform(0.42, 0.50), rng.uniform(0.70, 0.86)
+        tw = rng.uniform(-0.35, 0.35)
+        ra = rng.uniform(0.028, 0.050)
+        z0 = ra * 0.85 + (0.03 if k in (2, 5) else 0.0)
+        logs.append((r0 * math.cos(a), r0 * math.sin(a), z0, r1 * math.cos(a + tw * 0.4),
+                     r1 * math.sin(a + tw * 0.4), ra * 0.9, ra * rng.uniform(0.75, 0.9), ra, rng.uniform(0, 6.28), 0))
+    # kindling laid across the logs, some broken short
+    for k in range(22):
+        a = rng.uniform(0, 2 * np.pi)
+        r = rng.uniform(0.47, 0.80)
+        L = rng.uniform(0.06, 0.22)
+        yaw = a + math.pi / 2 + rng.uniform(-0.8, 0.8)
         cx, cy = r * math.cos(a), r * math.sin(a)
         dx, dy = 0.5 * L * math.cos(yaw), 0.5 * L * math.sin(yaw)
-        rr = rng.uniform(0.008, 0.016)
-        z = rng.uniform(0.03, 0.07)
+        rr = rng.uniform(0.006, 0.014)
+        z = rng.uniform(0.012, 0.06)
         logs.append((cx - dx, cy - dy, z, cx + dx, cy + dy, z + rng.uniform(-0.015, 0.02), rr, rr * 0.8,
                      rng.uniform(0, 6.28), 1))
     LG = np.array(logs, np.float64)
     ch = []
-    for k in range(22):
+    for k in range(9):
         a = rng.uniform(0, 2 * np.pi)
-        r = rng.uniform(0.44, 0.80)
-        s = rng.uniform(0.018, 0.04)
-        ch.append((r * math.cos(a), r * math.sin(a), s * 0.2, s, s * rng.uniform(0.6, 0.9), s * 0.55,
+        r = rng.uniform(0.46, 0.66)
+        sz = rng.uniform(0.022, 0.038)
+        ch.append((r * math.cos(a), r * math.sin(a), sz * 0.15, sz, sz * rng.uniform(0.6, 0.9), sz * 0.5,
                    rng.uniform(0, 10)))
     CH = np.array(ch, np.float64)
     return KB, LG, CH
@@ -572,7 +578,7 @@ def figures(t):
             Fa[i, G.F_EX:G.F_EZ + 1] = E
             Fa[i, G.F_HX:G.F_HZ + 1] = Hh
             Fa[i, G.F_TX:G.F_TZ + 1] = tor
-            Fa[i, G.F_TLIT] = 0.35 * st['lit']
+            Fa[i, G.F_TLIT] = st['lit']
             Fa[i, G.F_GILT] = 1.0 if i == GILDED else 0.0
             Fa[i, G.F_HEROHAND] = 1.0 if i == GILDED else 0.0
             extra = [Hh + 0.60 * tor, Hh - 0.30 * tor, E, Hh, sh]
@@ -644,7 +650,7 @@ def fire_state(t):
     age = t - FIRE_CATCH
     settle = smooth(ramp(t, P3[0], P3[0] + 26))
     white = (1.0 - settle) ** 1.5
-    H = 1.35 - 0.62 * settle
+    H = 1.35 - 0.45 * settle
     return dict(on=1.0, H=H, white=white, spread=1.0, hollow=0.0, conv=0.55, calm=settle, age=age)
 
 
@@ -677,7 +683,7 @@ def _cam_from(target, h, tilt_deg, phi_deg, scale, cy=None):
 # P1: the descent from the map's height, orbiting; then the council; the Ring; the gilded hand
 _P1_H = PchipInterpolator([4470, 4480, 4540, 4600, 4660, 4720, 4780, 4840, 4900, 4960, 5000, 5040, 5080, 5130],
                           np.log([300.0, 300.0, 170.0, 62.0, 21.0, 10.4, 8.6, 7.6, 6.9, 6.3, 5.4, 4.2, 4.0, 3.9]))
-PHI_GILT = math.degrees(FIG_PSI[GILDED]) - 90.0 - 12.0   # the gilded hand swings in on the right of frame
+PHI_GILT = math.degrees(FIG_PSI[5]) - 90.0 - 12.0   # the orbit's phase (kept: 4480 matches MAP's drawn ring)
 
 
 def p1_phi(t):
@@ -688,26 +694,65 @@ def p1_phi(t):
 
 
 def p1_target(t):
-    base = np.array([0.0, 0.0, 0.40])
-    g = np.array([FIG_R[GILDED] * math.cos(FIG_PSI[GILDED]), FIG_R[GILDED] * math.sin(FIG_PSI[GILDED]), 1.1])
-    k = smoother(ramp(t, 4985, 5045))
-    return base * (1 - 0.42 * k) + g * 0.42 * k
+    return np.array([0.0, 0.0, 0.34])
+
+
+def _cam_look(C, T, Uh, scale):
+    Fw = _unit(np.asarray(T, np.float64) - C)
+    U = _unit(Uh - Fw * (Uh @ Fw))
+    R = np.cross(Fw, U)
+    f = F_FULL * scale
+    return np.concatenate([C, R, U, Fw, [f, (W / 2) * scale, (H / 2) * scale]]).astype(np.float64)
+
+
+GILT_FIND0, GILT_FIND1 = 4990, 5042
+
+
+def gilt_knuckles(t):
+    """World position of the gilded hand's knuckles at t."""
+    Fa = figures(t)
+    HD, J = gilded_hand(t, Fa)
+    return HD[0:3] + HD[3:6] * 0.075 * HD[12] + HD[9:12] * 0.012
+
+
+def gilt_find_cam(t, scale):
+    """The orbit finds the gilded hand: close (2 m), 30 deg off vertical, from the side the back of the hand
+    faces and a little toward the hearth, so the gold crust catches its own torch and the flame stands clear
+    above it in frame; a slow drift in during the hold."""
+    Fa = figures(t)
+    HD, J = gilded_hand(t, Fa)
+    kn = HD[0:3] + HD[3:6] * 0.075 * HD[12] + HD[9:12] * 0.012
+    c = HD[9:12]
+    az_back = math.atan2(c[1], c[0])
+    inward = FIG_PSI[GILDED] + math.pi
+    d = (inward - az_back + 3 * math.pi) % (2 * math.pi) - math.pi
+    phi = math.degrees(az_back + 0.22 * d) + 5.0 * smooth(ramp(t, GILT_FIND1, 5119))
+    h = 1.40 - 0.12 * smooth(ramp(t, GILT_FIND1, 5119))
+    return _cam_from(kn, h, 34.0, phi, scale), kn
 
 
 def camera(t, scale=1.0):
     p = plate(t)
     if p == 1:
-        h = float(np.exp(_P1_H(t)))
+        h = float(np.exp(_P1_H(min(t, GILT_FIND1))))
         tilt = 12.0 + 1.5 * smooth(ramp(t, 4700, 5040))
-        return _cam_from(p1_target(t), h, tilt, p1_phi(t), scale)
+        co = _cam_from(p1_target(min(t, GILT_FIND1)), h, tilt, p1_phi(min(t, GILT_FIND1)), scale)
+        if t <= GILT_FIND0:
+            return co
+        cf, kn = gilt_find_cam(t, scale)
+        k = smoother(ramp(t, GILT_FIND0, GILT_FIND1))
+        Co = co[0:3]
+        To = Co + co[9:12] * h
+        C = Co * (1 - k) + cf[0:3] * k
+        T = To * (1 - k) + kn * k
+        Uh = co[6:9] * (1 - k) + cf[6:9] * k
+        return _cam_look(C, T, Uh, scale)
     if p == 2:
         phi = math.degrees(PSI_HER) + 90.0 + 0.035 * (t - P2[0])
-        h = float(np.exp(np.interp(t, [5120, 5130, 5170, 5230, 5379],
-                                   np.log([4.3, 4.25, 2.55, 2.35, 1.95]))))
-        tgt = np.array([0.0, 0.0, 0.40]) * 1.0
+        h = float(np.exp(np.interp(t, [5120, 5160, 5230, 5379], np.log([2.60, 2.05, 1.92, 1.72]))))
         f = hand_fist_pos(max(t, 5160)) if t > 5150 else ring_rest()
-        k = smooth(ramp(t, 5125, 5175))
-        tgt = tgt * (1 - k) + np.array([f[0] * 0.6, f[1] * 0.6, 0.45]) * k
+        k = smooth(ramp(t, 5120, 5170))
+        tgt = np.array([0.0, 0.0, 0.30]) * (1 - k) + np.array([f[0] * 0.55, f[1] * 0.55, 0.36]) * k
         return _cam_from(tgt, h, 4.0, phi, scale)
     # P3: out of the white, the crane up as the flame is carried away
     phi = math.degrees(PSI_HER) + 90.0 + 0.035 * (t - P2[0]) + 0.04 * (t - P3[0])
@@ -732,9 +777,13 @@ def project(cam, P):
 def exposure(t):
     p = plate(t)
     if p == 1:
-        # high over the dark plain, only the rivers of light: open up; down among the torches: normal
+        # high over the dark plain, only the rivers of light: open up; down among the torches: normal;
+        # close on the gilded hand under its own flame: stop down
         h = float(np.exp(_P1_H(t)))
-        return 1.25 + 1.6 * smooth((math.log(h) - math.log(12.0)) / (math.log(120.0) - math.log(12.0)))
+        return (1.25 + 1.6 * smooth((math.log(h) - math.log(12.0)) / (math.log(120.0) - math.log(12.0)))
+                - 0.40 * smoother(ramp(t, GILT_FIND0, GILT_FIND1)))
     if p == 2:
-        return 1.15 - 0.55 * smooth(ramp(t, FIRE_CATCH, FIRE_CATCH + 40)) - 0.25 * smooth(ramp(t, 5290, 5350))
+        # the torches come down close to everything: stop down; then again as the fire takes
+        return (1.10 - 0.35 * smooth(ramp(t, TORCH_DOWN, TORCH_DOWN + 30)) - 0.30 * smooth(ramp(t, FIRE_CATCH, FIRE_CATCH + 40))
+                - 0.15 * smooth(ramp(t, 5290, 5350)))
     return 0.62 + 0.40 * smooth(ramp(t, P3[0] + 4, P3[0] + 40)) + 0.25 * smooth(ramp(t, 5590, 5660))

@@ -172,7 +172,7 @@ def person(pose='stand', age=0.85, shawl=True, staff=True, torch=False, child=Fa
             d.capsule(kn, ft, 0.068 * sc, 0.055 * sc, k=k, mat=19)
     # the cloak: long, heavy, flared a little downwind at the hem
     long_ = pose in ('stand', 'walk', 'look', 'shield', 'reach')
-    hem = hip + np.array([0.0, -0.58 * sc if long_ else -0.26 * sc])
+    hem = hip + np.array([0.0, (-0.74 if pose != 'walk' else -0.66) * sc if long_ else -0.26 * sc])
     hem_w = 0.31 * sc + (0.12 if pose == 'shield' else 0.0)
     d.trap(hem + np.array([0.05 * wind, 0.0]), chest + up * 0.06 * sc, hem_w, 0.20 * sc, rnd=0.03, k=0.06,
            mat=cloak, fuzz=0.012, ff=12.0)

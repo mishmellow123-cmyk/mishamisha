@@ -8,16 +8,18 @@ import math
 
 from numba import njit
 
-from nbcore import FM, clamp, sstep, smin, sd_ellipsoid, sd_capsule, sd_capsule_r, vnoise2, fbm2
+import numpy as np
+
+from nbcore import FM, clamp, sstep, smin, sd_ellipsoid, sd_capsule, sd_capsule_r, vnoise2, fbm2, hash2i
 from geom import _crease, _hood, sd_stone, ray_aabb  # noqa: F401  (v2 hood shells and standing stones)
 
 # ------------------------------------------------------------- the centre ---
 STONE_R = 0.37          # the flat stone: mean radius
-STONE_TOP = 0.36        # its top (z)
+STONE_TOP = 0.30        # its top (z)
 STONE_BOT = -0.12
 ASH_R0, ASH_R1 = 0.40, 0.84   # the ash bed of the hearth (annulus round the stone)
 KERB_R = 0.92           # the ring of blackened kerb stones
-NKERB = 19
+NKERB = 17
 HEARTH_ZMAX = 0.20
 
 # ------------------------------------------------------------ figure rows ---
@@ -77,81 +79,185 @@ RP_N = 10
 
 # =============================================================== the centre ===
 
+# the flat stone's outline: an irregular heptagon of split faces (angle, distance), corners rounded a little
+FLAT_A = np.array([0.20, 1.02, 1.63, 2.61, 3.49, 4.31, 5.33])
+FLAT_D = np.array([0.338, 0.300, 0.352, 0.322, 0.346, 0.296, 0.334])
+NFLAT = 7
+FLAT_RC = 0.070          # corner rounding (the outline is the heptagon shrunk by this, then grown back round)
+# chips broken out of the rim: (angle, depth into the stone, radius)
+CHIP = np.array([[0.72, 0.012, 0.050], [2.45, 0.006, 0.034], [3.30, 0.016, 0.060], [4.95, 0.008, 0.042],
+                 [5.85, 0.004, 0.030], [1.62, 0.002, 0.028]])
+
+
 @njit(**FM)
 def flat_radius(th):
-    return STONE_R * (1.0 + 0.055 * math.sin(3.0 * th + 1.1) + 0.035 * math.sin(5.0 * th + 2.3)
-                      + 0.018 * math.sin(8.0 * th + 0.4))
+    R = 1e9
+    for k in range(NFLAT):
+        c = math.cos(th - FLAT_A[k])
+        if c > 1e-3:
+            R = min(R, FLAT_D[k] / c)
+    return R
+
+
+@njit(**FM)
+def _flat2d(px, py):
+    """Signed distance to the slab's outline in plan (negative inside): an irregular polygon of split faces,
+    its corners weathered round, its faces a little wavy."""
+    d = -1e9
+    for k in range(NFLAT):
+        d = max(d, px * math.cos(FLAT_A[k]) + py * math.sin(FLAT_A[k]) - (FLAT_D[k] - FLAT_RC))
+    th = math.atan2(py, px)
+    return (d - FLAT_RC + 0.008 * math.sin(5.0 * th + 1.3) + 0.005 * math.sin(11.0 * th + 0.4)
+            + 0.006 * (vnoise2(th * 4.0, 0.3, 304) - 0.5))
 
 
 @njit(**FM)
 def flat_top(r, th):
-    """The worn top of the flat stone: nearly flat, the rim weathered down."""
-    R = flat_radius(th)
-    u = r / R
-    return STONE_TOP - 0.018 * max(u - 0.55, 0.0) ** 2 * 4.0 + 0.004 * math.sin(2.0 * th + 0.7) * u
+    """The top of the slab: nearly flat, gently uneven, bevelled down at the rim by weather."""
+    px = r * math.cos(th)
+    py = r * math.sin(th)
+    d2 = _flat2d(px, py)
+    # an old frost crack across the top, a shallow groove
+    cr = abs(0.62 * px + 0.78 * py - 0.05 + 0.03 * math.sin(9.0 * px - 4.0 * py))
+    return (STONE_TOP - 0.024 * sstep(-0.07, 0.0, d2) + 0.012 * px - 0.006 * py
+            + 0.010 * math.sin(2.3 * px + 1.1) * math.sin(3.1 * py) + 0.007 * (vnoise2(px * 6.0, py * 6.0, 303) - 0.5)
+            - 0.004 * sstep(0.006, 0.0, cr))
 
 
 @njit(**FM)
 def sd_flat(px, py, pz):
     r = math.sqrt(px * px + py * py)
     th = math.atan2(py, px)
-    R = flat_radius(th)
     zc = 0.5 * (STONE_TOP + STONE_BOT)
     hh = 0.5 * (STONE_TOP - STONE_BOT)
-    # the sides bulge a little at mid-height
     zz = (pz - zc) / hh
-    Rb = R * (1.0 + 0.035 * max(1.0 - zz * zz, 0.0))
-    e = 0.055
-    top = flat_top(min(r, R), th)
-    qx = r - (Rb - e)
+    # the split faces lean out a little toward the ground, and bulge at mid-height
+    d2 = _flat2d(px, py) - 0.012 * max(1.0 - zz * zz, 0.0) + 0.010 * (zz - 1.0) * 0.5
+    top = flat_top(min(r, 0.45), th)
+    e = 0.022
+    qx = d2 + e
     qz = max(pz - (top - e), (STONE_BOT + e) - pz)
     mx = max(qx, 0.0)
     mz = max(qz, 0.0)
     d = math.sqrt(mx * mx + mz * mz) + min(max(qx, qz), 0.0) - e
-    # weathering
-    d += 0.0035 * (vnoise2(th * 9.0, pz * 14.0, 301) - 0.5) + 0.002 * (vnoise2(px * 40.0, py * 40.0 + pz * 30.0, 302) - 0.5)
+    # chips broken out of the rim
+    for k in range(CHIP.shape[0]):
+        a = CHIP[k, 0]
+        Rr = flat_radius(a)
+        cx = (Rr - CHIP[k, 1] + CHIP[k, 2] * 0.55) * math.cos(a)
+        cy = (Rr - CHIP[k, 1] + CHIP[k, 2] * 0.55) * math.sin(a)
+        cz = STONE_TOP + CHIP[k, 2] * 0.35
+        dc = math.sqrt((px - cx) ** 2 + (py - cy) ** 2 + (pz - cz) ** 2) - CHIP[k, 2]
+        d = max(d, -dc)
+    # weathering and grain
+    # weathering on the split faces only (never keyed on the angle over the top, which would crease it radially)
+    d += 0.0045 * (vnoise2(px * 11.0 + py * 7.0, pz * 14.0, 301) - 0.5) * sstep(-0.05, 0.0, _flat2d(px, py))
+    return d
+
+
+@njit(**FM)
+def sd_charcoal(px, py, pz):
+    """Charcoal broken over the ash: one lump or none per 4.5 cm cell, bigger and denser toward the stone."""
+    cs = 0.045
+    ix = int(math.floor(px / cs))
+    iy = int(math.floor(py / cs))
+    d = 1e9
+    for ddx in range(-1, 2):
+        for ddy in range(-1, 2):
+            cx = ix + ddx
+            cy = iy + ddy
+            ox = (cx + 0.15 + 0.7 * hash2i(cx, cy, 502)) * cs
+            oy = (cy + 0.15 + 0.7 * hash2i(cx, cy, 503)) * cs
+            orr = math.sqrt(ox * ox + oy * oy)
+            if orr < ASH_R0 + 0.015 or orr > ASH_R1 - 0.01:
+                continue
+            pd = 0.22 + 0.40 * sstep(ASH_R1, ASH_R0 + 0.05, orr)
+            if hash2i(cx, cy, 501) > pd:
+                continue
+            h4 = hash2i(cx, cy, 504)
+            rx = 0.005 + 0.019 * h4 * h4
+            ry = rx * (0.50 + 0.40 * hash2i(cx, cy, 505))
+            rz = rx * (0.35 + 0.30 * hash2i(cx, cy, 506))
+            yaw = 6.2832 * hash2i(cx, cy, 507)
+            c = math.cos(yaw)
+            sn = math.sin(yaw)
+            lx = px - ox
+            ly = py - oy
+            x = lx * c + ly * sn
+            y = -lx * sn + ly * c
+            z = pz - rz * 0.30
+            if x * x + y * y > (rx + 0.01) ** 2 * 4.0:
+                continue
+            dd = sd_ellipsoid(x, y, z, rx, ry, rz)
+            # broken, faceted
+            dd += 0.12 * rx * (vnoise2(x / rx * 2.2 + 3.0 * h4, y / rx * 2.2 + z / rx * 1.5, 508) - 0.5)
+            if dd < d:
+                d = dd
     return d
 
 
 @njit(**FM)
 def sd_hearth(px, py, pz, KB, LG, nlog, CH, nch):
     """The cold hearth round the flat stone: kerb stones (KB: x,y,z,ax,ay,az,yaw_c,yaw_s,seed), laid logs and
-    sticks (LG: capsules ax,ay,az,bx,by,bz,ra,rb,seed,kind), charcoal lumps (CH: x,y,z,rx,ry,rz,seed).
+    sticks (LG: capsules ax,ay,az,bx,by,bz,ra,rb,seed,kind), charcoal (cells) and a few big chunks (CH).
     Returns (distance, part id)."""
+    r = math.sqrt(px * px + py * py)
+    # a safe bound for everything in the hearth: all of it lies below 0.18 m, between r 0.36 and KERB_R + 0.22
+    # (never return "infinity" where no part is evaluated: the march would leap out of the hearth)
+    zb = pz - 0.18
+    rb = max(0.36 - r, r - (KERB_R + 0.22))
+    if zb > 0.012 or rb > 0.012:
+        # >= 1.2 cm: never inside a far camera's hit tolerance (a false hit on the bound shades black)
+        return max(zb, rb), 0
     d = 1e9
     part = 0
-    r = math.sqrt(px * px + py * py)
-    if r > KERB_R - 0.16 and r < KERB_R + 0.16:
-        th = math.atan2(py, px)
-        k0 = int(math.floor(th / (2.0 * math.pi / NKERB) + 0.5))
-        for dk in range(-1, 2):
-            k = (k0 + dk) % NKERB
+    nk = KB.shape[0]
+    if r > KERB_R - 0.22:
+        for k in range(nk):
             lx = px - KB[k, 0]
             ly = py - KB[k, 1]
-            lz = pz - KB[k, 2]
-            c = KB[k, 6]
-            s = KB[k, 7]
-            x = lx * c + ly * s
-            y = -lx * s + ly * c
-            dd = sd_ellipsoid(x, y, lz, KB[k, 3], KB[k, 4], KB[k, 5])
-            dd += 0.006 * (vnoise2(x * 40.0 + KB[k, 8], y * 40.0 + lz * 30.0, 311) - 0.5)
+            if lx * lx + ly * ly > (KB[k, 3] + 0.15) ** 2:
+                dd = math.sqrt(lx * lx + ly * ly) - KB[k, 3] - 0.03
+            else:
+                lz = pz - KB[k, 2]
+                c = KB[k, 6]
+                sn = KB[k, 7]
+                x = lx * c + ly * sn
+                y = -lx * sn + ly * c
+                dd = sd_ellipsoid(x, y, lz, KB[k, 3], KB[k, 4], KB[k, 5])
+                # rough field stones, a flat-ish top
+                dd += 0.022 * (vnoise2(x * 9.0 + KB[k, 8], y * 9.0 + lz * 7.0, 311) - 0.5) \
+                    + 0.008 * (vnoise2(x * 26.0, y * 26.0 + lz * 20.0 + KB[k, 8], 316) - 0.5)
             if dd < d:
                 d = dd
                 part = H_KERB
-    if r < ASH_R1 + 0.06 and pz < HEARTH_ZMAX:
+    if r < ASH_R1 + 0.10 and pz < HEARTH_ZMAX:
         for k in range(nlog):
             dd = sd_capsule_r(px, py, pz, LG[k, 0], LG[k, 1], LG[k, 2], LG[k, 3], LG[k, 4], LG[k, 5],
                               LG[k, 6], LG[k, 7])
             if dd < d + 0.02:
-                # bark and splits
-                ang = math.atan2(pz - 0.5 * (LG[k, 2] + LG[k, 5]), (px - LG[k, 0]) * 0.7 + (py - LG[k, 1]) * 0.7)
-                dd += 0.0025 * math.sin(9.0 * ang + LG[k, 8]) + 0.002 * (vnoise2(px * 60.0, py * 60.0, 312) - 0.5)
+                # bark ridges along the log, a split face on the big ones
+                ax = LG[k, 3] - LG[k, 0]
+                ay = LG[k, 4] - LG[k, 1]
+                al = math.sqrt(ax * ax + ay * ay) + 1e-9
+                along = ((px - LG[k, 0]) * ax + (py - LG[k, 1]) * ay) / al
+                side = (-(px - LG[k, 0]) * ay + (py - LG[k, 1]) * ax) / al
+                ang = math.atan2(pz - 0.5 * (LG[k, 2] + LG[k, 5]), side)
+                dd += 0.0030 * (vnoise2(along * 12.0 + LG[k, 8], ang * 2.0, 312) - 0.5)
             if dd < d:
                 d = dd
                 part = H_LOG
-        for k in range(nch):
-            dd = sd_ellipsoid(px - CH[k, 0], py - CH[k, 1], pz - CH[k, 2], CH[k, 3], CH[k, 4], CH[k, 5])
-            dd += 0.004 * (vnoise2(px * 70.0 + CH[k, 6], py * 70.0, 313) - 0.5)
+        if pz >= 0.06:
+            # the charcoal lies below 0.03 m: bound the step so it can never be leapt through
+            if pz - 0.03 < d:
+                d = pz - 0.03
+                part = 0
+        elif r > ASH_R0 - 0.02:
+            dd = sd_charcoal(px, py, pz)
+            for k in range(nch):
+                dc = sd_ellipsoid(px - CH[k, 0], py - CH[k, 1], pz - CH[k, 2], CH[k, 3], CH[k, 4], CH[k, 5])
+                dc += 0.005 * (vnoise2(px * 70.0 + CH[k, 6], py * 70.0, 313) - 0.5)
+                dd = min(dd, dc)
             if dd < d:
                 d = dd
                 part = H_CHAR
@@ -188,21 +294,21 @@ def _fist(x, y, z, hx, hy, hz, tx, ty, tz, bx, by, bz, gilt):
     a = qx * tx + qy * ty + qz * tz          # along the shaft
     b = qx * bx + qy * by + qz * bz          # toward the back of the hand
     c = qx * cx + qy * cy + qz * cz          # across
-    # the wrapped fingers: a rounded block round the shaft, offset toward the back of the hand
-    ea = abs(a) - 0.040
-    eb = abs(b - 0.010) - 0.030
-    ec = abs(c) - 0.026
-    rr = 0.018
+    # the wrapped fingers: a rounded roll round the shaft, offset toward the back of the hand
+    ea = abs(a) - 0.034
+    eb = abs(b - 0.008) - 0.024
+    ec = abs(c) - 0.021
+    rr = 0.019
     mx = max(ea + rr, 0.0)
     my = max(eb + rr, 0.0)
     mz = max(ec + rr, 0.0)
     d = math.sqrt(mx * mx + my * my + mz * mz) - rr + min(max(ea, max(eb, ec)), 0.0)
-    # finger grooves across the front (c > 0 side, the fingertips' side) and knuckle bumps on the back
-    g = math.cos(a / 0.0205 * math.pi)
-    d += 0.0022 * g * sstep(0.0, 0.02, c)
-    d -= 0.0028 * max(g, 0.0) * sstep(0.02, 0.035, b)
+    # four finger rolls across the front and knuckles on the back
+    g = math.cos(a / 0.0180 * math.pi)
+    d += 0.0020 * g * sstep(0.0, 0.02, c)
+    d -= 0.0022 * max(g, 0.0) * sstep(0.015, 0.03, b)
     # the thumb, wrapped round the shaft on the other side
-    dt = sd_capsule_r(a, b, c, 0.038, -0.004, -0.024, 0.030, -0.018, 0.020, 0.0105, 0.0095)
+    dt = sd_capsule_r(a, b, c, 0.034, -0.004, -0.021, 0.026, -0.016, 0.018, 0.0100, 0.0090)
     d = smin(d, dt, 0.008)
     # the cuff
     dc = sd_capsule_r(a, b, c, -0.046, 0.012, 0.0, -0.075, 0.020, 0.0, 0.030, 0.034)
@@ -249,6 +355,56 @@ def _open_hand(x, y, z, hx, hy, hz, fx, fy, fz, grip):
                       -0.014 - 0.01 * grip, 0.0105, 0.0090)
     d = smin(d, dt, 0.008)
     return d
+
+
+@njit(**FM)
+def _hood3(hx, y, hz, typ, seed):
+    """A wool hood seen from above, in the (bowed) head frame (hx forward, y left, hz up from the head's centre):
+    close over the skull (about half the shoulders' width), a centre seam from brow to nape, drawn to a peak
+    behind (a soft point, a liripipe, or a tall capuchin point by type); the face opening and the head inside it
+    stay in shadow. Returns (distance, material, in_cavity)."""
+    if typ == 3:      # the hood thrown back: a bare dark head of hair, the hood's folds lying on the shoulders
+        d_h = sd_ellipsoid(hx - 0.008, y, hz - 0.012, 0.098, 0.084, 0.112)
+        d_h += 0.004 * _crease(math.atan2(y, hx) * 9.0 + hz * 30.0 + seed)
+        if hx > 0.05 and hz < 0.03:
+            return d_h, M_SHADOW, False
+        return d_h, M_HAIR, False
+    ao_, bo_, co_ = 0.130, 0.110, 0.138
+    if typ == 5:
+        ao_, bo_ = 0.126, 0.106
+    d_out = sd_ellipsoid(hx + 0.010, y, hz - 0.004, ao_, bo_, co_)
+    # the brow of the hood over the face: a soft roll, not a visor
+    d_b = sd_ellipsoid(hx - 0.032, y, hz - 0.028, 0.118, bo_ * 0.93, 0.092)
+    d_out = smin(d_out, d_b, 0.025)
+    # the peak behind
+    if typ == 1:
+        d_p = sd_capsule_r(hx, y, hz, -0.050, 0.0, 0.050, -0.128, 0.0, 0.020, 0.062, 0.022)
+        d_out = smin(d_out, d_p, 0.045)
+    elif typ == 0:    # a liripipe: the point drawn out into a tail that falls down the back
+        d_p = sd_capsule_r(hx, y, hz, -0.050, 0.0, 0.055, -0.150, 0.004, -0.010, 0.060, 0.026)
+        d_p = min(d_p, sd_capsule_r(hx, y, hz, -0.150, 0.004, -0.010, -0.190, 0.012, -0.300, 0.026, 0.018))
+        d_out = smin(d_out, d_p, 0.040)
+    elif typ == 5:    # a capuchin: a tall stiff point, up and back
+        d_p = sd_capsule_r(hx, y, hz, -0.035, 0.0, 0.070, -0.110, 0.0, 0.215, 0.060, 0.007)
+        d_out = smin(d_out, d_p, 0.030)
+    # the centre seam: a low ridge from the brow over the crown to the nape
+    d_out -= 0.0045 * sstep(0.022, 0.0, abs(y)) * sstep(-0.08, 0.03, hz)
+    # soft creases running back from the opening, and a few falling from the crown
+    ph = math.atan2(hz - 0.02, y) * 5.0 + seed
+    d_out += 0.0055 * _crease(ph) * sstep(0.08, -0.10, hx)
+    d_out += 0.0035 * _crease(math.atan2(y, hx + 0.03) * 7.0 + 1.7 * seed) * sstep(0.02, -0.10, hz)
+    d_in = sd_ellipsoid(hx - 0.004, y, hz - 0.010, ao_ - 0.024, bo_ - 0.022, co_ - 0.022)
+    d_shell = max(d_out, -d_in)
+    oy = 0.070
+    oz = 0.095
+    e = math.sqrt((y / oy) ** 2 + ((hz + 0.030) / oz) ** 2)
+    d_cut = max(0.048 - hx, (e - 1.0) * min(oy, oz))
+    d_shell = max(d_shell, -d_cut)
+    d_head = sd_ellipsoid(hx - 0.006, y, hz + 0.004, 0.092, 0.077, 0.106)
+    if d_head < d_shell:
+        return d_head, M_SHADOW, True
+    cav = -d_in > d_out and -d_in > -d_cut
+    return d_shell, (M_SHADOW if cav else M_CLOTH2), cav
 
 
 @njit(**FM)
@@ -313,8 +469,19 @@ def sd_fig(px, py, pz, F, i):
         fc = 1.0 + (0.020 + 0.085 * u) * (_crease(wc) + 0.45 * _crease(2.3 * wc + seed))
         qc = math.sqrt((x / ac) ** 2 + (y / bc) ** 2) / fc
         if shawl:
-            # a woven shawl: crossed at the front, its ends hanging lower in front, shorter behind
-            zt = zsh - drop * (1.0 + 0.55 * sstep(-0.02, 0.12, x) - 0.25 * sstep(0.0, -0.15, x))
+            # a woven wool shawl: it clings to the shoulders and upper arms, its point hangs down her back,
+            # its two ends cross low at her breast; a few soft, irregular folds (never a ruff)
+            ac = (0.160 + 0.020 * u) * ws
+            if x < 0.0:
+                ac = (0.172 + 0.026 * u) * ws
+            bc = (0.224 + 0.030 * u) * ws
+            phc = math.atan2(y / bc, x / ac)
+            fc = 1.0 + (0.008 + 0.030 * u) * (0.8 * math.sin(3.0 * phc + seed) + 0.5 * math.sin(5.3 * phc + 2.1 * seed + 5.0 * u)
+                                               + 0.35 * _crease(8.0 * phc + seed))
+            qc = math.sqrt((x / ac) ** 2 + (y / bc) ** 2) / fc
+            back = sstep(0.0, -0.10, x) * sstep(0.55, 0.0, abs(y) / bc)
+            front = sstep(0.0, 0.10, x) * sstep(0.15, 0.55, abs(y) / bc)
+            zt = zsh - drop * (0.75 + 0.85 * back + 0.45 * front)
         else:
             zt = zsh - drop * (1.0 + 0.25 * sstep(0.0, 0.2, y * F[i, F_SIDE]))
         if z < zsh:
@@ -337,25 +504,29 @@ def sd_fig(px, py, pz, F, i):
     hx = xh - 0.015
     hz = zh - 0.12 * hs
     hb = math.sqrt(hx * hx + y * y + (hz - 0.06) ** 2)
-    far = hb > 0.52
+    far = hb > 0.50
     if far:
-        d_h, hm, cav = hb - 0.44, M_CLOTH, False
+        d_h, hm, cav = hb - 0.42, M_CLOTH2, False
     else:
-        d_h, hm, cav = _hood(hx, y, hz, typ, seed)
-        if hm == 2:           # v2's skin (a face): never lit in v3 - it stays in the hood's shadow
-            hm = M_SHADOW
+        d_h, hm, cav = _hood3(hx, y, hz, typ, seed)
     if typ != 3 and not far:
+        # the hood's cape: its cloth falls from round the face onto the shoulders as a sloping cone with folds
+        zb = zsh - 0.10 * hs
+        zt_ = zsh + 0.15 * hs
+        v = clamp((z - zb) / (zt_ - zb), 0.0, 1.0)
+        rc = 0.200 * ws * (1.0 - v) + 0.100 * v
         ang = math.atan2(y, x + 0.01)
-        rq = (math.sqrt(((x + 0.01) / 0.130) ** 2 + (y / 0.158) ** 2) - 1.0) * 0.14
-        zq = z - (zsh + 0.062 * hs)
-        d_cw = math.sqrt(rq * rq + (zq * 1.25) ** 2) - 0.050 + 0.006 * _crease(11.0 * ang + seed)
-        d_h = smin(d_h, d_cw, 0.035)
-        if d_cw < d_h + 0.004 and not cav:
-            hm = M_CLOTH
-    if typ == 0:
-        d_l = sd_capsule_r(x, y, z, -0.160, 0.012, zsh + 0.13 * hs, -0.240, 0.03, zsh - 0.30 * hs, 0.032, 0.018)
-        d_h = smin(d_h, d_l, 0.03)
-    elif typ == 3:
+        rq = math.sqrt(((x + 0.012) / 0.86) ** 2 + y * y)
+        fcp = 1.0 + (0.018 + 0.060 * (1.0 - v)) * _crease(7.0 * ang + 1.3 * seed + 2.0 * v)
+        d_cw = max((rq - rc * fcp) * 0.8, max(zb - z, z - zt_))
+        d_h = smin(d_h, d_cw, 0.05)
+        if d_cw < d_h + 0.006 and not cav:
+            hm = M_CLOTH2
+    if F[i, F_SHAWL] > 0.5 and hm == M_CLOTH2:
+        hm = M_CLOTH          # her hood is her dark wool; only the shawl is red
+        if typ != 3 and not far and d_cw < d_h + 0.004 and not cav and z < zsh + 0.10 * hs:
+            hm = M_SHAWL      # the shawl is drawn up round her neck, under the hood
+    if typ == 3:
         ang = math.atan2(y, x)
         wb = sstep(0.8, 2.5, abs(ang))
         rq = (math.sqrt((x / (0.150 + 0.03 * wb)) ** 2 + (y / 0.190) ** 2) - 1.0) * 0.17 * ws
@@ -385,8 +556,13 @@ def sd_fig(px, py, pz, F, i):
         ky = hy2 - ey
         kz = hz2 - ez
         kl = math.sqrt(kx * kx + ky * ky + kz * kz) + 1e-9
-        cuff = max(kl - 0.070, 0.02) / kl
-        d_f = sd_capsule_r(x0, y0, pz, ex, ey, ez, ex + kx * cuff, ey + ky * cuff, ez + kz * cuff, 0.066, 0.078)
+        if F[i, F_HEROHAND] > 0.5:
+            # the detailed glove carries its own cuff and sleeve: the cloak's sleeve stops well short of the grip
+            cuff = max(kl - 0.170, 0.02) / kl
+            d_f = sd_capsule_r(x0, y0, pz, ex, ey, ez, ex + kx * cuff, ey + ky * cuff, ez + kz * cuff, 0.064, 0.060)
+        else:
+            cuff = max(kl - 0.070, 0.02) / kl
+            d_f = sd_capsule_r(x0, y0, pz, ex, ey, ez, ex + kx * cuff, ey + ky * cuff, ez + kz * cuff, 0.066, 0.078)
         d_arm = min(d_u, d_f) + 0.004 * _crease(40.0 * (x0 + y0 + pz) + seed)
         d_prev = d
         d = smin(d, d_arm, 0.04)
@@ -420,9 +596,14 @@ def sd_fig(px, py, pz, F, i):
         ay_ = y0 - hy2
         az_ = pz - hz2
         along = ax_ * tx + ay_ * ty + az_ * tz
-        d_th = sd_capsule_r(x0, y0, pz, hx2 + 0.31 * tx, hy2 + 0.31 * ty, hz2 + 0.31 * tz,
-                            hx2 + 0.47 * tx, hy2 + 0.47 * ty, hz2 + 0.47 * tz, 0.031, 0.025)
-        d_th += 0.0035 * math.sin(along * 190.0) - 0.002 * (vnoise2(along * 80.0, (ax_ + ay_) * 80.0, 331) - 0.5)
+        d_th = sd_capsule_r(x0, y0, pz, hx2 + 0.33 * tx, hy2 + 0.33 * ty, hz2 + 0.33 * tz,
+                            hx2 + 0.45 * tx, hy2 + 0.45 * ty, hz2 + 0.45 * tz, 0.034, 0.029)
+        # rag wound round it: shallow, helical, irregular
+        rx_ = ax_ - along * tx
+        ry_ = ay_ - along * ty
+        wang = math.atan2(ry_, rx_)
+        d_th += 0.0016 * math.sin(along * 130.0 + 2.0 * wang + 3.0 * vnoise2(along * 20.0, wang * 2.0, 332)) \
+            - 0.003 * (vnoise2(along * 70.0, wang * 6.0, 331) - 0.5)
         if d_th < d:
             d = d_th
             mat = M_TORCH

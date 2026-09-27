@@ -91,8 +91,9 @@ def fog(f):
 
 
 STAR_DEG = 132.0            # the sky wheels ~9 hours across the vigil
-# the Milky Way (sky coordinates at the vigil's start): a band rising steeply out of the NE horizon to the zenith
-BAND = np.array([-0.766, 0.0, 0.643, 0.643, 0.0, 0.766, 0.13, 117.0])
+# the Milky Way (sky coordinates at the vigil's start): a band from the ESE horizon (the reveal's view) up through the
+# pole, its bright centre low in the ESE; it wheels with the stars through the night
+BAND = np.array([-0.244, 0.697, -0.674, 0.962, 0.087, -0.258, 0.13, 117.0])
 
 
 def sky_angle(f):
@@ -144,7 +145,7 @@ class Vigil:
 
     # far summits in frame that the camera sees, nearest first; each gets the frame it first answers
     def _peaks(self):
-        p = os.path.join(CACHE, f'vig_peaks_{BW.VERSION}.npy')
+        p = os.path.join(CACHE, f'vig_peaks2_{BW.VERSION}.npy')
         scam = self.fr.src
         if os.path.exists(p):
             P = np.load(p)
@@ -263,7 +264,8 @@ class Vigil:
         fogp[2] *= 1.0 + 60.0 * fg
         fogp[3] = 1.0 / (140.0 + 1500.0 * fg)
         fogp[5:8] = fogp[5:8] * (1.0 - 0.5 * fg) + lin('#5A6A90') * 0.6 * fg * 0.5
-        SN[3:9] = SN[3:9] * (1.0 - 0.4 * st) + np.r_[grey, grey] * 0.35 * st
+        SN[3:9] = SN[3:9] * (1.0 - 0.85 * st) + np.r_[grey * 0.55, grey * 0.9] * st
+        SN[3:9] = SN[3:9] * (1.0 - 0.6 * fg) + np.r_[lin('#3C4A70') * 0.35, lin('#5A6A90') * 0.5] * 0.6 * fg
         SN[9] *= 1.0 - 0.8 * st
         out = np.zeros((scam.H, scam.W, 3), np.float32)
         BW.shade(self.G, LP, SN, amb, fogp, float(scam.pos[1]), out)
@@ -326,19 +328,66 @@ class Vigil:
                     z=z[k], zbias=z[k] * 0.02, col=np.array([1.0, 0.45, 0.12]))
 
     # --- her and the others
+    def her_track(self):
+        """Her night as a list of (frame, position, pose): she walks between places (never jumps)."""
+        if getattr(self, '_track', None) is not None:
+            return self._track
+        LIPV = BS.on_ground(BS.STAND + BS.FWD * 1.6 + BS.RIGHT * 0.9)
+        SHIELD = BS.on_ground(BS.KNEEL + BS.RIGHT * -0.25)
+        ev = [(F0, BS.STAND, 'look')]
+
+        def go(f0, dst, pose, walk=24):
+            ev.append((f0, None, 'walk'))
+            ev.append((f0 + walk, dst, pose))
+        go(bar(22) - 10, LIPV, 'look')                       # the second call: to the lip, searching
+        go(bar(23, 3), BS.STAND, 'look')
+        for q in FEEDS:
+            if q >= bar(42):
+                continue
+            if q == bar(25, 3):                               # the squall comes: she feeds, then shields it
+                go(q - 40, BS.KNEEL, 'feed', 20)
+                ev.append((q + 30, SHIELD, 'shield'))
+                go(bar(27, 3) - 40, BS.KNEEL, 'feed', 16)
+                ev.append((bar(28, 1) + 20, BS.KNEEL, 'feed'))
+                go(bar(28, 1) + 40, BS.STAND, 'look', 20)
+                continue
+            if q == bar(27, 3):
+                continue
+            if q == bar(35, 3):                               # she has seen the answer: to the fire, feeds it
+                go(q - 16, BS.KNEEL, 'feed', 16)
+                go(q + 34, BS.STAND, 'look', 22)
+                continue
+            go(q - 40, BS.KNEEL, 'feed', 20)
+            go(q + 30, BS.STAND, 'look', 20)
+            if q == bar(31, 3):                               # bars 32-35: at the lip, searching the black horizon
+                go(bar(32) + 10, LIPV, 'look', 26)
+        go(F_FLARE - 26, BS.KNEEL, 'feed', 18)                # her light flares
+        go(F_FLARE + 30, BS.STAND, 'look', 18)
+        go(bar(42), BS.SEAT, 'sit', 22)                       # the young carry the flame down; she sits
+        ev.sort(key=lambda e: e[0])
+        self._track = ev
+        return ev
+
     def her_state(self, f):
         """(pose, position, extras) for her at frame f."""
-        for q in FEEDS:
-            if q - 34 <= f < q + 30:
-                return 'feed', BS.KNEEL, dict(feed=(f - q))
-        if storm(f) > 0.25:
-            return 'shield', BS.on_ground(BS.KNEEL + BS.RIGHT * -0.25), {}
-        if f >= bar(42):
-            return 'sit', BS.SEAT, {}                          # the young carry the flame down; she sits
-        # searching the black horizon: at the lip on the second call (bar 22) and from bar 32 to the first answer
-        if bar(22) <= f < bar(23, 3) or bar(32) <= f < bar(35, 3):
-            return 'look', BS.on_ground(BS.STAND + BS.FWD * 1.6 + BS.RIGHT * 0.9), {}
-        return 'look', BS.STAND, {}
+        ev = self.her_track()
+        cur = ev[0]
+        nxt = None
+        for i, e in enumerate(ev):
+            if e[0] <= f:
+                cur = e
+                nxt = ev[i + 1] if i + 1 < len(ev) else None
+        if cur[2] == 'walk' and nxt is not None:
+            # from the last placed position to the next one
+            prev = [e for e in ev if e[0] <= cur[0] and e[1] is not None][-1]
+            u = (f - cur[0]) / float(max(nxt[0] - cur[0], 1))
+            p = prev[1] + (nxt[1] - prev[1]) * min(max(u, 0.0), 1.0)
+            return 'walk', BS.on_ground(p), dict(walk=(f - cur[0]) / 26.0)
+        pos = cur[1] if cur[1] is not None else BS.STAND
+        if cur[2] == 'feed':
+            q = min(FEEDS + [F_FLARE], key=lambda x: abs(x - f))
+            return 'feed', pos, dict(feed=(f - q))
+        return cur[2], pos, {}
 
     def summit(self, img, zb, scam, f, t, md, lv):
         night_amb = lin('#27335E') * 0.45
@@ -377,11 +426,12 @@ class Vigil:
                 FG.render(img, zb, scam, cd, cpos, lights, amb=night_amb, mats=BS.M, t=t, write_depth=False,
                           zbias=0.3)
         pose, pos, ex = self.her_state(f)
-        kw = dict(age=0.85, shawl=shawl_on_child < 0.5, staff=pose in ('look', 'walk'), wind=0.5 + 1.2 * storm(f))
+        kw = dict(age=0.85, shawl=shawl_on_child < 0.5, staff=pose in ('look', 'walk'), wind=0.5 + 1.2 * storm(f),
+                  walk=ex.get('walk', 0.0) % 1.0)
         d, pts = BS.person('kneel' if pose == 'feed' else pose, **kw)
         FG.render(img, zb, scam, d, pos, lights, amb=night_amb, mats=BS.M, t=t, write_depth=False, zbias=0.3)
         if pose == 'feed':
-            q = ex['feed']
+            q = ex.get('feed', 99)
             if 0 <= q < 26:            # sparks as the wood takes
                 n = 14
                 rng = np.random.default_rng(int(f))

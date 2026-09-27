@@ -8,7 +8,7 @@ import math
 import numpy as np
 from numba import njit, prange
 
-from nbcore import FM, clamp, sstep, mix, vnoise2, fbm2, grid_sample
+from nbcore import FM, clamp, sstep, mix, vnoise2, fbm2, grid_sample, sd_capsule_r
 from geom import trace_stone, normal_stone
 import geom3 as G
 from geom3 import (sd_flat, sd_hearth, sd_fig, trace_fig, normal_fig, sd_hand, trace_hand, normal_hand,
@@ -160,27 +160,40 @@ def ground_albedo(x, y, fp, PR):
     ab = 0.036 * g
     # inside the stones: trampled earth and worn turf
     tr = sstep(10.5, 7.0, r) * clamp(0.55 + 0.9 * (n2 + 0.4) + 0.5 * n3, 0.0, 1.0)
-    ar = mix(ar, 0.058 * (1 + 0.6 * n3 + 0.4 * n4), tr)
-    ag = mix(ag, 0.050 * (1 + 0.6 * n3 + 0.4 * n4), tr)
-    ab = mix(ab, 0.041 * (1 + 0.6 * n3 + 0.4 * n4), tr)
+    ar = mix(ar, 0.052 * (1 + 0.6 * n3 + 0.4 * n4), tr)
+    ag = mix(ag, 0.045 * (1 + 0.6 * n3 + 0.4 * n4), tr)
+    ab = mix(ab, 0.037 * (1 + 0.6 * n3 + 0.4 * n4), tr)
+    # worn turf in patches between the bare, trodden earth (most worn where the council stands)
+    wear = sstep(2.6, 1.9, r) * sstep(0.9, 1.3, r)
+    turf = sstep(-0.04, 0.14, fbm2(x * 1.6 + 7.0, y * 1.6, 23, 3, 2.1, 0.5, fp * 1.6) + 0.10 * n4) * (1.0 - 0.8 * wear)
+    tf = 1.0 + 0.45 * fbm2(x * 40.0, y * 40.0, 24, 2, 2.1, 0.5, fp * 40.0)
+    ar = mix(ar, 0.030 * tf, turf * 0.8)
+    ag = mix(ag, 0.033 * tf, turf * 0.8)
+    ab = mix(ab, 0.022 * tf, turf * 0.8)
+    # small pebbles in the trodden earth
+    pb = sstep(0.13, 0.19, fbm2(x * 28.0 + 3.0, y * 28.0, 25, 2, 2.0, 0.5, fp * 28.0)) * (1.0 - turf)
+    ar = mix(ar, 0.080, pb * 0.6)
+    ag = mix(ag, 0.075, pb * 0.6)
+    ab = mix(ab, 0.068, pb * 0.6)
     # scorched round the hearth
-    sc = sstep(KERB_R + 0.45, KERB_R, r) * (0.7 + 0.3 * n3)
-    ar = mix(ar, 0.022, sc)
-    ag = mix(ag, 0.019, sc)
-    ab = mix(ab, 0.017, sc)
+    sc = sstep(KERB_R + 0.40, KERB_R, r) * (0.6 + 0.4 * n3)
+    ar = mix(ar, 0.036, sc * 0.7)
+    ag = mix(ag, 0.032, sc * 0.7)
+    ab = mix(ab, 0.029, sc * 0.7)
     ash = 0.0
-    if r < ASH_R1 + 0.06:
-        # the ash bed: pale grey ash, black char, the old fire's rim darker
-        ash = sstep(ASH_R1 + 0.05, ASH_R1 - 0.03, r)
-        a = 0.115 * (1.0 + 0.6 * n4 + 0.45 * n3)
-        ch = sstep(0.02, 0.14, fbm2(x * 26.0 + 3.1, y * 26.0, 15, 3, 2.1, 0.5, fp * 26.0))
-        ch = max(ch, 0.7 * sstep(0.05, 0.2, fbm2(x * 70.0, y * 70.0 + 1.3, 20, 3, 2.1, 0.5, fp * 70.0)))
-        a = mix(a, 0.014, ch * 0.9)
-        # older ash toward the rim, a fine grey; darker, sootier toward the stone
-        a *= 0.75 + 0.35 * sstep(ASH_R0, ASH_R1, r)
-        ar = mix(ar, a * 0.98, ash)
-        ag = mix(ag, a * 0.97, ash)
-        ab = mix(ab, a * 0.96, ash)
+    if r < ASH_R1 + 0.12:
+        # fine grey wood ash with a ragged edge: palest at the rim where it is oldest, sootier toward the stone
+        ash = sstep(ASH_R1 + 0.09, ASH_R1 - 0.04, r + 0.06 * n3)
+        a = 0.056 * (1.0 + 0.35 * n3 + 0.22 * n4) * (0.72 + 0.40 * sstep(ASH_R0, ASH_R1, r))
+        # charcoal dust worked into it in soft drifts (never blots)
+        dust = sstep(-0.10, 0.20, fbm2(x * 5.0 + 3.1, y * 5.0, 15, 3, 2.1, 0.5, fp * 5.0))
+        a *= 1.0 - 0.45 * dust
+        # fine specks of char
+        spk = fbm2(x * 55.0, y * 55.0 + 1.3, 20, 2, 2.1, 0.5, fp * 55.0)
+        a *= 1.0 - 0.30 * sstep(0.08, 0.20, spk)
+        ar = mix(ar, a * 1.00, ash)
+        ag = mix(ag, a * 0.98, ash)
+        ab = mix(ab, a * 0.95, ash)
     return ar, ag, ab, ash
 
 
@@ -196,11 +209,11 @@ def bed_embers(x, y, fp, PR):
     T = PR[P_T]
     ring = sstep(ASH_R1 + 0.06, ASH_R1 - 0.08, r) * sstep(ASH_R0 - 0.05, ASH_R0 + 0.05, r)
     ring *= sstep(0.0, 0.2, PR[P_ASHG] * 1.2 - (r - ASH_R0) / (ASH_R1 - ASH_R0) * 0.2)
-    c1 = vnoise2(x * 22.0 + T * 0.02, y * 22.0 - T * 0.015, 401)
-    c2 = vnoise2(x * 7.0 - T * 0.01, y * 7.0, 402)
-    k = sstep(0.42, 0.9, 0.6 * c1 + 0.55 * c2) * ring * e
+    c1 = vnoise2(x * 11.0 + T * 0.012, y * 11.0 - T * 0.009, 401)
+    c2 = vnoise2(x * 4.0 - T * 0.006, y * 4.0, 402)
+    k = sstep(0.35, 0.85, 0.55 * c1 + 0.6 * c2) * ring * e
     wh = PR[P_EMBW]
-    return 5.0 * k * (1.0 + 2.0 * wh), 5.0 * k * (0.30 + 0.45 * wh), 5.0 * k * (0.05 + 0.25 * wh)
+    return 2.2 * k * (1.0 + 2.0 * wh), 2.2 * k * (0.24 + 0.45 * wh), 2.2 * k * (0.03 + 0.25 * wh)
 
 
 @njit(**FM)
@@ -233,9 +246,9 @@ def shade_ring(px, py, pz, vx, vy, vz, fp, PR, LT, OC, RP, stex, ssz):
     env_g += up * 1.3 * fi
     env_b += up * 0.35 * fi
     sr, sg, sb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 140.0, PR, LT, OC, -1.0)
-    cr = (env_r + sr * 3.0) * fr
-    cg = (env_g + sg * 3.0) * fg
-    cb = (env_b + sb * 3.0) * fb
+    cr = (env_r + sr * 9.0) * fr
+    cg = (env_g + sg * 9.0) * fg
+    cb = (env_b + sb * 9.0) * fb
     g = PR[P_RGLOW]
     if g > 0.0:
         rho, zz, _, _, _ = ring_local(px, py, pz, RP)
@@ -318,10 +331,10 @@ def shade_leather(px, py, pz, nx, ny, nz, vx, vy, vz, u, v, w, gilt, fp, PR, LT,
         n2 = vnoise2(u * 260.0, v * 190.0 + w * 150.0, 94)
         crust = sstep(0.40, 0.50, 0.65 * n1 + 0.45 * n2 + 0.25 * sstep(-0.01, 0.02, w)) * gilt
         if crust > 0.0:
-            gr, gg, gb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 55.0, PR, LT, OC, skip)
-            hr, hg, hb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, 0.30, 0.20, 0.07, 0.0, False, skip,
+            gr, gg, gb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 38.0, PR, LT, OC, skip)
+            hr, hg, hb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, 0.10, 0.065, 0.022, 0.0, False, skip,
                                   PR, LT, OC, igc, igf, ao)
-            gs = 1.6 * (0.8 + 0.4 * n2)
+            gs = 2.6 * (0.7 + 0.6 * n2)
             cr = mix(cr, hr + gr * gs * 1.0, crust)
             cg = mix(cg, hg + gg * gs * 0.72, crust)
             cb = mix(cb, hb + gb * gs * 0.30, crust)
@@ -369,19 +382,19 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             if t > min(t1, tbest):
                 break
     # the cold hearth
-    t0, t1 = ray_aabb(ox, oy, oz, idx, idy, idz, -KERB_R - 0.16, KERB_R + 0.16, -KERB_R - 0.16, KERB_R + 0.16,
+    t0, t1 = ray_aabb(ox, oy, oz, idx, idy, idz, -KERB_R - 0.22, KERB_R + 0.22, -KERB_R - 0.22, KERB_R + 0.22,
                       -0.02, HEARTH_ZMAX)
     if t1 >= max(t0, 0.0) and t0 < tbest:
         t = max(t0, 0.0)
-        for it in range(90):
+        for it in range(140):
             d, pt = sd_hearth(ox + dx * t, oy + dy * t, oz + dz * t, KB, LG, nlog, CH, nch)
-            if d < max(0.0005, t * pix * 0.3):
+            if d < max(0.0004, t * pix * 0.25):
                 if t < tbest:
                     tbest = t
                     idb = 2
                     part = pt
                 break
-            t += d * 0.8
+            t += d * 0.62
             if t > min(t1, tbest):
                 break
     for i in range(nf):
@@ -434,6 +447,10 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         ar, ag, ab, ash = ground_albedo(px, py, fp, PR)
         nx = -0.08 * fbm2(px * 2.7 + 5.1, py * 2.7, 16, 3, 2.2, 0.5, fp * 2.7)
         ny = -0.08 * fbm2(px * 2.7, py * 2.7 + 3.3, 17, 3, 2.2, 0.5, fp * 2.7)
+        # the relief of trampled turf and earth: tussocks and pebbles, stronger away from the hearth
+        rel = (1.0 - ash) * (0.55 + 0.45 * sstep(1.2, 2.2, math.sqrt(px * px + py * py)))
+        nx -= 0.55 * rel * fbm2(px * 22.0 + 1.7, py * 22.0, 21, 3, 2.1, 0.55, fp * 22.0)
+        ny -= 0.55 * rel * fbm2(px * 22.0, py * 22.0 + 6.1, 22, 3, 2.1, 0.55, fp * 22.0)
         nx -= 0.12 * ash * fbm2(px * 30.0, py * 30.0, 18, 3, 2.1, 0.5, fp * 30.0)
         ny -= 0.12 * ash * fbm2(px * 30.0 + 4.0, py * 30.0, 19, 3, 2.1, 0.5, fp * 30.0)
         l = math.sqrt(nx * nx + ny * ny + 1.0)
@@ -449,7 +466,16 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             if dd < 0.9:
                 ao *= 0.5 + 0.5 * sstep(0.18, 0.75, dd)
         rr = math.sqrt(px * px + py * py)
-        ao *= 0.55 + 0.45 * sstep(G.STONE_R * 0.95, G.STONE_R + 0.18, rr)
+        ao *= 0.55 + 0.45 * sstep(G.STONE_R * 0.90, G.STONE_R + 0.14, rr)
+        if rr < KERB_R + 0.26:
+            occ = 0.0
+            for kk in range(3):
+                hh_ = 0.008 + 0.018 * kk
+                sd_, pt_ = sd_hearth(px, py, hh_, KB, LG, nlog, CH, nch)
+                if pt_ == 0:
+                    continue
+                occ += clamp((hh_ - sd_) / hh_, 0.0, 1.0) * (0.55 ** kk)
+            ao *= clamp(1.0 - 0.55 * occ, 0.25, 1.0)
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.0, True, -1.0,
                               PR, LT, OC, igc, igf, ao)
         er, eg, eb = bed_embers(px, py, fp, PR)
@@ -467,25 +493,33 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         nx /= l
         ny /= l
         nz /= l
-        # a dark, weathered granite, the top worn smooth, lichen on the rim, soot low on its sides
+        # a dark granite: pale feldspar specks and dark mica in a grey ground, weather pits on the top,
+        # a pale lichen crust on the rim, soot low on its sides; the top worn smooth where hands have rested
         ln = fbm2(px * 7.0, py * 7.0 + pz * 5.0, 81, 4, 2.1, 0.55, fp * 7.0)
-        sp = fbm2(px * 90.0, py * 90.0 + pz * 60.0, 82, 3, 2.3, 0.6, fp * 90.0)
-        g = 1.0 + 0.45 * ln + 0.35 * sp
-        ar = 0.105 * g
-        ag = 0.100 * g
-        ab = 0.094 * g
-        lich = sstep(0.12, 0.28, fbm2(px * 11.0 + 2.0, py * 11.0, 83, 4, 2.0, 0.5, fp * 11.0)) * sstep(0.1, 0.3, pz)
-        ar = mix(ar, 0.14, lich * 0.55)
-        ag = mix(ag, 0.13, lich * 0.55)
-        ab = mix(ab, 0.085, lich * 0.55)
-        soot = sstep(0.24, 0.05, pz) * (1.0 - 0.3 * nz)
-        ar = mix(ar, 0.020, soot * 0.9)
-        ag = mix(ag, 0.018, soot * 0.9)
-        ab = mix(ab, 0.016, soot * 0.9)
+        gr = fbm2(px * 130.0, py * 130.0 + pz * 95.0, 82, 2, 2.3, 0.6, fp * 130.0)
+        a = 0.032 * (1.0 + 0.55 * ln)
+        crk = sstep(0.008, 0.0, abs(0.62 * px + 0.78 * py - 0.05 + 0.03 * math.sin(9.0 * px - 4.0 * py))) * sstep(STONE_TOP - 0.04, STONE_TOP - 0.01, pz)
+        a *= 1.0 - 0.45 * crk
+        a *= 1.0 + 0.22 * sstep(0.05, 0.16, gr) - 0.12 * sstep(-0.05, -0.16, gr)
+        pit = 0.0
+        ar = a * 1.03
+        ag = a * 1.00
+        ab = a * 0.95
+        rim = sstep(-0.05, -0.005, G._flat2d(px, py)) * sstep(STONE_TOP - 0.10, STONE_TOP - 0.02, pz)
+        lich = sstep(0.10, 0.24, fbm2(px * 11.0 + 2.0, py * 11.0, 83, 4, 2.0, 0.5, fp * 11.0)) * rim
+        ar = mix(ar, 0.115, lich * 0.6)
+        ag = mix(ag, 0.112, lich * 0.6)
+        ab = mix(ab, 0.092, lich * 0.6)
+        soot = sstep(0.20, 0.02, pz) * (1.0 - 0.3 * nz)
+        # after the fire has burned on it (P2 from the catch, bar 70) its top is fire-blackened
+        soot = max(soot, 0.8 * PR[P_EMB] * sstep(0.35, 0.65, vnoise2(px * 9.0, py * 9.0, 98) + 0.3))
+        ar = mix(ar, 0.016, soot * 0.9)
+        ag = mix(ag, 0.014, soot * 0.9)
+        ab = mix(ab, 0.013, soot * 0.9)
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.0, False, -1.0,
                               PR, LT, OC, igc, igf, 1.0)
-        sr, sg, sb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 12.0, PR, LT, OC, -1.0)
-        wk = 0.012 * sstep(0.7, 0.95, nz)
+        sr, sg, sb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 22.0, PR, LT, OC, -1.0)
+        wk = 0.016 * sstep(0.7, 0.95, nz) * (1.0 - lich)
         return cr + sr * wk, cg + sg * wk, cb + sb * wk, tbest, idb
     if idb == 2:
         h = max(0.0012, fp * 0.5)
@@ -505,39 +539,72 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         eg = 0.0
         eb = 0.0
         if part == H_KERB:
-            sp = fbm2(px * 40.0, py * 40.0 + pz * 30.0, 84, 3, 2.2, 0.55, fp * 40.0)
-            a = 0.075 * (1.0 + 0.5 * sp)
-            soot = sstep(KERB_R + 0.02, KERB_R - 0.08, rr) * 0.85 + 0.1
-            ar = mix(a, 0.016, soot)
-            ag = mix(a * 0.97, 0.014, soot)
-            ab = mix(a * 0.92, 0.013, soot)
+            # field stones, grey and lichened outside, sooted black on the side that faced the fire
+            sp = fbm2(px * 25.0, py * 25.0 + pz * 20.0, 84, 3, 2.2, 0.55, fp * 25.0)
+            a = 0.060 * (1.0 + 0.30 * sp) * (0.75 + 0.5 * vnoise2(px * 6.0 + KB[0, 8], py * 6.0, 90))
+            inner = -(nx * px + ny * py) / (rr + 1e-6)
+            soot = clamp(0.25 + 0.75 * sstep(-0.2, 0.5, inner) * sstep(KERB_R + 0.10, KERB_R - 0.08, rr), 0.0, 1.0)
+            ar = mix(a, 0.015, soot * 0.85)
+            ag = mix(a * 0.98, 0.013, soot * 0.85)
+            ab = mix(a * 0.93, 0.012, soot * 0.85)
         elif part == H_LOG:
-            # bark and split grain, charred toward the stone
-            gr = vnoise2(px * 90.0 + pz * 40.0, py * 90.0, 85)
-            a = 0.040 * (0.7 + 0.6 * gr)
-            ch = sstep(0.72, 0.52, rr)
-            ar = mix(a * 1.1, 0.010, ch)
-            ag = mix(a * 0.8, 0.009, ch)
-            ab = mix(a * 0.6, 0.009, ch)
+            # which log: its axis gives the bark's furrows (along it) and the char's checks (across it)
+            kb_ = 0
+            db_ = 1e9
+            for kk in range(nlog):
+                dd_ = sd_capsule_r(px, py, pz, LG[kk, 0], LG[kk, 1], LG[kk, 2], LG[kk, 3], LG[kk, 4], LG[kk, 5],
+                                     LG[kk, 6], LG[kk, 7])
+                if dd_ < db_:
+                    db_ = dd_
+                    kb_ = kk
+            axx = LG[kb_, 3] - LG[kb_, 0]
+            axy = LG[kb_, 4] - LG[kb_, 1]
+            axz = LG[kb_, 5] - LG[kb_, 2]
+            al_ = math.sqrt(axx * axx + axy * axy + axz * axz) + 1e-9
+            along = ((px - LG[kb_, 0]) * axx + (py - LG[kb_, 1]) * axy + (pz - LG[kb_, 2]) * axz) / al_
+            sd2 = (-(px - LG[kb_, 0]) * axy + (py - LG[kb_, 1]) * axx) / al_
+            ang = math.atan2(pz - LG[kb_, 2] - along / al_ * axz, sd2)
+            # grey-brown bark in long furrows; charred black toward the stone, checked into blocks
+            fur = sstep(0.25, 0.75, 0.5 + 0.5 * math.sin(ang * 9.0 + 2.5 * vnoise2(along * 8.0, ang, 85) + LG[kb_, 8]))
+            a = 0.030 * (0.55 + 0.45 * fur) * (0.8 + 0.4 * vnoise2(along * 20.0, ang * 2.0, 91))
+            ch = sstep(0.76, 0.56, rr + 0.04 * (vnoise2(along * 9.0, ang, 94) - 0.5))
+            chk = sstep(0.035, 0.0, abs(vnoise2(along * 38.0 + LG[kb_, 8], ang * 2.2, 95) - 0.5)) \
+                + 0.8 * sstep(0.03, 0.0, abs(vnoise2(along * 14.0, ang * 5.0 + LG[kb_, 8], 96) - 0.5))
+            cha = 0.016 * (1.0 - 0.75 * min(chk, 1.0))
+            crack = min(chk, 1.0) * ch
+            ar = mix(a * 1.00, cha, ch)
+            ag = mix(a * 0.90, cha * 0.97, ch)
+            ab = mix(a * 0.80, cha * 0.95, ch)
+            wash = sstep(0.7, 0.95, nz) * sstep(0.62, 0.80, vnoise2(px * 60.0, py * 60.0, 92)) * ch
+            ar = mix(ar, 0.050, wash * 0.6)
+            ag = mix(ag, 0.049, wash * 0.6)
+            ab = mix(ab, 0.047, wash * 0.6)
             eb_ = PR[P_EMB]
             if eb_ > 0.0:
                 cr_ = vnoise2(px * 120.0 + T * 0.03, py * 120.0 + pz * 60.0, 86)
-                glow = sstep(0.45, 0.8, cr_) * eb_ * (0.5 + 0.5 * ch) * sstep(0.0, 0.3, PR[P_ASHG] * 1.2 - (rr - ASH_R0) / (ASH_R1 - ASH_R0) * 0.2)
+                glow = (sstep(0.45, 0.8, cr_) + 0.8 * crack) * eb_ * (0.5 + 0.5 * ch) * sstep(0.0, 0.3, PR[P_ASHG] * 1.2 - (rr - ASH_R0) / (ASH_R1 - ASH_R0) * 0.2)
                 wh = PR[P_EMBW]
                 er += 7.0 * glow * (1.0 + 1.5 * wh)
                 eg += 7.0 * glow * (0.28 + 0.5 * wh)
                 eb += 7.0 * glow * (0.04 + 0.3 * wh)
         else:
-            ar = 0.012
-            ag = 0.011
-            ab = 0.011
+            # charcoal: black, a faint silvery sheen on its broken faces
+            a = 0.011 * (1.0 + 0.5 * vnoise2(px * 200.0, py * 200.0, 93))
+            ar = a
+            ag = a * 0.98
+            ab = a * 0.97
+            sr_, sg_, sb_ = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 30.0, PR, LT, OC, -1.0)
+            er += 0.02 * sr_
+            eg += 0.02 * sg_
+            eb += 0.02 * sb_
             eb_ = PR[P_EMB]
             if eb_ > 0.0:
-                cr_ = vnoise2(px * 150.0 - T * 0.02, py * 150.0 + pz * 90.0, 87)
-                glow = sstep(0.4, 0.75, cr_) * eb_
-                er += 6.0 * glow
-                eg += 6.0 * glow * 0.3
-                eb += 6.0 * glow * 0.05
+                cr_ = vnoise2(px * 60.0 - T * 0.01, py * 60.0 + pz * 40.0, 87)
+                lump = vnoise2(px * 18.0, py * 18.0, 97)
+                glow = sstep(0.55, 0.85, cr_) * sstep(0.45, 0.7, lump) * eb_ * sstep(0.95, 0.5, rr)
+                er += 2.4 * glow
+                eg += 2.4 * glow * 0.26
+                eb += 2.4 * glow * 0.035
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.0, False, -1.0,
                               PR, LT, OC, igc, igf, 1.0)
         return cr + er, cg + eg, cb + eb, tbest, idb
@@ -638,12 +705,13 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
                                                          2.2, 0.5, fp * wf)
         sheen *= F[i, F_SHEENK]
         if mat == M_SHAWL:
-            # woven wool: a fine twill and a slub, a few darker threads
+            # woven wool: a soft twill, slubs in the yarn, a few darker threads, and a fuzz that catches light
             tw = 0.5 + 0.5 * math.sin((px + py) * 900.0 + pz * 700.0)
             tw = 1.0 + 0.10 * (tw - 0.5) * sstep(3.0 * fp, 1.0 * fp, 0.002)
-            sl = 1.0 + 0.22 * fbm2(px * 160.0 + seed, py * 160.0 - pz * 90.0, 58, 3, 2.2, 0.5, fp * 160.0)
-            wv = tw * sl
-            sheen *= 1.25
+            sl = 1.0 + 0.30 * fbm2(px * 160.0 + seed, py * 160.0 - pz * 90.0, 58, 3, 2.2, 0.5, fp * 160.0)
+            th_ = 1.0 - 0.25 * sstep(0.25, 0.45, fbm2(px * 45.0, py * 45.0 + pz * 30.0, 59, 2, 2.2, 0.5, fp * 45.0))
+            wv = tw * sl * th_
+            sheen *= 1.6
         dust = sstep(0.30, 0.03, pz)
         ar = ar * wv * (1.0 + 0.9 * dust) + 0.004 * dust
         ag = ag * wv * (1.0 + 0.8 * dust) + 0.0035 * dust
@@ -655,9 +723,11 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         sheen = 0.0
         tl = F[i, F_TLIT]
         if tl > 0.0:
-            c = tl * sstep(0.35, 0.85, vnoise2(px * 90.0 + T * 0.05, py * 90.0 + pz * 60.0, 53))
-            er += 3.0 * c
-            eg += 0.75 * c
+            g1 = vnoise2(px * 55.0 + T * 0.09, py * 55.0 + pz * 40.0, 53)
+            g2 = vnoise2(px * 160.0 - T * 0.13, py * 160.0 + pz * 120.0, 56)
+            c = tl * (0.55 + 0.9 * g1 * g1 + 0.35 * g2)
+            er += 1.6 * c
+            eg += 0.55 * c
             eb += 0.08 * c
     elif mat == M_WOOD:
         gr = vnoise2(px * 40.0 + pz * 300.0, py * 40.0, 54)
@@ -677,11 +747,6 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         sheen *= 0.7
     cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, sheen, False, fi,
                           PR, LT, OC, igc, igf, ao)
-    if mat == M_CLOTH or mat == M_CLOTH2 or mat == M_SHAWL:
-        vel = 0.45 + 0.55 * (1.0 - abs(nx * vx + ny * vy + nz * vz)) ** 0.8
-        cr *= vel
-        cg *= vel
-        cb *= vel
     # the crowd's torches beyond the stones rim the figures from behind
     if PR[P_CROWD] > 0.0 and mat != M_SHADOW:
         rq = math.sqrt(px * px + py * py) + 1e-9
@@ -691,7 +756,7 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         ndo = (nx * ox_ + ny * oy_ + nz * 0.18) / ol
         if ndo > -0.25:
             nv = abs(nx * vx + ny * vy + nz * vz)
-            k = PR[P_CROWD] * (max(ndo, 0.0) * 0.35 + 2.6 * (1.0 - nv) ** 2 * sstep(-0.25, 0.5, ndo)) * ao
+            k = PR[P_CROWD] * (max(ndo, 0.0) * 0.30 + 1.1 * (1.0 - nv) ** 2 * sstep(-0.25, 0.5, ndo)) * ao
             cr += ar * k * 1.00
             cg += ag * k * 0.56
             cb += ab * k * 0.16
@@ -704,10 +769,10 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         ndl = (nx * lx + ny * ly + nz * lz) / ll
         nv = abs(nx * vx + ny * vy + nz * vz)
         rim = sstep(0.0, 0.6, ndl) * (1.0 - nv) ** 3.0 * ao
-        e = PR[P_FIGRIM] * rim
-        er += e * 1.0 * (1.0 + 2.0 * ar)
-        eg += e * 0.62
-        eb += e * 0.22
+        e = PR[P_FIGRIM] * rim * 18.0
+        er += e * ar * 1.0
+        eg += e * ag * 0.62
+        eb += e * ab * 0.22
     return cr + er, cg + eg, cb + eb, tbest, idb
 
 

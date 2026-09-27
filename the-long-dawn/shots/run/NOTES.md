@@ -1,38 +1,60 @@
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION) - report 27 Sep <<<
-## PAUSED 27 Sep ~10:40Z (director's usage pacing). Nothing is rendering. RESUME HERE
-Done since the handoff: read the H5 calls, the brief, the log and the critic, and looked at the latest test frames.
-The pre-H5 code is committed as b791569 (a restore point). No H5 fix has been coded yet.
+## PAUSED 27 Sep ~16:45Z (director: usage window end). RESUME HERE
+**State.** All H5 fixes are coded and pushed (ce69649 look; 0e404d8 driver fixes plus the 14 job files rewritten for
+2x). JOB READY has NOT been sent yet. Two things run in the background (scratchpad `rc/`):
+1. `gate_h5b.sh` (log `gate_h5b.log`): the boil gate re-run with a TRUE boiling control. The salt now shifts every
+   hatch line's position (`_lines(..., shift)`), where before it only re-dealt ranks and dashes. Results go to
+   `renders/run_c_tests/boil_check_{scroll,reveal}_h5.txt`. First pass (the old, too-weak control): anchored
+   residual scroll 0.0178, reveal 0.0188. Pre-H5 it was 0.021-0.025, which passed, so the new hatching is at
+   least as anchored. After that it re-checks the production driver on reveal 0, illum 2640 and scroll 168-169
+   (the `--procs 2 --threads 2` spawn path). The first check crashed on NUMBA_NUM_THREADS; fixed in 0e404d8, the
+   env is now set in main() before numba loads.
+2. `crops.sh` (log `crops.log`; waits for (1)): three production-scale check crops (`--scale 1 --ss 2 --crop 0.5`,
+   i.e. 1:1 pixels of the final frame): scroll 168, reveal 0, illum 2640 -> `renders/runC_{shot}/chk_crop/`.
+**Next, on resume, in order.**
+(a) Read `gate_h5b.log` (the anchored/re-dealt ratio should be well under 0.5; PASS if so) and `crops.log`. Look
+    at the three crops at 1:1 (beacon glyph, her fire, the inked sun, the hatching, no jaggies). Use the aov/ink
+    times in the logs (the scale 0.25 frame is ~1/16 of the full cost) for the cost estimate.
+(b) Build the review sheet `_local_logs/review/runC_ink.jpg` (the pre-H5 one is kept in `review/h5/`): 3 frames
+    per shot from the half-res tests (`inkpass.py --scale 0.5 --tag _x4`, AOV caches exist: scroll 168/232-239/300,
+    reveal 0/108-115/200, illum 2410/2480/2560/2640) plus the three 1:1 crops. No boil heat map on it.
+(c) SendMessage main: `JOB READY runC_reveal_{a-d}, runC_scroll_{a-d}, runC_illum_{a-f}: C16/C17/C24 ink at 2x,
+    1040 frames, est. N min per job`, with the sheet path and the gate numbers. Then commit, clean up the tests,
+    and move the NOTES report to final.
+* Local renders are tests only; the Mac is at swap limit (0.8 GB free), so no full frames here.
 
-**Next steps, in order.** Iterate with `inkpass.py` on the EXISTING half-res AOV caches (`renders/run_c_tests/aov/*_050_*`:
-scroll 12/168/232-255/300, reveal 0/108-131/200, illum 2410-2800), so no AOV re-render is needed while the look is
-worked out.
-1. **Cross-contour hatching** (replaces the all-vertical fall-line dashes). Family F1 is the iso-lines of the world
-   height h (A[...,5]). Space them from the one-sided screen gradient (take the side whose depth stays continuous),
-   with nested intervals dh = 0.5*2^L m. Give each line a rank from its birth level relative to the continuous lam
-   (c = M - lam), which gives continuous LOD with no pops: coarse lines are drawn at light tones and in-between
-   lines fill in as the tone darkens. Break the lines into dashes with world-anchored octave noise, band-passed by
-   screen size, and taper them at the gaps. Family F2 is the shadow crosshatch: iso-lines of the tilted planes
-   h*cos(b) + psi*sin(b), with psi = the plan coordinate along the shot's mean camera right vector and b = 45 deg.
-   They run diagonally on cliffs, only where T > 0.45. Plan-only fields go vertical on cliffs, so don't use them.
-2. **Outlines at 2x.** Vary the weight by light: thin and broken on lit edges, heavy in shadow. Add world-anchored
-   pressure noise and pen lifts, and taper into the fire's light. This fixes the reveal's near-ridge "stock
-   chart". Blur the line coverage ~0.5 px at 2x before the downsample.
-3. **Inked beacons** replace fire2's gouache flame and the gold-leaf aureole disc. Draw a glyph of 3-5 swaying
-   teardrop tongues, outlined at the terrain's pen weight and filled with a gold wash (vermilion at the root),
-   depth-tested and anti-aliased from analytic distance. Two inked smoke strands curl up and drift. The catch blooms
-   as a watercolour gold wash on the firelit rock (world-anchored, from the firelight AOV), never a halo in the
-   sky. Remove the horizontal gold striping on the reveal's near slope.
-4. **The sun in ink.** A slightly irregular pen circle with paper and a pale gold wash inside (pooled at the rim),
-   plus many fine ruled rays of broken, varied length. Try it with and without the rays. The skyline cuts it.
-5. **R15 fill follows the light.** On the land, use the sunlit term (n.l x shadow), so the edge is the terminator.
-   In the sky, spread by the plate's luminance threshold falling over time. Feather it wide with grain. There
-   must be no hard edge anywhere; check 2410-2800 (dawn_C plates exist only for 2400-2655; the cloud driver renders
-   its own).
-6. **2x production.** `ink_final.py` defaults to scale 1 and ss 2 (drawn at 3840, INTER_AREA to 1920),
-   ~2 GB per worker. Tests use scale 0.5 and ss 2, viewed at 960 (a 2x downsample) plus 1920 crops.
-7. Re-run the boil gate (`ink_check.py`) on scroll 232-255 and reveal 108-131. Rewrite the 14 cloud jobs, make a
-   review sheet, and send JOB READY. Commit keeper.py first: ask RUN-B or the director, since C16 needs it on the
-   cloud box.
+## STATUS 27 Sep ~16:30Z: every H5 item in the ink pass is coded (commit ce69649); the gate re-run and job rewrite are next
+The H5 calls as coded (`inkpass.py`), checked by eye on half-res stills of all three shots:
+* **Hatching follows the form.** F1 is cross-contour: iso-lines of planes tilted 20 deg toward the camera
+  (h - 0.36 chi), so every ring wraps its peak even from beacon height. F2 is a diagonal crosshatch (tilted
+  planes along the shot's fixed right axis) and carries the shadows. The intervals are nested, and a line's rank
+  comes from its birth level against the continuous scale, so lines fade and never pop. Tone comes from the MACRO
+  form (normals smoothed at 40 page px, world footprint), so there are no vertical gully streaks. The contour field
+  is smoothed at 2.5 px. The old fall-line dashes are deleted.
+* **Outlines follow the light** (`line_mod`): heavy in shadow, thin with pen lifts where lit, fading into a fire's
+  light, with world-anchored pressure and a 0.3 px soften before the 2x downsample. The reveal's near ridge no
+  longer reads as a stock chart.
+* **Beacons hand-inked** (`ink_flames`): a glyph of 3/5/7 fat tapering tongues leaning in a common wind, with crisp
+  notches, curling tips and detached fragments. The outline is at the terrain's pen weight with lifts; nested
+  inner lines appear only where the tongues part. The wash is gold-only, paler in a soft core and deeper at the
+  root (no emoji red). Thin inked smoke threads rise from each fire. There is no halo. The catch blooms as a gold
+  wash on the rock the fire lights (`fire_soft`: a smooth, world-anchored falloff with distance; the AOV's
+  firelight banded on stratified rock). Far flames are drawn 7x life (FLAME_SCALE, the illustrator's licence).
+* **C24 colour follows the light** (`illum_fill`). A feathered (~9 deg) wash floods out from the sun along the
+  horizon first; brighter sky is reached sooner, and page-fixed irregularity is added to the edge. Cool hues are
+  laid as lilac, because blue on this yellow paper turned green. Only sunlit land and lit cloud take colour, and a
+  faint cool wash reaches the shadow faces late. There is no mask edge anywhere. **The sun is ink** (`sun_ink`):
+  an uneven pen circle with a lift, a pale gold wash pooled at the rim, and 44 fine broken rays.
+  **Smoke rises from every beacon summit** as inked strands (`ink_plumes`, following dawn.py's plume columns).
+* **2x:** `ink_final.py` now defaults to `--ss 2.0` (drawn at 3840x1608, INTER_AREA to 1920x804).
+  `render_ink.render_aov` no longer renders the gouache fire or the volumetric smoke layers.
+* Disk: `renders/run_c_tests` was trimmed to 24 AOV caches plus the current test stills (director's disk emergency).
+* **Cloud jobs rewritten for 2x** (NOT yet announced): `cloud/jobs/runC_reveal_{a-d}` (60 f each),
+  `runC_scroll_{a-d}` (80 f each) and `runC_illum_{a-f}` (80 f each, dawn frames 2398-2877 = C24 local 0-479).
+  Each job is one 4-vCPU box running 2 workers x 2 numba threads (`--procs 2 --threads 2`, ~2.5 GB per worker), with a
+  numba warm-up in setup. `ink_final` prints an aov/plate/ink time breakdown per frame (it shows in the status file).
+Next: the boil gate on scroll 232-239 and reveal 108-115, plus a small-scale `ink_final` end-to-end check (chain
+`scratchpad/rc/gate_h5.sh`, log `gate_h5.log`). Then the review sheet and JOB READY.
 
 ## STATE AT HANDOFF (new RUN-C agent, 27 Sep 10:10Z)
 * **Code** (`ink_aov.py`, `render_ink.py`, `inkpass.py`, `ink_final.py`, `ink_check.py`) was never committed; all
@@ -112,6 +134,45 @@ AOV + fire/smoke layers, caches), `inkpass.py` (the drawing), `ink_final.py` (pr
 boiling metric).
 
 ---
+
+# >>> RUN-B STATE AT PAUSE 2 (27 Sep ~16:40Z; RESUME 20:00Z) <<<
+**Nothing is rendering locally. No cloud job running for RUN-B.**
+**DONE:** `renders/dusk_B` = DUSK v1, 640/640 frames (cloud job dusk_b, relaunched after my --skip fix 68e0f72);
+smooth, no flicker. The director approved the landform and asked for a DUSK v2 (below).
+**Code state (all committed in this pause's commit; bworld VERSION 'b11'; caches keyed by it):**
+* `bworld.py` b11: soft-ridged field + layered range rings (9.5-63 km) + a sunrise basin ESE + rough worn crests
+  (outcrops/tors on the upper ground, never needles) + her massif/knoll/NE ridge + the sunrise shoulder (13 km,
+  az 118, TOP_Y-100). Snow: slope-based, stony summit boss within ~12 m of the top, wind-packed snow below with
+  sparse stones. Cloud: broad-billow normals, wide wrap. `add_band` = the Milky Way (wheels with the stars).
+* `bset.py`: set points (BEACON, CAIRN 5.5 m NNE-ish of her seat, KNEEL, STAND, SEAT, LIP), the vigil camera,
+  the NE path, puppets: `person()` (hood/cowl, red woven shawl, long cloak, staff, reach), `child_asleep()` (a
+  hooded lump wrapped in the shawl; the old two-circle child read as a SNOWMAN), `rubble_cairn()`,
+  `beacon_base()` (rough stone plinth: the old coursed base read as a BRICK BBQ), `fire_steel()`, `night_params()`.
+* `dusk.py` (v2 WIP, untested since dusk_B): stronger aerial perspective (fog 1.15e-4 / 3600 m), `wisps()` a thin
+  streaky cloud layer just above the cloud sea (rose while the sun reaches it), knoll-top glint (several px).
+* `handback_b.py`: crane 3840-4079 (per-frame build; +40 m out/+20 m up/+18 deg hfov at mid) + settled 4080-5199
+  (relight; push-in 4800-5000 to hfov 30; hands open 4840; hand-off 4960-5040 with a warm glint on the steel;
+  child wakes 5040). Tests OK (renders/run_b_tests/hbb_t9 = latest): story reads, sun tamed, fire dies to embers
+  in the sun. OPEN ISSUE: a smooth mid-distance dome (the field's island at az ~122, ~7.5 km, top ~-200) reads as
+  a sand pile under the shoulder -> deepen/shift the sunrise basin toward (az 122, 7 km), keep a few islands.
+* `vigil.py` (1520-3839): tested at quarter/half (vig_t3 look approved by me): moonlit snow dome, fire + her on the
+  skyline, storm squall (fine streaks, grey sky), fog hours, first answer bar 35 (she stands at the lip and sees
+  it), travellers + thread of torches, villages, the child 46-48. Her moves are a walked track (no teleports).
+* `reveal.py` (1360-1519): close behind her at the roar -> pull back 520 m WNW, level with the top. OPEN: the fire
+  must read as a warm point at the end (add a distance-sized glow), Milky Way stronger (0.12), the summit
+  silhouette is a smooth dark double dome (acceptable; could move the end camera to side-light it).
+**Jobs written, NOT yet READY (send JOB READY + 2-3 check stills each after the fixes):**
+`cloud/jobs/handback_b_settled.json` (4080-5199), `handback_b_crane_a/b.json` (3840-3959/3960-4079),
+`vigil_b_a/b.json` (1520-2679/2680-3839), `reveal_b_a/b.json` (1360-1439/1440-1519). All render into
+renders/{handback_B, vigil_B, reveal_B} in B frame numbers with ship jpg.
+**NEXT on RESUME (in order):** (1) fix the mid dome (basin), half-res check stills 4300/4880/4976 -> JOB READY
+handback_b_settled + crane_a/b. (2) vigil: half-res check stills 2060/2740/3700 -> JOB READY vigil_b_a/b. (3) reveal
+fire glow + band -> stills 1360/1440/1519 -> JOB READY reveal_b_a/b. (4) DUSK v2 test (quarter, then full-res
+f0/f320/f590) -> write dusk_b2.json (same as dusk_b but out renders/dusk_B2? ask the director whether to overwrite
+dusk_B) -> JOB READY. (5) THE CLIMB wide (bars 9-11, HEROINE + RUN-B fallback: her figure on the NE ridge carrying
+the pot's glow) if time allows. Status of cloud jobs: `gh api 'repos/mishmellow123-cmyk/mishamisha/contents/
+the-long-dawn/cloud_logs/<job>_status.txt?ref=claude/render-<branch>' --jq .content | base64 -d` (never fetch
+render branches: a fetch left a 1.4 GB temp pack).
 
 # >>> RUN-B STATE AT PAUSE (27 Sep ~11:25Z, director's usage pause; RESUME ~15:00Z) <<<
 **Nothing is rendering. No cloud job is ready** (the three pre-H5 jobs were deleted as stale; none written for the new look).
