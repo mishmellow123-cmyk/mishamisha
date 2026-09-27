@@ -675,21 +675,20 @@ class Vigil:
         rng = np.random.default_rng(99)
         W, H = scam.W, scam.H
         k = W / 1920.0
-        n = int(4200 * st)
+        n = int(3400 * st)
         x0 = rng.random(n) * W * 1.3 - 0.15 * W
         y0 = rng.random(n) * H
-        z = 0.5 + rng.random(n) ** 1.6 * 5.0                   # nearer (small z) = faster, longer, brighter
-        spd = (26.0 / z) * k
+        z = 0.6 + rng.random(n) ** 1.2 * 6.0                   # most flakes far and faint; a few near
+        spd = (22.0 / z) * k
         x = (x0 + spd * f) % (W * 1.3) - 0.15 * W
         y = (y0 + spd * 0.42 * f + 3.0 * np.sin(f * 0.11 + x0 * 0.01)) % H
-        L = np.minimum(spd * 0.60, 30.0 * k)
-        a = (0.08 + 0.30 / z) * st
+        L = np.minimum(spd * 0.40, 14.0 * k) * (0.6 + 0.8 * rng.random(n))
+        a = (0.03 + 0.13 / z) * st * (0.5 + rng.random(n))
         lay = np.zeros((H, W), np.float32)
         for i in range(n):
-            th = 2 if z[i] < 0.9 else 1
-            cv2.line(lay, (int(x[i]), int(y[i])), (int(x[i] + L[i]), int(y[i] + 0.42 * L[i])), float(a[i]), th,
+            cv2.line(lay, (int(x[i]), int(y[i])), (int(x[i] + L[i]), int(y[i] + 0.42 * L[i])), float(a[i]), 1,
                      cv2.LINE_AA)
-        lay = cv2.GaussianBlur(lay, (0, 0), 0.7 * max(k * 1.5, 0.5))
+        lay = cv2.GaussianBlur(lay, (0, 0), 0.9 * max(k * 1.5, 0.5))
         bx, by, bz = scam.project(BS.BEACON + np.array([0.0, 1.0, 0.0]))
         yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
         warm = np.exp(-(((xx - bx) ** 2 + (yy - by) ** 2) / (0.09 * W) ** 2)) * min(fire_level(f), 1.2)
