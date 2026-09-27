@@ -772,10 +772,34 @@ class SshNode(Node):
         self.bpy = bool(spec.get('bpy'))
         self.tunnel = None
         self.exists = True
+        self.checked = 0
+        self.ok = True
 
     def ssh(self, cmd, stdin=None, timeout=900):
         return subprocess.run(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', '-o', 'ServerAliveInterval=15',
                                self.host, cmd], input=stdin, capture_output=True, text=True, timeout=timeout)
+
+    def ok_to_work(self):
+        """Someone's own laptop: work only on AC power, and only when its owner isn't running heavy jobs of their
+        own (1-min load, measured while we have nothing running there, under 40% of its cores)."""
+        if time.time() - self.checked < 120:
+            return self.ok
+        self.checked = time.time()
+        try:
+            r = self.ssh("pmset -g batt | head -1; sysctl -n vm.loadavg hw.ncpu", timeout=20)
+            out = r.stdout or ''
+            ac = 'AC Power' in out
+            nums = out.split('{')[-1].split('}')
+            load1 = float(nums[0].split()[0]) if len(nums) > 1 else 99.0
+            ncpu = int(nums[-1].split()[0]) if len(nums) > 1 else 10
+            busy_owner = self.unit is None and load1 > 0.4 * ncpu
+            self.ok = ac and not busy_owner
+            if not self.ok:
+                self.say(f'{self.name}: stepping aside ({"on battery" if not ac else ""}'
+                         f'{" and " if not ac and busy_owner else ""}{"its owner is busy, load %.0f" % load1 if busy_owner else ""})')
+        except Exception:                           # noqa: BLE001
+            self.ok = False
+        return self.ok
 
     def open_tunnel(self):
         if self.tunnel and self.tunnel.poll() is None:
@@ -943,6 +967,9 @@ class Scheduler:
         self.known = set()
         self.budget_noted = {}
         self.last_sweep = 0
+        self.last_spend_post = 0
+        self.last_hourly = time.time() - 3000
+        self.alerted = {}
         self.bad_names = {}          # node name -> skip until (a node that failed its bootstrap)
         self.last_report = 0
         self.unit_secs = []          # recent unit wall times, for ETAs
@@ -1345,6 +1372,10 @@ class Scheduler:
         return next((u for u in tier if u['_job'].name == nd.last_job), tier[0])
 
     def dispatch(self, nd):
+        if nd.kind == 'ssh' and not nd.ok_to_work():
+            nd.stop('owner needs the machine')
+            self.backoff[nd.name] = (time.time() + 900, 900)
+            return
         with self.lock:
             u = self.choose(nd, self.dispatchable(nd.kind, bpy=getattr(nd, 'bpy', False)))
             if u is not None:
@@ -1356,6 +1387,11 @@ class Scheduler:
         spec = {k: v for k, v in u.items() if not k.startswith('_')}
         if not u['_job'].gpu and nd.cpu > KINDS['cpu']['cpu']:     # a bigger node than planned for: use its cores
             spec['concurrency'] = min(len(spec['items']), max(spec['concurrency'], nd.cpu // u.get('_d', 2)))
+        if nd.kind == 'ssh':                        # someone's laptop: total threads stay within its budget
+            per = max(2, u.get('_d', 2))
+            spec['concurrency'] = max(1, min(spec['concurrency'], nd.cpu // per))
+            asked = [int(m) for it in spec['items'] for m in re.findall(r'--threads[ =](\d+)', it['cmd'])]
+            spec['env'] = dict(spec.get('env') or {}, NUMBA_NUM_THREADS=str(max([nd.cpu // spec['concurrency']] + asked)))
         try:
             nd.agent('POST', '/unit', spec, timeout=30)
         except Exception as e:                      # noqa: BLE001
@@ -1462,6 +1498,10 @@ class Scheduler:
         for nd in [nd for nd in self.nodes.values() if nd.state == 'ready' and not nd.ticking]:
             nd.ticking = True
             self.pool.submit(self._tick, nd)
+        try:
+            self.report_spend()
+        except Exception as e:                      # noqa: BLE001
+            log(f'spend report failed: {str(e)[:120]}')
         for name in [n for n, nd in self.nodes.items() if nd.state == 'stopped']:
             del self.nodes[name]
 
@@ -1578,6 +1618,44 @@ class Scheduler:
             eta = (pos / max(1, live)) * avg / 60
             r.log(f'waiting: queue position {pos} of {len(order)} ({"test" if r.prio == 0 else "final"}), '
                   f'{busy} node(s) rendering, {live} up or booting; ETA to start ~{eta:.0f} min')
+
+    def report_spend(self):
+        """While busy: an hourly per-pool node count + spend line on each pool's mission page, and a one-time alert
+        when a pool reaches 80% of its spend stop."""
+        now = time.time()
+        if now - self.last_spend_post < 300:
+            return
+        self.last_spend_post = now
+        lines = []
+        for pool in POOLS:
+            sp = pool.spend()
+            nodes = [nd for nd in self.nodes.values() if nd.pool is pool and nd.state in ('ready', 'booting')]
+            gpu = sum(1 for nd in nodes if nd.kind == 'gpu' and nd.state == 'ready')
+            cpu = sum(1 for nd in nodes if nd.kind == 'cpu' and nd.state == 'ready')
+            wait = sum(1 for nd in nodes if nd.queued)
+            lines.append(f'pool {pool.name}: {gpu} h100-1 + {cpu} cpu-8 up ({wait} waiting for capacity), spend '
+                         f'${sp if sp is not None else float("nan"):.2f} of its ${pool.spend_stop:.0f} stop')
+            if sp is not None and sp >= 0.8 * pool.spend_stop and not self.alerted.get(pool.name):
+                self.alerted[pool.name] = True
+                try:
+                    pool.api('POST', f'/missions/{pool.mission}/updates', dict(
+                        kind='alert', title=f'Farm pool {pool.name} at ${sp:.2f}: 80% of its ${pool.spend_stop:.0f} stop',
+                        body='New nodes stop in this pool at the threshold; running work finishes. Raise it or accept.'))
+                except ApiError:
+                    pass
+        if now - self.last_hourly < 3600 or not self.nodes:
+            return
+        self.last_hourly = now
+        ssh_up = sum(1 for nd in self.nodes.values() if nd.kind == 'ssh' and nd.state == 'ready')
+        queued = len(self.queue)
+        body = '\n'.join('- ' + ln for ln in lines) + f'\n- M4 (ssh): {"up" if ssh_up else "idle"}\n- {queued} unit(s) queued'
+        for pool in POOLS:
+            try:
+                pool.api('POST', f'/missions/{pool.mission}/updates', dict(
+                    title=f'Farm hourly: {sum(1 for nd in self.nodes.values() if nd.state == "ready")} nodes up, {queued} queued',
+                    body=body, kind='note'))
+            except ApiError:
+                pass
 
     def active(self):
         return any(r.state not in TERMINAL for r in self.reqs.values())
