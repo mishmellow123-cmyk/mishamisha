@@ -51,6 +51,12 @@ DESIGN (as rendered):
 # >>> EMBERS-C3 (27 Sep ~20:35Z, took over from EMBERS-C): E15 LETTERS TO FIRE, E5-C THE FORGING, E11 THE RACE, and the
 # canonical Ring (ringsolid.py) + gold flame (cflame.py). EMBERS-C2 owns E12 / E8-C / E13a (c2.py etc.). <<<
 ## STATE AT HANDOFF (EMBERS-C3, 27 Sep 21:15Z; the account idles ~21:25Z-23:30Z). READ THIS FIRST.
+**UPDATE 23:45Z (resumed on the new account):** forging 1040-1439 (relaunch) and the race 1440-1679 LANDED in full; the
+director reviews them in the cut. E15 letters test 2 read as letters but overhung the flame (black 'wire' on the halo);
+33f1ca2 moves the word inside the body (19 %, at 37 %), inks only where the flame is bright, adds a glowing charred rim,
+and brings the right margin's streams in 0.55 s earlier (the bird/T at 772-788 becomes one hooked stream down the
+trunk). TEST: 0927-194222-embersC3e15-35514 -> renders/_farmtest/embers_C3_e15_p3 (764 776 784 792 900 925 950).
+NEXT: review it; if good, copy stills to review/embers_C3_check/ and send JOB READY embers_C3_e15 (340 f).
 **UPDATE 21:15Z (FINAL for this session):** ashlar TEST 2 PASSED the gate (sheet: _local_logs/review/embers_C/
 SHEET_E5C_ashlar2_vs_before.jpg): the window-dot, seam and joint grids are gone; the forge bands and edges remain on dark
 mottled stone (banded stacks, not offices). RELAUNCHED by me 21:14Z (director pre-approved): request
