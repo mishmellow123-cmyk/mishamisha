@@ -99,21 +99,30 @@
 * Dependencies: edge.py (EMBERS-2) Crater/GoldRuns/PitEmbers/rim_r are used as-is; the crater's brink factor is 1 after
   2640, so in A16 it starts bright and calms (edge `calm`) by 4700.
 
-# >>> EMBERS-2 (A only; C is EMBERS-C's) -- STATE 27 Sep ~19:25Z: the EDGE/BRINK pass, look-dev on the FARM <<<
-* Scope: A's shots only (EMBERS-C owns c3.py, scene_c.py, tolkien.py). Tests: farm.py <job> --test K --frames ...
-  (renders/_farmtest/<job>/); the Mac lab (scratchpad e4/labsrv.py) is retired.
-* A7 THE EDGE (1840-2467, CUT at 1840 and at 2468 in render.SHOTS_V3): `_cam_edge` = one steady orbit, r 27, y -9
-  (5 above the rim), az 2.93 -> 3.25 rel ALPHA_C (the widest gap, forges 4|5 framing), hf 88, SHIFT LENS
-  (`lens_fall`, fall 0.3: towers stay upright; looking down splayed them outward). Opens level on the fire over the
-  intact ground and tilts down with the falling plates (1848-1904). BRINK part 1 (2400-2467): tilt up with the
-  updraft (fall -0.15, rise), back down to the rim as it gives way at 2440 (shake).
-* A8 crown hero (2468-2639): `_cam_crown`, close on tower 7's crown (hf 50) against the glare; it breaks on 2480,
-  tips into the pit; the camera tracks it (FallingCrown.centre), goes over the lip through the 6|7 gap at 2520 and
-  down into the glare; white on 2640 (post).
-* Crater look: terraced strata lit from below (`w_strata`, LAYER_H 3.2), broad molten veins, WALL_RAMP (dark lip,
-  blazing 6-10 below), pit haze (1400 soft blobs, AIR_E), few pit embers (fade above the lip). GoldRuns overlay
-  replaces the crust gold (A3Sched.gold_overlay). near_fade: embers/sparks within ~16 of the lens fade.
-* Fire: a3 fire_centre settles to y -7 over 1846-1930 (+5 at the brink).
+# >>> EMBERS-2 (A7 THE EDGE + A8 THE BRINK only: edge.py; A3/A4/A9/A10 = EMBERS-A2, A16/A17 = EMBERS-A3 (turn.py),
+# C = EMBERS-C/-C2) -- STATE 27 Sep ~20:35Z: look-dev on the farm; edge jobs still HELD until new check stills <<<
+* Tests: `farm.py cloud/jobs/embers_A3_edge.json --test K --frames ... --detach` -> renders/_farmtest/embers_A3_edge/.
+  PUSH FIRST (nodes render the branch tip). Shared files (render.py, a3.py, scene_b.py): stage only my hunks
+  (scratchpad e4/stage_hunk.py builds the blob from HEAD + one replacement) and commit the index.
+* Shots (render.SHOTS_V3 A3): (1840,2460) THE EDGE + brink part 1, (2460,2520) the crown, (2520,2640) over the rim.
+* THE EDGE `_cam_edge`: one steady orbit r 27, y -8 (6 above the rim), az 2.93->3.25 rel ALPHA_C (the widest gap,
+  forges 4|5 framing), hf 88, SHIFT LENS (`lens_fall` fall 0.22: towers stay upright). Opens level on the fire over
+  the intact ground, tilts down with the falling plates (1848-1904). 2400-2459: the frame lifts to a slightly
+  upward, level-ish view (ty = y+4.2, hf 96) keeping the far lip at the bottom for the collapse (2440, jolt 0.22).
+* A8 crown `_cam_crown` (2460-2519): long lens (hf 38->48) from outside at r 70->61, az a7+0.05, level with the
+  crown; CrownBreak: seam of fire 2464-2480, throat through the parapet, gold glint round the silhouette, the
+  updraft's glare behind (a glow at the crown's height), raw broken faces after the break. FallingCrown: turns about
+  its own centre, drifts 11 in over the pit, CROWN_G 0.042: passes the lip ~2530, swallowed by the lake ~2544.
+  The forge's height freezes at the break (edge._height). StripEmbers x0.12 in this shot.
+* Over the rim `_cam_fall` (2520-2639): at the lip in the 7|0 gap, pitch 34->64 deg (slow), then falls toward the
+  lake's heart (ease-in); post() whites out 2600-2640.
+* Crater: bowl DEPTH 30 / BOWL_P 2.3 / LAKE 4.5, lip at the forges' feet (`_set_rim`), terraced strata lit from
+  below (w_strata, LAYER_H 3.2), WALL_RAMP, veins, pit haze (AIR_E), few pit embers, Chunks (crumble from 2000,
+  collapse 2440), heat shimmer. GoldRuns overlay (A3Sched.gold_overlay): broad rivulets, bright heads + trails per
+  beat. near_fade on tower embers/sparks. Fire (a3): settles to y -9, scale 2.0 -> 1.4 in 1846-1910, swells at 2400.
+* Farm tests so far: ft1 (EDGE ok-ish, crown illegible: black on black), ft2 (EDGE reads: bowl, dark lower third,
+  fire over it; 2446 smeared by the old tilt/shake; crown still dark; rim POV whip-blurred) -> fixes in 57a0dec.
+* NB: my render.py commit 1c3b512 carried EMBERS-A2's uncommitted TEXT window for T2 (700-840): it is theirs.
 
 # >>> EMBERS-A2 (split off A, 27 Sep ~18:50Z): A3 GLYPHS, A4 THE POINT, A9 THE DEAD VALLEY, A10 THE EMBER,
 # A16 TOWERS IN THE LIGHT, A17 THE FIRE, SEEN (+ A16/A17 in the _alt_codedtowers ALT). EMBERS-2 keeps A7/A8 (edge.py).
