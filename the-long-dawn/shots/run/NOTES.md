@@ -1,3 +1,11 @@
+> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
+> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
+> - The fire-basket plinth shows triangle-fan seams.
+> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
+> - The dark speckles on B's snow read as dalmatian spots (climb 700).
+>
+> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
+
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
 ## RUN-A2 STATE AT PAUSE (27 Sep ~21:00Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
@@ -580,19 +588,23 @@ Heavy renders as cloud jobs of <= 45 min each; the director launches them when c
 ## RUN-B2 (split off RUN-B ~19:25Z: B5 THE REVEAL + B6-B12 THE VIGIL; owns vigil.py, reveal.py; RUN-B-3 keeps
 ## handback_b.py + dusk; bworld.py/bset.py shared, additive only)
 **>>> RUN-B2 STATE AT PAUSE (27 Sep ~21:00Z; usage gap to ~23:30Z) <<<**
-* CODE (all pushed, tip 67f3785): vigil.py, reveal.py, bset.py (see the live status below for what each does).
-* JOB READY SENT 20:55Z for vigil_b (1520-3839 -> renders/vigil_B, --nodes 3, ~30-45 min) and reveal_b
-  (1360-1519 -> renders/reveal_B, --nodes 2, ~30 min). Check stills: _local_logs/review/runB2_jobready.jpg (half
-  res; the local stills are renders/run_b_tests/b2_check_local, b2_check_local3). Launched? see the live status.
+* FINALS LAUNCHED by main 20:52Z: farm request 0927-165244-vigilb-83135 = vigil_b (4 units x 580 f, 1520-3839 ->
+  renders/vigil_B) + reveal_b (1360-1519 -> renders/reveal_B), --nodes 4; queued at ~20:55Z (ETA ~15 min to start).
+  Launch log: _local_logs/jobs/vigil_reveal_b_farm.log; progress: `python3 the-long-dawn/cloud/farm.py status`.
+* CODE (pushed; the units fetch the tip when they start): 38220e9 = the squall fix (fine faint flakes; the thick
+  dashes read as warp speed). SQUALL GUARD running (nohup _local_logs/runB2/squall_guard.sh, log
+  squall_guard.log): when units 0/1 finish it checks their 'done at' sha and, only if older than 38220e9,
+  re-renders frames 1960-2170 (storm() > 0) with --frames 1960-2170 --nodes 2 (the director pre-approved it).
+* Check stills: _local_logs/review/runB2_jobready.jpg; squall: renders/run_b_tests/b2_check_local4 (2060, 1990).
 * JOIN with RUN-B-3 (handback_b crane 3840): matched numerically (my 3839 vs their hbb_t15/f_03840: sky 0.5/255);
-  the two remaining diffs were fixed in 2f86c1a (cloud sea frozen at t=160; the fire's light settles to full).
-* NEXT on resume (~23:30Z): (1) if approved and not yet launched: from ~/mishamisha run `python3
-  the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/vigil_b.json --nodes 3` and `... reveal_b.json --nodes 2`
-  (check `farm.py status` first: a request may already be queued); (2) review the landed frames: contact sheets
-  every ~200 f, the join 3839 vs renders/handback_B 3840, the reveal pull 1372-1519; (3) nitpicks, cheap re-renders:
+  the last two diffs were fixed in 2f86c1a (cloud sea frozen at t=160; the fire's light settles to full).
+* NEXT on resume (~23:30Z): (1) read squall_guard.log and farm.py status; confirm vigil_B 2320 f + reveal_B 160 f
+  landed; (2) review: contact sheets every ~200 f, the join 3839 vs renders/handback_B 3840, the reveal pull
+  1372-1519, the squall 1960-2170; (3) nitpicks, cheap re-renders:
   - summit_snow on the vigil + hand-back together (RUN-B-3 agreed; re-render the vigil where the summit is lit);
   - the reveal's band still a little cloudy (more band stars / less fbm contrast), a dark hump at its left edge;
-  - the fog hours a flat veil (drifting wisps); the far answers' distance falloff (shared with handback_b.layers).
+  - the squall could be a touch more visible; the fog hours are a flat veil (drifting wisps);
+  - her shawl passes to the child in one frame (~3789): a short wrap gesture would read better.
 
 **STATE AT HANDOFF (RUN-B2, 27 Sep ~19:30Z):** vigil.py + reveal.py as committed in 118eafd (tested at quarter/half
 on b11; no renders in renders/vigil_B or reveal_B). Jobs vigil_b_a/b + reveal_b_a/b written, NOT READY. Open: reveal
