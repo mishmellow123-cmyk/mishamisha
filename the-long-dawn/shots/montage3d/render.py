@@ -88,6 +88,8 @@ def post_frame(shot, f, exr_dir, out_dir, scene, keep_exr):
         rec = json.load(fh)
     cam = FP.BCam(rec, W=hdr.shape[1], H=hdr.shape[0])
     hdr = np.ascontiguousarray(hdr)
+    if hasattr(shot, 'post_aux'):                       # extra passes (e.g. the Ring's mask AOV for a composite)
+        shot.post_aux(f, ch, out_dir, f - OUT_OFFSET)
     if hasattr(shot, 'post'):
         hdr = shot.post(f, hdr, depth, cam, scene)
     img = look.finish(hdr, **shot.FINISH)
@@ -154,7 +156,7 @@ def main():
     spr_dir = os.path.join(cache, 'sprites')
     all_frames = list(range(shot.START - 2, shot.END + 3))
     if getattr(shot, 'PREP_ONLY_FRAMES', False):          # a cloud job renders part of a shot: prep only its frames
-        all_frames = list(range(min(frames) - 2, max(frames) + 3))
+        all_frames = sorted({f + d for f in frames for d in (-1, 0, 1)})   # (sparse test lists stay cheap)
     specs = shot.flame_specs()
     for spec in specs:
         need = [f for f in all_frames if not os.path.exists(os.path.join(spr_dir, f'{spec.name}_{f:05d}.exr'))]

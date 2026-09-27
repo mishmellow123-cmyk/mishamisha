@@ -1,5 +1,61 @@
 # MONTAGE-3D — notes
 
+## >>> MONTAGE-MELT (C22 THE MELT, C 5360-5519; lane split off MONTAGE-3D-4 by the director, 27 Sep ~19:15Z) <<<
+* **STATE AT HANDOFF (19:30Z):** fresh lane, nothing rendered. MONTAGE-3D-4 keeps THE FIND, THE FIRE TEST, `ringc.py` and
+  `glove.py` (the shared Blender Ring scene): MONTAGE-MELT never edits them. From now on **the melt lives in `meltc.py`**
+  (new file). `ringc.py`'s `_melt` (RING_SHOT=melt) and `cloud/jobs/ringC_melt_1..6.json` are the pre-split draft:
+  SUPERSEDED, never launch them (MONTAGE-3D-4: please leave or delete them, your call).
+* **Delivery:** `renders/ring_C/f_05360..05519` (C numbering; EDIT's C22 reads `ring_C` first) + `renders/ring_C_mask/`
+  (8-bit grey coverage of the band/bead for ACCORD-3's AC3 composite; format agreed in `shots/accord/NOTES.md`).
+* **Engine:** Cycles on the farm's h100-1 nodes (`farm.py the-long-dawn/cloud/jobs/meltC.json --gpu`), ~9 s/frame.
+* **H5 calls (all mine):** darker, never overexposed; a crisp drop; letters that STAY letters until they go out; NO
+  doubled rim (glazed donut / dentures); no plughole (no ring seen flat from above with a dark hole).
+* **Sync (music/v3/barmap_C.json):** 5360 the white heart, her fingers forced open, the drop; 5420 (68 b4) the letters
+  flare once; 5433-5440 the 275 ms breath; 5440 (69 b1) the letters go out = the Ring loop cadences into D; 5519 full white.
+
+## >>> STATE (MONTAGE-3D-4, 27 Sep ~19:25Z): all four Ring shots BUILT in `ringc.py`; local half-res tests running <<<
+* **find_a (3000-3079):** the disc step fixed (level meltwater, C1 wall: no double polygon glint); the moon now LOW (15 deg,
+  0.34) so the pit's far rim shades the floor and strike 2's flash is the reveal; the flash is the strike itself just out of
+  frame above left (`flash_pos` (-0.20,0.05,0.25), 0.55, tau 1.5 f): it falls off across the frame (was a far lamp that
+  turned the whole frame beige). Finals: MT3D_NOISE 0.03 (identical to 0.015 by eye, 30 % faster).
+* **find_b (3080-3149):** REDESIGNED after test t_fb1 failed (a black fist filling the frame, the palm invisible, the vision
+  a red neon crescent). Now a macro (lens 100, 14 cm, f/25, ~50 mm frame) down her palm at 35 deg; the fist opens 3081-3090;
+  the band lies in the cup (placed by ray-casting the posed glove); the vision on the FAR INNER face (strip u 0.30-0.70,
+  flipped to read true): `_vision_strip` = five of C6's kiln-like forge-towers (ember rings, a glow at each crown, smoky
+  forge-light), bowing toward the middle 3094-3126 (two earlier versions failed: a cartoon skyline with grid windows =
+  clip-art; thin towers with line flames = a crowd of raised arms). A diffuse-only warm light spills the vision on the
+  leather; a moon at the lens's mirror angle lays a sheen on it. The fist closes 3136-3141.
+* **fire (3360-3599):** the roar (flames surge 3360-3380, sparks), her right fist brings the C-steel in from the left
+  (3388-3404): `_steel_path` = forged flat stock 2.6 mm deep, the back in her fist, the long upper arm with an up-turned lip,
+  the lower arm curled into a scroll; the band HANGS on the upper arm (its inner face on the arm's top edge), letters awake
+  3401-3419; the arm's end glows dull red (blackbody, 'heat') while the gold stays cool; 3480 it tips, the band slides to
+  the lip and her wrist catches it (3489); 3560 drawn out; her LEFT palm rises under the tip (3564-3578), the band drops in
+  (3580-3583) and the fist closes (3585-3594). Fire = the film's bonfire sprites (bgfire + lick + lick2) on additive cards,
+  embers + burning kindling below, three iron basket bars + rim behind.
+* **melt (5360-5519):** `band_mesh_open` (a seam opposite the pool + end caps) deformed per frame by `_melt_positions` into
+  SHAPE KEYS (one per rendered frame, keyed 0-1-0 linear -> deformation blur); the far side melts first and runs into one
+  bead while the near side, letters toward us, stands until 5432, then gives way (5432-5446): never a flat ring (no donut);
+  letters wake 5368, flare 5420, out 5440 (deep orange-red); the molten metal glows (gold shader `molten` = the keyed front);
+  crisp drop 5360-5364 (accelerating), one bounce + a coin's settle to 5378; the fire whitens from 5468, post() pushes to
+  near-white by 5519; `post_aux` writes the 'ringmask' AOV to `renders/ring_C_mask/` for ACCORD's AC3.
+* **Jobs written (not READY yet):** `cloud/jobs/ringC_{find_a_1-3,find_b_1-3,fire_1-8,melt_1-6}.json` (<= 30 frames, 128 spp,
+  noise 0.03, Cycles; farm.py picks GPU because of MT3D_BLENDER). render.py: `post_aux` hook; PREP_ONLY_FRAMES preps the
+  exact frames +-1 (sparse tests cheap).
+
+## >>> STATE AT HANDOFF (MONTAGE-3D-4 fresh lane, 27 Sep 18:45Z) <<<
+* **Taken over by MONTAGE-3D-4.** Brief: `_local_logs/handoff/brief3_MONTAGE3D2.md` + the director's task: C's three Ring
+  close-ups (gloved hands included), Cycles in the cloud, jobs of <= 30 frames, JOB READY with one full-res check still
+  per shot, delivery `renders/ring_C/f_%05d` in C numbering (EDIT's `ring()` reads it).
+* **On disk (checked 18:40Z; no MONTAGE-3D process running; only the stray Blender.app pid 77512):** `ringc.py` find_a
+  implemented (tests `t_fa7` sheet, `t_fa9`/`t_fa9b` full-res 3017); find_b / fire / melt = NotImplementedError.
+  `renders/ring_C/` empty. KARST/DESERT v3 finals in `renders/montage3d_v3/` (done). `renders/montage_v2` kept.
+* **Findings at takeover:** t_fa9 vs t_fa9b (MT3D_NOISE 0.015 vs 0.03) are identical to the eye (mean |diff| 0.5/255)
+  -> finals use 0.03. BUG: the ice disc sits 0.6 mm PROUD of the pit floor (`_snow_pit`: bottom = -dp + 0.0006 inside
+  R < r_disc, the wall = -dp at r_disc) -> a step whose two edges catch the moon as a double jagged polygon line.
+* **ACCORD (AC3) wants:** her fist opening in white-hot fire at 5360, the Ring falling out of her palm; (near) full
+  white by 5519; a band alpha/mask pass welcome (-> `renders/ring_C_mask/`).
+
+
 ## >>> STATE (MONTAGE-3D-3, paused ~16:36Z by the director; RESUME 20:00Z) <<<
 * **Built (committed):** `ringc.py` (the v3 Ring shots, RING_SHOT=find_a|find_b|fire|melt, Cycles, C numbering,
   `PREP_ONLY_FRAMES` so a cloud job preps only its own frames) + `glove.py` (her thin leather glove: a ~330-vert
