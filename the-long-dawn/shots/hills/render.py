@@ -37,6 +37,12 @@ def make_shot(name):
         import beacon                     # AND on the locked sheets' master timing (src 1200-1555, strike 1 = 1236)
         beacon.V3_REKEY = True
         beacon.use_master_timing()
+        beacon.apply_h5_calls()           # the director's H5 calls (07:10Z): wardrobe, sparks, flinch, lift, basket
+        return beacon.FirstBeacon()
+    if name == 'beacon_v3_pre_h5':        # the master-timing take as rendered 05:09Z (before the H5 calls)
+        import beacon
+        beacon.V3_REKEY = True
+        beacon.use_master_timing()
         return beacon.FirstBeacon()
     if name == 'beacon_v3_rekey':         # the re-key alone on the accepted v2b timing (renders/hills_v3, 00:42Z)
         import beacon

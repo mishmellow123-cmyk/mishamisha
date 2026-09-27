@@ -31,8 +31,8 @@ PEXP = 3.2
 
 # materials 0-10 are heroine_sdf's; the v3 props follow
 (M_SKIN, M_EYE, M_HAIR, M_COAT, M_SCARF, M_CLOTH, M_BOOT, M_STEEL, M_FLINT, M_NAIL, M_KNIT) = range(11)
-M_GOLD, M_CLAY, M_EMBER, M_SNOW, M_ICE, M_COAL, M_IRON, M_ASH, M_GLOVE = range(11, 20)
-NMAT3 = 20
+M_GOLD, M_CLAY, M_EMBER, M_SNOW, M_ICE, M_COAL, M_IRON, M_ASH, M_GLOVE, M_HOOD, M_RUST = range(11, 22)
+NMAT3 = 22
 NCOL = 24
 # material columns: 0-15 as heroine_sdf (albedo, rough, F0, wrap, sheen, trans, rim, amb, metal, tex type,
 # tex scale, tex amp, bump, spare); 16 emission type (1 = ember/coal cracks); 17 env reflection gain;
@@ -52,8 +52,16 @@ def material_table3():
     M[M_COAL, :15] = [0.030, 0.027, 0.025, 0.85, 0.030, 0.10, 0.0, 0.0, 0.4, 1.0, 0.0, 0, 0.0, 0.0, 0.25]
     M[M_IRON, :15] = [0.032, 0.029, 0.027, 0.42, 0.120, 0.0, 0.0, 0.0, 0.5, 0.6, 0.6, 1, 420.0, 0.35, 0.12]
     M[M_ASH, :15] = [0.21, 0.20, 0.19, 0.98, 0.020, 0.40, 0.25, 0.0, 0.5, 1.0, 0.0, 1, 300.0, 0.25, 0.20]
-    M[M_GLOVE, :15] = [0.105, 0.056, 0.036, 0.36, 0.040, 0.10, 0.30, 0.0, 0.7, 1.0, 0.0, 1, 260.0, 0.10, 0.05]
+    # thin leather gloves (H5 calls): smooth, a soft sheen, fine grain; no felt
+    M[M_GLOVE, :15] = [0.078, 0.044, 0.029, 0.40, 0.045, 0.08, 0.12, 0.0, 0.7, 1.0, 0.0, 1, 900.0, 0.05, 0.03]
+    # the hood / wool cowl: undyed dark wool, woven (tex 3)
+    M[M_HOOD, :15] = [0.046, 0.041, 0.037, 0.95, 0.020, 0.10, 1.0, 0.0, 1.2, 1.0, 0.0, 3, 520.0, 0.22, 0.10]
+    # the fire-basket's iron: rust and soot (tex 4), bars that have seen years of fire
+    M[M_RUST, :15] = [0.110, 0.052, 0.026, 0.72, 0.050, 0.05, 0.0, 0.0, 0.6, 0.8, 0.0, 4, 30.0, 0.9, 0.18]
+    # the red scarf as a woven wool shawl (H5 calls): the Elder's red, woven (tex 3) instead of knitted
+    M[M_SCARF, 11:14] = [3, 460.0, 0.20]
     M[M_EMBER, 16] = 1.0
+    M[M_RUST, 17] = 0.03
     M[M_COAL, 16] = 1.0
     M[M_GOLD, 17] = 1.0
     M[M_ICE, 17] = 1.0
@@ -377,7 +385,24 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
     ar = M[m, 0]
     ag = M[m, 1]
     ab = M[m, 2]
-    tm = hs.tex_mod(M, m, px, py, pz)
+    tt = int(M[m, 11])
+    if tt == 3:
+        # woven wool: a fine twill of warp and weft (albedo and bump), plus a slow mottle
+        sc = M[m, 12]
+        wv = math.sin((px + py * 0.7) * sc) * math.sin((pz - py * 0.7) * sc * 0.93)
+        tm = 1.0 + M[m, 13] * (0.6 * wv + 0.4 * perlin3(px * sc * 0.08, py * sc * 0.08, pz * sc * 0.08))
+    elif tt == 4:
+        # old iron: rust in patches, soot where the fire licks (higher up the basket), a little bare metal
+        sc = M[m, 12]
+        n1 = perlin3(px * sc, py * sc, pz * sc) + 0.5 * perlin3(px * sc * 3.1, py * sc * 3.1, pz * sc * 3.1)
+        soot = min(1.0, max(0.0, 0.35 + 0.9 * n1 + 3.0 * (py - XP[33]))) if XP[33] > 0.0 else 0.4
+        rust = min(1.0, max(0.0, 0.55 + 1.2 * perlin3(px * sc * 2.2 + 3.0, py * sc * 2.2, pz * sc * 2.2)))
+        ar = (0.16 * rust + 0.045 * (1 - rust)) * (1 - 0.85 * soot)
+        ag = (0.068 * rust + 0.040 * (1 - rust)) * (1 - 0.85 * soot)
+        ab = (0.030 * rust + 0.036 * (1 - rust)) * (1 - 0.85 * soot)
+        tm = 1.0
+    else:
+        tm = hs.tex_mod(M, m, px, py, pz)
     ar *= tm
     ag *= tm
     ab *= tm
@@ -876,7 +901,7 @@ def render(cam, B, H, lights, env, XP=None, ENV=None, INS=None, M=None, ss=3, pa
     return Y0, X0, rgb.astype(np.float32), a.astype(np.float32), d.astype(np.float32), gb
 
 
-def gloves(B, H=None, inflate=0.0009):
+def gloves(B, H=None, inflate=0.00035):
     """Her hands as leather gloves: the hand groups get M_GLOVE and grow by `inflate` (m), the nails go, and the
     cold flush on knuckles and fingertips is switched off (H[40] = 0)."""
     for g in B.groups:
@@ -1034,3 +1059,84 @@ def ring_xp_accord(XP, centre, rows, R, tb, hb, glow=0.0, engrave=1.0):
     XP[52] = stack.shape[0]
     XP[53] = 1.0
     return XP
+
+
+# ------------------------------------------------------------ H5 wardrobe ---
+
+def nrm(v):
+    v = np.asarray(v, np.float64)
+    return v / (np.linalg.norm(v) + 1e-12)
+
+
+def wardrobe_v3(B, F, J, sa, scarf_pts=None, t=0.0, tail_width=0.13):
+    """The director's H5 calls on her clothes: a hood / wool cowl instead of the knit beanie (and so no streaming
+    hair: the hood holds it), and the red scarf as a woven wool shawl (a broad wrap over the shoulders, a front end,
+    and the long tail in the wind). F = head frame, J = skeleton, sa = scarf anchor, scarf_pts = the tail chain."""
+    import heroine as hero
+    for g in B.groups:
+        if g['name'] in ('cap', 'cap_brim', 'hair', 'scarf'):
+            g['prims'] = []
+    s = F.s
+    Rh = np.stack([F.U, F.V, F.W])
+    # the hood: a wool shell round the head, open at the face, its cape falling onto the shoulders
+    B.group('hood', M_HOOD, disp=1, amp=0.0012, scale=40.0, band=0.006)
+    B.ell(F.p(-0.030, 0.030, 0.0), np.array([0.132, 0.138, 0.112]) * s, R=Rh)
+    B.cone(F.p(-0.075, -0.035, 0.0), J['C7'] - 0.075 * J['Ut'] - 0.030 * J['Vt'], 0.098 * s, 0.135, k=0.035)
+    B.ell(F.p(-0.024, 0.026, 0.0), np.array([0.116, 0.121, 0.097]) * s, R=Rh, op=1, k=0.004)
+    B.ell(F.p(0.108, -0.028, 0.0), np.array([0.090, 0.112, 0.080]) * s, R=Rh, op=1, k=0.012)
+    # the shawl: a broad woven wrap round the neck and over the shoulders, crossing at the front
+    B.group('scarf', M_SCARF, band=0.006)
+    dn = J['dn']
+    Ut, Wt = J['Ut'], J['Wt']
+    C7 = J['C7']
+    for (hgt, R_, a_, b_, tu, tw) in ((0.010, 0.098, 0.030, 0.040, -18.0, 4.0), (0.045, 0.084, 0.024, 0.030, 6.0, -3.0)):
+        ax = hero.rot_about(hero.rot_about(dn, Wt, tu), Ut, tw)
+        x0 = nrm(Ut - np.dot(Ut, ax) * ax)
+        B.torus(C7 + hgt * dn + 0.004 * Ut, np.stack([x0, ax, np.cross(x0, ax)]), R_, a_, b_, k=0.02)
+    # over the shoulders: a draped band from shoulder to shoulder across the upper back
+    for sg in (1.0, -1.0):
+        B.cone(C7 + 0.02 * dn - 0.02 * Ut, J['S' + ('n' if sg > 0 else 'f')] + 0.03 * J['Vt'] - 0.03 * Ut, 0.045, 0.040, k=0.03)
+    # the front end, broad and flat, hanging down the chest
+    fe0 = C7 + 0.004 * dn + 0.080 * Ut + 0.03 * Wt
+    Rf = np.stack([nrm(-J['Vt']), nrm(Wt), nrm(Ut)])
+    for k in range(4):
+        c = fe0 - J['Vt'] * (0.035 + 0.06 * k) + Ut * 0.01 * k
+        B.box(c, np.array([0.032, 0.075, 0.008]), R=Rf, rnd=0.007, k=0.012)
+    if scarf_pts is not None:
+        hero.scarf_tail(B, scarf_pts, t, z0=sa[2] - 0.02, width=tail_width, thick=0.0065)
+    return B
+
+
+def basket_v3(B, bk_bot, bk_top, rb, rt, half='all', seed=11):
+    """The fire-basket aged (H5 calls: it read as a dish rack): eleven bars at uneven spacing, three bent, their
+    thickness varying; rings a little out of true; a few bent finials; rust and soot (M_RUST). half: 'front'
+    (z < 0, the lens side), 'back' or 'all', so a 2-D woodpile can sit between the halves."""
+    rng = np.random.default_rng(seed)
+    B.group('basket_' + half, M_RUST, disp=1, amp=0.0008, scale=90.0, band=0.004)
+    n = 11
+    th = np.sort((np.arange(n) + rng.uniform(-0.28, 0.28, n)) * 2 * math.pi / n)
+    want = (lambda z: z < 0.02) if half == 'front' else ((lambda z: z >= -0.02) if half == 'back' else (lambda z: True))
+    for k, a in enumerate(th):
+        a2 = a + rng.normal(0.0, 0.04)
+        p0 = np.array([rb * math.cos(a), bk_bot, rb * math.sin(a)])
+        p1 = np.array([rt * math.cos(a2), bk_top + rng.uniform(-0.006, 0.006), rt * math.sin(a2)])
+        if not want(0.5 * (p0[2] + p1[2])):
+            continue
+        r = rng.uniform(0.0062, 0.0095)
+        if k in (2, 6, 9):                                  # bent bars: a kink outward low down
+            mid = p0 + (p1 - p0) * rng.uniform(0.35, 0.55)
+            out = np.array([math.cos(a), 0.0, math.sin(a)]) * rng.uniform(0.010, 0.022)
+            B.cone(p0, mid + out, r, r * 0.95, k=0.003)
+            B.cone(mid + out, p1, r * 0.95, r * 0.9, k=0.003)
+        else:
+            B.cone(p0, p1, r, r * 0.9, k=0.003)
+        if rng.random() < 0.6:                              # a finial on the rim, some bent
+            tip = p1 + np.array([0.0, rng.uniform(0.030, 0.050), 0.0]) + \
+                np.array([math.cos(a2), 0.0, math.sin(a2)]) * rng.uniform(-0.004, 0.012)
+            B.cone(p1, tip, r * 0.8, r * 0.45, k=0.003)
+    arc = {'front': (-math.pi / 2, math.pi / 2 + 0.05), 'back': (math.pi / 2, math.pi / 2 + 0.05), 'all': None}[half]
+    for (y, R_, a_, b_, tilt) in ((bk_bot, rb + 0.004, 0.009, 0.012, 0.020), (bk_bot + 0.14, 0.5 * (rb + rt), 0.0065, 0.008, -0.015),
+                                  (bk_top, rt + 0.004, 0.011, 0.013, 0.012)):
+        R = np.stack([[1.0, 0.0, 0.0], [0.0, math.cos(tilt), math.sin(tilt)], [0.0, -math.sin(tilt), math.cos(tilt)]])
+        B.torus(np.array([0.0, y, 0.0]), R, R_, a_, b_, k=0.004, arc=arc)
+    return B
