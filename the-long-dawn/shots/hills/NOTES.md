@@ -21,7 +21,54 @@ re-staged LOW on the NW flank (118 m out, 76 deg off her heading, looking up at 
 beacon + cairn on the skyline right; the moon 34 deg left of frame, so the spindrift plumes are backlit): the high
 wide made bworld's summit-rim relief read as a fence along the crest. Spindrift = puffs (veil) + grains (sparkle).
 
-# >>> HEROINE-L STATE (27 Sep ~19:40Z) <<<
+# >>> STATE AT HANDOFF (HEROINE-L, 27 Sep ~20:40Z; session ended by the director for context size) <<<
+**DONE: H1 THE ROAR, final for all three cuts.** The director approved job `h1_v3_roar2` (shot `beacon_v3_roar2`,
+`beacon.apply_roar2()`). 80/80 frames (src 1476-1555) landed IN PLACE in `renders/h1_v3h5` at ~20:23Z and match the
+approved check (mean |diff| 0.5/255); src 1200-1475 is unchanged. Her forearm is across her face by ROAR+1.5, her head
+turned away and her weight back. She is a dark shape against the flare (fully flagged from the fire's key and bounce,
+the exposure stopped down 34% and eased back by ROAR+40), and her far fist is empty. Sheet:
+`review/v3/heroine_L_roar2_check.jpg`.
+
+**B3 THE DEAD EMBER: APPROVED by the director (~20:35Z) and LAUNCHED on the farm** (`h5_deadember_b_{a,b,c}.json`,
+`--nodes 3`, into `renders/deadember_B` in locked B numbering 880-1119; request log
+`renders/heroine_tests/farm_deadember_final.log`).
+* NEXT for whoever picks this up: when the request is DONE, check that all 240 frames decode (1920x804), look at a
+  contact sheet (especially 920-944, where the hand comes back from the lid, and 1100-1119), then tell main. EDIT's B3
+  row reads `deadember_B` first. If frames are missing: `farm.py <the three jobs> --missing --nodes 3`.
+* Check stills: `renders/_farmtest/heroine_chk2/deadember`; sheet `review/v3/heroine_L_deadember_check.jpg`.
+* What changed (`heroine_v3.DeadEmber`, `CRAFTED = True`):
+  * A crafted clay pot: a carinated shoulder, a flat foot, a rolled lip, lugs and a knotted thong.
+  * The far glove wraps the pot's lens-side belly after the knock.
+  * The ground is graded down (M_SNOW x0.4), and the glove has a moon rim of 1.6.
+  * The match cut: the last red point lands at 1100 on (1654, 303), which is strike 1's spark in B4 under EDIT's
+    `B_H1_CROP` (0.17, 0.22, 0.26, 0.26). If EDIT re-frames that crop, move `DeadEmber.SPARK_PX` and re-render
+    1040-1119.
+
+**H1-C: RETIRED from this lane** (director, ~20:35Z). C14's hands (strikes, the find, the fist, the catch) become one
+hands-only BLENDER sequence built by the Blender department's successor to match C15; EDIT keeps its fallback
+(`h1_v3h5` with grade 'C').
+* My h1c code stays in `beacon.py` / `render.py` behind flags (`H1C`, `H1C_POV`), but it FAILED the gate in both
+  looks:
+  * Telephoto (`review/v3/heroine_L_h1c_tele_FAIL.jpg`): the take's sleeves read as giant mottled gourds.
+  * POV (`review/v3/heroine_L_h1c_pov_FAIL.jpg`): her own shoulders fill the lens as domes.
+* Do NOT launch `h1c_a/b`, and do not add EDIT's `T('h1', 0, 'v3')` line.
+* **Facts for the Blender successor:**
+  * The master timing in C frames: strike 1 at 2980, strike 2 at 3009 (in the find's flash), the fist at 3140,
+    strike 3 at 3178, the blow ~3204-3300, the catch at 3316, the roar at 3360 (= src +1744 before the find,
+    +1884 after).
+  * The flint is in her LEFT hand, which also takes the Ring. The C-shaped fire-steel is in her RIGHT hand.
+  * The steel: flat stock 7 x 2.4 mm, a C with scroll ends (`heroine.py` tools `both_c`, `heroine_v3.FireTest.steel`).
+  * Thin dark leather gloves (albedo ~0.03, 0.021, 0.016). Short orange sparks that fall and curve. The head never in
+    frame.
+
+**Handed on:** B2 THE CLIMB goes to HEROINE-B (their block above); the bar-63 hand-off to RUN-B-3; every Ring close-up
+to MONTAGE-3D-4.
+**Files:**
+* Code: `shots/hills/{beacon,heroine,heroine_v3,render,hsdf3}.py`.
+* Jobs: `cloud/jobs/{h1_v3_roar2,h5_deadember_b_a,h5_deadember_b_b,h5_deadember_b_c,h1c_a,h1c_b,heroine_chk,heroine_chk2}.json`.
+* Checks: `renders/_farmtest/heroine_chk{,2}/`. Farm logs: `renders/heroine_tests/farm_*.log`.
+
+# >>> HEROINE-L STATE (27 Sep ~19:40Z; SUPERSEDED by the handoff block above) <<<
 **Done (committed cd96111, pushed).** All new work is behind flags; `beacon_v3` (the landed take) is unchanged.
 * **THE ROAR.** The cloud lane's roar fix IS in `renders/h1_v3h5` 1474-1555. My read at 1:1: she is darker and the
   recoil reads from 1478 on, but 1477 is still an arm thrust at the fire, she is still lit a smooth brown (doll-ish at
