@@ -102,7 +102,7 @@ class A3Sched:
     def fire_centre(self, t):
         y = 0.0
         if t >= T_EDGE and t < T_LIGHT:
-            y = 2.0 * float(smoothstep(T_EDGE, T_BRINK, t)) + 8.0 * float(smoothstep(T_BRINK, T_WHITE, t))
+            y = 2.0 * float(smoothstep(T_EDGE, T_BRINK, t))      # it hangs over the pit; at the brink it swells
         return np.array([0.0, y, 0.0])
 
     def fire_scale(self, t):
@@ -331,9 +331,9 @@ CAM_A5 = [  # (frame, radius, azimuth offset from ALPHA_C, height, target y, hfo
     (1470, 50.0, -0.16, 5.0, 7.0, 66.0),        # the forges rise round it: down to the fire's own height
     (1540, 44.0, -0.05, 2.5, 7.0, 70.0),
     (1620, 40.0, 0.05, 3.0, 5.0, 68.0),         # drifting round the ring (T5)
-    (1680, 27.0, -0.08, 3.0, 4.5, 72.0),        # in through the gap among the forges, the fire mid-frame (T6a)
-    (1722, 20.0, -0.30, 2.5, 5.0, 76.0),        # inside the ring, level with the fire
-    (1759, 13.0, -0.44, 1.0, 24.0, 88.0),       # tilting up as the two giants grow either side of it, lit from below
+    (1680, 44.0, -0.04, -2.0, 9.0, 74.0),       # craning down outside the ring (T6a) ...
+    (1725, 45.0, -0.10, -9.0, 13.0, 80.0),      # ... low and wide, looking up: the giants will grow out of the top
+    (1759, 45.5, -0.12, -10.0, 14.0, 80.0),     # a giant each side of the fire, black against the lit smoke
 ]
 
 # bar 23 b1 (1760): a CUT to behind giant 2, which slips across the fire until it eclipses it: a black mass fringed
@@ -395,7 +395,7 @@ class TimelineA3(TL.Timeline):
         if t < T_EDGE:
             pos, tgt, hf = cam_a5a6(t)
             focus = float(np.linalg.norm(B.crown_centre(t) - pos))
-            ap = float(lerp(0.06, 0.03, smoothstep(T_TOWERS, T_TOWERS + 100, t)))   # the towers stay crisp
+            ap = float(lerp(0.06, 0.012, smoothstep(T_TOWERS, T_TOWERS + 100, t)))  # the towers stay crisp (no bokeh blobs)
             return Camera(pos, tgt, hfov=hf, focus=focus, aperture=ap)
         import edge
         return edge.camera(self, t)
@@ -427,8 +427,7 @@ class TimelineA3(TL.Timeline):
         self.tembers.emit(ctx)
         self.tsmoke.emit(ctx, lp, lc, lpw)
         self.sparks.emit(ctx)
-        if t >= T_BRINK and t < T_LIGHT:
-            self.vortex.emit(ctx)
+        # (H5) no vortex in A: THE BRINK is the fire's own updraft (edge.Updraft) fed by embers off the tower tops
         self.fire.emit(ctx)
         emit_haze(ctx)
         self.fsparks.emit(ctx)

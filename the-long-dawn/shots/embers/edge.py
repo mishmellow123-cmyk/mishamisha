@@ -85,7 +85,7 @@ def _shutter(self, i, t, pl):
     """window light: shuttered (dim) toward the fire through the race; at the turn the two giants open first, on the
     sides that face each other, then the smaller towers, one by one on the beat (A16)"""
     if t < A.T_LIGHT:
-        return 0.3
+        return 0.04 if i in A.GIANTS else 0.3        # the giants' shutters are shut through the race
     if i in A.GIANTS:
         t0 = A.T_OPEN_GIANTS
     elif i < 8:
@@ -310,26 +310,36 @@ def _orbit_az(t):
 
 def camera(tl, t):
     if t < A.T_WHITE:
+        # THE EDGE: out from behind the giant as the ground falls, then one steady orbit just outside the rim,
+        # contre-jour (the near towers black against the pit's glare), the crater's glow mid-frame, the lower third
+        # the dark near ground
         a = _orbit_az(t)
-        k_in = float(smootherstep(A.T_EDGE, A.T_EDGE + 90, t))      # out from behind the giant as the ground falls
-        r = lerp(31.0, ORB_R, k_in)
-        y = lerp(10.0, ORB_Y, k_in)
-        ty = lerp(3.0, -5.0, k_in)
-        hf = lerp(56.0, 48.0, k_in)
-        if t >= A.T_TIP - 30:
-            # over the rim: in, over the lip, pitching down after the falling crown toward the fire
-            u = float(ease_in(np.clip((t - (A.T_TIP - 30)) / (A.T_WHITE - (A.T_TIP - 30)), 0, 1), 1.7))
-            r = lerp(ORB_R, 2.0, u)
-            y = lerp(ORB_Y, -6.0, u ** 1.3)
-            ty = lerp(-5.0, -32.0, float(smoothstep(0.0, 0.5, u)))
-            hf = lerp(48.0, 74.0, u)
+        k_in = float(smootherstep(A.T_EDGE, A.T_EDGE + 90, t))
+        r = lerp(31.0, 60.0, k_in)
+        y = lerp(10.0, 36.0, k_in)
+        ty = lerp(3.0, -16.0, k_in)
+        hf = lerp(56.0, 60.0, k_in)
+        # THE BRINK: tilt up with the updraft as it roars out of the fire, then back down to the rim
+        up = float(smoothstep(A.T_BRINK, A.T_BRINK + 26, t)) * (1.0 - float(smoothstep(A.T_RIM_GIVES + 8, A.T_TIP - 24, t)))
+        ty = ty + 40.0 * up
+        hf = hf + 6.0 * up
+        y = y - 14.0 * up
+        r = r - 8.0 * float(smoothstep(A.T_BRINK, A.T_TIP, t))
         pos = np.array([r * math.cos(a), y, r * math.sin(a)])
         tgt = np.array([0.0, ty, 0.0])
+        if t >= A.T_TIP - 24:
+            # over the rim: in over the lip after the falling crown and on into the swollen fire, to white
+            u = float(ease_in(np.clip((t - (A.T_TIP - 24)) / (A.T_WHITE - (A.T_TIP - 24)), 0, 1), 1.6))
+            C = B.crown_centre(t) + np.array([0.0, 3.0, 0.0])
+            d = pos - C
+            pos = C + d * (1.0 - 0.93 * u) + np.array([0.0, -3.0 * math.sin(math.pi * u), 0.0])
+            tgt = lerp(tgt, C + np.array([0.0, -4.0, 0.0]), float(smoothstep(0.0, 0.35, u)))
+            hf = lerp(hf, 84.0, u)
         if A.T_RIM_GIVES <= t < A.T_WHITE:
             k = math.exp(-(t - A.T_RIM_GIVES) / 18.0) + 0.5 * float(smoothstep(A.T_TIP, A.T_WHITE, t))
             pos = pos + 0.35 * k * np.array([math.sin(3.1 * t), math.sin(4.3 * t), math.cos(2.3 * t)])
         focus = float(np.linalg.norm(B.crown_centre(t) - pos))
-        return Camera(pos, tgt, hfov=hf, focus=max(focus, 2.0), aperture=0.1)
+        return Camera(pos, tgt, hfov=hf, focus=max(focus, 2.0), aperture=0.05)
     if t < A.T_BLACK:
         # the dead valley: the promise's own view, drifting
         u = (t - A.T_WHITE) / (A.T_BLACK - A.T_WHITE)
@@ -386,6 +396,7 @@ def emit_before_towers(tl, ctx, lp, lc, lpw):
 def emit_after(tl, ctx, lp, lc, lpw):
     t = ctx.t
     if A.T_BRINK <= t < A.T_WHITE:
+        tl._get('updraft', Updraft).emit(ctx)
         tl._get('strip_embers', lambda: StripEmbers(tl)).emit(ctx)
     if t >= A.T_LIGHT:
         tl._get('ridge_fires', RidgeFires).emit(ctx)
@@ -407,7 +418,8 @@ def post(tl, ctx, hdr):
 
 
 class StripEmbers:
-    """THE BRINK: the vortex strips embers off the tower tops and spirals them in toward the fire"""
+    """THE BRINK (H5: fire physics, not a vortex): the fire's updraft strips embers off the tower tops, drags them in
+    toward the column and throws them up it"""
 
     def __init__(self, tl, seed=949):
         r = rng(seed)
@@ -427,24 +439,116 @@ class StripEmbers:
         top = np.array([tw.top(i, t) for i in range(8)])[self.i]
         a0 = np.arctan2(top[:, 2], top[:, 0])
         r0 = np.hypot(top[:, 0], top[:, 2])
-        C = B.crown_centre(t)
-        rr = r0 * (1 - u) ** 1.3 + 3.0 * u
-        a = a0 + self.sw * u ** 1.2
-        y = top[:, 1] + 2.0 + (C[1] + 12.0 - top[:, 1]) * u ** 1.6
-        P = np.stack([rr * np.cos(a), y, rr * np.sin(a)], 1) + self.jit * (0.6 + 1.6 * u)[:, None]
+        # in toward the column (a little twist, never a spiral), then up it, fast
+        k_in = smoothstep(0.0, 0.55, u)
+        rr = r0 + (Updraft.radius(top[:, 1] + 4.0) * (0.4 + 0.6 * np.abs(self.jit[:, 0]) / 2.5) - r0) * k_in
+        a = a0 + 0.25 * (self.sw / 2.8) * k_in
+        y = top[:, 1] + 4.0 * k_in + 46.0 * smoothstep(0.45, 1.0, u) ** 1.6
+        P = np.stack([rr * np.cos(a), y, rr * np.sin(a)], 1) + self.jit * (0.5 + 0.8 * u)[:, None]
         return P, u, age
 
     def emit(self, ctx):
         t = ctx.t
         if t < A.T_BRINK or t >= A.T_WHITE:
             return
-        g = float(smoothstep(A.T_BRINK, A.T_BRINK + 60, t))
+        g = float(smoothstep(A.T_BRINK, A.T_BRINK + 24, t)) * Updraft.strength(t) ** 0.5
         P0, _, _ = self.pts(ctx.t0)
         P1, u, age = self.pts(ctx.t1)
         ok = age > 0.6
-        e = self.E * g * (1 - u) ** 0.8 * smoothstep(0.0, 0.08, u) * 3.0 * ok
-        col = look.blackbody(np.clip(0.5 + 0.3 * u, 0, 0.9))
+        e = self.E * g * (1 - u) ** 0.6 * smoothstep(0.0, 0.08, u) * 4.0 * ok
+        col = look.blackbody(np.clip(0.5 + 0.25 * smoothstep(0.45, 0.8, u) - 0.15 * smoothstep(0.85, 1.0, u), 0, 0.9))
         ctx.fr.splat(P0[ok], P1[ok], 0.03, e[ok], col[ok], ctx.cam0, ctx.cam1, zref=30.0)
+
+
+class Updraft:
+    """THE BRINK (H5): the fire swells and roars up into ONE column of flame and embers above it: a real fire's
+    updraft, fast, turbulent, cooling from white-gold at its root to red embers high up. It roars for ~2 s
+    (2410-2465), then subsides into the swollen fire as the rim gives way and the crown falls."""
+    T0, T1 = A.T_BRINK, A.T_BRINK + 18          # it builds
+    T2, T3 = A.T_BRINK + 70, A.T_TIP + 30       # it subsides (a weaker roar stays under the fall)
+
+    @staticmethod
+    def strength(t):
+        up = float(smoothstep(Updraft.T0, Updraft.T1, t))
+        down = 1.0 - 0.7 * float(smoothstep(Updraft.T2, Updraft.T3, t))
+        return up * down * (1.0 - float(smoothstep(A.T_WHITE - 30, A.T_WHITE - 4, t)))
+
+    @staticmethod
+    def radius(y):
+        """the column's radius at height y (world): a pillar, widening only a little as it climbs"""
+        yb = 6.0
+        return 2.8 + 0.07 * np.maximum(y - yb, 0.0)
+
+    def __init__(self, seed=959):
+        r = rng(seed)
+        n = 90000
+        self.n = n
+        self.ph = r.random(n)
+        self.v = r.uniform(0.9, 1.6, n)                     # units / frame: it roars
+        self.a = r.uniform(0, 2 * np.pi, n)
+        self.rr = r.random(n) ** 0.7                        # a dense core, ragged edges
+        self.E = r.lognormal(0, 0.45, n)
+        self.rw = r.uniform(0.1, 0.24, n)                   # soft: a body of flame, not dots
+        m = 14000                                           # embers riding it, faster, sharp
+        self.m = m
+        self.e_ph = r.random(m)
+        self.e_v = r.uniform(1.6, 3.0, m)
+        self.e_a = r.uniform(0, 2 * np.pi, m)
+        self.e_rr = r.random(m) ** 0.5
+        self.e_E = r.lognormal(0, 0.8, m)
+        self.e_fl = r.uniform(0, 2 * np.pi, m)
+        self.H = 80.0                                       # the column's reach above its root
+
+    def _col(self, t, ph, v, a0, rr):
+        C = B.crown_centre(t)
+        yb = C[1] + 1.2 * SCHED_fire(t)
+        s = (ph + v * (t - A.T_BRINK) / self.H) % 1.0
+        y = yb + s * self.H
+        R = Updraft.radius(y) * (1.0 + 0.5 * smoothstep(0.0, 0.08, s) * (1.0 - smoothstep(0.08, 0.25, s)))
+        a = a0 + 0.012 * (y - yb)
+        P = np.stack([C[0] + R * rr * np.cos(a), y, C[2] + R * rr * np.sin(a)], 1)
+        # billows: big turbulent eddies carried up with the flow (tongues at the edges, never a smooth cone)
+        w = vnoise(P * np.array([0.11, 0.05, 0.11]) + np.array([0.0, -0.05 * t, 0.0]), 1.0, (3.1, 0.7, 5.2), 2)
+        amp = (0.8 + 0.1 * (y - yb)) * (0.6 + 0.7 * rr)
+        P = P + w * amp[:, None] * np.array([1.0, 0.25, 1.0])
+        return P, s, y - yb
+
+    def emit(self, ctx):
+        t = ctx.t
+        g = Updraft.strength(t)
+        if g <= 0.001:
+            return
+        red = B.redness(t)
+        # the flame body
+        P0, s0, _ = self._col(ctx.t0, self.ph, self.v, self.a, self.rr)
+        P1, s, h = self._col(ctx.t1, self.ph, self.v, self.a, self.rr)
+        ok = s >= s0
+        puff = 0.55 + 0.45 * np.sin(0.21 * h - 0.33 * t + 2.0 * self.a) ** 2      # puffs travelling up it
+        hot = np.exp(-h / 26.0)
+        e = self.E * g * puff * (0.25 + 2.2 * hot) * smoothstep(0.0, 0.03, s) * (1.0 - smoothstep(0.6, 1.0, s)) * ok
+        e = e * (1.0 - 0.5 * self.rr) * 2.4
+        T = np.clip(0.47 + 0.3 * hot + 0.06 * (1 - self.rr), 0.0, 0.9)
+        col = look.blackbody(T)
+        col = col * (1 - 0.4 * red * (1 - hot))[:, None] + B.C_RED * (0.4 * red * (1 - hot))[:, None]
+        m = e > 1e-4
+        ctx.fr.splat(P0[m], P1[m], self.rw[m], e[m], col[m], ctx.cam0, ctx.cam1, zref=30.0)
+        # the embers torn up with it
+        Q0, q0, _ = self._col(ctx.t0, self.e_ph, self.e_v, self.e_a, self.e_rr)
+        Q1, q, hq = self._col(ctx.t1, self.e_ph, self.e_v, self.e_a, self.e_rr)
+        ok = q >= q0
+        fl = 0.6 + 0.4 * np.sin(0.9 * t + self.e_fl)
+        e = self.e_E * g * fl * (1.0 - q) ** 0.7 * smoothstep(0.0, 0.04, q) * ok * 3.0
+        col = look.blackbody(np.clip(0.52 + 0.2 * np.exp(-hq / 30.0), 0, 0.85))
+        m = e > 1e-4
+        ctx.fr.splat(Q0[m], Q1[m], 0.03, e[m], col[m], ctx.cam0, ctx.cam1, zref=30.0)
+        # its glow: the air round the column's root lit white-gold
+        C = B.crown_centre(t) + np.array([0.0, 10.0, 0.0])
+        ctx.fr.splat(C[None, :], C[None, :], np.array([11.0]), np.array([1.6e5 * g]), look.blackbody(0.78)[None, :],
+                     ctx.cam0, ctx.cam1, profile=1, rmax=1400.0)
+
+
+def SCHED_fire(t):
+    return A.SCHED.fire_scale(t)
 
 
 class RidgeFires:

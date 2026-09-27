@@ -1198,6 +1198,15 @@ class Towers:
                     fside = smoothstep(-0.3, 0.35, (N * Lf).sum(1) / np.maximum(np.linalg.norm(Lf, axis=1), 1e-6))
                     shim = 1.0 + 0.24 * fside * np.sin(0.9 * yl - 0.33 * t + 6.0 * nz + 3.0 * rnd)
                     fside = fside * (1.0 + FIRE_SIDE_BOOST * fside) * shim
+                    # the fire's light dies out above the ring (director: the giants' faces toward each other are
+                    # black, shutters shut: each only a shape lost in the other's glare); soot blackens every top
+                    yw = P[:, 1]
+                    if i in self.giants:
+                        fside = fside * (1.0 - smoothstep(6.0, 24.0, yw))
+                    else:
+                        fside = fside * (1.0 - 0.8 * smoothstep(16.0, 34.0, yw))
+                    soot = smoothstep(0.62, 0.97, frac) if kind in (0, 4, 1) else 0.0
+                    fside = fside * (1.0 - 0.6 * soot)
                 else:
                     fside = 1.0
                 if kind == 0:                                        # the crust: a glowing coal, ash patches, rims
@@ -1205,9 +1214,13 @@ class Towers:
                     opening = np.where(key >= 0, 0.12, 1.0)
                     ash = smoothstep(0.2, 0.85, 0.35 * nz + 0.65 * nzv)  # glowing coal vs cooler ash, streaked upward
                     grain = 0.85 + 0.3 * rnd
-                    if FS:
-                        ash = 0.35 + 0.3 * ash       # v3 A: an even coal, not a leopard print (the joints carry detail)
                     L = 0.09 * (0.3 + 1.4 * ash) * (0.8 + 0.4 * nz2) * grain * fl * opening * (1 + 3.0 * base) * heat
+                    if FS:
+                        # director: CHARCOAL. A dark crust with fine live ember points; the seams, joints and edges
+                        # carry the fire (no blotches at any scale)
+                        # (the crust points are big surface discs: any per-point glow reads as spots, so the crust
+                        # stays an even charcoal with a fine grain; the fire lives in the joints, seams and edges)
+                        L = 0.03 * (0.8 + 0.4 * rnd) * fl * opening * (1 + 2.0 * base) * heat
                     rim = np.clip(1.0 - ndv / 0.35, 0, 1) ** 2 * (ndv > 0)
                     rimL = 0.35 * rim * (0.6 + 0.6 * nz2) * fl * heat
                     L = ((L + rimL) * vgr + 2.2 * front) * fside + (0.8 if FS else 0.25) * rimL * vgr * (1 - fside)   # a glare fringe
@@ -1220,7 +1233,7 @@ class Towers:
                     lam = np.clip((N * Lv).sum(1) / np.maximum(dL, 1e-6), 0, 1)
                     lit = 0.006 * light_pow * lam ** 1.3 / (1 + (dL / 16.0) ** 2) * (1 - 0.4 * red) * opening
                     if FS:
-                        lit = lit * FIRE_SIDE_LIT * (0.8 + 0.35 * nz2) * (0.7 + 0.6 * rnd)    # fine crust detail
+                        lit = lit * FIRE_SIDE_LIT * 0.5 * (0.75 + 0.5 * rnd)    # charcoal: a dark sheen, fine grain
                     lit = lit * np.clip(hot / 0.3, 0, 1) ** 2          # roofs (hot 0.2) stay dark tile
                     face = smoothstep(-0.02, 0.1, ndv) * keep
                     colE = (col * L[:, None] + lcol[None, :] * lit[:, None]) * face[:, None]
@@ -1238,6 +1251,9 @@ class Towers:
                 if kind == 4:                                        # fire in the joints (masonry / mullions / fissures)
                     # soft crevices of fire: a hot core line fading into the stone; slow patches of heat
                     patch = 0.2 + 1.3 * smoothstep(0.25, 0.9, 0.4 * nz + 0.6 * nzv) ** 1.5
+                    if FS:
+                        patch = 0.55 + 0.25 * patch      # fine lines of fire, not patches (director: charcoal)
+                        hot = 0.55 + 0.45 * hot
                     L = (0.6 * far * (0.2 + 0.8 * hot ** 2) * patch * (0.8 + 0.4 * nz2) * fl * (1 + 3.0 * base) * heat
                          * vgr + 2.0 * front) * fside + 0.9 * crown
                     T = 0.34 + 0.16 * nz + 0.1 * hot + 0.22 * base
@@ -1634,7 +1650,7 @@ class Smoke:
         lit = light_pow * 5.0 / (1 + (d / 3.2) ** 2) ** 2
         if SCHED is not None and hasattr(SCHED, 'haze'):
             # the fire lights the whole arena's air, falling off slowly: warm smoke the towers stand out against
-            lit = lit + light_pow * 0.04 * SCHED.haze(t) / (1 + (d / 17.0) ** 2)
+            lit = lit + light_pow * 0.07 * SCHED.haze(t) / (1 + (d / 20.0) ** 2) * (1.0 + 2.5 * smoothstep(8.0, 38.0, p[:, 1]))
         red = redness(t)
         amb = 1.2 * red * np.exp(-np.maximum(p[:, 1] - GROUND, 0) / 25.0)
         warm = light_col * 0.4 + look.blackbody(0.6) * 0.6

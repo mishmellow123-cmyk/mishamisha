@@ -947,10 +947,12 @@ def forge_kiln(seed=1):
             edge_hot=0.65)
     for y in np.arange(ys - 3.0, YBOT, -5.5):
         b.ngon_ring(float(apo(np.array([y]))[0]) + 0.04, float(y), 4, rot=np.pi / 4, hot=0.7, width=0.09)
-    af = 1.25
+    af = 1.7
     _step_square(b, af, 2.05, ys, rot=np.pi / 4)
     b.prism(lambda y: np.full_like(y, af), ys, top - 0.6, 4, rot=np.pi / 4,
-            win=dict(fh=4.6, bw=1.0, ww=0.2, wh=1.4, off=1.0, p=0.2), edge_hot=0.75)
+            win=dict(fh=4.6, bw=1.0, ww=0.2, wh=1.4, off=1.0, p=0.12), edge_hot=0.75)
+    for y in np.arange(top - 2.6, ys, -2.3):
+        b.ngon_ring(af + 0.05, float(y), 4, rot=np.pi / 4, hot=0.8, width=0.1)
     _crenel_square(b, af, top - 0.6, 2, rot=np.pi / 4)
     _mouth(b, af * 0.8, top - 0.65, square=True)
     return b.done()
@@ -974,6 +976,8 @@ def forge_bellows(seed=2):
     for y in np.arange(band0 + pitch * 0.5, band1, pitch):
         b.ngon_ring(2.35 + 0.32 + 0.02, y, 4, rot=np.pi / 4, hot=0.85, width=0.07)
     b.ngon_ring(2.4, band0, 4, rot=np.pi / 4, hot=0.7)
+    for y in np.arange(band0 - 3.0, YBOT, -4.2):
+        b.ngon_ring(float(apo(np.array([y]))[0]) + 0.05, float(y), 4, rot=np.pi / 4, hot=0.75, width=0.1)
     af = 1.15
     _step_square(b, af, 2.37, roof, rot=np.pi / 4)
     _crenel_square(b, 2.37, roof, 3, h=0.6, rot=np.pi / 4, hot=0.8)
@@ -995,12 +999,11 @@ def forge_twin(seed=3):
     b.ngon_ring(2.14, blk, 4, hot=0.9)
     b.ngon_slab(2.14, 0.0, blk, 4)
     for zc, dt in ((-1.05, 0.0), (1.08, -1.6)):
-        af = 0.72
-        _shifted(b, lambda dt=dt: (b.prism(lambda y: np.full_like(y, af), blk - 0.2, top - 0.6 + dt, 4, edge_hot=0.8),
-                                   [b.ngon_ring(af + 0.04, float(y), 4, hot=0.8, width=0.07)
-                                    for y in np.arange(top - 2.5 + dt, blk, -2.1)],
-                                   _crenel_square(b, af, top - 0.6 + dt, 2),
-                                   _mouth(b, af * 0.75, top - 0.65 + dt, square=True)), (0.0, 0.0, zc))
+        rf_ = lambda y: np.full_like(y, 0.78)
+        _shifted(b, lambda dt=dt: (b.revolve(rf_, blk - 0.2, top - 0.6 + dt, dc=110),
+                                   _hoops(b, rf_, np.arange(top - 2.0 + dt, blk, -1.5), 0.08, 0.85),
+                                   _crenel_round(b, 0.78, top - 0.6 + dt, 6),
+                                   _mouth(b, 0.62, top - 0.65 + dt)), (0.0, 0.0, zc))
     for yb in (blk + 2.8, blk + 5.6):
         b.line([0.0, yb, -0.4], [0.0, yb, 0.4], EDGE, None, 0.1, 0.85)
     return b.done()
@@ -1048,6 +1051,8 @@ def forge_buttressed(seed=5):
                 _shifted(b, lambda w=w, ya=ya, yb_=yb_: b.prism(lambda y: np.full_like(y, w), ya, yb_, 4, rot=0.0,
                                                                edge_hot=0.5), (sx * c, 0.0, sz * c))
                 _shifted(b, lambda w=w, yb_=yb_: b.ngon_slab(w, 0.0, yb_, 4), (sx * c, 0.0, sz * c))
+    for y in np.arange(y1 - 2.5, YBOT, -3.8):
+        b.ngon_ring(float(apo(np.array([y]))[0]) + 0.05, float(y), 4, hot=0.75, width=0.09)
     a1 = float(apo(np.array([y1]))[0])
     _crenel_square(b, a1, y1, 2)
     _mouth(b, a1 * 0.85, y1 - 0.05, square=True)
@@ -1075,17 +1080,13 @@ def forge_crucible(seed=6):
         yy = ym + b.r.uniform(-0.55, 0.55, m) * (1.0 - 0.4 * b.r.random(m))
         b.add(WIN, np.stack([rr * np.cos(aa), yy, rr * np.sin(aa)], 1),
               _unit(np.stack([np.cos(aa), np.zeros(m), np.sin(aa)], 1)), 0.3 * 1.1 / m, int(key0[k]), 0.95)
-    a2 = 1.65
+    a2 = 1.8
     _step_square(b, a2, 2.3, s2, rot=np.pi / 8, nsides=8)
-    b.prism(lambda y: np.full_like(y, a2), s2, s1, 8, rot=np.pi / 8, win=dict(fh=4.0, bw=1.0, ww=0.2, wh=1.2,
-                                                                             off=1.0, p=0.25), edge_hot=0.7)
-    af = 1.05
-    _step_square(b, af * 1.08, a2, s1, rot=np.pi / 8, nsides=8)
-    b.prism(lambda y: np.full_like(y, af), s1, top - 0.6, 4, rot=0.0, edge_hot=0.8)
-    for y in np.arange(top - 2.4, s1, -2.0):
-        b.ngon_ring(af + 0.04, float(y), 4, hot=0.8, width=0.07)
-    _crenel_square(b, af, top - 0.6, 2)
-    _mouth(b, af * 0.8, top - 0.65, square=True)
+    b.prism(lambda y: np.full_like(y, a2), s2, top - 0.6, 8, rot=np.pi / 8, edge_hot=0.75)
+    for y in np.arange(top - 2.4, s2, -2.2):
+        b.ngon_ring(a2 + 0.05, float(y), 8, rot=np.pi / 8, hot=0.8, width=0.1)
+    _crenel_square(b, a2 * 0.98, top - 0.6, 2, rot=np.pi / 8)
+    _mouth(b, a2 * 0.8, top - 0.65, square=True)
     return b.done()
 
 
