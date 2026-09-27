@@ -49,7 +49,6 @@ import shade3 as SH  # noqa: E402
 import flame3 as FL3  # noqa: E402
 import nbcore  # noqa: E402
 import fire as FI  # noqa: E402
-import plain3 as PL  # noqa: E402
 
 OUT = os.path.join(SC.ROOT, 'renders', 'accord_C')   # EDIT-v3 convention: C numbering (4480-5599; bar 70 = 5520-5599)
 INSCRIPTION = os.path.join(SC.ROOT, 'assets', 'ring', 'inscription_outer.png')
@@ -226,25 +225,10 @@ def occluders(t, Fa, hands):
     return np.array(oc, np.float64)
 
 
-def crowd_on(t, cam):
-    """The rivers and the crowd: P1 while the crowd can be in frame, and bar 70's crane (the roads out)."""
-    p = SC.plate(t)
-    return (p == 1 and t < 4800) or (p == 3 and t >= 5584)
-
-
 def build(t, cam=None, scale=1.0):
     R = resources()
     Fa = SC.figures(t)
     FLm, Lt = flames_and_lights(t, Fa)
-    ncouncil = Fa.shape[0]
-    crowd = None
-    if cam is not None and crowd_on(t, cam):
-        rows, FLc, sel = PL.fig_rows(t, cam, scale)
-        if rows.shape[0]:
-            Fa = np.concatenate([Fa, rows], 0)
-            FLm = np.concatenate([FLm, FLc], 0)
-        igc, igf = PL.irradiance(t)
-        crowd = dict(sel=sel, igc=igc, igf=igf)
     fs, HP, CF = hearth_state(t)
     Lt += hearth_lights(t, fs)
     hands = []
@@ -280,9 +264,8 @@ def build(t, cam=None, scale=1.0):
     PR[SH.P_EMBW] = fs['white']
     PR[SH.P_ASHG] = fs['spread']
     PR[SH.P_CROWD] = 0.9 * (1.0 - 0.8 * fs['white'])
-    PR[SH.P_WI] = 1.0 if crowd is not None else 0.0
-    PR[SH.P_IGC_X0], PR[SH.P_IGC_CELL], PR[SH.P_IGF_X0], PR[SH.P_IGF_CELL] = -PL.IGC_R, PL.IGC_CELL, -PL.IGF_R, PL.IGF_CELL
-    PR[SH.P_NCOUNCIL] = ncouncil
+    PR[SH.P_WI] = 0.0
+    PR[SH.P_IGC_X0], PR[SH.P_IGC_CELL], PR[SH.P_IGF_X0], PR[SH.P_IGF_CELL] = -500.0, 250.0, -40.0, 20.0
     PR[SH.P_SHEEN] = 2.0
     PR[SH.P_FIGRIM] = 0.35 * fs['on'] * min(fs['H'], 1.0) * (1.0 + 2.0 * fs['white'])
     PR[SH.P_FIRE_Z] = 0.35 + 0.4 * fs['H']
@@ -292,8 +275,7 @@ def build(t, cam=None, scale=1.0):
     PR[SH.P_NOC] = OC.shape[0]
     PR[SH.P_FIRE_I] = 0.35 * fs['on'] * min(fs['H'], 1.0) * (1.0 + 3.0 * fs['white'])
     PR[SH.P_COAL] = fs.get('p3', 0.0)
-    return dict(Fa=Fa, FL=FLm, HP=HP, CF=CF, fs=fs, LT=LT, OC=OC, PR=PR, HDs=HDs, Js=Js, HBB=HBB, RP=RP,
-                crowd=crowd)
+    return dict(Fa=Fa, FL=FLm, HP=HP, CF=CF, fs=fs, LT=LT, OC=OC, PR=PR, HDs=HDs, Js=Js, HBB=HBB, RP=RP)
 
 
 # =============================================================== render ===
@@ -434,11 +416,8 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
     depth = np.zeros((Hd, Wd), np.float32)
     oid = np.zeros((Hd, Wd), np.int32)
     dummy = np.zeros((1, 1), np.bool_)
-    cw = st['crowd']
-    igc = cw['igc'] if cw is not None else igz
-    igf = cw['igf'] if cw is not None else igz
     args = (st['PR'], st['LT'], st['OC'], Fa, Fa.shape[0], S, S.shape[0], KB, LG, LG.shape[0], CH, CH.shape[0],
-            st['HDs'], st['Js'], st['HBB'], st['RP'], stex, ssz, igc, igf)
+            st['HDs'], st['Js'], st['HBB'], st['RP'], stex, ssz, igz, igz)
     SH.render_surfaces(Wd, Hd, cam, *args, rgb, depth, oid, False, dummy, 1)
     if aa:
         m = edge_mask(oid, rgb)
@@ -451,17 +430,6 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
                           int(28 + 14 * min(scale, 1.0)), st['CF'], st['CF'].shape[0])
         rgb = rgb * 1.0
         rgb += cv2.GaussianBlur(fb, (0, 0), 0.7 * max(scale, 0.5))
-    if cw is not None:
-        h = cam[2]
-        trail = 7.0 * (1.0 - smooth(ramp(t, 4560, 4640))) + 1.0
-        Q, Sk, Hb = PL.sprites(t, cam, cw['sel'], trail)
-        if Q.shape[0]:
-            FI.dark_sprites(rgb, depth, cam, Q, Q.shape[0])
-            FI.splat_streaks(rgb, depth, cam, Sk, Sk.shape[0], 0.0, 10.0, NOBAND, 1.0)
-            FI.splat_blobs(rgb, depth, cam, Hb, Hb.shape[0], 0.3, NOBAND)
-        if h > 40.0:
-            FI.mist_layers(rgb, cam, PL.MIST, PL.MIST.shape[0], float(t) - 4480.0 + 1912.0, cw['igc'], -PL.IGC_R,
-                           PL.IGC_CELL, 0.25)
     rgb = heat_haze(rgb, t, cam, scale, fs, window)
     # the firelight in the thin smoke haze over the council
     LTa = st['LT']

@@ -341,8 +341,27 @@ def ring_rest():
     return np.array([x, y, z])
 
 
+_CROWD = {}
+
+
+def _crowd3():
+    """ACCORD-CROWD's module (shots/accord/crowd/crowd3.py), or None if it is missing or broken."""
+    if 'm' not in _CROWD:
+        try:
+            d = os.path.join(HERE, 'crowd')
+            if d not in sys.path:
+                sys.path.insert(0, d)
+            import crowd3
+            _CROWD['m'] = crowd3
+        except Exception as e:                    # the council renders without the crowd lane
+            print('scene3: crowd3 unavailable:', repr(e)[:200], flush=True)
+            _CROWD['m'] = None
+    return _CROWD['m']
+
+
 def her_state(t):
-    """Her walk in, kneel, the reach that sets the Ring down (P1); kneeling at the hearth after (P2, P3)."""
+    """Her walk in (ACCORD-CROWD's her_walkin: along the Road through the crowd to her place by ~4704), then
+    the walk to the hearth, the kneel, the reach that sets the Ring down (P1); kneeling at the hearth after."""
     out = np.array([math.cos(PSI_HER), math.sin(PSI_HER)])
     u_walk = smoother(ramp(t, 4800, 4830))
     r = FIG_R[HER] + (HER_KNEEL_R - FIG_R[HER]) * u_walk
@@ -350,6 +369,13 @@ def her_state(t):
     ang = PSI_HER + math.pi
     walk = math.sin(math.pi * u_walk) if 0 < u_walk < 1 else 0.0
     phase = (FIG_R[HER] - r) / 0.30 * math.pi
+    if t < 4760:
+        cm = _crowd3()
+        wi = cm.her_walkin(t) if cm is not None else None
+        if wi is not None:
+            return dict(pos=np.asarray(wi['pos'], np.float64), ang=float(wi['ang']), kneel=0.0, lean=0.0,
+                        walk=float(wi['walk']), phase=float(wi['phase']), arm2=0.0, hand2=None, fdir=None,
+                        grip2=0.6, reach=0.0)
     kneel = smoother(ramp(t, 4826, 4840)) * 0.95
     lean = math.radians(12.0) * kneel
     arm2 = 0.0

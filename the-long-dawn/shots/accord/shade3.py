@@ -38,9 +38,7 @@ P_NOC = 27
 P_FIRE_I = 28                  # the hearth fire's strength (for the Ring's environment)
 P_ASHG = 29                    # ash glow radius progress
 P_COAL = 30                    # bar 70: the bed of coals on the stone's top under the fire that remains
-P_NCOUNCIL = 31                # figures [0, n) are the council; after them the crowd (plain3, F_CROWD)
 P_NPARAM = 32
-F_CROWD = 65
 
 GOLD = (1.0, 0.72, 0.30)
 
@@ -781,27 +779,6 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         sheen *= 0.7
     cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, sheen, False, fi,
                           PR, LT, OC, igc, igf, ao)
-    if F[i, F_CROWD] > 0.5:
-        # one of the crowd: lit by its own torch (no shadow test), held up before it
-        ca_ = F[i, G.F_C]
-        sa_ = F[i, G.F_S]
-        hx_ = F[i, G.F_HX] + 0.44 * F[i, G.F_TX]
-        hy_ = F[i, G.F_HY] + 0.44 * F[i, G.F_TY]
-        hz_ = F[i, G.F_HZ] + 0.44 * F[i, G.F_TZ] + 0.20
-        lx = F[i, F_X] + hx_ * ca_ - hy_ * sa_ - px
-        ly = F[i, F_Y] + hx_ * sa_ + hy_ * ca_ - py
-        lz = hz_ - pz
-        d2 = lx * lx + ly * ly + lz * lz
-        dl = math.sqrt(d2) + 1e-9
-        ndl = (nx * lx + ny * ly + nz * lz) / dl
-        nv = abs(nx * vx + ny * vy + nz * vz)
-        f_ = max(ndl, 0.0) + sheen * 0.6 * (1.0 - nv) ** 2.5 * max(ndl + 0.3, 0.0)
-        if f_ > 0.0:
-            I = 1.1 * f_ * ao / (d2 + 0.03)
-            cr += ar * I * 1.0
-            cg += ag * I * 0.60
-            cb += ab * I * 0.22
-        return cr + er, cg + eg, cb + eb, tbest, idb
     # the crowd's torches beyond the stones rim the figures from behind
     if PR[P_CROWD] > 0.0 and mat != M_SHADOW:
         rq = math.sqrt(px * px + py * py) + 1e-9
