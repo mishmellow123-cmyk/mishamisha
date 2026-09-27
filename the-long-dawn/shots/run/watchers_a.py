@@ -128,7 +128,7 @@ def lighter_spot(P, lat=0.8):
 # on our side of the fire and 0.7 m to its right, so the flames show just left of the figure and rim it.
 PLATE_YAW = 7.0
 WATCHER_BEARING = 7.3
-FIRE_GAP = (1.2, 0.7)
+FIRE_GAP = (1.35, 0.14)
 
 
 def _plate_axes():
@@ -192,29 +192,24 @@ def lighter_scene(sc, f, P, lat, seed):
 
 
 def hearth_scene(sc, P, seed, scale=1.0):
-    """The seventh fire's hearth (there before the catch: the lighter crouches at it in A14): a ring of irregular,
-    unequal stones round a leaning stack of split wood, so the flame stands on fuel, not on bare snow."""
+    """The seventh fire's beacon cairn, like hers: dry stones in five uneven courses, no mortar, tapering to a top about
+    1.02 m up where the fire burns (nighta's recipe stands a fire's base on a cairn). There before the catch (A14)."""
     rng = np.random.default_rng(int(seed))
     base = np.asarray(P[:3], np.float64)
-    sc.begin(rgb=(0.070, 0.066, 0.064))
-    n = 14
-    for m in range(n):
-        a_ = 2 * math.pi * m / n + rng.uniform(-0.16, 0.16)
-        rr = (0.62 + rng.uniform(-0.05, 0.07)) * scale
-        q = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rr
-        q[1] = ground(q[0], q[2])
-        hs = rng.uniform(0.55, 1.15) * scale
-        sc.box(q + UP * 0.05 * hs, (0.11 * hs, 0.075 * hs, 0.09 * hs), yaw=a_ + rng.uniform(-0.6, 0.6),
-               pitch=rng.uniform(-0.35, 0.35), rnd=0.03 * hs, mat=5, k=0.0)
-    sc.end()
-    sc.begin(rgb=(0.055, 0.040, 0.030))
-    for m in range(7):
-        a_ = 2 * math.pi * m / 7 + rng.uniform(-0.3, 0.3)
-        foot = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rng.uniform(0.30, 0.42) * scale
-        foot[1] = base[1] + 0.02
-        top = base + np.array([rng.uniform(-0.06, 0.06), rng.uniform(0.55, 0.78) * scale, rng.uniform(-0.06, 0.06)])
-        r0 = rng.uniform(0.035, 0.055) * scale
-        sc.cone(foot, top, r0, r0 * 0.75, mat=2, k=0.0)
+    sc.begin(rgb=(0.050, 0.047, 0.045))
+    courses, top = 5, 1.02 * scale
+    for c in range(courses):
+        y0 = top * c / courses
+        rr = (0.60 - 0.24 * c / (courses - 1)) * scale
+        n = 10 - c
+        for m in range(n):
+            a_ = 2.0 * math.pi * (m + 0.5 * (c % 2)) / n + rng.uniform(-0.12, 0.12)
+            hs = top / courses * rng.uniform(0.95, 1.30)
+            q = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rr * rng.uniform(0.92, 1.06) \
+                + UP * (y0 + 0.5 * hs)
+            sc.box(q, (rng.uniform(0.12, 0.19) * scale, 0.5 * hs, rng.uniform(0.10, 0.15) * scale),
+                   yaw=a_ + math.pi / 2 + rng.uniform(-0.25, 0.25), pitch=rng.uniform(-0.12, 0.12),
+                   rnd=0.022 * scale, mat=5, k=0.0)
     sc.end()
 
 
@@ -355,11 +350,11 @@ def draw_figures(img, zb, scam, f, LT, light, near_only=False, CH=None):
 
 
 # ------------------------------------------------------------------ the camera ---
-EYE = 1.65                       # a standing eye
+EYE = 1.90                       # a tall standing eye: level with the lighter's hood, never above it
 BACK = 14.5                      # metres behind the watcher
 HFOV = 40.0
 PITCH = -1.8
-PUSH = 1.2                       # metres of slow push over the shot (the plate breathes)
+PUSH = 3.5                       # metres of slow push toward the lighter, easing in from A14's hold
 
 
 def plate(P7):

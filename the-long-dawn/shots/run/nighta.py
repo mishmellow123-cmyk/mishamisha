@@ -233,12 +233,16 @@ def _ign(f, f_ign):
     return F.ignite_env(f / FPS, f_ign / FPS)
 
 
+POOL_I = 6.0                  # the warm pool a fire throws on the snow (world.shade LT intensity at size 1): a few metres
+                              # round a fire are warm, beyond that the moon holds (14 lit a whole ledge like clay)
+
+
 def fire_dims(size):
     """(flame height m, base half-width m, halo peak, point energy, aura peak, LT intensity, LT radius, platform r):
     size 1 = a watch-fire on a cairn (beacons' cairn), size 2.7 = a great pyre (beacons' pyre), smooth between."""
     s = max(size, 0.05)
     k = min(max((s - 1.0) / 1.7, 0.0), 1.0)
-    return (2.4 * s, 0.42 * s ** 0.85, 0.45 + 0.55 * k, 3.5 + 3.0 * k, 0.08 + 0.05 * k, 14.0 * s ** 1.6,
+    return (2.4 * s, 0.42 * s ** 0.85, 0.45 + 0.55 * k, 3.5 + 3.0 * k, 0.08 + 0.05 * k, POOL_I * s ** 1.6,
             0.5 + 0.3 * k, 2.8 + 1.7 * k)
 
 
