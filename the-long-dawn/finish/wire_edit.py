@@ -10,6 +10,9 @@ deliver.py: the master profile gets finish=True. A segment with rendered frames 
   only change is the finish are the BACKLOG, finished FINISH_BUDGET frames per film per run (default 1200), so the
   one-time cost spreads over the watcher's refreshes. FINISH_ALL=1 clears the backlog in one run. Slates, black and
   EDIT proxies keep their keys (the finish never touches them).
+API CONTRACT (EDIT-2, c62bca6): `assemble._finishing(ctx, look=None)` is also called by edit/h9_kit.py (the H9 critic's
+  stills; H9_FINISH=0 turns it off) and `deliver._finish_id()` / `segment_key(..., fin)` by edit/previews.py: keep
+  those signatures stable.
 """
 import os
 import sys

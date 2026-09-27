@@ -17,8 +17,10 @@
 - **Cost now:** ~5,700 rendered frames (A 2,320, B 952, C 2,453), ~76 CPU-min (~25 min on the 3 pool workers) on the
   next master build, which is a cold rebuild anyway after EDIT's 16834cf; after that each new render is finished as
   its segment is encoded. `FINISH_BUDGET` only matters when a look/code change leaves unfinished twins cached.
-- **Open / for whoever picks this up:** (1) the H9 kit's stills are unfinished (h9_kit.py builds its own Ctx; one
-  line gives it the finish, EDIT-2's call); (2) a look change (any edit to filmfinish/filmfast/stage or the LUTs)
+- **EDIT-2 follow-ups (c62bca6):** previews.py accepts either segment key (it re-exports when a backlog segment gets
+  finished); the H9 kit's full-res stills go through `AS._finishing(ctx)` (H9_FINISH=0 off). CONTRACT: keep
+  `_finishing(ctx, look=None)`, `_finish_id()` and `segment_key(..., fin)` stable (see finish/wire_edit.py).
+- **Open / for whoever picks this up:** (1) resolved by EDIT-2 (the H9 kit shows the finish); (2) a look change (any edit to filmfinish/filmfast/stage or the LUTs)
   re-keys every finished segment and, since no unfinished twins exist by then, re-encodes them all in one run: batch
   look tweaks; (3) C's ink finals (`runC_*`) are not on the Mac yet: their grain-only path was tested on RUN-C's farm
   tests only; (4) our halation is ~3x spektrafilm's Vision3 rem-jet preset (kept: approved by eye).
