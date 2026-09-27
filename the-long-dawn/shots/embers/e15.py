@@ -279,6 +279,8 @@ class Draught:
         # arrive by ~797 (a hair before the catch): squeeze the slow ones; the rest keep their own pace, so they
         # arrive staggered (the stream keeps coming until the catch)
         avail = np.maximum((T_FIRE - 3.0 - self.lift) / FPS, 0.35)
+        right = cen[wd, 0] > 11.5                    # (the right margin's streams arrive first: no pair of wings at the end)
+        avail = np.where(right, np.maximum(avail - 0.55, 0.3), avail)
         self.sc = np.minimum(1.0, avail / np.maximum(T_, 1e-6))
         self.dur = T_ * self.sc
         self.E = r.lognormal(0, 0.45, n)
@@ -430,8 +432,8 @@ class E15:
         gy = -G[:, 1]
         gy = gy - 0.5 * (gy.max() + gy.min())
         wide = max(float(gx.max() - gx.min()), 1e-6)
-        sc_ = 0.27 / wide                                  # the word spans the body (27 % of the flame's height) ...
-        yc = 0.45 + 0.0016 * (t - 882.0)                   # it rises slowly with the licks
+        sc_ = 0.19 / wide                                  # the word sits inside the body (19 % of the flame's height) ...
+        yc = 0.37 + 0.0016 * (t - 882.0)                   # it rises slowly with the licks
         fx = gx * sc_
         fy = yc + gy * sc_ * 2.4                           # ... and the heat draws its letters up tall (legible)
         X = x0 + (ax * fy + px * fx) * Hp
@@ -486,8 +488,9 @@ class E15:
             if lm is not None:
                 mk, rim = lm
                 lum = fl.max(axis=2)
-                fl = fl * (1.0 - 0.88 * mk)[..., None]
-                fl = fl + (np.array([1.0, 0.62, 0.2], np.float32)[None, None, :] * (0.55 * rim * lum)[..., None])
+                body = np.clip((lum / max(float(lum.max()), 1e-6) - 0.12) / 0.3, 0.0, 1.0)   # never ink on the halo
+                fl = fl * (1.0 - 0.74 * mk * body)[..., None]
+                fl = fl + (np.array([1.0, 0.5, 0.12], np.float32)[None, None, :] * (1.4 * rim * body * lum)[..., None])
             if k > 0:
                 fl = fl * band_rows(fl.shape[0], scale, 0.62 * k)[:, None, None]
             hdr = hdr + fl
