@@ -33,6 +33,24 @@ def make_shot(name):
     if name == 'beacon':
         import beacon
         return beacon.FirstBeacon()
+    if name == 'beacon_v3':               # BIBLE_V3: the flint take re-keyed (B7: gloves, the head a rim-lit silhouette)
+        import beacon                     # AND on the locked sheets' master timing (src 1200-1555, strike 1 = 1236)
+        beacon.V3_REKEY = True
+        beacon.use_master_timing()
+        beacon.apply_h5_calls()           # the director's H5 calls (07:10Z): wardrobe, sparks, flinch, lift, basket
+        return beacon.FirstBeacon()
+    if name == 'beacon_v3_pre_h5':        # the master-timing take as rendered 05:09Z (before the H5 calls)
+        import beacon
+        beacon.V3_REKEY = True
+        beacon.use_master_timing()
+        return beacon.FirstBeacon()
+    if name == 'beacon_v3_rekey':         # the re-key alone on the accepted v2b timing (renders/hills_v3, 00:42Z)
+        import beacon
+        beacon.V3_REKEY = True
+        return beacon.FirstBeacon()
+    if name in ('deadember', 'find', 'firetest'):   # BIBLE_V3 H5 / H2 close-ups (frames = seconds x 24 in the cut)
+        import heroine_v3
+        return heroine_v3.SHOTS[name]()
     if name == 'coda':
         import coda
         return coda.Coda()

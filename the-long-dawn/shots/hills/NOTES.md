@@ -1,3 +1,270 @@
+# >>> HEROINE-v3 STATE (2026-09-27 ~16:05Z; PAUSED for the usage window, RESUME ~20:00Z) <<<
+**Exact state.** Nothing of this lane is rendering (the roar job finished 15:46Z; no process left running). Everything is
+committed and pushed to `claude/v3-heroine` (= `claude/heroine-character-work-0o4wv2`). H1 is DONE for all three cuts:
+356/356 JPEGs on `claude/render-h1-v3-h5` (head c55be10, the roar fix included). The C close-ups (the find with the side
+glove and the meltwater sheen, the fire test on the C-steel) and B's dead ember (restaged, B 880-1119) are verified as
+stills; their jobs are written and NOT launched (director launches): `cloud/jobs/h2_firetest_c.json`,
+`cloud/jobs/h2_find_c.json`, `cloud/jobs/h5_deadember_b.json` (-> `renders/deadember_B`). The bar-63 hand-off is RUN-B's.
+**Next steps on RESUME:** (1) `git pull --rebase origin claude/long-dawn-v2`; (2) for each close-up job the director has
+launched, read its `cloud_logs/<job>_status.txt` on its branch, then check the landed frames (decode, luma, a contact
+sheet in `review/v3/`) against the stills in REPORT 4; (3) polish if asked: H1's far-hand steel to the C-steel at the
+roar (~6 frames), the find's hard dark foreground (her knee), the dead ember's near glove (dark on dark), the fire
+test's sleeve-cuff weave.
+
+# >>> HEROINE-v3 REPORT 4 (2026-09-27 ~16:00Z; the director's H1 review + scope change) <<<
+
+**H1 roar fix (director 15:15Z): DONE and RENDERED.** At the roar (src 1476-1510) the flare no longer lights her into a
+smooth brown doll: from ROAR-1 she is FLAGGED from the fire's key (its light on her x0.55, the warm bounce x0.15, and her
+hood, coat, sleeves, gloves, legs and shawl go rim-only, `V3_ROAR_SIL` 0.92): a dark shape against the flare with a thin
+warm edge, easing to half by ROAR+75. The recoil is re-posed (`FLINCH_V3` + the V3 guard in `yw2_pose`): the near
+FOREARM lies level ACROSS HER FACE between the flare and her head (the elbow thrown out toward the fire at eye height,
+the wrist at the brow, the hand carried round behind the hood, the thumb tucked: no hand held up in the air), her head
+turned right away (head_yaw -85, chin down 36), her weight back (lean -18, pelvis +3 cm). Job
+`cloud/jobs/h1_v3_h5_roar.json` (src 1474-1555, 82 frames) ran on this box 15:35-15:46Z: **82/82 JPEGs pushed onto
+`claude/render-h1-v3-h5`** (head c55be10), replacing 1474-1555 in the 356-frame set (1200-1473 unchanged). All 356 decode
+at 1920x804, none at <= 20/255 (darkest mean 31.9). Sheet `review/v3/heroine_v3_h1_roar_fix.jpg` (1474-1510). **The take
+is done for all three cuts.**
+
+**Scope change (director):** the bar-63 hand-off is RUN-B's own shot (silhouette figures at hand-back scale): no hands
+from this lane. Priorities: the roar fix (above), then C's hands (the find, the fire test) with the canonical Ring.
+
+**C with the canonical Ring.** Every Ring here reads `assets/ring` (MONTAGE-3D's script of fire, the revised letterforms
+of e7083c6: lean, flickering tips, uneven bellies, a spur) at the canonical band proportions (inner radius 8.8 mm);
+checked close on the fire test: the letters upright on the outer face and readable on the inner, deep orange-red.
+* THE FIRE TEST (C 3392-3599, fallback to the Blender fire test): the Ring on the up-turned tip of her C-shaped
+  fire-steel in the flames; no glow fringe round the hand. PASS against its fallback (the band in the coals, her fist).
+* THE FIND (C 3009-3059, fallback to the Blender find): the clean pit, a **meltwater sheen** on the frozen disc (the
+  moonlit far lip mirrored along the grazing edge, a slow ripple), no stain; **her glove comes in from the SIDE** (frame
+  right, low, palm down, fingers loosely curled, the moon rimming the leather) over 3036-3058, and the edit cuts to her
+  closed fist. PASS (the hand reads as a reaching glove, not a claw); `V3_FIND_HAND=none` = the band alone.
+* B THE DEAD EMBER (B 880-1119, locked numbering) restaged: ~45 deg down, from her front-left; **the pot is HELD**, cradled
+  on her near glove at her chest (her dark coat and red shawl behind it: **no snow wedge**, the far ground graded down);
+  her far glove lifts the lid off the mouth (888-904) and sets it down below (the knock, 920); the breath is **visible**
+  (982 blow, 1030 hanging); the last red point on 1100 still drifts onto H1's spark (the match cut). PASS.
+Sheet `review/v3/heroine_v3_h5_closeups.jpg` (find 3030/3056, fire test 3440/3486, dead ember 900/990); stills in
+`renders/heroine_C/stills`, `renders/deadember_B/stills`.
+
+**RENDER_SPEC (director launches; one 4-core CPU box each, 2 processes x 2 workers, `--step 2`, ship jpg):**
+* `cloud/jobs/h2_firetest_c.json` (firetest, C 3392-3599, 208 fr) -> `renders/heroine_C`: ~40 s/frame/process at full
+  res, ~1.2 h. Fallback: the band in the coals and her closed fist (the Blender fire test is the A-side).
+* `cloud/jobs/h2_find_c.json` (find, C 3009-3059, 51 fr) -> `renders/heroine_C`: ~20 min. Fallback: `V3_FIND_HAND=none`.
+* `cloud/jobs/h5_deadember_b.json` (deadember, B 880-1119, 240 fr) -> `renders/deadember_B`: ~1.3 h. Fallback: the
+  2-D ember insert (the eye greying) on RUN-B's plate.
+
+**Remaining weaknesses.** The H1 steel in her far hand is still the v2b bar-and-loop (visible for ~6 frames at the roar);
+the find's big dark foreground shape (her knee) is a hard edge; the dead ember's near glove under the pot is dark on
+dark; the fire test's sleeve cuff carries a zigzag weave; the Ring close-ups are the fallbacks to the Blender versions.
+
+# >>> HEROINE-v3 REPORT 3 (2026-09-27 ~10:50Z; the DIRECTOR'S H5 CALLS; superseded where REPORT 4 says so) <<<
+
+**State.** H1 with every H5 call is **RENDERED**: `cloud/jobs/h1_v3_h5.json` (`render.py --shot beacon_v3`, src 1200-1555
+master numbering, strike 1 = 1236, roar = 1476) -> `renders/h1_v3h5`, **356/356 JPEGs on branch `claude/render-h1-v3-h5`**
+(JOB COMPLETE 11:04Z, 48 min on this box). Every frame decodes at 1920x804; per-frame mean luma 31.9-80/255 (darkest
+src 1443), **no frame at <= 20/255**: her silhouette never vanishes. Contact sheet `review/v3/heroine_v3_h1_h5_contact.jpg`.
+It supersedes `claude/render-h1-v3-master` (pre-H5) and the 00:42Z re-key. The
+close-ups below are code + stills only; no close-up job is launched. B renders use LOCKED numbering and the B folders
+(`deadember_B`, `climb_B`, `heroine_B`).
+
+**H5 calls in my area (BIBLE_V3 top block), done / not done:**
+* [x] Humans silhouette or gloved hands only; H1 v2b un-accepted: `--shot beacon_v3` = the v3 silhouette re-key + the
+  master timing + `beacon.apply_h5_calls()`; the close-ups keep every head out of frame or a dark silhouette.
+* [x] Thin leather gloves (no felt mitts): `hsdf3.gloves` (0.35 mm over the anatomical hand, M_GLOVE dark leather).
+* [x] Flint sparks short, orange, falling and curving (gamma speeds, 0.10-0.32 s lives, gravity + drag + curl).
+* [x] The f1366 flinch re-posed (`FLINCH_V3`): head turned away, forearm across the face, weight back.
+* [x] A hood / wool cowl, no knit beanie; the red scarf as a woven wool shawl; no hair wires (`hsdf3.wardrobe_v3`).
+* [x] B: H1's crushed frames lifted (`V3_FLOOR`, `V3_CLOSE_SKY`, pre-roar exposure lift, black lift 0.011): confirmed on
+  the full render, every frame mean >= 31.9/255.
+* [x] B: the fire-basket aged (`hsdf3.basket_v3`: rust, soot line, uneven bars, bent finials), 3-D, in H1 and the fire test.
+* [ ] B: the dead ember at ~45 deg, a lidded vessel held by her hand, no blue wedge, a visible breath: NOT DONE (next).
+* [ ] B: the hands for the bar-63 hand-off (her fire-steel pressed into the child's palm): NOT DONE (next).
+* [x] C fire test: the Ring on the up-turned tip of her **C-shaped fire-steel** (flat stock forged into a C: the back in
+  her fist, the upper end rounding into the long arm and hook, the lower into a scroll; broad face to the lens), in the
+  flames; **no glow fringe round the hand** (bloom held off her glove and sleeve, the glove's rim gain down, the front
+  tongues masked by her figure, the basket's far half composited behind the flames). The whole C reads in frame; the
+  gold is gold, not white-hot. Tested 3440 (full res) and 3486 (the tip: the Ring edges over and holds).
+* [~] C find: the clean pit (fallback, `Find.HAND = False`) kept; no rust-yellow stain in 3012 or 3050. NOT DONE: the
+  meltwater / ice sheen on the disc (it still reads as a dark hole) and a side-entry glove test (else no glove at all).
+* [x] C inscription: **THE SCRIPT OF FIRE** (MONTAGE-3D-2, `assets/ring`) on every Ring here: outer and inner strips
+  mapped as `inscription.json` says (u CCW from the +axis end outside, 1 - that inside, row 0 = the +axis edge), the band
+  at the canonical proportions (inner circumference / width 11.358, outer 14.137, inner radius 8.8 mm); the letters
+  glow deep orange-red, never white (`hsdf3.inscription_canon`, `ring_xp_canon`; ring.py's strip only if missing).
+
+**Next steps (RESUME ~15:00Z), in order:** (1) H1 H5 is done (above); (2) Find: the ice sheen + one side-entry glove test;
+(3) DeadEmber restage (45 deg, held vessel, breath, no blue wedge) in B 880-1119 -> `renders/deadember_B`
+(`cloud/jobs/h5_deadember_b.json` now points there; HOLD it until the restage is verified); (4) the bar-63 hand-off hands
+as a layer for RUN-B -> `renders/heroine_B`; (5) review sheet, jobs, push, verify_session, the 5-line summary.
+
+# >>> HEROINE-v3 REPORT 2 (2026-09-27 ~05:30Z; after the LOCKED beat sheets, director commit 99e9bfb) <<<
+
+The locked sheets moved every heroine shot; all are re-keyed to them. REPORT 1 (01:15Z) follows below for history.
+
+**H1 on the MASTER TIMING, all cuts (must-have).** `beacon.use_master_timing()` rebinds the take's timing constants:
+strike 2 +29, strike 3 +58, the long blow +84..+180 (three breaths), the catch +196, the roar +240 (on a downbeat); the
+accepted post-catch poses are stretched 42 -> 44 frames to the roar and shifted +116 after it; four frame literals
+became constants with identical v2b values, so `--shot beacon` is unchanged. `render.py --shot beacon_v3` = this timing
++ the B7 re-key; src 1200-1555, strike 1 = src 1236 -> `renders/h1_v3`, JPEGs to branch **`claude/render-h1-v3-master`**
+(`cloud/jobs/h1_v3_master.json`): **DONE 05:09-05:50Z on this box, 356/356 JPEGs pushed, every frame decodes**; contact
+sheet `review/v3/heroine_v3_h1_master_contact.jpg` (strikes, the long blow, the catch, the roar, the pull-back). Verified at half res: 1265 (strike 2), 1334/1400
+(the blow), 1436/1456 (catch, small flame), 1478 (roar), 1500/1555 (pull-back): face dark throughout.
+Edit mapping (src -> cut): A src 1236 = A 3360 (+2124); B src 1236 = B 1120 (-116); C src 1236 = C 2980 (+1744) through
+strike 2 (C 3009), the find inserts, then src 1294 (strike 3) = C 3178 (+1884) through the roar (src 1476 = C 3360).
+The 00:42Z re-key on the v2b timing (`renders/hills_v3`, branch `claude/render-h1-v3-rekey`, `--shot beacon_v3_rekey`)
+is now only the fallback.
+
+**B THE DEAD EMBER (H5), B 880-1119.** Re-keyed and restaged: her FAR gloved hand lifts the lid away from the lens and
+sets it down beyond the pot on the knock (bar 12 b3 = 920), then rests on the pot's belly clear of the mouth; the red
+eye 920-980; from bar 13 b2 (980) she blows, a breath of hope, then the eye greys (1000-1100); the last red point on bar
+14 b4 (1100), out by 1116; the camera drifts 1040-1100 so that point sits exactly where H1's first spark is born
+(full-res px 757, 256): the match cut on bar 15 b1. Quarter-res motion test `review/v3/heroine_v3_deadember_mt2.jpg`:
+the lid lift is clean now. Fixed since: the ash poking through the wall, the soot (M_COAL greyed to ash) now dark.
+Verdict: PASS (beats its fallback). Stills: `renders/heroine_B/stills/deadember_{936,1100}.png`; sheet `review/v3/heroine_v3_sheet4_locked.jpg`.
+
+**C THE FIRE TEST (H2, Bag End), C 3392-3599.** Locked frame on the fire; her fist brings the steel in (3392-3404), the
+Ring lies on its tip in the flames from bar 43 b3 (3400); on bar 44 b3 (3480) the steel dips and rolls, the Ring slides
+toward the edge and does not fall; on bar 45 b3 (3560) she draws it out of frame right. PASS. Still `firetest_3484.png`.
+
+**C THE FIND (H2), C 3009-3059.** Strike 2 (C 3009) finds the band in the melted hollow; the insert is the fallback
+(the band alone, `Find.HAND = False`); the edit cuts to her closed fist for bar 39 b2. The vision on the band (towers
+bowing, bar 39 b3.5) is a Ring close-up: the Blender bake-off lane's. Still `find_3012.png`.
+
+**B THE CLIMB (H4), B 640-879.** The close from behind (bar 11 b1) FAILED in five framings (the pot is hidden by her
+body from behind; from the side the frame is a dark mass; the stand-in arete reads as a roof) -> the sheet's FALLBACK:
+the wide alone, her figure <= 60 px with the pot's glow the only warm point, on RUN-B's plate. This lane supplies
+`heroine_v3.climb_layer(cam, f, world_pos, heading_deg)`: the trudging, gloved figure with the glowing clay pot as an
+RGBA + depth layer for any camera (B's moon; the pot's light; the scarf and hair in the wind); `climb_wide_test` is a
+crude stand-in wide for scale only.
+
+**For ACCORD (AC2, "with HEROINE's hand"):** `heroine_v3.glove_hand_layer(cam, wrist, fdir, palm, curls, thumb, side,
+lights)` renders her gloved hand and sleeve cuff alone as an RGBA + depth layer in any camera (e.g. the top-down fist
+over the Ring on the stone); smoke-tested.
+
+**RENDER_SPEC (one 4-core box each, 2 processes x 2 workers, `--step 2`, ship jpg; `render.py --shot <name>`):**
+* `cloud/jobs/h1_v3_master.json` (beacon_v3): DONE (branch `claude/render-h1-v3-master`).
+* `cloud/jobs/h5_deadember_b.json` (deadember): B 880-1119 -> `renders/heroine_B`, ~1 h. Ready.
+* `cloud/jobs/h2_firetest_c.json` (firetest): C 3392-3599 -> `renders/heroine_C`, ~50 min. Ready.
+* `cloud/jobs/h2_find_c.json` (find): C 3009-3059 -> `renders/heroine_C`, ~15 min. Ready.
+
+**Remaining weaknesses.** The glove fingers are a touch thick at 1:1; the dead ember's snow wedge between her knee and
+body is a hard shape; the Ring is ring.py's band (the bake-off may replace it); H3 not attempted (optional); the
+climb's close is the fallback; H6 belongs to HILLS on the locked sheet.
+
+# >>> HEROINE-v3 REPORT (2026-09-27 ~01:15Z, lane `heroine`, code on branch claude/v3-heroine) <<<
+
+**What it is.** (1) **H1 RE-KEYED** (BIBLE_V3 REVISION 1, red-team B7) and rendered in full: the accepted v2b flint take
+with her hands in leather gloves and her head a rim-lit silhouette at every phase (no lit face anywhere), src
+1200-1439 -> `renders/hills_v3`, 240 JPEGs on branch `claude/render-h1-v3-rekey` (`render.py --shot beacon_v3`).
+(2) **Risk test #5 (people)** stills: B THE DEAD EMBER (H5), C THE FIRE TEST as Bag End (H2), C THE FIND (H2); code in
+`shots/hills/heroine_v3.py` on a fork of the heroine tracer (`hsdf3.py`) so nothing accepted can change.
+Sheets: `review/v3/heroine_v3_sheet1.jpg`, `heroine_v3_sheet2.jpg`, `heroine_v3_sheet3.jpg` (final stills),
+`heroine_v3_h1_contact.jpg` (the re-keyed take, every 12th frame), `heroine_v3_deadember_motion.jpg` + `_mt1.mp4`.
+
+**Verdicts against the fallbacks.**
+* H1 re-key: PASS (a re-key, not a crop: the composition, timing and every other element are the accepted take).
+* FIRE TEST (Bag End): PASS. The Ring lies on the tip of her steel in the flames, balanced, gold and unmarked, its
+  letters burning; her gloved fist holds it there (tremble, one dip toward the coals, drawn back). Beats its fallback.
+* DEAD EMBER: PASS with notes (stills). Seen high on her left, looking into the clay fire-pot (her head above frame):
+  the lid off, one red eye in a char crust, her breath, the eye greying to ash. Beats its fallback on legibility; in
+  motion the lid lift still needs restaging (see RENDER_SPEC).
+* FIND: SPLIT. The band in the melted hollow, found by the strike's flash and faintly awake in the dark: PASS (and
+  it is the bible's fallback image). Her gloved hand closing on it: FAIL (at the reach the glove silhouette breaks
+  into a claw) -> FALLBACK taken: the band in the hollow, then cut to her closed fist.
+* H3 (hand forced open): not attempted (REVISION 1: optional, last). H4 climb, H6 silhouettes: not started.
+
+**Remaining weaknesses.** Glove fingers a touch thick and smooth at 1:1 (inflate 0.9 mm; a seam would help); the
+pot was CG-clean (now a hand-thrown tilt, heavier shoulder, chipped lip: not yet seen at full res); the melt pool is
+frosted slate ice (it was a black void); the Ring here is ring.py's
+band (the Blender bake-off may replace it); H1 keeps the v2b timing (the v3 retime waits on the bar maps).
+
+**RENDER_SPEC (for the director; one 4-core box per job, 2 processes x 2 workers, ship jpg):**
+* `cloud/jobs/h1_v3_rekey.json`: DONE on this box (see above).
+* `cloud/jobs/h2_firetest_c.json`: C 4040-4183 (144 fr) -> `renders/heroine_C` (`--shot firetest`), ~60-90 s/frame/
+  core, ~45 min. Ready.
+* `cloud/jobs/h5_deadember_b.json`: B 960-1199 (240 fr) -> `renders/heroine_B` (`--shot deadember`), ~1 h. NOT YET:
+  the quarter-res motion test (`review/v3/heroine_v3_deadember_motion.jpg`, `..._mt1.mp4`, 976-1152 every 4th) holds
+  from 1008 on (the eye, her glove on the rim, the scarf end, the greying) but the lid lift 976-1004 is a dark smear:
+  her near arm sweeps across the lens. Restage (lift the lid away to frame left, or start with the lid already off)
+  and re-test before launching; the snow wedge between her knee and body also wants softening.
+* `cloud/jobs/h2_find_c.json`: C 3557-3620 (64 fr) -> `renders/heroine_C` (`--shot find`), the fallback version
+  (`Find.HAND = False`: the flash reveal, the sparks dying, the letters' glow; no hand), ~25 min. Ready.
+
+**Review sheet:** `review/v3/heroine_v3_sheet1.jpg` (H1 v2b vs re-key; H1 re-key strike + roar; B dead ember lid-off
+and greyed).
+
+**DONE (00:42-01:13Z, local 4-core box, 7.6 s/frame wall): H1 RE-KEY full render, 240/240 JPEGs pushed.** `cloud/jobs/h1_v3_rekey.json` run by
+`cloud/run_job.py` from the detached worktree `/home/user/h1job` (commit 216d9f1): src 1200-1439 -> `renders/hills_v3`,
+JPEGs pushed every 5 min to branch **`claude/render-h1-v3-rekey`** (created by hand at 00:57: a detached-HEAD worktree
+cannot push to a branch that does not exist yet; the runner's first rounds failed on that). Runner log: `/home/user/h1job/the-long-dawn/cloud_logs/h1_v3_rekey_runner.log`. If the box died: pull that branch,
+copy its jpgs' frame numbers out, and relaunch the same job on any box (`--skip-existing` only sees local PNGs).
+* What it is: `render.py --shot beacon_v3` = the accepted v2b take (timing, poses, camera, scarf, breath, sparks,
+  fire, world) with `beacon.V3_REKEY = True`: her hands in dark leather gloves (`hsdf3.gloves`: M_GLOVE, +0.9 mm,
+  no nails, no cold flush) and the head groups (skin, eyes, cap, brim, hair) RIM-ONLY under the warm sources
+  (`hsdf3` G col 9: strike/ember/tinder/roar light reaches them only at grazing angles; the moon unchanged); hair
+  strands and lashes get 12% of the warm light. Rendered through `hsdf3` (fork), so v2b (`--shot beacon`) is
+  bit-for-bit untouched.
+* Verified at half res (1262 strike, 1305 blow, 1322 catch, 1345 watch, 1366 flinch, 1390 rise): the face is a dark
+  silhouette with a thin warm profile rim at every phase; the gloves read as leather (tan in the strike flash);
+  nothing else changed. Test frames: `renders/hills/tests/h1v3b/` (+ v2b 1305 in `tests/h1v2b/`).
+* Not done: the v3 RETIME (strikes ~1.2 s apart, longer blow, roar on a downbeat) waits on SHOWRUNNER-REV's bar maps
+  (`music/v3/barmap_*.json` not on the branch yet); this render is the v2b timing, re-keyed.
+
+**B H5 THE DEAD EMBER: first full-res stills** `renders/heroine_B/stills/deadember_{1030,1120}.png` (sheet 1).
+Staging: she kneels at the cairn, the round clay fire-pot on its lowest course; camera high on her left looking ~50
+deg down into the pot (her head and shoulders above frame: no face possible); B's moon high on her left; the lid
+lifted off by her near hand and set down, her far gloved hand steadying the pot's rim; the ember's light shadowed by
+the pot walls; the breath (thin) lit from below; `life` greys the ember (1044-1130). Verdict: READS (clay pot in
+moonlight, the ember, the grey) = beats its fallback on legibility; NOT YET PERFECT: the ember too big/yellow with a
+busy "coral" crack pattern (want one small deep-red eye in a char rim; emission since made redder, untested at full
+res), the pot CG-smooth (want a hand-thrown wobble, soot, chips), the glove fingertips read as dark balls.
+Alternative coded: `deadember_pov` (her POV into the pot; breaks B's observational grammar). Fallback (bible): from
+behind her, the pot's glow the subject.
+
+**C H2 THE FIRE TEST (Bag End):** `renders/heroine_C/stills/firetest_4090.png` (sheet 2). Her gloved right fist holds
+her steel like a key, flat, its end in the flames at the basket rim; the Ring LIES flat on the steel's tip, balanced
+(a tilt of her wrist would drop it into the coals; she cannot); gold, unmarked, its letters burning; the fire behind in
+soft focus. Motion keys: tremble, one dip toward the coals (4100-4140), drawn back 4160+. Verdict: the strongest of
+the set; hands/pose/light read; glove reads as dark suede/leather. Weak: glove fingers a little thick and smooth at
+1:1; the burning logs (below frame now) looked like sausages when visible.
+
+**C H2 THE FIND:** `renders/heroine_C/stills/find_{3560,3645}.png` (sheet 2). Low on the snow by her knee: a melted
+hollow with a slumped lip, a frozen melt pool, the Ring lying tilted on it with its letters faintly awake; the strike
+flash (3557) and a few sparks dying on the snow; her gloved near hand comes down and closes on it (3600-3660). Verdict:
+the band-in-the-hollow reads (= the bible's fallback image, and it is good); the hand closing is NOT there yet: four
+blunt dark fingers descend like a claw. The full-res stills in sheet 2 predate these fixes (01:06Z, tested at 0.4):
+* the brown/green stains on the snow were heroine_sdf's skin wrap (red wraps furthest) applied to snow: new
+  materials now wrap neutrally, snow wraps blue deepest (H1's materials 0-10 unchanged);
+* camera raised to ~45 deg down (`Find.camera`): her gloved hand now reads as a SILHOUETTE against the moonlit snow
+  (no detail needed = no doll), and the Ring's letters warm as her fingers come near (`near`, 3612-3668) and light
+  the glove and the hollow from below: the temptation is the key light;
+* VERDICT 01:09Z: the hand closing FAILS (at 3630-3645 with the shoulders lowered so she can reach, the glove
+  silhouette breaks into floating finger segments: a claw read) -> FALLBACK NOW per the rule: the Find is the band in
+  the hollow (flash reveal 3557+ and the letters' glow; `find_3560.png` re-rendered full res with the fixes), then cut
+  to her closed fist (H1 close-up / the fire test). Next attempt, if the hand is wanted back: a pinch posed in the
+  hand lab (`hero.hand` curls ~(0.40, 0.70, 0.85, 0.92), thumb 0.6, fdir (-0.6,-0.75,0.1), palm (-0.55,0.45,0.7) read
+  as a clean C-shaped pinch against snow) with the wrist placed so the hand is not foreshortened, and the arm
+  entering from frame right; the pool is pure black (give it the lip's reflection and some frost).
+
+**RENDER_SPECs (not launched; each waits on its look being approved):** `cloud/jobs/h5_deadember_b.json` (B 960-1199 ->
+`renders/heroine_B`), `h2_find_c.json` (C 3557-3683 -> `renders/heroine_C`), `h2_firetest_c.json` (C 4040-4183);
+`render.py --shot deadember|find|firetest`; one 4-core box each (2 processes x 2 workers, --step 2), ~60-90 s/frame/core
+at full res, so ~1 h per job; ship jpg.
+
+**Code (new; nothing accepted changes behaviour unless a v3 flag/shot is used):**
+* `shots/hills/hsdf3.py`: fork of heroine_sdf's tracer. T_BAND ring primitive (ring.py's rounded section or
+  tolkien's superellipse); materials GOLD (env-map reflection + ring.py's inscription engraved/burning), CLAY,
+  EMBER/COAL (emissive cracks under spreading ash, `life`), SNOW (glints), ICE, IRON, ASH, GLOVE; rim-only groups;
+  returns a group-id buffer.
+* `shots/hills/beacon.py`: `V3_REKEY` (default False), `V3_SIL`, `V3_STRAND_WARM`; `render.py`: shot `beacon_v3`.
+* `shots/hills/heroine_v3.py` (WIP): DeadEmber (B H5) being laid out: kneeling bent over a round clay fire-pot on the
+  cairn's foot-stone, camera high on her left looking steeply into the pot (head and shoulders above frame),
+  moon behind her, ember light shadowed by the pot walls; `V3_CAM=px,py,pz,tx,ty,tz,hfov` / `V3_EXPO` debug hooks.
+  `python3 shots/hills/heroine_v3.py still deadember 1030 out.png --scale 0.3`.
+
+**Next steps (in order):**
+1. Find: the pinch (thumb + index, oblique), re-render with the snow fixes; DeadEmber pass (ember eye, pot wobble,
+   glove tips); glove fingers slimmer (inflate 0.9 -> 0.5 mm) + a seam; then launch the three RENDER_SPECs.
+2. H4 THE CLIMB (close from behind: the scarf and the pot) as a still; H3 last, if at all.
+3. When the H1 job ends: check `claude/render-h1-v3-rekey` has 240 jpgs; contact sheet; this section -> the report.
+
 # >>> HEROINE-2 (2026-09-26): FIRST BEACON v2b (s1 world, dry-stone courses, ignition) + RING fix - both LANDED <<<
 
 **LANDED 2026-09-26 18:4x (director accepted v2b).** Full-res FIRST BEACON src 1200-1439 rendered locally (240 frames,
