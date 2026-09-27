@@ -373,7 +373,7 @@ def gold(new_material, R, letters=None, deep=(1.0, 0.22, 0.03), bright=(1.0, 0.5
         liquid = nb.sstep(-0.10, 0.45, nb.sub(_keyv(nb, 'front', molten), dlt))
     rgh = nb.madd(polish.outputs['Fac'], 0.045, rough - 0.005)
     if liquid is not None:
-        rgh = nb.mixf(liquid, rgh, 0.03)
+        rgh = nb.mixf(liquid, rgh, 0.015)
     bs = nb.principled(Base_Color=(1.0, 0.71, 0.29), Metallic=1.0, Roughness=rgh)
     bs.inputs['Specular Tint'].default_value = (1.0, 0.93, 0.78, 1.0)
     shader = bs
@@ -398,7 +398,7 @@ def gold(new_material, R, letters=None, deep=(1.0, 0.22, 0.03), bright=(1.0, 0.5
         bb.inputs['Temperature'].default_value = 1350.0
         hk = _keyv(nb, 'hot', hot)
         if liquid is not None:                                     # solid metal only warms; the liquid glows
-            hk = nb.mul(hk, nb.madd(liquid, 1.0, 0.18))
+            hk = nb.mul(hk, nb.madd(liquid, 1.0, 0.12))
         emis.append(nb.emission(bb.outputs['Color'], hk))
     if vision:
         vpath, vtab = vision
@@ -559,7 +559,7 @@ def _sparks(C, new_material, paths, frames):
             return S * (1 - u) ** 2 + Q * 2 * u * (1 - u) + L * u * u
 
         def glow(f, f0=f0, f1=f1, land=land):
-            if f < f0 - 1:
+            if f < f0:
                 return 0.0
             if f < f1:
                 return 1400.0 * (0.55 + 0.45 * math.exp(-(f - f0) / 3.0))
@@ -574,9 +574,12 @@ def _sparks(C, new_material, paths, frames):
         ob = C.mesh_obj(f'spark{k}', bm_v, bm_f, mat=m)
         ob.visible_shadow = False
         for f in range(frames[0] - 2, frames[1] + 3):
-            alive = f >= f0 - 1 and (f < f1 or (land and f - f1 < land + 1))
-            ob.location = at(f) if alive else S + Vector((0.0, 0.0, 3.0))
+            ob.location = at(max(f, f0))                    # before birth it waits at its start; after, it stays
+            #                                                  where it died (a parked bead far away drew metres-long
+            #                                                  motion-blur streaks as it jumped in) -- hidden both times
             ob.keyframe_insert('location', frame=f)
+            ob.hide_render = not (f >= f0 and (f < f1 or (land and f - f1 < land)))
+            ob.keyframe_insert('hide_render', frame=f)
         obs.append((ob, L, f1, land))
     return obs
 
@@ -897,7 +900,12 @@ def _find_b(C, new_material, R, opts, T):
     # the night: a cold moon beyond her fingers, at the mirror angle of the lens, lays a sheen on the leather and
     # rims the fingers; the warm light on the palm is the vision's own
     C.sun('moon', opts.get('moon_dir', (-0.15, 0.82, 0.57)), (0.55, 0.66, 1.0), opts.get('moon', 0.85), angle_deg=3.0)
-    C.sun('nightfill', opts.get('fill_dir', (-0.55, -0.45, 0.70)), (0.50, 0.60, 1.0), opts.get('fill', 0.30), angle_deg=20.0)
+    # the night's cool fill from the lens side: enough to read the fist before it opens and after it closes; while the
+    # vision is awake the eye is on its glow and the fill sinks (an eye adapting, not a lamp being turned)
+    nf = C.sun('nightfill', opts.get('fill_dir', (-0.55, -0.45, 0.70)), (0.50, 0.60, 1.0), 0.0, angle_deg=20.0)
+    for f in range(START - 2, END + 3):
+        k = 1.0 - 0.7 * _ease((f - 3084) / 12.0) + 0.7 * _ease((f - 3134) / 10.0)
+        C.key(nf.data, 'energy', f, opts.get('fill', 1.3) * k)
     if opts.get('debug_light'):
         C.sun('dbg', (0.3, -0.6, 0.7), (1, 1, 1), opts['debug_light'], angle_deg=5.0)
     cen = Vector(loc) + up * (0.5 * WIDTH)
@@ -1050,7 +1058,7 @@ def steel_material(new_material, heat_tab):
     near = nb.sstep(0.045, 0.004, tipd)                        # hottest at the lip, fading along the arm
     glow = nb.mul(nb.mul(near, near), _keyv(nb, 'heat', heat_tab))
     col = nb.mixcol(nb.sstep(0.02, 0.0, tipd), (0.30, 0.018, 0.002), (0.85, 0.16, 0.02))
-    em = nb.emission(col, nb.mul(glow, nb.madd(mott.outputs['Fac'], 0.5, 0.55)))
+    em = nb.emission(col, nb.mul(glow, nb.madd(mott.outputs['Fac'], 1.2, 1.4)))
     nb.output(surface=nb.addshader(bs, em))
     return m
 
@@ -1094,8 +1102,8 @@ def _coals(C, new_material, n, spread, seed, heat, z0=0.0, exclude=None, gain_ta
     nz = nb.sep(nb.geo().outputs['Normal'])[2]
     warp = nb.noise(P, scale=90.0, detail=3.0, rough=0.6)
     Pw = nb.vadd(P, nb.vscale(nb.vsub(warp.outputs['Color'], (0.5, 0.5, 0.5)), 0.006))
-    vor = nb.voronoi(Pw, scale=190.0, feature='DISTANCE_TO_EDGE')
-    crack = nb.sstep(0.035, 0.0, vor.outputs['Distance'])
+    rid = nb.noise(Pw, scale=110.0, detail=6.0, rough=0.62)
+    crack = nb.sstep(0.030, 0.0, nb.math('ABSOLUTE', nb.sub(rid.outputs['Fac'], 0.5)))
     hotn = nb.noise(P, scale=38.0, detail=4.0, rough=0.65)
     hot = nb.sstep(0.5, 0.78, hotn.outputs['Fac'])
     under = nb.sstep(0.4, -0.5, nz)
@@ -1127,8 +1135,9 @@ def _sticks(C, new_material, specs, gain_tab):
     m, nb = new_material('stick')
     P = nb.texco().outputs['Object']
     grain = nb.noise(nb.vmath('MULTIPLY', P, (1.0, 1.0, 1.0)), scale=260.0, detail=3.0)
-    vor = nb.voronoi(P, scale=140.0, feature='DISTANCE_TO_EDGE')
-    crack = nb.sstep(0.05, 0.0, vor.outputs['Distance'])
+    rid = nb.noise(P, scale=90.0, detail=5.0, rough=0.62)
+    crack = nb.mul(nb.sstep(0.035, 0.0, nb.math('ABSOLUTE', nb.sub(rid.outputs['Fac'], 0.5))),
+                   nb.sstep(0.45, 0.62, nb.noise(P, scale=30.0, detail=2.0).outputs['Fac']))
     base = nb.mixcol(nb.sstep(0.4, 0.7, grain.outputs['Fac']), (0.012, 0.010, 0.009), (0.05, 0.04, 0.035))
     bs = nb.principled(Base_Color=base, Roughness=0.9)
     nb.link(nb.bump(nb.add(crack, grain.outputs['Fac']), 0.6, 0.001), bs.inputs['Normal'])
@@ -1178,7 +1187,7 @@ def _fire(C, new_material, R, opts, T):
     # ---- choreography (world): G(f) = the grip (steel origin) in the world; dip(f) = the steel's tip-down angle
     s_rest = opts.get('s_rest', 0.070)
     G0 = Vector((-s_rest, 0.0, -(_steel_arm_top(s_rest) - R_IN)))      # the band hangs at the world origin
-    Gd = G0 + Vector((-0.042, 0.0, 0.006))                            # drawn out of the flames (left, a little up)
+    Gd = G0 + Vector((-0.040, 0.0, 0.024))                            # drawn out of the flames: left and UP
     Gx = Gd + Vector((-0.16, 0.0, -0.01))                             # and away, once the band is in her palm
 
     def grip(f):
@@ -1211,7 +1220,11 @@ def _fire(C, new_material, R, opts, T):
             range(START - 2, END + 3)]
     stl = _steel_mesh(C, steel_material(new_material, heat))
     stl.rotation_mode = 'QUATERNION'
-    leather = GL.leather_material(new_material, base=opts.get('leather', (0.075, 0.047, 0.029)))
+    leather = GL.leather_material(new_material, base=opts.get('leather', (0.060, 0.037, 0.022)))
+    for nd in leather.node_tree.nodes:                 # in the fire: matte, dark (a wide sheen mirrored the flame wall
+        if nd.type == 'BSDF_PRINCIPLED':               # across it and read as cream clay)
+            nd.inputs['Specular IOR Level'].default_value = 0.22
+            nd.inputs['Coat Weight'].default_value = 0.03
     wool = GL.wool_material(new_material)
     GR = GL.Glove('rglove', leather, wool, mirror=False)
     GR.set_pose(GL.POSES['fist'])
@@ -1261,7 +1274,7 @@ def _fire(C, new_material, R, opts, T):
     # her left hand comes up from below, palm up, fingers pointing away into the light, the forearm falling toward the
     # lens and out of frame: a dark shape against the fire, rimmed by it
     GLh = GL.Glove('lglove', leather, wool, mirror=True)
-    ax_ = Vector(opts.get('lfingers', (0.18, 0.80, 0.52))).normalized()
+    ax_ = Vector(opts.get('lfingers', (0.92, 0.22, 0.34))).normalized()     # in profile: fingers toward the fire
     az_ = -(Vector((0.0, 0.0, 1.0)) - ax_ * ax_.z).normalized()
     ay_ = az_.cross(ax_)
     Rl = Matrix((ax_, ay_, az_)).transposed().to_4x4()
@@ -1374,7 +1387,7 @@ def _fire(C, new_material, R, opts, T):
     for f in range(START - 2, END + 3):
         push = 0.10 * _ease((f - 3404) / 80.0)
         follow = _ease((f - (draw_t - 2)) / 20.0)
-        shift = Vector((catch.x + 0.010, 0.0, catch.z + 0.012)) * follow
+        shift = Vector((catch.x + 0.012, 0.0, 0.25 * (catch.z + 0.010))) * follow
         p_ = cam_p.lerp(tgt, push) + shift
         cam.location = p_
         cam.keyframe_insert('location', frame=f)
@@ -1522,7 +1535,8 @@ def _melt_positions(par, f):
         sq = math.sqrt(max(0.0, 1.0 - us * us))
         px = pc[0] + rp * (sq * math.cos(a))
         py = pc[1] + rp * us
-        pz = zb + hp * max(sq * math.sin(a), 0.0) ** 0.85
+        r2 = ((px - pc[0]) ** 2 + (py - pc[1]) ** 2) / (rp * rp)
+        pz = zb + (hp * max(0.0, 1.0 - r2) ** 0.55 if math.sin(a) > 0 else 0.00002)   # a dome, a flat bottom
         g = min(1.0, max(0.0, (m - 0.12) / 0.6)) ** 1.2          # what slumps runs straight back to the pool
         g = g * g * (3 - 2 * g)
         out.append((bx + (px - bx) * g, by + (py - by) * g, bz + (pz - bz) * g))
@@ -1553,13 +1567,13 @@ def _stone(C, new_material, half=0.16, n=160):
             F.append((j * (n + 1) + i, j * (n + 1) + i + 1, (j + 1) * (n + 1) + i + 1, (j + 1) * (n + 1) + i))
     m, nb = new_material('hearthstone')
     P = nb.texco().outputs['Object']
-    speck = nb.voronoi(P, scale=900.0, feature='F1')
+    speck = nb.voronoi(P, scale=2600.0, feature='F1')
     sr, sg, sb = nb.sep(speck.outputs['Color'])
     soot = nb.noise(P, scale=40.0, detail=4.0, rough=0.6)
-    ash = nb.sstep(0.60, 0.72, nb.noise(P, scale=120.0, detail=5.0, rough=0.7).outputs['Fac'])
-    col = nb.mixcol(nb.sstep(0.82, 0.9, sr), (0.030, 0.028, 0.027), (0.11, 0.10, 0.095))
-    col = nb.mixcol(nb.mul(nb.sstep(0.3, 0.7, soot.outputs['Fac']), 0.8), col, (0.012, 0.010, 0.009))
-    col = nb.mixcol(nb.mul(ash, 0.7), col, (0.30, 0.285, 0.27))
+    ash = nb.sstep(0.66, 0.76, nb.noise(P, scale=120.0, detail=5.0, rough=0.7).outputs['Fac'])
+    col = nb.mixcol(nb.sstep(0.88, 0.95, sr), (0.016, 0.015, 0.014), (0.045, 0.042, 0.040))
+    col = nb.mixcol(nb.mul(nb.sstep(0.3, 0.7, soot.outputs['Fac']), 0.85), col, (0.007, 0.006, 0.005))
+    col = nb.mixcol(nb.mul(ash, 0.5), col, (0.16, 0.15, 0.14))
     bs = nb.principled(Base_Color=col, Roughness=nb.madd(soot.outputs['Fac'], 0.2, 0.62))
     nb.link(nb.bump(nb.add(speck.outputs['Distance'], nb.mul(ash, 0.5)), 0.3, 0.0003), bs.inputs['Normal'])
     nb.output(surface=bs)
@@ -1601,7 +1615,7 @@ def _melt(C, new_material, R, opts, T):
         letters.append((f, (wake + fl) * (1.0 - _ease((f - (MELT['out'] - 2)) / 4.0))))
     flare = [(f, math.exp(-max(0.0, f - MELT['flare']) / 6.0) * (f >= MELT['flare'] - 1)) for f in
              range(START - 2, END + 3)]
-    hot = [(f, 0.10 + 0.35 * _ease((f - 5372) / 40.0) + 0.9 * _ease((f - 5400) / 60.0)) for f in
+    hot = [(f, 0.03 + 0.10 * _ease((f - 5372) / 40.0) + 0.45 * _ease((f - 5400) / 60.0)) for f in
            range(START - 2, END + 3)]
     molten = [(f, _melt_front(f)) for f in range(START - 2, END + 3)]
     g = gold(new_material, R, letters=letters, flare=flare, hot=hot, molten=molten,
@@ -1613,8 +1627,8 @@ def _melt(C, new_material, R, opts, T):
     hit = 5364
     for f in range(START - 2, END + 3):
         if f < hit:                                                     # the fall (from her open hand, above)
-            u = (f - (hit - 4.5)) / 4.5
-            z = z_rest + 0.075 * (1.0 - max(u, 0.0) ** 2)                  # it falls: accelerating
+            u = (f - (hit - 3.0)) / 3.0                                     # from just above the frame, in 3 f
+            z = z_rest + 0.040 * (1.0 - max(u, 0.0) ** 2)                  # it falls: accelerating
             tilt = math.radians(38.0) * (1.0 - max(u, 0.0))
             q = yaw @ Quaternion((1.0, 0.0, 0.0), tilt) @ Quaternion((0.0, 1.0, 0.0), math.radians(12.0) * (1 - max(u, 0.0)))
             pos = Vector((0.004 * (1 - max(u, 0.0)), -0.002, z))
@@ -1669,7 +1683,7 @@ def _melt(C, new_material, R, opts, T):
     heart = bpy.data.lights.new('heart', 'AREA')
     heart.shape = 'DISK'
     heart.size = 0.16
-    heart.color = (1.0, 0.72, 0.42)
+    heart.color = (1.0, 0.82, 0.60)
     ob = C.link_obj(bpy.data.objects.new('heart', heart))
     ob.location = (0.0, 0.07, 0.10)
     ob.rotation_euler = Euler((math.radians(-35.0), 0.0, 0.0))       # down and toward the lens, onto the band
@@ -1683,9 +1697,9 @@ def _melt(C, new_material, R, opts, T):
     rim = C.point('rim', (0.04, 0.12, 0.05), (1.0, 0.6, 0.3), 0.0, radius=0.04)
     for f in range(START - 2, END + 3):
         k = fire(f)
-        C.key(heart, 'energy', f, opts.get('heart_w', 0.7) * k)
-        C.key(bed, 'energy', f, opts.get('bed_w', 0.45) * k)
-        C.key(rim.data, 'energy', f, opts.get('rim_w', 0.9) * k)
+        C.key(heart, 'energy', f, opts.get('heart_w', 0.40) * k)
+        C.key(bed, 'energy', f, opts.get('bed_w', 0.22) * k)
+        C.key(rim.data, 'energy', f, opts.get('rim_w', 0.6) * k)
     # ---- camera: low over the stone, the band's near side (letters toward us) in focus; rack to the bead at 5440
     cp = Vector(opts.get('cam', (0.0, -0.20, 0.070)))
     tgt = Vector(opts.get('tgt', (0.0, 0.004, 0.002)))
