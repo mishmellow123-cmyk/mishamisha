@@ -5,3 +5,115 @@ host: Linux vm 6.18.44-fc-v42 #1 SMP PREEMPT_DYNAMIC @0 x86_64 | cpus 4
 12:58:20 setup: cd shots/embers && python3 render.py 1040 --cut A3 --scale 0.1 --out /tmp/embers_warm
 12:59:59 setup ok in 99s
 12:59:59 SETUP DONE; starting renders
+13:00:01 render[0] started: cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1040-1439:4 --cut A3
+13:00:01 render[1] started: cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1041-1439:4 --cut A3
+13:00:01 render[2] started: cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1042-1439:4 --cut A3
+13:00:01 render[3] started: cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1043-1439:4 --cut A3
+
+--- render[0] cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1040-1439:4 --cut A3
+frame 1340 scale 1.0 1.45s
+frame 1344 scale 1.0 1.32s
+frame 1348 scale 1.0 1.36s
+frame 1352 scale 1.0 1.40s
+frame 1356 scale 1.0 1.35s
+frame 1360 scale 1.0 1.41s
+frame 1364 scale 1.0 1.38s
+frame 1368 scale 1.0 1.62s
+frame 1372 scale 1.0 1.39s
+frame 1376 scale 1.0 1.73s
+frame 1380 scale 1.0 1.34s
+frame 1384 scale 1.0 1.64s
+frame 1388 scale 1.0 1.63s
+frame 1392 scale 1.0 1.44s
+frame 1396 scale 1.0 1.69s
+frame 1400 scale 1.0 1.46s
+frame 1404 scale 1.0 1.95s
+frame 1408 scale 1.0 1.46s
+frame 1412 scale 1.0 1.95s
+frame 1416 scale 1.0 1.67s
+frame 1420 scale 1.0 1.60s
+frame 1424 scale 1.0 1.46s
+frame 1428 scale 1.0 1.10s
+frame 1432 scale 1.0 0.83s
+frame 1436 scale 1.0 0.83s
+
+--- render[1] cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1041-1439:4 --cut A3
+frame 1341 scale 1.0 1.48s
+frame 1345 scale 1.0 1.52s
+frame 1349 scale 1.0 1.31s
+frame 1353 scale 1.0 1.16s
+frame 1357 scale 1.0 1.47s
+frame 1361 scale 1.0 1.42s
+frame 1365 scale 1.0 1.31s
+frame 1369 scale 1.0 1.55s
+frame 1373 scale 1.0 1.43s
+frame 1377 scale 1.0 1.42s
+frame 1381 scale 1.0 1.57s
+frame 1385 scale 1.0 1.25s
+frame 1389 scale 1.0 1.55s
+frame 1393 scale 1.0 1.38s
+frame 1397 scale 1.0 1.45s
+frame 1401 scale 1.0 1.65s
+frame 1405 scale 1.0 1.85s
+frame 1409 scale 1.0 1.34s
+frame 1413 scale 1.0 1.15s
+frame 1417 scale 1.0 1.37s
+frame 1421 scale 1.0 1.37s
+frame 1425 scale 1.0 1.49s
+frame 1429 scale 1.0 1.62s
+frame 1433 scale 1.0 1.43s
+frame 1437 scale 1.0 1.23s
+
+--- render[2] cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1042-1439:4 --cut A3
+frame 1342 scale 1.0 1.37s
+frame 1346 scale 1.0 1.19s
+frame 1350 scale 1.0 1.24s
+frame 1354 scale 1.0 1.63s
+frame 1358 scale 1.0 1.53s
+frame 1362 scale 1.0 1.23s
+frame 1366 scale 1.0 1.52s
+frame 1370 scale 1.0 1.31s
+frame 1374 scale 1.0 1.32s
+frame 1378 scale 1.0 1.55s
+frame 1382 scale 1.0 1.47s
+frame 1386 scale 1.0 1.12s
+frame 1390 scale 1.0 1.62s
+frame 1394 scale 1.0 1.27s
+frame 1398 scale 1.0 1.59s
+frame 1402 scale 1.0 1.42s
+frame 1406 scale 1.0 1.34s
+frame 1410 scale 1.0 1.90s
+frame 1414 scale 1.0 2.06s
+frame 1418 scale 1.0 1.67s
+frame 1422 scale 1.0 1.83s
+frame 1426 scale 1.0 1.54s
+frame 1430 scale 1.0 1.57s
+frame 1434 scale 1.0 1.34s
+frame 1438 scale 1.0 1.33s
+
+--- render[3] cd shots/embers && NUMBA_NUM_THREADS=2 python3 render.py 1043-1439:4 --cut A3
+frame 1343 scale 1.0 1.40s
+frame 1347 scale 1.0 1.58s
+frame 1351 scale 1.0 1.35s
+frame 1355 scale 1.0 1.35s
+frame 1359 scale 1.0 1.50s
+frame 1363 scale 1.0 1.25s
+frame 1367 scale 1.0 1.13s
+frame 1371 scale 1.0 1.35s
+frame 1375 scale 1.0 1.39s
+frame 1379 scale 1.0 1.45s
+frame 1383 scale 1.0 1.40s
+frame 1387 scale 1.0 1.60s
+frame 1391 scale 1.0 1.67s
+frame 1395 scale 1.0 1.33s
+frame 1399 scale 1.0 1.59s
+frame 1403 scale 1.0 1.45s
+frame 1407 scale 1.0 1.44s
+frame 1411 scale 1.0 1.67s
+frame 1415 scale 1.0 1.29s
+frame 1419 scale 1.0 1.67s
+frame 1423 scale 1.0 1.53s
+frame 1427 scale 1.0 1.38s
+frame 1431 scale 1.0 1.87s
+frame 1435 scale 1.0 1.72s
+frame 1439 scale 1.0 1.27s
