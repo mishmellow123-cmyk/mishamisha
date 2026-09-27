@@ -1,25 +1,38 @@
 # MIRROR: C10 THE MIRROR (C bars 27-29, frames 2080-2319 -> renders/mirror_C)
 
-## STATE AT HANDOFF (MIRROR, 27 Sep ~21:15Z; read this first)
-* COMMITTED + PUSHED (e572d41 on claude/long-dawn-v2): `mirror.py` (renderer), `plates.py` (plate baker),
-  `plates/fire.mp4` (4.4 MB, 120 f), `plates/dawn.jpg`, `cloud/jobs/mirror_C.json` (1 lane,
-  `--frames 2080-2319 --threads 8 --ss 1.5`, ship jpg -> renders/mirror_C).
-* Farm look-dev: `farm.py cloud/jobs/mirror_C.json --test 4 --frames 2088,2160,2222,2300` -> renders/_farmtest/mirror_C/
-  (log: scratchpad mirror/farm_t1.log). The local 0.3-scale check of the same frames is in the scratchpad (mirror/t2).
-* The RESULT and the JOB READY status are in the block right below (updated last thing before the window closed).
+## STATE AT HANDOFF (MIRROR, 27 Sep ~20:55Z; read this first)
+* CODE: pushed at 5ba520d (claude/long-dawn-v2): `mirror.py` (renderer, look pass 2), `plates.py`, `plates/fire.mp4`,
+  `plates/dawn.jpg`, `cloud/jobs/mirror_C.json` (1 lane `--frames 2080-2319 --threads 8 --ss 1.5`, jpg ->
+  renders/mirror_C).
+* JOB READY mirror_C SENT to main at ~20:53Z (240 f, ~12 min on 3 cpu nodes). If approved, launch:
+  `cd ~/mishamisha && python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/mirror_C.json --nodes 3`
+  (and `--missing` to top up). EDIT-2 confirmed that the EDL already reads renders/mirror_C (C numbering, jpg or
+  png), so nothing is needed there.
+* Farm look-dev IN FLIGHT at 20:52Z: `--test 3 --frames 2160,2222,2300` -> renders/_farmtest/mirror_C/ (log: scratchpad
+  mirror/farm_t2.log). Review them at full res (a 1:1 crop of the lip and the ripples) before the final lands.
+* Local 0.3x check (look pass 2): review/mirror_C_check/local_0.3x_2160_2206_2222_2300.jpg. VERDICT: good with
+  nitpicks.
+  - It reads as rippled water in a stone basin: the lip on the right, the dark ground beyond. No porthole, no Eye.
+  - 2160: the burning lands in dark water with stars.
+  - 2206: the drop's rings bloom the dawn out from the sun.
+  - 2222: the golden dawn and the drawn ranges.
+  - 2300: the fire back (red walls, towers, sparks).
+* NITPICKS (a cheap re-render):
+  - The dawn's sun is a soft glow, not the drawn disc (lower the added glow in Mirror.__init__).
+  - Faint star dust over the dawn (star_sky gain 45).
+  - The drawn ranges are faint under the gold (the `land` factor).
+  - The lip could take more warm glow (rim_glow 3.0*E).
+* Music: the sync note is in music/NOTES_v3.md ("PICTURE SYNC: C10"). The drop strikes f2200, the after-drip ~2210.6,
+  the dawn runs 2200-2248, the fire is back 2248-2288. COMPOSER-C's score_v3_C.mirror() already matches.
 * NEXT STEPS, in order:
-  1. Look at the farm stills (reduced for composition, 1:1 crop for detail). Gate: stars read in dark water at
-     2088; the burning lands read (not "hammered glass") at 2160; the golden dawn with the sun under the drop at
-     2222; the fire back at 2300; the stone reads as stone; nothing reads as an eye, a porthole or a screen.
-  2. If it passes (or passes with nitpicks), send JOB READY mirror_C to main (240 f; farm est. ~10 min on 3 nodes)
-     and launch the final when approved: `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/mirror_C.json --nodes 3`.
-  3. Tell EDIT-2 (aed1b4c6f62d96a63) the folder: renders/mirror_C, C numbering 2080-2319 (C10, bars 27-29).
-  4. When EMBERS-C's H5 race (renders/embers_C3 1560-1679) or RUN-C's final f2480 changes: `python3
-     shots/mirror/plates.py`, check the flank crop still excludes the Ring (FLANK_L/FLANK_R), commit the plates,
-     re-render with `--missing` after deleting the old frames.
-
-## JOB STATUS
-* (see the bottom of this file; updated at each step)
+  1. The farm stills: check at full res, fix anything glaring, and push.
+  2. On approval, launch the final. When it lands, check the landed frames (contact sheet 2080-2319 every 16) and
+     play them through (ffmpeg preview).
+  3. Nitpick pass (above), then re-render.
+  4. When EMBERS-C's H5 race lands in renders/embers_C3 (1560-1679), or RUN-C's final f2480 changes:
+     - run `python3 shots/mirror/plates.py`;
+     - check that the flanks (FLANK_L/FLANK_R) still exclude the Ring;
+     - commit the plates and re-render.
 
 ## DESIGN (as built)
 * Beats (sync = music/v3/barmap_C.json; COMPOSER-C's score_v3_C.mirror() already uses these):
