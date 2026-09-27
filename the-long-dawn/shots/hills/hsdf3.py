@@ -448,8 +448,8 @@ def shade3(P, G, BS, allidx, nall, M, L, nl, env, H, cand, nc, buf, XP, ENV, INS
         if glow > 0.0 and gain > 0.0:
             tq = min(1.5, glow)
             emr += gain * tq * 1.0
-            emg += gain * tq * (0.10 + 0.30 * tq)
-            emb += gain * tq * (0.012 + 0.05 * tq * tq)
+            emg += gain * tq * (0.06 + 0.22 * tq)
+            emb += gain * tq * (0.008 + 0.03 * tq * tq)
     gloss_boost = 0.0
     if m == M_SKIN and H[0] > 0.5:
         lx = px - H[1]
