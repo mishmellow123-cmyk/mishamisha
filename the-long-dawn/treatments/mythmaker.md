@@ -428,4 +428,70 @@ A real legend could say every one of them.
 
 **The one line at risk.** *First the makers raced for it. Then the kingdoms.* is A's most literal line. It earns its place because it names both actors, blames neither, and gets the order right. If cold viewers of the animatic (§9) call it on the nose, cut it: the race still reads.
 
-<!-- NEXT: CUT B -->
+---
+
+# CUT B · THE CARRYING (the wordless legend)
+
+## B(1) Logline
+On a festival night, an old woman casts a legend in torchlit shadows on a rock. A star-fire fell on the highest mountain, and it burned the world when one hand seized it. The survivors shielded its last coal with many hands and carried it up through one long night. At the summit they lifted it together into the sky, and it became the sun. No words.
+
+## B(2) The central idea: *the sun is the fire no hand could hold*
+
+B serves no allegory. It is a myth for its own sake, and it keeps the internal logic of real myth. Its three rules are set up in the shadow-play and then obeyed to the letter:
+
+1. **Where the star-fire's light falls, things grow.** The gift.
+2. **It grows as it is fed, and a fire that grows faster than it can be carried burns everything.** The danger.
+3. **Whoever grasps it alone is burned.** Real folklore knows this rule:
+   - In the Cherokee telling of how fire came, the strong and the fast fetch the first coal and come back scorched black. The small water spider carries it home in a bowl she wove.
+   - At the altar of Prometheus, the Athenian torch race went not to the fastest runner but to the first whose torch was still alight. If every torch went out, nobody won.
+
+**The story is a myth in two attempts**, the old pattern of a failed first creation (the Popol Vuh's failed first people; the Aztec world ended by a rain of fire).
+- **First attempt.** One hand grabs the fire, and the world burns.
+- **Second attempt.** The survivors have one coal left and cannot afford another grab, so they shield it with many hands. Because it grows as it is carried, it needs more hands as it goes, and the carrying gathers everyone. Aeschylus said of his chain of beacons that the victor is the runner who ran both first and last: the whole chain wins together.
+- **The beacons.** On every ridge they light a fire from it, so that every valley can see where it is and how big it has grown.
+- **The summit.** By now it is too big for any hands. The only place for a fire no hand can hold is the sky. There it becomes the sun, which shines on every valley at once and belongs to no one.
+
+**Why the turn is inevitable.** Every step is forced by a rule we have already seen:
+- the grab burns, because rule 3 said it would;
+- the carrying must be slow and shared, because of rule 2;
+- the ending must be a letting-go, because only the sky can hold it.
+
+**What each key image means:**
+- **The elder's own hand, whose shadow becomes the grasping giant.** The temptation is human, not a monster's; the storyteller shows it with her own hand.
+- **The ash world.** Ruin for ever, nearly.
+- **The ring of cupped hands around one coal.** Many hands.
+- **The rope on the knife-edge.** Together across the threshold, at the speed you can see.
+- **The beacons on every ridge.** Carried in the open, watched, answered.
+- **The raising.** The gift let go into the sky, where no one can own it.
+- **The greening valleys.** Abundance, not just survival.
+- **The red scarf wound round the child.** The carrying goes on.
+
+**The north star in B** is felt only as fairy-tale truth:
+- don't grab;
+- carry it together;
+- cross the knife-edge slowly;
+- let everyone see where the fire is;
+- a gift nobody holds belongs to everybody.
+
+**The heroine is one of many hands, not the first.** We follow her because of the scarf. Whether the elder is that young woman or her descendant is left open; the scarf is the thread.
+
+**The look.**
+- First, a torchlit shadow-play: rough rock, cut-paper silhouettes whose penumbra softens with distance, and one real flame burning inside the shadow world.
+- Then moonlit 3-D land, which is the Run's world, with snow, wind and cloud sea.
+- Then the gold of the first dawn.
+
+**The motion.** Long takes with weight in them, and a physical camera that feels the wind on the ridge. B's one great flourish is the 30 km pull-back as the fire leaves the carriers' hands and becomes the sun.
+
+**How B differs from A and C.** A averts the brink; B suffers it and rebuilds. C unmakes the Ring; B has no Ring and no council, only a coal and a crowd.
+
+## B(3) Runtime: 4:20 (260 s)
+A wordless myth lasts as long as its images can hold the eye. B has five movements:
+- **the shadow-play:** 40 s, which a shadow-play needs to state its rules;
+- **the burning and the ash:** 44 s, dread with a silence after it;
+- **the hands:** 26 s;
+- **the carrying:** 60 s, including a 26 s unbroken knife-edge;
+- **the raising:** 36 s.
+
+The frames on the hill take the rest. B is shorter than A and C because nothing has to be read. Past about 4½ minutes, a film without words starts asking the eye for patience instead of giving it wonder.
+
+<!-- NEXT: B(4) beat sheet, B(5), B(8) -->
