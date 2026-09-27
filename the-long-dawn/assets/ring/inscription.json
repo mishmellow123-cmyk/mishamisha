@@ -1,0 +1,23 @@
+{
+ "script": "THE SCRIPT OF FIRE (invented; no real alphabet, no real text). Generator: shots/montage3d/ring_script.py (strip(W, H, face) at any resolution).",
+ "files": {
+  "outer": "inscription_outer.png",
+  "inner": "inscription_inner.png"
+ },
+ "pixel": "16-bit grey: 65535 = letter (full coverage), 0 = bare metal. Use as coverage/mask; the colour and strength of the glow are each lane's own (awake in fire: deep orange-red core, never white).",
+ "u": "columns: once round the band, left to right = the direction the script is read; the strip wraps seamlessly at u=0/1. OUTER face: u = angle/360 counter-clockwise seen from the +axis end, so it reads left to right seen from outside with +axis up. INNER face: u = 1 - angle/360 (clockwise seen from +axis), so it too reads left to right seen from inside, never mirrored.",
+ "v": "rows: across the band width; row 0 = the +axis edge (the top edge when the band stands axis-up). The letters are upright when row 0 is up.",
+ "proportions": {
+  "x_height_of_width": 0.3,
+  "baseline_from_top": 0.66,
+  "tallest_letter_above_baseline_of_width": 0.516,
+  "deepest_tail_below_baseline_of_width": 0.246,
+  "stroke_at_base_of_width": 0.0285,
+  "stroke_at_tip_of_width": 0.009
+ },
+ "aspect": {
+  "outer_w_over_h": 14.1372,
+  "inner_w_over_h": 11.3581,
+  "note": "for another band, keep the strip height = band width and stretch u round the circumference; the letters keep their shapes when W/H = circumference/width"
+ }
+}
