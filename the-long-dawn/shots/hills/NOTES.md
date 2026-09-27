@@ -1,4 +1,4 @@
-# >>> HEROINE-v3 (2026-09-27, lane `heroine`, branch claude/v3-heroine): STATE AT 00:50Z (WIP) <<<
+# >>> HEROINE-v3 (2026-09-27, lane `heroine`, branch claude/v3-heroine): STATE AT 01:00Z (WIP) <<<
 
 **Read with BIBLE_V3 REVISION 1** (director, 00:40Z): H1 re-key (B7: face never lit or in focus; tinder, gloves,
 sparks, breath, scarf; head a rim-lit silhouette at most); FIRE TEST = Bag End (the Ring on the tip of her steel IN
@@ -6,15 +6,19 @@ her beacon, unmarked, letters awake, not even warm; she cannot let it fall); Rin
 (`ring.py` = fallback), so this lane does hands, pose and light; H3 (hand forced open) is optional/last; H5 dead
 ember and H4 climb stay.
 
+**Review sheet:** `review/v3/heroine_v3_sheet1.jpg` (H1 v2b vs re-key; H1 re-key strike + roar; B dead ember lid-off
+and greyed).
+
 **RUNNING (launched 00:42Z, local 4-core box): H1 RE-KEY full render.** `cloud/jobs/h1_v3_rekey.json` run by
 `cloud/run_job.py` from the detached worktree `/home/user/h1job` (commit 216d9f1): src 1200-1439 -> `renders/hills_v3`,
-JPEGs pushed every 5 min to branch **`claude/render-h1-v3-rekey`** (~2 h at full res). Runner log:
-`/home/user/h1job/the-long-dawn/cloud_logs/h1_v3_rekey_runner.log`. If the box died, relaunch the same job file on any box
-(it skips nothing already pushed only if you pull that branch first; otherwise it re-renders all 240).
+JPEGs pushed every 5 min to branch **`claude/render-h1-v3-rekey`** (created by hand at 00:57: a detached-HEAD worktree
+cannot push to a branch that does not exist yet; the runner's first rounds failed on that). ~1.5-2 h at full res.
+Runner log: `/home/user/h1job/the-long-dawn/cloud_logs/h1_v3_rekey_runner.log`. If the box died: pull that branch,
+copy its jpgs' frame numbers out, and relaunch the same job on any box (`--skip-existing` only sees local PNGs).
 * What it is: `render.py --shot beacon_v3` = the accepted v2b take (timing, poses, camera, scarf, breath, sparks,
   fire, world) with `beacon.V3_REKEY = True`: her hands in dark leather gloves (`hsdf3.gloves`: M_GLOVE, +0.9 mm,
   no nails, no cold flush) and the head groups (skin, eyes, cap, brim, hair) RIM-ONLY under the warm sources
-  (`hsdf3` G col 9: the strike/ember/tinder/roar light reaches them only at grazing angles; the moon unchanged); hair
+  (`hsdf3` G col 9: strike/ember/tinder/roar light reaches them only at grazing angles; the moon unchanged); hair
   strands and lashes get 12% of the warm light. Rendered through `hsdf3` (fork), so v2b (`--shot beacon`) is
   bit-for-bit untouched.
 * Verified at half res (1262 strike, 1305 blow, 1322 catch, 1345 watch, 1366 flinch, 1390 rise): the face is a dark
@@ -22,6 +26,21 @@ JPEGs pushed every 5 min to branch **`claude/render-h1-v3-rekey`** (~2 h at full
   nothing else changed. Test frames: `renders/hills/tests/h1v3b/` (+ v2b 1305 in `tests/h1v2b/`).
 * Not done: the v3 RETIME (strikes ~1.2 s apart, longer blow, roar on a downbeat) waits on SHOWRUNNER-REV's bar maps
   (`music/v3/barmap_*.json` not on the branch yet); this render is the v2b timing, re-keyed.
+
+**B H5 THE DEAD EMBER: first full-res stills** `renders/heroine_B/stills/deadember_{1030,1120}.png` (in the sheet).
+Staging: she kneels at the cairn, the round clay fire-pot on its lowest course; camera high on her left looking ~50
+deg down into the pot (her head and shoulders above frame: no face possible); B's moon high on her left; the lid
+lifted off by her near hand and set down, her far gloved hand steadying the pot's rim; the ember's light shadowed by
+the pot walls; the breath (thin) lit from below; `life` greys the ember (1044-1130). Verdict so far: READS (clay pot in
+moonlight, the ember, the grey), NOT YET PERFECT: the ember is too big and yellow with a busy "coral" crack pattern
+(want one small deep-red eye in a char rim), the pot is CG-smooth (want a hand-thrown wobble, soot, chips), the glove
+fingertips read as dark balls. Alternatives coded: `deadember_pov` (her POV into the pot; breaks B's observational
+grammar, kept only as an option). Fallback (bible): from behind her, the pot's glow the subject.
+
+**C H2 THE FIRE TEST (Bag End):** `FireTest` coded (the Ring hanging on the end of her steel's bar in the flames, her
+gloved right hand holding the steel at the basket rim, tremble + one dip toward the coals, drawn back at the end;
+burning split logs, the nearest bars, the fire behind; ring.py band + inscription awake). First low-res test: camera
+inside the basket rim, layout broken (the rim bar fills the frame, the Ring hidden). NEXT: re-place the camera.
 
 **Code (new; nothing accepted changes behaviour unless a v3 flag/shot is used):**
 * `shots/hills/hsdf3.py`: fork of heroine_sdf's tracer. T_BAND ring primitive (ring.py's rounded section or
@@ -35,8 +54,7 @@ JPEGs pushed every 5 min to branch **`claude/render-h1-v3-rekey`** (~2 h at full
   `python3 shots/hills/heroine_v3.py still deadember 1030 out.png --scale 0.3`.
 
 **Next steps (in order):**
-1. DeadEmber still (full res) with the ember greying (life 1 -> 0) and the breath; judge vs the fallback (from behind
-   her, the pot's glow the subject).
+1. FireTest layout + full-res still; DeadEmber pass (ember eye, pot wobble, glove tips).
 2. C THE FIND (hand closing on the band in a melted snow hollow, strike-lit) and C THE FIRE TEST (Bag End: the Ring
    on her steel's tip in the flames, her gloved hand holding it there, trembling, cannot let it fall). Ring = ring.py
    band as the bake-off fallback; focus on hands, pose and light. H3 last, if at all.
