@@ -485,14 +485,12 @@ class HandBack:
         if getattr(self, '_title', None) is not None:
             return self._title
         t0 = settled_cam(self.W, self.H, F_TITLE0 - 1)
-        hf = t0.hfov_d * 1.08
-        Ws = int(round(self.W * self.ss * 1.08))
-        fs = 0.5 * Ws / math.tan(math.radians(hf) * 0.5)
         ft = 0.5 * self.W / math.tan(math.radians(t0.hfov_d) * 0.5)
         vt = 2.0 * math.degrees(math.atan(0.5 * self.H / ft))
-        span = vt + TITLE_TILT + TITLE_DRIFT + 1.6
-        Hs = int(round(2.0 * fs * math.tan(math.radians(span) * 0.5)))
-        scam = RC.RCam(t0.pos, t0.yaw_d, t0.pitch_d + 0.5 * (TITLE_TILT + TITLE_DRIFT), 0.0, hf, Ws, Hs)
+        span = vt + TITLE_TILT + TITLE_DRIFT + 0.6
+        Ht = int(round(2.0 * ft * math.tan(math.radians(span) * 0.5)))
+        tall = RC.RCam(t0.pos, t0.yaw_d, t0.pitch_d + 0.5 * (TITLE_TILT + TITLE_DRIFT), 0.0, t0.hfov_d, self.W, Ht)
+        scam = RC.source_for(tall.scaled(self.ss))            # the marched source (with the warp's margins)
         P = np.array([scam.pos[0], scam.pos[2], 0.0, 0.0])
         p = os.path.join(CACHE, f'hbt_G_{BW.VERSION}_{self.scale:.3f}_{self.ss:.2f}_{_sun_az():.2f}.npy')
         if os.path.exists(p):
