@@ -11,6 +11,17 @@ pole-bearers as an iconic silhouette, but it plays as a small party, not "about 
 frozen while the session is idle and rebooted at resume (here the chain stopped at 01:13Z at frame 140/960). Anything
 that must render while we wait goes to cloud jobs.
 
+## Review files (`review/v3/`)
+* `runA_crossing_greybox_q_12fps.mp4`: the whole take at 0.25 scale, 12 fps (the greybox).
+* `runA_crossing_wide_h_5s.mp4` (chosen, 24 fps) and `runA_crossing_wide_h_5s_fallback_few.mp4` (12 fps): the settled
+  wide at 0.5 scale, 32.5-37.5 s; `runA_crossing_wide_main_vs_fallback_h.jpg`: the same moment side by side.
+* `runA_crossing_greybox_q_contact.jpg`: one frame every 4 s; `runA_crossing_greybox_q_stills.jpg`: the first pass.
+* `runA_crossing_h_f400.jpg`: 16.7 s at 0.5 scale with the final orange-red smoulder (the mp4s above carry the
+  earlier, pinker red: crimson added over blue moonlit cloud reads magenta, as fire2's notes warn).
+* `runA_underglow_run_demo.jpg`: the red under-glow in the Beacon Run's own world (its last wide, 1679), off and on,
+  pulsing on the race's beat: `world.cloud_glow` is ready for R3/R2 as is (patch table: see `crossing.underglow`).
+* `runA_falsedawn_three_designs.jpg`, `runA_falsedawn_arc_swell.jpg`, `runA_falsedawn_arc_full_f420.jpg`.
+
 ## THE CROSSING (R6): what is built (`shots/run/crossing.py`, `shots/run/sdfppl.py`, additive `world.py`)
 * **Set.** A knife-edge arete (8 `ridge_row` segments, a wandering crest, flanks falling ~60 deg to the cloud sea
   800 m below) in a clear basin of the cloud sea at world (-5200, 14400), between two faceted summits (`crag_row`);

@@ -326,7 +326,7 @@ def underglow(t):
     a = sky_angle(t)
     T = _ug_table()
     out = []
-    col = np.array([1.0, 0.16, 0.035]) * 1.5
+    col = np.array([1.0, 0.34, 0.07]) * 1.4      # orange-red: crimson over blue moonlit cloud reads magenta
     for x, z, rad, a_out, g, ph in T:
         live = 1.0 - smoothstep(a_out - 3.5, a_out, a)
         if live <= 0.0:
