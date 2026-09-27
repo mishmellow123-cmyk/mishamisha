@@ -1,5 +1,18 @@
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
+## SPLIT (director approved ~19:05Z): two agents in this department
+* **RUN-A-L:** A2 FALSE DAWN (`falsedawn.py`), A11 X2 (`stars_a.py`, new), A13 R2-A REVEAL, A14 BEACON RUN and A15
+  WATCHERS. Folders: `falsedawn_A`, `stars_A`, `reveal_A`, `beaconrun_A` and `watchers_A`.
+* **RUN-A2:** A18 THE CROSSING, A19 THE BLUE HOUR and A20's title sky (`bluehour_A` 6240-6479). Owns `crossing.py`,
+  `bluehour.py`, `sdfppl.py` and `crossing_fires.npy`. RUN-A-L uses sdfppl read-only for the watchers and sends
+  figure requests through RUN-A2.
+* **Both:**
+  * `world.py` stays additive-only.
+  * Commit through `_local_logs/runA/commit_runA.py`.
+  * Keep your own sub-block (`# >>> RUN-A2 ...`) directly under this one. The helper carries every `# >>> RUN-A*`
+    block together.
+  * No old job launches. Heavy renders go to the FARM in jobs of 45 minutes or less, with JOB READY and check stills.
+
 ## STATE AT HANDOFF (RUN-A-L on the local Mac, 27 Sep ~18:50Z)
 * **Who.** The cloud RUN-A session (account now unreachable) paused at ~16:35Z. RUN-A-L took the lane over locally.
   Its branch `claude/v3-runA` (fbe4ada) was imported onto `claude/long-dawn-v2` in **6587a6e** with explicit paths, not
