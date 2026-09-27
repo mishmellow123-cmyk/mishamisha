@@ -7,7 +7,7 @@
   "$HOME/bpyenv/bin/python -c \"import bpy; print('bpy', bpy.app.version_string)\""
  ],
  "render": [
-  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.02 MT3D_BLENDER=$HOME/bpyenv/bin/python python3 render.py meltc --final --force --samples 192 --outdir renders/ring_C --range 5360-5519"
+  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.02 MT3D_BLENDER=$HOME/bpyenv/bin/python python3 melt_local.py meltc --final --force --samples 192 --outdir renders/ring_C --range 5360-5519"
  ],
  "outputs": [
   {"out_dir": "renders/ring_C", "frames": "5360-5519"},

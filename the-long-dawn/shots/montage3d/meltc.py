@@ -1041,7 +1041,7 @@ def _char_mat(new_material, fr):
     edges of the cracks."""
     m, nb = new_material('char')
     P = nb.texco().outputs['Object']
-    vo = nb.voronoi(nb.mul(P, (1.0, 2.2, 2.2)), scale=520.0, feature='DISTANCE_TO_EDGE')
+    vo = nb.voronoi(nb.vmul(P, (1.0, 2.2, 2.2)), scale=520.0, feature='DISTANCE_TO_EDGE')
     crack = nb.sub(1.0, nb.sstep(0.0, 0.07, vo.outputs['Distance']))
     under = nb.sstep(0.2, -0.6, nb.sep(nb.geo().outputs['Normal'])[2])
     hotn = nb.noise(P, scale=160.0, detail=3.0)
