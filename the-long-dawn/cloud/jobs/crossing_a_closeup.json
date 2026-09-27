@@ -1,0 +1,11 @@
+{
+ "name": "crossing_a_closeup",
+ "branch": "claude/render-crossing-a-closeup",
+ "setup": [],
+ "render": [
+  "python3 shots/run/crossing.py --frames 4880,5000,5100 --out closeup --procs 3"
+ ],
+ "out_dir": "renders/crossing_A/closeup",
+ "frames": "4880,5000,5100",
+ "ship": "jpg"
+}

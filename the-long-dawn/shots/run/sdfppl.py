@@ -587,8 +587,9 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
     # the hood: a cowl round the head, a front brim standing proud of the (unseen) face, a soft point at the back,
     # the cloth falling from it into the cape (no neck shows)
     sc.cone(head - w * 0.02 * h, head + up * 0.012 * h, 0.112 * h, 0.116 * h, 0, 0.06 * h)
-    sc.cone(head + w * 0.075 * h + up * 0.045 * h, head + w * 0.10 * h - up * 0.06 * h, 0.05 * h, 0.042 * h, 0,
-            0.07 * h)
+    # the brim: a lip of cloth over the brow, flush with the cowl (a longer one reads as a snout on a bent figure)
+    sc.cone(head + w * 0.05 * h + up * 0.05 * h, head + w * 0.065 * h - up * 0.02 * h, 0.05 * h, 0.04 * h, 0,
+            0.09 * h)
     sc.cone(head - up * 0.05 * h - w * 0.02 * h, chest + up * 0.03 * h - w * 0.03 * h, 0.10 * h, 0.17 * h, 0,
             0.07 * h)
     if peak:
@@ -833,8 +834,8 @@ def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0,
         sc.cone(C - up * 0.02 * h, P, 0.17 * h, 0.16 * h, 0, 0.06 * h)
     # ---- the hood: a cowl round the head, a front brim, a drape to the shoulders (no neck shows)
     sc.cone(Hd - hf * 0.02 * h, Hd + up * 0.012 * h, 0.108 * h, 0.112 * h, 0, 0.06 * h)
-    sc.cone(Hd + hf * 0.072 * h + up * 0.045 * h, Hd + hf * 0.095 * h - up * 0.055 * h, 0.048 * h, 0.040 * h, 0,
-            0.07 * h)
+    sc.cone(Hd + hf * 0.048 * h + up * 0.05 * h, Hd + hf * 0.062 * h - up * 0.02 * h, 0.048 * h, 0.038 * h, 0,
+            0.09 * h)
     sc.cone(Hd - up * 0.05 * h - hf * 0.02 * h, C + up * 0.03 * h - w * 0.03 * h, 0.098 * h, 0.165 * h, 0, 0.07 * h)
     if peak:
         sc.cone(Hd - hf * 0.05 * h + up * 0.05 * h, Hd - hf * 0.15 * h - up * 0.01 * h + wdir * 0.2 * wn,

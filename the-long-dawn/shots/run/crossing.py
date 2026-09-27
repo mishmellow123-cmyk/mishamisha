@@ -112,18 +112,17 @@ CR = CR0                                         # replaced by CR0 + the watch-f
 GR_V = -6900.0
 GR_U0 = -1120.0                                  # the dominant summit (about 9 deg left of the pole in the wide)
 GR_KNOTS = [(-2700, 250), (-2350, 360), (-2000, 330), (-1700, 420), (-1400, 385), (-1150, 470), (-900, 440),
-            (-650, 500), (-420, 465), (-250, 540), (-40, 560), (180, 505), (400, 450), (650, 468), (900, 400),
-            (1150, 372), (1400, 300), (1650, 248), (1950, 120), (2250, -160)]
-FR_V = -17500.0
-FR_KNOTS = [(1900, 150), (2400, 420), (3000, 520), (3600, 470), (4300, 600), (5000, 540), (5700, 575),
-            (6400, 470), (7200, 380), (8000, 150)]
+            (-650, 500), (-420, 465), (-250, 540), (-40, 560), (180, 505), (400, 450), (620, 430), (820, 330),
+            (1020, 150), (1250, -250)]
+# (a far range 18 km out was tried and cut: its crest made a clean pyramid, and with the great range it hid the
+# whole cloud sea, so the red under the cloud could not be seen going out. The right third stays open sea.)
 
 
 def build_ranges():
     rows = []
     crest = []
     rng = np.random.default_rng(606)
-    for knots, v0, u0, sd in ((GR_KNOTS, GR_V, GR_U0, 300), (FR_KNOTS, FR_V, 0.0, 400)):
+    for knots, v0, u0, sd in ((GR_KNOTS, GR_V, GR_U0, 300),):
         pts = []
         for du, y in knots:
             # the crest wanders (never a straight wall) and bows away from the camera at its ends
@@ -378,6 +377,7 @@ def _sm(x):
 
 
 LANT_K = 0.85                                 # the great lantern: ~0.9 m from foot to finial ring
+H0 = -0.45                                    # the opening camera's height relative to the lantern's heart (m)
 RING = (0.30 + 0.33) * LANT_K                 # heart -> finial ring
 
 
@@ -404,7 +404,9 @@ def camera(frame, W=1920, H=804, cfg=None):
     # side-on from the first frame, a little behind the lantern and below the crest, so the bearers stand in
     # profile on the crest's skyline against the stars, feet on the snow; the draw-back rises to crest level
     beta = math.radians(72.0 + 4.0 * e2)
-    h = -0.9 + (cfg['h1'] + 0.9) * e1 ** 1.3
+    # H0: just above the crest's own height at the bearers, so the uphill bearer's boots stand on the snow's
+    # skyline in frame (from lower, the near hump of the crest hid them)
+    h = H0 + (cfg['h1'] - H0) * e1 ** 1.3
     pos = L + (-E3 * math.cos(beta) + S3 * math.sin(beta)) * r + UP * h
     hfov = 38.0 + (cfg['hfov1'] - 38.0) * e1
     # frame the lantern directly: centred for the match cut, easing to 80% across the frame in the wide (the line
@@ -577,7 +579,7 @@ def range_fires():
     global _RF
     if _RF is None:
         out = []
-        for kn in (4, 8, 16):
+        for kn in (4, 8, 13):
             p = GR_CREST[kn]
             best = None
             for du in np.linspace(-30.0, 30.0, 7):
@@ -754,9 +756,10 @@ def night(t):
     fogp[0] = 1.0e-4                             # aerial depth: near islands dark, the great range 7 km out half
                                                  # veiled, the far range and the needles beyond it pale
     amb = amb * (0.55 + 0.45 * mf)
-    S = SK.sky_params(zenith='#070B1C', horizon='#2A3866', moon_dir=md, moon_radius_deg=0.8,
+    # the horizon band keeps its airglow after the moon sets, so the great range stays a silhouette against it
+    S = SK.sky_params(zenith='#070B1C', horizon='#2D3B6C', moon_dir=md, moon_radius_deg=0.8,
                       halo_I=0.025 * mf, halo_w=0.22, halo2_I=0.012 * (0.3 + 0.7 * mf), halo2_w=0.7,
-                      horizon_glow=0.25 * (0.6 + 0.4 * mf), gain=0.75 + 0.25 * mf)
+                      horizon_glow=0.25 * (0.8 + 0.2 * mf), gain=0.80 + 0.20 * mf)
     return (Lk, amb, S, fogp, Q), mf, md
 
 
