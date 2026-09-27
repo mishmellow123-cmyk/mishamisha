@@ -7,8 +7,8 @@ strike 2 +29, strike 3 +58, the long blow +84..+180 (three breaths), the catch +
 accepted post-catch poses are stretched 42 -> 44 frames to the roar and shifted +116 after it; four frame literals
 became constants with identical v2b values, so `--shot beacon` is unchanged. `render.py --shot beacon_v3` = this timing
 + the B7 re-key; src 1200-1555, strike 1 = src 1236 -> `renders/h1_v3`, JPEGs to branch **`claude/render-h1-v3-master`**
-(`cloud/jobs/h1_v3_master.json`; RUNNING on this box since 05:09Z, ~1-1.5 h; log
-`/home/user/h1m/the-long-dawn/cloud_logs/h1_v3_master_runner.log`). Verified at half res: 1265 (strike 2), 1334/1400
+(`cloud/jobs/h1_v3_master.json`): **DONE 05:09-05:50Z on this box, 356/356 JPEGs pushed, every frame decodes**; contact
+sheet `review/v3/heroine_v3_h1_master_contact.jpg` (strikes, the long blow, the catch, the roar, the pull-back). Verified at half res: 1265 (strike 2), 1334/1400
 (the blow), 1436/1456 (catch, small flame), 1478 (roar), 1500/1555 (pull-back): face dark throughout.
 Edit mapping (src -> cut): A src 1236 = A 3360 (+2124); B src 1236 = B 1120 (-116); C src 1236 = C 2980 (+1744) through
 strike 2 (C 3009), the find inserts, then src 1294 (strike 3) = C 3178 (+1884) through the roar (src 1476 = C 3360).
@@ -43,7 +43,7 @@ lights)` renders her gloved hand and sleeve cuff alone as an RGBA + depth layer 
 over the Ring on the stone); smoke-tested.
 
 **RENDER_SPEC (one 4-core box each, 2 processes x 2 workers, `--step 2`, ship jpg; `render.py --shot <name>`):**
-* `cloud/jobs/h1_v3_master.json` (beacon_v3): RUNNING here, see above.
+* `cloud/jobs/h1_v3_master.json` (beacon_v3): DONE (branch `claude/render-h1-v3-master`).
 * `cloud/jobs/h5_deadember_b.json` (deadember): B 880-1119 -> `renders/heroine_B`, ~1 h. Ready.
 * `cloud/jobs/h2_firetest_c.json` (firetest): C 3392-3599 -> `renders/heroine_C`, ~50 min. Ready.
 * `cloud/jobs/h2_find_c.json` (find): C 3009-3059 -> `renders/heroine_C`, ~15 min. Ready.
