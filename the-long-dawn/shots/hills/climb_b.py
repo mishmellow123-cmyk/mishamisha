@@ -389,8 +389,24 @@ class Shot:
             tmp = p + f'.{os.getpid()}.tmp.npy'
             np.save(tmp, self.G)
             os.replace(tmp, p)
+        self.patch_risers()
         self.dist = self.G[..., BW.G_DIST].astype(np.float32)
         self.sky = (self.dist > 1e8).astype(np.float32)
+
+    def patch_risers(self):
+        """bworld's h_rock has a ~0.36 m vertical riser on the NE crest ~25 m below the top; seen edge-on its pixels
+        (normal ny ~0.14, ambient-lit) read as a fence of dark posts along the crest. In OUR copy of the G-buffer only,
+        give near-vertical ground pixels near the summit the crest's up-normal and the moon (reported to RUN-B-3)."""
+        G = self.G
+        dtop = np.hypot(G[..., BW.G_X] - BW.TX, G[..., BW.G_Z] - BW.TZ)
+        m = ((G[..., BW.G_FLAG] == 1.0) & (G[..., BW.G_DIST] < 600.0) & (dtop > 12.0) & (dtop < 45.0)
+             & (G[..., BW.G_NY] < 0.35))
+        if m.any():
+            G[..., BW.G_NX][m] = 0.0
+            G[..., BW.G_NY][m] = 1.0
+            G[..., BW.G_NZ][m] = 0.0
+            if G.shape[-1] > BW.NG:
+                G[..., BW.NG][m] = 1.0
 
     def key(self):
         c = self.camera(1920, 804)
