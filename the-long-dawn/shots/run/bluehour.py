@@ -445,6 +445,64 @@ def light_valley(t):
     return Lk, amb, S, fogp2, Q
 
 
+# ------------------------------------------------------------------ the great lantern, v3 housing ---
+# The director's call (27 Sep): plain, timeless iron and horn: straight corner posts, flat horn panes, a stepped
+# pyramid roof with a vent and a bail, a flat base plate on four feet; no onion base, no arched panels. The core
+# stays the heart of light (the A17 -> A18 match cut), with a flame's flicker and a faint warm edge (HEART CONTRACT
+# v2 in the RUN-A NOTES). Built here from Scene primitives only (the crossing, frozen while it renders, still uses
+# sdfppl.great_lantern; both switch to one shared version after it lands).
+def lantern_v3(sc, c, yaw, pane_rgb, gain, k=1.0):
+    """Centred at c (the heart). Returns the base's height below c (so a caller can stand it on the snow)."""
+    up = np.array([0.0, 1.0, 0.0])
+    fw = np.array([math.sin(yaw), 0.0, math.cos(yaw)])
+    rt = np.array([math.cos(yaw), 0.0, -math.sin(yaw)])
+    R = 0.19 * k
+    hb = 0.30 * k
+    b = 0.014 * k
+
+    def P(x, y, z):
+        return c + rt * x + up * y + fw * z
+
+    sc.begin(rgb=(0.03, 0.03, 0.03), emit=gain, glass=pane_rgb, zbias=0.05)
+    for sx in (-1.0, 1.0):
+        for sz in (-1.0, 1.0):
+            sc.box(P(sx * R, 0.0, sz * R), (0.017 * k, hb + 0.02 * k, 0.017 * k), yaw=yaw, rnd=0.004 * k, mat=1)
+    for y, t_ in ((hb, b), (-hb, b), (-0.12 * hb, 0.6 * b)):
+        for sz in (-1.0, 1.0):
+            sc.box(P(0.0, y, sz * R), (R, t_, t_), yaw=yaw, rnd=0.003 * k, mat=1)
+        for sx in (-1.0, 1.0):
+            sc.box(P(sx * R, y, 0.0), (t_, t_, R), yaw=yaw, rnd=0.003 * k, mat=1)
+    # the horn panes (flat, straight-sided)
+    for sz in (-1.0, 1.0):
+        sc.box(P(0.0, 0.0, sz * R * 0.985), (R, hb, 0.004), yaw=yaw, glass=True, mat=0)
+    for sx in (-1.0, 1.0):
+        sc.box(P(sx * R * 0.985, 0.0, 0.0), (0.004, hb, R), yaw=yaw, glass=True, mat=0)
+    # the roof: a stepped pyramid, a vent, a bail
+    sc.box(P(0.0, hb + 0.03 * k, 0.0), (1.16 * R, 0.018 * k, 1.16 * R), yaw=yaw, rnd=0.004 * k, mat=1)
+    sc.box(P(0.0, hb + 0.085 * k, 0.0), (0.80 * R, 0.042 * k, 0.80 * R), yaw=yaw, rnd=0.01 * k, mat=1)
+    sc.box(P(0.0, hb + 0.150 * k, 0.0), (0.46 * R, 0.030 * k, 0.46 * R), yaw=yaw, rnd=0.008 * k, mat=1)
+    sc.box(P(0.0, hb + 0.200 * k, 0.0), (0.040 * k, 0.026 * k, 0.040 * k), yaw=yaw, rnd=0.004 * k, mat=1)
+    sc.box(P(0.0, hb + 0.232 * k, 0.0), (0.060 * k, 0.007 * k, 0.060 * k), yaw=yaw, rnd=0.003 * k, mat=1)
+    a0, a1 = P(-0.05 * k, hb + 0.24 * k, 0.0), P(-0.035 * k, hb + 0.31 * k, 0.0)
+    a2, a3 = P(0.035 * k, hb + 0.31 * k, 0.0), P(0.05 * k, hb + 0.24 * k, 0.0)
+    for u, v in ((a0, a1), (a1, a2), (a2, a3)):
+        sc.cone(u, v, 0.008 * k, 0.008 * k, 1, 0.0)
+    # the base: a flat plate on four short feet
+    sc.box(P(0.0, -hb - 0.025 * k, 0.0), (1.10 * R, 0.020 * k, 1.10 * R), yaw=yaw, rnd=0.005 * k, mat=1)
+    for sx in (-1.0, 1.0):
+        for sz in (-1.0, 1.0):
+            sc.box(P(sx * 0.9 * R, -hb - 0.060 * k, sz * 0.9 * R), (0.024 * k, 0.016 * k, 0.024 * k), yaw=yaw,
+                   rnd=0.006 * k, mat=1)
+    sc.end()
+    return hb + 0.076 * k
+
+
+def heart_flicker(f_cut):
+    """HEART CONTRACT v2: the core's flame flicker, a function of A's cut frame only."""
+    return 1.0 + 0.06 * math.sin(2 * math.pi * f_cut * 7.3 / 24.0) \
+        + 0.04 * math.sin(2 * math.pi * f_cut * 11.9 / 24.0 + 1.3) + 0.03 * math.sin(2 * math.pi * f_cut * 3.1 / 24.0 + 2.2)
+
+
 # ------------------------------------------------------------------ the people ---
 # Local frame of the gathering: origin at the lantern; F = the way they face (the valley and the dawn), R = its
 # right. Everything is placed in (f, r) metres and dropped onto the snow. The lantern stands LANT_BACK metres short
@@ -554,10 +612,11 @@ def build_scene(t):
     # the great lantern, set down on the snow: it touches down on bar 74 b1 and rocks once as it settles
     lb = lp(0.0, 0.0)
     rock = 0.05 * math.exp(-t / 0.35) * math.sin(t * 17.0)
-    heart = lb + UP * ((0.30 + 0.13) * X.LANT_K) + f_ * rock * 0.4
+    heart = lb + UP * ((0.30 + 0.076) * X.LANT_K) + f_ * rock * 0.4
     hc = np.array([1.00, 0.74, 0.40])
-    br = X.breath(t)
-    SP.great_lantern(sc, heart, math.radians(X.YAW_E) + 0.3, hc, 0.55 * br, scale=X.LANT_K)
+    br = X.breath(t) * heart_flicker(CUT0 + t * FPS)
+    # the horn panes glow warmer than the heart they hold
+    lantern_v3(sc, heart, math.radians(X.YAW_E) + 0.3, np.array([1.0, 0.66, 0.34]), 0.50 * br, k=X.LANT_K)
     lights.append([heart[0], heart[1], heart[2], hc[0], hc[1], hc[2], 4.2 * br, 0.35])
     # the poles laid down, the rope coiled beside it
     sc.begin(rgb=(0.07, 0.05, 0.035))
@@ -738,6 +797,11 @@ def render(frame, scale=1.0, ss=1.5):
         p = lp(ff, rr)
         F2.flame(fr.img, fr.zb, scam, p + UP * 0.1, 1.15, 0.36, t, seed=31 + kf, I=10.0, lean=-0.08, zbias=0.5)
     X.draw_heart(fr.img, fr.zb, scam, heart, t, hc, 0.6 * br, PI.src_scale(fr))
+    # HEART CONTRACT v2: a faint warm edge round the core
+    hx, hy, hz = scam.project(heart)
+    if hz > 0.2:
+        F.halo(fr.img, fr.zb, hx, hy, max(0.07 * scam.f / hz, 1.0), 0.10 * br, z=hz, zbias=0.4,
+               col=np.array([1.00, 0.72, 0.40]))
     img, zb, di = PI.to_target(fr)
     return img
 
