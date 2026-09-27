@@ -1,25 +1,24 @@
-# >>> HEROINE-B STATE AT HANDOFF (new agent, 27 Sep ~19:25Z; owns B2 THE CLIMB only) <<<
-**Scope (director, twice):** HEROINE-B does ONLY B2 THE CLIMB (H4, B 640-879 -> `renders/climb_B`, B frame numbers).
-B3 THE DEAD EMBER stays HEROINE-L's: I do not touch `DeadEmber`, its jobs or `deadember_B`. H1 / H1-C are HEROINE-L's.
-**Inherited:** nothing rendered (`renders/climb_B` does not exist); HEROINE-L's "FOR HEROINE-B" block below is my brief
-(set points, moon az 80 el 14, camera ideas, pipeline = reveal.py/vigil.py, pot = B3's crafted vessel). The old 3-D
-close (`heroine_v3.Climb`) failed in five framings (pot hidden from behind, dark mass from the side, stand-in arete).
-**Files I own (new):** `shots/hills/climb_b.py`, `cloud/jobs/climb_b_*.json`. Read-only for me: `shots/run/{bworld,bset,
-vigil,reveal,pipe,rcam,keeper,fire2}.py` (RUN-B-3's), `heroine_v3.py` / `hsdf3.py` / `heroine.py` (HEROINE-L's: I import
-`figure`, `Climb.walker` ideas and `DeadEmber.pot` for the same crafted vessel, never edit them).
-**H5 items in my area:** silhouette + gloved hands only (she walks away; never a lit face); thin leather gloves; hood/cowl +
-red woven shawl; B's landform + night grade (RUN-B FINISH: exposure 1.15, bloom 0.06/1.2, vignette 0.22); the cairn =
-`bset.rubble_cairn()` at `bset.CAIRN` exactly as the vigil draws it; wide figure 40-60 px; pot glow the only warm point.
-**Plan:** (1) climb_b.py: two locked cameras on bworld (G-buffer per camera, re-shaded per frame), the 3-D figure as a
-depth-tested layer, the pot's light in the terrain shader, spindrift particles; (2) low-res local layout stills via renderq;
-(3) farm `--test` stills; (4) JOB READY climb_b (640-879) with check stills.
-**Live status (20:15Z):** climb_b.py committed 2dea449 (3-D figure v1, superseded). Director (via RUN-B-3): she is B's
-shared keeper = `bset.person2` drawn by RUN-B-3's `bfig.render` (+ `bprops.cairn3`), so climb_b now draws
-`keeper_carry()` (person2 'stand', arms=False, age 0.9 as the vigil; our sleeved arms, the pot at her right hip, heel
-lifts) through bfig when importable, FG.render otherwise (`CLIMB_FIG=h` keeps the 3-D figure for comparison). WIDE
-re-staged LOW on the NW flank (118 m out, 76 deg off her heading, looking up at the crest; her 47 px; the summit's
-beacon + cairn on the skyline right; the moon 34 deg left of frame, so the spindrift plumes are backlit): the high
-wide made bworld's summit-rim relief read as a fence along the crest. Spindrift = puffs (veil) + grains (sparkle).
+# >>> HEROINE-B STATE (27 Sep ~20:50Z; B2 THE CLIMB only, B 640-879 -> renders/climb_B) <<<
+**Code (committed 4b7e740, pushed):** `shots/hills/climb_b.py` (mine), job `cloud/jobs/climb_b.json` (640-879, full res,
+ss 1.5, ship jpg; the farm splits it). Read-only deps: RUN-B's bworld/bset/vigil/pipe/rcam/keeper/fire2, bfig + bprops
+(committed edfa370), handback_b.sleeve_arm; HEROINE-L's heroine/hsdf3/heroine_v3 only for `CLIMB_FIG=h` (old 3-D look).
+* WIDE 640-799: locked, 115 m behind her right shoulder, 14 m above her feet, hfov 30; she is 50-52 px on the crest
+  (s 34 -> 32 m below the lip), the pot at her right hip; the summit's cold beacon + cairn3 on the skyline (x ~1255);
+  bworld's far ranges beyond. CLOSE 800-879: 20 m behind her right shoulder (25 deg), 2.2 m up, hfov 32; she is
+  270-290 px, walking up toward the lip; the beacon + cairn on the skyline right; her long moon shadow.
+* Her = `keeper_carry()`: bset.person2('stand', arms=False, age 0.9) drawn by bfig.render (FG.render fallback) +
+  our sleeved arms (handback_b.sleeve_arm) + the pot (B3's crafted vessel in profile, a glowing leak under the lid)
+  + heel lifts; the shawl rows re-layered on top. Moon = vigil moon_at(F0) (az 80, el 14); sky = vigil.draw_sky frozen
+  at f 1360; bset.match_horizon; RUN-B FINISH (exp 1.15, bloom 0.06/1.2, vignette 0.22).
+* Light: her moon shadow on the snow (capsules, re-shaded without the moon), the pot's warm pool (POOL) + a warm core
+  and halo; spindrift = PUFF (backlit veil) + GRAIN (sparkle) per shot (class dicts).
+**Rejected wides (don't retry):** side-on or low views of the crest show bworld's 0.36 m h_rock STEP ~25 m below the
+top as a fence of dark posts (told RUN-B-3 in shots/run/NOTES.md); the 3-D hsdf figure (the director wants B's
+shared keeper); a low NW-flank view hides the summit behind the dome.
+**Status:** farm --test 700/760/840 requested ~20:45Z (renders/_farmtest/climb_b/); local half-res check (climb_t4)
+queued. NEXT: look at the stills -> JOB READY climb_b (240 f; est. ~25 min on 2 cpu-8 nodes) -> on approval
+`farm.py cloud/jobs/climb_b.json --nodes 2`. Nitpicks for after 23:30Z: spindrift density/brightness, the pot's
+readability in the close, bfig's look on the carry arms.
 
 # >>> STATE AT HANDOFF (HEROINE-L, 27 Sep ~20:40Z; session ended by the director for context size) <<<
 **DONE: H1 THE ROAR, final for all three cuts.** The director approved job `h1_v3_roar2` (shot `beacon_v3_roar2`,

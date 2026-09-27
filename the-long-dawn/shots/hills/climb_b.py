@@ -414,9 +414,10 @@ class Shot:
             LP2[23] = 0.0
             nm = np.zeros((y1 - y0, x1 - x0, 3), np.float32)
             BW.shade(Gc, LP2, SN, amb, fogp, float(scam.pos[1]), nm)
-            sh = self.her_shadow(Gc, f)
             sub = img[y0:y1, x0:x1]
-            sub[:] = nm + (sub - nm) * (1.0 - sh[..., None])
+            if self.SHADOW:
+                sh = self.her_shadow(Gc, f)
+                sub[:] = nm + (sub - nm) * (1.0 - sh[..., None])
             # the pot's light on the snow (her body and the pot itself shadow it)
             sub += self.pot_light(Gc, glow_w, pot_I, f)
         return img
@@ -539,15 +540,17 @@ class Shot:
         s = tc.W / 1920.0
         ppm = tc.f / z
         # the light leaking under the lid: a small warm core and a faint veil round it
+        zb_ = 0.6 + 0.02 * z
         MF.glow(out, d3, float(sx), float(sy), max(0.6, 0.012 * ppm), 1.2 * pI * s * s * self.core_gain,
-                z=float(z), zbias=0.3, col=np.array([1.0, 0.50, 0.16]))
+                z=float(z), zbias=zb_, col=np.array([1.0, 0.50, 0.16]))
         MF.halo(out, d3, float(sx), float(sy), max(2.0, 0.45 * ppm), 0.020 * pI * self.halo_gain, z=float(z),
-                zbias=0.6, col=np.array([1.0, 0.42, 0.12]))
+                zbias=zb_, col=np.array([1.0, 0.42, 0.12]))
 
     core_gain = 1.0
     halo_gain = 1.0
     POOL = 0.06
     WIND_HEM = 1.0
+    SHADOW = True
 
     # --- spindrift: snow torn off the crest by the wind (toward the NNW), lit by the low moon (forward scatter) and,
     # near her, by the pot. Two layers from one emission model: PUFFS (big soft blobs that grow as they diffuse: the
@@ -676,9 +679,12 @@ class Wide(Shot):
 
     # spindrift off the crest: plumes torn over it, streaming down the NW flank toward the lens, backlit by the moon
     PUFF = dict(n=2600, seed=51, life=(2.0, 4.2), speed=(3.5, 8.0), lift=(0.6, 2.8), swirl=1.3, settle=0.45,
-                gain=0.0050, warm=0.0, r0=0.35, r1=1.9, rmin=1.5, bright_pow=1.0)
+                gain=0.020, warm=0.0, r0=0.35, r1=1.9, rmin=1.5, bright_pow=1.0)
     GRAIN = dict(n=45000, seed=53, life=(1.2, 3.0), speed=(5.0, 10.0), lift=(0.3, 2.4), swirl=0.9, settle=0.40,
-                 gain=0.35, warm=0.0, r0=0.0, r1=0.0, rmin=0.7, bright_pow=3.0)
+                 gain=1.5, warm=0.0, r0=0.0, r1=0.0, rmin=0.7, bright_pow=3.0)
+    SHADOW = False
+    core_gain = 4.0
+    halo_gain = 2.0
 
     def sources(self, rng, n):
         pts = np.array([BS.on_ground(BS.path_at(q)) for q in np.linspace(0.0, 120.0, 241)])
@@ -721,7 +727,7 @@ class Close(Shot):
     PUFF = dict(n=700, seed=61, life=(1.0, 2.4), speed=(2.5, 6.0), lift=(0.05, 0.6), swirl=0.4, settle=0.10,
                 gain=0.012, warm=0.010, r0=0.25, r1=0.9, rmin=2.0, bright_pow=1.0)
     GRAIN = dict(n=24000, seed=63, life=(0.8, 2.2), speed=(3.0, 7.5), lift=(0.02, 0.7), swirl=0.35, settle=0.10,
-                 gain=20.0, warm=1.2, r0=0.0, r1=0.0, rmin=1.0, bright_pow=3.0)
+                 gain=60.0, warm=2.0, r0=0.0, r1=0.0, rmin=1.0, bright_pow=3.0)
     WIND_HEM = 1.0
     POOL = 0.15
     core_gain = 3.0
