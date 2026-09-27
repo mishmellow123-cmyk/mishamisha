@@ -1,0 +1,11 @@
+{
+ "name": "crossing_a2_12",
+ "branch": "claude/render-crossing-a2-12",
+ "setup": [],
+ "render": [
+  "python3 shots/run/crossing.py --range 5474-5527 --procs 8"
+ ],
+ "out_dir": "renders/crossing_A",
+ "frames": "5474-5527",
+ "ship": "jpg"
+}

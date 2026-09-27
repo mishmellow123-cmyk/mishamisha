@@ -1,0 +1,11 @@
+{
+ "name": "bluehour_a2_11",
+ "branch": "claude/render-bluehour-a2-11",
+ "setup": [],
+ "render": [
+  "python3 shots/run/bluehour.py --range 6160-6191 --procs 8"
+ ],
+ "out_dir": "renders/bluehour_A",
+ "frames": "6160-6191",
+ "ship": "jpg"
+}
