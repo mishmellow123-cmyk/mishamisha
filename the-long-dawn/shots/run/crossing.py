@@ -454,7 +454,11 @@ def underglow(t):
     T = _ug_table()
     out = []
     col = np.array([1.0, 0.34, 0.07]) * 1.4      # orange-red: crimson over blue moonlit cloud reads magenta
+    cam = uv(0.0, 0.0)
     for x, z, rad, a_out, g, ph in T:
+        # the far patches sit in the thin band of sea the crest leaves under the horizon, deep in the haze: they burn
+        # harder so the red is there to go out (bar 70 b1)
+        g = g * (1.0 + 1.6 * smoothstep(8000.0, 30000.0, math.hypot(x - cam[0], z - cam[2])))
         live = 1.0 - smoothstep(a_out - 1.4, a_out, t)
         if live <= 0.0:
             continue
@@ -770,7 +774,7 @@ def night(t):
 WIND_DIR = -E3 * 0.93 + S3 * 0.37
 WIND_DIR = WIND_DIR / np.linalg.norm(WIND_DIR)
 WIND0 = 0.17                                     # metres of billow at the hem in the mean wind
-FIRE_LEAN = -0.26
+FIRE_LEAN = -0.15                                # (-0.26 bent the thin tongue tips into dark spikes over the keepers)
 
 
 def wind_at(t, s, k=0):
@@ -907,12 +911,21 @@ def build_scene(t, cfg):
             sc.end()
         feed = smoothstep(0.86, 0.93, ph) * (1.0 - smoothstep(0.97, 1.0, ph))
         kp, wk = keeper_spot(k)
+        kw_v, kfl = wind_at(t, 0.0, 60 + k)
+        if k == 0:
+            # the near keeper kneels on the heels in profile, leaning in and reaching to feed the fire
+            SP.seated(sc, kp, wk, (0.03, 0.025, 0.02), h=0.98, pose='kneel', lean=0.22 + 0.35 * feed,
+                      reach=(p + UP * 0.22) if feed > 0.1 else None, wind=kw_v * 0.7, flutter=kfl,
+                      ground=lambda q: float(ground_many(q)[0]), fold_phase=1.3)
+            fl = F.flicker(t, 30 + k)
+            lights.append([p[0], p[1] + 0.9, p[2], F.FIRE_LIGHT[0], F.FIRE_LIGHT[1], F.FIRE_LIGHT[2], 9.0 * b * fl,
+                           0.8])
+            continue
         side = np.cross(UP, wk)
         aL = kp + side * 0.12 + UP * 0.07
         aR = kp - side * 0.12 + wk * 0.08 + UP * 0.07
-        kneel = 0.34 if k == 0 else 0.0
+        kneel = 0.0
         pel = kp + UP * (0.93 * 0.98 - 0.30 * feed - kneel)
-        kw_v, kfl = wind_at(t, 0.0, 60 + k)
         SP.traveller(sc, pel, wk, aL, aR, (0.03, 0.025, 0.02), h=0.98, lean=0.10 + 0.55 * feed + 0.3 * (k == 0), hem=0.20,
                      cloak=(0.20, 0.29), folds=10, fold_depth=0.028, fold_phase=1.3 * k, peak=True,
                      reach=(p + UP * 0.25) if feed > 0.2 else None, wind=kw_v * (0.7 if k == 0 else 1.0), flutter=kfl)
@@ -1054,7 +1067,7 @@ def draw_fires(img, zb, scam, t):
         b, ph = wf_burn(t, k)
         fl = F.flicker(t, 30 + k)
         F2.flame(img, zb, scam, p + UP * 0.12, 1.5 * b, 0.42, t, seed=40 + k, I=12.0 * (0.5 + 0.5 * b),
-                 lean=FIRE_LEAN, zbias=0.5)
+                 lean=FIRE_LEAN, zbias=0.5, absorb=0.22)
         sx, sy, z = scam.project(p + UP * 0.6)
         if z > 0.5:
             ppm = scam.f / z
@@ -1125,7 +1138,25 @@ def render(frame, scale=1.0, ss=1.5, variant='main', trail=True):
     draw_small_glows(fr.img, fr.zb, scam, lant)
     draw_heart(fr.img, fr.zb, scam, heart, t, heart_col(t), breath(t), pxs)
     img, zb, di = PI.to_target(fr)
-    return img
+    zf = float(np.linalg.norm(heart - tcam.pos))
+    return lens_blur(img, zb, zf, scale)
+
+
+def lens_blur(img, zb, zf, scale):
+    """A real lens at night, focused on the great lantern (zf m away): in the close-up the far background (islands,
+    ranges, stars) softens a little behind the sharp bearers, and it sharpens as the camera draws back (the
+    circle of confusion of a far point is K / zf). Normalized convolution over the background only, so no
+    silhouette bleeds into it."""
+    sig = 0.5 * 34.0 * scale / max(zf, 1.0)          # K = 34 px m: ~1.8 px sigma at 9.5 m, ~0.3 px in the wide
+    if sig < 0.3:
+        return img
+    import cv2
+    m = np.clip((zb - 2.5 * zf) / (5.0 * zf), 0.0, 1.0).astype(np.float32)
+    m = m * m * (3.0 - 2.0 * m)
+    b = cv2.GaussianBlur(img * m[..., None], (0, 0), sig)
+    bm = cv2.GaussianBlur(m, (0, 0), sig)
+    blurred = b / np.maximum(bm, 1e-4)[..., None]
+    return (img * (1.0 - m[..., None]) + blurred * m[..., None]).astype(img.dtype)
 
 
 CUT0 = 4880                                      # A18 starts on A's cut frame 4880 (bar 62): files use cut frames

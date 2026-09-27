@@ -386,8 +386,8 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                     if fk > 0.05:
                         f1 = gnoise3(qx * 16.0, qy * 3.0, qz * 16.0, 11)
                         f2 = gnoise3(qx * 16.0 + 7.1, qy * 3.0, qz * 16.0 - 2.3, 12)
-                        nx += 0.35 * fk * f1
-                        nz += 0.35 * fk * f2
+                        nx += 0.45 * fk * f1
+                        nz += 0.45 * fk * f2
                         ny += 0.10 * fk * gnoise3(qx * 30.0, qy * 30.0, qz * 30.0, 13)
                         nl2 = math.sqrt(nx * nx + ny * ny + nz * nz) + 1e-12
                         nx /= nl2
@@ -572,7 +572,7 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
     cape_a = neck - up * 0.015 * h
     cape_b = chest - up * 0.07 * h + wdir * 0.2 * wn
     ang, _ = _bell_wind_ang(cape_a, cape_b, w, wv)
-    sc.bell(cape_a, cape_b, 0.085 * h, 0.215 * h, w, 0.012 * h, 7, fold_phase * 0.7 + 0.9, 0, 0.05 * h,
+    sc.bell(cape_a, cape_b, 0.085 * h, 0.215 * h, w, 0.020 * h, 9, fold_phase * 0.7 + 0.9, 0, 0.05 * h,
             ell=0.8 * el, wind=0.25 * wn, wind_ang=ang)
     # the cloak: from the chest to the hem, the hem centre streaming to the lee and swaying with the gait
     hem_c = np.array([pel[0], ground_y + hem * h, pel[2]]) - w * 0.04 * h + s * sway + wdir * 0.55 * wn
@@ -586,10 +586,9 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
                rnd=0.06 * h, mat=0, k=0.09 * h)
     # the hood: a cowl round the head, a front brim standing proud of the (unseen) face, a soft point at the back,
     # the cloth falling from it into the cape (no neck shows)
-    sc.cone(head - w * 0.02 * h, head + up * 0.012 * h, 0.112 * h, 0.116 * h, 0, 0.06 * h)
-    # the brim: a lip of cloth over the brow, flush with the cowl (a longer one reads as a snout on a bent figure)
-    sc.cone(head + w * 0.05 * h + up * 0.05 * h, head + w * 0.065 * h - up * 0.02 * h, 0.05 * h, 0.04 * h, 0,
-            0.09 * h)
+    # one deep cowl: longer front to back than a head, no brow or snout (a bump on the front reads as a face)
+    sc.cone(head - w * 0.04 * h + up * 0.004 * h, head + w * 0.035 * h + up * 0.014 * h, 0.110 * h, 0.106 * h, 0,
+            0.06 * h)
     sc.cone(head - up * 0.05 * h - w * 0.02 * h, chest + up * 0.03 * h - w * 0.03 * h, 0.10 * h, 0.17 * h, 0,
             0.07 * h)
     if peak:
@@ -816,7 +815,7 @@ def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0,
     cape_a = N - up * 0.015 * h
     cape_b = C - up * 0.07 * h
     ang, _ = _bell_wind_ang(cape_a, cape_b, w, wv)
-    sc.bell(cape_a, cape_b, 0.085 * h, 0.21 * h, w, 0.012 * h, 7, fold_phase * 0.7 + 0.9, 0, 0.05 * h,
+    sc.bell(cape_a, cape_b, 0.085 * h, 0.21 * h, w, 0.020 * h, 9, fold_phase * 0.7 + 0.9, 0, 0.05 * h,
             ell=0.26, wind=0.2 * wn, wind_ang=ang)
     if pose != 'lie':
         back = dict(knees=0.10, cross=0.14, back=0.30, side=0.12, kneel=0.16)[pose]
@@ -833,9 +832,8 @@ def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0,
                rnd=0.03 * h, mat=0, k=0.05 * h)
         sc.cone(C - up * 0.02 * h, P, 0.17 * h, 0.16 * h, 0, 0.06 * h)
     # ---- the hood: a cowl round the head, a front brim, a drape to the shoulders (no neck shows)
-    sc.cone(Hd - hf * 0.02 * h, Hd + up * 0.012 * h, 0.108 * h, 0.112 * h, 0, 0.06 * h)
-    sc.cone(Hd + hf * 0.048 * h + up * 0.05 * h, Hd + hf * 0.062 * h - up * 0.02 * h, 0.048 * h, 0.038 * h, 0,
-            0.09 * h)
+    sc.cone(Hd - hf * 0.04 * h + up * 0.004 * h, Hd + hf * 0.035 * h + up * 0.014 * h, 0.106 * h, 0.102 * h, 0,
+            0.06 * h)
     sc.cone(Hd - up * 0.05 * h - hf * 0.02 * h, C + up * 0.03 * h - w * 0.03 * h, 0.098 * h, 0.165 * h, 0, 0.07 * h)
     if peak:
         sc.cone(Hd - hf * 0.05 * h + up * 0.05 * h, Hd - hf * 0.15 * h - up * 0.01 * h + wdir * 0.2 * wn,
