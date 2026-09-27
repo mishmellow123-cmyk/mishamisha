@@ -325,8 +325,14 @@ def grade(img, g):
     """Per-cut grades of the shared H1 take (BIBLE §8 H1: A night, B cold moonlight, C parchment); fire stays warm."""
     warm = np.clip((img[..., 0] - img[..., 2]) * 3.0 - 0.15, 0, 1)[..., None]
     if g == 'B':
-        cool = img * np.array([0.78, 0.90, 1.12], np.float32)
-        return np.clip(img * warm + cool * (1 - warm), 0, 1)
+        # B's moonlit night: the H5 re-key lifted the sky, which the hands-and-tinder crop magnified into flat blue
+        # shapes between the basket's bars; all but the fire goes to deep night blue. Warm hues AND white-hot cores
+        # are kept (the old cool multiply turned the roar's white core blue).
+        lum = (img @ np.array([0.2126, 0.7152, 0.0722], np.float32))[..., None]
+        hot = np.clip((lum - 0.45) / 0.35, 0, 1)
+        keep = np.maximum(warm, hot * hot * (3 - 2 * hot))
+        night = lum * np.array([0.60, 0.74, 1.08], np.float32) * 0.80 + img * 0.12
+        return np.clip(img * keep + night * (1 - keep), 0, 1)
     if g == 'C':
         lum = (img @ np.array([0.2126, 0.7152, 0.0722], np.float32))[..., None]
         sep = lum * np.array([1.08, 0.92, 0.70], np.float32) * 1.05 + np.array([0.030, 0.024, 0.016], np.float32)
@@ -417,13 +423,15 @@ def masters_table():
     if not os.path.exists(p):
         return out
     for line in open(p):
-        m = re.match(r'\|\s*([ABC])\s+(score|fallback|master)\s*\|\s*`?([^|`]+?)`?\s*\|', line)
-        if m and m.group(3).strip() not in ('-', ''):
-            path = m.group(3).strip()
+        # e.g. "| B score (THE VIGIL) | `music/out/v3/final_B.wav` (stems ...) | ..." -> the first .wav in cell 2
+        m = re.match(r'\|\s*([ABC])\s+(score|fallback|master)\b[^|]*\|([^|]*)\|', line)
+        w = re.search(r'([\w./-]+\.wav)', m.group(3)) if m else None
+        if w:
+            path = w.group(1)
             for cand in (path, os.path.join(ROOT, path), os.path.join(ROOT, 'music', path),
                          os.path.join(ROOT, 'music', 'out', 'v3', path)):
                 if os.path.isfile(cand):
-                    out[(m.group(1), 'fallback' if m.group(2) == 'fallback' else 'score')] = cand
+                    out[(m.group(1), 'fallback' if m.group(2) == 'fallback' else 'score')] = os.path.abspath(cand)
                     break
     return out
 
@@ -439,6 +447,31 @@ def resolve_audio(cut):
         if path and os.path.isfile(path):
             return path, f'{label} ({os.path.relpath(path, ROOT)}, {time.strftime("%d %b %H:%M", time.localtime(os.path.getmtime(path)))} local)'
     return click_track(cut), 'CLICK track (soft click each bar, accented on section starts)'
+
+
+def snapshot_audio(path, cut, tries=36):
+    """COMPOSER re-renders masters in place, and ffmpeg reads its input for the whole encode, so encode from a
+    snapshot: wait (up to 6 min) until the file is the cut's exact length and unchanged for 5 s, copy it to
+    edit/cache/, and check it did not change during the copy. The caller deletes the snapshot after the encode."""
+    import shutil
+    import soundfile as sf
+    dst = os.path.join(CACHE, f'audio_{cut}.wav')
+    want = EDL.TOTAL[cut] / FPS
+    for _ in range(tries):
+        try:
+            st = os.stat(path)
+            ok = abs(sf.info(path).duration - want) < 0.01 and time.time() - st.st_mtime > 5
+            if ok:
+                shutil.copyfile(path, dst + '.part')
+                st2 = os.stat(path)
+                if (st2.st_mtime, st2.st_size) == (st.st_mtime, st.st_size):
+                    os.replace(dst + '.part', dst)
+                    return dst
+        except (OSError, RuntimeError):
+            pass
+        time.sleep(10)
+    print(f'  warning: {path} never settled; encoding from it directly', flush=True)
+    return path
 
 
 def click_track(cut):
@@ -485,6 +518,11 @@ def render(cut, out_path, variant=None, scale=0.5, clean=False, workers=3, rng=N
         audio, alabel = resolve_audio(cut)
     else:
         alabel = f'given ({audio})'
+    snap = None
+    if audio and not os.path.basename(audio).startswith('click_'):
+        snap = audio = snapshot_audio(audio, cut)
+        if not snap.startswith(CACHE):
+            snap = None
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     tmp = out_path + '.part.mp4'
     cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{ctx.W}x{ctx.H}',
@@ -504,7 +542,10 @@ def render(cut, out_path, variant=None, scale=0.5, clean=False, workers=3, rng=N
             if i % 480 == 0:
                 print(f'  {cut} frame {start + i}/{end}  {time.time() - t0:5.0f}s', flush=True)
     proc.stdin.close()
-    if proc.wait() != 0:
+    rc = proc.wait()
+    if snap:
+        os.remove(snap)
+    if rc != 0:
         raise SystemExit(f'ffmpeg failed for {out_path}')
     os.replace(tmp, out_path)
     print(f'wrote {out_path} ({os.path.getsize(out_path) / 1e6:.1f} MB, {time.time() - t0:.0f}s)', flush=True)

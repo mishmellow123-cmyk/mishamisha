@@ -228,7 +228,7 @@
    "code": "E7-A",
    "name": "THE BRINK \u00b7 OVER THE RIM",
    "owner": "EMBERS",
-   "desc": "A torn vortex strips the tower tops; the rim gives way; a crown falls; the camera tips over into white.",
+   "desc": "One roaring updraft strips the tower tops; the rim gives way; a gilded crown falls; the camera follows it into white.",
    "takes": [
     {
      "stem": "embers_A3",
@@ -521,7 +521,7 @@
      "stem": "montage3d_v3/karst_slow",
      "off": -3800,
      "mode": "exact",
-     "note": "Blender KARST at 2/3 speed, pre-H5 (pines, pillar profile)",
+     "note": "Blender KARST v3 final, 2/3 speed (H5: rock towers in mist)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -552,7 +552,7 @@
      "stem": "montage3d_v3/desert",
      "off": -3860,
      "mode": "exact",
-     "note": "Blender DESERT (H5 fixes)",
+     "note": "Blender DESERT v3 final (H5: wide, plain cloak, irregular prints)",
      "crop": null,
      "grade": null,
      "matte": null,

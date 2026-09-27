@@ -161,10 +161,10 @@
      "mode": "exact",
      "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
      "crop": [
-      0.1,
+      0.17,
+      0.22,
       0.26,
-      0.36,
-      0.36
+      0.26
      ],
      "grade": "B",
      "matte": null,
@@ -184,10 +184,10 @@
      "mode": "exact",
      "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
      "crop": [
-      0.1,
+      0.17,
+      0.22,
       0.26,
-      0.36,
-      0.36
+      0.26
      ],
      "grade": "B",
      "matte": null,
@@ -220,10 +220,10 @@
      "mode": "exact",
      "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
      "crop": [
-      0.1,
-      0.26,
-      0.36,
-      0.36
+      0.2,
+      0.08,
+      0.3,
+      0.3
      ],
      "grade": "B",
      "matte": null,
@@ -243,10 +243,10 @@
      "mode": "exact",
      "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
      "crop": [
-      0.1,
-      0.26,
-      0.36,
-      0.36
+      0.2,
+      0.08,
+      0.3,
+      0.3
      ],
      "grade": "B",
      "matte": null,
@@ -383,7 +383,7 @@
    "code": "R9",
    "name": "THE VIGIL \u00b7 SOMEONE HAS SEEN",
    "owner": "RUN-B",
-   "desc": "In her frame (the far-peak cutaway is CUT): the night holds its breath; far off, a pinprick.",
+   "desc": "In her frame: the night holds its breath; far off on the horizon, a pinprick of light.",
    "takes": [
     {
      "stem": "vigil",
@@ -447,7 +447,7 @@
    "code": "R9",
    "name": "THE VIGIL \u00b7 FIRE ANSWERS FIRE",
    "owner": "RUN-B",
-   "desc": "In her frame (cutaway CUT): a nearer far fire flares in answer to hers.",
+   "desc": "In her frame: her fire flares; a nearer far fire flares in answer to hers.",
    "takes": [
     {
      "stem": "vigil",
@@ -543,7 +543,7 @@
    "code": "R11",
    "name": "THE HAND-BACK",
    "owner": "RUN-B + HILLS",
-   "desc": "One take: the crane to the range alight; the east greys; the sun walks in; beacons pale, hers last; the hand-off.",
+   "desc": "One take: the crane to the range alight; the sun walks in, beacons pale, hers last; her fire-steel into the child's palm.",
    "takes": [
     {
      "stem": "handback",

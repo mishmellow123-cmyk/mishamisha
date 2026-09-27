@@ -51,7 +51,12 @@ def h1(off, **kw):
 
 
 # B: "H1 in B cropped to hands, tinder and sparks" (B DECISION 06:40Z): x, y, w, h as fractions of the frame
-B_H1_CROP = (0.10, 0.26, 0.36, 0.36)       # keeps her head and scarf out through the catch
+# re-framed 27 Sep 15:50Z for the H5 re-key (h1_v3h5): its lifted sky turned the old box's empty basket bars into flat
+# blue triangles. B4 now centres the gloved hands, steel and tinder and stays left of the scarf (x <= 0.43 while
+# she leans in to blow); B5 (the roar, 12 f while the camera pulls back) sits higher so the flame stays in frame
+# and the hood stays out (x <= 0.50). Square fractions keep 2.39:1.
+B_H1_CROP = (0.17, 0.22, 0.26, 0.26)
+B_H1_ROAR_CROP = (0.20, 0.08, 0.30, 0.30)
 
 EMB_A = [T('embers_A3', 0, 'exact', 'EMBERS v3, A timeline')]
 EMB_C = [T('embers_C3', 0, 'exact', 'EMBERS v3, C timeline'),
@@ -87,7 +92,8 @@ A = [
       'On every beat the towers surge; the ground falls into a crater of fire; the gilded lean in and the rim crumbles.',
       EMB_A),
     S('A8', 2400, 2640, 'E7-A', 'THE BRINK · OVER THE RIM', 'EMBERS',
-      'A torn vortex strips the tower tops; the rim gives way; a crown falls; the camera tips over into white.', EMB_A),
+      'One roaring updraft strips the tower tops; the rim gives way; a gilded crown falls; the camera follows it into white.',
+      EMB_A),
     S('A9', 2640, 2800, 'E4', 'THE DEAD VALLEY', 'EMBERS',
       "Out of the white: the promise's valley again, grey and unlit, cinder under falling ash.", EMB_A),
     S('A10', 2800, 3120, 'E9', 'BLACK · THE EMBER', 'EMBERS', 'Black. One ember drifts down and hangs, flickering. It does not die.',
@@ -104,10 +110,10 @@ A = [
       [T('reveal'), T('run')]),
     S('A13', 3800, 3860, 'M5', 'KARST', 'MONTAGE-3D-2',
       'Weathered rock towers in a mist sea; a beacon on a crown flares on bar 48 b3.75.',
-      [T('montage3d_v3/karst_slow', -3800, 'exact', 'Blender KARST at 2/3 speed, pre-H5 (pines, pillar profile)')]),
+      [T('montage3d_v3/karst_slow', -3800, 'exact', 'Blender KARST v3 final, 2/3 speed (H5: rock towers in mist)')]),
     S('A13', 3860, 3920, 'M5', 'DESERT', 'MONTAGE-3D-2',
       'A dune crest under the Milky Way; a robed figure; her stone beacon catches on bar 49 b3; she looks out.',
-      [T('montage3d_v3/desert', -3860, 'exact', 'Blender DESERT (H5 fixes)'),
+      [T('montage3d_v3/desert', -3860, 'exact', 'Blender DESERT v3 final (H5: wide, plain cloak, irregular prints)'),
        T('montage', 1520 - 3860, 'layered', 'Blender DESERT montage_v2 1520-1579, pre-H5 (framing, footprints)')]),
     S('A14', 3920, 4240, 'R3', 'THE BEACON RUN', 'RUN-A',
       "Following her look, fires link across the ranges every two beats, seven of them; the red under-glow pulses.",
@@ -150,7 +156,7 @@ B = [
       'Match cut on the last red point to the first spark: three strikes, a long blow, the catch. Hands, tinder, sparks.',
       h1(H1_S1 - 1120, crop=B_H1_CROP, grade='B')),
     S('B5', 1360, 1372, 'H1-B', 'THE ROAR', 'HEROINE (EDIT crop)', 'The roar on the downbeat, in the hands-and-tinder crop.',
-      h1(H1_ROAR - 1360, crop=B_H1_CROP, grade='B')),      # the take dissolves to A/C's wide from src ~1488
+      h1(H1_ROAR - 1360, crop=B_H1_ROAR_CROP, grade='B')),  # the take pulls back to A/C's wide from src ~1480
     S('B5', 1372, 1520, 'R2-B', 'THE REVEAL', 'RUN-B',
       'Moonlit silver, no red but the scarf: she is tiny on her summit above a silver cloud sea under the Milky Way.',
       [T('reveal'), T('vigil')]),
@@ -160,18 +166,18 @@ B = [
     S('B7', 2000, 2480, 'R9', 'THE VIGIL · NOTHING ANSWERS', 'RUN-B + HILLS',
       'Hours pass in the same frame: snow, then clear stars, then fog; she shields the flame. Nothing answers.', VIGIL),
     S('B8', 2480, 2640, 'R9', 'THE VIGIL · SOMEONE HAS SEEN', 'RUN-B',
-      'In her frame (the far-peak cutaway is CUT): the night holds its breath; far off, a pinprick.', VIGIL),
+      'In her frame: the night holds its breath; far off on the horizon, a pinprick of light.', VIGIL),
     S('B9', 2640, 3120, 'R9', 'THE VIGIL · THE FIRST ANSWERS', 'RUN-B + HILLS',
       'A pinprick answers from the far horizon; a traveller climbs in, takes flame, carries it down; village lights.',
       VIGIL),
     S('B10', 3120, 3280, 'R9', 'THE VIGIL · FIRE ANSWERS FIRE', 'RUN-B',
-      'In her frame (cutaway CUT): a nearer far fire flares in answer to hers.', VIGIL),
+      'In her frame: her fire flares; a nearer far fire flares in answer to hers.', VIGIL),
     S('B11', 3280, 3600, 'R9', 'THE VIGIL · THE WORLD COMES', 'RUN-B + HILLS',
       'Torches thread down the NE arete; more far peaks burn; the valleys brighten under the cloud.', VIGIL),
     S('B12', 3600, 3840, 'R9', 'THE VIGIL · THE CHILD', 'RUN-B + HILLS',
       "A traveller's child stays; she feeds the beacon; the child sits against her and falls asleep.", VIGIL),
     S('B13', 3840, 5200, 'R11', 'THE HAND-BACK', 'RUN-B + HILLS',
-      'One take: the crane to the range alight; the east greys; the sun walks in; beacons pale, hers last; the hand-off.',
+      'One take: the crane to the range alight; the sun walks in, beacons pale, hers last; her fire-steel into the child\'s palm.',
       [T('handback')]),
     S('B14', 5200, 5440, 'X3', 'TITLE', 'EDIT over RUN-B',
       'THE LONG DAWN kindles in the dawn sky and fades into the light.', [T('handback'), T('dawntitle')]),
@@ -208,7 +214,7 @@ C = [
     S('C9', 1992, 2080, 'E12', 'THE EYE ONTO NOTHING', 'EMBERS',
       'On bar 26 b1 its slit opens for the first time, onto empty black: no one is behind it.', EMB_C),
     S('C10', 2080, 2320, 'M4', 'THE MIRROR (optional)', 'MONTAGE',
-      'Built only if a lane frees up: a stone basin of dark water; ripples carry the lands burning; a drop; a golden dawn.',
+      'A stone basin of dark water with stars in it; ripples carry the lands burning; a drop: for one breath, a golden dawn.',
       [T('mirror')]),
     S('C11', 2320, 2480, 'E8-C', 'THE GRASP THAT CANNOT HOLD', 'EMBERS',
       'A claw of embers descends and closes on the Ring; the crust glows and cracks; the band slips through and falls.',
