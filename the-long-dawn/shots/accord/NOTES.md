@@ -1,5 +1,18 @@
 # ACCORD v3 (ACCORD-v3, 27 Sep): cut C only, C frames 4480-5679 -> `renders/accord_C3/f_%05d.png`
 
+## STATE AT HANDOFF (27 Sep 18:40Z, ACCORD-3 taking over from ACCORD-2; brief = `_local_logs/handoff/brief3_ACCORD.md`)
+* **On disk:** v3 engine pushed (118eafd + e0ea266). No ACCORD render process running. Test stills only, in
+  `renders/accord_C/tests/` (sheets a-e = ACCORD-2's last look: 4840/4960/5040/5100/5160/5180/5540-5595).
+  No v3 frames delivered. `renders/accord_C3/tests/` = the first look (superseded; to delete).
+* **MONTAGE-3D-3's melt (`renders/ring_C/f_05360..05519`) does not exist yet** (their order: find_a, find_b, fire, melt).
+* **ACCORD-3's order (director):** (1) the hearth fire so bar 70 is unmistakably warm; (2) the gloves (hers in P2 =
+  a puppet's hand; the gilded one = a gold brick); (3) the Ring's glint at 4840; (4) the crowd + rivers of torches
+  (AC1 descent 4480-4700); (5) check stills per beat, cloud jobs <= 45 min each, JOB READY; (6) AC3 once the melt exists.
+* **My read of sheets a-e:** bar 70's fire is a pale donut round a pale octagon (the stone), glitter for embers, the
+  figures pale beige "cups" (airlight veil + fill); torches from above = white cotton (over-exposed: ACES whites them);
+  P2 5160 = a grey dish of pills with a puppet arm. All frames sepia-muddy (the haze veil).
+
+
 ## >>> PAUSED 27 Sep ~18:00Z (ACCORD-2; director: usage window end; RESUME 20:00Z). No render running. <<<
 **Done this session (source pushed: it landed inside RUN-B's commit 118eafd, which swept up the shared git index while
 ACCORD-2's files were staged; commit with `git commit <paths>` to avoid the race; test stills only, in

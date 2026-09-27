@@ -37,7 +37,10 @@ P_RGLOW = 26                   # the Ring's letters
 P_NOC = 27
 P_FIRE_I = 28                  # the hearth fire's strength (for the Ring's environment)
 P_ASHG = 29                    # ash glow radius progress
+P_COAL = 30                    # bar 70: the bed of coals on the stone's top under the fire that remains
+P_NCOUNCIL = 31                # figures [0, n) are the council; after them the crowd (plain3, F_CROWD)
 P_NPARAM = 32
+F_CROWD = 65
 
 GOLD = (1.0, 0.72, 0.30)
 
@@ -191,6 +194,7 @@ def ground_albedo(x, y, fp, PR):
         # fine specks of char
         spk = fbm2(x * 55.0, y * 55.0 + 1.3, 20, 2, 2.1, 0.5, fp * 55.0)
         a *= 1.0 - 0.30 * sstep(0.08, 0.20, spk)
+        a *= 1.0 - 0.55 * PR[P_COAL]
         ar = mix(ar, a * 1.00, ash)
         ag = mix(ag, a * 0.98, ash)
         ab = mix(ab, a * 0.95, ash)
@@ -213,6 +217,10 @@ def bed_embers(x, y, fp, PR):
     c2 = vnoise2(x * 4.0 - T * 0.006, y * 4.0, 402)
     k = sstep(0.35, 0.85, 0.55 * c1 + 0.6 * c2) * ring * e
     wh = PR[P_EMBW]
+    if PR[P_COAL] > 0.0:
+        # bar 70: the old bed has burned down: soft deep-red patches, strongest toward the stone
+        k = sstep(0.55, 0.95, 0.35 * c1 + 0.8 * c2) * ring * e * (0.25 + 0.75 * sstep(ASH_R1, ASH_R0, r))
+        return 0.9 * k, 0.9 * k * 0.18, 0.9 * k * 0.02
     return 2.2 * k * (1.0 + 2.0 * wh), 2.2 * k * (0.24 + 0.45 * wh), 2.2 * k * (0.03 + 0.25 * wh)
 
 
@@ -306,51 +314,50 @@ def cloth_ao(px, py, pz, nx, ny, nz, F, i):
 
 @njit(**FM)
 def shade_leather(px, py, pz, nx, ny, nz, vx, vy, vz, u, v, w, gilt, fp, PR, LT, OC, igc, igf, skip, ao):
-    """Thin dark leather (a soft sheen), or the gilded glove: a gold crust run over the back of the hand,
-    cracked, with a few cracks still holding an ember's glow."""
-    ar = 0.030
-    ag = 0.021
-    ab = 0.016
-    wr = fbm2(u * 900.0 + w * 300.0, v * 900.0, 91, 3, 2.1, 0.5, fp * 900.0)
-    ar *= 1.0 + 0.35 * wr
-    ag *= 1.0 + 0.35 * wr
-    ab *= 1.0 + 0.35 * wr
-    cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.4, False, skip, PR, LT, OC,
-                          igc, igf, ao)
-    sr, sg, sb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 24.0, PR, LT, OC, skip)
-    k = 0.045 * ao
-    cr += sr * k
-    cg += sg * k
-    cb += sb * k
-    er = 0.0
-    eg = 0.0
-    eb = 0.0
+    """Thin dark leather: a soft sheen that rakes along the fingers, the grain, the three stitched points on the
+    back of the hand. Or (gilt) the crust: set gold is a metal, dark but for what it reflects (the torch over
+    it, the fire), lumpy and cracked, a few cracks still holding an ember's glow."""
     if gilt > 0.0:
-        # the crust: poured gold that ran along the back of the hand and the fingers and set
-        n1 = vnoise2(u * 95.0 + 3.0, v * 60.0 + w * 60.0, 93)
+        hr, hg, hb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 90.0, PR, LT, OC, skip)
+        br, bg, bb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 12.0, PR, LT, OC, skip)
         n2 = vnoise2(u * 260.0, v * 190.0 + w * 150.0, 94)
-        crust = sstep(0.40, 0.50, 0.65 * n1 + 0.45 * n2 + 0.25 * sstep(-0.01, 0.02, w)) * gilt
-        if crust > 0.0:
-            gr, gg, gb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 38.0, PR, LT, OC, skip)
-            hr, hg, hb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, 0.10, 0.065, 0.022, 0.0, False, skip,
-                                  PR, LT, OC, igc, igf, ao)
-            gs = 2.6 * (0.7 + 0.6 * n2)
-            cr = mix(cr, hr + gr * gs * 1.0, crust)
-            cg = mix(cg, hg + gg * gs * 0.72, crust)
-            cb = mix(cb, hb + gb * gs * 0.30, crust)
-            # the cracks in it, a few still glowing like cooling embers
-            cn = vnoise2(u * 170.0 + 7.0, v * 170.0 + w * 90.0, 95)
-            cracks = sstep(0.022, 0.0, abs(cn - 0.5)) * crust
-            live = sstep(0.55, 0.8, vnoise2(u * 40.0, v * 40.0 + 2.0, 96))
-            cr *= 1.0 - 0.8 * cracks
-            cg *= 1.0 - 0.8 * cracks
-            cb *= 1.0 - 0.8 * cracks
-            pul = 0.8 + 0.2 * math.sin(PR[P_T] * 0.21 + u * 60.0)
-            e = cracks * live * 0.9 * pul
-            er += e * 1.0
-            eg += e * 0.22
-            eb += e * 0.03
-    return cr + er, cg + eg, cb + eb
+        g = 2.4 * (0.75 + 0.5 * n2)
+        # schlick toward white at grazing, the warm dark it mirrors below
+        ndv = max(nx * vx + ny * vy + nz * vz, 0.0)
+        fr = 0.25 * (1.0 - ndv) ** 5
+        cr = (hr * g + br * 0.55) * (1.00 * (1.0 - fr) + fr) + 0.012 * ao
+        cg = (hg * g + bg * 0.55) * (0.74 * (1.0 - fr) + fr) + 0.0085 * ao
+        cb = (hb * g + bb * 0.55) * (0.32 * (1.0 - fr) + fr) + 0.0030 * ao
+        cn = vnoise2(u * 170.0 + 7.0, v * 170.0 + w * 90.0, 95)
+        cracks = sstep(0.030, 0.0, abs(cn - 0.5))
+        live = sstep(0.52, 0.78, vnoise2(u * 40.0, v * 40.0 + 2.0, 96))
+        cr *= 1.0 - 0.85 * cracks
+        cg *= 1.0 - 0.85 * cracks
+        cb *= 1.0 - 0.85 * cracks
+        pul = 0.8 + 0.2 * math.sin(PR[P_T] * 0.21 + u * 60.0)
+        e = cracks * live * 1.5 * pul
+        return cr + e * 1.0, cg + e * 0.24, cb + e * 0.035
+    ar = 0.026
+    ag = 0.018
+    ab = 0.014
+    wr = fbm2(u * 900.0 + w * 300.0, v * 900.0, 91, 3, 2.1, 0.5, fp * 900.0)
+    gk = 1.0 + 0.30 * wr
+    # the three points: stitched seams between the knuckles and the wrist on the back
+    if w > 0.004 and u > 0.030 and u < 0.088:
+        for kk in range(3):
+            sv = -0.016 + 0.016 * kk
+            q = abs(v - sv) / 0.0011
+            if q < 2.5:
+                gk *= 1.0 - 0.45 * math.exp(-q * q)
+    ar *= gk
+    ag *= gk
+    ab *= gk
+    cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.5, False, skip, PR, LT, OC,
+                          igc, igf, ao)
+    sr, sg, sb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 16.0, PR, LT, OC, skip)
+    ndv = max(nx * vx + ny * vy + nz * vz, 0.0)
+    k = (0.07 + 0.20 * (1.0 - ndv) ** 3) * ao
+    return cr + sr * k, cg + sg * k * 0.92, cb + sb * k * 0.85
 
 
 @njit(**FM)
@@ -516,11 +523,34 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         ar = mix(ar, 0.016, soot * 0.9)
         ag = mix(ag, 0.014, soot * 0.9)
         ab = mix(ab, 0.013, soot * 0.9)
+        # bar 70: the coals heaped on its top where the Ring was, crusted black, glowing through in the seams
+        ce_r = 0.0
+        ce_g = 0.0
+        ce_b = 0.0
+        co = PR[P_COAL]
+        if co > 0.0:
+            rr_ = math.sqrt(px * px + py * py)
+            bed = sstep(0.30, 0.21, rr_ + 0.035 * (vnoise2(px * 14.0, py * 14.0, 88) - 0.5)) \
+                * sstep(STONE_TOP - 0.06, STONE_TOP - 0.025, pz)
+            if bed > 0.0:
+                c1 = vnoise2(px * 34.0 + T * 0.003, py * 34.0, 89)
+                c2 = vnoise2(px * 11.0 - T * 0.004, py * 11.0 + 3.0, 90)
+                c3 = vnoise2(px * 95.0, py * 95.0 - T * 0.005, 99)
+                seam = sstep(0.09, 0.0, abs(c1 - 0.5)) * (0.6 + 0.4 * c3)
+                heat = (0.40 + 0.60 * sstep(0.28, 0.02, rr_)) * (0.55 + 0.45 * c2)
+                crust = sstep(0.62, 0.40, c2 + 0.25 * c3)
+                glow = bed * co * heat * (0.22 * (1.0 - crust) + 1.25 * seam + 0.10)
+                ar = mix(ar, 0.004, bed)
+                ag = mix(ag, 0.0036, bed)
+                ab = mix(ab, 0.0035, bed)
+                ce_r = 5.5 * glow
+                ce_g = 5.5 * glow * 0.27
+                ce_b = 5.5 * glow * 0.04
         cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, 0.0, False, -1.0,
                               PR, LT, OC, igc, igf, 1.0)
         sr, sg, sb = spec_at(px, py, pz, nx, ny, nz, vx, vy, vz, 22.0, PR, LT, OC, -1.0)
         wk = 0.016 * sstep(0.7, 0.95, nz) * (1.0 - lich)
-        return cr + sr * wk, cg + sg * wk, cb + sb * wk, tbest, idb
+        return cr + sr * wk + ce_r, cg + sg * wk + ce_g, cb + sb * wk + ce_b, tbest, idb
     if idb == 2:
         h = max(0.0012, fp * 0.5)
         k1, _ = sd_hearth(px + h, py - h, pz - h, KB, LG, nlog, CH, nch)
@@ -583,6 +613,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             if eb_ > 0.0:
                 cr_ = vnoise2(px * 120.0 + T * 0.03, py * 120.0 + pz * 60.0, 86)
                 glow = (sstep(0.45, 0.8, cr_) + 0.8 * crack) * eb_ * (0.5 + 0.5 * ch) * sstep(0.0, 0.3, PR[P_ASHG] * 1.2 - (rr - ASH_R0) / (ASH_R1 - ASH_R0) * 0.2)
+                if PR[P_COAL] > 0.0:
+                    pat = sstep(0.40, 0.70, vnoise2(along * 9.0 + LG[kb_, 8], ang * 1.3, 88))
+                    glow = (0.9 * crack * (0.4 + 0.6 * pat) + 0.25 * pat) * eb_ * ch * sstep(0.80, 0.45, rr)
                 wh = PR[P_EMBW]
                 er += 7.0 * glow * (1.0 + 1.5 * wh)
                 eg += 7.0 * glow * (0.28 + 0.5 * wh)
@@ -602,6 +635,7 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
                 cr_ = vnoise2(px * 60.0 - T * 0.01, py * 60.0 + pz * 40.0, 87)
                 lump = vnoise2(px * 18.0, py * 18.0, 97)
                 glow = sstep(0.55, 0.85, cr_) * sstep(0.45, 0.7, lump) * eb_ * sstep(0.95, 0.5, rr)
+                glow *= 1.0 - 0.75 * PR[P_COAL]
                 er += 2.4 * glow
                 eg += 2.4 * glow * 0.26
                 eb += 2.4 * glow * 0.035
@@ -731,9 +765,9 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
             eb += 0.08 * c
     elif mat == M_WOOD:
         gr = vnoise2(px * 40.0 + pz * 300.0, py * 40.0, 54)
-        ar = 0.030 * (0.75 + 0.5 * gr)
-        ag = 0.020 * (0.75 + 0.5 * gr)
-        ab = 0.013 * (0.75 + 0.5 * gr)
+        ar = 0.015 * (0.75 + 0.5 * gr)
+        ag = 0.0105 * (0.75 + 0.5 * gr)
+        ab = 0.0075 * (0.75 + 0.5 * gr)
         sheen = 0.0
     elif mat == M_SHADOW:
         ar = 0.004
@@ -747,6 +781,27 @@ def shade_sample(ox, oy, oz, dx, dy, dz, pix, PR, LT, OC, F, nf, S, ns, KB, LG, 
         sheen *= 0.7
     cr, cg, cb = light_at(px, py, pz, nx, ny, nz, vx, vy, vz, ar, ag, ab, sheen, False, fi,
                           PR, LT, OC, igc, igf, ao)
+    if F[i, F_CROWD] > 0.5:
+        # one of the crowd: lit by its own torch (no shadow test), held up before it
+        ca_ = F[i, G.F_C]
+        sa_ = F[i, G.F_S]
+        hx_ = F[i, G.F_HX] + 0.44 * F[i, G.F_TX]
+        hy_ = F[i, G.F_HY] + 0.44 * F[i, G.F_TY]
+        hz_ = F[i, G.F_HZ] + 0.44 * F[i, G.F_TZ] + 0.20
+        lx = F[i, F_X] + hx_ * ca_ - hy_ * sa_ - px
+        ly = F[i, F_Y] + hx_ * sa_ + hy_ * ca_ - py
+        lz = hz_ - pz
+        d2 = lx * lx + ly * ly + lz * lz
+        dl = math.sqrt(d2) + 1e-9
+        ndl = (nx * lx + ny * ly + nz * lz) / dl
+        nv = abs(nx * vx + ny * vy + nz * vz)
+        f_ = max(ndl, 0.0) + sheen * 0.6 * (1.0 - nv) ** 2.5 * max(ndl + 0.3, 0.0)
+        if f_ > 0.0:
+            I = 1.1 * f_ * ao / (d2 + 0.03)
+            cr += ar * I * 1.0
+            cg += ag * I * 0.60
+            cb += ab * I * 0.22
+        return cr + er, cg + eg, cb + eb, tbest, idb
     # the crowd's torches beyond the stones rim the figures from behind
     if PR[P_CROWD] > 0.0 and mat != M_SHADOW:
         rq = math.sqrt(px * px + py * py) + 1e-9

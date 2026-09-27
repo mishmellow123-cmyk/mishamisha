@@ -49,6 +49,7 @@ import shade3 as SH  # noqa: E402
 import flame3 as FL3  # noqa: E402
 import nbcore  # noqa: E402
 import fire as FI  # noqa: E402
+import plain3 as PL  # noqa: E402
 
 OUT = os.path.join(SC.ROOT, 'renders', 'accord_C')   # EDIT-v3 convention: C numbering (4480-5599; bar 70 = 5520-5599)
 INSCRIPTION = os.path.join(SC.ROOT, 'assets', 'ring', 'inscription_outer.png')
@@ -133,13 +134,54 @@ def hearth_state(t):
     f = SC.hand_fist_pos(max(t, SC.HAND_CLOSE))
     HP[FL3.HP_FX:FL3.HP_FZ + 1] = f
     HP[FL3.HP_I] = 16.0 * fs['on'] * (1.0 - 0.35 * fs['calm'])
-    return fs, HP
+    CF = np.zeros((1, FL3.CF_N))
+    if fs.get('p3', 0.0) > 0.0:
+        CF, nmain = SC.calm_flames(t)
+        HP[FL3.HP_P3] = 1.0
+        HP[FL3.HP_NMAIN] = nmain
+        HP[FL3.HP_I] = CALM_I
+    return fs, HP, CF
+
+
+CALM_I = 17.0           # bar 70: the fire that remains (emission scale of flame3.calm_density)
+
+
+def calm_lights(t, fs, CF):
+    """Bar 70: the light of the fire that remains: a warm cluster over the coals on the stone (its heart pumping
+    with the tall flame, <= ~4 % and slow, so the council breathes with it) and a low ring from the burning logs."""
+    L = []
+    wh = fs['white']
+    col = np.array([1.0, 0.50, 0.14]) * (1 - wh) + np.array([1.0, 0.92, 0.8]) * wh
+    boost = 1.0 + 5.0 * wh
+    br = 1.0 + 0.025 * math.sin(t * 0.55) + 0.015 * math.sin(t * 1.3 + 1.1)
+    zt = G.STONE_TOP
+    I0 = CALM_LIGHT * boost * br
+    # in the body of the flames (never a hand's breadth over the coals: that blew the stone's top out)
+    for k in range(5):
+        a = 2 * math.pi * k / 5 + 0.3
+        I = I0 * 0.13
+        L.append([0.13 * math.cos(a), 0.13 * math.sin(a), zt + 0.36 + 0.10 * (k % 2), 0.16,
+                  I * col[0], I * col[1], I * col[2], -1.0])
+    I = I0 * 0.30
+    L.append([0.0, 0.0, zt + 0.55, 0.20, I * col[0], I * col[1], I * col[2], -1.0])
+    # the log ring: low, redder
+    cl = np.array([1.0, 0.42, 0.10])
+    for k in range(6):
+        a = 2 * math.pi * k / 6 + 0.1
+        I = I0 * 0.035
+        L.append([0.58 * math.cos(a), 0.58 * math.sin(a), 0.16, 0.15, I * cl[0], I * cl[1], I * cl[2], -1.0])
+    return L
+
+
+CALM_LIGHT = 9.0
 
 
 def hearth_lights(t, fs):
     L = []
     if fs['on'] <= 0.0:
         return L
+    if fs.get('p3', 0.0) > 0.0:
+        return calm_lights(t, fs, None)
     ang = resources()['ang']
     n = 8
     wh = fs['white']
@@ -184,11 +226,26 @@ def occluders(t, Fa, hands):
     return np.array(oc, np.float64)
 
 
-def build(t):
+def crowd_on(t, cam):
+    """The rivers and the crowd: P1 while the crowd can be in frame, and bar 70's crane (the roads out)."""
+    p = SC.plate(t)
+    return (p == 1 and t < 4800) or (p == 3 and t >= 5584)
+
+
+def build(t, cam=None, scale=1.0):
     R = resources()
     Fa = SC.figures(t)
     FLm, Lt = flames_and_lights(t, Fa)
-    fs, HP = hearth_state(t)
+    ncouncil = Fa.shape[0]
+    crowd = None
+    if cam is not None and crowd_on(t, cam):
+        rows, FLc, sel = PL.fig_rows(t, cam, scale)
+        if rows.shape[0]:
+            Fa = np.concatenate([Fa, rows], 0)
+            FLm = np.concatenate([FLm, FLc], 0)
+        igc, igf = PL.irradiance(t)
+        crowd = dict(sel=sel, igc=igc, igf=igf)
+    fs, HP, CF = hearth_state(t)
     Lt += hearth_lights(t, fs)
     hands = []
     gh = SC.gilded_hand(t, Fa)
@@ -223,8 +280,9 @@ def build(t):
     PR[SH.P_EMBW] = fs['white']
     PR[SH.P_ASHG] = fs['spread']
     PR[SH.P_CROWD] = 0.9 * (1.0 - 0.8 * fs['white'])
-    PR[SH.P_WI] = 0.0
-    PR[SH.P_IGC_X0], PR[SH.P_IGC_CELL], PR[SH.P_IGF_X0], PR[SH.P_IGF_CELL] = -500.0, 250.0, -40.0, 20.0
+    PR[SH.P_WI] = 1.0 if crowd is not None else 0.0
+    PR[SH.P_IGC_X0], PR[SH.P_IGC_CELL], PR[SH.P_IGF_X0], PR[SH.P_IGF_CELL] = -PL.IGC_R, PL.IGC_CELL, -PL.IGF_R, PL.IGF_CELL
+    PR[SH.P_NCOUNCIL] = ncouncil
     PR[SH.P_SHEEN] = 2.0
     PR[SH.P_FIGRIM] = 0.35 * fs['on'] * min(fs['H'], 1.0) * (1.0 + 2.0 * fs['white'])
     PR[SH.P_FIRE_Z] = 0.35 + 0.4 * fs['H']
@@ -233,7 +291,9 @@ def build(t):
     PR[SH.P_RGLOW] = RP[7]
     PR[SH.P_NOC] = OC.shape[0]
     PR[SH.P_FIRE_I] = 0.35 * fs['on'] * min(fs['H'], 1.0) * (1.0 + 3.0 * fs['white'])
-    return dict(Fa=Fa, FL=FLm, HP=HP, fs=fs, LT=LT, OC=OC, PR=PR, HDs=HDs, Js=Js, HBB=HBB, RP=RP)
+    PR[SH.P_COAL] = fs.get('p3', 0.0)
+    return dict(Fa=Fa, FL=FLm, HP=HP, CF=CF, fs=fs, LT=LT, OC=OC, PR=PR, HDs=HDs, Js=Js, HBB=HBB, RP=RP,
+                crowd=crowd)
 
 
 # =============================================================== render ===
@@ -362,9 +422,9 @@ def dof(rgb, depth, cam, t, scale, window=None):
 
 def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
     R = resources()
-    st = build(t)
     Wd, Hd = frame_size(scale, window)
     cam = camera(t, scale, window)
+    st = build(t, cam, scale)
     Fa = st['Fa']
     S = R['stones']
     KB, LG, CH = R['hearth']
@@ -374,8 +434,11 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
     depth = np.zeros((Hd, Wd), np.float32)
     oid = np.zeros((Hd, Wd), np.int32)
     dummy = np.zeros((1, 1), np.bool_)
+    cw = st['crowd']
+    igc = cw['igc'] if cw is not None else igz
+    igf = cw['igf'] if cw is not None else igz
     args = (st['PR'], st['LT'], st['OC'], Fa, Fa.shape[0], S, S.shape[0], KB, LG, LG.shape[0], CH, CH.shape[0],
-            st['HDs'], st['Js'], st['HBB'], st['RP'], stex, ssz, igz, igz)
+            st['HDs'], st['Js'], st['HBB'], st['RP'], stex, ssz, igc, igf)
     SH.render_surfaces(Wd, Hd, cam, *args, rgb, depth, oid, False, dummy, 1)
     if aa:
         m = edge_mask(oid, rgb)
@@ -385,13 +448,25 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
     if fs['on'] > 0.0:
         fb = np.zeros_like(rgb)
         FL3.hearth_volume(Wd, Hd, cam, st['HP'], R['ang'], R['ang'].shape[0], R['noise3'], depth, fb,
-                          int(28 + 14 * min(scale, 1.0)))
+                          int(28 + 14 * min(scale, 1.0)), st['CF'], st['CF'].shape[0])
         rgb = rgb * 1.0
         rgb += cv2.GaussianBlur(fb, (0, 0), 0.7 * max(scale, 0.5))
+    if cw is not None:
+        h = cam[2]
+        trail = 7.0 * (1.0 - smooth(ramp(t, 4560, 4640))) + 1.0
+        Q, Sk, Hb = PL.sprites(t, cam, cw['sel'], trail)
+        if Q.shape[0]:
+            FI.dark_sprites(rgb, depth, cam, Q, Q.shape[0])
+            FI.splat_streaks(rgb, depth, cam, Sk, Sk.shape[0], 0.0, 10.0, NOBAND, 1.0)
+            FI.splat_blobs(rgb, depth, cam, Hb, Hb.shape[0], 0.3, NOBAND)
+        if h > 40.0:
+            FI.mist_layers(rgb, cam, PL.MIST, PL.MIST.shape[0], float(t) - 4480.0 + 1912.0, cw['igc'], -PL.IGC_R,
+                           PL.IGC_CELL, 0.25)
     rgb = heat_haze(rgb, t, cam, scale, fs, window)
     # the firelight in the thin smoke haze over the council
     LTa = st['LT']
-    FL3.airlight(rgb, depth, cam, LTa, int(st['PR'][SH.P_NL]), HAZE, 0.06, 0.35)
+    # (bar 70: a clear night round a steady fire, only a breath of smoke)
+    FL3.airlight(rgb, depth, cam, LTa, int(st['PR'][SH.P_NL]), HAZE * (0.35 if SC.plate(t) == 3 else 1.0), 0.06, 0.35)
     # the torch flames (after the haze so they stay crisp)
     FLm = st['FL']
     FL3.torch_flames(rgb, depth, cam, FLm, FLm.shape[0], float(t), R['noise3'], 0.85)
@@ -406,6 +481,7 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
         out = np.empty_like(rgb)
         FI.motion_blur(rgb, out, depth, cam, camA, camB, 16, 60.0 * scale)
         rgb = out
+    rgb = ring_glint(rgb, st, cam, depth, t, scale)
     # the white: the fire's heart swallows the frame (made of light, not a fade)
     wl = SC.white_level(t)
     if wl > 0.0:
@@ -416,6 +492,51 @@ def render_frame(t, scale=1.0, aa=True, mb=True, window=None):
         k = wl * (0.35 + 0.65 * g) * 60.0
         rgb = rgb + (k[..., None] * np.array([1.0, 0.93, 0.80], np.float32) * wl)
     return rgb, dict(depth=depth, oid=oid, cam=cam, st=st)
+
+
+GLINT_K = 30.0       # the Ring's glint: energy per unit of torch irradiance at the band (full-res pixels)
+
+
+def ring_glint(rgb, st, cam, depth, t, scale):
+    """The Ring on the stone is ~6 px across in P1: too small for its highlights to survive sampling, so its
+    glint is drawn here. A smooth rounded band has a specular point for every light that reaches it, each as
+    bright as that light's irradiance at the band: the sum over the torches (and the fire), breathing with their
+    flicker, gold-tinted, splatted as a tight gaussian after the lens so it stays crisp, hidden by anything in
+    front of it (her hand while she lays it down)."""
+    RP = st['RP']
+    if RP[0] <= 0.0 or SC.plate(t) != 1:
+        return rgb
+    c = RP[1:4]
+    (gx, gy), zc = SC.project(cam, c)
+    Hd, Wd = rgb.shape[:2]
+    if zc <= 0.05 or not (-4 <= gx < Wd + 4 and -4 <= gy < Hd + 4):
+        return rgb
+    ix, iy = int(min(max(gx, 0), Wd - 1)), int(min(max(gy, 0), Hd - 1))
+    dist = float(np.linalg.norm(c - cam[0:3]))
+    # occluded where the depth buffer holds something clearly nearer than the band
+    y0, y1 = max(iy - 1, 0), min(iy + 2, Hd)
+    x0, x1 = max(ix - 1, 0), min(ix + 2, Wd)
+    vis = float(np.mean(depth[y0:y1, x0:x1] > dist - 0.03))
+    if vis <= 0.0:
+        return rgb
+    LT = st['LT']
+    E = 0.0
+    for k in range(LT.shape[0]):
+        d2 = float(np.sum((LT[k, 0:3] - c) ** 2))
+        E += float(max(LT[k, 4], LT[k, 5], LT[k, 6])) / (d2 + LT[k, 3] ** 2 + 0.02)
+    # it only glints once it is down and her hand has come away from it
+    on = smooth(ramp(t, SC.RING_SET + 2, SC.RING_SET + 9))
+    energy = GLINT_K * E * on * vis * (7.6 / max(dist, 0.5)) ** 2 * scale * scale
+    if energy <= 1e-4:
+        return rgb
+    sig = max(0.85 * scale, 0.55)
+    r = int(math.ceil(3 * sig)) + 1
+    ys, xs = np.mgrid[iy - r:iy + r + 1, ix - r:ix + r + 1]
+    g = np.exp(-((xs + 0.5 - gx) ** 2 + (ys + 0.5 - gy) ** 2) / (2 * sig * sig)) / (2 * math.pi * sig * sig)
+    ok = (ys >= 0) & (ys < Hd) & (xs >= 0) & (xs < Wd)
+    col = np.array([1.0, 0.80, 0.42], np.float32)
+    rgb[ys[ok], xs[ok]] += (energy * g[ok])[:, None].astype(np.float32) * col
+    return rgb
 
 
 def grade(img, t):

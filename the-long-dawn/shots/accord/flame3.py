@@ -13,7 +13,10 @@ from nbcore import FM, clamp, sstep, mix, tex3
 
 FL_N = 10
 HP_T, HP_ON, HP_H, HP_WHITE, HP_SPREAD, HP_HOLLOW, HP_CONV, HP_CALM, HP_FX, HP_FY, HP_FZ, HP_I = range(12)
+HP_P3 = 12          # 1 = bar 70: the fire that remains (calm_density over the CF flames)
+HP_NMAIN = 13       # CF rows [0, nmain) stand on the stone; the rest lick along the logs
 HP_N = 14
+CF_N = 8            # calm-fire flames: x, y, z0, Hf, Rf, sx, sy, seed (Hf and the sway are per frame)
 
 # a real flame's colour: deep orange at the cool edges -> orange -> yellow -> near-white in the core
 RAMP = np.array([[0.00, 0.45, 0.060, 0.008],
@@ -379,16 +382,138 @@ def hearth_density(x, y, z, HP, ANG, nang, n3):
     return d, temp
 
 
+@njit(**FM)
+def calm_density(x, y, z, HP, CF, ncf, n3):
+    """Bar 70, the fire that remains: one fire standing on the stone where the Ring was. Each CF row is a flame
+    (an envelope wrapped round its root, drawn up to a point, bending downwind); ONE shared field of tongues and
+    crinkle tears their union, so the flames lick together as one fire instead of a clump of torches.
+    Hot yellow at the roots over the coals, orange in the body, dark red at the torn tips. (density, temp)"""
+    T = HP[HP_T]
+    Ts = T / 24.0
+    nmain = int(HP[HP_NMAIN])
+    best = -1e9
+    ub = 0.0
+    rb = 1.0
+    r0 = 0.1
+    r2 = x * x + y * y
+    k0 = 0
+    k1 = ncf
+    if z > 0.62:
+        k1 = nmain                  # the log flames stand below ~0.6 m
+    if r2 > 0.30:
+        k0 = nmain                  # the flames on the stone stand within ~0.55 m of its centre
+    for k in range(k0, k1):
+        Hf = CF[k, 3]
+        qz = z - CF[k, 2]
+        u = qz / Hf
+        if u < -0.30 or u > 1.25:
+            continue
+        uc = max(u, 0.0)
+        bend = Hf * uc ** 1.5
+        qx = x - CF[k, 0] - CF[k, 5] * bend
+        qy = y - CF[k, 1] - CF[k, 6] * bend
+        rho = math.sqrt(qx * qx + qy * qy)
+        if rho > CF[k, 4] * 2.4 + 0.02:
+            continue
+        if u < 0.15:
+            w = (u - 0.15) / 0.42
+            env = math.sqrt(max(1.0 - w * w, 0.0))
+        else:
+            w = (u - 0.15) / 0.92
+            env = max(1.0 - w, 0.0) ** 0.8
+        R = CF[k, 4] * max(env, 0.14)
+        ek = 1.0 - rho / R - 2.4 * max(u - 0.80, 0.0)
+        if ek > best:
+            best = ek
+            ub = u
+            rb = rho / R
+            r0 = CF[k, 4]
+    if best < -1.4:
+        return 0.0, 0.0
+    # the shared field: a slow twist as it climbs, big tongues rising faster than the fire, crinkled edges
+    zz = z - 0.28
+    ang = 0.8 * max(zz, 0.0) + 0.25 * Ts
+    ca = math.cos(ang)
+    sa = math.sin(ang)
+    xr = x * ca - y * sa
+    yr = x * sa + y * ca
+    rise = 1.25 * Ts
+    # the tongues' size follows the flame that owns the point: the heart tears in big tongues, the log flames fine
+    lt = 0.40 * r0 + 0.014
+    scl = 1.0 / lt
+    wx = tex3(n3, xr * scl * 0.5 + 5.0, yr * scl * 0.5, (zz - rise * 0.8) * scl * 0.25) - 0.5
+    wy = tex3(n3, xr * scl * 0.5, yr * scl * 0.5 + 9.0, (zz - rise * 0.8) * scl * 0.25 + 4.0) - 0.5
+    nl = _fbm3(n3, (xr + 1.25 * lt * wx) * scl, (yr + 1.25 * lt * wy) * scl, (zz - rise) * scl * 0.36, 3)
+    scf = 1.0 / (0.33 * lt)
+    nf = _turb3(n3, (xr + 0.75 * lt * wx) * scf + 40.0, (yr + 0.75 * lt * wy) * scf, (zz - 1.25 * rise) * scf * 0.5, 2, 0.55)
+    uu = max(ub, 0.0)
+    AL = 0.62 + 1.45 * sstep(0.0, 1.0, ub)
+    AF = 0.30 + 0.42 * uu
+    e = best + AL * (2.0 * nl - 1.0) * 1.5 - AF * (nf - 0.40)
+    d = sstep(0.0, 0.10, e)
+    if d <= 0.0:
+        return 0.0, 0.0
+    # hot over the coals (the roots), cooling through the body, the torn tips dull red
+    troot = 1.0 - sstep(0.02, 0.85, uu)
+    temp = clamp(0.20 + 0.78 * troot * (1.0 - 0.40 * min(rb, 1.0)) + 0.50 * (nl - 0.5)
+                 + 0.14 * sstep(0.0, 0.6, e), 0.0, 1.0)
+    # the luminous sheet: emission peaks where the flame surface folds (limb-bright tongues, crisp edges)
+    sh = (e - 0.14) / 0.16
+    d = d * (0.30 + 0.70 * math.exp(-sh * sh))
+    return d, temp
+
+
+@njit(inline='always', **FM)
+def _ray_cyl(Cx, Cy, dx, dy, R):
+    """Ray (horizontal part) vs an infinite vertical cylinder of radius R about the z axis: (ta, tb) or (1, 0)."""
+    a = dx * dx + dy * dy
+    b = 2.0 * (Cx * dx + Cy * dy)
+    c = Cx * Cx + Cy * Cy - R * R
+    if a < 1e-12:
+        if c > 0.0:
+            return 1.0, 0.0
+        return -1e9, 1e9
+    disc = b * b - 4 * a * c
+    if disc <= 0.0:
+        return 1.0, 0.0
+    sq = math.sqrt(disc)
+    return (-b - sq) / (2 * a), (-b + sq) / (2 * a)
+
+
+@njit(inline='always', **FM)
+def _ray_slab(Cz, dz, z0, z1):
+    if abs(dz) < 1e-9:
+        if Cz < z0 or Cz > z1:
+            return 1.0, 0.0
+        return -1e9, 1e9
+    ta = (z0 - Cz) / dz
+    tb = (z1 - Cz) / dz
+    if ta > tb:
+        ta, tb = tb, ta
+    return ta, tb
+
+
 @njit(parallel=True, **FM)
-def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps):
+def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps, CF, ncf):
     Cx, Cy, Cz = cam[0], cam[1], cam[2]
     f = cam[12]
     H = HP[HP_H]
     if H <= 0.0 or HP[HP_ON] <= 0.0:
         return
+    p3 = HP[HP_P3] > 0.5
     Rb = 1.02
     z0 = -0.02
     z1 = H
+    # bar 70: the fire on the stone (a narrow tall column) and the low flames on the logs (a wide flat disc)
+    zc1 = 0.0
+    zl1 = 0.0
+    if p3:
+        for k in range(ncf):
+            top = CF[k, 2] + CF[k, 3] * 1.25
+            if k < int(HP[HP_NMAIN]):
+                zc1 = max(zc1, top)
+            else:
+                zl1 = max(zl1, top)
     I = HP[HP_I]
     wh = HP[HP_WHITE]
     for y in prange(Hd):
@@ -402,44 +527,53 @@ def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps):
             dx /= l
             dy /= l
             dz /= l
-            a = dx * dx + dy * dy
-            b = 2.0 * (Cx * dx + Cy * dy)
-            c = Cx * Cx + Cy * Cy - Rb * Rb
-            if a < 1e-12:
-                if c > 0.0:
+            if p3:
+                # two tight intervals: the column over the stone, the disc over the logs (march their union)
+                ca, cb = _ray_cyl(Cx, Cy, dx, dy, 0.62)
+                za, zb = _ray_slab(Cz, dz, 0.20, zc1)
+                ta1 = max(max(ca, za), 0.02)
+                tb1 = min(min(cb, zb), depth[y, x])
+                ca, cb = _ray_cyl(Cx, Cy, dx, dy, Rb)
+                za, zb = _ray_slab(Cz, dz, -0.02, zl1)
+                ta2 = max(max(ca, za), 0.02)
+                tb2 = min(min(cb, zb), depth[y, x])
+                if tb1 <= ta1 and tb2 <= ta2:
                     continue
-                ta = -1e9
-                tb = 1e9
+                if tb1 <= ta1:
+                    ta = ta2
+                    tb = tb2
+                elif tb2 <= ta2:
+                    ta = ta1
+                    tb = tb1
+                else:
+                    ta = min(ta1, ta2)
+                    tb = max(tb1, tb2)
+                ns = int(min(max((tb - ta) / 0.009, 24.0), 200.0))
             else:
-                disc = b * b - 4 * a * c
-                if disc <= 0.0:
+                ca, cb = _ray_cyl(Cx, Cy, dx, dy, Rb)
+                if cb <= ca:
                     continue
-                sq = math.sqrt(disc)
-                ta = (-b - sq) / (2 * a)
-                tb = (-b + sq) / (2 * a)
-            if abs(dz) > 1e-9:
-                tz0 = (z1 - Cz) / dz
-                tz1 = (z0 - Cz) / dz
-                if tz0 > tz1:
-                    tz0, tz1 = tz1, tz0
-                ta = max(ta, tz0)
-                tb = min(tb, tz1)
-            ta = max(ta, 0.02)
-            tb = min(tb, depth[y, x])
+                za, zb = _ray_slab(Cz, dz, z0, z1)
+                ta = max(max(ca, za), 0.02)
+                tb = min(min(cb, zb), depth[y, x])
+                ns = nsteps
             if tb <= ta:
                 continue
-            ds = (tb - ta) / nsteps
+            ds = (tb - ta) / ns
             jit = (52.9829189 * ((0.06711056 * x + 0.00583715 * y + 0.1731 * (HP[HP_T] % 7.0)) % 1.0)) % 1.0
             er = 0.0
             eg = 0.0
             eb = 0.0
             tr = 1.0
-            for k in range(nsteps):
+            for k in range(ns):
                 tt = ta + (k + jit) * ds
                 px = Cx + dx * tt
                 py = Cy + dy * tt
                 pz = Cz + dz * tt
-                d, temp = hearth_density(px, py, pz, HP, ANG, nang, n3)
+                if p3:
+                    d, temp = calm_density(px, py, pz, HP, CF, ncf, n3)
+                else:
+                    d, temp = hearth_density(px, py, pz, HP, ANG, nang, n3)
                 if d > 0.0:
                     t2 = min(temp + wh * 0.7, 1.0)
                     cr, cg, cb = ramp(t2)
@@ -451,7 +585,7 @@ def hearth_volume(Wd, Hd, cam, HP, ANG, nang, n3, depth, out, nsteps):
                     er += e * cr
                     eg += e * cg
                     eb += e * cb
-                    tr *= math.exp(-d * ds * 5.0 * (1.0 - wh))
+                    tr *= math.exp(-d * ds * (1.6 if p3 else 5.0) * (1.0 - wh))
                     if tr < 0.01:
                         break
             out[y, x, 0] = out[y, x, 0] * tr + er

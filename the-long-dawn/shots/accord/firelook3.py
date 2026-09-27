@@ -18,7 +18,7 @@ def render(frames, out, scale=0.35):
     tiles = []
     for f in frames:
         t = float(f)
-        fs, HP = A.hearth_state(t)
+        fs, HP, CF = A.hearth_state(t)
         cam = SC.camera(t, scale)
         Wd, Hd = A.frame_size(scale)
         depth = np.full((Hd, Wd), 1e6, np.float32)
@@ -35,7 +35,7 @@ def render(frames, out, scale=0.35):
         depth[:] = np.where(dz < 0, tg, 1e6)
         img = np.zeros((Hd, Wd, 3), np.float32) + np.array([0.004, 0.003, 0.002], np.float32)
         fb = np.zeros_like(img)
-        FL3.hearth_volume(Wd, Hd, cam, HP, R['ang'], R['ang'].shape[0], R['noise3'], depth, fb, 40)
+        FL3.hearth_volume(Wd, Hd, cam, HP, R['ang'], R['ang'].shape[0], R['noise3'], depth, fb, 40, CF, CF.shape[0])
         img += fb
         im = look.finish(img, exposure=SC.exposure(t), bloom_strength=0.07, bloom_threshold=0.9, vignette_amount=0.0)
         im8 = (np.clip(im, 0, 1) * 255).astype(np.uint8)[..., ::-1].copy()

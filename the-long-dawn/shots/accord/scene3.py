@@ -294,17 +294,20 @@ def emissary_state(i, t):
         lit = 1.0 - smooth(ramp(t, FIRE_CATCH + 2, FIRE_CATCH + 16))
     # --- P3 (bar 70): spent torches dip into the fire that remains, catch, and are carried away
     if t >= P3[0] - 40:
+        # they have closed in round the fire (a new plate after the white)
+        pos = np.array([(FIG_R[i] - P3_STEP) * math.cos(FIG_PSI[i]), (FIG_R[i] - P3_STEP) * math.sin(FIG_PSI[i])])
         hand = np.array([0.28, side * 0.10, 0.92 * hs])
         tor = _unit([0.10, -side * 0.03, 1.0])
         lit = 0.0
         t0 = 5534 + FIG_DIP_DT[i]
         u = smoother(ramp(t, t0, t0 + 14))                      # lean in
         v = smoother(ramp(t, t0 + 20, t0 + 34))                 # draw back, lit
-        kneel = 0.30 * u * (1 - v)
-        lean = math.radians(34.0) * u * (1 - v)
-        tip = to_local(i, np.array([0.58 * math.cos(FIG_PSI[i]), 0.58 * math.sin(FIG_PSI[i]), 0.34]))
-        tor_dn = _unit([0.62, -side * 0.02, -0.55])
-        hand_dn = tip - 0.46 * tor_dn
+        kneel = 0.34 * u * (1 - v)
+        lean = math.radians(38.0) * u * (1 - v)
+        # the head of the spent torch goes into the flank of the fire on the stone
+        tip = to_local(i, np.array([0.24 * math.cos(FIG_PSI[i]), 0.24 * math.sin(FIG_PSI[i]), 0.56]), pos=pos)
+        tor_dn = _unit([0.84, -side * 0.02, -0.54])
+        hand_dn = tip - 0.44 * tor_dn
         w_ = u * (1 - v)
         hand = hand * (1 - w_) + hand_dn * w_
         tor = _unit(tor * (1 - w_) + tor_dn * w_)
@@ -325,7 +328,8 @@ def emissary_state(i, t):
 
 
 # --------------------------------------------------------------------- her ---
-HER_KNEEL_R = 1.10           # where she kneels at the hearth's kerb
+HER_KNEEL_R = 1.00           # where she kneels at the hearth's kerb
+P3_STEP = 0.40               # bar 70: the bearers stand this much closer round the fire
 RING_R = 0.22                # the Ring lies this far from the stone's centre, on her side
 
 
@@ -366,6 +370,9 @@ def her_state(t):
         hand2 = chest * (1 - reach) + tgt * reach
         fdir = _unit([1.0, -0.15, -0.35 * reach])
         grip2 = 0.75 - 0.75 * smooth(ramp(t, 4838, 4842))
+    if TORCH_DOWN <= t < P3[0] - 40:
+        # P2: she bends in over the hearth as her hand goes back to the Ring, and stays bent over her fist
+        lean = lean + math.radians(34.0) * smoother(ramp(t, 5128, 5154))
     return dict(pos=pos, ang=ang, kneel=kneel, lean=lean, walk=walk, phase=phase, arm2=arm2, hand2=hand2,
                 fdir=fdir, grip2=grip2, reach=reach)
 
@@ -456,7 +463,13 @@ def hand_frame(wrist, a, c_hint, scale=1.0, forearm=0.26, gilt=0.0, sleeve=1.0, 
 
 
 def hand_bounds(HD, J, extra=0.02):
-    pts = [HD[0:3] - HD[3:6] * (HD[13] + 0.25)]
+    if HD[23] > 0.5:
+        s = HD[12]
+        pts = [HD[0:3] + (HD[3:6] * HD[j] + HD[6:9] * HD[j + 1] + HD[9:12] * HD[j + 2]) * s for j in (16, 19)]
+        pts += [p + np.array(o) for p in pts for o in ((0.09, 0, 0), (-0.09, 0, 0), (0, 0.09, 0), (0, -0.09, 0),
+                                                        (0, 0, 0.09), (0, 0, -0.09))]
+    else:
+        pts = [HD[0:3] - HD[3:6] * (HD[13] + 0.25)]
     for f in range(5):
         for k in range(4):
             u, v, w = J[f, k]
@@ -496,17 +509,38 @@ def her_hand(t):
     # the hand points in toward the stone, palm down, tilting its fingers down to the Ring as it closes
     a = _unit(-out + np.array([0, 0, -0.35 - 0.3 * k]))
     chint = np.array([0.0, 0.0, 1.0]) + 0.3 * out
-    curl = 0.12 + 0.18 * u
-    curl = curl + (0.95 - curl) * smoother(ramp(t, HAND_CLOSE - 3, HAND_CLOSE + 6))
-    thumb = 0.15 + 0.8 * smoother(ramp(t, HAND_CLOSE - 2, HAND_CLOSE + 7))
+    # a living hand: relaxed, each finger curled a little more than the one before; then it closes on the Ring
+    relax = np.array([0.20, 0.29, 0.37, 0.46]) + 0.06 * u
+    cl = smoother(ramp(t, HAND_CLOSE - 3, HAND_CLOSE + 6))
+    curl = relax + (np.array([0.90, 0.95, 0.98, 1.0]) - relax) * cl
+    thumb = 0.28 + 0.67 * smoother(ramp(t, HAND_CLOSE - 2, HAND_CLOSE + 7))
     tremble = smooth(ramp(t, FIRE_CATCH, 5300)) * 1.0
     # forced open in the white heart: a spasm, the fingers spring out
     op = smoother(ramp(t, FINGERS_OPEN, FINGERS_OPEN + 5))
     curl = curl * (1 - op) + (-0.05) * op
     thumb = thumb * (1 - op) + 0.1 * op
-    J = hand_joints(curl, thumb, spread=1.0 + 0.8 * op, tremble=tremble, t=t)
+    J = hand_joints(curl, thumb, spread=0.85 + 0.9 * op, tremble=tremble, t=t)
     HD = hand_frame(wrist, a, chint, scale=1.0, forearm=0.30, gilt=0.0, sleeve=1.0)
+    # her arm, in her cloak's wool sleeve: from her right shoulder (bent in over the hearth) to the wrist
+    st = her_state(t)
+    S = to_world(HER, shoulder_local(HER, -1.0, st['kneel'], st['lean']), pos=st['pos'], ang=st['ang'])
+    ang = st['ang']
+    right = np.array([math.sin(ang), -math.cos(ang), 0.0])
+    E, _ = _two_bone(S, wrist, 0.31, 0.30, right * 0.7 + np.array([0.0, 0.0, -0.6]))
+    set_arm(HD, E, S)
     return HD, J
+
+
+def set_arm(HD, elbow, shoulder):
+    """A real arm for sd_hand: the elbow and shoulder (world) into hand-local units; arm mode on."""
+    s = HD[12]
+    for j, P in ((16, elbow), (19, shoulder)):
+        q = np.asarray(P, np.float64) - HD[0:3]
+        HD[j] = (q @ HD[3:6]) / s
+        HD[j + 1] = (q @ HD[6:9]) / s
+        HD[j + 2] = (q @ HD[9:12]) / s
+    HD[23] = 1.0
+    return HD
 
 
 def gilded_hand(t, Fa):
@@ -646,12 +680,14 @@ def fire_state(t):
         conv = 0.35 + 0.45 * smooth(ramp(t, FIRE_CATCH + 10, FIRE_CATCH + 60))
         hollow = 1.0 - smooth(ramp(t, 5334, 5362))
         return dict(on=on, H=H, white=white, spread=spread, hollow=hollow, conv=conv, calm=0.0, age=age)
-    # P3: out of the white, the fire settles to a warm, steady hearth fire on the stone
+    # P3: out of the white, the fire settles to a warm, steady fire on the stone where the Ring was
+    # (flame3.calm_density over calm_flames(t)); H is the fire's height factor (1 = settled)
     age = t - FIRE_CATCH
-    settle = smooth(ramp(t, P3[0], P3[0] + 26))
-    white = (1.0 - settle) ** 1.5
-    H = 1.35 - 0.45 * settle
-    return dict(on=1.0, H=H, white=white, spread=1.0, hollow=0.0, conv=0.55, calm=settle, age=age)
+    settle = smooth(ramp(t, P3[0], P3[0] + 30))
+    white = (1.0 - settle) ** 1.8
+    H = 1.0 + 0.40 * (1.0 - settle)
+    return dict(on=1.0, H=H, white=white, spread=1.0, hollow=0.0, conv=0.55, calm=1.0, age=age, p3=1.0,
+                settle=settle)
 
 
 def white_level(t):
@@ -661,6 +697,59 @@ def white_level(t):
     if plate(t) == 3:
         return (1.0 - smooth(ramp(t, P3[0] - 1, P3[0] + 22))) ** 1.4
     return 0.0
+
+
+def calm_flames(t):
+    """Bar 70 (flame3.calm_density rows: x, y, z0, Hf, Rf, sx, sy, seed): the fire that remains, standing on the
+    stone where the Ring was. A tall heart and a crown of flames rise from the coals on the stone; low flames lick
+    along the burning inner ends of the logs round it; all lean in a little and downwind, and each pumps and sways
+    on its own. Returns (CF, nmain)."""
+    fs = fire_state(t)
+    grow = fs['H']
+    rng = np.random.default_rng(70)
+    wind = np.array([0.26, -0.10])
+    Ts = t / 24.0
+    zt = G.STONE_TOP - 0.025
+    rows = []
+
+    def pump(seed, big):
+        return (1.0 + big * (0.085 * math.sin(2 * math.pi * 3.1 * Ts + seed) + 0.060 * math.sin(2 * math.pi * 1.37 * Ts + 2.1 * seed)
+                             + 0.045 * math.sin(2 * math.pi * 0.53 * Ts + 3.3 * seed)))
+
+    def sway(seed):
+        return (0.10 * math.sin(2 * math.pi * 0.61 * Ts + seed), 0.10 * math.sin(2 * math.pi * 0.47 * Ts + 1.7 * seed))
+
+    # the heart
+    s0 = 1.3
+    sw = sway(s0)
+    rows.append((0.012, -0.008, zt, 0.92 * grow * pump(s0, 1.0), 0.165, wind[0] + sw[0], wind[1] + sw[1], s0))
+    # the crown on the coals, leaning in toward the heart
+    for k in range(5):
+        a = 2 * math.pi * k / 5 + rng.uniform(-0.35, 0.35) + 0.4
+        r = rng.uniform(0.12, 0.18)
+        x, y = r * math.cos(a), r * math.sin(a)
+        sd = 2.9 + 1.7 * k
+        sw = sway(sd)
+        Hh = rng.uniform(0.50, 0.72) * grow * pump(sd, 1.2)
+        rows.append((x, y, zt, Hh, rng.uniform(0.105, 0.130), wind[0] - 0.24 * math.cos(a) + sw[0],
+                     wind[1] - 0.24 * math.sin(a) + sw[1], sd))
+    nmain = len(rows)
+    # low flames along the burning inner ends of the eight logs, leaning in over the stone
+    LG = hearth_parts()[1]
+    for k in range(8):
+        A = LG[k, 0:3]
+        B = LG[k, 3:6]
+        ra = LG[k, 7]
+        for j, fr in enumerate((0.08, 0.40)):
+            P = A + (B - A) * fr
+            rr = math.hypot(P[0], P[1]) + 1e-9
+            sd = 11.0 + 2.3 * k + 1.1 * j
+            sw = sway(sd)
+            # thin licking tongues that lean in over the stone (never round puffs)
+            Hh = (0.36 - 0.12 * j) * rng.uniform(0.85, 1.15) * grow * pump(sd, 1.4)
+            rows.append((P[0], P[1], P[2] + 0.6 * ra, Hh, (0.040 - 0.008 * j) * rng.uniform(0.9, 1.1),
+                         wind[0] - 0.80 * P[0] / rr + 0.6 * sw[0], wind[1] - 0.80 * P[1] / rr + 0.6 * sw[1], sd))
+    return np.array(rows, np.float64), nmain
 
 
 # ================================================================== camera ===
@@ -706,6 +795,7 @@ def _cam_look(C, T, Uh, scale):
 
 
 GILT_FIND0, GILT_FIND1 = 4990, 5042
+P3_PHI0 = 187.0        # bar 70 starts behind her right shoulder, between her and emissary 12
 
 
 def gilt_knuckles(t):
@@ -754,12 +844,16 @@ def camera(t, scale=1.0):
         k = smooth(ramp(t, 5120, 5170))
         tgt = np.array([0.0, 0.0, 0.30]) * (1 - k) + np.array([f[0] * 0.55, f[1] * 0.55, 0.36]) * k
         return _cam_from(tgt, h, 4.0, phi, scale)
-    # P3: out of the white, the crane up as the flame is carried away
-    phi = math.degrees(PSI_HER) + 90.0 + 0.035 * (t - P2[0]) + 0.04 * (t - P3[0])
-    h = float(np.exp(np.interp(t, [5520, 5540, 5560, 5580, 5600, 5620, 5640, 5660, 5679],
-                               np.log([3.4, 3.8, 4.8, 7.0, 11.0, 17.0, 27.0, 42.0, 62.0]))))
-    tilt = 5.0
-    return _cam_from(np.array([0.0, 0.0, 0.40]), h, tilt, phi, scale)
+    # P3: out of the white, low and oblique behind her shoulder (so the flames stand up as flames and the far
+    # bearers are dark against them); then the crane up, turning to top-down as the flame is carried away, so by
+    # 5600 the ring of stones lies where MAP's drawn ring will burn through
+    phi = P3_PHI0 + 0.05 * (t - P3[0])
+    h = float(np.exp(np.interp(t, [5520, 5548, 5566, 5582, 5600, 5620, 5640, 5660, 5679],
+                               np.log([3.25, 3.45, 4.3, 6.2, 10.5, 17.0, 27.0, 42.0, 62.0]))))
+    k = smoother(ramp(t, 5552, 5604))
+    tilt = 5.0 + 34.0 * (1.0 - k)
+    tgt = np.array([0.0, 0.0, 0.62 - 0.26 * k])
+    return _cam_from(tgt, h, tilt, phi, scale)
 
 
 def project(cam, P):

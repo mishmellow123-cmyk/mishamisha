@@ -70,7 +70,7 @@ S_N = 22
 
 # the detailed hand: H[0:3] wrist, H[3:6] a (wrist->knuckles), H[6:9] b (thumb side), H[9:12] c (back of hand),
 # H[12] scale, H[13] forearm length, H[14] gilt, H[15] sleeve (0/1); joints J (5 fingers x 4 points x 3) local (u,v,w)
-HD_N = 16
+HD_N = 24          # + [16:19] elbow, [19:22] shoulder (hand-local, hand units), [22] spare, [23] arm mode
 # the Ring: RP[0] on, RP[1:4] centre, RP[4:7] axis, RP[7] glow, RP[8] hide-inside-fist
 R_IN, R_THICK, R_WIDTH, R_SQ = 0.0094, 0.0023, 0.0052, 2.8
 R_MID = R_IN + 0.5 * R_THICK
@@ -662,11 +662,65 @@ def normal_fig(px, py, pz, F, i, h):
 
 # ============================================================ the detailed hand ===
 
+@njit(inline='always', **FM)
+def _seg_dist(u, v, w, ax, ay, az, bx, by, bz):
+    """Distance from (u,v,w) to segment a-b and the parameter along it (0..1)."""
+    ex = bx - ax
+    ey = by - ay
+    ez = bz - az
+    L2 = ex * ex + ey * ey + ez * ez + 1e-12
+    h = ((u - ax) * ex + (v - ay) * ey + (w - az) * ez) / L2
+    h = min(max(h, 0.0), 1.0)
+    dx = u - ax - ex * h
+    dy = v - ay - ey * h
+    dz = w - az - ez * h
+    return math.sqrt(dx * dx + dy * dy + dz * dz), h
+
+
+@njit(**FM)
+def gilt_crust(u, v, w, J):
+    """The gold that ran over the back of the grasping hand and set (0..1, the crust's thickness), in hand
+    units: a lobed sheet poured over the back of the hand, run forward over the knuckles in tongues along the
+    backs of the first three fingers; the leather shows round it and between the tongues."""
+    if w < -0.030:
+        return 0.0
+    du = (u - 0.046) / 0.050
+    dv = (v + 0.004) / 0.036
+    rr = math.sqrt(du * du + dv * dv)
+    lob = 0.30 * (vnoise2(u * 36.0 + 3.1, v * 36.0, 601) - 0.5) + 0.12 * (vnoise2(u * 105.0, v * 105.0 + 1.7, 602) - 0.5)
+    sheet = sstep(0.0, 0.10, 1.0 - rr + lob) * sstep(-0.012, 0.004, w)
+    # tongues over the knuckles, along the backs of the proximal phalanges (index long, middle, ring short)
+    tg = 0.0
+    for f in range(1, 4):
+        ax = J[f, 0, 0]
+        ay = J[f, 0, 1]
+        az = J[f, 0, 2]
+        ex = J[f, 1, 0] - ax
+        ey = J[f, 1, 1] - ay
+        ez = J[f, 1, 2] - az
+        el = math.sqrt(ex * ex + ey * ey + ez * ez) + 1e-9
+        ex /= el
+        ey /= el
+        ez /= el
+        # the dorsal side of the segment (the curl turns it with the finger)
+        nx = -ez
+        nz = ex
+        ln = (0.95, 0.75, 0.40)[f - 1] * el
+        ox = ax + nx * 0.0055 - ex * 0.012
+        oz = az + nz * 0.0055 - ez * 0.012
+        dd, hh = _seg_dist(u, v, w, ox, ay - ey * 0.012, oz, ax + ex * ln + nx * 0.0055, ay + ey * ln, az + ez * ln + nz * 0.0055)
+        rad = 0.0078 * (1.0 - 0.45 * hh) + 0.0015 * (vnoise2(hh * 9.0 + f, 0.5, 603) - 0.5)
+        tg = max(tg, sstep(0.0012, -0.0006, dd - rad))
+    return max(sheet, tg)
+
+
 @njit(**FM)
 def sd_hand(px, py, pz, HD, J):
     """A gloved hand (thin leather) with articulated fingers. J[f, k] = joint k (0..3) of finger f (0 thumb,
     1 index .. 4 little) in hand-local (u,v,w): u wrist->knuckles, v toward the thumb, w the back of the hand.
-    Returns (distance, material, glove seam coordinate)."""
+    HD[23] = 1: a real arm in a wool sleeve (wrist -> elbow HD[16:19] -> shoulder HD[19:22]); else a short
+    straight sleeve along -u. HD[14] > 0: the gilded glove (a raised gold crust, material M_GILT).
+    Returns (distance, material)."""
     qx = px - HD[0]
     qy = py - HD[1]
     qz = pz - HD[2]
@@ -674,6 +728,42 @@ def sd_hand(px, py, pz, HD, J):
     u = (qx * HD[3] + qy * HD[4] + qz * HD[5]) / s
     v = (qx * HD[6] + qy * HD[7] + qz * HD[8]) / s
     w = (qx * HD[9] + qy * HD[10] + qz * HD[11]) / s
+    arm = HD[23] > 0.5
+    # the sleeve first: far from the hand only the sleeve matters (cheap)
+    d_sl = 1e9
+    if HD[15] > 0.5:
+        if arm:
+            ex = HD[16]
+            ey = HD[17]
+            ez = HD[18]
+            el = math.sqrt(ex * ex + ey * ey + ez * ez) + 1e-9
+            fx = ex / el
+            fy = ey / el
+            fz = ez / el
+            # the forearm in a wool sleeve that opens a little over the glove's cuff and widens to the elbow
+            ax_ = fx * 0.045
+            ay_ = fy * 0.045
+            az_ = fz * 0.045
+            d1, h1 = _seg_dist(u, v, w, ax_, ay_, az_, ex, ey, ez)
+            r1 = 0.047 + 0.020 * h1
+            # folds: rings of soft creases pushed up the forearm, and a few long ones
+            lx = u - ax_ - (ex - ax_) * h1
+            ly = v - ay_ - (ey - ay_) * h1
+            lz = w - az_ - (ez - az_) * h1
+            ph = math.atan2(ly * fz - lz * fy, lx)
+            fo = 0.0045 * _crease(h1 * 34.0 + 1.6 * math.sin(ph * 2.0 + h1 * 5.0)) + 0.0030 * _crease(ph * 5.0 + h1 * 3.0)
+            d_sl = d1 - r1 - fo
+            # the upper arm up into her cloak at the shoulder
+            d2, h2 = _seg_dist(u, v, w, ex, ey, ez, HD[19], HD[20], HD[21])
+            d_sl = smin(d_sl, d2 - (0.064 + 0.012 * h2) - 0.004 * _crease(h2 * 22.0 + ph * 3.0), 0.03)
+        else:
+            L = HD[13]
+            d_sl = sd_capsule_r(u, v, w, -0.040, 0.0, 0.0, -L - 0.2, 0.0, 0.0, 0.040, 0.052)
+            d_sl += 0.003 * _crease(60.0 * u + 3.0 * math.atan2(w, v))
+    # bound: the hand itself (fingers straight: <= 0.19) and the cuff lie within 0.21 of the wrist
+    rh = math.sqrt(u * u + v * v + w * w)
+    if rh > 0.235:
+        return min(d_sl, rh - 0.215) * s, M_CLOTH
     # palm: a rounded slab, arched across the back
     ea = abs(u - 0.050) - 0.044
     eb = abs(v + 0.002) - 0.036
@@ -697,25 +787,36 @@ def sd_hand(px, py, pz, HD, J):
             dd = sd_capsule_r(u, v, w, J[f, k, 0], J[f, k, 1], J[f, k, 2], J[f, k + 1, 0], J[f, k + 1, 1],
                               J[f, k + 1, 2], ra, rb)
             d = smin(d, dd, 0.0045 if k == 0 else 0.0025)
-    # knuckles on the back
+    # knuckles on the back, and the tendons fanning to them under the thin leather
     for f in range(1, 5):
         d = smin(d, math.sqrt((u - J[f, 0, 0]) ** 2 + (v - J[f, 0, 1]) ** 2 + (w - J[f, 0, 2] - 0.004) ** 2) - 0.0095,
                  0.006)
-    # wrist, cuff and sleeve
-    L = HD[13]
-    dw = sd_capsule_r(u, v, w, 0.004, 0.0, 0.0, -L, 0.0, 0.0, 0.026, 0.034)
+    # wrist and the glove's cuff
+    if arm:
+        el = math.sqrt(HD[16] ** 2 + HD[17] ** 2 + HD[18] ** 2) + 1e-9
+        fx = HD[16] / el
+        fy = HD[17] / el
+        fz = HD[18] / el
+        dw = sd_capsule_r(u, v, w, 0.004, 0.0, 0.0, fx * 0.075, fy * 0.075, fz * 0.075, 0.026, 0.031)
+    else:
+        L = HD[13]
+        dw = sd_capsule_r(u, v, w, 0.004, 0.0, 0.0, -L, 0.0, 0.0, 0.026, 0.034)
     d = smin(d, dw, 0.010)
-    dcf = sd_capsule_r(u, v, w, -0.012, 0.0, 0.0, -0.030, 0.0, 0.0, 0.0285, 0.0300)
-    if dcf < d:
-        d = dcf
-    if HD[15] > 0.5:
-        dsl = sd_capsule_r(u, v, w, -0.040, 0.0, 0.0, -L - 0.2, 0.0, 0.0, 0.040, 0.052)
-        dsl += 0.003 * _crease(60.0 * u + 3.0 * math.atan2(w, v))
-        if dsl < d:
-            d = dsl
-            mat = M_CLOTH
-    if HD[14] > 0.0 and mat == M_GLOVE and w > -0.004:
-        mat = M_GILT
+    if not arm:
+        dcf = sd_capsule_r(u, v, w, -0.012, 0.0, 0.0, -0.030, 0.0, 0.0, 0.0285, 0.0300)
+        if dcf < d:
+            d = dcf
+    # the gilded glove: a raised crust of set gold, lumpy, with a bead at its edge where it stopped running
+    if HD[14] > 0.0 and d < 0.006:
+        c = gilt_crust(u, v, w, J) * HD[14]
+        if c > 0.0:
+            bump = 0.55 + 0.45 * vnoise2(u * 260.0, v * 260.0 + w * 180.0, 604)
+            lip = sstep(0.15, 0.45, c) * sstep(0.95, 0.55, c)
+            d -= 0.0016 * c * bump + 0.0007 * lip
+            if c > 0.35:
+                mat = M_GILT
+    if d_sl < d:
+        return d_sl * s, M_CLOTH
     return d * s, mat
 
 
