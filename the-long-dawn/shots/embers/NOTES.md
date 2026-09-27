@@ -1,3 +1,45 @@
+# >>> PAUSED 27 Sep ~11:55Z (director: usage at the window's end). RESUME 15:00Z: the EDGE/BRINK pass <<<
+
+## DIRECTOR'S NOTES (resume_notes/embers.txt, verbatim) -- apply these first
+Director's review of the EDGE/BRINK check stills (review/embers_A3_check/edge/, f8a7a02). HOLD both jobs for one more pass:
+(1) GEOGRAPHY FIRST. The audience must see: (a) the ground falling away into a CRATER OF FIRE around the fire, a deep glowing bowl of molten light with heat shimmer and embers, never a flat region with a thin glowing outline (it reads as a puddle or a map outline); (b) the towers standing on its LIP and leaning in, silhouetted against the pit's glare; (c) the two giants on opposite sides. Pull the orbit out to a 3/4 view from just above rim height, looking across the bowl. Keep the near rim dark in the lower third for T7/T8, with the pit's glow in the middle band.
+(2) THE GILDING must read: on each surge, bright liquid gold runs down the nearest faces while the farthest go dark. The incentive has to be visible.
+(3) From bar 26, the rim crumbles under the gilded ones: crust chunks break off into the glow. Make the lip a physical edge (breaking crust, glowing seams), not a graphic line.
+(4) The crown fall (about 2480-2520) must be a HERO moment: bigger in frame, a readable crenellated crown breaking off and tumbling into the glare, visible for about 1 s. Then the camera follows it over the rim into white on 2640.
+(5) The brink's updraft (fire physics, no vortex) is the right direction. Keep it.
+f2440 (looking up at the flaring fire, sparks falling) is the strongest of the set; build the rest to that intensity.
+
+## EXACT STATE AT PAUSE
+* Cloud, APPROVED and running (launched by the director): embers_A3_a5 (A5 1040-1439), embers_A3_a6 (A6 1440-1839
+  MAIN), embers_A3_alt_a (A6 1440-1839 ALT). Their code is frozen at 65985e3 in the jobs' clones; later commits touch
+  only frames >= 1840 (edge.py, the EDGE/BRINK camera, the crater) EXCEPT the Smoke/crust edits, which were already in
+  65985e3. Frames arrive via the importer into renders/embers_A3 and renders/embers_A3_alt_codedtowers.
+* HELD by the director: cloud/jobs/embers_A3_edge.json and embers_A3_alt_edge.json (1840-2639). Do not launch; they
+  need the pass below first.
+* Code at HEAD (f8a7a02 + this commit): THE EDGE crater solid (occluder hook), torn rim (`edge.rim_r`), hot walls,
+  lit plain; orbit r46 y30 ty-12 hf62; BRINK: Updraft pillar + StripEmbers (2400-2440), rim lurch + breaking lip at
+  2440, crowns raining sparks, FALL_TOWER=7 breaks at 2480 with the camera following (`FallingCrown.centre`,
+  `CrownTrail`), over the rim to white at 2640.
+* Check stills: the-long-dawn/review/embers_A3_check/{v3 (A6, approved), edge (EDGE/BRINK, held)}.
+* A background contact sheet of A9/A10/A16/A17 (scratchpad e3/v1.jpg) was launched at 11:53Z; not yet reviewed.
+
+## NEXT STEPS (the EDGE/BRINK pass, in the director's order)
+1. GEOGRAPHY: the crater must read as a deep glowing BOWL of molten light (heat shimmer, embers rising out of it),
+   not a flat area with an outline. Ideas: widen/deepen the visible wall (WALL 5 -> 9, a sloped bowl, not a shaft),
+   brighter wall with a strong gradient to a white-gold molten floor, embers + heat-haze particles rising out of the
+   pit, the plain's lip region breaking into glowing crust. Orbit: 3/4 view from just above rim height looking ACROSS
+   the bowl (e.g. r ~40-45, y ~ -4..0, ty ~ -12, hf ~60), towers on the far lip silhouetted against the glare, near
+   rim dark in the lower third, the two giants on opposite sides (az ~2.7 rel. ALPHA_C puts them left/right).
+2. GILDING: make `_gold_runs` visibly bright liquid gold on each surge on the nearest faces (check GILD_W and the
+   surge pulse: SCHED.gild returns g; scene_b._gold_runs), the farthest going dark.
+3. RIM CRUMBLE from bar 26 (2000): crust chunks (bigger than the debris sparks) breaking off the lip into the glow;
+   the lip as a physical edge (crust + glowing seams), not a line (Crater.l_p is a thin line now).
+4. HERO CROWN 2480-2520: bigger in frame (tighter lens / closer camera on FALL_TOWER=7), a readable crenellated crown
+   tumbling ~1 s into the glare; then follow it over the rim into white on 2640.
+5. Keep the updraft (director: right direction). f2440 is the intensity target.
+Then new check stills -> director -> relaunch the two held jobs. After that: A9/A10/A16/A17 review (e3/v1.jpg), E1
+glyphs retime, then C (canonical Ring inscription in assets/ring/, forging, race, Eye, grasp).
+
 # >>> EMBERS-v3 #2 -- STATE 27 Sep ~11:35Z (read this first) <<<
 
 **Cloud (approved + launched by the director):** `embers_A3_a5` (A5 1040-1439), `embers_A3_a6` (A6 1440-1839 MAIN),
