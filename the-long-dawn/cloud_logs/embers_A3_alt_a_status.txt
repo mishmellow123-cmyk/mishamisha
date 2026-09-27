@@ -1,0 +1,7 @@
+host: Linux vm 6.18.44-fc-v42 #1 SMP PREEMPT_DYNAMIC @0 x86_64 | cpus 4
+12:59:46 JOB embers_A3_alt_a: 400 frames -> renders/embers_A3_alt_codedtowers, pushing to claude/render-embers-A3-alt-a
+12:59:46 setup: python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow fonttools || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools
+13:00:03 setup ok in 17s
+13:00:03 setup: cd shots/embers && python3 render.py 1440 --cut A3 --alt-towers --scale 0.1 --out /tmp/embers_warm
+13:01:55 setup ok in 112s
+13:01:55 SETUP DONE; starting renders
