@@ -1,19 +1,16 @@
-# >>> MAP-L STATE (27 Sep ~15:20 local): book pass pushed, awaiting farm check stills <<<
-* DONE in code and pushed (1f5d629, job a190472), previewed only as flat 2-D rasters (local renders frozen):
-  - C4-C5 PAGE ONLY (contract with EMBERS-C, 600592b): `letters_at` passes fire=None, keeps the fire's light
-    (`fire_lights`); Kindling timings/seeds and `cam_letters` unchanged; `--with-fire` for tests.
-  - C28 title burn-on in book space (`titleburn.py`): 6980 in, cools to ink, sinks back by 7160. EDIT to drop its C
-    title overlay (asked via main).
-  - The illuminated initial (`redbook.initial`, glyph 'wc', 2.5 cm, vermilion ground + ink diaper + gold bezants,
-    gilt frame, ivy vine) + the rubricated opening words (`redbook.rubricate`). New RUBRIC layer = texture ch 6
-    (book.NCH 7; vermilion mix in the shader).
-  - C25 Plenty crown: leaf sprays + gilt racemes (pages.Plenty.build); lighter field stipple.
-  - C26 Havens: roundel = her bound hand raising a clay lamp (pages.Havens._roundel; lamp_flame moved); the tower
-    is a round crenellated watch-tower.
-* NEXT: farm --test 12 on map_v3_book (asked main for the go) -> review (gate questions, crops) -> fixes ->
-  JOB READY map_v3_book (2,472 frames). Open polish: C22 fallback flames read as paper cut-outs; the Mountain's
-  cone (judge in the render).
-* Flat preview tools (scratch, not in repo): windowed pen.raster of a plate/page; see MAP-L transcript.
+# >>> MAP-L STATE (27 Sep ~16:25 local): check stills reviewed, fixes pushed, JOB READY next <<<
+* Pushed: book pass 1f5d629; C22 fallback flames 3439334; C3 Mountain 7b60e0b; check-still fixes 93ba9ac.
+* Farm check stills (12, request 0927-154521, commit 3083493) in renders/_farmtest/map_v3_book/book_C, reviewed at
+  reduced size and in full-res crops. PASS: C2 drift/ship/sheaf; C3 the great cone on a huge base; C4 glow
+  (page only); C5 the hole onto black (page only, EMBERS-C's fire goes in it); C8 the Deep's thick gilt seam;
+  C26 the bound-hand roundel (reads as a linen-bound fist raising an oil lamp) and the watch-tower; C27 blank;
+  C28 the title burning (7000) and in ink (7060). FIXED after review (93ba9ac): the initial's letter read as a
+  gold tick in a checkbox ('wc' -> 'lp'); Plenty's limbs read as umbrella spokes from one point (now staggered up a
+  central leader, curving out then up) and its gold was lost in the low light (bigger, more racemes).
+* Farm request 0927-161846-mapv3book-61819 (FARM re-queued at the tip) re-renders the 12 stills with the fixes.
+  After a look at 175 and 6380: JOB READY map_v3_book (2,472 frames).
+* Contract notes: C4-C5 page only (EMBERS-C: renders/embers_C3_e15, EDIT adds); C28 title in book_C (EDIT drops
+  its C title overlay; director informed EDIT).
 
 # >>> STATE AT HANDOFF (MAP-L takes over, 27 Sep ~18:45Z local; MAP-v3's cloud session is unreachable) <<<
 * Imported from `claude/v3-map` (bfe5d4e) by explicit path onto `claude/long-dawn-v2` (f3aa4ee): all of shots/map's
