@@ -1,11 +1,3 @@
-> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
-> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
-> - The fire-basket plinth shows triangle-fan seams.
-> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
-> - The dark speckles on B's snow read as dalmatian spots (climb 700).
->
-> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
-
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
 ## RUN-A2 STATE AT PAUSE (27 Sep ~21:00Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
@@ -83,7 +75,7 @@
   invisible at H1's distance), check 3680 against 3679 again, then delete `renders/reveal_A` and re-run
   `farm.py the-long-dawn/cloud/jobs/reveal_a_1.json --nodes 1`. The re-render also carries nighta 2913ad7 (the far haze
   without the glow's shadow rays, which fell as faint vertical slabs under the horizon; the landed final predates it).
-* **A15 R16 THE WATCHERS: NOT approved; look-dev v3 on the farm at 20:49Z** (`watchers_a_look` -> 3 frames in
+* **A15 R16 THE WATCHERS: NOT approved; look-dev v4 (6e78762) QUEUED on the farm since 20:52Z** (`watchers_a_look` -> 3 frames in
   `renders/_farmtest/watchers_a_look`); the final job `watchers_a_1` (160 frames, cut 4240-4399 -> `renders/watchers_A`)
   is written and pushed. History at 1:1:
   * v1: the lit ledge read as clay, the flame floated a metre over a clip-art wood teepee, the lighter beside the fire.
@@ -92,7 +84,12 @@
     sigma = thousands of px at 15 m, depth-passed to everything behind the fire), not the LT pool.
   * v3 (04c1843): nighta caps the halos on screen (90 / 260 px at 1920; beacons unchanged); the lighter 0.55 m right
     of the fire (the flame beside the hood, rimming it); a low 3-course cairn to 0.64 m (the size-0.6 flame's base).
-  **Resume:** review v3 (sheet + 1:1 crop of the lighter/cairn/flame). If "good with nitpicks": JOB READY watchers_a_1
+    Cancelled unseen: RUN-A-L's A14 look-dev confirmed v2's box stones read as cubes and the lighter as a pillar.
+  * v4 (6e78762): the cairn of weathered, rounded field stones (lumpy round cones at random axes, lightly fused, three
+    uneven courses to 0.64 m); the lighter 0.72 m beside the fire. The request (0927-165213-watchersalook) stays
+    queued through the gap; its frames land in `renders/_farmtest/watchers_a_look/` while we are idle.
+  **Resume:** review v4 (sheet + 1:1 crop of the lighter/cairn/flame; if it never landed, re-run `farm.py
+  the-long-dawn/cloud/jobs/watchers_a_look.json --test 3`). If "good with nitpicks": JOB READY watchers_a_1
   with the stills. Still open if v3 shows them: (a) a single bright shadow ray of the glow above the sierra can read as
   a searchlight (GP[11] is shared with A14; any change must go in nighta for both); (b) the near ledge's moonlit rock
   may still read as clay at 15-60 m: the fallback is to pitch the plate up so the ledge leaves the lower third (A14's
@@ -273,6 +270,14 @@ finals numbered in A's cut frames, per EDIT-v3. Nothing is rendering; no job has
 * Lessons: background renders on the session box do not survive a usage pause (the box is frozen, then rebooted);
   use cloud jobs. In rebases, this shared NOTES file conflicts: keep each lane's block intact. In this world
   `cross(UP, w)` is a figure's RIGHT (sdfppl's comment says left; symmetric figures never showed it).
+
+> **DIRECTOR 21:00Z: LAUNCHED BY MAIN. Do NOT relaunch:** handback_b_{dawn_a,dawn_b,night,crane_a,crane_b} (--nodes 5), climb_b + stars_a (--nodes 2), falsedawn_a (--nodes 6) and crossing_a2_01..18 (--nodes 6). Logs are in `_local_logs/jobs/*_farm.log`. B's shared flaws for the 23:29Z pass (then re-render the frames where they show):
+> - **bprops.cairn3** reads as stacked low-poly hexagonal gems or nuts. It needs irregular, rounded, lichened stones with snow in the gaps.
+> - The fire-basket plinth shows triangle-fan seams.
+> - In the WIDE shots the woman's silhouette reads as a rock or monolith (4300); she needs a head-and-shoulders read.
+> - The dark speckles on B's snow read as dalmatian spots (climb 700).
+>
+> The crossing's fix list is in `_local_logs/PACING.md` (21:05Z).
 
 # >>> RUN-C (C . THE LIVING INK: C16 REVEAL, C17 INK RUN, C24 ILLUMINATION, R13b RING FALLS) - report 27 Sep <<<
 ## >>> STATE FOR RESUME (RUN-C-3, 27 Sep ~20:50Z; usage window ends 21:25Z, resume ~23:30Z) <<<
