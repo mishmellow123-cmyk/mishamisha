@@ -243,4 +243,79 @@ This closes the framing critic's blocker.
 
 **No triumph.** "Not yet" and a book of blank pages are the Grey Havens' own note: the victory is real, something is still owed, and the tale is not finished. The last image is a pen handed on, not a sword raised.
 
-<!-- NEXT: CUT A -->
+---
+
+# CUT A · THE RACE (the allegory)
+
+## A(1) Logline
+A lifetime from now, at a vigil for the sunrise, a child asks why the dawn takes so long. The answer is a legend of our own years:
+- a new fire that could think;
+- rivals racing it up a dark mountain toward an edge none of them could see, every step paid in gold;
+- people everywhere lighting the hills, until the runners saw the edge, and each other;
+- the fire carried together at walking pace into a dawn that took a generation to rise.
+
+## A(2) The central idea: *you can only race toward an edge you cannot see*
+
+**One physical truth holds A together.** A torch blinds you to everything outside its own circle. The brighter the fire you carry, the smaller the world you can see.
+
+**The race.** The runners' fires grow as they climb: more power, more gold. So the higher they get, the less they can see. The race depends on darkness, for three reasons:
+- no one can see inside the fire;
+- no one can see whether the others have stopped;
+- no one can see where the mountain ends.
+
+**The answer.** The answer is not to put the fire out, which is the gift. It is to light the dark. That is what beacons were for before they were signals of victory: warning, and bringing people together.
+
+**When ordinary people light the hills, two things become visible at once:**
+- the edge, a step ahead, so running is no longer "risky" but plainly suicide;
+- the other runners, so stopping together is something each can see is real.
+
+**The trap that light breaks.** The trap was: *if I stop and cannot see whether you stop, I lose.* Light breaks both halves of it. Then the only sane speed is the speed at which you can see the ground: *no faster than we can see.* The dawn at the end of that walk is the fire's full promise, reaching everyone. It is long because it was chosen to be.
+
+**What each key image means:**
+- **The vigil.** The future keeps faith with slowness; it waits up for the sun.
+- **The new fire** (ice-white with a gold edge; it breathes, it does not flicker). The brightest gift, and a fire unlike any other.
+- **The gift landscape.** Wherever its light falls, things grow. The fire is not the villain.
+- **The runners.** First the makers, then the kingdoms, each with a fire kindled from the new one. None is a villain; each is carried by the slope.
+- **The gold.** Sparks of gold spray from every stride and thicken toward the top: every step toward the edge pays.
+- **The shrinking circles.** Power outrunning sight.
+- **The cornice.** A lip of snow over nothing: the threshold you cannot see until you are standing on it.
+- **The storm, the clawing hand, the cracking globe.** The fire outgrowing any hand, and the world lost for ever.
+- **The people's small orange fires.** Witness, from people who are not in the race.
+- ***saw the edge, and each other*.** Understanding, and the ability to check one another. Both are felt, never named.
+- **The hearth.** Many fires into one gold fire: no single hand.
+- **The four vows in the stone.** The law of the walk.
+- **The cradle on many shoulders at walking pace.** Carrying it together, at a pace we can see by.
+- **The dawn that takes a generation.** The flourishing arrives slowly, and for everyone.
+- **The child running downhill in daylight.** Once you can see, you can run.
+
+**Why the turn follows inevitably:**
+- The race's whole logic is darkness.
+- Lighting a fire is the one act anyone can do.
+- It is the only act that asks no runner to trust another.
+
+So the people can do it, and once they have, racing stops making sense. Nothing in the film needs a hero: the first flame we see belongs to an unseen pair of hands, and a thousand follow.
+
+**The north star, felt:**
+- the work drags out of the dark (the lit hills);
+- many move together (the runners come down and join);
+- the pace is held until things can be seen and checked (the walk);
+- rivals put their fires into one hearth, and others join (the deal);
+- ordinary people turn it (the hills);
+- no single hand (the vows);
+- a dawn that rises on everyone.
+
+None of it is named.
+
+**The standing notes.** The makers are neither heroes nor villains. They are runners on a slope. *Each said: if not us, someone worse* is true of all of them. The turn comes from outside the race, and when the runners walk down, it is redemption without heroism.
+
+## A(3) Runtime: 5:50 (350 s)
+The producers found A rushed and underwhelming, and a fair bit longer was their own prescription. Here is what each part needs:
+- **The frame: 30 s.** Time for a question to be asked and left hanging.
+- **The race: 60 s, unbroken.** Relentlessness is a duration, not a cut rate.
+- **The silence: 25 s.** Grief needs time on black.
+- **The turn: 45 s.** "The people" must be many people, in many places.
+- **The dawn: 25 s.** A dawn that takes a generation cannot be shown in five seconds.
+
+Every line gets 5–7 s and a picture that breathes. Past about six minutes, a film carried partly by text wears thin.
+
+<!-- NEXT: A(4) beat sheet -->
