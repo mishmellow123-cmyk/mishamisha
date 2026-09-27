@@ -1130,9 +1130,10 @@ CUT0 = 4880                                      # A18 starts on A's cut frame 4
 
 def work(args):
     frames, scale, out, threads, ss, variant, off = args
-    os.environ['NUMBA_NUM_THREADS'] = str(threads)
+    # never rewrite NUMBA_NUM_THREADS here: the farm exports it (the node's CPU budget) and numba refuses a change
+    # once its pool is up; only narrow the pool
     import numba
-    numba.set_num_threads(threads)
+    numba.set_num_threads(max(1, min(threads, numba.config.NUMBA_NUM_THREADS)))
     import cv2
     cv2.setNumThreads(1)
     look = PI.look

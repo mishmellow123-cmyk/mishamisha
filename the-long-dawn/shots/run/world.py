@@ -374,6 +374,49 @@ def h_cloud(x, z, fp, t):
     return h
 
 
+# ADDITIVE (v3, RUN-A2): cloud-sea holes. Rows with col 12 == -5 lower the cloud sea's top (metres) inside an
+# ellipse, so the terrain beneath shows. They are read only while they LEAD the table (a caller puts them first):
+# a table without them costs one comparison per call, and h_rock skips them (col 12 < -2.5).
+# Layout: 0 cx | 1 cz | 2 radius | 3 depth (m) | 4 aniso (stretch along the angle) | 5 angle | 6 edge (fraction of
+# the radius) | 12 -5 | 13 reach.
+def hole_row(cx, cz, radius, depth, aniso=1.0, ang=0.0, edge=0.3):
+    r = np.zeros(NCR)
+    r[:7] = [cx, cz, radius, depth, aniso, ang, edge]
+    r[12] = -5.0
+    r[13] = radius * (1.0 + edge) * max(aniso, 1.0)
+    return r
+
+
+@njit(inline='always', fastmath=True)
+def cloud_thin(x, z, CR):
+    lo = 0.0
+    for k in range(CR.shape[0]):
+        if CR[k, 12] > -4.5:
+            break
+        dx = x - CR[k, 0]
+        dz = z - CR[k, 1]
+        if dx * dx + dz * dz > CR[k, 13] * CR[k, 13]:
+            continue
+        ca = math.cos(CR[k, 5])
+        sa = math.sin(CR[k, 5])
+        u = (dx * ca + dz * sa) / CR[k, 4]
+        v = -dx * sa + dz * ca
+        r = math.sqrt(u * u + v * v) / CR[k, 2]
+        m = smoothstep(1.0 + CR[k, 6], 1.0 - CR[k, 6], r)
+        if CR[k, 3] * m > lo:
+            lo = CR[k, 3] * m
+    return lo
+
+
+@njit(inline='always', fastmath=True)
+def h_cloud_cr(x, z, fp, t, CR):
+    """h_cloud with the table's leading hole rows applied (identical to h_cloud for any table without them)."""
+    h = h_cloud(x, z, fp, t)
+    if CR.shape[0] > 0 and CR[0, 12] < -4.5:
+        h -= cloud_thin(x, z, CR)
+    return h
+
+
 @njit(inline='always', fastmath=True)
 def h_near(x, z, fp):
     if x * x + z * z < NEAR_R * NEAR_R:
@@ -391,7 +434,7 @@ def hfun(x, z, fp, P, CR):
     hf = h_rock(x, z, fp, CR)
     if hf > h:
         h = hf
-    hc = h_cloud(x, z, fp, P[2])
+    hc = h_cloud_cr(x, z, fp, P[2], CR)
     if hc > h:
         h = hc
     return h - curv
@@ -534,7 +577,7 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
             curv = (ddx * ddx + ddz * ddz) / (2.0 * R_EARTH)
             hn = h_near(x, z, fp)
             hf = h_rock(x, z, fp, CR)
-            hc = h_cloud(x, z, fp, P[2])
+            hc = h_cloud_cr(x, z, fp, P[2], CR)
             surf = 0
             if hf > hn:
                 surf = 1
@@ -550,8 +593,8 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                 hz = h_rock(x, z + e, fp, CR)
             else:
                 h0 = hc
-                hx = h_cloud(x + e, z, fp, P[2])
-                hz = h_cloud(x, z + e, fp, P[2])
+                hx = h_cloud_cr(x + e, z, fp, P[2], CR)
+                hz = h_cloud_cr(x, z + e, fp, P[2], CR)
             nx = -(hx - h0)
             ny = e
             nz = -(hz - h0)
@@ -633,9 +676,21 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                         snow *= smoothstep(PL[pi, 3] * 0.7, PL[pi, 3] * 1.6,
                                            qd + 0.4 * PL[pi, 3] * gnoise2(x * 1.3, z * 1.3, 91))
                 ra = Q[10] * rv
+                vl = 0.0
+                if Q[19] != 0.0:
+                    # ADDITIVE (v3, RUN-A2): below the snow line Q[19] (m) the ground is a valley floor of fields
+                    # and woods, not snow or bare rock
+                    vl = smoothstep(Q[19] + 140.0, Q[19] - 140.0, h0)
+                    snow *= 1.0 - vl
                 ar = 0.055 * ra + (0.80 - 0.055 * ra) * snow
                 ag = 0.056 * ra + (0.86 - 0.056 * ra) * snow
                 ab = 0.062 * ra + (0.98 - 0.062 * ra) * snow
+                if vl > 0.0:
+                    wd = smoothstep(0.05, 0.30, gnoise2(x / 210.0, z / 210.0, 95) + 0.35 * gnoise2(x / 60.0, z / 60.0, 96))
+                    gr = 0.050 - 0.028 * wd
+                    ar = ar * (1.0 - vl) + gr * 0.95 * vl
+                    ag = ag * (1.0 - vl) + gr * 1.10 * vl
+                    ab = ab * (1.0 - vl) + gr * 0.80 * vl
                 shd = 1.0
                 if ndl > 0.0:
                     t0 = max(fp * 1.5, 0.08)
@@ -677,7 +732,10 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
             # atmosphere: aerial perspective + low mist over the cloud sea
             yc = C[1]
             tau = height_fog_tau(dist, yc, yw, fogp[0], fogp[1])
-            tau += height_fog_tau(dist, yc - CLOUD_Y, yw - CLOUD_Y, fogp[2], fogp[3])
+            if fogp.shape[0] > 8 and fogp[8] > 0.0:
+                tau += height_fog_tau_capped(dist, yc - CLOUD_Y, yw - CLOUD_Y, fogp[2], fogp[3], -fogp[8])
+            else:
+                tau += height_fog_tau(dist, yc - CLOUD_Y, yw - CLOUD_Y, fogp[2], fogp[3])
             tr = math.exp(-tau)
             cosv = dx * mx + dy * my + dz * mz
             ph = 1.0 + fogp[4] * max(cosv, 0.0) ** 4
@@ -696,6 +754,19 @@ def height_fog_tau(dist, y0, y1, a, b):
         return a * dist * e0
     e1 = math.exp(-b * y1)
     return a * dist * (e0 - e1) / (b * dy)
+
+
+@njit(inline='always', fastmath=True)
+def height_fog_tau_capped(dist, y0, y1, a, b, ymin):
+    """ADDITIVE (v3, RUN-A2): height_fog_tau with the density held constant below ymin (a valley under a thinned
+    cloud sea is hazy, not opaque)."""
+    if y0 >= ymin and y1 >= ymin:
+        return height_fog_tau(dist, y0, y1, a, b)
+    dmin = a * math.exp(-b * ymin)
+    if y0 < ymin and y1 < ymin:
+        return dmin * dist
+    f = (max(y0, y1) - ymin) / (abs(y1 - y0) + 1e-9)
+    return height_fog_tau(dist * f, max(y0, y1), ymin, a, b) + dmin * dist * (1.0 - f)
 
 
 # ---------------------------------------------------------------- utilities ---
@@ -798,7 +869,7 @@ def cloud_glow(C, D, P, CR, UG, fogp, out):
                 continue
             dist = d * math.sqrt(1.0 + sl * sl)
             fp = dist / C[7]
-            hc = h_cloud(x, z, fp, P[2])
+            hc = h_cloud_cr(x, z, fp, P[2], CR)
             if hc < h_near(x, z, fp):
                 continue
             if hc < h_rock(x, z, fp, CR):
