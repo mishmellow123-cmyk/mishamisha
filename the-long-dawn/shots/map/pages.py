@@ -1343,6 +1343,25 @@ class Havens:
         y = np.asarray(y, np.float64)
         return (y > self.coast(x)) & (x > self.shore_x(y))
 
+    def ship_mask(self, dx, ppc, H, W):
+        """Coverage of the ship's hull and sail (page raster), to erase the water and sky drawn behind it."""
+        import cv2
+        x, y = self.ship
+        x -= dx
+        s = 1.3
+        hull = catmull([(x + 1.5 * s, y - 0.55 * s), (x + 1.25 * s, y - 0.12 * s), (x + 0.3 * s, y + 0.08 * s),
+                        (x - 0.9 * s, y + 0.02 * s), (x - 1.45 * s, y - 0.35 * s), (x - 1.62 * s, y - 0.95 * s),
+                        (x - 1.45 * s, y - 1.12 * s)], 8)
+        hull = np.vstack([hull, [[x - 1.45 * s, y - 0.4 * s], [x + 1.5 * s, y - 0.55 * s]]])
+        yl, yr, ytop, ybot = x - 0.62 * s, x + 0.78 * s, y - 2.35 * s, y - 0.95 * s
+        sail = np.array([[yl, ytop], [yl - 0.16 * s, 0.5 * (ytop + ybot)], [yl - 0.05 * s, ybot], [x + 0.1 * s, ybot + 0.12 * s],
+                         [yr - 0.02 * s, ybot + 0.03 * s], [yr - 0.08 * s, 0.5 * (ytop + ybot)], [yr, ytop - 0.02 * s]])
+        m = np.zeros((H, W), np.uint8)
+        for P in (hull, sail):
+            cv2.fillPoly(m, [np.round(P * ppc * 16).astype(np.int32)], 255, lineType=cv2.LINE_AA, shift=4)
+        m = cv2.GaussianBlur(m.astype(np.float32) / 255.0, (0, 0), 0.8)
+        return np.clip(m * 1.05, 0, 1)
+
     def ship_strokes(self, dx=0.0, mode='ink'):
         """The ship (a long grey hull, a swan prow to the west, one mast, a sail) and the small figure with her
         light at the stern, shifted west by dx cm. Returns (Strokes, stern light position)."""
@@ -1461,9 +1480,6 @@ class Havens:
                 xs = np.arange(bx0 + 0.25, bx1 - 0.25, 0.02)
                 ys = yy + 0.012 * np.sin(xs * (9 - 3 * (yy - self.Yh) / (by1 - self.Yh)) + li * 1.7)
                 keep = ~self.land(xs, ys - 0.04) & ~self.land(xs - 0.06, ys)
-                # the ship's place (drawn separately) stays clear
-                sx, sy = self.ship
-                keep &= ~((np.abs(xs - sx) < 2.3) & (np.abs(ys - (sy - 0.1)) < 0.35))
                 dm = np.diff(np.concatenate([[0], keep.astype(np.int8), [0]]))
                 for a_, b_ in zip(np.nonzero(dm == 1)[0], np.nonzero(dm == -1)[0] - 1):
                     if b_ - a_ < 3:

@@ -457,7 +457,127 @@ SHOTS = {
     'mountain': (2000, 240),     # C3  INK PAGE: THE MOUNTAIN, drawn on (T1 in the caption band, EDIT's)
     'x1': (3000, 160),           # C4  LETTERS TO FIRE: the letters glow, lift as sparks, a flame burns the page open
     'deep': (4000, 280),         # C9  INK PAGE: THE DEEP (heals in from the race, burns out into the Eye)
+    'epilogue': (5000, 1040),    # C27-C30 THE LAST PAGES: plenty, the Havens, blank leaves, the page for the title
 }
+
+# the epilogue's clock (shot seconds)
+EP_TURNS = ((9.4, 1.7), (23.3, 1.6), (28.6, 1.6))       # (start, duration) of each page turn
+EP_HEAL = 31.0                                          # the scorched edges are whole again by here
+
+
+class Epilogue:
+    """C27-C30: the red book again, the hearth low. THE YEAR OF PLENTY draws itself on the recto; the leaf turns:
+    THE HAVENS on the verso (the ship slides west off the page, the coast's flame glyphs kindle one by one, a
+    small light answers at the stern, and in the roundel her bound hand holds up the lamp); the leaf turns: blank;
+    and the next; the scorched edges have healed; the blank page waits for the title."""
+
+    def __init__(self, W, H):
+        self.W, self.H = W, H
+        self.book = B.Book(TL=2.8, TR=1.2, seed=13)
+        self.light = B.Light((-55, 50, 30), (1.0, 0.52, 0.24), power=1.9, radius=10)
+        L0 = Strokes()
+        PG.text_page(L0, 81, lines=38, box=(3.0, 2.9, 16.8, 26.4))
+        self.tex_text = Page(L0, 45).texture(1e9)
+        self.plenty = PG.Plenty()
+        self.pPlenty = Page(self.plenty.build('ink', 0.5, 8.5), 90)
+        self.tex_plenty_done = None
+        self.hv = PG.Havens()
+        self.hv_static = self.hv.build('ink', 0, 0)
+        self.hv_ppc = 90
+        self.tex_blank = Page(Strokes(), 10).texture(1e9)
+        base = B.PageTex(PG.PW, PG.PH, self.hv_ppc)
+        pk = self.hv_static.pack()
+        C, _ = pen.raster(pk, 1e9, self.hv_ppc, base.H, base.W, INK)
+        self.hv_ink = C
+        # fires: the flame glyphs, filled, and the stern light and the lamp in the roundel
+        self.hv_fire = Strokes()
+        self.fire_t = []
+        for m, (fx, fy, hh) in enumerate(self.hv.fires):
+            pts = np.array([[fx, fy - 0.05], [fx + 0.01, fy - 0.75 * hh]])
+            self.hv_fire.add(pts, np.array([0.1, 0.05]), np.array([1.0, 1.0]), layer=INK)
+            self.fire_t.append(12.0 + 1.1 * m)
+        lx, ly = self.hv.lamp_flame
+        self.hv_fire.add(np.array([[lx, ly + 0.05], [lx + 0.005, ly - 0.08]]), np.array([0.06, 0.03]), np.array([1.0, 1.0]))
+        self.fire_t.append(18.2)
+        self.hv_fire_pk = self.hv_fire.pack()
+
+    def phase(self, t):
+        """Which leaf is turning (index, phi) or (None, 0)."""
+        for k, (a, d) in enumerate(EP_TURNS):
+            if a <= t < a + d:
+                x = (t - a) / d
+                return k, x * x * (3 - 2 * x)
+        return None, 0.0
+
+    def havens_tex(self, t):
+        tx = B.PageTex(PG.PW, PG.PH, self.hv_ppc)
+        dx = 10.5 * smooth((t - 11.5) / 11.0) ** 1.3 if t > 11.5 else 0.0
+        ship, stern = self.hv.ship_strokes(dx)
+        pk = ship.pack()
+        C, _ = pen.raster(pk, 1e9, self.hv_ppc, tx.H, tx.W, INK)
+        occ = self.hv.ship_mask(dx, self.hv_ppc, tx.H, tx.W)
+        tx.chan[..., 0] = np.maximum(self.hv_ink * (1.0 - occ), C)
+        # the stern light moves with the ship
+        fs = Strokes()
+        fs.extend(self.hv_fire)
+        fs.add(np.array([[stern[0], stern[1] + 0.02], [stern[0] + 0.004, stern[1] - 0.05]]), np.array([0.05, 0.03]),
+               np.array([1.0, 1.0]))
+        ft = self.fire_t + [17.0]
+        g = np.array([smooth((t - a) / 0.5) * (0.85 + 0.15 * math.sin(t * (17 + 3 * i) + i)) for i, a in enumerate(ft)])
+        F, _ = pen.raster(fs.pack(), 1e9, self.hv_ppc, tx.H, tx.W, INK, gain=g)
+        tx.chan[..., 4] = F
+        return tx.build(), dx, stern, g
+
+    def frame(self, t):
+        k, phi = self.phase(t)
+        leaf = None
+        xl = []
+        hv_on = t >= EP_TURNS[0][0] + EP_TURNS[0][1]
+        if t < EP_TURNS[0][0]:
+            texL = self.tex_text
+            texR = self.pPlenty.texture(t)
+        elif k == 0:
+            if self.tex_plenty_done is None:
+                self.tex_plenty_done = self.pPlenty.texture(1e9)
+            hvt, dx, stern, g = self.havens_tex(t)
+            texL, texR = self.tex_text, self.tex_blank
+            leaf = (phi, self.tex_plenty_done, hvt)
+        else:
+            hvt, dx, stern, g = self.havens_tex(t)
+            texL = hvt if (k is None and t < EP_TURNS[2][0]) or k in (None, 1) else self.tex_blank
+            if t >= EP_TURNS[1][0] + EP_TURNS[1][1]:
+                texL = self.tex_blank
+            texR = self.tex_blank
+            if k in (1, 2):
+                leaf = (phi, self.tex_blank, self.tex_blank)
+            if texL is hvt:
+                for i, (fx, fy, hh) in enumerate(self.hv.fires):
+                    if g[i] > 0.01:
+                        wp = self.book.page_to_world('L', np.array([fx]), np.array([fy - 0.3]))[0]
+                        xl.append([wp[0], wp[1], wp[2] + 0.6, 0.35 * g[i], 0.12 * g[i], 0.03 * g[i]])
+        burnL = BURN.edge_params('L', 0.9, EP_HEAL, seed=21)
+        burnR = BURN.edge_params('R', 0.9, EP_HEAL, seed=22)
+        return texL, texR, leaf, (np.array(xl) if xl else None), burnL, burnR
+
+    def camera(self, t):
+        bk = self.book
+        W, H = self.W, self.H
+        pl = bk.page_to_world('R', np.array([9.8]), np.array([11.0]))[0]
+        hv = bk.page_to_world('L', np.array([10.0]), np.array([10.5]))[0]
+        sp = np.array([0.0, 0.0, bk.zg])
+        bl = bk.page_to_world('R', np.array([10.0]), np.array([13.0]))[0]
+        # C27 the plenty page with its scorched fore-edge in frame; C28 over to the Havens; C29 back to see the
+        # spread (the turns, the healed edges); C30 in to the blank recto for the title
+        keys_t = [(0.0, pl + [1.2, 0, 0]), (9.0, pl + [1.0, 0, 0]), (12.0, hv + [0.5, -1.0, 0]), (22.3, hv + [0.2, -1.5, 0]),
+                  (25.5, sp + [0, -0.5, 0]), (33.0, sp + [2.5, -0.5, 0]), (43.3, bl)]
+        keys_o = [(0.0, (-2.0, -30.0, 28.0)), (9.0, (-1.8, -29.0, 27.0)), (12.0, (1.0, -31.0, 29.0)),
+                  (22.3, (0.8, -30.0, 28.0)), (25.5, (0.0, -52.0, 46.0)), (33.0, (0.5, -50.0, 44.0)),
+                  (43.3, (0.0, -30.0, 28.0))]
+        tgt = keyed(keys_t, t)
+        pos = tgt + keyed(keys_o, t)
+        cam = B.Cam(pos, tgt, 38.0, W, H)
+        cam.dof_k = 2.0
+        return cam
 
 
 def catrom(keys, t):
@@ -472,6 +592,18 @@ def catrom(keys, t):
     return 0.5 * ((2 * p1) + (-p0 + p2) * f + (2 * p0 - 5 * p1 + 4 * p2 - p3) * f * f + (-p0 + 3 * p1 - 3 * p2 + p3) * f ** 3)
 
 
+def keyed(keys, t):
+    """Keys with a hold at each: smoothstep within each interval (the camera settles on every key)."""
+    ts = [k[0] for k in keys]
+    if t <= ts[0]:
+        return np.asarray(keys[0][1], np.float64)
+    if t >= ts[-1]:
+        return np.asarray(keys[-1][1], np.float64)
+    i = max(j for j in range(len(ts) - 1) if ts[j] <= t)
+    u = smooth((t - ts[i]) / (ts[i + 1] - ts[i]))
+    return lerp(keys[i][1], keys[i + 1][1], u)
+
+
 class Delivery:
     """Frames of the four book shots (P1, P2 x2, X1a) as pure functions of the src frame number."""
 
@@ -481,6 +613,9 @@ class Delivery:
 
     def shot(self, name):
         if name not in self.cache:
+            if name == 'epilogue':
+                self.cache[name] = Epilogue(self.W, self.H)
+                return self.cache[name]
             if name == 'prologue':
                 sh = Shot('set', self.W, self.H)
             elif name == 'mountain':
@@ -541,6 +676,16 @@ class Delivery:
         base, n = SHOTS[name]
         t = (f - base) / FPS
         sh = self.shot(name)
+        if name == 'epilogue':
+            cam = sh.camera(t)
+            texL, texR, leaf, xl, burnL, burnR = sh.frame(t)
+            fl = B.flicker(t, 5, 0.12)
+            L = B.Light(sh.light.pos + np.array([1.2 * math.sin(t * 1.1), 0.6 * math.sin(t * 0.8), 0.4 * math.sin(t * 1.9)]),
+                        (1, 1, 1), 1.0, sh.light.radius)
+            L.col = sh.light.col * fl
+            hdr, alpha, G = B.render(sh.book, cam, L, texL, texR, t, burnL=burnL, burnR=burnR, xlights=xl, leaf=leaf)
+            hdr = B.dof(hdr, G[..., 1].astype(np.float32), cam, cam.dof_k * self.W / 1920.0)
+            return hdr, alpha, cam, t
         cam = self.camera(name, sh, t)
         draw_t = 1e9 if name in ('prologue', 'x1') else t
         burnR = sh.burnR

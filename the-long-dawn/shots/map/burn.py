@@ -22,6 +22,15 @@ from numba import njit
 from noise import fbm, gnoise
 
 
+def edge_params(side, depth, pivot, p=1.2, seed=12, brown=1.4, char=0.2, edge=0.03, PW=20.0, PH=29.0):
+    """Mode 2: the book's outer edges burned `depth` cm in (fore-edge, head and foot; never the gutter), healing
+    to clean paper by `pivot` seconds. side: 'R' (fore-edge at u = PW) or 'L' (fore-edge at u = 0)."""
+    b = np.zeros(16)
+    speed = depth / max(pivot, 1e-3) ** p
+    b[:] = (1.0, PW, PH, 0.0, speed, p, 0.35, 0.6, seed, brown, char, edge, 2.0, 1.0, pivot, 1.0 if side == 'R' else -1.0)
+    return b
+
+
 def params(origin, t_start, speed=1.2, p=1.6, amp=0.35, freq=0.45, seed=1, brown=1.6, char=0.22, edge=0.06,
            mode=0, lead=0.8, pivot=0.0, aspect=1.0):
     b = np.zeros(16)
@@ -60,6 +69,8 @@ def field(bf, u, v, t):
     """(brown, char, hole, edge, pool) at page cm (u, v), time t."""
     if bf[0] <= 0.0:
         return 0.0, 0.0, 0.0, 0.0, 0.0
+    if bf[12] > 1.5:
+        return edge_field(bf, u, v, t)
     R = radius(bf, t)
     d = dist(bf, u, v)
     # heat runs ahead: the browning disc grows from `lead` seconds before the hole
@@ -98,3 +109,32 @@ def field(bf, u, v, t):
         # the embers' light on the paper around the edge
         pool = math.exp(-max(sdf, 0.0) / 0.5) * (1.0 - hole)
     return brown, char, hole, edge, pool
+
+
+@njit(cache=True)
+def edge_field(bf, u, v, t):
+    """Mode 2: scorched outer edges that heal. The burned margin's depth shrinks to nothing at the pivot; no
+    glowing edge (the fire is long out), only char, a torn margin and the brown of old heat."""
+    PW, PH = bf[1], bf[2]
+    fe = (PW - u) if bf[15] > 0 else u
+    d = min(fe, min(v, PH - v))
+    s = int(bf[8])
+    f = bf[7]
+    d += 0.45 * fbm(u * f, v * f, 331 + s, 3, 2.0, 0.5) + 0.08 * gnoise(u * f * 8.0, v * f * 8.0, 333 + s) + 0.3
+    R = bf[4] * max(bf[14] - t, 0.0) ** bf[5]
+    if R <= 0.0:
+        return 0.0, 0.0, 0.0, 0.0, 0.0
+    sdf = d - R
+    brown = 0.0
+    wb = bf[9] * min(R / 0.6, 1.0)
+    if sdf < wb:
+        x = 1.0 - max(sdf, 0.0) / max(wb, 1e-3)
+        brown = x * x
+    char = 0.0
+    w = bf[10] * min(R / 0.4, 1.0)
+    if sdf < w:
+        char = (1.0 - max(sdf, 0.0) / max(w, 1e-3)) ** 0.7
+    # where the margin is burned away we see the scorched leaf beneath, not a hole: render it as deep char
+    gone = min(max(0.5 - sdf / 0.012, 0.0), 1.0)
+    char = max(char, 0.85 * gone)
+    return brown, char, 0.0, 0.0, 0.0
