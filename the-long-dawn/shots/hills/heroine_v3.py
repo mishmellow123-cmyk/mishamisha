@@ -230,12 +230,12 @@ def figure(pose, t, scarf_dir=(0.7, -0.7), hair_dir=(0.5, -0.8), gloved=True, sc
     an = hero.cheap_anchors(pose)
     sa = an['scarf_anchor'][:2]
     if scarf:
-        scarf = static_chain(sa, scarf_dir, scarf_n, 0.078, droop=0.55, sway=(0.12, 0.05), seed=1.0)
+        scarf = static_chain(sa, scarf_dir, scarf_n, 0.078, droop=0.55, sway=(0.12, 0.05), seed=1.0 - 1.7 * t)
     else:
         scarf = None
     hr = an['hair_root'][:2]
     hair = [static_chain(hr + np.array([-0.010 + 0.004 * k, 0.030 - 0.010 * k]), hair_dir, 8,
-                         0.045 + 0.006 * (k % 3), droop=0.6, sway=(0.05, 0.03), seed=k * 1.3) for k in range(9)]
+                         0.045 + 0.006 * (k % 3), droop=0.6, sway=(0.05, 0.03), seed=k * 1.3 - 2.1 * t) for k in range(9)]
     B, F, Hp, anc = hero.build_figure(pose, t, scarf_pts=scarf, hair_pts=hair, detail=detail)
     if gloved:
         H3.gloves(B, Hp)
@@ -333,13 +333,16 @@ class DeadEmber:
     def pot(self, B, lid_c, lid_u):
         """A round-bellied clay fire-pot (~15 cm), its lip sooted; ash inside with one ember; the lid in her hand."""
         c = self.POT
-        B.group('pot', H3.M_CLAY, disp=1, amp=0.0006, scale=90.0, band=0.004)
-        B.ell(c + [0, 0.070, 0], np.array([0.079, 0.068, 0.079]))
+        B.group('pot', H3.M_CLAY, disp=1, amp=0.0011, scale=55.0, band=0.005)
+        tilt = np.stack([nrm([1.0, 0.05, 0.0]), nrm([-0.05, 1.0, 0.03]), nrm([0.0, -0.03, 1.0])])   # hand-thrown: not true
+        B.ell(c + [0, 0.070, 0], np.array([0.079, 0.068, 0.077]), R=tilt)
+        B.ell(c + [0.012, 0.082, -0.010], np.array([0.068, 0.050, 0.070]), R=tilt, k=0.03)          # a heavier shoulder
         B.ell(c + [0, 0.012, 0], np.array([0.052, 0.014, 0.052]), k=0.02)                      # foot
         B.cone(c + [0, 0.112, 0], c + [0, 0.136, 0], 0.050, 0.044, k=0.014)                   # neck
         B.torus(c + [0, 0.137, 0], np.eye(3), 0.041, 0.0078, 0.0088, k=0.010)                  # rim
         B.ell(c + [0, 0.070, 0], np.array([0.069, 0.059, 0.069]), op=1, k=0.004)               # hollow
         B.cone(c + [0, 0.100, 0], c + [0, 0.190, 0], 0.0335, 0.0335, op=1, k=0.004)            # mouth
+        B.ell(c + [0.030, 0.143, -0.028], np.array([0.009, 0.007, 0.008]), op=1, k=0.002)       # an old chip in the lip
         # soot: the lip blackened by years of carried fire
         B.group('soot', H3.M_COAL, band=0.002)
         B.torus(c + [0, 0.1395, 0], np.eye(3), 0.0395, 0.0056, 0.0066, k=0.0)
@@ -398,7 +401,7 @@ class DeadEmber:
         # the scarf's end hangs from the front of her neck as she bends over the pot, on its far side
         J = anc['J']
         front = J['C7'] + 0.030 * J['dn'] + 0.080 * J['Ut']
-        tail = static_chain(front[:2], (-0.05, -1.0), 7, 0.074, droop=0.1, sway=(0.04, 0.0), seed=2.0)
+        tail = static_chain(front[:2], (-0.05, -1.0), 7, 0.074, droop=0.1, sway=(0.04, 0.0), seed=2.0 - 0.9 * t)
         B.group('scarf')
         hero.scarf_tail(B, tail, t, z0=0.060)
         for g in B.groups:
