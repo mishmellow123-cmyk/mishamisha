@@ -28,14 +28,17 @@
   * `cloud/jobs/make_runA2_jobs.py`: writes the finals (<= 40 min per cpu-8 node, no --skip) once s/frame is measured.
 
 ## RUN-A3 STATE AT PAUSE (27 Sep ~20:40Z; the account's usage ends ~21:25Z, RESUME ~23:30Z)
-* **A13 R2-A THE REVEAL: APPROVED, final queued on the farm** (`reveal_a_1`, cut 3680-3799 -> `renders/reveal_A`,
-  launched 20:24Z with `--nodes 1`). Continues H1's take in H1's own renderer (continuity 3680 vs h1_v3h5 1555 = 0.64/255).
-  **Pending (director's note, cheap 6-min re-render):** the cloud sea reads as a flat snowfield. When RUN-A-L sends the
-  final `nighta.CLOUD` values (its cloud-sea knob grid on the farm), set them in `nighta.CLOUD`, commit, push, then
-  `farm.py the-long-dawn/cloud/jobs/reveal_a_1.json --nodes 1` again (delete `renders/reveal_A` first, or the `--skip`
-  keeps the old frames). reveal_a.py already blends CLOUD + f0 in over 3680-3728 (never q18, the snow's domain).
-  The re-render also carries nighta 2913ad7 (the far haze without the glow's shadow rays: they fell as vertical slabs
-  under the horizon); the running final started 20:38Z on the older kit.
+* **A13 R2-A THE REVEAL: APPROVED and RENDERED** (`reveal_a_1`: 120/120 in `renders/reveal_A` at 20:46Z, QC'd: no gaps,
+  brightness smooth, max frame-to-frame jump 0.36/255). Continues H1's take in H1's own renderer (continuity 3680 vs
+  h1_v3h5 1555 = 0.64/255).
+  **Pending (director's note, cheap re-render, ~26 min on one node):** the cloud sea reads as a flat snowfield. RUN-A-L's
+  knob grid was inconclusive (its read: geometry, not shading); the fix after 23:30Z is RUN-A-L's additive cumuliform
+  relief for the A night (a leading CR row adding 25-40 m cauliflower tops at a 90-150 m scale to h_cloud_cr). When it and
+  any `nighta.CLOUD` values land: A13's world layer takes CR from H1's s1 world (`Wd['CR']`, empty), so ADD the relief row
+  there (stack it onto `Wd['CR']` in `reveal_a.world_layer`, faded in with the night ramp or from the first frame if it is
+  invisible at H1's distance), check 3680 against 3679 again, then delete `renders/reveal_A` and re-run
+  `farm.py the-long-dawn/cloud/jobs/reveal_a_1.json --nodes 1`. The re-render also carries nighta 2913ad7 (the far haze
+  without the glow's shadow rays, which fell as faint vertical slabs under the horizon; the landed final predates it).
 * **A15 R16 THE WATCHERS: look-dev v2 on the farm** (`watchers_a_look`, 3 frames -> `renders/_farmtest/watchers_a_look`);
   the final job `watchers_a_1` (160 frames) is written and pushed, NOT approved. v1 failed at 1:1 (the lit ledge read as
   clay, the flame floated over a clip-art wood teepee, the lighter stood beside the fire). v2: the seventh fire on a
