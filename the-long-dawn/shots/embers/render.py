@@ -31,7 +31,8 @@ OUTS = {'A': os.path.join(ROOT, 'renders', 'embers_v2'), 'B': os.path.join(ROOT,
 
 # shots: [start, end) -- the shutter never straddles a cut
 SHOTS = [(300, 880), (880, 960), (960, 1040), (1040, 1200)]
-SHOTS_V3 = {'A3': [(1040, 1760), (1760, 2640), (2640, 2800), (2800, 3120), (4400, 4880)],
+SHOTS_V3 = {'A3': [(560, 1040), (1040, 1760), (1760, 1840), (1840, 2468), (2468, 2640), (2640, 2800), (2800, 3120),
+                   (4400, 4880)],
             'C3': [(1040, 1680), (1920, 2080), (2320, 2480)]}
 
 # text windows (v2 frames = src frames here) per cut, from the edit's current titles (director, framing review).
@@ -40,8 +41,8 @@ TEXT = {
     'A': [(340, 440), (490, 565), (580, 648), (668, 738), (800, 866), (1060, 1186)],
     'B': [],
     'C': [(340, 440), (490, 572), (656, 722), (744, 804), (1052, 1190)],   # text red-team retime (19:20Z)
-    # v3, A's own frames (locked sheet): T4, T5, T6a/b, T7, T8, T9 (T10 is centred on black)
-    'A3': [(1140, 1270), (1460, 1610), (1640, 1800), (1848, 1944), (1960, 2060), (2670, 2790)],
+    # v3, A's own frames (locked sheet): T2, T4, T5, T6a/b, T7, T8, T9 (T10 is centred on black)
+    'A3': [(700, 840), (1140, 1270), (1460, 1610), (1640, 1800), (1848, 1944), (1960, 2060), (2670, 2790)],
     'C3': [(1056, 1190), (1446, 1550)],     # T5b, T6 (T8 sits on black)
 }
 

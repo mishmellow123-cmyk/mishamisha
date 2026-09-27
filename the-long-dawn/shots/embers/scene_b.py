@@ -1270,7 +1270,7 @@ class Towers:
                             out /= np.maximum(np.linalg.norm(out, axis=1, keepdims=True), 1e-6)
                             lb = np.clip((N * out).sum(1), 0, 1) ** 1.5 * (0.6 + 0.8 * nz2)
                             colE = colE + np.array([1.0, 0.62, 0.33])[None, :] * (bl * lb * face)[:, None]
-                    if gild > 0:
+                    if gild > 0 and not getattr(SCHED, 'gold_overlay', False):
                         colE = colE + _gold_runs(pt['pl'], t, gild, fside, face)
                     self._splat(ctx, i, pt, colE, a, np.clip(ndv, 0.05, 1.0), z, fpx, np.sqrt(a / np.pi) * 1.7)
                     continue
@@ -1428,6 +1428,8 @@ class TowerEmbers:
             e = e * (0.15 + 1.6 * fs) * (1.0 + 2.2 * smoothstep(0.72, 0.98, yrel / np.maximum(hb, 1.0)))
         col = look.blackbody(np.clip(0.78 - 0.45 * u, 0.2, 1))
         col = col * (1 - 0.45 * red) + C_RED * 0.45 * red
+        if SCHED is not None and hasattr(SCHED, 'near_fade'):
+            e = e * SCHED.near_fade(ctx, P1)          # (A, THE EDGE) no big bright streaks across the lens
         ctx.fr.splat(P0, P1, 0.006, e, col, ctx.cam0, ctx.cam1, zref=28.0)
 
 
@@ -1579,6 +1581,8 @@ class Sparks:
         red = redness(t)
         col = look.blackbody(np.clip(0.95 - 0.6 * x, 0.2, 1.0))
         col = col * (1 - 0.3 * red) + C_RED * 0.3 * red
+        if SCHED is not None and hasattr(SCHED, 'near_fade'):
+            e = e * SCHED.near_fade(ctx, P1[idx])
         ctx.fr.splat(P0[idx], P1[idx], 0.005, e, col, ctx.cam0, ctx.cam1, zref=28.0)
 
 
