@@ -307,6 +307,14 @@ def leather_material(new_material, base=(0.050, 0.030, 0.018), rough=0.46, detai
     tone = nb.mul(tone, nb.madd(nb.mx(dk, pk), -0.45, 1.0))
     tone = nb.mul(tone, nb.madd(rnd, -0.25, 1.0))
     tone = nb.mul(tone, nb.madd(wear, 0.85, 1.0))
+    if wear2 > 0.0:                                  # the polish: the fingers part (dark crevices, seams), the joints break
+        ao = nb.n('ShaderNodeAmbientOcclusion')
+        ao.samples = 8
+        ao.only_local = True
+        ao.inputs['Distance'].default_value = 0.007
+        tone = nb.mul(tone, nb.madd(ao.outputs['AO'], 0.75 * wear2, 1.0 - 0.75 * wear2))
+        tone = nb.mul(tone, nb.madd(nb.sstep(0.55, 0.95, seam), -0.30 * wear2, 1.0))
+        tone = nb.mul(tone, nb.madd(dk, -0.30 * wear2, 1.0))
     col = nb.colscale(base, tone)
     col = nb.mixcol(nb.mul(wear, 0.35), col, (base[0] * 2.2, base[1] * 2.0, base[2] * 1.9))
     th = thread or (min(1.0, base[0] * 2.6), min(1.0, base[1] * 2.4), min(1.0, base[2] * 2.0))

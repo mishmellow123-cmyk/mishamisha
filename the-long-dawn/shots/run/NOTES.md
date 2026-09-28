@@ -25,11 +25,18 @@
   (iron and horn: square posts, two horn lights a side, a latch, a square pyramid roof = new primitive 5, a vent
   cap, an arched bail to the old hook point), horn panes (O[14] = 1), material 6 rough snow-dusted rock, stone_ring,
   traveller cape/hood_k/bedroll/lantern_mode/reach_len/leg_k, seated drape/neck. heart2.py (9f05934): the contract.
-* **In flight:** farm look-dev `crossing_a4_lookdev` (0927-222311-crossinga4lookdev-18631; log
-  `_local_logs/jobs/crossing_a4_lookdev_farm.log`) -> renders/_farmtest/crossing_a4_lookdev/: 4880-4903 and
-  5572-5595 (24-frame motion windows: the bearers' walk in the close-up; the wide and the step), 5040, 5839.
-  NEXT: review stills + filmstrips; fix; then JOB READY crossing_a2_01..18 (the whole take changes: the lantern,
-  heart and line show in every job).
+* **RESTAGE (76aec6c; the user: "the walking at around 27 s is very glitchy" = the old crossing at A ~5050, the
+  bearers walking past the keeper's fire).** The line now STANDS at the first watch-fire through the close and
+  medium shots (a held moment: idle weight shifts, the lantern hanging, the keeper tending the fire) and sets off
+  front first, easing in over 4 s from T_GO = 12.5 s (cut 5180), as the sky begins to wheel (T13); a start wave
+  runs back down the line (lag = offset / 5 m/s). Walking bodies bob in step with their own feet; standing ones
+  never shuffle. The camera follows the smooth path, not the lantern's swing, plus an offset that centres the REAL
+  heart on 4880 (the old final had it 17 px right of the match cut: measured (977, 400) vs (959.5, 401.5)). Fire 0
+  stays where the match-cut composition had it (3.3 m ahead of the stopped lantern). The keepers' reach is blended
+  (the old kneeling keeper's arm jumped). Motion blur only on walking, large figures (12.5-19.5 s).
+* **In flight:** look-dev 2 (8bcc818: boulder, rough stones, horn) -> renders/_farmtest/crossing_a4_lookdev/;
+  look-dev 3 (the restage) -> renders/_farmtest/crossing_a4_lookdev3/: 4880, 5040-5063 (the hold), 5230-5253 (the
+  set-off at 1:1), 5584, 5839. NEXT: 1:1 strips of the feet -> JOB READY crossing_a2_01..18 (whole take).
 * **HEART CONTRACT v2: RUN-A4 CONFIRMS RUN-A2's proposal below, unchanged, and implements it at 4880 via a shared pure
   function `shots/run/heart2.py` (EMBERS-A3 may import it or port it). EMBERS-A3: please ACK here before either side
   renders a final with it.** (Nothing of mine renders a final with it until you do.) Reference:

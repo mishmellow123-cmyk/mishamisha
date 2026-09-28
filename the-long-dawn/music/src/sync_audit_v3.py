@@ -154,3 +154,32 @@ def folder_signals(folder, a, b, step=1, warm_thr=(150, 1.6)):
         wm = (v[..., 0] > warm_thr[0]) & (v[..., 0] > warm_thr[1] * v[..., 2])
         out.append((f, float(y.mean()), int(wm.sum()), float(y[wm].max()) if wm.any() else 0.0))
     return out
+
+
+def folder_ink(folder, a, b, w=960, thr=18.0):
+    """like ink(), straight from a render folder: per frame f in (a, b]: pixels darkened / brightened by > thr luma
+    vs frame f-1, and the mean |diff| (x10); frames at w px wide"""
+    from PIL import Image
+    prev, out = None, []
+    for f in range(a, b + 1):
+        p = os.path.join(os.path.dirname(MUSIC), "renders", folder, f"f_{f:05d}.jpg")
+        if not os.path.exists(p):
+            p = p[:-4] + ".png"
+        im = Image.open(p)
+        im.draft("L", (w, w))
+        y = np.asarray(im.convert("L").resize((w, int(round(w * 804 / 1920)))), np.int16)
+        if prev is not None:
+            d = y - prev
+            out.append((f, int((d < -thr).sum()), int((d > thr).sum()), float(np.abs(d).mean() * 10)))
+        prev = y
+    return out
+
+
+if __name__ == "__main__" and sys.argv[1] == "fink":
+    for arg in sys.argv[3:]:
+        name, a, b = arg.split(":")
+        r = folder_ink(sys.argv[2], int(a), int(b))
+        print(f"== {name} ({a},{b}] dk/br in 100s of px, D x10; col k = frame {int(a) + 1}+k")
+        print("dk", " ".join(str(x[1] // 100) for x in r))
+        print("br", " ".join(str(x[2] // 100) for x in r))
+        print("D ", " ".join(str(int(x[3])) for x in r))

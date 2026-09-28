@@ -25,6 +25,8 @@ import time
 from multiprocessing import Pool
 
 os.environ.setdefault('OPENCV_IO_ENABLE_OPENEXR', '1')          # the ember title layers are half-float EXR
+import inspect
+
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -659,42 +661,106 @@ import afix_comp as AFIX  # noqa: E402  (lane A-FIX's transition kinds, dispatch
 def _swell(o, i, d, f, t, k):
     """EDIT kind 'swell' (A4 -> A5, user 28 Sep): the outgoing point's glow grows (ease-in) into the incoming's first
     frame d (the ignition disc), drifting to its centre; a soft cross-blend over t['blend'] joins the two sides; after
-    the cut the disc, lightened over the live frames, shrinks and fades toward the flame so it condenses into it over
-    t['f1'] - t['cut'] frames. The disc is lifted off its black (minus its median, inside a soft circle of radius R)."""
+    the cut the disc shrinks and fades toward the flame so it condenses into it over t['f1'] - t['cut'] frames.
+    Everything added is ROUND: a bloom with the disc's own azimuthal-mean profile (lifted off its black, soft limit R),
+    and the incoming halo beyond r 140 px is replaced by its azimuthal mean (the render's halo is a rounded square)
+    from before the cut until it has faded; the flame inside r 140 is untouched."""
     H, W = d.shape[:2]
     cut, f0, f1 = t['cut'], t['f0'], t['f1']
     ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
     dx, dy = t['disc'][0] * k, t['disc'][1] * k
-    m = np.clip(1.2 - np.hypot(xs - dx, ys - dy) / (t['R'] * k), 0, 1)[..., None]
-    dm = np.clip(d - float(np.median(d)), 0, 1) * m
+    rd = np.hypot(xs - dx, ys - dy)
+    ri = rd.astype(np.int32).ravel()
+    cnt = np.maximum(np.bincount(ri), 1)
 
-    def place(scale, cx, cy):
-        M = np.float32([[scale, 0, cx - scale * dx], [0, scale, cy - scale * dy]])
-        return cv2.warpAffine(dm, M, (W, H), flags=cv2.INTER_LINEAR, borderValue=0)
+    def profile(img):                                         # per-channel azimuthal mean about the disc centre
+        return np.stack([np.bincount(ri, img[..., c].ravel()) / cnt for c in range(3)], 1).astype(np.float32)
+
+    def radial(prof, r):
+        idx = np.arange(len(prof), dtype=np.float32)
+        return np.stack([np.interp(r, idx, prof[:, c], right=0.0) for c in range(3)], -1).astype(np.float32)
+
+    pd = np.clip(profile(d) - float(np.median(d)), 0, None)
+    pd *= np.clip(1.2 - np.arange(len(pd), dtype=np.float32) / (t['R'] * k), 0, 1)[:, None]
+
+    def disc(scale, cx, cy):                                  # the round bloom, scaled about (cx, cy)
+        return radial(pd, np.hypot(xs - cx, ys - cy) / max(scale, 1e-3))
 
     u = min(1.0, max(0.0, (f - f0) / (cut - f0)))
     e = u ** 1.2                                                # before the cut: ease-in growth, visible from ~1/4
     cx = (t['p0'][0] + (t['c1'][0] - t['p0'][0]) * e) * k
     cy = (t['p0'][1] + (t['c1'][1] - t['p0'][1]) * e) * k
-    a_img = np.maximum(o, u ** 0.5 * place(t['s0'] + (1 - t['s0']) * e, cx, cy))
+    a_img = np.maximum(o, u ** 0.5 * disc(t['s0'] + (1 - t['s0']) * e, cx, cy))
     v = min(1.0, max(0.0, (f - cut) / (f1 - cut)))
     e2 = v * v * (3 - 2 * v)                                    # after the cut: the disc condenses into the flame
+    hm = (np.clip((rd - 140 * k) / (40 * k), 0, 1) * (1 - e2))[..., None]
+    i2 = i * (1 - hm) + radial(profile(i), rd) * hm             # the incoming halo made round
     fx = (t['disc'][0] + (t['flame'][0] - t['disc'][0]) * e2) * k
     fy = (t['disc'][1] + (t['flame'][1] - t['disc'][1]) * e2) * k
-    b_img = np.maximum(i, (1 - e2) * place(1 - (1 - t['s1']) * e2, fx, fy))
+    b_img = np.maximum(i2, (1 - e2) * disc(1 - (1 - t['s1']) * e2, fx, fy))
     b0, b1 = t['blend']
     w = min(1.0, max(0.0, (f - b0 + 0.5) / (b1 - b0)))
     w = w * w * (3 - 2 * w)
     return a_img * (1 - w) + b_img * w
 
 
+# The transition kinds (EDL.TRANS), one function each, so a change to one kind re-keys only its windows
+# (deliver.transition_sources keys a window on _transitions' core + its kind's function; A-FIX's on afix_comp).
+# Two-sided kinds take (o, i, f, t, ctx, lay, first): first() returns the incoming's first frame, finished.
+def _tk_burn(o, i, f, t, ctx, lay, first):
+    return o * ctx.read(lay['keep']) + i * (1 - ctx.read(lay['cover'], gray=True)[..., None]) + ctx.read(lay['glow'])
+
+
+def _tk_x1(o, i, f, t, ctx, lay, first):
+    keep = ctx.read(lay['keep'], gray=True)[..., None]
+    return o * keep + i * (1 - keep) + ctx.read(lay['glow'])
+
+
+def _tk_dissolve(o, i, f, t, ctx, lay, first):
+    a = (f - t['f0'] + 0.5) / (t['f1'] - t['f0'])
+    a = a * a * (3 - 2 * a)
+    return _to_srgb(_to_lin(o) * (1 - a) + _to_lin(i) * a)
+
+
+def _tk_swell(o, i, f, t, ctx, lay, first):
+    return _swell(o, i, first(), f, t, ctx.W / 1920.0)
+
+
+# One-shot kinds (no cut) take (img, src, f, t, fin, cut) and return the finished frame, or None for the plain one.
+def _tk_grade(img, src, f, t, fin, cut):
+    img = np.clip(img * np.asarray(t['gain'], np.float32), 0, 1)
+    return fin(img, src, cut, f) if fin else img
+
+
+def _tk_finish_ramp(img, src, f, t, fin, cut):
+    if fin is None:
+        return None
+    a = (f - t['f0']) / (t['f1'] - t['f0'])
+    a = a * a * (3 - 2 * a)
+    return fin.ink(img, cut, f) * (1 - a) + fin.film(img, cut, f) * a
+
+
+TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell)
+TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp)
+
+
+def transition_code(kind):
+    """The source that decides a window of this kind (for deliver's segment keys)."""
+    if kind in AFIX.KINDS:
+        return inspect.getsource(AFIX)
+    fn = TKINDS_PAIR.get(kind) or TKINDS_SHOT.get(kind)
+    src = inspect.getsource(fn) if fn else ''
+    return src + (inspect.getsource(_swell) if kind == 'swell' else '')
+
+
 def _transitions(ctx, finish=None):
     """EDIT transitions (EDL.TRANS), installed by _init after the finish. Inside a window the frame joins the outgoing
     shot (its frames before t['cut'], then its last frame held) and the incoming shot (its first frame held until
     t['cut'], then its frames), each finished on its own (ink or film look; grain seeded per cut frame, so a held
-    frame's grain still renews), by the window's matte (x1: O * keep + I * (1 - keep) + glow) or a linear-light
-    dissolve. No Ctx method changes (deliver._code_hash); deliver.segment_key adds a window's spec and frames only
-    to the segments it touches. Slates on either side, or a missing layer frame, leave the plain cut."""
+    frame's grain still renews), by the window's kind (TKINDS_PAIR, A-FIX's afix_comp.KINDS); one-shot kinds
+    (TKINDS_SHOT) work on a single shot. No Ctx method changes (deliver._code_hash); deliver.segment_key adds a
+    window's spec, this core and its kind's code only to the segments it touches. Slates on either side, or a
+    missing layer frame, leave the plain cut."""
     raw = Ctx.picture.__get__(ctx)
     outer = ctx.picture
     fin = None
@@ -714,40 +780,24 @@ def _transitions(ctx, finish=None):
         lay = transition_layers(t, f) if t else None
         if lay is None:
             return outer(f)
-        if t['kind'] == 'grade':                              # one shot: a per-channel gain before the finish
+        kind = t['kind']
+        if kind in TKINDS_SHOT:
             img, shot, status, src = raw(f)
             if src is None or status.startswith('SLATE'):
                 return outer(f)
-            img = np.clip(img * np.asarray(t['gain'], np.float32), 0, 1)
-            return (fin(img, src, ctx.cut, f) if fin else img), shot, f'{status} + grade', src
-        if t['kind'] == 'finish_ramp':                        # one shot, no cut: ink look -> film look
-            img, shot, status, src = raw(f)
-            if fin is None or src is None or status.startswith('SLATE'):
+            img = TKINDS_SHOT[kind](img, src, f, t, fin, ctx.cut)
+            if img is None:
                 return outer(f)
-            a = (f - t['f0']) / (t['f1'] - t['f0'])
-            a = a * a * (3 - 2 * a)
-            img = fin.ink(img, ctx.cut, f) * (1 - a) + fin.film(img, ctx.cut, f) * a
-            return np.clip(img, 0, 1).astype(np.float32), shot, f'{status} + finish_ramp', src
+            return np.clip(img, 0, 1).astype(np.float32), shot, f'{status} + {kind}', src
         (o, mo), (i, mi) = side(min(f, t['cut'] - 1), f), side(max(f, t['cut']), f)
         if o is None or i is None:
             return outer(f)
         shot, status, src = mo if f < t['cut'] else mi
-        if t['kind'] in AFIX.KINDS:                           # lane A-FIX's comps (edit/afix_comp.py)
-            img = AFIX.apply(t['kind'], o, i, f, t)
-        elif t['kind'] == 'swell':                            # the point swells into the disc, which condenses
-            d, _ = side(t['cut'], f)
-            img = _swell(o, i, d, f, t, ctx.W / 1920.0)
-        elif t['kind'] == 'burn':
-            img = (o * ctx.read(lay['keep']) + i * (1 - ctx.read(lay['cover'], gray=True)[..., None])
-                   + ctx.read(lay['glow']))
-        elif t['kind'] == 'x1':
-            keep = ctx.read(lay['keep'], gray=True)[..., None]
-            img = o * keep + i * (1 - keep) + ctx.read(lay['glow'])
-        else:                                                 # dissolve
-            a = (f - t['f0'] + 0.5) / (t['f1'] - t['f0'])
-            a = a * a * (3 - 2 * a)
-            img = _to_srgb(_to_lin(o) * (1 - a) + _to_lin(i) * a)
-        return np.clip(img, 0, 1).astype(np.float32), shot, f'{status} + {t["kind"]}', src
+        if kind in AFIX.KINDS:                                # lane A-FIX's comps (edit/afix_comp.py)
+            img = AFIX.apply(kind, o, i, f, t)
+        else:
+            img = TKINDS_PAIR[kind](o, i, f, t, ctx, lay, lambda: side(t['cut'], f)[0])
+        return np.clip(img, 0, 1).astype(np.float32), shot, f'{status} + {kind}', src
     return pic
 
 

@@ -72,12 +72,14 @@ RECIPES = {
     "C+.burn.letters": burn(8.0, 3.0, 0.6),
     # the ember edge 1686 -> 1700: rises with it, loudest mid-sweep, and dies with it (clean parchment from 1700,
     # the pen from 1705)
-    "C+.burn.deep": dict(burn(22.0, 1.0, 0.33), env=[(-0.33, -10.0), (0.0, 0.0), (0.25, -3.0), (0.6, -14.0),
-                                                   (1.0, -30.0)]),
+    "C+.burn.deep": dict(burn(22.0, 1.0, 0.42), env=[(-0.42, -10.0), (0.0, 0.0), (0.25, -3.0), (0.6, -14.0),
+                                                   (1.0, -30.0)]),        # pages_book: the sweep 1689-1705
     "C+.burn.eye": burn(33.5, 2.2, 0.3),                 # the glow 1921, the hole 1924
-    "C+.burn.map": burn(45.0, 2.6, 0.08),                # a hard cut (X1 not built yet): starts ON the cut
-    "C+.burn.remains": burn(52.0, 2.0, 0.08),            # a hard cut: starts ON the cut
-    "C+.burn.title": burn(58.5, 2.6, 0.5),               # first spark 6983, the letters burn on to 7016
+    # the X1s (PAGES-C's x1burn mattes): the burn opens over ~28-35 frames; the crackle rises from its first frame,
+    # peaks as half the sheet is open and dies with it
+    "C+.burn.map": dict(burn(45.0, 1.8, 0.62), env=[(-0.62, -12.0), (0.0, 0.0), (0.25, -2.0), (0.55, -8.0), (1.8, -26.0)]),
+    "C+.burn.remains": dict(burn(52.0, 1.8, 0.79), env=[(-0.79, -12.0), (0.0, 0.0), (0.3, -2.0), (0.65, -8.0), (1.8, -26.0)]),
+    "C+.burn.title": burn(58.5, 2.6, 0.54),              # first spark 6982, the letters burn on to 7016
     # ---------------------------------------------------------------- the fire born from the page, the forge
     "C.fire.born": dict(layers=[dict(src=FIRE, seg=(10, 18), xf=2.5, g=0.0),
                                 dict(src=HEARTH, seg=(8, 14), xf=2.0, g=-3.0)], hp=70),

@@ -1,28 +1,130 @@
 {
- "_doc": "SOUND-C: where C's picture events ACTUALLY happen, measured from the frames (music/src/sync_audit_v3.py on the delivery master C_master.mp4 of 27 Sep 23:36Z; the melt from renders/ring_C 5360-5519, newer than the master). 'f' = the frame the effect's hit is placed on (sound_v3.build moves the cue there); 'cue' = the locked cue-sheet frame; 'heard' = where final_C's synthesized effect actually peaked. PAGES-C: if you change any of these picture events, write the new frame here (or in NOTES_v3 'PICTURE SYNC: C PAGES') and re-run `python sound_v3.py C` (renderq).",
+ "_doc": "SOUND-C: where C's picture events ACTUALLY happen, measured from the frames (music/src/sync_audit_v3.py on the delivery master C_master.mp4 of 27 Sep 23:36Z; the melt from renders/ring_C 5360-5519, newer than the master). 'f' = the frame the effect's hit is placed on (sound_v3.build moves the cue there); 'cue' = the locked cue-sheet frame; 'heard' = where final_C's synthesized effect actually peaked. PAGES-C: if you change any of these picture events, write the new frame here (or in NOTES_v3 'PICTURE SYNC: C PAGES') and re-run `python sound_v3.py C` (renderq). RE-SYNC 28 Sep 02:50Z on PAGES-C's pages_book (renders/book_C, 2312 frames, landed 02:40Z) and the X1 mattes (x1_map_C 4150-4185, x1_map_C71 5594-5640): riffle, page turn, blanks, letters, T14, title unchanged within 1 f; havens -1; the deep's sweep later; the Eye's hole 2 f earlier; the X1s are now real burns.",
  "t": {
-  "C.riffle":        {"f": 320,  "cue": 320,  "heard": 320,  "what": "the leaves riffle 320-348 and land 349: the flicking recording's first burst on 320, its last on 348"},
-  "C+.pen.mountain": {"f": 355,  "cue": 336.8,"heard": 387,  "what": "the pen draws the mountain 355-535 (busiest 455-491: the sky hatching); quill envelope follows it"},
-  "C.page_turn":     {"f": 575,  "cue": 560,  "heard": 560,  "what": "lift from 564, the leaf crosses over on 575, lands 579"},
-  "C+.burn.letters": {"f": 842,  "cue": 840,  "heard": 841,  "what": "the page opens round the fire: first char 842, hole grows to the cut 880"},
-  "C+.burn.deep":    {"f": 1694, "cue": 1680, "heard": 1681, "what": "the race holds still 1680-1685; the ember edge appears 1686 and sweeps it away to parchment by 1700"},
-  "C+.pen.deep":     {"f": 1705, "cue": 1689.6,"heard": 1690, "what": "the pen's first stroke 1705 (the parchment is revealed 1700); drawing continues to ~1912"},
-  "C+.burn.eye":     {"f": 1924, "cue": 1920, "heard": 1920, "what": "glow from 1921, the hole opens 1923-1924 and grows onto the storm"},
-  "C+.burn.map":     {"f": 4160, "cue": 4160, "heard": 4160, "what": "HARD CUT from the still ink run to the map (no burn-through on screen yet: X1 planned); crackle starts ON the cut, no pre-swell"},
-  "C+.dip.0":        {"f": 5537, "cue": 5529.6,"heard": 5530, "what": "council v1: the image comes out of the white ~5536; the torches are dipped 5537-5570 (re-check after the Cycles rebuild)"},
-  "C+.dip.1":        {"f": 5545, "cue": 5542.8,"heard": 5543, "what": "v1"},
-  "C+.dip.2":        {"f": 5553, "cue": 5556, "heard": 5556, "what": "v1"},
-  "C+.dip.3":        {"f": 5561, "cue": 5570.4,"heard": 5571, "what": "v1"},
-  "C+.dip.4":        {"f": 5569, "cue": 5582.4,"heard": 5583, "what": "v1"},
-  "C+.burn.remains": {"f": 5600, "cue": 5600, "heard": 5600, "what": "HARD CUT from the council to the map (X1 planned); crackle starts ON the cut"},
-  "C+.roads":        {"f": 5604, "cue": 5606, "heard": 5611, "what": "the roads' first flames leave the ring of stones ~5604 and run outward to 5680"},
-  "C.page.havens":   {"f": 6417, "cue": 6400, "heard": 6400, "what": "lift from ~6392, the leaf crosses over 6417, lands 6422"},
-  "C.page.blank":    {"f": 6741, "cue": 6720, "heard": 6720, "what": "slow lift 6708-6731, sweep 6733-6741, lands 6743"},
-  "C.page.blank_2":  {"f": 6781, "cue": 6760, "heard": 6760, "what": "lift 6766, sweep to 6781, lands 6783"},
-  "C+.pen.T14":      {"f": 6793, "cue": 6790, "heard": 6790, "what": "'The last pages...' writes on 6793-6815"},
-  "C+.burn.title":   {"f": 6995, "cue": 6980, "heard": 6980, "what": "first spark 6983; THE LONG DAWN burns on letter by letter 6983-7016, then cools to ink"}
+  "C.riffle": {
+   "f": 320,
+   "cue": 320,
+   "heard": 320,
+   "what": "the leaves riffle 320-348 and land 349: the flicking recording's first burst on 320, its last on 348"
+  },
+  "C+.pen.mountain": {
+   "f": 355,
+   "cue": 336.8,
+   "heard": 387,
+   "what": "the pen draws the mountain 355-535 (busiest 455-491: the sky hatching); quill envelope follows it"
+  },
+  "C.page_turn": {
+   "f": 575,
+   "cue": 560,
+   "heard": 560,
+   "what": "lift from 564, the leaf crosses over on 575, lands 579"
+  },
+  "C+.burn.letters": {
+   "f": 842,
+   "cue": 840,
+   "heard": 841,
+   "what": "the page opens round the fire: first char 842, hole grows to the cut 880"
+  },
+  "C+.burn.deep": {
+   "f": 1699,
+   "cue": 1680,
+   "heard": 1681,
+   "what": "pages_book: the race holds still; the ember edge sweeps 1689-1705 (fastest 1696-1701): rises with it, peak 1699, dies with it"
+  },
+  "C+.pen.deep": {
+   "f": 1708,
+   "cue": 1689.6,
+   "heard": 1690,
+   "what": "the pen after the sweep (parchment clear ~1705); drawing to ~1912"
+  },
+  "C+.burn.eye": {
+   "f": 1922,
+   "cue": 1920,
+   "heard": 1920,
+   "what": "pages_book: the char ring 1921, the hole 1922, growing onto the storm"
+  },
+  "C+.burn.map": {
+   "f": 4167,
+   "cue": 4160,
+   "heard": 4160,
+   "what": "X1 (x1_map_C matte): the burn opens 4152, half 4168, done 4180: rises from 4152, peak 4167, decays with it"
+  },
+  "C+.dip.0": {
+   "f": 5537,
+   "cue": 5529.6,
+   "heard": 5530,
+   "what": "council v1: the image comes out of the white ~5536; the torches are dipped 5537-5570 (re-check after the Cycles rebuild)"
+  },
+  "C+.dip.1": {
+   "f": 5545,
+   "cue": 5542.8,
+   "heard": 5543,
+   "what": "v1"
+  },
+  "C+.dip.2": {
+   "f": 5553,
+   "cue": 5556,
+   "heard": 5556,
+   "what": "v1"
+  },
+  "C+.dip.3": {
+   "f": 5561,
+   "cue": 5570.4,
+   "heard": 5571,
+   "what": "v1"
+  },
+  "C+.dip.4": {
+   "f": 5569,
+   "cue": 5582.4,
+   "heard": 5583,
+   "what": "v1"
+  },
+  "C+.burn.remains": {
+   "f": 5616,
+   "cue": 5600,
+   "heard": 5600,
+   "what": "X1 (x1_map_C71 matte): opens 5597, half 5617, done 5632: rises from 5597, peak 5616"
+  },
+  "C+.roads": {
+   "f": 5604,
+   "cue": 5606,
+   "heard": 5611,
+   "what": "the roads' first flames leave the ring of stones ~5604 and run outward to 5680"
+  },
+  "C.page.havens": {
+   "f": 6416,
+   "cue": 6400,
+   "heard": 6400,
+   "what": "pages_book: lift ~6392, crosses 6415-6416, lands 6422"
+  },
+  "C.page.blank": {
+   "f": 6741,
+   "cue": 6720,
+   "heard": 6720,
+   "what": "slow lift 6708-6731, sweep 6733-6741, lands 6743"
+  },
+  "C.page.blank_2": {
+   "f": 6781,
+   "cue": 6760,
+   "heard": 6760,
+   "what": "lift 6766, sweep to 6781, lands 6783"
+  },
+  "C+.pen.T14": {
+   "f": 6793,
+   "cue": 6790,
+   "heard": 6790,
+   "what": "'The last pages...' writes on 6793-6815"
+  },
+  "C+.burn.title": {
+   "f": 6995,
+   "cue": 6980,
+   "heard": 6980,
+   "what": "pages_book: first spark 6982; THE LONG DAWN burns on 6982-7016, then cools to ink"
+  }
  },
  "on_frame": "measured and already on the picture (within 2 f), unchanged: C+.pen.T1 400 (write-on 400-422), C+.pen.T7 1710 (1710-1736), C+.pen.T9 3640 (3640-3665), C+.drop 2200 (strike 2200, bloom 2201), strikes 2980/3009/3178 (flashes on those frames), C.blow 3204, C.x.catch 3316 (first flame 3315-3317), beacons 1,2,4,5,6,7 on 3880..4120 (beacon 3 too small to measure), C+.seethe 5360 (letters flare 5420, slump 5426-5446: ring_C), C.fire.born 800 (glow 801)",
- "silent": {"C.page.plenty": "6160 is a hard cut to the book and nothing turns (D <= 0.5 after the cut): a page sound there is the wrong event. PAGES-C: if a page turns into C25, give me its crossing frame"},
+ "silent": {
+  "C.page.plenty": "6160 is a hard cut to the book and nothing turns (D <= 0.5 after the cut): a page sound there is the wrong event. PAGES-C: if a page turns into C25, give me its crossing frame"
+ },
  "not_measurable": "slates in the master: C13 2720-2960 (the Ring falls, strikes the snow ~2900: C.snow_hiss stays on the cue), C15 3360-3600 (the roar 3360, the cold tick 3400), C5 880-1040; black: the cock 2700 (2673-2719 is black: the real crow now STARTS on 2700; the synthesized one peaked at 2730, over the next shot)"
 }

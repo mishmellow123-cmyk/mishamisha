@@ -49,7 +49,9 @@
 `dict(f0, f1, cut, kind, ...)` joins the outgoing shot (its frames, then its last frame held) and the incoming (its
 first frame held, then its frames), each finished with its own look, by `kind`: `x1` (a MAP burn layer: `O * keep
 + I * (1 - keep) + glow`, from `glow`/`keep` folders) or `dissolve` (linear light, smoothstep). `ready=False` holds
-a window back (plain cut). New kinds go in `_transitions`. **C's spec is PAGES-C's (shots/map/NOTES_PAGES.md, 24 rows);
+a window back (plain cut). **New kinds go in `TKINDS_PAIR`/`TKINDS_SHOT` as their own functions (assemble.py),
+never inline in `_transitions`:** a window's segment key hashes `_transitions` (the core) + its kind's function
+(A-FIX's kinds: afix_comp's source), so editing one kind re-keys only its windows; editing the core re-keys all. **C's spec is PAGES-C's (shots/map/NOTES_PAGES.md, 24 rows);
 EDIT's rows are live (28 Sep ~01:40Z, checked on finished stills across each window):** dissolves 2314-2326 (#9),
 2836-2844 (#12; plays as the cut while E13 is a slate), 2998-3002 (#14), 3837-3843 (#16, optional, taken), 5672-5688
 (#20); kind `burn` (O * keep_rgb + I * (1 - cover) + glow) at 4150-4185 (#17) and 5594-5640 (#19) on PAGES' v2 layers

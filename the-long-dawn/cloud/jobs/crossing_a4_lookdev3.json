@@ -1,6 +1,6 @@
 {
- "name": "crossing_a4_lookdev",
- "branch": "claude/render-crossing-a4-lookdev",
+ "name": "crossing_a4_lookdev3",
+ "branch": "claude/render-crossing-a4-lookdev3",
  "setup": [],
  "render": [
   "python3 shots/run/crossing.py --frames 4880,5040-5063,5230-5253,5584,5839 --out lookdev --procs 8"

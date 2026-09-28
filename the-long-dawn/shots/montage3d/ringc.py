@@ -1206,7 +1206,7 @@ def _coals(C, new_material, n, spread, seed, heat, z0=0.0, exclude=None, gain_ta
     return C.mesh_obj('coals_' + heat, V, F, mat=m)
 
 
-def _sticks(C, new_material, specs, gain_tab):
+def _sticks(C, new_material, specs, gain_tab, fine=False):
     """Burning kindling: charred sticks with glowing splits (the beacon's fuel), [(p0, p1, radius)]."""
     from kit import fire as FK
     m, nb = new_material('stick')
@@ -1215,6 +1215,10 @@ def _sticks(C, new_material, specs, gain_tab):
     rid = nb.noise(P, scale=90.0, detail=5.0, rough=0.62)
     crack = nb.mul(nb.sstep(0.035, 0.0, nb.math('ABSOLUTE', nb.sub(rid.outputs['Fac'], 0.5))),
                    nb.sstep(0.45, 0.62, nb.noise(P, scale=30.0, detail=2.0).outputs['Fac']))
+    if fine:                                         # the polish: small broken embers along the grain, not lava
+        rid2 = nb.noise(P, scale=260.0, detail=4.0, rough=0.6)
+        crack = nb.mul(nb.sstep(0.022, 0.0, nb.math('ABSOLUTE', nb.sub(rid2.outputs['Fac'], 0.5))),
+                       nb.sstep(0.55, 0.70, nb.noise(P, scale=120.0, detail=2.0).outputs['Fac']))
     base = nb.mixcol(nb.sstep(0.4, 0.7, grain.outputs['Fac']), (0.012, 0.010, 0.009), (0.05, 0.04, 0.035))
     bs = nb.principled(Base_Color=base, Roughness=0.9)
     nb.link(nb.bump(nb.add(crack, grain.outputs['Fac']), 0.6, 0.001), bs.inputs['Normal'])
@@ -1715,7 +1719,7 @@ def _flint(C, new_material, R, opts, T):
     _sticks(C, new_material, [((0.00, -0.04, -0.024), (0.17, 0.05, -0.016), 0.006),
                               ((0.02, 0.06, -0.026), (0.15, -0.035, -0.020), 0.0055),
                               ((-0.01, 0.01, -0.032), (0.16, 0.00, -0.028), 0.0075),
-                              ((0.05, -0.05, -0.030), (0.10, 0.07, -0.022), 0.0045)], stick_g)
+                              ((0.05, -0.05, -0.030), (0.10, 0.07, -0.022), 0.0045)], stick_g, fine=True)
 
     # ---- the hands. The steel's plane is y = Y_STEEL; the flint rides her left fist.
     leather = GL.leather_material(new_material, base=opts.get('leather', (0.050, 0.031, 0.019)),
@@ -2025,14 +2029,14 @@ def _fire(C, new_material, R, opts, T):
     stl = _steel_mesh(C, steel_material(new_material, heat))
     stl.rotation_mode = 'QUATERNION'
     leather = GL.leather_material(new_material, base=opts.get('leather', (0.034, 0.022, 0.014)),
-                                  rough=opts.get('leather_rough', 0.38))
+                                  rough=opts.get('leather_rough', 0.38), wear2=opts.get('wear2', 1.0))
     for nd in leather.node_tree.nodes:                 # in the fire: dark leather whose waxy sheen draws the forms (a lit
         if nd.type == 'BSDF_PRINCIPLED':               # tan diffuse read as clay)
             nd.inputs['Specular IOR Level'].default_value = opts.get('leather_spec', 0.50)
             nd.inputs['Coat Weight'].default_value = opts.get('leather_coat', 0.25)
             nd.inputs['Coat Roughness'].default_value = 0.26
     wool = GL.wool_material(new_material)
-    GR = GL.Glove('rglove', leather, wool, mirror=False)
+    GR = GL.Glove('rglove', leather, wool, mirror=False, knuckles=opts.get('knuckles', 1.8))
     GR.set_pose(GL.POSES['fist'])
     sc = bpy.context.scene
     sc.frame_set(START)
@@ -2187,14 +2191,14 @@ def _fire_catch(C, new_material, R, opts, T):
     snow = snow_material(new_material)
     _plane(C, 'ground', -0.26, 1.2, snow)                          # the snow under her hand, lit by the fire
     leather = GL.leather_material(new_material, base=opts.get('leather', (0.034, 0.022, 0.014)),
-                                  rough=opts.get('leather_rough', 0.38))
+                                  rough=opts.get('leather_rough', 0.38), wear2=opts.get('wear2', 1.0))
     for nd in leather.node_tree.nodes:
         if nd.type == 'BSDF_PRINCIPLED':
             nd.inputs['Specular IOR Level'].default_value = 0.50
             nd.inputs['Coat Weight'].default_value = 0.25
             nd.inputs['Coat Roughness'].default_value = 0.26
     wool = GL.wool_material(new_material)
-    G = GL.Glove('lglove', leather, wool, mirror=True)
+    G = GL.Glove('lglove', leather, wool, mirror=True, knuckles=opts.get('knuckles', 1.8))
     # palm up, the fingers away from the lens and to the right, the thumb to the left, the forearm falling away
     # toward the lens and her (out of frame, lower left)
     R0 = Matrix(((0.0, 1.0, 0.0), (1.0, 0.0, 0.0), (0.0, 0.0, -1.0)))
@@ -2209,7 +2213,7 @@ def _fire_catch(C, new_material, R, opts, T):
         d += Vector((0.0, 0.0, -0.0025 * _ease((f - 3579) / 2.0) * (1.0 - _ease((f - 3581) / 6.0))))   # the weight lands
         return Matrix.Translation(T0 + d) @ Rh
 
-    cupped = GL.pose_mix(GL.POSES['cup'], GL.POSES['relaxed'], opts.get('open_mix', 0.35))
+    cupped = GL.pose_mix(GL.POSES['open_nat'], GL.POSES['cup'], opts.get('open_mix', 0.35))   # POLISH: finger variety
     close0 = opts.get('close0', 3584)
 
     def pose(f):
@@ -2269,7 +2273,7 @@ def _fire_catch(C, new_material, R, opts, T):
         g_ += Vector((0.0004 * math.sin(7.1 * t), 0.0003 * math.sin(5.9 * t + 1.0), 0.0005 * math.sin(5.3 * t + 0.4)))
         return Matrix.Translation(g_) @ M0
 
-    GR = GL.Glove('rglove', leather, wool, mirror=False)             # her right fist on the steel's back
+    GR = GL.Glove('rglove', leather, wool, mirror=False, knuckles=opts.get('knuckles', 1.8))   # her right fist
     GR.set_pose(GL.POSES['fist'])
     sc.frame_set(START)
     pbr = GR.rig.pose.bones
