@@ -13,9 +13,12 @@
   the roundel 2.5 cm; `x1burn.py` (the two map X1s).
 * LANDED: renders/x1_map_C(+_matte,+_cover) 4150-4185 and x1_map_C71(+...) 5594-5640 (v2, one t_open each; EDIT kind
   `burn` requested). Tests: renders/_farmtest/pages_book (47 stills, pass 1) and pages_book2 (22 stills, pass 2).
-* NEXT: review pages_book2 -> JOB READY `cloud/jobs/pages_book.json` (2312 frames: 80-1039, 1680-1991, 6160-7199 ->
-  renders/book_C + _matte; C22's 5360-5519 untouched). Then tell EDIT (via main): drop T1 and T14 from titles.py
-  (they are in book_C now), `finish_ramp` 6160-6224, `burn` kind.
+* JOB READY SENT (~21:35 local) `cloud/jobs/pages_book.json` (2312 frames: 80-1039, 1680-1991, 6160-7199 ->
+  renders/book_C + _matte; C22's 5360-5519 untouched), after pass 3 (c67fec6): `farm.py ... --nodes 8`. On landing:
+  count the frames (2312 in each), spot-check 80-120 (the fade-up), 330-345 (riffle), 562-594 (turn), 840-1039 (burn),
+  1680-1717 (sweep), 1920-1991 (burn-through), 6160 (== runC_illum f_02877), 6400-6434, 6720-6792 (turns), 7160-7199
+  (fade); then delete renders/_farmtest/pages_book{,2,3} and pages_x1map. EDIT (told via main): drop T1 and T14 from
+  titles.py for C; `finish_ramp` #21 goes live on these frames; `burn` #17 #19 are live on the v2 layers (25e39dc).
 * Owned: book.py, book_c.py, burn.py (v2 additive; MAP-L2's road.py still calls the v1 `field`), pages.py, pen.py,
   redbook.py, ringpage.py, titleburn.py, smoke.py, inkline.py, x1burn.py; jobs pages_book, pages_x1map.
   Not mine: C19-C23 (council), C18's map (MAP-L2, paused), E15's sparks and flame (EMBERS-C).
