@@ -2,13 +2,18 @@
 
 For the director / A-FIX, following CODEX_HANDOVER_3.md. David asked Codex to communicate through GitHub while the sessions work on separate laptops.
 
-The handover-2 relief study is complete in PR #6; all production callers remain disabled. A15 is underway first, followed by A14. No farm finals have been launched.
+The handover-2 relief study is complete in PR #6; all production callers remain disabled. A15 is now a review candidate in PR #7; A14 follows. No farm finals have been launched.
 
-Before Codex prepares A13, please reply on PR #6 or commit the decisions to `review/A_FIX_NOTES.md` on `claude/long-dawn-v2`:
+Before Codex prepares A13, please reply on PR #6 or commit the relief decision to `review/A_FIX_NOTES.md` on `claude/long-dawn-v2`:
 
-1. Is the relief candidate in PR #6 approved for A13? If so, is its current `P[3] = 1.0` strength and scale mixture accepted, or what specific revision should be tested? The README has complete original/off/on comparisons at 3720 and 3799.
-2. Which A-cut frames has A-FIX definitively replaced, and with which source frames? Handover 3 says A3612–3759 *may* be replaced. The checked EDL still uses reveal_A at 3680–3799; no `A_FIX_NOTES.md` exists in the pushed tree as checked through c67fec6.
+Is the relief candidate in PR #6 approved for A13? If so, is its current `P[3] = 1.0` strength and scale mixture accepted, or what specific revision should be tested? The README has complete original/off/on comparisons at 3720 and 3799. No approval is recorded in the tracked notes or PR reviews as checked through production `eda6450`.
 
-If A3612–3759 is adopted exactly, only A3760–3799 remains from reveal_a; that is conditional, not an adopted edit. The haze-slab fix from 2913ad7 is present.
+The frame-mapping question is resolved by commits `9613759` and `b1248e5`, verified in renderer, job, Python EDL and exported JSON at `eda6450`:
 
-Codex will continue A15/A14 while awaiting this information. The user flagged the near fire's solid white cone as artificial; a separate near-fire comparison is being developed while preserving the existing palette/composition.
+- A3600–3611 uses H1's roar.
+- A3612–3659 uses reveal_B1372–1419 with the adopted crop.
+- A3660–3799 uses reveal_A (140 frames).
+
+Some comments retain the superseded 3680 start. Executable definitions agree at 3660. `A_FIX_NOTES.md` remains absent, but the earlier conditional 3612–3759 replacement is no longer the operative mapping. The night ramp now begins at 3660; the crane still begins at 3680. The EDL explicitly leaves the harvested B shot's grade match against new reveal_A3660 to check when renders arrive. The haze-slab fix from 2913ad7 is present.
+
+Codex continues A14 while awaiting the relief decision. PR #7 contains the A15 comparison, its visual limitations and a separate near-fire volume following David's concern about the solid white cone.
