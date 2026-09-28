@@ -5,19 +5,17 @@
 ~3 px warm-white dot and streaks down-right at ~29 deg. This shot hands over to that exact spot, size and direction.
 
     2720  black (C12's black runs on); the band turns into the moon's light: a glint, then its gold; letters faint
-    2724  far below, a moonlit sea of cloud and a thin high layer of wisps come up out of the dark; we fall with the band
-    2760  we slow to a hover; the band does not: it drops away below us, and we tilt down after it (past the vertical,
-          the frame slowly rolling), the wisps' lit tops sliding up past it
-    2800  it goes down through the wisps: they glow warm round it and part where it went through
-    2833  it has become a glint in the frame's upper-left corner; the camera settles
+    2724  far below, a vast moonlit sea of cloud comes up out of the dark; we fall with the band
+    2760  we slow to a hover; the band does not: it drops away below us toward the sea, and we tilt down after it
+          (past the vertical, the frame slowly rolling), the sea sliding up past it
+    2833  it has become a glint in the frame's upper-left corner, falling on toward the sea; the camera settles
     2839  the glint (~5 px, warm white core) at (240, 28), sinking down-right toward the sea -> RUN-C's star at 2840
 
 Geometry: the camera is solved per frame so that the band lands on a designed screen path (`ring_px`); the band
 itself falls straight down in the world, so its motion against the clouds is honest (down, turning down-right as
-the frame rolls). The clouds are horizontal planes seen from above: the deck is a height field of billows (|noise|
-octaves: round tops, sharp creases) lit by a low moon with self-shadowing, cavity darkening and haze, octaves faded
-by the pixel footprint; the wisps are a sparse translucent layer the band lights from inside. Both are motion-
-blurred by reprojection when the camera turns.
+the frame rolls). The sea is a ray-marched slab of cloud seen from high above (billowed 3-D tops, a moon shadow
+march with multiple-scattering softening, sky light by height, haze), motion-blurred by reprojection while the
+camera turns. (Round 1's height-field read as rock; the thin high layer read as smoke, then as a cotton ball: cut.)
 """
 import math
 
@@ -45,7 +43,6 @@ T_S0, T_S1 = 2762.0, 2833.0
 PHI = math.radians(-60.0)                            # the frame's slow roll during the tilt (so it sinks down-right)
 C_MOON = np.array([0.62, 0.72, 0.9])
 DECK_Y = -6500.0                                     # the sea of cloud, far below (the band never reaches it here)
-WISP_Y = -1100.0                                     # the thin high layer the band goes through (~2812)
 DIAM = 2.0 * RS.R_OUT * RING_W                       # the band's outer diameter (RING_W is its WIDTH)
 
 
@@ -87,18 +84,6 @@ def drop(t):
         return 0.0
     k = min(y, BRAKE)
     return DROP_A * (math.exp(DROP_K * y) - 1.0 - DROP_K * y) + V0 * (k * k / (2.0 * BRAKE) + (y - k))
-
-
-def cross_t():
-    """when the band goes through the thin layer"""
-    a, b = T_LET, T_FALL_END
-    for _ in range(40):
-        m = 0.5 * (a + b)
-        if ring_pos(m)[1] > WISP_Y:
-            a = m
-        else:
-            b = m
-    return 0.5 * (a + b)
 
 
 def ring_pos(t):
@@ -179,9 +164,9 @@ def moon_dir():
 
 
 # ============================================================ clouds ===
-# Both layers are ray-marched volumes (a slab of cloud, not a painted plane): the sea's tops are billowed in 3-D
-# (|noise| octaves: rounded bulges with creases between), lit by the moon with a shadow march and a multiple-
-# scattering softening, brighter toward the tops (sky light); the wisps are a thin, eroded, sparse slab.
+# The sea is a ray-marched volume (a slab of cloud, not a painted plane): its tops are billowed in 3-D (|noise|
+# octaves: rounded bulges with creases between), lit by the moon with a shadow march and a multiple-scattering
+# softening, brighter toward the tops (sky light).
 
 @njit(fastmath=True, cache=True, inline='always')
 def _ssj(a, b, x):
@@ -303,101 +288,6 @@ def _sea_vol(Dirs, cp, pr, L, out_rgb):
             out_rgb[j, i, 2] = Lb * (1.0 - hz) + hz * hz_b
 
 
-@njit(fastmath=True, cache=True, inline='always')
-def _puff_rho(x, y, z, pr):
-    """small clouds high over the sea (sparse), one kept where the band goes through. pr: 0 layer mid y,
-    1 coverage bias, 2 half-thickness, 3-6 the tear (segment x0 z0 x1 z1), 7 tear radius, 8 tear depth,
-    14-15 the crossing (x, z)"""
-    hy = (y - pr[0]) / pr[2]
-    if hy <= -1.0 or hy >= 1.0:
-        return 0.0
-    u = x / 420.0
-    v = z / 420.0
-    c = 0.65 * perlin3(u + 5.3, v - 2.9, 3.1) + 0.35 * perlin3(u * 2.1 - 1.2, v * 2.1 + 4.4, 6.6) + pr[1]
-    ddx = (x - pr[14]) / 150.0
-    ddz = (z - pr[15]) / 150.0
-    c += 0.62 * math.exp(-(ddx * ddx + ddz * ddz))
-    if c < 0.0:
-        return 0.0
-    prof = (1.0 - hy * hy) if hy > 0.0 else (1.0 - hy * hy * hy * hy)       # domed tops, flatter bases
-    b = 0.6 * abs(perlin3(x / 95.0, y / 80.0, z / 95.0)) + 0.4 * abs(perlin3(x / 41.0 + 3.0, y / 36.0, z / 41.0 - 2.0))
-    d = _ssj(0.0, 0.16, c * 1.7 * prof - 0.42 * b)
-    if d <= 0.0:
-        return 0.0
-    # the band punched through here (the hole stays open along the line we watch it down)
-    ax = pr[5] - pr[3]
-    az = pr[6] - pr[4]
-    ll = ax * ax + az * az
-    tt = ((x - pr[3]) * ax + (z - pr[4]) * az) / max(ll, 1e-6)
-    tt = min(max(tt, 0.0), 1.0)
-    qx = x - (pr[3] + ax * tt)
-    qz = z - (pr[4] + az * tt)
-    d *= 1.0 - pr[8] * math.exp(-(qx * qx + qz * qz) / (pr[7] * pr[7]))
-    return d
-
-
-@njit(parallel=True, fastmath=True, cache=True)
-def _puff_vol(Dirs, cp, pr, L, rp, out_rgb, out_a):
-    """ray-march the small high clouds: moonlit with a short shadow march, the band's warmth inside the one it goes
-    through. pr: 0-8, 14-15 as _puff_rho; 9 sigma, 10 moon E, 11 warm E, 12 warm radius, 13 frame seed;
-    L: to the moon; rp: the band (or where it went through)"""
-    H, W, _ = Dirs.shape
-    for j in prange(H):
-        for i in range(W):
-            out_rgb[j, i, 0] = 0.0
-            out_rgb[j, i, 1] = 0.0
-            out_rgb[j, i, 2] = 0.0
-            out_a[j, i] = 0.0
-            dy = Dirs[j, i, 1]
-            if dy > -1e-3:
-                continue
-            s0 = (pr[0] + pr[2] - cp[1]) / dy
-            s1 = (pr[0] - pr[2] - cp[1]) / dy
-            if s1 <= 0.0:
-                continue
-            if s0 < 0.0:
-                s0 = 0.0
-            n = 14
-            ds = (s1 - s0) / n
-            s = s0 + ds * _hash01(i + int(pr[13]) * 131, j + 17)
-            T = 1.0
-            Lr = 0.0
-            Lg = 0.0
-            Lb = 0.0
-            for k in range(n):
-                px = cp[0] + Dirs[j, i, 0] * s
-                py = cp[1] + dy * s
-                pz = cp[2] + Dirs[j, i, 2] * s
-                rho = _puff_rho(px, py, pz, pr)
-                if rho > 0.001:
-                    tl = 0.0
-                    qs = 6.0
-                    ls = 10.0
-                    for m in range(4):
-                        tl += _puff_rho(px + L[0] * qs, py + L[1] * qs, pz + L[2] * qs, pr) * ls
-                        qs += ls
-                        ls *= 2.0
-                    tau = pr[9] * tl
-                    em = (math.exp(-tau) + 0.45 * math.exp(-0.3 * tau) + 0.2 * math.exp(-0.1 * tau)) / 1.65
-                    hf = 0.5 + 0.5 * (py - pr[0]) / pr[2]
-                    r2 = ((px - rp[0]) ** 2 + (py - rp[1]) ** 2 + (pz - rp[2]) ** 2) / (pr[12] * pr[12])
-                    wm = pr[11] * (math.exp(-r2) + 0.1 / (1.0 + 3.0 * r2))
-                    moon = pr[10] * em
-                    amb = 0.1 * (0.3 + 0.7 * hf)
-                    a = 1.0 - math.exp(-pr[9] * rho * ds)
-                    Lr += T * a * (moon * 0.58 + amb * 0.3 + wm * 1.0)
-                    Lg += T * a * (moon * 0.7 + amb * 0.45 + wm * 0.5)
-                    Lb += T * a * (moon * 0.95 + amb * 1.0 + wm * 0.16)
-                    T *= 1.0 - a
-                    if T < 0.01:
-                        break
-                s += ds
-            out_rgb[j, i, 0] = Lr
-            out_rgb[j, i, 1] = Lg
-            out_rgb[j, i, 2] = Lb
-            out_a[j, i] = 1.0 - T
-
-
 def _rays(cam, W, H):
     f = cam.f_px(W)
     u = (np.arange(W, dtype=np.float64) - (W - 1) / 2.0) / f
@@ -442,14 +332,6 @@ def _mblur(rgb, a, X, Y, y, cam0, cam1, cam, W, H, n_max=10):
 class FallShot:
     def __init__(self):
         self.moon = moon_dir()
-        # the tear in the thin layer: from where the band went through to where our last look down crosses it
-        self.tc = cross_t()
-        r = ring_pos(self.tc)
-        c_end = cam_pos(2839.0)
-        r_end = ring_pos(2839.0)
-        k = (WISP_Y - c_end[1]) / (r_end[1] - c_end[1])
-        e = c_end + (r_end - c_end) * k
-        self.tear = (float(r[0]), float(r[2]), float(e[0]), float(e[2]))
 
     def camera(self, t):
         return solve_cam(t)
@@ -490,24 +372,6 @@ class FallShot:
             X, Y = _plane_hit(cam, Dirs, DECK_Y + 250.0)
             drgb, _ = _mblur(drgb, np.ones((H, W), np.float32), X, Y, DECK_Y + 250.0, ctx.cam0, ctx.cam1, cam, W, H)
             img = drgb * dk
-        # ---- small clouds high over the sea (always below us): the band goes down through one
-        wl = None
-        if dk > 0.0:
-            warm = 1.4 * (_ss(self.tc - 5.0, self.tc, t) if t < self.tc else math.exp(-(t - self.tc) / 6.0))
-            rp_w = rpos if t < self.tc else ring_pos(self.tc)
-            cx = ring_pos(self.tc)
-            pr = np.array([WISP_Y, -0.34, 60.0, self.tear[0], self.tear[1], self.tear[2], self.tear[3], 26.0,
-                           0.97 * _ss(self.tc - 2.0, self.tc + 3.0, t), 0.03, 0.62, warm, 14.0, seed,
-                           float(cx[0]), float(cx[2])], np.float64)
-            wrgb = np.empty((H, W, 3), np.float32)
-            wa = np.empty((H, W), np.float32)
-            _puff_vol(Dirs, cam.pos.astype(np.float64), pr, self.moon.astype(np.float64), rp_w.astype(np.float64),
-                      wrgb, wa)
-            wrgb = cv2.GaussianBlur(wrgb, (0, 0), 0.6 * W / FW)
-            wa = cv2.GaussianBlur(wa, (0, 0), 0.6 * W / FW)
-            X, Y = _plane_hit(cam, Dirs, WISP_Y)
-            wrgb, wa = _mblur(wrgb, wa, X, Y, WISP_Y, ctx.cam0, ctx.cam1, cam, W, H)
-            wl = (wrgb * dk, wa * dk)
         # ---- the band (three instants across the shutter)
         acc = None
         for q in range(3):
@@ -539,12 +403,7 @@ class FallShot:
                   + halo[..., None] * np.array([0.34, 0.2, 0.07], np.float32)) * (kg * tw)
             rrgb = rrgb + gl.astype(np.float32)
         # ---- composite, far to near
-        k_over = float(np.clip((WISP_Y + 60.0 - rpos[1]) / 120.0, 0.0, 1.0))    # how much of the layer is over it
-        if wl is not None:
-            img = img * (1.0 - wl[1][..., None] * (1.0 - k_over)) + wl[0] * (1.0 - k_over)
         img = img * (1.0 - ra[..., None]) + rrgb
-        if wl is not None:
-            img = img * (1.0 - wl[1][..., None] * k_over) + wl[0] * k_over
         return hdr + img
 
     def phase(self, cam):
