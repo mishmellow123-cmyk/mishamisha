@@ -462,6 +462,10 @@ class TimelineA3(TL.Timeline):
         self.towers.emit(ctx, lp, lc, lpw)
         self.tembers.emit(ctx)
         self.tsmoke.emit(ctx, lp, lc, lpw)
+        if T_TOWERS <= t < T_WHITE:                   # A-FIX: the forges' throats roar, and throw sparks on the beat
+            import race_afix
+            self._get('throat_fire', lambda: race_afix.ThroatFire(self.towers, T_TOWERS + 30, T_WHITE,
+                                                                   giants=GIANTS)).emit(ctx)
         self.sparks.emit(ctx)
         # (H5) no vortex in A: THE BRINK is the fire's own updraft (edge.Updraft) fed by embers off the tower tops
         self.fire.emit(ctx)
