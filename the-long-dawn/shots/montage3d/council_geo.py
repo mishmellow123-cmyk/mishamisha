@@ -291,7 +291,7 @@ def _hood(m, F, zsh, hs, ws, seed, typ, lod):
     na = max(8, int(round(18 * lod)))
     nb = max(20, int(round(44 * lod / 4.0)) * 4)
     kk = {0: 1.00, 1: 1.02, 3: 1.10, 5: 1.08}.get(typ, 1.0) * (0.94 + 0.06 * hs)
-    pk = {0: 0.050, 1: 0.095, 3: 0.025, 5: 0.075}.get(typ, 0.06)
+    pk = {0: 0.070, 1: 0.125, 3: 0.040, 5: 0.100}.get(typ, 0.08)
     brim = {0: 0.050, 1: 0.060, 3: 0.035, 5: 0.075}.get(typ, 0.05)
     rx, ry, rz = 0.140 * kk, 0.128 * kk, 0.152 * kk
     a0 = 0.92 + 0.08 * math.sin(seed)
@@ -300,12 +300,12 @@ def _hood(m, F, zsh, hs, ws, seed, typ, lod):
     A, B = np.meshgrid(al, be, indexing='ij')
     dx, dy, dz = np.cos(A), np.sin(A) * np.cos(B), np.sin(A) * np.sin(B)
     r = 1.0 / np.sqrt((dx / rx) ** 2 + (dy / ry) ** 2 + (dz / rz) ** 2)
-    r = r + pk * np.exp(-((A - 2.45) / 0.38) ** 2) * np.clip(np.sin(B), 0, 1) ** 3
+    r = r + pk * np.exp(-((A - 2.50) / 0.30) ** 2) * np.clip(np.sin(B), 0, 1) ** 4
     near = sst(a0 + 0.75, a0, A)                                   # 1 at the rim
     r = r + 0.0085 * np.sin(8.0 * B + seed) * near + 0.004 * np.sin(5.0 * B + 2.0 * A + seed)
     # cloth, not a shell: soft creases fanning back from the peak and the brim, a slump to one side
     crown = np.clip(np.sin(B), 0, 1) * sst(1.2, 2.2, A)
-    r = r + 0.007 * crown * np.sin(6.0 * A + 3.0 * B + 1.7 * seed) + 0.005 * np.sin(11.0 * B - 4.0 * A + seed)
+    r = r + 0.012 * crown * np.sin(6.0 * A + 3.0 * B + 1.7 * seed) + 0.007 * np.sin(11.0 * B - 4.0 * A + seed)
     r = r * (1.0 - 0.16 * near * np.clip(-np.sin(B), 0, 1))          # the lower rim closes round the throat
     X, Y, Zh = r * dx, r * dy, r * dz
     Y = Y + 0.018 * math.sin(2.3 * seed) * np.clip(Zh / 0.15, 0, 1) ** 2      # the hood slumps a little to one side
