@@ -1,12 +1,19 @@
 # BURN-C: real filmed burn elements on C's pages (user: "the paper burning should look far more realistic")
 
-## STATE (BURN-C, 28 Sep ~03:30 local) -- READ FIRST
-* main 03:20: (a) ADOPTED (the user: "pretty decent"; stop at diminishing returns). (b) curl and (c) ash CANCELLED.
-  Remaining, then stand down: (1) clean plates: check at 1:1 when the test lands, then launch the finals (lane-launched
-  row in _local_logs/handoff/LAUNCHED_BY_MAIN.md); (2) roll (a) out: C5 841-1039 + the sweep 1680-1717 + the Eye
-  1905-1991 -> renders/book_C_ft + book_C_ft_matte (EDIT reads them unchanged; C is on hold in EDIT until the new
-  EDL: no need to message EDIT), one 24-frame strip each for my own check; (3) SOUND frames (below); (4) commit, push,
-  one line to main: "BURN ROLLOUT DONE". The farm queue waits on provider capacity: let the watcher wait, no resubmit.
+## STATE (BURN-C, 28 Sep ~09:45 local) -- LANE DONE (stood down)
+* **BURN ROLLOUT DONE.** `renders/book_C_ft` + `renders/book_C_ft_matte` (324 frames each: 841-1039, 1680-1717,
+  1905-1991), every frame on the farm's clean plates (renders/book_C_plate, landed 09:21, request 0928-091213).
+  Same conventions as book_C, so EDIT reads them unchanged (C is on hold in EDIT until the new EDL):
+  - 841-1039 (C4-C5): rgb = the page (premultiplied) + the fire; matte = cover; EDIT's under is black, e15 added.
+  - 1680-1717 (C8 sweep): the held race (embers_C3 f1679) burning away over the page is BAKED; matte = 1.
+  - 1905-1991 (C8-C9 the Eye): rgb = the page + the fire; matte = cover; EDIT adds the live storm through it.
+  Joins with book_C: 840 -> 841 mean |diff| 2.9/255; 1717 -> 1718 3.7 (= book_C's own frame-to-frame 3.7);
+  1904 -> 1905 18.6 (= book_C's own 18.0: the camera is moving fast there); book_C vs plate at 1905: 2.9. No pops.
+  Checked 24-frame strips (_local_logs/review/burn_C/FINAL_{c5,sweep,eye}_strip24_*.jpg): continuous; the sweep
+  is a fast (12x) busy wipe, the Eye tears up the vein from the glow and opens onto the storm.
+* (a) ADOPTED by main (the user: "pretty decent"); (b) curl and (c) ash CANCELLED. Second-half page burns (the map
+  X1s etc.) come later, once Codex's new pages exist: ftburn.SHOTS takes a new preset per burn (clip, mapping,
+  retime by the render's cover), `ftburn.py shot --shot <name> --out renders/book_C_ft`.
 * 05:40 main: option (a): WAIT for the plates (the farm test 0928-025304 sat 2h44m at "0 node(s) rendering, 9 up or
   booting"); watcher re-armed for 5 h (1-min polls, fires on EXIT/landed/failed). If still not started on wake: DO NOT
   resubmit; the morning session moves it to GPU nodes (noted in HANDOVER.md). When the plates land: check 1:1, launch
