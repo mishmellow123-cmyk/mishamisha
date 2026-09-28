@@ -234,6 +234,29 @@ in the master): the snow strike ~2900, the roar 3360, the cold tick 3400.
     **battery ALL PASS -> FINAL.**
   * Tool: `src/who_v3.py <cut> <name> t0 t1 ...` ranks the parts by loudness in a window (from the part cache).
 
+## COMPOSER-C2 (cut C, from 28 Sep 05:30Z) · STATE
+**STATE 07:10Z: PHASE 1: A/B render 2 is running (fixes: sfizz's early stop, the 16-bit floor gate). Then the README
+and the verdict to main. Phase 2 waits for the LOCKED C script (the draft is `_local_logs/review/script/C_SCRIPT_v2.md`).**
+- `src/sfizz_v3.py` (new, mine) has the commands `export`, `check <part> t0 t1` and `ab`. Checks so far: my window
+  mixer re-mixes A's stems to within -111 to -135 dB of A's premaster, so the chain is exact. B's orchestral parts
+  land within +-1 dB of A (single notes +0.5 dB), and at the sync points their onsets agree within 0-8 ms per part.
+- sfizz gotchas, all measured: it outputs 7.35 dB under the raw sample even with CC7 at 127 (compensated by
+  `SFIZZ_DB`); its default CC7 of 100 costs another 4.2 dB (CC7 is sent at 127); `--use-eot` stops at the last
+  EVENT, which cut every pass's last release (an inert CC119 now sits at the pass's end); its output is 16-bit, so
+  every pass renders near -26 dBFS, the dynamics are applied after rendering, and a 3-LSB gate removes the floor.
+- The headroom fix is `CLIMAX_RIDE`, a slow premaster fader from 79 to 87.6 s (down to -7 dB at the slit). At the
+  film's master gain, the master's reduction at the slit drops from comp 5.0 + lim 5.6 dB to comp 2.7 + lim 0.9 dB,
+  and the window comes out 0.95 LU quieter. Phase 2 must re-check the rules (the dawn sits only 2.5 LU under the slit).
+- Premise check (sent to main 05:40Z): 52 of C's 63 parts ALREADY play VSCO-2-CE through `sampler.py`, our numpy SFZ
+  player. Only 11 colour voices are synthesised: glass, glitter, hharm, anvil, tick, tam, taiko, lowbell, riser,
+  revcym, harmonic, gfall.
+- Toolchain: the official prebuilt `sfizz_render` 1.2.3 (x86_64) runs under Rosetta, so nothing is compiled
+  (SAFE MODE). It lives in `music/samples/tools/sfizz-1.2.3/`, which is gitignored.
+- The B plan: the same note events -> MIDI per part (tick = 1 sample) -> sfizz_render through derived VSCO SFZs
+  (onset offsets and CC dynamics), with the synth colours mapped to VSCO's real percussion. Then the same mix chain.
+- Pairs go to `~/Downloads/The Long Dawn v3 - PREVIEWS/music_AB/`: horn solo bars 43-48; the Eye into the slit 22-28
+  (headroom fix); the dawn 72-77.
+
 ## COMPOSER-C (cut C) · STATE
 - **21:05Z: C's full score FINAL** (`out/v3/final_C.wav` + stems; render 7). Battery all PASS: 48 kHz/24-bit, exactly
   14,400,000 samples, stems sum to the master, -16.03 LUFS integrated, TP -1.30 dBTP; level map **28/28** against the
