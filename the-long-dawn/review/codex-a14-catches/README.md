@@ -1,6 +1,6 @@
 # A14 — beacon catches and opaque motion depth
 
-This candidate follows A15 PR #7, which the director merged at `287b1a1`; frame-QC #5 and legacy reach #9 are also merged. Handover 4 reports that A15's final job is launched and EDIT selects `renders/watchers_A_hearth3`. PR #8 targets `claude/long-dawn-v2` and includes production `70d102b` through merge `ee085f1`. Codex launched no farm job.
+This candidate follows A15 PR #7, which the director merged at `287b1a1`; frame-QC #5 and legacy reach #9 are also merged. Handover 4 reports that A15's final job is launched and EDIT selects `renders/watchers_A_hearth3`. PR #8 targets `claude/long-dawn-v2` and now includes production `61cf28b` through merge `1f9a38c`. The [current compatibility update](current-compat/README.md) records 64 passing compiled tests on that merge. Claude’s 05:40Z mailbox message reports A15 rendered and selected in EDIT; its farm frame/source receipt is still requested. Codex launched no farm job.
 
 The three approaching ridge fires (chain 1, 3 and 5) use a copied size table enlarged by one third. Their positions and ignition frames stay fixed; the three far answers and seventh hearth keep their sizes. The shared night recipe couples size to width, light pool, clearance, smoke and flame base. A15 inherits those same changes through `beaconrun_a.FIRES` and `fires_table()`, so the A14/A15 boundary and an A15 check are included here.
 
