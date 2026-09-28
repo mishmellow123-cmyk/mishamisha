@@ -126,7 +126,7 @@ class DuskShot:
         self.fr = PI.Frame(self.tc, ss)
         scam = self.fr.src
         self.P = np.array([scam.pos[0], scam.pos[2], 0.0, CLOUD_RELIEF])
-        p = os.path.join(CACHE, f'bdusk_G_{BW.VERSION}v2_{scale:.3f}_{ss:.2f}.npy')
+        p = os.path.join(CACHE, f'bdusk_G_{BW.VERSION}v2b_{scale:.3f}_{ss:.2f}.npy')
         if cache and os.path.exists(p):
             self.G = np.load(p)
         else:
