@@ -656,6 +656,38 @@ def _to_srgb(x):
 import afix_comp as AFIX  # noqa: E402  (lane A-FIX's transition kinds, dispatched by _transitions)
 
 
+def _swell(o, i, d, f, t, k):
+    """EDIT kind 'swell' (A4 -> A5, user 28 Sep): the outgoing point's glow grows (ease-in) into the incoming's first
+    frame d (the ignition disc), drifting to its centre; a soft cross-blend over t['blend'] joins the two sides; after
+    the cut the disc, lightened over the live frames, shrinks and fades toward the flame so it condenses into it over
+    t['f1'] - t['cut'] frames. The disc is lifted off its black (minus its median, inside a soft circle of radius R)."""
+    H, W = d.shape[:2]
+    cut, f0, f1 = t['cut'], t['f0'], t['f1']
+    ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
+    dx, dy = t['disc'][0] * k, t['disc'][1] * k
+    m = np.clip(1.2 - np.hypot(xs - dx, ys - dy) / (t['R'] * k), 0, 1)[..., None]
+    dm = np.clip(d - float(np.median(d)), 0, 1) * m
+
+    def place(scale, cx, cy):
+        M = np.float32([[scale, 0, cx - scale * dx], [0, scale, cy - scale * dy]])
+        return cv2.warpAffine(dm, M, (W, H), flags=cv2.INTER_LINEAR, borderValue=0)
+
+    u = min(1.0, max(0.0, (f - f0) / (cut - f0)))
+    e = u ** 1.2                                                # before the cut: ease-in growth, visible from ~1/4
+    cx = (t['p0'][0] + (t['c1'][0] - t['p0'][0]) * e) * k
+    cy = (t['p0'][1] + (t['c1'][1] - t['p0'][1]) * e) * k
+    a_img = np.maximum(o, u ** 0.5 * place(t['s0'] + (1 - t['s0']) * e, cx, cy))
+    v = min(1.0, max(0.0, (f - cut) / (f1 - cut)))
+    e2 = v * v * (3 - 2 * v)                                    # after the cut: the disc condenses into the flame
+    fx = (t['disc'][0] + (t['flame'][0] - t['disc'][0]) * e2) * k
+    fy = (t['disc'][1] + (t['flame'][1] - t['disc'][1]) * e2) * k
+    b_img = np.maximum(i, (1 - e2) * place(1 - (1 - t['s1']) * e2, fx, fy))
+    b0, b1 = t['blend']
+    w = min(1.0, max(0.0, (f - b0 + 0.5) / (b1 - b0)))
+    w = w * w * (3 - 2 * w)
+    return a_img * (1 - w) + b_img * w
+
+
 def _transitions(ctx, finish=None):
     """EDIT transitions (EDL.TRANS), installed by _init after the finish. Inside a window the frame joins the outgoing
     shot (its frames before t['cut'], then its last frame held) and the incoming shot (its first frame held until
@@ -702,6 +734,9 @@ def _transitions(ctx, finish=None):
         shot, status, src = mo if f < t['cut'] else mi
         if t['kind'] in AFIX.KINDS:                           # lane A-FIX's comps (edit/afix_comp.py)
             img = AFIX.apply(t['kind'], o, i, f, t)
+        elif t['kind'] == 'swell':                            # the point swells into the disc, which condenses
+            d, _ = side(t['cut'], f)
+            img = _swell(o, i, d, f, t, ctx.W / 1920.0)
         elif t['kind'] == 'burn':
             img = (o * ctx.read(lay['keep']) + i * (1 - ctx.read(lay['cover'], gray=True)[..., None])
                    + ctx.read(lay['glow']))

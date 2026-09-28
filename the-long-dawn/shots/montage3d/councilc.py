@@ -28,10 +28,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ACC = os.path.abspath(os.path.join(HERE, '..', 'accord'))
 FINISH = dict(exposure=1.0, bloom_strength=0.045, bloom_threshold=1.4, streak_strength=0.0, vignette_amount=0.22,
               lift=0.003)
-EXPO = float(os.environ.get('COUNCIL_EXPO', '1.0'))
+EXPO = float(os.environ.get('COUNCIL_EXPO', '1.25'))
 WIND = (0.40, -0.16)
-TORCH_W = float(os.environ.get('COUNCIL_TORCH_W', '14.0'))        # a torch flame's light (W, before flicker)
-FIRE_W = float(os.environ.get('COUNCIL_FIRE_W', '260.0'))         # the hearth fire's light per m^2 of flame
+TORCH_W = float(os.environ.get('COUNCIL_TORCH_W', '6.0'))        # a torch flame's light (W, before flicker)
+FIRE_W = float(os.environ.get('COUNCIL_FIRE_W', '90.0'))         # the hearth fire's light per m^2 of flame
 FLAME_E = float(os.environ.get('COUNCIL_FLAME_E', '60.0'))        # flame volume emission scale
 CLIP_LC = float(os.environ.get('COUNCIL_CLIP', '1.8'))            # hue-preserving roll-off (after exposure)
 
@@ -526,12 +526,12 @@ def _bake(st, per, fr, cache, tag):
         V, Fc, Mt, _ = CG.chunk((x, y, z), (a, b, c), sd_)
         B.mesh(f'chunk{k}', V, Fc, Mt, {'u': np.full(len(V), 0.9)})
     if any(per[str(f)]['plate'] == 3 for f in fr):
-        for k in range(110):
+        for k in range(240):
             a = rng.uniform(0, 2 * np.pi)
-            r = 0.25 * math.sqrt(rng.uniform(0, 1))
+            r = 0.27 * math.sqrt(rng.uniform(0, 1))
             x, y = r * math.cos(a), r * math.sin(a)
-            sz = rng.uniform(0.014, 0.042) * (1.0 - 0.4 * r / 0.25)
-            z = float(CG.slab_top(x, y)) + 0.3 * sz + 0.03 * max(0.0, 1.0 - r / 0.16) * rng.uniform(0.3, 1.0)
+            sz = rng.uniform(0.012, 0.045) * (1.0 - 0.45 * r / 0.27)
+            z = float(CG.slab_top(x, y)) + 0.25 * sz + 0.06 * max(0.0, 1.0 - (r / 0.20) ** 2) * rng.uniform(0.2, 1.0)
             V, Fc, Mt, _ = CG.chunk((x, y, z), (sz, sz * rng.uniform(0.6, 0.9), sz * 0.55), 50.0 + k)
             B.mesh(f'coal{k}', V, Fc, Mt, {'u': np.full(len(V), rng.uniform(0.0, 0.3))})
     V, Fc, Mt, at = CG.torch_mesh()
@@ -634,7 +634,7 @@ def mat_wool(new_material, name, cattr):
     col = nb.colscale(base, nb.mul(k, 1.35))
     bs = nb.principled(Base_Color=col, Roughness=0.95)
     bs.inputs['Specular IOR Level'].default_value = 0.18
-    bs.inputs['Sheen Weight'].default_value = 0.35
+    bs.inputs['Sheen Weight'].default_value = 0.22
     bs.inputs['Sheen Roughness'].default_value = 0.30
     bs.inputs['Sheen Tint'].default_value = (0.95, 0.90, 0.85, 1.0)
     h = nb.add(nb.mul(fib.outputs['Fac'], 0.7), nb.mul(twill.outputs['Fac'], 0.3))
@@ -677,8 +677,9 @@ def mat_leather_simple(new_material, name='leather_far', base=(0.040, 0.026, 0.0
     m, nb = new_material(name)
     P = nb.texco().outputs['Object']
     g = nb.noise(P, scale=600.0, detail=3.0)
-    bs = nb.principled(Base_Color=base, Roughness=nb.madd(g.outputs['Fac'], 0.2, 0.42))
-    bs.inputs['Coat Weight'].default_value = 0.15
+    bs = nb.principled(Base_Color=base, Roughness=nb.madd(g.outputs['Fac'], 0.2, 0.52))
+    bs.inputs['Specular IOR Level'].default_value = 0.35
+    bs.inputs['Coat Weight'].default_value = 0.06
     nb.link(nb.bump(g.outputs['Fac'], 0.2, 0.0005), bs.inputs['Normal'])
     nb.output(surface=bs)
     return m
@@ -756,10 +757,10 @@ def mat_torch(new_material):
     crev = nb.sstep(0.46, 0.30, strands.outputs['Fac'])
     fl = nb.noise(P, scale=40.0, detail=1.0, dims='4D', w=nb.attr('tseed', 'OBJECT').outputs['Fac'])
     glow = nb.mul(nb.mul(crev, lit), nb.madd(fl.outputs['Fac'], 1.2, 0.2))
-    glow = nb.mul(glow, nb.sstep(0.26, 0.33, z))
+    glow = nb.mul(glow, nb.sstep(0.33, 0.40, z))
     bb = nb.n('ShaderNodeBlackbody')
     bb.inputs['Temperature'].default_value = 1300.0
-    em = nb.emission(bb.outputs['Color'], nb.mul(glow, 5.0))
+    em = nb.emission(bb.outputs['Color'], nb.mul(glow, 1.6))
     nb.output(surface=nb.addshader(bs, em))
     ms.append(m)
     return ms
@@ -805,20 +806,21 @@ def mat_flame(new_material, C, fr):
     core = nb.sub(1.0, nb.sstep(0.35, 1.0, rr))
     l2 = nb.mul(lam, 0.75)
     Q2 = nb.comb(nb.add(nb.div(qx2, l2), sd), nb.div(qy2, l2), nb.div(nb.sub(qz2, nb.mul(T, nb.mul(rise, 1.3))), l2))
-    n2 = nb.noise(Q2, scale=1.0, detail=1.0, rough=0.5)
+    n2 = nb.noise(Q2, scale=1.0, detail=2.0, rough=0.55)
     thr = nb.mul(h2c, 0.85)
-    tongue = nb.sstep(nb.sub(thr, 0.05), nb.add(thr, 0.20), nb.madd(n2.outputs['Fac'], 1.2, -0.08))
+    tongue = nb.sstep(nb.sub(thr, 0.03), nb.add(thr, 0.12), nb.madd(n2.outputs['Fac'], 1.25, -0.10))
     dens = nb.mul(core, tongue)
     dens = nb.mul(dens, nb.sstep(-0.03, 0.05, h2))
     dens = nb.mul(dens, nb.sstep(1.05, 0.90, h2))
-    temp = nb.add(1150.0, nb.mul(950.0, nb.mul(nb.pw(nb.sub(1.0, h2c), 1.3), nb.sub(1.0, nb.mul(nb.clamp01(rr), 0.5)))))
+    temp = nb.add(1100.0, nb.mul(1250.0, nb.mul(nb.pw(nb.sub(1.0, h2c), 1.2), nb.sub(1.0, nb.mul(nb.clamp01(rr), 0.45)))))
     bb = nb.n('ShaderNodeBlackbody')
     nb.link(temp, bb.inputs['Temperature'])
-    strength = nb.mul(nb.mul(nb.pw(dens, 1.3), In), nb.madd(nb.sub(1.0, h2c), 0.75, 0.25))
+    corek = nb.madd(nb.mul(nb.pw(nb.sub(1.0, nb.clamp01(rr)), 2.0), nb.sub(1.0, h2c)), 1.5, 1.0)
+    strength = nb.mul(nb.mul(nb.mul(nb.pw(dens, 1.3), In), nb.madd(nb.sub(1.0, h2c), 0.75, 0.25)), corek)
     em = nb.emission(bb.outputs['Color'], nb.mul(strength, FLAME_E))
     nb.output(volume=em)
     try:
-        m.cycles.volume_step_rate = 0.25
+        m.cycles.volume_step_rate = 0.40
         m.cycles.homogeneous_volume = False
     except Exception as e:
         print('flame step rate:', e, flush=True)
@@ -928,12 +930,12 @@ def mat_char(new_material, C, fr, heat_fn, name='char', cell=45.0, glow_k=3.0):
     body = nb.colscale((0.015, 0.014, 0.0135), nb.madd(nb.noise(P, scale=cell * 3.0).outputs['Fac'], 0.5, 0.75))
     col = nb.mixcol(nb.mul(cr, 0.8), body, (0.004, 0.0037, 0.0035))
     ashp = nb.mul(nb.mul(nb.sstep(0.50, 0.66, nb.noise(P, scale=cell * 0.6, detail=3.0).outputs['Fac']),
-                         nb.sstep(0.2, 0.7, nz)), nb.madd(heat, 0.55, 0.12))
+                         nb.sstep(0.2, 0.7, nz)), nb.madd(heat, 0.45, 0.30))
     col = nb.mixcol(nb.mul(ashp, nb.sub(1.0, cr)), col, (0.15, 0.145, 0.14))
-    bs = nb.principled(Base_Color=col, Roughness=nb.madd(cr, 0.45, 0.45))
-    bs.inputs['Specular IOR Level'].default_value = 0.5
+    bs = nb.principled(Base_Color=col, Roughness=nb.madd(cr, 0.30, 0.62))
+    bs.inputs['Specular IOR Level'].default_value = 0.30
     h = nb.sub(nb.clamp01(nb.mul(vo.outputs['Distance'], 6.0)), nb.mul(crack2, 0.4))
-    nb.link(nb.bump(h, 0.8, 0.0035), bs.inputs['Normal'])
+    nb.link(nb.bump(h, 0.4, 0.0030), bs.inputs['Normal'])
     nb.output(surface=nb.addshader(bs, em))
     return m
 
@@ -1175,7 +1177,7 @@ def _static(C, new_material, G, blob, per, fr):
     md = ob.modifiers.new('sub', 'SUBSURF')
     md.levels, md.render_levels = 1, 1
     kerb_m = mat_stone(new_material, 'kerb', base=(0.07, 0.066, 0.06), lichen=0.25, soot_fire=0.9)
-    char = mat_char(new_material, C, fr, heat, 'char', cell=38.0)
+    char = mat_char(new_material, C, fr, heat, 'char', cell=28.0)
     bark = mat_bark(new_material)
     chm = mat_char(new_material, C, fr, heat, 'charchunk', cell=90.0)
     coal = None
@@ -1194,7 +1196,7 @@ def _static(C, new_material, G, blob, per, fr):
             _mk(C, nm, e, blob, [chm])
         elif nm.startswith('coal'):
             if coal is None:
-                coal = mat_char(new_material, C, fr, lambda f: 1.0 if per[f]['plate'] == 3 else 0.0, 'coal', cell=70.0, glow_k=2.4)
+                coal = mat_char(new_material, C, fr, lambda f: 1.0 if per[f]['plate'] == 3 else 0.0, 'coal', cell=70.0, glow_k=1.6)
             ob = _mk(C, nm, e, blob, [coal])
             for f in fr:
                 ob.hide_render = per[f]['plate'] != 3
@@ -1284,7 +1286,7 @@ def _torches(C, G, blob, mats_t, flame_m, per, fr):
         if max(lits) > 0.01:
             ld = bpy.data.lights.new(f'tl{k}', 'POINT')
             ld.color = (1.0, 0.52, 0.20)
-            ld.shadow_soft_size = 0.05
+            ld.shadow_soft_size = 0.10
             light = C.link_obj(bpy.data.objects.new(f'tl{k}', ld))
             try:
                 light.visible_camera = False
@@ -1337,7 +1339,7 @@ def _hearth_fire(C, flame_m, per, fr):
     for k in range(4):
         ld = bpy.data.lights.new(f'hl{k}', 'POINT')
         ld.color = (1.0, 0.50, 0.18)
-        ld.shadow_soft_size = 0.14
+        ld.shadow_soft_size = 0.25
         lo = C.link_obj(bpy.data.objects.new(f'hl{k}', ld))
         try:
             lo.visible_camera = False
@@ -1399,8 +1401,8 @@ def _gloves(C, new_material, per, fr):
     """Leather gloves (glove.py rig): each emissary's torch hand in a hammer grip round the stave (the gilded one
     crusted with gold); her right hand in P2 (to the Ring, closing on it, the fist in the fire)."""
     import glove as GL
-    leather = [GL.leather_material(new_material, base=b) for b in
-               ((0.030, 0.020, 0.013), (0.026, 0.019, 0.014), (0.034, 0.022, 0.015))]
+    leather = [mat_leather_simple(new_material, f'eleather{j}', base=b) for j, b in
+               enumerate(((0.030, 0.020, 0.013), (0.026, 0.019, 0.014), (0.034, 0.022, 0.015)))]
     gilt = mat_gilt(new_material, fr, C)
     f0 = fr[0]
     n_c = len(per[f0]['torches'])
@@ -1408,7 +1410,7 @@ def _gloves(C, new_material, per, fr):
     for i in range(n_c):
         t0 = per[f0]['torches'][i]
         mat = gilt if abs(t0['HD'][14] - 1.0) < 1e-6 else leather[i % 3]
-        g = GL.Glove(f'g{i}', mat, None, mirror=bool(t0['left']), sub=2, sleeve=False)
+        g = GL.Glove(f'g{i}', mat, None, mirror=bool(t0['left']), sub=1 if mat is not gilt else 2, sleeve=False)
         sc = t0['HD'][12]
         g.rig.scale = (sc, -sc if t0['left'] else sc, sc)
         g.key(fr[0], grip)
@@ -1417,7 +1419,7 @@ def _gloves(C, new_material, per, fr):
     her_f = [f for f in fr if per[f]['her'] is not None]
     if her_f:
         g = GL.Glove('her_glove', GL.leather_material(new_material, base=(0.045, 0.028, 0.018)), None, mirror=False,
-                     sub=3, sleeve=False)
+                     sub=2, sleeve=False)
         for f in fr:
             h = per[f]['her'] or per[her_f[0] if f < her_f[0] else her_f[-1]]['her']
             g.key(f, _glove_pose(h['curl'], h['thumb'], h['spread']))
@@ -1458,15 +1460,19 @@ def build(job):
     C.use_cycles(sc, job['samples'])
     cy = sc.cycles
     cy.use_light_tree = True
-    cy.max_bounces = 6
-    cy.diffuse_bounces = 2
-    cy.glossy_bounces = 2
-    cy.transmission_bounces = 2
+    cy.max_bounces = 4
+    cy.diffuse_bounces = 1
+    cy.glossy_bounces = 1
+    cy.transmission_bounces = 1
     cy.volume_bounces = 0
-    cy.transparent_max_bounces = 16
-    cy.sample_clamp_indirect = 4.0
+    cy.transparent_max_bounces = 8
+    cy.sample_clamp_indirect = 3.0
     cy.volume_step_rate = 1.0
-    cy.volume_max_steps = 512
+    cy.volume_max_steps = 256
+    try:
+        cy.denoising_prefilter = 'FAST'
+    except Exception:
+        pass
     sc.render.use_motion_blur = True
     sc.render.motion_blur_shutter = 0.5
     try:
