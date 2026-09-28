@@ -248,6 +248,18 @@ A.A3Sched.vortex_shape = _vortex_shape
 A.A3Sched.shutter = _shutter
 A.A3Sched.back_light = _back_light
 A.A3Sched.gild = _gild
+
+
+def _edge_joint_k(self, i, t):
+    """A-FIX: at THE EDGE every forge goes darker (its joint-fire speckle made every tower read gold already), so the
+    gold that runs down the gilded ones on each surge is the change the eye sees."""
+    if t < A.T_EDGE or t >= A.T_LIGHT:
+        return 1.0
+    return 1.0 - EDGE_DARKEN * float(smoothstep(A.T_EDGE, A.T_EDGE + 60, t))
+
+
+EDGE_DARKEN = 0.65
+A.A3Sched.edge_joint_k = _edge_joint_k
 A.A3Sched.tower_lean = _tower_lean
 A.A3Sched.tower_post = _tower_post
 A.A3Sched.tower_post_n = _tower_post_n
@@ -701,7 +713,8 @@ def _orbit_az(t):
 
 
 EDGE_R, EDGE_Y, EDGE_TY, EDGE_HF, EDGE_FALL = 27.0, -8.0, -12.5, 88.0, 0.22
-EDGE_AZ0, EDGE_AZ1 = 2.93, 3.25      # rel. ALPHA_C, over THE EDGE: the widest gap (forges 4 and 5 frame it), the
+EDGE_PUSH = 4.0
+EDGE_AZ0, EDGE_AZ1 = 2.80, 3.55      # rel. ALPHA_C, over THE EDGE (A-FIX: was 2.93-3.25, which read static for 13 s): the
                                      # giants on either side of the fire across the pit
 T_CUT_CROWN = A.T_CROWN - 20         # the cut to the crown on bar 31 b4: it stands for a beat, then breaks
 T_CUT_FALL = A.T_TIP                 # the cut to the rim on bar 32 b3: the camera tips over after the crown
@@ -727,6 +740,7 @@ def _cam_edge(tl, t):
     u = (t - A.T_EDGE) / (A.T_BRINK - A.T_EDGE)
     az = B.ALPHA_C + EDGE_AZ0 + (EDGE_AZ1 - EDGE_AZ0) * u
     r, y, ty, hf, fall = EDGE_R, EDGE_Y, EDGE_TY, EDGE_HF, EDGE_FALL
+    r = r - EDGE_PUSH * float(smootherstep(A.T_EDGE, A.T_BRINK, t))          # A-FIX: a slow push in over the orbit
     # it opens on the fire over the intact ground and follows the ground down as it falls away
     k0 = float(smootherstep(A.T_EDGE + 8, A.T_EDGE + 64, t))
     ty = lerp(1.0, ty, k0)
