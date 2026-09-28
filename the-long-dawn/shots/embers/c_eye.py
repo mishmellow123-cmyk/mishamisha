@@ -152,6 +152,14 @@ class _AllTowers:
         return getattr(self._tw, n)
 
 
+def _all_smoke(tw):
+    """TowerSmoke over every tower (its crown widths are per design: the far towers take their forge's)"""
+    s = B.TowerSmoke(_AllTowers(tw))
+    hw8 = np.array([2.0, 3.5, 1.5, 2.2, 1.6, 2.2, 2.4, 2.2])
+    s.hw = hw8[getattr(tw, 'design', np.arange(tw.k_all) % 8)]
+    return s
+
+
 def _medieval(tw):
     """EMBERS-C4 (director, 28 Sep): under the Eye the far ring's skyline designs (masts, spheres, twisted blades)
     and the even heights read as a downtown at night. Here every tower is one of the eight forge designs (round and
@@ -160,6 +168,7 @@ def _medieval(tw):
     k, n = tw.k, tw.k_all
     r = rng(4242)
     order = r.permutation(np.tile(np.arange(k), 3))
+    tw.design = np.concatenate([np.arange(k), order[:n - k]]).astype(np.int64)
     for j in range(k, n):
         tw.G[j] = tw.G[int(order[j - k])]
     tw.h_rise = tw.h_rise * np.concatenate([r.uniform(0.55, 1.15, k), r.uniform(0.55, 1.2, n - k)])
@@ -502,7 +511,7 @@ class EyeShot:
         tw = self.towers
         tw.prepare(ctx)
         dust = self._get('dust', B.Dust)
-        tsm = self._get('tsmoke', lambda: B.TowerSmoke(_AllTowers(tw)))       # EMBERS-C4: every crown smokes ...
+        tsm = self._get('tsmoke', lambda: _all_smoke(tw))                    # EMBERS-C4: every crown smokes ...
         tem = self._get('tembers', lambda: B.TowerEmbers(_AllTowers(tw)))     # ... and sheds embers (not only 8)
         dust.emit(ctx)
         tw.emit(ctx, lp, lc, lpw)
