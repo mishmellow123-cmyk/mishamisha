@@ -135,10 +135,15 @@ A = [
     S('A11', 3120, 3360, 'X2', 'DARK ADAPTATION', 'EDIT (+ RUN-A star plate)',
       'Out of the black the stars come back: a few, then many, then the Milky Way; the ember one light among them.',
       [T('stars'), T('x2')], kind='x2'),
+    # A-FIX (28 Sep, approved): A's own H1 (renders/h1_A) goes live when it lands (its final waits on one more face fix)
     S('A12', 3360, 3600, 'H1-A', 'THE FIRST FIRE', 'HEROINE',
-      'Tinder, gloves, sparks, breath: three strikes, a long blow, the catch. The face never lit.', h1(H1_S1 - 3360)),
-    S('A13', 3600, 3680, 'H1-A', 'THE ROAR', 'HEROINE', 'The roar on the downbeat; the pull-back from her summit begins.',
-      h1(H1_ROAR - 3600)),
+      'Tinder, gloves, sparks, breath: three strikes, a long blow, the catch. The face never lit.',
+      [T('h1_A', H1_S1 - 3360, 'exact', 'A-FIX H1', need=(1236, 1487))] + h1(H1_S1 - 3360)),
+    S('A13', 3600, 3612, 'H1-A', 'THE ROAR', 'HEROINE', 'The roar on the downbeat; the pull-back from her summit begins.',
+      [T('h1_A', H1_ROAR - 3600, 'exact', 'A-FIX H1', need=(1236, 1487))] + h1(H1_ROAR - 3600)),
+    S('A13', 3612, 3680, 'R2-B', 'HER FIRE', 'RUN-B harvest',
+      "Moonlit silver: she is tiny by her new fire on her summit above the cloud sea (film B's reveal, harvested).",
+      [T('reveal_B', 1372 - 3612, 'exact', 'B5 reveal harvested')]),     # grade-matched to reveal_A: TRANS 'grade'
     S('A13', 3680, 3800, 'R2-A', 'EVERY RIDGE', 'RUN-A',
       'On every ridge to the horizon fires catch in the same breath; the cold glow pulses beyond; red under the cloud.',
       [T('reveal'), T('run')]),
@@ -352,6 +357,14 @@ TRANS = {'A': [], 'B': [], 'C': [
          note="#21 C25 opens pixel for pixel on C24 6159 (ink look) and takes the film look by 6224 (PAGES-C's "
               'pages_book re-render, 28 Sep)'),
 ]}
+
+# A (28 Sep, approved): A-FIX's six windows (edit/afix_comp.py: bloom, dissolve, vision x2, iceheart, ember) + EDIT's
+# grade-match of the harvested B reveal (B's sky is a touch darker and cooler than reveal_A's at the 3680 cut)
+import afix_comp  # noqa: E402
+TRANS['A'] = list(afix_comp.A_TRANS) + [
+    dict(f0=3612, f1=3680, kind='grade', gain=(1.2, 1.05, 1.0),
+         note="HER FIRE (reveal_B) matched to reveal_A's sky at the cut: sky means r .096 -> .119, g .133 -> .140"),
+]
 
 
 def check(barmap_dir):

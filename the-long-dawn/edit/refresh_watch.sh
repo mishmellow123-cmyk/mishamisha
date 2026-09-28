@@ -50,6 +50,8 @@ for c in os.environ.get('FILMS', 'AC'):                # film B was dropped (use
                     h.update(repr(AS.provisional_sources(t, c, v, f)).encode())
     for t in AS.EDL.TRANS.get(c, ()):             # EDIT transition windows (EDL.TRANS) and their layer folders
         h.update(repr((t, [dmt(os.path.join(AS.RENDERS, t[k])) for k in ('glow', 'keep', 'cover') if t.get(k)])).encode())
+    if c == 'A':                                         # lane A-FIX iterates on its comps: a change refreshes A
+        h.update(repr(dmt(os.path.join(AS.ROOT, 'edit', 'afix_comp.py'))).encode())
     alt = h.hexdigest()[:10]                    # which take each shot plays and when its folders last changed
     audio = 'click'
     for p in (AS.adopted_audio(c)[0], tab.get((c, 'score')), os.path.join(v3, f'final_{c}.wav'), tab.get((c, 'fallback')),

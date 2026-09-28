@@ -650,6 +650,9 @@ def _to_srgb(x):
     return np.where(x <= 0.0031308, x * 12.92, 1.055 * x ** (1 / 2.4) - 0.055)
 
 
+import afix_comp as AFIX  # noqa: E402  (lane A-FIX's transition kinds, dispatched by _transitions)
+
+
 def _transitions(ctx, finish=None):
     """EDIT transitions (EDL.TRANS), installed by _init after the finish. Inside a window the frame joins the outgoing
     shot (its frames before t['cut'], then its last frame held) and the incoming shot (its first frame held until
@@ -667,15 +670,21 @@ def _transitions(ctx, finish=None):
 
     def side(g, f):
         img, shot, status, src = raw(g)
-        if src is None or status.startswith('SLATE'):
+        if status.startswith('SLATE'):
             return None, None
-        return (fin(img, src, ctx.cut, f) if fin else img), (shot, status, src)
+        return (fin(img, src, ctx.cut, f) if (fin and src is not None) else img), (shot, status, src)
 
     def pic(f):
         t = transition_at(ctx.cut, f)
         lay = transition_layers(t, f) if t else None
         if lay is None:
             return outer(f)
+        if t['kind'] == 'grade':                              # one shot: a per-channel gain before the finish
+            img, shot, status, src = raw(f)
+            if src is None or status.startswith('SLATE'):
+                return outer(f)
+            img = np.clip(img * np.asarray(t['gain'], np.float32), 0, 1)
+            return (fin(img, src, ctx.cut, f) if fin else img), shot, f'{status} + grade', src
         if t['kind'] == 'finish_ramp':                        # one shot, no cut: ink look -> film look
             img, shot, status, src = raw(f)
             if fin is None or src is None or status.startswith('SLATE'):
@@ -688,7 +697,9 @@ def _transitions(ctx, finish=None):
         if o is None or i is None:
             return outer(f)
         shot, status, src = mo if f < t['cut'] else mi
-        if t['kind'] == 'burn':
+        if t['kind'] in AFIX.KINDS:                           # lane A-FIX's comps (edit/afix_comp.py)
+            img = AFIX.apply(t['kind'], o, i, f, t)
+        elif t['kind'] == 'burn':
             img = (o * ctx.read(lay['keep']) + i * (1 - ctx.read(lay['cover'], gray=True)[..., None])
                    + ctx.read(lay['glow']))
         elif t['kind'] == 'x1':
