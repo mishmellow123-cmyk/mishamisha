@@ -247,7 +247,49 @@ def ember(o, i, f, t):
     return np.clip(_srgb(out), 0.0, 1.0)
 
 
-KINDS = dict(bloom=bloom, vision=vision, iceheart=iceheart, ember=ember)
+# ------------------------------------------------------------------------------------------------ watchfires
+def _ell(xx, yy, cx, cy, rx, ry):
+    d = np.sqrt(((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2)
+    return np.clip((1.0 - d) * min(rx, ry) + 0.5, 0.0, 1.0)            # ~1 px anti-aliased edge
+
+
+def watchfires(o, i, f, t):
+    """A19-A20 over the reversed dusk (dawnrev): the lantern and the watch-fires as tiny warm points that pale, one
+    by one, as the light comes (t['fires'] = [(x, y, size, pale_frame)]); a few tiny, still, seated figures by the
+    lantern (t['figures'] = [(x, y_base, h)]); and, if t['destreak'], a soft vertical blur over the band where the
+    massif's strata and the cloud sea's streaks read as terraces and water."""
+    img = i if f >= t['cut'] else o
+    H, W = img.shape[:2]
+    k = W / REF_W
+    L = _lin(img)
+    ds = t.get('destreak')
+    if ds:
+        y0, y1, sig = ds
+        bl = cv2.GaussianBlur(L, (1, 0), sigmaX=0.01, sigmaY=sig * k)
+        yy_ = np.arange(H, dtype=np.float32)[:, None] / k
+        m = (np.clip((yy_ - y0) / 30.0, 0, 1) * np.clip((y1 - yy_) / 30.0, 0, 1))[..., None]
+        L = L * (1 - m) + bl * m
+    xx, yy = _grid(H, W)
+    lx, ly = [v * k for v in t.get('lantern', (1265.0, 640.0))]
+    for (fx, fy, fh) in t.get('figures', ()):                           # tiny seated silhouettes, still
+        cx, cy, h = fx * k, fy * k, fh * k
+        body = _ell(xx, yy, cx, cy, 0.40 * h, 0.72 * h) * np.clip(cy - yy + 0.5, 0.0, 1.0)   # a cloak on the ground
+        a = np.maximum(body, _ell(xx, yy, cx + 0.04 * h, cy - 0.78 * h, 0.17 * h, 0.21 * h))  # the hooded head
+        side = np.clip((xx - cx) * np.sign(lx - cx) / max(0.3 * h, 1.0), 0.0, 1.0)  # the lantern's side
+        col = np.float32([0.012, 0.012, 0.016])[None, None, :] + (side * 0.035)[..., None] * np.float32([1.0, 0.55, 0.25])
+        L = L * (1 - a[..., None]) + col * a[..., None]
+    for (fx, fy, sz, pale) in t.get('fires', ()):
+        cx, cy = fx * k, fy * k
+        e = 1.0 - 0.85 * _ss(pale - 20, pale, f)                       # paled ON its frame (its horn falls silent)
+        e *= 1.0 + 0.12 * math.sin(f * 0.53 + fx) + 0.07 * math.sin(f * 1.71 + fy)
+        d2 = (xx - cx) ** 2 + (yy - cy) ** 2
+        s_ = sz * k
+        L += (np.exp(-d2 / (2 * (0.6 * s_) ** 2))[..., None] * np.float32([1.0, 0.62, 0.28]) * 0.9
+              + np.exp(-d2 / (2 * (3.2 * s_) ** 2))[..., None] * np.float32([0.7, 0.28, 0.07]) * 0.05) * e
+    return np.clip(_srgb(L), 0.0, 1.0)
+
+
+KINDS = dict(bloom=bloom, vision=vision, iceheart=iceheart, ember=ember, watchfires=watchfires)
 
 
 def apply(kind, o, i, f, t):
@@ -264,6 +306,14 @@ _PROMISE_TRACK = [(1280, 957, 404), (1300, 957, 409), (1320, 958, 414), (1340, 9
 _EMBER_TRACK = [(2836, 1030, 160), (2846, 1021, 215), (2850, 1009, 269), (2856, 989, 338), (2860, 976, 375),
                 (2866, 960, 423), (2872, 953, 464), (2880, 947, 504), (2890, 954, 530), (2900, 962, 546),
                 (3359, 958, 547)]                                    # A10's drifting ember, then A11's (measured)
+# A19-A20 over dawnrev_A (dusk_B2 reversed): four watch-fires pale, near to farthest, ON COMPOSER-A2's horn frames
+# (final_A.wav: the near, far, farther and farthest horns fall silent at 6240, 6290, 6340, 6390); the lantern stays
+# lit among them (the fade to black is 6456)
+WATCHFIRES = dict(f0=5840, f1=6480, cut=5840, kind='watchfires', lantern=(1265, 640),
+                  fires=[(1640, 662, 2.0, 6240), (1330, 452, 1.6, 6290), (180, 470, 1.5, 6340), (1560, 350, 1.2, 6390),
+                         (1265, 640, 2.6, 99999)],
+                  figures=[(1236, 646, 16), (1250, 648, 14), (1286, 646, 17), (1301, 647, 15)],
+                  destreak=(520, 690, 2.2), note='A-FIX ENDING: the watch-fires pale as the long dawn comes')
 A_TRANS = [
     # A2 -> A3: the push INTO the glow, which floods to white on bar 8 (was a one-frame slam at 560)
     dict(f0=536, f1=560, cut=560, kind='bloom', center=(1124, 464), zoom=1.14,
