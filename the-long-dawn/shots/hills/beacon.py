@@ -131,7 +131,7 @@ def strike_env(f):
             continue
         d = f - s
         if d >= 0:
-            e += (0.55 + 0.45 * k) * math.exp(-d / (2.2 + 0.6 * k))
+            e += (0.55 + 0.45 * k) * math.exp(-d / ((0.9 + 0.2 * k) if AFIX else (2.2 + 0.6 * k)))
     return e
 
 
@@ -405,6 +405,29 @@ V3_ROAR_SIL = 0.92               # at the roar her fire-lit groups go rim-only: 
 #   read in the strike light); her C-shaped fire-steel, the one the fire test (C15) holds the Ring on.
 V3_ROAR2 = False
 H1C = False
+# A-FIX (28 Sep; film A only: shot 'beacon_v3_afix' = beacon_v3_roar2 + apply_afix(), renders/h1_A in src numbering).
+# CLARITY-A §(d): short strikes with no halo on the glove; an irregular woodpile (the teepee's converging logs read as
+# a letter "A"); a 20-frame lean-in to the blow (no lurch); the scarf dark until the flame warms it; pale moonlit
+# breath (no floating orange fireball after the catch); the roar grown over AFIX_RAMP frames (no one-frame tripling);
+# NO pull-back (A cuts to her standing by her fire at src 1488 = A 3612); a slow push-in over the take.
+AFIX = False
+AFIX_RAMP = 10                   # frames over which the kindling flame grows into the bonfire
+AFIX_FLINCH = 4                  # her flinch starts this many frames into the ramp (she reacts to the surge)
+AFIX_HFOV = (40.0, 33.0)         # the push-in: strike 1 -> the roar
+AFIX_TGT = ((0.40, 1.02, 0.0), (0.33, 1.06, 0.0))
+AFIX_BREATH_COOL = np.array([0.20, 0.24, 0.32])   # moonlit breath (linear, x density): pale, never lit like a flame
+
+
+def roar_mix(f):
+    """0 before the roar, 1 once the bonfire has taken over: A-FIX ramps it; otherwise the one-frame switch."""
+    if not AFIX:
+        return 1.0 if f >= ROAR else 0.0
+    return smoothstep(ROAR - 1, ROAR + AFIX_RAMP - 1, f)
+
+
+def roar_react():
+    """The frame her flinch keys on (A-FIX: a few frames into the surge)."""
+    return ROAR + (AFIX_FLINCH if AFIX else 0)
 H1C_GLOVE = (0.030, 0.021, 0.016, 0.34)   # dark thin leather: albedo, roughness (MONTAGE-3D's glove is near-black)
 H1C_POV = True    # H1-C through her own eyes (MONTAGE-3D's find is her look down, find_b a palm-up POV): the head is
                   # never drawn, the backs of her gloves are dark against the strike and the ember, her breath streams
@@ -429,6 +452,49 @@ def apply_roar2():
     global V3_ROAR2
     V3_ROAR2 = True
     _HA.clear()
+
+
+def apply_afix():
+    """A-FIX (call after apply_roar2()): see AFIX. The lean-in from strike 3 to the first blow takes 20 frames."""
+    global AFIX, V2_KEYS
+    AFIX = True
+    s3 = STRIKES[2]
+    ks = []
+    for fr, pose, e in V2_KEYS:
+        if fr == s3 + 16 and pose is KNEEL:
+            ks.append((s3 + 6, KNEEL, 'smooth'))
+        elif fr == s3 + 24 and pose is BLOW:
+            ks.append((s3 + 26, BLOW, 'smooth'))
+        else:
+            ks.append((fr, pose, e))
+    V2_KEYS = ks
+    _HA.clear()
+
+
+_AFIX_WOOD = []
+
+
+def afix_wood():
+    """A-FIX: the basket's wood as an irregular pile (split logs leaning every which way, tops at uneven heights round
+    the rim, no apex and no crossbar), with one log lying under the tinder nest."""
+    if not _AFIX_WOOD:
+        rng = np.random.default_rng(1947)
+        yb, yt = CAIRN.bk_bot, CAIRN.bk_top
+        for i in range(8):
+            side = -1.0 if i % 3 else 1.0
+            xb = side * rng.uniform(0.03, 0.19)
+            xt = xb * rng.uniform(0.15, 0.75) + rng.uniform(-0.07, 0.07)
+            _AFIX_WOOD.append((xb, yb + rng.uniform(0.02, 0.07), xt, yt + rng.uniform(-0.07, 0.045),
+                               rng.uniform(0.024, 0.040)))
+        for i in range(2):
+            y_ = yb + 0.11 + 0.10 * i + rng.uniform(-0.02, 0.02)
+            _AFIX_WOOD.append((-0.21 + rng.uniform(-0.03, 0.03), y_, 0.16 + rng.uniform(-0.03, 0.03),
+                               y_ + rng.uniform(-0.07, 0.07), rng.uniform(0.028, 0.036)))
+        _AFIX_WOOD.append((0.05, yt - 0.075, 0.27, yt - 0.055, 0.030))     # under the nest
+    wood = ch.G('wood', 'wood', k=0.004, per_prim=True)
+    for (xb, yb_, xt, yt_, r) in _AFIX_WOOD:
+        wood.cone((xb, yb_), (xt, yt_), r, r * 0.85, k=0.004)
+    return wood
 
 
 def apply_h1c():
@@ -565,7 +631,7 @@ def yw2_pose(f):
     gw = smoothstep(ROAR, ROAR + 3, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))
     if V3_ROAR2:
         # a flinch is fast: the forearm is across her face by ROAR + 1.5, so no frame shows an arm thrust at the fire
-        gw = smoothstep(ROAR - 0.5, ROAR + 1.5, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))
+        gw = smoothstep(roar_react() - 0.5, roar_react() + 1.5, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))
     if gw > 0:
         import heroine as hero
         q = dict(p)
@@ -582,7 +648,7 @@ def yw2_pose(f):
             fd = nrm_(fd - np.dot(fd, up) * up)                     # toward the fire, level
             cs = np.array([0.0, 0.0, -1.0])                         # the lens side
             guard = Fh.C + fd * 0.065 + up * 0.025 - cs * 0.040
-            gd = smoothstep(ROAR - 1, ROAR + 1.5, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))   # the hand's aim leads
+            gd = smoothstep(roar_react() - 1, roar_react() + 1.5, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))   # the hand's aim leads
             def _mix(a, b):
                 return tuple(nrm_(np.asarray(a, np.float64) * (1 - gd) + np.asarray(b, np.float64) * gd))
             # the hand carries on along the forearm, round behind the hood (never a hand held up in the air)
@@ -619,7 +685,7 @@ def yw2_pose(f):
     p['rock'] = ROCK
     # she lets the flint go as she flinches (a 3 cm stone, gone inside the fast guard move)
     p['tools'] = 'both' if f < ROAR + 1 else 'steel'
-    if V3_ROAR2 and f >= ROAR + 1:
+    if V3_ROAR2 and f >= roar_react() + 1:
         p['tools'] = 'none'            # the steel goes with the flint, inside the fast guard move (no slab in her fist)
     if H1C:
         p['tools'] = 'both_c' if f < ROAR + 1 else 'csteel'    # the flint, and her C-shaped fire-steel
@@ -646,6 +712,14 @@ def camera(f, scale):
     hand = 0.004 * fnoise1(t * 0.9, 1.0) , 0.003 * fnoise1(t * 0.8, 2.0)
     c_pos = np.array([0.42 + hand[0], 0.96 + hand[1], -2.15])
     c_tgt = np.array([0.40, 1.02, 0.0])
+    if AFIX:                        # A-FIX: a slow push-in over the take and no pull-back (A cuts away at src 1488)
+        s = smoothstep(STRIKES[0], ROAR, f)
+        hfov = AFIX_HFOV[0] + (AFIX_HFOV[1] - AFIX_HFOV[0]) * s
+        tgt = np.asarray(AFIX_TGT[0]) + (np.asarray(AFIX_TGT[1]) - np.asarray(AFIX_TGT[0])) * s
+        cam = Camera(c_pos, hfov=hfov, scale=scale)
+        yaw, pitch = cam.look_at(tgt)
+        focus = float(np.linalg.norm(np.array([0.4, 1.0, 0.0]) - c_pos))
+        return Camera(c_pos, yaw=yaw, pitch=pitch, hfov=hfov, scale=scale), focus, 0.0
     if HEROINE_V2:
         w_pos = np.array([1.50, 5.2, -46.0])
         w_tgt = np.array([0.40, 0.0, 60.0])
@@ -908,7 +982,8 @@ class FirstBeacon:
                         # H5: short orange sparks that fall and curve (no white angle-grinder spray)
                         sp = rng.gamma(2.5, 0.45, n) + 0.4
                         vel = np.stack([np.cos(ang) * sp, np.sin(ang) * sp + 0.6, rng.normal(0, 0.35, n)], 1)
-                        sim.spawn(pos, vel, rng.uniform(0.10, 0.32, n), (rng.random(n) ** 2.2 * 2.0 + 0.3) * 0.6,
+                        sim.spawn(pos, vel, rng.uniform(0.16, 0.42, n) if AFIX else rng.uniform(0.10, 0.32, n),
+                                  (rng.random(n) ** 2.2 * 2.0 + 0.3) * 0.6,
                                   np.zeros(n, np.int64), 0.62)
                     else:
                         sp = rng.gamma(3.0, 0.9, n) + 0.6
@@ -967,15 +1042,18 @@ class FirstBeacon:
             flint = ch.young_woman(yw_pose(f), t)[1]['flint']
         if st_e > 0.01:
             sc_ = (3.0, 1.8, 0.8) if V3_H5 else (3.2, 2.6, 1.9)
+            if AFIX:
+                sc_ = tuple(0.4 * c for c in sc_)
             lights.append([flint[0] - 0.05, flint[1] - 0.05, -0.08, sc_[0] * st_e, sc_[1] * st_e, sc_[2] * st_e, 0.30, 0.0])
         if em_e > 0:
             lights.append([TINDER[0], TINDER[1], -0.05, 1.4 * em_e, 0.45 * em_e, 0.10 * em_e, 0.18, 0.0])
+        rm = roar_mix(f)
         if lv > 0:
-            if f < ROAR:
-                I = lv * flick
+            if rm < 1.0:
+                I = (lv if f < ROAR else min(lv, 1.0) * (1.0 - rm)) * flick
                 lights.append([TINDER[0], TINDER[1] + 0.06, -0.06, 2.6 * I, 1.25 * I, 0.40 * I, 0.35, 0.0])
-            else:
-                I = min(lv, 2.5) * flick
+            if rm > 0.0:
+                I = min(lv, 2.5) * flick * rm
                 lights.append([FIRE_BASE[0], FIRE_BASE[1] + 0.6, -0.1, 6.0 * I, 2.8 * I, 0.9 * I, 1.1, 0.0])
         lights = np.array(lights, np.float64).reshape(-1, 8)
         # --- sky + range (moonlit world scaled by the reveal)
@@ -989,11 +1067,12 @@ class FirstBeacon:
             # one ray-marched pass: far range + cloud sea (x reveal) and the summit (dim in the
             # close-up, full after the reveal), with the fire's warm pool on the summit snow
             fl = []
-            if lv > 0 and f >= ROAR:
-                I = min(lv, 2.5) * flick
+            if lv > 0 and rm > 0.0:
+                I = min(lv, 2.5) * flick * rm
                 fl.append([FIRE_BASE[0], FIRE_BASE[1] + 0.45, FIRE_BASE[2] - 0.05, 0.11 * I, 0.047 * I, 0.014 * I, 1.5, 0])
-            elif lv > 0:
-                fl.append([TINDER[0], TINDER[1], TINDER[2] - 0.05, 0.035 * lv, 0.015 * lv, 0.005 * lv, 0.7, 0])
+            if lv > 0 and rm < 1.0:
+                l1 = lv if f < ROAR else min(lv, 1.0) * (1.0 - rm)
+                fl.append([TINDER[0], TINDER[1], TINDER[2] - 0.05, 0.035 * l1, 0.015 * l1, 0.005 * l1, 0.7, 0])
             pp = None
             if HEROINE_V2 and getattr(peaks, 'S1_WORLD', False):
                 # the shepherd's world: s1's snow-hold rule, rock albedo and a softer moon
@@ -1062,8 +1141,8 @@ class FirstBeacon:
                 # H5: the aged 3-D basket: its back half, the 2-D woodpile, then the front half (whose bars hide the
                 # first flames, as the card's did)
                 basket_front = self._basket(img, cam, f, 'back', st_e, em_e, lv, flick, reveal, flint)
-                grp = [g for g in CAIRN.groups(x=0.0) if g.name == 'wood']
-                if f < ROAR:
+                grp = [afix_wood()] if AFIX else [g for g in CAIRN.groups(x=0.0) if g.name == 'wood']
+                if f < ROAR + (AFIX_RAMP // 2 if AFIX else 0):
                     grp = grp + tinder_groups()
                 r = Figure([0.0, 0.0, 0.0], grp).render(cam, lights, amb_top, np.zeros(3), back=back)
                 if r is not None:
@@ -1077,7 +1156,7 @@ class FirstBeacon:
                 if r is not None:
                     over_region(img, *r)
             self._tinder_smoke(img, cam, f, t, em_e, lv)
-            if f < ROAR and V3_H5:
+            if (f < ROAR or (AFIX and rm < 0.6)) and V3_H5:
                 iron_a = basket_front
             elif f < ROAR:
                 # the ember and the first flames burn inside the basket: its bars and rim are in front of them
@@ -1114,7 +1193,17 @@ class FirstBeacon:
         fa = np.zeros(img.shape[:2], np.float32)
         if lv > 0:
             fimg = np.zeros_like(img) if occ is not None else img
-            if f < ROAR and HEROINE_V2:
+            if AFIX and f >= ROAR and rm < 1.0:
+                # A-FIX: the kindling flame grows into the bonfire (its tongues fade as the bonfire rises through them)
+                for b, h, w, lean, seed, k in ig_flames(ROAR - 1):
+                    fire.draw_flame(fimg, fa, cam, b, h * (1.0 + 0.8 * rm), w, lean, t, seed,
+                                    6.5 * flick * k * (1.0 - rm), fire.TORCH_STYLE)
+                grow = min(lv, 2.2)
+                b0 = np.array([TINDER[0] - 0.05, TINDER[1] - 0.03, TINDER[2]])
+                fire.draw_flame(fimg, fa, cam, b0 + (FIRE_BASE - b0) * rm, 0.25 + (0.30 + 0.75 * grow) * rm,
+                                0.09 + 0.22 * rm, 0.55, t, 2.9, (5.0 + 5.0 * min(1.0, lv - 1.0 + 0.3)) * (0.35 + 0.65 * rm),
+                                fire.BONFIRE_STYLE)
+            elif f < ROAR and HEROINE_V2:
                 for b, h, w, lean, seed, k in ig_flames(f):
                     fire.draw_flame(fimg, fa, cam, b, h, w, lean, t, seed, 6.5 * flick * (0.6 + 0.4 * lv) * k,
                                     fire.TORCH_STYLE)
@@ -1128,8 +1217,8 @@ class FirstBeacon:
                                 5.0 + 5.0 * min(1.0, lv - 1.0 + 0.3), fire.BONFIRE_STYLE)
             if occ is not None:
                 vis = 1.0 - occ
-                if iron_a is not None and f < ROAR:
-                    vis = vis * (1.0 - iron_a)
+                if iron_a is not None and (f < ROAR or (AFIX and rm < 0.6)):
+                    vis = vis * (1.0 - iron_a * (1.0 - rm / 0.6 if f >= ROAR else 1.0))
                 img += fimg * vis[..., None]
             gc = TINDER
             if f < ROAR and HEROINE_V2:
@@ -1137,8 +1226,12 @@ class FirstBeacon:
                 if fl:
                     wsum = sum(x[1] for x in fl)
                     gc = sum(x[0] * x[1] for x in fl) / wsum + np.array([0.0, 0.35 * fl[0][1], 0.0])
-            fire.add_glow(img, cam, (gc if f < ROAR else FIRE_BASE + np.array([0, 0.7, 0])),
-                          0.12 if f < ROAR else 0.9, (0.05 * lv if f < ROAR else 0.10 * min(lv, 2.5)) * flick)
+            if AFIX and f >= ROAR and rm < 1.0:
+                fire.add_glow(img, cam, gc, 0.12, 0.05 * min(lv, 1.0) * flick * (1.0 - rm))
+                fire.add_glow(img, cam, FIRE_BASE + np.array([0, 0.7, 0]), 0.12 + 0.78 * rm, 0.10 * min(lv, 2.5) * flick * rm)
+            else:
+                fire.add_glow(img, cam, (gc if f < ROAR else FIRE_BASE + np.array([0, 0.7, 0])),
+                              0.12 if f < ROAR else 0.9, (0.05 * lv if f < ROAR else 0.10 * min(lv, 2.5)) * flick)
         for k, s_ in enumerate(STRIKES):
             d = f - s_
             if 0 <= d <= 2 and flint is not None:
@@ -1149,7 +1242,12 @@ class FirstBeacon:
                     splat_gauss(img, float(fx), float(fy), max(0.6, 1.8 * cam.scale), e, e * 0.55, e * 0.22)
                 else:
                     splat_gauss(img, float(fx), float(fy), max(0.6, 2.5 * cam.scale), e, e * 0.85, e * 0.6)
-                fire.add_glow(img, cam, np.array([flint[0], flint[1], -0.02]), 0.06, (0.25 + 0.15 * k) * (1.0, 0.45, 0.15)[d])
+                if AFIX:                   # A-FIX: a pinpoint flash, no halo round the glove
+                    if d <= 1:
+                        fire.add_glow(img, cam, np.array([flint[0], flint[1], -0.02]), 0.018,
+                                      0.35 * (0.25 + 0.15 * k) * (1.0, 0.35)[d])
+                else:
+                    fire.add_glow(img, cam, np.array([flint[0], flint[1], -0.02]), 0.06, (0.25 + 0.15 * k) * (1.0, 0.45, 0.15)[d])
         if em_e > 0 and HEROINE_V2:
             eimg = np.zeros_like(img) if occ is not None else img
             for q, (ox, oy, wq) in enumerate(IG_EMBER):
@@ -1190,7 +1288,7 @@ class FirstBeacon:
         if V3_ROAR2:
             # the lens stops down for the flare (she goes to a dark shape, the fire stays white-hot), and opens again
             # as the pull-back reveals the world
-            expo *= 1.0 - 0.34 * smoothstep(ROAR - 1, ROAR + 1, f) * (1 - smoothstep(ROAR + 10, ROAR + 40, f))
+            expo *= 1.0 - 0.34 * (rm if AFIX else smoothstep(ROAR - 1, ROAR + 1, f)) * (1 - smoothstep(ROAR + 10, ROAR + 40, f))
         out = look.finish(img, exposure=expo, bloom_strength=0.09, bloom_threshold=0.9, vignette_amount=0.25,
                           lift=(0.011 if V3_H5 else 0.004))
         return out
@@ -1205,6 +1303,8 @@ class FirstBeacon:
         if st_e > 0.01:
             # the spark shower at the flint's edge: white-hot, brief, an extended source
             sc_ = (0.070, 0.042, 0.017) if V3_H5 else (0.075, 0.060, 0.042)
+            if AFIX:
+                sc_ = tuple(0.35 * c for c in sc_)
             L.append([flint[0] + 0.015, flint[1] + 0.015, flint[2] - 0.045,
                       sc_[0] * st_e, sc_[1] * st_e, sc_[2] * st_e, 0.05, -10.0])
         if em_e > 0:
@@ -1213,15 +1313,17 @@ class FirstBeacon:
         # H5 (director, 15:15Z): at the roar the flare must not light her front into a smooth doll: she is FLAGGED
         # from the fire's key (it only rims her edges) and stays a dark shape against it
         rw = 0.0
-        if V3_H5 and f >= ROAR - 1:
-            rw = smoothstep(ROAR - 1, ROAR + 1, f) * (1 - 0.5 * smoothstep(ROAR + 40, ROAR + 75, f))
+        if V3_H5 and f >= roar_react() - 1:
+            rw = smoothstep(roar_react() - 1, roar_react() + 1, f) * (1 - 0.5 * smoothstep(ROAR + 40, ROAR + 75, f))
+        rm = roar_mix(f)
         if lv > 0:
-            if f < ROAR:
-                I = lv * flick
-                L.append([TINDER[0], TINDER[1] + 0.03 + 0.06 * lv, TINDER[2] - 0.02,
-                          0.30 * I, 0.135 * I, 0.036 * I, 0.03 + 0.04 * lv, -8.0])
-            else:
-                I = min(lv, 2.5) * flick * (1 - (0.80 if V3_ROAR2 else 0.45) * rw)
+            if rm < 1.0:
+                I = (lv if f < ROAR else min(lv, 1.0) * (1.0 - rm)) * flick
+                l1 = lv if f < ROAR else min(lv, 1.0)
+                L.append([TINDER[0], TINDER[1] + 0.03 + 0.06 * l1, TINDER[2] - 0.02,
+                          0.30 * I, 0.135 * I, 0.036 * I, 0.03 + 0.04 * l1, -8.0])
+            if rm > 0.0:
+                I = min(lv, 2.5) * flick * (1 - (0.80 if V3_ROAR2 else 0.45) * rw) * rm
                 L.append([FIRE_BASE[0], FIRE_BASE[1] + 0.55, FIRE_BASE[2] - 0.05, 0.75 * I, 0.34 * I, 0.095 * I,
                           0.28, 3.0])
         if reveal > 0.05:
@@ -1231,7 +1333,9 @@ class FirstBeacon:
             c = np.array([0.55, 0.70, 0.95]) * mi
             p0 = np.array([0.9, 1.0, 0.0]) + d * 100.0
             L.append([p0[0], p0[1], p0[2], c[0], c[1], c[2], 0.0, 0.0])
-        warm = (0.9 * lv * flick if f < ROAR else 0.35 * min(lv, 2.5) * flick) * (1 - (0.97 if V3_ROAR2 else 0.85) * rw)
+        warm = ((0.9 * lv * flick if f < ROAR else 0.35 * min(lv, 2.5) * flick) if not AFIX else
+                (0.9 * min(lv, 1.0) * flick * (1.0 - rm) + 0.35 * min(lv, 2.5) * flick * rm)) \
+            * (1 - (0.97 if V3_ROAR2 else 0.85) * rw)
         rg = V3_RIM if V3_H5 else 1.0
         env = hero.env_vec(rim_dir=(0.55, 0.42, 0.72), rim=np.array([0.070, 0.100, 0.180]) * (1.0 + 1.0 * reveal) * rg,
                            amb=np.array([0.0035, 0.0050, 0.0100]) * (1.0 + 4.0 * reveal) * (1.0 + 0.5 * (rg - 1.0)),
@@ -1254,8 +1358,12 @@ class FirstBeacon:
                         sil[gname] = rw * (0.95 if gname == 'scarf' else 1.0)
                     else:
                         sil[gname] = V3_ROAR_SIL * rw * (0.85 if gname == 'scarf' else 1.0)
+            if AFIX and f < ROAR:
+                # A-FIX: the red scarf stays a dark shape (rim only) under the ember, and warms with the flame
+                sil = dict(sil)
+                sil['scarf'] = max(sil.get('scarf', 0.0), 0.92 * (1.0 - smoothstep(CATCH, CATCH + 24, f)))
             M3 = hsdf3.material_table3()
-            if H1C:
+            if H1C or AFIX:
                 M3[hsdf3.M_GLOVE, 0:3] = H1C_GLOVE[:3]
                 M3[hsdf3.M_GLOVE, 3] = H1C_GLOVE[3]
                 # the sleeves close to the lens: dark undyed woven wool (the hood's weave), not the coat's 2 cm mottle
@@ -1284,15 +1392,19 @@ class FirstBeacon:
         hsdf3.basket_v3(B, CAIRN.bk_bot, CAIRN.bk_top, CAIRN.bk_rb, CAIRN.bk_rt, half=half)
         L = []
         if st_e > 0.01:
-            L.append([flint[0] + 0.015, flint[1] + 0.015, flint[2] - 0.045, 0.21 * st_e, 0.126 * st_e, 0.051 * st_e, 0.05, 0.0])
+            ka = 0.4 if AFIX else 1.0
+            L.append([flint[0] + 0.015, flint[1] + 0.015, flint[2] - 0.045, 0.21 * st_e * ka, 0.126 * st_e * ka,
+                      0.051 * st_e * ka, 0.05, 0.0])
         if em_e > 0:
             L.append([TINDER[0], TINDER[1] + 0.006, TINDER[2], 0.070 * em_e, 0.023 * em_e, 0.005 * em_e, 0.010, 0.0])
+        rm = roar_mix(f)
         if lv > 0:
-            if f < ROAR:
-                I = lv * flick
-                L.append([TINDER[0], TINDER[1] + 0.03 + 0.06 * lv, TINDER[2], 0.30 * I, 0.135 * I, 0.036 * I, 0.05, 0.0])
-            else:
-                I = min(lv, 2.5) * flick
+            if rm < 1.0:
+                I = (lv if f < ROAR else min(lv, 1.0) * (1.0 - rm)) * flick
+                l1 = lv if f < ROAR else min(lv, 1.0)
+                L.append([TINDER[0], TINDER[1] + 0.03 + 0.06 * l1, TINDER[2], 0.30 * I, 0.135 * I, 0.036 * I, 0.05, 0.0])
+            if rm > 0.0:
+                I = min(lv, 2.5) * flick * rm
                 L.append([FIRE_BASE[0], FIRE_BASE[1] + 0.45, FIRE_BASE[2], 0.75 * I, 0.34 * I, 0.095 * I, 0.28, 0.0])
         env = hero.env_vec(rim_dir=(0.55, 0.42, 0.72), rim=np.array([0.05, 0.07, 0.12]) * (1.0 + reveal) * V3_RIM,
                            amb=np.array([0.0035, 0.0050, 0.0100]) * (1.0 + 4.0 * reveal), ao=0.01)
@@ -1345,7 +1457,7 @@ class FirstBeacon:
             srcs.append((TINDER, (0.05 if HEROINE_V2 else 0.070) * em_e, np.array([1.0, 0.33, 0.07])))
         if st_e > 0.01:
             srcs.append((flint, 0.075 * st_e, np.array([1.0, 0.8, 0.56])))
-        if not srcs:
+        if not srcs and not AFIX:
             return
         for (fs, dur, kind) in BREATHS:
             age = (f - fs) / FPS
@@ -1388,6 +1500,12 @@ class FirstBeacon:
                     d2 = float(np.sum((pos - sp) ** 2)) + 0.003
                     Ls += c * (I / d2)
                 Ls *= 0.55 * (1.0 - smoothstep(ROAR - 1, ROAR + 1, f))
+                if AFIX:
+                    # A-FIX: breath is pale in the moonlight; after the catch the flame only tints it (it was an
+                    # orange ball floating beside the basket)
+                    if fs >= CATCH - 2:
+                        Ls *= 0.08
+                    Ls = Ls + AFIX_BREATH_COOL * (1.0 - roar_mix(f))
                 sig = max(0.8, cam.f * rad_m / z * 0.6)
                 hsdf.splat_fog(img, float(sx), float(sy), sig, dens, Ls[0], Ls[1], Ls[2],
                                float(fs * 0.37), f / FPS * 0.8, max(2.0, sig * 1.1))

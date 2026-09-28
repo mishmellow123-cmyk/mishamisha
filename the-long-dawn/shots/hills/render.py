@@ -46,6 +46,14 @@ def make_shot(name):
         beacon.apply_h5_calls()
         beacon.apply_roar2()
         return beacon.FirstBeacon()
+    if name == 'beacon_v3_afix':          # A-FIX (28 Sep, film A only): beacon_v3_roar2 + apply_afix(): no strike halo,
+        import beacon                     # no "A" woodpile, no lurch, dark scarf till the catch, pale breath, the roar
+        beacon.V3_REKEY = True            # ramped, no pull-back, a slow push-in. src numbering -> renders/h1_A
+        beacon.use_master_timing()
+        beacon.apply_h5_calls()
+        beacon.apply_roar2()
+        beacon.apply_afix()
+        return beacon.FirstBeacon()
     if name == 'h1c':                     # HEROINE-L: C14's H1-C (hands and flint only), frames in C NUMBERING:
         import beacon                     # C 2960-2999 = src 1216-1255 (strike 1 = C 2980), C 3150-3359 = src
         beacon.V3_REKEY = True            # 1266-1475 (strike 3 = C 3178, the catch C 3316; the roar C 3360 is

@@ -49,7 +49,8 @@ TAKE_END = 1555                          # H1's last src frame (cut 3679)
 SRC1 = CUT1 - 1 - SRC_OFF                # 1675
 FIRES_NPY = os.path.join(HERE, 'reveal_a_fires.npy')
 
-GUARD = {'camera': '0a26d2bd405988bdfd98dcc56975ef66', 'world_layer': '5041ad8575dd41016499c12ef2138ff2'}
+GUARD = {'camera': '49dd99955a91d12e61f657c861031c7f',  # A-FIX branch only (AFIX False here)
+          'world_layer': '5041ad8575dd41016499c12ef2138ff2'}
 
 
 def _guard():
