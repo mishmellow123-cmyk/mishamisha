@@ -56,6 +56,10 @@ F_SETTLE, F_GREY, F_FIRST, F_HER = 4080, 4160, 4240, 4800
 PALE = [4320, 4400, 4480, 4560, 4640, 4720]
 F_HANDS, F_CHILD_SUN, F_GIVE, F_WAKE = 4840, 4960, 4980, 5040
 F_PUSH0, F_PUSH1 = 4800, 5000
+# B14 TITLE plate (dawntitle_B, 5200-5439): the settled frame of 5199 lifts into the dawn sky (a rotation only), so
+# EDIT's title (y ~360, kindling ~5260, fading into the light 5340-5400) sits over clean sky and high cloud
+F_TITLE0, F_TITLE1 = 5200, 5440
+TITLE_TILT, TITLE_EASE, TITLE_DRIFT = 6.8, 76, 0.45
 MOON_END = BS.moon_vec(12.0, 305.0)         # the setting moon, low in the NW (the vigil's last hour)
 
 
@@ -465,7 +469,58 @@ class HandBack:
         self.e_first = e_first
 
     def sun_el(self, frame):
+        f2 = F1 + 40
+        if frame > f2:              # the title plate: the sun keeps rising at the hand-back's last rate (seamless)
+            return float(self.e_of(f2)) + float(self.e_of.derivative()(f2)) * (frame - f2)
         return float(self.e_of(max(frame, F_GREY)))
+
+    def title_cam(self, frame):
+        t0 = settled_cam(self.W, self.H, F_TITLE0 - 1)
+        u = min(max((frame - F_TITLE0) / float(TITLE_EASE), 0.0), 1.0)
+        tilt = TITLE_TILT * _ease(u) + TITLE_DRIFT * max(frame - F_TITLE0 - TITLE_EASE, 0) / float(F_TITLE1 - F_TITLE0 - TITLE_EASE)
+        return RC.RCam(t0.pos, t0.yaw_d, t0.pitch_d + tilt, 0.0, t0.hfov_d, self.W, self.H)
+
+    def title_src(self):
+        """One tall source frame covering the whole lift (a rotation from a fixed position): marched once."""
+        if getattr(self, '_title', None) is not None:
+            return self._title
+        t0 = settled_cam(self.W, self.H, F_TITLE0 - 1)
+        ft = 0.5 * self.W / math.tan(math.radians(t0.hfov_d) * 0.5)
+        vt = 2.0 * math.degrees(math.atan(0.5 * self.H / ft))
+        span = vt + TITLE_TILT + TITLE_DRIFT + 0.6
+        Ht = int(round(2.0 * ft * math.tan(math.radians(span) * 0.5)))
+        tall = RC.RCam(t0.pos, t0.yaw_d, t0.pitch_d + 0.5 * (TITLE_TILT + TITLE_DRIFT), 0.0, t0.hfov_d, self.W, Ht)
+        scam = RC.source_for(tall.scaled(self.ss))            # the marched source (with the warp's margins)
+        P = np.array([scam.pos[0], scam.pos[2], 0.0, 0.0])
+        p = os.path.join(CACHE, f'hbt_G_{BW.VERSION}_{self.scale:.3f}_{self.ss:.2f}_{_sun_az():.2f}.npy')
+        if os.path.exists(p):
+            G = np.load(p)
+        else:
+            G = BW.build(scam, P, CR, _sun_az(), nsteps=88, tmax=120000.0, snow_bias=0.03, dmax=180000.0,
+                         kstep=0.03, moons=[MOON_END], mk=10.0)
+            os.makedirs(CACHE, exist_ok=True)
+            tmp = p + f'.{os.getpid()}.tmp.npy'
+            np.save(tmp, G)
+            os.replace(tmp, p)
+        self._title = dict(scam=scam, G=G)
+        return self._title
+
+    def render_title(self, frame):
+        t = frame / FPS
+        S = self.title_src()
+        scam, G = S['scam'], S['G']
+        e = self.sun_el(frame)
+        LP, SD, amb, fogp = self.dawn(e, 1.0, scam)
+        self.fire_light(LP, self.fire_level(frame), t)
+        img = np.zeros((scam.H, scam.W, 3), np.float32)
+        BW.shade(G, LP, SD, amb, fogp, float(scam.pos[1]), img)
+        img = high_cloud(img, G, scam.pos, LP[0:3])
+        dist = G[..., BW.G_DIST].copy()
+        zb = dist.copy()
+        self.layers(img, zb, dist, scam, frame, t, G)
+        mx, my = RC.warp_maps(self.title_cam(frame).scaled(self.ss), scam)
+        out = RC.warp(img, mx, my, cv2.INTER_LINEAR)
+        return cv2.resize(out, (self.W, self.H), interpolation=cv2.INTER_AREA)
 
     def settled(self):
         """The settled frame's source camera covers the widest (un-pushed) view; the push-in is a zoom inside it."""
@@ -517,6 +572,8 @@ class HandBack:
 
     def render(self, frame):
         t = frame / FPS
+        if frame >= F_TITLE0:
+            return self.render_title(frame)
         if frame < F_SETTLE:
             return self.render_crane(frame)
         S = self.settled()
@@ -686,6 +743,35 @@ class HandBack:
 FINISH = dict(exposure=0.80, bloom_strength=0.05, bloom_threshold=1.8, streak_strength=0.0, vignette_amount=0.22)
 
 
+def high_cloud(img, G, cam_pos, L):
+    """A thin veil of high cirrus in the dawn sky (7.5 km up), lit from below by the low sun: gold toward the sun,
+    peach and rose away from it; brighter than the sky behind it. Sky pixels only (the title's clean sky)."""
+    from dusk import _fbm_arr
+    sky = (G[..., BW.G_FLAG] == 0.0) & (G[..., BW.G_DY] > 0.010)
+    jj, ii = np.nonzero(sky)
+    if len(jj) == 0:
+        return img
+    dx, dy, dz = G[..., BW.G_DX][jj, ii], G[..., BW.G_DY][jj, ii], G[..., BW.G_DZ][jj, ii]
+    t = (7500.0 - cam_pos[1]) / dy
+    x = cam_pos[0] + dx * t
+    z = cam_pos[2] + dz * t
+    ca, sa = math.cos(math.radians(24.0)), math.sin(math.radians(24.0))
+    u = ((x * ca + z * sa) / 11000.0).astype(np.float64)
+    v = ((-x * sa + z * ca) / 1700.0).astype(np.float64)
+    n = np.zeros(len(u))
+    _fbm_arr(u, v, n)
+    d = np.clip((n - 0.10) / 0.40, 0.0, 1.0)
+    d = d * d * (3.0 - 2.0 * d) * np.clip(1.0 - t / 140000.0, 0.0, 1.0) ** 0.7
+    cg = np.clip(dx * L[0] + dy * L[1] + dz * L[2], 0.0, 1.0)
+    lift = (1.20 + 1.30 * cg ** 10)[:, None]
+    tint = (np.array([1.0, 0.80, 0.62])[None, :] * (0.4 + 0.6 * cg ** 4)[:, None]
+            + np.array([1.0, 0.70, 0.72])[None, :] * (0.6 - 0.6 * cg ** 4)[:, None])
+    a = (0.42 * d)[:, None]
+    px = img[jj, ii, :]
+    img[jj, ii, :] = px * (1.0 - a) + px * lift * tint * a
+    return img
+
+
 def finish_at(f):
     """The crane opens in the vigil's grade (the join at 3839/3840) and eases into the hand-back's by the greying."""
     import vigil as VG
@@ -742,8 +828,10 @@ def main():
         frames = [int(x) for x in a.frames.split(',')]
     if a.skip:
         frames = [f for f in frames if not os.path.exists(look.find_frame(out, f))]   # find_frame never returns None
-    if any(f >= F_SETTLE for f in frames):
+    if any(F_SETTLE <= f < F_TITLE0 for f in frames):
         shot.settled()
+    if any(f >= F_TITLE0 for f in frames):
+        shot.title_src()
     print(f'sun az {_sun_az():.2f}; first light e={shot.e_first:.3f}; hers e={shot.e_her:.3f}; beacons {len(shot.B)}; '
           f'chosen {[(int(k), round(float(shot.th[k]), 3)) for k in shot.chosen]}', flush=True)
     if a.procs <= 1:

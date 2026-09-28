@@ -11,8 +11,20 @@
   watcher's signature; the MASTERS table in music/NOTES_v3.md is untouched (the music lanes' table). Outside
   `deliver._code_hash()`, so B re-muxes without re-encoding picture.
 - **Watcher** restarted on the merged (PR #1) `refresh_watch.sh` (the old one, pid 74916, ran the pre-PR script).
-- **B14 has no real plate:** `handback_B` stops at 5199 (its jobs are 3840-5199) and nothing renders `dawntitle_B`
-  5200-5439, so B14 stays the stand-in sky + ember title (asked the director).
+- **B14's plate (director ~23:55Z, option a):** `handback_B` stops at 5199, so RUN-B-3 renders `dawntitle_B`
+  5200-5439: continuous with handback at 5199, then a slow tilt up into the dawn sky so the title sits over clean sky
+  at y~360. No held frame. Until it lands B14 stays the stand-in sky + ember title (the kit calls it out as the
+  proxy); the watcher picks the plate up (B14's second take) and `title_v3.sh` re-throws the sparks from its fires.
+- **Previews (EDIT-2's handover):** the killed 21:11Z run left A_bars01-49, B_bars01-68 and C_bars01-12 but no
+  `.previews.json`/README, so the next previews step re-cuts every stretch as NEW (the watcher exits 3: send main
+  one line per file). NEVER run two preview jobs at once (the .part files collide). README fixes: it now names the
+  provisional source itself (`AS.provisional_sources`: C9's burn-through = its under-layer embers_C3_half), names
+  C's council takes (`accord`) as v1 timing renders (`previews.TIMING`), and says the film finish is in.
+- **Disk:** ~14 GB free; delivery/ 7.1 GB (grained masters 0.5-1 GB each + MP4 screeners); dropping the MP4
+  screeners frees ~2.7 GB if space gets tight.
+- **B's H9 kit (for a fresh-context critic):** `~/mishamisha/_local_logs/review/h9_B/` (`h9_kit.py --cuts B --out`),
+  plus `CRITIC_README.md` there: the B master to watch with sound, and what is known-pending (DUSK v2, the cairn
+  re-renders, the B14 plate).
 
 ## >>> STATE (EDIT-2, resumed 18:38Z on the new account; every lane runs continuously) <<<
 

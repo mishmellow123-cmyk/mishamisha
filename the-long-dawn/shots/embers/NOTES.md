@@ -51,6 +51,18 @@ DESIGN (as rendered):
 # >>> EMBERS-C3 (27 Sep ~20:35Z, took over from EMBERS-C): E15 LETTERS TO FIRE, E5-C THE FORGING, E11 THE RACE, and the
 # canonical Ring (ringsolid.py) + gold flame (cflame.py). EMBERS-C2 owns E12 / E8-C / E13a (c2.py etc.). <<<
 ## STATE AT HANDOFF (EMBERS-C3, 27 Sep 21:15Z; the account idles ~21:25Z-23:30Z). READ THIS FIRST.
+**FINAL STATE (EMBERS-C3, 27 Sep 23:48Z): C's embers work is DONE (director).**
+* E5-C forging 1040-1439 (ashlar relaunch) and E11 race 1440-1679: LANDED in full in renders/embers_C3; the director
+  reviews them in the cut.
+* E15 700-1039 (340 f): APPROVED; main launched request 0927-194418-embersC3e15-36741
+  (--nodes 2) -> renders/embers_C3_e15. The director's letters polish (read as a bent wire) was pushed as 2742bd8
+  while that request was still queued (0/2 units), so the whole final renders it:
+  - two distinct looped letters of the hand, set apart, in a pen's thin line with a glowing charred rim;
+  - tested locally at 905/925/950 (review/embers_C3_check/SHEET_E15_letters_polish.jpg).
+  IF a unit had already started on the old code, re-render only 880-975:
+  `farm.py the-long-dawn/cloud/jobs/embers_C3_e15.json --frames 880-975 --nodes 1`.
+* Open nitpicks only (cheap, if ever): race 1600-1625 a soft warm blob at the left edge; 1575 spidery burst; a vertical
+  EDGE rib on the 1380 facade; E15 a short right arm at 776; the letters can be clipped by a lick at 905/950.
 **UPDATE 23:50Z: JOB READY embers_C3_e15 SENT** (C 700-1039, 340 f; pass 3 reviewed: _farmtest/embers_C3_e15_p3,
 review/embers_C3_check/SHEET_E15_pass3.jpg). Sparks = tributary streams, one hooked stream down the trunk at the end
 (no radial, no spiral, no bird); C5 letters = three charred letters dark in the flame's body. Waiting for approval;

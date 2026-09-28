@@ -65,7 +65,7 @@ def _mb():
     M[21, 16] = 7.5
     # granite: snow lies on the stones' upper faces
     for r in (16, 17, 23):
-        M[r, 17] = 0.85
+        M[r, 17] = 0.70
         M[r, 18] = 0.55
         M[r, 6] = 0.13                      # rounded fieldstones: a broad pillow, never a flat facet
     return M
@@ -219,6 +219,7 @@ def _render(img, depth, P, gidx, M, L, amb, fx, fy, ppm, zf, x0, x1, y0, y1, see
                 if sn > 0.0:
                     capd = 0.035 + 0.02 * (0.5 + 0.5 * gnoise2(Xs * 6.0, Y * 6.0, seed + 5))
                     w = sn * min(max((gy - 0.20) / 0.35, 0.0), 1.0) * min(max((capd - di) / 0.012, 0.0), 1.0)
+                    w *= min(max((gnoise2(Xs * 2.6 + 1.3, Y * 2.6, seed + 6) + 0.05) / 0.30, 0.0), 1.0)   # patchy
                     ar += (0.78 - ar) * w
                     ag += (0.79 - ag) * w
                     ab += (0.84 - ab) * w

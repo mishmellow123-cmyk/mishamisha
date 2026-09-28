@@ -389,13 +389,31 @@ class E15:
             h = pen.Hand(seed=77, xh=0.22)
             S = pen.Strokes()
             x = 0.0
-            words = [h.word(3)]
+            # two DISTINCT letters of the tale's hand, set apart (a joined cursive word read as a bent wire)
+            # (the hand's letters are mostly wide and flat: take the two most letter-like, tall with an ascender or a
+            # descender and at least two strokes, from a fixed run of the hand, so they read as letters, not worms)
+            cand = []
+            for k_ in range(60):
+                w = h.word(1)
+                S2 = pen.Strokes()
+                h.write_word(S2, w, 0.0, 0.0)
+                P = np.concatenate(S2.P)
+                hh, ww = float(np.ptp(P[:, 1])), float(np.ptp(P[:, 0]))
+                ln = sum(float(np.hypot(*np.diff(Q, axis=0).T).sum()) for Q in S2.P)
+                curl = ln / max(hh + ww, 1e-6)             # a looped, curved letter (a straight stroke reads as a stick)
+                if hh / max(ww, 1e-6) < 0.45:
+                    continue
+                cand.append((curl + 0.4 * min(hh / max(ww, 1e-6), 1.5), k_, w))
+            cand.sort(key=lambda c: -c[0])
+            words = [cand[0][2], cand[1][2]]
             lines = []
+            xc = 0.0
             for li, w in enumerate(words):
                 S2 = pen.Strokes()
                 x2 = h.write_word(S2, w, 0.0, 0.0)
                 for si, P in enumerate(S2.P):
-                    lines.append((P - np.array([0.5 * x2, 0.0]), 1000 * li + si))
+                    lines.append((P + np.array([xc, 0.0]), 1000 * li + si))
+                xc += x2 + 0.1
             pts, lid = [], []
             for P, li in lines:
                 seg = np.hypot(*np.diff(P, axis=0).T)
@@ -432,15 +450,15 @@ class E15:
         gy = -G[:, 1]
         gy = gy - 0.5 * (gy.max() + gy.min())
         wide = max(float(gx.max() - gx.min()), 1e-6)
-        sc_ = 0.19 / wide                                  # the word sits inside the body (19 % of the flame's height) ...
+        sc_ = 0.2 / wide                                   # the two letters sit inside the body (20 % of its height) ...
         yc = 0.37 + 0.0016 * (t - 882.0)                   # it rises slowly with the licks
         fx = gx * sc_
-        fy = yc + gy * sc_ * 2.4                           # ... and the heat draws its letters up tall (legible)
+        fy = yc + gy * sc_ * 1.9                           # ... and the heat draws them up tall (legible)
         X = x0 + (ax * fy + px * fx) * Hp
         Y = y0 + (ay * fy + py * fx) * Hp
         burn = smoothstep(944 + 60 * (fy - yc + 0.1), 962 + 60 * (fy - yc + 0.1), t)   # from below
         m = np.zeros((H, W), np.uint8)
-        th = max(2, int(round(0.017 * Hp)))
+        th = max(2, int(round(0.009 * Hp)))           # a pen's line: thick ink closed the letters' loops
         seg_ok = (1.0 - burn) > 0.5
         pts = np.stack([X, Y], 1)
         for a_ in range(len(pts) - 1):
@@ -451,7 +469,7 @@ class E15:
             cv2.line(m, (int(round(pts[a_, 0] * 4)), int(round(pts[a_, 1] * 4))),
                      (int(round(pts[a_ + 1, 0] * 4)), int(round(pts[a_ + 1, 1] * 4))), 255, th, cv2.LINE_AA, 2)
         mf = cv2.GaussianBlur(m.astype(np.float32) / 255.0, (0, 0), 0.5)
-        rim = np.clip(cv2.GaussianBlur(mf, (0, 0), 1.2 + 0.004 * Hp) - mf, 0, 1)
+        rim = np.clip(cv2.GaussianBlur(mf, (0, 0), 0.8 + 0.004 * Hp) - mf, 0, 1)
         return mf * k, rim * k
 
     # ------------------------------------------------------------- frame
@@ -489,8 +507,8 @@ class E15:
                 mk, rim = lm
                 lum = fl.max(axis=2)
                 body = np.clip((lum / max(float(lum.max()), 1e-6) - 0.12) / 0.3, 0.0, 1.0)   # never ink on the halo
-                fl = fl * (1.0 - 0.74 * mk * body)[..., None]
-                fl = fl + (np.array([1.0, 0.5, 0.12], np.float32)[None, None, :] * (1.4 * rim * body * lum)[..., None])
+                fl = fl * (1.0 - 0.84 * mk * body)[..., None]
+                fl = fl + (np.array([1.0, 0.7, 0.28], np.float32)[None, None, :] * (3.2 * rim * body * lum)[..., None])
             if k > 0:
                 fl = fl * band_rows(fl.shape[0], scale, 0.62 * k)[:, None, None]
             hdr = hdr + fl

@@ -29,6 +29,8 @@ OUT = os.path.expanduser('~/Downloads/The Long Dawn v3 - PREVIEWS')
 MANIFEST = os.path.join(OUT, '.previews.json')
 FPS, MIN_F, EDGE_BLACK = 24, 600, 24
 OK = {'RENDERED', 'STAND_IN', 'PROXY', 'BLACK'}
+# renders that count as rendered but are known to be replaced (director): named in the README
+TIMING = {'accord': "a v1 timing render (COUNCIL-C's rebuild replaces it)"}
 VUI = D.VUI
 
 
@@ -75,10 +77,18 @@ def describe(film, a, b):
     for i in idx:
         s, pl = film.shots[i], film.plans[i]
         ks = Counter(film.status(f)[0] for f in range(max(a, s['f0']), min(b, s['f1'])))
-        if ks.get('STAND_IN'):
-            temp.append(f"{s['sec']} {s['name']} is a stand-in ({(pl['take'] or {}).get('note', '')})")
+        if ks.get('STAND_IN'):             # name what is provisional (the take itself, or only its under-layer)
+            t = pl['take'] or {}
+            srcs = Counter(x for f in range(max(a, s['f0']), min(b, s['f1']))
+                           for x in AS.provisional_sources(t, film.cut, None, f)) if t else Counter()
+            why = [f"its under-layer {x[6:]}" if x.startswith('under:') else f"{x} ({t.get('note', '')})"
+                   for x in srcs] or [t.get('note', '')]
+            temp.append(f"{s['sec']} {s['name']} is a stand-in: " + '; '.join(why))
         if ks.get('PROXY'):
             temp.append(f"{s['sec']} {s['name']} is an EDIT proxy until its plate lands")
+        stem = (pl['take'] or {}).get('stem')
+        if stem in TIMING and ks.get('RENDERED'):
+            temp.append(f"{s['sec']} {s['name']} is {TIMING[stem]}")
     return idx, what, temp
 
 
@@ -177,8 +187,9 @@ def main():
     head = [f'THE LONG DAWN v3 · PREVIEWS · updated {stamp}',
             'Each file is a continuous, fully rendered stretch of one film, cut frame-exactly from that film\'s current '
             'master with its sound. Files update automatically when a stretch grows or its renders or score improve.',
-            'General notes for every file: work in progress; no film-look pass yet (grain, final grade); the rest of '
-            'each film is still being rendered.', '']
+            'General notes for every file: work in progress; the film finish (Kodak Vision3 250D printed to 2383, '
+            'grain 0.5, blend 0.75) is in the masters these are cut from; the rest of each film is still being '
+            'rendered.', '']
     open(os.path.join(OUT, 'README.txt'), 'w').write('\n'.join(head + (lines or ['(no finished stretch yet)'])) + '\n')
     for n in new:
         print(f'NEW: {n}')

@@ -39,13 +39,17 @@ def cairn3(seed=3, H=1.62, R=1.05):
     """v2 (director: the v1 facets read as low-poly gems / nuts): rounded, weathered fieldstones of every size in a
     loose heap (never courses of equal stones), lichen crust on their faces, snow on their tops and lodged in the
     gaps between them, a ragged top of a few stones on end, a drift at the foot."""
-    key = (seed, H, R, 2)
+    key = (seed, H, R, 3)
     if key in _CAIRN:
         return _CAIRN[key]
     rng = np.random.default_rng(seed)
     d = FG.Drawing()
+    # the drift first: a low irregular bank of old snow the lowest stones sit in (never a plate laid over them)
     d.new_group()
-    d.trap((0.0, 0.02), (0.0, H * 0.72), R * 0.60, R * 0.10, rnd=0.05, k=0.0, mat=BF.GAP)       # the dark heart
+    d.ellipse((0.04, 0.03), R * 1.10, 0.085, k=0.0, mat=BF.SNOW, fuzz=0.018, ff=9.0)
+    d.ellipse((-R * 0.62, 0.06), R * 0.42, 0.10, ang=0.10, k=0.06, mat=BF.SNOW, fuzz=0.014, ff=11.0)
+    d.new_group()
+    d.trap((0.0, 0.02), (0.0, H * 0.70), R * 0.52, R * 0.08, rnd=0.05, k=0.0, mat=BF.GAP)       # the dark heart
     mats = (16, 17, 23, 16)
     n = 0
     y = 0.0
@@ -67,14 +71,14 @@ def cairn3(seed=3, H=1.62, R=1.05):
             placed.append((x, cy + rr * 0.95, rr * el))
             row_top = max(row_top, cy + rr)
             n += 1
-            x += rr * el * (1.70 + 0.30 * rng.random())
+            x += rr * el * (1.38 + 0.22 * rng.random())                  # packed: stones touch
         # snow lodged along this course's top: it shows in the gaps once the next course sits on it
         d.new_group()
         for (px, py, w) in placed:
             if rng.random() < 0.8:
                 d.ellipse((px + rng.normal(0, 0.02), py - 0.01), w * (0.75 + 0.3 * rng.random()), 0.022,
                           ang=rng.normal(0, 0.08), k=0.03, mat=BF.SNOW)
-        y += r0 * (1.40 + 0.25 * rng.random())
+        y += r0 * (1.18 + 0.20 * rng.random())
     top = y
     for j, (dx, lean, rr, el) in enumerate(((-0.10, 0.28, 0.12, 0.66), (0.09, -0.22, 0.095, 0.62),
                                            (0.21, -0.45, 0.075, 0.95))):
@@ -83,9 +87,6 @@ def cairn3(seed=3, H=1.62, R=1.05):
         d.new_group()
         BF.add_stone(d, (dx + rng.normal(0, 0.015), top + rr * 0.85), rr, elong=el, ang=math.pi / 2 + lean,
                      facet=0.18, seed=seed * 1000 + 900 + j, mat=int(mats[rng.integers(0, 4)]))
-    d.new_group()
-    d.ellipse((0.05, 0.02), R * 1.05, 0.07, k=0.0, mat=BF.SNOW, fuzz=0.012, ff=10.0)
-    d.ellipse((-R * 0.55, 0.05), R * 0.40, 0.08, ang=0.12, k=0.05, mat=BF.SNOW, fuzz=0.01, ff=12.0)
     _CAIRN[key] = d
     return d
 
