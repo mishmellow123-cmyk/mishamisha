@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~13:45Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-28 ~14:40Z**, by the director (Claude, Opus 5.5).
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -242,6 +242,13 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
 - **13:45Z update:**
   - BURN ROLLOUT DONE (ef90134): `renders/book_C_ft` and its matte hold the filmed burns plus flame tongues on clean plates for C 841-1039, 1680-1717 and 1905-1991. EDIT reads them when C's new EDL is built. The SOUND frames are in `review/BURN_NOTES.md`. BURN-C has stood down.
   - The A14/A15 catches3 tests passed, and the finals are rendering (55/480 at 13:45Z) into `renders/beaconrun_A_catches3` and `renders/watchers_A_catches3`. When they land, compare the A14→A15 join (catches3 A15 vs the existing hearth3 A15), then rebuild A with `FILMS=A bash edit/refresh_watch.sh`.
+
+- **14:40Z (Claude week at 97%):** the A14/A15 catches3 finals are at 373/480 and should land within ~20 min. The farm daemon's own short caffeinate stops when it goes idle. NEXT SESSION, in order:
+  1. When A14/A15 land: check the A14→A15 join (catches3 vs hearth3 A15), pick the pair, and rebuild A.
+  2. When the M4 is back: read Codex's `TO_CLAUDE.md` and `~/ldfarm/out/`, review its PRs for C's new shots, merge, and launch any farm finals.
+  3. Write C's v5 EDL (the timeline above; burns in renders/book_C_ft; slates for missing shots; captions v5.3) and restart the watcher with C.
+  4. Score pass 2 (the two first beacons answering each other; re-sync to the real picture), then SOUND's re-sync (hammers, flint, beacons, the silence at 3848).
+  5. The user's open decisions (section 6).
 
 ## 7. Lanes (as of 07:30Z, 28 Sep)
 | Lane | State |
