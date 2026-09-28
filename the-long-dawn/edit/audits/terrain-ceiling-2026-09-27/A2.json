@@ -1,0 +1,289 @@
+{
+  "shot": "A2",
+  "scope": "finished full frame",
+  "scale": 0.5,
+  "threads": 2,
+  "head": "e096e99942a16e77030bb4a4df184755505f47ee",
+  "source": "shots/run/falsedawn.py",
+  "source_sha256": "d673c601219fb1291e48b8299b3e81baecc8690cb338874b187ecc67558395f7",
+  "rgb_metric": "max absolute finished RGB channel difference; uint8 uses round(255*clip(RGB,0,1)), no dither",
+  "coordinates": "bounding boxes inclusive, [xmin,ymin,xmax,ymax]; source and output spaces labelled separately",
+  "coverage": "all source rows and columns in every actual march call",
+  "frames": [
+    {
+      "frame": 80,
+      "width": 960,
+      "height": 402,
+      "comparisons": {
+        "700": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1471
+              ],
+              "pixels": 907607,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 700.0,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        },
+        "current": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1471
+              ],
+              "pixels": 907607,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 2784.5,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "frame": 300,
+      "width": 960,
+      "height": 402,
+      "comparisons": {
+        "700": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1469
+              ],
+              "pixels": 906373,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 700.0,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        },
+        "current": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1469
+              ],
+              "pixels": 906373,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 2784.5,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "frame": 380,
+      "width": 960,
+      "height": 402,
+      "comparisons": {
+        "700": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1468
+              ],
+              "pixels": 905756,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 700.0,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        },
+        "current": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1468
+              ],
+              "pixels": 905756,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 2784.5,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "frame": 500,
+      "width": 960,
+      "height": 402,
+      "comparisons": {
+        "700": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1467
+              ],
+              "pixels": 905139,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 700.0,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        },
+        "current": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1467
+              ],
+              "pixels": 905139,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 2784.5,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "frame": 559,
+      "width": 960,
+      "height": 402,
+      "comparisons": {
+        "700": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1466
+              ],
+              "pixels": 904522,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 700.0,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        },
+        "current": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                617,
+                1466
+              ],
+              "pixels": 904522,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 2784.5,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

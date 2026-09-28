@@ -1,0 +1,181 @@
+{
+  "shot": "A11",
+  "scope": "finished full frame",
+  "scale": 0.5,
+  "threads": 2,
+  "head": "e096e99942a16e77030bb4a4df184755505f47ee",
+  "source": "shots/run/stars_a.py",
+  "source_sha256": "8720485ee543d6cec1ed8fe8bc5cf54928a45e34be0a68659de65aad14e6c50e",
+  "rgb_metric": "max absolute finished RGB channel difference; uint8 uses round(255*clip(RGB,0,1)), no dither",
+  "coordinates": "bounding boxes inclusive, [xmin,ymin,xmax,ymax]; source and output spaces labelled separately",
+  "coverage": "all source rows and columns in every actual march call",
+  "frames": [
+    {
+      "frame": 3120,
+      "width": 960,
+      "height": 402,
+      "comparisons": {
+        "700": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                644,
+                1564
+              ],
+              "pixels": 1007216,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "camera": [
+                60.0,
+                172.0,
+                480.0,
+                0.9396926207859084,
+                -0.3420201433256687,
+                -0.3420201433256687,
+                -0.9396926207859084,
+                1247.076581449592,
+                781.9609518148842,
+                603.267169865387,
+                1564.0,
+                644.0
+              ],
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 700.0,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        },
+        "current": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                644,
+                1564
+              ],
+              "pixels": 1007216,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "camera": [
+                60.0,
+                172.0,
+                480.0,
+                0.9396926207859084,
+                -0.3420201433256687,
+                -0.3420201433256687,
+                -0.9396926207859084,
+                1247.076581449592,
+                781.9609518148842,
+                603.267169865387,
+                1564.0,
+                644.0
+              ],
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 2784.5,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "frame": 3359,
+      "width": 960,
+      "height": 402,
+      "comparisons": {
+        "700": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                644,
+                1564
+              ],
+              "pixels": 1007216,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "camera": [
+                60.0,
+                172.0,
+                480.0,
+                0.9396926207859084,
+                -0.3420201433256687,
+                -0.3420201433256687,
+                -0.9396926207859084,
+                1247.076581449592,
+                781.9609518148842,
+                603.267169865387,
+                1564.0,
+                644.0
+              ],
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 700.0,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        },
+        "current": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                644,
+                1564
+              ],
+              "pixels": 1007216,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "camera": [
+                60.0,
+                172.0,
+                480.0,
+                0.9396926207859084,
+                -0.3420201433256687,
+                -0.3420201433256687,
+                -0.9396926207859084,
+                1247.076581449592,
+                781.9609518148842,
+                603.267169865387,
+                1564.0,
+                644.0
+              ],
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 2784.5,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "initialization": "A18 terrain completed before either condition; A2/A11 skyline reset per condition; isolated frames, not farm cache replay"
+}

@@ -1,0 +1,121 @@
+{
+  "shot": "A15",
+  "scope": "finished full frame",
+  "scale": 0.5,
+  "threads": 2,
+  "head": "3d5913a7d0b0d2d7007eb2ab67c43e69969f9a19",
+  "source": "shots/run/watchers_a.py",
+  "source_sha256": "f8ecf33ebaa6f0d4c2c6c35566f9db73c9cd08fa4526e875e6b368f2c4ff10ff",
+  "harness_sha256": "033bc031cfb1c849921b42f2346062b91523adac4e6fb26111c76877320fdc9e",
+  "lookdev_overrides": {
+    "W15_CAM": null,
+    "W15_P7": null,
+    "W15_OWN_CAM": null,
+    "A14_CAM": null,
+    "NIGHT_CLOUD": null
+  },
+  "rgb_metric": "max absolute finished RGB channel difference; uint8 uses round(255*clip(RGB,0,1)), no dither",
+  "coordinates": "bounding boxes inclusive, [xmin,ymin,xmax,ymax]; source and output spaces labelled separately",
+  "coverage": "all source rows and columns in every actual march call",
+  "frames": [
+    {
+      "frame": 4360,
+      "width": 960,
+      "height": 402,
+      "comparisons": {
+        "700": {
+          "max_rgb_float": 0.13301104307174683,
+          "max_rgb_uint8": 34,
+          "changed_rgb_pixels": 1243,
+          "rgb_bbox_output": [
+            545,
+            93,
+            750,
+            134
+          ],
+          "depth": [
+            {
+              "shape": [
+                616,
+                1460
+              ],
+              "pixels": 899360,
+              "changed": 2272,
+              "sky_to_terrain": 2272,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": [
+                828,
+                146,
+                1134,
+                205
+              ],
+              "recovered_bbox_source": [
+                828,
+                146,
+                1134,
+                205
+              ],
+              "max_finite_depth_delta_m": 0.0,
+              "camera": [
+                -1000.058700510746,
+                -192.56853973159733,
+                -520.5629500882702,
+                -0.39073112848927377,
+                0.9205048534524404,
+                0.9205048534524404,
+                0.39073112848927377,
+                1978.1837420073282,
+                729.8223851888403,
+                244.19218876327847,
+                1460.0,
+                616.0
+              ],
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 700.0,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        },
+        "current": {
+          "max_rgb_float": 0.0,
+          "max_rgb_uint8": 0,
+          "changed_rgb_pixels": 0,
+          "rgb_bbox_output": null,
+          "depth": [
+            {
+              "shape": [
+                616,
+                1460
+              ],
+              "pixels": 899360,
+              "changed": 0,
+              "sky_to_terrain": 0,
+              "terrain_to_sky": 0,
+              "changed_bbox_source": null,
+              "recovered_bbox_source": null,
+              "max_finite_depth_delta_m": 0.0,
+              "camera": [
+                -1000.058700510746,
+                -192.56853973159733,
+                -520.5629500882702,
+                -0.39073112848927377,
+                0.9205048534524404,
+                0.9205048534524404,
+                0.39073112848927377,
+                1978.1837420073282,
+                729.8223851888403,
+                244.19218876327847,
+                1460.0,
+                616.0
+              ],
+              "caller_hmax": 2784.5,
+              "baseline_hmax": 2784.5,
+              "diagnostic_hmax": 3000.0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "initialization": "A18 terrain completed before either condition; A2/A11 skyline reset per condition; isolated frames, not farm cache replay"
+}
