@@ -287,6 +287,7 @@ class FootageBurn:
         self.plate_lin = to_lin(self.plate_srgb)
         self.reader = Reader(clip, crop=roi)
         self.state = np.zeros((h, w), np.float32)
+        self.hist = []                 # the union a few clip frames back (the front's speed)
         self.cur = None
         self.n = -1
         rng = np.random.default_rng(7)
@@ -315,6 +316,9 @@ class FootageBurn:
             a = cv2.morphologyEx(a.astype(np.float32), cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
             a = cv2.GaussianBlur(a, (0, 0), 0.8)
             np.maximum(self.state, a, out=self.state)
+            self.hist.append(self.state.copy())
+            if len(self.hist) > 5:
+                self.hist.pop(0)
             self.cur = im
         return self.layers()
 
@@ -342,13 +346,124 @@ class FootageBurn:
         # edge never shows as a step in the fire's light)
         # (warm light only: the sheet's torn fibres catch the backdrop as white specks, which are not fire)
         warm = np.clip((ex[..., 0] - 1.3 * ex[..., 2]) / np.maximum(ex[..., 0], 1e-4), 0, 1)[..., None]
-        side = ex * warm * (1 - wgt)
+        side = cv2.GaussianBlur(ex * warm, (0, 0), 2.0) * (1 - wgt)    # (soften the clip's h264 blocks)
         ext = cv2.GaussianBlur(cv2.dilate(side, np.ones((5, 5), np.uint8)), (0, 0), 3)
-        flame = side + (ramp + 0.4 * ext) * wgt
+        # (the over-hole cores in `ramp` came out as h264-blocky blobs: the tongues (a) are the fire over the hole now)
+        flame = side + (0.0 * ramp + 0.4 * ext) * wgt
         # distance from the hole's edge into the paper (cm), for the char band
         paper = (hole < 0.5).astype(np.uint8)
         d = cv2.distanceTransform(paper, cv2.DIST_L2, 5).astype(np.float32) * K_CM
         return hole, flame.astype(np.float32), d
+
+    def speed(self):
+        """How fast the front moves (0..1): the band the union swept over the last 4 clip frames, spread to the front."""
+        old = self.hist[0] if self.hist else self.state
+        return np.clip(cv2.GaussianBlur(self.state - old, (0, 0), 10) / 0.22, 0, 1).astype(np.float32)
+
+
+# ======================================================= (a) flame tongues along the front ===
+
+# real flames on black: the first seconds of two PureRaw clips, before the hole shows the green (flames rising off
+# the sheet's burning lower edge, the frame's bottom = their base); (file, first frame, last frame + 1)
+FLAME_BANK = [('pexels_8828898_1080.mp4', 24, 96), ('pexels_8828892_1080.mp4', 36, 84)]
+BW, BH = 640, 360
+SU = 3.5                        # strip px per clip px of the page (a tongue ~30-50 screen px wide)
+H_MIN, H_MAX = 8.0, 125.0       # tongue height on screen (px): slow edge -> fast edge
+
+
+class FlameBank:
+    """Short flame clips at 640x360 (uint8, ~55 MB each), played in loops with a 10-frame crossfade."""
+
+    def __init__(self):
+        self.clips = []
+        for name, a, b in FLAME_BANK:
+            p = subprocess.Popen([FF, '-loglevel', 'error', '-ss', '%.4f' % (a / CFPS), '-i', os.path.join(FOOT, name),
+                                  '-frames:v', str(b - a), '-vf', 'scale=%d:%d' % (BW, BH), '-f', 'rawvideo',
+                                  '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE)
+            raw = p.stdout.read()
+            p.wait()
+            arr = np.frombuffer(raw, np.uint8).reshape(-1, BH, BW, 3).copy()
+            g = arr[..., 1].astype(np.int16) - arr[..., 0].astype(np.int16)
+            arr[g > 10] = 0                                    # any green (the hole starting): not flame
+            self.clips.append(arr)
+        self.lut = to_lin(np.arange(256, dtype=np.float32) / 255.0)
+
+    def frame(self, ci, k):
+        arr = self.clips[ci]
+        n = len(arr)
+        K = 10
+        L = n - K
+        i = int(k) % L
+        a = self.lut[arr[i]]
+        if i < K:
+            w = (i + 1.0) / (K + 1.0)
+            a = a * w + self.lut[arr[L + i]] * (1 - w)
+        return np.clip(a - 0.012, 0, None)      # the clip's black level (else its noise stacks into faint streaks)
+
+
+def flame_tongues(hs, sp, fx, fy, bank, f):
+    """Real flame tongues stood on the hole's edge, rising screen-up: each edge pixel carries one column of a flame
+    strip (tile = one clip at its own phase), the column chosen by a page-fixed coordinate (so a tongue stays put
+    on the paper as the edge moves), its height and brightness set by how fast the front moves there."""
+    out = np.zeros((H * W, 3), np.float32)
+    cs, _ = cv2.findContours((hs > 0.5).astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    cs = [c[:, 0, :] for c in cs if len(c) > 12]
+    if not cs:
+        return out.reshape(H, W, 3)
+    # the edge's direction at each point (a vertical run would stack its columns into one tall streak: there the
+    # tongues stay short, hugging the edge)
+    # each tongue's base is the edge's height smoothed along the contour (+-12 px), so neighbouring columns share a
+    # baseline and a flame stays whole (independent 1-px columns on a slanted edge shear it into slivers); steep
+    # runs get no tongues (only the rim), there the columns would stack into streaks
+    xs_, ys_, flat_ = [], [], []
+    box = np.ones(25) / 25.0
+    for c in cs:
+        d = np.roll(c, -4, 0) - np.roll(c, 4, 0)
+        ysm = np.convolve(np.concatenate([c[-12:, 1], c[:, 1], c[:12, 1]]).astype(np.float64), box, 'valid')
+        xs_.append(c[:, 0])
+        ys_.append(np.round(ysm).astype(np.int64))
+        flat_.append(np.abs(d[:, 0]) / (np.hypot(d[:, 0], d[:, 1]) + 1e-6))
+    x, y, flat = np.concatenate(xs_), np.concatenate(ys_), np.concatenate(flat_)
+    ok = (x > 2) & (x < W - 3) & (y > 2) & (y < H - 3) & (flat > 0.45)
+    x, y, flat = x[ok], y[ok], flat[ok]
+    if len(x) == 0:
+        return out.reshape(H, W, 3)
+    u = (fx[y, x] + 0.7 * fy[y, x]) * SU
+    spd = sp[y, x]
+    wob = 1.0 + 0.25 * np.sin(u * 0.013 + 1.3) * np.sin(u * 0.0071 + f * 0.05)
+    lie = np.clip((flat - 0.45) / 0.35, 0.0, 1.0) ** 0.7
+    h = (H_MIN + (H_MAX - H_MIN) * spd ** 0.7) * wob * lie
+    amp = (0.2 + 0.8 * spd ** 0.5) * (0.55 + 0.45 * lie)
+    # overlapping tiles (stride BW - M), crossfaded over M strip px, so no tongue is cut at a tile's seam
+    M = 120.0
+    stride = BW - M
+    t0 = np.floor(u / stride).astype(np.int64)
+    c0 = u - t0 * stride
+    w0 = np.clip(c0 / M, 0, 1)
+    tiles = [(t0, c0, np.sqrt(w0)), (t0 - 1, c0 + stride, np.sqrt(1 - w0))]
+    kmax = int(np.ceil(h.max())) + 1
+    ks = np.arange(kmax, dtype=np.float32)[None, :]
+    for tt, cc, ww in tiles:
+        use = ww > 0.02
+        for t in np.unique(tt[use]):
+            m = use & (tt == t)
+            ci = int(t) % len(bank.clips)
+            n = len(bank.clips[ci])
+            phase = (int(t) * 7919) % n
+            S = bank.frame(ci, (f - F_BIRTH) * CFPS / FPS + phase)
+            hh = h[m][:, None]
+            valid = ks < hh
+            yy = (y[m][:, None] - ks).astype(np.int64)
+            valid &= yy >= 0
+            srow = np.clip(((BH - 1) * (1.0 - ks / hh)).astype(np.int64), 0, BH - 1)
+            scol = np.broadcast_to(np.clip(cc[m], 0, BW - 1).astype(np.int64)[:, None], srow.shape)
+            g = (amp[m] * ww[m])[:, None]
+            vals = S[srow[valid], scol[valid]] * np.broadcast_to(g, srow.shape)[valid][:, None]
+            idx = yy[valid] * W + np.broadcast_to(x[m][:, None], yy.shape)[valid]
+            for c in range(3):
+                np.maximum.at(out[:, c], idx, vals[:, c])
+    out = out.reshape(H, W, 3)
+    return cv2.GaussianBlur(out, (0, 0), 1.0)
 
 
 def tau_of(f, speed=1.0):
@@ -391,6 +506,7 @@ def cmd_c5(a):
     plate = read_rgb(frame_path(os.path.join(R, 'book_C'), f_plate))
     cam_p = cam_letters(f_plate)
     FBn = FootageBurn()
+    bank = FlameBank() if a.tongues else None
     for f in frames:
         hole, flame, dist = FBn.advance(int(round(tau_of(f, a.speed))))
         fx, fy, P = maps_for(f)
@@ -402,6 +518,11 @@ def cmd_c5(a):
         ds = cv2.remap(dist, fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=99.0)
         nz = cv2.remap(FBn.noise, fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
         keep = char_keep(ds * (1.0 + 0.3 * np.tanh(nz)))
+        if bank is not None:
+            sp = cv2.remap(FBn.speed(), fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+            tg = flame_tongues(hs, sp, fx, fy, bank, f) * a.tgain
+            tg = tg + cv2.GaussianBlur(tg, (0, 0), 10) * 0.35                # their halo
+            fl = fl + tg
         # the flames light the paper round them (a soft pool that flickers with them)
         lum = fl @ np.array([0.5, 0.35, 0.15], np.float32)
         small = cv2.resize(lum, (W // 4, H // 4), interpolation=cv2.INTER_AREA)
@@ -440,5 +561,7 @@ if __name__ == '__main__':
     ap.add_argument('--grade', type=lambda s: [float(v) for v in s.split(',')], default=[1.0, 0.8, 0.55])
     ap.add_argument('--e15', type=int, default=1)
     ap.add_argument('--layers', action='store_true')
+    ap.add_argument('--tongues', type=int, default=1, help='(a) real flame tongues along the front')
+    ap.add_argument('--tgain', type=float, default=1.0)
     a = ap.parse_args()
     {'geo': cmd_geo, 'probe': cmd_probe, 'c5': cmd_c5}[a.cmd](a)

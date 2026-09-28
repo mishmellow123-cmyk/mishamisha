@@ -1,12 +1,26 @@
 # BURN-C: real filmed burn elements on C's pages (user: "the paper burning should look far more realistic")
 
-## STATE (BURN-C, 28 Sep ~02:50 local) -- READ FIRST
-* **BURN TEST READY sent to main (02:50).** Verdict: PARTLY. The real footage gives a far more natural burn FRONT
-  (a torn, asymmetric, unevenly growing hole, a separate small hole, a curling flap, the page lingering to ~1020);
-  the FIRE does not come with it (the clip's flames are big defocused glows that cannot be pulled cleanly off its
-  green screen), so it reads as "a real hole glowing at its edges", not yet "paper on fire". Recommended: HYBRID =
-  keep the footage matte + its rim light as the front, add flame tongues along it (real flame-on-black elements
-  instanced on the contour, or procedural), a lit curl lip, ash flakes; awaiting main's call.
+## STATE (BURN-C, 28 Sep ~03:05 local) -- READ FIRST
+* main 02:55: "go on (a)": real flame tongues along the front (hold (b) curl and (c) ash until main has seen (a)).
+  Deliver a 24-frame strip + a side-by-side (footage matte on top, footage + (a) below), then STOP and send
+  "BURN (a) READY". Usage is nearly spent: no side experiments.
+* (a) BUILT (ftburn.flame_tongues, `--tongues 1 --tgain`): real flames on black (the first seconds of PureRaw
+  8828898 [24:96] and 8828892 [36:84], before the green shows; 640x360 uint8 bank, crossfaded loops) stood on the
+  hole's contour and rising screen-up: one strip column per edge pixel, the column picked by a page-fixed coordinate
+  (fx + 0.7 fy) x SU 3.5, overlapping tiles crossfaded (M 120), height 8-140 px and brightness by the front's speed
+  (the union swept over 4 clip frames), short on near-vertical edge runs (else they stack into streaks).
+  DONE 03:14 (full 841-1039, scratchpad fullA): BURN (a) READY sent. Review: _local_logs/review/burn_C/A_* and
+  C5_A_matte_vs_tongues.mp4 (top = footage matte, bottom = + (a)). Fixes on the way: tongue bases smoothed along
+  the contour (+-12 px; 1-px columns on slanted edges sheared into slivers), no tongues on steep runs, the clip's
+  black level clipped (its noise stacked into faint streaks), the over-hole cores dropped (h264 blocks).
+* CLEAN PLATES: job `cloud/jobs/pages_book_plate.json` (book_c `--no-burn`, pushed 339b1e3; 324 frames: 841-1039,
+  1680-1717, 1905-1991 -> renders/book_C_plate + _matte). main launched the TEST (req 0928-025304-pagesbookplate-31317,
+  log ~/.cache/ldfarm/req/0928-025304-pagesbookplate-31317.log; frames 900, 1700, 1930, 1985 -> renders/_farmtest/
+  pages_book_plate/). I OWN THE REST: check at 1:1 (burn off, light kept, nothing else changed); if clean launch
+  finals `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/pages_book_plate.json --nodes 3 --detach`
+  and add a row "(lane-launched)" to _local_logs/handoff/LAUNCHED_BY_MAIN.md; if not, fix, push, re-test.
+* The C5 test verdict (sent 02:50): PARTLY: the footage FRONT is far more real; the footage's own flames don't
+  transfer; hybrid recommended -> (a) now.
 * Review files (not in git): `~/mishamisha/_local_logs/review/burn_C/` (SHEET_compare.jpg: now vs footage at 12
   frames; STRIP24_866-889.jpg; STILL_898_975.jpg; C5_burn_now_vs_footage.mp4: top now, bottom footage, 841-1039).
   Frames: session scratchpad `burn/full3/` (199 JPGs; delete when superseded).
