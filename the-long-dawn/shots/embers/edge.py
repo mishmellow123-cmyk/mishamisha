@@ -930,7 +930,7 @@ def post(tl, ctx, hdr):
     if A.T_WHITE - 40 <= t < A.T_WHITE:
         # falling into the fire: the frame goes white ON the downbeat (the IMPACT, bar 34 = 2640). A-FIX (SOUND-C):
         # the 40-frame ramp saturated by ~2616, 24 frames ahead of the hit; the white now arrives over the last 14
-        k = float(smoothstep(A.T_WHITE - 14, A.T_WHITE, t)) ** 2.2
+        k = float(smoothstep(A.T_WHITE - 5, A.T_WHITE, t)) ** 3.0     # (the glare saturates at k ~ 0.2)
         hdr = hdr * (1 - 0.3 * k) + np.array([6.0, 5.6, 5.0], np.float32) * (1.2 * k)
     if A.T_WHITE <= t < A.T_DEAD + 6:
         # out of the white, the grey vision

@@ -1335,6 +1335,10 @@ class FirstBeacon:
         pose = yw2_pose(f)
         hair = [c.at(f) for c in self.hair]
         B, F, H, an = hero.build_figure(pose, t, scarf_pts=self.scarf.at(f), hair_pts=hair)
+        if AFIX:                            # A-FIX (director): no lip colour or flush on the silhouetted face
+            H = np.array(H, np.float64, copy=True)
+            H[0] = 0.0
+            H[40] = 0.0
         L = []
         if st_e > 0.01:
             # the spark shower at the flint's edge: white-hot, brief, an extended source
@@ -1400,6 +1404,15 @@ class FirstBeacon:
                 sil = dict(sil)
                 sil['scarf'] = max(sil.get('scarf', 0.0), 0.92 * (1.0 - smoothstep(CATCH, CATCH + 24, f)))
             M3 = hsdf3.material_table3()
+            if AFIX:
+                # A-FIX (director, 1:1 at 1380): the face is a pure silhouette in the hood (no albedo, sheen, SSS,
+                # rim or ambient: only the hood's outer rim catches light), and the red scarf stays dark until the
+                # flame warms it
+                for mm in (hsdf3.M_SKIN, hsdf3.M_EYE):
+                    M3[mm, 0:3] = (0.004, 0.0035, 0.0033)
+                    M3[mm, 4] = 0.0
+                    M3[mm, 7:10] = 0.0
+                M3[hsdf3.M_SCARF, 0:3] *= 0.3 + 0.7 * smoothstep(CATCH, CATCH + 24, f)
             if H1C or AFIX:
                 M3[hsdf3.M_GLOVE, 0:3] = H1C_GLOVE[:3]
                 M3[hsdf3.M_GLOVE, 3] = H1C_GLOVE[3]
