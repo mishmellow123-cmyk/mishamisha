@@ -72,3 +72,8 @@ Local delivery uses frozen renderer commit `9fa0822`, with AC power confirmed. *
 ## Handback
 
 Inspect full-resolution C2639, the rivals strip, the C2460/C2510/C2560 sequence, the shutdown strip and the final grey Ring. The only new renderer is `shots/embers/c_v5.py`; the former C11 grasp remains on its old entrypoint. Use the new stems when adopting the new timeline. The source stayed frozen at9fa0822 throughout delivery; all11 recorded renderer/dependency hashes still matched at completion. An independent final Trap visual audit inspected29 unique delivered frames and found no new blocker, while noting that the withdrawing forge requires spatial tracking at480px. This was an informed inspection, not a blind audience test. The remaining assembly work is caption/transition/sound review; no such changes are included here.
+
+
+## Final delivered-image audit
+
+A later root audit inspected 74 unique delivered Cold/Unfinished frames, including native key states and three 24-frame strips. It found no new visual blocker and independently reproduced the final hold’s byte/pixel comparison. See [report and evidence](final-visual-audit/REPORT.md). This extends the sampled final-image review; real-time playback and EDIT joins remain outside its scope.
