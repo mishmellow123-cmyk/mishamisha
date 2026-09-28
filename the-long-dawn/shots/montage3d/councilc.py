@@ -33,6 +33,7 @@ WIND = (0.40, -0.16)
 TORCH_W = float(os.environ.get('COUNCIL_TORCH_W', '14.0'))        # a torch flame's light (W, before flicker)
 FIRE_W = float(os.environ.get('COUNCIL_FIRE_W', '260.0'))         # the hearth fire's light per m^2 of flame
 FLAME_E = float(os.environ.get('COUNCIL_FLAME_E', '60.0'))        # flame volume emission scale
+CLIP_LC = float(os.environ.get('COUNCIL_CLIP', '1.8'))            # hue-preserving roll-off (after exposure)
 
 
 def flame_specs():
@@ -339,6 +340,9 @@ def post(f, hdr, depth, cam, scene):
     e = scene.get('expo', {}).get(str(f), 1.0)
     w = scene.get('white', {}).get(str(f), 0.0)
     hdr = hdr * (EXPO * e)
+    L = hdr.max(axis=2, keepdims=True)
+    k = np.where(L > 1e-6, CLIP_LC * np.tanh(L / CLIP_LC) / np.maximum(L, 1e-6), 1.0)
+    hdr = hdr * k
     if w > 0.0:
         hdr = hdr * (1.0 - w) + w * np.array([8.0, 6.9, 5.4], np.float32)
     return hdr.astype(np.float32)
@@ -417,6 +421,27 @@ def _heather_points(rng, avoid, nvar, clear_r=1.05):
     return np.concatenate(pts), np.concatenate(rot), np.concatenate(scl), np.concatenate(var)
 
 
+def _litter_points(rng):
+    """The floor round the hearth, as it is at 1 mm a pixel from above: pebbles, broken stems of dead heather,
+    charcoal crumbs thick in the ash bed and thinning outward. Kinds: 0-2 pebbles, 3-6 stems, 7-9 crumbs."""
+    import council_geo as CG
+    P, R, S, K = [], [], [], []
+    for r0, r1, dens, kinds in ((0.34, 2.6, 40.0, (0, 1, 2)), (0.34, 2.6, 70.0, (3, 4, 5, 6)),
+                                (0.36, 1.1, 140.0, (7, 8, 9)), (1.1, 2.6, 10.0, (7, 8, 9))):
+        n = int(np.pi * (r1 * r1 - r0 * r0) * dens)
+        rr = np.sqrt(rng.uniform(r0 * r0, r1 * r1, n))
+        aa = rng.uniform(0, 2 * np.pi, n)
+        ok = rr > CG.slab_outline(aa) * 1.03
+        rr, aa = rr[ok], aa[ok]
+        n = len(rr)
+        P.append(np.stack([rr * np.cos(aa), rr * np.sin(aa), np.full(n, -0.002)], -1))
+        R.append(np.stack([rng.normal(0, 0.12, n), rng.normal(0, 0.12, n), rng.uniform(0, 6.28, n)], -1))
+        sc = rng.uniform(0.6, 1.4, n)
+        S.append(np.stack([sc, sc, sc], -1))
+        K.append(rng.choice(kinds, n))
+    return np.concatenate(P), np.concatenate(R), np.concatenate(S), np.concatenate(K)
+
+
 def _ring_geo():
     R_IN, TH, WD, SQ = 0.0094, 0.0023, 0.0052, 2.8
     n_t, n_a = 96, 20
@@ -450,6 +475,19 @@ def _bake(st, per, fr, cache, tag):
     s0 = per[str(f0)]
     V, Fc, Mt, _ = _ground_geo()
     B.mesh('ground', V, Fc, Mt)
+    for k in range(3):
+        V, Fc, Mt, _ = CG.pebble(200 + k, 0.010 + 0.007 * k)
+        B.mesh(f'l0{k}', V, Fc, Mt, kind='peb')
+    for k in range(4):
+        V, Fc, Mt, _ = CG.twig(300 + k, 0.045 + 0.030 * k)
+        B.mesh(f'l0{3 + k}', V, Fc, Mt, kind='twig')
+    for k in range(3):
+        sz = 0.005 + 0.004 * k
+        V, Fc, Mt, _ = CG.chunk((0.0, 0.0, 0.3 * sz), (sz, sz * 0.7, sz * 0.5), 400.0 + k)
+        B.mesh(f'l0{7 + k}', V, Fc, Mt, {'u': np.full(len(V), 0.9)}, kind='crumb')
+    P, R, S, K = _litter_points(np.random.default_rng(77))
+    B.idx['litter'] = dict(P=B.put(P, np.float32), R=B.put(R, np.float32), S=B.put(S, np.float32),
+                           K=B.put(K, np.int32), n=len(P))
     if not os.environ.get('COUNCIL_NOHEATHER'):
         nvar = 6
         for k in range(nvar):
@@ -488,12 +526,12 @@ def _bake(st, per, fr, cache, tag):
         V, Fc, Mt, _ = CG.chunk((x, y, z), (a, b, c), sd_)
         B.mesh(f'chunk{k}', V, Fc, Mt, {'u': np.full(len(V), 0.9)})
     if any(per[str(f)]['plate'] == 3 for f in fr):
-        for k in range(46):
+        for k in range(110):
             a = rng.uniform(0, 2 * np.pi)
-            r = 0.30 * math.sqrt(rng.uniform(0, 1))
+            r = 0.25 * math.sqrt(rng.uniform(0, 1))
             x, y = r * math.cos(a), r * math.sin(a)
-            sz = rng.uniform(0.012, 0.030)
-            z = float(CG.slab_top(x, y)) + 0.3 * sz
+            sz = rng.uniform(0.014, 0.042) * (1.0 - 0.4 * r / 0.25)
+            z = float(CG.slab_top(x, y)) + 0.3 * sz + 0.03 * max(0.0, 1.0 - r / 0.16) * rng.uniform(0.3, 1.0)
             V, Fc, Mt, _ = CG.chunk((x, y, z), (sz, sz * rng.uniform(0.6, 0.9), sz * 0.55), 50.0 + k)
             B.mesh(f'coal{k}', V, Fc, Mt, {'u': np.full(len(V), rng.uniform(0.0, 0.3))})
     V, Fc, Mt, at = CG.torch_mesh()
@@ -579,8 +617,8 @@ def _noise_col(nb, vec, scale, detail=3.0, rough=0.5):
 # ---------------------------------------------------------------- materials ---
 
 def mat_wool(new_material, name, cattr):
-    """Heavy fulled wool: fuzz and a fine twill, a soft sheen that catches the torchlight at the rims, damp and
-    darker at the hem, the fold ridges a little worn."""
+    """Heavy fulled wool, dark: fuzz and a fine twill, only a faint sheen at the grazing rims (never velvet or
+    satin), damp and darker toward the hem."""
     m, nb = new_material(name)
     R = nb.attr('rest').outputs['Vector']
     fib = nb.noise(R, scale=900.0, detail=5.0, rough=0.7)
@@ -588,18 +626,18 @@ def mat_wool(new_material, name, cattr):
                     wtype='BANDS', direction='DIAGONAL')
     mott = nb.noise(R, scale=5.0, detail=3.0, rough=0.55)
     base = nb.attr(cattr, 'OBJECT').outputs['Color']
-    k = nb.mul(nb.madd(mott.outputs['Fac'], 0.45, 0.78), nb.madd(fib.outputs['Fac'], 0.30, 0.85))
+    k = nb.mul(nb.madd(mott.outputs['Fac'], 0.40, 0.80), nb.madd(fib.outputs['Fac'], 0.25, 0.87))
     hem = nb.attr('hem').outputs['Fac']
-    k = nb.mul(k, nb.madd(nb.sstep(0.0, 1.0, hem), 0.42, 0.58))
+    k = nb.mul(k, nb.madd(nb.sstep(0.0, 1.0, hem), 0.40, 0.60))
     ridge = nb.attr('ridge').outputs['Fac']
-    k = nb.mul(k, nb.madd(nb.clamp01(ridge), 0.16, 1.0))
-    col = nb.colscale(base, nb.mul(k, 2.1))
-    bs = nb.principled(Base_Color=col, Roughness=0.93)
-    bs.inputs['Specular IOR Level'].default_value = 0.22
-    bs.inputs['Sheen Weight'].default_value = 1.0
-    bs.inputs['Sheen Roughness'].default_value = 0.42
-    bs.inputs['Sheen Tint'].default_value = (1.0, 0.93, 0.86, 1.0)
-    h = nb.add(nb.mul(fib.outputs['Fac'], 0.7), nb.mul(twill.outputs['Fac'] if hasattr(twill, 'outputs') else twill, 0.3))
+    k = nb.mul(k, nb.madd(nb.clamp01(ridge), 0.05, 1.0))
+    col = nb.colscale(base, nb.mul(k, 1.35))
+    bs = nb.principled(Base_Color=col, Roughness=0.95)
+    bs.inputs['Specular IOR Level'].default_value = 0.18
+    bs.inputs['Sheen Weight'].default_value = 0.35
+    bs.inputs['Sheen Roughness'].default_value = 0.30
+    bs.inputs['Sheen Tint'].default_value = (0.95, 0.90, 0.85, 1.0)
+    h = nb.add(nb.mul(fib.outputs['Fac'], 0.7), nb.mul(twill.outputs['Fac'], 0.3))
     nb.link(nb.bump(h, 0.30, 0.0012), bs.inputs['Normal'])
     nb.output(surface=bs)
     return m
@@ -687,17 +725,18 @@ def mat_gold(new_material):
 
 
 def mat_torch(new_material):
-    """Slot 0: the stave (worn dark wood, sooted toward the head). Slot 1: the head: strips of cloth soaked in pitch,
-    charred black with a sticky sheen; while lit the crevices glow; spent it is cold black with grey ash."""
+    """Slot 0: the stave (dark worn wood, charred black toward the head). Slot 1: the head: strips of cloth wound
+    and soaked in pitch, charred black with a sticky sheen; while lit its crevices glow; spent: cold, black, ash."""
     ms = []
     m, nb = new_material('torch_wood')
     P = nb.texco().outputs['Object']
     x, y, z = nb.sep(P)
     grain = nb.noise(nb.vmul(P, (60.0, 60.0, 3.0)), scale=1.0, detail=4.0, rough=0.6)
-    soot = nb.sstep(0.05, 0.28, z)
-    col = nb.mixcol(soot, nb.colscale((0.070, 0.047, 0.030), nb.madd(grain.outputs['Fac'], 0.5, 0.75)),
-                    (0.012, 0.010, 0.009))
-    bs = nb.principled(Base_Color=col, Roughness=0.72)
+    soot = nb.sstep(-0.02, 0.20, nb.add(z, nb.mul(nb.sub(grain.outputs['Fac'], 0.5), 0.08)))
+    col = nb.mixcol(soot, nb.colscale((0.034, 0.024, 0.016), nb.madd(grain.outputs['Fac'], 0.5, 0.75)),
+                    (0.007, 0.006, 0.0055))
+    bs = nb.principled(Base_Color=col, Roughness=0.80)
+    bs.inputs['Specular IOR Level'].default_value = 0.3
     nb.link(nb.bump(grain.outputs['Fac'], 0.3, 0.0006), bs.inputs['Normal'])
     nb.output(surface=bs)
     ms.append(m)
@@ -710,17 +749,17 @@ def mat_torch(new_material):
     lit = nb.attr('lit', 'OBJECT').outputs['Fac']
     ash = nb.attr('ash', 'OBJECT').outputs['Fac']
     ashm = nb.mul(ash, nb.sstep(0.45, 0.65, nb.noise(P, scale=120.0, detail=3.0).outputs['Fac']))
-    col = nb.mixcol(ashm, (0.010, 0.009, 0.008), (0.16, 0.15, 0.14))
-    bs = nb.principled(Base_Color=col, Roughness=nb.mixf(pitch, 0.78, 0.28))
+    col = nb.mixcol(ashm, (0.008, 0.007, 0.006), (0.12, 0.115, 0.11))
+    bs = nb.principled(Base_Color=col, Roughness=nb.mixf(pitch, 0.80, 0.30))
     bs.inputs['Specular IOR Level'].default_value = 0.4
     nb.link(nb.bump(nb.add(strands.outputs['Fac'], nb.mul(lump.outputs['Fac'], 0.5)), 0.45, 0.0015), bs.inputs['Normal'])
     crev = nb.sstep(0.46, 0.30, strands.outputs['Fac'])
     fl = nb.noise(P, scale=40.0, detail=1.0, dims='4D', w=nb.attr('tseed', 'OBJECT').outputs['Fac'])
     glow = nb.mul(nb.mul(crev, lit), nb.madd(fl.outputs['Fac'], 1.2, 0.2))
-    glow = nb.mul(glow, nb.sstep(0.30, 0.36, z))
+    glow = nb.mul(glow, nb.sstep(0.26, 0.33, z))
     bb = nb.n('ShaderNodeBlackbody')
-    bb.inputs['Temperature'].default_value = 1350.0
-    em = nb.emission(bb.outputs['Color'], nb.mul(glow, 6.0))
+    bb.inputs['Temperature'].default_value = 1300.0
+    em = nb.emission(bb.outputs['Color'], nb.mul(glow, 5.0))
     nb.output(surface=nb.addshader(bs, em))
     ms.append(m)
     return ms
@@ -730,7 +769,7 @@ def mat_flame(new_material, C, fr):
     """Volumetric flame (emission only) in the flame object's space (z up from its root, metres). Per object:
     fH height, fR radius, flx/fly lean (downwind shift per unit height), fI brightness, fseed. A turbulent field
     rising through it and a threshold that climbs with height break the top into tapering tongues with ragged,
-    transparent tips; blackbody from a yellow-orange core to deep orange-red tips."""
+    transparent tips; blackbody from a yellow-orange root (never white) to deep orange-red tips."""
     m, nb = new_material('flame')
     P = nb.texco().outputs['Object']
     px, py, pz = nb.sep(P)
@@ -747,13 +786,13 @@ def mat_flame(new_material, C, fr):
     bend = nb.mul(nb.pw(hc, 1.6), Hs)
     qx = nb.sub(px, nb.mul(lx, bend))
     qy = nb.sub(py, nb.mul(ly, bend))
-    lam = nb.madd(Hs, 0.22, 0.02)
-    rise = nb.madd(Hs, 2.2, 0.5)
+    lam = nb.madd(Hs, 0.24, 0.02)
+    rise = nb.madd(Hs, 2.0, 0.45)
     tz = nb.sub(pz, nb.mul(T, rise))
     Q = nb.comb(nb.div(qx, lam), nb.div(qy, lam), nb.div(tz, lam))
-    n1 = nb.noise(Q, scale=1.0, detail=2.0, rough=0.5, dims='4D', w=nb.add(nb.mul(T, 1.1), sd))
+    n1 = nb.noise(Q, scale=1.0, detail=1.0, rough=0.5, dims='4D', w=nb.add(nb.mul(T, 0.9), sd))
     dv = nb.vsub(n1.outputs['Color'], (0.5, 0.5, 0.5))
-    amp = nb.mul(nb.mul(nb.pw(hc, 0.9), Hs), 0.55)
+    amp = nb.mul(nb.mul(nb.pw(hc, 0.9), Hs), 0.50)
     dx, dy, dzz = nb.sep(dv)
     qx2 = nb.add(qx, nb.mul(dx, amp))
     qy2 = nb.add(qy, nb.mul(dy, amp))
@@ -763,23 +802,23 @@ def mat_flame(new_material, C, fr):
     r = nb.math('SQRT', nb.add(nb.mul(qx2, qx2), nb.mul(qy2, qy2)))
     prof = nb.mul(nb.mul(Rn, 1.85), nb.mul(nb.pw(nb.mx(h2c, 0.002), 0.33), nb.pw(nb.sub(1.0, h2c), 0.85)))
     rr = nb.div(r, nb.mx(prof, 0.001))
-    core = nb.sub(1.0, nb.sstep(0.30, 1.0, rr))
-    Q2 = nb.comb(nb.div(qx2, nb.mul(lam, 0.42)), nb.div(qy2, nb.mul(lam, 0.42)),
-                 nb.div(nb.sub(qz2, nb.mul(T, nb.mul(rise, 1.35))), nb.mul(lam, 0.42)))
-    n2 = nb.noise(Q2, scale=1.0, detail=2.0, rough=0.55, dims='4D', w=nb.add(nb.mul(T, 1.7), nb.mul(sd, 1.3)))
-    thr = nb.mul(h2c, 0.88)
-    tongue = nb.sstep(nb.sub(thr, 0.04), nb.add(thr, 0.16), nb.madd(n2.outputs['Fac'], 1.25, -0.10))
+    core = nb.sub(1.0, nb.sstep(0.35, 1.0, rr))
+    l2 = nb.mul(lam, 0.75)
+    Q2 = nb.comb(nb.add(nb.div(qx2, l2), sd), nb.div(qy2, l2), nb.div(nb.sub(qz2, nb.mul(T, nb.mul(rise, 1.3))), l2))
+    n2 = nb.noise(Q2, scale=1.0, detail=1.0, rough=0.5)
+    thr = nb.mul(h2c, 0.85)
+    tongue = nb.sstep(nb.sub(thr, 0.05), nb.add(thr, 0.20), nb.madd(n2.outputs['Fac'], 1.2, -0.08))
     dens = nb.mul(core, tongue)
     dens = nb.mul(dens, nb.sstep(-0.03, 0.05, h2))
     dens = nb.mul(dens, nb.sstep(1.05, 0.90, h2))
-    temp = nb.add(1250.0, nb.mul(1250.0, nb.mul(nb.pw(nb.sub(1.0, h2c), 1.4), nb.sub(1.0, nb.mul(nb.clamp01(rr), 0.55)))))
+    temp = nb.add(1150.0, nb.mul(950.0, nb.mul(nb.pw(nb.sub(1.0, h2c), 1.3), nb.sub(1.0, nb.mul(nb.clamp01(rr), 0.5)))))
     bb = nb.n('ShaderNodeBlackbody')
     nb.link(temp, bb.inputs['Temperature'])
-    strength = nb.mul(nb.mul(nb.pw(dens, 1.4), In), nb.madd(nb.sub(1.0, h2c), 0.75, 0.25))
+    strength = nb.mul(nb.mul(nb.pw(dens, 1.3), In), nb.madd(nb.sub(1.0, h2c), 0.75, 0.25))
     em = nb.emission(bb.outputs['Color'], nb.mul(strength, FLAME_E))
     nb.output(volume=em)
     try:
-        m.cycles.volume_step_rate = 0.12
+        m.cycles.volume_step_rate = 0.25
         m.cycles.homogeneous_volume = False
     except Exception as e:
         print('flame step rate:', e, flush=True)
@@ -824,29 +863,35 @@ def mat_stone(new_material, name, base=(0.085, 0.080, 0.072), lichen=0.6, soot_f
 
 
 def mat_slab(new_material):
-    """The council's flat stone: weathered dark gritstone, a natural cleft top; sooted black toward the middle where
-    fires have stood, ash dust in the hollows, crusts of lichen on the weathered outer edge and sides. It never
-    glows of itself."""
+    """The council's flat stone: weathered dark-grey gritstone, a natural cleft top; a patchy soot stain in the middle
+    where fires have stood, the broken sides sooted and dark, ash dust in the hollows, crusts of lichen on the
+    weathered outer top. It never glows of itself."""
     m, nb = new_material('slab')
     P = nb.texco().outputs['Object']
     px, py, pz = nb.sep(P)
+    nz = nb.sep(nb.geo().outputs['Normal'])[2]
     rl = nb.math('SQRT', nb.add(nb.mul(px, px), nb.mul(py, py)))
     grain = nb.voronoi(P, scale=1100.0, feature='F1')
     gr, _, _ = nb.sep(grain.outputs['Color'])
     pits = nb.noise(P, scale=90.0, detail=6.0, rough=0.65)
     stain = nb.noise(P, scale=9.0, detail=4.0, rough=0.6)
-    col = nb.colscale((0.080, 0.074, 0.066), nb.mul(nb.madd(stain.outputs['Fac'], 0.5, 0.75), nb.madd(gr, 0.25, 0.88)))
-    sootn = nb.noise(P, scale=14.0, detail=4.0, rough=0.6)
-    soot = nb.sstep(0.36, 0.10, nb.add(rl, nb.mul(nb.sub(sootn.outputs['Fac'], 0.5), 0.22)))
-    col = nb.mixcol(soot, col, (0.008, 0.0075, 0.007))
-    dust = nb.mul(nb.sstep(0.52, 0.36, pits.outputs['Fac']), nb.sstep(0.12, 0.30, rl))
-    col = nb.mixcol(nb.mul(dust, 0.45), col, (0.20, 0.19, 0.18))
+    col = nb.colscale((0.078, 0.073, 0.066), nb.mul(nb.madd(stain.outputs['Fac'], 0.55, 0.72), nb.madd(gr, 0.25, 0.88)))
+    sootn = nb.noise(P, scale=11.0, detail=4.0, rough=0.6)
+    soot = nb.sstep(0.21, 0.07, nb.add(rl, nb.mul(nb.sub(sootn.outputs['Fac'], 0.5), 0.20)))
+    streak = nb.mul(nb.sstep(0.55, 0.70, nb.noise(nb.vmul(P, (1.0, 1.0, 0.2)), scale=30.0, detail=2.0).outputs['Fac']),
+                    nb.sstep(0.34, 0.18, rl))
+    soot = nb.mx(soot, nb.mul(streak, 0.7))
+    side = nb.sstep(0.75, 0.35, nz)
+    soot = nb.mx(soot, nb.mul(side, 0.75))
+    col = nb.mixcol(soot, col, (0.011, 0.010, 0.0095))
+    dust = nb.mul(nb.sstep(0.52, 0.36, pits.outputs['Fac']), nb.mul(nb.sstep(0.16, 0.30, rl), nb.sub(1.0, side)))
+    col = nb.mixcol(nb.mul(dust, 0.40), col, (0.15, 0.145, 0.14))
     lv = nb.voronoi(P, scale=26.0, feature='F1')
     lic = nb.mul(nb.sstep(0.24, 0.10, nb.add(lv.outputs['Distance'], nb.mul(nb.noise(P, scale=40.0).outputs['Fac'], 0.10))),
-                 nb.sstep(0.30, 0.40, rl))
-    lic = nb.mul(lic, nb.sstep(0.40, 0.62, nb.noise(P, scale=4.0, detail=2.0).outputs['Fac']))
-    col = nb.mixcol(nb.mul(lic, 0.9), col, (0.24, 0.26, 0.21))
-    bs = nb.principled(Base_Color=col, Roughness=nb.madd(soot, -0.10, 0.90))
+                 nb.sstep(0.27, 0.36, rl))
+    lic = nb.mul(nb.mul(lic, nb.sstep(0.40, 0.62, nb.noise(P, scale=4.0, detail=2.0).outputs['Fac'])), nb.sub(1.0, soot))
+    col = nb.mixcol(nb.mul(lic, 0.85), col, (0.20, 0.215, 0.17))
+    bs = nb.principled(Base_Color=col, Roughness=nb.madd(soot, -0.08, 0.90))
     bs.inputs['Specular IOR Level'].default_value = 0.22
     h = nb.add(pits.outputs['Fac'], nb.mul(grain.outputs['Distance'], 0.4))
     h = nb.add(h, nb.mul(lic, 0.5))
@@ -855,10 +900,10 @@ def mat_slab(new_material):
     return m
 
 
-def mat_char(new_material, C, fr, heat_fn, name='char', cell=45.0):
-    """Alligator char: irregular blocky cells split by cracks (the cells warped, so no edge runs straight and none
-    meets another square), a silvery sheen on the char, grey ash in the cracks when cold; burning, the cracks and the
-    underside glow softly near the burning end (attribute u: 0 = the inner, burnt end)."""
+def mat_char(new_material, C, fr, heat_fn, name='char', cell=45.0, glow_k=3.0):
+    """Charcoal: warped blocky alligator cells (no crack runs straight or meets another square), black with a dull
+    silvery sheen on the cell faces and darker cracks; burning, the cracks and the underside glow softly near the
+    burning end (attribute u: 0 = the inner, burnt end) under patchy white ash. Cold, nothing glows."""
     m, nb = new_material(name)
     P = nb.texco().outputs['Object']
     warp = nb.noise(P, scale=cell * 0.35, detail=3.0, rough=0.6)
@@ -872,18 +917,21 @@ def mat_char(new_material, C, fr, heat_fn, name='char', cell=45.0):
     u = nb.attr('u').outputs['Fac']
     heat = _keyv(C, nb, name + '_heat', heat_fn, fr)
     near = nb.sstep(0.55, 0.05, u)
-    under = nb.sstep(0.2, -0.7, nb.sep(nb.geo().outputs['Normal'])[2])
+    nz = nb.sep(nb.geo().outputs['Normal'])[2]
+    under = nb.sstep(0.2, -0.7, nz)
     hotn = nb.noise(P, scale=cell * 0.25, detail=3.0, dims='4D', w=_keyv(C, nb, name + '_t', lambda f: f / 24.0 * 0.4, fr))
     glow = nb.mul(nb.mx(nb.mul(cr, near), nb.mul(under, nb.mul(near, 0.5))), nb.sstep(0.35, 0.7, hotn.outputs['Fac']))
     glow = nb.mul(glow, heat)
     bb = nb.n('ShaderNodeBlackbody')
-    bb.inputs['Temperature'].default_value = 1300.0
-    em = nb.emission(bb.outputs['Color'], nb.mul(glow, 3.0))
-    ashc = nb.mul(nb.mul(cr, nb.sub(1.0, heat)), 0.8)
-    body = nb.colscale((0.016, 0.015, 0.014), nb.madd(nb.noise(P, scale=cell * 3.0).outputs['Fac'], 0.5, 0.75))
-    col = nb.mixcol(ashc, body, (0.20, 0.19, 0.18))
-    bs = nb.principled(Base_Color=col, Roughness=nb.madd(cr, 0.35, 0.50))
-    bs.inputs['Specular IOR Level'].default_value = 0.45
+    bb.inputs['Temperature'].default_value = 1250.0
+    em = nb.emission(bb.outputs['Color'], nb.mul(glow, glow_k))
+    body = nb.colscale((0.015, 0.014, 0.0135), nb.madd(nb.noise(P, scale=cell * 3.0).outputs['Fac'], 0.5, 0.75))
+    col = nb.mixcol(nb.mul(cr, 0.8), body, (0.004, 0.0037, 0.0035))
+    ashp = nb.mul(nb.mul(nb.sstep(0.50, 0.66, nb.noise(P, scale=cell * 0.6, detail=3.0).outputs['Fac']),
+                         nb.sstep(0.2, 0.7, nz)), nb.madd(heat, 0.55, 0.12))
+    col = nb.mixcol(nb.mul(ashp, nb.sub(1.0, cr)), col, (0.15, 0.145, 0.14))
+    bs = nb.principled(Base_Color=col, Roughness=nb.madd(cr, 0.45, 0.45))
+    bs.inputs['Specular IOR Level'].default_value = 0.5
     h = nb.sub(nb.clamp01(nb.mul(vo.outputs['Distance'], 6.0)), nb.mul(crack2, 0.4))
     nb.link(nb.bump(h, 0.8, 0.0035), bs.inputs['Normal'])
     nb.output(surface=nb.addshader(bs, em))
@@ -912,7 +960,7 @@ def mat_ground(new_material, C, fr, heat_fn):
     crumbs = nb.noise(P, scale=160.0, detail=6.0, rough=0.65)
     grit = nb.voronoi(P, scale=420.0, feature='F1')
     grr, _, _ = nb.sep(grit.outputs['Color'])
-    gritm = nb.mul(nb.sstep(0.93, 0.99, grr), nb.sstep(0.35, 0.05, grit.outputs['Distance']))
+    gritm = nb.mul(nb.sstep(0.965, 0.995, grr), nb.sstep(0.30, 0.05, grit.outputs['Distance']))
     broad = nb.noise(P, scale=0.6, detail=3.0, rough=0.5)
     mid = nb.noise(P, scale=3.5, detail=4.0, rough=0.55)
     earth = nb.colscale((0.034, 0.025, 0.018), nb.mul(nb.madd(broad.outputs['Fac'], 0.25, 0.88),
@@ -926,13 +974,13 @@ def mat_ground(new_material, C, fr, heat_fn):
                    nb.sstep(0.70, 0.78, lit_c.outputs['Fac']))
     lmask = nb.mul(nb.sstep(0.95, 1.6, rl), nb.madd(nb.noise(P, scale=2.0).outputs['Fac'], 0.8, 0.3))
     litter = nb.mul(litter, lmask)
-    col = nb.mixcol(litter, earth, (0.060, 0.046, 0.034))
-    col = nb.mixcol(gritm, col, (0.10, 0.095, 0.088))
+    col = nb.mixcol(litter, earth, (0.045, 0.036, 0.028))
+    col = nb.mixcol(gritm, col, (0.055, 0.052, 0.048))
     # the ash bed round the stone (0.38 .. 0.92 m), drifting, finer and paler toward the stone
     an = nb.noise(P, scale=5.0, detail=4.0, rough=0.6)
     ashm = nb.mul(nb.sstep(0.34, 0.44, rl), nb.sstep(0.96, 0.78, nb.add(rl, nb.mul(nb.sub(an.outputs['Fac'], 0.5), 0.20))))
     ashf = nb.noise(P, scale=260.0, detail=5.0, rough=0.7)
-    ashc = nb.colscale((0.23, 0.22, 0.21), nb.mul(nb.madd(ashf.outputs['Fac'], 0.45, 0.78),
+    ashc = nb.colscale((0.105, 0.100, 0.095), nb.mul(nb.madd(ashf.outputs['Fac'], 0.45, 0.78),
                                                  nb.madd(an.outputs['Fac'], 0.5, 0.75)))
     dust = nb.sstep(0.55, 0.70, nb.noise(P, scale=90.0, detail=3.0).outputs['Fac'])
     ashc = nb.mixcol(nb.mul(dust, 0.8), ashc, (0.018, 0.016, 0.015))
@@ -1102,6 +1150,18 @@ def _static(C, new_material, G, blob, per, fr):
         h = G['heather']
         _instancer(C, 'heather', h['n'], _arr(blob, 'f', h['P']), _arr(blob, 'f', h['R']), _arr(blob, 'f', h['S']),
                    _arr(blob, 'i', h['K']), src)
+    if 'litter' in G:
+        src2 = C.collection('litter_src', hide=True)
+        lm = {'peb': mat_stone(new_material, 'pebble', base=(0.075, 0.070, 0.064), lichen=0.15),
+              'twig': mat_bark(new_material),
+              'crumb': mat_char(new_material, C, fr, lambda f: 0.0, 'crumb', cell=240.0)}
+        for k in range(10):
+            nm = f'l0{k}'
+            ob = _mk(C, nm, G[nm], blob, [lm[G[nm]['kind']]], link=False)
+            src2.objects.link(ob)
+        h = G['litter']
+        _instancer(C, 'litter', h['n'], _arr(blob, 'f', h['P']), _arr(blob, 'f', h['R']), _arr(blob, 'f', h['S']),
+                   _arr(blob, 'i', h['K']), src2)
     for j in range(11):
         e = G.get(f'stone{j}')
         if e is None:
@@ -1134,7 +1194,7 @@ def _static(C, new_material, G, blob, per, fr):
             _mk(C, nm, e, blob, [chm])
         elif nm.startswith('coal'):
             if coal is None:
-                coal = mat_char(new_material, C, fr, lambda f: 1.0 if per[f]['plate'] == 3 else 0.0, 'coal', cell=160.0)
+                coal = mat_char(new_material, C, fr, lambda f: 1.0 if per[f]['plate'] == 3 else 0.0, 'coal', cell=70.0, glow_k=2.4)
             ob = _mk(C, nm, e, blob, [coal])
             for f in fr:
                 ob.hide_render = per[f]['plate'] != 3
@@ -1219,7 +1279,7 @@ def _torches(C, G, blob, mats_t, flame_m, per, fr):
         lits = [tdata(f, k)[2] for f in fr]
         hfs = [tdata(f, k)[5] for f in fr]
         leans = [math.hypot(*tdata(f, k)[4]) for f in fr]
-        fl_ob = _flame_obj(C, f'flame{k}', flame_m, max(hfs) * 1.25, 0.06, max(leans) * 0.55) if max(lits) > 0.01 else None
+        fl_ob = _flame_obj(C, f'flame{k}', flame_m, max(hfs) * 1.40, 0.075, max(leans) * 0.9) if max(lits) > 0.01 else None
         light = None
         if max(lits) > 0.01:
             ld = bpy.data.lights.new(f'tl{k}', 'POINT')
@@ -1242,12 +1302,12 @@ def _torches(C, G, blob, mats_t, flame_m, per, fr):
             _key_prop(ob, 'ash', f, spent)
             _key_prop(ob, 'tseed', f, seed + f / 24.0 * 1.5)
             if fl_ob is not None:
-                fl_ob.location = base
+                fl_ob.location = (base[0] - 0.06 * ax[0], base[1] - 0.06 * ax[1], base[2] - 0.06 * ax[2])
                 fl_ob.keyframe_insert('location', frame=f)
-                _key_prop(fl_ob, 'fH', f, hf * (0.92 + 0.16 * (flk - 1.0) / 0.26))
-                _key_prop(fl_ob, 'fR', f, 0.088 * 0.62)
-                _key_prop(fl_ob, 'flx', f, lean[0] * 0.55)
-                _key_prop(fl_ob, 'fly', f, lean[1] * 0.55)
+                _key_prop(fl_ob, 'fH', f, hf * 1.25 * (0.92 + 0.16 * (flk - 1.0) / 0.26))
+                _key_prop(fl_ob, 'fR', f, 0.072)
+                _key_prop(fl_ob, 'flx', f, lean[0] * 0.9)
+                _key_prop(fl_ob, 'fly', f, lean[1] * 0.9)
                 _key_prop(fl_ob, 'fI', f, lit * flk)
                 _key_prop(fl_ob, 'fseed', f, seed)
                 fl_ob.hide_render = lit < 0.005
@@ -1296,7 +1356,7 @@ def _hearth_fire(C, flame_m, per, fr):
                 _key_prop(ob, 'fR', f, Rf)
                 _key_prop(ob, 'flx', f, sx)
                 _key_prop(ob, 'fly', f, sy)
-                _key_prop(ob, 'fI', f, 1.0 + 2.0 * wh)
+                _key_prop(ob, 'fI', f, 0.6 + 2.0 * wh)
                 _key_prop(ob, 'fseed', f, sd)
                 ob.hide_render = False
                 w = Hf * Rf
@@ -1340,7 +1400,7 @@ def _gloves(C, new_material, per, fr):
     crusted with gold); her right hand in P2 (to the Ring, closing on it, the fist in the fire)."""
     import glove as GL
     leather = [GL.leather_material(new_material, base=b) for b in
-               ((0.045, 0.030, 0.020), (0.038, 0.027, 0.020), (0.052, 0.034, 0.022))]
+               ((0.030, 0.020, 0.013), (0.026, 0.019, 0.014), (0.034, 0.022, 0.015))]
     gilt = mat_gilt(new_material, fr, C)
     f0 = fr[0]
     n_c = len(per[f0]['torches'])
@@ -1356,7 +1416,7 @@ def _gloves(C, new_material, per, fr):
             g.key_place(f, _hand_matrix(per[f]['torches'][i]['HD']))
     her_f = [f for f in fr if per[f]['her'] is not None]
     if her_f:
-        g = GL.Glove('her_glove', GL.leather_material(new_material, base=(0.075, 0.047, 0.029)), None, mirror=False,
+        g = GL.Glove('her_glove', GL.leather_material(new_material, base=(0.045, 0.028, 0.018)), None, mirror=False,
                      sub=3, sleeve=False)
         for f in fr:
             h = per[f]['her'] or per[her_f[0] if f < her_f[0] else her_f[-1]]['her']
@@ -1421,7 +1481,7 @@ def build(job):
     bg = w.node_tree.nodes['Background']
     bg.inputs[0].default_value = (0.0016, 0.0022, 0.0042, 1.0)
     bg.inputs[1].default_value = 1.0
-    C.sun('moon', Vector((-0.55, 0.50, 0.67)).normalized(), (0.55, 0.66, 1.0), 0.030, angle_deg=0.6)
+    C.sun('moon', Vector((-0.55, 0.50, 0.67)).normalized(), (0.55, 0.66, 1.0), 0.090, angle_deg=0.6)
     # ACCORD's camera exactly: 50 deg horizontal, principal point centred
     cam = C.make_camera('CAM', hfov=50.0, clip=(0.02, 3000.0))
     cam.rotation_mode = 'QUATERNION'
