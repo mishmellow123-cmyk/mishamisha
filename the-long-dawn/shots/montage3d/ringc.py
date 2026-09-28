@@ -28,7 +28,7 @@ FPS = 24.0
 SAMPLES = 96
 PREP_ONLY_FRAMES = True
 SHOT = os.environ.get('RING_SHOT', 'find_a')
-SHOTS = dict(find_a=(3000, 3079), find_b=(3080, 3149), fire=(3360, 3599), melt=(5360, 5519),
+SHOTS = dict(find_a=(3000, 3079), find_b=(3080, 3149), fire=(3360, 3565), fire_catch=(3566, 3599), melt=(5360, 5519),
              flint_a=(2960, 2999), flint_b=(3150, 3359))
 START, END = SHOTS[SHOT]
 BEAT = dict(strike2=3009, close=3060, open=3090, vision=(3090, 3141), fist=3140,
@@ -44,6 +44,8 @@ _F = dict(find_a=dict(exposure=1.0, bloom_strength=0.035, bloom_threshold=1.2, s
                       vignette_amount=0.34, lift=0.002),
           fire=dict(exposure=0.9, bloom_strength=0.06, bloom_threshold=1.1, streak_strength=0.0,
                     vignette_amount=0.3, lift=0.003),
+          fire_catch=dict(exposure=0.9, bloom_strength=0.05, bloom_threshold=1.1, streak_strength=0.0,
+                          vignette_amount=0.34, lift=0.003),
           melt=dict(exposure=0.55, bloom_strength=0.03, bloom_threshold=1.8, streak_strength=0.0,
                     vignette_amount=0.3, lift=0.002),
           flint_a=dict(exposure=1.0, bloom_strength=0.04, bloom_threshold=1.2, streak_strength=0.0,
@@ -664,7 +666,8 @@ def build(job):
         sc.cycles.light_sampling_threshold = 0.0
         sc.cycles.use_light_tree = True
     T = dict(T, _frames=list(job['frames']))
-    dict(find_a=_find_a, find_b=_find_b, fire=_fire, melt=_melt, flint_a=_flint, flint_b=_flint)[SHOT](
+    dict(find_a=_find_a, find_b=_find_b, fire=_fire, fire_catch=_fire_catch, melt=_melt, flint_a=_flint,
+         flint_b=_flint)[SHOT](
         C, new_material, R, opts, T)
     for ob in bpy.data.objects:                       # lamps light the scene; the lens never sees them as shapes
         if ob.type == 'LIGHT':
@@ -2067,72 +2070,20 @@ def _fire(C, new_material, R, opts, T):
     phi = math.radians(opts.get('ring_phi', 52.0))
     drop0, drop1 = 3577, 3581                                         # off the lip, into her palm
 
-    # her LEFT hand, the far one: at the steel's depth (in the focal plane), palm up, its fingers toward the fire and
-    # a little toward the lens, its forearm going back and away (left, into depth); it slides in from the left
-    GLh = GL.Glove('lglove', leather, wool, mirror=True)
-    ax_ = Vector(opts.get('lfingers', (0.90, -0.30, 0.16))).normalized()
-    az_ = -(Vector((0.0, 0.0, 1.0)) - ax_ * ax_.z).normalized()
-    ay_ = az_.cross(ax_)
-    Rl = Matrix((ax_, ay_, az_)).transposed().to_4x4()
-    cupped = GL.pose_mix(GL.POSES['relaxed'], GL.POSES['fist'], opts.get('lcurl', 0.30))
-    cupped['spread'] = -2.0                                           # the fingers together, curled: a hand to catch
-    mir = Matrix.Diagonal((1.0, -1.0, 1.0, 1.0))
-    palm_loc = Vector(opts.get('lpalm', (0.050, 0.004, -0.022)))      # right-hand-frame point on the palm
-    tip_d = S(drop0) @ Vector((s_lip, 0.0, _steel_arm_top(s_lip) - 2.0 * R_IN - THICK))
-    catch = tip_d + Vector(opts.get('catch_off', (0.003, 0.006, -0.020)))
-    l_in = 3544
-
-    def lplace(f):
-        u = _ease((f - l_in) / 30.0)                                  # in from off frame, arriving at rest by 3574
-        off = -ax_ * (0.42 * (1.0 - u)) + Vector((0.0, 0.0, -0.03 * (1.0 - u)))
-        off += Vector((0.0, 0.0, -0.003 * _ease((f - drop1) / 3.0) * (1.0 - _ease((f - drop1 - 4) / 6.0))))
-        return Matrix.Translation(catch + off) @ Rl @ Matrix.Translation(-(mir @ palm_loc))
-
-    close0 = 3584
     for f in range(START - 2, END + 3):
-        GLh.key_place(f, lplace(f))
-        GLh.key(f, GL.pose_mix(cupped, GL.POSES['fist'], _ease((f - close0) / 11.0) ** 0.9))
-        _key_hide((GLh.mesh, GLh.sleeve), f, f < l_in - 2)
-    sc.frame_set(close0 + 11)
-    pbl = GLh.rig.pose.bones
-    holl = (pbl['m1'].head + pbl['m2'].head + pbl['m3'].head + pbl['m3'].tail) / 4.0
-    holl = Vector((holl.x, -holl.y, holl.z))                          # the mirrored hand's fist hollow
-    in_fist = Matrix.Translation(holl) @ Matrix.Rotation(math.radians(70.0), 4, 'X')
-    for f in range(START - 2, END + 3):
-        if f < drop0:
-            sc_ = s_contact(f)
-            Pc = S(f) @ Vector((sc_, 0.0, _steel_arm_top(sc_)))
-            ps = swing(f)
-            arm_dir = (S(f).to_3x3() @ Vector((1.0, 0.0, 0.0))).normalized()
-            hdir = Vector((arm_dir.x, arm_dir.y, 0.0)).normalized()
-            axis = Quaternion((0.0, 0.0, 1.0), phi) @ hdir               # the band's axis, horizontal
-            upv = Vector((0.0, 0.0, 1.0))
-            M3 = Matrix((upv, axis.cross(upv), axis)).transposed()     # local x = up, local z = the axis
-            q = Quaternion(hdir, ps) @ M3.to_quaternion()
-            cen = Pc + Quaternion(hdir, ps) @ Vector((0.0, 0.0, -(R_IN + 0.0008)))   # clear of the arm's edges
-        else:
-            # off the lip: it falls (accelerating, a quarter turn) into the cup of her palm, lies there, and is drawn
-            # into the closing fist
-            Pl = lplace(f) @ (mir @ palm_loc) + Vector((0.0, 0.0, 0.5 * WIDTH + 0.0004))
-            if f < drop1:
-                u = (f - drop0) / float(drop1 - drop0)
-                P0 = S(drop0) @ Vector((s_lip + 0.003, 0.0, _steel_arm_top(s_lip) - R_IN))
-                cen = P0.lerp(Pl, u * u)
-                q = Quaternion((1.0, 0.0, 0.0), math.radians(80.0) * (1.0 - u)) @ Quaternion((0.0, 0.0, 1.0), phi)
-            else:
-                b_ = (f - drop1) / FPS
-                cen = Pl + Vector((0.0, 0.0, 0.0022 * abs(math.sin(b_ * 30.0)) * math.exp(-b_ * 18.0)))
-                q = Quaternion((0.0, 0.0, 1.0), phi) @ Quaternion((1.0, 0.0, 0.0), math.radians(8.0))
-                k = _ease((f - close0) / 10.0)
-                if k > 0:
-                    Mf = lplace(f) @ in_fist
-                    lf, rf, _ = Mf.decompose()
-                    cen = cen.lerp(lf, k)
-                    q = q.slerp(rf, k)
-        ring.location = cen
-        ring.rotation_quaternion = q
+        sc_ = s_contact(f)
+        Pc = S(f) @ Vector((sc_, 0.0, _steel_arm_top(sc_)))
+        ps = swing(f)
+        arm_dir = (S(f).to_3x3() @ Vector((1.0, 0.0, 0.0))).normalized()
+        hdir = Vector((arm_dir.x, arm_dir.y, 0.0)).normalized()
+        axis = Quaternion((0.0, 0.0, 1.0), phi) @ hdir                   # the band's axis, horizontal
+        upv = Vector((0.0, 0.0, 1.0))
+        M3 = Matrix((upv, axis.cross(upv), axis)).transposed()         # local x = up, local z = the axis
+        ring.location = Pc + Quaternion(hdir, ps) @ Vector((0.0, 0.0, -(R_IN + 0.0008)))   # clear of the arm's edges
+        ring.rotation_quaternion = Quaternion(hdir, ps) @ M3.to_quaternion()
         ring.keyframe_insert('location', frame=f)
         ring.keyframe_insert('rotation_quaternion', frame=f)
+    catch = Gd
     print('fire: G0', tuple(round(c, 4) for c in G0), 'Gd', tuple(round(c, 4) for c in Gd), 'catch',
           tuple(round(c, 4) for c in catch), flush=True)
 
@@ -2200,26 +2151,213 @@ def _fire(C, new_material, R, opts, T):
         L0 = (x0 + rng.uniform(-0.06, 0.06), y0 + rng.uniform(-0.02, 0.02), rng.uniform(0.05, 0.09))
         paths.append((S0, Q0, L0, f0, f0 + int(rng.uniform(8, 14)), 0))
     _sparks(C, new_material, paths, (START, END))
-    # the camera: locked on the band; a slow push while it lies in the fire; at the draw it pulls back and follows
-    # the steel out to the left until both hands are in frame, in focus
-    vdir = (tgt - cam_p).normalized()
-    tgt2 = catch + Vector(opts.get('tgt2_off', (0.010, 0.0, 0.020)))
-    d2 = opts.get('cam2_dist', 0.80)
-    p2 = tgt2 - vdir * d2 + Vector((0.0, 0.0, opts.get('cam2_rise', 0.14)))
+    # the camera: locked on the band; a slow push while it lies in the fire; when she draws it out (3560) the lens
+    # starts to follow it; C15 cuts here (3566) to the insert of her palm (fire_catch)
     for f in range(START - 2, END + 3):
         push = 0.10 * _ease((f - 3404) / 80.0)
-        k2 = _ease((f - (draw_t - 4)) / 30.0)
-        p_ = cam_p.lerp(tgt, push).lerp(p2, k2)
-        t_ = tgt.lerp(tgt2, k2)
+        shift = (grip(f) - G0) * 0.55 if f > draw_t else Vector((0.0, 0.0, 0.0))
+        p_ = cam_p.lerp(tgt, push) + shift
+        t_ = tgt + shift
         cam.location = p_
         cam.keyframe_insert('location', frame=f)
         cam.rotation_quaternion = (t_ - p_).to_track_quat('-Z', 'Y')
         cam.keyframe_insert('rotation_quaternion', frame=f)
-        foc = Vector((0.0, 0.0, 0.0)).lerp(catch + Vector((0.0, 0.004, 0.0)), _ease((f - (draw_t - 2)) / 22.0))
-        cam.data.dof.focus_distance = (p_ - foc).length
+        cam.data.dof.focus_distance = (p_ - (grip(f) - G0)).length
         cam.data.dof.keyframe_insert('focus_distance', frame=f)
-        cam.data.dof.aperture_fstop = opts.get('fstop', 9.0) + (opts.get('fstop2', 14.0) - opts.get('fstop', 9.0)) * k2
-        cam.data.dof.keyframe_insert('aperture_fstop', frame=f)
+
+
+def _fire_catch(C, new_material, R, opts, T):
+    """C15's end, the insert (3566-3599): looking down on her open left palm by the fire (a rhyme of find_b). The
+    tip of her C-steel, still dull red, holds the band over the palm; the steel tips (3572), the band slides over the
+    lip and drops into the palm (3577-3580); her fingers close on it (3584-3595): already she cannot let it go."""
+    import bpy
+    from mathutils import Euler, Matrix, Quaternion, Vector
+
+    import glove as GL
+    _world((0.020, 0.0065, 0.0022), 0.5)
+    snow = snow_material(new_material)
+    _plane(C, 'ground', -0.26, 1.2, snow)                          # the snow under her hand, lit by the fire
+    leather = GL.leather_material(new_material, base=opts.get('leather', (0.034, 0.022, 0.014)),
+                                  rough=opts.get('leather_rough', 0.38))
+    for nd in leather.node_tree.nodes:
+        if nd.type == 'BSDF_PRINCIPLED':
+            nd.inputs['Specular IOR Level'].default_value = 0.50
+            nd.inputs['Coat Weight'].default_value = 0.25
+            nd.inputs['Coat Roughness'].default_value = 0.26
+    wool = GL.wool_material(new_material)
+    G = GL.Glove('lglove', leather, wool, mirror=True)
+    # palm up, the fingers away from the lens and to the right, the thumb to the left, the forearm falling away
+    # toward the lens and her (out of frame, lower left)
+    R0 = Matrix(((0.0, 1.0, 0.0), (1.0, 0.0, 0.0), (0.0, 0.0, -1.0)))
+    Rh = (Euler((math.radians(opts.get('hand_pitch', 10.0)), math.radians(opts.get('hand_roll', -8.0)),
+                 math.radians(opts.get('hand_yaw', -28.0))), 'XYZ').to_matrix() @ R0).to_4x4()
+    T0 = Vector((0.0, -0.050, 0.0))
+
+    def place(f):
+        t = f / FPS
+        d = Vector((0.0005 * math.sin(1.3 * t + 0.4) + 0.0003 * math.sin(3.1 * t), 0.0004 * math.sin(0.9 * t + 1.1),
+                    0.0007 * math.sin(1.7 * t + 2.0) + 0.0003 * math.sin(4.3 * t + 0.5)))
+        d += Vector((0.0, 0.0, -0.0025 * _ease((f - 3579) / 2.0) * (1.0 - _ease((f - 3581) / 6.0))))   # the weight lands
+        return Matrix.Translation(T0 + d) @ Rh
+
+    cupped = GL.pose_mix(GL.POSES['cup'], GL.POSES['relaxed'], opts.get('open_mix', 0.35))
+    close0 = opts.get('close0', 3584)
+
+    def pose(f):
+        return GL.pose_mix(cupped, GL.POSES['fist'], _ein((f - close0) / 11.0) ** 0.8)
+
+    for f in range(START - 2, END + 3):
+        G.key_place(f, place(f))
+        G.key(f, pose(f))
+    sc = bpy.context.scene
+    dg = bpy.context.evaluated_depsgraph_get()
+    sc.frame_set(3576)
+    dg.update()
+    Mh = place(3576)
+    mir = Matrix.Diagonal((1.0, -1.0, 1.0, 1.0))
+    spot = Mh @ mir @ Vector(opts.get('palm_spot', (0.050, 0.004, -0.02)))
+    hit, loc, nrm, _i, _o, _m = sc.ray_cast(dg, spot + Vector((0.0, 0.0, 0.05)), Vector((0.0, 0.0, -1.0)))
+    if not hit:
+        print('fire_catch: palm ray missed; using the spot', flush=True)
+        loc, nrm = spot, Vector((0.0, 0.0, 1.0))
+    loc = Vector(loc)
+    print('fire_catch palm', tuple(round(c, 4) for c in loc), flush=True)
+    up = Vector(nrm).normalized()
+    if up.z < 0:
+        up = -up
+    up = up.lerp(Vector((0.0, 0.0, 1.0)), 0.5).normalized()
+    ax = -(Vector((0.0, 1.0, 0.0)) - up * up.y).normalized()
+    ay = up.cross(ax)
+    lie = Matrix.Translation(loc + up * (0.5 * WIDTH + 0.0003)) @ Matrix((ax, ay, up)).transposed().to_4x4()
+    lie_local = Mh.inverted() @ lie
+    sc.frame_set(close0 + 11)
+    pb = G.rig.pose.bones
+    hol = (pb['m1'].head + pb['m2'].head + pb['m3'].head + pb['m3'].tail) / 4.0
+    hol = Vector((hol.x, -hol.y, hol.z))
+    in_fist = Matrix.Translation(hol) @ Euler((math.radians(70.0), 0.0, math.radians(10.0))).to_matrix().to_4x4()
+
+    # ---- the steel: from the upper left (her right fist, out of frame), its tip over the palm; it tips, the band
+    # goes over the lip, and the steel withdraws up and away to the left
+    heat = [(f, 0.28 * (1.0 - 0.5 * _ease((f - START) / 34.0))) for f in range(START - 2, END + 3)]
+    stl = _steel_mesh(C, steel_material(new_material, heat))
+    stl.rotation_mode = 'QUATERNION'
+    yaw = math.radians(opts.get('steel_yaw', -25.0))                 # the arm comes from the upper left
+    hang = loc + Vector((0.004, 0.002, opts.get('hang_h', 0.030)))    # the band's centre while it hangs
+
+    def dip(f):
+        d = math.radians(26.0) * _ease((f - 3572) / 5.0) - math.radians(24.0) * _ease((f - 3581) / 8.0)
+        t = f / FPS
+        return d + math.radians(0.4) * math.sin(6.1 * t + 0.3) + math.radians(0.25) * math.sin(11.7 * t)
+
+    def S(f):
+        Rz = Matrix.Rotation(yaw, 4, 'Z')
+        lip_top = Vector((S_LIP, 0.0, _steel_arm_top(S_LIP)))
+        base = hang + Vector((0.0, 0.0, R_IN + 0.0008))              # the arm's top edge at the lip, at rest
+        M0 = Rz @ Matrix.Rotation(dip(f), 4, 'Y')
+        g_ = base - (M0.to_3x3() @ lip_top)
+        g_ += Vector((-0.030, 0.010, 0.050)) * _ease((f - 3582) / 14.0)                # withdraws after the drop
+        t = f / FPS
+        g_ += Vector((0.0004 * math.sin(7.1 * t), 0.0003 * math.sin(5.9 * t + 1.0), 0.0005 * math.sin(5.3 * t + 0.4)))
+        return Matrix.Translation(g_) @ M0
+
+    GR = GL.Glove('rglove', leather, wool, mirror=False)             # her right fist on the steel's back
+    GR.set_pose(GL.POSES['fist'])
+    sc.frame_set(START)
+    pbr = GR.rig.pose.bones
+    holr = (pbr['m1'].head + pbr['m2'].head + pbr['m3'].head + pbr['m3'].tail) / 4.0
+    Rf = Matrix(((1.0, 0.0, 0.0), (0.0, 0.0, -1.0), (0.0, 1.0, 0.0))).to_4x4()
+    for f in range(START - 2, END + 3):
+        Sf = S(f)
+        l, r, _ = Sf.decompose()
+        stl.location = l
+        stl.rotation_quaternion = r
+        stl.keyframe_insert('location', frame=f)
+        stl.keyframe_insert('rotation_quaternion', frame=f)
+        GR.key_place(f, Sf @ Rf @ Matrix.Translation(-holr))
+        GR.key(f, GL.POSES['fist'])
+
+    # ---- the band: swinging a little on the lip (it was just drawn out), over the lip at the tip, falls into the palm,
+    # a small bounce, then drawn into the closing fist
+    g = gold(new_material, R)
+    ring, _ = band_mesh('ring', g)
+    ring.rotation_mode = 'QUATERNION'
+    phi = math.radians(opts.get('ring_phi', 52.0))
+    drop0, drop1 = 3576, 3580
+    for f in range(START - 2, END + 3):
+        if f < drop0:
+            Sf = S(f)
+            Pc = Sf @ Vector((S_LIP, 0.0, _steel_arm_top(S_LIP)))
+            arm_dir = (Sf.to_3x3() @ Vector((1.0, 0.0, 0.0))).normalized()
+            hdir = Vector((arm_dir.x, arm_dir.y, 0.0)).normalized()
+            u = (f - START) / FPS
+            ps = math.radians(7.0) * math.exp(-u * 2.2) * math.sin(u * 11.0 + 0.6)
+            axis = Quaternion((0.0, 0.0, 1.0), phi) @ hdir
+            upv = Vector((0.0, 0.0, 1.0))
+            M3 = Matrix((upv, axis.cross(upv), axis)).transposed()
+            cen = Pc + Quaternion(hdir, ps) @ Vector((0.0, 0.0, -(R_IN + 0.0008)))
+            q = Quaternion(hdir, ps) @ M3.to_quaternion()
+        else:
+            Ml = place(f) @ lie_local
+            ll, lr, _ = Ml.decompose()
+            if f < drop1:
+                u = (f - drop0) / float(drop1 - drop0)
+                P0 = S(drop0) @ Vector((S_LIP + 0.004, 0.0, _steel_arm_top(S_LIP) - R_IN))
+                cen = P0.lerp(ll, u * u)
+                q0 = Quaternion((0.0, 0.0, 1.0), phi) @ Quaternion((1.0, 0.0, 0.0), math.radians(80.0))
+                q = q0.slerp(lr, u)
+            else:
+                b_ = (f - drop1) / FPS
+                cen = ll + up * (0.0020 * abs(math.sin(b_ * 30.0)) * math.exp(-b_ * 16.0))
+                q = lr
+                k = _ease((f - close0) / 10.0)
+                if k > 0:
+                    lf, rf, _ = (place(f) @ in_fist).decompose()
+                    cen = cen.lerp(lf, k)
+                    q = q.slerp(rf, k)
+        ring.location = cen
+        ring.rotation_quaternion = q
+        ring.keyframe_insert('location', frame=f)
+        ring.keyframe_insert('rotation_quaternion', frame=f)
+
+    # ---- the fire, off frame right: its warm key on the palm, its glow from below, a warm rim from behind; the
+    # night's cold fill from the lens side
+    tgt = loc + Vector(opts.get('tgt_off', (0.004, 0.006, 0.010)))
+    kd = bpy.data.lights.new('firekey', 'AREA')
+    kd.shape = 'DISK'
+    kd.size = 0.22
+    kd.color = (1.0, 0.44, 0.13)
+    kob = C.link_obj(bpy.data.objects.new('firekey', kd))
+    kob.location = tgt + Vector(opts.get('key_off', (0.26, 0.10, 0.10)))
+    kob.rotation_mode = 'QUATERNION'
+    kob.rotation_quaternion = (kob.location - tgt).to_track_quat('Z', 'Y')
+    bd = bpy.data.lights.new('bedglow', 'AREA')
+    bd.shape = 'DISK'
+    bd.size = 0.25
+    bd.color = (1.0, 0.33, 0.07)
+    bob = C.link_obj(bpy.data.objects.new('bedglow', bd))
+    bob.location = tgt + Vector((0.22, 0.12, -0.16))
+    bob.rotation_mode = 'QUATERNION'
+    bob.rotation_quaternion = (bob.location - tgt).to_track_quat('Z', 'Y')
+    rim = C.point('backrim', tuple(tgt + Vector((0.06, 0.24, 0.10))), (1.0, 0.58, 0.24), 0.0, radius=0.05)
+    for f in range(START - 2, END + 3):
+        k = _flick(f, 3, 0.8)
+        C.key(kd, 'energy', f, opts.get('key_w', 1.3) * k)
+        C.key(bd, 'energy', f, opts.get('bed_w', 0.9) * _flick(f, 11, 0.7))
+        C.key(rim.data, 'energy', f, opts.get('rim_w', 0.35) * _flick(f, 7, 0.6))
+    C.sun('nightfill', opts.get('fill_dir', (-0.45, -0.70, 0.55)), (0.50, 0.60, 1.0), opts.get('fill', 0.05),
+          angle_deg=20.0)
+    # ---- the camera: looking down on the palm from her side of it, a slow push
+    el = math.radians(opts.get('cam_el', 50.0))
+    az = math.radians(opts.get('cam_az', -12.0))
+    vdir = Vector((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)))
+    d0 = opts.get('cam_dist', 0.34)
+    cam = _camera(tgt + vdir * d0, tgt, opts.get('lens', 80.0), opts.get('fstop', 14.0))
+    for f in range(START - 2, END + 3):
+        p_ = tgt + vdir * (d0 * (1.0 - 0.04 * _ease((f - START) / float(END - START))))
+        cam.location = p_
+        cam.keyframe_insert('location', frame=f)
+        cam.data.dof.focus_distance = (p_ - (loc + Vector((0.0, 0.0, 0.006)))).length
+        cam.data.dof.keyframe_insert('focus_distance', frame=f)
 
 
 # ------------------------------------------------------------------------ C22 ---
