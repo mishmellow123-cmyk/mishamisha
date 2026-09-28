@@ -6,7 +6,7 @@ Last updated: **2026-09-28 ~07:30Z**, by the director (Claude, Opus 5.5).
 
 **The repo is PUBLIC.**
 - Never put tokens, keys, credentials, personal details, licensed footage, or film/book audio clips in it.
-- Never commit the user's `AI-2040.pdf`.
+- Never commit untracked personal files that sit in the working copy (e.g. PDFs in the repo root).
 
 **Read first, in order:**
 1. This file.
