@@ -1,6 +1,6 @@
 {
   "source_commit": "ebcdd0a0b51691a74f3635f7a64c55d6546a2aa0",
-  "updated_utc": "2026-09-28T08:36:41.018093+00:00",
+  "updated_utc": "2026-09-28T09:05:54.308096+00:00",
   "shots": {
     "refusal": {
       "range": [
@@ -33,7 +33,24 @@
       "delivery_receipt_sha256": "e38f4aa429647f18703f9321e06a7ce6ded0234806a6cfbba6139cc3489de73c",
       "preview": "book_C5_deep_abandoned_preview.mp4",
       "preview_sha256": "36b8266707ea9f5294d6caa6af7151f39e00c83cc45c0dc1b85c9e6dffb6a1d8",
-      "completed_utc": "2026-09-28T08:36:41.017556+00:00"
+      "completed_utc": "2026-09-28T08:36:41.017556+00:00",
+      "mailbox_reported_utc": "2026-09-28T08:36:44.651208+00:00"
+    },
+    "pen": {
+      "range": [
+        5440,
+        5679
+      ],
+      "rgb_frames": 240,
+      "matte_frames": 240,
+      "qc_valid": 240,
+      "qc_pairs": 239,
+      "review_candidates": 0,
+      "render_seconds": 1747.4811416250013,
+      "delivery_receipt_sha256": "c538ee84db0c6c861140cc7788aeb30d7560d39145c27812e99a63517fc5b17b",
+      "preview": "book_C5_pen_preview.mp4",
+      "preview_sha256": "55b659c1a08c1b496c51f8625a94261860144924d384bb0dc197d09e00412855",
+      "completed_utc": "2026-09-28T09:05:54.307669+00:00"
     }
   },
   "limits": [
