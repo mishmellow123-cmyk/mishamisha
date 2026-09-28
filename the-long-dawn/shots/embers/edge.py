@@ -784,7 +784,8 @@ def _cam_fall(tl, t):
     pitch = math.radians(lerp(34.0, 64.0, lean))
     pos = p0 - out * (2.4 * lean) + np.array([0.0, -1.2 * lean, 0.0])
     look_d = -out * math.cos(pitch) + np.array([0.0, -math.sin(pitch), 0.0])
-    k = float(ease_in(np.clip((x - 24.0) / (A.T_WHITE - A.T_TIP - 24.0), 0, 1), 2.0))
+    # A-FIX (SOUND-C, 28 Sep): the plunge lands on the IMPACT (2640), so the travel is held back (x^3, was x^2)
+    k = float(ease_in(np.clip((x - 24.0) / (A.T_WHITE - A.T_TIP - 24.0), 0, 1), 3.0))
     pos = pos + (heart + np.array([0.0, 6.0, 0.0]) - pos) * (0.85 * k)
     d_heart = heart - pos
     d_heart /= max(np.linalg.norm(d_heart), 1e-6)
@@ -927,8 +928,9 @@ def post(tl, ctx, hdr):
         amp = 2.2 + 2.0 * float(smoothstep(A.T_BRINK, A.T_BRINK + 40, t)) if t < A.T_WHITE else 1.2
         hdr = _shimmer(ctx, hdr, amp)
     if A.T_WHITE - 40 <= t < A.T_WHITE:
-        # falling into the fire: the frame goes white on the downbeat (the IMPACT)
-        k = float(smoothstep(A.T_WHITE - 40, A.T_WHITE - 1, t)) ** 1.6
+        # falling into the fire: the frame goes white ON the downbeat (the IMPACT, bar 34 = 2640). A-FIX (SOUND-C):
+        # the 40-frame ramp saturated by ~2616, 24 frames ahead of the hit; the white now arrives over the last 14
+        k = float(smoothstep(A.T_WHITE - 14, A.T_WHITE, t)) ** 2.2
         hdr = hdr * (1 - 0.3 * k) + np.array([6.0, 5.6, 5.0], np.float32) * (1.2 * k)
     if A.T_WHITE <= t < A.T_DEAD + 6:
         # out of the white, the grey vision

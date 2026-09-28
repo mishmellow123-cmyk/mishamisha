@@ -258,7 +258,8 @@ A_TRANS = [
          glow_keys=[(1280, 0.004, 0.0036, 0.0032), (1440, 0.004, 0.0036, 0.0032)],
          note="A-FIX V1: THE PROMISE seen in the fire's light"),
     # A8 over the rim: the fall ends in the thinking fire's ice-white, not a warm blast
-    dict(f0=2520, f1=2640, cut=2520, kind='iceheart', ramp=(2528, 2600), gain=1.35, lift=0.25,
+    # (the render's own white now lands ON 2640, the IMPACT: edge.py A-FIX; so no lift here, only the colour)
+    dict(f0=2520, f1=2640, cut=2520, kind='iceheart', ramp=(2528, 2620), gain=1.35, lift=0.0,
          note='A-FIX E3: the fall into the ice-white fire'),
     # A9 THE DEAD VALLEY, bars 34-35: the fire's second vision, in the same window, closing to a point
     dict(f0=2640, f1=2800, cut=2684, kind='vision', track=[(2640, 958, 440), (2800, 958, 440)], open=(2656, 2692),
