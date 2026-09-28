@@ -5,7 +5,7 @@
 frame fresh; C22 5360-5519 untouched). Verified: 6160 == runC_illum f_02877 (mean diff 0.27/255); C9's matte open by
 1991; the fade reaches black at 7199. Map X1s: renders/x1_map_C{,_matte,_cover} 4150-4185 and x1_map_C71{...}
 5594-5640 (x1burn.py, v2; EDIT kind `burn` live, 25e39dc).
-**JOB READY SENT (22:50 local): `pages_book_polish`** (cloud/jobs/pages_book_polish.json, 1425 frames: 80-331,
+**LAUNCHED by main (--nodes 8, log _local_logs/jobs/pages_book_polish_farm.log); the director reviews the landed frames. Lane DONE. Lesson: keep passing check stills until the director has seen them.** Was: **JOB READY SENT (22:50 local): `pages_book_polish`** (cloud/jobs/pages_book_polish.json, 1425 frames: 80-331,
 360-594, 760-850, 1680-1991, 6160-6434, 6741-7000; code at the tip after 'PAGES-C polish 2'). The director's notes:
 T14 1.5x off the gutter; the initial re-illuminated (a burnished gold ground with an ink diaper and vermilion bezants,
 the vermilion letter filling it, penwork curls and frame lines, a gilt border stem with ivy down the margin;
