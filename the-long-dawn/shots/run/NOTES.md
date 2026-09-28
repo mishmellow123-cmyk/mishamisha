@@ -34,9 +34,20 @@
   heart on 4880 (the old final had it 17 px right of the match cut: measured (977, 400) vs (959.5, 401.5)). Fire 0
   stays where the match-cut composition had it (3.3 m ahead of the stopped lantern). The keepers' reach is blended
   (the old kneeling keeper's arm jumped). Motion blur only on walking, large figures (12.5-19.5 s).
-* **In flight:** look-dev 2 (8bcc818: boulder, rough stones, horn) -> renders/_farmtest/crossing_a4_lookdev/;
-  look-dev 3 (the restage) -> renders/_farmtest/crossing_a4_lookdev3/: 4880, 5040-5063 (the hold), 5230-5253 (the
-  set-off at 1:1), 5584, 5839. NEXT: 1:1 strips of the feet -> JOB READY crossing_a2_01..18 (whole take).
+* **HOLD (director, 28 Sep ~01:30Z): do NOT send or launch the crossing finals until A's ending is decided (after
+  C becomes "STOP"; A's crossing + dawn = "slow down together").** Code is pushed; the finals are the existing
+  jobs `crossing_a2_01..18` (whole take: the lantern, heart and line change in every job; est. ~2x RUN-A2's cost,
+  ~380 s/frame/proc while figures are large and blurred, ~260 s after; ~10 node-hours; 6 nodes ~1.7 h).
+* **Look-dev results.** LD1 (60e2f13, 50 f, renders/_farmtest/crossing_a4_lookdev_prev): the procession reads as
+  people (groups, pairs, a hand on a shoulder, a child's hand held, staffs, raised and staff-hung lanterns), not
+  pawns; the step-help reads (the helper on the rock turned back, reaching down; the second climbing); 24-frame
+  diffs uniform (no pops); the stones were still cubes and the step a crate. LD2 (8bcc818, 5 f,
+  renders/_farmtest/crossing_a4_lookdev): stones now dark, rough, lumpy, snow-speckled rocks (PASS); the lantern a
+  plain square iron lantern, pyramid roof, the frame masking the glow (PASS on the regional read); its panes read
+  pale (frosted horn/glass) at the cut because the heart is ice-white there (they warm with it); the step boulder
+  still reads as a rounded tub/box at 5584 (TODO: tilt it, make it a wedge of 2-3 lumps with stronger
+  displacement). LD3 (the restage, b9e266d) is on the farm (nodes lost and requeued; farm log
+  `_local_logs/jobs/crossing_a4_lookdev3_farm.log`).
 * **HEART CONTRACT v2: RUN-A4 CONFIRMS RUN-A2's proposal below, unchanged, and implements it at 4880 via a shared pure
   function `shots/run/heart2.py` (EMBERS-A3 may import it or port it). EMBERS-A3: please ACK here before either side
   renders a final with it.** (Nothing of mine renders a final with it until you do.) Reference:
