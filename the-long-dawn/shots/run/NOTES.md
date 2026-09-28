@@ -38,7 +38,7 @@
   C becomes "STOP"; A's crossing + dawn = "slow down together").** Code is pushed; the finals are the existing
   jobs `crossing_a2_01..18` (whole take: the lantern, heart and line change in every job; est. ~2x RUN-A2's cost,
   ~380 s/frame/proc while figures are large and blurred, ~260 s after; ~10 node-hours; 6 nodes ~1.7 h).
-* **Look-dev results.** LD1 (60e2f13, 50 f, renders/_farmtest/crossing_a4_lookdev_prev): the procession reads as
+* **Look-dev results.** LD1 (60e2f13, 50 f; frames deleted, superseded): the procession reads as
   people (groups, pairs, a hand on a shoulder, a child's hand held, staffs, raised and staff-hung lanterns), not
   pawns; the step-help reads (the helper on the rock turned back, reaching down; the second climbing); 24-frame
   diffs uniform (no pops); the stones were still cubes and the step a crate. LD2 (8bcc818, 5 f,
