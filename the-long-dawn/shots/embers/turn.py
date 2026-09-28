@@ -78,7 +78,7 @@ _ORIG = A.__dict__.setdefault('_turn_orig', {})
 
 def _orig(name):
     if name not in _ORIG:
-        _ORIG[name] = getattr(A.A3Sched, name)
+        _ORIG[name] = getattr(A.A3Sched, name, None)
     return _ORIG[name]
 
 
@@ -111,7 +111,7 @@ def _power(self, t):
     s_ = _fire_scale(self, t)
     g = gather(t)
     # the flame's surface brightens as it draws in, and hands its light over to the heart (Heart) at the end
-    return s_ ** 1.6 * (1.0 + 1.8 * g) * (1.0 - 0.9 * float(smoothstep(T_HEART + 40, T_END - 4, t)))
+    return s_ ** 1.6 * (1.0 + 1.8 * g) * (1.0 - float(smoothstep(T_HEART + 36, T_END - 6, t)))
 
 
 def _extra_occluders(self, towers, ctx):
@@ -125,7 +125,31 @@ def _extra_occluders(self, towers, ctx):
             np.full(len(P), edge.CRATER_ID, np.int32))
 
 
-for _n, _f in (('shutter', _shutter), ('back_light', _back_light), ('fire_centre', _fire_centre),
+_LMOD = {}
+
+
+def line_mask(towers, i, kind):
+    """static, per point of tower i's lines (kind 1 seams, 2 edges, 4 joints): irregular lit lengths with dark gaps
+    and an uneven heat along them, so the lines read as ember-lit stone, not strings of lights"""
+    key = (id(towers), i, kind)
+    if key not in _LMOD:
+        from core import snoise
+        p = towers.G[i][kind]['p'].astype(np.float64)
+        q = p * np.array([1.0, 0.45, 1.0])
+        n1 = snoise(q, 0.42, (3.1 * i + 0.7, 7.7, 1.3 * kind), 2)
+        n2 = snoise(p, 1.9, (1.7 * i, 2.9 * kind, 5.3), 1)
+        m = smoothstep(-0.05, 0.3, n1) * (0.3 + 0.7 * smoothstep(-0.7, 0.7, n2))
+        _LMOD[key] = m.astype(np.float32)
+    return _LMOD[key]
+
+
+def _line_mod(self, towers, i, kind, pt, t):
+    if t < T_LIGHT or i >= 8:
+        return 1.0
+    return line_mask(towers, i, kind)[pt['idx']]
+
+
+for _n, _f in (('line_mod', _line_mod), ('shutter', _shutter), ('back_light', _back_light), ('fire_centre', _fire_centre),
                ('fire_scale', _fire_scale), ('power', _power), ('extra_occluders', _extra_occluders)):
     _orig(_n)
     setattr(A.A3Sched, _n, _f)
@@ -188,7 +212,9 @@ def render_opts(tl, f):
 
 
 def finish_opts(tl, f):
-    return dict(exposure=1.0, bloom_strength=0.15, bloom_threshold=0.7, streak_strength=0.0, vignette_amount=0.25)
+    k = float(smoothstep(T_END - 40, T_END - 1, f))
+    return dict(exposure=1.0, bloom_strength=0.15 - 0.07 * k, bloom_threshold=0.7 + 0.2 * k, streak_strength=0.0,
+                vignette_amount=0.25)
 
 
 # ================================================================ helpers
@@ -229,7 +255,7 @@ class RidgeWorld:
 
     # (azimuth from the arena, distance, crest height above the ground, fires)
     CLUSTERS = [(0.30, 150, 34, 3), (0.95, 75, 9, 2), (1.40, 260, 70, 4), (1.62, 95, 14, 1), (1.95, 170, 40, 3),
-                (2.55, 320, 95, 2), (3.30, 120, 22, 4), (3.75, 210, 55, 1), (4.35, 90, 12, 3), (4.62, 280, 78, 5),
+                (2.55, 320, 95, 2), (3.30, 120, 22, 4), (3.75, 210, 55, 1), (4.35, 90, 12, 3), (4.62, 300, 30, 4), (4.47, 190, 22, 3), (4.80, 240, 18, 2),
                 (4.98, 140, 30, 2), (5.30, 360, 110, 3), (5.62, 65, 7, 1), (6.05, 230, 60, 2)]
 
     def __init__(self, seed=4401):
@@ -390,7 +416,7 @@ class TowerLight:
                 if kind == 0:
                     grain = 0.9 + 0.2 * rnd                         # an even sheen: no blotches at any scale
                 else:
-                    grain = (0.55 + 0.9 * G[kind]['nz2'][sel]) * (0.8 + 0.4 * rnd)
+                    grain = (0.55 + 0.9 * G[kind]['nz2'][sel]) * (0.8 + 0.4 * rnd) * line_mask(tw, i, kind)[sel]
                 Nf = N.astype(np.float32)
                 Eb = rw.irradiance(Nf, t) * (gb * kb) * grain
                 colE = np.outer(Eb, C_RIDGE)
@@ -417,7 +443,7 @@ class TowerLight:
                 m = E > 1e-7
                 if not m.any():
                     continue
-                rwid = np.sqrt(a / np.pi) * 1.7 if rwk is None else np.full(len(P), rwk)
+                rwid = np.sqrt(a / np.pi) * 1.7 if rwk is None else np.full(len(P), 1.6 * rwk)   # no beads
                 ctx.fr.splat(pt['P0'][vis][m], pt['P1'][vis][m], rwid[m], E[m], colE[m] / E[m][:, None], ctx.cam0,
                              ctx.cam1, zref=0.0, myid=i, profile=1)
 
@@ -477,7 +503,8 @@ class Shutters:
                 flare = 1.0 + 0.9 * np.exp(-np.maximum(x, 0.0) / 6.0) * (x > 0)
                 lvk = 0.55 + 0.45 * _hash01(key, 11)
                 wf = 1.0 + 0.1 * np.sin(0.21 * t + 6.2832 * _hash01(key, 7)) * np.sin(0.07 * t + 3.0 * _hash01(key, 5))
-                L = 3.2 * sw * flare * lvk * wf * facing * (1.0 if kind == 0 else 1.25) * (0.7 + 0.3 * night(t))
+                gk = 1.9 if i in GIANTS else 1.0
+                L = 3.2 * gk * sw * flare * lvk * wf * facing * (1.0 if kind == 0 else 1.25) * (0.7 + 0.3 * night(t))
                 col = look.blackbody(np.clip(0.6 + 0.08 * _hash01(key, 13) + 0.05 * (flare - 1.0), 0, 1))
                 z = np.maximum((P - cpos[None, :]) @ fwd, 0.3)
                 a = G[kind]['a'][idx][sel] / pt['q']
@@ -487,7 +514,7 @@ class Shutters:
                 m = E > 1e-7
                 if not m.any():
                     continue
-                rwid = np.sqrt(a / np.pi) * (1.5 if kind == 0 else 1.15)
+                rwid = np.sqrt(a / np.pi) * (1.5 if kind == 0 else 1.15) * (1.6 if i in GIANTS else 1.0)
                 ctx.fr.splat(pt['P0'][sel][m], pt['P1'][sel][m], rwid[m], E[m], colE[m] / E[m][:, None], ctx.cam0,
                              ctx.cam1, zref=0.0, myid=i, profile=1)
 
@@ -617,38 +644,13 @@ class SmallLights:
         if not on.any():
             return
         fl = 0.85 + 0.15 * np.sin(0.9 * t + self.ph) * np.sin(0.23 * t + 2 * self.ph)
-        e = self.E * fl * 16.0 * on
+        e = self.E * fl * 48.0 * on
         _splat_nofog(ctx, P0[on], P1[on], 0.05, e[on], C_LAMP, ctx.cam0, ctx.cam1, zref=12.0)
         _splat_nofog(ctx, P1[on], P1[on], 0.55, e[on] * 6.0, C_LAMP * 0.8, ctx.cam0, ctx.cam1, profile=1,
                      zref=12.0)
 
 
 # ================================================================ A17: the heart
-
-class Heart:
-    """A17 bar 61: the fire gathers into one small, intense heart (THE CROSSING's lantern heart at 4880): an ice-white
-    core, a glow and a faint halo, at the crossing's sizes; the flame's own filaments and motes draw in round it."""
-
-    def emit(self, ctx):
-        t = ctx.t
-        g = gather(t)
-        if g <= 0.0:
-            return
-        H = heart_pos(t)
-        cam = ctx.cam
-        dz = float(np.linalg.norm(H - cam.pos))
-        f = cam.f_px(1920)
-        px = dz / f                                   # world units per full-res pixel at the heart
-        br = 1.0 + 0.1 * math.sin(2 * math.pi * (t - A.T_IGN) / 80.0 - math.pi / 2)
-        k = g ** 1.5 * br
-        sig = np.array(HEART_PX) * px
-        peak = np.array([30.0, 0.9, 0.05])
-        Ee = 2 * np.pi * (np.array(HEART_PX) ** 2) * peak * k
-        Hs = np.repeat(H[None, :], 3, 0)
-        # r ~ 2 sigma for the gaussian splat
-        ctx.fr.splat(Hs, Hs, 2.0 * sig, Ee, np.repeat(C_HEART[None, :], 3, 0), ctx.cam0, ctx.cam1, profile=1,
-                     zref=0.0, rmax=520.0, occ=False)
-
 
 # ================================================================ emit
 
@@ -708,9 +710,39 @@ def emit(tl, ctx):
     _get(tl, 't_beams', Beams).emit(ctx, tl)
     if t >= T_OPEN_G + 20:
         _get(tl, 't_lamps', lambda: SmallLights(tl, rw)).emit(ctx)
-    if t >= T_HEART:
-        _get(tl, 't_heart', Heart).emit(ctx)
+
+
+_HEART_W = []
+
+
+def heart_sigma_world():
+    """the heart's core sigma in world units: 10 full-res px on 4879 (HEART CONTRACT v2), fixed in the world before"""
+    if not _HEART_W:
+        c = camera(None, float(T_END - 1))
+        d = float(np.linalg.norm(heart_pos(float(T_END - 1)) - c.pos))
+        _HEART_W.append(10.0 * d / c.f_px(1920))
+    return _HEART_W[0]
 
 
 def post(tl, ctx, hdr):
-    return edge.post(tl, ctx, hdr)
+    hdr = edge.post(tl, ctx, hdr)
+    t = ctx.t
+    g = gather(t)
+    if g <= 0.0:
+        return hdr
+    # HEART CONTRACT v2 (RUN-A4, ACKed): the shared function of A's cut frame, identical on both sides of 4879|4880
+    import sys
+    rp = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'run')
+    if rp not in sys.path:
+        sys.path.insert(0, rp)
+    import heart2
+    H_, W_ = hdr.shape[:2]
+    H = heart_pos(t)
+    u, v, z = ctx.cam.project(H[None, :], W_, H_)
+    if z[0] <= 0.5:
+        return hdr
+    sig = heart_sigma_world() * ctx.cam.f_px(W_) / float(z[0])
+    hdr = np.ascontiguousarray(hdr, np.float32)
+    zb = np.full(hdr.shape[:2], 1e9, np.float32)
+    heart2.draw(hdr, zb, float(u[0]), float(v[0]), sig, float(t), C_HEART, I=g ** 1.5)
+    return hdr

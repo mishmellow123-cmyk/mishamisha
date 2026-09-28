@@ -904,6 +904,14 @@ def _gold_runs(pl, t, g, fside, face):
     return C_GOLD[None, :] * (k * (skin + run))[:, None] + C_GOLD_HOT[None, :] * (k * 2.6 * riv * head)[:, None]
 
 
+def _line_mod(towers, i, kind, pt, t):
+    """v3 A (EMBERS-A3, A16/A17): a schedule may break the towers' lines of fire (edges, seams, joints) into irregular
+    lengths so they read as ember-lit stone, not strings of lights; 1 when it doesn't"""
+    if SCHED is not None and hasattr(SCHED, 'line_mod'):
+        return SCHED.line_mod(towers, i, kind, pt, t)
+    return 1.0
+
+
 def _tw_colours(T):
     return look.blackbody(np.clip(T, 0.0, 1.0))
 
@@ -1293,6 +1301,7 @@ class Towers:
                     col = _tw_colours(T)
                     col = col * (1 - 0.7 * red) + C_RED * 0.7 * red
                     face = smoothstep(-0.02, 0.12, ndv) * keep
+                    face = face * _line_mod(self, i, kind, pt, t)     # v3 A16/A17 (EMBERS-A3): broken lines of fire
                     self._splat(ctx, i, pt, col * (L * face)[:, None], a, np.clip(ndv, 0.15, 1.0), z, fpx,
                                 np.full(len(idx), 0.03, np.float32))
                     continue
@@ -1325,6 +1334,7 @@ class Towers:
                     col = _tw_colours(T)
                     col = col * (1 - 0.7 * red) + C_RED * 0.7 * red
                     face = smoothstep(-0.02, 0.12, ndv) * keep
+                    face = face * _line_mod(self, i, kind, pt, t)     # v3 A16/A17 (EMBERS-A3): broken lines of fire
                     self._splat(ctx, i, pt, col * (L * face)[:, None], a, np.clip(ndv, 0.25, 1.0), z, fpx,
                                 np.full(len(idx), 0.022, np.float32))
                     continue
@@ -1339,6 +1349,7 @@ class Towers:
                 lam = np.clip((N * Lv).sum(1) / np.maximum(dL, 1e-6), 0, 1)
                 lit = 0.014 * light_pow * lam / (1 + (dL / 16.0) ** 2) * (1 - 0.4 * red)
                 face = smoothstep(-0.5, -0.1, ndv) * keep
+                face = face * _line_mod(self, i, kind, pt, t)     # v3 A16/A17 (EMBERS-A3): broken lines of fire
                 colE = (col * L[:, None] + lcol[None, :] * lit[:, None]) * face[:, None]
                 self._splat(ctx, i, pt, colE, a, np.full(len(idx), 0.6, np.float32), z, fpx,
                             np.full(len(idx), 0.03, np.float32))
