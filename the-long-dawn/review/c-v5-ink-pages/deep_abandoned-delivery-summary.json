@@ -1,0 +1,113 @@
+{
+  "shot": "deep_abandoned",
+  "verified_utc": "2026-09-28T08:36:40.975378+00:00",
+  "range": [
+    4240,
+    4479
+  ],
+  "rgb_frames": 240,
+  "matte_frames": 240,
+  "source_commit": "ebcdd0a0b51691a74f3635f7a64c55d6546a2aa0",
+  "render_seconds": 1418.5752037500206,
+  "frame_qc_coverage": {
+    "expected_frames": 240,
+    "frame_status_counts": {
+      "ok": 240,
+      "missing": 0,
+      "decode_error": 0,
+      "wrong_dimensions": 0,
+      "unsupported_format": 0
+    },
+    "expected_adjacent_pairs": 239,
+    "compared_adjacent_pairs": 239,
+    "skipped_adjacent_pairs": 0,
+    "joins_measured": 0,
+    "joins_unavailable": 0,
+    "joins_outside_range": 0,
+    "extra_join_endpoint_frames": 0
+  },
+  "frame_candidates": {
+    "black": [],
+    "constant": [],
+    "near_constant": [],
+    "transparent": []
+  },
+  "duplicate_pairs": [],
+  "pop_candidates": [],
+  "preview": {
+    "file": "book_C5_deep_abandoned_preview.mp4",
+    "sha256": "36b8266707ea9f5294d6caa6af7151f39e00c83cc45c0dc1b85c9e6dffb6a1d8",
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 960,
+        "height": 402,
+        "r_frame_rate": "24/1",
+        "nb_frames": "240",
+        "duration": "10.000000"
+      }
+    ]
+  },
+  "artifacts": {
+    "deep_abandoned-delivery.json": {
+      "original_sha256": "e38f4aa429647f18703f9321e06a7ce6ded0234806a6cfbba6139cc3489de73c",
+      "packaged_sha256": "f875a4c301961c26057919a84d6c88d550684041723f716f468263de88228528"
+    },
+    "deep_abandoned-delivery.log": {
+      "original_sha256": "3f7a943f88d0ce591bcabd8d546afd97c21f8229eb292eaa2cebbcaf10a75361",
+      "packaged_sha256": "3f7a943f88d0ce591bcabd8d546afd97c21f8229eb292eaa2cebbcaf10a75361"
+    },
+    "deep_abandoned-delivery-qc.json": {
+      "original_sha256": "1192d423f7642f9c7393396c155823b3dba7f2bb69302bb4d646be74eb42355e",
+      "packaged_sha256": "038c4e6539a1ac0440900b6007edcdc889e63083bb805dce95e0885b6ca6270a"
+    },
+    "deep_abandoned-delivery-sheet.jpg": {
+      "packaged_sha256": "6e641fa800884aaee86db78248ba9b45c082e402455fc76259a350a22e3b98f2",
+      "frames": [
+        4240,
+        4250,
+        4261,
+        4271,
+        4282,
+        4292,
+        4302,
+        4313,
+        4323,
+        4334,
+        4344,
+        4354,
+        4365,
+        4375,
+        4385,
+        4396,
+        4406,
+        4417,
+        4427,
+        4437,
+        4448,
+        4458,
+        4469,
+        4479
+      ],
+      "note": "24 evenly spaced samples, not a consecutive motion strip"
+    },
+    "deep_abandoned-delivery-4240.jpg": {
+      "packaged_sha256": "8f38dfd571698023e0f05aaefbb55b89525e11e122f928e63b23e91a408f423a",
+      "frame": 4240
+    },
+    "deep_abandoned-delivery-4359.jpg": {
+      "packaged_sha256": "b2d72503496a385a546d885190cd0490e8fc97c14f71aee06c3cf6e3849ca50e",
+      "frame": 4359
+    },
+    "deep_abandoned-delivery-4479.jpg": {
+      "packaged_sha256": "3ddf5096c2b42579ca31558e6d226837133ddd9b6305eaf6213845792ea5513d",
+      "frame": 4479
+    }
+  },
+  "normalization": "Workspace and farm prefixes replaced; original and packaged hashes retained.",
+  "limitations": [
+    "Frame-QC thresholds are review aids, not artistic approval.",
+    "Adjacent-shot joins, captions and EDIT adoption are not checked here."
+  ]
+}

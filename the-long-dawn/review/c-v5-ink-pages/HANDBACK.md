@@ -58,7 +58,7 @@ Each completed row has decoded 1920×804 JPEG q95 4:4:4 RGB frames and matching 
 | Shot | RGB / mattes verified | Actual delivered samples | Receipt / full-shot QC |
 |---|---:|---|---|
 | 10 refusal | 240 / 240 | [24 sampled frames](refusal-delivery-sheet.jpg) | [Receipt](refusal-delivery.json), [QC](refusal-delivery-qc.json) |
-| 18 deep_abandoned | pending | — | — |
+| 18 deep_abandoned | 240 / 240 | [24 sampled frames](deep_abandoned-delivery-sheet.jpg) | [Receipt](deep_abandoned-delivery.json), [QC](deep_abandoned-delivery-qc.json) |
 | 22 pen | pending | — | — |
 
 Frames live under `~/ldfarm/out/book_C5_<shot>/` and its `_matte` sibling. Previews and original full receipts live under `~/ldfarm/comms/files/book_C5_<shot>_preview.mp4` and `book_C5_<shot>_receipt.json`.
