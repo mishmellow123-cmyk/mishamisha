@@ -37,15 +37,16 @@ OFF = np.array([-0.55 * 52.0, -70.0, 0.83 * 52.0])   # the band from the lens wh
 V0 = 6.0                                             # our common fall (units per frame) until T_LET
 T_LET = 2760.0
 BRAKE = 40.0                                         # frames for us to come to a hover
-G_RING = 0.084                                       # the band keeps falling and gathers speed
+DROP_A, DROP_K = 36.0, 0.055                         # the band falls away from us: exp-like (it shrinks steadily)
 PS0 = (640.0, 262.0)                                 # the band on screen while we fall together (lead room down-right)
 PS1 = (220.0, 17.0)                                  # the corner it settles into as we tilt after it
 PS2 = (240.0, 28.0)                                  # 2839: just behind RUN-C's first star position (248, 31)
 T_S0, T_S1 = 2762.0, 2833.0
 PHI = math.radians(-60.0)                            # the frame's slow roll during the tilt (so it sinks down-right)
 C_MOON = np.array([0.62, 0.72, 0.9])
-DECK_Y = -2700.0                                     # the sea of cloud, far below
-WISP_Y = -600.0                                      # the thin high layer the band goes through (~2800)
+DECK_Y = -6500.0                                     # the sea of cloud, far below (the band never reaches it here)
+WISP_Y = -1100.0                                     # the thin high layer the band goes through (~2812)
+DIAM = 2.0 * RS.R_OUT * RING_W                       # the band's outer diameter (RING_W is its WIDTH)
 
 
 def _unit(v):
@@ -79,12 +80,25 @@ def cam_pos(t):
 
 
 def drop(t):
-    """how far the band has fallen away below us since we let it go"""
+    """how far the band has fallen away below us since we let it go: it keeps our old speed while we brake, and
+    falls away ever faster (5 %/frame at the end: 168 px at 2760 -> ~5 px at 2839)"""
     y = t - T_LET
     if y <= 0.0:
         return 0.0
     k = min(y, BRAKE)
-    return 0.5 * G_RING * y * y + V0 * (k * k / (2.0 * BRAKE) + (y - k))
+    return DROP_A * (math.exp(DROP_K * y) - 1.0 - DROP_K * y) + V0 * (k * k / (2.0 * BRAKE) + (y - k))
+
+
+def cross_t():
+    """when the band goes through the thin layer"""
+    a, b = T_LET, T_FALL_END
+    for _ in range(40):
+        m = 0.5 * (a + b)
+        if ring_pos(m)[1] > WISP_Y:
+            a = m
+        else:
+            b = m
+    return 0.5 * (a + b)
 
 
 def ring_pos(t):
@@ -165,6 +179,9 @@ def moon_dir():
 
 
 # ============================================================ clouds ===
+# Both layers are ray-marched volumes (a slab of cloud, not a painted plane): the sea's tops are billowed in 3-D
+# (|noise| octaves: rounded bulges with creases between), lit by the moon with a shadow march and a multiple-
+# scattering softening, brighter toward the tops (sky light); the wisps are a thin, eroded, sparse slab.
 
 @njit(fastmath=True, cache=True, inline='always')
 def _ssj(a, b, x):
@@ -177,155 +194,210 @@ def _ssj(a, b, x):
 
 
 @njit(fastmath=True, cache=True, inline='always')
-def _sea_h(u, v, nob):
-    """the sea's top height at (u, v) (units of the biggest billow's wavelength). Round billows with sharp creases
-    (|noise| octaves, each turned ~37 deg), on slow swells; nob = octaves to use (fractional: the last fades)"""
-    m = 0.62 * perlin3(u * 0.21 + 7.1, v * 0.21 - 3.3, 1.9) + 0.38 * perlin3(u * 0.47 - 2.2, v * 0.47 + 8.4, 4.4)
-    h = 0.55 * m
-    a = 1.0
-    uu = u
-    vv = v
-    for o in range(6):
-        w = nob - o
-        if w <= 0.0:
-            break
-        if w > 1.0:
-            w = 1.0
-        n = abs(perlin3(uu + 3.7 * o, vv - 1.3 * o, 0.61 * o + 2.0))
-        if o == 0:
-            n = math.sqrt(n)                     # the big domes: rounder tops, the creases stay sharp
-        h += w * a * n
-        a *= 0.47
-        u2 = 0.8 * uu - 0.6 * vv
-        vv = (0.6 * uu + 0.8 * vv) * 2.03
-        uu = u2 * 2.03
-    return h
-
-
-@njit(parallel=True, fastmath=True, cache=True)
-def _deck(X, Y, ok, DIST, FPW, pr, L, out_rgb):
-    """the sea of cloud from above. pr: 0 freq (1/wavelength), 1 relief, 2 moon E, 3 sky E, 4 haze distance,
-    5 gap level, 6 moon tan(elevation); L: the moon's horizontal direction (lx, lz)"""
-    H, W = X.shape
-    f = pr[0]
-    A = pr[1]
-    tanE = pr[6]
-    lx = L[0]
-    lz = L[1]
-    for j in prange(H):
-        for i in range(W):
-            if not ok[j, i]:
-                out_rgb[j, i, 0] = 0.0
-                out_rgb[j, i, 1] = 0.0
-                out_rgb[j, i, 2] = 0.0
-                continue
-            u = X[j, i] * f
-            v = Y[j, i] * f
-            fp = FPW[j, i] * f                                   # the pixel's footprint in wavelengths
-            # octaves: keep those whose wavelength spans > ~3 px
-            nob = math.log(max(0.5 / (3.0 * fp), 1e-6)) / math.log(2.03) + 1.0
-            if nob > 6.0:
-                nob = 6.0
-            if nob < 0.6:
-                nob = 0.6
-            h0 = _sea_h(u, v, nob)
-            e = max(fp, 0.004)
-            hx = _sea_h(u + e, v, nob)
-            hy = _sea_h(u, v + e, nob)
-            gx = A * (hx - h0) / e
-            gy = A * (hy - h0) / e
-            nn = 1.0 / math.sqrt(gx * gx + gy * gy + 1.0)
-            nx = -gx * nn
-            ny = nn
-            nz = -gy * nn
-            # the moon: wrapped diffuse (soft, as cloud is), and the billows' shadows (march toward the moon)
-            ly = tanE / math.sqrt(1.0 + tanE * tanE)
-            lh = 1.0 / math.sqrt(1.0 + tanE * tanE)
-            ndl = nx * lx * lh + ny * ly + nz * lz * lh
-            diff = (ndl + 0.35) / 1.35
-            if diff < 0.0:
-                diff = 0.0
-            sh = 1.0
-            nsb = min(nob, 3.0)
-            z0 = A * _sea_h(u, v, nsb) + 0.004
-            s = 0.045
-            for k in range(6):
-                hs = A * _sea_h(u + lx * s, v + lz * s, nsb)
-                occ = (hs - (z0 + s * tanE)) / 0.03
-                if occ > 0.0:
-                    sh *= 1.0 - 0.8 * min(occ, 1.0)
-                s *= 1.62
-            # creases and the low places between the billows hold the dark
-            cav = _ssj(pr[5] - 0.25, pr[5] + 0.35, h0)
-            hi = _ssj(pr[5], pr[5] + 1.0, h0)
-            moon = pr[2] * diff * sh * (0.55 + 0.45 * hi) * (0.35 + 0.65 * cav)
-            sky = pr[3] * (0.45 + 0.55 * ny) * (0.25 + 0.75 * cav)
-            r = moon * 0.62 + sky * 0.5
-            g = moon * 0.72 + sky * 0.62
-            b = moon * 0.9 + sky * 1.0
-            # the air between: a cold haze thickens with distance
-            hz = 1.0 - math.exp(-DIST[j, i] / pr[4])
-            out_rgb[j, i, 0] = r * (1.0 - hz) + hz * 0.010
-            out_rgb[j, i, 1] = g * (1.0 - hz) + hz * 0.014
-            out_rgb[j, i, 2] = b * (1.0 - hz) + hz * 0.026
+def _hash01(i, j):
+    h = (i * 374761393 + j * 668265263) & 0xFFFFFFFF
+    h = ((h ^ (h >> 13)) * 1274126177) & 0xFFFFFFFF
+    return ((h ^ (h >> 16)) & 0xFFFF) / 65535.0
 
 
 @njit(fastmath=True, cache=True, inline='always')
-def _wisp_d(u, v, pr):
-    n = c2._fbm(u + 5.3, v - 2.9, 3.1, 4, 2.03, 0.5)
-    b = abs(perlin3(u * 2.3 + 1.1, v * 2.3 + 7.7, 0.4))
-    d = _ssj(0.0, 0.32, n + pr[1] - 0.25 * b)
-    # the band tore them open where it went through (and they part slowly)
-    dx = u / pr[0] - pr[4]
-    dz = v / pr[0] - pr[5]
-    d *= 1.0 - pr[7] * math.exp(-(dx * dx + dz * dz) / (pr[6] * pr[6]))
+def _sea_top(x, z):
+    """the sea's slow heaps and hollows: the height of its top above DECK_Y, before the billows"""
+    u = x * 3.85e-4
+    v = z * 3.85e-4
+    return 150.0 + 230.0 * (0.62 * perlin3(u, v, 1.3) + 0.3 * perlin3(u * 2.07 + 5.1, v * 2.07 - 3.3, 4.2)
+                            + 0.14 * perlin3(u * 4.3 - 1.7, v * 4.3 + 8.2, 7.7))
+
+
+@njit(fastmath=True, cache=True, inline='always')
+def _billow(x, y, z, noct):
+    """billows on the tops in 3-D: |noise| octaves (0 .. ~1.3)"""
+    f = 1.0 / 420.0
+    a = 1.0
+    s = 0.0
+    for o in range(noct):
+        s += a * abs(perlin3(x * f + 3.1 * o, y * f * 1.25 - 1.7 * o, z * f + 5.3 * o))
+        a *= 0.5
+        f *= 2.02
+    return s
+
+
+@njit(fastmath=True, cache=True, inline='always')
+def _sea_rho(x, hy, z, noct):
+    """the sea's density (0..1) at (x, height above DECK_Y, z), and its local surface height"""
+    top = _sea_top(x, z)
+    if hy > top + 170.0:
+        return 0.0, top + 170.0
+    b = _billow(x, hy, z, noct)
+    surf = top + 175.0 * (b - 0.33)
+    return min(max((surf - hy) / 45.0, 0.0), 1.0), surf
+
+
+@njit(parallel=True, fastmath=True, cache=True)
+def _sea_vol(Dirs, cp, pr, L, out_rgb):
+    """ray-march the sea of cloud. pr: 0 DECK_Y, 1 sigma, 2 moon E, 3 sky E, 4 step, 5 octaves, 6 haze distance,
+    7 phase (moon), 8 frame seed; L: the direction to the moon"""
+    H, W, _ = Dirs.shape
+    dy0 = pr[0]
+    sig = pr[1]
+    noct = int(pr[5])
+    for j in prange(H):
+        for i in range(W):
+            dx = Dirs[j, i, 0]
+            dy = Dirs[j, i, 1]
+            dz = Dirs[j, i, 2]
+            hz_r = 0.010
+            hz_g = 0.014
+            hz_b = 0.026
+            if dy > -1e-3:
+                out_rgb[j, i, 0] = hz_r
+                out_rgb[j, i, 1] = hz_g
+                out_rgb[j, i, 2] = hz_b
+                continue
+            s = (dy0 + 560.0 - cp[1]) / dy
+            if s < 0.0:
+                s = 0.0
+            step = pr[4]
+            s += step * _hash01(i + int(pr[8]) * 7919, j)
+            T = 1.0
+            Lr = 0.0
+            Lg = 0.0
+            Lb = 0.0
+            for k in range(220):
+                px = cp[0] + dx * s
+                hy = cp[1] + dy * s - dy0
+                pz = cp[2] + dz * s
+                if hy < -250.0:
+                    break
+                rho, surf = _sea_rho(px, hy, pz, noct)
+                if rho > 0.001:
+                    # the moon: a short shadow march (fewer octaves)
+                    tl = 0.0
+                    qs = 10.0
+                    ls = 16.0
+                    for m in range(5):
+                        rq, _ = _sea_rho(px + L[0] * qs, hy + L[1] * qs, pz + L[2] * qs, 2)
+                        tl += rq * ls
+                        qs += ls
+                        ls *= 2.0
+                    tau = sig * tl
+                    em = (math.exp(-tau) + 0.45 * math.exp(-0.3 * tau) + 0.2 * math.exp(-0.1 * tau)) / 1.65
+                    hf = min(max((hy + 250.0) / (surf + 250.0), 0.0), 1.0)
+                    amb = pr[3] * (0.2 + 0.8 * hf * hf)
+                    moon = pr[2] * em * pr[7]
+                    a = 1.0 - math.exp(-sig * rho * step)
+                    Lr += T * a * (moon * 0.62 + amb * 0.36)
+                    Lg += T * a * (moon * 0.72 + amb * 0.5)
+                    Lb += T * a * (moon * 0.9 + amb * 1.0)
+                    T *= 1.0 - a
+                    if T < 0.015:
+                        break
+                s += step
+            # what little shows through is the dark below; the long air between is a cold haze
+            Lr += T * 0.004
+            Lg += T * 0.005
+            Lb += T * 0.009
+            hz = 1.0 - math.exp(-s / pr[6])
+            out_rgb[j, i, 0] = Lr * (1.0 - hz) + hz * hz_r
+            out_rgb[j, i, 1] = Lg * (1.0 - hz) + hz * hz_g
+            out_rgb[j, i, 2] = Lb * (1.0 - hz) + hz * hz_b
+
+
+@njit(fastmath=True, cache=True, inline='always')
+def _wisp_rho(x, y, z, pr):
+    """the thin high layer: sparse patches, eroded. pr: 0 its y, 1 coverage bias, 2 half-thickness,
+    3-6 the tear (segment x0 z0 x1 z1), 7 tear radius, 8 tear depth"""
+    hy = (y - pr[0]) / pr[2]
+    if hy <= -1.0 or hy >= 1.0:
+        return 0.0
+    u = x / 260.0
+    v = z / 260.0
+    c = c2._fbm(u + 5.3, v - 2.9, 3.1, 3, 2.03, 0.5) + pr[1]
+    if c < -0.02:
+        return 0.0
+    prof = 1.0 - hy * hy
+    e = 0.62 * abs(perlin3(x / 70.0, y / 55.0, z / 70.0)) + 0.38 * abs(perlin3(x / 29.0 + 3.0, y / 25.0, z / 29.0 - 2.0))
+    d = _ssj(0.0, 0.3, c * prof * 1.7 - 0.5 * e)
+    if d <= 0.0:
+        return 0.0
+    # the band went through here and the wisps part (and the line we watch it down stays clear)
+    ax = pr[5] - pr[3]
+    az = pr[6] - pr[4]
+    ll = ax * ax + az * az
+    tt = ((x - pr[3]) * ax + (z - pr[4]) * az) / max(ll, 1e-6)
+    tt = min(max(tt, 0.0), 1.0)
+    qx = x - (pr[3] + ax * tt)
+    qz = z - (pr[4] + az * tt)
+    d *= 1.0 - pr[8] * math.exp(-(qx * qx + qz * qz) / (pr[7] * pr[7]))
     return d
 
 
 @njit(parallel=True, fastmath=True, cache=True)
-def _wisps(X, Y, ok, pr, L, rp, out_rgb, out_a):
-    """a sparse, thin, high layer seen from above. pr: 0 freq, 1 coverage bias, 2 sigma, 3 moon E,
-    4-5 the tear (x, z), 6 tear radius, 7 tear depth, 8 the band's warmth E, 9 warmth radius, 10 plane y;
-    L: moon (lx, lz) horizontal; rp: the band (x, y, z)"""
-    H, W = X.shape
-    f = pr[0]
+def _wisp_vol(Dirs, cp, pr, L, rp, out_rgb, out_a):
+    """ray-march the thin high layer (it is thin: no shadowing, a silver edge, the band's warmth near it).
+    pr: 0-8 as _wisp_rho, 9 sigma, 10 moon E, 11 warm E, 12 warm radius, 13 frame seed; rp: the band"""
+    H, W, _ = Dirs.shape
     for j in prange(H):
         for i in range(W):
             out_rgb[j, i, 0] = 0.0
             out_rgb[j, i, 1] = 0.0
             out_rgb[j, i, 2] = 0.0
             out_a[j, i] = 0.0
-            if not ok[j, i]:
+            dy = Dirs[j, i, 1]
+            if dy > -1e-3:
                 continue
-            u = X[j, i] * f
-            v = Y[j, i] * f
-            d = _wisp_d(u, v, pr)
-            if d < 1e-4:
+            s0 = (pr[0] + pr[2] - cp[1]) / dy
+            s1 = (pr[0] - pr[2] - cp[1]) / dy
+            if s1 <= 0.0:
                 continue
-            d2 = _wisp_d(u + L[0] * 0.05, v + L[1] * 0.05, pr)
-            lit = min(max((d - d2) * 3.0 + 0.45, 0.0), 1.0)          # the moon-facing side of each wisp
-            thick = 1.0 - math.exp(-2.2 * d)
-            Lm = pr[3] * (0.3 + 0.7 * lit) * (0.35 + 0.65 * thick)
-            # the band's warmth inside them
-            dx = X[j, i] - rp[0]
-            dy = pr[10] - rp[1]
-            dz = Y[j, i] - rp[2]
-            r2 = (dx * dx + dy * dy + dz * dz) / (pr[9] * pr[9])
-            wm = pr[8] * (math.exp(-r2) + 0.18 / (1.0 + 3.0 * r2)) * (0.3 + 0.7 * thick)
-            out_rgb[j, i, 0] = (Lm * 0.62 + wm * 1.0) * d
-            out_rgb[j, i, 1] = (Lm * 0.72 + wm * 0.5) * d
-            out_rgb[j, i, 2] = (Lm * 0.9 + wm * 0.16) * d
-            out_a[j, i] = 1.0 - math.exp(-pr[2] * d)
+            if s0 < 0.0:
+                s0 = 0.0
+            n = 10
+            ds = (s1 - s0) / n
+            s = s0 + ds * _hash01(i + int(pr[13]) * 131, j + 17)
+            T = 1.0
+            Lr = 0.0
+            Lg = 0.0
+            Lb = 0.0
+            for k in range(n):
+                px = cp[0] + Dirs[j, i, 0] * s
+                py = cp[1] + dy * s
+                pz = cp[2] + Dirs[j, i, 2] * s
+                rho = _wisp_rho(px, py, pz, pr)
+                if rho > 0.001:
+                    r2 = ((px - rp[0]) ** 2 + (py - rp[1]) ** 2 + (pz - rp[2]) ** 2) / (pr[12] * pr[12])
+                    wm = pr[11] * (math.exp(-r2) + 0.12 / (1.0 + 4.0 * r2))
+                    # thin edges catch the moon (a silver edge); the body is a softer grey
+                    moon = pr[10] * (0.55 + 0.45 * (1.0 - rho))
+                    a = 1.0 - math.exp(-pr[9] * rho * ds)
+                    Lr += T * a * (moon * 0.62 + wm * 1.0)
+                    Lg += T * a * (moon * 0.72 + wm * 0.52)
+                    Lb += T * a * (moon * 0.9 + wm * 0.17)
+                    T *= 1.0 - a
+                s += ds
+            out_rgb[j, i, 0] = Lr
+            out_rgb[j, i, 1] = Lg
+            out_rgb[j, i, 2] = Lb
+            out_a[j, i] = 1.0 - T
 
 
-def _plane(cam, W, H, y):
-    X, Y, ok = c2.plane_coords(cam, W, H, np.array([0.0, y, 0.0]), np.array([1.0, 0.0, 0.0]),
-                               np.array([0.0, 0.0, 1.0]), np.array([0.0, 1.0, 0.0]), 1.0)
-    return X, Y, ok
+def _rays(cam, W, H):
+    f = cam.f_px(W)
+    u = (np.arange(W, dtype=np.float64) - (W - 1) / 2.0) / f
+    v = -(np.arange(H, dtype=np.float64) - (H - 1) / 2.0) / f
+    R = cam.R
+    d = R[0][None, None, :] * u[None, :, None] + R[1][None, None, :] * v[:, None, None] + R[2][None, None, :]
+    d /= np.linalg.norm(d, axis=2, keepdims=True)
+    return d
+
+
+def _plane_hit(cam, Dirs, y):
+    s = (y - cam.pos[1]) / np.minimum(Dirs[..., 1], -1e-6)
+    return (cam.pos[0] + Dirs[..., 0] * s).astype(np.float32), (cam.pos[2] + Dirs[..., 2] * s).astype(np.float32)
 
 
 def _mblur(rgb, a, X, Y, y, cam0, cam1, cam, W, H, n_max=10):
-    """shutter blur of a plane layer by reprojection (the camera turns fast during the tilt)"""
+    """shutter blur of a layer by reprojection of its plane (the camera turns fast during the tilt)"""
     P = np.stack([X.astype(np.float64), np.full(X.shape, y), Y.astype(np.float64)], -1)
     u0, v0, _ = cam0.project(P, W, H)
     u1, v1, _ = cam1.project(P, W, H)
@@ -353,6 +425,14 @@ def _mblur(rgb, a, X, Y, y, cam0, cam1, cam, W, H, n_max=10):
 class FallShot:
     def __init__(self):
         self.moon = moon_dir()
+        # the tear in the thin layer: from where the band went through to where our last look down crosses it
+        self.tc = cross_t()
+        r = ring_pos(self.tc)
+        c_end = cam_pos(2839.0)
+        r_end = ring_pos(2839.0)
+        k = (WISP_Y - c_end[1]) / (r_end[1] - c_end[1])
+        e = c_end + (r_end - c_end) * k
+        self.tear = (float(r[0]), float(r[2]), float(e[0]), float(e[2]))
 
     def camera(self, t):
         return solve_cam(t)
@@ -380,37 +460,31 @@ class FallShot:
         rpos = ring_pos(t)
         img = np.zeros((H, W, 3), np.float32)
         f = cam.f_px(W)
-        mh = np.array([self.moon[0], self.moon[2]])
-        mh = mh / np.linalg.norm(mh)
-        tanE = self.moon[1] / math.hypot(self.moon[0], self.moon[2])
+        seed = float(int(t) % 997)
+        Dirs = None
         # ---- the sea of cloud, far below
         if dk > 0.0:
-            X, Y, ok = _plane(cam, W, H, DECK_Y)
-            dx = X - cam.pos[0]
-            dz = Y - cam.pos[2]
-            dy = DECK_Y - cam.pos[1]
-            dist = np.sqrt(dx * dx + dz * dz + dy * dy).astype(np.float32)
-            cosi = np.abs(dy) / np.maximum(dist, 1e-3)
-            fpw = (dist / (f * np.maximum(cosi, 0.12))).astype(np.float32)
-            pr = np.array([1.0 / 520.0, 0.3, 0.46, 0.05, 9000.0, 0.62, tanE], np.float64)
+            Dirs = _rays(cam, W, H)
+            ph = self.phase(cam)
+            pr = np.array([DECK_Y, 0.05, 0.52, 0.07, 22.0, 5.0, 60000.0, ph, seed], np.float64)
             drgb = np.empty((H, W, 3), np.float32)
-            _deck(X, Y, ok, dist, fpw, pr, mh, drgb)
-            da = ok.astype(np.float32)
-            drgb, da = _mblur(drgb, da, X, Y, DECK_Y, ctx.cam0, ctx.cam1, cam, W, H)
+            _sea_vol(Dirs, cam.pos.astype(np.float64), pr, self.moon.astype(np.float64), drgb)
+            X, Y = _plane_hit(cam, Dirs, DECK_Y + 250.0)
+            drgb, _ = _mblur(drgb, np.ones((H, W), np.float32), X, Y, DECK_Y + 250.0, ctx.cam0, ctx.cam1, cam, W, H)
             img = drgb * dk
-        # ---- the thin high layer (only while it is below us)
+        # ---- the thin high layer (always below us)
         wl = None
-        if cam.pos[1] > WISP_Y + 1.0 and dk > 0.0:
-            X, Y, ok = _plane(cam, W, H, WISP_Y)
-            tear_t = T_LET + 40.0                      # ~ when the band goes through
-            rt = ring_pos(tear_t)
-            opened = _ss(tear_t - 2.0, tear_t + 5.0, t)
-            warm = 2.2 * math.exp(-((rpos[1] - WISP_Y) / 38.0) ** 2) * glint(t)
-            pr = np.array([1.0 / 150.0, -0.08, 1.4, 0.36, rt[0], rt[2], 34.0, 0.92 * opened, warm, 34.0, WISP_Y],
-                          np.float64)
+        if dk > 0.0:
+            # its warmth in the wisps as it goes through, lingering a moment where it went (a small glow, no blob)
+            warm = 1.3 * (_ss(self.tc - 4.0, self.tc, t) if t < self.tc else math.exp(-(t - self.tc) / 5.0))
+            rp_w = rpos if t < self.tc else ring_pos(self.tc)
+            pr = np.array([WISP_Y, -0.1, 45.0, self.tear[0], self.tear[1], self.tear[2], self.tear[3], 55.0,
+                           0.95 * _ss(self.tc - 2.0, self.tc + 4.0, t), 0.02, 0.2, warm, 11.0, seed], np.float64)
             wrgb = np.empty((H, W, 3), np.float32)
             wa = np.empty((H, W), np.float32)
-            _wisps(X, Y, ok, pr, mh, rpos.astype(np.float64), wrgb, wa)
+            _wisp_vol(Dirs, cam.pos.astype(np.float64), pr, self.moon.astype(np.float64), rp_w.astype(np.float64),
+                      wrgb, wa)
+            X, Y = _plane_hit(cam, Dirs, WISP_Y)
             wrgb, wa = _mblur(wrgb, wa, X, Y, WISP_Y, ctx.cam0, ctx.cam1, cam, W, H)
             wl = (wrgb * dk, wa * dk)
         # ---- the band (three instants across the shutter)
@@ -428,11 +502,11 @@ class FallShot:
                 acc[0] += rgb
                 acc[1] += a
         rrgb, ra = acc[0] / 3.0, acc[1] / 3.0
-        # ---- the glint: once the band is small it reads as a warm star (RUN-C's star at 2840: ~3 px warm white
-        #      core, a soft warm halo)
+        # ---- the glint: once the band is too small to show its hole it reads as a warm star (RUN-C's star at
+        #      2840: a ~3 px warm-white core in a soft warm halo)
         u, v, z = cam.project(rpos, W, H)
-        size = RING_W * f / max(float(z), 1e-3) * (FW / W)
-        kg = _ss(16.0, 6.0, size) * glint(t)
+        diam = DIAM * f / max(float(z), 1e-3) * (FW / W)
+        kg = _ss(15.0, 7.0, diam) * glint(t)
         if kg > 0.0 and z > 0:
             sc = W / FW
             gx, gy = np.meshgrid(np.arange(W, dtype=np.float32), np.arange(H, dtype=np.float32))
@@ -445,12 +519,18 @@ class FallShot:
             rrgb = rrgb + gl.astype(np.float32)
         # ---- composite, far to near
         above = rpos[1] > WISP_Y
-        if wl is not None and above:
-            img = img * (1.0 - wl[1][..., None]) + wl[0]
-        img = img * (1.0 - ra[..., None]) + rrgb
         if wl is not None and not above:
             img = img * (1.0 - wl[1][..., None]) + wl[0]
+        img = img * (1.0 - ra[..., None]) + rrgb
+        if wl is not None and above:
+            img = img * (1.0 - wl[1][..., None]) + wl[0]
         return hdr + img
+
+    def phase(self, cam):
+        """the moon's phase for the clouds seen from this camera (mostly back-scatter from up here)"""
+        c = float(np.dot(self.moon, cam.R[2]))
+        hg = lambda g: (1.0 - g * g) / (1.0 + g * g - 2.0 * g * c) ** 1.5
+        return 0.6 * hg(0.35) + 0.4 * hg(-0.25)
 
     def finish_opts(self, f):
         return dict(exposure=1.0, bloom_strength=0.06, bloom_threshold=1.2, streak_strength=0.0, vignette_amount=0.25)

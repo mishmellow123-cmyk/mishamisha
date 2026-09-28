@@ -100,6 +100,9 @@ class EyeSched(c3.C3Sched):
     end = float(T_EYE_END + 1)
     pulses = []
 
+    def ashlar_k(self, t):
+        return 1.0          # EMBERS-C4: ashlar stone, no lit window/seam grid (a row of lit grids reads as a city)
+
     def beat_pulse(self, t):
         return 0.35 * swell(t) + 0.9 * (flare(t) if t >= T_SLIT else 0.0)
 
