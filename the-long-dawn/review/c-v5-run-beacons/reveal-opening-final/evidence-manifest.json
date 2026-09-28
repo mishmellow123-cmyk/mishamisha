@@ -1,0 +1,68 @@
+[
+  {
+    "file": "C2880-480.png",
+    "raw_sha256": "77a78b575af87e2be154f5cd5fe05a7ec475b1945b42eb4025f531746c67d2bf",
+    "published_sha256": "77a78b575af87e2be154f5cd5fe05a7ec475b1945b42eb4025f531746c67d2bf",
+    "path_normalized": false
+  },
+  {
+    "file": "C2903-480.png",
+    "raw_sha256": "195e4a49cbf84b82f6b1683632e838f889b720bf06b04aa38164412545817d17",
+    "published_sha256": "195e4a49cbf84b82f6b1683632e838f889b720bf06b04aa38164412545817d17",
+    "path_normalized": false
+  },
+  {
+    "file": "C3000-480.png",
+    "raw_sha256": "8e62e13c40bed8010425589f04ea0c7c6454adb7dc2c30536ff32699b88dbf1d",
+    "published_sha256": "8e62e13c40bed8010425589f04ea0c7c6454adb7dc2c30536ff32699b88dbf1d",
+    "path_normalized": false
+  },
+  {
+    "file": "C3023-480.png",
+    "raw_sha256": "6a679e956cfcf149cfb7b3fb70a2879d07f1a09f3a961a32ae17ba4136117e75",
+    "published_sha256": "6a679e956cfcf149cfb7b3fb70a2879d07f1a09f3a961a32ae17ba4136117e75",
+    "path_normalized": false
+  },
+  {
+    "file": "audit.md",
+    "raw_sha256": "27d23e9888570cc4b012f3f3268f62a779261ccf1b1289eca8ad41e3101c632e",
+    "published_sha256": "27d23e9888570cc4b012f3f3268f62a779261ccf1b1289eca8ad41e3101c632e",
+    "path_normalized": false
+  },
+  {
+    "file": "composition-2880-2903.png",
+    "raw_sha256": "753e1a6b33218072ae364d2358f4b255d3e85f146c2709adff456a55682410e1",
+    "published_sha256": "753e1a6b33218072ae364d2358f4b255d3e85f146c2709adff456a55682410e1",
+    "path_normalized": false
+  },
+  {
+    "file": "evidence.json",
+    "raw_sha256": "47386bf8fa32977f368c7d04674ee7b3361f4f8183de318d2e9558bff5e80929",
+    "published_sha256": "47386bf8fa32977f368c7d04674ee7b3361f4f8183de318d2e9558bff5e80929",
+    "path_normalized": false
+  },
+  {
+    "file": "far-native-2880-2903.png",
+    "raw_sha256": "93183daeeb4710b3c102695a89d1b3d3954a7ba00b0dc5b0791a426d63191176",
+    "published_sha256": "93183daeeb4710b3c102695a89d1b3d3954a7ba00b0dc5b0791a426d63191176",
+    "path_normalized": false
+  },
+  {
+    "file": "near-native-2880-2903.png",
+    "raw_sha256": "048968fb93595289a64df9fed8a84d695e0affd436d0a19a6f3fd57cfa6e195f",
+    "published_sha256": "048968fb93595289a64df9fed8a84d695e0affd436d0a19a6f3fd57cfa6e195f",
+    "path_normalized": false
+  },
+  {
+    "file": "receipt_02880_02999.json.snapshot",
+    "raw_sha256": "79e12007d65aab687cd3f52e392ef0a7489236aa77323dde8df7fb26ffcf7251",
+    "published_sha256": "79e12007d65aab687cd3f52e392ef0a7489236aa77323dde8df7fb26ffcf7251",
+    "path_normalized": false
+  },
+  {
+    "file": "receipt_03000_03119.json.snapshot",
+    "raw_sha256": "08cd6e04279e900b48548782dc95601ac4237f159f4c5554dfa62a4c8417459b",
+    "published_sha256": "08cd6e04279e900b48548782dc95601ac4237f159f4c5554dfa62a4c8417459b",
+    "path_normalized": false
+  }
+]
