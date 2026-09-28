@@ -396,6 +396,26 @@
    "desc": "Tinder, gloves, sparks, breath: three strikes, a long blow, the catch. The face never lit.",
    "takes": [
     {
+     "stem": "h1_A",
+     "off": -2124,
+     "mode": "exact",
+     "note": "A-FIX H1",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1236,
+      1487
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/h1_A"
+     ]
+    },
+    {
      "stem": "h1_v3h5",
      "off": -2124,
      "mode": "exact",
@@ -442,12 +462,32 @@
   {
    "sec": "A13",
    "f0": 3600,
-   "f1": 3680,
+   "f1": 3612,
    "code": "H1-A",
    "name": "THE ROAR",
    "owner": "HEROINE",
    "desc": "The roar on the downbeat; the pull-back from her summit begins.",
    "takes": [
+    {
+     "stem": "h1_A",
+     "off": -2124,
+     "mode": "exact",
+     "note": "A-FIX H1",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1236,
+      1487
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/h1_A"
+     ]
+    },
     {
      "stem": "h1_v3h5",
      "off": -2124,
@@ -483,6 +523,39 @@
      "final_eligible": false,
      "folders": [
       "renders/h1_v3"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    46,
+    46
+   ]
+  },
+  {
+   "sec": "A13",
+   "f0": 3612,
+   "f1": 3680,
+   "code": "R2-B",
+   "name": "HER FIRE",
+   "owner": "RUN-B harvest",
+   "desc": "Moonlit silver: she is tiny by her new fire on her summit above the cloud sea (film B's reveal, harvested).",
+   "takes": [
+    {
+     "stem": "reveal_B",
+     "off": -2240,
+     "mode": "exact",
+     "note": "B5 reveal harvested",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/reveal_B"
      ]
     }
    ],
@@ -1079,6 +1152,307 @@
    "locked": "THE LONG DAWN"
   }
  ],
- "transitions": [],
+ "transitions": [
+  {
+   "f0": 536,
+   "f1": 560,
+   "cut": 560,
+   "kind": "bloom",
+   "center": [
+    1124,
+    464
+   ],
+   "zoom": 1.14,
+   "note": "A-FIX TR560: the push into the false dawn arrives at white"
+  },
+  {
+   "f0": 596,
+   "f1": 672,
+   "cut": 596,
+   "kind": "dissolve",
+   "note": "A-FIX TR600: held white -> the live frames, evenly"
+  },
+  {
+   "f0": 1280,
+   "f1": 1440,
+   "cut": 1280,
+   "kind": "vision",
+   "track": [
+    [
+     1280,
+     957,
+     404
+    ],
+    [
+     1300,
+     957,
+     409
+    ],
+    [
+     1320,
+     958,
+     414
+    ],
+    [
+     1340,
+     958,
+     445
+    ],
+    [
+     1360,
+     958,
+     478
+    ],
+    [
+     1380,
+     957,
+     486
+    ],
+    [
+     1400,
+     957,
+     481
+    ],
+    [
+     1420,
+     958,
+     484
+    ],
+    [
+     1440,
+     958,
+     511
+    ]
+   ],
+   "open": [
+    1280,
+    1318
+   ],
+   "close": [
+    1396,
+    1436
+   ],
+   "r0": [
+    40,
+    90
+   ],
+   "r1": [
+    600,
+    300
+   ],
+   "lift": 60,
+   "breath": 0.035,
+   "bar0": 1280,
+   "feather": 0.07,
+   "flame_key": true,
+   "rim": [
+    1.0,
+    0.75,
+    0.42
+   ],
+   "rim_gain": 0.5,
+   "inside_glow": 0.35,
+   "shimmer": 1.6,
+   "outside": "glow",
+   "glow_floor": 1.0,
+   "glow_keys": [
+    [
+     1280,
+     0.004,
+     0.0036,
+     0.0032
+    ],
+    [
+     1440,
+     0.004,
+     0.0036,
+     0.0032
+    ]
+   ],
+   "note": "A-FIX V1: THE PROMISE seen in the fire's light"
+  },
+  {
+   "f0": 2520,
+   "f1": 2640,
+   "cut": 2520,
+   "kind": "iceheart",
+   "ramp": [
+    2528,
+    2620
+   ],
+   "gain": 1.35,
+   "lift": 0.0,
+   "note": "A-FIX E3: the fall into the ice-white fire"
+  },
+  {
+   "f0": 2640,
+   "f1": 2800,
+   "cut": 2684,
+   "kind": "vision",
+   "track": [
+    [
+     2640,
+     958,
+     440
+    ],
+    [
+     2800,
+     958,
+     440
+    ]
+   ],
+   "open": [
+    2656,
+    2692
+   ],
+   "close": [
+    2762,
+    2796
+   ],
+   "r0": [
+    10,
+    10
+   ],
+   "r1": [
+    600,
+    300
+   ],
+   "lift": 60,
+   "breath": 0.035,
+   "bar0": 2640,
+   "feather": 0.07,
+   "rim": [
+    1.0,
+    0.9,
+    0.8
+   ],
+   "rim_gain": 0.7,
+   "inside_glow": 0.25,
+   "shimmer": 1.2,
+   "outside": "glow",
+   "glow_r": 520,
+   "glow_floor": 0.0,
+   "glow_keys": [
+    [
+     2640,
+     1.0,
+     1.0,
+     1.0
+    ],
+    [
+     2664,
+     0.9,
+     0.86,
+     0.8
+    ],
+    [
+     2692,
+     0.12,
+     0.07,
+     0.035
+    ],
+    [
+     2730,
+     0.05,
+     0.028,
+     0.014
+    ],
+    [
+     2780,
+     0.02,
+     0.011,
+     0.005
+    ],
+    [
+     2800,
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "note": "A-FIX V2: THE DEAD VALLEY in the fire's light (the white's iris 2662-2676 is never seen)"
+  },
+  {
+   "f0": 2836,
+   "f1": 3360,
+   "cut": 2836,
+   "kind": "ember",
+   "track": [
+    [
+     2836,
+     1030,
+     160
+    ],
+    [
+     2846,
+     1021,
+     215
+    ],
+    [
+     2850,
+     1009,
+     269
+    ],
+    [
+     2856,
+     989,
+     338
+    ],
+    [
+     2860,
+     976,
+     375
+    ],
+    [
+     2866,
+     960,
+     423
+    ],
+    [
+     2872,
+     953,
+     464
+    ],
+    [
+     2880,
+     947,
+     504
+    ],
+    [
+     2890,
+     954,
+     530
+    ],
+    [
+     2900,
+     962,
+     546
+    ],
+    [
+     3359,
+     958,
+     547
+    ]
+   ],
+   "size": 14,
+   "gain": 1.0,
+   "in": [
+    2836,
+    2850
+   ],
+   "note": "A-FIX E4: the ember, 12-20 px with a soft glow; match cut to strike 1"
+  },
+  {
+   "f0": 3612,
+   "f1": 3680,
+   "kind": "grade",
+   "gain": [
+    1.2,
+    1.05,
+    1.0
+   ],
+   "note": "HER FIRE (reveal_B) matched to reveal_A's sky at the cut: sky means r .096 -> .119, g .133 -> .140"
+  }
+ ],
  "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first"
 }
