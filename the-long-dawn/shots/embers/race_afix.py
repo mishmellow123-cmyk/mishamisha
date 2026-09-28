@@ -50,7 +50,7 @@ class ThroatFire:
         gro = np.array([1.0 + (0.8 * float(smoothstep(1730.0, 1780.0, t)) if i in self.giants else 0.0)
                         for i in range(self.k)])
         tops = self._tops(t)
-        beat_age = (t - self.t0) % BEAT
+        beat_age = t % BEAT                                     # on the beat (the grid: beats at multiples of 20)
         surge = 1.0 + 0.9 * math.exp(-beat_age / 4.0)          # every beat the throats roar up
         cam = ctx.cam
         fpx = cam.f_px(1920)
