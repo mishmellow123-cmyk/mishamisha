@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~08:15Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-28 ~08:30Z**, by the director (Claude, Opus 5.5).
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -194,6 +194,8 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
   - Launch `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/<job>.json [--test K --frames a,b] [--nodes N] [--detach]` and check with `... farm.py status`.
   - Nodes `git fetch` the branch tip before every unit, so PUSH FIRST, and never push code that a running render uses. Frames stream back into `renders/` on the launching machine.
   - **FREE CREDITS ONLY; never charge a card.** Pool p1 refuses new nodes at $200 (spent $70.50); pool p2 refuses at $450 (spent $128.59), both as of 28 Sep 07:00Z.
+  - **Overnight 28 Sep, the farm is stuck on PROVIDER CAPACITY.** From ~07:00Z the queued requests (pages_book_plate test, the beaconrun/watchers catches3 tests and finals) had nodes "up or booting" but nothing rendering; the log shows CPU nodes "queued for capacity". Don't resubmit duplicates. If still stuck, cancel and resubmit with `--gpu` (GPU nodes may have room; still free credits), or wait.
+  - **From Oct 1 2026, Autoresearch switches to PREPAID credit** (a platform notice): compute stops when the balance hits zero. Never buy credits or top up, since the rule is free credits only, so plan the remaining farm work to land before then or ask the user.
   - The farm config and tokens live in `~/.config/longdawn-farm/` on the production Mac. NEVER commit, print or copy them without the user's say-so.
   - The M4's own farm node is paused while Codex works there: the config file `ssh_nodes.json` was renamed to `ssh_nodes.json.paused-for-codex`.
 - **Env:** venv `~/.venvs/longdawn` (`source ~/.venvs/longdawn/env.sh`). ffmpeg comes from imageio_ffmpeg inside the venv.
