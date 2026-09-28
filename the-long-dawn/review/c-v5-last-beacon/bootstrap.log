@@ -1,0 +1,54 @@
+/Users/davidgringras26-27/Documents/Codex/2026-09-27/could/work/c5-map/the-long-dawn/shots/map/terra.py:213: RuntimeWarning: invalid value encountered in power
+  prof = np.where(u < 1.0, (1.0 - u) ** 1.6, 0.0) * hh
+relief 11.9 s
+hydrology 14.0 s
+rivers 147 14.0 s
+world 22.6 s
+original world/glyphs ready; all eight beacons on dry land
+atlas tile 0,0 768x768: 8.7s
+atlas tile 768,0 768x768: 3.1s
+atlas tile 1536,0 768x768: 3.9s
+atlas tile 2304,0 768x768: 2.8s
+atlas tile 3072,0 768x768: 3.3s
+atlas tile 3840,0 768x768: 3.0s
+atlas tile 4608,0 192x768: 1.0s
+atlas tile 0,768 768x768: 2.5s
+atlas tile 768,768 768x768: 2.5s
+atlas tile 1536,768 768x768: 2.5s
+atlas tile 2304,768 768x768: 2.5s
+atlas tile 3072,768 768x768: 2.3s
+atlas tile 3840,768 768x768: 2.3s
+atlas tile 4608,768 192x768: 1.1s
+atlas tile 0,1536 768x768: 2.4s
+atlas tile 768,1536 768x768: 2.4s
+atlas tile 1536,1536 768x768: 2.3s
+atlas tile 2304,1536 768x768: 2.2s
+atlas tile 3072,1536 768x768: 2.2s
+atlas tile 3840,1536 768x768: 2.3s
+atlas tile 4608,1536 192x768: 1.0s
+atlas tile 0,2304 768x384: 1.5s
+atlas tile 768,2304 768x384: 1.5s
+atlas tile 1536,2304 768x384: 1.5s
+atlas tile 2304,2304 768x384: 1.4s
+atlas tile 3072,2304 768x384: 1.4s
+atlas tile 3840,2304 768x384: 2.0s
+atlas tile 4608,2304 192x384: 0.9s
+atlas complete /Users/davidgringras26-27/Documents/Codex/2026-09-27/could/work/c5-map/the-long-dawn/renders/map_last_beacon_C/atlas/eeef0dd857771b36
+      674.60 real       412.74 user       212.04 sys
+          1264549888  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+              592837  page reclaims
+                5069  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                3168  voluntary context switches
+             1866699  involuntary context switches
+       3412547576911  instructions retired
+       1827641959748  cycles elapsed
+          1202620528  peak memory footprint
