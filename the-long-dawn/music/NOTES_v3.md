@@ -1,3 +1,10 @@
+> **DIRECTOR / USER NOTE ON C's SCORE (28 Sep ~05:20Z), for the next composer.** "Lots of it is actually really good", but:
+> (1) **The music continues or repeats material after the picture's mood has changed.** It must TURN when the story turns. Map every story beat to its emotional state, and change material at each turn instead of carrying the previous cue on.
+> (2) **Some stretches go on too long without a satisfying close.** Give sections real cadences and resolution, and end phrases instead of droning on.
+> (3) **Some bits are too light.** "The falling of the ring and stuff almost sounds like a cartoon score." No mickey-mousing: no playful descending figures for the fall. Use weight, dread or stillness instead.
+> (4) C's ending is being re-scripted to STOP (Plan S): the Ring unmade together, every forge goes cold, "we had enough without it". It needs new music. See _local_logs/review/script/ for the script.
+> (5) Try the SAME score rendered through a real sampled orchestra (for example VSCO 2 Community Edition, CC0, via an SFZ player) on 2-3 exposed passages (solos, climaxes) and A/B it for the user. The climax near 1:23 is limited by up to about 6 dB; fix that too.
+
 # THE LONG DAWN v3: score & sound (COMPOSER-v3 notes)
 
 ## MASTERS: THE ONE TABLE (EDIT wires these into the animatics; both composers update only their own rows)
