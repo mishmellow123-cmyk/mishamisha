@@ -1,0 +1,20 @@
+C3724 1920x804 1.40s
+C3792 1920x804 0.98s
+        4.87 real         3.22 user         0.89 sys
+           755302400  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               64810  page reclaims
+                7362  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                1154  voluntary context switches
+                9434  involuntary context switches
+         22536409258  instructions retired
+          7801999360  cycles elapsed
+           401737144  peak memory footprint

@@ -1,0 +1,51 @@
+C3440 960x402 0.92s
+C3466 960x402 0.35s
+C3521 960x402 0.38s
+C3582 960x402 0.36s
+C3645 960x402 0.37s
+C3678 960x402 0.39s
+C3716 960x402 0.36s
+C3724 960x402 0.35s
+C3772 960x402 0.36s
+C3773 960x402 0.35s
+C3774 960x402 0.34s
+C3775 960x402 0.33s
+C3776 960x402 0.33s
+C3777 960x402 0.37s
+C3778 960x402 0.36s
+C3779 960x402 0.38s
+C3780 960x402 0.43s
+C3781 960x402 0.37s
+C3782 960x402 0.34s
+C3783 960x402 0.33s
+C3784 960x402 0.32s
+C3785 960x402 0.32s
+C3786 960x402 0.31s
+C3787 960x402 0.31s
+C3788 960x402 0.39s
+C3789 960x402 0.39s
+C3790 960x402 0.32s
+C3791 960x402 0.32s
+C3792 960x402 0.31s
+C3793 960x402 0.27s
+C3794 960x402 0.30s
+C3795 960x402 0.34s
+C3839 960x402 0.29s
+       15.15 real        11.02 user         2.89 sys
+           569458688  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+               64526  page reclaims
+                4536  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   0  messages sent
+                   0  messages received
+                   0  signals received
+                1497  voluntary context switches
+               39210  involuntary context switches
+         74721710087  instructions retired
+         23796273150  cycles elapsed
+           328762568  peak memory footprint
