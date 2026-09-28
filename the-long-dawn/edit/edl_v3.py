@@ -75,7 +75,10 @@ def h1(off, **kw):
 # blue triangles. B4 now centres the gloved hands, steel and tinder and stays left of the scarf (x <= 0.43 while
 # she leans in to blow); B5 (the roar, 12 f while the camera pulls back) sits higher so the flame stays in frame
 # and the hood stays out (x <= 0.50). Square fractions keep 2.39:1.
-B_H1_CROP = (0.17, 0.22, 0.26, 0.26)
+# H9 CRITIC B M4 (28 Sep): the 3.85x box read as girders and a spinner of dots and kept her hands off the edge; now
+# 2.5x: glove, steel and sparks at ~0.75-0.9 of the width on the strikes (src 1236/1265/1294), the basket's rim
+# reads as a basket; on the blow (src 1320-1416) her profile enters at the right edge as a dim silhouette.
+B_H1_CROP = (0.12, 0.08, 0.40, 0.40)
 B_H1_ROAR_CROP = (0.20, 0.08, 0.30, 0.30)
 
 # director ~19:20Z: HEROINE-L's C-only hands-and-flint take (renders/h1_C, C frames 2960-2999 and 3150-3359) goes

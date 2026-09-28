@@ -173,10 +173,10 @@
      "mode": "exact",
      "note": "H1 v3 master timing with the H5 calls (hood, shawl, thin gloves, orange sparks)",
      "crop": [
-      0.17,
-      0.22,
-      0.26,
-      0.26
+      0.12,
+      0.08,
+      0.4,
+      0.4
      ],
      "grade": "B",
      "matte": null,
@@ -198,10 +198,10 @@
      "mode": "exact",
      "note": "H1 v3 master timing, pre-H5 look (beanie, dish-rack basket, white sparks)",
      "crop": [
-      0.17,
-      0.22,
-      0.26,
-      0.26
+      0.12,
+      0.08,
+      0.4,
+      0.4
      ],
      "grade": "B",
      "matte": null,
