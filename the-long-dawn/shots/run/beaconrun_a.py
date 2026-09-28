@@ -94,7 +94,14 @@ def cloud_knobs(Lk, amb, S, fogp, Q):
 # start and the plate (A15). The near chain comes in toward us (1: 1.07 km, 3: 530 m, 5: 190 m, 7: here), and so
 # does the far chain answering it (2: 18.5 km, the far answer on bar 51 b1; 4: 9.3 km, high on the great sierra;
 # 6: 5.2 km).
-CHAIN = np.load(os.path.join(HERE, 'beaconrun_a_chain.npy'))
+def glide_chain(rows):
+    """Enlarge the three approaching ridge fires; preserve the source table and seventh hearth."""
+    chain = np.asarray(rows, np.float64).copy()
+    chain[[0, 2, 4], 4] *= 4.0 / 3.0
+    return chain
+
+
+CHAIN = glide_chain(np.load(os.path.join(HERE, 'beaconrun_a_chain.npy')))
 FIRES = CHAIN                                    # A15's name for the seven (ignition order)
 _LITF = os.path.join(HERE, 'reveal_a_fires.npy')  # A13's fires (RUN-A3): already burning, far off (her cluster)
 LIT = np.load(_LITF) if os.path.exists(_LITF) else np.zeros((0, 6))
@@ -184,7 +191,8 @@ def flare_env(u):
 def draw_flares(img, zb, scam, f, pxs, fogp):
     """Each chain fire, as it catches, flares: the tinder and the first blaze throw a burst of light into the air
     around the summit (a soft warm bloom, never a streak), so a far catch reads as an event at festival size. The
-    bloom is sized in metres when near and never smaller than a readable few pixels far off."""
+    bloom is sized in metres when near and never smaller than a readable few pixels far off. A compact warm
+    core marks the catch without extending the pulse; close stones and cowls occlude every component."""
     import fire2 as F2
     for x, y, z, fi, sz, sd in CHAIN:
         env = flare_env(f - fi)
@@ -192,15 +200,23 @@ def draw_flares(img, zb, scam, f, pxs, fogp):
             continue
         Hf = NA.fire_dims(sz)[0]
         P = np.array([x, y + 0.5 * Hf, z])
+        if int(sd) == int(CHAIN[6, 5]):
+            import watchers_a as WA
+            # The shared A15 hearth's fuel is lower than the old billboard base.
+            # Put the catch just above its measured seat, in the root of the flame.
+            P[1] = y + WA.seventh_hearth(CHAIN[6]).fire_base_offset + 0.12 * Hf
         sx, sy, zc = scam.project(P)
         if zc <= 1.0:
             continue
         ppm = scam.f / zc
         tr = NA.fire_trans(scam.pos, P, fogp, WD)
         e = env * tr
+        zbias = NA.fire_depth_bias(zc, near_hearth=True)
         s1 = min(max(1.2 * Hf * ppm, 14.0 * pxs), 90.0 * pxs)
-        F2.halo(img, zb, sx, sy, s1, 0.08 * e, z=zc, zbias=max(3.0, 0.004 * zc), col=F2.AURA_COL)
-        F2.halo(img, zb, sx, sy, 3.0 * s1, 0.012 * e, z=zc, zbias=max(3.0, 0.004 * zc), col=F2.AURA_COL)
+        F2.halo(img, zb, sx, sy, s1, 0.08 * e, z=zc, zbias=zbias, col=F2.AURA_COL)
+        F2.halo(img, zb, sx, sy, 3.0 * s1, 0.012 * e, z=zc, zbias=zbias, col=F2.AURA_COL)
+        core = min(max(0.20 * Hf * ppm, 1.4 * pxs), 8.0 * pxs)
+        F2.halo(img, zb, sx, sy, core, 0.28 * e, z=zc, zbias=zbias, col=np.array([1.0, 0.62, 0.26]))
 
 
 # ------------------------------------------------------------------ the frame ---
@@ -212,6 +228,24 @@ def stars():
     if _STARS is None:
         _STARS = SK.make_stars(14000, 101, lum_scale=7.0)
     return _STARS
+
+
+def sync_opaque_distance(fr, previous_zb):
+    """Copy nearer opaque source hits into Euclidean distance for target-space motion blur.
+
+    HA/SP write horizontal-forward source depth, whereas RC.velocity consumes ray distance.
+    For a source pixel, ray length / forward length is sqrt(1 + (u/f)^2 + (v/f)^2).
+    Compare around the opaque pass so unchanged terrain/sky distances stay bit-for-bit intact.
+    """
+    changed = np.isfinite(fr.zb) & (fr.zb > 0.0) & (fr.zb < previous_zb)
+    j, i = np.nonzero(changed)
+    if not len(i):
+        return
+    C = fr.src.params()
+    u = (i + 0.5 - C[8]) / C[7]
+    v = (C[9] - j - 0.5) / C[7]
+    distance = fr.zb[j, i] * np.sqrt(1.0 + u * u + v * v)
+    fr.dist[j, i] = np.minimum(fr.dist[j, i], distance)
 
 
 def render(f, scale=1.0, ss=1.5, mblur=True):
@@ -247,7 +281,9 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     pxs = PI.src_scale(fr)
     SK.splat_stars(fr.img, scam, stars(), kill, t=t, gain=ss * ss, scale=pxs)
     # the lighters (RUN-A3's watchers_a): after the stars, BEFORE the fires, so each is a silhouette against its fire
+    before_figures = fr.zb.copy()
     WA.draw_figures(fr.img, fr.zb, scam, f, LT, (Lk, amb, S, fogp, Q), CH=CHAIN)
+    sync_opaque_distance(fr, before_figures)
     NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD, near_hearth=True,
                    base_offsets={int(CHAIN[6, 5]): WA.seventh_hearth(CHAIN[6]).fire_base_offset})
     draw_flares(fr.img, fr.zb, scam, f, pxs, fogp)
@@ -301,7 +337,7 @@ def _work(args):
     import numba                        # NUMBA_NUM_THREADS is fixed once numba runs (the farm sets it per node)
     numba.set_num_threads(max(1, min(threads, numba.config.NUMBA_NUM_THREADS)))
     import cv2
-    cv2.setNumThreads(1)
+    cv2.setNumThreads(0)                  # sequential: OpenCV's GCD backend does not cap its pool at 1
     look = PI.look
     for f in frames:
         t0 = time.time()

@@ -1,0 +1,733 @@
+{
+  "created_utc": "2026-09-28T03:15:20.119055+00:00",
+  "repo": "<workspace>/work/night-a14",
+  "worktree_head": "9b9027bff17490a082cbb69cf1b11b62e652e735",
+  "probe_sha256": "c5f9d9bc8ce969797908d3ab762ba078af43ea0a745c10567a07c3f4ce9f7d38",
+  "sdfppl_sources": {
+    "old": {
+      "commit": "6ae71801bae7b188a8f2d9533761c7e13824fc06",
+      "path": "<workspace>/work/night3/latest-sp-compat/geometry-extracts/sdfppl_old.py",
+      "sha256": "137110a7446b013816ebf60d7d9315ca2e826814a9340fa25a69da99d297a193"
+    },
+    "new": {
+      "commit": "70d102b148ff225947f252f3183aca9503a6d4fd",
+      "path": "<workspace>/work/night3/latest-sp-compat/geometry-extracts/sdfppl_new.py",
+      "sha256": "2d02ef0aa2d7bf8787daf1f95b0500dca6899d3b4422d5209b6f09b9a6cc77b5"
+    }
+  },
+  "unchanged_scene_sources_sha256": {
+    "watchers_a.py": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+    "beaconrun_a.py": "3f3a165565d2b9e8a5058f92407f78dee9ee6ee8bbd43aff21dd4986cb26d0f7",
+    "world.py": "401e3c2fa2dd092523c93656a500626440a6bb7566316c54db8cb47503bea147",
+    "falsedawn.py": "d673c601219fb1291e48b8299b3e81baecc8690cb338874b187ecc67558395f7",
+    "nighta.py": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+    "hearth_a.py": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+    "fire_near_a.py": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+    "beaconrun_a_chain.npy": "dbba80a06281dc3b40399f4c894f3acd4b451db9b59e0aac9d8b8363d7f1a849",
+    "watchers_a_extra.npy": "26e3cf08dac35c8e3e635f7d3db626247a64396e4da5187a9dcd5497804e39b6",
+    "watchers_a_figs.npy": "a89022b4e5b6ee1cb5a1895e411aadf7b9f1165b708b3c3aa33cedcb77a0635c"
+  },
+  "numba_threads": 1,
+  "opencv_sequential_requested": true,
+  "opencv_threads_reported": 1,
+  "jit_disabled": true,
+  "scene_inputs": {
+    "chain": {
+      "shape": [
+        7,
+        6
+      ],
+      "dtype": "float64",
+      "sha256": "7ba6312298dcdd75984cd11c3fd710113797ef16d3ca8600d10cfd09e50e69fa",
+      "finite": true
+    },
+    "extra_fires": {
+      "shape": [
+        4,
+        6
+      ],
+      "dtype": "float64",
+      "sha256": "53e4263f95d238a64d7e7046ce286235339ec1b95239e8cf4297ca8ca8b67a07",
+      "finite": true
+    },
+    "extra_figures": {
+      "shape": [
+        4,
+        8
+      ],
+      "dtype": "float64",
+      "sha256": "11d2527c57151af77b41a0fde796a0ed69027e5333db35c29513c24a848b48e7",
+      "finite": true
+    },
+    "terrain": {
+      "shape": [
+        72,
+        22
+      ],
+      "dtype": "float64",
+      "sha256": "5058e847040ad9a2c556918b94b74a077fb41ff26fcf2e95a546212e873400c5",
+      "finite": true
+    }
+  },
+  "scope": "Actual WA.figures_scene with actual ground and tables; WA.SP module swapped. No pixel render.",
+  "frames": [
+    {
+      "frame": 4202,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "6a70c1a06a848428deb5e69b3060fe9107a77b7c6ef681f5adf10b4353c006ff",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "6a70c1a06a848428deb5e69b3060fe9107a77b7c6ef681f5adf10b4353c006ff",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "4d1707fc92e8cff150bacd7d8e2860bebaaef9c06282a6c0e27763678348e9aa",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "4d1707fc92e8cff150bacd7d8e2860bebaaef9c06282a6c0e27763678348e9aa",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      },
+      "scene_rows": {
+        "old": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        },
+        "new": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        }
+      }
+    },
+    {
+      "frame": 4208,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "39ae01fe9aacadbda896958ddafeab001032660891a66f70443a4867fc8f71d4",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "39ae01fe9aacadbda896958ddafeab001032660891a66f70443a4867fc8f71d4",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "058e4e3954d777786458a676027ecbab432144fa10bd6e012479d28fab87d631",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "058e4e3954d777786458a676027ecbab432144fa10bd6e012479d28fab87d631",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      },
+      "scene_rows": {
+        "old": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        },
+        "new": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        }
+      }
+    },
+    {
+      "frame": 4239,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "6d98822d23236855a096bf4bb9583f867ac0b7b7deadb01f0345b327e9769055",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "6d98822d23236855a096bf4bb9583f867ac0b7b7deadb01f0345b327e9769055",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "d14b9adc30d83384a01ce98f362102be7ed1f54c3915780721e6230791eecf2f",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "d14b9adc30d83384a01ce98f362102be7ed1f54c3915780721e6230791eecf2f",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      },
+      "scene_rows": {
+        "old": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        },
+        "new": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        }
+      }
+    },
+    {
+      "frame": 4240,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "adae230ed8cf36f64efe23fbb32985a73793d70673385161f1d7f8375c40b78d",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "adae230ed8cf36f64efe23fbb32985a73793d70673385161f1d7f8375c40b78d",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "334b15b2c6cb9e39ef18867d046c2df6834482bb9d56fded1af344a8b3c58ce4",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "334b15b2c6cb9e39ef18867d046c2df6834482bb9d56fded1af344a8b3c58ce4",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      },
+      "scene_rows": {
+        "old": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        },
+        "new": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        }
+      }
+    },
+    {
+      "frame": 4399,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "7009087cb30f24c18aa844551fc38dcc664a5a34811f86402e96e1c9b1e4ef9a",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "7009087cb30f24c18aa844551fc38dcc664a5a34811f86402e96e1c9b1e4ef9a",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "87698bb6b078146ecb1bf437b6883626feeb4777271bf2f1e11f60ba1369aea6",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "87698bb6b078146ecb1bf437b6883626feeb4777271bf2f1e11f60ba1369aea6",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      },
+      "scene_rows": {
+        "old": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        },
+        "new": {
+          "primitive_types": {
+            "0.0": 106,
+            "1.0": 16,
+            "4.0": 17
+          },
+          "materials": {
+            "0.0": 137,
+            "2.0": 2
+          },
+          "box_rough_amplitudes": {
+            "0.0": 16
+          },
+          "box_rough_frequencies": {
+            "0.0": 16
+          },
+          "object_emission": {
+            "0.0": 9
+          },
+          "object_horn_flags": {
+            "0.0": 9
+          },
+          "object_flame_height": {
+            "0.0": 9
+          }
+        }
+      }
+    }
+  ],
+  "all_arrays_exact": true,
+  "legacy_reach_probe": [
+    {
+      "version": "old",
+      "cloth": false,
+      "reach": true,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "b0f89d6bde83420ef85862a2013e95839dd486ba824a0b23d2cc6b6fce5ee88a",
+        "finite": true
+      }
+    },
+    {
+      "version": "old",
+      "cloth": false,
+      "reach": false,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "b87e3bdfbcce5a30445d627ece00f5f9f3622262629921e93f6545b69f2da56b",
+        "finite": true
+      }
+    },
+    {
+      "version": "old",
+      "cloth": true,
+      "reach": true,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          17,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "8c145ef2b6562dec2f0ec1ecd336a6ca8cf672f1eb2b47cd3ddbdec18b46daa0",
+        "finite": true
+      }
+    },
+    {
+      "version": "old",
+      "cloth": false,
+      "reach": true,
+      "carry": true,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "090cfec773f90e4bf18b9d2bbb57d17d654a5ed653aa325930b42e5932218322",
+        "finite": true
+      }
+    },
+    {
+      "version": "new",
+      "cloth": false,
+      "reach": true,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "b0f89d6bde83420ef85862a2013e95839dd486ba824a0b23d2cc6b6fce5ee88a",
+        "finite": true
+      }
+    },
+    {
+      "version": "new",
+      "cloth": false,
+      "reach": false,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "b87e3bdfbcce5a30445d627ece00f5f9f3622262629921e93f6545b69f2da56b",
+        "finite": true
+      }
+    },
+    {
+      "version": "new",
+      "cloth": true,
+      "reach": true,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          17,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "8c145ef2b6562dec2f0ec1ecd336a6ca8cf672f1eb2b47cd3ddbdec18b46daa0",
+        "finite": true
+      }
+    },
+    {
+      "version": "new",
+      "cloth": false,
+      "reach": true,
+      "carry": true,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "090cfec773f90e4bf18b9d2bbb57d17d654a5ed653aa325930b42e5932218322",
+        "finite": true
+      }
+    }
+  ],
+  "limits": "Geometry/object arrays only. Does not execute SP.render or establish final-pixel shader parity.",
+  "publication_note": "Local workspace path prefix normalized to <workspace>; source identities, flags and measurements unchanged."
+}

@@ -1,0 +1,577 @@
+{
+  "created_utc": "2026-09-28T03:17:34.672890+00:00",
+  "method": "Standard-library AST/source inspection only; no project import, scene generation, JIT or pixels",
+  "script_sha256": "6ed3d7d936aba5484a85c3a8d1bd8248228bd164cdcdc608355be6deb1ed1468",
+  "repo": "<workspace>/work/night-a14",
+  "commits": {
+    "before": "6ae71801bae7b188a8f2d9533761c7e13824fc06",
+    "after": "70d102b148ff225947f252f3183aca9503a6d4fd"
+  },
+  "observed_worktree_head": "ee085f19eb1d6d01fb8b170a592db5f1c56a6b59",
+  "sdfppl": {
+    "before": {
+      "source_sha256": "137110a7446b013816ebf60d7d9315ca2e826814a9340fa25a69da99d297a193",
+      "functions": {
+        "Scene.__init__": {
+          "line": 34,
+          "ast_sha256": "d7718c2ca10fe8e52ae54391e0070b861eb190abc02403e440642be095ba3668",
+          "decorators": []
+        },
+        "Scene.begin": {
+          "line": 38,
+          "ast_sha256": "a2a2faa1215681d1a5463a5648b625306ae85dd342342006cc5aee49ebef50de",
+          "decorators": []
+        },
+        "Scene._add": {
+          "line": 43,
+          "ast_sha256": "5fc91eefbddd20ec063c7d144241bfc3bf7f78cdf7ea94a000bc32d2d7f7e58f",
+          "decorators": []
+        },
+        "Scene.cone": {
+          "line": 48,
+          "ast_sha256": "d6dd87cf59e5b3bf2bc79e4a613e6d61dc32146551e49b1b09496ee76290fa4c",
+          "decorators": []
+        },
+        "Scene.box": {
+          "line": 61,
+          "ast_sha256": "e0a6cfce638bb6b2c3f8d3051e7f019b617a5fda55c8888cae836ba89be5d030",
+          "decorators": []
+        },
+        "Scene.bell": {
+          "line": 75,
+          "ast_sha256": "e987e297c707d216705998c9cd33cb62b433b01167309fc191ad581fdddce66c",
+          "decorators": []
+        },
+        "Scene.pyramid": {
+          "line": 99,
+          "ast_sha256": "f044f845703907a84010d53cbcf9d4242ea737a9d7951ed227cb07c1055dbeab",
+          "decorators": []
+        },
+        "Scene.torus": {
+          "line": 114,
+          "ast_sha256": "945c89fe70ea04d01f15ce18889746190845d2dd599aca16667d65f30cf73e78",
+          "decorators": []
+        },
+        "Scene.end": {
+          "line": 125,
+          "ast_sha256": "ca03b0be797dc90d3292e129939365d43a209e0009927b10a6c5462932256d69",
+          "decorators": []
+        },
+        "Scene.arrays": {
+          "line": 135,
+          "ast_sha256": "1d175b334655993de99973b0ec49a9e801afddf39963c0ae45aaad3cb6310015",
+          "decorators": []
+        },
+        "_sd_cone": {
+          "line": 144,
+          "ast_sha256": "94f37af8bf73ab225c26c74bf071589e09ce2d7867e35f6d6bd24f870d804829",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_sd_box": {
+          "line": 158,
+          "ast_sha256": "344755ca8e0e2c65cd6f14be6e1267617ada0072370b20dc6e6a368f5f13f018",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_sd_torus": {
+          "line": 179,
+          "ast_sha256": "d7be0344f2c5b229fa7e0a26453dd730f7d4b6169b2f99e10fe551c8a1743f01",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_sd_bell": {
+          "line": 186,
+          "ast_sha256": "ecfcbff3a2dd1d863c60c57def87b31212120e31253cbcb67c44ec66a3770694",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_sd_pyr": {
+          "line": 253,
+          "ast_sha256": "c5a9bd7dc2468053c30eeb6300272b9543ad69f5179f024d44f22df7030c2f20",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_prim": {
+          "line": 283,
+          "ast_sha256": "536cff4e9570c0719ee084ce602ab2c9f59f5b5713660ef2d417fbf8af481378",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_smin": {
+          "line": 297,
+          "ast_sha256": "096cfea302e32f4f81e685648ae3e044748163dea0c98067cc81169738195403",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_map": {
+          "line": 305,
+          "ast_sha256": "a268a5f0198a1ed2f8de9e5a1cf67e152f04143d359a83811674cb84dc44b033",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_glass": {
+          "line": 320,
+          "ast_sha256": "1e1500a0e89af1f9c5fa84b2f20c5119bdc3b7083ec2b41b43000c7a60d4fd99",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_horn": {
+          "line": 331,
+          "ast_sha256": "52ff94eb989fd97e930fa795c4e0c4d0556b5dea4e96cd4645e4f4b13c84ee66",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "render": {
+          "line": 344,
+          "ast_sha256": "e8d784d24595322ce9fb7ccf6c6dff0c3a4fb3d1544b42432bb73afe529fb31f",
+          "decorators": [
+            "njit(parallel=True, fastmath=True, cache=True)"
+          ]
+        },
+        "_unit": {
+          "line": 604,
+          "ast_sha256": "3d66daf2a7534201432c75494a9df2cf2c1f1e213468d0ab5b045359d156674d",
+          "decorators": []
+        },
+        "_knee": {
+          "line": 609,
+          "ast_sha256": "be360eec79051b27e0b331afcfbc46285f3b2ce43c96db1a4035a3965c648591",
+          "decorators": []
+        },
+        "_bell_wind_ang": {
+          "line": 623,
+          "ast_sha256": "df5718d269684e9538b4934f036c326106bc0f83862d427fb70b4f2c82602385",
+          "decorators": []
+        },
+        "traveller": {
+          "line": 634,
+          "ast_sha256": "b9b50f935662d21da092c074a6510b4176adacc22ff089469bae4ec6d7f8f015",
+          "decorators": []
+        },
+        "_traveller_v2": {
+          "line": 774,
+          "ast_sha256": "b521999163abe1ae5b327ff853e8f61f0e4e23c136780cef9c1e34f4318196da",
+          "decorators": []
+        },
+        "seated": {
+          "line": 870,
+          "ast_sha256": "f68bfdd16eac5a9f591bbdca42f9e1611bb197c7f6c8c174cafe55f977ba2883",
+          "decorators": []
+        },
+        "small_lantern": {
+          "line": 1024,
+          "ast_sha256": "7336a6661332b712d3932ce2dd7e70d5d700d54fbcd62e984f0958354c85b1d9",
+          "decorators": []
+        },
+        "great_lantern": {
+          "line": 1037,
+          "ast_sha256": "ff76fb6360c70067b713f24b3064a9595e4715b47a7815909d91216701bfcb14",
+          "decorators": []
+        },
+        "lantern_v3": {
+          "line": 1070,
+          "ast_sha256": "767b08d0b3cfa1a82cc094c809fef5dd4516bced352ae331f85078e4d6705268",
+          "decorators": []
+        },
+        "stone_ring": {
+          "line": 1134,
+          "ast_sha256": "f141ff0ac37adeb96ed91476bea4618cdd0c48fb80ffdd441bc89d66f541f6f0",
+          "decorators": []
+        }
+      }
+    },
+    "after": {
+      "source_sha256": "2d02ef0aa2d7bf8787daf1f95b0500dca6899d3b4422d5209b6f09b9a6cc77b5",
+      "functions": {
+        "Scene.__init__": {
+          "line": 34,
+          "ast_sha256": "d7718c2ca10fe8e52ae54391e0070b861eb190abc02403e440642be095ba3668",
+          "decorators": []
+        },
+        "Scene.begin": {
+          "line": 38,
+          "ast_sha256": "a2a2faa1215681d1a5463a5648b625306ae85dd342342006cc5aee49ebef50de",
+          "decorators": []
+        },
+        "Scene._add": {
+          "line": 43,
+          "ast_sha256": "5fc91eefbddd20ec063c7d144241bfc3bf7f78cdf7ea94a000bc32d2d7f7e58f",
+          "decorators": []
+        },
+        "Scene.cone": {
+          "line": 48,
+          "ast_sha256": "d6dd87cf59e5b3bf2bc79e4a613e6d61dc32146551e49b1b09496ee76290fa4c",
+          "decorators": []
+        },
+        "Scene.box": {
+          "line": 61,
+          "ast_sha256": "241abeefaa4bddb494ccfdc5983845882cd45ea374423c2f7af7a742e4af8b3d",
+          "decorators": []
+        },
+        "Scene.bell": {
+          "line": 80,
+          "ast_sha256": "e987e297c707d216705998c9cd33cb62b433b01167309fc191ad581fdddce66c",
+          "decorators": []
+        },
+        "Scene.pyramid": {
+          "line": 104,
+          "ast_sha256": "f044f845703907a84010d53cbcf9d4242ea737a9d7951ed227cb07c1055dbeab",
+          "decorators": []
+        },
+        "Scene.torus": {
+          "line": 119,
+          "ast_sha256": "945c89fe70ea04d01f15ce18889746190845d2dd599aca16667d65f30cf73e78",
+          "decorators": []
+        },
+        "Scene.end": {
+          "line": 130,
+          "ast_sha256": "ca03b0be797dc90d3292e129939365d43a209e0009927b10a6c5462932256d69",
+          "decorators": []
+        },
+        "Scene.arrays": {
+          "line": 140,
+          "ast_sha256": "1d175b334655993de99973b0ec49a9e801afddf39963c0ae45aaad3cb6310015",
+          "decorators": []
+        },
+        "_sd_cone": {
+          "line": 149,
+          "ast_sha256": "94f37af8bf73ab225c26c74bf071589e09ce2d7867e35f6d6bd24f870d804829",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_sd_box": {
+          "line": 163,
+          "ast_sha256": "344755ca8e0e2c65cd6f14be6e1267617ada0072370b20dc6e6a368f5f13f018",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_sd_torus": {
+          "line": 184,
+          "ast_sha256": "d7be0344f2c5b229fa7e0a26453dd730f7d4b6169b2f99e10fe551c8a1743f01",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_sd_bell": {
+          "line": 191,
+          "ast_sha256": "ecfcbff3a2dd1d863c60c57def87b31212120e31253cbcb67c44ec66a3770694",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_sd_pyr": {
+          "line": 258,
+          "ast_sha256": "c5a9bd7dc2468053c30eeb6300272b9543ad69f5179f024d44f22df7030c2f20",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_prim": {
+          "line": 288,
+          "ast_sha256": "189ede59c0462906fe78364795364dd0eab7dd168cf9a4ccbd871a077a1706e8",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_smin": {
+          "line": 307,
+          "ast_sha256": "096cfea302e32f4f81e685648ae3e044748163dea0c98067cc81169738195403",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_map": {
+          "line": 315,
+          "ast_sha256": "a268a5f0198a1ed2f8de9e5a1cf67e152f04143d359a83811674cb84dc44b033",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_glass": {
+          "line": 330,
+          "ast_sha256": "1e1500a0e89af1f9c5fa84b2f20c5119bdc3b7083ec2b41b43000c7a60d4fd99",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "_horn": {
+          "line": 341,
+          "ast_sha256": "8ea0b0971685fdf476c85106598bc78f18c7267b27d660f9588bafa977787d70",
+          "decorators": [
+            "njit(inline='always', fastmath=True)"
+          ]
+        },
+        "render": {
+          "line": 354,
+          "ast_sha256": "b604f0bd9dd457632d72ad8a5361068380bd0aadb7ca255b4e1b72837b3bfacf",
+          "decorators": [
+            "njit(parallel=True, fastmath=True, cache=True)"
+          ]
+        },
+        "_unit": {
+          "line": 614,
+          "ast_sha256": "3d66daf2a7534201432c75494a9df2cf2c1f1e213468d0ab5b045359d156674d",
+          "decorators": []
+        },
+        "_knee": {
+          "line": 619,
+          "ast_sha256": "be360eec79051b27e0b331afcfbc46285f3b2ce43c96db1a4035a3965c648591",
+          "decorators": []
+        },
+        "_bell_wind_ang": {
+          "line": 633,
+          "ast_sha256": "df5718d269684e9538b4934f036c326106bc0f83862d427fb70b4f2c82602385",
+          "decorators": []
+        },
+        "traveller": {
+          "line": 644,
+          "ast_sha256": "b9b50f935662d21da092c074a6510b4176adacc22ff089469bae4ec6d7f8f015",
+          "decorators": []
+        },
+        "_traveller_v2": {
+          "line": 784,
+          "ast_sha256": "b521999163abe1ae5b327ff853e8f61f0e4e23c136780cef9c1e34f4318196da",
+          "decorators": []
+        },
+        "seated": {
+          "line": 880,
+          "ast_sha256": "f68bfdd16eac5a9f591bbdca42f9e1611bb197c7f6c8c174cafe55f977ba2883",
+          "decorators": []
+        },
+        "small_lantern": {
+          "line": 1034,
+          "ast_sha256": "7336a6661332b712d3932ce2dd7e70d5d700d54fbcd62e984f0958354c85b1d9",
+          "decorators": []
+        },
+        "great_lantern": {
+          "line": 1047,
+          "ast_sha256": "ff76fb6360c70067b713f24b3064a9595e4715b47a7815909d91216701bfcb14",
+          "decorators": []
+        },
+        "lantern_v3": {
+          "line": 1080,
+          "ast_sha256": "aee5524ade9bbbd1d2914d94146c603a49bc75158263dc6f90dcd80a53618f66",
+          "decorators": []
+        },
+        "stone_ring": {
+          "line": 1144,
+          "ast_sha256": "891a5e31bc4e1356c2ec2345a6fd0e2b21f5d38f05cffadf8000b8fde9a83da3",
+          "decorators": []
+        }
+      }
+    }
+  },
+  "compiled_function_count": 11,
+  "compiled_functions": [
+    "_sd_cone",
+    "_sd_box",
+    "_sd_torus",
+    "_sd_bell",
+    "_sd_pyr",
+    "_prim",
+    "_smin",
+    "_map",
+    "_glass",
+    "_horn",
+    "render"
+  ],
+  "changed_functions": [
+    "Scene.box",
+    "_prim",
+    "_horn",
+    "render",
+    "lantern_v3",
+    "stone_ring"
+  ],
+  "changed_compiled_functions": [
+    "_prim",
+    "_horn",
+    "render"
+  ],
+  "unchanged_production_shot_inputs": {
+    "the-long-dawn/shots/run/watchers_a.py": {
+      "before_source_sha256": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+      "after_source_sha256": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+      "identical": true
+    },
+    "the-long-dawn/shots/run/beaconrun_a.py": {
+      "before_source_sha256": "431ff5caf67c058a9baab02aac4e01f702efed3e0a815a52bf882c67d16dfe75",
+      "after_source_sha256": "431ff5caf67c058a9baab02aac4e01f702efed3e0a815a52bf882c67d16dfe75",
+      "identical": true
+    },
+    "the-long-dawn/shots/run/nighta.py": {
+      "before_source_sha256": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+      "after_source_sha256": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+      "identical": true
+    },
+    "the-long-dawn/shots/run/hearth_a.py": {
+      "before_source_sha256": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+      "after_source_sha256": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+      "identical": true
+    },
+    "the-long-dawn/shots/run/fire_near_a.py": {
+      "before_source_sha256": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+      "after_source_sha256": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+      "identical": true
+    }
+  },
+  "watcher_worktree_source_sha256": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+  "watcher_sp_calls": [
+    "SP.Scene",
+    "SP.render",
+    "SP.traveller"
+  ],
+  "traveller_box_calls": [
+    {
+      "line": 685,
+      "expression": "sc.box(ank + w * 0.045 * h - up * 0.035 * h, (0.052 * h * bk, 0.048 * h * bk, 0.13 * h * bk), yaw=math.atan2(w[0], w[2]), rnd=0.033 * h * bk, mat=0, k=0.02)"
+    },
+    {
+      "line": 702,
+      "expression": "sc.box(chest - w * 0.18 * h - up * 0.1 * h, (0.16 * h, 0.21 * h, 0.11 * h), yaw=math.atan2(w[0], w[2]), rnd=0.06 * h, mat=0, k=0.09 * h)"
+    }
+  ],
+  "traveller_primitive_material_calls": [
+    {
+      "line": 692,
+      "method": "sc.bell",
+      "material": 0,
+      "expression": "sc.bell(cape_a, cape_b, 0.085 * h, cr_ * h, w, 0.02 * h, 9, fold_phase * 0.7 + 0.9, 0, 0.05 * h, ell=0.8 * el, wind=0.25 * wn, wind_ang=ang)"
+    },
+    {
+      "line": 698,
+      "method": "sc.bell",
+      "material": 0,
+      "expression": "sc.bell(top, hem_c, cloak[0] * h, cloak[1] * h, w, fold_depth * h * 1.25, folds, fold_phase + flutter, 0, 0.06 * h, ell=el, wind=wn, wind_ang=ang)"
+    },
+    {
+      "line": 712,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(head - w * 0.04 * h + up * 0.004 * h, head + w * 0.035 * h * hk + up * 0.014 * h, 0.11 * h * hk, 0.106 * h * hk, 0, 0.06 * h)"
+    },
+    {
+      "line": 714,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(head - up * 0.05 * h - w * 0.02 * h, chest + up * 0.03 * h - w * 0.03 * h, 0.1 * h * hk, 0.17 * h, 0, 0.07 * h)"
+    },
+    {
+      "line": 683,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(hip, kn, 0.074 * h * lk, 0.058 * h * lk, 0, 0.03)"
+    },
+    {
+      "line": 684,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(kn, ank, 0.055 * h * lk, 0.044 * h * lk, 0, 0.02)"
+    },
+    {
+      "line": 685,
+      "method": "sc.box",
+      "material": 0,
+      "expression": "sc.box(ank + w * 0.045 * h - up * 0.035 * h, (0.052 * h * bk, 0.048 * h * bk, 0.13 * h * bk), yaw=math.atan2(w[0], w[2]), rnd=0.033 * h * bk, mat=0, k=0.02)"
+    },
+    {
+      "line": 702,
+      "method": "sc.box",
+      "material": 0,
+      "expression": "sc.box(chest - w * 0.18 * h - up * 0.1 * h, (0.16 * h, 0.21 * h, 0.11 * h), yaw=math.atan2(w[0], w[2]), rnd=0.06 * h, mat=0, k=0.09 * h)"
+    },
+    {
+      "line": 718,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(head - w * 0.05 * h + up * 0.05 * h, tip, 0.07 * h, 0.028 * h, 0, 0.05 * h)"
+    },
+    {
+      "line": 725,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(sh, el_, 0.076 * h, 0.07 * h, 0, 0.04 * h)"
+    },
+    {
+      "line": 726,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(el_, hand - (hand - el_) * 0.12, 0.07 * h, 0.086 * h, 0, 0.02 * h)"
+    },
+    {
+      "line": 727,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(hand, hand, 0.045 * h, 0.045 * h, 0, 0.015 * h)"
+    },
+    {
+      "line": 707,
+      "method": "sc.cone",
+      "material": 0,
+      "expression": "sc.cone(br_c + s * 0.23 * h, br_c - s * 0.23 * h, 0.075 * h, 0.075 * h, 0, 0.03 * h)"
+    },
+    {
+      "line": 768,
+      "method": "sc.cone",
+      "material": 2,
+      "expression": "sc.cone(hand_s + up * 0.28 * h, staff_tip, 0.017, 0.014, 2, 0.0)"
+    },
+    {
+      "line": 752,
+      "method": "sc.cone",
+      "material": 2,
+      "expression": "sc.cone(foot, stop, 0.016, 0.014, 2, 0.0)"
+    },
+    {
+      "line": 753,
+      "method": "sc.cone",
+      "material": 2,
+      "expression": "sc.cone(stop, crook, 0.012, 0.01, 2, 0.0)"
+    }
+  ],
+  "static_branch_assessment": [
+    {
+      "branch": "rough box displacement",
+      "gate": "primitive type 1 AND P[14] > 0",
+      "result": "not selected by current watcher calls",
+      "reason": "traveller box calls omit rough; its default is zero, and Scene.box initializes rows to zero. Bells have type4, so their positive P[14] fold depth does not satisfy box type."
+    },
+    {
+      "branch": "horn transmission",
+      "gate": "glass hit AND O[14] > 0.5",
+      "result": "not selected by current watcher calls",
+      "reason": "Scene.begin initializes O[14] to 0; watcher does not call lantern_v3 or emit glass primitives."
+    },
+    {
+      "branch": "rough stone shading",
+      "gate": "material >= 5.5",
+      "result": "not selected by current watcher calls",
+      "reason": "traveller primitive material arguments are 0 or 2 and direct wrap is material 0. Hearth uses the separate HA.draw tracer, without calling SP.stone_ring."
+    },
+    {
+      "branch": "lantern_v3 bar position and stone_ring geometry",
+      "result": "not called by current watcher scene",
+      "reason": "watchers_a SP call set is Scene/traveller/render only; A14 invokes WA.draw_figures."
+    }
+  ],
+  "limits": [
+    "The compiled _prim, _horn and render functions have changed; prior compiled-function identity does not apply.",
+    "Reachability follows current source call arguments; actual geometry arrays are checked separately by another agent.",
+    "Unselected source branches do not establish machine-code identity or pixel equivalence after recompilation.",
+    "The older pixel render retains its original source provenance and does not validate this newer shader."
+  ],
+  "publication_note": "Local workspace path prefix normalized to <workspace>; source identities, flags and measurements unchanged."
+}

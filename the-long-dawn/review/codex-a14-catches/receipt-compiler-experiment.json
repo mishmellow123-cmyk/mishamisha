@@ -1,0 +1,496 @@
+{
+  "purpose": "Disposable performance proposal: change only SP-local gnoise3 inline policy; not adopted or production validation.",
+  "started_utc": "2026-09-28T03:11:37.546936+00:00",
+  "pid": 72205,
+  "tree": "<workspace>/work/night-a14",
+  "head": "9b9027bff17490a082cbb69cf1b11b62e652e735",
+  "script_sha256": "41e45a19b02140b6a40739c08ee202106c6684ea656c5905b8b41b9d26692dae",
+  "status": "complete",
+  "frame": 4240,
+  "scale": 0.5,
+  "ss": 1.5,
+  "source_sha256": {
+    "the-long-dawn/shots/run/beaconrun_a.py": "3f3a165565d2b9e8a5058f92407f78dee9ee6ee8bbd43aff21dd4986cb26d0f7",
+    "the-long-dawn/shots/montage/common.py": "cf7879681c70a63fc021ec113c29a3a389f26043bfac4caf86a19929166422c2",
+    "the-long-dawn/shots/run/falsedawn.py": "d673c601219fb1291e48b8299b3e81baecc8690cb338874b187ecc67558395f7",
+    "the-long-dawn/shots/run/fire2.py": "5fa78082d63b210fefc0a237d28d292bb5612fa5176b15c26e030696c9757494",
+    "the-long-dawn/shots/run/fire_near_a.py": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+    "the-long-dawn/shots/run/hearth_a.py": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+    "the-long-dawn/lib/look.py": "1a311e38a231ee9fda65aa8037759ded7b19ae215bd184afb0327dd4cdd70614",
+    "the-long-dawn/shots/montage/mt/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "the-long-dawn/shots/montage/mt/cam.py": "77b0ec0a3e5a28bdc91dde40913afdbd4fd913e540de9051863c83cc1a2f7b25",
+    "the-long-dawn/shots/montage/mt/figure.py": "400b53358f6872e71d3a45fc0e428be0fad661adad40fc47cf63502bf1026b66",
+    "the-long-dawn/shots/montage/mt/fire.py": "b24176203d8a537f6150511e8fea842b03699a40597d4c6f1eda6999eee227e5",
+    "the-long-dawn/shots/montage/mt/noise.py": "dd0db39b82b5f86869f911dd9461583dc804c6a8bd1530902932d9cadd414ef8",
+    "the-long-dawn/shots/montage/mt/people.py": "6af8e5c787e52b4c74823ef90e916a0221362d6758dca884a0e6b57265cc804e",
+    "the-long-dawn/shots/montage/mt/props.py": "c9b0c8f719929ef62d64879614caa727d5964427810780b4aaa0dcc2213c6923",
+    "the-long-dawn/shots/montage/mt/sky.py": "8c65c54f7484a0b505f888a0087024c6433aee3976c2156b69f2ec7d96f05f70",
+    "the-long-dawn/shots/montage/mt/terrain.py": "4d4364ffcbacba2d732ba1a239bc4bf7d66f217da574ec7daffb09e681e4b202",
+    "the-long-dawn/shots/run/nighta.py": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+    "the-long-dawn/shots/run/pipe.py": "1afae49c38be0b47335777f8e87965e1fbb78a8624863b6d3c8aec43d35c0734",
+    "the-long-dawn/shots/run/rcam.py": "cbaaf940d271a744e7630db19483d151db86eead05592c9b68ac61292751128d",
+    "the-long-dawn/shots/run/run.py": "a65551d70f1ac8e7925188fc48c0a58a9df0006ea7c531a07fc897e9ab55b7a1",
+    "the-long-dawn/shots/montage/s1_peak.py": "575ffa78325d0a7eea6a37520a37bd33189e7fa65ecbad7d8ee1520716078b7b",
+    "the-long-dawn/shots/run/sdfppl.py": "137110a7446b013816ebf60d7d9315ca2e826814a9340fa25a69da99d297a193",
+    "the-long-dawn/shots/run/watchers_a.py": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+    "the-long-dawn/shots/run/world.py": "401e3c2fa2dd092523c93656a500626440a6bb7566316c54db8cb47503bea147",
+    "the-long-dawn/shots/run/summits.npy": "833f158f4207a6124242d0647bbf7f4585a797705a5ad2ae3524f9c5fed419a5",
+    "the-long-dawn/shots/run/beaconrun_a_chain.npy": "dbba80a06281dc3b40399f4c894f3acd4b451db9b59e0aac9d8b8363d7f1a849",
+    "the-long-dawn/shots/run/watchers_a_extra.npy": "26e3cf08dac35c8e3e635f7d3db626247a64396e4da5187a9dcd5497804e39b6",
+    "the-long-dawn/shots/run/watchers_a_figs.npy": "a89022b4e5b6ee1cb5a1895e411aadf7b9f1165b708b3c3aa33cedcb77a0635c",
+    "the-long-dawn/shots/run/reveal_a_fires.npy": "7b5f135066539a90790008eb328bb0e10d08ecc2805a44851b98ea35e6c0b284"
+  },
+  "cache_seed": [
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._draw_streaks-443.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._draw_streaks-443.py313.1.nbc",
+      "sha256": "b4b7f007323020a1552f2982a2fc0a5c9b7fe5519d57f8b247e2ee95c8a39a12"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._draw_streaks-443.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._draw_streaks-443.py313.nbi",
+      "sha256": "593a2936a8faffd69270a9d369b1c2304c027d4d0b5fd01d45a79a37127281ad"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._glow-231.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._glow-231.py313.1.nbc",
+      "sha256": "aeb2b8b6a13dfe664acf77773622222803f6fa83d475a44243274d31c22910af"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._glow-231.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._glow-231.py313.nbi",
+      "sha256": "878e282d67abbd31c28a3564a571c3f618ba549737d4c0d448c14159670b1c52"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._halo-263.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._halo-263.py313.1.nbc",
+      "sha256": "4a81df29b592450d6532ad286e07073046983894b2c560487310dec4bf023af0"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._halo-263.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._halo-263.py313.nbi",
+      "sha256": "59abb4c387686b87c6a6aeb08c9bac9511ae13adaf02c9948d6242fca47ea1e3"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._integrate-386.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._integrate-386.py313.1.nbc",
+      "sha256": "51a6585650979ebe7aeec553934b3f03388c9fed5fb50396928d193d9b5b83e7"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._integrate-386.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._integrate-386.py313.nbi",
+      "sha256": "db25d133784d6a14908c292cb903d44f072523a7c0e5cff55fcfff1151b1cd68"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._smoke-563.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._smoke-563.py313.1.nbc",
+      "sha256": "31ecbb8acf2b9382d9b767c017e07cb37565f2474fb943abf76f29149846e109"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/fire._smoke-563.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/fire._smoke-563.py313.nbi",
+      "sha256": "c5ba5237bbcc03544662faf60386c660858d74cf89cb0a11cbcdc4faff29d84e"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/noise.fbm3-161.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/noise.fbm3-161.py313.1.nbc",
+      "sha256": "f2ef40a9b5cf94f2a7c5079ecee27a13123a18c999e1d56bd197ef7f1af277ba"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/noise.fbm3-161.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/noise.fbm3-161.py313.nbi",
+      "sha256": "59804df935ab9b0094d50ece0de9bc44687d8d115b3366324b6908f5a161db00"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/noise.smoothstep-208.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/noise.smoothstep-208.py313.1.nbc",
+      "sha256": "5d2396b31a365dbd1e1e6c50bdb256924961167e1a7afb10dc14210d3783939b"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/noise.smoothstep-208.py313.2.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/noise.smoothstep-208.py313.2.nbc",
+      "sha256": "1b08526bfc08306848b73f61691675f5e9681ae236c53bbcbc50d47d0192d236"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/montage/mt/__pycache__/noise.smoothstep-208.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/mt_4a66105e31b073ed4dfab9e7eb5084d1be2e0408/noise.smoothstep-208.py313.nbi",
+      "sha256": "996311cc61ce167ad502ad673a0b7a9ce6b4ce629541e39fd64f96a3ef7769c0"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/fire2._bonfire-51.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/fire2._bonfire-51.py313.1.nbc",
+      "sha256": "aafdff1f0cd0b5df8966a38475314940e949937d016faffcdacc7859cb673438"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/fire2._bonfire-51.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/fire2._bonfire-51.py313.nbi",
+      "sha256": "c9009a6dac50f95597aef7233bb30c0593bf6bb7185f9d10531c0129cd5bdf23"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/fire_near_a._interval-113.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/fire_near_a._interval-113.py313.1.nbc",
+      "sha256": "b258a5105b028a367d8ce09ee2e11eb438d6c5802f0e744cfaf8a02d7e8b36bc"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/fire_near_a._interval-113.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/fire_near_a._interval-113.py313.nbi",
+      "sha256": "403fabe72543c3a878e60b960c9fa1d53d7cf06eb13720e5a558d5dba4899d7f"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/fire_near_a._render-130.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/fire_near_a._render-130.py313.1.nbc",
+      "sha256": "55aa8a5e45ed017c1df34770efabaca101915351f3cb43930beafc205697ca4e"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/fire_near_a._render-130.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/fire_near_a._render-130.py313.nbi",
+      "sha256": "65faa68635da3debd4e3ecb54a6a74c704890a22e02e5962032cefc5fd7b04b7"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/fire_near_a.field-44.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/fire_near_a.field-44.py313.1.nbc",
+      "sha256": "0ff9afeb5db1355273099c790cb74b32682fe763c81acfa97e86cd2fde6d1881"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/fire_near_a.field-44.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/fire_near_a.field-44.py313.nbi",
+      "sha256": "081bc394b747e7cd42f7b47017e34b8b39e54836d3ce5ccd628c68107562ffe3"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a._ground_shadow-382.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a._ground_shadow-382.py313.1.nbc",
+      "sha256": "b04b1e876121e7ae576d64b4d2ad3b1016d62f71a87147622687ff9fceb31593"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a._ground_shadow-382.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a._ground_shadow-382.py313.nbi",
+      "sha256": "5c4d2dc5ae0a86873f3a773108f841a80ca97e4503b8f90de66bffb22b294342"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a._noise-245.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a._noise-245.py313.1.nbc",
+      "sha256": "753cbe0c2c69874483563531ec7279fae57c1b8e3f7c0403a01bd240c8ed3096"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a._noise-245.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a._noise-245.py313.nbi",
+      "sha256": "fbed9332ad4818fa1a11b9be48681f6ce1fd18cbf6480a1afbff3571201fb239"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a._render-318.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a._render-318.py313.1.nbc",
+      "sha256": "9b06feeea3c8742c84f1ae117ca7d3f3bee0d8f41b2bf5c48d0778144a652df0"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a._render-318.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a._render-318.py313.nbi",
+      "sha256": "078c937251e71a215ca734ff6659b842cf497b365ac741217b6aaefe365fe833"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a._shade-268.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a._shade-268.py313.1.nbc",
+      "sha256": "9e826ae5140335f14c3b3ed3b7642226ba808327ecebbc320a15beb2e4597df4"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a._shade-268.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a._shade-268.py313.nbi",
+      "sha256": "329799442895bce40e1dd5dcbe0b4ec96c0a43b2d8134c23ad809cafaae49544"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a.scene_distance-189.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a.scene_distance-189.py313.1.nbc",
+      "sha256": "953fbbdc43655c902a2c22b9bea1a9f1f1f8ba7e671a2fffabcd7ecbb08fe1da"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a.scene_distance-189.py313.2.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a.scene_distance-189.py313.2.nbc",
+      "sha256": "a198f4ab9d64d96bdd2564642e7890e44a99ba7265bb891a25830d86b94d7e6e"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a.scene_distance-189.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a.scene_distance-189.py313.nbi",
+      "sha256": "d43905d52d0d43a0780f59d6334143e410a6889fa7306aeb65ba65a41ed7b6dd"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a.stone_distance-172.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a.stone_distance-172.py313.1.nbc",
+      "sha256": "b69c102d4dfffa5b8cb9a781a28548dcbcad63577784fa407e0f77b9a2b9bb89"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a.stone_distance-172.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a.stone_distance-172.py313.nbi",
+      "sha256": "06ba080b87e47562a1d51144e0714c3f42534ead6451caa0b56c5dbd0f17e1d6"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a.visibility-205.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a.visibility-205.py313.1.nbc",
+      "sha256": "78b45502af035517bb4a59aca66311b89ba2f63eaef0c9b5ae38aa50fd1e0b00"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a.visibility-205.py313.2.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a.visibility-205.py313.2.nbc",
+      "sha256": "8b5cfde615c2336e0a2bc90cecefd40ec0ac6c916b2b8fccb5e1d0a6af397b38"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/hearth_a.visibility-205.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/hearth_a.visibility-205.py313.nbi",
+      "sha256": "39aaa58dd65e5e925c6f8aef930641a7fd4a510454e2700030ab26a62d32f68c"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/nighta.glow_pass-137.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/nighta.glow_pass-137.py313.1.nbc",
+      "sha256": "093e08723ff5f7fdb96ab5f95ead154c3e9ef86b59d15e2c57026945bf2c4dee"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/nighta.glow_pass-137.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/nighta.glow_pass-137.py313.nbi",
+      "sha256": "3438ee7800e0dd113d5a2526d6d355fce64471fca8f34aead8fc1088c5d145bb"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/rcam._neighbor_max-197.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/rcam._neighbor_max-197.py313.1.nbc",
+      "sha256": "681e815c41a93d44d0a0d7e95a1c52ddbb94254ff0e2030a3236bddf371319fe"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/rcam._neighbor_max-197.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/rcam._neighbor_max-197.py313.nbi",
+      "sha256": "1b264a7f92eb93c7f860718d02cecf3d97ae45ab55e05c69fa21f85e7dee611d"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/rcam._reconstruct-234.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/rcam._reconstruct-234.py313.1.nbc",
+      "sha256": "2d7db5bf4cc13bf9f31165edb16c0bc1de70a508e39ec7672eff067d09492b29"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/rcam._reconstruct-234.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/rcam._reconstruct-234.py313.nbi",
+      "sha256": "d4f30453db5b5bd5bef0abef9c41cf398cc811f70bc0e599c05e19bd8413c0f9"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/rcam._tile_max-177.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/rcam._tile_max-177.py313.1.nbc",
+      "sha256": "e6c2b82e159dfeac8c68213ffceb9186b8c9918558a141ae8fb53578f32b2231"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/rcam._tile_max-177.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/rcam._tile_max-177.py313.nbi",
+      "sha256": "ef90b8935b4646b4dcb2c1b5ad3513b6e6b1c00440e2660d20f7ce985cd4efb3"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.cloud_glow-889.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.cloud_glow-889.py313.1.nbc",
+      "sha256": "a1cc2087b0296757025bb6502958fa6f1de3316623a66fb8e614d65dbac279bf"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.cloud_glow-889.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.cloud_glow-889.py313.nbi",
+      "sha256": "73cbb689fc25187779b624c1ae7c774315c7267f034dd2fa920bdb095fd73582"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.crag-135.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.crag-135.py313.1.nbc",
+      "sha256": "5f5a55026bb31cfcfb28c26f7c68d40623a8b47bb9a360a1a3001bfc17c6ab94"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.crag-135.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.crag-135.py313.nbi",
+      "sha256": "25fa701f0975d9373cd339729f3ff8cf30085e3744d8dcbd42db30c0fd913090"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.h_cloud-367.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.h_cloud-367.py313.1.nbc",
+      "sha256": "764b28fdcfe6d6b70b80dc1fdf253a97d7c46e05a2b14829b65cdca391dbceb2"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.h_cloud-367.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.h_cloud-367.py313.nbi",
+      "sha256": "504f64c562ae6910c4b8f41170ace23981ba5c67abbbb33e4efcd003557b1005"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.h_rock-348.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.h_rock-348.py313.1.nbc",
+      "sha256": "1cd262ae14fb088c1a72a1a6a9e33fcd910e984141ad9f97e7952a8cfadece1c"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.h_rock-348.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.h_rock-348.py313.nbi",
+      "sha256": "5381eb3e76030bce239957ebbcd117df01ab67211f3142ebd3bd668087c20c80"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.heights-954.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.heights-954.py313.1.nbc",
+      "sha256": "f42cd35083073c6f484281ea3dc75cecf594698c222fa5a244d6953f75a52c6a"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.heights-954.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.heights-954.py313.nbi",
+      "sha256": "61d2fc993818b60eebc0319ab59baeed7eb8d1878269f3813dd169d01ab3cfba"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.hfun-476.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.hfun-476.py313.1.nbc",
+      "sha256": "32dafe4a38a6124db088dddf0c147d80302925012b5c2c1a7223794b0f28ce30"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.hfun-476.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.hfun-476.py313.nbi",
+      "sha256": "6d3eb7207cf8347bd7a2629291d68595f6715a8a8875c95355399e164b779c1e"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.march-494.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.march-494.py313.1.nbc",
+      "sha256": "33ee18089ca50016a82efe2ee899350fe2d8c2960eef26854a4e76b0b967cc39"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.march-494.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.march-494.py313.nbi",
+      "sha256": "8703358e8f1a301e9d23dbcd1afe751715e1b05802422cb50ee392b012c4eb7e"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.near_range-267.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.near_range-267.py313.1.nbc",
+      "sha256": "ec2e8f054d88c20fde8546a69d83e507a34af766da53b39910aa6325dcb930e1"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.near_range-267.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.near_range-267.py313.nbi",
+      "sha256": "ea86ae89ca102f00c557fe6283683281bb4b86b20bcf05ad0a0665f6414f2ad6"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.ridge-201.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.ridge-201.py313.1.nbc",
+      "sha256": "8b9f9e104187b2f26c133e45fff4e7cfa095f5df0ff0bee42891f4d6708ee334"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.ridge-201.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.ridge-201.py313.nbi",
+      "sha256": "01c85ad613bada268db33bc342ad1122929cb0b79c3679582587a6bd7f661438"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.shade-587.py313.1.nbc",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.shade-587.py313.1.nbc",
+      "sha256": "5c8b9ecfde059a478080835a785ff694d879886e049343f9899f9c726a4cedb2"
+    },
+    {
+      "source": "<workspace>/work/night-a14/the-long-dawn/shots/run/__pycache__/world.shade-587.py313.nbi",
+      "copy": "<workspace>/work/night3/compiler-experiment/numba-cache/run_ff4b5e582e392630690fc1b22511ff5cd12486ba/world.shade-587.py313.nbi",
+      "sha256": "2d165cf5fe8a0935b4a739cf3e1ceb86686e381045cda0ff1d4f9f3c9c12324e"
+    }
+  ],
+  "events": [
+    {
+      "event": "imports_and_override_ready",
+      "elapsed_seconds": 1.4939673749904614,
+      "seeded_cache_files": 67
+    },
+    {
+      "event": "sp_render_enter",
+      "elapsed_seconds": 10.110162124998169,
+      "image_shape": [
+        616,
+        1456,
+        3
+      ],
+      "primitive_shape": [
+        139,
+        20
+      ],
+      "object_shape": [
+        9,
+        16
+      ]
+    },
+    {
+      "event": "sp_render_exit",
+      "elapsed_seconds": 43.84575212499476,
+      "seconds": 33.73517816700041,
+      "signatures": [
+        "(Array(float32, 3, 'C', False, aligned=True), Array(float32, 2, 'C', False, aligned=True), Array(float64, 1, 'C', False, aligned=True), Array(float64, 2, 'C', False, aligned=True), Array(float64, 2, 'C', False, aligned=True), Array(float64, 2, 'C', False, aligned=True), Array(float64, 1, 'C', False, aligned=True), Array(float64, 1, 'C', False, aligned=True), Array(float64, 1, 'C', False, aligned=True), float64)"
+      ]
+    },
+    {
+      "event": "linear_frame_returned",
+      "elapsed_seconds": 44.8043373330147
+    },
+    {
+      "event": "complete",
+      "elapsed_seconds": 44.99842637500842
+    }
+  ],
+  "versions": {
+    "numpy": "2.3.5",
+    "numba": "0.62.1",
+    "llvmlite": "0.45.1",
+    "opencv-python-headless": "5.0.0.93"
+  },
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "environment": {
+    "NUMBA_NUM_THREADS": "1",
+    "NUMBA_CACHE_DIR": "<workspace>/work/night3/compiler-experiment/numba-cache",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "W15_P7": null,
+    "W15_CAM": null,
+    "W15_OWN_CAM": null,
+    "A14_CAM": null,
+    "NIGHT_CLOUD": null
+  },
+  "opencv_requested_threads": 0,
+  "opencv_reported_threads": 1,
+  "numba_threads": 1,
+  "jit_disabled": 0,
+  "original_noise_options": {
+    "inline": "always",
+    "nopython": true,
+    "boundscheck": null
+  },
+  "experimental_noise_options": {
+    "inline": "never",
+    "nopython": true,
+    "boundscheck": null
+  },
+  "original_render_options": {
+    "parallel": true,
+    "fastmath": true,
+    "nopython": true,
+    "boundscheck": null
+  },
+  "experimental_render_options": {
+    "parallel": true,
+    "fastmath": true,
+    "nopython": true,
+    "boundscheck": null
+  },
+  "experimental_dispatcher_caches": {
+    "gnoise3": "NullCache",
+    "render": "NullCache"
+  },
+  "override_scope": "Only sdfppl.gnoise3 binding (original Python body; inline always to never), and fresh sdfppl.render dispatcher with original target options and cache=False. A Python timing wrapper records the real SP call without changing arguments/results.",
+  "output_shape": [
+    402,
+    960,
+    3
+  ],
+  "rgb_sha256": "0864e9ca32afcdd2ca0830c7868848276a78f94061ac4a2163e56cee0843bf1d",
+  "png_sha256": "a4b8b4e3469d237fc297733ba37c05f3334d13293afb503df7b55576844aae35",
+  "pixels_sha256": "3059c7d2ddc40aeddd55e9c8f270c4eb0a93e67d29597698efb18069e96d8f57",
+  "noise_signatures": [
+    "(float64, float64, float64, Literal[int](21))",
+    "(float64, float64, float64, Literal[int](22))",
+    "(float64, float64, float64, Literal[int](23))",
+    "(float64, float64, float64, Literal[int](11))",
+    "(float64, float64, float64, Literal[int](12))",
+    "(float64, float64, float64, Literal[int](13))",
+    "(float64, float64, float64, Literal[int](14))",
+    "(float64, float64, float64, Literal[int](15))",
+    "(float64, float64, float64, Literal[int](31))",
+    "(float64, float64, float64, Literal[int](32))",
+    "(float64, float64, float64, Literal[int](33))",
+    "(float64, float64, float64, Literal[int](34))",
+    "(float64, float64, float64, Literal[int](35))"
+  ],
+  "source_unchanged": true,
+  "publication_note": "Local workspace path prefix normalized to <workspace>; measurements and hashes unchanged. Experimental result, not adopted renderer code."
+}

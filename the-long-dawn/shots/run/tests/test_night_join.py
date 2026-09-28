@@ -34,7 +34,7 @@ class NightJoinTests(unittest.TestCase):
         hearth = mock.Mock(return_value=types.SimpleNamespace(fire_base_offset=.123))
         lighting = functions('watchers_a.py', ('hearth_lighting',), (), dict(np=np))['hearth_lighting']
         wa = types.SimpleNamespace(hearth_lighting=lighting, seventh_hearth=hearth, draw_figures=mock.Mock())
-        scope = functions('beaconrun_a.py', ('render',), ('FPS', 'LT_MAX'),
+        scope = functions('beaconrun_a.py', ('render', 'sync_opaque_distance'), ('FPS', 'LT_MAX'),
             dict(np=np, os=os, camera=lambda *a: cam, fires_table=lambda: fires.copy(), CHAIN=fires,
                  light=lambda f: light, CR=np.zeros((0, 16)), WD=wd, NA=na,
                  FD=types.SimpleNamespace(terrain_hmax=lambda cr: 3000.),

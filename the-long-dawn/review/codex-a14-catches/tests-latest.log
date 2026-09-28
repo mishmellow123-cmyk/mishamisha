@@ -1,0 +1,116 @@
+JIT disabled=0; Numba threads=2; OpenCV threads=1
+test_all_in_range_poses_and_shutter_samples_are_unchanged (test_beaconrun_camera.BeaconRunCameraTests.test_all_in_range_poses_and_shutter_samples_are_unchanged) ... ok
+test_first_frame_velocity_samples_are_finite (test_beaconrun_camera.BeaconRunCameraTests.test_first_frame_velocity_samples_are_finite) ... ok
+test_pre_start_camera_holds_first_pose (test_beaconrun_camera.BeaconRunCameraTests.test_pre_start_camera_holds_first_pose) ... ok
+test_catch_envelope_retains_original_timing_and_warm_core_is_compact (test_beaconrun_catches.BeaconCatchTests.test_catch_envelope_retains_original_timing_and_warm_core_is_compact) ... ok
+test_catch_uses_one_transmission_factor_and_resolution_scaled_radius (test_beaconrun_catches.BeaconCatchTests.test_catch_uses_one_transmission_factor_and_resolution_scaled_radius) ... ok
+test_loaded_chain_enlarges_only_three_glide_fires_and_preserves_disk_input (test_beaconrun_catches.BeaconCatchTests.test_loaded_chain_enlarges_only_three_glide_fires_and_preserves_disk_input) ... ok
+test_real_catch_pixels_are_occluded_by_close_foreground (test_beaconrun_catches.BeaconCatchTests.test_real_catch_pixels_are_occluded_by_close_foreground) ... ok
+test_seventh_catch_tracks_measured_fuel_seat (test_beaconrun_catches.BeaconCatchTests.test_seventh_catch_tracks_measured_fuel_seat) ... ok
+test_worker_selects_sequential_opencv_after_import (test_beaconrun_catches.BeaconCatchTests.test_worker_selects_sequential_opencv_after_import) ... ok
+test_actual_render_sends_nearer_opaque_distance_through_warp_to_velocity (test_beaconrun_catches.OpaqueMotionDepthTests.test_actual_render_sends_nearer_opaque_distance_through_warp_to_velocity) ... ok
+test_source_conversion_preserves_unchanged_terrain_sky_and_depth_buffer (test_beaconrun_catches.OpaqueMotionDepthTests.test_source_conversion_preserves_unchanged_terrain_sky_and_depth_buffer) ... ok
+test_actual_scene_depth_can_hide_or_cut_through_the_volume (test_fire_near_a.NearFireTests.test_actual_scene_depth_can_hide_or_cut_through_the_volume) ... ok
+test_extinguished_and_zero_transmission_draws_are_noops (test_fire_near_a.NearFireTests.test_extinguished_and_zero_transmission_draws_are_noops) ... ok
+test_invalid_parameters_fail_before_rendering (test_fire_near_a.NearFireTests.test_invalid_parameters_fail_before_rendering) ... ok
+test_irregular_fuel_seats_stay_stationary_while_flame_changes (test_fire_near_a.NearFireTests.test_irregular_fuel_seats_stay_stationary_while_flame_changes) ... ok
+test_oblique_ray_uses_horizontal_forward_depth (test_fire_near_a.NearFireTests.test_oblique_ray_uses_horizontal_forward_depth) ... ok
+test_real_volume_emits_finite_warm_light_and_is_deterministic (test_fire_near_a.NearFireTests.test_real_volume_emits_finite_warm_light_and_is_deterministic) ... ok
+test_roi_keeps_visible_tip_when_base_is_outside_the_image (test_fire_near_a.NearFireTests.test_roi_keeps_visible_tip_when_base_is_outside_the_image) ... ok
+test_time_is_continuous_and_changes_the_field_without_reseeding_fuel (test_fire_near_a.NearFireTests.test_time_is_continuous_and_changes_the_field_without_reseeding_fuel) ... ok
+test_translation_of_camera_and_fuel_preserves_pixels (test_fire_near_a.NearFireTests.test_translation_of_camera_and_fuel_preserves_pixels) ... ok
+test_transmission_is_applied_once (test_fire_near_a.NearFireTests.test_transmission_is_applied_once) ... ok
+test_bad_ground_and_scale_fail_early (test_hearth_a.HearthTests.test_bad_ground_and_scale_fail_early) ... ok
+test_bounds_contain_each_stone_and_distant_points_are_outside (test_hearth_a.HearthTests.test_bounds_contain_each_stone_and_distant_points_are_outside) ... ok
+test_build_is_deterministic_and_samples_world_ground (test_hearth_a.HearthTests.test_build_is_deterministic_and_samples_world_ground) ... ok
+test_fire_seat_is_above_actual_central_rubble_surface (test_hearth_a.HearthTests.test_fire_seat_is_above_actual_central_rubble_surface) ... ok
+test_foreground_depth_prevents_any_hearth_paint (test_hearth_a.HearthTests.test_foreground_depth_prevents_any_hearth_paint) ... ok
+test_ground_pass_contact_is_finite_without_light_and_blocked_light_darkens (test_hearth_a.HearthTests.test_ground_pass_contact_is_finite_without_light_and_blocked_light_darkens) ... ok
+test_ground_pass_preserves_outside_sky_and_foreground_pixels (test_hearth_a.HearthTests.test_ground_pass_preserves_outside_sky_and_foreground_pixels) ... ok
+test_light_visibility_detects_a_real_blocker (test_hearth_a.HearthTests.test_light_visibility_detects_a_real_blocker) ... ok
+test_physical_pit_removes_solid_without_affecting_unrelated_point (test_hearth_a.HearthTests.test_physical_pit_removes_solid_without_affecting_unrelated_point) ... ok
+test_rough_site_culls_stairs_without_moving_surviving_stones (test_hearth_a.HearthTests.test_rough_site_culls_stairs_without_moving_surviving_stones) ... ok
+test_sloped_ground_cannot_embed_the_fire_in_neighbouring_rubble (test_hearth_a.HearthTests.test_sloped_ground_cannot_embed_the_fire_in_neighbouring_rubble) ... ok
+test_stones_are_flattened_and_loose_stones_partly_sunk (test_hearth_a.HearthTests.test_stones_are_flattened_and_loose_stones_partly_sunk) ... ok
+test_tracer_draws_stone_and_writes_real_forward_depth (test_hearth_a.HearthTests.test_tracer_draws_stone_and_writes_real_forward_depth) ... ok
+test_carry_targets_take_precedence_over_reach_in_both_paths (test_legacy_reach.LegacyReachTests.test_carry_targets_take_precedence_over_reach_in_both_paths) ... ok
+test_default_cloth_path_keeps_custom_reach_length (test_legacy_reach.LegacyReachTests.test_default_cloth_path_keeps_custom_reach_length) ... ok
+test_default_legacy_reach_retains_original_length_and_glove_endpoint (test_legacy_reach.LegacyReachTests.test_default_legacy_reach_retains_original_length_and_glove_endpoint) ... ok
+test_legacy_hand_meets_a_target_at_its_reach_distance (test_legacy_reach.LegacyReachTests.test_legacy_hand_meets_a_target_at_its_reach_distance) ... ok
+test_legacy_without_reach_and_staff_override_still_construct (test_legacy_reach.LegacyReachTests.test_legacy_without_reach_and_staff_override_still_construct) ... ok
+test_actual_opted_volume_obeys_foreground_and_single_transmission (test_night_hearth.NightHearthTests.test_actual_opted_volume_obeys_foreground_and_single_transmission) ... ok
+test_actual_resolved_flame_is_blocked_by_near_foreground (test_night_hearth.NightHearthTests.test_actual_resolved_flame_is_blocked_by_near_foreground) ... ok
+test_actual_watchers_render_selects_only_seventh_base_and_shadow_opt_out (test_night_hearth.NightHearthTests.test_actual_watchers_render_selects_only_seventh_base_and_shadow_opt_out)
+Execute the actual orchestration with one-pixel synthetic pass outputs. ... ok
+test_base_offset_moves_origin_without_resizing_flame (test_night_hearth.NightHearthTests.test_base_offset_moves_origin_without_resizing_flame) ... ok
+test_default_and_explicit_off_keep_all_emitter_arguments (test_night_hearth.NightHearthTests.test_default_and_explicit_off_keep_all_emitter_arguments) ... ok
+test_depth_opt_in_preserves_foreground_occlusion_and_far_policy (test_night_hearth.NightHearthTests.test_depth_opt_in_preserves_foreground_occlusion_and_far_policy) ... ok
+test_hearth_lighting_accepts_unlit_and_unmatched_tables (test_night_hearth.NightHearthTests.test_hearth_lighting_accepts_unlit_and_unmatched_tables) ... ok
+test_hearth_lighting_changes_only_seventh_pool_and_platform_without_mutation (test_night_hearth.NightHearthTests.test_hearth_lighting_changes_only_seventh_pool_and_platform_without_mutation) ... ok
+test_offsets_follow_seed_after_depth_sort_and_default_is_opt_out (test_night_hearth.NightHearthTests.test_offsets_follow_seed_after_depth_sort_and_default_is_opt_out) ... ok
+test_opt_in_smoke_and_flame_use_same_close_depth_policy (test_night_hearth.NightHearthTests.test_opt_in_smoke_and_flame_use_same_close_depth_policy) ... ok
+test_shadow_ray_option_changes_only_shadow_component (test_night_hearth.NightHearthTests.test_shadow_ray_option_changes_only_shadow_component) ... ok
+test_volume_dispatch_requires_explicit_hearth_identity_at_every_distance (test_night_hearth.NightHearthTests.test_volume_dispatch_requires_explicit_hearth_identity_at_every_distance) ... ok
+test_volume_origin_translates_with_explicit_fuel_seat (test_night_hearth.NightHearthTests.test_volume_origin_translates_with_explicit_fuel_seat) ... ok
+test_volume_receives_atmosphere_once_without_pre_attenuated_emission (test_night_hearth.NightHearthTests.test_volume_receives_atmosphere_once_without_pre_attenuated_emission) ... ok
+test_volume_roi_owns_culling_when_fuel_base_is_outside_frame (test_night_hearth.NightHearthTests.test_volume_roi_owns_culling_when_fuel_base_is_outside_frame) ... ok
+test_feet_remain_planted_through_entire_rise_and_turn (test_night_hearth.WatcherMotionTests.test_feet_remain_planted_through_entire_rise_and_turn) ... ok
+test_hand_targets_are_real_glove_geometry_and_release_reaches_rest (test_night_hearth.WatcherMotionTests.test_hand_targets_are_real_glove_geometry_and_release_reaches_rest) ... ok
+test_hands_are_continuous_at_old_switch_and_pose_endpoints (test_night_hearth.WatcherMotionTests.test_hands_are_continuous_at_old_switch_and_pose_endpoints) ... ok
+test_actual_camera_pose_and_projection_match_across_4239_4240 (test_night_join.NightJoinTests.test_actual_camera_pose_and_projection_match_across_4239_4240) ... ok
+test_beacon_render_passes_seventh_fuel_seat_and_disables_glow_shadow_rays (test_night_join.NightJoinTests.test_beacon_render_passes_seventh_fuel_seat_and_disables_glow_shadow_rays) ... ok
+test_beacon_render_uses_shared_seventh_lighting_for_terrain_and_figure (test_night_join.NightJoinTests.test_beacon_render_uses_shared_seventh_lighting_for_terrain_and_figure) ... ok
+test_a15_farwall_survives_foreground_column_history (test_terrain_horizon.TerrainHorizonTests.test_a15_farwall_survives_foreground_column_history) ... ok
+test_all_a_world_entrypoints_supply_the_scene_bound (test_terrain_horizon.TerrainHorizonTests.test_all_a_world_entrypoints_supply_the_scene_bound) ... ok
+test_ceiling_tracks_changed_crest_heights_without_resampling (test_terrain_horizon.TerrainHorizonTests.test_ceiling_tracks_changed_crest_heights_without_resampling) ... ok
+test_pipeline_default_remains_700_for_other_worlds (test_terrain_horizon.TerrainHorizonTests.test_pipeline_default_remains_700_for_other_worlds) ... ok
+
+----------------------------------------------------------------------
+Ran 64 tests in 0.780s
+
+OK
+real 2.94
+user 2.16
+sys 0.28
+
+PROVENANCE
+{
+  "recorded_utc": "2026-09-28T03:17:20.010245+00:00",
+  "cwd": "<workspace>/work/night-a14",
+  "head": "ee085f19eb1d6d01fb8b170a592db5f1c56a6b59",
+  "requested_merge_head": "ee085f19eb1d6d01fb8b170a592db5f1c56a6b59",
+  "production_ref": "70d102b",
+  "sdfppl_path": "<workspace>/work/night-a14/the-long-dawn/shots/run/sdfppl.py",
+  "sdfppl_sha256": "2d02ef0aa2d7bf8787daf1f95b0500dca6899d3b4422d5209b6f09b9a6cc77b5",
+  "production_sdfppl_sha256": "2d02ef0aa2d7bf8787daf1f95b0500dca6899d3b4422d5209b6f09b9a6cc77b5",
+  "source_match": true,
+  "command": "/usr/bin/time -p ../validation-venv/bin/python -B ../night3/run_suite.py .",
+  "suite_runner_sha256": "04eb0349c56721c595f3d6aeb77a5f1cb377dcea860518ab50dc2f709ad96ed8",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "python_executable": "<workspace>/work/night-a14/../validation-venv/bin/python",
+  "versions": {
+    "numpy": "2.3.5",
+    "numba": "0.62.1",
+    "llvmlite": "0.45.1",
+    "opencv-python-headless": "5.0.0.93"
+  },
+  "runner_settings": {
+    "jit_disabled": 0,
+    "numba_threads": 2,
+    "opencv_set_threads": 0,
+    "opencv_get_threads": 1,
+    "OMP_NUM_THREADS": 1,
+    "OPENBLAS_NUM_THREADS": 1,
+    "MKL_NUM_THREADS": 1,
+    "VECLIB_MAXIMUM_THREADS": 1
+  },
+  "tests_run": 64,
+  "tests_passed": 64,
+  "unittest_seconds": 0.78,
+  "command_real_seconds": 2.94,
+  "command_user_seconds": 2.16,
+  "command_sys_seconds": 0.28,
+  "exit_code": 0,
+  "scope": "Compiled RUN unit suite; no full-frame render or production source edits.",
+  "run_source_changes_since_requested_merge_head": []
+}

@@ -1,0 +1,454 @@
+{
+  "created_utc": "2026-09-28T02:34:33.719791+00:00",
+  "worktree_head": "7ab77932ebe7fbd143638980ef706ded90bdc2ab",
+  "probe_sha256": "0ae0bc8e90d55f89699848eadf8a34b9c788903ee5bf95be8746a381b1214d57",
+  "sdfppl_sources": {
+    "old": {
+      "commit": "7ab77932ebe7fbd143638980ef706ded90bdc2ab",
+      "sha256": "de599d1815bc8b37eb2a8a1a3bc1a71ba56868c6091444da09060768e13f6a9b"
+    },
+    "new": {
+      "commit": "742bcaee2e752db23594de5c2ed523538995f5a6",
+      "sha256": "0feff19d5baf983d7decca3bdd06318093f974506eff5a4db3fe900b114b2376"
+    }
+  },
+  "unchanged_scene_sources_sha256": {
+    "watchers_a.py": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+    "beaconrun_a.py": "3f3a165565d2b9e8a5058f92407f78dee9ee6ee8bbd43aff21dd4986cb26d0f7",
+    "world.py": "401e3c2fa2dd092523c93656a500626440a6bb7566316c54db8cb47503bea147",
+    "falsedawn.py": "d673c601219fb1291e48b8299b3e81baecc8690cb338874b187ecc67558395f7",
+    "nighta.py": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+    "hearth_a.py": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+    "fire_near_a.py": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+    "beaconrun_a_chain.npy": "dbba80a06281dc3b40399f4c894f3acd4b451db9b59e0aac9d8b8363d7f1a849",
+    "watchers_a_extra.npy": "26e3cf08dac35c8e3e635f7d3db626247a64396e4da5187a9dcd5497804e39b6",
+    "watchers_a_figs.npy": "a89022b4e5b6ee1cb5a1895e411aadf7b9f1165b708b3c3aa33cedcb77a0635c"
+  },
+  "numba_threads": 2,
+  "opencv_sequential_requested": true,
+  "opencv_threads_reported": 1,
+  "jit_disabled": false,
+  "scene_inputs": {
+    "chain": {
+      "shape": [
+        7,
+        6
+      ],
+      "dtype": "float64",
+      "sha256": "7ba6312298dcdd75984cd11c3fd710113797ef16d3ca8600d10cfd09e50e69fa",
+      "finite": true
+    },
+    "extra_fires": {
+      "shape": [
+        4,
+        6
+      ],
+      "dtype": "float64",
+      "sha256": "53e4263f95d238a64d7e7046ce286235339ec1b95239e8cf4297ca8ca8b67a07",
+      "finite": true
+    },
+    "extra_figures": {
+      "shape": [
+        4,
+        8
+      ],
+      "dtype": "float64",
+      "sha256": "11d2527c57151af77b41a0fde796a0ed69027e5333db35c29513c24a848b48e7",
+      "finite": true
+    },
+    "terrain": {
+      "shape": [
+        72,
+        22
+      ],
+      "dtype": "float64",
+      "sha256": "18142dabb2c82ecf4f63950b7ecdaca2b92feb5dde8bee5a8ad88b471701aaf6",
+      "finite": true
+    }
+  },
+  "scope": "Actual WA.figures_scene with actual ground and tables; WA.SP module swapped. No pixel render.",
+  "frames": [
+    {
+      "frame": 4202,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "6e0beca346d466aed59bd56c76144b43b67a33689a8cc5188f9cb2c8ab500418",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "6e0beca346d466aed59bd56c76144b43b67a33689a8cc5188f9cb2c8ab500418",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "3c3513efd484998a7d6ce437f0696ba623e7b7fc4ec68af01c41d4acf61ab271",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "3c3513efd484998a7d6ce437f0696ba623e7b7fc4ec68af01c41d4acf61ab271",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      }
+    },
+    {
+      "frame": 4208,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "ef24082ce693237aa11b58a0062a37ec321f7a38cd9ed217b301d25df064b4db",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "ef24082ce693237aa11b58a0062a37ec321f7a38cd9ed217b301d25df064b4db",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "77407effbdf160faaa48a8d0bc49c26f69d7c7c749e1bd5c5ef648ba10cedf76",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "77407effbdf160faaa48a8d0bc49c26f69d7c7c749e1bd5c5ef648ba10cedf76",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      }
+    },
+    {
+      "frame": 4239,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "0fb1a617317254dd3a0cd979fe836ceec06a3e1c59424fc3479efc485314a039",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "0fb1a617317254dd3a0cd979fe836ceec06a3e1c59424fc3479efc485314a039",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "cf4d3a916417d8830f89b99e452901b9eaf793da340a0b059466a6c1f559db50",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "cf4d3a916417d8830f89b99e452901b9eaf793da340a0b059466a6c1f559db50",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      }
+    },
+    {
+      "frame": 4240,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "944e560cbd78d7a9a807440e8e6cb4aad398e4b41aeff23dd166032008ea38b2",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "944e560cbd78d7a9a807440e8e6cb4aad398e4b41aeff23dd166032008ea38b2",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "f4fab52e8a9b1271af7aac9d758c4ef4f0a996004fd7023e92f2311b87a37061",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "f4fab52e8a9b1271af7aac9d758c4ef4f0a996004fd7023e92f2311b87a37061",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      }
+    },
+    {
+      "frame": 4399,
+      "arrays": {
+        "primitives": {
+          "old": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "468526c971a57e51de1a7013745c3b8ae2190d133afae95642bcec9bd1f69a43",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              139,
+              20
+            ],
+            "dtype": "float64",
+            "sha256": "468526c971a57e51de1a7013745c3b8ae2190d133afae95642bcec9bd1f69a43",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        },
+        "objects": {
+          "old": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "609b46f3a885aba0c6c8165bdd58367896147c04777e013d82edfdd48a44efe4",
+            "finite": true
+          },
+          "new": {
+            "shape": [
+              9,
+              16
+            ],
+            "dtype": "float64",
+            "sha256": "609b46f3a885aba0c6c8165bdd58367896147c04777e013d82edfdd48a44efe4",
+            "finite": true
+          },
+          "exact_equal": true,
+          "differing_values": 0,
+          "max_abs_difference": 0.0
+        }
+      }
+    }
+  ],
+  "all_arrays_exact": true,
+  "legacy_reach_probe": [
+    {
+      "version": "old",
+      "cloth": false,
+      "reach": true,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "b0f89d6bde83420ef85862a2013e95839dd486ba824a0b23d2cc6b6fce5ee88a",
+        "finite": true
+      }
+    },
+    {
+      "version": "old",
+      "cloth": false,
+      "reach": false,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "b87e3bdfbcce5a30445d627ece00f5f9f3622262629921e93f6545b69f2da56b",
+        "finite": true
+      }
+    },
+    {
+      "version": "old",
+      "cloth": true,
+      "reach": true,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          17,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "8c145ef2b6562dec2f0ec1ecd336a6ca8cf672f1eb2b47cd3ddbdec18b46daa0",
+        "finite": true
+      }
+    },
+    {
+      "version": "old",
+      "cloth": false,
+      "reach": true,
+      "carry": true,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "090cfec773f90e4bf18b9d2bbb57d17d654a5ed653aa325930b42e5932218322",
+        "finite": true
+      }
+    },
+    {
+      "version": "new",
+      "cloth": false,
+      "reach": true,
+      "carry": false,
+      "status": "error",
+      "error_type": "NameError",
+      "message": "name 'reach_len' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"<workspace>/work/night3/probe_sp_compatibility.py\", line 107, in main\n    module.traveller(scene, np.array([0., .93, 0.]), np.array([0., 0., 1.]),\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                     np.array([-.13, .07, 0.]), np.array([.13, .07, 0.]), (.03, .026, .022), **controls)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<workspace>/work/night3/sp-compatibility/sdfppl_new.py\", line 651, in traveller\n    return _traveller_v2(sc, pel, w, ank_l, ank_r, rgb, h, lean, hem, cloak, folds, fold_depth, fold_phase, sway,\n                         pack, staff_tip, lantern_side, lantern_swing, carry, carry_side, peak, free_swing, reach)\n  File \"<workspace>/work/night3/sp-compatibility/sdfppl_new.py\", line 855, in _traveller_v2\n    out['reach_hand'] = arm(shB, shB + d * reach_len * h, -sl)\n                                           ^^^^^^^^^\nNameError: name 'reach_len' is not defined\n"
+    },
+    {
+      "version": "new",
+      "cloth": false,
+      "reach": false,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "b87e3bdfbcce5a30445d627ece00f5f9f3622262629921e93f6545b69f2da56b",
+        "finite": true
+      }
+    },
+    {
+      "version": "new",
+      "cloth": true,
+      "reach": true,
+      "carry": false,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          17,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "8c145ef2b6562dec2f0ec1ecd336a6ca8cf672f1eb2b47cd3ddbdec18b46daa0",
+        "finite": true
+      }
+    },
+    {
+      "version": "new",
+      "cloth": false,
+      "reach": true,
+      "carry": true,
+      "status": "ok",
+      "primitives": {
+        "shape": [
+          16,
+          20
+        ],
+        "dtype": "float64",
+        "sha256": "090cfec773f90e4bf18b9d2bbb57d17d654a5ed653aa325930b42e5932218322",
+        "finite": true
+      }
+    }
+  ],
+  "limits": "Geometry/object arrays only. Does not execute SP.render or establish final-pixel shader parity.",
+  "local_path_normalization": "Repository and extracted-source absolute paths omitted; traceback workspace prefix normalized. Measurements unchanged."
+}
