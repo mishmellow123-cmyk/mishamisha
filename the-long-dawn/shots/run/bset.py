@@ -566,37 +566,44 @@ def beacon_base(seed=9, height=0.52, base_w=1.02, top_w=0.80, basket_h=0.42, bas
         y += r * (1.2 + 0.3 * rng.random())
     top = height
     fb = top + 0.07
-    for i in range(7):
+    # the wood: an irregular heap of split wood (angular sections, every length and angle, a few pieces standing up,
+    # some charred dark, some glowing), never a tidy crib (the H9 critic: a tidy crib in a bowl = a garden fire-pit)
+    for i in range(11):
         back.new_group()
-        side = -1 if i % 2 else 1
-        a = side * (0.35 + 0.35 * rng.random())
-        L = basket_w * (0.42 + 0.18 * rng.random())
-        cx = (rng.random() - 0.5) * 0.20
-        cy = top + 0.08 + 0.04 * i
+        L = basket_w * (0.22 + 0.36 * rng.random())
+        a = (rng.random() - 0.5) * 2.2 if rng.random() < 0.75 else (math.pi / 2 + (rng.random() - 0.5) * 0.9)
+        cx = (rng.random() - 0.5) * basket_w * 0.46
+        cy = top + 0.05 + 0.26 * rng.random() ** 1.4
         dx = math.cos(a) * L / 2
         dy = math.sin(a) * L / 2
-        back.capsule((cx - dx, cy - dy), (cx + dx, cy + dy), 0.034, 0.028, mat=8)
+        w0 = 0.022 + 0.020 * rng.random()
+        mat = 8 if rng.random() < 0.55 else 4
+        back.trap((cx - dx, cy - dy), (cx + dx, cy + dy), w0, w0 * (0.6 + 0.5 * rng.random()), rnd=0.006,
+                  k=0.004, mat=mat)
     rng = np.random.default_rng(seed + 7)
     front = FG.Drawing()
-    r0 = basket_w * 0.24
-    r1 = basket_w * 0.52
+    # the cage: an old hand-forged cresset, bars nearly straight and uneven (a slight flare only, never a bowl), three
+    # rings not quite level, one bar bent out
+    r0 = basket_w * 0.36
+    r1 = basket_w * 0.46
     yb0 = top - 0.03
-    nb = 8
+    bh = basket_h * 1.15
+    nb = 9
     for i in range(nb):
-        u = -1 + 2 * i / (nb - 1) + 0.06 * (rng.random() - 0.5)
+        u = -1 + 2 * i / (nb - 1) + 0.05 * (rng.random() - 0.5)
         front.new_group()
-        hb = basket_h * (0.86 + 0.24 * rng.random())
-        bend = 0.05 * (rng.random() - 0.5) + (0.07 if i == 5 else 0.0)
+        hb = bh * (0.88 + 0.20 * rng.random())
+        bend = 0.03 * (rng.random() - 0.5) + (0.09 if i == 6 else 0.0)
         pa = (u * r0, yb0)
-        pm = (u * (r0 + (r1 - r0) * 0.70) + bend, yb0 + hb * 0.55)
-        pb = (u * r1 + bend * 1.6, yb0 + hb)
-        w0 = 0.011 + 0.005 * rng.random()
-        front.capsule(pa, pm, w0, w0 * 0.9, mat=18)
-        front.capsule(pm, pb, w0 * 0.9, w0 * 0.8, mat=18)
-    # the two rings, not quite level
-    for yy, rr, tl in ((yb0 + basket_h * 0.55, r0 + (r1 - r0) * 0.70, 0.03), (yb0 + basket_h * 0.98, r1, -0.04)):
+        pm = (u * (r0 + (r1 - r0) * 0.5) + 0.3 * bend, yb0 + hb * 0.5)
+        pb = (u * r1 + bend * 1.8, yb0 + hb)
+        w0 = 0.012 + 0.005 * rng.random()
+        front.capsule(pa, pm, w0, w0 * 0.92, mat=18)
+        front.capsule(pm, pb, w0 * 0.92, w0 * 0.8, mat=18)
+    for yy, rr, tl in ((yb0 + bh * 0.08, r0 + 0.01, 0.02), (yb0 + bh * 0.52, r0 + (r1 - r0) * 0.52, -0.025),
+                       (yb0 + bh * 0.97, r1, 0.035)):
         front.new_group()
-        front.capsule((-rr, yy - tl), (rr, yy + tl), 0.010, 0.010, mat=18)
+        front.capsule((-rr, yy - tl), (rr, yy + tl), 0.011, 0.010, mat=18)
     return back, front, fb
 
 
