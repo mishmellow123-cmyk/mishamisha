@@ -515,7 +515,7 @@ def _sm(x):
 
 
 LANT_K = 0.85                                 # the great lantern: ~0.9 m from foot to finial ring
-HORN = np.array([1.00, 0.70, 0.42])           # thin horn: it warms the heart's light as it passes
+HORN = np.array([1.00, 0.56, 0.24])           # thin horn: it warms the heart's light to amber as it passes
 H0 = -0.45                                    # the opening camera's height relative to the lantern's heart (m)
 RING = (0.30 + 0.33) * LANT_K                 # heart -> finial ring
 
@@ -1056,7 +1056,7 @@ def build_scene(t, cfg):
     sc.cone(mid, heart + UP * RING, 0.008, 0.008, 1, 0.0)                                # the hook
     sc.end()
     # v3 (the director's call): plain iron and horn; the horn warms the heart's light
-    SP.lantern_v3(sc, heart, math.radians(YAW_E) + 0.3, hc * HORN, 0.9 * br, k=LANT_K)
+    SP.lantern_v3(sc, heart, math.radians(YAW_E) + 0.3, hc * HORN, 1.5 * br, k=LANT_K)
     lights.append([heart[0], heart[1], heart[2], hc[0], hc[1], hc[2], 2.6 * br, 0.35])
     waists += [0.5 * (pf + pr), pr]          # the rope is tied in at the rear bearer's waist
     # ---- the roped walkers: small groups, pairs and gaps; hooded wool cloaks, coats and capes, packs, staffs
@@ -1128,10 +1128,15 @@ def build_scene(t, cfg):
         g0 = ground_many(p0)[0]
         sc.begin(rgb=(0.07, 0.07, 0.07))
         yaw0 = math.atan2(w0[0], w0[2])
-        sc.box(np.array([p0[0], g0 + STEP_H * 0.5 - 0.10, p0[2]]), (0.62, STEP_H * 0.5 + 0.10, 0.70),
-               yaw=yaw0 + 0.12, pitch=0.04, rnd=0.07, mat=6, k=0.0)
-        sc.box(np.array([p0[0], g0 + STEP_H * 0.35, p0[2]]) + np.cross(UP, w0) * 0.45 - w0 * 0.25,
-               (0.30, STEP_H * 0.38, 0.34), yaw=yaw0 - 0.5, pitch=-0.08, rnd=0.06, mat=6, k=0.08)
+        lat0 = np.cross(UP, w0)
+        # a boulder, not a block: a main mass tilted into the ridge, two lumps breaking its top and flank, all
+        # displaced (rough) and half sunk in the snow
+        sc.box(np.array([p0[0], g0 + STEP_H * 0.5 - 0.14, p0[2]]), (0.58, STEP_H * 0.5 + 0.12, 0.66),
+               yaw=yaw0 + 0.18, pitch=0.07, rnd=0.10, mat=6, k=0.0, rough=0.055, rough_f=5.5)
+        sc.box(np.array([p0[0], g0 + STEP_H * 0.72, p0[2]]) - lat0 * 0.22 + w0 * 0.30, (0.30, 0.16, 0.30),
+               yaw=yaw0 - 0.6, pitch=-0.12, rnd=0.07, mat=6, k=0.10, rough=0.04, rough_f=7.0)
+        sc.box(np.array([p0[0], g0 + STEP_H * 0.30, p0[2]]) + lat0 * 0.50 - w0 * 0.35, (0.34, STEP_H * 0.40, 0.36),
+               yaw=yaw0 - 0.9, pitch=0.10, rnd=0.08, mat=6, k=0.12, rough=0.045, rough_f=6.0)
         sc.end()
         sc.O[-1][14] = -1.0          # rock, not a hearth ring: snow on its top, no soot
     # ---- the watch-fires: a ring of stones at the near one; a hooded keeper at each, backlit, feeding it
@@ -1146,7 +1151,7 @@ def build_scene(t, cfg):
             # the near keeper kneels on the heels in profile, leaning in and reaching to feed the fire
             SP.seated(sc, kp, wk, (0.03, 0.025, 0.02), h=0.98, pose='kneel', lean=0.22 + 0.35 * feed,
                       reach=(p + UP * 0.22) if feed > 0.1 else None, wind=kw_v * 0.7, flutter=kfl,
-                      ground=lambda q: float(ground_many(q)[0]), fold_phase=1.3)
+                      ground=lambda q: float(ground_many(q)[0]), fold_phase=1.3, pack=False)
             fl = F.flicker(t, 30 + k)
             lights.append([p[0], p[1] + 0.9, p[2], F.FIRE_LIGHT[0], F.FIRE_LIGHT[1], F.FIRE_LIGHT[2], 9.0 * b * fl,
                            0.8])
@@ -1256,7 +1261,8 @@ def draw_heart(img, zb, scam, heart, t, hc, br, pxs):
     if z < 0.2:
         return
     ppm = scam.f / z
-    H2.draw(img, zb, sx, sy, 0.035 * ppm, CUT0 + t * FPS, hc, I=1.0 * br, z=z, zbias=0.4)
+    # zbias 0.1: the lantern's own iron frame (0.14 m nearer) masks the glow, so the housing reads round the light
+    H2.draw(img, zb, sx, sy, 0.035 * ppm, CUT0 + t * FPS, hc, I=1.0 * br, z=z, zbias=0.1)
 
 
 def draw_small_glows(img, zb, scam, lant):

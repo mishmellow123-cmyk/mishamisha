@@ -58,7 +58,9 @@ class Scene:
         R = max(ra, rb)
         self._add(r, [np.asarray(a) + R, np.asarray(a) - R, np.asarray(b) + R, np.asarray(b) - R])
 
-    def box(self, c, half, yaw=0.0, pitch=0.0, rnd=0.0, mat=0, k=0.0, glass=False):
+    def box(self, c, half, yaw=0.0, pitch=0.0, rnd=0.0, mat=0, k=0.0, glass=False, rough=0.0, rough_f=0.0):
+        """rough > 0 (RUN-A4): the surface is displaced by two octaves of noise of this amplitude (m) at rough_f
+        (1/m), so a block reads as a rock; the distance is halved to keep the tracer safe."""
         r = np.zeros(NP)
         r[0] = 2 if glass else 1
         r[1:4] = c
@@ -68,7 +70,10 @@ class Scene:
         r[9] = mat
         r[10] = k
         r[11:14] = half
-        R = float(np.linalg.norm(half)) + rnd
+        if rough > 0.0 and not glass:
+            r[14] = rough
+            r[15] = rough_f
+        R = float(np.linalg.norm(half)) + rnd + 2.0 * rough
         c = np.asarray(c)
         self._add(r, [c + R, c - R])
 
@@ -285,6 +290,11 @@ def _prim(px, py, pz, R):
     if t < 0.5:
         return _sd_cone(px, py, pz, R)
     if t < 2.5:
+        if R[14] > 0.0 and t < 1.5:
+            fq = R[15]
+            dn = gnoise3(px * fq, py * fq, pz * fq, 41) + 0.5 * gnoise3(px * fq * 2.3 + 1.7, py * fq * 2.3,
+                                                                      pz * fq * 2.3 - 0.9, 42)
+            return 0.5 * (_sd_box(px, py, pz, R) + R[14] * dn)
         return _sd_box(px, py, pz, R)
     if t < 3.5:
         return _sd_torus(px, py, pz, R)
@@ -333,10 +343,10 @@ def _horn(qx, qy, qz, hx, hy, hz):
     brightest in front of the flame and dims toward the corners, with the soft, wavy growth bands of horn."""
     dx, dy, dz = qx - hx, qy - hy, qz - hz
     d2 = dx * dx + 1.4 * dy * dy + dz * dz
-    fall = 0.30 + 0.95 * math.exp(-d2 / (0.15 * 0.15))
+    fall = 0.16 + 1.25 * math.exp(-d2 / (0.14 * 0.14))
     wv = gnoise3(qx * 5.0, qy * 5.0, qz * 5.0, 21)
-    band = 0.80 + 0.20 * gnoise3(qx * 7.0, qy * 46.0 + 2.6 * wv, qz * 7.0, 22)
-    spot = 0.90 + 0.10 * gnoise3(qx * 30.0, qy * 30.0, qz * 30.0, 23)
+    band = 0.66 + 0.34 * gnoise3(qx * 7.0, qy * 38.0 + 3.0 * wv, qz * 7.0, 22)
+    spot = 0.82 + 0.18 * gnoise3(qx * 26.0, qy * 26.0, qz * 26.0, 23)
     return fall * band * spot
 
 
@@ -508,8 +518,8 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                     nx /= nl2
                     ny /= nl2
                     nz /= nl2
-                    rk = 0.62 + 0.30 * b3 + 0.18 * b1
-                    ar, ag, ab = 0.085 * rk, 0.078 * rk, 0.070 * rk
+                    rk = 0.60 + 0.32 * b3 + 0.20 * b1
+                    ar, ag, ab = 0.058 * rk, 0.054 * rk, 0.050 * rk
                     rxz = math.sqrt((qx - bcx) ** 2 + (qz - bcz) ** 2)
                     dry = min(max((rxz - 0.40) / 0.22, 0.0), 1.0)
                     if O[oi, 14] < -0.5:
@@ -518,7 +528,7 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                     ar *= soot
                     ag *= soot
                     ab *= soot
-                    sn = min(max((ny + 0.22 * b1 + 0.15 * b2 - 0.35) / 0.30, 0.0), 1.0) * dry
+                    sn = min(max((ny + 0.35 * b1 + 0.25 * b3 - 0.55) / 0.25, 0.0), 1.0) * dry
                     sn = sn * sn * (3.0 - 2.0 * sn)
                     ar += (0.62 - ar) * sn
                     ag += (0.66 - ag) * sn
@@ -1090,7 +1100,7 @@ def lantern_v3(sc, c, yaw, pane_rgb, gain, k=1.0, feet=False, bail=True):
             sc.box(P(sx * R, -0.01 * k, sz * R), (0.016 * k, hb + 0.035 * k, 0.016 * k), yaw=yaw, rnd=0.003 * k,
                    mat=1)
     # frames: top and bottom rails, and a glazing bar at 58 % up each side
-    for y, t_ in ((hb + 0.012 * k, b), (-hb - 0.012 * k, b), (0.16 * hb, 0.55 * b)):
+    for y, t_ in ((hb + 0.012 * k, b), (-hb - 0.012 * k, b), (0.47 * hb, 0.55 * b)):
         for sz in (-1.0, 1.0):
             sc.box(P(0.0, y, sz * R), (R, t_, t_), yaw=yaw, rnd=0.002 * k, mat=1)
         for sx in (-1.0, 1.0):
@@ -1147,16 +1157,18 @@ def stone_ring(sc, p, seed, ground=None, n=12, r0=0.50):
         q = np.asarray(p, np.float64) + np.array([math.cos(a), 0.0, math.sin(a)]) * r
         if ground is not None:
             q[1] = ground(q)
-        sz = rng.uniform(0.70, 1.25) * (1.45 if rng.random() < 0.15 else 1.0)
-        hx, hy, hz = (0.075 * sz * rng.uniform(0.8, 1.2), 0.055 * sz * rng.uniform(0.8, 1.3),
-                      0.065 * sz * rng.uniform(0.8, 1.2))
+        sz = rng.uniform(0.65, 1.30) * (1.45 if rng.random() < 0.15 else 1.0)
+        hx, hy, hz = (0.075 * sz * rng.uniform(0.75, 1.3), 0.050 * sz * rng.uniform(0.7, 1.4),
+                      0.065 * sz * rng.uniform(0.75, 1.3))
         yaw = a + rng.uniform(-0.8, 0.8)
-        c = q + up * (hy * rng.uniform(0.35, 0.75))
-        sc.box(c, (hx, hy, hz), yaw=yaw, pitch=rng.uniform(-0.35, 0.35), rnd=0.35 * min(hx, hy, hz), mat=6, k=0.0)
+        c = q + up * (hy * rng.uniform(0.25, 0.70))
+        m_ = min(hx, hy, hz)
+        sc.box(c, (hx, hy, hz), yaw=yaw, pitch=rng.uniform(-0.4, 0.4), rnd=0.18 * m_, mat=6, k=0.0,
+               rough=0.30 * m_, rough_f=1.7 / m_)
         for _ in range(int(rng.integers(1, 3))):
             o = np.array([rng.uniform(-1, 1) * hx, rng.uniform(-0.2, 0.9) * hy, rng.uniform(-1, 1) * hz])
             sc.box(c + o, (hx * rng.uniform(0.45, 0.7), hy * rng.uniform(0.45, 0.8), hz * rng.uniform(0.45, 0.7)),
-                   yaw=yaw + rng.uniform(-1.2, 1.2), pitch=rng.uniform(-0.6, 0.6), rnd=0.25 * min(hx, hy, hz),
-                   mat=6, k=0.030 * sz)
+                   yaw=yaw + rng.uniform(-1.2, 1.2), pitch=rng.uniform(-0.6, 0.6), rnd=0.15 * m_,
+                   mat=6, k=0.030 * sz, rough=0.22 * m_, rough_f=2.2 / m_)
     sc.end()
 
