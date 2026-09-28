@@ -34,6 +34,8 @@ SHOTS = [(300, 880), (880, 960), (960, 1040), (1040, 1200)]
 SHOTS_V3 = {'A3': [(560, 1040), (1040, 1760), (1760, 1840), (1840, 2460), (2460, 2520), (2520, 2640), (2640, 2800), (2800, 3120),
                    (4400, 4880)],
             'C3': [(1040, 1680), (1920, 2080), (2320, 2480), (2720, 2840)]}
+if os.environ.get('LD_GILD', '0') == '1':     # EMBERS-C4: THE GILDING insert (A 1860-1920, edge.py) is its own shot
+    SHOTS_V3['A3'] = sorted([s for s in SHOTS_V3['A3'] if s != (1840, 2460)] + [(1840, 1860), (1860, 1920), (1920, 2460)])
 
 # text windows (v2 frames = src frames here) per cut, from the edit's current titles (director, framing review).
 # The band y~560-700 is calmed during these. Lines on black (1060-1186) sit mid-frame; kept for completeness.

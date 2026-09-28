@@ -1,0 +1,18 @@
+{
+ "name": "embers_A3_gild",
+ "branch": "claude/render-embers-A3-gild",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow fonttools || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools",
+  "cd shots/embers && LD_GILD=1 python3 render.py 1860 --cut A3 --scale 0.1 --out /tmp/embers_warm"
+ ],
+ "render": [
+  "cd shots/embers && LD_GILD=1 NUMBA_NUM_THREADS=2 python3 render.py 1860-1919:4 --cut A3",
+  "cd shots/embers && LD_GILD=1 NUMBA_NUM_THREADS=2 python3 render.py 1861-1919:4 --cut A3",
+  "cd shots/embers && LD_GILD=1 NUMBA_NUM_THREADS=2 python3 render.py 1862-1919:4 --cut A3",
+  "cd shots/embers && LD_GILD=1 NUMBA_NUM_THREADS=2 python3 render.py 1863-1919:4 --cut A3"
+ ],
+ "out_dir": "renders/embers_A3",
+ "frames": "1860-1919",
+ "push_every": 300,
+ "ship": "jpg"
+}

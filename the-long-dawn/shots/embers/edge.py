@@ -10,6 +10,7 @@ gilded tower's crown (never a giant's) breaks off and falls into the pit (2480);
 falls after it toward the fire (2520) until the frame is white (2640).
 """
 import math
+import os
 
 import numpy as np
 
@@ -817,9 +818,42 @@ def _cam_fall(tl, t):
     return _cam(pos, tgt, hf, 0.0, focus=20.0, ap=0.02)
 
 
+# ---- EMBERS-C4: THE GILDING insert (A_FIX_NOTES "SPEC for EMBERS-C4", director ~02:25Z), under T7 "Every step
+# closer made them richer": hard cuts on the beats; the surges at 1860, 1880 and 1900 pour gold down tower 7.
+# Gated (LD_GILD=1, jobs embers_A3_gild / embers_A3_alt_gild) because the EDGE finals were rendering when it went in;
+# render.py makes it its own shot under the same switch (the shutter never straddles its cuts).
+GILD_T0, GILD_T1 = 1860.0, 1920.0
+GILD_ON = os.environ.get('LD_GILD', '0') == '1'
+GILD_HF, GILD_PITCH, GILD_D0, GILD_DROP = 72.0, 48.0, 10.5, 16.0
+
+
+def _gild_top(tw, t):
+    """tower 7's crown height, eased over ~6 frames: a surge lifts the crown in frame and the camera follows (a lurch)"""
+    return B.GROUND + float(np.mean([tw.height(FALL_TOWER, t - 1.5 * k) for k in range(5)]))
+
+
+def _cam_gild(tl, t):
+    """THE GILDING: inside the ring with the fire behind the lens and below, looking up the fire-facing face of
+    FALL_TOWER (tower 7, never a giant; the crown that breaks at 2480, so this is the one whose gold we watched):
+    its throat roaring at the top of frame, the face under it where the molten gold pours on each surge, the wall's
+    soot low in frame (T7). No giant in frame (towers 6 and 0 sit ~68 deg off the axis). A slow push in (1 unit)."""
+    tw = tl.towers
+    b = tw.base(FALL_TOWER)
+    u_in = -np.array([b[0], 0.0, b[2]])
+    u_in /= np.linalg.norm(u_in)
+    x = float(np.clip((t - GILD_T0) / (GILD_T1 - GILD_T0), 0.0, 1.0))
+    d = GILD_D0 - 1.0 * float(smootherstep(0.0, 1.0, x))
+    pos = np.array([b[0], _gild_top(tw, t) - GILD_DROP, b[2]]) + u_in * d
+    p = math.radians(GILD_PITCH)
+    tgt = pos + (-u_in * math.cos(p) + np.array([0.0, math.sin(p), 0.0])) * 10.0
+    return _cam(pos, tgt, GILD_HF, 0.0, focus=d - 2.0, ap=0.02)
+
+
 def camera(tl, t):
     if t < A.T_WHITE:
         if t < T_CUT_CROWN:
+            if GILD_ON and GILD_T0 <= t < GILD_T1:
+                return _cam_gild(tl, t)
             return _cam_edge(tl, t)
         if t < T_CUT_FALL:
             return _cam_crown(tl, t)
