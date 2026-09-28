@@ -48,6 +48,12 @@ SRC_OFF = 3600 - 1476                    # cut = src + 2124 (the roar: src 1476 
 TAKE_END = 1555                          # H1's last src frame (cut 3679)
 SRC1 = CUT1 - 1 - SRC_OFF                # 1675
 FIRES_NPY = os.path.join(HERE, 'reveal_a_fires.npy')
+# A-FIX (28 Sep): A13 now follows B's reveal of her by her fire (A 3612-3679), and the cut to these ranges must show
+# fires ANSWERING across them: at 3-5 px they were invisible. FAR_PXS scales the unresolved fires' hot point and aura
+# (nighta draws them at a fixed 0.95 / 3.4 / 11 px x pxs, energy x pxs^2). GLOW_RAYS 0: the glow's shadow rays fanned
+# up from the tallest peak like a searchlight.
+FAR_PXS = 2.1
+GLOW_RAYS = 0.0
 
 GUARD = {'camera': '49dd99955a91d12e61f657c861031c7f',  # A-FIX branch only (AFIX False here)
           'world_layer': 'f53a1f551995e845cb816731fb4be17b'}   # A-FIX branch only
@@ -327,10 +333,11 @@ def world_layer(cam, f, t, reveal):
     if ramp > 0.0:
         GP = NA.glow_gp(fc)
         GP[2] *= ramp
+        GP[11] *= GLOW_RAYS
         skl = NA.skyline(pos, Wd['CR'], WD)
         NA.glow_pass(out, di, kill, C, GP, skl[0], skl[1], skl[2], NA.HAZE_K, NA.HAZE_D)
     pxs = cam.scale * k
-    NA.fires_layer(out, zb, mc, FR, fc, pxs, fogp=fogp, wmod=WD)
+    NA.fires_layer(out, zb, mc, FR, fc, pxs * FAR_PXS, fogp=fogp, wmod=WD)
     sky = (di > 1e8).astype(np.float32)
     starm = sky * np.where(di > 1e8, kill, 1.0).astype(np.float32)
     # ---- as beacon.world_layer: our pixel centres -> world rays -> the canvas
