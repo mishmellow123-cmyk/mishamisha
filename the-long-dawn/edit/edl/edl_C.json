@@ -650,6 +650,23 @@
    "desc": "Over a moonlit range drawn in ink it streaks like a falling star and strikes the snow by an old cairn: steam.",
    "takes": [
     {
+     "stem": "runC_ringfall",
+     "off": 0,
+     "mode": "exact",
+     "note": "RUN-C ink final",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/runC_ringfall"
+     ]
+    },
+    {
      "stem": "ringfall",
      "off": 0,
      "mode": "v3",

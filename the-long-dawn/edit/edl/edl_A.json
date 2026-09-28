@@ -992,7 +992,7 @@
   },
   {
    "id": "T6a",
-   "line": "First the forges raced for it.",
+   "line": "First the smiths raced for it.",
    "f_in": 1640,
    "f_out": 1800,
    "set": "row",
@@ -1008,7 +1008,7 @@
   },
   {
    "id": "T7",
-   "line": "The closer they came, the more it paid.",
+   "line": "Every step closer made them richer.",
    "f_in": 1848,
    "f_out": 1944,
    "set": "lower",
@@ -1024,7 +1024,7 @@
   },
   {
    "id": "T9",
-   "line": "Whoever won, there would have been no morning.",
+   "line": "Whoever won, no morning would come.",
    "f_in": 2670,
    "f_out": 2790,
    "set": "lower",
@@ -1032,7 +1032,7 @@
   },
   {
    "id": "T10a",
-   "line": "Even those who raced were afraid.",
+   "line": "They feared the fire.",
    "f_in": 2880,
    "f_out": 3060,
    "set": "black_top",
@@ -1040,7 +1040,7 @@
   },
   {
    "id": "T10b",
-   "line": "None would slow alone.",
+   "line": "They feared each other more.",
    "f_in": 2950,
    "f_out": 3060,
    "set": "black_bottom",

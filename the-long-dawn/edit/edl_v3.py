@@ -264,7 +264,8 @@ C = [
       'Out of the black a gold glint tumbles slowly, its letters faintly awake, down through cloud.', EMB_C),
     S('C13', 2840, 2960, 'R13', 'THE RING FALLS · THE STAR', 'RUN-C',
       'Over a moonlit range drawn in ink it streaks like a falling star and strikes the snow by an old cairn: steam.',
-      [T('ringfall'), T('run')]),
+      # RUN-C-3's ink final landed as renders/runC_ringfall in C numbering (2840-2959): wired 28 Sep (EDIT-3 audit)
+      [T('runC_ringfall', 0, 'exact', 'RUN-C ink final'), T('ringfall'), T('run')]),
     S('C14', 2960, 3000, 'H1-C', 'FLINT', 'HEROINE',
       'Dark, her breath, the scarf. Strike 1 on bar 38 b2: a spark in the dark.',
       [H1_C] + h1(H1_S1 - 2980, grade='C')),

@@ -514,7 +514,10 @@ def masters_table():
 # stays the music lanes'). B (director, 27 Sep ~23:40Z): SOUND's sound_B.wav = final_B's pre-master score + real
 # recorded effects through COMPOSER's master chain (battery: level map 14/14, sync 25/25, dawn rule, -16.05 LUFS,
 # TP -1.30 dBTP). Outside deliver._code_hash(): a change re-muxes, it never re-encodes picture.
-ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master')}
+ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master'),
+                 # C (director, 28 Sep ~01:10Z): SOUND-C's sound_C.wav, every effect re-synced to the measured picture
+                 # (music/sound/picture_sync_C.json); passes the battery
+                 'C': ('music/out/v3/sound_C.wav', 'SOUND master')}
 
 
 def adopted_audio(cut):
