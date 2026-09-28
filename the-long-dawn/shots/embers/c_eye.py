@@ -261,11 +261,12 @@ def _eye(X, Y, ok, aa_, t, pr, HL, out_rgb, out_a, out_void, out_bev):
             E *= Ef * (1.0 - 0.38 * crypt) * (1.0 + 0.45 * coll) * (1.0 - 0.22 * fur)
             if u < uc:
                 E *= 1.12
+            E *= 1.0 + 0.6 * math.exp(-((u - uc) / 0.1) ** 2)     # EMBERS-C4: the fire round the collarette
             k1 = _ss(0.3, 0.62, u)
             k2 = _ss(0.62, 0.92, u)
             cr_ = 1.0
-            cg_ = 0.78 * (1.0 - k1) + 0.5 * k1
-            cb_ = 0.3 * (1.0 - k1) + 0.09 * k1
+            cg_ = 0.78 * (1.0 - k1) + 0.42 * k1               # EMBERS-C4: more chroma (ACES was greying it to beige)
+            cb_ = 0.16 * (1.0 - k1) + 0.04 * k1
             cg_ = cg_ * (1.0 - k2) + 0.3 * k2
             cb_ = cb_ * (1.0 - k2) + 0.05 * k2
             # ---- the slit (a closed seam until it opens)
