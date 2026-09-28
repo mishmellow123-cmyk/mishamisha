@@ -706,8 +706,9 @@ def _find_a(C, new_material, R, opts, T):
                                        (R_IN + THICK) * math.sin(tilt) * 0.0)))
             @ Euler((tilt, 0.0, math.radians(38.0))).to_matrix().to_4x4())
     # her left glove: from the left, low over the snow, palm down; closes on the band (3060) and lifts it
-    leather = GL.leather_material(new_material, base=opts.get('leather', (0.075, 0.047, 0.029)))
-    G = GL.Glove('glove', leather, GL.wool_material(new_material), mirror=True)
+    leather = GL.leather_material(new_material, base=opts.get('leather', (0.075, 0.047, 0.029)),
+                                  wear2=opts.get('wear2', 1.0))
+    G = GL.Glove('glove', leather, GL.wool_material(new_material), mirror=True, knuckles=opts.get('knuckles', 1.8))
     close = BEAT['close']
 
     # a low scoop from the side: the hand skims in over the snow (palm just above it), the fingers reach down
@@ -856,8 +857,9 @@ def _find_b(C, new_material, R, opts, T):
     import glove as GL
     _world(opts.get('sky', (0.10, 0.16, 0.36)), opts.get('sky_w', 0.12))
     _plane(C, 'snow_far', -0.30, 1.5, snow_material(new_material))           # her knees' snow, far out of focus
-    leather = GL.leather_material(new_material, base=opts.get('leather', (0.075, 0.047, 0.029)))
-    G = GL.Glove('glove', leather, GL.wool_material(new_material), mirror=True)
+    leather = GL.leather_material(new_material, base=opts.get('leather', (0.075, 0.047, 0.029)),
+                                  wear2=opts.get('wear2', 1.0))
+    G = GL.Glove('glove', leather, GL.wool_material(new_material), mirror=True, knuckles=opts.get('knuckles', 1.8))
     v0, v1 = BEAT['vision']
     fist_t = BEAT['fist']
     # palm up, fingers toward +Y, thumb toward -X (her LEFT hand): local x -> Y, local y -> X, local z -> -Z; the
@@ -875,7 +877,7 @@ def _find_b(C, new_material, R, opts, T):
                     0.0007 * math.sin(1.7 * t + 2.0) + 0.0003 * math.sin(4.3 * t + 0.5)))
         return Matrix.Translation(T0 + d) @ Rh
 
-    cupped = GL.pose_mix(GL.POSES['cup'], GL.POSES['relaxed'], opts.get('open_mix', 0.35))
+    cupped = GL.pose_mix(GL.POSES['open_nat'], GL.POSES['cup'], opts.get('open_mix', 0.35))   # POLISH: no even fan
     fistp = GL.POSES['fist']
 
     def pose(f):
@@ -1530,7 +1532,7 @@ def _flint_stone(C, new_material, seed=5):
 
 def _vol_box(C, name, x0, x1, y0, y1, z0, z1):
     V = [(x, y, z) for z in (z0, z1) for y in (y0, y1) for x in (x0, x1)]
-    F = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    F = [(2, 3, 1, 0), (5, 7, 6, 4), (1, 5, 4, 0), (6, 7, 3, 2), (4, 6, 2, 0), (3, 7, 5, 1)]   # outward (Cycles needs it)
     ob = C.mesh_obj(name, V, F, smooth=False)
     ob.visible_shadow = False
     return ob
@@ -1717,7 +1719,7 @@ def _flint(C, new_material, R, opts, T):
 
     # ---- the hands. The steel's plane is y = Y_STEEL; the flint rides her left fist.
     leather = GL.leather_material(new_material, base=opts.get('leather', (0.050, 0.031, 0.019)),
-                                  rough=opts.get('leather_rough', 0.38))
+                                  rough=opts.get('leather_rough', 0.38), wear2=opts.get('wear2', 1.0))
     for nd in leather.node_tree.nodes:                 # a waxy sheen: the moon and the flash draw the forms
         if nd.type == 'BSDF_PRINCIPLED':
             nd.inputs['Specular IOR Level'].default_value = 0.50
@@ -1727,14 +1729,16 @@ def _flint(C, new_material, R, opts, T):
     heat = [(f, 0.0) for f in fr]
     stl = _steel_mesh(C, steel_material(new_material, heat))
     stl.rotation_mode = 'QUATERNION'
-    GR = GL.Glove('rglove', leather, wool, mirror=False)
-    GL_ = GL.Glove('lglove', leather, wool, mirror=True)
-    sc.frame_set(START)
+    kn = opts.get('knuckles', 1.8)
+    GR = GL.Glove('rglove', leather, wool, mirror=False, knuckles=kn)
+    GL_ = GL.Glove('lglove', leather, wool, mirror=True, knuckles=kn)
     GR.set_pose(GL.POSES['fist'])
-    pb = GR.rig.pose.bones
-    hol = (pb['m1'].head + pb['m2'].head + pb['m3'].head + pb['m3'].tail) / 4.0
     lpose = GL.pose_mix(GL.POSES['fist'], GL.POSES['cup'], opts.get('lfist_open', 0.10))
     GL_.set_pose(lpose)
+    sc.frame_set(START)                                # evaluate the poses BEFORE reading the bones (a stale rest
+    bpy.context.view_layer.update()                    # pose put both fists ~5 cm back along the hand)
+    pb = GR.rig.pose.bones
+    hol = (pb['m1'].head + pb['m2'].head + pb['m3'].head + pb['m3'].tail) / 4.0
     pbl = GL_.rig.pose.bones
     holl = (pbl['m1'].head + pbl['m2'].head + pbl['m3'].head + pbl['m3'].tail) / 4.0
     holl = Vector((holl.x, -holl.y, holl.z))
@@ -1874,9 +1878,9 @@ def _flint(C, new_material, R, opts, T):
 
     # ---- the moon behind them, low: cold rims on the fists, the steel, the flint, the straw and the breath; a faint
     # cold fill from the lens side keeps the leather from going black
-    C.sun('moon', opts.get('moon_dir', (0.30, 0.85, 0.42)), (0.55, 0.66, 1.0), opts.get('moon', 0.40), angle_deg=1.5,
+    C.sun('moon', opts.get('moon_dir', (0.30, 0.85, 0.42)), (0.55, 0.66, 1.0), opts.get('moon', 0.75), angle_deg=1.5,
           volume=1.0)
-    C.sun('nightfill', opts.get('fill_dir', (-0.35, -0.85, 0.40)), (0.50, 0.60, 1.0), opts.get('fill', 0.11),
+    C.sun('nightfill', opts.get('fill_dir', (-0.35, -0.85, 0.40)), (0.50, 0.60, 1.0), opts.get('fill', 0.20),
           angle_deg=20.0)
     # ---- the camera: the strike framing (both fists, the steel's whole C, the nest below); in flint_b a slow push
     # to the nest through the blow, easing back and up as the flame rises

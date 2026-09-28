@@ -87,7 +87,8 @@ class Cage:
             self.F.append((A[i], A[(i + 1) % n], B[(i + 1) % n], B[i]))
 
 
-def build_cage():
+def build_cage(knuckles=1.0):
+    """knuckles > 1 (opt-in, the polish): sharper knuckle heads on the fist, deeper valleys between them."""
     C = Cage()
     H = {'hand': 1.0}
     # ---- cuff, wrist and palm rings (x, half width, top, bottom)
@@ -112,7 +113,7 @@ def build_cage():
         if j % 2 == 1:
             f = order[j // 2]
             xs.append(fx[f])
-            zt.append(fhh[f] + 0.0017)
+            zt.append(fhh[f] + 0.0017 * knuckles)
             zb.append(-fhh[f] * 1.08)
         elif j in (0, 8):
             f = order[0] if j == 0 else order[3]
@@ -122,7 +123,7 @@ def build_cage():
         else:
             f1, f2 = order[j // 2 - 1], order[j // 2]
             xs.append(0.5 * (fx[f1] + fx[f2]) - 0.0015)
-            zt.append(0.84 * 0.5 * (fhh[f1] + fhh[f2]))
+            zt.append((0.84 - 0.07 * (knuckles - 1.0)) * 0.5 * (fhh[f1] + fhh[f2]))
             zb.append(-0.86 * 0.5 * (fhh[f1] + fhh[f2]))
     front = _palm_ring(0.09, 0.04, 0.0, 0.0, xs=xs, zt=zt, zb=zb, ys=list(COLS))
     front_i = [C.add(p, H) for p in front]
@@ -222,7 +223,7 @@ def build_cage():
     return C
 
 
-def leather_material(new_material, base=(0.050, 0.030, 0.018), rough=0.46, detail=True, thread=None):
+def leather_material(new_material, base=(0.050, 0.030, 0.018), rough=0.46, detail=True, thread=None, wear2=0.0):
     """Thin, supple leather: dark brown, a soft waxy sheen, a pebble grain you can see, the palm's working creases
     and (detail=True) what makes it read as a GLOVE at a glance: bunched wrinkles over every finger joint on the
     back, a flexion crease at each joint on the palm side, the knuckles burnished lighter by wear, the three
@@ -313,6 +314,11 @@ def leather_material(new_material, base=(0.050, 0.030, 0.018), rough=0.46, detai
     rgh = nb.madd(fine.outputs['Fac'], 0.16, rough - 0.08)
     rgh = nb.sub(rgh, nb.mul(wear, 0.10))
     rgh = nb.add(rgh, nb.mul(nb.mx(dk, pk), 0.10))
+    if wear2 > 0.0:                                  # the polish (opt-in): worn thin leather, its sheen in patches
+        patch = nb.noise(R, scale=70.0, detail=3.0, rough=0.55).outputs['Fac']
+        rgh = nb.add(rgh, nb.mul(nb.sub(patch, 0.5), 0.34 * wear2))
+        rgh = nb.sub(rgh, nb.mul(wear, 0.10 * wear2))
+        col = nb.mixcol(nb.mul(wear, 0.30 * wear2), col, (base[0] * 2.6, base[1] * 2.3, base[2] * 2.0))
     bs = nb.principled(Base_Color=col, Roughness=rgh)
     bs.inputs['Specular IOR Level'].default_value = 0.55
     bs.inputs['Coat Weight'].default_value = 0.18
@@ -321,7 +327,7 @@ def leather_material(new_material, base=(0.050, 0.030, 0.018), rough=0.46, detai
     h = nb.add(h, nb.mul(pebble, 0.9))
     h = nb.add(h, nb.mul(ridge, 2.2))
     h = nb.sub(h, nb.mul(cr, 1.1))
-    h = nb.sub(h, nb.mul(dk, 1.8))
+    h = nb.sub(h, nb.mul(dk, 1.8 * (1.0 + 0.6 * wear2)))
     h = nb.sub(h, nb.mul(pk, 1.5))
     h = nb.sub(h, nb.mul(rnd, 0.8))
     h = nb.add(h, nb.mul(stitch, 1.6))
@@ -380,8 +386,8 @@ def _sleeve_mesh(name, mat, length=0.26, r_cuff=0.046, r_far=0.058, n_a=28, n_l=
 class Glove:
     """One gloved hand: rig (armature object; key its transform to move the hand), mesh (the glove), sleeve."""
 
-    def __init__(self, name, leather, sleeve_mat=None, mirror=False, sub=3, sleeve=True):
-        C = build_cage()
+    def __init__(self, name, leather, sleeve_mat=None, mirror=False, sub=3, sleeve=True, knuckles=1.0):
+        C = build_cage(knuckles)
         self.cage = C
         self.mirror = mirror
         sc = bpy.context.scene
@@ -503,4 +509,8 @@ POSES = {
              'thumb': (34, 40, 44, 38), 'spread': -3.0},
     'cup': {'curl': {'index': (22, 30, 16), 'middle': (24, 32, 16), 'ring': (26, 34, 18), 'little': (30, 36, 18)},
             'thumb': (10, 14, 12, 10), 'spread': 2.0},
+    # an open hand at rest (the polish): not a mannequin's even fan: the index nearly straight, each finger after it
+    # a little more curled, the little finger the most, the thumb relaxed
+    'open_nat': {'curl': {'index': (7, 12, 7), 'middle': (13, 19, 10), 'ring': (19, 26, 13), 'little': (26, 33, 17)},
+                 'thumb': (6, 10, 12, 9), 'spread': 1.5},
 }
