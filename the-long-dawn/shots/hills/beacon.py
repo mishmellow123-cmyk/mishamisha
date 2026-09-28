@@ -470,8 +470,12 @@ def apply_afix():
             ks.append((s3 + 6, KNEEL, 'smooth'))
         elif fr == s3 + 24 and pose is BLOW:
             ks.append((s3 + 26, BLOW, 'smooth'))
-        elif fr >= ROAR:
-            ks.append((fr + AFIX_FLINCH, pose, e))
+        elif fr == ROAR:                              # she watches the surge a moment ...
+            ks.append((ROAR + 2, pose, e))
+        elif fr > ROAR and pose is FLINCH_V3:         # ... then leans back from it over 12 frames (no one-frame pop)
+            ks.append((ROAR + 14, pose, 'io'))
+        elif fr > ROAR:
+            ks.append((fr + 10, pose, e))
         else:
             ks.append((fr, pose, e))
     V2_KEYS = ks
@@ -659,6 +663,8 @@ def yw2_pose(f):
     if V3_ROAR2:
         # a flinch is fast: the forearm is across her face by ROAR + 1.5, so no frame shows an arm thrust at the fire
         gw = smoothstep(roar_react() - 0.5, roar_react() + 1.5, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))
+        if AFIX:                                      # the guard comes up over 6 frames, with the lean-back
+            gw = smoothstep(roar_react(), roar_react() + 6, f) * (1 - smoothstep(ROAR + 26, ROAR + 40, f))
     if gw > 0:
         import heroine as hero
         q = dict(p)
@@ -676,6 +682,8 @@ def yw2_pose(f):
             cs = np.array([0.0, 0.0, -1.0])                         # the lens side
             guard = Fh.C + fd * 0.065 + up * 0.025 - cs * 0.040
             gd = smoothstep(roar_react() - 1, roar_react() + 1.5, f) * (1 - smoothstep(ROAR + 16, ROAR + 30, f))   # the hand's aim leads
+            if AFIX:
+                gd = smoothstep(roar_react() - 1, roar_react() + 5, f) * (1 - smoothstep(ROAR + 26, ROAR + 40, f))
             def _mix(a, b):
                 return tuple(nrm_(np.asarray(a, np.float64) * (1 - gd) + np.asarray(b, np.float64) * gd))
             # the hand carries on along the forearm, round behind the hood (never a hand held up in the air)
@@ -1343,7 +1351,7 @@ class FirstBeacon:
         # from the fire's key (it only rims her edges) and stays a dark shape against it
         rw = 0.0
         if V3_H5 and f >= roar_react() - 1:
-            rw = smoothstep(roar_react() - 1, roar_react() + 1, f) * (1 - 0.5 * smoothstep(ROAR + 40, ROAR + 75, f))
+            rw = smoothstep(roar_react() - 1, roar_react() + (7 if AFIX else 1), f) * (1 - 0.5 * smoothstep(ROAR + 40, ROAR + 75, f))
         rm = roar_mix(f)
         if lv > 0:
             if rm < 1.0:
