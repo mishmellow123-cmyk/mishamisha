@@ -62,9 +62,20 @@ from timeline_v3 import BEAT_S
 TAM_BLOOM_S = 3.2          # the slit's tam-tam bloom ends before the hearth flares (v1: 6 s, into the Mirror)
 # the headroom fix (A/B pair 2): a slow premaster fader into the slit, (t_s, dB). The master's gain reduction at
 # the slit falls from comp 5.0 + lim 5.6 dB to 2.7 + 0.9 dB
-CLIMAX_FADER = [(79.0, 0.0), (80.5, -1.0), (81.6, -2.5), (82.6, -5.0), (83.25, -7.0), (84.6, -6.5), (85.4, -3.0),
-                (86.6, -0.5), (87.6, 0.0)]
-RIDE = {"C6": -1.5, "C7": -1.0, "C9": -1.0, "C14": -3.0, "C20": -0.5}   # v1's, on the v5 section ids
+CLIMAX_FADER = [(79.0, 0.0), (80.5, -0.7), (81.6, -1.8), (82.6, -3.5), (83.25, -4.5), (84.6, -4.2), (85.4, -2.0),
+                (86.6, -0.4), (87.6, 0.0)]      # C5 render 2: -7 dB left the slit under the trap and the dawn
+RIDE = {"C6": -1.5, "C7": -1.0, "C9": -1.0, "C11": -3.0, "C14": -3.0, "C20": -1.2}   # v1's on the v5 ids; the
+# trap (render 1: the film's loudest, 0.0 LU) sits under the slit
+# render 1's battery, per layer: a bloom's ONSET sits on its beat; late arrivals get their measured lateness
+ANTIC_SET5 = {**{("refusal", pn): 0.26 for pn in ("cb_q", "vc_q", "vla_q")},
+              **{(("deep_still", 10), pn): 0.03 for pn in ("bsn_c", "line_vc")},
+              (("sunrise", 8), "svln"): 0.325,          # v1's 0.23 + render 4's measured +95 ms (the C20 ride)
+              **{(("catch", 0.6), pn): 0.05 for pn in ("vla_q", "vln2_q")},
+              **{("map", pn): 0.05 for pn in ("cb", "vc", "vla", "vln2", "vln1")},
+              **{(("last_beacon", 0.5), pn): 0.05 for pn in ("cb", "vc", "vla", "vln2", "vln1", "hn", "hn2", "hn3",
+                                                             "tbn", "tuba")}}
+ANTIC_DT5 = {("map", "ob_c"): 0.23, ("map", "ob_dbl"): 0.23, ("deep_still", "bsn_c"): 0.11,
+             ("deep_still", "line_vc"): 0.11, ("pulls_ahead", "vln1"): 0.20, ("pulls_ahead", "vln2"): 0.20}
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +134,7 @@ def trap(S, bm):
     for a, b in ((t0, low), (surge, cut)):
         voiced(S, [(a, {"vla_trem": ["D4", "Ab4"], "vln_trem": ["D5", "Ab5"]})], b)
     dyn(S, ("vla_trem", "vln_trem"), (t0 - 0.1, 0.22), (low - 0.3, 0.36), (low, 0.05), (surge, 0.3),
-        (ahead, 0.5), (black - 0.1, 0.62))
+        (ahead, 0.44), (black - 0.1, 0.52))
     # the corrupted call in the trombones, answered in canon by the horns
     for pn, root in (("tbn", "D3"), ("tbn2", "D2")):
         line(S, pn, [(root, 1.0), (m(root) + 6, 1.0), (m(root) + 12, 1.9)], t0)
@@ -145,12 +156,12 @@ def trap(S, bm):
     voiced(S, [(ahead, {"tbn": ["D3", "Ab3"], "tuba": ["D2"], "hn": ["D4"], "hn2": ["Ab4"]})], cut)
     S.sync.append((ahead * BEAT_S, "one tower pulls ahead: the violins climb (D5)", "vln1", 0.25, "arrivew"))
     hold(S, "timp_roll", "D2", ahead + 0.05, cut, legato=True)
-    dyn(S, "timp_roll", (ahead, 0.12), (black - 0.1, 0.4))
-    dyn(S, ("tbn", "tbn2"), (t0 - 0.05, 0.42), (low - 0.2, 0.46), (low, 0.05), (surge, 0.5), (black - 0.1, 0.66))
-    dyn(S, ("hn", "hn2"), (t0 + 0.9, 0.38), (low - 0.2, 0.42), (low, 0.05), (back - 0.1, 0.46), (black - 0.1, 0.62))
-    dyn(S, "hn3", (low - 0.1, 0.3), (low + 1.5, 0.3), (surge, 0.24), (back - 0.1, 0.44), (black - 0.1, 0.6))
-    dyn(S, "tuba", (ahead - 0.1, 0.34), (black - 0.1, 0.6))
-    dyn(S, ("vln1", "vln2"), (ahead - 0.1, 0.36), (black - 0.1, 0.66))
+    dyn(S, "timp_roll", (ahead, 0.1), (black - 0.1, 0.28))
+    dyn(S, ("tbn", "tbn2"), (t0 - 0.05, 0.42), (low - 0.2, 0.46), (low, 0.05), (surge, 0.48), (black - 0.1, 0.54))
+    dyn(S, ("hn", "hn2"), (t0 + 0.9, 0.38), (low - 0.2, 0.42), (low, 0.05), (back - 0.1, 0.44), (black - 0.1, 0.52))
+    dyn(S, "hn3", (low - 0.1, 0.3), (low + 1.5, 0.3), (surge, 0.24), (back - 0.1, 0.42), (black - 0.1, 0.5))
+    dyn(S, "tuba", (ahead - 0.1, 0.32), (black - 0.1, 0.5))
+    dyn(S, ("vln1", "vln2"), (ahead - 0.1, 0.32), (black - 0.1, 0.52))
 
 
 # ---------------------------------------------------------------------------
@@ -200,11 +211,11 @@ def last_beacon(S, bm):
     voiced(S, H, off, sync_first=True)
     for pn, a in (("cb", 0.36), ("vc", 0.38), ("vla", 0.37), ("vln2", 0.36), ("vln1", 0.36)):
         S.P(pn).d((mp - 0.05, a), (mp + 4, a * 1.02), (dark - 0.3, a * 0.9), (dark + 1, a * 0.62),
-                  (dark + 4, a * 0.5), (ham, a * 0.36), (last + 0.3, a * 0.36), (last + 1.2, a * 0.8),
-                  (cold - 0.1, a * 1.5), (off, a * 1.5))
+                  (dark + 4, a * 0.5), (ham, a * 0.36), (last + 0.3, a * 0.36), (last + 1.2, a * 0.75),
+                  (cold - 0.1, a * 1.1), (off, a * 1.1))
     S.sync.append((mp * BEAT_S, "THE LAST BEACON: the run's C lands in F on the map (strings)", "vla", 0.2, "bloom"))
-    S.sync.append(((last + 0.5) * BEAT_S, "the last beacon caught: the held A7sus4 resolves into D", "vla", 0.25,
-                   "bloom"))
+    S.sync.append(((last + 0.5) * BEAT_S, "the last beacon caught: the held A7sus4 resolves into D (vla G3-F#3)", "vla",
+                   0.25, "pitch:54"))
     # the beacons answer, near (the oboe, a clarinet under it) and far (horns)
     for pn in ("ob_c", "ob_dbl"):
         K.answer(S, pn, "F5" if pn == "ob_c" else "F4", mp, mode="major", rhythm=(1, .5, .5, 2))
@@ -217,10 +228,10 @@ def last_beacon(S, bm):
         S.sync.append((t * BEAT_S, f"a far beacon answers ({pn}, {top})", pn, 0.25, f"arrive:{m(top)}"))
     # the swell out of the resolution: horns, trombone and tuba join the D, and the timpani roll grows
     voiced(S, [(last + 0.5, {"hn": ["D4"], "hn2": ["F#4"], "hn3": ["A4"], "tbn": ["A3"], "tuba": ["D2"]})], off)
-    dyn(S, ("hn", "hn2", "hn3", "tbn", "tuba"), (last + 0.4, 0.1), (last + 1.5, 0.3), (cold - 0.1, 0.56),
-        (off, 0.56))
+    dyn(S, ("hn", "hn2", "hn3", "tbn", "tuba"), (last + 0.4, 0.1), (last + 1.5, 0.25), (cold - 0.1, 0.4),
+        (off, 0.4))
     hold(S, "timp_roll", "D2", last + 1.0, off, legato=True)
-    dyn(S, "timp_roll", (last + 0.9, 0.08), (cold - 0.1, 0.42), (off, 0.42))
+    dyn(S, "timp_roll", (last + 0.9, 0.08), (cold - 0.1, 0.3), (off, 0.3))
 
 
 # ---------------------------------------------------------------------------
@@ -255,8 +266,8 @@ def deep_abandoned(S, bm):
     S.P("line_vc").d((d0 - 0.1, 0.2), (d0 + 4, 0.2), (d0 + 9, 0.18), (d0 + 10.5, 0.13), (d0 + 11.7, 0.03))
     S.sync.append((d0 * BEAT_S, "THE DEEP, ABANDONED: bassoon and cellos, the descent at rest (D4)", "bsn_c", 0.2,
                    "arrivew"))
-    S.sync.append(((d0 + 10) * BEAT_S, "the Deep closes V-i: the gold left in the ground (D3)", "bsn_c", 0.25,
-                   "arrivew"))
+    S.sync.append(((d0 + 10) * BEAT_S, "the Deep closes V-i: the gold left in the ground (cellos D3)", "line_vc", 0.25,
+                   "pitch:50"))           # the bassoon's D3 has almost no fundamental (v1's finding): the cellos
     voiced(S, [(d0, {"vla_q": ["A3"], "vln2_q": ["F4"]}), (d0 + 2, {"vla_q": ["G3"], "vln2_q": ["E4"]}),
                (d0 + 3, {"vla_q": ["F3"], "vln2_q": ["D4"]}), (d0 + 4, {"vla_q": ["E3"], "vln2_q": ["C#4"]}),
                (d0 + 6, {"vla_q": ["D3"], "vln2_q": ["Bb3"]}), (d0 + 7, {"vla_q": ["C3"], "vln2_q": ["A3"]}),
@@ -322,6 +333,15 @@ def build(bm):
         for n in S.P(pn).notes:
             if abs(n.start - b0) < 1e-6:
                 n.kw["antic"] = a
+    for (eid, pn), a in ANTIC_SET5.items():
+        b0 = bm.ev(eid) if isinstance(eid, str) else bm.ev(eid[0]) + eid[1]
+        for n in S.P(pn).notes:
+            if abs(n.start - b0) < 1e-6:
+                n.kw["antic"] = a
+    for (eid, pn), dt in ANTIC_DT5.items():
+        for n in S.P(pn).notes:
+            if abs(n.start - bm.ev(eid)) < 1e-6 and not n.legato:
+                n.kw["antic"] = max(0.02, n.kw.get("antic", 0.0) + dt)
     for p in S.parts.values():
         p.gain_db += C1.SCORE_TRIM_DB
     for s in bm.sections:
