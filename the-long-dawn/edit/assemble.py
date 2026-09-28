@@ -517,7 +517,10 @@ def masters_table():
 ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master'),
                  # C (director, 28 Sep ~01:10Z): SOUND-C's sound_C.wav, every effect re-synced to the measured picture
                  # (music/sound/picture_sync_C.json); passes the battery
-                 'C': ('music/out/v3/sound_C.wav', 'SOUND master')}
+                 'C': ('music/out/v3/sound_C.wav', 'SOUND master'),
+                 # A (director, 28 Sep ~02:20Z): COMPOSER-A2's v2 score + SOUND-C's real effects re-synced to the
+                 # measured picture (incl. A-FIX's h1_A fire); sync 59/59. Re-renders are picked up by name.
+                 'A': ('music/out/v3/sound_A.wav', 'SOUND master')}
 
 
 def adopted_audio(cut):
