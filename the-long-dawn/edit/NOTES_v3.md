@@ -51,8 +51,8 @@ a window back (plain cut). New kinds go in `_transitions`. **C's spec is PAGES-C
 EDIT's rows are live (28 Sep ~01:40Z, checked on finished stills across each window):** dissolves 2314-2326 (#9),
 2836-2844 (#12; plays as the cut while E13 is a slate), 2998-3002 (#14), 3837-3843 (#16, optional, taken), 5672-5688
 (#20); kind `burn` (O * keep_rgb + I * (1 - cover) + glow) at 4150-4185 (#17) and 5594-5640 (#19) on PAGES' v2 layers
-(one t_open each); `finish_ramp` 6160-6224 (#21: ink look -> film look) HELD (ready=False) until PAGES-C's
-plate-match book_C lands. Not taken: #5 1037-1043 (the flames match); #10's fallback fade 2470-2480 waits on EMBERS-C4.
+(one t_open each); `finish_ramp` 6160-6224 (#21: ink look -> film look) live with PAGES-C's pages_book re-render
+(28 Sep ~01:30Z launch; C25 opens pixel for pixel on C24 6159). T1 and T14 are now in the page (set `in_picture`). Not taken: #5 1037-1043 (the flames match); #10's fallback fade 2470-2480 waits on EMBERS-C4.
 C's ink lines (T1, T7, T9, T14) are now always IRON (titles.py): T14 on C27's page was white.
 
 Until then, how EDIT joins shots: every EDL boundary is a **hard cut** (segments are byte-joined; there is no EDIT

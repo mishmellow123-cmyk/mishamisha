@@ -348,9 +348,9 @@ TRANS = {'A': [], 'B': [], 'C': [
          'parchment views of the range read as a jump cut on stills (EDIT-3)'),
     # #5 (optional 1037-1043) not needed: e15's flame at 1039 and E5-C's at 1040 match in place, size and colour.
     # #10 (fallback fade 2470-2480) waits on EMBERS-C4 (the band should fall out of frame in the render).
-    dict(f0=6160, f1=6224, kind='finish_ramp', ready=False,
-         note='#21 C25 opens pixel for pixel on C24 6159 (ink look) and takes the film look by 6224; held back until '
-              "PAGES-C's plate-match book_C lands (book_C 6160 on disk is the 27 Sep 20:58Z page)"),
+    dict(f0=6160, f1=6224, kind='finish_ramp',
+         note="#21 C25 opens pixel for pixel on C24 6159 (ink look) and takes the film look by 6224 (PAGES-C's "
+              'pages_book re-render, 28 Sep)'),
 ]}
 
 

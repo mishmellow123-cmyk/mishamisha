@@ -256,8 +256,10 @@ H5_WORDS = {
 SET_AS = {
     'A': dict(T10a='black_top', T10b='black_bottom', T6a='row', T6b='row', title='title'),
     'B': dict(title='title'),
-    'C': dict(T1='ink', T7='ink', T9='ink', T14='ink_page', T8a='fire_black_top', T8b='fire_black_bottom',
+    'C': dict(T1='in_picture', T7='ink', T9='ink', T14='in_picture', T8a='fire_black_top', T8b='fire_black_bottom',
               title='in_picture'),        # director ~19:20Z: MAP-L burns C's title into the page (book space)
+    # 28 Sep (director): T1 and T14 are written INTO the page by PAGES-C's pages_book render (perspective, iron-gall
+    # ink), so titles.py no longer draws them; T7 stays EDIT's (the camera travels down the Deep)
 }
 DEFAULT_SET = {'A': 'lower', 'B': 'lower', 'C': 'fire'}
 Y_LOWER, Y_TOP, Y_BOTTOM, Y_MID = 648, 372, 440, 402          # 1920x804 picture coordinates
