@@ -105,8 +105,21 @@ def _window(H, W, f, t, k):
     fe = t.get('feather', 0.07)
     a = np.clip(0.5 - edge / fe, 0.0, 1.0)
     a = a * a * (3.0 - 2.0 * a)
-    rim = (np.exp(-(edge / (fe * 0.22)) ** 2) + 0.35 * np.exp(-np.maximum(edge, 0.0) / (fe * 1.4))
-           * (edge > 0)) * s
+    # the rim is the fire's own light, not an outline (director): thin, uneven along its length, flickering, with
+    # flecks of ember riding the edge and lifting off it
+    ph = 0.5 + 0.5 * (np.sin(7 * th + 2.1 * tt) * np.sin(17 * th - 3.3 * tt + 1.0))
+    ph = np.clip(ph + 0.30 * np.sin(31 * th + 5.0 * tt + 0.4) + 0.15 * np.sin(53 * th - 7.9 * tt), 0.0, 1.0)
+    uneven = 0.18 + 0.82 * ph ** 1.6
+    line = np.exp(-(edge / (fe * 0.12)) ** 2)
+    outer = 0.09 * np.exp(-np.maximum(edge, 0.0) / (fe * 0.9)) * (edge > 0) \
+        * (0.6 + 0.4 * (0.5 + 0.5 * np.sin(3 * th + 1.3 * tt)))              # a low, smooth warmth outside
+    H, W = xx.shape
+    ix = (xx / (2.5 * k)).astype(np.int64)
+    iy = ((yy + 0.9 * f * k) / (2.5 * k)).astype(np.int64)                # the flecks drift up off the edge
+    hsh = (ix * 73856093) ^ (iy * 19349663) ^ (int(f // 3) * 83492791)
+    hsh = (hsh & 0xFFFF).astype(np.float32) / 65535.0
+    fleck = (hsh > 0.992) * np.exp(-((edge + 0.25 * fe) / (fe * 0.55)) ** 2) * 1.6
+    rim = (line * uneven + outer + fleck) * s
     return a.astype(np.float32), rim.astype(np.float32), (cx, cy - oy), s
 
 
