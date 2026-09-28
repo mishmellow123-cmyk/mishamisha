@@ -24,7 +24,8 @@ LAKE = 4.5            # the molten lake fills the bowl's bottom this deep
 BOWL_P = 2.3          # the wall's profile: steep under the lip, flattening into the lake
 FLOOR_Y = B.GROUND - DEPTH + LAKE          # the lake's surface
 S_LAKE = (LAKE / DEPTH) ** (1.0 / BOWL_P)  # the lake's radius / the lip's
-GILD_W = {2: 1.0, 6: 1.0, 1: 0.85, 4: 0.9, 7: 0.8, 0: 0.15, 3: 0.2, 5: 0.1}   # the nearest (gilded) vs the farthest
+GILD_W = {2: 1.0, 6: 1.0, 1: 0.3, 4: 0.9, 7: 0.8, 0: 0.15, 3: 0.2, 5: 0.1}   # the nearest (gilded) vs the farthest
+# (A-FIX: tower 1 no longer gilds: four gilded of eight, so not every forge in frame wears gold)
 FALL_TOWER = 7        # the gilded tower whose crown breaks off (never a giant's)
 C_MOLT = np.array([1.0, 0.72, 0.3])
 AIR_E = 300.0
@@ -713,8 +714,10 @@ def _orbit_az(t):
 
 
 EDGE_R, EDGE_Y, EDGE_TY, EDGE_HF, EDGE_FALL = 27.0, -8.0, -12.5, 88.0, 0.22
-EDGE_PUSH = 4.0
-EDGE_AZ0, EDGE_AZ1 = 2.80, 3.55      # rel. ALPHA_C, over THE EDGE (A-FIX: was 2.93-3.25, which read static for 13 s): the
+EDGE_PUSH = 5.0
+EDGE_ZOOM = 10.0
+EDGE_AZ0, EDGE_AZ1 = 2.93, 3.25      # rel. ALPHA_C, over THE EDGE (A-FIX: a wider orbit put a forge in the lens; the motion
+                                     # is a creeping push + zoom instead, EDGE_PUSH / EDGE_ZOOM): the
                                      # giants on either side of the fire across the pit
 T_CUT_CROWN = A.T_CROWN - 20         # the cut to the crown on bar 31 b4: it stands for a beat, then breaks
 T_CUT_FALL = A.T_TIP                 # the cut to the rim on bar 32 b3: the camera tips over after the crown
@@ -741,6 +744,7 @@ def _cam_edge(tl, t):
     az = B.ALPHA_C + EDGE_AZ0 + (EDGE_AZ1 - EDGE_AZ0) * u
     r, y, ty, hf, fall = EDGE_R, EDGE_Y, EDGE_TY, EDGE_HF, EDGE_FALL
     r = r - EDGE_PUSH * float(smootherstep(A.T_EDGE, A.T_BRINK, t))          # A-FIX: a slow push in over the orbit
+    hf = hf - EDGE_ZOOM * float(smootherstep(A.T_EDGE + 20, A.T_BRINK, t))   # ... and a slow zoom: we creep to the edge
     # it opens on the fire over the intact ground and follows the ground down as it falls away
     k0 = float(smootherstep(A.T_EDGE + 8, A.T_EDGE + 64, t))
     ty = lerp(1.0, ty, k0)
