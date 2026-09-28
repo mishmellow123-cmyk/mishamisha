@@ -7,6 +7,11 @@
   1905-1991 -> renders/book_C_ft + book_C_ft_matte (EDIT reads them unchanged; C is on hold in EDIT until the new
   EDL: no need to message EDIT), one 24-frame strip each for my own check; (3) SOUND frames (below); (4) commit, push,
   one line to main: "BURN ROLLOUT DONE". The farm queue waits on provider capacity: let the watcher wait, no resubmit.
+* 05:40 main: option (a): WAIT for the plates (the farm test 0928-025304 sat 2h44m at "0 node(s) rendering, 9 up or
+  booting"); watcher re-armed for 5 h (1-min polls, fires on EXIT/landed/failed). If still not started on wake: DO NOT
+  resubmit; the morning session moves it to GPU nodes (noted in HANDOVER.md). When the plates land: check 1:1, launch
+  the finals (--nodes 3 --detach, lane-launched row), then `ftburn shot` x3 into renders/book_C_ft, strips, commit,
+  push, "BURN ROLLOUT DONE", stand down.
 * ROLLOUT CODE READY (ftburn.py `shot --shot c5|sweep|eye [--frames] --out renders/book_C_ft [--preview DIR]`):
   - c5: as adopted (leaf geometry, real time from the clip's birth at 841, tongues);
   - sweep: Pexels 8828892 in screen space, flipped (its burn climbs from the lower left -> falls from the upper left),
