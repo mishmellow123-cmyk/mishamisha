@@ -1320,76 +1320,75 @@ def _strands(pts_list, radii, attrs):
 
 
 def _nest(C, new_material, N, E, rf_tab, kg_tab, seed=17):
-    """The tinder nest: dry grass laid round a hollow (a bird's nest of straw), loose ends, fluff, coarse bark strips
-    beneath. Its fibres catch from the ember outward late in the blow (rf: the burnt front's radius round E; kg: the
-    glow): a crawling orange edge, black char behind it."""
+    """The tinder nest: fine dry grass and bark fibre worked round a hollow, irregular and fluffy (a wicker ring of
+    even strands read as a basket), loose ends, curly fluff, coarse strips beneath. Its fibres catch from the ember
+    outward late in the blow (rf: the burnt front's radius round E; kg: the glow): a crawling orange edge, black char
+    behind it."""
     import random
 
-    from mathutils import Vector
+    from mathutils import Vector, noise
     rng = random.Random(seed)
     P, R_, SR, DK = [], [], [], []
+    off = Vector((seed * 0.7, 3.1, 1.7))
 
-    def zb(r):
-        return -0.006 + 0.020 * min(1.0, max(0.0, (r - 0.014) / 0.034)) ** 1.2
+    def rim(th):                                           # an irregular bowl: radius and height wander round it
+        return 0.046 * (1.0 + 0.10 * math.sin(2 * th + 0.8) + 0.06 * math.sin(3 * th + 2.0))
 
-    for k in range(430):                                 # the bowl: straw circling the hollow
-        th0 = rng.uniform(0, 2 * math.pi)
-        rr = rng.uniform(0.016, 0.050)
-        L = rng.uniform(0.03, 0.08)
-        dth = L / rr * rng.choice((-1.0, 1.0))
-        z0 = zb(rr) + rng.uniform(0.0, 0.006)
-        ph, amp = rng.uniform(0, 6.3), rng.uniform(0.001, 0.004)
-        pts = []
-        for i in range(9):
-            u = i / 8.0
-            th = th0 + dth * u
-            r_ = rr * (1.0 + 0.12 * math.sin(3.0 * u + ph)) + amp * math.sin(9.0 * u + ph)
-            pts.append((r_ * math.cos(th), r_ * math.sin(th), zb(r_) + (z0 - zb(rr)) + 0.002 * math.sin(7 * u + ph)))
-        P.append(pts)
-        R_.append(rng.uniform(0.00024, 0.00048))
-        SR.append(rng.random())
-        DK.append(0.0)
-    for k in range(70):                                  # loose ends sticking out of the rim
+    def zb(r, th):
+        rr = r / rim(th)
+        return -0.006 + 0.021 * min(1.0, max(0.0, (rr - 0.30) / 0.72)) ** 1.25 + 0.003 * math.sin(3 * th + 1.0)
+
+    def grow(p0, d0, L, n, kink, curl):
+        pts, p, d = [], Vector(p0), Vector(d0).normalized()
+        for i in range(n):
+            pts.append(tuple(p))
+            q = p * 90.0 + off + Vector((i * 0.37, 0.0, 0.0))
+            turn = Vector((noise.noise(q), noise.noise(q + Vector((5.2, 1.3, 0.0))), 0.3 * noise.noise(q + Vector((0, 9.1, 2.0)))))
+            d = (d + turn * curl).normalized()
+            if rng.random() < kink:
+                d = (d + Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-0.4, 0.4)))).normalized()
+            p = p + d * (L / (n - 1))
+        return pts
+
+    for k in range(760):                                    # the bowl: grass laid round (mostly), crossing, kinked
         th = rng.uniform(0, 2 * math.pi)
-        rr = rng.uniform(0.034, 0.050)
-        L = rng.uniform(0.018, 0.045)
-        d = Vector((math.cos(th + rng.uniform(-0.8, 0.8)), math.sin(th + rng.uniform(-0.8, 0.8)),
-                    rng.uniform(0.1, 0.9))).normalized()
-        c = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))) * 0.006
-        p0 = Vector((rr * math.cos(th), rr * math.sin(th), zb(rr) + 0.003))
-        pts = [tuple(p0 + d * (L * i / 7.0) + c * (i / 7.0) ** 2) for i in range(8)]
+        rr = rim(th) * rng.uniform(0.30, 1.02)
+        p0 = Vector((rr * math.cos(th), rr * math.sin(th), 0.0))
+        p0.z = zb(rr, th) + rng.uniform(0.0, 0.007)
+        tang = Vector((-math.sin(th), math.cos(th), 0.0)) * rng.choice((-1.0, 1.0))
+        d0 = tang + Vector((rng.uniform(-0.6, 0.6), rng.uniform(-0.6, 0.6), rng.uniform(-0.25, 0.35)))
+        pts = grow(p0, d0, rng.uniform(0.018, 0.060), 10, 0.10, 0.35)
+        pts = [(x, y, max(z, zb(math.hypot(x, y), math.atan2(y, x)) - 0.002)) for x, y, z in pts]
         P.append(pts)
-        R_.append(rng.uniform(0.00022, 0.00038))
+        R_.append(rng.uniform(0.00015, 0.00034))
         SR.append(rng.random())
         DK.append(0.0)
-    for k in range(90):                                  # fluff: fine curly fibres in the hollow and on the rim
-        rr = rng.uniform(0.0, 0.030)
+    for k in range(110):                                    # loose ends out of the rim
         th = rng.uniform(0, 2 * math.pi)
-        p0 = Vector((rr * math.cos(th), rr * math.sin(th), zb(max(rr, 0.014)) + rng.uniform(0.0, 0.004)))
-        L = rng.uniform(0.008, 0.022)
-        a0, w0 = rng.uniform(0, 6.3), rng.uniform(0.0015, 0.003)
-        pts = []
-        for i in range(8):
-            u = i / 7.0
-            pts.append(tuple(p0 + Vector((L * u + w0 * math.sin(11 * u + a0), w0 * math.cos(13 * u + a0),
-                                          0.002 * math.sin(7 * u + a0) + 0.0015 * u))))
-        rot = rng.uniform(0, 6.283)
-        cr, sr = math.cos(rot), math.sin(rot)
-        pts = [(p0.x + (x - p0.x) * cr - (y - p0.y) * sr, p0.y + (x - p0.x) * sr + (y - p0.y) * cr, z) for x, y, z in pts]
-        P.append(pts)
-        R_.append(rng.uniform(0.00010, 0.00016))
+        rr = rim(th) * rng.uniform(0.8, 1.05)
+        p0 = Vector((rr * math.cos(th), rr * math.sin(th), zb(rr, th) + 0.003))
+        d0 = Vector((math.cos(th + rng.uniform(-1.0, 1.0)), math.sin(th + rng.uniform(-1.0, 1.0)), rng.uniform(0.0, 1.1)))
+        P.append(grow(p0, d0, rng.uniform(0.012, 0.040), 8, 0.05, 0.25))
+        R_.append(rng.uniform(0.00012, 0.00028))
         SR.append(rng.random())
         DK.append(0.0)
-    for k in range(60):                                  # coarse bark strips under the bowl
-        th0 = rng.uniform(0, 2 * math.pi)
-        rr = rng.uniform(0.010, 0.052)
-        L = rng.uniform(0.03, 0.07)
-        dth = L / max(rr, 0.02) * rng.choice((-1.0, 1.0))
-        pts = [((rr + 0.003 * math.sin(5 * i)) * math.cos(th0 + dth * i / 7.0),
-                (rr + 0.003 * math.sin(5 * i)) * math.sin(th0 + dth * i / 7.0),
-                zb(rr) - 0.004 - rng.uniform(0.0, 0.004)) for i in range(8)]
-        P.append(pts)
-        R_.append(rng.uniform(0.0006, 0.0011))
+    for k in range(170):                                    # fluff: fine curly fibre, mostly in the hollow
+        th = rng.uniform(0, 2 * math.pi)
+        rr = rim(th) * rng.uniform(0.0, 0.75)
+        p0 = Vector((rr * math.cos(th), rr * math.sin(th), zb(max(rr, 0.012), th) + rng.uniform(0.0, 0.005)))
+        d0 = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-0.2, 0.6)))
+        P.append(grow(p0, d0, rng.uniform(0.006, 0.020), 8, 0.2, 0.9))
+        R_.append(rng.uniform(0.00007, 0.00012))
+        SR.append(rng.random())
+        DK.append(0.0)
+    for k in range(50):                                     # coarse bark strips under the bowl
+        th = rng.uniform(0, 2 * math.pi)
+        rr = rim(th) * rng.uniform(0.2, 1.1)
+        p0 = Vector((rr * math.cos(th), rr * math.sin(th), zb(rr, th) - 0.005 - rng.uniform(0.0, 0.004)))
+        tang = Vector((-math.sin(th), math.cos(th), 0.0))
+        P.append(grow(p0, tang + Vector((rng.uniform(-0.5, 0.5), rng.uniform(-0.5, 0.5), 0.0)), rng.uniform(0.03, 0.07),
+                      8, 0.05, 0.15))
+        R_.append(rng.uniform(0.0005, 0.0010))
         SR.append(rng.random())
         DK.append(1.0)
     V, F, A = _strands(P, R_, dict(srand=SR, dark=DK))
@@ -1477,26 +1476,53 @@ def _charcloth(C, new_material, N, E, er_tab, ek_tab):
 
 
 def _flint_stone(C, new_material, seed=5):
-    """A flint nodule, ~3.6 x 2.2 x 3.4 cm: glassy dark knapped faces, a chalky pale cortex on one side."""
+    """A flint nodule (~3.8 x 2.4 x 3.2 cm): a lumpy nodule whose top and front are knapped away in flat conchoidal
+    facets (glassy near-black flint, faint ripples); a thin pale chalky cortex survives only on the unbroken skin."""
     import random
 
+    import bmesh
+    from mathutils import Vector, noise
+
     from kit import fire as FK
-    bm = FK.stone_mesh(random.Random(seed), 0.036, 0.022, 0.034, seed, sub=2, chip=0.30, round_=0.22)
+    rng = random.Random(seed)
+    bm = bmesh.new()
+    bmesh.ops.create_icosphere(bm, subdivisions=4, radius=1.0)
+    planes = []
+    for k in range(7):
+        th = rng.uniform(-2.9, 0.4)
+        el = rng.uniform(0.05, 1.1)
+        n = Vector((math.cos(th) * math.cos(el), math.sin(th) * math.cos(el), math.sin(el))).normalized()
+        planes.append((n, rng.uniform(0.42, 0.72)))
+    cut = []
+    for v in bm.verts:
+        p = v.co.copy()
+        p *= 1.0 + 0.20 * noise.noise(p * 1.6 + Vector((seed * 1.3, 0.0, 0.0))) + 0.06 * noise.noise(p * 4.3)
+        c = 0.0
+        for n, d in planes:
+            h = p.dot(n) - d
+            if h > 0.0:
+                p -= n * h
+                c = 1.0
+        v.co = Vector((p.x * 0.019, p.y * 0.012, p.z * 0.016))
+        cut.append(c)
+    bm.verts.index_update()
     V, F = FK._bm_to_lists(bm)
     bm.free()
     m, nb = new_material('flint')
     Pl = nb.texco().outputs['Object']
-    x, y, z = nb.sep(Pl)
-    n1 = nb.noise(Pl, scale=90.0, detail=4.0)
-    cort = nb.sstep(-0.004, -0.011, nb.add(nb.add(x, nb.mul(z, 0.7)), nb.mul(nb.sub(n1.outputs['Fac'], 0.5), 0.012)))
-    col = nb.mixcol(cort, (0.028, 0.027, 0.031), (0.46, 0.43, 0.38))
+    kn = nb.sstep(0.5, 0.95, nb.attr('knap').outputs['Fac'])
+    n1 = nb.noise(Pl, scale=160.0, detail=4.0)
+    col = nb.mixcol(kn, (0.40, 0.37, 0.32), (0.018, 0.017, 0.020))
     col = nb.colscale(col, nb.madd(n1.outputs['Fac'], 0.5, 0.75))
-    bs = nb.principled(Base_Color=col, Roughness=nb.madd(cort, 0.72, 0.20))
-    rip = nb.math('SINE', nb.mul(nb.length(nb.vsub(Pl, (0.012, -0.008, 0.010))), 2600.0))
-    nb.link(nb.bump(nb.add(nb.mul(rip, nb.madd(cort, -1.0, 1.0)), nb.mul(n1.outputs['Fac'], nb.madd(cort, 2.0, 0.2))),
-                    0.25, 0.0002), bs.inputs['Normal'])
+    bs = nb.principled(Base_Color=col, Roughness=nb.madd(kn, -0.62, 0.86))
+    rip = nb.math('SINE', nb.mul(nb.length(nb.vsub(Pl, (0.010, -0.008, 0.012))), 2300.0))
+    nb.link(nb.bump(nb.add(nb.mul(rip, nb.mul(kn, 0.5)), nb.mul(n1.outputs['Fac'], nb.madd(kn, -1.6, 2.0))),
+                    0.25, 0.00018), bs.inputs['Normal'])
     nb.output(surface=bs)
-    return C.mesh_obj('flint', V, F, mat=m, smooth=False)
+    ob = C.mesh_obj('flint', V, F, mat=m, smooth=False)
+    at = ob.data.attributes.new('knap', 'FLOAT', 'POINT')
+    at.data.foreach_set('value', cut)
+    return ob
 
 
 def _vol_box(C, name, x0, x1, y0, y1, z0, z1):
@@ -1582,6 +1608,20 @@ def _smoke_c14(C, new_material, E, sk_tab, wind_tab, dens=90.0):
     return ob
 
 
+def _ash_material(new_material):
+    """Old ash on the basket's floor: soft grey, darker in drifts, flecked with char."""
+    m, nb = new_material('ash')
+    P = nb.texco().outputs['Object']
+    n1 = nb.noise(P, scale=30.0, detail=5.0, rough=0.6)
+    n2 = nb.noise(P, scale=300.0, detail=3.0)
+    col = nb.mixcol(nb.sstep(0.35, 0.7, n1.outputs['Fac']), (0.030, 0.029, 0.028), (0.16, 0.155, 0.15))
+    col = nb.colscale(col, nb.madd(nb.sstep(0.6, 0.75, n2.outputs['Fac']), -0.8, 1.0))
+    bs = nb.principled(Base_Color=col, Roughness=0.95)
+    nb.link(nb.bump(nb.add(n1.outputs['Fac'], n2.outputs['Fac']), 0.5, 0.002), bs.inputs['Normal'])
+    nb.output(surface=bs)
+    return m
+
+
 def _strike_grip(f, fs, Rg, Cg, Wg, Sg):
     """The right fist's strike round frame fs: rest -> wind-up (fs-12..fs-4) -> down fast onto the flint's edge (fs-3
     ..fs) -> a short scrape (fs..fs+1) -> the rebound (fs+1..fs+9). Returns (grip, dip in degrees; + = tip down)."""
@@ -1622,7 +1662,11 @@ def _flint(C, new_material, R, opts, T):
         sc.cycles.volume_step_rate = opts.get('vol_step', 0.25)
         sc.cycles.volume_max_steps = 512
     _plane(C, 'snow_far', -0.45, 6.0, snow_material(new_material))           # the moonlit ground, far behind
-    _basket_c14(C, new_material)
+    # the basket's floor under the kindling: old ash and cold cinders (no bars in frame: they read as a cage)
+    ash = _plane(C, 'ash', -0.046, 0.40, _ash_material(new_material))
+    ash.location = (N.x, N.y, 0.0)
+    _coals(C, new_material, 70, (0.17, 0.13), 23, 'fire', z0=-0.046 - 0.004,
+           gain_tab=[(f, 0.0) for f in range(START - 2, END + 3)])
     fr = range(START - 2, END + 3)
     later = []
     # ---- the ember (flint_b): born when strike 3's spark lands (3181); each breath brightens it and spreads it
@@ -1758,36 +1802,34 @@ def _flint(C, new_material, R, opts, T):
     for fs in (F_['s1'], F_['s3']):
         if not (START - 2 <= fs <= END):
             continue
-        for k in range(opts.get('n_sparks', 26)):
-            v = rng.uniform(0.35, 1.25)
-            dv = Vector((rng.uniform(-0.25, 0.95), rng.uniform(-0.35, 0.25), -1.0)).normalized()
-            tau = rng.uniform(0.05, 0.12)
-            life = rng.uniform(3.0, 9.0) / FPS
+        g_ = Vector((0.0, 0.0, -2.6))                             # gravity, eased by the air: short falling arcs
+        for k in range(opts.get('n_sparks', 22)):
+            v = rng.uniform(0.25, 0.85)
+            dv = Vector((rng.uniform(0.15, 1.0), rng.uniform(-0.45, 0.30), rng.uniform(-0.85, 0.35))).normalized()
+            V0 = dv * v
+            T_ = rng.uniform(4.0, 10.0) / FPS
             S0 = Cpt + Vector((rng.uniform(-0.002, 0.004), rng.uniform(-0.002, 0.001), rng.uniform(-0.002, 0.001)))
-
-            def pos(t, S0=S0, v=v, dv=dv, tau=tau):
-                return S0 + dv * (v * tau * (1.0 - math.exp(-t / tau))) + Vector((0.0, 0.0, -1.6 * t * t))
-
-            tl_, land = life, 0
-            for i in range(1, 25):
-                t = life * i / 24.0
-                p = pos(t)
-                if p.z < 0.012 and (Vector((p.x, p.y, 0.0)) - Vector((N.x, N.y, 0.0))).length < 0.05:
-                    tl_, land = t, int(rng.uniform(2, 7))
+            land = 0
+            for i in range(1, 25):                                # does it come down in the tinder first?
+                t = T_ * i / 24.0
+                p = S0 + V0 * t + 0.5 * g_ * t * t
+                if p.z < 0.010 and (Vector((p.x, p.y, 0.0)) - Vector((N.x, N.y, 0.0))).length < 0.046:
+                    T_, land = t, int(rng.uniform(2, 6))
                     break
-            L_ = pos(tl_)
-            M_ = pos(tl_ * 0.5)
-            Q_ = 2.0 * M_ - 0.5 * (S0 + L_)
+            Q_ = S0 + V0 * (0.5 * T_)
+            L_ = S0 + V0 * T_ + 0.5 * g_ * T_ * T_
             f0 = fs + (1 if k % 3 else 0)
-            paths.append((tuple(S0), tuple(Q_), tuple(L_), f0, f0 + max(2, int(round(tl_ * FPS))), land))
+            paths.append((tuple(S0), tuple(Q_), tuple(L_), f0, f0 + max(2, int(round(T_ * FPS))), land))
         if fs == F_['s3']:                                        # the one that takes, on the char cloth
             S0 = Cpt + Vector((0.001, -0.001, -0.001))
             L_ = E + Vector((0.0, 0.0, 0.0006))
-            paths.append((tuple(S0), tuple((S0 + L_) * 0.5 + Vector((0.012, 0.0, 0.004))), tuple(L_), fs, fs + 3, 18))
+            T_ = 4.0 / FPS
+            V0 = (L_ - S0 - 0.5 * g_ * T_ * T_) / T_
+            paths.append((tuple(S0), tuple(S0 + V0 * (0.5 * T_)), tuple(L_), fs, fs + 4, 18))
     if paths:
         _sparks(C, new_material, paths, (START, END))
     # the strike's flash: a brief warm burst at the edge, on the gloves and the tinder
-    fls = C.point('flash', tuple(Cpt), (1.0, 0.52, 0.20), 0.0, radius=0.004)
+    fls = C.point('flash', tuple(Cpt + Vector((-0.004, -0.018, 0.004))), (1.0, 0.52, 0.20), 0.0, radius=0.004)
     for f in fr:
         e = 0.0
         for fs in (F_['s1'], F_['s3']):
@@ -1796,11 +1838,11 @@ def _flint(C, new_material, R, opts, T):
         C.key(fls.data, 'energy', f, opts.get('flash_w', 0.10) * e)
 
     # ---- breath: two slow exhales in strike 1; in flint_b the tension (3149) and then the long blow at the ember
-    mouth_a = Vector(opts.get('mouth_a', (-0.20, 0.07, 0.30)))
-    _breath(C, new_material, 'breath_rest', mouth_a, Vector((0.10, 0.02, 0.10)) - mouth_a,
-            [(fa, fb) for fa, fb, _k in F_['breaths']], speed=0.30, dens=opts.get('breath_dens', 22.0), cone=0.34)
+    mouth_a = Vector(opts.get('mouth_a', (-0.15, 0.10, 0.22)))
+    _breath(C, new_material, 'breath_rest', mouth_a, Vector((0.10, -0.01, 0.09)) - mouth_a,
+            [(fa, fb) for fa, fb, _k in F_['breaths']], speed=0.34, dens=opts.get('breath_dens', 30.0), cone=0.34)
     if has_ember:
-        mouth_b = Vector(opts.get('mouth_b', (-0.13, 0.035, 0.175)))
+        mouth_b = Vector(opts.get('mouth_b', (-0.11, 0.05, 0.17)))
         _breath(C, new_material, 'breath_blow', mouth_b, (E + Vector((0.0, 0.0, 0.004))) - mouth_b, list(blows),
                 speed=0.85, dens=opts.get('blow_dens', 16.0), cone=0.16, length=0.30)
         sk = [(f, 0.0 if f < F_['ember'] + 4 else (0.25 + 0.75 * _ease((f - 3190) / 110.0)) *
@@ -1811,14 +1853,14 @@ def _flint(C, new_material, R, opts, T):
     # ---- the catch: the smoke takes, a small flame blooms from the nest (sprites) and the kindling follows
     if 'tflame' in T.get('sprites', {}):
         fl_tab = [(f, 0.0 if f < F_['catch'] - 1 else _flick(f, 17, 0.4)) for f in fr]
-        lights = [C.point('flame1', tuple(N + Vector((0.0, 0.0, 0.03))), (1.0, 0.50, 0.17), 0.0, radius=0.012),
-                  C.point('flame2', tuple(N + Vector((0.01, 0.0, 0.07))), (1.0, 0.55, 0.20), 0.0, radius=0.02)]
+        lights = [C.point('flame1', tuple(N + Vector((0.0, 0.0, 0.016))), (1.0, 0.50, 0.17), 0.0, radius=0.010),
+                  C.point('flame2', tuple(N + Vector((0.008, 0.01, 0.055))), (1.0, 0.55, 0.20), 0.0, radius=0.02)]
         for f in fr:
             u = (f - F_['catch']) / 20.0
             grow = 0.0 if u < 0 else (0.25 + 0.75 * (1.0 - math.exp(-2.0 * u)))
             kgrow = 0.0 if f < F_['kindle'] else 0.8 * _ease((f - F_['kindle']) / 20.0)
-            C.key(lights[0].data, 'energy', f, opts.get('flame_w', 0.35) * (grow + kgrow) * _flick(f, 3, 0.7))
-            C.key(lights[1].data, 'energy', f, opts.get('flame_w', 0.35) * 0.8 * (grow * 0.5 + kgrow) * _flick(f, 8, 0.7))
+            C.key(lights[0].data, 'energy', f, opts.get('flame_w', 0.10) * (grow + kgrow) * _flick(f, 3, 0.7))
+            C.key(lights[1].data, 'energy', f, opts.get('flame_w', 0.10) * 0.8 * (grow * 0.5 + kgrow) * _flick(f, 8, 0.7))
         later.append((N + Vector((0.0, 0.0, -0.004)), 'tflame', opts.get('tflame_g', 0.9), fl_tab))
         later.append((N + Vector((0.012, 0.022, -0.014)), 'kflame', opts.get('kflame_g', 0.8), fl_tab))
 
@@ -1830,10 +1872,13 @@ def _flint(C, new_material, R, opts, T):
           angle_deg=20.0)
     # ---- the camera: the strike framing (both fists, the steel's whole C, the nest below); in flint_b a slow push
     # to the nest through the blow, easing back and up as the flame rises
-    pA, tA = Vector(opts.get('camA', (0.0, -0.56, 0.135))), Vector(opts.get('tgtA', (0.012, 0.0, 0.058)))
-    pB, tB = Vector(opts.get('camB', (0.058, -0.335, 0.105))), Vector(opts.get('tgtB', (0.070, 0.0, 0.014)))
-    pC, tC = Vector(opts.get('camC', (0.052, -0.40, 0.128))), Vector(opts.get('tgtC', (0.068, 0.0, 0.040)))
-    cam = _camera(pA, tA, opts.get('lens', 55.0), opts.get('fstop', 8.0))
+    tA = Vector(opts.get('tgtA', (0.028, 0.012, 0.048)))
+    pA = tA + Vector(opts.get('camA_off', (-0.045, -0.465, 0.19)))
+    tB = Vector(opts.get('tgtB', tuple(E + Vector((-0.006, 0.0, 0.004)))))
+    pB = tB + Vector(opts.get('camB_off', (-0.025, -0.205, 0.175)))
+    tC = Vector(opts.get('tgtC', tuple(N + Vector((-0.004, 0.0, 0.030)))))
+    pC = tC + Vector(opts.get('camC_off', (-0.03, -0.30, 0.15)))
+    cam = _camera(pA, tA, opts.get('lens', 50.0), opts.get('fstop', 8.0))
     for f in fr:
         u = (f - START) / float(max(1, END - START))
         p_, t_ = pA.lerp(tA, 0.015 * u), tA.copy()
@@ -1851,6 +1896,9 @@ def _flint(C, new_material, R, opts, T):
         cam.keyframe_insert('rotation_quaternion', frame=f)
         cam.data.dof.focus_distance = (p_ - foc).length
         cam.data.dof.keyframe_insert('focus_distance', frame=f)
+        if START >= 3100:                                             # close over the nest: keep the tinder sharp
+            cam.data.dof.aperture_fstop = opts.get('fstop', 8.0) + 5.0 * _ease((f - 3186) / 114.0)
+            cam.data.dof.keyframe_insert('aperture_fstop', frame=f)
     from kit import fire as FK
     for pos, name, gain, tab in later:
         sp_ = T['sprites'][name]
