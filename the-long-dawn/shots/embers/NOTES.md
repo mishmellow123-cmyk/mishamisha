@@ -142,7 +142,7 @@ mottled stone (banded stacks, not offices). RELAUNCHED by me 21:14Z (director pr
 # (c_grasp.py tone-down), E12 THE EYE if still owed (it is: no final in renders/embers_C3 1920-2079; EDIT still plays
 # embers_C3_half). Then (low priority, director): E15 polish at 764-788 (spark streams swoop in two arcs) + ~800 (soft
 # orange blob), partial re-render only if cheap. <<<
-## EMBERS-C4 CLOSE-OUT (28 Sep ~02:40Z). My queue is empty after the gild JOB READY.
+## EMBERS-C4 CLOSE-OUT (28 Sep ~02:45Z). LANE CLOSED (director): every item approved and launched.
 * C (all approved, launched by the director; do not relaunch):
   - embers_C3_fall (2720-2839) + embers_C3_grasp (2320-2479): --nodes 3, log _local_logs/jobs/embers_C3_fall_grasp_farm.log.
   - embers_C3_eye (1920-2079): --nodes 2, log _local_logs/jobs/embers_C3_eye_farm.log. Final code f77620e: forge
@@ -150,8 +150,10 @@ mottled stone (banded stacks, not offices). RELAUNCHED by me 21:14Z (director pr
     crown, crenellations x2.2), smoke and embers over all 18 (_AllTowers / _all_smoke: TowerSmoke's hw table is 8
     long, so crown widths go per design), a globe eye (limb darkening) with a wet highlight.
   - If a landing check is needed: 120 / 160 / 160 frames in renders/embers_C3. EDIT then drops embers_C3_half.
-* A THE GILDING insert (A 1860-1919, MAIN + ALT): JOB READY sent (02:40Z) as embers_A3_gild / embers_A3_alt_gild at
-  29fda0a. It must be launched AFTER the EDGE finals' 1860-1919 frames have landed, because both write the same frames.
+* A THE GILDING insert (A 1860-1919, MAIN + ALT): APPROVED and LAUNCHED by the director (--nodes 4, log
+  _local_logs/jobs/embers_A3_gild_farm.log) at 29fda0a, after the EDGE finals' 1860-1919 had landed in both folders
+  (60/60 each; the gild frames supersede them). Do not relaunch. To check: 1860-1919 in renders/embers_A3 and
+  renders/embers_A3_alt_codedtowers show tower 7's face with the gold.
   - Everything is behind LD_GILD=1: edge._cam_gild (inside the ring, looking up tower 7's fire-facing face, throat at
     the top, 1-unit push), GoldRuns insert-only parameters (gain 1.6, heads x4.5, rivulets 0.65 freq, discs x1.4),
     render.py's own shutter interval (1860, 1920) and a graduated filter on the lower third for T7.
