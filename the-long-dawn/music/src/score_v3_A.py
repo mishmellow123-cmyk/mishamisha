@@ -31,14 +31,21 @@ THE PLAN
   A5 ignition     the Lydian bloom (Bbmaj9#11/D) out of the breath, breathing once a bar, too evenly; the cycle
                   below notice; the promise (17 b1): one warm line (violas + cellos in unison) rises D4 .. C5 and
                   is cut off on 18 b3, a step short of its octave
-  A6 towers       A7(b9), the prize, built tower by tower; the cycle raced (sixteenths, the prize's own arpeggio);
-                  low drums prepare (1 -> 1 and 3 -> quarters -> a timpani roll); from 22 b3.5 the two giants: two
-                  trombones on opposite sides, on the prize's tritone (C#, G), and a sub swell on A; 200 ms breath
+  A6 towers       A7(b9), the prize, built tower by tower from the bottom, darkest first (root; the tritone E-Bb
+                  with the b9; the diminished seventh closing; the b9 on top; the major third only ever inside); the
+                  cycle raced but smothered (sixteenths of the prize circled low and close, A Bb A G A Bb C#, dark
+                  and damped); low drums prepare, a tightening pulse (1 -> 1 and 3 -> quarters, timpani on A under
+                  it, then a timpani roll; no pickups); from 22 b3.5 the two giants: two trombones on opposite sides,
+                  on the prize's tritone (C#, G), and a sub swell on A; 200 ms breath
   A7 the edge     the corrupted call (D Ab D) at four speeds: taiko + spiccato in quarters (24), eighths (26),
-                  sixteenths (28: the middle strings; cellos and first violins keep eighths), a roll (30: sustained
-                  drum and timpani rolls, string tremolo; never 32nds); the
-                  corrupted call in the low brass at each doubling; a sweet metallic ring on every surge (D major
-                  far above the tritone: the gold is lovely); the bellows drawing into every beat
+                  sixteenths (28: the violas and second violins; cellos and first violins keep eighths), a roll (30:
+                  sustained drum and timpani rolls, string tremolo; never 32nds); the spiccato insistent, never
+                  skipping (the cellos grind D D Ab D, the violas hammer the tritone Ab Ab G Ab, the second violins
+                  press D against Eb), nothing above D5; the subdivisions on the low drum only, a pulse, not a
+                  groove; the corrupted call in the low brass (horns in unison with the trombones, low) at each
+                  doubling; the gold's sweet ring, a pure fifth struck with the bar's first surge (and its third from
+                  26): lovely, a chime above the machine, never a tune; the bellows drawing into every beat; the
+                  cycle racing smothered (D Eb D C D Eb Ab)
   A8 the brink    the rolls, a Shepard rise and the brass clusters thickening to A's loudest (33 b1); the rim
                   crumbling (drum and low piano, irregular on a sixteenth grid); the suck (33 b3: the orchestra cut,
                   a falling noise and a sub drop into the 125 ms breath); the IMPACT on the white (timpani, drum and
@@ -57,7 +64,8 @@ THE PLAN
   A15 watchers    the strings hold; the corrupted call, softened, in the low brass (over D6 its Ab is the fire's
                   #11); a far horn answers with the CALL
   A16 towers in   the violas hold the tritone (Ab3) until the giants open (57 b1): it heals into the fifth (A3); the
-      the light   cycle slows: sixteenths (56), eighths (57-58), quarter notes locked to the bar (59 b1); the
+      the light   cycle slows: the race's smothered sixteenths (56), clearing into the glass in eighths as the giants
+                  open (57-58), quarter notes locked to the bar (59 b1); the
                   smaller towers follow on the beat (58): the high strings enter one per beat
   A17 fire seen   the cycle in quarter notes under the held chord (D sus2); from 61 b1 all of it gathers into D
   A18 crossing    the WALK: pizzicato basses and a soft hand drum on 1 and 3; the harmony moves only at a watch-fire
@@ -105,6 +113,9 @@ A_SEATS = {
     "glasstone": dict(inst="harmonic", pan=0.0, width=0.8, depth=0.6, send=0.6, gain_db=-8.0, **_X),
     "cycle": dict(inst="fmwarm", pan=0.0, width=1.0, depth=0.45, send=0.5, gain_db=-7.0,
                   params=dict(ratio=3.5, index=1.6, decay=1.2, lp=7000.0, chorus=3.0), **_X),
+    # the race's cycle (v2): the same FM (ratio 3.5), smothered: low index, low-passed, no glass partial, damped
+    "cycle_dk": dict(inst="fmwarm", pan=0.0, width=0.8, depth=0.55, send=0.45, gain_db=-13.0,
+                     params=dict(ratio=3.5, index=0.9, decay=0.9, lp=1800.0, chorus=2.0, atk=0.003), **_X),
     "bellows": dict(inst="riser", pan=0.0, width=1.0, depth=0.5, send=0.3, gain_db=-9.0, **_X),
     "shepard": dict(inst="shepard", pan=0.0, width=1.0, depth=0.4, send=0.35, gain_db=-5.8, **_X),
     "suck": dict(inst="riser", pan=0.0, width=1.0, depth=0.4, send=0.2, gain_db=-7.0, **_X),
@@ -121,7 +132,7 @@ ROLES = {
 }
 
 # the conductor's ride (dB on the players' dynamics, per section), from the battery
-RIDE = {"A2": -1.5, "A3": -1.5, "A4": -2.8, "A7": -2.4, "A10": -5.0, "A16": -1.0, "A17": -0.8}
+RIDE = {"A2": -2.3, "A3": -2.3, "A4": -3.5, "A7": -2.4, "A10": -5.0, "A16": -1.0, "A17": -0.8}
 # the drum hits share a bus limiter (score-mix domain, before the master), so no single stroke drives the master
 GROUPS = {"dr_": dict(ceiling_db=-9.0, release=0.08)}
 # the intended colour arc (median spectral centroid of the score stem, Hz): the point blinding, the race dark,
@@ -135,7 +146,9 @@ SYNC_TRIM = {("call_vla", 180.0): 0.15, ("desert_vc", 194.0): 0.06, ("desert_cb"
 
 # the kindling's cycles (kit) and A's own
 CYC_IGN = ("D6", "A6", "E6", "Bb5", "F6", "C6", "E6")          # the calm fire: Bbmaj9(#11), below notice
-CYC_RACE = ("D6", "Ab5", "E6", "F5", "C6", "Ab5", "E5")        # the towers seen again: the tritone in it
+CYC_PRIZE = ("A3", "Bb3", "A3", "G3", "A3", "Bb3", "C#4")       # the towers: the prize circled, low and close
+CYC_RACE = ("D4", "Eb4", "D4", "C4", "D4", "Eb4", "Ab4")        # the edge (and 56): D Phrygian, the tritone's jab
+DAMP = lambda u: dict(damp=True)                                # the race's cycle is damped: it ticks, never rings
 CYC_HEAL = ("D5", "E5", "A5", "D6", "E6", "A5", "E5")          # healed: seven eighths against the bar
 SHRINK = (("D6", "A5", "E6", "F5", "C6", "Bb5", "E5"), ("D6", "A5", "E6", "F5", "C6"), ("D6", "A5", "E6"), ("D6",))
 LOCK = ("D5", "A5", "D6", "E6")                                # locked to the bar (kit LOCK4 on D)
@@ -344,8 +357,9 @@ def ignition(S, bm, ev):
                     (cut - 0.4, base * 0.74), (cut + 0.4, base * 0.5), (end - 0.1, 0.03)]
         S.P(pn).d(*pts)
     sync(S, ig, "IGNITION: the bloom out of the breath (score stem)", "score", "bloom", 0.15)
-    # the calm fire's filaments, below notice: its cycle in sixteenths, pp, into the towers (where it is raced)
-    cycle(S, "glass", CYC_IGN, ig + 0.5, tw, 0.25, 0.06, 0.08, pan_amp=0.5, sync_first=False)
+    # the calm fire's filaments, below notice: its cycle in sixteenths, pp, cut off with the promise (v2: it ran
+    # on, bright, into the towers); the towers' cycle starts low and dark on 19 b1
+    cycle(S, "glass", CYC_IGN, ig + 0.5, cut, 0.25, 0.06, 0.08, pan_amp=0.5, sync_first=False)
     # THE PROMISE: one warm line, violas and cellos in unison, rising; cut off on 18 b3, a step short of its octave
     line = [("D4", 1.5), ("E4", 0.5), ("F4", 1.0), ("A4", 1.0), ("G4", 0.5), ("A4", 0.5), ("C5", 1.0)]
     for pn in ("prom_vc", "prom_vla"):
@@ -362,22 +376,28 @@ def ignition(S, bm, ev):
 # ---------------------------------------------------------------------------
 def towers(S, bm, ev):
     tw, giants, br, e0 = ev("towers"), ev("giants"), ev("breath_race"), ev("edge")
-    # A7(b9), the prize, built tower by tower (dark strings, soft entries)
-    entries = [(tw, "cb_q", "A1"), (tw, "vc_q", "A2"), (tw + 4, "vc_q", "E3"), (tw + 4, "vla_q", "G3"),
-               (tw + 8, "vla_q", "C#4"), (tw + 8, "vln2_q", "E4"), (tw + 12, "vln1_q", "Bb4"), (tw + 12, "vln2_q", "G4")]
+    # A7(b9), the prize, built tower by tower from the bottom, darkest first (v2; the user: the race's start read
+    # as upbeat): the root; then the tritone E3-Bb3 with the b9 over the root; then the diminished seventh closes
+    # (G3, C#4); the b9 on top at the giants' bar. The major third (C#) is only ever inside, never on top.
+    entries = [(tw, "cb_q", "A1"), (tw, "vc_q", "A2"), (tw + 4, "vc_q", "E3"), (tw + 4, "vla_q", "Bb3"),
+               (tw + 8, "vla_q", "G3"), (tw + 8, "vln2_q", "C#4"), (tw + 12, "vln1_q", "Bb4"), (tw + 12, "vln2_q", "G4")]
     for b, pn, p in entries:
         S.P(pn).n(p, b, br - b + 0.02, sync=(b == tw))
     for pn, lv in (("cb_q", 0.24), ("vc_q", 0.22), ("vla_q", 0.22), ("vln2_q", 0.2), ("vln1_q", 0.2)):
         first = min(b for b, q, _ in entries if q == pn)
         S.P(pn).d((first - 0.05, lv * 0.75), (first + 2, lv * 0.8), (giants, lv), (br - 0.5, lv * 1.3), (br, lv * 1.3))
     sync(S, tw, "THE TOWERS: A7(b9), the prize (basses)", "cb_q", "arrive:33")
-    # the cycle, raced: the prize's own arpeggio (A7b9) in sixteenths, rising from below notice
-    cycle(S, "glass", K.CYC8, tw, e0, 0.25, 0.1, 0.3, pan_amp=0.5, sync_first=False)
-    # low drums prepare: 1 | 1 3 | 1 3 | quarters | quarters and a timpani roll on A, into the breath
+    # the cycle, raced but smothered (v2: it was the prize's bright arpeggio, E5-E6 in the glass, and read as
+    # excitement): the prize circled low and close in sixteenths (the b9's sigh, the tritone's jab), damped, dark,
+    # rising from below notice
+    cycle(S, "cycle_dk", CYC_PRIZE, tw, e0, 0.25, 0.06, 0.2, pan_amp=0.35, sync_first=False, morph=DAMP)
+    # low drums prepare, a tightening pulse, not a drive: 1 | 1 3 | 1 3 | quarters | quarters and a timpani roll on
+    # A, into the breath; the timpani double it softly on the prize's root from bar 21 (no pickups, no accents)
     hits = [tw, tw + 4, tw + 6, tw + 8, tw + 10] + [tw + 12 + k for k in range(8)]
     for k, b in enumerate(hits):
-        S.P("dr_bdrum").n(60, b, 1.0, 0.16 + 0.24 * k / (len(hits) - 1), sync=(k == 0))
-    S.P("timp").n("A1", tw + 11, 1.0, 0.22)
+        S.P("dr_bdrum").n(60, b, 1.0, 0.14 + 0.24 * k / (len(hits) - 1), sync=(k == 0))
+        if tw + 8 <= b <= giants - 2:
+            S.P("timp").n("A1", b, 1.0, 0.13 + 0.03 * (b - tw - 8), maxlen=1.4)
     S.P("timp_roll").n("A1", tw + 16, br - (tw + 16))
     S.P("timp_roll").d((tw + 16, 0.08), (br - 0.2, 0.42))
     # the two giants: two trombones on opposite sides of the fire, on the prize's tritone (C#3, G3), and a sub on A
@@ -402,17 +422,16 @@ def edge(S, bm, ev):
         if b < roll or (b - roll) % 2 == 0:              # bar 30: beats 1 and 3 under the roll
             S.P("dr_taiko").n(60, b, 1.0, min(0.72, 0.38 + 0.24 * u + acc * 0.6), sync=(b == e0))
         b += 1
+    # the subdivisions (v2): a tightening pulse, not a groove. Only the low drum, softer than the beat and even:
+    # the offbeat eighths a heartbeat's echo (26-27), then every sixteenth (28-29); no high drum, no backbeat
     for k in range(int((e16 - e8) * 2)):
         t = e8 + 0.5 + k                                    # eighths: the offbeats
         if t < e16:
-            S.P("dr_tenor").n(60, t, 0.5, 0.34 + 0.08 * k / 16)
+            S.P("dr_tenor").n(60, t, 0.5, 0.26 + 0.06 * k / 16)
     t = e16
-    while t < roll - 1e-6:                                  # sixteenths: e / & / a
-        f = round((t - e16) % 1, 3)
-        if f == 0.5:
-            S.P("dr_tenor").n(60, t, 0.25, 0.44)
-        elif f in (0.25, 0.75):
-            S.P("dr_tenorhi").n(60, t, 0.25, 0.36 if f == 0.25 else 0.32)
+    while t < roll - 1e-6:                                  # sixteenths: e / & / a, even, slowly pressing
+        if round((t - e16) % 1, 3) > 0:
+            S.P("dr_tenor").n(60, t, 0.25, 0.25 + 0.07 * (t - e16) / (roll - e16))
         t += 0.25
     sync(S, e0, "THE EDGE: the taiko on the downbeat", "dr_taiko", "hit", 0.1)
     sync(S, e8, "the rhythm doubles: eighths", "dr_taiko", "hit", 0.1)
@@ -422,11 +441,15 @@ def edge(S, bm, ev):
     S.P("bdroll").d((roll, 0.22), (vx, 0.3), (ev("loudest"), 0.5), (ev("suck") - 0.1, 0.52))
     S.P("timp_roll").n("D2", roll, ev("suck") - roll, sync=True)
     S.P("timp_roll").d((roll, 0.25), (vx, 0.32), (ev("loudest"), 0.6), (ev("suck") - 0.1, 0.62))
-    # the spiccato ostinato: the corrupted call (D Ab D' Ab) spun at the drums' speed
-    # (sparse beats dense: at each doubling only one new layer takes the faster value; in the sixteenths the
-    #  middle strings run, the cellos and the first violins keep eighths)
-    fig = ("D3", "Ab3", "D4", "Ab3")
-    oct_ = {"vc_sp": 0, "vla_sp": 12, "vln2_sp": 12, "vln1_sp": 24}
+    # the spiccato ostinato (v2: insistent, never skipping; it was the corrupted call arpeggiated, D Ab D' Ab, up
+    # to D6 in the first violins, and bounced): the corrupted call ground into pitches that press. The cellos grind
+    # a repeated D that drops to the tritone below (D D Ab D); the violas hammer the tritone itself, pulled down a
+    # semitone and back (Ab Ab G Ab: stuck on the note that heals only when the giants open, 57 b1); from bar 28
+    # the second violins press the D against its flat second (D D Eb D) and the first violins double the violas'
+    # tritone an octave up. Nothing above D5. (Sparse beats dense: at each doubling one new layer takes the faster
+    # value; in the sixteenths the violas and second violins run, the cellos and first violins keep eighths.)
+    figs = {"vc_sp": ("D3", "D3", "Ab2", "D3"), "vla_sp": ("Ab3", "Ab3", "G3", "Ab3"),
+            "vln2_sp": ("D4", "D4", "Eb4", "D4"), "vln1_sp": ("Ab4", "Ab4", "G4", "Ab4")}
     for (b0, b1, step), parts in (((e0, e8, 1.0), ("vc_sp",)), ((e8, e16, 0.5), ("vc_sp", "vla_sp")),
                                   ((e16, roll, 0.5), ("vc_sp", "vln1_sp")), ((e16, roll, 0.25), ("vla_sp", "vln2_sp"))):
         for pn in parts:
@@ -434,7 +457,7 @@ def edge(S, bm, ev):
             while t < b1 - 1e-6:
                 u = (t - e0) / (roll - e0)
                 acc = 0.08 if k % 4 == 0 else 0.0
-                S.P(pn).n(m(fig[k % 4]) + oct_[pn], t, step, min(0.72, 0.42 + 0.18 * u + acc), sync=(t == e0))
+                S.P(pn).n(figs[pn][k % 4], t, step, min(0.72, 0.42 + 0.18 * u + acc), sync=(t == e0))
                 t += step
                 k += 1
     t = e0
@@ -446,10 +469,12 @@ def edge(S, bm, ev):
     # the roll in the strings: tremolo on the tritone, into the brink's clusters
     for pn, ps in (("vc_trem", ["D3", "Ab3"]), ("vla_trem", ["D4", "Ab4"]), ("vln_trem", ["Ab4", "D5"])):
         hold(S, pn, ps, roll, ev("suck"), sync=True)
-    # the corrupted call in the low brass at each doubling, fuller each time; the tritone held between
+    # the corrupted call in the low brass at each doubling, fuller each time; the tritone held between (v2: the
+    # horns join in unison with the trombones, low and covered, not an octave up: a rising horn call up there read
+    # as adventure)
     calls = [(e0, ("tbn_l", "tuba"), 0.36), (e8, ("tbn_l", "tbn_r", "tuba"), 0.4),
              (e16, ("tbn_l", "tbn_r", "tuba", "hn", "hn2"), 0.4), (roll, ("tbn_l", "tbn_r", "tuba", "hn", "hn2"), 0.46)]
-    reg = {"tbn_l": "D3", "tbn_r": "D3", "tuba": "D2", "hn": "D4", "hn2": "D4"}
+    reg = {"tbn_l": "D3", "tbn_r": "D3", "tuba": "D2", "hn": "D3", "hn2": "D3"}
     for b0, parts, v in calls:
         for pn in parts:
             r = m(reg[pn])
@@ -460,24 +485,27 @@ def edge(S, bm, ev):
             if b0 < roll:
                 S.P(pn).d((b0 + 7.8, v * 0.95))
         sync(S, b0, "the corrupted call in the low brass", parts[0], "arrive:50", 0.25)
-    # a sweet metallic ring on every surge: D major, far above the tritone (the gold is lovely: the horror)
-    RING = ("D7", "A6", "F#6", "A6")
-    b, k = e0, 0
+    # the gold's sweet ring (the gold is lovely: the horror). v2: it was a D-major figure on every beat far up
+    # (D7 A6 F#6 A6) with a glockenspiel, a tune, and read as excitement. Now a pure open fifth (D6 + A6), struck
+    # with each bar's first surge, and from 26 b1 (the rim crumbling under the gilded ones) with its third too:
+    # still lovely, a chime above the machine, never a tune, no major third
+    b = e0
     while b < vx - 1e-6:
         u = (b - e0) / (vx - e0)
-        S.P("ring").n(RING[k % 4], b, 1.0, 0.15 + 0.12 * u, pan=0.3 * np.sin(k * 1.7))
-        if k % 4 == 0:
-            S.P("glock").n(RING[0], b, 1.0, 0.1 + 0.07 * u)
+        beat = round((b - e0) % 4)
+        if beat == 0 or (beat == 2 and b >= e8):
+            for p, pan in (("D6", -0.25), ("A6", 0.3)):
+                S.P("ring").n(p, b, 1.0, 0.14 + 0.08 * u, pan=pan)
         b += 1
-        k += 1
     # the forge-stacks breathe like bellows: a low draw of air into every beat
     b = e0 + 1
     while b < vx + 1e-6:
         u = (b - e0) / (vx - e0)
         S.P("bellows").n(60, b - 0.55, 0.55, 0.26 + 0.2 * u, f0=140.0, f1=900.0, curve=2.2)
         b += 1
-    # the cycle keeps racing (the prize's arpeggio) under it all; a sub under the rim
-    cycle(S, "glass", K.CYC8, e0, vx, 0.25, 0.18, 0.23, pan_amp=0.5, sync_first=False)
+    # the cycle keeps racing, smothered, under it all (v2: it was the prize's bright arpeggio in the glass): the
+    # race's own cell, D Eb D C D Eb Ab (D Phrygian, the tritone's jab), damped; a sub under the rim
+    cycle(S, "cycle_dk", CYC_RACE, e0, vx, 0.25, 0.2, 0.26, pan_amp=0.35, sync_first=False, morph=DAMP)
     S.P("sub").n("D1", e0, ev("suck") - e0, atk=0.05, rel=0.15)
     S.P("sub").d((e0, 0.3), (roll, 0.42), (ev("loudest"), 0.5), (ev("suck") - 0.1, 0.5))
 
@@ -706,8 +734,10 @@ def light(S, bm, ev):
         S.P(pn).d((heart + 1.5, 0.25), (lantern - 1.0, 0.16), (lantern - 0.1, 0.12))
     # the cycle: sixteenths while the towers still race (56), eighths once the giants open (57-58), quarter notes
     # locked to the bar from 59 b1; from the heart, only D
+    # (v2: bar 56 is the race's own smothered cycle, as in the edge, fading as the surges stop; it clears into the
+    #  glass as the giants open)
     wm = warm_morph(0.0, 0.0)
-    cycle(S, "cycle", CYC_RACE, bl, go, 0.25, 0.22, 0.2, pan_amp=0.45, morph=wm)
+    cycle(S, "cycle_dk", CYC_RACE, bl, go, 0.25, 0.4, 0.22, pan_amp=0.35, sync_first=False, morph=DAMP)
     cycle(S, "cycle", CYC_HEAL, go, lock, 0.5, 0.22, 0.22, pan_amp=0.35, morph=wm, sync_first=False)
     cycle(S, "cycle", LOCK, lock, heart, 1.0, 0.24, 0.24, pan_amp=0.25, morph=wm, sync_first=True)
     cycle(S, "cycle", ("D5", "D6"), heart, lantern, 1.0, 0.24, 0.2, pan_amp=0.15, morph=wm, sync_first=False)

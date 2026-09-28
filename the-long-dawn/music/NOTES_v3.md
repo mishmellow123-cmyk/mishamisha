@@ -8,7 +8,7 @@
 | A fallback | `music/out/v3/fallback_A.wav` (stems `fallback_A_score.wav`, `fallback_A_sfx.wav`) | **DONE 18:58Z** (re-rendered on the current engine so the file matches the committed source): battery all PASS (level map 20/20, sync 8/8, notes 0, clicks 0) | COMPOSER-A |
 | B fallback | `music/out/v3/fallback_B.wav` (stems `fallback_B_score.wav`, `fallback_B_sfx.wav`) | **DONE 11:45Z**: battery all PASS (level map 14/14, sync 5/5, notes 0, clicks 0) | - |
 | C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | **DONE 18:54Z**: battery all PASS (level map 28/28, sync 7/7, notes 0, clicks 0). Fix: the ride (C2 bar-2 horn -6.5 dB, C12 piano -4.5 dB) + C11's race drone now falls away after the slip into C12's black (its tail was C12's peak, -6.4 LU) | COMPOSER-A |
-| A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`; review copy `score_A.wav`) | **FINAL 20:35Z** (render 6): battery ALL PASS: level map 20/20, rules 3/3 (the brink A's loudest, the edge -1.5 LU under it; the blue hour -5.7 LU under it; the first fire -15.5 LU), centroid arc 5/5, sync 55/55, notes 0, clicks 0, -16.07 LUFS, TP -1.29 dBTP, 12,960,000 samples | COMPOSER-A |
+| A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`; review copy `score_A.wav`) | **FINAL v2 (28 Sep, COMPOSER-A2): the race re-voiced as dread** (see COMPOSER-A2 below). Battery ALL PASS: level map 20/20, rules 3/3 (the edge -1.6 LU under the brink; the blue hour -4.9; the first fire -14.6), centroid arc 5/5 (A7 275 Hz), sync 55/55, notes 0, clicks 0, -16.03 LUFS, TP -1.29 dBTP. **v1 kept for A/B:** `final_A_v1.wav` (+ `final_A_v1_score.wav`, report `analysis/v3/final_A_v1_report.txt`, manifest `cache/v3/manifest_final_A_v1.json`) | COMPOSER-A2 |
 | C score (THE LAST PAGES) | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | **FINAL 21:05Z**: battery all PASS (format/length/stems, -16.03 LUFS, TP -1.30 dBTP; level map 28/28; sync 51/51; rules 3/3: the slit is C's loudest, the dawn -2.5 LU under it, the prologue -8.7 LU; breaths 44-56 dB deep; notes 0; clicks 0). Review sheet `analysis/v3/final_C/review_C.jpg` | COMPOSER-C |
 | B with REAL effects (SOUND) | `music/out/v3/sound_B.wav` (stems `sound_B_score.wav` = final_B's score through the same master, `sound_B_sfx.wav` = `sfx_B.wav`) | **PASS 21:10Z**: battery all PASS (level map 14/14, dawn -2.3 LU, first half -6.1 LU, sync 25/25, notes 0, clicks 0); effects hits on their frames 15/15 (strikes 0.0-0.1 ms). 48 kHz/24-bit, 10,880,000 samples, -16.05 LUFS, TP -1.30 | SOUND |
 
@@ -62,6 +62,39 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
   runs your battery. The cue sheets stay locked. Where the picture changed, the recipe says why. B is THE VIGIL, so
   `B.his_fire` is silent (the far answer is a pinprick) and `B.x.flare` is added (her own flare, 40 b2).
 
+## PICTURE SYNC: C PAGES (SOUND-C <-> PAGES-C; SOUND-C from 28 Sep 00:40Z)
+The user: C's effects are "off with the visuals ... around the paper/page stuff mostly". Measured from the frames of the
+23:36Z master (`src/sync_audit_v3.py`), final_C's page sounds peak 15-23 f BEFORE the leaf moves (they sit on the cue
+frame; the picture turns later). SOUND-C now places every page/pen/burn on the MEASURED picture frame. The table the
+sound reads is `sound/picture_sync_C.json` (`f` = the frame the sound's hit lands on). **PAGES-C: if you re-time or
+redraw any of these, write your new frame in that JSON (or here) and tell SOUND-C: a re-sync is ~3 min.**
+Sync definitions: a page = the frame the leaf CROSSES OVER (its fastest frame; the lift's rustle rises before it, the
+landing follows). A burn-through = the frame the hole OPENS (or, for an edge sweep, mid-sweep; the crackle rises from
+the edge's first frame). A pen = its first and last stroke (the quill's level follows the drawing between them).
+
+| event | cue f | final_C heard | picture f (measured) | now |
+|---|---|---|---|---|
+| riffle | 320 | 320 (swell from 303, one leaf) | flutter 320-348, lands 349 | the flicking take, bursts 320-348 |
+| pen, the mountain | 336.8 | 337-394 | first stroke 355, last 535 (densest 455-491) | quill 355-542 following the drawing |
+| page_turn | 560 | 560 (swell from 542) | lift 564, crosses 575, lands 579 | 575 |
+| burn, letters | 840 | 841 | hole opens 842 | 842 |
+| burn, the deep | 1680 | 1681 | still 1680-85; edge 1686-1700 | rises 1686, peak 1694 |
+| pen, the deep | 1689.6 | 1690-1906 | first stroke 1705, to ~1912 | 1705-1911 |
+| burn, the Eye | 1920 | 1920 | glow 1921, hole 1924 | 1924 |
+| burn, the map | 4160 | swell 4150 -> 4160 | HARD CUT, no burn (X1 not built) | starts ON the cut |
+| burn, remains | 5600 | swell 5594 -> 5600 | HARD CUT, no burn (X1 not built) | starts ON the cut |
+| roads | 5606 | 5611 | flames leave the ring ~5604 | 5604 |
+| page, plenty | 6160 | 6160 | hard cut; NOTHING turns | silent (a turn into C25 gets it back) |
+| page, havens | 6400 | 6400 (swell from 6382) | lift ~6392, crosses 6417, lands 6422 | 6417 |
+| page, blank | 6720 | 6720 (swell from 6702) | lift 6708, sweep to 6741, lands 6743 | 6741 |
+| page, blank_2 | 6760 | 6760 (swell from 6740) | lift 6766, crosses 6781, lands 6783 | 6781 |
+| pen T14 | 6790 | 6790 | write-on 6793-6815 | 6793 |
+| burn, title | 6980 | 6980 | first spark 6983, letters 6983-7016 | rises 6983, peak 6995 |
+On the picture already (<= 2 f): pen T1 400, T7 1710, T9 3640; the drop 2200; strikes 2980/3009/3178; the catch 3316;
+beacons 1,2,4,5,6,7; the seethe's flare 5420 (ring_C). The council (4480-5679) is synced to its v1 frames (the dips
+now 5537-5569, when the torches are seen going in): **re-check when the Cycles rebuild lands.** Not measurable (slates
+in the master): the snow strike ~2900, the roar 3360, the cold tick 3400.
+
 ## PICTURE SYNC: C10 THE MIRROR (MIRROR lane, 21:10Z; for COMPOSER-C and SOUND)
 - Picture is `renders/mirror_C` (C 2080-2319), built to barmap_C: the drop STRIKES the water on **f2200 exactly (28 b3)**:
   put the drop's splash transient there (`sfx("drop", ..., ev("drop"))` already does). The falling glint is only
@@ -81,6 +114,36 @@ stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
 - **COMPOSER-C owns:** `src/score_v3_C.py`, the C score row.
 - **Renders:** one each at a time (the Mac is at ~4.4 of 5 GB swap); outputs never collide (`final_A` vs `final_C`).
 - **Git:** commit with explicit paths only (`git commit -m ... -- <your paths>`).
+
+## COMPOSER-A2 (cut A) · STATE 28 Sep: FINAL v2, THE RACE RE-VOICED AS DREAD
+- **The note (the user, bars 1-49):** "great in parts but ... a bit discordant at other times (e.g. during the race it was a bit
+  too upbeat ... at the start of the towers rising)". **Cause, measured with `who_v3.py`:** at the towers' start (60-65 s) the
+  thinking cycle, the prize's bright arpeggio in the glass (E5-E6, sixteenths), led the score by 7.8 dB, and it led the edge's
+  first bars too (-30.3 LUFS, over the taiko): a sparkling synth arp over a drum build reads as adventure.
+- **What changed (all in `src/score_v3_A.py`, v2 comments in place):**
+  * A5 -> A6 turn: the calm fire's bright cycle is cut off with the promise (18 b3) instead of running on into the towers.
+  * A6: the prize A7(b9) built from the bottom, darkest first (root; E3-Bb3 tritone + b9; the dim7 closes, G3 C#4; the b9 on
+    top); its major third only ever inside. The cycle stays sixteenths but smothered (new seat `cycle_dk`: the same FM, ratio
+    3.5, low index, low-passed, damped; the prize circled low and close, A Bb A G A Bb C#), now under the strings (-44.6 vs
+    the basses' -40.6). The drums: no pickup; soft timpani on A under bars 21-22; a tightening pulse.
+  * A7: the spiccato insistent, not skipping (cellos D D Ab D; violas hammer the tritone Ab Ab G Ab; from 28 second violins
+    D D Eb D, first violins the violas' tritone an octave up; nothing above D5; it went to D6). Subdivisions on the low tenor
+    only, even (no tenor_hi backbeat or gallop). The horns join the corrupted call in unison with the trombones (D3), not an
+    octave up. The gold's ring is a pure fifth (D6 + A6) on each bar's first surge (and its third from 26), not a D-major
+    figure on every beat far up with a glockenspiel. The cycle smothered (D Eb D C D Eb Ab). Doubling scheme, taiko, brass
+    calls, bellows, sub, roll and brink untouched.
+  * **Other mismatches found in the scan:** (1) the A5 -> A6 carry-over above; (2) A16 bar 56 recalled the race in the bright
+    glass: now the race's own smothered cycle, clearing into the glass as the giants open (57 b1). A1-A5, A8-A20 checked
+    against the locked sheet: no other place where the music's feeling contradicts the picture.
+- **Levels:** a darker race lowers the film, the master gain rises, and the brink is pinned by the limiter, so every untouched
+  section creeps up (+0.6 LU over the two renders). RIDE A2 -2.3, A3 -2.3, A4 -3.5 (were -1.5/-1.5/-2.8). Margins now thin:
+  A2, A3, A4 and A10 are 0.2 LU from their band tops, A17 0.3, the edge rule 0.1 (it was 0.0 in v1). If a re-master (SOUND's
+  `sound_v3.py`) tips one: trim that section's RIDE by 0.3 (A10: check the silence-piano syncs, +/-10 ms, after any change).
+- **B is dropped. Proposal only (not done):** B's ending passed the ANSWER note by note from horn to farther horn, each then
+  silent, and brought back the dead of night's high harmonic at the hand-off. For A20: as the title crumbles, pass the ANSWER
+  (D C# B F#) outward, horn -> far -> farther, one note each, each falling silent, over the D add9; and let A11's pure harmonic
+  A5 (the false dawn's beating A made pure) return ppp as the rose sky pales. It closes A's false-dawn / true-dawn circle and says
+  "carried by many" without getting louder. About one render; the blue hour's whole theme and cadence stay as they are.
 
 ## COMPOSER-A (cut A) · STATE 20:40Z: BOTH TASKS DONE
 - **1. C fallback: DONE** (table). The ride alone fixed C2 but not C12: C12's loudest 3 s was C11's race drone
