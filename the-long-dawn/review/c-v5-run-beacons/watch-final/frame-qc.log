@@ -1,0 +1,5 @@
+Frames 4480-4719 (inclusive): 240/240 valid.
+File issues: 0 missing, 0 undecodable, 0 wrong size, 0 unsupported format.
+Review candidates: 0 black, 0 constant, 0 near-constant, 0 transparent; 0 duplicate adjacent pairs, 0 pop transitions.
+Adjacent coverage: 239/239; joins: 0 measured, 0 unavailable, 0 outside range (0 extra endpoint reads). Candidates require review.
+JSON: $WORKSPACE/work/c-v5-watch-final-audit/frame-qc.json
