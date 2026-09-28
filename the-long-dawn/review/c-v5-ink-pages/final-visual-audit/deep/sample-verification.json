@@ -1,0 +1,669 @@
+{
+  "utc": "2026-09-28T09:01:32.312933+00:00",
+  "receipt": "<validation-root>/c5-page-review/book_C5_deep_abandoned-final.json",
+  "receipt_sha256": "e38f4aa429647f18703f9321e06a7ce6ded0234806a6cfbba6139cc3489de73c",
+  "receipt_claimed_status": "verified",
+  "sampled_rgb_frames": 30,
+  "total_rgb_frames_in_shot": 240,
+  "sampled_matte_frames": 30,
+  "total_matte_frames_in_shot": 240,
+  "sample_frames": [
+    4240,
+    4288,
+    4336,
+    4352,
+    4353,
+    4354,
+    4355,
+    4356,
+    4357,
+    4358,
+    4359,
+    4360,
+    4361,
+    4362,
+    4363,
+    4364,
+    4365,
+    4366,
+    4367,
+    4368,
+    4369,
+    4370,
+    4371,
+    4372,
+    4373,
+    4374,
+    4375,
+    4400,
+    4432,
+    4479
+  ],
+  "native_full_frames_viewed": [
+    4240,
+    4360,
+    4479
+  ],
+  "consecutive_strip": [
+    4352,
+    4353,
+    4354,
+    4355,
+    4356,
+    4357,
+    4358,
+    4359,
+    4360,
+    4361,
+    4362,
+    4363,
+    4364,
+    4365,
+    4366,
+    4367,
+    4368,
+    4369,
+    4370,
+    4371,
+    4372,
+    4373,
+    4374,
+    4375
+  ],
+  "keyframes": [
+    4240,
+    4288,
+    4336,
+    4360,
+    4400,
+    4432,
+    4479
+  ],
+  "source_sha256": {
+    "shots/map/book_c_v5.py": "8ac783e6a3edf7e53f49bcf6e5abe66033332a3638ad52e38c663495b41c7f2f",
+    "shots/map/v5_inkpages.py": "00a1d80055f8b73e71fa131c9af57247c0653179bca4829c0ddf68c8aefbfa05",
+    "shots/map/pages.py": "e971ef31d2d2cb8c212f1837a6382cdc6115653ec7d026a7135a0ae25e650dc1"
+  },
+  "source_hashes_match_receipt": true,
+  "samples": [
+    {
+      "frame": 4240,
+      "rgb": {
+        "sha256": "8f38dfd571698023e0f05aaefbb55b89525e11e122f928e63b23e91a408f423a",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4288,
+      "rgb": {
+        "sha256": "dddafc3b12d41c0a3a0abec4723eaaaf18d3fc039d2431eb9b52ba5e9442984b",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4336,
+      "rgb": {
+        "sha256": "e31245b814485c372e72f06a52c8c3069f1254792b0c0331be668bdaa71ba2e9",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4352,
+      "rgb": {
+        "sha256": "237d6bd78545dc529e2f507bd1654adbc359615bd99efa6a4b48560073efff45",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4353,
+      "rgb": {
+        "sha256": "1cbd7637213e4419a41478a1b67d740f4fa11e811d7f756208fd482f4ca97b2b",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4354,
+      "rgb": {
+        "sha256": "bc1a023a35514259a47c4d402e6f83f28e49ecd1c4697c8c741b69957e21de67",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4355,
+      "rgb": {
+        "sha256": "84387218dd2cf6c8e8cb9891a5e38e9a83599756fcce097cb5c5de91849f43eb",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4356,
+      "rgb": {
+        "sha256": "0015a9dd87518c5450cf378263dac8b765b672ac405e807156e3671249112bdb",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4357,
+      "rgb": {
+        "sha256": "bac548f1bea3feb01b31ea88f2709fd8aa084875a4b7321c8a5da7cb0c040cb3",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4358,
+      "rgb": {
+        "sha256": "3efce5dacbd32e0b97d1538b95fce5ec6c3b30ca6f8a685c35c81583cb678fa2",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4359,
+      "rgb": {
+        "sha256": "b2d72503496a385a546d885190cd0490e8fc97c14f71aee06c3cf6e3849ca50e",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4360,
+      "rgb": {
+        "sha256": "1aad0db8bcb7e75f9cb4280a37761a683e526f20d231de12146c962b8a942f6a",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4361,
+      "rgb": {
+        "sha256": "ca4238462a84f1b7676e9403272fd5eaf2fe201157281b47ba88c8fe3171985b",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4362,
+      "rgb": {
+        "sha256": "985e1e704e26a240d6aa6c27a397ac57ba2b7c1fa1326da0fff5bd2005722d08",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4363,
+      "rgb": {
+        "sha256": "f55fffcaa6c61b87da7a122a0e1eab21b974d6c235da26b2ce3677114c139616",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4364,
+      "rgb": {
+        "sha256": "1715644582c5735191f9459853347cabde4f04c6a9bc58b850a803db9834aca6",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4365,
+      "rgb": {
+        "sha256": "4ea508c334028fb477e1f4479349dd5db0363f945e56403e7d69edbf0bcfcfd6",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4366,
+      "rgb": {
+        "sha256": "5642cc9b5362906e42b02f1cb1cf18c84172b5dc222864e7cc67cb200dfd6ac0",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4367,
+      "rgb": {
+        "sha256": "97dc6f9dd45400aaac9cbdd6b9d67472d757c0d2505ced39968239217d8ba2ea",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4368,
+      "rgb": {
+        "sha256": "6caa7b4c1d47e4750553435c43def61cb6b2a10f1bd418b544698eb0f6090103",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4369,
+      "rgb": {
+        "sha256": "1e2a07b9045540140ea72c05e0827234df3787c112d6564e0cb11ebb66e7a095",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4370,
+      "rgb": {
+        "sha256": "d4540eb0673c408736b0a6ee896907c70aeeb9728326591c12515794342fd64f",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4371,
+      "rgb": {
+        "sha256": "8a873e72c90e39fd429ff183c5e6e5549f760c6ec906c759e988930dc1d250ee",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4372,
+      "rgb": {
+        "sha256": "cfa6bf3794c4b59d42d045f85ea47fbe969217694490d5948602711e09b3a1a8",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4373,
+      "rgb": {
+        "sha256": "1c053a7bffebbce62eb3203e639d664b2ece707cb5b671d827b61a405128efbe",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4374,
+      "rgb": {
+        "sha256": "138a4a7b0dc9e81d3c5570fc2970d1a9da485776c5975fc735ab88fd5320dfe5",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4375,
+      "rgb": {
+        "sha256": "5dfcd7da164c669bd588c5b6ed3f8872953c22c509efb176b26f2c917fd631d5",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4400,
+      "rgb": {
+        "sha256": "ede5fddac43751bdbbf3a09a0da2de409161e75d2b421ad4d1d18491d8b23b37",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4432,
+      "rgb": {
+        "sha256": "e19d076f89c484146bea9247114bc0bcb65715db90c28f6abc3c038b45710a1e",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    },
+    {
+      "frame": 4479,
+      "rgb": {
+        "sha256": "3ddf5096c2b42579ca31558e6d226837133ddd9b6305eaf6213845792ea5513d",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      },
+      "matte": {
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "matches_receipt": true,
+        "decoded_dimensions": [
+          1920,
+          804
+        ]
+      }
+    }
+  ],
+  "limits": "Bounded visual and source/hash sample audit; no full numerical QC rerun, playback, audience or editorial-join approval.",
+  "_publication": {
+    "original_audit_file_sha256": "ecd2ae54dd1639cf65bacb06065511903b631a6a200fd250a47127c19719c954",
+    "original_delivery_receipt_sha256": "e38f4aa429647f18703f9321e06a7ce6ded0234806a6cfbba6139cc3489de73c",
+    "transformations": [
+      "Private absolute paths normalized to <validation-root> or ~/ldfarm."
+    ],
+    "limits": "Audit facts and sample/source/receipt hashes are preserved; this is a normalized public copy."
+  }
+}

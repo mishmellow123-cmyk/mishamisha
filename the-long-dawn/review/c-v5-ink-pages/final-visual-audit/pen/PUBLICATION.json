@@ -1,0 +1,74 @@
+{
+  "published_utc": "2026-09-28T09:08:40.676836+00:00",
+  "source_audit_folder": "<validation-root>/c-v5-pen-final-audit",
+  "raw_mirror": "~/ldfarm/comms/files/C5_pen_final_audit/",
+  "sample_pairs": 26,
+  "original_delivery_receipt_sha256": "c538ee84db0c6c861140cc7788aeb30d7560d39145c27812e99a63517fc5b17b",
+  "files": [
+    {
+      "file": "REPORT.md",
+      "original_sha256": "2045a471cb34a1d712d74fd286586f560bd5cb10004eabeb5957b38ab5549c35",
+      "public_sha256": "6efc0e4b8d03105446a1798cbe83761c8a6668af918bd885750632a4519b97a9",
+      "raw_mirror_sha256": "2045a471cb34a1d712d74fd286586f560bd5cb10004eabeb5957b38ab5549c35",
+      "transformations": [
+        "Handback link adjusted for public package location.",
+        "Helper-script link omitted; helper scripts are outside this publication."
+      ]
+    },
+    {
+      "file": "evidence.json",
+      "original_sha256": "1a54f3d84d775df418311fe34c70ba949c22edc4789c85cf64d1673e87748eff",
+      "public_sha256": "80abe9c81edb2cdbacdce2bb6d3b63377270121e4770bac72ca05559cce920fa",
+      "raw_mirror_sha256": "1a54f3d84d775df418311fe34c70ba949c22edc4789c85cf64d1673e87748eff",
+      "transformations": [
+        "Receipt path expressed relative to the local validation root."
+      ]
+    },
+    {
+      "file": "key-composition.png",
+      "original_sha256": "052232dbdb57739cc2722ed0ff9436c493bd5b0856bd80df34a66b508e755797",
+      "public_sha256": "052232dbdb57739cc2722ed0ff9436c493bd5b0856bd80df34a66b508e755797",
+      "raw_mirror_sha256": "052232dbdb57739cc2722ed0ff9436c493bd5b0856bd80df34a66b508e755797",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "key-gutter-native.png",
+      "original_sha256": "194f406cd959323f85d76ba834bbaad0aded93e86c0390a04a1b7357a1344e56",
+      "public_sha256": "194f406cd959323f85d76ba834bbaad0aded93e86c0390a04a1b7357a1344e56",
+      "raw_mirror_sha256": "194f406cd959323f85d76ba834bbaad0aded93e86c0390a04a1b7357a1344e56",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "key-pen-native.png",
+      "original_sha256": "750331c923e6b53e508ed106984b1e5a4518326dc2f53d39abea74d7ff7d7fd7",
+      "public_sha256": "750331c923e6b53e508ed106984b1e5a4518326dc2f53d39abea74d7ff7d7fd7",
+      "raw_mirror_sha256": "750331c923e6b53e508ed106984b1e5a4518326dc2f53d39abea74d7ff7d7fd7",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "motion-composition-5550-5573.png",
+      "original_sha256": "2585379b9c882ba9a0cac69629005074c52c7f166238ae3c3c365510fb6017a0",
+      "public_sha256": "2585379b9c882ba9a0cac69629005074c52c7f166238ae3c3c365510fb6017a0",
+      "raw_mirror_sha256": "2585379b9c882ba9a0cac69629005074c52c7f166238ae3c3c365510fb6017a0",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "motion-nib-native-5550-5573.png",
+      "original_sha256": "b714b0316259ea5db9e71921f8fb1b7d31686c73996218e801538a1d4b821cc0",
+      "public_sha256": "b714b0316259ea5db9e71921f8fb1b7d31686c73996218e801538a1d4b821cc0",
+      "raw_mirror_sha256": "b714b0316259ea5db9e71921f8fb1b7d31686c73996218e801538a1d4b821cc0",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    }
+  ],
+  "policy": "Reports/evidence/images only. Helper scripts excluded. Original local audits and delivery receipts unchanged."
+}
