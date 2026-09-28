@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~07:30Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-28 ~07:50Z**, by the director (Claude, Opus 5.5).
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -169,6 +169,7 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
     The user flagged "the walking at around 27s in the short vid is very glitchy".
   - **The race rebuild** (A6-A8 in A's real landscape; A16-17 held). The user: "really don't love the race bit... feels so random... too abstracted, visually especially". Rebuild it in the real world, and reuse the best of the old ember race elsewhere if there's a good way. The RACE-A lane stalled.
   - **A's ENDING:** "decide after C". C is now pause/stop, so propose an A ending consistent with it and ask the user.
+- **The user on the new A preview** (`A_bars54-81_watchers-to-title.mp4`, 28 Sep ~07:45Z): "good progress! Not perfect - but super directionally strong in several ways so keep it up."
 - **The user's A notes:** "some bits are pretty damn difficult to track/understand... some of the captions aren't remotely clear... the race was a bit too upbeat... unevenly abstracted". Clarity work is in `review/A_CLARITY.md` and `review/A_FIX_NOTES.md`.
 
 ## 4. Pipeline and machines
