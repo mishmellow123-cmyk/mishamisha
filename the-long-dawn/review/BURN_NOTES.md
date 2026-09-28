@@ -11,7 +11,7 @@
   frames; STRIP24_866-889.jpg; STILL_898_975.jpg; C5_burn_now_vs_footage.mp4: top now, bottom footage, 841-1039).
   Frames: session scratchpad `burn/full3/` (199 JPGs; delete when superseded).
 * Footage: `assets/burn_footage/` (7 clips + the 4K of 8828893, ~175 MB; mp4s git-ignored; LICENSES.md committed).
-* Code: `shots/map/ftburn.py` (committed 7f6ffdd; the wash fix after it is uncommitted until the next commit):
+* Code: `shots/map/ftburn.py` (committed 7f6ffdd + 72f9625):
   `geo`, `probe`, `c5 --frames --out [--speed --gain --pool --grade --e15 --layers]`. Page plate = book_C f840
   reprojected per frame through cam_letters (a leaf ray-cast in numpy); footage -> leaf by a similarity (K_CM 0.0106
   cm per 4K px, birth (2545,1425) pinned to Fw, footage-up = the page's far side); hole = running union of a green
