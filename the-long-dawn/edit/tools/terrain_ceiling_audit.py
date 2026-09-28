@@ -135,9 +135,12 @@ def main():
     cv2.setNumThreads(1)
     print(f'Loading {args.shot} adapter (first use can compile render kernels)', flush=True)
     WD, render, reset, scope, source = adapter(args.shot, args.scale)
+    # Shot imports load look.py, which resets OpenCV to two threads.
+    cv2.setNumThreads(1)
     march = WD.march
     args.out.mkdir(parents=True, exist_ok=True)
     report = dict(shot=args.shot, scope=scope, scale=args.scale, threads=args.threads,
+                  opencv_threads=cv2.getNumThreads(),
                   head=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
                   source=str(source.relative_to(ROOT)), source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
                   harness_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
