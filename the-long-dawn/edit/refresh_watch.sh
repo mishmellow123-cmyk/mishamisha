@@ -31,7 +31,7 @@ def dmt(d):
         return os.stat(d).st_mtime_ns
     except OSError:
         return 0
-for c in 'ABC':
+for c in os.environ.get('FILMS', 'AC'):                # film B was dropped (user, 28 Sep)
     h, have = hashlib.sha1(), 0
     for v in ((None, 'codedtowers') if c == 'A' else (None,)):
         for s in AS.EDL.EDL[c]:
@@ -95,7 +95,7 @@ while :; do
   : > "$RUN.all"
   export CUTS="${cuts% }"
   fail=0
-  tc=$(echo "$CUTS" | tr ' ' '\n' | grep -E '^[AB]$' | tr '\n' ' ' || true)
+  tc=$(echo "$CUTS" | tr ' ' '\n' | grep -E '^A$' | tr '\n' ' ' || true)
   if [ -n "${tc// /}" ]; then                 # the ember titles (A20, B14) follow their plates' fires
     export TITLE_CUTS="${tc% }"; step bash edit/title_v3.sh || fail=1; unset TITLE_CUTS
   fi

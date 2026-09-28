@@ -3,7 +3,7 @@
 # Everything in the kit is regenerated; the critic judges from it without watching video:
 #   ~/mishamisha/_local_logs/review/h9/  INDEX.md  COVERAGE.md  TEXT.md
 #     {A,B,C}_overview.jpg  {A,B,C}_bars_<a>-<b>.jpg  A_ALT_codedtowers_bars_<a>-<b>.jpg  stills/<film>/*.jpg
-# Options (env): CUTS="A B C" (default), WORKERS=3.
+# Options (env): CUTS="A C" (default; film B was dropped 28 Sep), WORKERS=3.
 set -euo pipefail
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 cd "$(dirname "$SELF")/.."
@@ -18,5 +18,5 @@ if [ ! -s edit/cache/x1_letters_C_test.mp4 ]; then
   git -C .. show origin/claude/v3-map:the-long-dawn/review/v3/map_X1_letters_to_fire.mp4 \
     > edit/cache/x1_letters_C_test.mp4 2>/dev/null || rm -f edit/cache/x1_letters_C_test.mp4
 fi
-CUTS="${CUTS:-A B C}"
+CUTS="${CUTS:-A C}"
 python3 edit/h9_kit.py --cuts "${CUTS// /}" --workers "${WORKERS:-3}"

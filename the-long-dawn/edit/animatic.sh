@@ -3,7 +3,7 @@
 # Re-run it as renders land; anything missing is a slate at the right duration. Outputs:
 #   ~/mishamisha/_local_logs/animatic/{A,B,C}_animatic.mp4   (+ A_animatic_codedtowers.mp4 once ALT frames exist)
 #   edit/NOTES_v3.md COVERAGE block, edit/edl/edl_{A,B,C}.json
-# Options (env): CUTS="A B C" (default), WORKERS=3, CLEAN=1 (no burn-ins), VARIANT=1 (force A's ALT master).
+# Options (env): CUTS="A C" (default; B dropped 28 Sep), WORKERS=3, CLEAN=1 (no burn-ins), VARIANT=1 (force A's ALT master).
 set -euo pipefail
 SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 cd "$(dirname "$SELF")/.."
@@ -18,7 +18,7 @@ if [ ! -s edit/cache/x1_letters_C_test.mp4 ]; then
   git -C .. show origin/claude/v3-map:the-long-dawn/review/v3/map_X1_letters_to_fire.mp4 \
     > edit/cache/x1_letters_C_test.mp4 2>/dev/null || rm -f edit/cache/x1_letters_C_test.mp4
 fi
-CUTS="${CUTS:-A B C}"
+CUTS="${CUTS:-A C}"
 WORKERS="${WORKERS:-3}"
 EXTRA=""
 [ "${CLEAN:-0}" = "1" ] && EXTRA="--clean"

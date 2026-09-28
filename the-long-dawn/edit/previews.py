@@ -29,6 +29,7 @@ OUT = os.path.expanduser('~/Downloads/The Long Dawn v3 - PREVIEWS')
 MANIFEST = os.path.join(OUT, '.previews.json')
 FPS, MIN_F, EDGE_BLACK = 24, 600, 24
 OK = {'RENDERED', 'STAND_IN', 'PROXY', 'BLACK'}
+FILMS = 'AC'                     # the deliverables: A (+ A's ALT master) and C; film B was dropped (user, 28 Sep)
 # renders that count as rendered but are known to be replaced (director): named in the README
 TIMING = {'accord': "a v1 timing render (COUNCIL-C's rebuild replaces it)"}
 VUI = D.VUI
@@ -148,7 +149,7 @@ def main():
     man = json.load(open(MANIFEST)) if os.path.exists(MANIFEST) else {}
     stamp = time.strftime('%d %b %H:%MZ', time.gmtime())
     lines, keep, new = [], set(), []
-    for cut in 'ABC':
+    for cut in FILMS:
         mov = os.path.join(D.DELIVERY, f'{cut}_master.mov')
         if not os.path.exists(mov):
             continue
