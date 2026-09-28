@@ -18,6 +18,16 @@ All masters: 48 kHz / 24-bit / stereo WAV, exactly the cut's length (A 6,480 f =
 stem-linked `<name>_score.wav` + `<name>_sfx.wav` (score + sfx = master).
 
 ## SOUND (real effects lane, from 19:00Z): THE INTERFACE + STATE (COMPOSER-A, COMPOSER-C, EDIT: please read)
+**SOUND-C STATE 28 Sep 01:20Z (SOUND retired; SOUND-C owns the lane):** C: `sound_C.wav` APPROVED (every page/pen/burn
+on its measured frame, `sound/picture_sync_C.json`; see PICTURE SYNC: C PAGES). A: interim `sound_A.wav` with the first
+fire laid on the measured breaths (`sound/picture_sync_A.json`: the ember's three blows 3447/3479/3513, the puff 3556, the
+catch 3563 now heard + a growing fire into the roar, the night wind -6 dB under the take, watch-fires 2-4 at distance).
+WAITING ON: A-FIX's new first-fire frames (crop, no plume, roar ramp, B's reveal at 3612-3759) -> re-measure + re-sync;
+COMPOSER-A2's new premaster -> `python sound_v3.py A` re-masters it (the interim battery's 3 A20 sync fails are A2's
+in-progress score source vs the old premaster, not effects); PAGES-C pages_book + X1 at 4160/5600 and the Cycles council ->
+re-measure C. How: `python src/sync_audit_v3.py extract|signals <cut>`, then `show`/`ink`/`sheet` around the events,
+update the JSON, `python ~/mishamisha/_local_logs/renderq.py -- python sound_v3.py <cut>` (~4 min), check the moved
+effects' loudest moments land on their frames.
 **STATE AT 21:15Z (SOUND):**
 - **B: PASSES.** `out/v3/sound_B.wav` = final_B's pre-master score + the REAL effects, mastered by `render_v3.master()`.
   The battery: level map 14/14, dawn -2.3 LU, first half -6.1 LU (limit -6.0; the score alone is -6.5 there), sync
