@@ -1,0 +1,15 @@
+test_mine_retains_every_non_miner_stroke_exactly (test_book_c_v5.V5PageContracts.test_mine_retains_every_non_miner_stroke_exactly) ... FAIL
+
+======================================================================
+FAIL: test_mine_retains_every_non_miner_stroke_exactly (test_book_c_v5.V5PageContracts.test_mine_retains_every_non_miner_stroke_exactly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<WORKSPACE>/work/c5-pages/the-long-dawn/shots/map/tests/test_book_c_v5.py", line 56, in test_mine_retains_every_non_miner_stroke_exactly
+    self.assertEqual(len(keep),len(abandoned))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 17122 != 17120
+
+----------------------------------------------------------------------
+Ran 1 test in 11.617s
+
+FAILED (failures=1)

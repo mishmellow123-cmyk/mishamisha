@@ -1,0 +1,1229 @@
+{
+  "created_utc": "2026-09-28T09:05:55.629454+00:00",
+  "scope": "Visual audit of selected delivered frames only; no full-sequence QC or renderer invocation.",
+  "input_range": [
+    5440,
+    5679
+  ],
+  "sample_frames": [
+    5440,
+    5550,
+    5551,
+    5552,
+    5553,
+    5554,
+    5555,
+    5556,
+    5557,
+    5558,
+    5559,
+    5560,
+    5561,
+    5562,
+    5563,
+    5564,
+    5565,
+    5566,
+    5567,
+    5568,
+    5569,
+    5570,
+    5571,
+    5572,
+    5573,
+    5679
+  ],
+  "unique_rgb_samples": 26,
+  "unique_matte_samples": 26,
+  "consecutive_window": [
+    5550,
+    5573
+  ],
+  "end_frame_available": true,
+  "receipt": {
+    "path": "<validation-root>/c5-page-review/book_C5_pen-final.json",
+    "sha256": "c538ee84db0c6c861140cc7788aeb30d7560d39145c27812e99a63517fc5b17b",
+    "status": "verified",
+    "created_utc": "2026-09-28T08:36:19.152373+00:00",
+    "frames_entries": 240,
+    "matte_entries": 240
+  },
+  "source_checks": {
+    "shots/map/book_c_v5.py": {
+      "actual_sha256": "8ac783e6a3edf7e53f49bcf6e5abe66033332a3638ad52e38c663495b41c7f2f",
+      "receipt_sha256": "8ac783e6a3edf7e53f49bcf6e5abe66033332a3638ad52e38c663495b41c7f2f",
+      "match": true
+    },
+    "shots/map/v5_pen.py": {
+      "actual_sha256": "997abb874ae5fda4b9f0f4f7be2bcb61f6d197f603ea57f111092a7cc18bde69",
+      "receipt_sha256": "997abb874ae5fda4b9f0f4f7be2bcb61f6d197f603ea57f111092a7cc18bde69",
+      "match": true
+    },
+    "shots/map/book_c.py": {
+      "actual_sha256": "a8282a2dd0ea5fbd006669a39ef17d90e88d4e84395f60ea32bc883f82606760",
+      "receipt_sha256": "a8282a2dd0ea5fbd006669a39ef17d90e88d4e84395f60ea32bc883f82606760",
+      "match": true
+    },
+    "shots/map/book.py": {
+      "actual_sha256": "0c72f9adecce415f6707db274a673575eb9592c8c9640076ef2d6d6fd11a094e",
+      "receipt_sha256": "0c72f9adecce415f6707db274a673575eb9592c8c9640076ef2d6d6fd11a094e",
+      "match": true
+    }
+  },
+  "samples": [
+    {
+      "frame": 5440,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05440.jpg",
+        "sha256": "60f7858ecef28d088754c312486ec12ef3c7de707f15bff90b8e1de5d45fa27e",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "60f7858ecef28d088754c312486ec12ef3c7de707f15bff90b8e1de5d45fa27e",
+          "bytes": 171750,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05440.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5550,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05550.jpg",
+        "sha256": "e9b566dc35daa80883a119f2697072a1d3b2eaf0150d10a0f3e9eee9305550ba",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "e9b566dc35daa80883a119f2697072a1d3b2eaf0150d10a0f3e9eee9305550ba",
+          "bytes": 173493,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05550.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5551,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05551.jpg",
+        "sha256": "d416db01364267fb1934fd5a26c0293743d5ba5dcaf43a5f41c20a01a36bbba8",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "d416db01364267fb1934fd5a26c0293743d5ba5dcaf43a5f41c20a01a36bbba8",
+          "bytes": 173226,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05551.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5552,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05552.jpg",
+        "sha256": "68ee2ddb0021289081d3156b313ba0524b58f3d93ccbd7b479693c853398be17",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "68ee2ddb0021289081d3156b313ba0524b58f3d93ccbd7b479693c853398be17",
+          "bytes": 173378,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05552.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5553,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05553.jpg",
+        "sha256": "d20dc5ad56b9f5f123abf9d684dd214ca75cf8adf25732d33db1430d66885fb1",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "d20dc5ad56b9f5f123abf9d684dd214ca75cf8adf25732d33db1430d66885fb1",
+          "bytes": 173280,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05553.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5554,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05554.jpg",
+        "sha256": "a5ce3db286c35d47b67833e5e6f7b8f2970ec0ed6dbf451fefc9b19206bf4a1f",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "a5ce3db286c35d47b67833e5e6f7b8f2970ec0ed6dbf451fefc9b19206bf4a1f",
+          "bytes": 173499,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05554.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5555,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05555.jpg",
+        "sha256": "a23bba3df7514c0059206d68aba457daea5f1616bcfd7be8ad72d4c68695c1b4",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "a23bba3df7514c0059206d68aba457daea5f1616bcfd7be8ad72d4c68695c1b4",
+          "bytes": 173441,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05555.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5556,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05556.jpg",
+        "sha256": "f030b9a43d7fc77d177daa356154d90f7dc2f915f15ee1efbe4e61b92f60272a",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "f030b9a43d7fc77d177daa356154d90f7dc2f915f15ee1efbe4e61b92f60272a",
+          "bytes": 173426,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05556.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5557,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05557.jpg",
+        "sha256": "3564097da1317a61207f47315dfdc9f33420c747ce053b5623a80455f1f3bef1",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "3564097da1317a61207f47315dfdc9f33420c747ce053b5623a80455f1f3bef1",
+          "bytes": 173295,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05557.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5558,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05558.jpg",
+        "sha256": "a89c1ec72b526590158f6af19833c57663a7529c9edce641b6dea0057115b1e2",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "a89c1ec72b526590158f6af19833c57663a7529c9edce641b6dea0057115b1e2",
+          "bytes": 173310,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05558.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5559,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05559.jpg",
+        "sha256": "06a73d4e0e0dcf5835841d3756e485ca6e0946da19569b74388b8c593c5a93d3",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "06a73d4e0e0dcf5835841d3756e485ca6e0946da19569b74388b8c593c5a93d3",
+          "bytes": 172834,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05559.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5560,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05560.jpg",
+        "sha256": "57c890cb1f4e67ec79b3d86197760f200f6122fcb55961a6b611615b2dc9490e",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "57c890cb1f4e67ec79b3d86197760f200f6122fcb55961a6b611615b2dc9490e",
+          "bytes": 172925,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05560.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5561,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05561.jpg",
+        "sha256": "22267faa4b45ddd7c3fd7229753daf174412da989a0f31fa4245b7678269a41f",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "22267faa4b45ddd7c3fd7229753daf174412da989a0f31fa4245b7678269a41f",
+          "bytes": 172852,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05561.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5562,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05562.jpg",
+        "sha256": "2698ff16fb725d483f4840436b8211c9f69567967b7a30392c2b8aa1fbd84bad",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "2698ff16fb725d483f4840436b8211c9f69567967b7a30392c2b8aa1fbd84bad",
+          "bytes": 173096,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05562.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5563,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05563.jpg",
+        "sha256": "31e87808f9dc0b334764540d9bbb00f732e4759cea699449757761ac50aa0141",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "31e87808f9dc0b334764540d9bbb00f732e4759cea699449757761ac50aa0141",
+          "bytes": 173452,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05563.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5564,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05564.jpg",
+        "sha256": "07b2532f94b82f57fced8a06fc3e5159d3696fd4445af1588db13850ebe5632e",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "07b2532f94b82f57fced8a06fc3e5159d3696fd4445af1588db13850ebe5632e",
+          "bytes": 173167,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05564.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5565,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05565.jpg",
+        "sha256": "684476d526840187234953c8d5fcea0e1fba243abaf483d489b5aabcdaef25bb",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "684476d526840187234953c8d5fcea0e1fba243abaf483d489b5aabcdaef25bb",
+          "bytes": 173427,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05565.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5566,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05566.jpg",
+        "sha256": "4c2f6e8292f995dbdcb7ddc9d6b612c57e5500a9dad15faa576886e4af5c97f3",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "4c2f6e8292f995dbdcb7ddc9d6b612c57e5500a9dad15faa576886e4af5c97f3",
+          "bytes": 173588,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05566.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5567,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05567.jpg",
+        "sha256": "48bfa5e0819ab8b40a0e89436aa674b24492747c9fa3bcf01ce3b009b8823ad5",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "48bfa5e0819ab8b40a0e89436aa674b24492747c9fa3bcf01ce3b009b8823ad5",
+          "bytes": 173666,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05567.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5568,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05568.jpg",
+        "sha256": "4256318dc6a5d3fbac827e4468c1f88488e6d2edf364992d5fa6c6baeebab4a9",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "4256318dc6a5d3fbac827e4468c1f88488e6d2edf364992d5fa6c6baeebab4a9",
+          "bytes": 173581,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05568.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5569,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05569.jpg",
+        "sha256": "4828e38091abeb70b0617cd22981b55e14adab7748f700805f9d46e0d24cc836",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "4828e38091abeb70b0617cd22981b55e14adab7748f700805f9d46e0d24cc836",
+          "bytes": 173539,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05569.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5570,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05570.jpg",
+        "sha256": "f5d140cf491ce56678ab94383b7739b80faf5cb46d93df2102f1e39ae1d43ab4",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "f5d140cf491ce56678ab94383b7739b80faf5cb46d93df2102f1e39ae1d43ab4",
+          "bytes": 173748,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05570.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5571,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05571.jpg",
+        "sha256": "758ee977f57934bc5f28b58dcfd50fc367a55792bcf821a81c099a5f4c8062ff",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "758ee977f57934bc5f28b58dcfd50fc367a55792bcf821a81c099a5f4c8062ff",
+          "bytes": 173647,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05571.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5572,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05572.jpg",
+        "sha256": "3661e4739d9003f21d679982b5e2ad2e94f7e1829f440065201689e2b9ebeef9",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "3661e4739d9003f21d679982b5e2ad2e94f7e1829f440065201689e2b9ebeef9",
+          "bytes": 173624,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05572.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5573,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05573.jpg",
+        "sha256": "e18e6918976db5ec1da82367a295c937f12ae91ede7caf86715ddfcab91a1008",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "e18e6918976db5ec1da82367a295c937f12ae91ede7caf86715ddfcab91a1008",
+          "bytes": 173623,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05573.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    },
+    {
+      "frame": 5679,
+      "rgb": {
+        "path": "~/ldfarm/out/book_C5_pen/f_05679.jpg",
+        "sha256": "cfb4c3dd67f782c726a6df04fa57438d4ae55cb10f58e730685f396bf247fa4b",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "cfb4c3dd67f782c726a6df04fa57438d4ae55cb10f58e730685f396bf247fa4b",
+          "bytes": 174034,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      },
+      "matte": {
+        "path": "~/ldfarm/out/book_C5_pen_matte/f_05679.jpg",
+        "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+        "shape_hwc": [
+          804,
+          1920,
+          3
+        ],
+        "receipt_entry": {
+          "sha256": "7df981b290b3515d3ce8352d9e48f84a036b840ea3a60443e1c4e094c29ef153",
+          "bytes": 43047,
+          "shape": [
+            804,
+            1920,
+            3
+          ],
+          "jpeg_sampling": "4:4:4"
+        },
+        "receipt_sha256_match": true
+      }
+    }
+  ],
+  "presentation": {
+    "composition": "area reduction to 480x201 or 960x402; no enhancement",
+    "native_nib_crop_xyxy": [
+      1200,
+      375,
+      1500,
+      550
+    ],
+    "native_pen_crop_xyxy": [
+      485,
+      180,
+      1505,
+      555
+    ],
+    "native_gutter_crop_xyxy": [
+      780,
+      220,
+      1040,
+      510
+    ],
+    "native_crops": "unchanged decoded pixels; frame labels outside crop"
+  },
+  "limits": [
+    "24 consecutive images inspected as sheets, no full-speed playback.",
+    "No adjacent-shot join, captions or audience comprehension test.",
+    "JPEG and matte samples only; no raw HDR/depth or geometric contact recomputation.",
+    "Receipt matches remain null if renderer has not finalized per-frame hashes."
+  ],
+  "_publication": {
+    "original_audit_file_sha256": "1a54f3d84d775df418311fe34c70ba949c22edc4789c85cf64d1673e87748eff",
+    "original_delivery_receipt_sha256": "c538ee84db0c6c861140cc7788aeb30d7560d39145c27812e99a63517fc5b17b",
+    "transformations": [
+      "Receipt path expressed relative to the local validation root."
+    ],
+    "limits": "Audit facts and sample/source/receipt hashes are preserved; this is a normalized public copy."
+  }
+}

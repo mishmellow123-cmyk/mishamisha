@@ -1,0 +1,15 @@
+test_resting_pen_has_support_on_both_sides_of_mass (test_book_c_v5.V5PageContracts.test_resting_pen_has_support_on_both_sides_of_mass) ... FAIL
+
+======================================================================
+FAIL: test_resting_pen_has_support_on_both_sides_of_mass (test_book_c_v5.V5PageContracts.test_resting_pen_has_support_on_both_sides_of_mass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<WORKSPACE>/work/c5-pages/the-long-dawn/shots/map/tests/test_book_c_v5.py", line 89, in test_resting_pen_has_support_on_both_sides_of_mass
+    self.assertLess(gap[q>.7].min(),.035)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: np.float64(0.6713948067854782) not less than 0.035
+
+----------------------------------------------------------------------
+Ran 1 test in 0.193s
+
+FAILED (failures=1)
