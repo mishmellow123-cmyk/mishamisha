@@ -1,15 +1,26 @@
 # PAGES-C (lane PAGES): C's BOOK, PAPER and PAGE material, and C's TRANSITIONS (succeeds MAP-L, the book's author)
 
-# >>> STATE (PAGES-C, 28 Sep) <<<
-* Diagnosis: `~/mishamisha/_local_logs/review/C_PAGES.md` (sheets in `_local_logs/review/c_pages/`); summary sent to
-  main. Pending decision: the C24->C25 plate transition (C25 opens on C24's last frame as a plate on the verso).
-* Owned files (from MAP-L): book.py, book_c.py, burn.py (shared with MAP-L2: additive, noted changes only), pages.py
-  (Mountain, Deep, Plenty, Havens), pen.py, redbook.py, ringpage.py, titleburn.py; job `cloud/jobs/map_v3_book.json`.
-  Not mine: C19-C23 (the council, handled separately), C18's map (MAP-L2), E15's sparks and flame (EMBERS-C).
-* SAFE MODE: no local renders; every test goes through `farm.py <job> --test K --frames ...`.
-* Phase 2 order: (1) bugs: the 6400 blank frame, the leaf z-fight, the shutter samples, the 320 pop; (2) burn edge v2;
-  (3) fire letters; (4) paper and light, C2 at 150 px/cm; (5) the opening; (6) gold; (7) ship and Havens; (8) the
-  C24->C25 plate and the end fade.
+# >>> STATE (PAGES-C, 28 Sep ~01:25Z local 21:25) <<<
+* Diagnosis: `~/mishamisha/_local_logs/review/C_PAGES.md` (sheets `_local_logs/review/c_pages/`). Director approved the
+  C24->C25 PLATE version and asked for the transitions spec (below; relayed to EDIT-3 via main).
+* DONE + pushed (2c8cb6e, abe373c, a05da80, pass 2): burn edge v2 (`burn.field2`: torn at birth, crinkled char band
+  with a lit lip, beaded ember line, flecks; creep so C5's rim leaves the frame); smoke off the burning page
+  (`smoke.py`); incandescent fire letters (`fire_k`); paper tooth/laid+chain lines/pulp cloud/show-through; gold
+  crinkle so it glints; a living hearth (`B.hearth`); leaf z-fight fix; 16-sample turns, 24-sample riffle; the 6400
+  blank frame; the 320 pop; C2 opening (the hearth flares up on the red book; the hand at 140 px/cm); the C24->C25
+  plate (pixel match: mean diff 0.27/255 at 6160); the Havens framed closer; the end fade; C's ink lines T1/T14 written
+  into the page (`inkline.py`); C2's ship = the Havens' swan-ship; the Mountain's ring bolder, inner flame tongues;
+  the roundel 2.5 cm; `x1burn.py` (the two map X1s).
+* LANDED: renders/x1_map_C(+_matte,+_cover) 4150-4185 and x1_map_C71(+...) 5594-5640 (v2, one t_open each; EDIT kind
+  `burn` requested). Tests: renders/_farmtest/pages_book (47 stills, pass 1) and pages_book2 (22 stills, pass 2).
+* NEXT: review pages_book2 -> JOB READY `cloud/jobs/pages_book.json` (2312 frames: 80-1039, 1680-1991, 6160-7199 ->
+  renders/book_C + _matte; C22's 5360-5519 untouched). Then tell EDIT (via main): drop T1 and T14 from titles.py
+  (they are in book_C now), `finish_ramp` 6160-6224, `burn` kind.
+* Owned: book.py, book_c.py, burn.py (v2 additive; MAP-L2's road.py still calls the v1 `field`), pages.py, pen.py,
+  redbook.py, ringpage.py, titleburn.py, smoke.py, inkline.py, x1burn.py; jobs pages_book, pages_x1map.
+  Not mine: C19-C23 (council), C18's map (MAP-L2, paused), E15's sparks and flame (EMBERS-C).
+* Open notes for others: EMBERS-C's e15 streams swoop in two big arcs (764-788) and a soft orange blob at 800;
+  E5-C's first flame should match e15's at 1039/1040.
 
 ## C's TRANSITIONS: the spec (PAGES-C, 28 Sep; director: "design each in the book's own language")
 C has three materials: the BOOK in a dark room (~0.3-0.55), the INK world on bright parchment (~0.75), and FIRE on

@@ -698,12 +698,11 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 # three scales so some facet always glints as the fire breathes and the camera moves; the gold lies
                 # over the ink, as the initial's letter and the Deep's seam are laid)
                 if gilt > 0.0:
-                    cr = gnoise(u * 40.0, v * 40.0, 91) + 0.6 * gnoise(u * 110.0, v * 110.0, 93) + \
-                        0.35 * gnoise(u * 260.0, v * 260.0, 99)
-                    cr2 = gnoise(u * 40.0 + 7.0, v * 40.0, 95) + 0.6 * gnoise(u * 110.0 + 3.0, v * 110.0, 97) + \
-                        0.35 * gnoise(u * 260.0 + 1.3, v * 260.0, 101)
-                    nx = nx + 0.5 * cr * gilt
-                    ny = ny + 0.5 * cr2 * gilt
+                    # facets of 2-6 mm (burnished leaf, broad glints), not sub-pixel sparkle (read as glitter)
+                    cr = gnoise(u * 17.0, v * 17.0, 91) + 0.55 * gnoise(u * 43.0, v * 43.0, 93)
+                    cr2 = gnoise(u * 17.0 + 7.0, v * 17.0, 95) + 0.55 * gnoise(u * 43.0 + 3.0, v * 43.0, 97)
+                    nx = nx + 0.55 * cr * gilt
+                    ny = ny + 0.55 * cr2 * gilt
                     nn = math.sqrt(nx * nx + ny * ny + nz * nz)
                     nx /= nn
                     ny /= nn

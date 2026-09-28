@@ -965,11 +965,15 @@ class Book3:
             cam = B.Cam(tgt + RB.catrom(keys_o, t), tgt, 38.0, self.W, self.H)
             cam.dof_k = 2.0
             return cam
+        # PAGES-C: after the two blank leaves the camera comes to the verso where T14 is written (inkline.py), then
+        # crosses to the recto for the title
+        t14 = bk.page_to_world('L', np.array([9.4]), np.array([13.6]))[0]
         keys_t = [(9.6, pl + [1.0, 0, 0]), (12.2, hv1 + [0.3, 0, 0]), (22.8, hv4),
-                  (24.2, sp + [0, -0.5, 0]), (31.5, sp + [2.5, -0.5, 0]), (35.0, bl), (43.33, bl + [0, 0.3, 0])]
+                  (24.2, sp + [0, -0.5, 0]), (26.2, t14 + [0.8, 0, 0]), (31.2, t14 + [1.6, 0, 0]), (35.0, bl),
+                  (43.33, bl + [0, 0.3, 0])]
         keys_o = [(9.6, (-1.8, -29.0, 27.0)), (12.2, (0.8, -24.0, 22.5)), (22.8, (0.4, -28.5, 27.0)),
-                  (24.2, (0.0, -52.0, 46.0)), (31.5, (0.5, -50.0, 44.0)), (35.0, (0.0, -30.0, 28.0)),
-                  (43.33, (0.0, -28.0, 26.0))]
+                  (24.2, (0.0, -52.0, 46.0)), (26.2, (0.4, -34.0, 31.0)), (31.2, (0.6, -32.0, 29.5)),
+                  (35.0, (0.0, -30.0, 28.0)), (43.33, (0.0, -28.0, 26.0))]
         cam = B.Cam(keyed(keys_t, t) + keyed(keys_o, t), keyed(keys_t, t), 38.0, self.W, self.H)
         cam.dof_k = 2.0
         return cam

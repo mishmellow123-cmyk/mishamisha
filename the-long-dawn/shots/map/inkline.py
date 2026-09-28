@@ -19,7 +19,7 @@ FONT = os.path.join(HERE, '..', '..', 'assets', 'fonts', 'EBGaramond-Italic.ttf'
 # id: (text, C frame in, C frame out, page centre u (cm), baseline v (cm), font size (cm))
 LINES = {
     'T1': ('In the old story, a Dark Lord forges the Ring in secret.', 400, 540, 9.8, 13.72, 0.52),
-    'T14': ('The last pages were left for us.', 6790, 6930, 9.4, 13.4, 0.62),
+    'T14': ('The last pages were left for us.', 6790, 6930, 9.4, 13.4, 0.74),
 }
 
 
