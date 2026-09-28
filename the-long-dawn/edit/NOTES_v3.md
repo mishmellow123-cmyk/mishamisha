@@ -11,6 +11,12 @@
   watcher's signature; the MASTERS table in music/NOTES_v3.md is untouched (the music lanes' table). Outside
   `deliver._code_hash()`, so B re-muxes without re-encoding picture.
 - **Watcher** restarted on the merged (PR #1) `refresh_watch.sh` (the old one, pid 74916, ran the pre-PR script).
+  The Mac crashed (memory) at 00:15Z 28 Sep; SAFE MODE (COMMON.md top): renderq = 1 slot, niced, waits for 1.5 GB.
+  Every watcher step self-queues through renderq; relaunched with `WORKERS=2` (log `_local_logs/animatic/watch_<HHMM>.log`).
+- **B4 crop (H9 CRITIC B M4, 28 Sep):** `B_H1_CROP = (0.12, 0.08, 0.40, 0.40)` (was 0.17,0.22,0.26,0.26): 2.5x; on the
+  strikes the glove, steel and sparks read, and the basket reads as a basket; on the blow her profile enters at the right
+  edge as a dim silhouette (a warm rim on the lips/nose around src 1356). Not done: Lanczos resampling (it is `Ctx.read`,
+  inside `_code_hash()`, so changing it re-encodes every segment of every film).
 - **B14's plate (director ~23:55Z, option a):** `handback_B` stops at 5199, so RUN-B-3 renders `dawntitle_B`
   5200-5439: continuous with handback at 5199, then a slow tilt up into the dawn sky so the title sits over clean sky
   at y~360. No held frame. Until it lands B14 stays the stand-in sky + ember title (the kit calls it out as the
@@ -25,6 +31,60 @@
 - **B's H9 kit (for a fresh-context critic):** `~/mishamisha/_local_logs/review/h9_B/` (`h9_kit.py --cuts B --out`),
   plus `CRITIC_README.md` there: the B master to watch with sound, and what is known-pending (DUSK v2, the cairn
   re-renders, the B14 plate).
+
+## TRANSITIONS in A's and C's comps (for CLARITY-A and PAGES-C; user, 28 Sep: "some of the transitions weren't great")
+
+How EDIT joins shots: every EDL boundary is a **hard cut** (segments are byte-joined; there is no EDIT dissolve
+anywhere). EDIT makes only four transition devices: (1) **matte comp** `rgb + (1 - matte) * under` (MAP's
+`book_C_matte` over an under-layer: C8, C9), (2) an **additive layer** (`add`: C4-C5's `embers_C3_e15`), (3) the
+**fade to black** in A (6456-6479, `Ctx`), (4) the X3 **ember-title** layers (A20). Every other transition
+(dissolves, white-outs, page turns, burn-throughs, holds) is **baked in the department's render**: "continuous" below
+means the same folder runs on across the section line with no cut, so a change there is that lane's re-render.
+
+| film | frame | from -> to | kind | how it is made / who owns it |
+|---|---|---|---|---|
+| A | 80 | A1 black -> A2 R1 FALSE DAWN | hard cut from black | falsedawn_A's first frame (RUN-A-L); any fade-in is in the render |
+| A | 560 | A2 R1 -> A3 E1 INTO THE LIGHT | hard cut | falsedawn_A -> embers_A3 (the push into the glow is EMBERS') |
+| A | 960-3119 | A3 -> A4 -> A5 -> ... -> A10 | continuous | one embers_A3 render (EMBERS-A2/A3): the point, the ignition, towers, edge, brink, "out of the white" at 2640 (A8 -> A9) and the drop to black at 2800 (A9 -> A10) are baked |
+| A | 3120 | A10 E9 ember on black -> A11 X2 stars | hard cut | embers_A3 -> stars_A (RUN-A-L); the ember sits at (960, 548) on both sides |
+| A | 3360 | A11 X2 -> A12 H1-A FIRST FIRE | hard cut | stars_A -> h1_v3h5 src 1236 (the shared H1 take) |
+| A | 3600 | A12 -> A13 H1-A ROAR | continuous | the same H1 take |
+| A | 3680 | A13 ROAR -> R2-A EVERY RIDGE | hard cut | h1_v3h5 -> reveal_A (RUN-A) |
+| A | 3800 / 3860 | R2-A -> M5 KARST -> M5 DESERT | hard cuts | reveal_A -> montage3d_v3/karst_slow -> /desert (MONTAGE-3D, Blender) |
+| A | 3920 | M5 DESERT -> A14 R3 BEACON RUN | hard cut | -> beaconrun_A (RUN-A-L) |
+| A | 4240 | A14 -> A15 R16 WATCHERS | hard cut | -> watchers_A (RUN-A-L) |
+| A | 4400 | A15 -> A16 E10 TOWERS IN THE LIGHT | hard cut | watchers_A -> embers_A3 |
+| A | 4720 | A16 -> A17 E10 THE FIRE, SEEN | continuous | embers_A3 |
+| A | 4880 | A17 -> A18 R6 THE CROSSING | hard cut | embers_A3 -> crossing_A (RUN-A2) |
+| A | 5840 | A18 -> A19 R7 THE BLUE HOUR | hard cut | crossing_A -> bluehour_A (RUN-A2) |
+| A | 6240 | A19 -> A20 X3 TITLE | continuous (planned) | bluehour_A runs on under the ember title (EDIT's title layer); now the stand-in sky, an EDIT proxy |
+| A | 6456-6479 | A20 -> end | fade to black | EDIT (`Ctx`, bar 81 b3.8) |
+| A ALT | 1440-2639, 4400-4879 | A6-A8, A16-A17 | same cuts | embers_A3_alt_codedtowers replaces embers_A3 frame for frame |
+| C | 80 | C1 black -> C2 P1 THE RED BOOK | hard cut from black | book_C's first frame (MAP-L, book engine) |
+| C | 80-1039 | C2 -> C3 -> C4 -> C5 | continuous | one book_C render + its matte: the riffle back (320), the page darkening to letters-to-fire (560) are MAP's |
+| C | 700-1039 | C4 THE FIRE CATCHES, C5 THE FIRE, ALONE | EDIT additive layer | + embers_C3_e15 (EMBERS-C3) added over the page; frames count only where both exist |
+| C | 1040 | C5 -> C6 E5-C THE FORGING | hard cut | book_C + e15 -> embers_C3 |
+| C | 1440 | C6 -> C7 E11 THE RACE | continuous | embers_C3 |
+| C | 1680-1919 | C7 -> C8 P2 THE DEEP | EDIT matte comp (wipe) | book_C over a HOLD of embers_C3 f1679: MAP's matte is the ember edge that sweeps the frozen race away to parchment |
+| C | 1920-1991 | C8 -> C9 THE EYE (burn-through) | EDIT matte comp | book_C over embers_C3 at the same frame (live storm under the page): the burn-through is MAP's matte opening |
+| C | 1992 | C9 burn-through -> C9 THE EYE ONTO NOTHING | hard cut | book_C + under -> embers_C3 alone (seamless only if the matte is fully open by 1991) |
+| C | 2080 | C9 -> C10 M4 THE MIRROR | hard cut | embers_C3 -> mirror_C (MIRROR) |
+| C | 2320 | C10 -> C11 E8-C THE GRASP | hard cut | mirror_C -> embers_C3 |
+| C | 2480 / 2720 | C11 -> C12 black -> C13 THE RING FALLS | hard cuts to and from black | embers_C3 -> black (EDIT) -> embers_C3 |
+| C | 2840 | C13 E13 -> C13 R13 THE STAR | hard cut | embers_C3 -> ringfall_C (RUN-C-3) |
+| C | 2960 | C13 R13 -> C14 H1-C FLINT | hard cut | ringfall_C -> h1_C |
+| C | 3000 / 3080 / 3150 | FLINT -> THE FIND -> THE VISION -> THE CATCH | hard cut, continuous, hard cut | h1_C -> ring_C (find_a, find_b: MONTAGE-3D-4) -> h1_C |
+| C | 3360 | C14 -> C15 H2 THE FIRE TEST | hard cut | h1_C -> ring_C |
+| C | 3600 / 3840 | C15 -> C16 R2-C REVEAL -> C17 THE LIVING INK RUN | hard cuts | ring_C -> runC_reveal -> runC_scroll (RUN-C ink) |
+| C | 4160 | C17 -> C18 P4 THE MAP ANSWERS | hard cut (the "burn-through onto the map" is in map_C) | runC_scroll -> map_C (MAP-L2) |
+| C | 4480 | C18 -> C19 AC1 THE COUNCIL | hard cut | map_C -> accord_C (v1 timing renders; COUNCIL-C rebuilds) |
+| C | 4800 / 5120 | C19 -> C20 -> C21 | continuous | accord_C |
+| C | 5360 | C21 -> C22 AC3 · H3 THE UNMAKING | hard cut | accord_C -> ring_C / montage3d melt (MONTAGE-3D) |
+| C | 5520 | C22 -> C23 THE FIRE REMAINS · THE STONE | hard cut ("out of the white" is in the renders) | melt -> accord_C |
+| C | 5600 | THE STONE -> ROADS OF FIRE | hard cut (the burn-through is in map_C) | accord_C -> map_C |
+| C | 5680 | C23 -> C24 R15 THE ILLUMINATION | hard cut | map_C -> runC_illum |
+| C | 6160 | C24 -> C25 THE YEAR OF PLENTY | hard cut | runC_illum -> book_C |
+| C | 6160-7199 | C25 -> C26 -> C27 -> C28 TITLE | continuous | one book_C render + matte: the page turns (6400, 6720) and the title burn-on (6980-7160) are MAP's |
 
 ## >>> STATE (EDIT-2, resumed 18:38Z on the new account; every lane runs continuously) <<<
 
