@@ -282,7 +282,7 @@ def _bands(bf, u, v, t, sdf, w, embers, still):
         if sdf > 0.0 and sdf < wv:
             fn = gnoise(u * 60.0, v * 60.0, 377 + s)
             tw = 0.5 + 0.5 * gnoise(u * 11.0, t * 2.2, 379 + s)
-            fleck = max(fn - 0.3, 0.0) * 6.0 * math.exp(-sdf / 0.09) * (0.35 + 0.65 * tw) * embers
+            fleck = max(fn - 0.37, 0.0) * 5.0 * math.exp(-sdf / 0.05) * (0.3 + 0.7 * tw) * embers
     return char, hole, edge, lip, fleck, crk
 
 
