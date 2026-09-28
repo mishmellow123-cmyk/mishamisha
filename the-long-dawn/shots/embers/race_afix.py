@@ -65,10 +65,11 @@ class ThroatFire:
                             -0.3 + self.fv * age * surge * g * (0.8 + 0.6 * race),
                             self.foff[:, 2] * hw * 0.28 * (1 - 0.5 * u)], 1)
         P = P + vnoise(P * 0.35 + np.array([0.0, -0.08 * t, 0.0]), 0.25, (0, 0, 0), 1) * (0.2 + 1.2 * u)[:, None]
-        rad = (0.35 + 0.55 * u) * (0.7 + 0.3 * g)
-        temp = 0.95 - 0.55 * u                                  # white-yellow at the throat, orange-red above
+        rad = (0.28 + 0.45 * u) * (0.7 + 0.3 * g)
+        temp = 0.78 - 0.45 * u                                  # forge-orange at the throat, red above (the thinking
+                                                                # fire stays the only ice-white thing in the frame)
         col = np.array([look.blackbody(float(x)) for x in np.round(temp, 2)])
-        L = (2.2 * self.fE * (1 - u) ** 1.4 * smoothstep(0.0, 0.12, u) * on * g * (0.7 + 0.3 * surge))
+        L = (1.0 * self.fE * (1 - u) ** 1.4 * smoothstep(0.0, 0.12, u) * on * g * (0.7 + 0.3 * surge))
         P_all.append(P); R_all.append(rad); E_all.append(L); C_all.append(col); V_all.append(np.zeros_like(P))
         # --- the sparks thrown on the beat
         sage = beat_age + (t // BEAT) * 0.0
@@ -76,7 +77,7 @@ class ThroatFire:
             v = self.sv * (0.55 + 0.45 * gro[self.si])[:, None] * (0.8 + 0.5 * race)
             Ps = tops[self.si] + v * sage + np.array([0.0, -0.012, 0.0]) * sage * sage
             us = np.clip(sage / self.slife, 0.0, 1.0)
-            Ls = 3.0 * self.sE * (1 - us) ** 1.5 * (us < 1.0) * on * gro[self.si]
+            Ls = 2.0 * self.sE * (1 - us) ** 1.5 * (us < 1.0) * on * gro[self.si]
             cs = np.array([look.blackbody(0.8)] * len(Ps))
             P_all.append(Ps); R_all.append(np.full(len(Ps), 0.18)); E_all.append(Ls); C_all.append(cs)
             V_all.append(v * 0.9)
