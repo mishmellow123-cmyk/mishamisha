@@ -67,6 +67,31 @@ def sky_dir(az, el):
 
 # ======================================================================= venv side ===
 
+def soft_env(t, t0, fps=24.0, catch=8.0):
+    """A-FIX (MONTAGE-3D-5): the ignition as a soft catch, not fireparts.ignite_env's one-frame switch. A small flame
+    at the catch grows to full over `catch` frames, then a gentle swell settles. Returns (size, intensity, light)."""
+    u = (t - t0) * fps
+    if u < 0.0:
+        return 0.0, 0.0, 0.0
+    c = min(1.0, u / catch)
+    c = c * c * (3.0 - 2.0 * c)
+    after = max(0.0, u - catch)
+    size = 0.12 + 0.88 * c + 0.18 * math.exp(-((u - catch - 4.0) / 5.0) ** 2)
+    inten = (0.5 + 0.5 * c) * (1.0 + 0.45 * c * math.exp(-after / 5.0))
+    light = (0.15 + 0.85 * c) * (1.0 + 0.7 * c * math.exp(-after / 6.0))
+    return size, inten, light
+
+
+def _soft_params(sp):
+    """A FlameSpec's params() with soft_env in place of ignite_env."""
+    def params(frame):
+        t = ftime(frame)
+        size, inten, light = soft_env(t, sp.t_ign)
+        lean = sp.lean * size if sp.lean_fn is None else sp.lean_fn(frame, size)
+        return t, sp.Hf * size, inten, light, lean
+    return params
+
+
 def flame_specs():
     import fireparts as FP
 
@@ -75,9 +100,10 @@ def flame_specs():
         g = 0.8 + 0.2 * math.sin(t * 2.3) * math.sin(t * 1.1 + 1.0)
         return -0.5 * size * g
 
-    return [FP.FlameSpec('beacon', Hf=2.0, Rb=0.33, seed=11, I=26.0, tongues=5, lean=-0.5, ppm=160,
-                         t_ign=ftime(IGN), lean_fn=lean_fn),
-            FP.FlameSpec('torch', Hf=0.3, Rb=0.045, seed=17, I=16.0, tongues=3, lean=-0.12, ppm=500, env=False)]
+    b = FP.FlameSpec('beacon', Hf=2.0, Rb=0.33, seed=11, I=26.0, tongues=5, lean=-0.5, ppm=160,
+                     t_ign=ftime(IGN), lean_fn=lean_fn)
+    b.params = _soft_params(b)
+    return [b, FP.FlameSpec('torch', Hf=0.3, Rb=0.045, seed=17, I=16.0, tongues=3, lean=-0.12, ppm=500, env=False)]
 
 
 def timing(frames):
@@ -85,7 +111,7 @@ def timing(frames):
     out = dict(beacon=[], torch=[], ember=[])
     for f in frames:
         t = ftime(f)
-        s, i, l = FP.ignite_env(t, ftime(IGN))
+        s, i, l = soft_env(t, ftime(IGN))
         out['beacon'].append((f, l * FP.flicker(t, 13)))
         out['torch'].append((f, FP.flicker(t, 7)))
         out['ember'].append((f, 0.0 if f < IGN else min(1.0, (f - IGN + 1) / 10.0) * (0.8 + 0.2 * FP.flicker(t, 3))))
@@ -289,7 +315,7 @@ FIG_KEYS = [
     (1530, dict(lean=0.1, head_pitch=-0.35)),
     (1539.5, dict(lean=0.3, twist=0.12, head_pitch=-0.5, crouch=0.12, l_flex=0.45, l_elbow=1.2, r_hip=0.18,
                   r_knee=0.3)),
-    (1544, dict(lean=-0.12, twist=-0.05, head_pitch=0.05, head_yaw=-0.3, crouch=0.05, r_flex=0.35, r_abd=0.3,
+    (1548, dict(lean=-0.08, twist=-0.05, head_pitch=0.05, head_yaw=-0.3, crouch=0.05, r_flex=0.35, r_abd=0.3,
                 r_elbow=0.55, l_flex=1.3, l_abd=0.35, l_elbow=1.95, r_hip=0.02, r_knee=0.12, l_hip=-0.08, l_knee=0.1)),
     (1552, dict(lean=-0.05, head_pitch=0.12, head_yaw=-0.15, l_flex=1.1, l_elbow=1.85)),
     (1566, dict(lean=0.0, twist=0.0, head_pitch=0.08, head_yaw=0.05, crouch=0.0, r_flex=0.18, r_abd=0.14,
@@ -470,7 +496,7 @@ def _figure_frames(frames, cache, beacon, root, yaw, basket_top):
     only = None if not only else {int(x) for x in only.split(',')} | {START - 1}
     for f in frames:
         J, gust, t = fig_frame(f, wl)
-        back = 0.42 * FG.ease((f - 1540.5) / 5.0)
+        back = 0.0                        # A-FIX: planted (the old 0.42 m in 5 frames slid her, feet fixed: a jump)
         u_in = FG.ease((f - 1531.0) / 8.5) * (1 - FG.ease((f - 1540.5) / 3.0))
         hold = np.array([0.18, 0.75, 0.62])
         hold /= np.linalg.norm(hold)
@@ -493,7 +519,7 @@ def _figure_frames(frames, cache, beacon, root, yaw, basket_top):
         if cup > 1e-3:
             tgt = head + np.array([-wl[0], -wl[1], 0.0]) * 0.1 + np.array([0, 0, 0.02])
             FG.ik_arm(J, 'l', J['l_hand'] * (1 - cup) + tgt * cup, pole=(-0.6, -0.3, -0.8))
-        sh = FG.ease((f - 1540.0) / 3.0) * (1 - FG.ease((f - 1552.0) / 14.0))
+        sh = FG.ease((f - 1540.0) / 6.0) * (1 - FG.ease((f - 1550.0) / 24.0))    # A-FIX: up in 6 f, lowered slowly
         if sh > 1e-3:
             face = J['head'] + J['R_head'] @ np.array([0.04, 0.17, 0.0])
             FG.ik_arm(J, 'l', J['l_hand'] * (1 - sh) + face * sh, pole=(-0.2, 0.75, -0.65))
@@ -579,10 +605,10 @@ def post(frame, hdr, depth, cam, scene):
     fb = scene['fire_base']
     if frame >= IGN:
         if _SPARKS is None:
-            _SPARKS = FP.ZSparks(53, (fb[0], fb[1], fb[2] + 0.35), ftime(IGN), ftime(END) + 0.1, burst=90, rate=26,
+            _SPARKS = FP.ZSparks(53, (fb[0], fb[1], fb[2] + 0.35), ftime(IGN + 5), ftime(END) + 0.1, burst=45, rate=26,
                                  ember_rate=9, wind=(2.6 * WIND[0], 2.6 * WIND[1], 0.25), radius=0.22, I=24.0,
                                  burst_speed=(2.0, 5.5), speed=(1.2, 3.5), spread=0.4, buoy=3.5)
-        s, i, l = FP.ignite_env(t, ftime(IGN))
+        s, i, l = soft_env(t, ftime(IGN))
         FP.shimmer(hdr, cam, fb, 2.0 * s, 0.33, t, amp_px=1.0 * cam.W / 1920)
         _SPARKS.render(hdr, depth, cam, t)
     return hdr
@@ -674,7 +700,8 @@ def build(job):
         if t < t0:
             return 0.0
         u = t - t0
-        return amp * math.exp(-decay * u) * math.sin(2 * math.pi * freq * u)
+        on = min(1.0, u * 6.0)                                    # eased in over ~4 frames
+        return amp * on * on * math.exp(-decay * u) * math.sin(2 * math.pi * freq * u)
 
     crop = opts.get('crop')
     if crop:
@@ -682,7 +709,7 @@ def build(job):
     for f in range(START - 1, END + 2):
         u = (f - START) / (END - START)
         x = CAM_X0 + (CAM_X1 - CAM_X0) * ease_x(u)
-        k = kick(ftime(f), ftime(IGN))
+        k = kick(ftime(f), ftime(IGN + 5), amp=0.5)                # A-FIX: a soft nudge once it has caught, not a jolt
         shift = ((crop[0] - 960.0) / crop[2], -(crop[1] - 402.0) / crop[2]) if crop else (0.0, 0.0)
         C.key_camera(cam, f, (x, 0.0, cam_z(x) + 0.004 * k), YAW0 + 0.04 * k, PITCH0 + 0.05 * k, shift=shift)
     # ------------------------------------------------------------------ sand
