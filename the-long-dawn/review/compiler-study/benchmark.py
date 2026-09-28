@@ -29,8 +29,43 @@ def assert_cache_reload(cold, current):
         assert cold[key] == current[key], f'Cache reload changed {key}'
     assert len(cold['sp_calls']) == len(current['sp_calls'])
     for old, new in zip(cold['sp_calls'], current['sp_calls']):
-        for key in ('name', 'repeat', 'call', 'input_hashes', 'img', 'zb', 'depth_changed_mask'):
+        for key in ('mode', 'name', 'repeat', 'call', 'input_hashes', 'img', 'zb', 'depth_changed_mask'):
             assert old[key] == new[key], f'Cache reload changed {key}'
+    assert len(cold.get('frames', [])) == len(current.get('frames', []))
+    for old, new in zip(cold.get('frames', []), current.get('frames', [])):
+        for key in ('mode', 'frame', 'repeat', 'linear', 'finished', 'sp_calls', 'mblur'):
+            assert old[key] == new[key], f'Cache reload changed frame {key}'
+
+
+def assert_warm_frames(frames):
+    initial = {}
+    for frame in frames:
+        key = (frame['mode'], frame['frame'])
+        if frame['repeat'] == 0:
+            initial[key] = frame
+        else:
+            for field in ('linear', 'finished'):
+                assert frame[field] == initial[key][field], f'Warm full frame changed {field}: {key}'
+
+
+def frame_requests(mode, frames):
+    if mode == 'material':
+        return []
+    result = []
+    for frame in (int(value) for value in frames.split(',')):
+        shot = ('A14' if frame <= 4239 else 'A15') if mode == 'suite' else mode
+        lo, hi = (3920, 4239) if shot == 'A14' else (4240, 4399)
+        if not lo <= frame <= hi:
+            raise ValueError(f'{shot} frame {frame} is outside {lo}..{hi}')
+        result.append(dict(mode=shot, frame=frame))
+    if not result or len({item['frame'] for item in result}) != len(result):
+        raise ValueError('Supply a nonempty list of distinct cut frames.')
+    return result
+
+
+def settings(args):
+    return dict(mode=args.mode, frames=args.frames, frame_requests=frame_requests(args.mode, args.frames),
+                scale=args.scale, ss=args.ss, repeats=args.repeats, material_size=args.size)
 
 
 def git(repo, *args):
@@ -76,8 +111,7 @@ def run(args):
         raise SystemExit('Cache-hit run requires the same variant/mode cold run first.')
     if args.phase == 'cache-hit':
         cold = json.loads((result.parent / 'cold' / 'receipt.json').read_text())
-        requested = dict(mode=args.mode, frames=args.frames, scale=args.scale, ss=args.ss,
-                         repeats=args.repeats, material_size=args.size)
+        requested = settings(args)
         if cold['status'] != 'complete' or cold['settings'] != requested:
             raise SystemExit('Cache-hit run must repeat a completed cold run with identical settings.')
     cache.mkdir(parents=True, exist_ok=True)
@@ -195,8 +229,7 @@ def worker(args):
     receipt = dict(status='starting', variant=args.variant, phase=args.phase,
         reference_commit=metadata['reference_commit'], source_sha256=expected,
         harness_sha256=sha(Path(__file__).read_bytes()), created_utc=datetime.now(timezone.utc).isoformat(),
-        settings=dict(mode=args.mode, frames=args.frames, scale=args.scale, ss=args.ss,
-                      repeats=args.repeats, material_size=args.size),
+        settings=settings(args),
         environment={k: os.environ.get(k) for k in (*OVERRIDES, 'NUMBA_NUM_THREADS', 'NUMBA_CACHE_DIR',
             'OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS', 'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS')},
         versions={k: importlib.metadata.version(k) for k in ('numpy', 'numba', 'llvmlite')},
@@ -240,10 +273,10 @@ def worker(args):
             noise_signatures_before=[str(s) for s in SP.gnoise3.signatures],
             cache_files_before=[str(p.relative_to(Path(os.environ['NUMBA_CACHE_DIR'])))
                                 for p in Path(os.environ['NUMBA_CACHE_DIR']).rglob('*') if p.is_file()])
-        state = {'name': '', 'repeat': 0, 'calls': 0}
+        state = {'mode': 'material', 'name': '', 'repeat': 0, 'calls': 0}
         def timed_render(*values):
             before_depth = values[1].copy()
-            call = dict(name=state['name'], repeat=state['repeat'], call=state['calls'],
+            call = dict(mode=state['mode'], name=state['name'], repeat=state['repeat'], call=state['calls'],
                 input_hashes=[info(v) for v in values],
                 prior_signatures=[str(s) for s in original_render.signatures])
             state['calls'] += 1
@@ -260,6 +293,7 @@ def worker(args):
                 depth_changed_mask=info(depth_changed), depth_changed_pixels=int(depth_changed.sum()),
                 cache_hits={str(k): int(v) for k, v in original_render.stats.cache_hits.items()},
                 cache_misses={str(k): int(v) for k, v in original_render.stats.cache_misses.items()})
+            call['new_signatures'] = [s for s in call['signatures'] if s not in call['prior_signatures']]
             if state['repeat'] == 0:
                 stem = f'{state["name"]}-sp{call["call"]}'
                 output(stem + '-img', values[0])
@@ -269,7 +303,7 @@ def worker(args):
             print(f'SP exit {call["name"]}: {call["seconds"]:.6f}s', flush=True)
             return returned
         SP.render = timed_render
-        if args.mode == 'material':
+        if args.mode in ('material', 'suite'):
             cases = list(material_cases(SP, RC, np, args.size))
             first_outputs = {}
             for name, values in cases:
@@ -317,24 +351,21 @@ def worker(args):
             if not cv2.imwrite(str(result/'material-preview.png'), preview[..., ::-1]):
                 raise OSError('Could not write material preview.')
             receipt['preview_transfer'] = 'clip linear RGB to [0,1], power 1/2.2, round to uint8; display only'
-        else:
-            frames = [int(f) for f in args.frames.split(',')]
-            lo, hi = (3920, 4239) if args.mode == 'A14' else (4240, 4399)
-            if not frames or any(f < lo or f > hi for f in frames):
-                raise ValueError(f'{args.mode} frames must be within {lo}..{hi}')
-            for frame in frames:
-                name = f'{args.mode}-{frame}'
+        if args.mode != 'material':
+            for request in receipt['settings']['frame_requests']:
+                frame, shot = request['frame'], request['mode']
+                name = f'{shot}-{frame}'
                 for repeat in range(args.repeats + 1):
-                    state.update(name=name, repeat=repeat, calls=0)
+                    state.update(mode=shot, name=name, repeat=repeat, calls=0)
                     started = time.perf_counter()
-                    if args.mode == 'A14':
+                    if shot == 'A14':
                         linear, _cam, _dist = BR.render(frame, scale=args.scale, ss=args.ss, mblur=True)
                         finished = WA.PI.look.finish(linear, **BR.FINISH)
                     else:
                         linear = WA.render(frame, scale=args.scale, ss=args.ss)
                         finished = WA.finish(linear)
-                    item = dict(frame=frame, repeat=repeat, seconds_including_instrumentation=time.perf_counter()-started,
-                        linear=info(linear), finished=info(finished), sp_calls=state['calls'], mblur=args.mode == 'A14')
+                    item = dict(mode=shot, frame=frame, repeat=repeat, seconds_including_instrumentation=time.perf_counter()-started,
+                        linear=info(linear), finished=info(finished), sp_calls=state['calls'], mblur=shot == 'A14')
                     receipt['frames'].append(item)
                     if not state['calls']:
                         raise RuntimeError('Actual frame did not invoke SP.render')
@@ -345,6 +376,9 @@ def worker(args):
             max_rss_native=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
             max_rss_units='bytes' if sys.platform == 'darwin' else 'KiB',
             noise_signatures_after=[str(s) for s in SP.gnoise3.signatures],
+            render_signatures=[str(s) for s in original_render.signatures],
+            signature_changes=[dict(mode=c['mode'], name=c['name'], repeat=c['repeat'],
+                                    new_signatures=c['new_signatures']) for c in receipt['sp_calls'] if c['new_signatures']],
             limits='Finite sampled material fixtures/frames only. Cold SP call includes compilation and rendering; '
                    'later same-signature calls are warm. Full-frame timing includes other kernels and capture overhead. '
                    'Cache-hit phase is a fresh process and must show dispatcher cache hits; no CPU pinning or load isolation.')
@@ -363,6 +397,8 @@ def worker(args):
                     if call[field] != initial[key][field]:
                         raise RuntimeError(f'Warm repeat changed {field}: {key}')
         receipt['warm_repeats_exact'] = True
+        assert_warm_frames(receipt['frames'])
+        receipt['full_frame_warm_repeats_exact'] = True if receipt['frames'] else None
         if args.phase == 'cache-hit':
             cold_dir = result.parent / 'cold'
             cold = json.loads((cold_dir / 'receipt.json').read_text())
@@ -397,9 +433,9 @@ def compare(args):
     assert list(a['outputs']) == list(b['outputs'])
     calls = []
     for x, y in zip(a['sp_calls'], b['sp_calls']):
-        assert (x['name'], x['repeat'], x['call']) == (y['name'], y['repeat'], y['call'])
+        assert (x['mode'], x['name'], x['repeat'], x['call']) == (y['mode'], y['name'], y['repeat'], y['call'])
         assert x['input_hashes'] == y['input_hashes'], f'Inputs differ: {x["name"]}'
-        calls.append(dict(name=x['name'], repeat=x['repeat'], reference_seconds=x['seconds'],
+        calls.append(dict(mode=x['mode'], name=x['name'], repeat=x['repeat'], reference_seconds=x['seconds'],
             candidate_seconds=y['seconds'], img_exact=x['img']==y['img'], zb_exact=x['zb']==y['zb'],
             depth_changed_masks_exact=x['depth_changed_mask']==y['depth_changed_mask'],
             reference_depth_changed_pixels=x['depth_changed_pixels'],
@@ -436,9 +472,9 @@ def main():
         p = subs.add_parser(name)
         p.add_argument('--out', type=Path, required=True)
         p.add_argument('--variant', choices=('reference', 'candidate'), required=True)
-        p.add_argument('--mode', choices=('material', 'A14', 'A15'), required=True)
+        p.add_argument('--mode', choices=('material', 'A14', 'A15', 'suite'), required=True)
         p.add_argument('--phase', choices=('cold', 'cache-hit'), default='cold')
-        p.add_argument('--frames', default='4240')
+        p.add_argument('--frames')
         p.add_argument('--scale', type=float, default=.5)
         p.add_argument('--ss', type=float, default=1.5)
         p.add_argument('--size', type=int, default=96)
@@ -448,6 +484,14 @@ def main():
     p.add_argument('--reference', type=Path, required=True); p.add_argument('--candidate', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    if hasattr(args, 'frames'):
+        if args.mode == 'suite' and args.frames is None:
+            parser.error('Suite mode requires an explicit --frames list.')
+        args.frames = args.frames or '4240'
+        try:
+            frame_requests(args.mode, args.frames)
+        except ValueError as exc:
+            parser.error(str(exc))
     if hasattr(args, 'repeats') and (args.repeats < 1 or args.size < 16 or args.scale <= 0 or args.ss <= 0):
         parser.error('Use repeats>=1, size>=16 and positive scale/ss.')
     {'prepare': prepare, 'run': run, '_worker': worker, 'compare': compare}[args.action](args)

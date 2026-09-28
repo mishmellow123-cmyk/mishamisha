@@ -6,19 +6,21 @@ The material mode calls the real `SP.render` on twelve small diagnostic cases: c
 
 Each case runs once plus three identical warm repeats by default. The first SP call in a cold process includes compilation and rendering; subsequent same-signature calls measure warm execution. The separate `cache-hit` phase launches a new process against that variant's populated cache and rejects a missing SP cache hit or any output/input difference from that variant’s cold run. Full-frame timings also contain other kernels and capture overhead; use the recorded SP call times for the compiler comparison. Cold compilation time cannot be inferred by subtracting arbitrary full-frame timings.
 
+Suite mode runs all material cases, then the explicitly requested real frames in order, in the same process and private cache. A3920–4239 uses A14; A4240–4399 uses A15. Each call records its shot and any new typed signatures: compatible frame calls reuse the material compilation, while a naturally different signature is compiled once and reported. Warm full-frame linear and finished RGB must also match that frame's first result. This avoids starting separate cold SP compilers for materials, A14 and A15.
+
 All runs use one Numba thread, sequential OpenCV and BLAS thread limits of one. Source/input hashes, call settings, Python/library versions, signatures, cache hits/misses and process peak RSS are recorded. The wall-clock timeout terminates only the launched process group. No CPU affinity or background-load isolation is claimed. Run the variants sequentially under comparable machine load; do not interpret a one-off timing difference as a throughput estimate.
 
 From the repository root, with the validation Python on `PATH`:
 
 ```sh
 python -B the-long-dawn/review/compiler-study/benchmark.py prepare --repo . --out /absolute/new/benchmark-pair
-python -B the-long-dawn/review/compiler-study/benchmark.py run --out /absolute/new/benchmark-pair --variant reference --mode material --phase cold --timeout 1200
-python -B the-long-dawn/review/compiler-study/benchmark.py run --out /absolute/new/benchmark-pair --variant candidate --mode material --phase cold --timeout 1200
-python -B the-long-dawn/review/compiler-study/benchmark.py run --out /absolute/new/benchmark-pair --variant reference --mode material --phase cache-hit --timeout 1200
-python -B the-long-dawn/review/compiler-study/benchmark.py run --out /absolute/new/benchmark-pair --variant candidate --mode material --phase cache-hit --timeout 1200
-python -B the-long-dawn/review/compiler-study/benchmark.py compare --reference /absolute/new/benchmark-pair/results/material/reference/cold --candidate /absolute/new/benchmark-pair/results/material/candidate/cold --output /absolute/new/benchmark-pair/material-comparison.json
+python -B the-long-dawn/review/compiler-study/benchmark.py run --out /absolute/new/benchmark-pair --variant candidate --mode suite --frames 4202,4208,4239,4240,4360 --scale 0.5 --ss 1.5 --phase cold --timeout 1200
+python -B the-long-dawn/review/compiler-study/benchmark.py run --out /absolute/new/benchmark-pair --variant reference --mode suite --frames 4202,4208,4239,4240,4360 --scale 0.5 --ss 1.5 --phase cold --timeout 1200
+python -B the-long-dawn/review/compiler-study/benchmark.py run --out /absolute/new/benchmark-pair --variant candidate --mode suite --frames 4202,4208,4239,4240,4360 --scale 0.5 --ss 1.5 --phase cache-hit --timeout 1200
+python -B the-long-dawn/review/compiler-study/benchmark.py run --out /absolute/new/benchmark-pair --variant reference --mode suite --frames 4202,4208,4239,4240,4360 --scale 0.5 --ss 1.5 --phase cache-hit --timeout 1200
+python -B the-long-dawn/review/compiler-study/benchmark.py compare --reference /absolute/new/benchmark-pair/results/suite/reference/cold --candidate /absolute/new/benchmark-pair/results/suite/candidate/cold --output /absolute/new/benchmark-pair/suite-comparison.json
 ```
 
-For real frames, use `--mode A14 --frames 4202,4208,4239` or `--mode A15 --frames 4240,4360`, with explicit `--scale 0.5 --ss 1.5`. Each mode has separate per-variant caches. `--repeats 1` reduces full-frame work to two calls per frame. Preparation and `--help` do not import a renderer. A material render still compiles the entire SP kernel: a small image does not make that initial compilation cheap. Long runs require the coordinator's resource slot.
+The independent `material`, `A14` and `A15` modes remain available. Each mode has separate per-variant caches. `--repeats 1` reduces full-frame work to two calls per frame; use identical settings for both variants and the cache-hit phase. Preparation and `--help` do not import a renderer. A material render still compiles the entire SP kernel: a small image does not make that initial compilation cheap. Long runs require the coordinator's resource slot. Earlier material-only pilot results belong to harness `93f08d77426089370ff40ad1cf57592a3b0f8578d948ec472d7b3d193a850d42`; suite runs require fresh evidence under the revised harness hash.
 
 Comparison verifies source isolation and matching inputs/settings before comparing every saved float element; any output difference returns nonzero. Warm repeats must reproduce their first call exactly. `test_benchmark.py` includes a known changed pixel and mismatched-input/source negative controls and imports no renderer. These sampled cases cannot establish all-input equivalence or creative acceptance.

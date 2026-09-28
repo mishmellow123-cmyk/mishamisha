@@ -24,7 +24,7 @@ class ComparisonTests(unittest.TestCase):
             path = folder / 'image.npy'
             np.save(path, image)
             image_info = {'sha256': B.sha(image.tobytes())}
-            call = dict(name='probe', repeat=0, call=0, input_hashes=['same'], seconds=1.,
+            call = dict(mode='material', name='probe', repeat=0, call=0, input_hashes=['same'], seconds=1.,
                         img=image_info, zb={'sha256': 'same-depth'},
                         depth_changed_mask={'sha256': 'same-mask'}, depth_changed_pixels=2)
             if index and altered_input:
@@ -100,6 +100,26 @@ class ComparisonTests(unittest.TestCase):
             record['sp_calls'][0]['zb']['sha256'] = 'changed-depth'
             B.write_json(path, record)
             self.assertEqual(self.compare(args), 1)
+
+    def test_suite_preserves_requested_order_and_routes_cut_boundary(self):
+        self.assertEqual(B.frame_requests('suite', '4202,4208,4239,4240,4360'), [
+            dict(mode='A14', frame=4202), dict(mode='A14', frame=4208), dict(mode='A14', frame=4239),
+            dict(mode='A15', frame=4240), dict(mode='A15', frame=4360)])
+
+    def test_invalid_shot_frames_and_duplicate_suite_frames_fail(self):
+        for mode, frames in [('suite', '3919'), ('suite', '4400'), ('suite', '4240,4240'),
+                             ('A14', '4240'), ('A15', '4239')]:
+            with self.subTest(mode=mode, frames=frames), self.assertRaises(ValueError):
+                B.frame_requests(mode, frames)
+
+    def test_warm_finished_frame_change_fails_with_unchanged_linear_frame(self):
+        first = dict(mode='A15', frame=4240, repeat=0, linear={'sha256': 'same'}, finished={'sha256': 'same'})
+        warm = copy.deepcopy(first)
+        warm['repeat'] = 1
+        B.assert_warm_frames([first, warm])
+        warm['finished']['sha256'] = 'changed'
+        with self.assertRaisesRegex(AssertionError, 'Warm full frame changed finished'):
+            B.assert_warm_frames([first, warm])
 
 
 if __name__ == '__main__':
