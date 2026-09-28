@@ -208,18 +208,31 @@ def sweep_field(bf, u, v, t):
 # spots that crawl, a smouldering band, a crinkled char band of uneven width whose curled lip catches the fire, ember
 # flecks dying in the fresh char, then the toasted scorch and clean paper.
 
-def v2(b, rag=1.0):
-    """Extend a 16-float block to v2."""
+def v2(b, rag=1.0, creep=0.0):
+    """Extend a 16-float block to v2 (creep: a hold's slow drift outward after it rests, cm/s^2)."""
     out = np.zeros(20)
     out[:16] = b
     out[16] = 1.0
     out[17] = rag
+    out[18] = creep
     return out
 
 
 @njit(cache=True)
 def is_v2(bf):
     return bf.shape[0] > 17 and bf[16] > 0.5
+
+
+@njit(cache=True)
+def radius2(bf, t):
+    """v2 radius: a hold (mode 4) may creep on outward after it has eased to rest (bf[18], cm/s^2), so a rim that
+    glowed at the frame's edge leaves it (C5: 'for a moment it is only light')."""
+    R = radius(bf, t)
+    if bf.shape[0] > 18 and bf[12] > 3.5 and bf[18] > 0.0:
+        x = t - bf[3] - 2.0 * bf[5]
+        if x > 0.0:
+            R += bf[18] * x * x
+    return R
 
 
 @njit(cache=True)
@@ -347,7 +360,7 @@ def field2(bf, u, v, t):
         # where the margin is burned away we see the scorched leaf beneath (deep char), not a hole
         char = max(char, 0.9 * hole)
         return brown, char, 0.0, 0.0, 0.0, lip * (1.0 - hole), 0.0, crk
-    R = radius(bf, t)
+    R = radius2(bf, t)
     d = dist2(bf, u, v)
     dt = t - bf[3] if (bf[12] < 0.5 or bf[12] > 3.5) else bf[14] - t
     heat = min(max((dt + bf[13]) / max(bf[13], 1e-3), 0.0), 1.0)
@@ -372,7 +385,7 @@ def field2(bf, u, v, t):
 def front_r(bf, ang, t):
     """Radius (cm) of the radial front along the ray at angle `ang` from the origin at time t (bisection on dist2);
     -1 before the hole opens. Used to seed the smoke on the burning edge."""
-    R = radius(bf, t)
+    R = radius2(bf, t)
     if R <= 0.0:
         return -1.0
     ca = math.cos(ang)

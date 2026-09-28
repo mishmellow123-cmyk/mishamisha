@@ -591,7 +591,7 @@ class Book3:
             Fu, Fv = float(K.Fw[0]), float(0.5 * bk.PH - K.Fw[1])
             # PAGES-C: burn edge v2 (torn at birth, char, lip, beaded embers, flecks) and the paper's smoke
             post = BURN.v2(BURN.hold_params((Fu, Fv), K.T_BURN, 6.6, 1.2, amp=0.42, freq=0.35, seed=4, brown=2.8,
-                                            char=0.34, edge=0.04, lead=1.5))
+                                            char=0.34, edge=0.04, lead=1.5), creep=0.12)
             smk = (post, 'radial', (0.30, 0.19, 0.12), 0.45, 1.0, 0.45)
         return self.finish_layer(bk, cam, L, tL, tR, t, fire=fire, xl=xl, leaf=leaf, post=post, texS=tBack, st=0.06,
                                  fire_k=(1.0 if t > K.T_GLOW - 0.1 else 0.0), smoke=smk)
@@ -784,9 +784,17 @@ class Book3:
         return iy[ok], ix[ok], x, y, ed
 
     def _plate_rgb(self, x, y):
-        import cv2
-        return cv2.remap(self.plate_img(), x.astype(np.float32)[None, :], y.astype(np.float32)[None, :],
-                         cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)[0]
+        """Bilinear samples of the plate at pixel-index coordinates (x, y) (cv2.remap caps a map at 32767 wide)."""
+        img = self.plate_img()
+        H, W = img.shape[:2]
+        x = np.clip(x, 0.0, W - 1.001)
+        y = np.clip(y, 0.0, H - 1.001)
+        x0 = x.astype(np.int64)
+        y0 = y.astype(np.int64)
+        fx = (x - x0)[:, None].astype(np.float32)
+        fy = (y - y0)[:, None].astype(np.float32)
+        return ((img[y0, x0] * (1 - fx) + img[y0, x0 + 1] * fx) * (1 - fy) +
+                (img[y0 + 1, x0] * (1 - fx) + img[y0 + 1, x0 + 1] * fx) * fy)
 
     def plate_hdr(self, bk):
         """In the render (every shutter sample): the plate printed on the verso, lit like it: the page's light times
