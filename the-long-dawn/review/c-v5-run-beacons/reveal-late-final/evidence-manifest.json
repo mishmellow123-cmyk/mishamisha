@@ -1,0 +1,62 @@
+[
+  {
+    "file": "audit.md",
+    "raw_sha256": "3b7691ff5a81028c6a82f755d23646008c196f074ce4ec9c17afcf43969bfe43",
+    "published_sha256": "329c8b9c586f6559cce5bd32a031aef1d59176ff6ef92da9a426f6d04763f357",
+    "text_normalized": true
+  },
+  {
+    "file": "composition-3072-3095.png",
+    "raw_sha256": "4487a76b267986acd428aac8dc502d31d355511198283838005553088386a5b9",
+    "published_sha256": "4487a76b267986acd428aac8dc502d31d355511198283838005553088386a5b9",
+    "text_normalized": false
+  },
+  {
+    "file": "evidence.json",
+    "raw_sha256": "a2efa95b22f1cdc3ea47aeba669dddd30befb83fc7fdd46b3529defd0bd8c1be",
+    "published_sha256": "a2efa95b22f1cdc3ea47aeba669dddd30befb83fc7fdd46b3529defd0bd8c1be",
+    "text_normalized": false
+  },
+  {
+    "file": "far-native-3072-3095.png",
+    "raw_sha256": "33953bf9e68bac16d3c058aa1561f110c4be1b4986203248e480e78d2c9dfedb",
+    "published_sha256": "33953bf9e68bac16d3c058aa1561f110c4be1b4986203248e480e78d2c9dfedb",
+    "text_normalized": false
+  },
+  {
+    "file": "key-composition-480.png",
+    "raw_sha256": "8d9123bc0da389e79a2939b54adb67f68530d1135f1945c5eaadebd590ab221c",
+    "published_sha256": "8d9123bc0da389e79a2939b54adb67f68530d1135f1945c5eaadebd590ab221c",
+    "text_normalized": false
+  },
+  {
+    "file": "key-far-native.png",
+    "raw_sha256": "868e2ae653ce4708544da0085e0b425d1e60546c5bbd9fa82e84f21e088c81a2",
+    "published_sha256": "868e2ae653ce4708544da0085e0b425d1e60546c5bbd9fa82e84f21e088c81a2",
+    "text_normalized": false
+  },
+  {
+    "file": "key-near-native.png",
+    "raw_sha256": "8cfbd85ba7509734c6882ad01b2104afee688a8559fda402a3c99ab3d0104380",
+    "published_sha256": "8cfbd85ba7509734c6882ad01b2104afee688a8559fda402a3c99ab3d0104380",
+    "text_normalized": false
+  },
+  {
+    "file": "near-native-3072-3095.png",
+    "raw_sha256": "36ab33837e21a70a35f7c84468fdf622fb48196acb7b641f766cd828faffd916",
+    "published_sha256": "36ab33837e21a70a35f7c84468fdf622fb48196acb7b641f766cd828faffd916",
+    "text_normalized": false
+  },
+  {
+    "file": "receipt_02880_02999.json.snapshot",
+    "raw_sha256": "1d4e2c6a7c00f2221bc74eb1ce6edee3aa08f40c4f6d69bfef3fc0a6c6cfef8e",
+    "published_sha256": "1d4e2c6a7c00f2221bc74eb1ce6edee3aa08f40c4f6d69bfef3fc0a6c6cfef8e",
+    "text_normalized": false
+  },
+  {
+    "file": "receipt_03000_03119.json.snapshot",
+    "raw_sha256": "fc10b4c76b8899a290c5b80de6405c33c8b0ad46c7eada68c95c66b5022c73fa",
+    "published_sha256": "fc10b4c76b8899a290c5b80de6405c33c8b0ad46c7eada68c95c66b5022c73fa",
+    "text_normalized": false
+  }
+]
