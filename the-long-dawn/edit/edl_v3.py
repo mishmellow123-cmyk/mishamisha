@@ -173,10 +173,10 @@ A = [
       [T('crossing'), T('run')]),
     S('A19', 5840, 6240, 'R7', 'THE BLUE HOUR', 'RUN-A',
       'The lantern set down among the watch-fires; they sit and unrope; the east pales to rose; hearth smoke below.',
-      [T('bluehour'), T('run')]),
+      [T('dawnrev'), T('bluehour'), T('run')]),       # A-FIX ENDING (approved 28 Sep): B's dusk reversed into a dawn
     S('A20', 6240, 6480, 'X3', 'TITLE', 'EDIT over RUN-A',
       'THE LONG DAWN kindles in the rose sky over the valley, holds, crumbles into rising sparks as the sky pales.',
-      [T('bluehour'), T('run')], kind='title'),                  # ember title: edit/ember_title_v3.py
+      [T('dawnrev'), T('bluehour'), T('run')], kind='title'),                  # ember title: edit/ember_title_v3.py
 ]
 
 # ------------------------------------------------------------------------------------------------------- B
@@ -363,7 +363,7 @@ TRANS = {'A': [], 'B': [], 'C': [
 # A (28 Sep, approved): A-FIX's six windows (edit/afix_comp.py: bloom, dissolve, vision x2, iceheart, ember) + EDIT's
 # grade-match of the harvested B reveal (B's sky is a touch darker and cooler than reveal_A's at the 3680 cut)
 import afix_comp  # noqa: E402
-TRANS['A'] = list(afix_comp.A_TRANS) + [
+TRANS['A'] = list(afix_comp.A_TRANS) + [afix_comp.WATCHFIRES] + [      # + A-FIX's ENDING (approved 28 Sep)
     dict(f0=3612, f1=3660, kind='grade', gain=(1.18, 0.99, 0.94),
          note="HER FIRE (reveal_B, cropped) matched to reveal_A's sky: top-third means (.101 .142 .263) -> (.119 .140 "
               ".246) (reveal_A 3680; re-check on 3660 when reveal_a_1 lands)"),

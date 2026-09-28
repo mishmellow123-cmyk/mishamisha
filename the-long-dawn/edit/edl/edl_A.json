@@ -940,6 +940,24 @@
    "desc": "The lantern set down among the watch-fires; they sit and unrope; the east pales to rose; hearth smoke below.",
    "takes": [
     {
+     "stem": "dawnrev",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/dawnrev_A",
+      "renders/dawnrev_v3"
+     ]
+    },
+    {
      "stem": "bluehour",
      "off": 0,
      "mode": "v3",
@@ -991,6 +1009,24 @@
    "owner": "EDIT over RUN-A",
    "desc": "THE LONG DAWN kindles in the rose sky over the valley, holds, crumbles into rising sparks as the sky pales.",
    "takes": [
+    {
+     "stem": "dawnrev",
+     "off": 0,
+     "mode": "v3",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/dawnrev_A",
+      "renders/dawnrev_v3"
+     ]
+    },
     {
      "stem": "bluehour",
      "off": 0,
@@ -1448,6 +1484,76 @@
     2850
    ],
    "note": "A-FIX E4: the ember, 12-20 px with a soft glow; match cut to strike 1"
+  },
+  {
+   "f0": 5840,
+   "f1": 6480,
+   "cut": 5840,
+   "kind": "watchfires",
+   "lantern": [
+    1265,
+    640
+   ],
+   "fires": [
+    [
+     1640,
+     662,
+     2.0,
+     6240
+    ],
+    [
+     1330,
+     452,
+     1.6,
+     6290
+    ],
+    [
+     180,
+     470,
+     1.5,
+     6340
+    ],
+    [
+     1560,
+     350,
+     1.2,
+     6390
+    ],
+    [
+     1265,
+     640,
+     2.6,
+     99999
+    ]
+   ],
+   "figures": [
+    [
+     1236,
+     646,
+     16
+    ],
+    [
+     1250,
+     648,
+     14
+    ],
+    [
+     1286,
+     646,
+     17
+    ],
+    [
+     1301,
+     647,
+     15
+    ]
+   ],
+   "destreak": [
+    520,
+    690,
+    2.2
+   ],
+   "note": "A-FIX ENDING: the watch-fires pale as the long dawn comes"
   },
   {
    "f0": 3612,
