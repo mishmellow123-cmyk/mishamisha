@@ -219,6 +219,17 @@ mottled stone (banded stacks, not offices). RELAUNCHED by me 21:14Z (director pr
 # >>> EMBERS-A3 (split off EMBERS-A2, 27 Sep ~19:30Z): A16 TOWERS IN THE LIGHT + A17 THE FIRE, SEEN (4400-4879,
 # one take) + both in the _alt_codedtowers ALT. Owner file: turn.py (+ cloud/jobs/embers_A3_turn.json, _alt_turn.json).
 # Shared modules untouched so far (a3.py/edge.py/scene_b.py hooks are installed from turn.py on import). <<<
+## EMBERS-A3 STATE (28 Sep ~00:10Z): POLISH PASS (director's RESUME list) -- code pushed (ac5518c), farm check running
+* HEART CONTRACT v2 ACKed in RUN-A4's block (shots/run/NOTES.md, 8551f02): turn.post draws shots/run/heart2.py
+  unchanged on the linear HDR (u = 10 px on 4879, world-fixed before; I = gather^1.5; no filaments); the fire's body
+  fades to 0 by 4874; finish eases to the crossing's FINISH (bloom 0.08/0.9) over 4840-4879.
+* Fairy lights: scene_b got a small noted hook (_line_mod in the joints/seams/edges shading, a no-op unless a schedule
+  defines line_mod); turn.line_mask breaks the lines into irregular lit lengths with dark gaps (static snoise per
+  point) for t >= 4400, and TowerLight uses the same mask with wider splats (no beads).
+* Giants' openings x1.9 brighter, x1.6 larger; rim lights x3; ridge clusters added in the gap's sky (az 4.47/4.62/4.80).
+* Check test: farm --test 4460,4580,4760,4879 (MAIN) + 4580 (ALT) -> renders/_farmtest/embers_A3_{turn,alt_turn}/.
+  Then JOB READY embers_A3_turn + embers_A3_alt_turn (same job files) for a full re-render of 4400-4879.
+
 ## EMBERS-A3 STATE (27 Sep ~20:50Z) -- RESUME HERE (~23:30Z)
 * 20:55Z: APPROVED (director). main launched BOTH finals itself (--nodes 2; log _local_logs/jobs/embers_A3_turn_farm.log)
   -> renders/embers_A3 4400-4879 + renders/embers_A3_alt_codedtowers 4400-4879. Do NOT relaunch them; on resume, check
