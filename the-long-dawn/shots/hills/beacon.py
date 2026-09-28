@@ -418,6 +418,9 @@ AFIX_TGT = ((0.24, 1.265, 0.0), (0.33, 1.06, 0.0))   # strike 1's spark lands on
 AFIX_BREATH_COOL = np.array([0.10, 0.12, 0.16])   # moonlit breath (linear, x density): pale, never lit like a flame
 
 
+BEACON_SMOKE_AMB = (0.004, 0.005, 0.009)          # the beacon smoke's ambient (reveal_a lifts it to moonlight)
+
+
 def roar_mix(f):
     """0 before the roar, 1 once the bonfire has taken over: A-FIX ramps it; otherwise the one-frame switch."""
     if not AFIX:
@@ -1156,7 +1159,7 @@ class FirstBeacon:
                 fire.render_smoke(sm_rgb, sm_a, cam.params(), float(b[0]), float(b[1]), float(b[2]),
                                   (t - SMOKE_T0) if HEROINE_V2 else t, 1.7,
                                   7.0, 0.25, 0.30, 0.9, 0.9, 0.55 * smoothstep(ROAR, ROAR + 12, f),
-                                  0.30 * I, 0.11 * I, 0.03 * I, 0.9, 0.004, 0.005, 0.009,
+                                  0.30 * I, 0.11 * I, 0.03 * I, 0.9, *BEACON_SMOKE_AMB,
                                   int(min(sx)) - 20, int(min(sy)) - 20, int(max(sx)) + 20, int(max(sy)) + 20)
                 over(img, sm_rgb, sm_a)
         # --- cairn + woman

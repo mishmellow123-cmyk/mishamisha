@@ -52,7 +52,7 @@ FIRES_NPY = os.path.join(HERE, 'reveal_a_fires.npy')
 # fires ANSWERING across them: at 3-5 px they were invisible. FAR_PXS scales the unresolved fires' hot point and aura
 # (nighta draws them at a fixed 0.95 / 3.4 / 11 px x pxs, energy x pxs^2). GLOW_RAYS 0: the glow's shadow rays fanned
 # up from the tallest peak like a searchlight.
-FAR_PXS = 2.1
+FAR_PXS = 3.0
 GLOW_RAYS = 0.0
 
 GUARD = {'camera': '49dd99955a91d12e61f657c861031c7f',  # A-FIX branch only (AFIX False here)
@@ -80,6 +80,7 @@ BK.V3_REKEY = True           # == render.py make_shot('beacon_v3_roar2')
 BK.use_master_timing()
 BK.apply_h5_calls()
 BK.apply_roar2()
+BK.BEACON_SMOKE_AMB = (0.020, 0.026, 0.045)   # A-FIX: her smoke a pale moonlit veil, not a dark smudge over the sky
 assert BK.ROAR == 1476 and BK.F1 == TAKE_END, (BK.ROAR, BK.F1)
 _orig_s1_world = BK.s1_world
 
