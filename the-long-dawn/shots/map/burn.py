@@ -198,3 +198,191 @@ def sweep_field(bf, u, v, t):
             edge = e * (0.15 + 1.1 * hot)
         pool = math.exp(-max(sdf, 0.0) / 0.5) * (1.0 - hole)
     return brown, char, hole, edge, pool
+
+
+# ============================================================ v2 (PAGES-C) ===
+# The book's paper burns, v2 (PAGES-C, 28 Sep; review/C_PAGES.md #1). A v2 block is 20 floats: the 16 above, then
+# 16 = 1 (the v2 flag), 17 = raggedness gain. v1 blocks (16 floats; MAP-L2's road.py) keep `field` unchanged.
+# The front is torn at every scale down to the fibre with an ABSOLUTE raggedness (so a small hole is never born round:
+# the paper breaks through at a few points and they merge); behind the hole's edge a thin beaded ember line with hot
+# spots that crawl, a smouldering band, a crinkled char band of uneven width whose curled lip catches the fire, ember
+# flecks dying in the fresh char, then the toasted scorch and clean paper.
+
+def v2(b, rag=1.0):
+    """Extend a 16-float block to v2."""
+    out = np.zeros(20)
+    out[:16] = b
+    out[16] = 1.0
+    out[17] = rag
+    return out
+
+
+@njit(cache=True)
+def is_v2(bf):
+    return bf.shape[0] > 17 and bf[16] > 0.5
+
+
+@njit(cache=True)
+def _rag(u, v, s, k):
+    """Absolute raggedness of a paper burn front (cm), amplitude falling with scale down to the fibre."""
+    return k * (0.26 * gnoise(u * 2.6, v * 2.6, 361 + s) + 0.11 * gnoise(u * 9.0, v * 9.0, 363 + s) +
+                0.045 * gnoise(u * 27.0, v * 27.0, 365 + s) + 0.018 * gnoise(u * 70.0, v * 70.0, 367 + s) +
+                0.008 * gnoise(u * 170.0, v * 170.0, 369 + s))
+
+
+@njit(cache=True)
+def dist2(bf, u, v):
+    du = u - bf[1]
+    dv = (v - bf[2]) / bf[15]
+    r = math.sqrt(du * du + dv * dv)
+    s = int(bf[8])
+    n1 = fbm(u * bf[7], v * bf[7], 301 + s, 3, 2.0, 0.5)
+    return r * (1.0 + bf[6] * n1) + 0.3 * bf[6] * n1 + _rag(u, v, s, bf[17])
+
+
+@njit(cache=True)
+def _bands(bf, u, v, t, sdf, w, embers, still):
+    """The structure outside a hole's edge (sdf > 0 is paper): (char, hole, edge, lip, fleck, crk)."""
+    s = int(bf[8])
+    wv = max(w * (0.7 + 0.6 * (0.5 + gnoise(u * 3.1, v * 3.1, 371 + s))), 1e-4)   # the char band's width wanders
+    char = 0.0
+    if sdf < wv:
+        x = (max(sdf, 0.0) - 0.55 * wv) / (0.45 * wv)
+        x = min(max(x, 0.0), 1.0)
+        char = 1.0 - x * x * (3.0 - 2.0 * x)
+    hole = min(max(0.5 - sdf / 0.008, 0.0), 1.0)
+    # crinkle: carbon wrinkled across the band (stretched along the edge by the noise's anisotropy of scale)
+    crk = 0.5 + 0.5 * gnoise(u * 34.0, v * 34.0, 381 + s) + 0.3 * gnoise(u * 90.0, v * 90.0, 383 + s)
+    crk = min(max(crk, 0.0), 1.0)
+    # the curled lip at the hole's edge catches the fire
+    lip = math.exp(-((sdf - 0.02) / 0.014) ** 2) * (0.55 + 0.9 * max(gnoise(u * 18.0, v * 18.0, 373 + s), 0.0))
+    edge = 0.0
+    fleck = 0.0
+    if embers > 0.0 and sdf > -0.01:
+        hot = 0.5 + 0.5 * gnoise(u * 6.0 - t * 0.9, v * 6.0 + t * 0.7, 311 + s)
+        hot = max(hot, 0.0) ** 1.6
+        bead = max(gnoise(u * 24.0 + t * 1.3, v * 24.0 - t * 0.8, 375 + s) + 0.18, 0.0) * 2.2
+        core = math.exp(-((sdf - 0.006) / 0.0075) ** 2)
+        halo = math.exp(-max(sdf, 0.0) / 0.05)
+        br = 1.0 - 0.45 * still * (0.5 + 0.5 * math.sin(t * 1.7 + u * 0.9 + v * 0.4))     # embers at rest breathe
+        edge = (core * (0.25 + 1.6 * hot) * (0.45 + bead) + 0.3 * halo * hot) * br * embers
+        if sdf > 0.0 and sdf < wv:
+            fn = gnoise(u * 60.0, v * 60.0, 377 + s)
+            tw = 0.5 + 0.5 * gnoise(u * 11.0, t * 2.2, 379 + s)
+            fleck = max(fn - 0.3, 0.0) * 6.0 * math.exp(-sdf / 0.09) * (0.35 + 0.65 * tw) * embers
+    return char, hole, edge, lip, fleck, crk
+
+
+@njit(cache=True)
+def sweep_front(bf, t):
+    x = (t - bf[3]) / max(bf[13], 1e-3)
+    x = min(max(x, 0.0), 1.0)
+    return bf[4] + (bf[5] - bf[4]) * (x * x * (3.0 - 2.0 * x))
+
+
+@njit(cache=True)
+def sweep_d(bf, u, v):
+    """The sweep's ragged distance along its direction (the front is the level set sweep_d = sweep_front)."""
+    s = int(bf[8])
+    return u * bf[1] + v * bf[2] + 0.9 * fbm(u * bf[7], v * bf[7], 341 + s, 3, 2.0, 0.5) + 1.6 * _rag(u, v, s, bf[17])
+
+
+@njit(cache=True)
+def sweep_pt(bf, lat, t):
+    """(u, v) of the sweep front at lateral position `lat` (cm along the front) at time t (bisection)."""
+    dx, dy = bf[1], bf[2]
+    ex, ey = -dy, dx
+    front = sweep_front(bf, t)
+    lo = front - 5.0
+    hi = front + 5.0
+    for _ in range(22):
+        mid = 0.5 * (lo + hi)
+        if sweep_d(bf, lat * ex + mid * dx, lat * ey + mid * dy) < front:
+            lo = mid
+        else:
+            hi = mid
+    mid = 0.5 * (lo + hi)
+    return lat * ex + mid * dx, lat * ey + mid * dy
+
+
+@njit(cache=True)
+def field2(bf, u, v, t):
+    """v2: (brown, char, hole, edge, pool, lip, fleck, crk) at page cm (u, v), time t."""
+    z = 0.0
+    if bf[0] <= 0.0:
+        return z, z, z, z, z, z, z, z
+    s = int(bf[8])
+    if bf[12] > 2.5 and bf[12] < 3.5:                  # sweep
+        x = (t - bf[3]) / max(bf[13], 1e-3)
+        x = min(max(x, 0.0), 1.0)
+        front = sweep_front(bf, t)
+        d = sweep_d(bf, u, v)
+        sdf = front - d
+        if sdf < -0.02:
+            return z, z, 1.0, z, z, z, z, z
+        brown = 0.0
+        if sdf < bf[9]:
+            y = 1.0 - max(sdf, 0.0) / bf[9]
+            brown = y * y
+        mv = 1.0 if x < 1.0 else 0.0
+        char, hole, edge, lip, fleck, crk = _bands(bf, u, v, t, sdf, bf[10], 1.0, 1.0 - mv)
+        pool = math.exp(-max(sdf, 0.0) / 0.5) * (1.0 - hole)
+        return brown, char, hole, edge, pool, lip, fleck, crk
+    if bf[12] > 1.5 and bf[12] < 2.5:                  # scorched outer edges that heal
+        PW, PH = bf[1], bf[2]
+        fe = (PW - u) if bf[15] > 0 else u
+        d = min(fe, min(v, PH - v))
+        d += 0.45 * fbm(u * bf[7], v * bf[7], 331 + s, 3, 2.0, 0.5) + 0.8 * _rag(u, v, s, bf[17]) + 0.3
+        k = min(max((bf[14] - t) / max(bf[14] - bf[3], 1e-3), 0.0), 1.0)
+        R = bf[4] * k ** bf[5]
+        if R <= 0.0:
+            return z, z, z, z, z, z, z, z
+        sdf = d - R
+        brown = 0.0
+        wb = bf[9] * min(R / 0.6, 1.0)
+        if sdf < wb:
+            x = 1.0 - max(sdf, 0.0) / max(wb, 1e-3)
+            brown = x * x
+        char, hole, edge, lip, fleck, crk = _bands(bf, u, v, t, sdf, bf[10] * min(R / 0.4, 1.0), 0.0, 1.0)
+        # where the margin is burned away we see the scorched leaf beneath (deep char), not a hole
+        char = max(char, 0.9 * hole)
+        return brown, char, 0.0, 0.0, 0.0, lip * (1.0 - hole), 0.0, crk
+    R = radius(bf, t)
+    d = dist2(bf, u, v)
+    dt = t - bf[3] if (bf[12] < 0.5 or bf[12] > 3.5) else bf[14] - t
+    heat = min(max((dt + bf[13]) / max(bf[13], 1e-3), 0.0), 1.0)
+    Rb = max(R, 0.0) + bf[9] * heat * (0.6 + 0.4 * heat)
+    sdf = d - max(R, -0.5)
+    brown = 0.0
+    if Rb > 0.0 and d < Rb:
+        x = 1.0 - (d - max(R, 0.0)) / max(Rb - max(R, 0.0), 1e-3)
+        x = min(max(x, 0.0), 1.0)
+        brown = x * x * (0.55 + 0.45 * heat)
+    if R <= 0.0:
+        return brown, z, z, z, z, z, z, z
+    still = 0.0
+    if bf[12] > 3.5:                                   # hold: the front eases to rest at the frame's edge
+        still = min(max((dt / max(bf[5], 1e-3) - 2.0) / 2.0, 0.0), 1.0)
+    char, hole, edge, lip, fleck, crk = _bands(bf, u, v, t, sdf, bf[10], 1.0, still)
+    pool = math.exp(-max(sdf, 0.0) / 0.5) * (1.0 - hole)
+    return brown, char, hole, edge, pool, lip, fleck, crk
+
+
+@njit(cache=True)
+def front_r(bf, ang, t):
+    """Radius (cm) of the radial front along the ray at angle `ang` from the origin at time t (bisection on dist2);
+    -1 before the hole opens. Used to seed the smoke on the burning edge."""
+    R = radius(bf, t)
+    if R <= 0.0:
+        return -1.0
+    ca = math.cos(ang)
+    sa = math.sin(ang) * bf[15]
+    lo = 0.0
+    hi = 3.0 * R + 1.0
+    for _ in range(18):
+        mid = 0.5 * (lo + hi)
+        if dist2(bf, bf[1] + ca * mid, bf[2] + sa * mid) < R:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)

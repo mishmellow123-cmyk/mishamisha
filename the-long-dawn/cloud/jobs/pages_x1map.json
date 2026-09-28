@@ -1,0 +1,39 @@
+{
+ "name": "pages_x1map",
+ "branch": "claude/long-dawn-v2",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow"
+ ],
+ "render": [
+  "cd shots/map && NUMBA_NUM_THREADS=4 python3 x1burn.py --center 1130,485 --t-open 4152 --speed 9.4 --frames 4150-4185 --out ../../renders/x1_map_C",
+  "cd shots/map && NUMBA_NUM_THREADS=4 python3 x1burn.py --center 960,402 --t-open 5597 --speed 6.3 --frames 5594-5640 --out ../../renders/x1_map_C71"
+ ],
+ "outputs": [
+  {
+   "out_dir": "renders/x1_map_C",
+   "frames": "4150-4185"
+  },
+  {
+   "out_dir": "renders/x1_map_C_matte",
+   "frames": "4150-4185"
+  },
+  {
+   "out_dir": "renders/x1_map_C_cover",
+   "frames": "4150-4185"
+  },
+  {
+   "out_dir": "renders/x1_map_C71",
+   "frames": "5594-5640"
+  },
+  {
+   "out_dir": "renders/x1_map_C71_matte",
+   "frames": "5594-5640"
+  },
+  {
+   "out_dir": "renders/x1_map_C71_cover",
+   "frames": "5594-5640"
+  }
+ ],
+ "ship": "jpg",
+ "push_every": 300
+}

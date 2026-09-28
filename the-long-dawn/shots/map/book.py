@@ -361,7 +361,11 @@ def trace_kernel(G, P, ck, uL, uR, da, cam_pos, cam_r, cam_u, cam_f, F, W, H, zm
             px = ox + dx * th
             py = oy + dy * th
             if LX.shape[0] > 0:
-                tl, lq, sl = leaf_hit(ox, oy, oz, dx, dy, dz, LX, LZ, 0.5 * PH, th if (hit and py <= table_far) else 1e9)
+                # PAGES-C: a leaf lying on a cockled page must win over the page's small waves (it was z-fighting:
+                # the page beneath showed through the flat part of a turning leaf in patches), so accept a leaf hit
+                # up to ~1.2 mm (vertically) behind the page surface
+                tmx = (th + 0.12 / max(-dz, 0.1)) if (hit and py <= table_far) else 1e9
+                tl, lq, sl = leaf_hit(ox, oy, oz, dx, dy, dz, LX, LZ, 0.5 * PH, tmx)
                 if tl > 0.0:
                     k = int(sl)
                     ex = LX[lq, k + 1] - LX[lq, k]
@@ -459,7 +463,9 @@ def trace_kernel(G, P, ck, uL, uR, da, cam_pos, cam_r, cam_u, cam_f, F, W, H, zm
             if LX.shape[0] > 0 and sh > 0.0:
                 tb, _, _ = leaf_hit(px, py, pz + 2e-3, lx, ly, lz, LX, LZ, 0.5 * PH, 1e9)
                 if tb > 0.0:
-                    sh *= 0.12 + 0.1 * min(tb / 6.0, 1.0)       # a thin leaf: the shadow is soft and warm
+                    # a thin leaf: the shadow is soft and warm (PAGES-C: a leaf lets a third of the hearth through;
+                    # at 0.12 the riffle's dozen leaves darkened the whole frame for a second)
+                    sh *= 0.3 + 0.15 * min(tb / 6.0, 1.0)
             G[i, j, 11] = sh
             # ambient occlusion from the local field
             hs = 0.0
@@ -538,22 +544,36 @@ def paper(u, v, fp, PW, PH, seed, age, fore_right):
     # thumbed corner: the foot of the fore-edge
     uc = (PW - u) if fore_right else u
     gr = age * 0.5 * math.exp(-(uc * uc) / 18.0 - ((PH - v) ** 2) / 30.0) * (0.7 + 0.3 * big)
-    r = 0.80 + 0.07 * t + 0.015 * fib - 0.16 * tone - 0.24 * fox - 0.14 * gr
-    g = 0.69 + 0.07 * t + 0.015 * fib - 0.22 * tone - 0.32 * fox - 0.2 * gr
-    b = 0.47 + 0.06 * t + 0.015 * fib - 0.24 * tone - 0.35 * fox - 0.22 * gr
+    # PAGES-C: handmade laid paper: chain lines every ~2.4 cm (a faint darker band with a lighter shoulder) and the
+    # close laid lines (1 mm, only where a pixel resolves them); the cloudy formation of the pulp in the tone
+    cv = u * 0.4167 + 0.08 * gnoise(v * 0.2, u * 0.1, 57 + sd)
+    cf = cv - math.floor(cv) - 0.5
+    chain = math.exp(-(cf / 0.035) ** 2) - 0.25 * math.exp(-(cf / 0.12) ** 2)
+    laid = 0.0
+    if fp < 0.025:
+        laid = _ss(0.025, 0.012, fp) * math.cos(6.2832 * (v * 10.0 + 0.15 * gnoise(u * 0.8, v * 0.3, 59 + sd)))
+    cloud = fbm(u * 1.7, v * 1.7, 61 + sd, 3, 2.0, 0.55)
+    q = 0.08 * fib - 0.018 * chain + 0.007 * laid + 0.03 * cloud
+    r = 0.80 + 0.07 * t + q - 0.16 * tone - 0.24 * fox - 0.14 * gr
+    g = 0.69 + 0.07 * t + q - 0.22 * tone - 0.32 * fox - 0.2 * gr
+    b = 0.47 + 0.06 * t + 0.8 * q - 0.24 * tone - 0.35 * fox - 0.22 * gr
     return r, g, b, fib
 
 
 @njit(cache=True, parallel=True)
 def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_col, amb_col, env_col,
                  texL, metaL, ppcL, texR, metaR, ppcR, seedL, seedR, age, burnL, burnR, xl, t,
-                 texF, metaF, ppcF, texB, metaB, ppcB):
+                 texF, metaF, ppcF, texB, metaB, ppcB, texS, metaS, ppcS, st_amt, fire_k, tooth_k):
     """Colour (linear HDR) and coverage of the book layer. burnL/burnR: burn fields per page (burn.py);
-    xl: extra point lights (n x 6: position, colour) without shadows (a fire on the page)."""
+    xl: extra point lights (n x 6: position, colour) without shadows (a fire on the page).
+    PAGES-C: texS/st_amt: the reverse's writing showing through the leaf (mirrored, blurred; 0 = off); fire_k: the
+    burning letters as incandescent strokes (a hot heart graded to a deep red rim, the paper scorched round them);
+    tooth_k: the paper's tooth in the normal (a raking hearth shows it)."""
     H, W = out.shape[0], out.shape[1]
     PW, PH = P[0], P[1]
     for i in prange(H):
         tv = np.zeros(NCH, np.float64)
+        tv2 = np.zeros(NCH, np.float64)
         for j in range(W):
             m = int(G[i, j, 0])
             dx, dy, dz = G[i, j, 13], G[i, j, 14], G[i, j, 15]
@@ -590,6 +610,13 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 if m == M_LEAF_F or m == M_LEAF_B:
                     sd = sd + 5.0
                 pr, pg, pb, fib = paper(u, v, fp, PW, PH, sd, age, right)
+                # the reverse's writing, faintly through the leaf (mirrored, soft)
+                if st_amt > 0.0 and (m == M_PAGE_L or m == M_PAGE_R):
+                    tex(texS, metaS, ppcS, PW - u, v, fp * 5.0 + 0.02, tv2)
+                    sti = min(tv2[0], 1.0) * st_amt
+                    pr *= 1.0 - 0.85 * sti
+                    pg *= 1.0 - sti
+                    pb *= 1.0 - 1.1 * sti
                 if m == M_PAGE_R:
                     tex(texR, metaR, ppcR, u, v, fp, tv)
                 elif m == M_PAGE_L:
@@ -598,6 +625,28 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     tex(texF, metaF, ppcF, u, v, fp, tv)
                 else:
                     tex(texB, metaB, ppcB, u, v, fp, tv)
+                # the paper's tooth: fibre-scale relief a raking light catches
+                if tooth_k > 0.0 and fp < 0.04:
+                    kt = tooth_k * _ss(0.04, 0.012, fp)
+                    tu_ = gnoise(u * 55.0, v * 55.0, 49) + 0.6 * gnoise(u * 140.0, v * 140.0, 53)
+                    tw_ = gnoise(u * 55.0 + 5.3, v * 55.0, 51) + 0.6 * gnoise(u * 140.0 + 2.1, v * 140.0, 55)
+                    nx = nx + kt * tu_
+                    ny = ny + kt * tw_
+                    nn = math.sqrt(nx * nx + ny * ny + nz * nz)
+                    nx /= nn
+                    ny /= nn
+                    nz /= nn
+                fb = 0.0
+                if fire_k > 0.0:
+                    if m == M_PAGE_R:
+                        tex(texR, metaR, ppcR, u, v, fp * 7.0 + 0.03, tv2)
+                    elif m == M_PAGE_L:
+                        tex(texL, metaL, ppcL, u, v, fp * 7.0 + 0.03, tv2)
+                    elif m == M_LEAF_F:
+                        tex(texF, metaF, ppcF, u, v, fp * 7.0 + 0.03, tv2)
+                    else:
+                        tex(texB, metaB, ppcB, u, v, fp * 7.0 + 0.03, tv2)
+                    fb = min(tv2[4], 1.0)
                 if m == M_LEAF_F or m == M_LEAF_B:
                     trans = 0.3
                 ink = min(tv[0], 1.25)
@@ -621,9 +670,12 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 # vermilion (rubric): an opaque, slightly chalky red laid over the ink it shares a letter with
                 if rub > 0.0:
                     kr = min(rub * (0.92 + 0.16 * tooth), 1.0) ** 0.8
-                    ar = ar * (1 - kr) + 0.5 * kr
-                    ag = ag * (1 - kr) + 0.078 * kr
-                    ab = ab * (1 - kr) + 0.028 * kr
+                    # PAGES-C: old vermilion is not flat: laid unevenly, rubbed and a little faded (it read as a
+                    # printed red stamp)
+                    mo = 0.82 + 0.3 * (0.5 + fbm(u * 7.0, v * 7.0, 63, 3, 2.0, 0.55)) + 0.08 * fib
+                    ar = ar * (1 - kr) + 0.47 * mo * kr
+                    ag = ag * (1 - kr) + 0.085 * mo * kr
+                    ab = ab * (1 - kr) + 0.035 * mo * kr
                 # graphite
                 gp = pencil * (0.75 + 0.5 * (1.0 - tooth))
                 gp = min(gp, 0.85)
@@ -642,21 +694,40 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     ar *= 1.0 - 0.3 * wet * d
                     ag *= 1.0 - 0.3 * wet * d
                     ab *= 1.0 - 0.3 * wet * d
-                # gold leaf: crinkled, burnished metal
+                # gold leaf: crinkled, burnished metal whose facets catch the hearth (PAGES-C: a deeper crinkle at
+                # three scales so some facet always glints as the fire breathes and the camera moves; ink drawn over
+                # the gold covers it)
                 if gilt > 0.0:
-                    cr = gnoise(u * 60.0, v * 60.0, 91) + 0.5 * gnoise(u * 150.0, v * 150.0, 93)
-                    cr2 = gnoise(u * 60.0 + 7.0, v * 60.0, 95) + 0.5 * gnoise(u * 150.0 + 3.0, v * 150.0, 97)
-                    nx = nx + 0.22 * cr * gilt
-                    ny = ny + 0.22 * cr2 * gilt
+                    cr = gnoise(u * 40.0, v * 40.0, 91) + 0.6 * gnoise(u * 110.0, v * 110.0, 93) + \
+                        0.35 * gnoise(u * 260.0, v * 260.0, 99)
+                    cr2 = gnoise(u * 40.0 + 7.0, v * 40.0, 95) + 0.6 * gnoise(u * 110.0 + 3.0, v * 110.0, 97) + \
+                        0.35 * gnoise(u * 260.0 + 1.3, v * 260.0, 101)
+                    nx = nx + 0.5 * cr * gilt
+                    ny = ny + 0.5 * cr2 * gilt
                     nn = math.sqrt(nx * nx + ny * ny + nz * nz)
                     nx /= nn
                     ny /= nn
                     nz /= nn
-                    metal = gilt
-                    rough = rough * (1 - gilt) + 0.22 * gilt
+                    metal = gilt * (1.0 - k)
+                    rough = rough * (1 - gilt) + 0.3 * gilt
                 # burn fields: browning, char, the hole, the glowing edge
-                bf = burnR if m == M_PAGE_R else burnL
-                if (m == M_PAGE_R or m == M_PAGE_L) and bf[0] > 0.0:
+                bf = burnR if (m == M_PAGE_R or m == M_LEAF_F) else burnL
+                if bf[0] > 0.0 and BURN.is_v2(bf):
+                    # v2 (PAGES-C): torn at every scale, a crinkled char band whose curled lip catches the light,
+                    # a beaded ember line, flecks dying in the char; the turning leaf burns like the page it was
+                    brown, char, hole, edge, pool, lip, fleck, crk = BURN.field2(bf, u, v, t)
+                    ar = ar * (1 - 0.62 * brown)
+                    ag = ag * (1 - 0.82 * brown)
+                    ab = ab * (1 - 0.95 * brown)
+                    cc = 0.5 + 0.9 * crk + 1.6 * lip
+                    ar = ar * (1 - char) + char * 0.05 * cc
+                    ag = ag * (1 - char) + char * 0.042 * cc
+                    ab = ab * (1 - char) + char * 0.036 * cc
+                    cov = 1.0 - hole
+                    er += edge * 4.2 + fleck * 2.6 + pool * ar * 0.6
+                    eg += edge * 1.25 + fleck * 0.55 + pool * ag * 0.3
+                    eb += edge * 0.18 + fleck * 0.06 + pool * ab * 0.1
+                elif (m == M_PAGE_R or m == M_PAGE_L) and bf[0] > 0.0:
                     brown, char, hole, edge, pool = BURN.field(bf, u, v, t)
                     ar = ar * (1 - 0.62 * brown) * (1 - 0.96 * char)
                     ag = ag * (1 - 0.82 * brown) * (1 - 0.97 * char)
@@ -665,7 +736,21 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     er += edge * 4.2 + pool * ar * 0.6
                     eg += edge * 1.25 + pool * ag * 0.3
                     eb += edge * 0.18 + pool * ab * 0.1
-                if fire > 0.0:
+                if fire_k > 0.0 and (fire > 0.0 or fb > 0.0):
+                    # awake in fire, like the Ring's letters (PAGES-C): incandescent strokes, the thick heart of a
+                    # stroke hotter (orange-gold) than its hairlines and rims (a deep red), never white; the paper
+                    # round a burning letter scorches and takes its light
+                    core = _ss(0.3, 0.85, fb)
+                    er += fire * fire_k * (2.1 + 1.7 * core)
+                    eg += fire * fire_k * (0.38 + 0.95 * core * core)
+                    eb += fire * fire_k * (0.05 + 0.16 * core * core * core)
+                    ar *= 1.0 - 0.3 * fb
+                    ag *= 1.0 - 0.42 * fb
+                    ab *= 1.0 - 0.55 * fb
+                    er += 0.35 * fb * fire_k
+                    eg += 0.09 * fb * fire_k
+                    eb += 0.012 * fb * fire_k
+                elif fire > 0.0:
                     # awake in fire, like the Ring's letters: a deep orange-red core, never white
                     er += fire * 2.7
                     eg += fire * 0.64
@@ -809,8 +894,16 @@ def flicker(t, seed=0, amt=0.1):
                         0.25 * gnoise(t * 6.1, seed, 205))
 
 
+def hearth(t, seed=0, amt=0.16):
+    """PAGES-C: a living hearth: slow swells and the odd flare, a mid waver, very little fast flicker (a page lit by a
+    fire breathes; it never strobes)."""
+    return 1.0 + amt * (0.85 * gnoise(t * 0.33, seed * 1.3, 211) + 0.5 * gnoise(t * 0.9, seed, 213) +
+                        0.28 * gnoise(t * 2.3, seed, 215) + 0.1 * gnoise(t * 6.5, seed, 217))
+
+
 def render(book, cam, light, texL, texR, t, fill=None, amb=(0.012, 0.009, 0.007), env=(0.9, 0.5, 0.22),
-           burnL=None, burnR=None, xlights=None, age=1.0, table_far=40.0, leaf=None):
+           burnL=None, burnR=None, xlights=None, age=1.0, table_far=40.0, leaf=None, texS=None, st_amt=0.0,
+           fire_k=0.0, tooth_k=0.03):
     """One frame of the book: returns (hdr HxWx3, alpha HxW, G-buffer). leaf = (phi, texF, texB) turns the
     right-hand leaf over: phi 0 (lying on the right) .. 1 (lying on the left); texR is then the page beneath it.
     phi may be a list (a riffle: several leaves in flight, all with the faces texF/texB)."""
@@ -835,14 +928,20 @@ def render(book, cam, light, texL, texR, t, fill=None, amb=(0.012, 0.009, 0.007)
     fd = np.array([0.35, -0.5, 0.8]) if fill is None else np.asarray(fill[0], np.float64)
     fd = fd / np.linalg.norm(fd)
     fc = np.array([0.010, 0.012, 0.016]) if fill is None else np.asarray(fill[1], np.float64)
-    bL = np.zeros(16) if burnL is None else burnL
-    bR = np.zeros(16) if burnR is None else burnR
+    bL = np.zeros(20) if burnL is None else np.asarray(burnL, np.float64)
+    bR = np.zeros(20) if burnR is None else np.asarray(burnR, np.float64)
+    if bL.shape[0] != bR.shape[0]:                     # one array type into the kernel: pad a v1 block to 20
+        bL = np.concatenate([bL, np.zeros(20 - bL.shape[0])]) if bL.shape[0] < 20 else bL
+        bR = np.concatenate([bR, np.zeros(20 - bR.shape[0])]) if bR.shape[0] < 20 else bR
+    texS_ = texR if texS is None else texS
     xl = np.zeros((0, 6)) if xlights is None else np.asarray(xlights, np.float64).reshape(-1, 6)
     shade_kernel(out, alpha, G, book.params, cam.pos, light.pos, light.col, light.radius, fd, fc,
                  np.asarray(amb, np.float64), np.asarray(env, np.float64),
                  texL.data, texL.meta, float(texL.ppc), texR.data, texR.meta, float(texR.ppc),
                  float(book.seed), float(book.seed + 17), float(age), bL, bR, xl, float(t),
-                 texF.data, texF.meta, float(texF.ppc), texB.data, texB.meta, float(texB.ppc))
+                 texF.data, texF.meta, float(texF.ppc), texB.data, texB.meta, float(texB.ppc),
+                 texS_.data, texS_.meta, float(texS_.ppc), float(st_amt if texS is not None else 0.0), float(fire_k),
+                 float(tooth_k))
     return out.astype(np.float32), alpha.astype(np.float32), G
 
 
