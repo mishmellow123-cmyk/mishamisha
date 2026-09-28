@@ -6,8 +6,8 @@
     (5160/5161 = P2 top-down, her glove closing on the Ring; 5566/5567 = bar 70, spent torches dipping into the fire).
   - round 3: `renders/_farmtest/councilC_look_v3/`; round 2: `..._v2/` (round 1 deleted: pale robes, cotton-swab
     torches, cake slab, giraffe logs, 17 min/frame).
-* **Timing (round 4):** P2 without the hearth fire 87-88 s/frame; P3 with the fire 381 s (5566, shared GPU; 5567,
-  alone for part of it: see below). Round 3 was 79-81 / 365 / 270 (5567 alone). Kernel JIT ~6-7 min on a NEW node.
+* **Timing (round 4):** P2 without the hearth fire 87-88 s/frame; P3 with the fire 381 s (5566, shared GPU) and
+  272 s (5567, alone on the GPU for most of it): the fire frames' real cost is ~4.5 min until the domain fix. Round 3 was 79-81 / 365 / 270 (5567 alone). Kernel JIT ~6-7 min on a NEW node.
 * **Projection (880 Cycles frames: 4640-4799 AC1 low part, 4800-5119 AC4, 5120-5359 AC2, 5520-5679 bar 70; AC1's
   far wides 4464-4639 = ACCORD-CROWD v1 kept, dissolve at 4640-4663; C22 = the melt's ring_C):** as is, 560 no-fire
   frames x ~75 s + 320 fire frames x ~4.5-6 min = ~36-44 GPU-h (+ ~2 h JIT). With the known P3 fix below, ~20-24 GPU-h.
