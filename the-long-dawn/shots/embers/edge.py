@@ -1088,9 +1088,11 @@ class GoldRuns:
             v = 1.1 + 1.3 * smoothstep(-0.4, 0.4, n2)                  # each one's speed (units / frame)
             dtop = 66.0 - pl[:, 1]
             d = v * age - dtop                                          # > 0: the head has passed (poured)
-            trail = np.exp(-np.maximum(d, 0.0) / 7.0) * smoothstep(-0.6, 0.2, d)
+            trail = np.exp(-np.maximum(d, 0.0) / 11.0) * smoothstep(-0.6, 0.2, d)
             head = np.exp(-(d / 0.8) ** 2) * fresh
-            Lg = g * fs ** 0.6 * (0.05 + riv * (0.22 + 2.6 * trail * math.exp(-age / 22.0)))
+            # A-FIX: no even gold skin (on the crust's point discs it read as glitter, so every tower looked gold
+            # already); the gold is the RUNS: longer, brighter trails with dark wall between them
+            Lg = g * fs ** 0.6 * (0.008 + riv * (0.16 + 3.2 * trail * math.exp(-age / 22.0)))
             Lh = g * fs ** 0.6 * riv * head * 6.0
             if i in A.GIANTS:
                 k = 1.0 - smoothstep(6.0, 12.0, P[:, 1])
