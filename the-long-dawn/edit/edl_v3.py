@@ -165,7 +165,8 @@ A = [
       [T('beaconrun'), T('run')]),
     S('A15', 4240, 4400, 'R16', 'THE WATCHERS', 'RUN-A + HILLS',
       'Behind a backlit watcher at the seventh fire, looking to the cold glow; small figures on far ridges, eyelines only.',
-      [T('watchers'), T('run')]),
+      # Codex PR #7 (merged 287b1a1): the restaged hearth, job watchers_a_hearth3 -> renders/watchers_A_hearth3
+      [T('watchers_A_hearth3', 0, 'exact', 'Codex restaged hearth (PR #7)'), T('watchers'), T('run')]),
     S('A16', 4400, 4720, 'E10', 'TOWERS IN THE LIGHT', 'EMBERS',
       "Far ridge fires light the towers' backs; the surges stop; the two giants open their shutters to each other first.",
       EMB_A),
