@@ -36,6 +36,7 @@ import pipe as PI           # noqa: E402
 import falsedawn as FD      # noqa: E402
 import nighta as NA         # noqa: E402
 import sdfppl as SP         # noqa: E402  (RUN-A2's; read-only)
+import hearth_a as HA       # noqa: E402
 from mt import fire as F    # noqa: E402
 from mt.noise import smoothstep   # noqa: E402
 
@@ -125,11 +126,11 @@ def lighter_spot(P, lat=0.8):
 
 
 # THE PLATE (A15; A14's END_CAM settles into it): the camera looks PLATE_YAW deg right of the glow, so the glow's core
-# sits in the left third; the seventh's lighter stands WATCHER_BEARING deg right of the axis (the right third), 1.2 m
-# on our side of the fire and 0.7 m to its right, so the flames show just left of the figure and rim it.
+# sits in the left third; the seventh's lighter stands WATCHER_BEARING deg right of the axis (the right third),
+# 1 m on our side of the fire and 0.55 m to its right, partly concealing the hearth.
 PLATE_YAW = 7.0
 WATCHER_BEARING = 7.3
-FIRE_GAP = (1.2, 0.72)
+FIRE_GAP = (1.0, 0.55)
 
 
 def _plate_axes():
@@ -145,12 +146,11 @@ def seventh_spot(P7):
 
 
 def lighter_pose(f, f_ign):
-    """(crouch 0..1, reach 0..1, turn deg): crouched and reaching into the fire at its catch, rising by +22, standing
-    and turned full to the glow by +36; then still, a watcher."""
-    rise = smoothstep(f_ign + 4, f_ign + 22, f)
+    """Crouch, reach and turn: lower the hand by +22, rise by +36, face the glow by +38; then stand still."""
+    rise = smoothstep(f_ign + 6, f_ign + 36, f)
     crouch = 1.0 - rise
-    reach = 1.0 - smoothstep(f_ign + 1, f_ign + 10, f)
-    turn = 14.0 * (1.0 - smoothstep(f_ign + 12, f_ign + 36, f))     # from the fire toward the glow
+    reach = 1.0 - smoothstep(f_ign + 4, f_ign + 22, f)
+    turn = 14.0 * (1.0 - smoothstep(f_ign + 16, f_ign + 38, f))
     return crouch, reach, turn
 
 
@@ -159,26 +159,51 @@ def seventh_pose(f):
 
 
 def _figure(sc, spot, w, f, seed, h=1.0, crouch=0.0, reach=None, rgb=(0.030, 0.026, 0.022), staff=False,
-            gust=1.0):
+            gust=1.0, reach_amount=0.0, shawl=False, stance_w=None):
     t = f / FPS
     rng = np.random.default_rng(int(seed))
     s = np.cross(UP, w)
     ph = rng.uniform(0, 6.28)
     # a planted stance, weight a little back on the heels; the breath lifts the chest by a few millimetres
-    aL = spot + s * 0.13 * h + w * 0.05 * h + UP * 0.07
-    aR = spot - s * 0.13 * h - w * 0.07 * h + UP * 0.07
-    breath = 0.004 * math.sin(2 * math.pi * t / 3.6 + ph)
+    stance_w = w if stance_w is None else stance_w
+    stance_s = np.cross(UP, stance_w)
+    aL = spot + stance_s * 0.13 * h + stance_w * 0.05 * h + UP * 0.07
+    aR = spot - stance_s * 0.13 * h - stance_w * 0.07 * h + UP * 0.07
+    breath = 0.0015 * math.sin(2 * math.pi * t / 5.2 + ph)
     pel = spot + UP * ((0.93 - 0.42 * crouch) * h + breath) - w * 0.02 * h
     # the wind: a steady lean of the cloth to the lee, with gusts; the hem flutters
-    g = 0.14 + 0.05 * math.sin(2 * math.pi * t / 5.3 + ph) + 0.03 * math.sin(2 * math.pi * t / 1.7 + 2 * ph)
+    g = 0.07 + 0.008 * math.sin(2 * math.pi * t / 7.3 + ph)
     wind = WIND * g * gust
     tip = None
     if staff:
         tip = spot + w * 0.30 * h - s * 0.34 * h
         tip[1] = spot[1]
-    SP.traveller(sc, pel, w, aL, aR, rgb, h=h, lean=0.05 + 0.50 * crouch, hem=0.14, cloak=(0.205, 0.33),
+    lean = 0.05 + 0.50 * crouch
+    carry = None
+    if reach is not None:
+        # Use traveller's explicit hand targets throughout: its reach/None switch
+        # changes arm length and pose abruptly. Feet stay in the same world positions.
+        fl = w * math.sin(lean) + UP * math.cos(lean)
+        chest = pel + fl * 0.47 * h
+        sh_l, sh_r = chest + UP * .02 * h + s * .19 * h, chest + UP * .02 * h - s * .19 * h
+        rest_l = sh_l + (w * .08 - UP * .52 + s * .06) * h
+        rest_r = sh_r + (w * .06 - UP * .52 - s * .06) * h
+        toward = np.asarray(reach, np.float64) - sh_l
+        extended = sh_l + toward / (np.linalg.norm(toward) + 1e-12) * .62 * h
+        carry = (rest_l + (extended - rest_l) * float(reach_amount), rest_r)
+    body = SP.traveller(sc, pel, w, aL, aR, rgb, h=h, lean=lean, hem=0.14, cloak=(0.205, 0.33),
                  folds=int(9 + 3 * rng.random()), fold_depth=0.030, fold_phase=6.28 * rng.random(), peak=True,
-                 staff_tip=tip, reach=reach, wind=wind, flutter=2.3 * t + ph)
+                 staff_tip=tip, carry=carry, wind=wind, flutter=0.10 * math.sin(2 * math.pi * t / 6.5 + ph))
+    if shawl:
+        # A muted red shoulder wrap over a closed cowl, with no face geometry.
+        fl = w * math.sin(lean) + UP * math.cos(lean)
+        neck = body['chest'] + fl * .11 * h
+        sc.begin(rgb=(0.55, 0.022, 0.017))
+        sc.bell(neck - UP * .025 * h - w * .016 * h,
+                body['chest'] - UP * .25 * h - w * .025 * h,
+                .13 * h, .32 * h, w, .014 * h, 7, ph, 0, .012 * h,
+                ell=.30, wind=.02, wind_ang=ph)
+        sc.end()
 
 
 LIGHTERS = ((6, 0.8, 7007), (4, -0.7, 7005), (2, 0.75, 7003), (0, -0.8, 7001))   # (chain index, side m, seed)
@@ -188,39 +213,42 @@ def lighter_scene(sc, f, P, lat, seed):
     spot, w = lighter_spot(P, lat)
     crouch, reach, turn = lighter_pose(f, P[3])
     ww = _dir(LOOK_AZ + (turn if lat >= 0 else -turn))
-    rp = (np.asarray(P[:3]) + UP * 0.3) if reach > 0.2 else None
-    _figure(sc, spot, ww, f, seed, h=1.0, crouch=crouch, reach=rp, rgb=(0.030, 0.026, 0.022), staff=False)
+    rp = np.asarray(P[:3]) + UP * 0.3
+    _figure(sc, spot, ww, f, seed, h=1.0, crouch=crouch, reach=rp, reach_amount=reach,
+            rgb=(0.030, 0.026, 0.022), staff=False, stance_w=_dir(LOOK_AZ))
 
 
-def hearth_scene(sc, P, seed, scale=1.0):
-    """The seventh fire's low cairn: weathered, rounded field stones (lumpy round cones at random axes, each its own
-    size, lightly fused where they touch) in three uneven courses to about 0.64 m, where nighta's recipe puts a size-0.6
-    fire's base. No cut blocks, no even gaps. There before the catch (A14)."""
-    rng = np.random.default_rng(int(seed))
-    base = np.asarray(P[:3], np.float64)
-    sc.begin(rgb=(0.050, 0.047, 0.045))
-    courses, top = 3, 0.64 * scale
-    for c in range(courses):
-        y0 = top * c / courses
-        rr = (0.44 - 0.15 * c / (courses - 1)) * scale
-        n = 9 - 2 * c
-        for m in range(n):
-            a_ = 2.0 * math.pi * (m + 0.5 * (c % 2)) / n + rng.uniform(-0.2, 0.2)
-            r0 = rng.uniform(0.075, 0.125) * scale
-            q = base + np.array([math.cos(a_), 0.0, math.sin(a_)]) * rr * rng.uniform(0.88, 1.08) \
-                + UP * (y0 + r0 * rng.uniform(0.55, 0.9))
-            tang = np.array([-math.sin(a_), rng.uniform(-0.35, 0.35), math.cos(a_)])
-            tang = tang / np.linalg.norm(tang) * rng.uniform(0.03, 0.10) * scale
-            sc.cone(q - tang, q + tang, r0, r0 * rng.uniform(0.55, 0.9), mat=5, k=0.018 * scale)
-    sc.end()
+_HEARTHS = {}
+
+
+def seventh_hearth(P7):
+    """Cache immutable world-space stones; their fuel seat also anchors the flame."""
+    key = tuple(float(v) for v in P7[:3])
+    if key not in _HEARTHS:
+        _HEARTHS[key] = HA.Hearth(P7[:3], seed=7070, ground=ground, ground_band=(-.30, .12))
+    return _HEARTHS[key]
+
+
+def hearth_lighting(LT, PL, P7):
+    """Keep the seventh fire's pool local and its cleared patch close to the fuel.
+
+    Copies preserve shared night recipes. A14 must use the same local treatment
+    when it settles into this plate; far beacon lighting is unchanged.
+    """
+    LT, PL = LT.copy(), PL.copy()
+    near = np.hypot(LT[:, 0] - P7[0], LT[:, 2] - P7[2]) < .01
+    LT[near, 6] *= .15
+    cleared = np.hypot(PL[:, 0] - P7[0], PL[:, 2] - P7[2]) < .01
+    PL[cleared, 3] = 1.0
+    return LT, PL
 
 
 def seventh_scene(sc, f, P7):
-    hearth_scene(sc, P7, 7070)
     spot, w = seventh_spot(P7)
     crouch, reach, turn = lighter_pose(f, P7[3])
-    rp = (np.asarray(P7[:3]) + UP * 0.3) if reach > 0.2 else None
-    _figure(sc, spot, _dir(LOOK_AZ + turn), f, 7007, h=1.0, crouch=crouch, reach=rp, rgb=(0.030, 0.026, 0.022))
+    rp = np.asarray(P7[:3]) + UP * 0.3
+    _figure(sc, spot, _dir(LOOK_AZ + turn), f, 7007, h=1.0, crouch=crouch, reach=rp, reach_amount=reach,
+            rgb=(0.030, 0.026, 0.022), shawl=True, stance_w=_dir(LOOK_AZ))
 
 
 # ------------------------------------------------------------------ the ridges between ---
@@ -340,6 +368,8 @@ def draw_figures(img, zb, scam, f, LT, light, near_only=False, CH=None):
     """The watchers in a lens-shift SOURCE camera: after the terrain and the stars, BEFORE the fires, so a flame and
     its air glow stay behind a figure standing in front of it (the backlit silhouette). LT: the frame's point lights;
     light: the world light tuple (Lk, amb, S, fogp, Q). A14 calls this for every frame where a figure is >= 3 px."""
+    CH = chain() if CH is None else CH
+    HA.draw(img, zb, scam, seventh_hearth(CH[6]), LT, light)
     sc = figures_scene(f, near_only, CH)
     Pr, Ob = sc.arrays()
     Lk, amb, S, fogp, Q = light
@@ -347,7 +377,9 @@ def draw_figures(img, zb, scam, f, LT, light, near_only=False, CH=None):
     md = md / np.linalg.norm(md)
     moon = np.array([md[0], md[1], md[2], Lk[3], Lk[4], Lk[5], Q[0]])
     C = scam.params()
-    SP.render(img, zb, C, Pr, Ob, np.asarray(LT, np.float64).reshape(-1, 8), moon, amb * 1.3, fogp,
+    # Lift the night fill enough to retain the red wrap under the finishing curve;
+    # the closed cowl contains no face geometry.
+    SP.render(img, zb, C, Pr, Ob, np.asarray(LT, np.float64).reshape(-1, 8), moon, amb * 7.8, fogp,
               float(scam.pos[1]))
 
 
@@ -355,7 +387,7 @@ def draw_figures(img, zb, scam, f, LT, light, near_only=False, CH=None):
 EYE = 1.90                       # a tall standing eye: level with the lighter's hood, never above it
 BACK = 14.5                      # metres behind the watcher
 HFOV = 40.0
-PITCH = -1.8
+PITCH = -0.8
 PUSH = 3.5                       # metres of slow push toward the lighter, easing in from A14's hold
 
 
@@ -433,6 +465,7 @@ def render(f, scale=1.0, ss=1.5):
                 FT = np.vstack([FT, row[None]])
     LT = NA.lt_rows(FT, f)
     PL = NA.pl_rows(FT, max_dist=6000.0, cam_pos=tcam.pos)
+    LT, PL = hearth_lighting(LT, PL, CH[6])
     light = BR.light(f)
     Lk, amb, S, fogp, Q = light
     scam = fr.src
@@ -448,12 +481,13 @@ def render(f, scale=1.0, ss=1.5):
     WD.cloud_glow(C, D, Pp, BR.CR, NA.ug_rows(f), fogp, fr.img)
     kill = np.zeros(fr.dist.shape, np.float32)
     skl = NA.skyline(scam.pos, BR.CR, WD)
-    NA.glow_pass(fr.img, fr.dist, kill, C, NA.glow_gp(f), skl[0], skl[1], skl[2], NA.HAZE_K, NA.HAZE_D)
+    NA.glow_pass(fr.img, fr.dist, kill, C, NA.glow_gp(f, shadow_rays=False), skl[0], skl[1], skl[2], NA.HAZE_K, NA.HAZE_D)
     pxs = PI.src_scale(fr)
     from mt import sky as SK
     SK.splat_stars(fr.img, scam, BR.stars(), kill, t=t, gain=ss * ss, scale=pxs)
     draw_figures(fr.img, fr.zb, scam, f, LT, light, CH=CH)
-    NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD)
+    NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD, near_hearth=True,
+                   base_offsets={int(CH[6, 5]): seventh_hearth(CH[6]).fire_base_offset})
     if hasattr(BR, 'draw_flares'):
         BR.draw_flares(fr.img, fr.zb, scam, f, pxs, fogp)     # A14's catch flares run on into A15 (the last to 4260)
     img, zb, di = PI.to_target(fr)
@@ -467,7 +501,7 @@ def finish(img):
 def _work(args):
     frames, scale, out, skip, wid = args
     import cv2
-    cv2.setNumThreads(1)
+    cv2.setNumThreads(0)
     for f in frames:
         path = PI.look.frame_path(out, f)
         if skip and (os.path.exists(path) or os.path.exists(path[:-4] + '.jpg')):

@@ -1,0 +1,15 @@
+{
+  "name": "watchers_a_hearth3",
+  "branch": "codex/render-watchers-a-hearth3",
+  "setup": [
+    "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+    "NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/watchers_a.py --frames 4240 --scale 0.12 --out warm_watchers_a_hearth3"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/watchers_a.py --range 4240-4399 --procs 2 --out renders/watchers_A_hearth3 --skip"
+  ],
+  "out_dir": "renders/watchers_A_hearth3",
+  "frames": "4240-4399",
+  "push_every": 300,
+  "ship": "jpg"
+}

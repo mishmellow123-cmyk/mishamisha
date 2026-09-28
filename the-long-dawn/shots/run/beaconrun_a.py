@@ -215,6 +215,7 @@ def stars():
 
 
 def render(f, scale=1.0, ss=1.5, mblur=True):
+    import watchers_a as WA
     W, H = int(round(1920 * scale)), int(round(804 * scale))
     tcam = camera(f, W, H)
     fr = PI.Frame(tcam, ss)
@@ -222,6 +223,9 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     near = np.hypot(FT[:, 0] - tcam.pos[0], FT[:, 2] - tcam.pos[2]) < LT_MAX
     LT = NA.lt_rows(FT[near], f)
     PL = NA.pl_rows(FT, max_dist=6000.0, cam_pos=tcam.pos)
+    # This camera lands in A15: its shared seventh hearth must have the same
+    # fuel seat, local light pool and flame on both sides of the cut.
+    LT, PL = WA.hearth_lighting(LT, PL, CHAIN[6])
     Lk, amb, S, fogp, Q = light(f)
     scam = fr.src
     C = scam.params()
@@ -239,13 +243,13 @@ def render(f, scale=1.0, ss=1.5, mblur=True):
     # the cold glow beyond the ranges, breathing once a bar; it puts out the stars near it
     kill = np.zeros(fr.dist.shape, np.float32)
     skl = NA.skyline(scam.pos, CR, WD)
-    NA.glow_pass(fr.img, fr.dist, kill, C, NA.glow_gp(f), skl[0], skl[1], skl[2], NA.HAZE_K, NA.HAZE_D)
+    NA.glow_pass(fr.img, fr.dist, kill, C, NA.glow_gp(f, shadow_rays=False), skl[0], skl[1], skl[2], NA.HAZE_K, NA.HAZE_D)
     pxs = PI.src_scale(fr)
     SK.splat_stars(fr.img, scam, stars(), kill, t=t, gain=ss * ss, scale=pxs)
     # the lighters (RUN-A3's watchers_a): after the stars, BEFORE the fires, so each is a silhouette against its fire
-    import watchers_a as WA
     WA.draw_figures(fr.img, fr.zb, scam, f, LT, (Lk, amb, S, fogp, Q), CH=CHAIN)
-    NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD)     # each dimmed by the air in front
+    NA.fires_layer(fr.img, fr.zb, scam, FT, f, pxs, fogp=fogp, wmod=WD, near_hearth=True,
+                   base_offsets={int(CHAIN[6, 5]): WA.seventh_hearth(CHAIN[6]).fire_base_offset})
     draw_flares(fr.img, fr.zb, scam, f, pxs, fogp)
     # a near catch throws a short burst of orange sparks that arc and fall (H5): fires 5 and 7
     for k in (4, 6):
