@@ -130,7 +130,7 @@ def transition_sources(cut, variant, t, f):
     if lay is None:
         return out + ['no layer: plain cut']
     out += [_stat(p) for p in lay.values()]
-    for g in (min(f, t['cut'] - 1), max(f, t['cut'])):
+    for g in ((min(f, t['cut'] - 1), max(f, t['cut'])) if 'cut' in t else ()):     # finish_ramp: one shot
         s = next(s for s in AS.EDL.EDL[cut] if s['f0'] <= g < s['f1'])
         out += frame_sources(cut, variant, AS.plan_shot(s, cut, variant), g)
     return out

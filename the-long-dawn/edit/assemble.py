@@ -632,7 +632,7 @@ def transition_at(cut, f):
 def transition_layers(t, f):
     """{'glow': path, 'keep': path} of a window's layer frames at f; None if one is missing (then: a hard cut)."""
     out = {}
-    for k in ('glow', 'keep'):
+    for k in ('glow', 'keep', 'cover'):
         if t.get(k):
             p = index(os.path.join(RENDERS, t[k])).get(f)
             if not p:
@@ -676,11 +676,22 @@ def _transitions(ctx, finish=None):
         lay = transition_layers(t, f) if t else None
         if lay is None:
             return outer(f)
+        if t['kind'] == 'finish_ramp':                        # one shot, no cut: ink look -> film look
+            img, shot, status, src = raw(f)
+            if fin is None or src is None or status.startswith('SLATE'):
+                return outer(f)
+            a = (f - t['f0']) / (t['f1'] - t['f0'])
+            a = a * a * (3 - 2 * a)
+            img = fin.ink(img, ctx.cut, f) * (1 - a) + fin.film(img, ctx.cut, f) * a
+            return np.clip(img, 0, 1).astype(np.float32), shot, f'{status} + finish_ramp', src
         (o, mo), (i, mi) = side(min(f, t['cut'] - 1), f), side(max(f, t['cut']), f)
         if o is None or i is None:
             return outer(f)
         shot, status, src = mo if f < t['cut'] else mi
-        if t['kind'] == 'x1':
+        if t['kind'] == 'burn':
+            img = (o * ctx.read(lay['keep']) + i * (1 - ctx.read(lay['cover'], gray=True)[..., None])
+                   + ctx.read(lay['glow']))
+        elif t['kind'] == 'x1':
             keep = ctx.read(lay['keep'], gray=True)[..., None]
             img = o * keep + i * (1 - keep) + ctx.read(lay['glow'])
         else:                                                 # dissolve

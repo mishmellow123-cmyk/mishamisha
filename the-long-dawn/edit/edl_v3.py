@@ -325,19 +325,32 @@ C = [
 
 EDL = {'A': A, 'B': B, 'C': C}
 
-# EDIT transitions across an EDL boundary 'cut' (assemble._transitions; the comp, not a cut): the outgoing shot plays
-# its own frames up to the boundary, then holds its last; the incoming holds its first frame until the boundary, then
-# plays. A window whose layer frames are missing plays as the plain hard cut.
-#   x1        MAP-L2's burn-through layer (shots/map/road.py x1_screen): out = O * keep + I * (1 - keep) + glow
-#   dissolve  a linear-light dissolve on a smoothstep ramp over the window
-# ready=False: wired but held back (plays as the plain cut). Both X1s (28 Sep 01:00Z): the farm rendered the layers in
-# 12-frame chunks and x1_screen's default t_open = (chunk's first frame + 6) / 24, so the burn restarts every chunk
-# (holes only at 4157-61, 4169-73, 4181-85); MAP-L2 re-renders them with one explicit t_open, then ready=True.
+# EDIT transitions (assemble._transitions; the comp, not a cut). C's spec: PAGES-C, shots/map/NOTES_PAGES.md (28 Sep).
+# Across an EDL boundary 'cut' the outgoing shot plays its own frames up to it, then holds its last; the incoming holds
+# its first frame until it, then plays. A window whose layer frames are missing, or with a slate on either side, plays
+# as the plain cut. ready=False holds a window back.
+#   burn         PAGES' burn-through (x1burn.py v2): out = O * keep + I * (1 - cover) + glow; keep is COLOUR (the scorch
+#                tint and the char band), cover = 1 - hole, glow is display sRGB
+#   x1           MAP-L2's first formula (fallback): out = O * keep + I * (1 - keep) + glow (shows the map through the char)
+#   dissolve     linear light, smoothstep over the window
+#   finish_ramp  one shot, no cut: the finish goes from the ink look to the film look, lerp(ink, film, smoothstep)
 TRANS = {'A': [], 'B': [], 'C': [
-    dict(f0=4150, f1=4186, cut=4160, kind='x1', glow='x1_map_C', keep='x1_map_C_matte', ready=False,
-         note="MAP-L2's X1: the ink run's seventh beacon (1130, 485) burns through onto the map (PAGES-C, 28 Sep)"),
-    dict(f0=5594, f1=5641, cut=5600, kind='x1', glow='x1_map_C71', keep='x1_map_C71_matte', ready=False,
-         note="MAP-L2's X1 for bar 71: the stone burns through onto the roads of fire (960, 402) (PAGES-C, 28 Sep)"),
+    dict(f0=2314, f1=2326, cut=2320, kind='dissolve', note='#9 C10 the Mirror -> C11 the grasp: the fire in the ripples '
+         "becomes the claw's embers"),
+    dict(f0=2836, f1=2844, cut=2840, kind='dissolve', note='#12 E13 the glint -> R13 the ink star, on the falling light'),
+    dict(f0=2998, f1=3002, cut=3000, kind='dissolve', note='#14 H1 flint (warm) -> find_a (cold blue)'),
+    dict(f0=4150, f1=4186, cut=4160, kind='burn', glow='x1_map_C', keep='x1_map_C_matte', cover='x1_map_C_cover',
+         note="#17 the seventh beacon burns through onto the map (x1burn v2, one t_open 4152)"),
+    dict(f0=5594, f1=5641, cut=5600, kind='burn', glow='x1_map_C71', keep='x1_map_C71_matte', cover='x1_map_C71_cover',
+         note='#19 bar 70 the stone burns through onto bar 71 the roads of fire (one t_open 5597)'),
+    dict(f0=5672, f1=5688, cut=5680, kind='dissolve', note="#20 the map -> C24 the illumination, through the map's breath"),
+    dict(f0=3837, f1=3843, cut=3840, kind='dissolve', note='#16 (optional) C16 the reveal -> C17 the ink run: two '
+         'parchment views of the range read as a jump cut on stills (EDIT-3)'),
+    # #5 (optional 1037-1043) not needed: e15's flame at 1039 and E5-C's at 1040 match in place, size and colour.
+    # #10 (fallback fade 2470-2480) waits on EMBERS-C4 (the band should fall out of frame in the render).
+    dict(f0=6160, f1=6224, kind='finish_ramp', ready=False,
+         note='#21 C25 opens pixel for pixel on C24 6159 (ink look) and takes the film look by 6224; held back until '
+              "PAGES-C's plate-match book_C lands (book_C 6160 on disk is the 27 Sep 20:58Z page)"),
 ]}
 
 
