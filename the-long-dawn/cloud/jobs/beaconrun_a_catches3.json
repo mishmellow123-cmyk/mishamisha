@@ -1,0 +1,15 @@
+{
+  "name": "beaconrun_a_catches3",
+  "branch": "codex/render-beaconrun-a-catches3",
+  "setup": [
+    "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+    "NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/beaconrun_a.py --frames 4202 --scale 0.12 --out warm_catches3"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/beaconrun_a.py --range 3920-4239 --procs 2 --out ../beaconrun_A_catches3 --skip"
+  ],
+  "out_dir": "renders/beaconrun_A_catches3",
+  "frames": "3920-4239",
+  "push_every": 300,
+  "ship": "jpg"
+}
