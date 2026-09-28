@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~08:30Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-28 ~13:10Z**, by the director (Claude, Opus 5.5).
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -194,7 +194,10 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
   - Launch `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/<job>.json [--test K --frames a,b] [--nodes N] [--detach]` and check with `... farm.py status`.
   - Nodes `git fetch` the branch tip before every unit, so PUSH FIRST, and never push code that a running render uses. Frames stream back into `renders/` on the launching machine.
   - **FREE CREDITS ONLY; never charge a card.** Pool p1 refuses new nodes at $200 (spent $70.50); pool p2 refuses at $450 (spent $128.59), both as of 28 Sep 07:00Z.
-  - **Overnight 28 Sep, the farm is stuck on PROVIDER CAPACITY.** From ~07:00Z the queued requests (pages_book_plate test, the beaconrun/watchers catches3 tests and finals) had nodes "up or booting" but nothing rendering; the log shows CPU nodes "queued for capacity". Don't resubmit duplicates. If still stuck, cancel and resubmit with `--gpu` (GPU nodes may have room; still free credits), or wait.
+  - **28 Sep 13:07Z: the farm DAEMON was wedged, not the provider.** From ~07:00Z to 13:07Z it logged only "waiting" and never tried to start a node.
+    - Fix: `kill <farmd pid>`, then `nohup python the-long-dawn/cloud/farm.py daemon >/dev/null 2>&1 &` from the repo root with the venv. Requests persist in `~/.cache/ldfarm/req/` and the new daemon adopts them.
+    - After the restart, nodes began waking (an H100 was running within 90 s).
+  - (Earlier note) Overnight 28 Sep, the farm looked stuck on PROVIDER CAPACITY. From ~07:00Z the queued requests (pages_book_plate test, the beaconrun/watchers catches3 tests and finals) had nodes "up or booting" but nothing rendering; the log shows CPU nodes "queued for capacity". Don't resubmit duplicates. If still stuck, cancel and resubmit with `--gpu` (GPU nodes may have room; still free credits), or wait.
   - **From Oct 1 2026, Autoresearch switches to PREPAID credit** (a platform notice): compute stops when the balance hits zero. Never buy credits or top up, since the rule is free credits only, so plan the remaining farm work to land before then or ask the user.
   - The farm config and tokens live in `~/.config/longdawn-farm/` on the production Mac. NEVER commit, print or copy them without the user's say-so.
   - The M4's own farm node is paused while Codex works there: the config file `ssh_nodes.json` was renamed to `ssh_nodes.json.paused-for-codex`.
@@ -229,6 +232,12 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
 2. The Frodo voice line: yes or no; if yes, the user drops in the clip (it stays local).
 3. A's ending, now that C is pause/stop.
 4. Review in the morning: Codex's new C shots, the burn pass (a), the Phase 2 score, and A14/A15 (catches3 vs hearth3 at the join).
+
+## 6b. Morning status (28 Sep 13:10Z)
+- Claude week at 96%; it resets ~Tue 29 Sep 23:59Z. caffeinate is OFF: the laptop is on battery and in use by its owner.
+- The M4 is unreachable over SSH (asleep or off the LAN), so Codex's overnight progress is unknown. Read `~/ldfarm/comms/TO_CLAUDE.md` and `~/ldfarm/out/` when it's back.
+- The farm daemon is restarted, and the queued requests (pages_book_plate test; beaconrun/watchers catches3 tests + finals) should now run.
+- BURN-C's watcher (5 h) fires when the plate test ends. It then renders the three first-half burns into renders/book_C_ft and stands down.
 
 ## 7. Lanes (as of 07:30Z, 28 Sep)
 | Lane | State |
