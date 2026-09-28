@@ -1,0 +1,686 @@
+[
+ {
+  "id": "C.hearth.open",
+  "kind": "bed",
+  "t0": 0.0,
+  "t1": 25.0,
+  "level": -65.4,
+  "gain": -24.9,
+  "src": [
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "C.fire.born",
+  "kind": "bed",
+  "t0": 33.333,
+  "t1": 45.0,
+  "level": -65.2,
+  "gain": -34.4,
+  "src": [
+   "fs:595483",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "C.fire.forge",
+  "kind": "bed",
+  "t0": 43.333,
+  "t1": 70.0,
+  "level": -66.1,
+  "gain": -35.9,
+  "src": [
+   "fs:172630",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.storm.eye",
+  "kind": "bed",
+  "t0": 80.0,
+  "t1": 86.667,
+  "level": -34.2,
+  "gain": 2.3,
+  "src": [
+   "fs:754256"
+  ]
+ },
+ {
+  "id": "C.wind.fall",
+  "kind": "bed",
+  "t0": 113.333,
+  "t1": 153.333,
+  "level": -42.9,
+  "gain": -12.8,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "C.hearth.council",
+  "kind": "bed",
+  "t0": 186.667,
+  "t1": 223.333,
+  "level": -67.7,
+  "gain": -37.7,
+  "src": [
+   "fs:595483",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "C.air.dawn",
+  "kind": "bed",
+  "t0": 236.667,
+  "t1": 256.667,
+  "level": -51.1,
+  "gain": -21.4,
+  "src": [
+   "fs:725630"
+  ]
+ },
+ {
+  "id": "C.hearth.end",
+  "kind": "bed",
+  "t0": 256.667,
+  "t1": 300.0,
+  "level": -65.8,
+  "gain": -26.1,
+  "src": [
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "C.sea",
+  "kind": "bed",
+  "t0": 266.667,
+  "t1": 280.0,
+  "level": -46.7,
+  "gain": -13.2,
+  "src": [
+   "sn:soft_waves_cliffs"
+  ]
+ },
+ {
+  "id": "C.x.murmur",
+  "kind": "bed",
+  "t0": 186.667,
+  "t1": 201.667,
+  "level": -50.0,
+  "gain": -21.1,
+  "src": [
+   "fs:766658"
+  ]
+ },
+ {
+  "id": "C+.fire.remains",
+  "kind": "bed",
+  "t0": 230.0,
+  "t1": 236.375,
+  "level": -61.6,
+  "gain": -30.9,
+  "src": [
+   "fs:595483",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "C+.fire.rises",
+  "kind": "bed",
+  "t0": 216.367,
+  "t1": 223.333,
+  "level": -33.6,
+  "gain": -3.2,
+  "src": [
+   "fs:172630",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C+.sea.near",
+  "kind": "bed",
+  "t0": 266.667,
+  "t1": 280.0,
+  "level": -41.3,
+  "gain": -8.2,
+  "src": [
+   "sn:soft_waves_cliffs"
+  ]
+ },
+ {
+  "id": "C.page_turn_0",
+  "kind": "event",
+  "t": 1.6667,
+  "level": -32.8,
+  "gain": 7.3,
+  "clip_start_s": 1.0667,
+  "hit_offset_s": 0.6,
+  "src": [
+   "sn:slow_page_turns"
+  ]
+ },
+ {
+  "id": "C.riffle",
+  "kind": "event",
+  "t": 13.3333,
+  "level": -33.7,
+  "gain": 2.1,
+  "clip_start_s": 12.8333,
+  "hit_offset_s": 0.5,
+  "src": [
+   "sn:flicking_pages"
+  ]
+ },
+ {
+  "id": "C.page_turn",
+  "kind": "event",
+  "t": 23.3333,
+  "level": -34.9,
+  "gain": 6.0,
+  "clip_start_s": 22.7333,
+  "hit_offset_s": 0.6,
+  "src": [
+   "sn:slow_page_turns"
+  ]
+ },
+ {
+  "id": "C.snow_hiss",
+  "kind": "event",
+  "t": 120.8333,
+  "level": -29.1,
+  "gain": -17.5,
+  "clip_start_s": 120.8133,
+  "hit_offset_s": 0.02,
+  "src": [
+   "fs:541035",
+   "fs:870180"
+  ]
+ },
+ {
+  "id": "C.strike1",
+  "kind": "event",
+  "t": 124.1667,
+  "level": -39.0,
+  "gain": -10.4,
+  "clip_start_s": 124.0767,
+  "hit_offset_s": 0.09,
+  "src": [
+   "fs:499027"
+  ]
+ },
+ {
+  "id": "C.strike2",
+  "kind": "event",
+  "t": 125.375,
+  "level": -38.8,
+  "gain": -11.2,
+  "clip_start_s": 125.285,
+  "hit_offset_s": 0.09,
+  "src": [
+   "fs:499027"
+  ]
+ },
+ {
+  "id": "C.strike3",
+  "kind": "event",
+  "t": 132.4167,
+  "level": -36.6,
+  "gain": -12.0,
+  "clip_start_s": 132.3267,
+  "hit_offset_s": 0.09,
+  "src": [
+   "fs:499027"
+  ]
+ },
+ {
+  "id": "C.blow",
+  "kind": "event",
+  "t": 133.5,
+  "level": -36.6,
+  "gain": -15.6,
+  "clip_start_s": 133.452,
+  "hit_offset_s": 0.048,
+  "src": [
+   "fs:848421",
+   "fs:273979",
+   "fs:273979",
+   "fs:406648",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.roar",
+  "kind": "event",
+  "t": 140.0,
+  "level": -29.3,
+  "gain": -5.2,
+  "clip_start_s": 139.316,
+  "hit_offset_s": 0.684,
+  "src": [
+   "fs:595483",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "C.beacon1",
+  "kind": "event",
+  "t": 161.6667,
+  "level": -30.0,
+  "gain": -4.2,
+  "clip_start_s": 161.1667,
+  "hit_offset_s": 0.5,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.beacon2",
+  "kind": "event",
+  "t": 163.3333,
+  "level": -32.9,
+  "gain": -7.1,
+  "clip_start_s": 162.8483,
+  "hit_offset_s": 0.485,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.beacon3",
+  "kind": "event",
+  "t": 165.0,
+  "level": -34.2,
+  "gain": -8.3,
+  "clip_start_s": 164.485,
+  "hit_offset_s": 0.515,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.beacon4",
+  "kind": "event",
+  "t": 166.6667,
+  "level": -32.7,
+  "gain": -5.1,
+  "clip_start_s": 166.1867,
+  "hit_offset_s": 0.48,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.beacon5",
+  "kind": "event",
+  "t": 168.3333,
+  "level": -35.2,
+  "gain": -9.5,
+  "clip_start_s": 167.8133,
+  "hit_offset_s": 0.52,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.beacon6",
+  "kind": "event",
+  "t": 170.0,
+  "level": -34.8,
+  "gain": -7.9,
+  "clip_start_s": 169.51,
+  "hit_offset_s": 0.49,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.beacon7",
+  "kind": "event",
+  "t": 171.6667,
+  "level": -31.9,
+  "gain": -3.7,
+  "clip_start_s": 171.1567,
+  "hit_offset_s": 0.51,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C.page.plenty",
+  "kind": "event",
+  "t": 256.6667,
+  "level": -35.3,
+  "gain": 10.0,
+  "clip_start_s": 256.0667,
+  "hit_offset_s": 0.6,
+  "src": [
+   "sn:slow_page_turns"
+  ]
+ },
+ {
+  "id": "C.page.havens",
+  "kind": "event",
+  "t": 266.6667,
+  "level": -37.2,
+  "gain": 7.5,
+  "clip_start_s": 266.0667,
+  "hit_offset_s": 0.6,
+  "src": [
+   "sn:slow_page_turns"
+  ]
+ },
+ {
+  "id": "C.page.blank",
+  "kind": "event",
+  "t": 280.0,
+  "level": -36.0,
+  "gain": 10.2,
+  "clip_start_s": 279.4,
+  "hit_offset_s": 0.6,
+  "src": [
+   "sn:slow_page_turns"
+  ]
+ },
+ {
+  "id": "C.page.blank_2",
+  "kind": "event",
+  "t": 281.6667,
+  "level": -35.2,
+  "gain": 5.6,
+  "clip_start_s": 281.2167,
+  "hit_offset_s": 0.45,
+  "src": [
+   "sn:slow_page_turns"
+  ]
+ },
+ {
+  "id": "C.x.catch",
+  "kind": "event",
+  "t": 138.1667,
+  "level": -35.6,
+  "gain": -14.4,
+  "clip_start_s": 137.4967,
+  "hit_offset_s": 0.67,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C+.pen.mountain",
+  "kind": "event",
+  "t": 14.0333,
+  "level": -45.1,
+  "gain": -2.0,
+  "clip_start_s": 14.0333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:194905"
+  ]
+ },
+ {
+  "id": "C+.pen.T1",
+  "kind": "event",
+  "t": 16.6667,
+  "level": -40.9,
+  "gain": 4.8,
+  "clip_start_s": 16.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:194905"
+  ]
+ },
+ {
+  "id": "C+.pen.deep",
+  "kind": "event",
+  "t": 70.4,
+  "level": -46.0,
+  "gain": -5.3,
+  "clip_start_s": 70.4,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:194905"
+  ]
+ },
+ {
+  "id": "C+.pen.T7",
+  "kind": "event",
+  "t": 71.25,
+  "level": -42.7,
+  "gain": 3.1,
+  "clip_start_s": 71.25,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:194905"
+  ]
+ },
+ {
+  "id": "C+.pen.T9",
+  "kind": "event",
+  "t": 151.6667,
+  "level": -42.4,
+  "gain": -0.5,
+  "clip_start_s": 151.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:194905"
+  ]
+ },
+ {
+  "id": "C+.pen.T14",
+  "kind": "event",
+  "t": 282.9167,
+  "level": -42.8,
+  "gain": -0.2,
+  "clip_start_s": 282.9167,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:194905"
+  ]
+ },
+ {
+  "id": "C+.burn.letters",
+  "kind": "event",
+  "t": 35.0,
+  "level": -33.4,
+  "gain": -0.5,
+  "clip_start_s": 34.4,
+  "hit_offset_s": 0.6,
+  "src": [
+   "fs:528662"
+  ]
+ },
+ {
+  "id": "C+.burn.deep",
+  "kind": "event",
+  "t": 70.0,
+  "level": -29.7,
+  "gain": 3.4,
+  "clip_start_s": 69.5,
+  "hit_offset_s": 0.5,
+  "src": [
+   "fs:528662"
+  ]
+ },
+ {
+  "id": "C+.burn.eye",
+  "kind": "event",
+  "t": 80.0,
+  "level": -28.7,
+  "gain": 4.4,
+  "clip_start_s": 79.5,
+  "hit_offset_s": 0.5,
+  "src": [
+   "fs:528662"
+  ]
+ },
+ {
+  "id": "C+.burn.map",
+  "kind": "event",
+  "t": 173.3333,
+  "level": -32.6,
+  "gain": 0.1,
+  "clip_start_s": 172.8333,
+  "hit_offset_s": 0.5,
+  "src": [
+   "fs:528662"
+  ]
+ },
+ {
+  "id": "C+.burn.remains",
+  "kind": "event",
+  "t": 233.3333,
+  "level": -40.6,
+  "gain": -6.0,
+  "clip_start_s": 232.8333,
+  "hit_offset_s": 0.5,
+  "src": [
+   "fs:528662"
+  ]
+ },
+ {
+  "id": "C+.burn.title",
+  "kind": "event",
+  "t": 290.8333,
+  "level": -49.4,
+  "gain": -15.8,
+  "clip_start_s": 290.0333,
+  "hit_offset_s": 0.8,
+  "src": [
+   "fs:528662"
+  ]
+ },
+ {
+  "id": "C+.drop",
+  "kind": "event",
+  "t": 91.6667,
+  "level": -34.8,
+  "gain": 4.6,
+  "clip_start_s": 91.6467,
+  "hit_offset_s": 0.02,
+  "src": [
+   "fs:197900",
+   "fs:197900"
+  ]
+ },
+ {
+  "id": "C+.cock",
+  "kind": "event",
+  "t": 112.5,
+  "level": -37.7,
+  "gain": -15.2,
+  "clip_start_s": 112.4,
+  "hit_offset_s": 0.1,
+  "src": [
+   "fs:482119"
+  ]
+ },
+ {
+  "id": "C+.coldtick",
+  "kind": "event",
+  "t": 141.6667,
+  "level": -39.4,
+  "gain": -26.3,
+  "clip_start_s": 141.6629,
+  "hit_offset_s": 0.0037,
+  "src": [
+   "fs:185609",
+   "fs:185608",
+   "fs:185609",
+   "fs:185608",
+   "fs:185609",
+   "fs:185608",
+   "fs:185609",
+   "fs:185608"
+  ]
+ },
+ {
+  "id": "C+.seethe",
+  "kind": "event",
+  "t": 223.3333,
+  "level": -35.3,
+  "gain": -10.3,
+  "clip_start_s": 223.3333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:172630",
+   "fs:194635"
+  ]
+ },
+ {
+  "id": "C+.dip.0",
+  "kind": "event",
+  "t": 230.4,
+  "level": -36.2,
+  "gain": -25.3,
+  "clip_start_s": 230.05,
+  "hit_offset_s": 0.35,
+  "src": [
+   "fs:426208"
+  ]
+ },
+ {
+  "id": "C+.dip.1",
+  "kind": "event",
+  "t": 230.95,
+  "level": -36.2,
+  "gain": -25.5,
+  "clip_start_s": 230.579,
+  "hit_offset_s": 0.371,
+  "src": [
+   "fs:426208"
+  ]
+ },
+ {
+  "id": "C+.dip.2",
+  "kind": "event",
+  "t": 231.5,
+  "level": -36.5,
+  "gain": -25.7,
+  "clip_start_s": 231.1675,
+  "hit_offset_s": 0.3325,
+  "src": [
+   "fs:426208"
+  ]
+ },
+ {
+  "id": "C+.dip.3",
+  "kind": "event",
+  "t": 232.1,
+  "level": -38.0,
+  "gain": -27.3,
+  "clip_start_s": 231.715,
+  "hit_offset_s": 0.385,
+  "src": [
+   "fs:426208"
+  ]
+ },
+ {
+  "id": "C+.dip.4",
+  "kind": "event",
+  "t": 232.6,
+  "level": -37.5,
+  "gain": -26.6,
+  "clip_start_s": 232.278,
+  "hit_offset_s": 0.322,
+  "src": [
+   "fs:426208"
+  ]
+ },
+ {
+  "id": "C+.roads",
+  "kind": "event",
+  "t": 233.5833,
+  "level": -50.9,
+  "gain": -10.2,
+  "clip_start_s": 233.5833,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:681366",
+   "fs:681366",
+   "fs:681366",
+   "fs:681366",
+   "fs:681366",
+   "fs:681366"
+  ]
+ }
+]

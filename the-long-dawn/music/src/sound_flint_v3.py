@@ -34,10 +34,10 @@ BLOW = dict(layers=[                                  # blow, a soft in-breath, 
          env=[(0.0, -14.0), (2.5, -7.0), (4.6, 0.0)]),      # the tinder's glow crackling up under the breath
 ])
 
-CATCH = dict(src=("fs:595483", 7.40), pre=0.6, post=0.63, hp=90, fi=0.4, fo=0.06)
+CATCH = dict(src=("fs:595483", 7.47), pre=0.67, post=0.56, hp=90, fi=0.4, fo=0.06)   # hit = the burst's arrival
 
 ROAR = dict(layers=[
-    dict(src=("fs:595483", 9.90), pre=0.64, post=5.2, hp=70, fi=0.06, fo=1.8, g=0.0, dt=0.0),
+    dict(src=("fs:595483", 9.944), pre=0.684, post=5.16, hp=70, fi=0.06, fo=1.8, g=0.0, dt=0.0),  # arrival
     dict(src=("fs:681366", 40.0), pre=0.1, post=5.0, hp=70, fi=0.25, fo=1.8, g=-5.0, dt=0.05),
 ])
 

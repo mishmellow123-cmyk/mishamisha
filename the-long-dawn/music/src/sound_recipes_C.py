@@ -21,21 +21,22 @@ FLIP = "sn:flicking_pages"                                   # 344 Audio: the sa
 
 
 def page(src, hit, pre=0.5, post=1.0, **kw):
-    return dict(src=(src, hit), pre=pre, post=post, hp=120, fi=0.08, fo=0.3, **kw)
+    return dict(src=(src, hit), pre=pre, post=post, hp=120, fi=0.08, fo=0.3, crest=13.0, **kw)
 
 
 def pen(start, dur):
-    return dict(src=(QUILL, start), pre=0.0, post=dur, hp=250, fi=0.05, fo=min(0.3, dur / 3), width=0.7)
+    return dict(src=(QUILL, start), pre=0.0, post=dur, hp=250, fi=0.05, fo=min(0.3, dur / 3), width=0.7, crest=12.0)
 
 
 def burn(start, dur, swell=0.5):
     """paper catching at a burn-through: the crackle swells in over `swell` s to the hit, then burns on"""
-    return dict(src=(PAPER, start), pre=swell, post=dur, hp=200, fi=swell, fo=min(1.2, dur / 2),
+    return dict(src=(PAPER, start), pre=swell, post=dur, hp=200, fi=swell, fo=min(1.2, dur / 2), crest=12.0,
                 env=[(-swell, -10.0), (0.0, 0.0), (dur, -4.0)])
 
 
 def flare(src_t, dist, stretch=1.0):
-    """a far beacon catching: the same real whoomp as the roar, at distance"""
+    """a far beacon catching: the same real whoomp as the roar, at distance (src_t = the burst's measured arrival:
+    8 dB under its peak, so the flame's burst lands on the frame)"""
     return dict(layers=[dict(src=("fs:595483", src_t), pre=0.5, post=2.6, hp=90, fi=0.05, fo=1.2, stretch=stretch,
                              g=0.0, dt=0.0)], dist=dist)
 
@@ -64,10 +65,10 @@ RECIPES = {
     "C.fire.forge": dict(layers=[dict(src=FIRE, seg=(10, 18), xf=2.5, g=0.0),
                                  dict(src=LAVA, seg=(8, 14), xf=2.0, g=-8.0)], hp=50),
     "C.storm.eye": dict(src=STORM, seg=(6, 10), xf=1.5, hp=60),
-    "C+.drop": dict(layers=[dict(src=("fs:197900", 0.40), pre=0.02, post=0.45, hp=300, fo=0.1, g=0.0, dt=0.0),
+    "C+.drop": dict(crest=14.0, peak_room=2.0, layers=[dict(src=("fs:197900", 0.40), pre=0.02, post=0.45, hp=300, fo=0.1, g=0.0, dt=0.0),
                             dict(src=("fs:197900", 0.10), pre=0.02, post=0.25, hp=300, fo=0.1, g=-8.0, dt=0.44)]),
                             # the strike on f2200 exactly; the bead falling back ~f2210.6 (MIRROR, 21:10Z)
-    "C+.cock": dict(src=("fs:482119", 0.12), pre=0.1, post=2.2, hp=400, lp=3500, fo=0.5, dist=0.85, width=0.3),
+    "C+.cock": dict(src=("fs:482119", 0.13), pre=0.1, post=2.2, hp=400, lp=3500, fo=0.5, dist=0.85, width=0.3),
     "C.wind.fall": dict(src=WIND, seg=(10, 18), xf=3.0, hp=50),
     "C.snow_hiss": dict(layers=[
         dict(src=("fs:541035", 0.06), pre=0.02, post=1.2, hp=500, fo=0.4, g=0.0, dt=0.0),        # the quench
@@ -80,16 +81,16 @@ RECIPES = {
                                      dt=d)
                                 for k, d in enumerate((0.0, 0.62, 1.55, 2.1, 3.3, 4.05, 5.2, 6.1))]),
     # ---------------------------------------------------------------- the run: beacons catching at distance
-    "C.beacon1": flare(9.90, 0.23), "C.beacon2": flare(26.40, 0.31, 0.97), "C.beacon3": flare(9.90, 0.39, 1.03),
-    "C.beacon4": flare(20.00, 0.47, 0.96), "C.beacon5": flare(26.40, 0.55, 1.04), "C.beacon6": flare(9.90, 0.63, 0.98),
-    "C.beacon7": flare(20.00, 0.71, 1.02),
+    "C.beacon1": flare(9.944, 0.23), "C.beacon2": flare(26.558, 0.31, 0.97), "C.beacon3": flare(9.944, 0.39, 1.03),
+    "C.beacon4": flare(20.070, 0.47, 0.96), "C.beacon5": flare(26.558, 0.55, 1.04), "C.beacon6": flare(9.944, 0.63, 0.98),
+    "C.beacon7": flare(20.070, 0.71, 1.02),
     # ---------------------------------------------------------------- the council: torches, murmur, the unmaking
     "C.hearth.council": dict(layers=[dict(src=FIRE, seg=(10, 18), xf=2.5, g=0.0),
                                      dict(src=HEARTH, seg=(8, 14), xf=2.0, g=-2.0)], hp=90, width=1.0),
     "C+.fire.rises": dict(layers=[dict(src=FIRE, seg=(8, 12), xf=1.5, g=0.0),
-                                  dict(src=LAVA, seg=(6, 10), xf=1.5, g=-6.0)], hp=45,
+                                  dict(src=LAVA, seg=(6, 10), xf=1.5, g=-6.0)], hp=45, crest=12.0,
                           env=[(0.0, -12.0), (8.0, 0.0)]),
-    "C+.seethe": dict(layers=[dict(src=("fs:172630", 20.0), pre=0.0, post=7.0, hp=120, fi=0.4, fo=0.3, g=0.0, dt=0.0,
+    "C+.seethe": dict(crest=14.0, layers=[dict(src=("fs:172630", 20.0), pre=0.0, post=7.0, hp=120, fi=0.4, fo=0.3, g=0.0, dt=0.0,
                                    env=[(0.0, -8.0), (1.5, -2.0), (1.9, 0.0), (3.4, -3.0), (3.5, -40.0)]),
                               dict(src=("fs:194635", 4.0), pre=0.0, post=3.4, hp=900, fi=0.3, fo=0.25, g=-6.0, dt=0.0,
                                    env=[(0.0, -12.0), (1.8, 0.0), (3.35, -30.0)])]),
@@ -119,14 +120,16 @@ EXTRA_BEDS = [
 EXTRA_EVENTS = [
     dict(id="C.x.catch", t={"at": "catch"}),                  # the flint take's catch (+196), on every cut
 ]
+# the murmur must be HEARD under the council's clarinet and chorale (score ~-22 LUFS short-term there) for its falling
+# silent at ring_set to register: ~12 dB under the score, low-passed so no word is intelligible
 RECIPES["C.x.murmur"] = dict(src=[("fs:766658", 4.0, 150.0, 1.0)], seg=(12, 20), xf=3.0, hp=150, lp=2200,
-                             width=0.8, level_from="C.hearth.council", trim=-6.0)
+                             width=0.8, level=-50.0)
 RECIPES["C.x.catch"] = dict(FL.CATCH, level_from="C.blow", trim=1.0)
 RECIPES.pop("C.catch", None)                                  # C's sheet has no catch cue: C.x.catch is it
 RECIPES["C+.sea.near"] = dict(src=SEA, seg=(14, 24), xf=3.5, hp=40, width=1.0)   # the Havens, nearer the water
 
 SPACE = dict(distance="forest20", outdoor="forest20", event_send=0.08, bed_send=0.0, wet_hp=150, wet_lp=9000,
-             stem_hp=25)
+             stem_hp=25, bed_crest=14.0)
 
 
 def extra_cues(bm):

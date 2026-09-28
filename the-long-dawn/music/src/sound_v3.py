@@ -205,6 +205,26 @@ def pan(y, p):
     return (y * np.array([gl, gr], np.float32)).astype(np.float32)
 
 
+def limit_crest(y, crest_db, look=0.0015, release=0.04):
+    """a transparent look-ahead peak limiter that holds a clip's peaks within crest_db of its loudest 400 ms.
+    A real page's snap or a wood pop carries 18-25 dB of peak over its loudness (a synthesized one ~10 dB), so
+    matched by loudness it would spike the master; limited this way it can sit at its designed level instead.
+    Acts only on the rare peaks (1.5 ms look-ahead, 40 ms release): the crackle's texture is untouched."""
+    if crest_db is None or len(y) < 16:
+        return y
+    from scipy.ndimage import minimum_filter1d
+    thr = db(loud_max(y) + crest_db)
+    a = np.abs(y).max(1)
+    if a.max() <= thr:
+        return y
+    gr = 20 * np.log10(np.minimum(1.0, thr / (a + 1e-12)))
+    gr = minimum_filter1d(gr, size=2 * int(look * SR) + 1)
+    k = np.exp(-1.0 / (release * SR))
+    sm = signal.lfilter([1 - k], [1, -k], gr)
+    gr = np.minimum(gr, sm)
+    return (y * db(gr).astype(np.float32)[:, None]).astype(np.float32)
+
+
 # ------------------------------------------------------------------ building blocks
 _SRC_L = {}
 _SRC_L_PATH = os.path.join(LIB, "src_loudness.json")
@@ -465,7 +485,7 @@ def build(cut, only=None, verbose=True):
             continue
         rng = rng_for(rid)
         dur = b["t1"] - b["t0"]
-        y = bed(rc, dur, rng)
+        y = limit_crest(bed(rc, dur, rng), rc.get("crest", R.SPACE.get("bed_crest", 18.0)))
         ref = ref_of(b, rc)
         g = match_gain(y, ref, "bed", rc.get("trim", 0.0))
         target = (ref["I"] if isinstance(ref, dict) else ref) + rc.get("trim", 0.0)
@@ -510,6 +530,7 @@ def build(cut, only=None, verbose=True):
         dist = rc.get("dist", ev.get("dist"))
         if dist:
             y = distance(y, dist, irs_dist)
+        y = limit_crest(y, rc.get("crest", R.SPACE.get("event_crest")))
         ref = ref_of(ev, rc)
         g = match_gain(y, ref, "event", rc.get("trim", 0.0), rc.get("peak_room", R.SPACE.get("peak_room", 0.0)))
         target = (ref["M"] if isinstance(ref, dict) else ref) + rc.get("trim", 0.0)
@@ -536,6 +557,52 @@ def build(cut, only=None, verbose=True):
             if m.get("status"):
                 print(f"  {m['id']:22s} {m['status']:9s} {m.get('why', '')}")
     return bm, stem, meta
+
+
+def levels_report(cut, only=None):
+    """per cue: the synthesized design's levels vs the real clip's after matching, and which cap decided the gain"""
+    import importlib
+    R = importlib.import_module(f"sound_recipes_{cut}")
+    bm = BarMap(cut)
+    beds = [dict(b) for b in bm.d.get("ambience", [])]
+    evs = [dict(e) for e in bm.d.get("sfx", [])]
+    if hasattr(R, "extra_cues"):
+        fx, amb = R.extra_cues(bm)
+        have = {x["id"] for x in beds + evs}
+        evs += [dict(e) for e in fx if e["id"] not in have]
+        beds += [dict(b) for b in amb if b["id"] not in have]
+    live = lambda x: x["id"] in R.RECIPES and not R.RECIPES[x["id"]].get("skip") and (not only or x["id"] in only)
+    refs = ref_levels(bm, [(b, "bed") for b in beds if live(b)] + [(e, "event") for e in evs if live(e)])
+    irs_dist = space_irs(R.SPACE.get("distance", "forest20"))
+    print(f"{'cue':20s} {'kind':5s} | synth I / S3 / M / pk       | real, after gain: I / S3 / M / pk | gain  bound")
+    for it, kind in [(b, "bed") for b in beds] + [(e, "event") for e in evs]:
+        rid = it["id"]
+        if not live(it) or rid not in refs:
+            continue
+        rc = R.RECIPES[rid]
+        rng = rng_for(rid)
+        if kind == "bed":
+            y = limit_crest(bed(rc, it["t1"] - it["t0"], rng), rc.get("crest", R.SPACE.get("bed_crest", 18.0)))
+        else:
+            y, _ = event(rc, rng)
+            if rc.get("pan") is not None:
+                y = pan(y, rc["pan"])
+            d = rc.get("dist", it.get("dist"))
+            if d:
+                y = distance(y, d, irs_dist)
+            y = limit_crest(y, rc.get("crest", R.SPACE.get("event_crest")))
+        r = refs[rid]
+        L = levels(y)
+        tr = rc.get("trim", 0.0)
+        if kind == "bed":
+            cands = {"I": r["I"] + tr - L["I"], "S3cap": max(r["S3"], r["I"] + 3.0) + 1.0 + tr - L["S3"]}
+        else:
+            pr = rc.get("peak_room", R.SPACE.get("peak_room", 0.0))
+            cands = {"M": r["M"] + tr - L["M"], "S3cap": r["S3"] + tr - L["S3"], "pkcap": r["pk"] + pr + tr - L["pk"]}
+        bound = min(cands, key=cands.get)
+        g = cands[bound]
+        print(f"{rid:20s} {kind:5s} | {r['I']:6.1f} {r['S3']:6.1f} {r['M']:6.1f} {r['pk']:6.1f} | "
+              f"{L['I'] + g:6.1f} {L['S3'] + g:6.1f} {L['M'] + g:6.1f} {L['pk'] + g:6.1f} | {g:6.1f} {bound}")
 
 
 def write(cut, stem, meta, bm):
@@ -617,9 +684,13 @@ if __name__ == "__main__":
     ap.add_argument("--only", default="")
     ap.add_argument("--solo", default="")
     ap.add_argument("--no-battery", action="store_true")
+    ap.add_argument("--levels", action="store_true")
     a = ap.parse_args()
     cut = a.cut.upper()
     only = set(x for x in a.only.split(",") if x) or None
+    if a.levels:
+        levels_report(cut, only)
+        sys.exit(0)
     bm, stem, meta = build(cut, only)
     if a.solo:
         sf.write(a.solo, stem[: bm.n], SR, subtype="PCM_24")

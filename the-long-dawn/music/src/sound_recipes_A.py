@@ -17,7 +17,7 @@ LAVA = [("fs:172630", 1.0, 57.5, 1.0)]                       # molten rock seeth
 PINE = [("sn:pine_branches", 2.0, 85.0, 1.0)]                # fresh pine branches in a fire: sizzle and spit
 
 # the real flare-ups available (source, onset): oil igniting (Sonniss) and kindling taking (Freesound)
-FLARES = [("sn:oil_flare", 2.93), ("fs:595483", 9.90), ("sn:oil_flare", 20.14), ("fs:595483", 26.40)]
+FLARES = [("sn:oil_flare", 2.974), ("fs:595483", 9.944), ("sn:oil_flare", 20.288), ("fs:595483", 26.558)]
 
 
 def flare(k, dist, stretch=1.0):
@@ -41,8 +41,8 @@ RECIPES = {
                                   dict(src=FIRE, seg=(6, 10), xf=1.5, g=-3.0),
                                   dict(src=LAVA, seg=(6, 10), xf=1.5, g=-6.0)], hp=35),
     "A.impact": dict(layers=[
-        dict(src=("sn:oil_flare", 20.14), pre=0.02, post=3.2, hp=40, fi=0.01, fo=1.8, g=0.0, dt=0.0),
-        dict(src=("fs:595483", 9.90), pre=0.05, post=4.5, hp=35, fi=0.01, fo=2.2, g=-2.0, dt=0.0),
+        dict(src=("sn:oil_flare", 20.288), pre=0.17, post=3.05, hp=40, fi=0.01, fo=1.8, g=0.0, dt=0.0),
+        dict(src=("fs:595483", 9.944), pre=0.09, post=4.46, hp=35, fi=0.01, fo=2.2, g=-2.0, dt=0.0),
         dict(src=("fs:172630", 44.0), pre=0.0, post=5.0, hp=30, fi=0.02, fo=3.0, g=-6.0, dt=0.0),
     ]),
     # ---------------------------------------------------------------- the dead valley, the night

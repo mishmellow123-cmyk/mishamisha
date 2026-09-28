@@ -79,7 +79,7 @@ RECIPES = {
     "B.feed.stone_8": feed(4), "B.feed.stone_12": feed(5), "B.feed.stone_20": feed(6), "B.feed.stone_30": feed(7),
     "B.feed.stone_45": feed(8), "B.feed.y60_strikes": feed(9),
     "B.traveller": dict(layers=[
-        dict(src=("fs:595483", 26.5), pre=0.3, post=2.0, hp=120, lp=7000, fi=0.2, fo=0.9, g=0.0, dt=0.0),
+        dict(src=("fs:595483", 26.558), pre=0.36, post=1.94, hp=120, lp=7000, fi=0.2, fo=0.9, g=0.0, dt=0.0),
         dict(src=("el:B_torch_02", 0.05), pre=0.05, post=3.3, hp=150, fi=0.15, fo=1.2, g=-4.0, dt=0.25),
     ], dist=0.35, width=0.6),
     "B.his_fire": dict(skip=True, why="THE VIGIL: the far answer is a pinprick kilometres off; no sound carries (her own "
