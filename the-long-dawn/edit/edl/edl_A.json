@@ -1573,6 +1573,36 @@
    "note": "A-FIX ENDING: the watch-fires pale as the long dawn comes"
   },
   {
+   "f0": 1026,
+   "f1": 1048,
+   "cut": 1040,
+   "kind": "swell",
+   "p0": [
+    966,
+    238
+   ],
+   "c1": [
+    964,
+    238
+   ],
+   "disc": [
+    962,
+    235
+   ],
+   "flame": [
+    959,
+    245
+   ],
+   "s0": 0.2,
+   "s1": 0.4,
+   "blend": [
+    1038,
+    1042
+   ],
+   "R": 330,
+   "note": "A4 -> A5 (user 28 Sep: the point jumped to the ignition disc in one frame): the point swells, catches and becomes the flame"
+  },
+  {
    "f0": 3612,
    "f1": 3660,
    "kind": "grade",
