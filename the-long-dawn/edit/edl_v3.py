@@ -141,10 +141,12 @@ A = [
       [T('h1_A', H1_S1 - 3360, 'exact', 'A-FIX H1', need=(1236, 1487))] + h1(H1_S1 - 3360)),
     S('A13', 3600, 3612, 'H1-A', 'THE ROAR', 'HEROINE', 'The roar on the downbeat; the pull-back from her summit begins.',
       [T('h1_A', H1_ROAR - 3600, 'exact', 'A-FIX H1', need=(1236, 1487))] + h1(H1_ROAR - 3600)),
-    S('A13', 3612, 3680, 'R2-B', 'HER FIRE', 'RUN-B harvest',
+    # A-FIX hinge (28 Sep): HER FIRE 48 f of B's reveal (1372-1419) in a static 1.56x crop that keeps B's cairn out,
+    # then EVERY RIDGE from 3660 (RUN-A/A-FIX re-render reveal_a_1 3660-3799: one continuous move into the crane)
+    S('A13', 3612, 3660, 'R2-B', 'HER FIRE', 'RUN-B harvest',
       "Moonlit silver: she is tiny by her new fire on her summit above the cloud sea (film B's reveal, harvested).",
-      [T('reveal_B', 1372 - 3612, 'exact', 'B5 reveal harvested')]),     # grade-matched to reveal_A: TRANS 'grade'
-    S('A13', 3680, 3800, 'R2-A', 'EVERY RIDGE', 'RUN-A',
+      [T('reveal_B', 1372 - 3612, 'exact', 'B5 reveal harvested', crop=(0.344, 0.20, 0.64, 0.64))]),
+    S('A13', 3660, 3800, 'R2-A', 'EVERY RIDGE', 'RUN-A',
       'On every ridge to the horizon fires catch in the same breath; the cold glow pulses beyond; red under the cloud.',
       [T('reveal'), T('run')]),
     S('A13', 3800, 3860, 'M5', 'KARST', 'MONTAGE-3D-2',
@@ -362,8 +364,9 @@ TRANS = {'A': [], 'B': [], 'C': [
 # grade-match of the harvested B reveal (B's sky is a touch darker and cooler than reveal_A's at the 3680 cut)
 import afix_comp  # noqa: E402
 TRANS['A'] = list(afix_comp.A_TRANS) + [
-    dict(f0=3612, f1=3680, kind='grade', gain=(1.2, 1.05, 1.0),
-         note="HER FIRE (reveal_B) matched to reveal_A's sky at the cut: sky means r .096 -> .119, g .133 -> .140"),
+    dict(f0=3612, f1=3660, kind='grade', gain=(1.18, 0.99, 0.94),
+         note="HER FIRE (reveal_B, cropped) matched to reveal_A's sky: top-third means (.101 .142 .263) -> (.119 .140 "
+              ".246) (reveal_A 3680; re-check on 3660 when reveal_a_1 lands)"),
 ]
 
 

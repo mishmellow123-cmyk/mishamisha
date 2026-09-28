@@ -535,7 +535,7 @@
   {
    "sec": "A13",
    "f0": 3612,
-   "f1": 3680,
+   "f1": 3660,
    "code": "R2-B",
    "name": "HER FIRE",
    "owner": "RUN-B harvest",
@@ -546,7 +546,12 @@
      "off": -2240,
      "mode": "exact",
      "note": "B5 reveal harvested",
-     "crop": null,
+     "crop": [
+      0.344,
+      0.2,
+      0.64,
+      0.64
+     ],
      "grade": null,
      "matte": null,
      "under": null,
@@ -567,7 +572,7 @@
   },
   {
    "sec": "A13",
-   "f0": 3680,
+   "f0": 3660,
    "f1": 3800,
    "code": "R2-A",
    "name": "EVERY RIDGE",
@@ -613,7 +618,7 @@
    ],
    "kind": "takes",
    "bars": [
-    47,
+    46,
     48
    ]
   },
@@ -1303,21 +1308,23 @@
    ],
    "open": [
     2656,
-    2692
+    2688
    ],
    "close": [
     2762,
     2796
    ],
    "r0": [
-    10,
-    10
+    46,
+    105
    ],
    "r1": [
-    600,
-    300
+    620,
+    250
    ],
-   "lift": 60,
+   "lift": 120,
+   "shift_y": -120,
+   "teardrop": 0.85,
    "breath": 0.035,
    "bar0": 2640,
    "feather": 0.07,
@@ -1444,14 +1451,14 @@
   },
   {
    "f0": 3612,
-   "f1": 3680,
+   "f1": 3660,
    "kind": "grade",
    "gain": [
-    1.2,
-    1.05,
-    1.0
+    1.18,
+    0.99,
+    0.94
    ],
-   "note": "HER FIRE (reveal_B) matched to reveal_A's sky at the cut: sky means r .096 -> .119, g .133 -> .140"
+   "note": "HER FIRE (reveal_B, cropped) matched to reveal_A's sky: top-third means (.101 .142 .263) -> (.119 .140 .246) (reveal_A 3680; re-check on 3660 when reveal_a_1 lands)"
   }
  ],
  "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first"
