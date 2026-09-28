@@ -34,6 +34,14 @@
       "packaged_bytes": 133181
     }
   ],
-  "readme_sha256": "ec9478c301f49985d0eb98a39404fa0ff1caf7925e6541ce09a83f555c8515ca",
-  "limits": "One second of native stacks and adjacent ps snapshots. Exact Numba pass and causal explanation unproven; no output-equivalence verdict."
+  "readme_sha256": "0d89ae5c5f02d3e071b6318ada21513ae0da88828770f425aa6578aacd1ad55f",
+  "limits": "One second of native stacks and adjacent ps snapshots. Exact Numba pass and causal explanation unproven; no output-equivalence verdict.",
+  "readme_history": [
+    {
+      "sha256": "ec9478c301f49985d0eb98a39404fa0ff1caf7925e6541ce09a83f555c8515ca",
+      "description": "Original README before the second-sample observation was appended."
+    }
+  ],
+  "readme_updated_utc": "2026-09-28T06:39:26.743197+00:00",
+  "readme_update_note": "README appended with the separately packaged 06:37:20.577 UTC sample; original sample/receipt file hashes unchanged."
 }

@@ -15,3 +15,9 @@ All 787 main-thread samples include Numba's dispatcher `compile_and_invoke`. Pyt
 [Packaging provenance](provenance.json) records SHA-256 hashes and byte counts for each original and packaged artifact. Packaging replaces the session workspace prefix with `<WORKSPACE>`, the local Anaconda root with `<PYTHON_RUNTIME>`, and user-home prefixes with `<USER_HOME>`; existing macOS wildcard redactions remain. System-library paths, sample counts, symbols, addresses, timestamps and numeric observations are preserved. The original local files were unchanged.
 
 This diagnostic accompanies the draft compiler study. It provides no rendered-output equivalence verdict or controlled performance ratio. Packaging performed no new sampling, renderer work or process lifecycle action.
+
+## Second one-second sample
+
+The [second sample](reference-98102-20260928T0637Z.sample.txt) is timestamped **2026-09-28 06:37:20.577 UTC**, with launch time **06:02:47.534 UTC**. All **752 main-thread samples** include `compile_and_invoke`; **710** pass through `PyNumber_And`, and **690** through `set_intersection` into `set_contains_entry`. It again shows Python set operations within Numba compilation. The sample reports physical footprint and peak as **`9.0G`**. This second package contains no adjacent `ps` snapshot and supplies no new RSS reading for the table above.
+
+[Separate provenance](provenance-0637.json) records the original and normalized sample hashes. The exact compiler pass, causal explanation and advancement to any later compilation stage remain unproven; no LLVM-progress or rendered-output verdict follows. The first provenance file now pins this appended README and retains its previous README hash in `readme_history`. No additional sampling or process action occurred during packaging.

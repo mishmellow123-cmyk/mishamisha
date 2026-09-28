@@ -1,5 +1,5 @@
 {
-  "normalization": "Machine-specific workspace prefixes are replaced with <WORKSPACE>; source/output hashes and numerical values are unchanged.",
+  "normalization": "Machine-specific workspace prefixes are replaced with <WORKSPACE> and the local Anaconda prefix with <PYTHON_RUNTIME>; source/output hashes and numerical values are unchanged.",
   "raw_arrays": "Preserved locally under work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold; no NPY or cache files are packaged.",
   "reference_commit": "61cf28b390cf00fdf860401127ca3e7f6cf33491",
   "candidate_sdfppl_sha256": "9140e4ccd060db8895a2952ea5aab74a3c444bda12e29fd43ab8ec12909b2855",
@@ -70,6 +70,24 @@
       "original_sha256": "97b451ec04c53702179db8dbe8327172e642fc2c6e356a14ff0dcbf13b218535",
       "packaged_sha256": "97b451ec04c53702179db8dbe8327172e642fc2c6e356a14ff0dcbf13b218535",
       "normalized_workspace_prefix": false
+    },
+    "reference-cold-partial-receipt.json": {
+      "local_source": "work/compiler-study/bench/suite-61cf28b/results/suite/reference/cold/receipt.json",
+      "original_sha256": "7d4166ef8134dbcb820622fd0ac2e23c78ed832915ef805df6624e3a1b7cbbe5",
+      "packaged_sha256": "39c7d10814130f972d150ab8f2ec471a08c56e472f18715759823d2880ba32f3",
+      "normalized_workspace_prefix": true
+    },
+    "reference-cold-launcher.json": {
+      "local_source": "work/compiler-study/bench/suite-61cf28b/results/suite/reference/cold/launcher.json",
+      "original_sha256": "18cef6739b225d13bd993aea16ebf1119f440a598e70b9dff95fbe4f3393cd7d",
+      "packaged_sha256": "18cef6739b225d13bd993aea16ebf1119f440a598e70b9dff95fbe4f3393cd7d",
+      "normalized_workspace_prefix": false
+    },
+    "reference-cold.log": {
+      "local_source": "work/compiler-study/bench/suite-61cf28b/reference-cold.log",
+      "original_sha256": "e58714a956bc1217884c51bac5650e9a197ae2e87ad9501f6ad355dcfefac984",
+      "packaged_sha256": "d00ef47e170adb6164e0f8eea8029aae6e2c2759339dbd1adbb79c9fc1ef65dc",
+      "normalized_workspace_prefix": true
     }
   }
 }

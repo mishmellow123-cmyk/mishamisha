@@ -1,0 +1,43 @@
+{
+  "packaged_utc": "2026-09-28T06:39:26.743197+00:00",
+  "kind": "Second existing one-second sample, normalized without resampling",
+  "observed_utc": "2026-09-28T06:37:20.577+00:00",
+  "process_launch_utc": "2026-09-28T06:02:47.534+00:00",
+  "pid": 98102,
+  "source": "macOS sample header and main-thread call graph; all numeric observations below checked against the raw sample.",
+  "counts": {
+    "main_thread_samples": 752,
+    "compile_and_invoke": 752,
+    "PyNumber_And": 710,
+    "set_intersection": 690,
+    "set_contains_entry": 690
+  },
+  "physical_footprint_display": "9.0G",
+  "peak_physical_footprint_display": "9.0G",
+  "rss": null,
+  "rss_note": "No adjacent ps snapshot is included in this second source artifact. The separately communicated earlier ps reading is not reproduced here.",
+  "normalization_rules": [
+    {
+      "replacement": "<WORKSPACE>",
+      "description": "Session workspace absolute path prefix"
+    },
+    {
+      "replacement": "<PYTHON_RUNTIME>",
+      "description": "Local Anaconda installation root"
+    },
+    {
+      "replacement": "<USER_HOME>",
+      "description": "Any /Users/<name> prefix, including the wildcard user redaction already supplied by macOS sample"
+    }
+  ],
+  "file": {
+    "file": "reference-98102-20260928T0637Z.sample.txt",
+    "original_location": "<WORKSPACE>/work/compiler-study/diagnostics/reference-98102-20260928T0637Z.sample.txt",
+    "original_sha256": "ac004c2809d6f835e193929edbb6873e7db8243b02db6867b530d73d9d754013",
+    "packaged_sha256": "521ed453acf2792a279a8c022dce4332acf479266f1f512610074fadaeecd31b",
+    "original_bytes": 132731,
+    "packaged_bytes": 133293
+  },
+  "readme_sha256": "0d89ae5c5f02d3e071b6318ada21513ae0da88828770f425aa6578aacd1ad55f",
+  "limits": "Active Python-side Numba compilation with set operations in this sampled interval; exact compiler pass, root cause and LLVM-stage progress unproven. No output-equivalence verdict."
+}
