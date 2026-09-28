@@ -6,10 +6,10 @@
   "NUMBA_NUM_THREADS=4 python3 shots/run/reveal_a.py --frames 3700 --scale 0.12 --out warm_reveal_a"
  ],
  "render": [
-  "python3 shots/run/reveal_a.py --range 3680-3799 --procs 4 --skip"
+  "python3 shots/run/reveal_a.py --range 3660-3799 --procs 4 --skip"
  ],
  "out_dir": "renders/reveal_A",
- "frames": "3680-3799",
+ "frames": "3660-3799",
  "push_every": 300,
  "ship": "jpg"
 }

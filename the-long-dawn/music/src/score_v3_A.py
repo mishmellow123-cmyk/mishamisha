@@ -74,7 +74,9 @@ THE PLAN
   A19 blue hour   275 ms of silence; a bloom on D add9 with the cycle warm inside; the whole theme: CALL (horns and
                   violas), ANSWER (violins and a far horn), HOME (violins and a horn) arriving on D on 78 b1, the
                   first real cadence (A7 -> D); mf at most
-  A20 title       D add9 rings out to silence; the watch tone ends with it
+  A20 title       D add9 rings out to silence; the watch tone ends with it; over it (v2b, from B's sunrise) the
+                  ANSWER passed outward note by note, horn -> far -> farther -> farthest, each then silent (the
+                  violins hand HOME's D to the first); A11's pure A5 returns ppp as the sky pales (PASS_FRAMES)
 """
 import numpy as np
 
@@ -95,6 +97,8 @@ A_SEATS = {
     "vc_sp": dict(inst="vc_spic", pan=0.35, width=0.5, depth=0.3, send=0.2, gain_db=1.4, humanize_ms=6, **_S),
     "cb_sp": dict(inst="cb_spic", pan=0.58, width=0.4, depth=0.35, send=0.2, gain_db=1.4, humanize_ms=6, **_S),
     # the two giants: two trombones on opposite sides of the fire (they lead the race's low brass)
+    # A20's pass: the farthest horn, toward the horizon ahead (the cut follows her look)
+    "hn_farthest": dict(inst="horn", pan=0.22, width=0.2, depth=1.0, send=0.95, gain_db=-4.5, humanize_ms=14, **_B),
     "tbn_l": dict(inst="trombone", pan=-0.55, width=0.4, depth=0.65, send=0.42, gain_db=-2.8, humanize_ms=8, **_B),
     "tbn_r": dict(inst="trombone", pan=0.6, width=0.4, depth=0.65, send=0.42, gain_db=-2.8, humanize_ms=8, **_B),
     "dr_taiko": dict(inst="giant_mallet", pan=-0.1, width=0.9, depth=0.6, send=0.35, gain_db=7.7, **_PC),
@@ -151,7 +155,14 @@ CYC_RACE = ("D4", "Eb4", "D4", "C4", "D4", "Eb4", "Ab4")        # the edge (and 
 DAMP = lambda u: dict(damp=True)                                # the race's cycle is damped: it ticks, never rings
 CYC_HEAL = ("D5", "E5", "A5", "D6", "E6", "A5", "E5")          # healed: seven eighths against the bar
 SHRINK = (("D6", "A5", "E6", "F5", "C6", "Bb5", "E5"), ("D6", "A5", "E6", "F5", "C6"), ("D6", "A5", "E6"), ("D6",))
-LOCK = ("D5", "A5", "D6", "E6")                                # locked to the bar (kit LOCK4 on D)
+LOCK = ("D5", "A5", "D6", "E6")
+# A20 (v2b, from B's sunrise; the director, 28 Sep): the ANSWER passed outward, one note per horn, each horn then
+# silent; A11's pure A5 returns ppp as the rose sky pales. In FRAMES (20 a beat) so that A-FIX's fire-paling frames
+# drop straight in: one frame per note, in order. They must fall after the cadence's horn (>= 6200) and before the
+# fade; nothing else moves with them except the violins' hand-off of HOME's D to the first horn.
+PASS_FRAMES = (6240, 6290, 6340, 6390)                         # 79 b1, 79 b3.5, 80 b2, 80 b4.5 (current A20)
+PASS_NOTES = (("hn", "D4", 0.34), ("hn_far", "C#4", 0.33), ("hn_farther", "B3", 0.32), ("hn_farthest", "F#3", 0.3))
+HARM_RETURN_FRAME = 6320                                       # 80 b1                                # locked to the bar (kit LOCK4 on D)
 
 
 def T(b):
@@ -239,7 +250,7 @@ def build(bm):
     crossing(S, bm, ev)
     blue_hour(S, bm, ev)
     end = bm.bars * 4
-    for pn in ("hn", "hn2", "hn_far", "hn_farther", "tbn_l", "tbn_r", "tuba"):
+    for pn in ("hn", "hn2", "hn_far", "hn_farther", "hn_farthest", "tbn_l", "tbn_r", "tuba"):
         K.breathe(S, pn, 0, end, depth=0.12, min_dur=1.4)
     K.ride(S, bm, RIDE)
     S.groups = dict(GROUPS)
@@ -846,16 +857,32 @@ def blue_hour(S, bm, ev):
     S.P("hn_far").d((ans0 - 0.05, 0.36), (ans0 + 1, 0.4), (ans0 + 3.4, 0.34), (ans0 + 4.3, 0.04))
     sync(S, ans0, "the whole theme: the ANSWER (the violins step to D5)", "vln1", "pitch:74")
     # HOME on the violins and a horn, arriving on D as the cadence falls (78 b1)
-    phrase(S, "vln1", [("B4", 1), ("A4", 1), ("F#4", 2), ("D4", last - cad)], home0, legato=True,
+    pass_b = [f / 20.0 for f in PASS_FRAMES]
+    assert cad + 2 <= pass_b[0] and all(a < b for a, b in zip(pass_b, pass_b[1:])) and pass_b[-1] < fade - 1, pass_b
+    phrase(S, "vln1", [("B4", 1), ("A4", 1), ("F#4", 2), ("D4", pass_b[0] + 1.5 - cad)], home0, legato=True,
            sync_first=False)
     S.P("vln1").notes[-4].legato = True
     phrase(S, "hn", [("B3", 1), ("A3", 1), ("F#3", 2), ("D3", 3.0)], home0)
     S.P("hn").d((home0 - 0.05, 0.36), (home0 + 1, 0.38), (cad, 0.4), (cad + 2, 0.32), (cad + 3.2, 0.04))
     S.P("vln1").d((down, 0.07), (down + 1.4, 0.26), (ans0 - 0.3, 0.27), (ans0 + 0.4, 0.42), (home0, 0.43),
-                  (cad, 0.44), (cad + 2, 0.34), (title, 0.26), (title + 4, 0.14), (last - 2, 0.05), (last - 0.2, 0.02))
+                  (cad, 0.44), (cad + 2, 0.34), *sorted([(pass_b[0], 0.26), (pass_b[0] + 1.4, 0.05)]))
     sync(S, home0, "the whole theme: HOME (the horn)", "hn", "arrive:59", 0.25)
     sync(S, cad, "the first real cadence: A7 -> D (the basses)", "cb", "pitch:38")
     sync(S, cad, "the first real cadence: HOME arrives on D4 (violins)", "vln1", "pitch:62")
+    # A20: the ANSWER passed outward over the ringing D add9, horn -> far -> farther -> farthest, each then silent
+    # (the violins hand HOME's D to the first); the last one fades with the picture
+    for i, ((pn, p, v), t) in enumerate(zip(PASS_NOTES, pass_b)):
+        t1 = pass_b[i + 1] if i + 1 < len(pass_b) else fade
+        S.P(pn).n(p, t, t1 - t + (0.6 if i + 1 < len(pass_b) else 0.9), sync=True)
+        tail = [(t1, v * 0.7), (t1 + 0.6, 0.02)] if i + 1 < len(pass_b) else [(fade - 0.5, v * 0.6), (last - 0.3, 0.02)]
+        S.P(pn).d((t - 0.05, v * 0.8), (t + 0.8, v), *tail)
+        sync(S, t, f"A20: the ANSWER passed, {p} ({pn}), then silent", pn, f"arrive:{m(p)}", 0.25)
+    # A11's pure A5 (the false dawn's beating A, made pure) returns, ppp, as the rose sky pales; out with the fade
+    hr = HARM_RETURN_FRAME / 20.0
+    S.P("harmonic").n("A5", hr, last - 0.1 - hr, atk=2.2, rel=1.6)
+    S.P("harmonic").d((hr, 0.03), (hr + 2.5, 0.1), (fade - 0.5, 0.08), (last - 0.3, 0.02))
+    S.P("harm_str").n("A5", hr + 0.5, last - 0.3 - hr - 0.5)
+    S.P("harm_str").d((hr + 0.5, 0.02), (hr + 3, 0.05), (fade - 0.5, 0.04), (last - 0.4, 0.015))
     # the cycle, warm, inside the bloom; it stops as the chord rings out
     cycle(S, "cycle", LOCK, down, title + 4, 1.0, 0.11, 0.1, pan_amp=0.3, morph=warm_morph(1.0, 1.0),
           sync_first=False)

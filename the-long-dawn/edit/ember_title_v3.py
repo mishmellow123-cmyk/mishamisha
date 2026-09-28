@@ -44,6 +44,11 @@ def plate_fires(cut):
     """(fires, source): the fires in the delivered plate's first frame, else the stand-in fires."""
     import assemble as AS
     shot = next(s for s in AS.EDL.EDL[cut] if s['kind'] == 'title')
+    wf = next((t for t in AS.EDL.TRANS.get(cut, ()) if t.get('kind') == 'watchfires'
+               and t['f0'] <= shot['f0'] < t['f1']), None)
+    if wf:              # A-FIX's ending: the fires are comped over the plate, so the sparks rise from its own list
+        return ([(float(x), float(y), max(4.0, 3.0 * sz)) for x, y, sz, _ in wf['fires']],
+                'the watch-fires and the lantern (afix_comp.WATCHFIRES)')
     for take in shot['takes']:
         p, _ = AS.locate(take, cut, None, shot['f0'])
         if p and not isinstance(p, tuple):
@@ -63,7 +68,8 @@ def plate_fires(cut):
 def signature(cut, fires):
     eng = open(os.path.join(ROOT, 'edit', 'ember_title.py')).read()
     me = open(os.path.abspath(__file__)).read()
-    sc = [inspect.getsource(TS.clock), inspect.getsource(TS.fade), TS.CLOCK[cut], TS.FADE.get(cut), TS.TITLE_Y,
+    sc = [inspect.getsource(TS.clock), inspect.getsource(TS.fade), TS.CLOCK[cut], TS.FADE.get(cut),
+          TS.TITLE_Y_CUT.get(cut, TS.TITLE_Y),
           TS.SPAN[cut]]
     return hashlib.sha1(json.dumps([eng, me, sc, fires], default=str).encode()).hexdigest()[:16]
 
@@ -71,7 +77,7 @@ def signature(cut, fires):
 def setup(cut, fires):
     """Install the v3 scene into the engine (module globals it reads at call time)."""
     import ember_title as ET
-    ET.TITLE_Y = TS.TITLE_Y
+    ET.TITLE_Y = TS.TITLE_Y_CUT.get(cut, TS.TITLE_Y)
     ET.crane = lambda fv2: (np.zeros(3), np.eye(3), F_PX)             # static: no crane flow, no parallax
     ET.crest_y = lambda xs, fv2: np.full(np.shape(xs), TS.H + 500.0)  # nothing hides the sparks
     ET.occluder_boxes = lambda fv2: np.zeros((0, 4), np.float64)

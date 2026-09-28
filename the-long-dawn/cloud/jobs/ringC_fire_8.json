@@ -7,10 +7,10 @@
   "$HOME/bpyenv/bin/python -c \"import bpy; print('bpy', bpy.app.version_string)\""
  ],
  "render": [
-  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.03 MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=fire python3 render.py ringc --final --force --samples 128 --outdir renders/ring_C --range 3570-3599"
+  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.03 MT3D_BLENDER=$HOME/bpyenv/bin/python RING_SHOT=fire_catch python3 render.py ringc --final --force --samples 128 --outdir renders/ring_C --range 3566-3599"
  ],
  "out_dir": "renders/ring_C",
- "frames": "3570-3599",
+ "frames": "3566-3599",
  "push_every": 300,
  "ship": "jpg"
 }

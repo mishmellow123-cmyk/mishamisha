@@ -100,6 +100,24 @@ class EyeSched(c3.C3Sched):
     end = float(T_EYE_END + 1)
     pulses = []
 
+    def ashlar_k(self, t):
+        return 1.0          # EMBERS-C4: ashlar stone, no lit window/seam grid (a row of lit grids reads as a city)
+
+    def line_mod(self, towers, i, kind, pt, t):
+        """EMBERS-C4 (director, 28 Sep): far silhouettes under the Eye. The lines of fire (edges, seams, joints) burn
+        at the crenellated crown only; below it each stack is dark stone with a few broken embers (straight lit
+        corners and courses stacked up read as office floors and mullions: a downtown at night)"""
+        pl = pt.get('pl') if isinstance(pt, dict) else None
+        if pl is None:
+            return 1.0
+        y = pl[:, 1].astype(np.float64)
+        top = float(towers.TW2.HMAX)
+        crown = smoothstep(top - 3.2, top - 1.6, y)
+        h = np.sin(pl[:, 0] * 12.9898 + pl[:, 1] * 78.233 + pl[:, 2] * 37.719 + 1.7 * i) * 43758.5453
+        h = h - np.floor(h)
+        ember = np.where(h > 0.9, 0.35, 0.025)
+        return 2.2 * crown + (1.0 - crown) * ember          # the crowns burn (fire in the crenellations)
+
     def beat_pulse(self, t):
         return 0.35 * swell(t) + 0.9 * (flare(t) if t >= T_SLIT else 0.0)
 
@@ -121,6 +139,31 @@ class EyeSched(c3.C3Sched):
 
 
 SCHED = EyeSched()
+
+
+class _AllTowers:
+    """a view of the towers in which every one of them (not only the eight nearest) smokes and sheds embers"""
+
+    def __init__(self, tw):
+        self._tw = tw
+        self.k = tw.k_all
+
+    def __getattr__(self, n):
+        return getattr(self._tw, n)
+
+
+def _medieval(tw):
+    """EMBERS-C4 (director, 28 Sep): under the Eye the far ring's skyline designs (masts, spheres, twisted blades)
+    and the even heights read as a downtown at night. Here every tower is one of the eight forge designs (round and
+    square stacks, octagonal shafts, twin and telescoping flues, all crenellated, throats roaring) and the heights
+    are irregular: squat crenellated turrets beside tall stacks."""
+    k, n = tw.k, tw.k_all
+    r = rng(4242)
+    order = r.permutation(np.tile(np.arange(k), 3))
+    for j in range(k, n):
+        tw.G[j] = tw.G[int(order[j - k])]
+    tw.h_rise = tw.h_rise * np.concatenate([r.uniform(0.55, 1.15, k), r.uniform(0.55, 1.2, n - k)])
+    return tw
 
 
 def use():
@@ -261,11 +304,13 @@ def _eye(X, Y, ok, aa_, t, pr, HL, out_rgb, out_a, out_void, out_bev):
             E *= Ef * (1.0 - 0.38 * crypt) * (1.0 + 0.45 * coll) * (1.0 - 0.22 * fur)
             if u < uc:
                 E *= 1.12
+            E *= 1.0 + 0.6 * math.exp(-((u - uc) / 0.1) ** 2)     # EMBERS-C4: the fire round the collarette
+            E *= 1.0 - 0.38 * u * u                                   # EMBERS-C4: a curved globe, not a flat disc
             k1 = _ss(0.3, 0.62, u)
             k2 = _ss(0.62, 0.92, u)
             cr_ = 1.0
-            cg_ = 0.78 * (1.0 - k1) + 0.5 * k1
-            cb_ = 0.3 * (1.0 - k1) + 0.09 * k1
+            cg_ = 0.78 * (1.0 - k1) + 0.42 * k1               # EMBERS-C4: more chroma (ACES was greying it to beige)
+            cb_ = 0.16 * (1.0 - k1) + 0.04 * k1
             cg_ = cg_ * (1.0 - k2) + 0.3 * k2
             cb_ = cb_ * (1.0 - k2) + 0.05 * k2
             # ---- the slit (a closed seam until it opens)
@@ -295,6 +340,9 @@ def _eye(X, Y, ok, aa_, t, pr, HL, out_rgb, out_a, out_void, out_bev):
             arc = math.exp(-((rho - 0.8) / 0.035) ** 2) * math.exp(-((aph - 2.2) / 0.42) ** 2) \
                 * (0.6 + 0.4 * perlin3(cph * 9.0, sph * 9.0, t * 0.05))
             sh = 0.55 * arc + 0.05 * math.exp(-((ex + 0.3) ** 2 + (ey - 0.4) ** 2) / 0.12)
+            # EMBERS-C4: wet: a small crisp highlight of the fire on its upper-left curve, and its softer bloom
+            sh += 1.6 * math.exp(-((ex + 0.34) ** 2 + (ey - 0.41) ** 2) / 0.0035) \
+                + 0.2 * math.exp(-((ex + 0.3) ** 2 + (ey - 0.36) ** 2) / 0.03)
             gz = pr[4] * (sp + sh) * (1.0 - _ss(0.9, 1.02, u))
             b = pr[3] * (1.0 + 0.25 * pr[8])
             Fi = F ** 1.3
@@ -432,7 +480,7 @@ class EyeShot:
     def towers(self):
         def mk():
             use()
-            return c3.layout_towers(B.Towers())
+            return _medieval(c3.layout_towers(B.Towers()))
         return self._get('towers', mk)
 
     def camera(self, t):
@@ -454,8 +502,8 @@ class EyeShot:
         tw = self.towers
         tw.prepare(ctx)
         dust = self._get('dust', B.Dust)
-        tsm = self._get('tsmoke', lambda: B.TowerSmoke(tw))
-        tem = self._get('tembers', lambda: B.TowerEmbers(tw))
+        tsm = self._get('tsmoke', lambda: B.TowerSmoke(_AllTowers(tw)))       # EMBERS-C4: every crown smokes ...
+        tem = self._get('tembers', lambda: B.TowerEmbers(_AllTowers(tw)))     # ... and sheds embers (not only 8)
         dust.emit(ctx)
         tw.emit(ctx, lp, lc, lpw)
         tem.emit(ctx)

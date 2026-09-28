@@ -132,3 +132,25 @@ if __name__ == "__main__" and sys.argv[1] == "ink":
         print(f"== {name} [{a},{b}) ink-dark / brighten pixel counts (960 px wide), col k = frame {a}+k")
         print("dk", " ".join(str(int(x)) for x in dk))
         print("br", " ".join(str(int(x)) for x in br))
+
+
+def folder_signals(folder, a, b, step=1, warm_thr=(150, 1.6)):
+    """signals straight from a render folder (f_NNNNN.jpg/png, the EDL's source numbering): per frame L (mean luma),
+    Wpx (warm pixels: R > thr and R > k*B, count at 192x80), Wmax (the brightest warm pixel's luma)"""
+    from PIL import Image
+    sys.path.insert(0, os.path.join(os.path.dirname(MUSIC), "lib"))
+    out = []
+    for f in range(a, b, step):
+        p = os.path.join(os.path.dirname(MUSIC), "renders", folder, f"f_{f:05d}.jpg")
+        if not os.path.exists(p):
+            p = p[:-4] + ".png"
+        if not os.path.exists(p):
+            out.append((f, None, None, None))
+            continue
+        im = Image.open(p)
+        im.draft("RGB", (W * 2, H * 2))
+        v = np.asarray(im.convert("RGB").resize((W, H)), np.float32)
+        y = luma(v)
+        wm = (v[..., 0] > warm_thr[0]) & (v[..., 0] > warm_thr[1] * v[..., 2])
+        out.append((f, float(y.mean()), int(wm.sum()), float(y[wm].max()) if wm.any() else 0.0))
+    return out

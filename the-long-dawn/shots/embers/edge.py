@@ -24,7 +24,8 @@ LAKE = 4.5            # the molten lake fills the bowl's bottom this deep
 BOWL_P = 2.3          # the wall's profile: steep under the lip, flattening into the lake
 FLOOR_Y = B.GROUND - DEPTH + LAKE          # the lake's surface
 S_LAKE = (LAKE / DEPTH) ** (1.0 / BOWL_P)  # the lake's radius / the lip's
-GILD_W = {2: 1.0, 6: 1.0, 1: 0.85, 4: 0.9, 7: 0.8, 0: 0.15, 3: 0.2, 5: 0.1}   # the nearest (gilded) vs the farthest
+GILD_W = {2: 1.0, 6: 1.0, 1: 0.3, 4: 0.9, 7: 0.8, 0: 0.15, 3: 0.2, 5: 0.1}   # the nearest (gilded) vs the farthest
+# (A-FIX: tower 1 no longer gilds: four gilded of eight, so not every forge in frame wears gold)
 FALL_TOWER = 7        # the gilded tower whose crown breaks off (never a giant's)
 C_MOLT = np.array([1.0, 0.72, 0.3])
 AIR_E = 300.0
@@ -248,6 +249,18 @@ A.A3Sched.vortex_shape = _vortex_shape
 A.A3Sched.shutter = _shutter
 A.A3Sched.back_light = _back_light
 A.A3Sched.gild = _gild
+
+
+def _edge_joint_k(self, i, t):
+    """A-FIX: at THE EDGE every forge goes darker (its joint-fire speckle made every tower read gold already), so the
+    gold that runs down the gilded ones on each surge is the change the eye sees."""
+    if t < A.T_EDGE or t >= A.T_LIGHT:
+        return 1.0
+    return 1.0 - EDGE_DARKEN * float(smoothstep(A.T_EDGE, A.T_EDGE + 60, t))
+
+
+EDGE_DARKEN = 0.65
+A.A3Sched.edge_joint_k = _edge_joint_k
 A.A3Sched.tower_lean = _tower_lean
 A.A3Sched.tower_post = _tower_post
 A.A3Sched.tower_post_n = _tower_post_n
@@ -701,7 +714,11 @@ def _orbit_az(t):
 
 
 EDGE_R, EDGE_Y, EDGE_TY, EDGE_HF, EDGE_FALL = 27.0, -8.0, -12.5, 88.0, 0.22
-EDGE_AZ0, EDGE_AZ1 = 2.93, 3.25      # rel. ALPHA_C, over THE EDGE: the widest gap (forges 4 and 5 frame it), the
+EDGE_PUSH = 5.0
+GOLD_GAIN, GOLD_FS = 2.4, 0.08       # A-FIX: the gold runs bolder, and down the grazing-lit sides we see (was x1, fs > 0.2)
+EDGE_ZOOM = 10.0
+EDGE_AZ0, EDGE_AZ1 = 2.93, 3.25      # rel. ALPHA_C, over THE EDGE (A-FIX: a wider orbit put a forge in the lens; the motion
+                                     # is a creeping push + zoom instead, EDGE_PUSH / EDGE_ZOOM): the
                                      # giants on either side of the fire across the pit
 T_CUT_CROWN = A.T_CROWN - 20         # the cut to the crown on bar 31 b4: it stands for a beat, then breaks
 T_CUT_FALL = A.T_TIP                 # the cut to the rim on bar 32 b3: the camera tips over after the crown
@@ -727,6 +744,8 @@ def _cam_edge(tl, t):
     u = (t - A.T_EDGE) / (A.T_BRINK - A.T_EDGE)
     az = B.ALPHA_C + EDGE_AZ0 + (EDGE_AZ1 - EDGE_AZ0) * u
     r, y, ty, hf, fall = EDGE_R, EDGE_Y, EDGE_TY, EDGE_HF, EDGE_FALL
+    r = r - EDGE_PUSH * float(smootherstep(A.T_EDGE, A.T_BRINK, t))          # A-FIX: a slow push in over the orbit
+    hf = hf - EDGE_ZOOM * float(smootherstep(A.T_EDGE + 20, A.T_BRINK, t))   # ... and a slow zoom: we creep to the edge
     # it opens on the fire over the intact ground and follows the ground down as it falls away
     k0 = float(smootherstep(A.T_EDGE + 8, A.T_EDGE + 64, t))
     ty = lerp(1.0, ty, k0)
@@ -784,7 +803,8 @@ def _cam_fall(tl, t):
     pitch = math.radians(lerp(34.0, 64.0, lean))
     pos = p0 - out * (2.4 * lean) + np.array([0.0, -1.2 * lean, 0.0])
     look_d = -out * math.cos(pitch) + np.array([0.0, -math.sin(pitch), 0.0])
-    k = float(ease_in(np.clip((x - 24.0) / (A.T_WHITE - A.T_TIP - 24.0), 0, 1), 2.0))
+    # A-FIX (SOUND-C, 28 Sep): the plunge lands on the IMPACT (2640), so the travel is held back (x^3, was x^2)
+    k = float(ease_in(np.clip((x - 24.0) / (A.T_WHITE - A.T_TIP - 24.0), 0, 1), 3.0))
     pos = pos + (heart + np.array([0.0, 6.0, 0.0]) - pos) * (0.85 * k)
     d_heart = heart - pos
     d_heart /= max(np.linalg.norm(d_heart), 1e-6)
@@ -927,8 +947,9 @@ def post(tl, ctx, hdr):
         amp = 2.2 + 2.0 * float(smoothstep(A.T_BRINK, A.T_BRINK + 40, t)) if t < A.T_WHITE else 1.2
         hdr = _shimmer(ctx, hdr, amp)
     if A.T_WHITE - 40 <= t < A.T_WHITE:
-        # falling into the fire: the frame goes white on the downbeat (the IMPACT)
-        k = float(smoothstep(A.T_WHITE - 40, A.T_WHITE - 1, t)) ** 1.6
+        # falling into the fire: the frame goes white ON the downbeat (the IMPACT, bar 34 = 2640). A-FIX (SOUND-C):
+        # the 40-frame ramp saturated by ~2616, 24 frames ahead of the hit; the white now arrives over the last 14
+        k = float(smoothstep(A.T_WHITE - 5, A.T_WHITE, t)) ** 3.0     # (the glare saturates at k ~ 0.2)
         hdr = hdr * (1 - 0.3 * k) + np.array([6.0, 5.6, 5.0], np.float32) * (1.2 * k)
     if A.T_WHITE <= t < A.T_DEAD + 6:
         # out of the white, the grey vision
@@ -1059,7 +1080,7 @@ class GoldRuns:
             V = cpos[None, :] - P
             dist = np.linalg.norm(V, axis=1)
             ndv = (N * V).sum(1) / np.maximum(dist, 1e-6)
-            sel = (fs > 0.2) & (ndv > 0.03)
+            sel = (fs > GOLD_FS) & (ndv > 0.03)
             if i in A.GIANTS:
                 sel &= P[:, 1] < 12.0
             if not sel.any():
@@ -1072,10 +1093,12 @@ class GoldRuns:
             v = 1.1 + 1.3 * smoothstep(-0.4, 0.4, n2)                  # each one's speed (units / frame)
             dtop = 66.0 - pl[:, 1]
             d = v * age - dtop                                          # > 0: the head has passed (poured)
-            trail = np.exp(-np.maximum(d, 0.0) / 7.0) * smoothstep(-0.6, 0.2, d)
+            trail = np.exp(-np.maximum(d, 0.0) / 11.0) * smoothstep(-0.6, 0.2, d)
             head = np.exp(-(d / 0.8) ** 2) * fresh
-            Lg = g * fs ** 0.6 * (0.05 + riv * (0.22 + 2.6 * trail * math.exp(-age / 22.0)))
-            Lh = g * fs ** 0.6 * riv * head * 6.0
+            # A-FIX: no even gold skin (on the crust's point discs it read as glitter, so every tower looked gold
+            # already); the gold is the RUNS: longer, brighter trails with dark wall between them
+            Lg = GOLD_GAIN * g * fs ** 0.6 * (0.008 + riv * (0.16 + 3.2 * trail * math.exp(-age / 22.0)))
+            Lh = GOLD_GAIN * g * fs ** 0.6 * riv * head * 6.0
             if i in A.GIANTS:
                 k = 1.0 - smoothstep(6.0, 12.0, P[:, 1])
                 Lg, Lh = Lg * k, Lh * k

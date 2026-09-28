@@ -334,11 +334,13 @@ CAM_A5 = [  # (frame, radius, azimuth offset from ALPHA_C, height, target y, hfo
     (1380, 48.0, -0.20, 11.0, 4.5, 62.0),       # ... to the horizon (the fire swells to twice its size)
     (1425, 52.0, -0.22, 10.0, 5.0, 62.0),
     (1470, 50.0, -0.16, 5.0, 7.0, 66.0),        # the forges rise round it: down to the fire's own height
-    (1540, 44.0, -0.05, 2.5, 7.0, 70.0),
-    (1620, 40.0, 0.05, 3.0, 5.0, 68.0),         # drifting round the ring (T5)
-    (1680, 44.0, -0.04, -2.0, 9.0, 74.0),       # craning down outside the ring (T6a) ...
-    (1725, 45.0, -0.10, -9.0, 13.0, 80.0),      # ... low and wide, looking up: the giants will grow out of the top
-    (1759, 45.5, -0.12, -10.0, 14.0, 80.0),     # a giant each side of the fire, black against the lit smoke
+    # A-FIX (the race was legible only in the captions: the forges' burning crowns and the giants' growth were all
+    # above the frame): the camera draws back as they rise until the whole ring and its crowns race in view
+    (1540, 58.0, -0.08, -2.0, 9.0, 68.0),
+    (1620, 66.0, 0.02, -5.0, 11.0, 68.0),       # T5: the ring of forges, every crown burning, round the fire
+    (1690, 68.0, -0.04, -7.0, 13.0, 70.0),      # T6a: the smiths race (the fire low in the frame, the crowns above)
+    (1730, 72.0, -0.08, -8.0, 16.0, 74.0),      # T6b: two giants shoot up past the rest; the camera tilts up with them
+    (1759, 74.0, -0.12, -8.0, 18.5, 78.0),
 ]
 
 # bar 23 b1 (1760): a CUT to behind giant 2, which slips across the fire until it eclipses it: a black mass fringed
@@ -460,6 +462,10 @@ class TimelineA3(TL.Timeline):
         self.towers.emit(ctx, lp, lc, lpw)
         self.tembers.emit(ctx)
         self.tsmoke.emit(ctx, lp, lc, lpw)
+        if T_TOWERS <= t < T_WHITE:                   # A-FIX: the forges' throats roar, and throw sparks on the beat
+            import race_afix
+            self._get('throat_fire', lambda: race_afix.ThroatFire(self.towers, T_TOWERS + 30, T_WHITE,
+                                                                   giants=GIANTS)).emit(ctx)
         self.sparks.emit(ctx)
         # (H5) no vortex in A: THE BRINK is the fire's own updraft (edge.Updraft) fed by embers off the tower tops
         self.fire.emit(ctx)

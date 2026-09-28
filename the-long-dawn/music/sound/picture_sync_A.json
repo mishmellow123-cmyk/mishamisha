@@ -1,0 +1,23 @@
+{
+ "_doc": "SOUND-C: A's picture events measured from the frames (music/src/sync_audit_v3.py): A-FIX's NEW first fire measured straight from renders/h1_A (src 1236-1495 = A 3360-3619, 21:57 local), the dead-valley vision from A-FIX's exact frames; 'f' = the frame the effect's hit is placed on.",
+ "t": {
+  "A.blow": {
+   "f": 3448,
+   "cue": 3444,
+   "heard": "final_A: one steady blow 3446-3528, then silence to 3597",
+   "what": "h1_A: the ember brightens on three blows 3448-3470, 3481-3505 (flaring 3502-3504), 3515-3541 and dims on each in-breath (3471-3480, 3506-3514, 3542-3553); no puff"
+  },
+  "A.x.catch": {
+   "f": 3556,
+   "cue": 3556,
+   "heard": "final_A: nothing (no catch cue)",
+   "what": "h1_A: the tinder flares 3555-3559 (the first flame) and takes 3561 onward, growing to the roar; the scarf warms from 3564"
+  }
+ },
+ "on_frame": "h1_A: strike1 3360 (the first frame's spark), strike2 3389 (sparks 3388-3390), strike3 3418 (3417-3419); the roar 3600 (the flames leap 3598-3608, L 38 -> 74, then the 12-frame lean-back); HER FIRE 3612-3660 (reveal_B 1372-1419): the fire's footprint shrinks ~2.7x as the camera pulls back -> the roar settles and recedes under it (-9 dB by 3660); karst 3815, desert 3880; watch-fire 1 4990-5040",
+ "offsets_not_moved": {
+  "A.impact": "DIRECTOR 01:25Z: the hit stays ON THE BAR (2640, bar 34 b1, A9's first frame); A-FIX moves the PICTURE's whiteout onto 2640 (measured before: plunge 2600, white 2606-2622). Effect + score hit stay; SOUND-C re-measures when A-FIX's frames land."
+ },
+ "not_measurable": "A14 3920-4240 (the beacon run: run_1..7) and A15, A19 are slates in the master; watch-fires 2-4 are too small in the wide frames to time",
+ "pending": "EVERY RIDGE (reveal_a re-render, 3660-3800) not landed: the ridges' fires catching get measured then; A19+A20 = dawnrev_A (B's dusk reversed, 5840-6479): L rises 46 -> 83, alpenglow from ~6080; the fire and wind ambience get shaped on A-FIX's final pale frames"
+}

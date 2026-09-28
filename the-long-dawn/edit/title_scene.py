@@ -22,6 +22,8 @@ CLOCK = {'A': [(6240, 2811.0), (6300, 2853.0), (6330, 2880.0), (6400, 2924.0), (
          'B': [(5200, 2811.0), (5260, 2853.0), (5290, 2880.0), (5440, 2924.0)]}
 FADE = {'B': (5340, 5400)}            # B: the title fades into the light over the last 60 f of its window
 TITLE_Y = 360                          # titles.py v3: the A and B titles sit in the sky (Cinzel 92, 500, 0.28)
+# A (28 Sep, director): over A-FIX's ending (dawnrev_A) the title sits in the clean rose sky, wholly above y 340
+TITLE_Y_CUT = {'A': 285}
 
 
 def clock(cut, f):
