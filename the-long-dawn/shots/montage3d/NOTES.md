@@ -12,13 +12,16 @@
   `renders/montage3d_v3/desert/f_00000-00059` re-rendered in EEVEE on the farm (Mesa, ~80 s/frame). Desert planted (no
   slide), soft ignition catch in both (local `soft_env` in karst.py/desert.py; fireparts.py untouched). Desert was
   rendered in SOURCE numbering (farm.py can't map --out-offset) and renamed locally; jobs `mt3d_{karst,desert}_afix`.
-**PENDING with main:** JOB READY (sent ~03:30Z) for the find polish: `ringC_find_a_1..3 --frames 3009-3015,3033-3079`
-+ `ringC_find_b_1..3` (all). Optional (the director's call): the polished glove on `ringC_fire_8` (3566-3599) and
-C14's end (`ringC_flint_b_6..7 --frames 3300-3359`). Check stills: `renders/_farmtest/ringC_look2/`.
+**POLISH PASS DONE (approved + landed 28 Sep ~01:56Z local):** find_a 3009-3015 + 3033-3079, all of find_b, the C15
+insert 3566-3599 (`ringC_fire_8`) and C14's end 3300-3359 (`ringC_flint_b_6..7`), all with the polished glove. Seams
+checked (mean |step| at 3299|3300 = 1.17 vs 1.4-1.8 around it; find_a 3032|3033 and 3015|3016 in line): no pops. The
+C15 hang (3360-3565) and C14 before 3300 keep the pre-polish glove (the director's call; the difference is subtle).
+Check stills deleted. **LANE DONE (main, 28 Sep).** FYI: C's story is now "STOP" (the Ring unmade together, every
+forge goes cold); the find, the fire test and the hands stay in any version.
 **The glove now:** `glove.py` fingers slimmed + tapered (global); the polish is OPT-IN (`Glove(knuckles=1.8)`,
 `leather_material(wear2=1.0)`: local AO crevices, darker seams, deeper joint creases, worn specular patches;
 `POSES['open_nat']`) and is ON in every current shot builder (flint, find_a, find_b, fire, fire_catch). The FINALS of
-C15 and C14 used the glove BEFORE the AO/seam polish (bb1e85f); the finds will use it.
+C15 (3360-3565) and C14 (before 3300) used the glove BEFORE the AO/seam polish (bb1e85f); the rest has it.
 **Gotchas learned:** (1) read pose-bone heads only after `sc.frame_set` + `view_layer.update()` (a stale rest pose put
 the fists 5 cm off); (2) Cycles needs volume boxes wound OUTWARD (kit's EEVEE-era boxes are inward: no breath/smoke);
 (3) never push code that a running final uses: every farm unit fetches the tip (make changes opt-in or wait);
