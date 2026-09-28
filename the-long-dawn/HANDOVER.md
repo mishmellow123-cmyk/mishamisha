@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~08:05Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-28 ~08:15Z**, by the director (Claude, Opus 5.5).
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -139,7 +139,12 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
 - **Music (COMPOSER-C2):**
   - The A/B verdict: C's orchestra was already VSCO samples, so sfizz vs our player is only a subtle difference. The real gains are the climax headroom ride and real recordings for the colour voices (anvil, cymbal + gong, harp).
   - The A/B files are in PREVIEWS `music_AB/`.
-  - **Phase 2 (re-score to the v5 timeline) started 28 Sep ~07:25Z.** The key beats are in music/NOTES_v3.md:
+  - **Phase 2 pass 1 is DONE** (28 Sep ~08:15Z): `PREVIEWS/C_v5.2_score_pass1.wav`, score only, 5920 frames.
+    - It turns with every shot: the refusal closes on V-i; the trap leaves room for the hammers; the lone-hammer hold resolves at 3760, then a hard silence 3848-3999; the Ring motif plays once on stopped horns, never finished; the Deep is a V-i lament; the watch is a pp chorale; the dawn hymn is kept; 5460-5540 is left clean for a voice line.
+    - Two sync probes are unstable: the trap's violin climb and the dawn's violin double. Check them by ear.
+    - Next pass: add a two-voice answer when the TWO first beacons catch together (v5.3), then re-sync to the real picture when the new shots land.
+    - Code: `music/src/score_v3_C5.py`, `v3/barmap_C5.json`, `v3/cues_C5.json`.
+  - Phase 2 started 28 Sep ~07:25Z. The key beats are in music/NOTES_v3.md:
     - the trap's hammering (bars 30-33);
     - the holdout suspense (bars 44-48);
     - hard SILENCE at 3848;
