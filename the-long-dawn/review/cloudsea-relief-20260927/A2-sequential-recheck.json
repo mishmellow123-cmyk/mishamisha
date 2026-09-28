@@ -1,0 +1,69 @@
+{
+  "shot": "A2",
+  "cut_frames": [
+    500
+  ],
+  "relief": 1.0,
+  "relief_cap_m": 180.0,
+  "scale": 0.5,
+  "threads": 2,
+  "opencv_threads": 1,
+  "full_frame": true,
+  "recipe": "falsedawn.render(cut-80, arc, scale, ss=1.5) + FINISH",
+  "quantization": "round-to-nearest RGB uint8; no dither",
+  "skyline_cache": "cleared before each frame in both conditions",
+  "status": "complete",
+  "frames": [
+    {
+      "cut_frame": 500,
+      "path": "A2-on-500.png",
+      "seconds": 7.088438167003915,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "world_inputs": {
+        "march": [
+          [
+            43.23561917502082,
+            505.81488267243043,
+            17.5,
+            1.0
+          ]
+        ],
+        "shade": [
+          [
+            43.23561917502082,
+            505.81488267243043,
+            17.5,
+            1.0
+          ]
+        ],
+        "cloud_glow": []
+      },
+      "march_depths": [
+        {
+          "shape": [
+            617,
+            1467
+          ],
+          "dtype": "float64",
+          "sha256": "7e79f50219b1b0868eaa49ef901d024d5e491a888c693f26b060f5399b565fde"
+        }
+      ],
+      "finished_rgb_sha256": "58dd7e7e6e5e754c88dca3fb98cc6de5d6da0b47ed15481cb96673a853d01386",
+      "quantized_rgb_sha256": "ec3813cfe6d14204226628a5a3034481a5e4ba93cd4b3810a62317bb988da7e2",
+      "png_sha256": "3aad2fe4aa2874f66bdbb8c7491c60d8bda34d6fa0dcea884d5671c83f56f796"
+    }
+  ],
+  "git_head": "17e8f9f3233a6b5bd1055a42b1f6cd925b91bf8f",
+  "source_sha256": {
+    "shots/run/world.py": "62023fd8d7075ccb68bffdd5d2d8eba80505f150f6403a41f3d57cd5200440d9",
+    "shots/run/falsedawn.py": "11c1b765a0ea69a363bb7a4d32025269b745f637032d181997540eaeb52cd789",
+    "shots/run/pipe.py": "1afae49c38be0b47335777f8e87965e1fbb78a8624863b6d3c8aec43d35c0734",
+    "shots/run/reveal_a.py": "bf703227af384553b1a4204b48d92115596f41e3561e9d2937675a0c76177312",
+    "shots/hills/beacon.py": "d737b97c0584e2b4653dbd843f80acfe7f82856665bade46a66a92587397a9cd",
+    "edit/tools/cloudsea_study.py": "8cbbcc863dc9b02855b82ade8628a53bb121caf9ec6684bc90b5b978eeb91f8c"
+  }
+}

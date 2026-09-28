@@ -215,14 +215,17 @@ def main(argv=None):
     import cv2
     import numba
     import numpy as np
-    cv2.setNumThreads(1)
+    cv2.setNumThreads(0)  # sequential, with unambiguous reporting on the macOS GCD backend
     numba.set_num_threads(args.threads)
     world, render, recipe = shot_adapter(args.shot)
+    # The shared look module sets OpenCV to two threads during import.
+    cv2.setNumThreads(0)  # sequential, with unambiguous reporting on the macOS GCD backend
     cap = getattr(world, 'CLOUD_RELIEF_MAX', None)
     if cap is None and args.relief > 0.0:
         raise ValueError('selected source does not provide the cloud relief API; only --relief 0 is valid')
     manifest = dict(shot=args.shot, cut_frames=args.frames, relief=args.relief, relief_cap_m=cap,
-                    scale=args.scale, threads=args.threads, full_frame=True, recipe=recipe,
+                    scale=args.scale, threads=args.threads, opencv_threads=cv2.getNumThreads(),
+                    full_frame=True, recipe=recipe,
                     quantization='round-to-nearest RGB uint8; no dither',
                     skyline_cache='cleared before each frame in both conditions',
                     status='running', frames=[], **source_record(world, args.shot))

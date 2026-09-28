@@ -1,0 +1,85 @@
+{
+  "resolution": [
+    960,
+    402
+  ],
+  "comparisons": [
+    {
+      "shot": "A2",
+      "frame": 380,
+      "original_equals_off": {
+        "finished_rgb_sha256": true,
+        "quantized_rgb_sha256": true,
+        "march_depths": true
+      },
+      "enabled_changes_depth": true,
+      "max_rgb_uint8": 71,
+      "mean_abs_rgb_uint8": 0.7330474364289663,
+      "changed_rgb_pixels": 50406,
+      "changed_bbox_xy": [
+        0,
+        208,
+        959,
+        401
+      ]
+    },
+    {
+      "shot": "A2",
+      "frame": 500,
+      "original_equals_off": {
+        "finished_rgb_sha256": true,
+        "quantized_rgb_sha256": true,
+        "march_depths": true
+      },
+      "enabled_changes_depth": true,
+      "max_rgb_uint8": 80,
+      "mean_abs_rgb_uint8": 0.724541355721393,
+      "changed_rgb_pixels": 50228,
+      "changed_bbox_xy": [
+        0,
+        10,
+        959,
+        401
+      ]
+    },
+    {
+      "shot": "A13",
+      "frame": 3720,
+      "original_equals_off": {
+        "finished_rgb_sha256": true,
+        "quantized_rgb_sha256": true,
+        "march_depths": true
+      },
+      "enabled_changes_depth": true,
+      "max_rgb_uint8": 80,
+      "mean_abs_rgb_uint8": 1.8700551064123825,
+      "changed_rgb_pixels": 67043,
+      "changed_bbox_xy": [
+        0,
+        167,
+        959,
+        401
+      ]
+    },
+    {
+      "shot": "A13",
+      "frame": 3799,
+      "original_equals_off": {
+        "finished_rgb_sha256": true,
+        "quantized_rgb_sha256": true,
+        "march_depths": true
+      },
+      "enabled_changes_depth": true,
+      "max_rgb_uint8": 83,
+      "mean_abs_rgb_uint8": 2.9367830983969045,
+      "changed_rgb_pixels": 83365,
+      "changed_bbox_xy": [
+        0,
+        142,
+        959,
+        401
+      ]
+    }
+  ],
+  "metric": "Absolute difference of deterministic 8-bit finished RGB; depth equality compares complete buffer SHA256."
+}

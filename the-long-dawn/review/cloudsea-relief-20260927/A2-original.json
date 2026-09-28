@@ -1,0 +1,111 @@
+{
+  "shot": "A2",
+  "cut_frames": [
+    380,
+    500
+  ],
+  "relief": 0.0,
+  "relief_cap_m": null,
+  "scale": 0.5,
+  "threads": 2,
+  "full_frame": true,
+  "recipe": "falsedawn.render(cut-80, arc, scale, ss=1.5) + FINISH",
+  "quantization": "round-to-nearest RGB uint8; no dither",
+  "skyline_cache": "cleared before each frame in both conditions",
+  "status": "complete",
+  "frames": [
+    {
+      "cut_frame": 380,
+      "path": "A2-original-380.png",
+      "seconds": 8.364485208003316,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "world_inputs": {
+        "march": [
+          [
+            48.0190732430535,
+            498.4490093470506,
+            12.5,
+            0.0
+          ]
+        ],
+        "shade": [
+          [
+            48.0190732430535,
+            498.4490093470506,
+            12.5,
+            0.0
+          ]
+        ],
+        "cloud_glow": []
+      },
+      "march_depths": [
+        {
+          "shape": [
+            617,
+            1468
+          ],
+          "dtype": "float64",
+          "sha256": "3b6d43f96fdf8088a396ee8b445cff0efd9acf6c6d1dc6abc66d0a2daeea2b28"
+        }
+      ],
+      "finished_rgb_sha256": "bc60239b65ea296718392d3a54f7fb82731cafeade813670a1244a31d67ea27e",
+      "quantized_rgb_sha256": "79a9ba5d863addb20e6e8613f97afd9ef0036653193ca6b1f78ed76d3d1e5531",
+      "png_sha256": "510b81f4e5e8c46a8e5dc991772decf21edc66bf601ee94a3e832b17a8006bc5"
+    },
+    {
+      "cut_frame": 500,
+      "path": "A2-original-500.png",
+      "seconds": 7.366144625004381,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "world_inputs": {
+        "march": [
+          [
+            43.23561917502082,
+            505.81488267243043,
+            17.5,
+            0.0
+          ]
+        ],
+        "shade": [
+          [
+            43.23561917502082,
+            505.81488267243043,
+            17.5,
+            0.0
+          ]
+        ],
+        "cloud_glow": []
+      },
+      "march_depths": [
+        {
+          "shape": [
+            617,
+            1467
+          ],
+          "dtype": "float64",
+          "sha256": "343a40e91cff6d795c7c0ec56c67433da44c544942187cc9d6c435f8a372bf50"
+        }
+      ],
+      "finished_rgb_sha256": "eaf55668652a127953dbe1d591bafb8a2ec0a323c6ca2b0a1d6cc688eaf4a035",
+      "quantized_rgb_sha256": "246b2da062093248c244e020b9d49fb30683d0b1e0c4be67658c8eccaf9bb401",
+      "png_sha256": "397532f3298b031f4af33af629d7b4b7b6af114f12c621a50ed07c9fce840df1"
+    }
+  ],
+  "git_head": "3d5913a7d0b0d2d7007eb2ab67c43e69969f9a19",
+  "source_sha256": {
+    "shots/run/world.py": "401e3c2fa2dd092523c93656a500626440a6bb7566316c54db8cb47503bea147",
+    "shots/run/falsedawn.py": "d673c601219fb1291e48b8299b3e81baecc8690cb338874b187ecc67558395f7",
+    "shots/run/pipe.py": "1afae49c38be0b47335777f8e87965e1fbb78a8624863b6d3c8aec43d35c0734",
+    "shots/run/reveal_a.py": "bf703227af384553b1a4204b48d92115596f41e3561e9d2937675a0c76177312",
+    "shots/hills/beacon.py": "d737b97c0584e2b4653dbd843f80acfe7f82856665bade46a66a92587397a9cd",
+    "driver/cloudsea_study.py": "4914ec4a53d0c4b2f8367d2264d62dae90029ae396c7fa7478af7c921700715e"
+  }
+}
