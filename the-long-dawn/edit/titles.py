@@ -242,9 +242,13 @@ EBG_ITALIC = os.path.join(FONTS, 'EBGaramond-Italic.ttf')
 # H5 CALL 3: new words, the same in/out frames ("everything else stays as locked")
 H5_WORDS = {
     'A': {'T2': 'We fed it everything we knew.',
-          'T7': 'The closer they came, the more it paid.',
-          'T9': 'Whoever won, there would have been no morning.',
-          'T10a': 'Even those who raced were afraid.'},          # T10b 'None would slow alone.' stays
+          # USER-APPROVED caption changes (28 Sep, via the director): T6a, T7, T9, T10a, T10b; same IDs, slots, frames
+          # (T4, T5 and T6b 'Then the kingdoms.' stay as locked; T11 pending the user's pick)
+          'T6a': 'First the smiths raced for it.',
+          'T7': 'Every step closer made them richer.',
+          'T9': 'Whoever won, no morning would come.',
+          'T10a': 'They feared the fire.',
+          'T10b': 'They feared each other more.'},
     'C': {'T6': 'Each said: better us than them.',
           'T7': 'They delved deeper every year, for the gold ran deeper still.'},
 }
