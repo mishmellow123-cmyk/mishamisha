@@ -16,7 +16,7 @@ Job file (JSON):
 
 Frames are written atomically by lib/look.save_png, so any f_*.png that exists is complete. Each one is
 decoded before it's pushed (a bad frame is reported and deleted so it can't reach the edit). Progress
-lines go to stdout, and the last line is JOB COMPLETE or JOB ENDED (missing: ...).
+lines go to stdout, and the last line is JOB COMPLETE or JOB ENDED (with failure details).
 """
 import json
 import os
@@ -161,13 +161,18 @@ def main():
                     sys.exit(3)
             last_push = time.time()
         if not running and not ready:
+            failed = 0
             for p, cmd, lf in procs:
                 lf.close()
                 if p.returncode != 0:
+                    failed += 1
                     log(f'ERROR render exited {p.returncode}: {cmd} (see cloud_logs/{name}_*.log)')
             missing = [f'{d.split("/")[-1]}:{f}' for d, f in want if (d, f) not in pushed]
             if missing:
                 log(f'JOB ENDED (missing {len(missing)}: {missing[:40]}{"..." if len(missing) > 40 else ""})')
+            elif failed:
+                log(f'JOB ENDED ({failed} render commands failed; pushed {len(pushed)}/{len(want)} frames)')
+            if missing or failed:
                 git_push([write_status(name, procs)], branch, len(want), len(pushed))
                 sys.exit(1)
             log(f'JOB COMPLETE: {len(pushed)} frames pushed to {branch} in {(time.time() - t0) / 60:.1f} min')
