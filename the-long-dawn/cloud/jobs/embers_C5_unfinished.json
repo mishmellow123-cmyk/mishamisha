@@ -1,0 +1,18 @@
+{
+  "name": "embers_C5_unfinished",
+  "branch": "codex/render-embers-c5-unfinished",
+  "setup": [
+    "python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/embers/c_v5.py --frames 4000-4239:4 --out \"$PWD/renders/embers_C5_unfinished\" --format png",
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/embers/c_v5.py --frames 4001-4239:4 --out \"$PWD/renders/embers_C5_unfinished\" --format png",
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/embers/c_v5.py --frames 4002-4239:4 --out \"$PWD/renders/embers_C5_unfinished\" --format png",
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/embers/c_v5.py --frames 4003-4239:4 --out \"$PWD/renders/embers_C5_unfinished\" --format png"
+  ],
+  "out_dir": "renders/embers_C5_unfinished",
+  "frames": "4000-4239",
+  "push_every": 80,
+  "ship": "jpg",
+  "note": "C v5 absolute frames. Opt-in entrypoint; existing C0-2079 unchanged. Render PNG; farm runner ships JPEG quality95 chroma4:4:4. EDIT owns captions/burn/dissolve, sound remains separate."
+}

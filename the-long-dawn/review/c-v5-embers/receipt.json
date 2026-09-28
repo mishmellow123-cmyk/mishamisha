@@ -1,0 +1,214 @@
+{
+  "base_commit": "339b1e370f6cbd01acc18c6d8a2e50f5e7f302e2",
+  "production_ref_checked": "ebe55462b0f732172a05df5c349577477d4f2292",
+  "render_dimensions": [
+    960,
+    402
+  ],
+  "threads": {
+    "numba": 1,
+    "BLAS": 1,
+    "opencv_requested": 0,
+    "opencv_reported": 1
+  },
+  "final_source_hashes": {
+    "the-long-dawn/shots/embers/c_v5.py": "c41538d04d94c03961f5361b573992e46aac0150d8e6630ee5298169035a991c",
+    "the-long-dawn/shots/embers/core.py": "c42ff0e583bca9d86e99570662c5327a869c161e6e449bc1b1f4252f8dca3008",
+    "the-long-dawn/shots/embers/scene_b.py": "12e9ddc1b7b3b44128000a53f187c40ec810a01f52235773f79ab6306fc84da3",
+    "the-long-dawn/shots/embers/towers2.py": "2a10df74fe267736684e8a966d16dc8793de4e5caeada49db1e7370b174cdde5",
+    "the-long-dawn/shots/embers/c3.py": "002cf46dc0c7f2f9062f51e81017899b02fed89f971612cd9e8219d345739738",
+    "the-long-dawn/shots/embers/c_eye.py": "9f0dc6b44d59681add014d71297cbd77a27c503e4c4fab30b4dc7b8dd430178b",
+    "the-long-dawn/shots/embers/c2.py": "bdc97306e0657ea69b5efc2f8a99d1d924b789fdb42524ceed7a189d0117e33a",
+    "the-long-dawn/shots/embers/cflame.py": "c4d9b0296174b2c4245b5955e780ccfdcd3cfbd6d1c2109d39b442525e55e692",
+    "the-long-dawn/shots/embers/ringsolid.py": "24443ff59f5555075454bb2864c5ef671bf6f70df4c718a6b614a0e619166252",
+    "the-long-dawn/shots/embers/variant.py": "a4b7adca9e469903086c2c2a5c25f12a310490ec268b912541e692cf11d03ca1",
+    "the-long-dawn/lib/look.py": "1a311e38a231ee9fda65aa8037759ded7b19ae215bd184afb0327dd4cdd70614"
+  },
+  "source_version_note": "Review renders precede CLI-only additions for overwrite refusal and farm --frames. Render functions are unchanged from pass3/motion; no claim of byte-identical source files at render time.",
+  "initial_frame": {
+    "frame": 2360,
+    "wall_seconds": 33.26165599998785,
+    "initialization_seconds": 6.387026457989123,
+    "frame_seconds_including_compile": 26.008528790989658,
+    "peak_rss_bytes": 1240350720,
+    "status": "rejected: Ring clipped; camera corrected"
+  },
+  "motion": {
+    "frames": 144,
+    "ranges": [
+      [
+        2418,
+        2441
+      ],
+      [
+        2478,
+        2501
+      ],
+      [
+        2538,
+        2561
+      ],
+      [
+        2592,
+        2615
+      ],
+      [
+        3840,
+        3863
+      ],
+      [
+        4100,
+        4123
+      ]
+    ],
+    "sum_frame_seconds": 69.58737224887591,
+    "minimum_frame_seconds": 0.43766362499445677,
+    "median_frame_seconds": 0.48191452051105443,
+    "maximum_frame_seconds": 0.5869668750092387,
+    "peak_rss_bytes": 692912128
+  },
+  "reviewed": {
+    "native_whole_frame_stills": [
+      2360,
+      2460,
+      2510,
+      2560,
+      2639,
+      3847,
+      3848,
+      3920,
+      4000,
+      4110,
+      4216
+    ],
+    "reduced_motion_compositions": 144,
+    "native_subject_crops": 144,
+    "full_frame_realtime_playback": false
+  },
+  "clean_hold_endpoint_pngs_identical": false,
+  "full_resolution_test": {
+    "frame": 2639,
+    "path": "stills/f_02639.jpg",
+    "dimensions": [
+      1920,
+      804
+    ],
+    "jpeg_subsampling": 0,
+    "chroma": "4:4:4",
+    "jpeg_quality_setting": 95,
+    "wall_seconds": 4.963423207984306,
+    "import_seconds": 0.4637750830152072,
+    "initialization_seconds": 1.7560701670008712,
+    "frame_seconds": 2.4387849170016125,
+    "peak_rss_bytes": 845447168,
+    "sha256": "5df4ea1fa7b34f981e7862a234d85008a34bdf0caad0d5fd551a05f9a07c27b1",
+    "review": "Viewed entire native1920x804 image: canonical inscription/band visible, leader crown remains separated from Ring, no clipped Ring."
+  },
+  "local_finals": null,
+  "farm_launched": false,
+  "artifacts": {
+    "stills/f_02360.png": {
+      "sha256": "546ecd2c1ca03abf5927c2e159a33b8e51c981d81bae25ceefe040493e52d1c6",
+      "bytes": 391962
+    },
+    "stills/f_02460.png": {
+      "sha256": "42bd87d682639ae83685d1f9f68e6d2a1101c0a957ab84b9deebbb2f96fe2524",
+      "bytes": 392251
+    },
+    "stills/f_02510.png": {
+      "sha256": "da021b4114d2357947fb5cb6890965ee8571290dfd6abf80ca521b54047beb49",
+      "bytes": 415655
+    },
+    "stills/f_02560.png": {
+      "sha256": "263f86e6b3736f3c574574d220bac108c458388658ac153d42e799db4f79611c",
+      "bytes": 419707
+    },
+    "stills/f_02639.png": {
+      "sha256": "376afc4abd4e65064cfcec076f1713206380ddcda0bf4b7191d210f8dd666fed",
+      "bytes": 424661
+    },
+    "stills/f_03847.png": {
+      "sha256": "3fc6b6254e9c81a450f7c3e32ba662adfccd615adfda1ebd2103f9152a7d75f6",
+      "bytes": 423849
+    },
+    "stills/f_03848.png": {
+      "sha256": "430bfde61db5e3d12b74fe265e395f794a295501302d792c256eb768be01a621",
+      "bytes": 363026
+    },
+    "stills/f_03920.png": {
+      "sha256": "e20ae1715fbd9053d88028d33d3b0c77cc567b61ffce1d652b1b67b6d99b8e89",
+      "bytes": 363989
+    },
+    "stills/f_04000.png": {
+      "sha256": "5e93930446f366d480837be5b7a8c46165a487133475fc7a64b37e6a235cfc7d",
+      "bytes": 368452
+    },
+    "stills/f_04110.png": {
+      "sha256": "b23905ec382333ca8d58fc5cf8fbfe43836f58b94db5833fee77be6d60dacca8",
+      "bytes": 343082
+    },
+    "stills/f_04216.png": {
+      "sha256": "9cdaf34c4f9abcef8cb01e64e240b9ea4b83483b76e6d56fd79df94d14df7ff5",
+      "bytes": 328923
+    },
+    "stills/f_04239.png": {
+      "sha256": "561a6c6e6edfa4864072f013634510b4477df910ffe3134239f903ca305fb442",
+      "bytes": 328347
+    },
+    "motion/cooling-24.png": {
+      "sha256": "527e05a31faa98acfdb816b9242b7c7cf27a4e37645c39eac0ac9b1b884b9e9d",
+      "bytes": 511294
+    },
+    "motion/cooling-native-24.png": {
+      "sha256": "1b753570d3c883d63158207f4e39a4c73a0b503afaa368a1da8455107bb3bc2c",
+      "bytes": 499071
+    },
+    "motion/leader-24.png": {
+      "sha256": "62115245bb92224c834c82a9057f447f3e92dd28df390a75505a77e7991877cd",
+      "bytes": 711769
+    },
+    "motion/leader-native-24.png": {
+      "sha256": "07f631202d2dea471662f42dfe4217f56c3e02de3f3f7b569bc9d69d3c5cc3b7",
+      "bytes": 1505551
+    },
+    "motion/others-surge-24.png": {
+      "sha256": "c57832324d9c72c22a4541861d6180fef8f528cbf6e1c858eca5259eb3955e9b",
+      "bytes": 701095
+    },
+    "motion/others-surge-native-24.png": {
+      "sha256": "173c8eed02bcf3f21d83ea84b9bb32fb00e6d0abcfbe7f9b537c306f59b7983f",
+      "bytes": 1143781
+    },
+    "motion/return-24.png": {
+      "sha256": "5b7f5457bb47785a5ba1b700f5e4b72518ea6d4b31655c138eff8682900d2cf2",
+      "bytes": 716820
+    },
+    "motion/return-native-24.png": {
+      "sha256": "3135ed56c49d67b1b468b5f32e8f5b1e3ee691c90fa470027fd27fa2ce16a6e4",
+      "bytes": 1292821
+    },
+    "motion/shutdown-24.png": {
+      "sha256": "6e35aa74511de6a31b52a06a1ed75b86a2c828618056eb85a9010ef8274f605f",
+      "bytes": 634020
+    },
+    "motion/shutdown-native-24.png": {
+      "sha256": "c18329e88c124b326d306f998c88ae94106539cdb3c242c96b232dff7ddad54a",
+      "bytes": 1410633
+    },
+    "motion/withdrawal-24.png": {
+      "sha256": "81082f1c0a473826ce66f52c6b1051e1d0f612bcbcedb27daf6f13a3d83f764e",
+      "bytes": 644842
+    },
+    "motion/withdrawal-native-24.png": {
+      "sha256": "e89b6cc435c3cf185e53c4f471d45ace7192b42b7d8ee910eb5a5698df1041ff",
+      "bytes": 903117
+    }
+  },
+  "production_changes_in_reused_embers_and_look_paths": [],
+  "clean_hold_endpoint_comparison": {
+    "png_bytes_equal": false,
+    "max_decoded_channel_delta_codes": 2,
+    "differing_rgb_pixels": 307752,
+    "limit": "look.save_png uses an unseeded TPDF dither. Finished floating RGB was not saved for this pair, so image equality before quantization is not claimed. Camera/scene schedule holds from4216; measured decoded differences are within two8-bit code values."
+  }
+}

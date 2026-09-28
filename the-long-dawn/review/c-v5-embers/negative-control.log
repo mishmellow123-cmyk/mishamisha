@@ -1,0 +1,16 @@
+Expected failure: force forge_level=1 after shutdown; no source file was modified.
+test_actual_tower_emission_override_kills_hot_edges_but_keeps_stone (test_c_v5.Timing.test_actual_tower_emission_override_kills_hot_edges_but_keeps_stone) ... FAIL
+
+======================================================================
+FAIL: test_actual_tower_emission_override_kills_hot_edges_but_keeps_stone (test_c_v5.Timing.test_actual_tower_emission_override_kills_hot_edges_but_keeps_stone)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPOSITORY>/the-long-dawn/shots/embers/tests/test_c_v5.py", line 175, in test_actual_tower_emission_override_kills_hot_edges_but_keeps_stone
+    self.assertTrue(np.all(calls[0][3] == 0.))
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: np.False_ is not true
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

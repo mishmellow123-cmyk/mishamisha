@@ -1,0 +1,7 @@
+{
+  "command": "python shots/embers/c_v5.py --frames 2360 --scale .5 --out <existing-review-dir>",
+  "exit_code": 1,
+  "refusal_observed": true,
+  "scene_not_initialized": true,
+  "existing_frame_sha256_before_and_after": "546ecd2c1ca03abf5927c2e159a33b8e51c981d81bae25ceefe040493e52d1c6"
+}

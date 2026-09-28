@@ -1,0 +1,14 @@
+towers v3: forges 153094 254944 318131 266223 197390 450043 259923 211927 | skyline 1123570
+{"initialization_seconds": 1.3797438750043511, "opencv_threads": 1}
+{"frame": 2360, "seconds": 0.5621741669892799, "peak_rss_bytes": 666173440, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_02360.png"}
+{"frame": 2460, "seconds": 0.4650702920043841, "peak_rss_bytes": 666189824, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_02460.png"}
+{"frame": 2510, "seconds": 0.48798320902278647, "peak_rss_bytes": 700825600, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_02510.png"}
+{"frame": 2560, "seconds": 0.481428083992796, "peak_rss_bytes": 708575232, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_02560.png"}
+{"frame": 2639, "seconds": 0.4866574589977972, "peak_rss_bytes": 723468288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_02639.png"}
+{"frame": 3847, "seconds": 0.49729658299474977, "peak_rss_bytes": 723468288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_03847.png"}
+{"frame": 3848, "seconds": 0.48270066699478775, "peak_rss_bytes": 723468288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_03848.png"}
+{"frame": 3920, "seconds": 0.44487974999356084, "peak_rss_bytes": 723468288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_03920.png"}
+{"frame": 4000, "seconds": 0.43819229200016707, "peak_rss_bytes": 723468288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_04000.png"}
+{"frame": 4110, "seconds": 0.43426341700251214, "peak_rss_bytes": 723468288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_04110.png"}
+{"frame": 4216, "seconds": 0.178898374986602, "peak_rss_bytes": 723468288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_04216.png"}
+{"frame": 4239, "seconds": 0.1843994999944698, "peak_rss_bytes": 723468288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pass3/f_04239.png"}
