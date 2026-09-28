@@ -47,9 +47,44 @@ class Timing(unittest.TestCase):
         self.assertGreater(tw.height(0, 2539), tw.height(0, 2479))
         self.assertEqual(tw.height(C.LOW_FORGE, 2539), tw.rest[C.LOW_FORGE])
         self.assertGreater(tw.height(C.LOW_FORGE, 2579), tw.rest[C.LOW_FORGE])
-        self.assertGreater(tw.height(C.LEADER, 2639), max(tw.height(i, 2639) for i in range(18) if i != C.LEADER))
+        for leader in C.LEADERS:
+            self.assertGreater(tw.height(leader, 2639), max(tw.height(i, 2639) for i in range(18) if i not in C.LEADERS))
         for i in range(18):
             self.assertEqual(tw.height(i, 2639), tw.height(i, 4239))
+
+    def test_rivals_share_existing_form_height_and_intensity_without_shared_edits(self):
+        forms = [object() for _ in range(18)]
+        def initialize(tw):
+            tw.G = forms.copy()
+            tw.h_rise = np.linspace(26., 39., 18)
+            tw.J = np.zeros((18, 2))
+            tw.design = np.arange(18)
+        with patch.object(C.B.Towers, '__init__', initialize), patch.object(C.c3, 'layout_towers', side_effect=lambda tw:tw), patch.object(C.EYE, '_medieval', side_effect=lambda tw:tw):
+            tw = C.Forges()
+        a, b = C.LEADERS
+        self.assertIs(tw.G[a], forms[b])
+        self.assertIs(tw.G[b], forms[b])
+        self.assertIsNot(forms[a], forms[b])
+        self.assertEqual(tw.design[a], tw.design[b])
+        for f in np.arange(2580., 2640., .25):
+            self.assertEqual(tw.height(a, f), tw.height(b, f))
+            self.assertEqual(C.forge_level(a, f), C.forge_level(b, f))
+        for i in range(18):
+            if i not in C.LEADERS:
+                self.assertIs(tw.G[i], forms[i])
+
+    def test_flame_and_smoke_crown_follows_actual_bent_geometry(self):
+        tw = C.Forges.__new__(C.Forges)
+        tw.rest = np.full(18, 32.)
+        tw.ang = np.linspace(0., 2*np.pi, 18, endpoint=False)
+        tw.rad = np.full(18, 30.)
+        for f in (2580., 2610., 2639., 3848., 4216.):
+            for i in C.LEADERS:
+                axis_top = C.B.Towers.top(tw, i, f)
+                expected = C.SCHED.tower_post(tw, i, axis_top[None, :], f)[0]
+                np.testing.assert_array_equal(tw.top(i, f), expected)
+                if f >= 2610:
+                    self.assertLess(np.linalg.norm(tw.top(i, f)[[0,2]]), np.linalg.norm(axis_top[[0,2]]))
 
     def test_world_restores_shared_defaults_even_on_exception(self):
         before = C.variant.CUT, C.B.SCHED, C.B.IGN, C.B.BEATS

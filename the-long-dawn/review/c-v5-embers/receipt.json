@@ -1,18 +1,9 @@
 {
   "base_commit": "339b1e370f6cbd01acc18c6d8a2e50f5e7f302e2",
   "production_ref_checked": "ebe55462b0f732172a05df5c349577477d4f2292",
-  "render_dimensions": [
-    960,
-    402
-  ],
-  "threads": {
-    "numba": 1,
-    "BLAS": 1,
-    "opencv_requested": 0,
-    "opencv_reported": 1
-  },
+  "amendment": "2026-09-28 two abstract front runners, neck and neck; supersedes0a5c545 single leader",
   "final_source_hashes": {
-    "the-long-dawn/shots/embers/c_v5.py": "c41538d04d94c03961f5361b573992e46aac0150d8e6630ee5298169035a991c",
+    "the-long-dawn/shots/embers/c_v5.py": "3f0c3320d7098fc0883246fe6f2d6726bf7a18a9cce753b222a196b13cefdf4f",
     "the-long-dawn/shots/embers/core.py": "c42ff0e583bca9d86e99570662c5327a869c161e6e449bc1b1f4252f8dca3008",
     "the-long-dawn/shots/embers/scene_b.py": "12e9ddc1b7b3b44128000a53f187c40ec810a01f52235773f79ab6306fc84da3",
     "the-long-dawn/shots/embers/towers2.py": "2a10df74fe267736684e8a966d16dc8793de4e5caeada49db1e7370b174cdde5",
@@ -24,15 +15,18 @@
     "the-long-dawn/shots/embers/variant.py": "a4b7adca9e469903086c2c2a5c25f12a310490ec268b912541e692cf11d03ca1",
     "the-long-dawn/lib/look.py": "1a311e38a231ee9fda65aa8037759ded7b19ae215bd184afb0327dd4cdd70614"
   },
-  "source_version_note": "Review renders precede CLI-only additions for overwrite refusal and farm --frames. Render functions are unchanged from pass3/motion; no claim of byte-identical source files at render time.",
-  "initial_frame": {
-    "frame": 2360,
-    "wall_seconds": 33.26165599998785,
-    "initialization_seconds": 6.387026457989123,
-    "frame_seconds_including_compile": 26.008528790989658,
-    "peak_rss_bytes": 1240350720,
-    "status": "rejected: Ring clipped; camera corrected"
+  "source_version_note": "All current stills and six motion windows rendered from these exact renderer source bytes.",
+  "render_dimensions": [
+    960,
+    402
+  ],
+  "threads": {
+    "numba": 1,
+    "BLAS": 1,
+    "opencv_requested": 0,
+    "opencv_reported": 1
   },
+  "review_batch_unique_frames": 152,
   "motion": {
     "frames": 144,
     "ranges": [
@@ -61,11 +55,32 @@
         4123
       ]
     ],
-    "sum_frame_seconds": 69.58737224887591,
-    "minimum_frame_seconds": 0.43766362499445677,
-    "median_frame_seconds": 0.48191452051105443,
-    "maximum_frame_seconds": 0.5869668750092387,
-    "peak_rss_bytes": 692912128
+    "sum_frame_seconds": 116.30932604626287,
+    "median_frame_seconds": 0.7895122920162976,
+    "minimum_frame_seconds": 0.5329335840069689,
+    "maximum_frame_seconds": 2.035229624976637,
+    "peak_rss_bytes": 706707456
+  },
+  "full_resolution_test": {
+    "frame": 2639,
+    "path": "stills/f_02639.jpg",
+    "dimensions": [
+      1920,
+      804
+    ],
+    "jpeg_subsampling": 0,
+    "chroma": "4:4:4",
+    "jpeg_quality_setting": 95,
+    "import_seconds": 0.22959212501882575,
+    "initialization_seconds": 1.338839417003328,
+    "frame_seconds": 1.6749910420039669,
+    "peak_rss_bytes": 1033125888,
+    "sha256": "0fbba570c9fed19f8f1c7edb43ef1de9322c4672597c4b03c7f879275138616c"
+  },
+  "tests": {
+    "passed": 16,
+    "compiled": false,
+    "negative_control": "Inherited unbent Forges.top fails crown alignment test"
   },
   "reviewed": {
     "native_whole_frame_stills": [
@@ -79,136 +94,121 @@
       3920,
       4000,
       4110,
-      4216
+      4216,
+      4239
     ],
     "reduced_motion_compositions": 144,
     "native_subject_crops": 144,
     "full_frame_realtime_playback": false
   },
-  "clean_hold_endpoint_pngs_identical": false,
-  "full_resolution_test": {
-    "frame": 2639,
-    "path": "stills/f_02639.jpg",
-    "dimensions": [
-      1920,
-      804
-    ],
-    "jpeg_subsampling": 0,
-    "chroma": "4:4:4",
-    "jpeg_quality_setting": 95,
-    "wall_seconds": 4.963423207984306,
-    "import_seconds": 0.4637750830152072,
-    "initialization_seconds": 1.7560701670008712,
-    "frame_seconds": 2.4387849170016125,
-    "peak_rss_bytes": 845447168,
-    "sha256": "5df4ea1fa7b34f981e7862a234d85008a34bdf0caad0d5fd551a05f9a07c27b1",
-    "review": "Viewed entire native1920x804 image: canonical inscription/band visible, leader crown remains separated from Ring, no clipped Ring."
-  },
   "local_finals": null,
   "farm_launched": false,
+  "limitations": [
+    "Internal visual review; no unbriefed-viewer comprehension test.",
+    "Motion strips sample six windows, not every frame.",
+    "PNG save adds unseeded TPDF dither; prequantization endpoint equality not measured.",
+    "EDIT captions, transitions and sound excluded."
+  ],
   "artifacts": {
     "stills/f_02360.png": {
-      "sha256": "546ecd2c1ca03abf5927c2e159a33b8e51c981d81bae25ceefe040493e52d1c6",
-      "bytes": 391962
+      "sha256": "7bc2d133820d691c891701799e9e6d3f5894231effc625dbac5f2fe67b807d17",
+      "bytes": 392413
     },
     "stills/f_02460.png": {
-      "sha256": "42bd87d682639ae83685d1f9f68e6d2a1101c0a957ab84b9deebbb2f96fe2524",
-      "bytes": 392251
+      "sha256": "f2f29726fda5486abd20ad44e52307a551967ed7fc96639f35688645441130d6",
+      "bytes": 392935
     },
     "stills/f_02510.png": {
-      "sha256": "da021b4114d2357947fb5cb6890965ee8571290dfd6abf80ca521b54047beb49",
-      "bytes": 415655
+      "sha256": "277155fcaf26c3a2fc6b4448c9859d4badb9b8b1947e6b5fb2511cffaf4451a3",
+      "bytes": 416632
     },
     "stills/f_02560.png": {
-      "sha256": "263f86e6b3736f3c574574d220bac108c458388658ac153d42e799db4f79611c",
-      "bytes": 419707
+      "sha256": "6fc4817958ca3b4ad3dc193f2bebcbec81eda0d93d8cef01c7f1aafaf5d2bbfd",
+      "bytes": 420283
+    },
+    "stills/f_02639.jpg": {
+      "sha256": "0fbba570c9fed19f8f1c7edb43ef1de9322c4672597c4b03c7f879275138616c",
+      "bytes": 256848
     },
     "stills/f_02639.png": {
-      "sha256": "376afc4abd4e65064cfcec076f1713206380ddcda0bf4b7191d210f8dd666fed",
-      "bytes": 424661
+      "sha256": "204a9d16cd00b9367282522a2471d7d047ab7d1af47bb476e84f6f0cbd7b6780",
+      "bytes": 430185
     },
     "stills/f_03847.png": {
-      "sha256": "3fc6b6254e9c81a450f7c3e32ba662adfccd615adfda1ebd2103f9152a7d75f6",
-      "bytes": 423849
+      "sha256": "7fabac3fb03b55a3692edf5c6fc747a34b1e976f788ae97cedb5263e13585f47",
+      "bytes": 430007
     },
     "stills/f_03848.png": {
-      "sha256": "430bfde61db5e3d12b74fe265e395f794a295501302d792c256eb768be01a621",
-      "bytes": 363026
+      "sha256": "9d64576fc85ae9379d4e76a56e1815d626b3a4046c0fef578ab0eab97b5461c5",
+      "bytes": 364224
     },
     "stills/f_03920.png": {
-      "sha256": "e20ae1715fbd9053d88028d33d3b0c77cc567b61ffce1d652b1b67b6d99b8e89",
-      "bytes": 363989
+      "sha256": "76cf2d1b6d8ead79a4a04d97c0f76555cad96ec156fff7f1e54515e046545d54",
+      "bytes": 364583
     },
     "stills/f_04000.png": {
-      "sha256": "5e93930446f366d480837be5b7a8c46165a487133475fc7a64b37e6a235cfc7d",
-      "bytes": 368452
+      "sha256": "784fa806a30670fbb7a6e7a8b69c3ef8eb5960d58a77655ddc00485c7c521fbb",
+      "bytes": 368404
     },
     "stills/f_04110.png": {
-      "sha256": "b23905ec382333ca8d58fc5cf8fbfe43836f58b94db5833fee77be6d60dacca8",
-      "bytes": 343082
+      "sha256": "3013509e15fe746c64b2bad56761aaf1e2b421317447e1233bf84cabc7ef69fb",
+      "bytes": 344190
     },
     "stills/f_04216.png": {
-      "sha256": "9cdaf34c4f9abcef8cb01e64e240b9ea4b83483b76e6d56fd79df94d14df7ff5",
-      "bytes": 328923
+      "sha256": "f02cfa548f830486195066815d85229ca11398b34fd7f76cf530a66793f7c603",
+      "bytes": 329353
     },
     "stills/f_04239.png": {
-      "sha256": "561a6c6e6edfa4864072f013634510b4477df910ffe3134239f903ca305fb442",
-      "bytes": 328347
+      "sha256": "bcc7d91d56a9db8c9b3909876d0db1ca0b3a38217707cd97e3290b3563dd6c8f",
+      "bytes": 328734
     },
     "motion/cooling-24.png": {
-      "sha256": "527e05a31faa98acfdb816b9242b7c7cf27a4e37645c39eac0ac9b1b884b9e9d",
-      "bytes": 511294
+      "sha256": "766e5745a7e1887cf8a958982850a3389e51fbead0d5a01013e9fcca87858d23",
+      "bytes": 517589
     },
     "motion/cooling-native-24.png": {
-      "sha256": "1b753570d3c883d63158207f4e39a4c73a0b503afaa368a1da8455107bb3bc2c",
-      "bytes": 499071
-    },
-    "motion/leader-24.png": {
-      "sha256": "62115245bb92224c834c82a9057f447f3e92dd28df390a75505a77e7991877cd",
-      "bytes": 711769
-    },
-    "motion/leader-native-24.png": {
-      "sha256": "07f631202d2dea471662f42dfe4217f56c3e02de3f3f7b569bc9d69d3c5cc3b7",
-      "bytes": 1505551
+      "sha256": "92a6e236f0aae27d9328c29e3eed9a486159e12d8c4baca67316d6140e4b6ad7",
+      "bytes": 891437
     },
     "motion/others-surge-24.png": {
-      "sha256": "c57832324d9c72c22a4541861d6180fef8f528cbf6e1c858eca5259eb3955e9b",
-      "bytes": 701095
+      "sha256": "bdb42fdcad15c0ed3010a4f4803010809facb7f6b96eeb99020cbd6e4e61b155",
+      "bytes": 701229
     },
     "motion/others-surge-native-24.png": {
-      "sha256": "173c8eed02bcf3f21d83ea84b9bb32fb00e6d0abcfbe7f9b537c306f59b7983f",
-      "bytes": 1143781
+      "sha256": "cccb9786924b2afdad676ffdabab551f7230fe258629ee00ea897d0d95e2b907",
+      "bytes": 1142383
     },
     "motion/return-24.png": {
-      "sha256": "5b7f5457bb47785a5ba1b700f5e4b72518ea6d4b31655c138eff8682900d2cf2",
-      "bytes": 716820
+      "sha256": "7819ab1704f855e8c9b8f7d8b294abdc6dd8dcd7e6b1c7de5933137f1f882098",
+      "bytes": 717836
     },
     "motion/return-native-24.png": {
-      "sha256": "3135ed56c49d67b1b468b5f32e8f5b1e3ee691c90fa470027fd27fa2ce16a6e4",
-      "bytes": 1292821
+      "sha256": "d9b111580089ab076a4d8115f4b59e9a41b9ee24d2457530f777989c1d91e950",
+      "bytes": 1305254
+    },
+    "motion/rivals-24.png": {
+      "sha256": "7d36e41df7a1fe82b668cef544f837ab0235b55899718752dc23e685e35a2b38",
+      "bytes": 720975
+    },
+    "motion/rivals-native-24.png": {
+      "sha256": "23b449a33d254b8e2a9abc13d4c63d14acfd5d4b08c1b1814d1f65f6b1db65b2",
+      "bytes": 1593738
     },
     "motion/shutdown-24.png": {
-      "sha256": "6e35aa74511de6a31b52a06a1ed75b86a2c828618056eb85a9010ef8274f605f",
-      "bytes": 634020
+      "sha256": "250aacdbdc7a15033d5666799d54d2a58a39055842da054b910f40a44bb16ac9",
+      "bytes": 641509
     },
     "motion/shutdown-native-24.png": {
-      "sha256": "c18329e88c124b326d306f998c88ae94106539cdb3c242c96b232dff7ddad54a",
-      "bytes": 1410633
+      "sha256": "3df9caaffbde1bf31f6519d4b36323984a46f648b71f1dd52b08d5f73358e25a",
+      "bytes": 1633474
     },
     "motion/withdrawal-24.png": {
-      "sha256": "81082f1c0a473826ce66f52c6b1051e1d0f612bcbcedb27daf6f13a3d83f764e",
-      "bytes": 644842
+      "sha256": "3c9994645069ba10453db68c01fb6f0653beae51fa7968fb215fe51920c576a7",
+      "bytes": 644283
     },
     "motion/withdrawal-native-24.png": {
-      "sha256": "e89b6cc435c3cf185e53c4f471d45ace7192b42b7d8ee910eb5a5698df1041ff",
-      "bytes": 903117
+      "sha256": "e81a5d718bd5195d397a92c54383fb7f1a6df49d034d9aad7a111f8526648e0e",
+      "bytes": 898082
     }
-  },
-  "production_changes_in_reused_embers_and_look_paths": [],
-  "clean_hold_endpoint_comparison": {
-    "png_bytes_equal": false,
-    "max_decoded_channel_delta_codes": 2,
-    "differing_rgb_pixels": 307752,
-    "limit": "look.save_png uses an unseeded TPDF dither. Finished floating RGB was not saved for this pair, so image equality before quantization is not claimed. Camera/scene schedule holds from4216; measured decoded differences are within two8-bit code values."
   }
 }

@@ -1,3 +1,3 @@
 towers v3: forges 153094 254944 318131 266223 197390 450043 259923 211927 | skyline 1123570
-{"import_seconds": 0.4637750830152072, "initialization_seconds": 1.7560701670008712, "opencv_threads": 1}
-{"frame": 2639, "seconds": 2.4387849170016125, "peak_rss_bytes": 845447168, "output": "<WORKSPACE>/work/c-v5-embers-tests/fullres/f_02639.jpg"}
+{"import_seconds": 0.22959212501882575, "initialization_seconds": 1.338839417003328, "opencv_threads": 1}
+{"frame": 2639, "seconds": 1.6749910420039669, "peak_rss_bytes": 1033125888, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-fullres/f_02639.jpg"}

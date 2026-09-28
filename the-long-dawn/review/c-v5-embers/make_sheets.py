@@ -5,13 +5,13 @@ import cv2
 import numpy as np
 
 WINDOWS = {'withdrawal': (2418,2441), 'others-surge': (2478,2501),
-           'return': (2538,2561), 'leader': (2592,2615),
+           'return': (2538,2561), 'rivals': (2592,2615),
            'shutdown': (3840,3863), 'cooling': (4100,4123)}
 # Source-pixel crops; no enlargement or sharpening. Each 24-frame crop strip
 # preserves native detail in the moving subject while the other sheet shows composition.
 CROPS = {'withdrawal': (280,150,130,240), 'others-surge': (690,130,160,260),
-         'return': (270,100,150,290), 'leader': (435,65,145,325),
-         'shutdown': (430,70,150,320), 'cooling': (430,75,120,160)}
+         'return': (270,100,150,290), 'rivals': (400,65,170,275),
+         'shutdown': (400,70,170,320), 'cooling': (400,75,170,220)}
 
 
 def sheet(frames, source, size, crop=None):

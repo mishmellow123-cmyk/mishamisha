@@ -34,7 +34,8 @@ from core import Camera, Frame, rng
 cv2.setNumThreads(0)
 IMPORT_SECONDS = time.perf_counter() - _IMPORT_STARTED
 SHOTS = {'trap': (2320, 2640), 'cold': (3840, 4000), 'unfinished': (4000, 4240)}
-LOW_FORGE, LEADER = 8, 5
+LOW_FORGE = 8
+LEADERS = (4, 5)
 OFF = 3848
 CLEAN = 4216
 RING_C = np.array([0., B.GROUND + 55., 0.])
@@ -59,7 +60,7 @@ def forge_level(i, t):
         return forge_level(i, 2639.)
     if i == LOW_FORGE:
         return (1. - .94 * ease(2420, 2438, t)) + 1.24 * ease(2540, 2552, t)
-    return 1. + .65 * ease(2480, 2492, t) + (.45 * ease(2580, 2598, t) if i == LEADER else 0.)
+    return 1. + .65 * ease(2480, 2492, t) + (.45 * ease(2580, 2598, t) if i in LEADERS else 0.)
 
 
 def ring_warmth(t):
@@ -85,11 +86,11 @@ class Schedule(EYE.EyeSched):
     def beat_pulse(self, t): return 0.
     def tower_lean(self, t): return 0.
     def tower_post(self, towers, i, P, t):
-        # The leader inclines toward the Ring; inherited geometry and normals stay intact.
+        # Both rivals incline toward the Ring using the same growth recipe.
         b = towers.base(i)
         q = P.copy()
         s = np.clip((P[:, 1] - b[1]) / max(towers.height(i, t), 1.), 0., 1.)
-        k = .14 * ease(2580, 2630, min(t, 2639.)) if i == LEADER else .015
+        k = .14 * ease(2580, 2630, min(t, 2639.)) if i in LEADERS else .015
         inward = -np.array([b[0], 0., b[2]]) / np.linalg.norm(b[[0, 2]])
         q += (k * towers.height(i, t) * s * s)[:, None] * inward
         return q
@@ -119,6 +120,12 @@ class Forges(B.Towers):
         super().__init__()
         EYE._medieval(c3.layout_towers(self))
         self.rest = self.h_rise + self.J.sum(axis=1)
+        # Abstract rivals: the same existing forge form and starting height,
+        # with no separate colour, insignia or architectural identity.
+        left, right = LEADERS
+        self.G[left] = self.G[right]
+        self.design[left] = self.design[right]
+        self.rest[list(LEADERS)] = max(self.rest[left], self.rest[right])
 
     def height(self, i, t):
         t = min(t, 2639.)
@@ -126,9 +133,15 @@ class Forges(B.Towers):
         if i == LOW_FORGE:
             return h + 7. * ease(2540, 2578, t)
         h += 6. * ease(2480, 2538, t)
-        if i == LEADER:
+        if i in LEADERS:
             h += (55. - h) * ease(2580, 2636, t)
         return h
+
+    def top(self, i, t):
+        # Flames, smoke, Ring lights and falling gold use the actual crown,
+        # including the same inward displacement applied to its geometry.
+        p = super().top(i, t)
+        return SCHED.tower_post(self, i, p[None, :], t)[0]
 
     def _splat(self, ctx, i, pt, colE, a, geo, z, fpx, rw):
         k = forge_level(i, ctx.t)
