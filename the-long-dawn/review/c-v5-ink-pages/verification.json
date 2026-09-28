@@ -1,0 +1,724 @@
+{
+  "source_base": "339b1e370f6cbd01acc18c6d8a2e50f5e7f302e2",
+  "production_source_check": "ebe5546",
+  "note": "Runtime samples overlapped other bounded workers. Single full-resolution samples include construction. No production sequence or join approval follows from these samples.",
+  "shots": {
+    "refusal": {
+      "full_frame": 2272,
+      "full_measurement": {
+        "frame": 2272,
+        "shot": "refusal",
+        "seconds": 15.308920999988914,
+        "peak_rss_bytes": 681132032,
+        "opencv_threads": 1
+      },
+      "motion_range": [
+        2192,
+        2215
+      ],
+      "motion_frames": 24,
+      "motion_input_hashes": {
+        "f_02192.png": "b53f47c27246813f19dc208ee1a0d11f11a8e49ef460b72e69d6b28e94be7fa4",
+        "f_02193.png": "c083ec9db1b2944a2d87ecb84c5b888eb07082d84f9b8d454bdb2828b4c5199b",
+        "f_02194.png": "994e88e375a07d20280df68abee83b3d416a586ca73219586933404b59fc5bac",
+        "f_02195.png": "ee5ccb60dcddece6c01ad0d7d8e4cc169cf29b46eb6cfb929f95f69e7761f6f8",
+        "f_02196.png": "59921e0e5af2c68780119ce697931c404950819d25a2752ddc7f22c95ff847ab",
+        "f_02197.png": "9a498e257782c35c94cd8e69efbdc6e7cabcb18ca0753290b93a3dd316a09739",
+        "f_02198.png": "5894c31f84c763666c087747180730a8e36ab4a69f0d13358e0ce8e2fe99d243",
+        "f_02199.png": "a3b495ad62936c2c9bf9dcbc3bb546e771403e232e7a3b4a8f97846cd09ed654",
+        "f_02200.png": "5c6972b82418abab27d13839fceb85d37e81cca9d6df5fa40fae4bd9d9c5dcf0",
+        "f_02201.png": "e11225a1f317d56e61a7a24a15af49406e1273cc21e97891362c30e49e171b96",
+        "f_02202.png": "bd4d51b7017cc5affc09483c0791ca23816af583aa2c5b6549ffd84e66cd8a24",
+        "f_02203.png": "c48bf9c0c1d94eead59dc7fd49995db19e42f1bf3c3b707874621fd291823ae2",
+        "f_02204.png": "49ba05f09216b9e2e01e517f5f382b66170bbd01c2f7d1102c3afe5144f2b8d8",
+        "f_02205.png": "9831fae69b0be4b8d519bc6f69f3bb50a4fe15a0314837fc94eb2754423e3fce",
+        "f_02206.png": "5068e6f1079435c85392d7d608e8d952fa85ff28b065005ebaca7eadd4bd3bd6",
+        "f_02207.png": "ff3efb7ee8d9d485769ddf8d66a2c1fb703cc4c21abadb94b8e4557101696ccc",
+        "f_02208.png": "1c8252c348505b67731f7b7b23c54a963a8aaca3032161aa95f62b455b2984ec",
+        "f_02209.png": "6c1c7cacfc4128b5a209720f3a035dbc0fa7d302103554b17f2272da42e03203",
+        "f_02210.png": "c9671f43d698cdbaa92d5a96c154da608079894b1048439d06984a444e657c47",
+        "f_02211.png": "7d9ec37676d21e53d925b36d9f7eec038d682a40db9520d08c6b121f560f65ba",
+        "f_02212.png": "e7865919c91fa6e697ff58a87e0e4d56cd8736e31aa66b1fe2090a50179fb7b0",
+        "f_02213.png": "60a8eb9ceaac1ffacb304f50aca90825631f5259dabe21498581252fd0985b2f",
+        "f_02214.png": "a7670434520067031ef263b33bcec2ceff1205f285091415fe3c5d1e5f7bfcff",
+        "f_02215.png": "53308a3090ea9faad1442b3aa47e777299b6d3290d6c81c9e242f72d2eababaf"
+      },
+      "motion_per_frame_measurements": [
+        {
+          "frame": 2192,
+          "shot": "refusal",
+          "seconds": 8.510718500008807,
+          "peak_rss_bytes": 650215424,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2193,
+          "shot": "refusal",
+          "seconds": 4.274958208989119,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2194,
+          "shot": "refusal",
+          "seconds": 3.5008112500072457,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2195,
+          "shot": "refusal",
+          "seconds": 4.123002708016429,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2196,
+          "shot": "refusal",
+          "seconds": 3.592640749993734,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2197,
+          "shot": "refusal",
+          "seconds": 3.64479512500111,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2198,
+          "shot": "refusal",
+          "seconds": 3.8930382499820553,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2199,
+          "shot": "refusal",
+          "seconds": 4.789115999999922,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2200,
+          "shot": "refusal",
+          "seconds": 4.472561957983999,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2201,
+          "shot": "refusal",
+          "seconds": 4.7594307090039365,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2202,
+          "shot": "refusal",
+          "seconds": 4.192995916993823,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2203,
+          "shot": "refusal",
+          "seconds": 4.536719916999573,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2204,
+          "shot": "refusal",
+          "seconds": 4.455796708003618,
+          "peak_rss_bytes": 980926464,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2205,
+          "shot": "refusal",
+          "seconds": 3.5867284160049167,
+          "peak_rss_bytes": 1237139456,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2206,
+          "shot": "refusal",
+          "seconds": 3.0136547919828445,
+          "peak_rss_bytes": 1237139456,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2207,
+          "shot": "refusal",
+          "seconds": 2.286705707985675,
+          "peak_rss_bytes": 1271234560,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2208,
+          "shot": "refusal",
+          "seconds": 3.4286920000158716,
+          "peak_rss_bytes": 1289633792,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2209,
+          "shot": "refusal",
+          "seconds": 2.7109424579830375,
+          "peak_rss_bytes": 1289633792,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2210,
+          "shot": "refusal",
+          "seconds": 2.5041124999988824,
+          "peak_rss_bytes": 1289633792,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2211,
+          "shot": "refusal",
+          "seconds": 2.6548807499930263,
+          "peak_rss_bytes": 1289633792,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2212,
+          "shot": "refusal",
+          "seconds": 2.6534507909964304,
+          "peak_rss_bytes": 1289633792,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2213,
+          "shot": "refusal",
+          "seconds": 2.4962035000207834,
+          "peak_rss_bytes": 1289633792,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2214,
+          "shot": "refusal",
+          "seconds": 2.5001977089850698,
+          "peak_rss_bytes": 1289633792,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 2215,
+          "shot": "refusal",
+          "seconds": 2.3834910830191802,
+          "peak_rss_bytes": 1289633792,
+          "opencv_threads": 1
+        }
+      ],
+      "motion_adjacent_pairs": 23,
+      "qc_summary": "Frames 2192-2215 (inclusive): 24/24 valid.\nFile issues: 0 missing, 0 undecodable, 0 wrong size, 0 unsupported format.\nReview candidates: 0 black, 0 constant, 0 near-constant, 0 transparent; 0 duplicate adjacent pairs, 0 pop transitions.\nAdjacent coverage: 23/23; joins: 0 measured, 0 unavailable, 0 outside range (0 extra endpoint reads). Candidates require review."
+    },
+    "deep_abandoned": {
+      "full_frame": 4360,
+      "full_measurement": {
+        "frame": 4360,
+        "shot": "deep_abandoned",
+        "seconds": 18.40666508299182,
+        "peak_rss_bytes": 1333444608,
+        "opencv_threads": 1
+      },
+      "motion_range": [
+        4360,
+        4383
+      ],
+      "motion_frames": 24,
+      "motion_input_hashes": {
+        "f_04360.png": "8076f276ac44d8d4e63aaac977387c259d3f2fc7b783e7f643844b410242eda8",
+        "f_04361.png": "ee43879efaeb602e40360357381541243f97e07fa670159e1741748ae593c780",
+        "f_04362.png": "e609ff5af7a07a5f4697239da27ab04155f554629c8ee026fa84343cd8210f5f",
+        "f_04363.png": "57570da9c2a55f47716353a00d643139fda54852d90de2d880be6ea05c41a094",
+        "f_04364.png": "9c37e24ebfe3ec586f3a04a90924cfe51a02f0b8e5d4c9730300c7ac335c785f",
+        "f_04365.png": "a5587036f0f89ae7321c1ce73901e33508f87d877f2bb6f215757bb3e6b21c0f",
+        "f_04366.png": "e1d562a7bf96f81cf2662cd5cd83a16447d2eb57bd1a96d4370a22e0d08c49d9",
+        "f_04367.png": "6c99f8a23ec25dd9b14cc5a3aa828836b313f0d5e65c47b3d70ddc1a0c3eccf2",
+        "f_04368.png": "b211b0153c2cc96ca0c5df56b4007077e4d00b48aa8586eb322e4df5d5887a85",
+        "f_04369.png": "0a91c09ba8848a5a6953a356a6ef5e92e18bd1b1bf33315c0dd0d409ca27fc15",
+        "f_04370.png": "13bbb89c5c5e2bcf2844b78c8dbb402cbf903d6aea52508a307c892bcb9250f4",
+        "f_04371.png": "c91bc28f1dac20276dfbcd095cd01c994a864fd1dfad0310be5a0e4b1f440a1e",
+        "f_04372.png": "ef439d91a53ded2615a0c4c2d2c66f757921246e47e3e2d747b52590acfbc1e4",
+        "f_04373.png": "944e868802826ec9f02972941d1f825b1f676d8d19dd3fe6d15b72a6e89af1ed",
+        "f_04374.png": "7ef364c614c458cf18b4c2c5c7a48366aec1074983dbe169c2fd8e4d3b7e85cb",
+        "f_04375.png": "dff52a8da7b28827e1de72cce0d80f91ff75b50f5b91cfcad256418834559a42",
+        "f_04376.png": "3a4b1fe1a3820e3a1bb8fd00fb4c9da7af433947707a14f0342a99b736ac28c3",
+        "f_04377.png": "35cc3a2210bd9642dbd62b238ef0bd5b15822579568df424be6887554861d40c",
+        "f_04378.png": "faa10796f387a86a3eb31ee406e9a576b86ce5fe13d22b551d625d0f5fc08a94",
+        "f_04379.png": "03b755cf43909a90d8476da6dd2d86f2a29d065a4509c032de66931abbdccc3f",
+        "f_04380.png": "92ad85f0d9cb4e24f17819a5a116286c6fbe8993f4c587ccf3af215d1a23eeec",
+        "f_04381.png": "e73f4af2a82aec34ccba75dfa8d5ad6467ae8db00907ac9bdf5dd3e485bd3c90",
+        "f_04382.png": "6123bca7a1e1cc0a9f9911c4700aec78fde3e55e0b01cc5425bed6b31bfdb17d",
+        "f_04383.png": "12e82dee6fc0c8b2a3b76ab4191d1c9f4aa8627bd7cb723fc73b87e7325240f3"
+      },
+      "motion_per_frame_measurements": [
+        {
+          "frame": 4360,
+          "shot": "deep_abandoned",
+          "seconds": 10.634122124989517,
+          "peak_rss_bytes": 1099579392,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4361,
+          "shot": "deep_abandoned",
+          "seconds": 1.9778555000084452,
+          "peak_rss_bytes": 1161641984,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4362,
+          "shot": "deep_abandoned",
+          "seconds": 1.9485410420165863,
+          "peak_rss_bytes": 1192706048,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4363,
+          "shot": "deep_abandoned",
+          "seconds": 1.9703007090138271,
+          "peak_rss_bytes": 1192755200,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4364,
+          "shot": "deep_abandoned",
+          "seconds": 2.165991582995048,
+          "peak_rss_bytes": 1211629568,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4365,
+          "shot": "deep_abandoned",
+          "seconds": 2.05673041602131,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4366,
+          "shot": "deep_abandoned",
+          "seconds": 2.006286292016739,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4367,
+          "shot": "deep_abandoned",
+          "seconds": 2.1219479159917682,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4368,
+          "shot": "deep_abandoned",
+          "seconds": 2.0732678750064224,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4369,
+          "shot": "deep_abandoned",
+          "seconds": 2.7206235000048764,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4370,
+          "shot": "deep_abandoned",
+          "seconds": 2.8899632499960717,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4371,
+          "shot": "deep_abandoned",
+          "seconds": 2.1726902079826687,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4372,
+          "shot": "deep_abandoned",
+          "seconds": 2.5955286670068745,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4373,
+          "shot": "deep_abandoned",
+          "seconds": 2.592430707998574,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4374,
+          "shot": "deep_abandoned",
+          "seconds": 2.115704916010145,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4375,
+          "shot": "deep_abandoned",
+          "seconds": 1.9787524590210523,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4376,
+          "shot": "deep_abandoned",
+          "seconds": 1.9357629579899367,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4377,
+          "shot": "deep_abandoned",
+          "seconds": 1.927829666994512,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4378,
+          "shot": "deep_abandoned",
+          "seconds": 1.951224667020142,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4379,
+          "shot": "deep_abandoned",
+          "seconds": 2.0191251669893973,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4380,
+          "shot": "deep_abandoned",
+          "seconds": 1.9372984999790788,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4381,
+          "shot": "deep_abandoned",
+          "seconds": 1.9206655829912052,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4382,
+          "shot": "deep_abandoned",
+          "seconds": 1.9881880839820951,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 4383,
+          "shot": "deep_abandoned",
+          "seconds": 1.9629932919924613,
+          "peak_rss_bytes": 1213841408,
+          "opencv_threads": 1
+        }
+      ],
+      "motion_adjacent_pairs": 23,
+      "qc_summary": "Frames 4360-4383 (inclusive): 24/24 valid.\nFile issues: 0 missing, 0 undecodable, 0 wrong size, 0 unsupported format.\nReview candidates: 0 black, 0 constant, 0 near-constant, 0 transparent; 0 duplicate adjacent pairs, 0 pop transitions.\nAdjacent coverage: 23/23; joins: 0 measured, 0 unavailable, 0 outside range (0 extra endpoint reads). Candidates require review."
+    },
+    "pen": {
+      "full_frame": 5560,
+      "full_measurement": {
+        "frame": 5560,
+        "shot": "pen",
+        "seconds": 11.362073041003896,
+        "peak_rss_bytes": 660553728,
+        "opencv_threads": 1
+      },
+      "motion_range": [
+        5550,
+        5573
+      ],
+      "motion_frames": 24,
+      "motion_input_hashes": {
+        "f_05550.png": "8637dc5de48b1be04b6c37f0fbbfa911863b8b8b27d96c8923fb904d2761902a",
+        "f_05551.png": "e77cbe436f3664c8ebcffdb5a22df9df5d3380926bd0bb982de35751a6be7247",
+        "f_05552.png": "4728ffde4f6cddd5dc9150a95e82e16d8301df21d87f808e095b8418a54b8b9e",
+        "f_05553.png": "56625579700b5c6da7c5c0aedb37e6a17f09c2219e724c1865ac1a2ac8c2ab83",
+        "f_05554.png": "802164c2f43f9847236e95aee72af028562b19e8b37b867eaf9c7e0e153d09d6",
+        "f_05555.png": "c3887c3ffe499e28dff4f5d790b22a1440c03f5d73f59d7f331b88ffbe2ab1dd",
+        "f_05556.png": "f1b4d60555b89e4e6c1f6092be49611aba6cca28ddb6220cbe504422ae34a2f7",
+        "f_05557.png": "5bd707ec1665dd45859c0ae924c205eed741dbc37a2d7c7809de65bf14f687ec",
+        "f_05558.png": "40b2d0793d7e099718dd237cb719226022586c39852d55f55b5a536910962ebf",
+        "f_05559.png": "03bc39507325d02816784ea3b38abb2186a98265b94ddbfb96867f779abd1ecd",
+        "f_05560.png": "31030eb3a529a676dcbf94016bd921a1b192c96af3ff427ef958434716d02841",
+        "f_05561.png": "ac44f69a186bfa7d0441c7cb49b0a8ca50a251ee0c77b3571ce6fdc37236edd8",
+        "f_05562.png": "6ab81aff8e9723a3fa9da801c7699ca12c4d595cde342908385cc5b8329e6199",
+        "f_05563.png": "a8c4f0b109ad4e31c22b9021be7ef4ad95a8d4bab7f7a1c8372201af80d9ad25",
+        "f_05564.png": "6417756c0c4d4c16f50dc75b51ae8caa1877ff3aee434699e4f9ad601d6d6860",
+        "f_05565.png": "e561c10f4c51e07541b87f082369013778f670ce4b4b518fc65ae93ddfdc565e",
+        "f_05566.png": "e833cf68a6718686e1ab4ddc1613dc231f17d44be741912af80bf6e9d5983b59",
+        "f_05567.png": "bc0374adb1fa7b8c5f2b08a3c024c67ac56acca5dcd7b81132d91b6dc20f92ae",
+        "f_05568.png": "aba9ce0c9d37d1c6cef269d8de89e9ead8cb520d9dbe279c15b2eccfaf48b452",
+        "f_05569.png": "019e5d41bbc196d9151e55e9de131d3821a9a89a4ffbd61fb46e9829f3006acd",
+        "f_05570.png": "481b9e95c1ce5f812427c43985686aaad0e7de6098dd21400f00bf007f3f1740",
+        "f_05571.png": "177d562c746cb916e61efff70f3e606230664950637f33faabb6d367a9e8b1a5",
+        "f_05572.png": "294c6e9dc4413a70238403527f20d45f85a7fb97e153ec1982dc02e9db6dc4c6",
+        "f_05573.png": "9b788ee4fac3d2698a4822043440bd6b1261a71daa539daf95c9981641d6463a"
+      },
+      "motion_per_frame_measurements": [
+        {
+          "frame": 5550,
+          "shot": "pen",
+          "seconds": 2.8344098750094417,
+          "peak_rss_bytes": 367378432,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5551,
+          "shot": "pen",
+          "seconds": 2.590327541984152,
+          "peak_rss_bytes": 399949824,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5552,
+          "shot": "pen",
+          "seconds": 3.143359625013545,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5553,
+          "shot": "pen",
+          "seconds": 3.1299916669959202,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5554,
+          "shot": "pen",
+          "seconds": 2.5728341249923687,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5555,
+          "shot": "pen",
+          "seconds": 3.4994255829951726,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5556,
+          "shot": "pen",
+          "seconds": 2.555930166010512,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5557,
+          "shot": "pen",
+          "seconds": 2.255962291994365,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5558,
+          "shot": "pen",
+          "seconds": 2.3939218330197036,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5559,
+          "shot": "pen",
+          "seconds": 2.8463442909996957,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5560,
+          "shot": "pen",
+          "seconds": 3.2199882499990053,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5561,
+          "shot": "pen",
+          "seconds": 3.4709791250061244,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5562,
+          "shot": "pen",
+          "seconds": 2.919280957983574,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5563,
+          "shot": "pen",
+          "seconds": 3.966111167013878,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5564,
+          "shot": "pen",
+          "seconds": 3.7292988330009393,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5565,
+          "shot": "pen",
+          "seconds": 3.146953040995868,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5566,
+          "shot": "pen",
+          "seconds": 3.573467166017508,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5567,
+          "shot": "pen",
+          "seconds": 3.5380163750087377,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5568,
+          "shot": "pen",
+          "seconds": 3.0864236670022365,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5569,
+          "shot": "pen",
+          "seconds": 2.902964666020125,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5570,
+          "shot": "pen",
+          "seconds": 3.323090791993309,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5571,
+          "shot": "pen",
+          "seconds": 3.7208240410254803,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5572,
+          "shot": "pen",
+          "seconds": 3.886620999983279,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        },
+        {
+          "frame": 5573,
+          "shot": "pen",
+          "seconds": 2.6935867079882883,
+          "peak_rss_bytes": 424443904,
+          "opencv_threads": 1
+        }
+      ],
+      "motion_adjacent_pairs": 23,
+      "qc_summary": "Frames 5550-5573 (inclusive): 24/24 valid.\nFile issues: 0 missing, 0 undecodable, 0 wrong size, 0 unsupported format.\nReview candidates: 0 black, 0 constant, 0 near-constant, 0 transparent; 0 duplicate adjacent pairs, 0 pop transitions.\nAdjacent coverage: 23/23; joins: 0 measured, 0 unavailable, 0 outside range (0 extra endpoint reads). Candidates require review."
+    }
+  },
+  "artifacts": {
+    "refusal-full.log": {
+      "original_sha256": "d95c936ed95069b0847d4f9646f4739fd059c7b98a81d3b5984ce244e772df07",
+      "packaged_sha256": "d95c936ed95069b0847d4f9646f4739fd059c7b98a81d3b5984ce244e772df07"
+    },
+    "refusal-full-launcher.json": {
+      "original_sha256": "15e26adb96f6a4503dd45c6168e88aa6c55958347089d03967270aa274585346",
+      "packaged_sha256": "4908d5764713442e367f70e17a81a35a45e81088fc8ec8973787f059434a31a9"
+    },
+    "refusal-motion.log": {
+      "original_sha256": "c4e7238a2c0319c1f69843509170d38eb0ed3fe13ab72f76f8fa1c1125ba65c1",
+      "packaged_sha256": "c4e7238a2c0319c1f69843509170d38eb0ed3fe13ab72f76f8fa1c1125ba65c1"
+    },
+    "refusal-motion-launcher.json": {
+      "original_sha256": "9a9f90eeba0f48c18a4b60955abe90c6478308391585a843c593abe1f3285faf",
+      "packaged_sha256": "3a8e7d7349b6c5e8259dbedd4696354b7decda70a9581f571ad5c0a36f01b25e"
+    },
+    "deep_abandoned-full.log": {
+      "original_sha256": "0650246671c2d33b06fc7674a0ff392d2f4ba009032f9c7e21dd5fa571924b3b",
+      "packaged_sha256": "0650246671c2d33b06fc7674a0ff392d2f4ba009032f9c7e21dd5fa571924b3b"
+    },
+    "deep_abandoned-full-launcher.json": {
+      "original_sha256": "7c04a84ecd95f7604a5069f49da9a7f6365397d7c7c7d375f7ddec7fa7c1c5a0",
+      "packaged_sha256": "71a54f46cd691972253fc68cb99804a4d5025103f1e3ba2c5e98d700053a071b"
+    },
+    "deep_abandoned-motion.log": {
+      "original_sha256": "eb922207afcc8c70b653d4b6e438e5a888b2a1d4311f54fe357e6c38eb5b0cc8",
+      "packaged_sha256": "eb922207afcc8c70b653d4b6e438e5a888b2a1d4311f54fe357e6c38eb5b0cc8"
+    },
+    "deep_abandoned-motion-launcher.json": {
+      "original_sha256": "fde935d5336055347584245a2a65317e253a429ca2d73c274f825f4db714918d",
+      "packaged_sha256": "2ecbf34e532eac82783c869f4886112af478d30ee6c679d1acc5df80e0909556"
+    },
+    "pen-full.log": {
+      "original_sha256": "43657c63c532613fa428b006bf1386054ee65bd8f325ac91f03203e0ca3e54ff",
+      "packaged_sha256": "43657c63c532613fa428b006bf1386054ee65bd8f325ac91f03203e0ca3e54ff"
+    },
+    "pen-full-launcher.json": {
+      "original_sha256": "248c00b1140f816721e9bd4e6b6f369361f8917448bafcbce28ed31d186c94aa",
+      "packaged_sha256": "922f66762b9b8e2a7a21ccce34ada9c1a0ee50aa088a7fc25d2e867752bce2c2"
+    },
+    "pen-motion.log": {
+      "original_sha256": "bed9f4e5d304568620dd618c2948ed72510218f527f07b77ecb3e1e856482c8c",
+      "packaged_sha256": "bed9f4e5d304568620dd618c2948ed72510218f527f07b77ecb3e1e856482c8c"
+    },
+    "pen-motion-launcher.json": {
+      "original_sha256": "3052bd6e3f5acd01dd43d7eba570b53aff955ee57325ac7e50b2a9b9cd843f7f",
+      "packaged_sha256": "399843cd36d1bbe7416de252ec5fdcfde1a594d2243e5ddebad251ea76a3e101"
+    },
+    "pen-full.png": {
+      "packaged_sha256": "360cd132ca75a73c90d565c3273859339bde3617239d65b0777ea7688fce713b"
+    },
+    "deep_abandoned-reduced.png": {
+      "packaged_sha256": "832ccbb5d08a009014f76d93e63bff5a86f5fdb27f7684a3ced464af4d2e0080"
+    },
+    "refusal-full.png": {
+      "packaged_sha256": "ae9120b04d96385e4f22ecb689f37db0883b843102416b418c0b1982b447008a"
+    },
+    "deep_abandoned-motion-sheet.png": {
+      "packaged_sha256": "f0965a84261153288d7ea53b7661282fb709ddf61d30153448cad0663197d012"
+    },
+    "deep_abandoned-full.png": {
+      "packaged_sha256": "902bd00db4bc816e8d8d625eb3e0c1c86ff5bc0b257e12b5069d49c1f95caba7"
+    },
+    "pen-motion-sheet.png": {
+      "packaged_sha256": "17ddd207d40a66885a1e127fd90045c23c17550b4776f660c09e461ae1bf7ae9"
+    },
+    "refusal-motion-sheet.png": {
+      "packaged_sha256": "1cbcac3224bdaf4304113617db7b8a6e8271795fb69074c457f70af9cdb607f2"
+    },
+    "refusal-reduced.png": {
+      "packaged_sha256": "e269a47a4a79a7d2c057c0fa06ccf40dba262206804b2ed760edfe9c3fe9c753"
+    },
+    "pen-reduced.png": {
+      "packaged_sha256": "eddc903ae8e337686f2d63eff3cbf3438bb4653951f4d42ace6a5e87e664800d"
+    }
+  },
+  "receipt_normalization": "Workspace prefix replaced with <WORKSPACE>; original and packaged hashes retained."
+}

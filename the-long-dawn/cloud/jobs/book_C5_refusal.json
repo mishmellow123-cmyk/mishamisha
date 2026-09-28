@@ -1,0 +1,27 @@
+{
+  "name": "book_C5_refusal",
+  "branch": "codex/c-v5-ink-pages",
+  "note": "Opt-in C v5.2; new absolute C frames. Captions/EDIT adoption separate. No farm launch by this PR.",
+  "setup": [
+    "python3 -m pip install -q numba numpy scipy opencv-python-headless pillow"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/map/book_c_v5.py --shot refusal --frames 2080-2319 --out \"$(pwd)/renders/book_C5_refusal\" --skip"
+  ],
+  "outputs": [
+    {
+      "out_dir": "renders/book_C5_refusal",
+      "frames": "2080-2319"
+    },
+    {
+      "out_dir": "renders/book_C5_refusal_matte",
+      "frames": "2080-2319"
+    }
+  ],
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "push_every": 300
+}
