@@ -116,7 +116,7 @@ class EyeSched(c3.C3Sched):
         h = np.sin(pl[:, 0] * 12.9898 + pl[:, 1] * 78.233 + pl[:, 2] * 37.719 + 1.7 * i) * 43758.5453
         h = h - np.floor(h)
         ember = np.where(h > 0.9, 0.35, 0.025)
-        return crown + (1.0 - crown) * ember
+        return 2.2 * crown + (1.0 - crown) * ember          # the crowns burn (fire in the crenellations)
 
     def beat_pulse(self, t):
         return 0.35 * swell(t) + 0.9 * (flare(t) if t >= T_SLIT else 0.0)
@@ -139,6 +139,17 @@ class EyeSched(c3.C3Sched):
 
 
 SCHED = EyeSched()
+
+
+class _AllTowers:
+    """a view of the towers in which every one of them (not only the eight nearest) smokes and sheds embers"""
+
+    def __init__(self, tw):
+        self._tw = tw
+        self.k = tw.k_all
+
+    def __getattr__(self, n):
+        return getattr(self._tw, n)
 
 
 def _medieval(tw):
@@ -330,8 +341,8 @@ def _eye(X, Y, ok, aa_, t, pr, HL, out_rgb, out_a, out_void, out_bev):
                 * (0.6 + 0.4 * perlin3(cph * 9.0, sph * 9.0, t * 0.05))
             sh = 0.55 * arc + 0.05 * math.exp(-((ex + 0.3) ** 2 + (ey - 0.4) ** 2) / 0.12)
             # EMBERS-C4: wet: a small crisp highlight of the fire on its upper-left curve, and its softer bloom
-            sh += 0.55 * math.exp(-((ex + 0.34) ** 2 + (ey - 0.41) ** 2) / 0.0035) \
-                + 0.1 * math.exp(-((ex + 0.3) ** 2 + (ey - 0.36) ** 2) / 0.03)
+            sh += 1.6 * math.exp(-((ex + 0.34) ** 2 + (ey - 0.41) ** 2) / 0.0035) \
+                + 0.2 * math.exp(-((ex + 0.3) ** 2 + (ey - 0.36) ** 2) / 0.03)
             gz = pr[4] * (sp + sh) * (1.0 - _ss(0.9, 1.02, u))
             b = pr[3] * (1.0 + 0.25 * pr[8])
             Fi = F ** 1.3
@@ -491,8 +502,8 @@ class EyeShot:
         tw = self.towers
         tw.prepare(ctx)
         dust = self._get('dust', B.Dust)
-        tsm = self._get('tsmoke', lambda: B.TowerSmoke(tw))
-        tem = self._get('tembers', lambda: B.TowerEmbers(tw))
+        tsm = self._get('tsmoke', lambda: B.TowerSmoke(_AllTowers(tw)))       # EMBERS-C4: every crown smokes ...
+        tem = self._get('tembers', lambda: B.TowerEmbers(_AllTowers(tw)))     # ... and sheds embers (not only 8)
         dust.emit(ctx)
         tw.emit(ctx, lp, lc, lpw)
         tem.emit(ctx)
