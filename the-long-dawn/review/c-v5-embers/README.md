@@ -63,7 +63,9 @@ The CLI requires an absolute output path and refuses existing frame files. Farm 
 
 Local delivery uses frozen renderer commit `9fa0822`, with AC power confirmed. **Trap is complete:** 320/320 frames at `~/ldfarm/out/embers_C5_trap/`, 1920×804 RGB JPEG q95/4:4:4, every frame decoded and hashed. The [delivery receipt](delivery/trap.json) records all file/pixel hashes and encoding checks. [Whole-shot frame QC](delivery/trap-qc.json) covers all 319 adjacent pairs, with no input errors or black/constant/hold/pop candidates at the tool's uncalibrated defaults. Final C2639 is byte-identical to the reviewed native sample. Silent preview: `~/ldfarm/comms/files/C5_trap_pair_2320-2639_24fps.mp4`, 320 frames at 24fps (13.333333 seconds).
 
-Cold is running next; Unfinished remains queued in the same sequential supervisor. The group is not yet fully delivered. Remaining completion receipts will be published separately.
+**Cold is complete:** 160/160 C3840–3999 frames at `~/ldfarm/out/embers_C5_cold/`, with the same decode/dimension/q95/4:4:4/hash validation. [Receipt](delivery/cold.json) and [whole-shot QC](delivery/cold-qc.json) cover all 159 adjacent pairs. The QC defaults report no input issues or candidates; they do not substitute for the visually reviewed intentional shutdown. Delivered native C3848/C3999 were inspected. Silent preview: `~/ldfarm/comms/files/C5_cold_pair_3840-3999_24fps.mp4`, 160 frames at24fps (6.666667 seconds).
+
+Unfinished is still rendering in the sequential supervisor. The group is not yet fully delivered; its completion receipt will be published separately.
 
 ## Handback
 

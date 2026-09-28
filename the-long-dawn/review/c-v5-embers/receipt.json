@@ -108,10 +108,12 @@
       "receipt": "delivery/trap.json"
     },
     "cold": {
-      "status": "in_progress"
+      "status": "complete",
+      "validated_frames": 160,
+      "receipt": "delivery/cold.json"
     },
     "unfinished": {
-      "status": "queued"
+      "status": "in_progress"
     }
   },
   "farm_launched": false,
