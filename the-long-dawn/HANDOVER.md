@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~07:50Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-28 ~08:05Z**, by the director (Claude, Opus 5.5).
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -41,6 +41,7 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
 
 ### Story decisions, in the user's words
 - **The solution is STOP** ("Plan S, not Plan A"). The user later refined it to *"more of a pause-for-as-long-as-it-takes deal"*: keep the film vaguer but directionally the same. Never "destroyed forever".
+- **The two front-runners go first, together** (the user's idea, 28 Sep ~08:00Z): the two furthest ahead, hardest to reconcile, light the first two beacons at the same moment; then the rest follow. Keep them abstract, with no national coding.
 - **It's a coordination problem.** "Why is it one person... this is a game-theoretic prisoner's dilemma/coordination problem that resists unilateral solutions." So there is **no lone hero**: each smith makes a conditional promise, and the stop happens only when all have joined.
 - **Fire:** "trying to cover too much conceptual ground". So each fire now has one job:
   - the gold lettered flame is the Ring's origin;
@@ -81,10 +82,10 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
 | 8 | Ink page: a mine going down level by level along a gold vein | They dug deeper every year, for the gold ran deeper still. |
 | 9 | The page burns into the storm; an Eye opens onto nothing | But whoever won the race, the Ring would rule us all. |
 | 10 | NEW ink page: a ring held out on a palm; a hooded figure turns away, hand raised | In the old story, the wise refused the Ring. |
-| 11 | NEW ember world, THE TRAP: one forge sinks, the others surge, it flares back and races; one tower pulls ahead | In ours, no smith could refuse it alone. |
-| 12 | Flint in the dark; kindling catches (one of many, not a hero) | So each smith lit a beacon. |
-| 13 | One small fire on the vast ink range | It was a promise to stop, if all the others would. |
-| 14 | Beacon run: beacons catch along the peaks | none |
+| 11 | NEW ember world, THE TRAP: one forge sinks, the others surge, it flares back and races; TWO towers pull ahead, neck and neck (the two great rivals; abstract, never coded) | In ours, no smith could refuse it alone. |
+| 12 | Flint in the dark; kindling catches | none |
+| 13 | Her small fire on the vast ink range; at the SAME moment a second fire catches on a far peak across the range | So the two furthest ahead lit the first beacons, together. |
+| 14 | Beacon run: beacons catch along the peaks | It was a promise to stop, if all the others would. |
 | 15 | NEW map: kingdom borders; beacons flare in no order; ONE kingdom stays dark while a hammer rings; a long pause; it catches | When the last beacon caught, every forge went cold. |
 | 16 | NEW: every forge goes dark at the same instant; the hammering stops mid-stroke; silence | none |
 | 17 | NEW: the Ring hangs over the dark towers; its glow drains to grey; the storm thins | The Ring hung there, unfinished. |
@@ -169,6 +170,7 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
     The user flagged "the walking at around 27s in the short vid is very glitchy".
   - **The race rebuild** (A6-A8 in A's real landscape; A16-17 held). The user: "really don't love the race bit... feels so random... too abstracted, visually especially". Rebuild it in the real world, and reuse the best of the old ember race elsewhere if there's a good way. The RACE-A lane stalled.
   - **A's ENDING:** "decide after C". C is now pause/stop, so propose an A ending consistent with it and ask the user.
+  - A seed from the user's two-rivals idea (28 Sep ~08:00Z): the title EVERY STEP CLOSER could flip at the end. The two leading groups step closer to EACH OTHER rather than to the finish, e.g. two lines of lanterns from opposite ridges converging. The people movement must pass the glitch gate, so prefer far-wide shots and lights, not legs.
 - **The user on the new A preview** (`A_bars54-81_watchers-to-title.mp4`, 28 Sep ~07:45Z): "good progress! Not perfect - but super directionally strong in several ways so keep it up."
 - **The user's A notes:** "some bits are pretty damn difficult to track/understand... some of the captions aren't remotely clear... the race was a bit too upbeat... unevenly abstracted". Clarity work is in `review/A_CLARITY.md` and `review/A_FIX_NOTES.md`.
 
