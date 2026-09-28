@@ -3,9 +3,9 @@
  "branch": "claude/render-crossing-a4-lookdev",
  "setup": [],
  "render": [
-  "python3 shots/run/crossing.py --frames 4880,4960,5040,5584,5839 --out lookdev --procs 5"
+  "python3 shots/run/crossing.py --frames 4880,5040-5063,5230-5253,5584,5839 --out lookdev --procs 8"
  ],
  "out_dir": "renders/crossing_A/lookdev",
- "frames": "4880,4960,5040,5584,5839",
+ "frames": "4880,5040-5063,5230-5253,5584,5839",
  "ship": "jpg"
 }

@@ -645,7 +645,7 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
               fold_depth=0.03, fold_phase=0.0, sway=0.0, pack=False, staff_tip=None, lantern_side=0.0,
               lantern_swing=0.0, carry=None, carry_side=1.0, peak=True, free_swing=0.0, reach=None,
               wind=None, ell=None, flutter=0.0, cloth=True, cape=None, hood_k=1.0, bedroll=False,
-              lantern_mode='hand', reach_len=0.62, leg_k=1.0):
+              lantern_mode='hand', reach_len=0.62, leg_k=1.0, reach_w=None):
     """v3 CLOTH (cloth=True, the default): the cloak is elliptical (a body is flatter front to back), hangs with
     creased folds, and takes the wind: `wind` = a world vector, the direction the wind blows toward, its length the
     hem's billow in metres (0.1-0.3); the hem centre streams to the lee, the lee side billows and its hem lifts and
@@ -656,7 +656,8 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
     longer, wider cape (default (0.07, 0.215)); hood_k scales the cowl; bedroll: a rolled blanket across the top of
     the pack; lantern_mode 'hand' (hung at the side), 'raised' (held up forward at shoulder height) or 'staff'
     (hung from the crook of a tall staff held in the lantern hand); reach_len: the reaching arm's length (h units);
-    leg_k: fuller trouser legs and boots (the close-up bearers: a thin shin under a cloak reads as a doll's)."""
+    leg_k: fuller trouser legs and boots (the close-up bearers: a thin shin under a cloak reads as a doll's);
+    reach_w (0-1): blend the free hand from hanging to reaching (a keeper's arm never jumps to the fire)."""
     if not cloth:
         return _traveller_v2(sc, pel, w, ank_l, ank_r, rgb, h, lean, hem, cloak, folds, fold_depth, fold_phase, sway,
                              pack, staff_tip, lantern_side, lantern_swing, carry, carry_side, peak, free_swing, reach)
@@ -766,6 +767,13 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
             hand_s = shB + (w * 0.22 - up * 0.34 - sl * 0.07) * h
             arm(shB, hand_s, -sl)
             sc.cone(hand_s + up * 0.28 * h, staff_tip, 0.017, 0.014, 2, 0.0)
+        elif reach is not None and reach_w is not None:
+            d = reach - shB
+            d = d / (np.linalg.norm(d) + 1e-9)
+            hang = shB + (w * (0.08 - 0.5 * sw) - up * 0.52 - sl * 0.06) * h
+            rw = min(max(float(reach_w), 0.0), 1.0)
+            rw = rw * rw * (3.0 - 2.0 * rw)
+            out['reach_hand'] = arm(shB, hang + (shB + d * reach_len * h - hang) * rw, -sl)
         elif reach is not None:
             d = reach - shB
             d = d / (np.linalg.norm(d) + 1e-9)
@@ -878,7 +886,8 @@ SEAT_POSES = ('knees', 'cross', 'back', 'side', 'kneel', 'lie')
 
 
 def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0, wind=None, flutter=0.0,
-           peak=True, reach=None, breath=0.0, pack=True, ground=None, fold_phase=0.0, drape=1.0, neck=1.0):
+           peak=True, reach=None, breath=0.0, pack=True, ground=None, fold_phase=0.0, drape=1.0, neck=1.0,
+           reach_w=None):
     """A hooded adult sitting on the snow, in cloth (v3): lean proportions (a long back, sloping shoulders, a head a
     seventh of the height), the cloak draped from the shoulders to the snow behind, the arms and elbows breaking
     its outline, so a figure seen from behind is a person resting, not a bell or a plush toy.
@@ -1010,7 +1019,15 @@ def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0,
         arm(S[1], gnd(B + (-s * 0.30 + w * 0.02 + up * 0.04) * h), (-s * 0.05) * h)
         arm(S[0], K[0] + up * 0.06 * h, (s * 0.06) * h)
     elif pose == 'kneel':
-        if reach is not None:
+        if reach is not None and reach_w is not None:
+            # (RUN-A4) blended from the knee to the fire by reach_w, so the arm never jumps
+            d = _unit(np.asarray(reach) - S[0])
+            rw = min(max(float(reach_w), 0.0), 1.0)
+            rw = rw * rw * (3.0 - 2.0 * rw)
+            rest = K[0] + (up * 0.07 - w * 0.02) * h
+            arm(S[0], rest + (S[0] + d * 0.60 * h - rest) * rw,
+                ((s * 0.06) + (s * 0.03 - up * 0.04 - s * 0.06) * rw) * h)
+        elif reach is not None:
             d = _unit(np.asarray(reach) - S[0])
             arm(S[0], S[0] + d * 0.60 * h, (s * 0.03 - up * 0.04) * h)
         else:

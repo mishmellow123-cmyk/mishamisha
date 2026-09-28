@@ -232,11 +232,27 @@ def _hh(i, j=0):
     return ((a ^ (a >> 15)) & 0xFFFFFFFF) / 4294967296.0
 
 
+# RESTAGE (RUN-A4, 28 Sep; the user: the walking at A ~5050 was "very glitchy"): no walking legs read in the close
+# and medium shots. The line has stopped at the first watch-fire: the match cut and the draw-back find it standing,
+# the lantern hanging, a held moment while its keeper tends the fire. It sets off, front first and slowly, as the
+# sky begins to wheel (T13, bar 66 b1), when the draw-back has made every figure small.
+T_GO = 12.5                                   # s: the bearers' first step (cut 5180)
+TAU_GO = 4.0                                  # s: they ease up to SPEED over this
+
+
+def walk_k(t):
+    """0 while the line stands, easing to 1 at full pace (the lantern's speed / SPEED)."""
+    return min(max((t - T_GO) / TAU_GO, 0.0), 1.0)
+
+
 def lantern_s(t):
     global S_L0
     if S_L0 is None:
         S_L0 = s_of_u(-6.0)
-    return S_L0 + SPEED * t
+    x = (t - T_GO) / TAU_GO
+    if x <= 0.0:
+        return S_L0
+    return S_L0 + SPEED * TAU_GO * (0.5 * x * x if x < 1.0 else x - 0.5)
 
 
 # ---- the line's layout (RUN-A4, the director's 21:05Z fix: ~20 identical, evenly spaced pawns -> people). Small
@@ -290,12 +306,14 @@ def layout(cfg):
 
 
 def _sched(t, cfg, k):
-    """Walker k's own schedule (arc length), before anyone waits: its group breathes as one."""
+    """Walker k's own schedule (arc length), before anyone waits: it sets off a moment after the one in front (a
+    start wave running back down the line), and while walking its group breathes as one."""
     L = layout(cfg)
     g = int(L['grp'][k])
+    lag = min(L['off'][k] / 5.0, 6.0) + 0.4 * _hh(g, 4)
     T = 12.0 + 8.0 * _hh(g, 1)
     br = 0.30 * math.sin(2 * math.pi * t / T + 6.28 * _hh(g, 3)) + 0.04 * math.sin(2 * math.pi * t / 6.1 + 6.28 * _hh(k, 3))
-    return lantern_s(t) - 1.3 - L['off'][k] + br
+    return lantern_s(t - lag) - 1.3 - L['off'][k] + br * walk_k(t - lag)
 
 
 # the step: which pair and when (shot seconds); the pair is the one ~30 m behind the lantern at the event, so it
@@ -408,12 +426,13 @@ def walk_phase(s, i):
     return 2 * math.pi * (s / stride_of(i) + _hh(i, 6))
 
 
-def plant(figs, cfg=None, go=None, stand=None):
+def plant(figs, cfg=None, go=None, stand=None, t=None):
     """Feet and pelvises for figures [(arc s, index i, height h, crouch m)]: each foot planted on the real terrain
     (one height query for all), the pelvis lowered wherever a leg could not otherwise reach its foot.
     go[n] (0-1): how fast figure n is walking (a stopped figure puts its swinging foot down); stand[n]: a
     standing figure's two foot arcs and a 0-1 blend (both feet planted there at 1); cfg: the rock step is added
-    under feet and pelvises."""
+    under feet and pelvises. t: life in the body: a standing figure shifts its weight a little, slowly; a walking
+    one rises over each planted foot and dips between steps (in step with its own feet)."""
     feet = []
     for n_, (s_, i, h, cr) in enumerate(figs):
         S = stride_of(i) * (h / 0.95 if h < 0.8 else 1.0)      # a child takes shorter steps
@@ -438,6 +457,15 @@ def plant(figs, cfg=None, go=None, stand=None):
         aL, aR = Q[2 * n_], Q[2 * n_ + 1]
         latb = np.cross(UP, wb)
         pel = pb + UP * (0.93 * h - cr + (step_h(s_, cfg, body=True) if cfg is not None else 0.0))
+        if t is not None:
+            g = 1.0 if go is None else float(go[n_])
+            per = 3.6 + 2.6 * _hh(i, 50)
+            idle_f = 0.008 * h * math.sin(2 * math.pi * t / per + 6.28 * _hh(i, 51))
+            idle_v = 0.004 * h * math.sin(2 * math.pi * t / (0.5 * per) + 6.28 * _hh(i, 52))
+            S = stride_of(i) * (h / 0.95 if h < 0.8 else 1.0)
+            v = s_ / S + _hh(i, 6)
+            bob = (0.008 if i < 2 else 0.012) * h * math.cos(4 * math.pi * (v - 0.5 * STANCE))
+            pel = pel + wb * idle_f * (1.0 - g) + UP * (idle_v * (1.0 - g) + bob * g)
         for a, side in ((aL, 1.0), (aR, -1.0)):
             hip = pel + latb * side * 0.085 * h
             dxz = math.hypot(a[0] - hip[0], a[2] - hip[2])
@@ -520,15 +548,30 @@ H0 = -0.45                                    # the opening camera's height rela
 RING = (0.30 + 0.33) * LANT_K                 # heart -> finial ring
 
 
+_D0 = None
+_BUILDING = False                             # True while the watch-fire sites are placed (they need a camera)
+
+
 def heart_pos(t, cfg=None):
+    """Where the camera looks: the path under the lantern, ~0.86 m up, plus the constant offset that puts the REAL
+    heart (hung from the bearers' poles) exactly on the frame centre at 4880, the A17 -> A18 match cut (959.5,
+    401.5). It never follows the lantern's swing (a camera locked to a swinging lantern sways the whole world)."""
+    global _D0
     sl = lantern_s(t)
     p, w = at(sl)
-    # poles on the bearers' shoulders ~1.47 m over the path; crossbar +0.03, a 0.10 m hook, then the ring
-    return p + UP * (1.50 - 0.10 - RING) + _swing(t) * w
+    base = p + UP * (1.50 - 0.10 - RING)
+    if _D0 is None:
+        if _BUILDING:
+            return base                       # the fire sites tolerate the ~6 cm; the set must exist first
+        wfs()
+        p0, _ = at(lantern_s(0.0))
+        _D0 = bearers(0.0, variant_cfg('main'))['heart'] - (p0 + UP * (1.50 - 0.10 - RING))
+    return base + _D0
 
 
 def _swing(t):
-    return 0.035 * math.sin(2 * math.pi * 0.6 * t - 0.8)
+    """The lantern's sway on its hook along the path: a little while it hangs still, full as they walk."""
+    return (0.008 + 0.027 * walk_k(t)) * math.sin(2 * math.pi * 0.6 * t - 0.8)
 
 
 def camera(frame, W=1920, H=804, cfg=None):
@@ -617,9 +660,9 @@ def _fire_sites():
         t = f / FPS
         L = heart_pos(t)
         if D is None:
-            # a rock shoulder just beyond the crest (away from the camera), level with the lantern at its bar:
-            # the bearers pass in front of its fire as backlit silhouettes
-            p, w = at(lantern_s(t))
+            # a rock shoulder just beyond the crest (away from the camera), 3 m ahead of where the line has
+            # stopped (the match cut's composition): the bearers stand by it, then pass in front of its fire
+            p, w = at(lantern_s(0.0) + 3.0)
             north = np.cross(UP, w)
             q = p + north * 2.6 + w * 0.3
             top = p[1] - 0.40
@@ -640,8 +683,12 @@ def _fire_sites():
 
 
 def _finish_set():
-    global CR, _WF
-    sites, rows = _fire_sites()
+    global CR, _WF, _BUILDING
+    _BUILDING = True
+    try:
+        sites, rows = _fire_sites()
+    finally:
+        _BUILDING = False
     rows[:, 14] = 0.95
     rows[:, 13] *= 2.5
     CR = np.vstack([CR0, rows, GR_ROWS])
@@ -948,7 +995,7 @@ def keeper_spot(k):
         if k == 0:
             # the near fire sits just beyond the crest: its keeper kneels on its west side, in profile, facing it
             # (below the poles as the bearers pass, and never front-lit)
-            _, w = at(lantern_s(PASS_FRAMES[0] / FPS))
+            _, w = at(lantern_s(0.0) + 3.0)
             d = -w.copy()
         side = np.cross(UP, d)
         best = None
@@ -966,6 +1013,24 @@ def _facing(w, ang):
     """w turned by ang radians about the vertical (toward the figure's left for +ang)."""
     c, s_ = math.cos(ang), math.sin(ang)
     return np.array([w[0] * c + w[2] * s_, 0.0, -w[0] * s_ + w[2] * c])
+
+
+def bearers(t, cfg):
+    """The two bearers planted (standing or walking), their shoulders, the poles, the crossbar and the real heart
+    hung from it. One source for build_scene and for the camera's 4880 offset (heart_pos)."""
+    S2 = line_s(t, cfg)[:2]
+    g = walk_k(t)
+    (pf, aLf, aRf, wf_), (pr, aLr, aRr, wr_) = plant([(S2[0], 0, 1.0, 0.04), (S2[1], 1, 1.03, 0.04)], cfg=cfg,
+                                                     go=[g, g], t=t)
+    lean_b = 0.14
+    fL, fR = _shoulders(pf, wf_, 1.0, lean_b)
+    rL, rR = _shoulders(pr, wr_, 1.03, lean_b)
+    poles = ((fL + UP * 0.075 + wf_ * 0.35, rL + UP * 0.075 - wr_ * 0.35),
+             (fR + UP * 0.075 + wf_ * 0.35, rR + UP * 0.075 - wr_ * 0.35))
+    mid = 0.25 * (poles[0][0] + poles[0][1] + poles[1][0] + poles[1][1])
+    heart = mid - UP * (0.10 + RING) + _swing(t) * wf_
+    return dict(S=S2, g=g, lean=lean_b, front=(pf, aLf, aRf, wf_), rear=(pr, aLr, aRr, wr_), fs=(fL, fR),
+                rs=(rL, rR), poles=poles, mid=mid, heart=heart)
 
 
 def walker_cut(k):
@@ -999,7 +1064,7 @@ def build_scene(t, cfg):
     n = len(S_)
     S0 = line_s(t - 0.25, cfg)
     go = np.clip((S_ - S0) / (0.25 * SPEED), 0.0, 1.0)
-    go[:2] = 1.0
+    go[:2] = walk_k(t)
     L = layout(cfg)
     ev = step_event(cfg)
     cuts = [walker_cut(k) for k in range(cfg['n'])]
@@ -1019,40 +1084,41 @@ def build_scene(t, cfg):
     if ev is not None and ev['t_hand'] - 0.3 < t < ev['t_c1'] + 0.3:
         u = smoothstep(ev['t_c0'] - 0.3, ev['t_c0'] + 0.5, t) * (1.0 - smoothstep(ev['t_c1'] - 0.4, ev['t_c1'] + 0.3, t))
         crouch[ev['kb'] + 2] = 0.12 * u
-    planted = plant([(S_[i], i, hts[i], crouch[i]) for i in range(n)], cfg=cfg, go=go)
+    planted = plant([(S_[i], i, hts[i], crouch[i]) for i in range(n)], cfg=cfg, go=go, t=t)
     lights = []
     lant = []
     waists = []
     hc = heart_col(t)
     br = breath(t)
-    # ---- the great lantern on its poles, carried by two cloaked bearers
-    lean_b = 0.14
-    (pf, aLf, aRf, wf_), (pr, aLr, aRr, wr_) = planted[0], planted[1]
-    fL, fR = _shoulders(pf, wf_, 1.0, lean_b)
-    rL, rR = _shoulders(pr, wr_, 1.03, lean_b)
+    # ---- the great lantern on its poles, carried by two cloaked bearers (standing at the fire, then walking)
+    Bz = bearers(t, cfg)
+    lean_b = Bz['lean']
+    (pf, aLf, aRf, wf_), (pr, aLr, aRr, wr_) = Bz['front'], Bz['rear']
+    fL, fR = Bz['fs']
+    rL, rR = Bz['rs']
     lat = np.cross(UP, wf_)
-    poles = ((fL + UP * 0.075 + wf_ * 0.35, rL + UP * 0.075 - wr_ * 0.35),
-             (fR + UP * 0.075 + wf_ * 0.35, rR + UP * 0.075 - wr_ * 0.35))
+    poles = Bz['poles']
     carry_f = (fL + UP * 0.05 + wf_ * 0.13, fR + UP * 0.05 + wf_ * 0.13)
     carry_r = (rL + UP * 0.05 + wr_ * 0.13, rR + UP * 0.05 + wr_ * 0.13)
     ph_f = walk_phase(S_[0], 0)
     ph_r = walk_phase(S_[1], 1)
     wf_v, fl_f = wind_at(t, S_[0], 0)
     wr_v, fl_r = wind_at(t, S_[1], 1)
+    gb = Bz['g']
     SP.traveller(sc, pf, wf_, aLf, aRf, (0.022, 0.018, 0.016), h=1.0, lean=lean_b, hem=0.15, cloak=(0.20, 0.34),
-                 folds=11, fold_depth=0.030, fold_phase=0.8 * math.sin(ph_f) + 1.1, sway=0.025 * math.sin(ph_f),
-                 carry=carry_f, carry_side=1.0, free_swing=0.06 * math.sin(ph_f), peak=True, wind=wf_v, flutter=fl_f,
-                 leg_k=1.25)
+                 folds=11, fold_depth=0.030, fold_phase=0.8 * math.sin(ph_f) * gb + 1.1,
+                 sway=0.025 * math.sin(ph_f) * gb, carry=carry_f, carry_side=1.0, free_swing=0.06 * math.sin(ph_f) * gb,
+                 peak=True, wind=wf_v, flutter=fl_f, leg_k=1.25)
     SP.traveller(sc, pr, wr_, aLr, aRr, (0.030, 0.030, 0.036), h=1.03, lean=lean_b, hem=0.15, cloak=(0.20, 0.34),
-                 folds=12, fold_depth=0.030, fold_phase=0.8 * math.sin(ph_r) + 2.3, sway=0.025 * math.sin(ph_r),
-                 carry=carry_r, carry_side=-1.0, free_swing=0.06 * math.sin(ph_r), peak=False, wind=wr_v, flutter=fl_r,
-                 leg_k=1.25)
+                 folds=12, fold_depth=0.030, fold_phase=0.8 * math.sin(ph_r) * gb + 2.3,
+                 sway=0.025 * math.sin(ph_r) * gb, carry=carry_r, carry_side=-1.0, free_swing=0.06 * math.sin(ph_r) * gb,
+                 peak=False, wind=wr_v, flutter=fl_r, leg_k=1.25)
     sc.begin(rgb=(0.1, 0.07, 0.05))
     for a_, b_ in poles:
         sc.cone(a_, b_, 0.028, 0.028, 2, 0.0)
-    mid = 0.25 * (poles[0][0] + poles[0][1] + poles[1][0] + poles[1][1])
+    mid = Bz['mid']
     sc.cone(mid + lat * 0.30, mid - lat * 0.30, 0.022, 0.022, 2, 0.0)                     # crossbar
-    heart = mid - UP * (0.10 + RING) + _swing(t) * wf_
+    heart = Bz['heart']
     sc.cone(mid, heart + UP * RING, 0.008, 0.008, 1, 0.0)                                # the hook
     sc.end()
     # v3 (the director's call): plain iron and horn; the horn warms the heart's light
@@ -1109,7 +1175,8 @@ def build_scene(t, cfg):
             rlen = 0.52
         o = SP.traveller(sc, pel, wfig, aL, aR, pal[int(_hh(k, 11) * len(pal))], h=hts[i], lean=lean,
                          hem=c_['hem'], cloak=c_['cloak'], folds=int(8 + 5 * _hh(k, 20)),
-                         fold_depth=0.020 + 0.014 * _hh(k, 21), fold_phase=0.8 * math.sin(ph) + 6.28 * _hh(k, 22),
+                         fold_depth=0.020 + 0.014 * _hh(k, 21),
+                         fold_phase=0.8 * math.sin(ph) * go[i] + 6.28 * _hh(k, 22),
                          sway=0.03 * math.sin(ph) * go[i], pack=c_['pack'], staff_tip=tip,
                          lantern_side=c_['lside'], lantern_swing=0.03 * math.sin(2 * ph - 0.6) * go[i],
                          free_swing=0.08 * math.sin(ph) * go[i], peak=c_['peak'], reach=reach, reach_len=rlen,
@@ -1149,8 +1216,9 @@ def build_scene(t, cfg):
         kw_v, kfl = wind_at(t, 0.0, 60 + k)
         if k == 0:
             # the near keeper kneels on the heels in profile, leaning in and reaching to feed the fire
-            SP.seated(sc, kp, wk, (0.03, 0.025, 0.02), h=0.98, pose='kneel', lean=0.22 + 0.35 * feed,
-                      reach=(p + UP * 0.22) if feed > 0.1 else None, wind=kw_v * 0.7, flutter=kfl,
+            idle = 0.025 * math.sin(2 * math.pi * t / 5.3 + 0.7)
+            SP.seated(sc, kp, wk, (0.03, 0.025, 0.02), h=0.98, pose='kneel', lean=0.22 + 0.35 * feed + idle,
+                      reach=p + UP * 0.22, reach_w=feed, wind=kw_v * 0.7, flutter=kfl,
                       ground=lambda q: float(ground_many(q)[0]), fold_phase=1.3, pack=False)
             fl = F.flicker(t, 30 + k)
             lights.append([p[0], p[1] + 0.9, p[2], F.FIRE_LIGHT[0], F.FIRE_LIGHT[1], F.FIRE_LIGHT[2], 9.0 * b * fl,
@@ -1163,7 +1231,7 @@ def build_scene(t, cfg):
         pel = kp + UP * (0.93 * 0.98 - 0.30 * feed - kneel)
         SP.traveller(sc, pel, wk, aL, aR, (0.03, 0.025, 0.02), h=0.98, lean=0.10 + 0.55 * feed + 0.3 * (k == 0), hem=0.20,
                      cloak=(0.20, 0.29), folds=10, fold_depth=0.028, fold_phase=1.3 * k, peak=True,
-                     reach=(p + UP * 0.25) if feed > 0.2 else None, wind=kw_v * (0.7 if k == 0 else 1.0), flutter=kfl)
+                     reach=p + UP * 0.25, reach_w=feed, wind=kw_v * (0.7 if k == 0 else 1.0), flutter=kfl)
         fl = F.flicker(t, 30 + k)
         lights.append([p[0], p[1] + 0.9, p[2], F.FIRE_LIGHT[0], F.FIRE_LIGHT[1], F.FIRE_LIGHT[2], 9.0 * b * fl, 0.8])
     return sc, lights, lant, waists, heart
@@ -1312,10 +1380,10 @@ def draw_fires(img, zb, scam, t):
 FINISH = dict(exposure=1.0, bloom_strength=0.08, bloom_threshold=0.9, streak_strength=0.0, vignette_amount=0.25)
 
 
-# natural motion blur on the people while they are large in frame (the close-up and the draw-back): three sub-frame
-# samples across a 180-degree shutter for every object whose bound spans > MB_PX source pixels; the small, far
-# figures take one sample (their blur would be under a pixel). The sub-frame scenes differ only in the figures.
-MB_T1 = 14.0                                     # seconds: after this the draw-back has made every figure small
+# natural motion blur on the people while they walk and are still large in frame (from T_GO until the draw-back has
+# made them small): three sub-frame samples across a 180-degree shutter for every object whose bound spans > MB_PX
+# source pixels; small, far figures take one sample (their blur would be under a pixel). Standing figures need none.
+MB_T1 = 19.5                                     # seconds: after this every walking figure is small
 MB_PX = 36.0
 MB_DT = (-1.0 / 72.0, 0.0, 1.0 / 72.0)           # centres of three thirds of a 1/48 s shutter (s)
 
@@ -1330,7 +1398,7 @@ def _near_objects(Ob, C):
 
 
 def render_figures(fr, scam, C, t, cfg, Pr, Ob, LT, moon, amb, fogp):
-    near = _near_objects(Ob, C) if t < MB_T1 else np.zeros(0, np.int64)
+    near = _near_objects(Ob, C) if T_GO <= t < MB_T1 else np.zeros(0, np.int64)
     if len(near) == 0:
         SP.render(fr.img, fr.zb, C, Pr, Ob, LT, moon, amb, fogp, scam.pos[1])
         return
