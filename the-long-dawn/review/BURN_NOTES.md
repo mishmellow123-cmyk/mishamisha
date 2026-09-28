@@ -12,6 +12,12 @@
   resubmit; the morning session moves it to GPU nodes (noted in HANDOVER.md). When the plates land: check 1:1, launch
   the finals (--nodes 3 --detach, lane-launched row), then `ftburn shot` x3 into renders/book_C_ft, strips, commit,
   push, "BURN ROLLOUT DONE", stand down.
+* 09:12 the plate TEST landed (09:11, GPU ldf-g03, 3.06 s/frame): checked 1:1 at 900/1700/1930/1985: the burn and its
+  smoke are off, the fire's and the glow's light kept, the rest within render noise (mean |diff| 1.6-2.4/255 away from
+  the burn); matte 1 everywhere. FINALS LAUNCHED by the lane: request 0928-091213-pagesbookplate-44915 (--nodes 3,
+  log ~/.cache/ldfarm/req/0928-091213-pagesbookplate-44915.log), row added to LAUNCHED_BY_MAIN.md. Watcher armed.
+  NEXT when they land: `ftburn shot --shot c5|sweep|eye --out ../../renders/book_C_ft --preview <scratch>` (each via
+  RENDERQ_SLOTS=2 renderq), a 24-frame strip each, commit, push, "BURN ROLLOUT DONE", stand down.
 * ROLLOUT CODE READY (ftburn.py `shot --shot c5|sweep|eye [--frames] --out renders/book_C_ft [--preview DIR]`):
   - c5: as adopted (leaf geometry, real time from the clip's birth at 841, tongues);
   - sweep: Pexels 8828892 in screen space, flipped (its burn climbs from the lower left -> falls from the upper left),
