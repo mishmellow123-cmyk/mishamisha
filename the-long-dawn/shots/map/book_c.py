@@ -39,6 +39,7 @@ import book as B  # noqa: E402
 import burn as BURN  # noqa: E402
 import redbook as RB  # noqa: E402
 import smoke as SMK  # noqa: E402
+import inkline as IL  # noqa: E402
 from pen import INK, Strokes  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
@@ -419,6 +420,13 @@ class Book3:
             return mt, RB.Page(R, 110), fl.pack()
         return self.once('mountain', mk)
 
+    def ink_line(self, key, f, ppc):
+        """PAGES-C: C's ink line `key` written into a page texture at frame f (inkline.py), or None."""
+        il = self.once(('inkline', key, ppc), lambda: IL.InkLine(key, ppc))
+        if not il.active(f):
+            return None
+        return lambda chan: il.apply(chan, f)
+
     # ---- the shots
     def frame(self, f):
         for name, (a, b) in SHOTS.items():
@@ -499,7 +507,7 @@ class Book3:
         TR = 1.4 + (2.8 - 1.4) * land
         bk = self.book(TL, TR)
         tText = self.tex_text(41)
-        tM = pM.texture(t)
+        tM = pM.texture(t, extra=self.ink_line('T1', f, pM.ppc))
         # its letters kindle faintly in the drawn fire, and fade
         g = 0.45 * ramp(t, 1.9, 2.4) * (1.0 - ramp(t, 3.4, 4.6)) * (1 + 0.2 * math.sin(t * 23))
         if g > 0.005:
@@ -592,7 +600,7 @@ class Book3:
             # PAGES-C: burn edge v2 (torn at birth, char, lip, beaded embers, flecks) and the paper's smoke
             post = BURN.v2(BURN.hold_params((Fu, Fv), K.T_BURN, 6.6, 1.2, amp=0.42, freq=0.35, seed=4, brown=2.8,
                                             char=0.34, edge=0.04, lead=1.5), creep=0.12)
-            smk = (post, 'radial', (0.30, 0.19, 0.12), 0.45, 1.0, 0.45)
+            smk = (post, 'radial', (0.15, 0.1, 0.07), 0.22, 0.8, 0.35)
         return self.finish_layer(bk, cam, L, tL, tR, t, fire=fire, xl=xl, leaf=leaf, post=post, texS=tBack, st=0.06,
                                  fire_k=(1.0 if t > K.T_GLOW - 0.1 else 0.0), smoke=smk)
 
@@ -687,13 +695,13 @@ class Book3:
             # PAGES-C: a ragged diagonal front with its char and embers, a little slower, trailing smoke
             post = BURN.v2(BURN.sweep_params((0.28, 0.96), 0.0, 1.55, span=(-2.0, 16.0), seed=31, brown=1.4,
                                              char=0.26, edge=0.035))
-            smk = (post, 'sweep', (0.26, 0.2, 0.15), 0.35, 1.0, 0.0)
+            smk = (post, 'sweep', (0.2, 0.15, 0.11), 0.22, 0.8, 0.0)
         else:
             # the paper browns and smokes round the glow; on bar 25 b1 the glow burns through (into the storm)
             Gu, Gv = float(gw[0]), float(0.5 * bk.PH - gw[1] - 0.25)
             post = BURN.v2(BURN.params((Gu, Gv), t_start=10.0, speed=3.2, p=1.9, amp=0.45, freq=0.35, seed=9, brown=3.6,
                                        char=0.3, edge=0.035, lead=3.0))
-            smk = (post, 'radial', (0.3, 0.2, 0.14), 0.42, 1.0, 0.7) if t > 7.0 else None
+            smk = (post, 'radial', (0.22, 0.15, 0.1), 0.24, 0.8, 0.6) if t > 7.0 else None
         return self.finish_layer(bk, cam, L, tL, tDp, t, xl=xl, post=post, texS=tL, st=0.04, smoke=smk)
 
     def cam_deep(self, bk, dp, t):
@@ -881,13 +889,20 @@ class Book3:
                 leaf = (phi, ep.tex_plenty_done, hvt)
             else:
                 tL = hvt if t < self.TURNS[1][0] + self.TURNS[1][1] else ep.tex_blank
+                fA = int(round(t * FPS)) + SHOTS['last_pages'][0]
+                wr = self.ink_line('T14', fA, 100)
+                if wr is not None and tL is ep.tex_blank:
+                    tL = self.once('t14_page', lambda: RB.Page(Strokes(), 100)).texture(1e9, extra=wr)
                 if k in (1, 2):
                     leaf = (phi, ep.tex_blank, ep.tex_blank)
                 if tL is hvt:
+                    # (PAGES-C: dimmed as the blank leaf comes over them; they lit its underside in hot spots)
+                    cov_ = (1.0 - phi) ** 2 if k == 1 else 1.0
                     for i, (fx, fy, hh) in enumerate(ep.hv.fires):
                         if g[i] > 0.01:
                             wp = bk.page_to_world('L', np.array([fx]), np.array([fy - 0.3]))[0]
-                            xl.append([wp[0], wp[1], wp[2] + 0.6, 0.35 * g[i], 0.12 * g[i], 0.03 * g[i]])
+                            xl.append([wp[0], wp[1], wp[2] + 0.6, 0.35 * g[i] * cov_, 0.12 * g[i] * cov_,
+                                       0.03 * g[i] * cov_])
         # C28: the title burns onto the blank recto
         a0 = SHOTS['last_pages'][0]
         tb = None
@@ -920,7 +935,7 @@ class Book3:
         # as the stern light answers), on one smooth path between the turns
         hv1 = bk.page_to_world('L', np.array([10.0]), np.array([9.4]))[0]
         hv2 = bk.page_to_world('L', np.array([9.6]), np.array([9.9]))[0]
-        hv3 = bk.page_to_world('L', np.array([8.4]), np.array([12.6]))[0]
+        hv3 = bk.page_to_world('L', np.array([7.6]), np.array([14.2]))[0]
         hv4 = bk.page_to_world('L', np.array([9.0]), np.array([12.0]))[0]
         if t < self.PULL[1]:
             # the pull-back: from straight above the plate (C24's last frame, exactly) to the red book on its table
@@ -944,7 +959,7 @@ class Book3:
             return cam
         if 12.2 <= t <= 22.8:
             keys_t = [(12.2, hv1 + [0.3, 0, 0]), (16.8, hv2), (19.4, hv3), (22.8, hv4)]
-            keys_o = [(12.2, (0.8, -24.0, 22.5)), (16.8, (0.6, -23.0, 21.5)), (19.4, (0.2, -26.5, 25.0)),
+            keys_o = [(12.2, (0.8, -24.0, 22.5)), (16.8, (0.6, -23.0, 21.5)), (19.4, (0.2, -23.5, 22.0)),
                       (22.8, (0.4, -28.5, 27.0))]
             tgt = RB.catrom(keys_t, t)
             cam = B.Cam(tgt + RB.catrom(keys_o, t), tgt, 38.0, self.W, self.H)

@@ -322,10 +322,20 @@ class Mountain:
                   base + [lean + sgn * 0.12, -1.0 * hgt]]
             R_ = [base + [lean + sgn * 0.12, -1.0 * hgt], base + [wdt * 0.25 + lean * 0.6 + sgn * 0.08, -0.6 * hgt],
                   base + [wdt * 1.05 + lean * 0.2, -0.28 * hgt], base + [wdt, 0]]
-            line(S, np.array(L_), W(0.016), self.seed + 40 + m, dens=dens, layer=lay, lift=(4, 6), smooth=10,
+            line(S, np.array(L_), W(0.02), self.seed + 40 + m, dens=dens, layer=lay, lift=(4, 6), smooth=10,
                  taper=(0.05, 0.25))
-            line(S, np.array(R_), W(0.014), self.seed + 45 + m, dens=dens, layer=lay, lift=(4, 6), smooth=10,
+            line(S, np.array(R_), W(0.017), self.seed + 45 + m, dens=dens, layer=lay, lift=(4, 6), smooth=10,
                  taper=(0.2, 0.05))
+            if not pencil:
+                # PAGES-C: a tongue within the tongue, as an engraver draws fire (the outlines alone read as hair)
+                I_ = [base + [-wdt * 0.45, -0.04 * hgt], base + [-wdt * 0.55 + lean * 0.25, -0.34 * hgt],
+                      base + [-wdt * 0.1 + lean * 0.5 + sgn * 0.03, -0.58 * hgt], base + [lean * 0.8 + sgn * 0.07, -0.8 * hgt]]
+                line(S, np.array(I_), W(0.011), self.seed + 50 + m, dens=dens * 0.9, layer=lay, lift=(4, 6), smooth=10,
+                     taper=(0.1, 0.4))
+                J_ = [base + [wdt * 0.5, -0.03 * hgt], base + [wdt * 0.55 + lean * 0.3, -0.3 * hgt],
+                      base + [wdt * 0.15 + lean * 0.55 - sgn * 0.03, -0.5 * hgt]]
+                line(S, np.array(J_), W(0.009), self.seed + 55 + m, dens=dens * 0.85, layer=lay, lift=(4, 6), smooth=10,
+                     taper=(0.1, 0.4))
         if not pencil:
             for m in range(9):
                 ex = fx + rng.normal(0, 0.55)
@@ -350,16 +360,17 @@ class Mountain:
 
         # the ring: gold leaf, outlined in fine ink
         k = len(S)
-        a = np.linspace(0, 2 * np.pi, 90)
-        rx, ry = 0.17, 0.13
+        a = np.linspace(0, 2 * np.pi, 120)
+        rx, ry = 0.25, 0.185                        # PAGES-C: bigger and bolder (it read as a 20 px outline)
         ringp = np.column_stack([fx + rx * np.cos(a), fy + ry * np.sin(a)])
         if pencil:
             pp, rr, dd = hand(ringp, 0.014, self.seed + 60, slow=(1.0, 0.004), dens=0.5, thin_end=0.8,
                               taper=(0.0, 0.0))
             S.add(pp, rr, dd, layer=lay)
         else:
-            S.add(ringp, np.full(len(ringp), 0.03), np.full(len(ringp), 1.0), layer=GILT)
-            for sc in (1.0 + 0.03 / 0.15 * 1.25, 1.0 - 0.03 / 0.15 * 1.25):
+            # the band: gold leaf, a little heavier on the near side as a ring seen from above is
+            S.add(ringp, 0.042 + 0.012 * np.clip(np.sin(a), 0, 1), np.full(len(ringp), 1.0), layer=GILT)
+            for sc in (1.22, 0.76):
                 q = np.column_stack([fx + rx * sc * np.cos(a), fy + ry * sc * np.sin(a)])
                 pp, rr, dd = hand(q, 0.006, self.seed + 61, slow=(1.0, 0.002), dens=0.8, thin_end=0.9,
                                   taper=(0, 0), fast=(0.2, 0.0008))
@@ -1492,7 +1503,8 @@ class Havens:
         bx0, by0, bx1, by1 = self.box
         self.Yh = by0 + 6.2                       # horizon
         self.ship = (bx0 + 7.2, self.Yh + 2.3)    # the ship's keel centre at rest (page cm)
-        self.roundel = (bx0 + 2.3, by1 + 3.2, 1.85)   # below the plate, in the page's lower left
+        self.roundel = (bx0 + 2.7, by1 + 3.35, 2.5)   # below the plate, in the page's lower left (PAGES-C: 1.85 ->
+                                                       # 2.5: at 1.85 her bound hand read as a fist with a ball)
         rng = np.random.default_rng(seed)
         # the coast: headlands on the right (east), the haven among them; fires on the heights
         self.fires = []

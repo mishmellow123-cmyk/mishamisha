@@ -695,8 +695,8 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     ag *= 1.0 - 0.3 * wet * d
                     ab *= 1.0 - 0.3 * wet * d
                 # gold leaf: crinkled, burnished metal whose facets catch the hearth (PAGES-C: a deeper crinkle at
-                # three scales so some facet always glints as the fire breathes and the camera moves; ink drawn over
-                # the gold covers it)
+                # three scales so some facet always glints as the fire breathes and the camera moves; the gold lies
+                # over the ink, as the initial's letter and the Deep's seam are laid)
                 if gilt > 0.0:
                     cr = gnoise(u * 40.0, v * 40.0, 91) + 0.6 * gnoise(u * 110.0, v * 110.0, 93) + \
                         0.35 * gnoise(u * 260.0, v * 260.0, 99)
@@ -708,7 +708,7 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     nx /= nn
                     ny /= nn
                     nz /= nn
-                    metal = gilt * (1.0 - k)
+                    metal = gilt
                     rough = rough * (1 - gilt) + 0.3 * gilt
                 # burn fields: browning, char, the hole, the glowing edge
                 bf = burnR if (m == M_PAGE_R or m == M_LEAF_F) else burnL

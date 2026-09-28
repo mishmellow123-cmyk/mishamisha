@@ -119,7 +119,8 @@ class Page:
         self.ppc = ppc
         self.tex = B.PageTex(PG.PW, PG.PH, ppc)
 
-    def texture(self, t, gains=None):
+    def texture(self, t, gains=None, extra=None):
+        """extra(chan): a last write into the channels before the pyramid is built (PAGES-C: C's ink lines)."""
         tx = self.tex
         tx.chan[:] = 0
         pk = self.pk
@@ -140,6 +141,8 @@ class Page:
             tx.chan[..., 4] = C
             C, _ = pen.raster(pk, 1e9, ppc, H, W, INK, gain=gains[2])
             tx.chan[..., 5] = np.clip(C, 0, 1)
+        if extra is not None:
+            extra(tx.chan)
         return tx.build()
 
 
@@ -298,7 +301,19 @@ def leaves_last(seed=5):
     rubricate(R, recs[15]['base'], boxR[0] + 2.72 + 5.2)
     initial(R, boxR[0] + 0.02, 2.9 + 0.62 * 14.45, 2.5, seed + 50, glyph='lp')   # 'wc' read as a tick in a box
     yl = recs[-1]['base']
-    sketch_ship(R, 10.1, yl + 2.6, 0.75, seed + 300)
+    # PAGES-C: the tale ends with the Havens' own swan-ship at the plates' line weight (the director's "230 ship
+    # doodle": sketch_ship read as a child's drawing), riding a low sea; she is the ship we meet again at the Havens
+    hv = PG.Havens()
+    hv.ship = (10.5, yl + 4.15)
+    shp, _ = hv.ship_strokes(0.0)
+    R.extend(shp)
+    rng_s = np.random.default_rng(seed + 301)
+    for m in range(4):
+        yy = yl + 4.35 + 0.16 * m
+        x0_, x1_ = 7.6 + 0.35 * m + rng_s.uniform(-0.1, 0.1), 13.4 - 0.4 * m + rng_s.uniform(-0.1, 0.1)
+        xs_ = np.linspace(x0_, x1_, 9)
+        wv = np.column_stack([xs_, yy + 0.035 * np.sin(xs_ * 4.1 + m * 1.7)])
+        line(R, catmull(wv, 6), 0.009 - 0.0012 * m, seed + 310 + m, lift=(3, 5))
     # the tale's closing mark: a small flourish under the last line
     fl = catmull([(8.6, yl + 0.55), (9.5, yl + 0.42), (10.2, yl + 0.62), (10.9, yl + 0.45), (11.6, yl + 0.55)], 8)
     line(R, fl, 0.014, seed + 400, lift=(8, 9))

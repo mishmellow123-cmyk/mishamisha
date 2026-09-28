@@ -83,7 +83,7 @@ def _puffs(bf, mode, t, M, PH, P, ck, pre_r, out):
             out[k, n, 0] = wx + 0.55 * age + A * q1
             out[k, n, 1] = wy + 0.25 * age + A * q2
             out[k, n, 2] = z0 + 0.05 + 0.9 * age + 1.1 * age * age
-            out[k, n, 3] = 0.035 + 0.24 * age
+            out[k, n, 3] = 0.03 + 0.13 * age
             fl = 0.55 + 0.45 * (0.5 + gnoise(k * 0.37, tau * 3.0, 435))
             out[k, n, 4] = strength * fl * (1.0 - math.exp(-age / 0.12)) * math.exp(-age / 1.1)
 
