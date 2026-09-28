@@ -5,12 +5,15 @@
 frame fresh; C22 5360-5519 untouched). Verified: 6160 == runC_illum f_02877 (mean diff 0.27/255); C9's matte open by
 1991; the fade reaches black at 7199. Map X1s: renders/x1_map_C{,_matte,_cover} 4150-4185 and x1_map_C71{...}
 5594-5640 (x1burn.py, v2; EDIT kind `burn` live, 25e39dc).
-**In flight:** `pages_book_polish` (cloud/jobs/pages_book_polish.json, 1425 frames: 80-331, 360-594, 760-850,
-1680-1991, 6160-6434, 6741-7000) for the director's notes: T14 1.5x off the gutter; the initial richer (penwork curls,
-frame lines, a gilt border stem with ivy/berries/bezants, a bolder gold letter); gold as hammered leaf (few large
-facets, gnoise 4.5 + 11 cycles/cm, rough 0.24); the ~800 orange blob (the page's fire lights held 11 mm up and
-softened, EMBERS-C4's find); the Deep's smoke thinned away before 1992. Check stills: renders/_farmtest/pages_polish.
-Then JOB READY -> main launches -> verify the spans landed.
+**JOB READY SENT (22:50 local): `pages_book_polish`** (cloud/jobs/pages_book_polish.json, 1425 frames: 80-331,
+360-594, 760-850, 1680-1991, 6160-6434, 6741-7000; code at the tip after 'PAGES-C polish 2'). The director's notes:
+T14 1.5x off the gutter; the initial re-illuminated (a burnished gold ground with an ink diaper and vermilion bezants,
+the vermilion letter filling it, penwork curls and frame lines, a gilt border stem with ivy down the margin;
+RB.Page ink_over_gilt); gold as hammered leaf (few large facets: gnoise 4.5 + 11 cycles/cm, rough 0.24); the Deep's
+seam one solid band; the ~800 orange blob (the page's fire lights held 11 mm up and softened, EMBERS-C4's find);
+the Deep's smoke thins away before 1992. Checked on 17 farm stills (deleted). ON LANDING: count the six spans in
+renders/book_C and _matte (1425 each, fresh), look at 118, 215, 520, 800-816, 1850, 1880, 6300, 6860; nothing
+else is pending in PAGES-C's area.
 **How it is built (for a successor):**
 * book.py = the engine (a numba ray-marched 2.5-D book; `shade_kernel` materials: paper(), ink, gilt, rubric, fire,
   burn v2 via `BURN.field2`). book_c.py = C's shots on C's timeline (`Book3.shot_*`, cameras `cam_*`), the post burn
