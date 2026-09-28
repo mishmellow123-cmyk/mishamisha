@@ -1,0 +1,5 @@
+# BURN-C: the footage stays local (re-download from LICENSES.md); only the licence file is tracked
+*.mp4
+*.mov
+*.npz
+_*
