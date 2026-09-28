@@ -1121,8 +1121,10 @@ class GoldRuns:
                 continue
             P, N, pl, fs, ndv = P[sel], N[sel], pl[sel], fs[sel], ndv[sel]
             z0 = np.zeros(len(pl), pl.dtype)
-            n1 = vnoise(np.stack([pl[:, 2] * 0.42, pl[:, 0] * 0.42, z0], 1), 1.0, (7.1, 0.0, 3.3), 2)[:, 0]
-            riv = smoothstep(0.15, 0.05, np.abs(n1))                   # broad rivulets (~1 unit), vertical
+            ins = GILD_ON and GILD_T0 <= t < GILD_T1                   # EMBERS-C4: THE GILDING insert, close up
+            fq = 0.95 if ins else 0.42
+            n1 = vnoise(np.stack([pl[:, 2] * fq, pl[:, 0] * fq, z0], 1), 1.0, (7.1, 0.0, 3.3), 2)[:, 0]
+            riv = smoothstep(0.12, 0.04, np.abs(n1)) if ins else smoothstep(0.15, 0.05, np.abs(n1))   # rivulets, vertical
             n2 = vnoise(np.stack([pl[:, 2] * 0.3, pl[:, 0] * 0.3, z0], 1), 1.0, (2.3, 5.0, 1.7), 1)[:, 0]
             v = 1.1 + 1.3 * smoothstep(-0.4, 0.4, n2)                  # each one's speed (units / frame)
             dtop = 66.0 - pl[:, 1]
@@ -1131,8 +1133,9 @@ class GoldRuns:
             head = np.exp(-(d / 0.8) ** 2) * fresh
             # A-FIX: no even gold skin (on the crust's point discs it read as glitter, so every tower looked gold
             # already); the gold is the RUNS: longer, brighter trails with dark wall between them
-            Lg = GOLD_GAIN * g * fs ** 0.6 * (0.008 + riv * (0.16 + 3.2 * trail * math.exp(-age / 22.0)))
-            Lh = GOLD_GAIN * g * fs ** 0.6 * riv * head * 6.0
+            gg = 0.95 if ins else GOLD_GAIN                            # (close up: molten gold, never blown white)
+            Lg = gg * g * fs ** 0.6 * (0.008 + riv * (0.16 + 3.2 * trail * math.exp(-age / 22.0)))
+            Lh = gg * g * fs ** 0.6 * riv * head * (3.0 if ins else 6.0)
             if i in A.GIANTS:
                 k = 1.0 - smoothstep(6.0, 12.0, P[:, 1])
                 Lg, Lh = Lg * k, Lh * k
@@ -1144,7 +1147,7 @@ class GoldRuns:
             m = E > 1e-7
             if not m.any():
                 continue
-            rw = np.sqrt(a / np.pi) * 1.1
+            rw = np.sqrt(a / np.pi) * (1.7 if ins else 1.1)            # (close up: the discs merge into a flow)
             ctx.fr.splat(pt['P0'][sel][m], pt['P1'][sel][m], rw[m], E[m], colE[m] / E[m][:, None], ctx.cam0, ctx.cam1,
                          zref=0.0, myid=i, profile=1)
 

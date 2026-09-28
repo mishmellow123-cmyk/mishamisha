@@ -103,6 +103,11 @@ def render_frame(f, scale=1.0, outdir=None, save=True, verbose=True):
     sc.emit(ctx)
     hdr = fr.resolve()
     hdr = sc.post(ctx, hdr)
+    import variant
+    if variant.CUT == 'A3' and os.environ.get('LD_GILD', '0') == '1' and 1860 <= f < 1920:
+        # EMBERS-C4: THE GILDING insert: a graduated filter keeps the lower third (T7's caption) in soot
+        yy = np.linspace(0.0, 1.0, hdr.shape[0], dtype=np.float32)[:, None, None]
+        hdr = hdr * (1.0 - 0.72 * np.clip((yy - 0.5) / 0.4, 0.0, 1.0) ** 1.3)
     if not np.isfinite(hdr).all():
         print(f'warning: non-finite values in frame {f}', flush=True)
         hdr = np.nan_to_num(hdr, nan=0.0, posinf=0.0, neginf=0.0)
