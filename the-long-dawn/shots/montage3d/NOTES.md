@@ -8,7 +8,14 @@ C-shaped steel read (a longer back, both bends clear the fist), grained + crease
 3009 flash: cold-white snow, warmth only in speculars/sparks; 3033-3060 warm knuckle rims + a stitch line; find_b
 cam_dists 0.20/0.165 -> 0.28/0.24). meltC (5360-5519) belongs to MONTAGE-MELT: never touch meltc.py or its jobs;
 kit/*.py, fireparts.py and render.py are shared with it, so they stay unchanged.
-**In progress:** glove leather v2 (joint creases, stitched points, knuckle burnish), the new steel, flint_a/flint_b.
+**Built + pushed (2baac88):** glove leather v2 (`glove.leather_material`: joint wrinkles, palm flexion creases, burnished
+knuckles, the three stitched points + side-seam dashes, a visible pebble grain); the long-backed C-steel (`STEEL_*`,
+`_steel_arm_top/_bot`, `S_REST`, `S_LIP`: back 8.6 cm, the C 11 x 8 cm); `_fire` restaged; `_flint` (flint_a/flint_b:
+basket, straw nest, char cloth ember, flint, both fists, sparks, flash, breath + smoke volumes, the catch's Bloom
+sprites `tflame`/`kflame`); find_a flash split (warm glossy-only + cool diffuse) and a light-linked glove rim; find_b
+cam_dists (0.28, 0.112, 0.24). Jobs: `ringC_look2.json` (5 lanes), `ringC_flint_a_1`, `ringC_flint_b_1..7`.
+**Running:** farm look-dev round 1 (21 frames) -> `renders/_farmtest/ringC_look2/ring_C/`. Local smoke test queued
+(`tests/m5_smoke_*`, delete after).
 
 ## >>> LAST-HOUR UPDATE (MONTAGE-3D-4, 27 Sep ~21:00Z): find_a APPROVED + LAUNCHED; find_b JOB READY sent <<<
 * **find_a (3000-3079): APPROVED by the director, launched by main** (`ringC_find_a_{1,2,3}`, --nodes 3, log

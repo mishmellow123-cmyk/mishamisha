@@ -1960,16 +1960,17 @@ def _fire(C, new_material, R, opts, T):
         return Matrix.Translation(grip(f)) @ Matrix.Rotation(dip(f), 4, 'Y')
 
     # ---- the steel and her right fist
-    heat = [(f, 0.9 * _ease((f - 3408) / 120.0) * (1.0 - 0.35 * _ease((f - draw_t) / 40.0))) for f in
+    heat = [(f, 0.5 * _ease((f - 3408) / 120.0) * (1.0 - 0.35 * _ease((f - draw_t) / 40.0))) for f in
             range(START - 2, END + 3)]
     stl = _steel_mesh(C, steel_material(new_material, heat))
     stl.rotation_mode = 'QUATERNION'
-    leather = GL.leather_material(new_material, base=opts.get('leather', (0.052, 0.032, 0.019)),
-                                  rough=opts.get('leather_rough', 0.44))
-    for nd in leather.node_tree.nodes:                 # in the fire: a restrained sheen (a wide one mirrors the flames
-        if nd.type == 'BSDF_PRINCIPLED':               # across the leather and reads as cream clay)
-            nd.inputs['Specular IOR Level'].default_value = opts.get('leather_spec', 0.40)
-            nd.inputs['Coat Weight'].default_value = opts.get('leather_coat', 0.10)
+    leather = GL.leather_material(new_material, base=opts.get('leather', (0.034, 0.022, 0.014)),
+                                  rough=opts.get('leather_rough', 0.38))
+    for nd in leather.node_tree.nodes:                 # in the fire: dark leather whose waxy sheen draws the forms (a lit
+        if nd.type == 'BSDF_PRINCIPLED':               # tan diffuse read as clay)
+            nd.inputs['Specular IOR Level'].default_value = opts.get('leather_spec', 0.50)
+            nd.inputs['Coat Weight'].default_value = opts.get('leather_coat', 0.25)
+            nd.inputs['Coat Roughness'].default_value = 0.26
     wool = GL.wool_material(new_material)
     GR = GL.Glove('rglove', leather, wool, mirror=False)
     GR.set_pose(GL.POSES['fist'])
@@ -2025,16 +2026,17 @@ def _fire(C, new_material, R, opts, T):
     az_ = -(Vector((0.0, 0.0, 1.0)) - ax_ * ax_.z).normalized()
     ay_ = az_.cross(ax_)
     Rl = Matrix((ax_, ay_, az_)).transposed().to_4x4()
-    cupped = GL.pose_mix(GL.POSES['cup'], GL.POSES['relaxed'], 0.55)
+    cupped = GL.pose_mix(GL.POSES['relaxed'], GL.POSES['fist'], opts.get('lcurl', 0.30))
+    cupped['spread'] = -2.0                                           # the fingers together, curled: a hand to catch
     mir = Matrix.Diagonal((1.0, -1.0, 1.0, 1.0))
     palm_loc = Vector(opts.get('lpalm', (0.050, 0.004, -0.022)))      # right-hand-frame point on the palm
     tip_d = S(drop0) @ Vector((s_lip, 0.0, _steel_arm_top(s_lip) - 2.0 * R_IN - THICK))
     catch = tip_d + Vector(opts.get('catch_off', (0.003, 0.006, -0.020)))
-    l_in = 3558
+    l_in = 3544
 
     def lplace(f):
-        u = _eout((f - l_in) / 16.0)
-        off = -ax_ * (0.22 * (1.0 - u)) + Vector((0.0, 0.0, -0.02 * (1.0 - u)))
+        u = _ease((f - l_in) / 30.0)                                  # in from off frame, arriving at rest by 3574
+        off = -ax_ * (0.42 * (1.0 - u)) + Vector((0.0, 0.0, -0.03 * (1.0 - u)))
         off += Vector((0.0, 0.0, -0.003 * _ease((f - drop1) / 3.0) * (1.0 - _ease((f - drop1 - 4) / 6.0))))
         return Matrix.Translation(catch + off) @ Rl @ Matrix.Translation(-(mir @ palm_loc))
 
@@ -2042,7 +2044,7 @@ def _fire(C, new_material, R, opts, T):
     for f in range(START - 2, END + 3):
         GLh.key_place(f, lplace(f))
         GLh.key(f, GL.pose_mix(cupped, GL.POSES['fist'], _ease((f - close0) / 11.0) ** 0.9))
-        _key_hide((GLh.mesh, GLh.sleeve), f, f < l_in - 4)
+        _key_hide((GLh.mesh, GLh.sleeve), f, f < l_in - 2)
     sc.frame_set(close0 + 11)
     pbl = GLh.rig.pose.bones
     holl = (pbl['m1'].head + pbl['m2'].head + pbl['m3'].head + pbl['m3'].tail) / 4.0
@@ -2111,29 +2113,32 @@ def _fire(C, new_material, R, opts, T):
         C.key(L1.data, 'energy', f, opts.get('tongue_w', 0.45) * k * _flick(f, 7, 1.2))
         C.key(L2.data, 'energy', f, 0.9 * k * _flick(f, 11, 0.8))
         C.key(L3.data, 'energy', f, opts.get('rim_w', 3.5) * k)
-        C.key(kd, 'energy', f, opts.get('key_w', 1.6) * k * _flick(f, 5, 0.9))
+        C.key(kd, 'energy', f, opts.get('key_w', 0.45) * k * _flick(f, 5, 0.9))
 
     # ---- flames: the film's own bonfire sprites on camera-facing additive cards, around and through the band. The
     # far fire is two dim, deep cards with smoke drifting across them (dark gaps, depth), not a wall
     cam_p = Vector(opts.get('cam', (0.006, -0.37, 0.012)))
     tgt = Vector(opts.get('tgt', (-0.012, 0.0, -0.006)))
     cam = _camera(cam_p, tgt, opts.get('lens', 80.0), opts.get('fstop', 9.0), focus=(cam_p - Vector((0, 0, 0))).length)
-    bg = opts.get('bg', [(0.07, 0.30, -0.12, 0.085, 3.0), (-0.09, 0.42, -0.14, 0.055, 7.0)])
+    bg = opts.get('bg', [(0.06, 0.26, -0.12, 0.14, 3.0), (-0.08, 0.36, -0.13, 0.10, 7.0)])
     cards = [('bgfire', (x, y, z), g_, sd) for (x, y, z, g_, sd) in bg]
-    cards += [('lick', (0.004, 0.018, -0.075), 0.95, None), ('lick2', (0.030, 0.030, -0.078), 0.85, None),
-              ('lick', (-0.020, 0.040, -0.080), 0.7, None), ('lick2', (0.058, 0.012, -0.076), 0.8, None),
-              ('lick2', (0.012, -0.020, -0.072), 0.40, None), ('lick', (-0.008, -0.012, -0.070), 0.32, None)]
+    lz = opts.get('lick_z', 0.016)                    # the tongues lick round the band, not below it
+    cards += [('lick', (0.004, 0.018, -0.075 + lz), 0.95, None), ('lick2', (0.030, 0.030, -0.078 + lz), 0.85, None),
+              ('lick', (-0.020, 0.040, -0.080 + lz), 0.7, None), ('lick2', (0.058, 0.012, -0.076 + lz), 0.8, None),
+              ('lick2', (0.012, -0.020, -0.072 + lz), 0.40, None), ('lick', (-0.008, -0.012, -0.070 + lz), 0.32, None),
+              ('lick2', (0.010, 0.060, -0.085 + lz), 0.75, None)]
     for i, (name, pos, gain, seed) in enumerate(cards):
         sp_ = T['sprites'][name]
         fc = FK.flame_card(f'{name}{i}', Vector(pos), sp_['card'], sp_['first'], cam, gain=gain, fog=False)
         _card_no_light(fc)
         if seed is not None:
-            _smoke_gate(fc, seed, amt=opts.get('smoke_amt', 0.8))
+            _smoke_gate(fc, seed, amt=opts.get('smoke_amt', 0.55))
         for nd in fc.data.materials[0].node_tree.nodes:
             if nd.type == 'EMISSION':
                 base = nd.inputs['Strength'].default_value
                 for f, v in gt:
-                    C.key_socket(nd.inputs['Strength'], f, base * v)
+                    surge = 1.0 + (1.3 * math.exp(-((f - roar_t - 6.0) / 7.0) ** 2) if seed is not None else 0.0)
+                    C.key_socket(nd.inputs['Strength'], f, base * v * surge)
     # rising sparks off the roar, and a few later: short orange beads curving up through the frame
     import random
     rng = random.Random(5)
@@ -2150,9 +2155,9 @@ def _fire(C, new_material, R, opts, T):
     # the camera: locked on the band; a slow push while it lies in the fire; at the draw it pulls back and follows
     # the steel out to the left until both hands are in frame, in focus
     vdir = (tgt - cam_p).normalized()
-    tgt2 = catch + Vector(opts.get('tgt2_off', (-0.030, 0.0, 0.016)))
-    d2 = opts.get('cam2_dist', 0.56)
-    p2 = tgt2 - vdir * d2 + Vector((0.0, 0.0, opts.get('cam2_rise', 0.03)))
+    tgt2 = catch + Vector(opts.get('tgt2_off', (0.010, 0.0, 0.020)))
+    d2 = opts.get('cam2_dist', 0.80)
+    p2 = tgt2 - vdir * d2 + Vector((0.0, 0.0, opts.get('cam2_rise', 0.14)))
     for f in range(START - 2, END + 3):
         push = 0.10 * _ease((f - 3404) / 80.0)
         k2 = _ease((f - (draw_t - 4)) / 30.0)
