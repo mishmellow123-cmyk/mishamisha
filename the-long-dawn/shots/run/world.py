@@ -30,6 +30,7 @@ from mt.noise import fbm2, ridged2, gnoise2, smoothstep   # noqa: E402
 
 R_EARTH = 6.371e6
 CLOUD_Y = S1.CLOUD_Y
+CLOUD_RELIEF_MAX = 180.0                  # fixed geometry envelope; the opt-in is runtime P[3]
 MOON_DIR = S1.MOON_DIR.copy()
 NEAR_R = 250.0                           # the shepherd's summit patch (world-anchored at the origin)
 
@@ -376,6 +377,46 @@ def h_cloud(x, z, fp, t):
     return h
 
 
+@njit(fastmath=True, cache=True)
+def _cloud_lobes(x, z, fp, scale, seed):
+    """Rounded, world-fixed caps, smoothly joined into a field in [0, 1]."""
+    fade = smoothstep(scale * 0.5, scale * 0.18, fp)
+    if fade <= 0.0:
+        return 0.0
+    u, v = x / scale, z / scale
+    ix, iz = math.floor(u), math.floor(v)
+    remaining = 1.0
+    for j in range(-1, 2):
+        for i in range(-1, 2):
+            gx, gz = ix + i, iz + j
+            cx = gx + 0.2 + 0.6 * _hh(gx + seed, gz)
+            cz = gz + 0.2 + 0.6 * _hh(gx, gz + seed)
+            radius = 0.66 + 0.39 * _hh(gx + seed, gz - seed)
+            q = 1.0 - ((u - cx) ** 2 + (v - cz) ** 2) / (radius * radius)
+            if q > 0.0:
+                # q^2 has a rounded top and zero slope at the cap's edge. The
+                # product union avoids the creases from taking the tallest cap.
+                remaining *= 1.0 - q * q
+    # Centres lie in [cell+.2, cell+.8], radii <=1.05 cells: a cap beyond
+    # this 3x3 neighbourhood is at least 1.2 cells away and cannot contribute.
+    return min(1.0, max(0.0, 1.0 - remaining)) * fade
+
+
+@njit(fastmath=True, cache=True)
+def cloud_relief(x, z, fp, strength):
+    """Experimental A relief: positive geometry, capped at 180 m; strength 0 is off.
+
+    Each lobe field and its footprint fade are in [0,1]. Their amplitudes sum
+    to 180 m, and the runtime strength is clamped to [0,1]. No shading changes.
+    """
+    if strength <= 0.0:
+        return 0.0
+    broad = _cloud_lobes(x, z, fp, 360.0, 413)
+    middle = _cloud_lobes(0.8 * x + 0.6 * z, -0.6 * x + 0.8 * z, fp, 125.0, 827)
+    fine = _cloud_lobes(0.6 * x - 0.8 * z, 0.8 * x + 0.6 * z, fp, 45.0, 1291)
+    return min(CLOUD_RELIEF_MAX, max(0.0, (100.0 * broad + 55.0 * middle + 25.0 * fine) * min(strength, 1.0)))
+
+
 # ADDITIVE (v3, RUN-A2): cloud-sea holes. Rows with col 12 == -5 lower the cloud sea's top (metres) inside an
 # ellipse, so the terrain beneath shows. They are read only while they LEAD the table (a caller puts them first):
 # a table without them costs one comparison per call, and h_rock skips them (col 12 < -2.5).
@@ -413,9 +454,15 @@ def cloud_thin(x, z, CR):
 
 
 @njit(inline='always', fastmath=True)
-def h_cloud_cr(x, z, fp, t, CR):
-    """h_cloud with the table's leading hole rows applied (identical to h_cloud for any table without them)."""
+def h_cloud_cr(x, z, fp, t, CR, relief=0.0):
+    """Cloud top plus optional A relief, then the table's leading hole rows.
+
+    relief=0 retains the existing cloud top exactly. Production shots stay off;
+    the comparison driver supplies the per-frame opt-in through P[3].
+    """
     h = h_cloud(x, z, fp, t)
+    if relief > 0.0:
+        h += cloud_relief(x, z, fp, relief)
     if CR.shape[0] > 0 and CR[0, 12] < -4.5:
         h -= cloud_thin(x, z, CR)
     return h
@@ -475,7 +522,7 @@ def h_near(x, z, fp):
 
 @njit(fastmath=True, cache=True)
 def hfun(x, z, fp, P, CR):
-    """World height incl. Earth curvature relative to the camera (P[0], P[1]); P[2] = time (s)."""
+    """World height with curvature; P: camera x,z, time(s), optional A relief(0=off)."""
     dx = x - P[0]
     dz = z - P[1]
     curv = (dx * dx + dz * dz) / (2.0 * R_EARTH)
@@ -483,7 +530,8 @@ def hfun(x, z, fp, P, CR):
     hf = h_rock(x, z, fp, CR)
     if hf > h:
         h = hf
-    hc = h_cloud_cr(x, z, fp, P[2], CR)
+    relief = P[3] if P.shape[0] > 3 else 0.0
+    hc = h_cloud_cr(x, z, fp, P[2], CR, relief)
     if hc > h:
         h = hc
     return h - curv
@@ -587,6 +635,7 @@ def soft_shadow(P, CR, x, y, z, lx, ly, lz, t0, tmax, nsteps, k, fp):
 @njit(parallel=True, fastmath=True, cache=True)
 def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
     H, W = D.shape
+    relief = P[3] if P.shape[0] > 3 else 0.0
     mx, my, mz = Lk[0], Lk[1], Lk[2]
     Ik = Q[0]
     pix_ang = 1.0 / C[7]
@@ -626,7 +675,7 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
             curv = (ddx * ddx + ddz * ddz) / (2.0 * R_EARTH)
             hn = h_near(x, z, fp)
             hf = h_rock(x, z, fp, CR)
-            hc = h_cloud_cr(x, z, fp, P[2], CR)
+            hc = h_cloud_cr(x, z, fp, P[2], CR, relief)
             surf = 0
             if hf > hn:
                 surf = 1
@@ -642,8 +691,8 @@ def shade(C, D, P, CR, S, LT, Lk, Q, amb, fogp, out, zbuf, dist_out, PL):
                 hz = h_rock(x, z + e, fp, CR)
             else:
                 h0 = hc
-                hx = h_cloud_cr(x + e, z, fp, P[2], CR)
-                hz = h_cloud_cr(x, z + e, fp, P[2], CR)
+                hx = h_cloud_cr(x + e, z, fp, P[2], CR, relief)
+                hz = h_cloud_cr(x, z + e, fp, P[2], CR, relief)
             nx = -(hx - h0)
             ny = e
             nz = -(hz - h0)
@@ -889,6 +938,7 @@ def night_light():
 @njit(parallel=True, fastmath=True, cache=True)
 def cloud_glow(C, D, P, CR, UG, fogp, out):
     H, W = D.shape
+    relief = P[3] if P.shape[0] > 3 else 0.0
     for j in prange(H):
         for i in range(W):
             d = D[j, i]
@@ -918,7 +968,7 @@ def cloud_glow(C, D, P, CR, UG, fogp, out):
                 continue
             dist = d * math.sqrt(1.0 + sl * sl)
             fp = dist / C[7]
-            hc = h_cloud_cr(x, z, fp, P[2], CR)
+            hc = h_cloud_cr(x, z, fp, P[2], CR, relief)
             if hc < h_near(x, z, fp):
                 continue
             if hc < h_rock(x, z, fp, CR):
