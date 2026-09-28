@@ -532,6 +532,11 @@ def shade_claw(o, t, cam, W, H, Bm, Wp, A, R, ring_C):
     q = np.einsum('nji,nj->ni', R[J], P - A[J])
     Pr = A_REST[J] + np.einsum('nij,nj->ni', R_REST[J], q)
     sharp, soft, plate, cre = SC.anat_cracks(Pr, J, SK, A_REST, R_REST)
+    # EMBERS-C4: at this size anat_cracks' Worley bands are wide; narrow them, and break the big plates' seams into
+    # runs (closed cell outlines on the back of the hand read as drawn loops, not cracks in a crust)
+    brk = np.clip((snoise(Pr, 26.0, (4.1, 0.7, 2.6), 2) + 0.12) * 3.0, 0.0, 1.0)
+    sharp = np.maximum(cre, (sharp ** 2.6) * brk)
+    soft = soft * (0.45 + 0.55 * brk)
     fine = snoise(Pr, 95.0, (3.1, 7.7, 1.3), 3)
     # the crust's relief: a bump from rest-space noise, turned into the world with the bone
     e_ = 0.004
@@ -569,9 +574,9 @@ def shade_claw(o, t, cam, W, H, Bm, Wp, A, R, ring_C):
     # plates between stay charcoal
     crack = np.maximum(cre * (0.3 + 0.7 * hk), sharp * smoothstep(0.08, 0.6, hk))
     e_pore = pores * flick * (0.15 + 0.5 * hk) * 0.35
-    e_crack = crack * (0.22 + 3.0 * hk) * flick
+    e_crack = crack * (0.22 + 2.0 * hk) * flick
     e_soft = soft * hk * 0.22 * thin
-    T = np.clip(0.48 + 0.3 * hk + 0.06 * crack, 0.35, 0.82)
+    T = np.clip(0.48 + 0.3 * hk + 0.06 * crack, 0.35, 0.74)              # never white: orange at the blaze
     ecol = look.blackbody(T)
     col = col + ecol * (e_pore + e_crack + e_soft)[:, None]
     # ---- the Ring's gold leaking along the seams between the fingers (and the palm's crease)
