@@ -1566,7 +1566,7 @@
    "line": "In the old story, a Dark Lord forges the Ring in secret.",
    "f_in": 400,
    "f_out": 540,
-   "set": "ink",
+   "set": "in_picture",
    "locked": "In the old story, a Dark Lord forges the Ring in secret."
   },
   {
@@ -1662,7 +1662,7 @@
    "line": "The last pages were left for us.",
    "f_in": 6790,
    "f_out": 6930,
-   "set": "ink_page",
+   "set": "in_picture",
    "locked": "The last pages were left for us."
   },
   {
@@ -1676,24 +1676,65 @@
  ],
  "transitions": [
   {
+   "f0": 2314,
+   "f1": 2326,
+   "cut": 2320,
+   "kind": "dissolve",
+   "note": "#9 C10 the Mirror -> C11 the grasp: the fire in the ripples becomes the claw's embers"
+  },
+  {
+   "f0": 2836,
+   "f1": 2844,
+   "cut": 2840,
+   "kind": "dissolve",
+   "note": "#12 E13 the glint -> R13 the ink star, on the falling light"
+  },
+  {
+   "f0": 2998,
+   "f1": 3002,
+   "cut": 3000,
+   "kind": "dissolve",
+   "note": "#14 H1 flint (warm) -> find_a (cold blue)"
+  },
+  {
    "f0": 4150,
    "f1": 4186,
    "cut": 4160,
-   "kind": "x1",
+   "kind": "burn",
    "glow": "x1_map_C",
    "keep": "x1_map_C_matte",
-   "ready": false,
-   "note": "MAP-L2's X1: the ink run's seventh beacon (1130, 485) burns through onto the map (PAGES-C, 28 Sep)"
+   "cover": "x1_map_C_cover",
+   "note": "#17 the seventh beacon burns through onto the map (x1burn v2, one t_open 4152)"
   },
   {
    "f0": 5594,
    "f1": 5641,
    "cut": 5600,
-   "kind": "x1",
+   "kind": "burn",
    "glow": "x1_map_C71",
    "keep": "x1_map_C71_matte",
-   "ready": false,
-   "note": "MAP-L2's X1 for bar 71: the stone burns through onto the roads of fire (960, 402) (PAGES-C, 28 Sep)"
+   "cover": "x1_map_C71_cover",
+   "note": "#19 bar 70 the stone burns through onto bar 71 the roads of fire (one t_open 5597)"
+  },
+  {
+   "f0": 5672,
+   "f1": 5688,
+   "cut": 5680,
+   "kind": "dissolve",
+   "note": "#20 the map -> C24 the illumination, through the map's breath"
+  },
+  {
+   "f0": 3837,
+   "f1": 3843,
+   "cut": 3840,
+   "kind": "dissolve",
+   "note": "#16 (optional) C16 the reveal -> C17 the ink run: two parchment views of the range read as a jump cut on stills (EDIT-3)"
+  },
+  {
+   "f0": 6160,
+   "f1": 6224,
+   "kind": "finish_ramp",
+   "note": "#21 C25 opens pixel for pixel on C24 6159 (ink look) and takes the film look by 6224 (PAGES-C's pages_book re-render, 28 Sep)"
   }
  ],
  "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first"

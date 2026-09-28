@@ -8,14 +8,28 @@ C-shaped steel read (a longer back, both bends clear the fist), grained + crease
 3009 flash: cold-white snow, warmth only in speculars/sparks; 3033-3060 warm knuckle rims + a stitch line; find_b
 cam_dists 0.20/0.165 -> 0.28/0.24). meltC (5360-5519) belongs to MONTAGE-MELT: never touch meltc.py or its jobs;
 kit/*.py, fireparts.py and render.py are shared with it, so they stay unchanged.
-**Built + pushed (2baac88):** glove leather v2 (`glove.leather_material`: joint wrinkles, palm flexion creases, burnished
-knuckles, the three stitched points + side-seam dashes, a visible pebble grain); the long-backed C-steel (`STEEL_*`,
-`_steel_arm_top/_bot`, `S_REST`, `S_LIP`: back 8.6 cm, the C 11 x 8 cm); `_fire` restaged; `_flint` (flint_a/flint_b:
-basket, straw nest, char cloth ember, flint, both fists, sparks, flash, breath + smoke volumes, the catch's Bloom
-sprites `tflame`/`kflame`); find_a flash split (warm glossy-only + cool diffuse) and a light-linked glove rim; find_b
-cam_dists (0.28, 0.112, 0.24). Jobs: `ringC_look2.json` (5 lanes), `ringC_flint_a_1`, `ringC_flint_b_1..7`.
-**Running:** farm look-dev round 1 (21 frames) -> `renders/_farmtest/ringC_look2/ring_C/`. Local smoke test queued
-(`tests/m5_smoke_*`, delete after).
+**SAFE MODE (28 Sep 00:30Z):** no local Blender/renders at all; every test on the farm (`ringC_look2.json`, one lane
+per RING_SHOT; `--frames` must fall inside a lane's range, a single-shot job clips the list to its own range).
+**PRIORITY (coordinator):** C15 first (a SLATE in C's master), then C14, then the find polish. Hands must move
+naturally: check 24+ consecutive frames (farm --test of a RANGE, a filmstrip of every 2nd frame) before JOB READY.
+**C15 now = two shots:** `fire` 3360-3565 (roar, entrance, hang, tip, the draw begins) + `fire_catch` 3566-3599 (an
+insert looking down on her open left palm, find_b's rig: the steel's tip tips the band in, the fingers close).
+Round 2 verdict: roar/entrance/hang PASS (flames with dark depth, the C's upper bend reads, dark waxy leather); the
+in-shot catch FAILED twice (the band lost in the dark, a claw-like curled hand, cheesy coal bed) -> the insert.
+Jobs re-cut: `ringC_fire_1..7` = 3360-3565, `ringC_fire_8` = fire_catch 3566-3599.
+**Glove v2 (glove.py):** fingers slimmed ~16 % + tapered; leather v2 (joint wrinkles, flexion creases, burnished
+knuckles, stitched points, side-seam dashes, a visible grain). **C-steel:** back 8.6 cm (both bends clear the fist).
+**C14 redesign (round 1 FAILED: cage-like basket grid, unreadable fists, a pale-cube flint, straight rain sparks,
+wicker nest):** ash bed + cold cinders (no bars), a knapped flint nodule, an irregular fine-fibre nest, parabolic
+orange sparks, breath paths through frame, look-down cameras (22 deg strikes; 40 deg over the nest for the blow).
+**Running (28 Sep ~01:25Z):** C15 round 3 = motion ranges 3380-3405, 3476-3500, 3556-3599 (95 fr); C14 round 2 =
+2966-2999 + 9 flint_b stills. Both -> `renders/_farmtest/ringC_look2/`.
+**EDIT:** when finals land, C14 rows 2960-3000 and 3150-3360 and C15 3360-3600 read `renders/ring_C` (stem `ring`).
+**QUEUED after C15 + C14 (coordinator, A-FIX; spec `review/A_FIX_NOTES.md` item 6):** re-render DESERT (A ~3880) and
+KARST (A3815), 60 frames each on the farm GPU: (1) desert.py's step-back `back = 0.42 * ease((f - 1540.5) / 5)` slides
+her 0.42 m in 5 frames with planted feet (A3881-3885): keep her planted, lower the arm slowly instead; (2) the fire's
+ignition is a one-frame switch (fireparts.ignite_env): give it a soft catch over ~6-10 frames, LOCALLY in karst.py /
+desert.py (fireparts.py is shared with meltc.py: do not edit it). Motion check 24+ consecutive frames, then JOB READY.
 
 ## >>> LAST-HOUR UPDATE (MONTAGE-3D-4, 27 Sep ~21:00Z): find_a APPROVED + LAUNCHED; find_b JOB READY sent <<<
 * **find_a (3000-3079): APPROVED by the director, launched by main** (`ringC_find_a_{1,2,3}`, --nodes 3, log

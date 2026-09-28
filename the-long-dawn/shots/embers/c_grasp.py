@@ -531,7 +531,19 @@ def shade_claw(o, t, cam, W, H, Bm, Wp, A, R, ring_C):
     # rest-pose coordinates (the crust's pattern sticks to the skin)
     q = np.einsum('nji,nj->ni', R[J], P - A[J])
     Pr = A_REST[J] + np.einsum('nij,nj->ni', R_REST[J], q)
-    sharp, soft, plate, cre = SC.anat_cracks(Pr, J, SK, A_REST, R_REST)
+    # EMBERS-C4: the Voronoi seams are straight segments (they read as glowing scratches): wander them first
+    wv = np.stack([snoise(Pr, 38.0, (2.3, 5.1, 0.7), 2), snoise(Pr, 38.0, (7.4, 1.9, 3.3), 2),
+                   snoise(Pr, 38.0, (0.6, 8.8, 4.1), 2)], 1)
+    sharp, soft, plate, cre = SC.anat_cracks(Pr + 0.011 * wv, J, SK, A_REST, R_REST)
+    # EMBERS-C4: at this size anat_cracks' Worley bands are wide; narrow them, and break the big plates' seams into
+    # runs (closed cell outlines on the back of the hand read as drawn loops, not cracks in a crust)
+    brk = np.clip((snoise(Pr, 26.0, (4.1, 0.7, 2.6), 2) + 0.12) * 3.0, 0.0, 1.0)
+    sharp_w = (sharp ** 4.0) * brk                       # the crust's own fissures (their fire), thin
+    sharp = np.maximum(cre, sharp_w)                     # (the creases stay dark lines in the crust)
+    soft = soft * (0.45 + 0.55 * brk)
+    # the long creases (tendons, knuckle and palm lines) never carry the blaze: glowing, they read as wires or an
+    # X-ray; only a little broken fire sits in them
+    brk2 = np.clip((snoise(Pr, 40.0, (8.3, 2.2, 6.1), 2) + 0.05) * 2.5, 0.0, 1.0)
     fine = snoise(Pr, 95.0, (3.1, 7.7, 1.3), 3)
     # the crust's relief: a bump from rest-space noise, turned into the world with the bone
     e_ = 0.004
@@ -567,11 +579,11 @@ def shade_claw(o, t, cam, W, H, Bm, Wp, A, R, ring_C):
     thin = np.clip(1.4 - SK.RA[J] / 0.05, 0.3, 1.2)
     # the creases always hold a little fire (it is a claw of embers); the whole network opens as it fails; the
     # plates between stay charcoal
-    crack = np.maximum(cre * (0.3 + 0.7 * hk), sharp * smoothstep(0.08, 0.6, hk))
+    crack = np.maximum(cre * brk2 * (0.12 + 0.22 * hk), sharp_w * smoothstep(0.08, 0.6, hk))
     e_pore = pores * flick * (0.15 + 0.5 * hk) * 0.35
-    e_crack = crack * (0.22 + 3.0 * hk) * flick
+    e_crack = crack * (0.2 + 1.1 * hk) * flick
     e_soft = soft * hk * 0.22 * thin
-    T = np.clip(0.48 + 0.3 * hk + 0.06 * crack, 0.35, 0.82)
+    T = np.clip(0.44 + 0.22 * hk + 0.03 * crack, 0.35, 0.64)             # never white: deep orange at the blaze
     ecol = look.blackbody(T)
     col = col + ecol * (e_pore + e_crack + e_soft)[:, None]
     # ---- the Ring's gold leaking along the seams between the fingers (and the palm's crease)
@@ -644,6 +656,9 @@ class GraspSched(c3.C3Sched):
     """C's forges as the race left them, far below the Ring"""
     end = float(T_GRASP_END + 1)
     pulses = []
+
+    def ashlar_k(self, t):
+        return 1.0          # EMBERS-C4: ashlar stone, no lit window/seam grid (from above it reads as a city at night)
 
     def beat_pulse(self, t):
         return 0.0

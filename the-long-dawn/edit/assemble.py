@@ -517,7 +517,10 @@ def masters_table():
 ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master'),
                  # C (director, 28 Sep ~01:10Z): SOUND-C's sound_C.wav, every effect re-synced to the measured picture
                  # (music/sound/picture_sync_C.json); passes the battery
-                 'C': ('music/out/v3/sound_C.wav', 'SOUND master')}
+                 'C': ('music/out/v3/sound_C.wav', 'SOUND master'),
+                 # A (director, 28 Sep ~02:20Z): COMPOSER-A2's v2 score + SOUND-C's real effects re-synced to the
+                 # measured picture (incl. A-FIX's h1_A fire); sync 59/59. Re-renders are picked up by name.
+                 'A': ('music/out/v3/sound_A.wav', 'SOUND master')}
 
 
 def adopted_audio(cut):
@@ -632,7 +635,7 @@ def transition_at(cut, f):
 def transition_layers(t, f):
     """{'glow': path, 'keep': path} of a window's layer frames at f; None if one is missing (then: a hard cut)."""
     out = {}
-    for k in ('glow', 'keep'):
+    for k in ('glow', 'keep', 'cover'):
         if t.get(k):
             p = index(os.path.join(RENDERS, t[k])).get(f)
             if not p:
@@ -648,6 +651,9 @@ def _to_lin(x):
 def _to_srgb(x):
     x = np.maximum(x, 0)
     return np.where(x <= 0.0031308, x * 12.92, 1.055 * x ** (1 / 2.4) - 0.055)
+
+
+import afix_comp as AFIX  # noqa: E402  (lane A-FIX's transition kinds, dispatched by _transitions)
 
 
 def _transitions(ctx, finish=None):
@@ -667,20 +673,39 @@ def _transitions(ctx, finish=None):
 
     def side(g, f):
         img, shot, status, src = raw(g)
-        if src is None or status.startswith('SLATE'):
+        if status.startswith('SLATE'):
             return None, None
-        return (fin(img, src, ctx.cut, f) if fin else img), (shot, status, src)
+        return (fin(img, src, ctx.cut, f) if (fin and src is not None) else img), (shot, status, src)
 
     def pic(f):
         t = transition_at(ctx.cut, f)
         lay = transition_layers(t, f) if t else None
         if lay is None:
             return outer(f)
+        if t['kind'] == 'grade':                              # one shot: a per-channel gain before the finish
+            img, shot, status, src = raw(f)
+            if src is None or status.startswith('SLATE'):
+                return outer(f)
+            img = np.clip(img * np.asarray(t['gain'], np.float32), 0, 1)
+            return (fin(img, src, ctx.cut, f) if fin else img), shot, f'{status} + grade', src
+        if t['kind'] == 'finish_ramp':                        # one shot, no cut: ink look -> film look
+            img, shot, status, src = raw(f)
+            if fin is None or src is None or status.startswith('SLATE'):
+                return outer(f)
+            a = (f - t['f0']) / (t['f1'] - t['f0'])
+            a = a * a * (3 - 2 * a)
+            img = fin.ink(img, ctx.cut, f) * (1 - a) + fin.film(img, ctx.cut, f) * a
+            return np.clip(img, 0, 1).astype(np.float32), shot, f'{status} + finish_ramp', src
         (o, mo), (i, mi) = side(min(f, t['cut'] - 1), f), side(max(f, t['cut']), f)
         if o is None or i is None:
             return outer(f)
         shot, status, src = mo if f < t['cut'] else mi
-        if t['kind'] == 'x1':
+        if t['kind'] in AFIX.KINDS:                           # lane A-FIX's comps (edit/afix_comp.py)
+            img = AFIX.apply(t['kind'], o, i, f, t)
+        elif t['kind'] == 'burn':
+            img = (o * ctx.read(lay['keep']) + i * (1 - ctx.read(lay['cover'], gray=True)[..., None])
+                   + ctx.read(lay['glow']))
+        elif t['kind'] == 'x1':
             keep = ctx.read(lay['keep'], gray=True)[..., None]
             img = o * keep + i * (1 - keep) + ctx.read(lay['glow'])
         else:                                                 # dissolve

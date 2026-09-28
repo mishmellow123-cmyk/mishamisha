@@ -8,13 +8,16 @@ reads as lit glass between dark iron bars); cloth takes a per-object tint. No sh
 in the wides; in the close-up the light is inside the lantern, so the bars' silhouettes are what matter).
 
 Primitive row (NP floats):
-  0 type (0 round cone a->b | 1 rounded box | 2 glass box shell | 3 torus about +y | 4 bell: a hanging cloak)
+  0 type (0 round cone a->b | 1 rounded box | 2 glass box shell | 3 torus about +y | 4 bell: a hanging cloak
+    | 5 square pyramid: 1-3 base centre, 4 yaw, 7 rounding, 11 base half-size, 12 height)
   1-3 a | 4-6 b (box: 4 = yaw, 5 = pitch-about-right) | 7 ra (box: rounding) | 8 rb | 9 material
   10 blend k (smooth union with the object so far) | 11-13 box half extents (bell: the forward reference)
   14 torus major R (bell: fold depth at the hem) | 15 bell fold count | 16 bell fold phase
 Object row (NO floats): 0 first prim | 1 n prims | 2-4 bound centre | 5 bound radius | 6-8 cloth rgb
-  | 9 emission gain (glass) | 10-12 glass rgb | 13 depth bias (m)
+  | 9 emission gain (glass) | 10-12 glass rgb | 13 depth bias (m) | 14 horn panes (1: the glass glows as horn,
+  brightest before the flame) | 15 the flame's height above the bound centre (m)
 Materials: 0 cloth | 1 iron | 2 wood | 3 small-lantern glass (emissive) | 4 rope | 5 stone
+  | 6 rough rock, snow-dusted on top, dry and sooted toward the object's centre (a hearth ring)
 """
 import math
 
@@ -92,6 +95,21 @@ class Scene:
         r[19] = wind_ang
         R = max(ra, rb) + depth + 1.2 * abs(wind)
         self._add(r, [np.asarray(a) + R, np.asarray(a) - R, np.asarray(b) + R, np.asarray(b) - R])
+
+    def pyramid(self, c, half, height, yaw=0.0, rnd=0.0, mat=1, k=0.0):
+        """A square pyramid standing on its base centre c (a lantern's roof)."""
+        r = np.zeros(NP)
+        r[0] = 5
+        r[1:4] = c
+        r[4] = yaw
+        r[7] = rnd
+        r[9] = mat
+        r[10] = k
+        r[11] = half
+        r[12] = height
+        c = np.asarray(c, np.float64)
+        R = 1.5 * half + height
+        self._add(r, [c + R, c - R])
 
     def torus(self, c, R, r_, mat=1, k=0.0):
         r = np.zeros(NP)
@@ -232,6 +250,36 @@ def _sd_bell(px, py, pz, R):
 
 
 @njit(inline='always', fastmath=True)
+def _sd_pyr(px, py, pz, R):
+    """5: a square pyramid (base centre R[1:4] on its floor, yaw R[4], base half-size R[11], height R[12],
+    rounding R[7]); the exact SDF (after I. Quilez), scaled from a unit base."""
+    dx, dy, dz = px - R[1], py - R[2], pz - R[3]
+    cy, sy = math.cos(R[4]), math.sin(R[4])
+    sc = 2.0 * R[11]
+    lx = abs(dx * cy - dz * sy) / sc
+    lz = abs(dx * sy + dz * cy) / sc
+    ly = dy / sc
+    h = R[12] / sc
+    if lz > lx:
+        lx, lz = lz, lx
+    lx -= 0.5
+    lz -= 0.5
+    m2 = h * h + 0.25
+    qx = lz
+    qy = h * ly - 0.5 * lx
+    qz = h * lx + 0.5 * ly
+    s_ = max(-qx, 0.0)
+    t_ = min(max((qy - 0.5 * lz) / (m2 + 0.25), 0.0), 1.0)
+    a_ = m2 * (qx + s_) * (qx + s_) + qy * qy
+    b_ = m2 * (qx + 0.5 * t_) * (qx + 0.5 * t_) + (qy - m2 * t_) * (qy - m2 * t_)
+    d2 = 0.0 if min(qy, -qx * m2 - qy * 0.5) > 0.0 else min(a_, b_)
+    d = math.sqrt((d2 + qz * qz) / m2)
+    if max(qz, -ly) < 0.0:
+        d = -d
+    return d * sc - R[7]
+
+
+@njit(inline='always', fastmath=True)
 def _prim(px, py, pz, R):
     t = R[0]
     if t < 0.5:
@@ -240,7 +288,9 @@ def _prim(px, py, pz, R):
         return _sd_box(px, py, pz, R)
     if t < 3.5:
         return _sd_torus(px, py, pz, R)
-    return _sd_bell(px, py, pz, R)
+    if t < 4.5:
+        return _sd_bell(px, py, pz, R)
+    return _sd_pyr(px, py, pz, R)
 
 
 @njit(inline='always', fastmath=True)
@@ -275,6 +325,19 @@ def _glass(px, py, pz, P, i0, n):
             if dq < d:
                 d = dq
     return d
+
+
+@njit(inline='always', fastmath=True)
+def _horn(qx, qy, qz, hx, hy, hz):
+    """Horn panes (an object with O[14] = 1; O[15] = the heart's height above the bound centre): thin horn glows
+    brightest in front of the flame and dims toward the corners, with the soft, wavy growth bands of horn."""
+    dx, dy, dz = qx - hx, qy - hy, qz - hz
+    d2 = dx * dx + 1.4 * dy * dy + dz * dz
+    fall = 0.30 + 0.95 * math.exp(-d2 / (0.15 * 0.15))
+    wv = gnoise3(qx * 5.0, qy * 5.0, qz * 5.0, 21)
+    band = 0.80 + 0.20 * gnoise3(qx * 7.0, qy * 46.0 + 2.6 * wv, qz * 7.0, 22)
+    spot = 0.90 + 0.10 * gnoise3(qx * 30.0, qy * 30.0, qz * 30.0, 23)
+    return fall * band * spot
 
 
 @njit(parallel=True, fastmath=True, cache=True)
@@ -339,7 +402,10 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                     eps = max(0.35 * t / f, 0.0006)
                     if dg < eps:
                         if not ing:
-                            gl += 1.0
+                            if O[oi, 14] > 0.5:
+                                gl += _horn(qx, qy, qz, bcx, bcy + O[oi, 15], bcz)
+                            else:
+                                gl += 1.0
                             ing = True
                     elif dg > 3.0 * eps:
                         ing = False
@@ -423,9 +489,41 @@ def render(img, zb, C, P, O, LT, moon, amb, fogp, cam_y):
                     ar, ag, ab = 0.09, 0.075, 0.055
                     wrap = 0.4
                     spec = 0.0
-                else:
+                elif mat < 5.5:
                     ar, ag, ab = 0.075, 0.075, 0.08
                     wrap = 0.2
+                    spec = 0.0
+                else:
+                    # 6: rough, irregular rock, snow-dusted on its tops, dry and sooted on the side facing the
+                    # object's centre (a hearth ring: the bound centre is the fire)
+                    fsc = 1.0 / max(e * 5.0, 0.004)
+                    fk = min(fsc / 40.0, 1.0)
+                    b1 = gnoise3(qx * 23.0, qy * 23.0, qz * 23.0, 31)
+                    b2 = gnoise3(qx * 61.0 + 3.3, qy * 61.0, qz * 61.0 - 1.7, 32)
+                    b3 = gnoise3(qx * 9.0 - 5.1, qy * 9.0, qz * 9.0 + 2.9, 33)
+                    nx += fk * (0.55 * b1 + 0.30 * b2)
+                    ny += fk * (0.55 * gnoise3(qx * 23.0 + 9.1, qy * 23.0, qz * 23.0, 34) + 0.3 * b3)
+                    nz += fk * (0.55 * gnoise3(qx * 23.0, qy * 23.0 - 4.4, qz * 23.0 + 6.2, 35) + 0.30 * b2)
+                    nl2 = math.sqrt(nx * nx + ny * ny + nz * nz) + 1e-12
+                    nx /= nl2
+                    ny /= nl2
+                    nz /= nl2
+                    rk = 0.62 + 0.30 * b3 + 0.18 * b1
+                    ar, ag, ab = 0.085 * rk, 0.078 * rk, 0.070 * rk
+                    rxz = math.sqrt((qx - bcx) ** 2 + (qz - bcz) ** 2)
+                    dry = min(max((rxz - 0.40) / 0.22, 0.0), 1.0)
+                    if O[oi, 14] < -0.5:
+                        dry = 1.0                # a rock on its own (O[14] = -1): no hearth, no soot
+                    soot = 1.0 - 0.55 * (1.0 - dry)
+                    ar *= soot
+                    ag *= soot
+                    ab *= soot
+                    sn = min(max((ny + 0.22 * b1 + 0.15 * b2 - 0.35) / 0.30, 0.0), 1.0) * dry
+                    sn = sn * sn * (3.0 - 2.0 * sn)
+                    ar += (0.62 - ar) * sn
+                    ag += (0.66 - ag) * sn
+                    ab += (0.74 - ab) * sn
+                    wrap = 0.25
                     spec = 0.0
                 cr = ar * amb[0] * (0.6 + 0.4 * ny) * ao
                 cg = ag * amb[1] * (0.6 + 0.4 * ny) * ao
@@ -536,13 +634,19 @@ def _bell_wind_ang(a, b, w, wind_vec):
 def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(0.215, 0.34), folds=9,
               fold_depth=0.03, fold_phase=0.0, sway=0.0, pack=False, staff_tip=None, lantern_side=0.0,
               lantern_swing=0.0, carry=None, carry_side=1.0, peak=True, free_swing=0.0, reach=None,
-              wind=None, ell=None, flutter=0.0, cloth=True):
+              wind=None, ell=None, flutter=0.0, cloth=True, cape=None, hood_k=1.0, bedroll=False,
+              lantern_mode='hand', reach_len=0.62, leg_k=1.0):
     """v3 CLOTH (cloth=True, the default): the cloak is elliptical (a body is flatter front to back), hangs with
     creased folds, and takes the wind: `wind` = a world vector, the direction the wind blows toward, its length the
     hem's billow in metres (0.1-0.3); the hem centre streams to the lee, the lee side billows and its hem lifts and
     flutters (`flutter` = a phase that runs with time), the windward side presses onto the legs. The short cape is
     cloth too, and the hood has a front brim, so a profile reads as a deep cowl, not a ball on a cone.
-    cloth=False keeps the v2 figure exactly."""
+    cloth=False keeps the v2 figure exactly.
+    Cuts (RUN-A4; the defaults keep the figure exactly): cape = (drop below the chest, hem radius) in h units for a
+    longer, wider cape (default (0.07, 0.215)); hood_k scales the cowl; bedroll: a rolled blanket across the top of
+    the pack; lantern_mode 'hand' (hung at the side), 'raised' (held up forward at shoulder height) or 'staff'
+    (hung from the crook of a tall staff held in the lantern hand); reach_len: the reaching arm's length (h units);
+    leg_k: fuller trouser legs and boots (the close-up bearers: a thin shin under a cloak reads as a doll's)."""
     if not cloth:
         return _traveller_v2(sc, pel, w, ank_l, ank_r, rgb, h, lean, hem, cloak, folds, fold_depth, fold_phase, sway,
                              pack, staff_tip, lantern_side, lantern_swing, carry, carry_side, peak, free_swing, reach)
@@ -561,18 +665,21 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
     out = {}
     sc.begin(rgb=rgb)
     # legs (only the shins and boots show below the hem; the knees press the cloth where the stride opens it)
+    lk = leg_k
+    bk = 1.0 + 0.4 * (leg_k - 1.0)
     for side, ank in ((1.0, ank_l), (-1.0, ank_r)):
         hip = pel + s * side * 0.085 * h
         kn = _knee(hip, ank, 0.46 * h, 0.45 * h, w)
-        sc.cone(hip, kn, 0.074 * h, 0.058 * h, 0, 0.03)
-        sc.cone(kn, ank, 0.055 * h, 0.044 * h, 0, 0.02)
-        sc.box(ank + w * 0.045 * h - up * 0.035 * h, (0.052 * h, 0.048 * h, 0.13 * h),
-               yaw=math.atan2(w[0], w[2]), rnd=0.033 * h, mat=0, k=0.02)
+        sc.cone(hip, kn, 0.074 * h * lk, 0.058 * h * lk, 0, 0.03)
+        sc.cone(kn, ank, 0.055 * h * lk, 0.044 * h * lk, 0, 0.02)
+        sc.box(ank + w * 0.045 * h - up * 0.035 * h, (0.052 * h * bk, 0.048 * h * bk, 0.13 * h * bk),
+               yaw=math.atan2(w[0], w[2]), rnd=0.033 * h * bk, mat=0, k=0.02)
     # the cape over sloping shoulders: a short cloth bell, lightly folded, lifting a little in the wind
     cape_a = neck - up * 0.015 * h
-    cape_b = chest - up * 0.07 * h + wdir * 0.2 * wn
+    cd_, cr_ = (0.07, 0.215) if cape is None else cape
+    cape_b = chest - up * cd_ * h + wdir * 0.2 * wn
     ang, _ = _bell_wind_ang(cape_a, cape_b, w, wv)
-    sc.bell(cape_a, cape_b, 0.085 * h, 0.215 * h, w, 0.020 * h, 9, fold_phase * 0.7 + 0.9, 0, 0.05 * h,
+    sc.bell(cape_a, cape_b, 0.085 * h, cr_ * h, w, 0.020 * h, 9, fold_phase * 0.7 + 0.9, 0, 0.05 * h,
             ell=0.8 * el, wind=0.25 * wn, wind_ang=ang)
     # the cloak: from the chest to the hem, the hem centre streaming to the lee and swaying with the gait
     hem_c = np.array([pel[0], ground_y + hem * h, pel[2]]) - w * 0.04 * h + s * sway + wdir * 0.55 * wn
@@ -584,15 +691,20 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
         # a bundle on the back, under the cloak: it makes the hump
         sc.box(chest - w * 0.18 * h - up * 0.10 * h, (0.16 * h, 0.21 * h, 0.11 * h), yaw=math.atan2(w[0], w[2]),
                rnd=0.06 * h, mat=0, k=0.09 * h)
+        if bedroll:
+            # a rolled blanket strapped across the top of the pack, standing proud of the shoulders
+            br_c = chest - w * 0.19 * h + up * 0.13 * h
+            sc.cone(br_c + s * 0.23 * h, br_c - s * 0.23 * h, 0.075 * h, 0.075 * h, 0, 0.03 * h)
     # the hood: a cowl round the head, a front brim standing proud of the (unseen) face, a soft point at the back,
     # the cloth falling from it into the cape (no neck shows)
     # one deep cowl: longer front to back than a head, no brow or snout (a bump on the front reads as a face)
-    sc.cone(head - w * 0.04 * h + up * 0.004 * h, head + w * 0.035 * h + up * 0.014 * h, 0.110 * h, 0.106 * h, 0,
-            0.06 * h)
-    sc.cone(head - up * 0.05 * h - w * 0.02 * h, chest + up * 0.03 * h - w * 0.03 * h, 0.10 * h, 0.17 * h, 0,
+    hk = hood_k
+    sc.cone(head - w * 0.04 * h + up * 0.004 * h, head + w * 0.035 * h * hk + up * 0.014 * h, 0.110 * h * hk,
+            0.106 * h * hk, 0, 0.06 * h)
+    sc.cone(head - up * 0.05 * h - w * 0.02 * h, chest + up * 0.03 * h - w * 0.03 * h, 0.10 * h * hk, 0.17 * h, 0,
             0.07 * h)
     if peak:
-        tip = head - w * 0.16 * h + up * 0.005 * h + wdir * 0.25 * wn
+        tip = head - w * 0.16 * h * hk + up * 0.005 * h + wdir * 0.25 * wn
         sc.cone(head - w * 0.05 * h + up * 0.05 * h, tip, 0.07 * h, 0.028 * h, 0, 0.05 * h)
     # arms: loose sleeves, gloved hands
     shL = chest + up * 0.02 * h + s * 0.19 * h
@@ -615,9 +727,25 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
         if lantern_side != 0.0:
             sl = -s if lantern_side > 0 else s
             shA, shB = (shR, shL) if lantern_side > 0 else (shL, shR)
-            hand_l = shA + (w * (0.16 + 0.5 * sw) - up * 0.50 + sl * 0.07) * h
-            arm(shA, hand_l, sl)
-            out['lantern'] = hand_l - up * 0.21 * h + w * lantern_swing + wdir * 0.12 * wn
+            if lantern_mode == 'raised':
+                # held up and forward at the shoulder, lighting the way
+                hand_l = shA + (w * (0.40 + 0.2 * sw) - up * 0.04 + sl * 0.10) * h
+                arm(shA, hand_l, sl)
+                out['lantern'] = hand_l - up * 0.05 * h + w * lantern_swing + wdir * 0.06 * wn
+            elif lantern_mode == 'staff':
+                # a tall staff in the lantern hand, the lantern hung from a short crook at its top
+                hand_l = shA + (w * (0.20 + 0.3 * sw) - up * 0.26 + sl * 0.11) * h
+                arm(shA, hand_l, sl)
+                foot = np.array([hand_l[0], ground_y + 0.02, hand_l[2]]) + w * 0.08 * h
+                stop = hand_l + (hand_l - foot) / max(float(np.linalg.norm(hand_l - foot)), 1e-6) * 0.80 * h
+                crook = stop + w * 0.13 * h + up * 0.01 * h
+                sc.cone(foot, stop, 0.016, 0.014, 2, 0.0)
+                sc.cone(stop, crook, 0.012, 0.010, 2, 0.0)
+                out['lantern'] = crook - up * 0.03 * h + w * 0.4 * lantern_swing + wdir * 0.10 * wn
+            else:
+                hand_l = shA + (w * (0.16 + 0.5 * sw) - up * 0.50 + sl * 0.07) * h
+                arm(shA, hand_l, sl)
+                out['lantern'] = hand_l - up * 0.21 * h + w * lantern_swing + wdir * 0.12 * wn
             out['hand'] = hand_l
         else:
             sl = -s
@@ -631,7 +759,7 @@ def traveller(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, cloak=(
         elif reach is not None:
             d = reach - shB
             d = d / (np.linalg.norm(d) + 1e-9)
-            arm(shB, shB + d * 0.62 * h, -sl)
+            out['reach_hand'] = arm(shB, shB + d * reach_len * h, -sl)
         else:
             hand_s = shB + (w * (0.08 - 0.5 * sw) - up * 0.52 - sl * 0.06) * h
             arm(shB, hand_s, -sl)
@@ -724,7 +852,7 @@ def _traveller_v2(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, clo
         elif reach is not None:
             d = reach - shB
             d = d / (np.linalg.norm(d) + 1e-9)
-            arm(shB, shB + d * 0.62 * h, -sl)
+            out['reach_hand'] = arm(shB, shB + d * reach_len * h, -sl)
         else:
             hand_s = shB + (w * (0.08 - 0.5 * sw) - up * 0.52 - sl * 0.06) * h
             arm(shB, hand_s, -sl)
@@ -740,7 +868,7 @@ SEAT_POSES = ('knees', 'cross', 'back', 'side', 'kneel', 'lie')
 
 
 def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0, wind=None, flutter=0.0,
-           peak=True, reach=None, breath=0.0, pack=True, ground=None, fold_phase=0.0):
+           peak=True, reach=None, breath=0.0, pack=True, ground=None, fold_phase=0.0, drape=1.0, neck=1.0):
     """A hooded adult sitting on the snow, in cloth (v3): lean proportions (a long back, sloping shoulders, a head a
     seventh of the height), the cloak draped from the shoulders to the snow behind, the arms and elbows breaking
     its outline, so a figure seen from behind is a person resting, not a bell or a plush toy.
@@ -750,6 +878,8 @@ def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0,
       kneel  sitting on the heels (reach: a hand toward it)  lie    lying back on the pack, hands behind the head
     tilt: the head toward its left (+) or right (-) (a head on a shoulder); turn: the head turned (rad, + left);
     breath: the phase of a slow breath (the shoulders rise); ground(p) -> snow height for planted hands and feet.
+    drape < 1 (RUN-A4): the cloak falls straighter from the shoulders (its hem radius x drape), so a back seen
+    against the light is shoulders over a body, not a cone; neck < 1: the hood's drape narrows into a neck.
     Returns dict(head, chest, left, right (shoulders), w)."""
     up = np.array([0.0, 1.0, 0.0])
     w = _unit([w[0], 0.0, w[2]])
@@ -824,8 +954,12 @@ def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0,
         top = C - up * 0.03 * h
         ang, _ = _bell_wind_ang(top, hem_c, w, wv)
         rb = dict(knees=0.33, cross=0.36, back=0.30, side=0.34, kneel=0.33)[pose]
-        sc.bell(top, hem_c, 0.19 * h, rb * h, w, 0.030 * h, 11, fold_phase + flutter, 0, 0.06 * h,
-                ell=0.24, wind=wn, wind_ang=ang)
+        if drape == 1.0:
+            sc.bell(top, hem_c, 0.19 * h, rb * h, w, 0.030 * h, 11, fold_phase + flutter, 0, 0.06 * h,
+                    ell=0.24, wind=wn, wind_ang=ang)
+        else:
+            sc.bell(top, hem_c, 0.19 * h * (1.0 - 0.3 * (1.0 - drape)), rb * h * drape, w, 0.030 * h, 11,
+                    fold_phase + flutter, 0, 0.06 * h, ell=0.30, wind=wn, wind_ang=ang)
     else:
         # lying back: the cloak spread under and around the body, the pack under the shoulders
         sc.box(P - w * 0.25 * h + up * 0.02 * h, (0.26 * h, 0.035 * h, 0.40 * h), yaw=math.atan2(w[0], w[2]),
@@ -834,7 +968,12 @@ def seated(sc, base, w, rgb, h=1.0, pose='knees', lean=None, tilt=0.0, turn=0.0,
     # ---- the hood: a cowl round the head, a front brim, a drape to the shoulders (no neck shows)
     sc.cone(Hd - hf * 0.04 * h + up * 0.004 * h, Hd + hf * 0.035 * h + up * 0.014 * h, 0.106 * h, 0.102 * h, 0,
             0.06 * h)
-    sc.cone(Hd - up * 0.05 * h - hf * 0.02 * h, C + up * 0.03 * h - w * 0.03 * h, 0.098 * h, 0.165 * h, 0, 0.07 * h)
+    if neck == 1.0:
+        sc.cone(Hd - up * 0.05 * h - hf * 0.02 * h, C + up * 0.03 * h - w * 0.03 * h, 0.098 * h, 0.165 * h, 0,
+                0.07 * h)
+    else:
+        sc.cone(Hd - up * 0.05 * h - hf * 0.02 * h, C + up * 0.03 * h - w * 0.03 * h, 0.098 * h * neck,
+                0.165 * h * neck, 0, 0.04 * h)
     if peak:
         sc.cone(Hd - hf * 0.05 * h + up * 0.05 * h, Hd - hf * 0.15 * h - up * 0.01 * h + wdir * 0.2 * wn,
                 0.066 * h, 0.026 * h, 0, 0.05 * h)
@@ -926,3 +1065,98 @@ def great_lantern(sc, c, yaw, glass_rgb, gain, scale=1.0):
     sc.cone(c - up * (hb + 0.07 * k), c - up * (hb + 0.13 * k), 0.05 * k, 0.03 * k, 1, 0.0)
     sc.end()
     return c + up * (hb + 0.33 * k)      # the hanging point (the finial ring)
+
+
+def lantern_v3(sc, c, yaw, pane_rgb, gain, k=1.0, feet=False, bail=True):
+    """THE GREAT LANTERN, v3 (the director's call, 27 Sep): plain, timeless iron and horn. Four straight square
+    posts, flat horn panes (two lights a side, split by a glazing bar), a door latch, a plain square pyramid roof
+    with a round vent cap and an arched bail, a flat base plate (on four short feet when it stands on the snow).
+    No onion base, no arches, no glass. Centred at c (the flame's heart). The hook point (the bail's top) is
+    c + up * 0.63 k, as the v2 lantern's finial ring. Returns the base's depth below c."""
+    up = np.array([0.0, 1.0, 0.0])
+    fw = np.array([math.sin(yaw), 0.0, math.cos(yaw)])
+    rt = np.array([math.cos(yaw), 0.0, -math.sin(yaw)])
+    R = 0.17 * k                    # half-width to the posts' centres
+    hb = 0.30 * k                   # half-height of the panes
+    b = 0.013 * k                   # frame bar half-thickness
+
+    def P(x, y, z):
+        return c + rt * x + up * y + fw * z
+
+    sc.begin(rgb=(0.03, 0.03, 0.03), emit=gain, glass=pane_rgb, zbias=0.05)
+    # posts (square iron, a little proud of the frame at the foot)
+    for sx in (-1.0, 1.0):
+        for sz in (-1.0, 1.0):
+            sc.box(P(sx * R, -0.01 * k, sz * R), (0.016 * k, hb + 0.035 * k, 0.016 * k), yaw=yaw, rnd=0.003 * k,
+                   mat=1)
+    # frames: top and bottom rails, and a glazing bar at 58 % up each side
+    for y, t_ in ((hb + 0.012 * k, b), (-hb - 0.012 * k, b), (0.16 * hb, 0.55 * b)):
+        for sz in (-1.0, 1.0):
+            sc.box(P(0.0, y, sz * R), (R, t_, t_), yaw=yaw, rnd=0.002 * k, mat=1)
+        for sx in (-1.0, 1.0):
+            sc.box(P(sx * R, y, 0.0), (t_, t_, R), yaw=yaw, rnd=0.002 * k, mat=1)
+    # the door's latch (on the camera-facing side of the crossing's opening) and its two hinge knuckles
+    sc.box(P(R * 0.86, 0.05 * k, R + 0.006 * k), (0.012 * k, 0.026 * k, 0.006 * k), yaw=yaw, rnd=0.003 * k, mat=1)
+    for y in (0.55 * hb, -0.55 * hb):
+        sc.cone(P(-R, y - 0.02 * k, R + 0.008 * k), P(-R, y + 0.02 * k, R + 0.008 * k), 0.008 * k, 0.008 * k, 1, 0.0)
+    # the horn panes (flat shells just inside the posts)
+    for sz in (-1.0, 1.0):
+        sc.box(P(0.0, 0.0, sz * R * 0.97), (R, hb, 0.004), yaw=yaw, glass=True, mat=0)
+    for sx in (-1.0, 1.0):
+        sc.box(P(sx * R * 0.97, 0.0, 0.0), (0.004, hb, R), yaw=yaw, glass=True, mat=0)
+    # the roof: a plain square pyramid with a small overhang, a round vent cap, the bail
+    y0 = hb + 0.024 * k
+    sc.box(P(0.0, y0, 0.0), (1.14 * R, 0.008 * k, 1.14 * R), yaw=yaw, rnd=0.003 * k, mat=1)
+    sc.pyramid(P(0.0, y0 + 0.006 * k, 0.0), 1.16 * R, 0.17 * k, yaw=yaw, rnd=0.004 * k, mat=1, k=0.004 * k)
+    sc.cone(P(0.0, y0 + 0.125 * k, 0.0), P(0.0, y0 + 0.205 * k, 0.0), 0.036 * k, 0.036 * k, 1, 0.004 * k)
+    sc.cone(P(0.0, y0 + 0.205 * k, 0.0), P(0.0, y0 + 0.222 * k, 0.0), 0.052 * k, 0.040 * k, 1, 0.0)
+    if bail:
+        yb = y0 + 0.226 * k
+        a0, a1 = P(-0.055 * k, yb, 0.0), P(-0.040 * k, 0.60 * k, 0.0)
+        a2, a3 = P(0.040 * k, 0.60 * k, 0.0), P(0.055 * k, yb, 0.0)
+        top = P(0.0, 0.63 * k, 0.0)
+        for u, v in ((a0, a1), (a1, top), (top, a2), (a2, a3)):
+            sc.cone(u, v, 0.008 * k, 0.008 * k, 1, 0.0)
+    # the base: a flat plate with a shallow lip; four short feet when it stands
+    sc.box(P(0.0, -hb - 0.030 * k, 0.0), (1.12 * R, 0.014 * k, 1.12 * R), yaw=yaw, rnd=0.004 * k, mat=1)
+    if feet:
+        for sx in (-1.0, 1.0):
+            for sz in (-1.0, 1.0):
+                sc.box(P(sx * 0.92 * R, -hb - 0.058 * k, sz * 0.92 * R), (0.020 * k, 0.014 * k, 0.020 * k),
+                       yaw=yaw, rnd=0.005 * k, mat=1)
+    sc.end()
+    o = sc.O[-1]
+    o[14] = 1.0                     # horn panes
+    o[15] = float(c[1] - o[3])      # the flame's height above the bound centre
+    return hb + (0.072 if feet else 0.044) * k
+
+
+def stone_ring(sc, p, seed, ground=None, n=12, r0=0.50):
+    """A hearth ring of rough, irregular field stones round a fire at p (material 6: snow-dusted on their outer
+    tops, dry and sooted toward the fire): lumps of two or three rounded blocks each, of unequal size and set,
+    half sunk in the snow, one gap. Replaces the grey cubes (the director's 21:05Z note)."""
+    up = np.array([0.0, 1.0, 0.0])
+    rng = np.random.default_rng(seed)
+    skip = int(rng.integers(0, n))
+    sc.begin(rgb=(0.07, 0.07, 0.07))
+    for m in range(n):
+        if m == skip:
+            continue
+        a = 2 * math.pi * m / n + rng.uniform(-0.12, 0.12)
+        r = r0 + rng.uniform(-0.05, 0.08)
+        q = np.asarray(p, np.float64) + np.array([math.cos(a), 0.0, math.sin(a)]) * r
+        if ground is not None:
+            q[1] = ground(q)
+        sz = rng.uniform(0.70, 1.25) * (1.45 if rng.random() < 0.15 else 1.0)
+        hx, hy, hz = (0.075 * sz * rng.uniform(0.8, 1.2), 0.055 * sz * rng.uniform(0.8, 1.3),
+                      0.065 * sz * rng.uniform(0.8, 1.2))
+        yaw = a + rng.uniform(-0.8, 0.8)
+        c = q + up * (hy * rng.uniform(0.35, 0.75))
+        sc.box(c, (hx, hy, hz), yaw=yaw, pitch=rng.uniform(-0.35, 0.35), rnd=0.35 * min(hx, hy, hz), mat=6, k=0.0)
+        for _ in range(int(rng.integers(1, 3))):
+            o = np.array([rng.uniform(-1, 1) * hx, rng.uniform(-0.2, 0.9) * hy, rng.uniform(-1, 1) * hz])
+            sc.box(c + o, (hx * rng.uniform(0.45, 0.7), hy * rng.uniform(0.45, 0.8), hz * rng.uniform(0.45, 0.7)),
+                   yaw=yaw + rng.uniform(-1.2, 1.2), pitch=rng.uniform(-0.6, 0.6), rnd=0.25 * min(hx, hy, hz),
+                   mat=6, k=0.030 * sz)
+    sc.end()
+

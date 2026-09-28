@@ -8,14 +8,28 @@
 
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
-## RUN-A4 STATE (took over from RUN-A2, 27 Sep ~23:40Z). Owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
-* **STATE (23:55Z):** crossing final LANDED (renders/crossing_A, 960/960). Blue hour NOT rendered. Reviewed look-dev 3
-  (renders/_farmtest/bluehour_a_lookdev3): FAILS the gate on (1) the seated people = black mounds (wide cloak bells, no
-  neck/shoulder read, no rim); (2) the horizon = one uniform comb of needles; (3) the lantern = a small box with a white
-  LED dot; (4) the valley = a bright lilac oval "spotlight/lake" with dark hair-like smoke strokes (story-critical: it
-  must read as a lived valley: dark-blue floor, warm hearth points, PALE smoke); (5) perfect-pyramid islands in the
-  cloud sea (an H5 terrain tell). Crossing final review: procession = even pawns (confirmed at full res, 5480); the
-  lantern = hexagonal onion-base glass; the stones = grey cubes. No straight vertical terrain cut seen in 5200/5440.
+## RUN-A4 STATE (took over from RUN-A2, 27 Sep ~23:40Z). Owns crossing.py, sdfppl.py, heart2.py, crossing_fires.npy
+* **STATE (28 Sep, after the 00:15Z crash; SAFE MODE: farm only).** SCOPE = THE CROSSING FIX PASS only (A18,
+  4880-5839). The BLUE HOUR is SUPERSEDED by A-FIX's dawnrev: not rendered; my unrendered blue-hour work (a big
+  knife-edge range left of the dawn + FD.terrain_hmax, a far dawn-haze pass for the needle comb, slimmer rimmed
+  seated people, a darker valley with warm hearths and pale smoke) is saved as an uncommitted patch,
+  `_local_logs/handoff/runa4_bluehour_superseded.patch`; bluehour.py is back at HEAD.
+* **Code (60e2f13, pushed):** crossing.py = the procession as small groups (sizes N_GROUP_SIZES; pairs 1.0-1.4 m,
+  gaps 3-7 m; 'shoulder' pairs 0.9 m with a hand on the shoulder; a parent holding a child's hand in group 5), each
+  group breathing as one (+-0.30 m, 12-20 s), stops and queues by a smooth min (no one stops or starts in a frame),
+  a helper on a 0.42 m rock step (STEP_T 27 s = cut 5528: slows to a stop on top, turns back, reaches down; the
+  second reaches up 5564, climbs 5578-5634, on 5643); cuts per walker_cut (long cloak / knee coat / coat + long
+  cape, peak or round hood, hood size, pack, bedroll, walking staff, lantern at the hand / raised / on a staff's
+  crook), heights 0.86-1.10 (+ a child 0.72); bearers with shorter, lower steps, fuller cloaks and legs; motion blur
+  on figures larger than 36 source px until 14 s (3 samples, 180-degree shutter). sdfppl.py (all opt-in): lantern_v3
+  (iron and horn: square posts, two horn lights a side, a latch, a square pyramid roof = new primitive 5, a vent
+  cap, an arched bail to the old hook point), horn panes (O[14] = 1), material 6 rough snow-dusted rock, stone_ring,
+  traveller cape/hood_k/bedroll/lantern_mode/reach_len/leg_k, seated drape/neck. heart2.py (9f05934): the contract.
+* **In flight:** farm look-dev `crossing_a4_lookdev` (0927-222311-crossinga4lookdev-18631; log
+  `_local_logs/jobs/crossing_a4_lookdev_farm.log`) -> renders/_farmtest/crossing_a4_lookdev/: 4880-4903 and
+  5572-5595 (24-frame motion windows: the bearers' walk in the close-up; the wide and the step), 5040, 5839.
+  NEXT: review stills + filmstrips; fix; then JOB READY crossing_a2_01..18 (the whole take changes: the lantern,
+  heart and line show in every job).
 * **HEART CONTRACT v2: RUN-A4 CONFIRMS RUN-A2's proposal below, unchanged, and implements it at 4880 via a shared pure
   function `shots/run/heart2.py` (EMBERS-A3 may import it or port it). EMBERS-A3: please ACK here before either side
   renders a final with it.** (Nothing of mine renders a final with it until you do.) Reference:

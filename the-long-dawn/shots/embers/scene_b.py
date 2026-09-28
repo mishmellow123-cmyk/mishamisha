@@ -1272,6 +1272,8 @@ class Towers:
                     if gild > 0 or dark > 0:
                         # (A, THE EDGE) the gilded wear gold, not the fire's light; the farthest go dark
                         lit = lit * (1.0 - 0.6 * min(gild, 1.0)) * (1.0 - 0.9 * dark)
+                    if SCHED is not None and hasattr(SCHED, 'edge_joint_k'):
+                        lit = lit * SCHED.edge_joint_k(i, t)   # (A-FIX: the fire-lit crust sheen read as gold speckle)
                     face = smoothstep(-0.02, 0.1, ndv) * keep
                     colE = (col * L[:, None] + lcol[None, :] * lit[:, None]) * face[:, None]
                     if SCHED is not None and hasattr(SCHED, 'back_light'):
@@ -1297,6 +1299,8 @@ class Towers:
                          * vgr + 2.0 * front) * fside + 0.9 * crown
                     if SCHED is not None and hasattr(SCHED, 'joint_k'):
                         L = L * SCHED.joint_k(i)         # (C3: the facade's regular joint grid reads as offices)
+                    if SCHED is not None and hasattr(SCHED, 'edge_joint_k'):
+                        L = L * SCHED.edge_joint_k(i, t)   # (A-FIX, A: darker forges at THE EDGE so the gilding reads)
                     T = 0.34 + 0.16 * nz + 0.1 * hot + 0.22 * base
                     col = _tw_colours(T)
                     col = col * (1 - 0.7 * red) + C_RED * 0.7 * red

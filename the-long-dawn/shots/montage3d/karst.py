@@ -77,11 +77,37 @@ def moon_dir(az=None, el=None):
 
 # ======================================================================= venv side ===
 
+def soft_env(t, t0, fps=24.0, catch=8.0):
+    """A-FIX (MONTAGE-3D-5): the ignition as a soft catch, not fireparts.ignite_env's one-frame switch. A small flame
+    at the catch grows to full over `catch` frames, then a gentle swell settles. Returns (size, intensity, light)."""
+    u = (t - t0) * fps
+    if u < 0.0:
+        return 0.0, 0.0, 0.0
+    c = min(1.0, u / catch)
+    c = c * c * (3.0 - 2.0 * c)
+    after = max(0.0, u - catch)
+    size = 0.12 + 0.88 * c + 0.18 * math.exp(-((u - catch - 4.0) / 5.0) ** 2)
+    inten = (0.5 + 0.5 * c) * (1.0 + 0.45 * c * math.exp(-after / 5.0))
+    light = (0.15 + 0.85 * c) * (1.0 + 0.7 * c * math.exp(-after / 6.0))
+    return size, inten, light
+
+
+def _soft_params(sp):
+    """A FlameSpec's params() with soft_env in place of ignite_env."""
+    def params(frame):
+        t = ftime(frame)
+        size, inten, light = soft_env(t, sp.t_ign)
+        lean = sp.lean * size if sp.lean_fn is None else sp.lean_fn(frame, size)
+        return t, sp.Hf * size, inten, light, lean
+    return params
+
+
 def flame_specs():
     import fireparts as FP
     specs = [FP.FlameSpec('beacon', Hf=2.3, Rb=0.34, seed=8, I=26.0, tongues=5, lean=0.25, ppm=90,
                           t_ign=ftime(IGN_SRC)),
              FP.FlameSpec('torch', Hf=0.3, Rb=0.045, seed=23, I=16.0, tongues=3, lean=0.05, ppm=200, env=False)]
+    specs[0].params = _soft_params(specs[0])                   # A-FIX: a soft catch (source frames)
     if SLOW:
         for sp in specs:
             sp.params = (lambda frame, _p=sp.params: _p(sf(frame)))
@@ -93,7 +119,7 @@ def timing(frames):
     out = dict(beacon=[], torch=[], ember=[])
     for f in frames:
         t = ftime(sf(f))
-        s, i, l = FP.ignite_env(t, ftime(IGN_SRC))
+        s, i, l = soft_env(t, ftime(IGN_SRC))
         out['beacon'].append((f, l * FP.flicker(t, 21)))
         out['torch'].append((f, FP.flicker(t, 5)))
         e = 0.0 if sf(f) < IGN_SRC else min(1.0, (sf(f) - IGN_SRC + 1) / 10.0) * (0.8 + 0.2 * FP.flicker(t, 3))
@@ -441,9 +467,9 @@ def post(frame, hdr, depth, cam, scene):
     fb = scene['fire_base']
     if sf(frame) >= IGN_SRC:
         if _SPARKS is None:
-            _SPARKS = FP.ZSparks(73, (fb[0], fb[1], fb[2] + 0.4), ftime(IGN_SRC), ftime(SRC1) + 0.1, burst=120, rate=30,
+            _SPARKS = FP.ZSparks(73, (fb[0], fb[1], fb[2] + 0.4), ftime(IGN_SRC + 5), ftime(SRC1) + 0.1, burst=60, rate=30,
                                  ember_rate=10, wind=(1.4, 0.3, 0.0), I=24.0, radius=0.3)
-        s, i, l = FP.ignite_env(t, ftime(IGN_SRC))
+        s, i, l = soft_env(t, ftime(IGN_SRC))
         FP.shimmer(hdr, cam, fb, 2.3 * s, 0.34, t, amp_px=0.8 * cam.W / 1920)
         _SPARKS.render(hdr, depth, cam, t, shutter=RATE / 48.0)
     return hdr
@@ -490,7 +516,8 @@ def build(job):
         if t < t0:
             return 0.0
         u = t - t0
-        return amp * math.exp(-decay * u) * math.sin(2 * math.pi * freq * u)
+        on = min(1.0, u * 6.0)                                    # eased in over ~4 frames
+        return amp * on * on * math.exp(-decay * u) * math.sin(2 * math.pi * freq * u)
 
     crop = opts.get('crop')            # [cx, cy, w] full-res pixels: same pixel density, narrower view
     if crop:
@@ -498,7 +525,7 @@ def build(job):
     for f in range(START - 1, END + 2):
         u = (sf(f) - SRC0) / (SRC1 - SRC0)
         x = 1.6 + (-2.2 - 1.6) * ease_x(u)
-        k = kick(ftime(sf(f)), ftime(IGN_SRC))
+        k = kick(ftime(sf(f)), ftime(IGN_SRC + 5), amp=0.5)      # A-FIX: a soft nudge once it has caught, not a jolt
         shift = ((crop[0] - 960.0) / crop[2], -(crop[1] - 402.0) / crop[2]) if crop else (0.0, 0.0)
         C.key_camera(cam, f, (CAM0[0] + x, CAM0[1] + 0.8 * (sf(f) - SRC0) / 40.0, CAM0[2] + 0.02 * k),
                      0.0, PITCH0 + 0.06 * k, shift=shift)

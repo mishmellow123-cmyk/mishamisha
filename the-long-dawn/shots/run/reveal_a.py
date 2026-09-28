@@ -43,14 +43,20 @@ if HILLS not in sys.path:
     sys.path.insert(0, HILLS)                                       # hills first: beacon's own imports
 os.environ.setdefault('NUMBA_NUM_THREADS', '1')
 
-CUT0, CUT1 = 3680, 3800                  # A13 R2-A: bar 47 b1 .. bar 48 b3 (KARST from 3800)
+CUT0, CUT1 = 3660, 3800                  # A13 R2-A: from 3660 (A-FIX: after B's reveal 3612-3659) .. bar 48 b3 (KARST from 3800)
 SRC_OFF = 3600 - 1476                    # cut = src + 2124 (the roar: src 1476 = cut 3600, bar 46 b1)
 TAKE_END = 1555                          # H1's last src frame (cut 3679)
 SRC1 = CUT1 - 1 - SRC_OFF                # 1675
 FIRES_NPY = os.path.join(HERE, 'reveal_a_fires.npy')
+# A-FIX (28 Sep): A13 now follows B's reveal of her by her fire (A 3612-3679), and the cut to these ranges must show
+# fires ANSWERING across them: at 3-5 px they were invisible. FAR_PXS scales the unresolved fires' hot point and aura
+# (nighta draws them at a fixed 0.95 / 3.4 / 11 px x pxs, energy x pxs^2). GLOW_RAYS 0: the glow's shadow rays fanned
+# up from the tallest peak like a searchlight.
+FAR_PXS = 3.0
+GLOW_RAYS = 0.0
 
 GUARD = {'camera': '49dd99955a91d12e61f657c861031c7f',  # A-FIX branch only (AFIX False here)
-          'world_layer': '5041ad8575dd41016499c12ef2138ff2'}
+          'world_layer': 'f53a1f551995e845cb816731fb4be17b'}   # A-FIX branch only
 
 
 def _guard():
@@ -74,6 +80,8 @@ BK.V3_REKEY = True           # == render.py make_shot('beacon_v3_roar2')
 BK.use_master_timing()
 BK.apply_h5_calls()
 BK.apply_roar2()
+BK.BEACON_SMOKE_AMB = (0.05, 0.062, 0.105)    # A-FIX: her smoke a pale moonlit veil, not a dark smudge over the sky
+BK.BEACON_SMOKE_OPACITY = 0.30
 assert BK.ROAR == 1476 and BK.F1 == TAKE_END, (BK.ROAR, BK.F1)
 _orig_s1_world = BK.s1_world
 
@@ -327,10 +335,11 @@ def world_layer(cam, f, t, reveal):
     if ramp > 0.0:
         GP = NA.glow_gp(fc)
         GP[2] *= ramp
+        GP[11] *= GLOW_RAYS
         skl = NA.skyline(pos, Wd['CR'], WD)
         NA.glow_pass(out, di, kill, C, GP, skl[0], skl[1], skl[2], NA.HAZE_K, NA.HAZE_D)
     pxs = cam.scale * k
-    NA.fires_layer(out, zb, mc, FR, fc, pxs, fogp=fogp, wmod=WD)
+    NA.fires_layer(out, zb, mc, FR, fc, pxs * FAR_PXS, fogp=fogp, wmod=WD)
     sky = (di > 1e8).astype(np.float32)
     starm = sky * np.where(di > 1e8, kill, 1.0).astype(np.float32)
     # ---- as beacon.world_layer: our pixel centres -> world rays -> the canvas

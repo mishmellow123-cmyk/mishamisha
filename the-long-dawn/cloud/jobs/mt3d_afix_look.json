@@ -1,0 +1,26 @@
+{
+ "name": "mt3d_afix_look",
+ "branch": "claude/render-mt3d-afix-look",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+  "(apt-get update -qq && apt-get install -y -qq libxrender1 libxxf86vm1 libxfixes3 libxi6 libxkbcommon0 libsm6 libgl1 libegl1 libegl-mesa0 libgl1-mesa-dri libgbm1 > /tmp/apt.log 2>&1 && echo apt ok) || echo 'apt unavailable'",
+  "python3 -m venv $HOME/bpyenv && $HOME/bpyenv/bin/pip install -q bpy==4.5.14",
+  "$HOME/bpyenv/bin/python -c \"import bpy; print('bpy', bpy.app.version_string)\""
+ ],
+ "render": [
+  "cd shots/montage3d && EGL_PLATFORM=surfaceless KARST_SLOW=1 MT3D_BLENDER=$HOME/bpyenv/bin/python python3 render.py karst --final --force --outdir renders/montage3d_v3/karst_slow --range 0-59",
+  "cd shots/montage3d && EGL_PLATFORM=surfaceless MT3D_REFIG=1 MT3D_BLENDER=$HOME/bpyenv/bin/python python3 render.py desert --final --force --outdir renders/montage3d_v3/desert_src --range 1520-1579"
+ ],
+ "outputs": [
+  {
+   "out_dir": "renders/montage3d_v3/karst_slow",
+   "frames": "0-59"
+  },
+  {
+   "out_dir": "renders/montage3d_v3/desert_src",
+   "frames": "1520-1579"
+  }
+ ],
+ "push_every": 120,
+ "ship": "jpg"
+}

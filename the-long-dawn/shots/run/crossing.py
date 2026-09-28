@@ -34,6 +34,7 @@ import rcam as RC           # noqa: E402
 import pipe as PI           # noqa: E402
 import fire2 as F2          # noqa: E402
 import sdfppl as SP         # noqa: E402
+import heart2 as H2         # noqa: E402
 from mt import sky as SK, fire as F   # noqa: E402
 
 
@@ -238,17 +239,146 @@ def lantern_s(t):
     return S_L0 + SPEED * t
 
 
+# ---- the line's layout (RUN-A4, the director's 21:05Z fix: ~20 identical, evenly spaced pawns -> people). Small
+# groups at their own pace: pairs and threes close together (a hand on a shoulder, a child's hand held), longer
+# gaps between the groups, each group breathing as one (an accordion on a knife-edge); one pair at a rock step on
+# the narrowest stretch (bar 70): the first climbs up, turns back and reaches down, and pulls the second up.
+N_GROUP_SIZES = (2, 1, 3, 2, 2, 4, 1, 2, 3, 2, 1, 3, 2, 2, 3, 1, 2, 2, 3, 2)
+_LAYOUT = {}
+
+
+def layout(cfg):
+    """Static offsets (m behind the rear bearer) and roles for the n roped walkers."""
+    key = (cfg['n'], cfg['gap'])
+    if key in _LAYOUT:
+        return _LAYOUT[key]
+    n = cfg['n']
+    if cfg['gap'] > 3.0:                                  # the 'few' fallback keeps its even spacing
+        off = np.array([2.4 + cfg['gap'] * k for k in range(n)])
+        _LAYOUT[key] = dict(off=off, grp=np.arange(n), role=[''] * n)
+        return _LAYOUT[key]
+    off, grp, role = [], [], []
+    cur = 2.4
+    k = 0
+    g = 0
+    while k < n:
+        size = N_GROUP_SIZES[g % len(N_GROUP_SIZES)]
+        for m in range(size):
+            if k >= n:
+                break
+            if m > 0:
+                cur += 1.02 + 0.40 * _hh(k, 42)
+            off.append(cur)
+            grp.append(g)
+            role.append('')
+            k += 1
+        cur += 3.0 + 4.2 * _hh(g, 43) ** 1.4
+        g += 1
+    off = np.array(off)
+    grp = np.array(grp)
+    # a hand on the shoulder in front (closer), in a few pairs; a child's hand held in the fourth group
+    for k in range(1, n):
+        if grp[k] == grp[k - 1] and _hh(k, 44) < 0.30:
+            off[k:] -= (off[k] - off[k - 1]) - (0.86 + 0.06 * _hh(k, 45))
+            role[k] = 'shoulder'
+    kc = int(np.argmax(grp == 5)) + 1                       # the second of the four
+    off[kc:] -= (off[kc] - off[kc - 1]) - 0.78
+    role[kc] = 'child'
+    role[kc - 1] = 'parent'
+    _LAYOUT[key] = dict(off=off, grp=grp, role=role)
+    return _LAYOUT[key]
+
+
+def _sched(t, cfg, k):
+    """Walker k's own schedule (arc length), before anyone waits: its group breathes as one."""
+    L = layout(cfg)
+    g = int(L['grp'][k])
+    T = 12.0 + 8.0 * _hh(g, 1)
+    br = 0.30 * math.sin(2 * math.pi * t / T + 6.28 * _hh(g, 3)) + 0.04 * math.sin(2 * math.pi * t / 6.1 + 6.28 * _hh(k, 3))
+    return lantern_s(t) - 1.3 - L['off'][k] + br
+
+
+# the step: which pair and when (shot seconds); the pair is the one ~30 m behind the lantern at the event, so it
+# stands in the wide's left-middle third (the lantern sits at 80 % across)
+STEP_T = 27.0                                       # the helper reaches the top (cut 5528, bar 70 b1 + 8 f)
+STEP_H = 0.42                                       # the rock step's height (m)
+STEP_HOLD = (1.5, 0.6, 2.3, 0.4)                    # the second arrives | the hands meet | the climb | then on
+_STEP = {}
+
+
+def step_event(cfg):
+    key = (cfg['n'], cfg['gap'])
+    if key in _STEP:
+        return _STEP[key]
+    L = layout(cfg)
+    if cfg['gap'] > 3.0:
+        _STEP[key] = None
+        return None
+    sl = lantern_s(STEP_T)
+    best = None
+    for k in range(len(L['off']) - 1):
+        if L['grp'][k] != L['grp'][k + 1] or L['role'][k + 1] or L['role'][k]:
+            continue
+        d = sl - _sched(STEP_T, cfg, k)
+        if best is None or abs(d - 30.0) < abs(best[1] - 30.0):
+            best = (k, d)
+    ka = best[0]
+    s_top = _sched(STEP_T, cfg, ka)                 # the helper stands here from STEP_T
+    a, b, c, d = STEP_HOLD
+    ev = dict(ka=ka, kb=ka + 1, s_top=s_top, s_edge=s_top - 0.55, s_foot=s_top - 0.55 - 0.42,
+              t0=STEP_T, t_hand=STEP_T + a, t_c0=STEP_T + a + b, t_c1=STEP_T + a + b + c,
+              t_go=STEP_T + a + b + c + d)
+    _STEP[key] = ev
+    return ev
+
+
+def step_h(s_, cfg, body=False):
+    """The rock step's rise under arc length s_ (0 off the rock): up at s_edge, a 1.3 m long top, then down.
+    body=True: the pelvis's gentler ramp (a body rises through the step as the legs climb it)."""
+    ev = step_event(cfg)
+    if ev is None:
+        return 0.0
+    u0 = ev['s_edge']
+    if body:
+        return STEP_H * smoothstep(u0 - 0.30, u0 + 0.30, s_) * (1.0 - smoothstep(u0 + 1.1, u0 + 1.75, s_))
+    return STEP_H * smoothstep(u0 - 0.06, u0 + 0.06, s_) * (1.0 - smoothstep(u0 + 1.25, u0 + 1.55, s_))
+
+
+def smin(a, b, k):
+    """A smooth minimum (C1): a walker slows into a stop over ~k metres instead of stopping in a frame."""
+    h = max(k - abs(a - b), 0.0) / k
+    return min(a, b) - h * h * k * 0.25
+
+
+def _ease_on(t, t0, tau=0.9):
+    """Metres walked since t0, easing up to SPEED over tau seconds (C1: a walker sets off, never jumps)."""
+    x = (t - t0) / tau
+    if x <= 0.0:
+        return 0.0
+    return SPEED * tau * (0.5 * x * x if x < 1.0 else x - 0.5)
+
+
 def line_s(t, cfg):
-    """Arc lengths of: front bearer, rear bearer, then the roped walkers. The spacing breathes (an accordion:
-    people pause and close up on a knife-edge), never faster than the lantern."""
+    """Arc lengths of: front bearer, rear bearer, then the roped walkers (never faster than the lantern)."""
     sl = lantern_s(t)
     out = [sl + 1.3, sl - 1.3]
-    cur = sl - 1.3 - 2.4
-    for k in range(cfg['n']):
-        T = 11.0 + 9.0 * _hh(k, 1)
-        g = cfg['gap'] + cfg['jit'] * (_hh(k, 2) - 0.5) * 2.0 + 0.32 * math.sin(2 * math.pi * t / T + 6.28 * _hh(k, 3))
-        out.append(cur)
-        cur -= g
+    ev = step_event(cfg)
+    n = cfg['n']
+    prev = sl - 1.3
+    for k in range(n):
+        s_ = _sched(t, cfg, k)
+        if ev is not None and k == ev['ka']:
+            s_ = smin(s_, ev['s_top'] + _ease_on(t, ev['t_go']), 0.35)
+        if ev is not None and k == ev['kb']:
+            u = smoothstep(ev['t_c0'], ev['t_c1'], t)
+            lim = ev['s_foot'] + (ev['s_edge'] + 0.12 - ev['s_foot']) * u + _ease_on(t, ev['t_c1'])
+            s_ = smin(s_, lim, 0.35)
+            gap = 0.45
+        else:
+            gap = 0.80 if (k and layout(cfg)['role'][k]) else 0.95
+        s_ = smin(s_, prev - gap, 0.40)
+        out.append(s_)
+        prev = s_
     return np.array(out)
 
 
@@ -257,7 +387,7 @@ STANCE = 0.62                                    # fraction of the cycle a foot 
 
 def stride_of(i):
     """Stride (m) of figure i (0, 1 = the bearers: short, loaded steps)."""
-    return 0.62 if i < 2 else 0.75 * (0.92 + 0.16 * _hh(i, 5))
+    return 0.55 if i < 2 else 0.72 * (0.92 + 0.16 * _hh(i, 5))
 
 
 def foot_cycle(s, S, ph, delta):
@@ -278,28 +408,36 @@ def walk_phase(s, i):
     return 2 * math.pi * (s / stride_of(i) + _hh(i, 6))
 
 
-def plant(figs):
+def plant(figs, cfg=None, go=None, stand=None):
     """Feet and pelvises for figures [(arc s, index i, height h, crouch m)]: each foot planted on the real terrain
-    (one height query for all), the pelvis lowered wherever a leg could not otherwise reach its foot."""
+    (one height query for all), the pelvis lowered wherever a leg could not otherwise reach its foot.
+    go[n] (0-1): how fast figure n is walking (a stopped figure puts its swinging foot down); stand[n]: a
+    standing figure's two foot arcs and a 0-1 blend (both feet planted there at 1); cfg: the rock step is added
+    under feet and pelvises."""
     feet = []
-    for (s_, i, h, cr) in figs:
-        S = stride_of(i)
+    for n_, (s_, i, h, cr) in enumerate(figs):
+        S = stride_of(i) * (h / 0.95 if h < 0.8 else 1.0)      # a child takes shorter steps
         ph = _hh(i, 6)
-        for delta, side in ((0.0, 1.0), (0.5, -1.0)):
+        g = 1.0 if go is None else go[n_]
+        st = None if stand is None else stand[n_]
+        for m_, (delta, side) in enumerate(((0.0, 1.0), (0.5, -1.0))):
             sf, lift = foot_cycle(s_, S, ph, delta)
-            feet.append((sf, side, lift, h))
+            if st is not None:
+                sf, lift = sf + (st[m_] - sf) * st[2], lift * (1.0 - st[2])
+            feet.append((sf, side, lift * g * (0.55 if i < 2 else 0.85), h))
     sfs = np.array([f[0] for f in feet])
     P, Wd = at(sfs)
     lat = np.cross(UP[None, :], Wd)
     Q = P + lat * np.array([f[1] * 0.10 * f[3] for f in feet])[:, None]
     gy = ground_many(Q)
-    Q[:, 1] = np.maximum(gy, P[:, 1] - 0.05) + np.array([0.075 * f[3] + f[2] for f in feet])
+    stp = np.array([step_h(f[0], cfg) for f in feet]) if cfg is not None else 0.0
+    Q[:, 1] = np.maximum(gy, P[:, 1] - 0.05) + stp + np.array([0.075 * f[3] + f[2] for f in feet])
     out = []
     for n_, (s_, i, h, cr) in enumerate(figs):
         pb, wb = at(s_)
         aL, aR = Q[2 * n_], Q[2 * n_ + 1]
         latb = np.cross(UP, wb)
-        pel = pb + UP * (0.93 * h - cr)
+        pel = pb + UP * (0.93 * h - cr + (step_h(s_, cfg, body=True) if cfg is not None else 0.0))
         for a, side in ((aL, 1.0), (aR, -1.0)):
             hip = pel + latb * side * 0.085 * h
             dxz = math.hypot(a[0] - hip[0], a[2] - hip[2])
@@ -377,6 +515,7 @@ def _sm(x):
 
 
 LANT_K = 0.85                                 # the great lantern: ~0.9 m from foot to finial ring
+HORN = np.array([1.00, 0.70, 0.42])           # thin horn: it warms the heart's light as it passes
 H0 = -0.45                                    # the opening camera's height relative to the lantern's heart (m)
 RING = (0.30 + 0.33) * LANT_K                 # heart -> finial ring
 
@@ -823,13 +962,64 @@ def keeper_spot(k):
     return _KEEP[k]
 
 
+def _facing(w, ang):
+    """w turned by ang radians about the vertical (toward the figure's left for +ang)."""
+    c, s_ = math.cos(ang), math.sin(ang)
+    return np.array([w[0] * c + w[2] * s_, 0.0, -w[0] * s_ + w[2] * c])
+
+
+def walker_cut(k):
+    """Figure k's cut and carry (deterministic): the director's list: heights, gait, hood and cloak cuts, packs,
+    lantern heights. Roles (layout) override."""
+    cut = dict(h=0.86 + 0.24 * _hh(k, 14), lean=0.04 + 0.14 * _hh(k, 15), peak=_hh(k, 23) < 0.55,
+               hood_k=0.90 + 0.28 * _hh(k, 25), pack=_hh(k, 13) < 0.62, bedroll=False, cape=None,
+               lside=1.0 if _hh(k, 16) < 0.45 else -1.0, lmode='hand', staff=_hh(k, 12) < 0.30)
+    r = _hh(k, 24)
+    if r < 0.24:                                      # a long cloak to the ankles
+        cut.update(hem=0.18 + 0.06 * _hh(k, 17), cloak=(0.20 + 0.03 * _hh(k, 18), 0.27 + 0.05 * _hh(k, 19)))
+    elif r < 0.52:                                    # a knee coat under a long cape to the hips
+        cut.update(hem=0.44 + 0.08 * _hh(k, 17), cloak=(0.17 + 0.02 * _hh(k, 18), 0.19 + 0.03 * _hh(k, 19)),
+                   cape=(0.20 + 0.08 * _hh(k, 26), 0.26 + 0.04 * _hh(k, 27)))
+    else:                                             # a hooded wool coat to the knee: the legs and the walk show
+        cut.update(hem=0.40 + 0.14 * _hh(k, 17), cloak=(0.19 + 0.025 * _hh(k, 18), 0.215 + 0.04 * _hh(k, 19)))
+    if cut['pack'] and _hh(k, 28) < 0.45:
+        cut['bedroll'] = True
+    m = _hh(k, 29)
+    if m < 0.22:
+        cut['lmode'] = 'staff'                        # the lantern high on a staff's crook
+        cut['staff'] = False
+    elif m < 0.40:
+        cut['lmode'] = 'raised'                       # held up, lighting the way
+    return cut
+
+
 def build_scene(t, cfg):
     sc = SP.Scene()
     S_ = line_s(t, cfg)
     n = len(S_)
-    hts = [1.0, 1.03] + [0.93 + 0.14 * _hh(k, 14) for k in range(cfg['n'])]
-    # the bearers walk loaded: knees a little bent, shorter steps (stride_of)
-    planted = plant([(S_[i], i, hts[i], 0.04 if i < 2 else 0.0) for i in range(n)])
+    S0 = line_s(t - 0.25, cfg)
+    go = np.clip((S_ - S0) / (0.25 * SPEED), 0.0, 1.0)
+    go[:2] = 1.0
+    L = layout(cfg)
+    ev = step_event(cfg)
+    cuts = [walker_cut(k) for k in range(cfg['n'])]
+    for k in range(cfg['n']):
+        if L['role'][k] == 'child':
+            cuts[k].update(h=0.72, pack=False, bedroll=False, lside=0.0, lmode='hand', staff=False, lean=0.06,
+                           hem=0.34, cloak=(0.19, 0.22), cape=None, peak=False, hood_k=1.05)
+        if L['role'][k] == 'parent':
+            cuts[k].update(h=max(cuts[k]['h'], 0.98), staff=False, lmode='hand')
+    if ev is not None:
+        cuts[ev['ka']].update(staff=False, lmode='hand', lside=1.0)
+        cuts[ev['kb']].update(staff=False, lmode='hand', lside=1.0)
+    hts = [1.0, 1.03] + [c['h'] for c in cuts]
+    # the step's pair: the helper slows to a stop on the rock (its feet stay where its last step put them: no
+    # foot is ever slid into place), the second crouches a little as it climbs
+    crouch = [0.04, 0.04] + [0.0] * cfg['n']
+    if ev is not None and ev['t_hand'] - 0.3 < t < ev['t_c1'] + 0.3:
+        u = smoothstep(ev['t_c0'] - 0.3, ev['t_c0'] + 0.5, t) * (1.0 - smoothstep(ev['t_c1'] - 0.4, ev['t_c1'] + 0.3, t))
+        crouch[ev['kb'] + 2] = 0.12 * u
+    planted = plant([(S_[i], i, hts[i], crouch[i]) for i in range(n)], cfg=cfg, go=go)
     lights = []
     lant = []
     waists = []
@@ -849,12 +1039,14 @@ def build_scene(t, cfg):
     ph_r = walk_phase(S_[1], 1)
     wf_v, fl_f = wind_at(t, S_[0], 0)
     wr_v, fl_r = wind_at(t, S_[1], 1)
-    SP.traveller(sc, pf, wf_, aLf, aRf, (0.022, 0.018, 0.016), h=1.0, lean=lean_b, hem=0.17, cloak=(0.20, 0.30),
+    SP.traveller(sc, pf, wf_, aLf, aRf, (0.022, 0.018, 0.016), h=1.0, lean=lean_b, hem=0.15, cloak=(0.20, 0.34),
                  folds=11, fold_depth=0.030, fold_phase=0.8 * math.sin(ph_f) + 1.1, sway=0.025 * math.sin(ph_f),
-                 carry=carry_f, carry_side=1.0, free_swing=0.06 * math.sin(ph_f), peak=True, wind=wf_v, flutter=fl_f)
-    SP.traveller(sc, pr, wr_, aLr, aRr, (0.030, 0.030, 0.036), h=1.03, lean=lean_b, hem=0.17, cloak=(0.20, 0.30),
+                 carry=carry_f, carry_side=1.0, free_swing=0.06 * math.sin(ph_f), peak=True, wind=wf_v, flutter=fl_f,
+                 leg_k=1.25)
+    SP.traveller(sc, pr, wr_, aLr, aRr, (0.030, 0.030, 0.036), h=1.03, lean=lean_b, hem=0.15, cloak=(0.20, 0.34),
                  folds=12, fold_depth=0.030, fold_phase=0.8 * math.sin(ph_r) + 2.3, sway=0.025 * math.sin(ph_r),
-                 carry=carry_r, carry_side=-1.0, free_swing=0.06 * math.sin(ph_r), peak=False, wind=wr_v, flutter=fl_r)
+                 carry=carry_r, carry_side=-1.0, free_swing=0.06 * math.sin(ph_r), peak=False, wind=wr_v, flutter=fl_r,
+                 leg_k=1.25)
     sc.begin(rgb=(0.1, 0.07, 0.05))
     for a_, b_ in poles:
         sc.cone(a_, b_, 0.028, 0.028, 2, 0.0)
@@ -863,52 +1055,90 @@ def build_scene(t, cfg):
     heart = mid - UP * (0.10 + RING) + _swing(t) * wf_
     sc.cone(mid, heart + UP * RING, 0.008, 0.008, 1, 0.0)                                # the hook
     sc.end()
-    SP.great_lantern(sc, heart, math.radians(YAW_E) + 0.3, hc, 0.9 * br, scale=LANT_K)
+    # v3 (the director's call): plain iron and horn; the horn warms the heart's light
+    SP.lantern_v3(sc, heart, math.radians(YAW_E) + 0.3, hc * HORN, 0.9 * br, k=LANT_K)
     lights.append([heart[0], heart[1], heart[2], hc[0], hc[1], hc[2], 2.6 * br, 0.35])
     waists += [0.5 * (pf + pr), pr]          # the rope is tied in at the rear bearer's waist
-    # ---- the roped walkers: hooded wool cloaks and coats, packs, staffs; no two alike
+    # ---- the roped walkers: small groups, pairs and gaps; hooded wool cloaks, coats and capes, packs, staffs
     pal = [(0.07, 0.035, 0.028), (0.04, 0.045, 0.06), (0.06, 0.05, 0.03), (0.035, 0.045, 0.035), (0.05, 0.05, 0.05),
            (0.075, 0.04, 0.03), (0.055, 0.042, 0.038)]
+    outs = {}
     for k in range(cfg['n']):
         i = k + 2
+        c_ = cuts[k]
         pel, aL, aR, w = planted[i]
         ph = walk_phase(S_[i], i)
-        lside = 1.0 if _hh(k, 16) < 0.45 else -1.0
-        # most wear knee-length hooded wool coats (the legs and the walk show); one in five a long cloak
-        long_ = (0.20 + 0.06 * _hh(k, 17), 0.26 + 0.04 * _hh(k, 19)) if _hh(k, 24) < 0.2 else \
-            (0.42 + 0.12 * _hh(k, 17), 0.215 + 0.04 * _hh(k, 19))
+        role = L['role'][k]
         wk_v, flk = wind_at(t, S_[i], i)
         tip = None
-        if _hh(k, 12) < 0.35:
+        if c_['staff']:
             q, wq = at(S_[i] + 0.5 + 0.12 * math.sin(ph))
-            q = q - np.cross(UP, wq) * (0.22 * lside)
-            q[1] = ground_many(q)[0]
+            q = q - np.cross(UP, wq) * (0.22 * c_['lside'])
+            q[1] = ground_many(q)[0] + step_h(S_[i] + 0.5, cfg)
             tip = q
-        o = SP.traveller(sc, pel, w, aL, aR, pal[int(_hh(k, 11) * len(pal))], h=hts[i], lean=0.07 + 0.07 * _hh(k, 15),
-                         hem=long_[0], cloak=(0.19 + 0.025 * _hh(k, 18), long_[1]),
-                         folds=int(8 + 5 * _hh(k, 20)), fold_depth=0.020 + 0.014 * _hh(k, 21),
-                         fold_phase=0.8 * math.sin(ph) + 6.28 * _hh(k, 22), sway=0.03 * math.sin(ph),
-                         pack=_hh(k, 13) < 0.7, staff_tip=tip, lantern_side=lside,
-                         lantern_swing=0.03 * math.sin(2 * ph - 0.6), free_swing=0.08 * math.sin(ph),
-                         peak=_hh(k, 23) < 0.6, wind=wk_v * (0.8 + 0.4 * _hh(k, 34)), flutter=flk)
+        wfig = w
+        lean = c_['lean']
+        reach, rlen = None, 0.62
+        if ev is not None and k == ev['ka']:
+            # turns back on the rock (over 0.7 s), reaches down to the second, leans back as it pulls
+            turn = smoothstep(ev['t0'] - 0.3, ev['t0'] + 0.5, t) * (1.0 - smoothstep(ev['t_go'] - 0.5, ev['t_go'], t))
+            wfig = _facing(w, math.pi * turn * (1.0 if c_['lside'] > 0 else -1.0))
+            if turn > 0.5:
+                aL, aR = aR, aL                  # turned round: its left leg now goes to the other foot
+            pull = smoothstep(ev['t_c0'], ev['t_c0'] + 0.4, t) * (1.0 - smoothstep(ev['t_c1'], ev['t_go'], t))
+            lean = c_['lean'] * (1.0 - turn) + turn * (0.30 - 0.42 * pull)
+            if turn > 0.3:
+                pb_, _ = at(S_[i + 1])
+                reach = pb_ + UP * (0.85 + 0.35 * smoothstep(ev['t_c0'], ev['t_c1'], t))
+        if ev is not None and k == ev['kb'] and ev['t_hand'] - 0.6 < t < ev['t_c1'] + 0.4:
+            # reaches up for the hand, leans in and climbs
+            lean = 0.18 + 0.22 * smoothstep(ev['t_hand'], ev['t_c0'] + 0.5, t)
+            if ev['ka'] in outs and 'reach_hand' in outs[ev['ka']]:
+                reach = outs[ev['ka']]['reach_hand']
+                rlen = 0.64
+        if role == 'shoulder' and (k - 1) in outs:
+            o_ = outs[k - 1]
+            reach = o_['shoulders'][0 if c_['lside'] > 0 else 1] - UP * 0.02
+            rlen = min(float(np.linalg.norm(reach - (pel + UP * 0.49 * hts[i]))) / hts[i], 0.60)
+        if role == 'parent':
+            pc, _, _, _ = planted[i + 1]
+            reach = pc + UP * 0.30
+            rlen = 0.46
+        if role == 'child' and (k - 1) in outs and 'reach_hand' in outs[k - 1]:
+            reach = outs[k - 1]['reach_hand']
+            rlen = 0.52
+        o = SP.traveller(sc, pel, wfig, aL, aR, pal[int(_hh(k, 11) * len(pal))], h=hts[i], lean=lean,
+                         hem=c_['hem'], cloak=c_['cloak'], folds=int(8 + 5 * _hh(k, 20)),
+                         fold_depth=0.020 + 0.014 * _hh(k, 21), fold_phase=0.8 * math.sin(ph) + 6.28 * _hh(k, 22),
+                         sway=0.03 * math.sin(ph) * go[i], pack=c_['pack'], staff_tip=tip,
+                         lantern_side=c_['lside'], lantern_swing=0.03 * math.sin(2 * ph - 0.6) * go[i],
+                         free_swing=0.08 * math.sin(ph) * go[i], peak=c_['peak'], reach=reach, reach_len=rlen,
+                         wind=wk_v * (0.8 + 0.4 * _hh(k, 34)), flutter=flk, cape=c_['cape'], hood_k=c_['hood_k'],
+                         bedroll=c_['bedroll'], lantern_mode=c_['lmode'])
+        outs[k] = o
         waists.append(o['waist'])
-        I = small_lantern_I(k, t)
-        bc = SP.small_lantern(sc, o['lantern'], SMALL_COL, 2.2 * I / 0.3)
-        lights.append([bc[0], bc[1], bc[2], SMALL_COL[0], SMALL_COL[1], SMALL_COL[2], I, 0.12])
-        lant.append((bc, I))
+        if 'lantern' in o:
+            I = small_lantern_I(k, t)
+            bc = SP.small_lantern(sc, o['lantern'], SMALL_COL, 2.2 * I / 0.3)
+            lights.append([bc[0], bc[1], bc[2], SMALL_COL[0], SMALL_COL[1], SMALL_COL[2], I, 0.12])
+            lant.append((bc, I))
+    if ev is not None:
+        # the rock step across the path: a rough, snow-dusted block the pair climbs
+        p0, w0 = at(ev['s_edge'] + 0.65)
+        g0 = ground_many(p0)[0]
+        sc.begin(rgb=(0.07, 0.07, 0.07))
+        yaw0 = math.atan2(w0[0], w0[2])
+        sc.box(np.array([p0[0], g0 + STEP_H * 0.5 - 0.10, p0[2]]), (0.62, STEP_H * 0.5 + 0.10, 0.70),
+               yaw=yaw0 + 0.12, pitch=0.04, rnd=0.07, mat=6, k=0.0)
+        sc.box(np.array([p0[0], g0 + STEP_H * 0.35, p0[2]]) + np.cross(UP, w0) * 0.45 - w0 * 0.25,
+               (0.30, STEP_H * 0.38, 0.34), yaw=yaw0 - 0.5, pitch=-0.08, rnd=0.06, mat=6, k=0.08)
+        sc.end()
+        sc.O[-1][14] = -1.0          # rock, not a hearth ring: snow on its top, no soot
     # ---- the watch-fires: a ring of stones at the near one; a hooded keeper at each, backlit, feeding it
     for k, p in enumerate(wfs()):
         b, ph = wf_burn(t, k)
         if k == 0:
-            sc.begin(rgb=(0.07, 0.07, 0.075))
-            rng = np.random.default_rng(70 + k)
-            for m in range(13):
-                a_ = 2 * math.pi * m / 13 + rng.uniform(-0.15, 0.15)
-                q = p + np.array([math.cos(a_), 0.0, math.sin(a_)]) * (0.50 + rng.uniform(-0.04, 0.05))
-                hs = rng.uniform(0.6, 1.0)
-                sc.box(q + UP * 0.05 * hs, (0.09 * hs, 0.07 * hs, 0.08 * hs), yaw=a_ + rng.uniform(-0.5, 0.5),
-                       pitch=rng.uniform(-0.3, 0.3), rnd=0.025, mat=5, k=0.0)
-            sc.end()
+            SP.stone_ring(sc, p, 70 + k, ground=lambda q: float(ground_many(q)[0]))
         feed = smoothstep(0.86, 0.93, ph) * (1.0 - smoothstep(0.97, 1.0, ph))
         kp, wk = keeper_spot(k)
         kw_v, kfl = wind_at(t, 0.0, 60 + k)
@@ -940,7 +1170,7 @@ def draw_rope(img, zb, scam, waists, lights, md, mf):
     L = np.array(lights)
     for a, b in zip(W[:-1], W[1:]):
         d = np.linalg.norm(b - a)
-        sag = 0.28 + 0.12 * math.sin(d * 3.1)
+        sag = min((0.10 + 0.04 * math.sin(d * 3.1)) * d, 0.55)
         u = np.linspace(0, 1, 14)
         pts = a[None] + (b - a)[None] * u[:, None] - UP[None] * (4 * sag * u * (1 - u))[:, None]
         sx, sy, z = scam.project(pts)
@@ -1019,37 +1249,14 @@ def draw_trail(img, zb, scam, t, cfg, gain):
 
 
 def draw_heart(img, zb, scam, heart, t, hc, br, pxs):
-    """The heart of light in the lantern: an intense core, a soft glow filling the glass, and a few slow filaments."""
+    """The heart of light in the lantern: HEART CONTRACT v2 (heart2.py), the same function of A's cut frame as
+    EMBERS-A3's 4879: an upright flame core that flickers and licks, the steady glows, a faint warm edge. (v1's
+    curling filaments are gone: they popped in on the cut and read as a bulb's filament.)"""
     sx, sy, z = scam.project(heart)
     if z < 0.2:
         return
     ppm = scam.f / z
-    I = 1.0 * br
-    F.halo(img, zb, sx, sy, max(0.035 * ppm, 0.6), 30.0 * I, z=z, zbias=0.4, col=hc)
-    F.halo(img, zb, sx, sy, max(0.09 * ppm, 0.9), 0.9 * I, z=z, zbias=0.4, col=hc)
-    F.halo(img, zb, sx, sy, max(0.40 * ppm, 1.5), 0.05 * I, z=z, zbias=0.6, col=hc)
-    if ppm < 40:
-        return
-    # filaments: slow curling threads of light around the core (the thinking fire, calm)
-    rng = np.random.default_rng(5)
-    for k in range(7):
-        a0 = rng.uniform(0, 6.28)
-        tilt = rng.uniform(-0.9, 0.9)
-        rr = rng.uniform(0.05, 0.11)
-        n = 28
-        pts = []
-        for m in range(n):
-            u = m / (n - 1)
-            a = a0 + 2.2 * u + 0.15 * t * (0.6 + 0.4 * k / 7)
-            r = rr * (0.4 + 0.6 * math.sin(math.pi * u))
-            p = heart + np.array([math.cos(a) * r, (u - 0.5) * 0.16 + tilt * 0.03 * math.sin(a), math.sin(a) * r])
-            pts.append(p)
-        pts = np.array(pts)
-        a_, b_, zz = scam.project(pts)
-        for m in range(n - 1):
-            e = 0.9 * I * math.sin(math.pi * m / (n - 1)) ** 2
-            _aa_line(img, zb, float(a_[m]), float(b_[m]), float(a_[m + 1]), float(b_[m + 1]), float(zz[m]),
-                     max(0.004 * ppm, 0.5), float(hc[0] * e), float(hc[1] * e), float(hc[2] * e), 0.3)
+    H2.draw(img, zb, sx, sy, 0.035 * ppm, CUT0 + t * FPS, hc, I=1.0 * br, z=z, zbias=0.4)
 
 
 def draw_small_glows(img, zb, scam, lant):
@@ -1099,6 +1306,48 @@ def draw_fires(img, zb, scam, t):
 FINISH = dict(exposure=1.0, bloom_strength=0.08, bloom_threshold=0.9, streak_strength=0.0, vignette_amount=0.25)
 
 
+# natural motion blur on the people while they are large in frame (the close-up and the draw-back): three sub-frame
+# samples across a 180-degree shutter for every object whose bound spans > MB_PX source pixels; the small, far
+# figures take one sample (their blur would be under a pixel). The sub-frame scenes differ only in the figures.
+MB_T1 = 14.0                                     # seconds: after this the draw-back has made every figure small
+MB_PX = 36.0
+MB_DT = (-1.0 / 72.0, 0.0, 1.0 / 72.0)           # centres of three thirds of a 1/48 s shutter (s)
+
+
+def _near_objects(Ob, C):
+    """Indices of objects whose bounding sphere projects wider than MB_PX source pixels."""
+    ox, oy, oz, fx, fz, rx, rz, f = C[0], C[1], C[2], C[3], C[4], C[5], C[6], C[7]
+    v = Ob[:, 2:5] - np.array([ox, oy, oz])
+    zc = v[:, 0] * fx + v[:, 2] * fz
+    rp = f * Ob[:, 5] / np.maximum(zc - Ob[:, 5], 0.05)
+    return np.nonzero((zc > 0.05) & (rp > MB_PX))[0]
+
+
+def render_figures(fr, scam, C, t, cfg, Pr, Ob, LT, moon, amb, fogp):
+    near = _near_objects(Ob, C) if t < MB_T1 else np.zeros(0, np.int64)
+    if len(near) == 0:
+        SP.render(fr.img, fr.zb, C, Pr, Ob, LT, moon, amb, fogp, scam.pos[1])
+        return
+    far = np.setdiff1d(np.arange(len(Ob)), near)
+    if len(far):
+        SP.render(fr.img, fr.zb, C, Pr, np.ascontiguousarray(Ob[far]), LT, moon, amb, fogp, scam.pos[1])
+    acc = np.zeros_like(fr.img)
+    zc = None
+    for dt in MB_DT:
+        if dt == 0.0:
+            Pj, Oj = Pr, Ob
+        else:
+            Pj, Oj = build_scene(t + dt, cfg)[0].arrays()
+        im = fr.img.copy()
+        zb = fr.zb.copy()
+        SP.render(im, zb, C, Pj, np.ascontiguousarray(Oj[near]), LT, moon, amb, fogp, scam.pos[1])
+        acc += im
+        if dt == 0.0:
+            zc = zb
+    fr.img = (acc / len(MB_DT)).astype(fr.img.dtype)
+    fr.zb = zc
+
+
 def render(frame, scale=1.0, ss=1.5, variant='main', trail=True):
     cfg = variant_cfg(variant)
     t = frame / FPS
@@ -1129,7 +1378,7 @@ def render(frame, scale=1.0, ss=1.5, variant='main', trail=True):
     Pr, Ob = sc.arrays()
     Lk = light[0]
     moon = np.array([md[0], md[1], md[2], Lk[3], Lk[4], Lk[5], 0.55 * mf])
-    SP.render(fr.img, fr.zb, C, Pr, Ob, np.array(lights, np.float64), moon, light[1] * 1.3, light[3], scam.pos[1])
+    render_figures(fr, scam, C, t, cfg, Pr, Ob, np.array(lights, np.float64), moon, light[1] * 1.3, light[3])
     a = sky_angle(t)
     if trail:
         draw_trail(fr.img, fr.zb, scam, t, cfg, 0.10 * smoothstep(4.0, 16.0, a))
