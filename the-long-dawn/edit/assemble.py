@@ -659,29 +659,43 @@ import afix_comp as AFIX  # noqa: E402  (lane A-FIX's transition kinds, dispatch
 def _swell(o, i, d, f, t, k):
     """EDIT kind 'swell' (A4 -> A5, user 28 Sep): the outgoing point's glow grows (ease-in) into the incoming's first
     frame d (the ignition disc), drifting to its centre; a soft cross-blend over t['blend'] joins the two sides; after
-    the cut the disc, lightened over the live frames, shrinks and fades toward the flame so it condenses into it over
-    t['f1'] - t['cut'] frames. The disc is lifted off its black (minus its median, inside a soft circle of radius R)."""
+    the cut the disc shrinks and fades toward the flame so it condenses into it over t['f1'] - t['cut'] frames.
+    Everything added is ROUND: a bloom with the disc's own azimuthal-mean profile (lifted off its black, soft limit R),
+    and the incoming halo beyond r 140 px is replaced by its azimuthal mean (the render's halo is a rounded square)
+    from before the cut until it has faded; the flame inside r 140 is untouched."""
     H, W = d.shape[:2]
     cut, f0, f1 = t['cut'], t['f0'], t['f1']
     ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
     dx, dy = t['disc'][0] * k, t['disc'][1] * k
-    m = np.clip(1.2 - np.hypot(xs - dx, ys - dy) / (t['R'] * k), 0, 1)[..., None]
-    dm = np.clip(d - float(np.median(d)), 0, 1) * m
+    rd = np.hypot(xs - dx, ys - dy)
+    ri = rd.astype(np.int32).ravel()
+    cnt = np.maximum(np.bincount(ri), 1)
 
-    def place(scale, cx, cy):
-        M = np.float32([[scale, 0, cx - scale * dx], [0, scale, cy - scale * dy]])
-        return cv2.warpAffine(dm, M, (W, H), flags=cv2.INTER_LINEAR, borderValue=0)
+    def profile(img):                                         # per-channel azimuthal mean about the disc centre
+        return np.stack([np.bincount(ri, img[..., c].ravel()) / cnt for c in range(3)], 1).astype(np.float32)
+
+    def radial(prof, r):
+        idx = np.arange(len(prof), dtype=np.float32)
+        return np.stack([np.interp(r, idx, prof[:, c], right=0.0) for c in range(3)], -1).astype(np.float32)
+
+    pd = np.clip(profile(d) - float(np.median(d)), 0, None)
+    pd *= np.clip(1.2 - np.arange(len(pd), dtype=np.float32) / (t['R'] * k), 0, 1)[:, None]
+
+    def disc(scale, cx, cy):                                  # the round bloom, scaled about (cx, cy)
+        return radial(pd, np.hypot(xs - cx, ys - cy) / max(scale, 1e-3))
 
     u = min(1.0, max(0.0, (f - f0) / (cut - f0)))
     e = u ** 1.2                                                # before the cut: ease-in growth, visible from ~1/4
     cx = (t['p0'][0] + (t['c1'][0] - t['p0'][0]) * e) * k
     cy = (t['p0'][1] + (t['c1'][1] - t['p0'][1]) * e) * k
-    a_img = np.maximum(o, u ** 0.5 * place(t['s0'] + (1 - t['s0']) * e, cx, cy))
+    a_img = np.maximum(o, u ** 0.5 * disc(t['s0'] + (1 - t['s0']) * e, cx, cy))
     v = min(1.0, max(0.0, (f - cut) / (f1 - cut)))
     e2 = v * v * (3 - 2 * v)                                    # after the cut: the disc condenses into the flame
+    hm = (np.clip((rd - 140 * k) / (40 * k), 0, 1) * (1 - e2))[..., None]
+    i2 = i * (1 - hm) + radial(profile(i), rd) * hm             # the incoming halo made round
     fx = (t['disc'][0] + (t['flame'][0] - t['disc'][0]) * e2) * k
     fy = (t['disc'][1] + (t['flame'][1] - t['disc'][1]) * e2) * k
-    b_img = np.maximum(i, (1 - e2) * place(1 - (1 - t['s1']) * e2, fx, fy))
+    b_img = np.maximum(i2, (1 - e2) * disc(1 - (1 - t['s1']) * e2, fx, fy))
     b0, b1 = t['blend']
     w = min(1.0, max(0.0, (f - b0 + 0.5) / (b1 - b0)))
     w = w * w * (3 - 2 * w)
