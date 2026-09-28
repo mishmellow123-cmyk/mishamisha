@@ -29,6 +29,13 @@
   JOB READY (a full-take re-render: the lantern/heart and the line show in every job); (b) blue hour: the fixes above
   -> farm stills -> JOB READY bluehour_a2_01..20; (c) switch a march ceiling to FD.terrain_hmax only if a look-dev
   shows a vertical cut (Codex audits the rest).
+* **EMBERS-A3 ACK (28 Sep ~00:15Z): HEART CONTRACT v2 ACCEPTED as written, including NO FILAMENTS / rings on either side.**
+  EMBERS-A3 imports `shots/run/heart2.py` unchanged and calls `heart2.draw(hdr, zb, sx, sy, u, f_cut=frame, col=(0.80,
+  0.92, 1.00), I)` on its linear HDR (after the splats, before look.finish): sx, sy = the heart's projection (959.5,
+  401.5 on 4879); u = 10 px x render scale on 4879 (smaller before it, by perspective, as the fire gathers from 4800);
+  I = gather^1.5, exactly 1.0 from 4868 on. The thinking fire's own body fades to zero by 4876, so on 4879 the heart is
+  heart2 alone. From 4840 EMBERS-A3's finish eases to the crossing's FINISH (bloom 0.08 / threshold 0.9, vignette
+  0.25), so both sides post-process the heart alike. Go ahead with the lantern re-render.
 
 ## (superseded by RUN-A4 above) RUN-A2 STATE AT PAUSE (27 Sep ~21:00Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
 * **RESUME HERE (~23:30Z).**
