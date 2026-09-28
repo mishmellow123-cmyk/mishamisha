@@ -324,6 +324,21 @@ C = [
 
 EDL = {'A': A, 'B': B, 'C': C}
 
+# EDIT transitions across an EDL boundary 'cut' (assemble._transitions; the comp, not a cut): the outgoing shot plays
+# its own frames up to the boundary, then holds its last; the incoming holds its first frame until the boundary, then
+# plays. A window whose layer frames are missing plays as the plain hard cut.
+#   x1        MAP-L2's burn-through layer (shots/map/road.py x1_screen): out = O * keep + I * (1 - keep) + glow
+#   dissolve  a linear-light dissolve on a smoothstep ramp over the window
+# ready=False: wired but held back (plays as the plain cut). Both X1s (28 Sep 01:00Z): the farm rendered the layers in
+# 12-frame chunks and x1_screen's default t_open = (chunk's first frame + 6) / 24, so the burn restarts every chunk
+# (holes only at 4157-61, 4169-73, 4181-85); MAP-L2 re-renders them with one explicit t_open, then ready=True.
+TRANS = {'A': [], 'B': [], 'C': [
+    dict(f0=4150, f1=4186, cut=4160, kind='x1', glow='x1_map_C', keep='x1_map_C_matte', ready=False,
+         note="MAP-L2's X1: the ink run's seventh beacon (1130, 485) burns through onto the map (PAGES-C, 28 Sep)"),
+    dict(f0=5594, f1=5641, cut=5600, kind='x1', glow='x1_map_C71', keep='x1_map_C71_matte', ready=False,
+         note="MAP-L2's X1 for bar 71: the stone burns through onto the roads of fire (960, 402) (PAGES-C, 28 Sep)"),
+]}
+
 
 def check(barmap_dir):
     """Shots must tile each cut exactly, and every section boundary must match the locked bar map."""

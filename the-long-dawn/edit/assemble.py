@@ -597,6 +597,8 @@ def _init(cut, variant, scale, clean, finish=None):
     _CTX = Ctx(cut, variant, scale, clean)
     if finish:                                                # FINISH (finish/stage.py): the masters' film finish
         _CTX.picture = _finishing(_CTX, None if finish is True else finish)
+    if EDL.TRANS.get(cut):                                    # EDIT transitions (EDL.TRANS), after the finish
+        _CTX.picture = _transitions(_CTX, finish)
 
 
 def _finishing(ctx, look=None):
@@ -614,6 +616,76 @@ def _finishing(ctx, look=None):
             img = fin(img, src, ctx.cut, f)
         return img, shot, status, src
     return finished
+
+
+def transition_at(cut, f):
+    """The EDIT transition window (EDL.TRANS) holding cut frame f, else None."""
+    for t in EDL.TRANS.get(cut, ()):
+        if t.get('ready', True) and t['f0'] <= f < t['f1']:
+            return t
+    return None
+
+
+def transition_layers(t, f):
+    """{'glow': path, 'keep': path} of a window's layer frames at f; None if one is missing (then: a hard cut)."""
+    out = {}
+    for k in ('glow', 'keep'):
+        if t.get(k):
+            p = index(os.path.join(RENDERS, t[k])).get(f)
+            if not p:
+                return None
+            out[k] = p
+    return out
+
+
+def _to_lin(x):
+    return np.where(x <= 0.04045, x / 12.92, ((x + 0.055) / 1.055) ** 2.4)
+
+
+def _to_srgb(x):
+    x = np.maximum(x, 0)
+    return np.where(x <= 0.0031308, x * 12.92, 1.055 * x ** (1 / 2.4) - 0.055)
+
+
+def _transitions(ctx, finish=None):
+    """EDIT transitions (EDL.TRANS), installed by _init after the finish. Inside a window the frame joins the outgoing
+    shot (its frames before t['cut'], then its last frame held) and the incoming shot (its first frame held until
+    t['cut'], then its frames), each finished on its own (ink or film look; grain seeded per cut frame, so a held
+    frame's grain still renews), by the window's matte (x1: O * keep + I * (1 - keep) + glow) or a linear-light
+    dissolve. No Ctx method changes (deliver._code_hash); deliver.segment_key adds a window's spec and frames only
+    to the segments it touches. Slates on either side, or a missing layer frame, leave the plain cut."""
+    raw = Ctx.picture.__get__(ctx)
+    outer = ctx.picture
+    fin = None
+    if finish:
+        sys.path.insert(0, os.path.join(ROOT, 'finish'))
+        import stage
+        fin = stage.Finisher(None if finish is True else finish)
+
+    def side(g, f):
+        img, shot, status, src = raw(g)
+        if src is None or status.startswith('SLATE'):
+            return None, None
+        return (fin(img, src, ctx.cut, f) if fin else img), (shot, status, src)
+
+    def pic(f):
+        t = transition_at(ctx.cut, f)
+        lay = transition_layers(t, f) if t else None
+        if lay is None:
+            return outer(f)
+        (o, mo), (i, mi) = side(min(f, t['cut'] - 1), f), side(max(f, t['cut']), f)
+        if o is None or i is None:
+            return outer(f)
+        shot, status, src = mo if f < t['cut'] else mi
+        if t['kind'] == 'x1':
+            keep = ctx.read(lay['keep'], gray=True)[..., None]
+            img = o * keep + i * (1 - keep) + ctx.read(lay['glow'])
+        else:                                                 # dissolve
+            a = (f - t['f0'] + 0.5) / (t['f1'] - t['f0'])
+            a = a * a * (3 - 2 * a)
+            img = _to_srgb(_to_lin(o) * (1 - a) + _to_lin(i) * a)
+        return np.clip(img, 0, 1).astype(np.float32), shot, f'{status} + {t["kind"]}', src
+    return pic
 
 
 def _job(f):
@@ -772,7 +844,7 @@ def export_edl():
             b0, _ = bar_beat(s['f0'])
             shots.append(dict(s, takes=takes, bars=[b0, bar_beat(s['f1'] - 1)[0]]))
         txt = titles.text_table(cut)
-        json.dump(dict(cut=cut, fps=FPS, frames=EDL.TOTAL[cut], shots=shots, text=txt,
+        json.dump(dict(cut=cut, fps=FPS, frames=EDL.TOTAL[cut], shots=shots, text=txt, transitions=EDL.TRANS.get(cut, []),
                        lookup='per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; '
                               'exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>'
                               '_alt_codedtowers first'),

@@ -182,6 +182,8 @@ def _still(job):
         _CTX[key] = AS.Ctx(cut, variant, 1.0, True)
         if os.environ.get('H9_FINISH', '1') == '1' and AS.__dict__.get('_finishing'):
             _CTX[key].picture = AS._finishing(_CTX[key])        # the masters' film finish (FINISH lane)
+        if AS.EDL.TRANS.get(cut):                            # EDIT transitions (EDL.TRANS), as in the masters
+            _CTX[key].picture = AS._transitions(_CTX[key], os.environ.get('H9_FINISH', '1') == '1')
     ctx = _CTX[key]
     img = ctx.frame(f)
     if len(ctx._slates) > 3:                         # full-res slate cards are 4.6 MB each

@@ -116,6 +116,25 @@ def _finish_id():
     return f'{stage.LOOK}:{stage.code_id()}'
 
 
+
+_TRANS_CODE = []
+
+
+def transition_sources(cut, variant, t, f):
+    """What a transition frame is made of: the window (spec + the comp's code), its layer frames and both sides'
+    source frames (the outgoing held after the boundary, the incoming held before it)."""
+    if not _TRANS_CODE:
+        _TRANS_CODE.append(hashlib.sha1(inspect.getsource(AS._transitions).encode()).hexdigest()[:12])
+    out = [json.dumps([{k: t[k] for k in sorted(t) if k != 'note'}, _TRANS_CODE[0]], default=str)]
+    lay = AS.transition_layers(t, f)
+    if lay is None:
+        return out + ['no layer: plain cut']
+    out += [_stat(p) for p in lay.values()]
+    for g in (min(f, t['cut'] - 1), max(f, t['cut'])):
+        s = next(s for s in AS.EDL.EDL[cut] if s['f0'] <= g < s['f1'])
+        out += frame_sources(cut, variant, AS.plan_shot(s, cut, variant), g)
+    return out
+
 def segment_key(cut, variant, prof, i, shot, plan, code, table, fin=None):
     h = hashlib.sha1()
     take = plan['take']
@@ -141,6 +160,9 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table, fin=None):
         src = frame_sources(cut, variant, plan, f)
         if title:                                             # the ember title layer over the plate
             src.append(_stat(os.path.join(AS.RENDERS, f'title_{cut}', f'f_{f:05d}.exr')))
+        tw = AS.transition_at(cut, f)
+        if tw:                                                # an EDIT transition window (EDL.TRANS) over this frame
+            src += transition_sources(cut, variant, tw, f)
         h.update('\n'.join(src).encode())
     h.update(json.dumps(rows).encode())
     return h.hexdigest()[:24]

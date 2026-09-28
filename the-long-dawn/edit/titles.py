@@ -423,7 +423,8 @@ class TextV3:
         big[Y0 - HY0:Y1 - HY0, X0 - HX0:X1 - HX0] = sub_a
         bg = float(region.mean())
         if self.cut == 'C' and k.startswith('ink'):
-            col = IRON if bg > 0.33 else PARCH
+            col = IRON        # every C ink line is written on paper (book pages, the ink world): ink is darker than
+            # its paper whatever the light (PAGES-C 28 Sep: PARCH below a 0.33 mean turned T14 on C27's page white)
             region[:] = region * (1 - big[..., None]) + col * big[..., None]
             return img
         # legibility halo (a soft darkening under the words), strongest over bright pictures
