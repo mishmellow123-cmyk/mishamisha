@@ -52,4 +52,17 @@ These single full-resolution samples include asset construction and overlap othe
 
 ## Delivery status
 
-Approved local finals are rendering sequentially into `~/ldfarm/out/book_C5_refusal`, `book_C5_deep_abandoned` and `book_C5_pen`, plus corresponding `_matte` directories. Each shot will have 240 absolute-numbered JPEG q95 4:4:4 RGB frames and 240 mattes. The delivery checker decodes every frame, checks its dimensions and chroma sampling, and records its SHA256. Silent 24 fps previews and receipts will be placed in `~/ldfarm/comms/files/`. This paragraph records a running operation; completed delivery counts will replace it after validation.
+Source for all deliveries is `ebcdd0a`; review-only commits do not change it.
+Each completed row has decoded 1920×804 JPEG q95 4:4:4 RGB frames and matching mattes, independently rechecked SHA256 hashes, and a silent 24 fps preview.
+
+| Shot | RGB / mattes verified | Actual delivered samples | Receipt / full-shot QC |
+|---|---:|---|---|
+| 10 refusal | 240 / 240 | [24 sampled frames](refusal-delivery-sheet.jpg) | [Receipt](refusal-delivery.json), [QC](refusal-delivery-qc.json) |
+| 18 deep_abandoned | pending | — | — |
+| 22 pen | pending | — | — |
+
+Frames live under `~/ldfarm/out/book_C5_<shot>/` and its `_matte` sibling. Previews and original full receipts live under `~/ldfarm/comms/files/book_C5_<shot>_preview.mp4` and `book_C5_<shot>_receipt.json`.
+
+The 24-frame motion strips and native stills above were visually reviewed before final rendering. The complete final sequences await the later visual audit; no adjacent-shot joins or final captions have been approved here. Deep’s lantern and ladders remain small at 480 pixels wide. PEN is a supported physical insert onto blank pages; the incoming page turn belongs to EDIT.
+
+Frame-QC candidates are review flags, not calibration or artistic approval. [Delivery packaging/provenance](delivery-provenance.json), [runtime versions](runtime.json).

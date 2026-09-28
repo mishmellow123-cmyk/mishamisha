@@ -1,0 +1,28 @@
+{
+  "source_commit": "ebcdd0a0b51691a74f3635f7a64c55d6546a2aa0",
+  "updated_utc": "2026-09-28T08:13:04.019053+00:00",
+  "shots": {
+    "refusal": {
+      "range": [
+        2080,
+        2319
+      ],
+      "rgb_frames": 240,
+      "matte_frames": 240,
+      "qc_valid": 240,
+      "qc_pairs": 239,
+      "review_candidates": 0,
+      "render_seconds": 2183.3491916250205,
+      "delivery_receipt_sha256": "a85cd6a07cbf14fcbd5bf4162c8f43c81d8b5ff72fab2b45a9dcb9284810a574",
+      "preview": "book_C5_refusal_preview.mp4",
+      "preview_sha256": "7317a2343b4e2fa0e9008e69d49e6a99075374b158a374b78c15208281240284",
+      "completed_utc": "2026-09-28T08:13:04.018395+00:00"
+    }
+  },
+  "limits": [
+    "No new full-sequence visual review by the unattended supervisor.",
+    "No adjacent-shot join, caption, sound or EDIT approval."
+  ],
+  "supervisor_sha256": "6c23abaef81fcdf97a57410b0ce04b753bc3a799478464de7fd21a46cb7b6f57",
+  "packager_sha256": "3bbc0f15fd98bffec73aedfc39a5343d367ea05177d212370a7dfe72de223fcc"
+}

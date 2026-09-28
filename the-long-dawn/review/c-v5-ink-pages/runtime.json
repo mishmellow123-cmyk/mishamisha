@@ -1,0 +1,21 @@
+{
+  "python": "3.13.9",
+  "platform": "Darwin",
+  "machine": "arm64",
+  "libraries": {
+    "numpy": "2.3.5",
+    "numba": "0.62.1",
+    "scipy": "1.16.3",
+    "opencv-python-headless": "5.0.0.93",
+    "Pillow": "12.0.0"
+  },
+  "renderer_environment": {
+    "NUMBA_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1"
+  },
+  "opencv_setting": "setNumThreads(0) after imports; getter returned 1 in render logs",
+  "note": "Versions read from the same validation environment used for tests and finals; no package installation or renderer import."
+}
