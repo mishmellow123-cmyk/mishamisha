@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~14:40Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-28 ~14:50Z**, by the director (Claude, Opus 5.5).
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -249,6 +249,12 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
   3. Write C's v5 EDL (the timeline above; burns in renders/book_C_ft; slates for missing shots; captions v5.3) and restart the watcher with C.
   4. Score pass 2 (the two first beacons answering each other; re-sync to the real picture), then SOUND's re-sync (hammers, flint, beacons, the silence at 3848).
   5. The user's open decisions (section 6).
+
+- **14:50Z FINAL CHECKPOINT (battery 20%, Claude week 97%):** the session is going idle and its caffeinate is off.
+  - The A15 companion `renders/watchers_A_catches3` has fully landed (160/160).
+  - A14 `renders/beaconrun_A_catches3` has 213/320 landed; its last farm unit was still running.
+  - If the laptop slept before it finished, fill the gaps with: `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/beaconrun_a_catches3.json --missing --nodes 2 --detach`. If the farm hangs, restart the daemon as described in section 4.
+  - Everything else is as in the 14:40Z list above.
 
 ## 7. Lanes (as of 07:30Z, 28 Sep)
 | Lane | State |
