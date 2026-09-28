@@ -106,6 +106,17 @@
   ]
  },
  {
+  "id": "A.x.take",
+  "kind": "bed",
+  "t0": 148.375,
+  "t1": 150.083,
+  "level": -36.0,
+  "gain": -5.2,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
   "id": "A.impact",
   "kind": "event",
   "t": 110.0,
@@ -158,15 +169,17 @@
  {
   "id": "A.blow",
   "kind": "event",
-  "t": 143.5,
+  "t": 143.625,
   "level": -36.2,
-  "gain": -15.6,
-  "clip_start_s": 143.452,
-  "hit_offset_s": 0.048,
+  "gain": -20.6,
+  "clip_start_s": 143.595,
+  "hit_offset_s": 0.03,
   "src": [
    "fs:848421",
    "fs:273979",
    "fs:273979",
+   "fs:273979",
+   "fs:848421",
    "fs:406648",
    "fs:595483"
   ]
@@ -309,7 +322,7 @@
   "kind": "event",
   "t": 218.3333,
   "level": -61.3,
-  "gain": -17.6,
+  "gain": -15.6,
   "clip_start_s": 215.8333,
   "hit_offset_s": 2.5,
   "src": [
@@ -321,7 +334,7 @@
   "kind": "event",
   "t": 228.3333,
   "level": -60.4,
-  "gain": -16.6,
+  "gain": -13.8,
   "clip_start_s": 225.8333,
   "hit_offset_s": 2.5,
   "src": [
@@ -333,7 +346,7 @@
   "kind": "event",
   "t": 238.3333,
   "level": -60.8,
-  "gain": -17.0,
+  "gain": -13.8,
   "clip_start_s": 235.8333,
   "hit_offset_s": 2.5,
   "src": [
@@ -343,10 +356,10 @@
  {
   "id": "A.x.catch",
   "kind": "event",
-  "t": 148.1667,
-  "level": -35.2,
-  "gain": -14.4,
-  "clip_start_s": 147.4967,
+  "t": 148.4583,
+  "level": -30.2,
+  "gain": -9.4,
+  "clip_start_s": 147.7883,
   "hit_offset_s": 0.67,
   "src": [
    "fs:595483"
