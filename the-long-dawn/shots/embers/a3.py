@@ -336,11 +336,11 @@ CAM_A5 = [  # (frame, radius, azimuth offset from ALPHA_C, height, target y, hfo
     (1470, 50.0, -0.16, 5.0, 7.0, 66.0),        # the forges rise round it: down to the fire's own height
     # A-FIX (the race was legible only in the captions: the forges' burning crowns and the giants' growth were all
     # above the frame): the camera draws back as they rise until the whole ring and its crowns race in view
-    (1540, 62.0, -0.08, 2.0, 12.0, 68.0),
-    (1620, 78.0, 0.02, 0.0, 17.0, 66.0),        # T5: the ring of forges, every crown burning, round the fire
-    (1690, 92.0, -0.04, -2.0, 21.0, 66.0),      # T6a: the smiths race
-    (1730, 100.0, -0.08, -4.0, 25.0, 66.0),     # T6b: two giants shoot up past the rest; the camera tilts up with them
-    (1759, 104.0, -0.12, -5.0, 28.0, 66.0),
+    (1540, 58.0, -0.08, -2.0, 9.0, 68.0),
+    (1620, 66.0, 0.02, -5.0, 11.0, 68.0),       # T5: the ring of forges, every crown burning, round the fire
+    (1690, 68.0, -0.04, -7.0, 13.0, 70.0),      # T6a: the smiths race (the fire low in the frame, the crowns above)
+    (1730, 70.0, -0.08, -8.0, 15.0, 72.0),      # T6b: two giants shoot up past the rest; the camera tilts up with them
+    (1759, 70.0, -0.12, -8.0, 16.0, 74.0),
 ]
 
 # bar 23 b1 (1760): a CUT to behind giant 2, which slips across the fire until it eclipses it: a black mass fringed
