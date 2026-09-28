@@ -1,0 +1,17 @@
+{
+ "name": "map_last_beacon_c5",
+ "note": "C v5.2 shot15 LAST BEACON. Eight invented kingdoms; C3724–3783 exactly one dark, C3784–3791 last catch, C3792–3839 all-lit caption hold. No titles/burn. Serial bootstrap and render to bound memory; opt-in output leaves accepted map_C untouched.",
+ "branch": "codex/c-v5-last-beacon",
+ "setup": [
+  "python3 -m pip install -q numba==0.62.1 llvmlite==0.45.1 numpy==2.3.5 scipy==1.16.3 opencv-python-headless==5.0.0.93 pillow==12.0.0",
+  "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 shots/map/last_beacon.py bake"
+ ],
+ "render": [
+  "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 shots/map/last_beacon.py frames --frames 3440-3839 --format png --out renders/map_last_beacon_C"
+ ],
+ "outputs": [
+  {"out_dir": "renders/map_last_beacon_C", "frames": "3440-3839"}
+ ],
+ "ship": "jpg",
+ "push_every": 300
+}
