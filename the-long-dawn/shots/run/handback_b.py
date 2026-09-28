@@ -756,17 +756,17 @@ def high_cloud(img, G, cam_pos, L):
     x = cam_pos[0] + dx * t
     z = cam_pos[2] + dz * t
     ca, sa = math.cos(math.radians(24.0)), math.sin(math.radians(24.0))
-    u = ((x * ca + z * sa) / 11000.0).astype(np.float64)
-    v = ((-x * sa + z * ca) / 1700.0).astype(np.float64)
+    u = ((x * ca + z * sa) / 6500.0).astype(np.float64)                # broad feathery cirrus, never thin straight
+    v = ((-x * sa + z * ca) / 3200.0).astype(np.float64)                # lines (they read as contrails)
     n = np.zeros(len(u))
     _fbm_arr(u, v, n)
-    d = np.clip((n - 0.10) / 0.40, 0.0, 1.0)
+    d = np.clip((n - 0.02) / 0.55, 0.0, 1.0)
     d = d * d * (3.0 - 2.0 * d) * np.clip(1.0 - t / 140000.0, 0.0, 1.0) ** 0.7
     cg = np.clip(dx * L[0] + dy * L[1] + dz * L[2], 0.0, 1.0)
     lift = (1.20 + 1.30 * cg ** 10)[:, None]
     tint = (np.array([1.0, 0.80, 0.62])[None, :] * (0.4 + 0.6 * cg ** 4)[:, None]
             + np.array([1.0, 0.70, 0.72])[None, :] * (0.6 - 0.6 * cg ** 4)[:, None])
-    a = (0.42 * d)[:, None]
+    a = (0.30 * d)[:, None]
     px = img[jj, ii, :]
     img[jj, ii, :] = px * (1.0 - a) + px * lift * tint * a
     return img
