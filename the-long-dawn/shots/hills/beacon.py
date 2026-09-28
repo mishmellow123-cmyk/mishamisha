@@ -415,7 +415,7 @@ AFIX_RAMP = 10                   # frames over which the kindling flame grows in
 AFIX_FLINCH = 4                  # her flinch starts this many frames into the ramp (she reacts to the surge)
 AFIX_HFOV = (40.0, 33.0)         # the push-in: strike 1 -> the roar
 AFIX_TGT = ((0.40, 1.02, 0.0), (0.33, 1.06, 0.0))
-AFIX_BREATH_COOL = np.array([0.20, 0.24, 0.32])   # moonlit breath (linear, x density): pale, never lit like a flame
+AFIX_BREATH_COOL = np.array([0.10, 0.12, 0.16])   # moonlit breath (linear, x density): pale, never lit like a flame
 
 
 def roar_mix(f):
@@ -423,6 +423,11 @@ def roar_mix(f):
     if not AFIX:
         return 1.0 if f >= ROAR else 0.0
     return smoothstep(ROAR - 1, ROAR + AFIX_RAMP - 1, f)
+
+
+def lv_cap(lv):
+    """The roar's light level: A-FIX holds the camera close, so the flare is capped lower than the take's 2.5."""
+    return min(lv, 1.6) if AFIX else min(lv, 2.5)
 
 
 def roar_react():
@@ -465,6 +470,8 @@ def apply_afix():
             ks.append((s3 + 6, KNEEL, 'smooth'))
         elif fr == s3 + 24 and pose is BLOW:
             ks.append((s3 + 26, BLOW, 'smooth'))
+        elif fr >= ROAR:
+            ks.append((fr + AFIX_FLINCH, pose, e))
         else:
             ks.append((fr, pose, e))
     V2_KEYS = ks
@@ -475,25 +482,45 @@ _AFIX_WOOD = []
 
 
 def afix_wood():
-    """A-FIX: the basket's wood as an irregular pile (split logs leaning every which way, tops at uneven heights round
-    the rim, no apex and no crossbar), with one log lying under the tinder nest."""
+    """A-FIX: the basket's wood as a jumbled pile. Seen from below against the sky, a few clean logs read as letters
+    (the v3 teepee was an "A"; t1's sparse pile an "H"), so: many split logs at random slants, overlapping, their tops
+    mostly under the rim, three lying across at a slope, one log under the tinder nest."""
     if not _AFIX_WOOD:
-        rng = np.random.default_rng(1947)
+        rng = np.random.default_rng(2209)
         yb, yt = CAIRN.bk_bot, CAIRN.bk_top
-        for i in range(8):
-            side = -1.0 if i % 3 else 1.0
-            xb = side * rng.uniform(0.03, 0.19)
-            xt = xb * rng.uniform(0.15, 0.75) + rng.uniform(-0.07, 0.07)
-            _AFIX_WOOD.append((xb, yb + rng.uniform(0.02, 0.07), xt, yt + rng.uniform(-0.07, 0.045),
-                               rng.uniform(0.024, 0.040)))
-        for i in range(2):
-            y_ = yb + 0.11 + 0.10 * i + rng.uniform(-0.02, 0.02)
-            _AFIX_WOOD.append((-0.21 + rng.uniform(-0.03, 0.03), y_, 0.16 + rng.uniform(-0.03, 0.03),
-                               y_ + rng.uniform(-0.07, 0.07), rng.uniform(0.028, 0.036)))
+        for i in range(12):
+            xb = rng.uniform(-0.16, 0.16)
+            yb_ = yb + rng.uniform(0.02, 0.09)
+            ang = math.radians(rng.uniform(18.0, 68.0)) * (1.0 if rng.random() < 0.5 else -1.0)
+            L = rng.uniform(0.17, 0.30)
+            xt, yt_ = xb + L * math.sin(ang), yb_ + L * math.cos(ang)
+            if yt_ > yt + 0.015:                          # keep the tops under (or just at) the rim
+                k = (yt + 0.015 - yb_) / (yt_ - yb_)
+                xt, yt_ = xb + (xt - xb) * k, yb_ + (yt_ - yb_) * k
+            _AFIX_WOOD.append((xb, yb_, xt, yt_, rng.uniform(0.022, 0.040)))
+        for i in range(3):
+            y_ = yb + 0.08 + 0.085 * i + rng.uniform(-0.02, 0.02)
+            sl = rng.uniform(0.2, 0.5) * (1.0 if i % 2 else -1.0)
+            x0 = -0.20 + rng.uniform(-0.03, 0.04)
+            x1 = 0.18 + rng.uniform(-0.04, 0.03)
+            _AFIX_WOOD.append((x0, y_ - 0.5 * sl * (x1 - x0), x1, y_ + 0.5 * sl * (x1 - x0), rng.uniform(0.026, 0.036)))
         _AFIX_WOOD.append((0.05, yt - 0.075, 0.27, yt - 0.055, 0.030))     # under the nest
     wood = ch.G('wood', 'wood', k=0.004, per_prim=True)
-    for (xb, yb_, xt, yt_, r) in _AFIX_WOOD:
-        wood.cone((xb, yb_), (xt, yt_), r, r * 0.85, k=0.004)
+    wr = np.random.default_rng(77)
+    for (xb, yb_, xt, yt_, r) in _AFIX_WOOD:          # split logs: flat-cut ends, one flatter split face, bark
+        a_, b_ = np.array([xb, yb_]), np.array([xt, yt_])
+        d_ = b_ - a_
+        u_ = d_ / (np.linalg.norm(d_) + 1e-12)
+        n_ = np.array([-u_[1], u_[0]])
+        s1, s2 = [], []
+        for q in range(9):
+            c_ = a_ + d_ * (q / 8.0)
+            s1.append(c_ + n_ * r * (1.0 + 0.10 * wr.normal()))
+            s2.append(c_ - n_ * r * (0.72 + 0.10 * wr.normal()))
+        c0, c1 = wr.uniform(-0.35, 0.35) * r, wr.uniform(-0.35, 0.35) * r
+        s1[0], s2[0] = s1[0] + u_ * c0, s2[0] - u_ * c0
+        s1[-1], s2[-1] = s1[-1] + u_ * c1, s2[-1] - u_ * c1
+        wood.poly(np.array(s1 + s2[::-1]), r=0.002, k=0.004)
     return wood
 
 
@@ -1053,7 +1080,7 @@ class FirstBeacon:
                 I = (lv if f < ROAR else min(lv, 1.0) * (1.0 - rm)) * flick
                 lights.append([TINDER[0], TINDER[1] + 0.06, -0.06, 2.6 * I, 1.25 * I, 0.40 * I, 0.35, 0.0])
             if rm > 0.0:
-                I = min(lv, 2.5) * flick * rm
+                I = lv_cap(lv) * flick * rm
                 lights.append([FIRE_BASE[0], FIRE_BASE[1] + 0.6, -0.1, 6.0 * I, 2.8 * I, 0.9 * I, 1.1, 0.0])
         lights = np.array(lights, np.float64).reshape(-1, 8)
         # --- sky + range (moonlit world scaled by the reveal)
@@ -1068,7 +1095,7 @@ class FirstBeacon:
             # close-up, full after the reveal), with the fire's warm pool on the summit snow
             fl = []
             if lv > 0 and rm > 0.0:
-                I = min(lv, 2.5) * flick * rm
+                I = lv_cap(lv) * flick * rm
                 fl.append([FIRE_BASE[0], FIRE_BASE[1] + 0.45, FIRE_BASE[2] - 0.05, 0.11 * I, 0.047 * I, 0.014 * I, 1.5, 0])
             if lv > 0 and rm < 1.0:
                 l1 = lv if f < ROAR else min(lv, 1.0) * (1.0 - rm)
@@ -1193,15 +1220,15 @@ class FirstBeacon:
         fa = np.zeros(img.shape[:2], np.float32)
         if lv > 0:
             fimg = np.zeros_like(img) if occ is not None else img
-            if AFIX and f >= ROAR and rm < 1.0:
+            if AFIX and f >= ROAR:
                 # A-FIX: the kindling flame grows into the bonfire (its tongues fade as the bonfire rises through them)
-                for b, h, w, lean, seed, k in ig_flames(ROAR - 1):
+                for b, h, w, lean, seed, k in (ig_flames(ROAR - 1) if rm < 1.0 else []):
                     fire.draw_flame(fimg, fa, cam, b, h * (1.0 + 0.8 * rm), w, lean, t, seed,
                                     6.5 * flick * k * (1.0 - rm), fire.TORCH_STYLE)
-                grow = min(lv, 2.2)
+                grow = min(lv, 1.3)             # held close: the bonfire's full 2 m would be a flat wall of flame
                 b0 = np.array([TINDER[0] - 0.05, TINDER[1] - 0.03, TINDER[2]])
                 fire.draw_flame(fimg, fa, cam, b0 + (FIRE_BASE - b0) * rm, 0.25 + (0.30 + 0.75 * grow) * rm,
-                                0.09 + 0.22 * rm, 0.55, t, 2.9, (5.0 + 5.0 * min(1.0, lv - 1.0 + 0.3)) * (0.35 + 0.65 * rm),
+                                0.09 + 0.20 * rm, 0.55, t, 2.9, (5.0 + 5.0 * min(1.0, lv - 1.0 + 0.3)) * (0.35 + 0.30 * rm),
                                 fire.BONFIRE_STYLE)
             elif f < ROAR and HEROINE_V2:
                 for b, h, w, lean, seed, k in ig_flames(f):
@@ -1226,9 +1253,9 @@ class FirstBeacon:
                 if fl:
                     wsum = sum(x[1] for x in fl)
                     gc = sum(x[0] * x[1] for x in fl) / wsum + np.array([0.0, 0.35 * fl[0][1], 0.0])
-            if AFIX and f >= ROAR and rm < 1.0:
+            if AFIX and f >= ROAR:
                 fire.add_glow(img, cam, gc, 0.12, 0.05 * min(lv, 1.0) * flick * (1.0 - rm))
-                fire.add_glow(img, cam, FIRE_BASE + np.array([0, 0.7, 0]), 0.12 + 0.78 * rm, 0.10 * min(lv, 2.5) * flick * rm)
+                fire.add_glow(img, cam, FIRE_BASE + np.array([0, 0.7, 0]), 0.12 + 0.78 * rm, 0.10 * lv_cap(lv) * flick * rm)
             else:
                 fire.add_glow(img, cam, (gc if f < ROAR else FIRE_BASE + np.array([0, 0.7, 0])),
                               0.12 if f < ROAR else 0.9, (0.05 * lv if f < ROAR else 0.10 * min(lv, 2.5)) * flick)
@@ -1288,7 +1315,8 @@ class FirstBeacon:
         if V3_ROAR2:
             # the lens stops down for the flare (she goes to a dark shape, the fire stays white-hot), and opens again
             # as the pull-back reveals the world
-            expo *= 1.0 - 0.34 * (rm if AFIX else smoothstep(ROAR - 1, ROAR + 1, f)) * (1 - smoothstep(ROAR + 10, ROAR + 40, f))
+            expo *= 1.0 - (0.45 * rm if AFIX else 0.34 * smoothstep(ROAR - 1, ROAR + 1, f)) \
+                * (1 - smoothstep(ROAR + 10, ROAR + 40, f))
         out = look.finish(img, exposure=expo, bloom_strength=0.09, bloom_threshold=0.9, vignette_amount=0.25,
                           lift=(0.011 if V3_H5 else 0.004))
         return out
@@ -1308,8 +1336,9 @@ class FirstBeacon:
             L.append([flint[0] + 0.015, flint[1] + 0.015, flint[2] - 0.045,
                       sc_[0] * st_e, sc_[1] * st_e, sc_[2] * st_e, 0.05, -10.0])
         if em_e > 0:
-            L.append([TINDER[0], TINDER[1] + 0.006, TINDER[2] - 0.02, 0.070 * em_e, 0.023 * em_e, 0.0050 * em_e,
-                      0.010, -12.0])
+            ke = 0.3 if AFIX else 1.0       # A-FIX: the ember is a pinprick; it must not light the scarf or her profile
+            L.append([TINDER[0], TINDER[1] + 0.006, TINDER[2] - 0.02, 0.070 * em_e * ke, 0.023 * em_e * ke,
+                      0.0050 * em_e * ke, 0.010, -12.0])
         # H5 (director, 15:15Z): at the roar the flare must not light her front into a smooth doll: she is FLAGGED
         # from the fire's key (it only rims her edges) and stays a dark shape against it
         rw = 0.0
@@ -1323,7 +1352,7 @@ class FirstBeacon:
                 L.append([TINDER[0], TINDER[1] + 0.03 + 0.06 * l1, TINDER[2] - 0.02,
                           0.30 * I, 0.135 * I, 0.036 * I, 0.03 + 0.04 * l1, -8.0])
             if rm > 0.0:
-                I = min(lv, 2.5) * flick * (1 - (0.80 if V3_ROAR2 else 0.45) * rw) * rm
+                I = lv_cap(lv) * flick * (1 - (0.80 if V3_ROAR2 else 0.45) * rw) * rm
                 L.append([FIRE_BASE[0], FIRE_BASE[1] + 0.55, FIRE_BASE[2] - 0.05, 0.75 * I, 0.34 * I, 0.095 * I,
                           0.28, 3.0])
         if reveal > 0.05:
@@ -1334,7 +1363,7 @@ class FirstBeacon:
             p0 = np.array([0.9, 1.0, 0.0]) + d * 100.0
             L.append([p0[0], p0[1], p0[2], c[0], c[1], c[2], 0.0, 0.0])
         warm = ((0.9 * lv * flick if f < ROAR else 0.35 * min(lv, 2.5) * flick) if not AFIX else
-                (0.9 * min(lv, 1.0) * flick * (1.0 - rm) + 0.35 * min(lv, 2.5) * flick * rm)) \
+                (0.9 * min(lv, 1.0) * flick * (1.0 - rm) + 0.35 * lv_cap(lv) * flick * rm)) \
             * (1 - (0.97 if V3_ROAR2 else 0.85) * rw)
         rg = V3_RIM if V3_H5 else 1.0
         env = hero.env_vec(rim_dir=(0.55, 0.42, 0.72), rim=np.array([0.070, 0.100, 0.180]) * (1.0 + 1.0 * reveal) * rg,
@@ -1404,7 +1433,7 @@ class FirstBeacon:
                 l1 = lv if f < ROAR else min(lv, 1.0)
                 L.append([TINDER[0], TINDER[1] + 0.03 + 0.06 * l1, TINDER[2], 0.30 * I, 0.135 * I, 0.036 * I, 0.05, 0.0])
             if rm > 0.0:
-                I = min(lv, 2.5) * flick * rm
+                I = lv_cap(lv) * flick * rm
                 L.append([FIRE_BASE[0], FIRE_BASE[1] + 0.45, FIRE_BASE[2], 0.75 * I, 0.34 * I, 0.095 * I, 0.28, 0.0])
         env = hero.env_vec(rim_dir=(0.55, 0.42, 0.72), rim=np.array([0.05, 0.07, 0.12]) * (1.0 + reveal) * V3_RIM,
                            amb=np.array([0.0035, 0.0050, 0.0100]) * (1.0 + 4.0 * reveal), ao=0.01)
