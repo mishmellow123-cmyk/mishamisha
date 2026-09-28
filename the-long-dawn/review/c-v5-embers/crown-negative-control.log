@@ -1,0 +1,32 @@
+test_flame_and_smoke_crown_follows_actual_bent_geometry (test_c_v5.Timing.test_flame_and_smoke_crown_follows_actual_bent_geometry) ... FAIL
+
+======================================================================
+FAIL: test_flame_and_smoke_crown_follows_actual_bent_geometry (test_c_v5.Timing.test_flame_and_smoke_crown_follows_actual_bent_geometry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<WORKSPACE>/work/c5-embers/the-long-dawn/shots/embers/tests/test_c_v5.py", line 85, in test_flame_and_smoke_crown_follows_actual_bent_geometry
+    np.testing.assert_array_equal(tw.top(i, f), expected)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.13/site-packages/numpy/testing/_private/utils.py", line 1054, in assert_array_equal
+    assert_array_compare(operator.__eq__, actual, desired, err_msg=err_msg,
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                         verbose=verbose, header='Arrays are not equal',
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                         strict=strict)
+                         ^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.13/site-packages/numpy/testing/_private/utils.py", line 919, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Arrays are not equal
+
+Mismatched elements: 2 / 3 (66.7%)
+Max absolute difference among violations: 4.23561825
+Max relative difference among violations: 0.16735876
+ ACTUAL: array([ 5.209445, 33.409165, 29.544233])
+ DESIRED: array([ 4.462592, 33.409165, 25.308614])
+
+----------------------------------------------------------------------
+Ran 1 test in 0.010s
+
+FAILED (failures=1)
+EXPECTED FAILURE: inherited unbent crown is rejected.

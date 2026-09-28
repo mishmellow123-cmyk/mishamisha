@@ -1,0 +1,235 @@
+{
+  "base_commit": "339b1e370f6cbd01acc18c6d8a2e50f5e7f302e2",
+  "production_ref_checked": "ebe55462b0f732172a05df5c349577477d4f2292",
+  "amendment": "2026-09-28 two abstract front runners, neck and neck; supersedes0a5c545 single leader",
+  "final_source_hashes": {
+    "the-long-dawn/shots/embers/c_v5.py": "3f0c3320d7098fc0883246fe6f2d6726bf7a18a9cce753b222a196b13cefdf4f",
+    "the-long-dawn/shots/embers/core.py": "c42ff0e583bca9d86e99570662c5327a869c161e6e449bc1b1f4252f8dca3008",
+    "the-long-dawn/shots/embers/scene_b.py": "12e9ddc1b7b3b44128000a53f187c40ec810a01f52235773f79ab6306fc84da3",
+    "the-long-dawn/shots/embers/towers2.py": "2a10df74fe267736684e8a966d16dc8793de4e5caeada49db1e7370b174cdde5",
+    "the-long-dawn/shots/embers/c3.py": "002cf46dc0c7f2f9062f51e81017899b02fed89f971612cd9e8219d345739738",
+    "the-long-dawn/shots/embers/c_eye.py": "9f0dc6b44d59681add014d71297cbd77a27c503e4c4fab30b4dc7b8dd430178b",
+    "the-long-dawn/shots/embers/c2.py": "bdc97306e0657ea69b5efc2f8a99d1d924b789fdb42524ceed7a189d0117e33a",
+    "the-long-dawn/shots/embers/cflame.py": "c4d9b0296174b2c4245b5955e780ccfdcd3cfbd6d1c2109d39b442525e55e692",
+    "the-long-dawn/shots/embers/ringsolid.py": "24443ff59f5555075454bb2864c5ef671bf6f70df4c718a6b614a0e619166252",
+    "the-long-dawn/shots/embers/variant.py": "a4b7adca9e469903086c2c2a5c25f12a310490ec268b912541e692cf11d03ca1",
+    "the-long-dawn/lib/look.py": "1a311e38a231ee9fda65aa8037759ded7b19ae215bd184afb0327dd4cdd70614"
+  },
+  "source_version_note": "All current stills and six motion windows rendered from these exact renderer source bytes.",
+  "render_dimensions": [
+    960,
+    402
+  ],
+  "threads": {
+    "numba": 1,
+    "BLAS": 1,
+    "opencv_requested": 0,
+    "opencv_reported": 1
+  },
+  "review_batch_unique_frames": 152,
+  "motion": {
+    "frames": 144,
+    "ranges": [
+      [
+        2418,
+        2441
+      ],
+      [
+        2478,
+        2501
+      ],
+      [
+        2538,
+        2561
+      ],
+      [
+        2592,
+        2615
+      ],
+      [
+        3840,
+        3863
+      ],
+      [
+        4100,
+        4123
+      ]
+    ],
+    "sum_frame_seconds": 116.30932604626287,
+    "median_frame_seconds": 0.7895122920162976,
+    "minimum_frame_seconds": 0.5329335840069689,
+    "maximum_frame_seconds": 2.035229624976637,
+    "peak_rss_bytes": 706707456
+  },
+  "full_resolution_test": {
+    "frame": 2639,
+    "path": "stills/f_02639.jpg",
+    "dimensions": [
+      1920,
+      804
+    ],
+    "jpeg_subsampling": 0,
+    "chroma": "4:4:4",
+    "jpeg_quality_setting": 95,
+    "import_seconds": 0.22959212501882575,
+    "initialization_seconds": 1.338839417003328,
+    "frame_seconds": 1.6749910420039669,
+    "peak_rss_bytes": 1033125888,
+    "sha256": "0fbba570c9fed19f8f1c7edb43ef1de9322c4672597c4b03c7f879275138616c"
+  },
+  "tests": {
+    "passed": 16,
+    "compiled": false,
+    "negative_control": "Inherited unbent Forges.top fails crown alignment test"
+  },
+  "reviewed": {
+    "native_whole_frame_stills": [
+      2360,
+      2460,
+      2510,
+      2560,
+      2639,
+      3847,
+      3848,
+      3920,
+      4000,
+      4110,
+      4216,
+      4239
+    ],
+    "reduced_motion_compositions": 144,
+    "native_subject_crops": 144,
+    "full_frame_realtime_playback": false
+  },
+  "local_finals": {
+    "trap": {
+      "status": "complete",
+      "validated_frames": 320,
+      "receipt": "delivery/trap.json"
+    },
+    "cold": {
+      "status": "complete",
+      "validated_frames": 160,
+      "receipt": "delivery/cold.json"
+    },
+    "unfinished": {
+      "status": "complete",
+      "validated_frames": 240,
+      "receipt": "delivery/unfinished.json"
+    }
+  },
+  "farm_launched": false,
+  "limitations": [
+    "Internal visual review; no unbriefed-viewer comprehension test.",
+    "Motion strips sample six windows, not every frame.",
+    "PNG save adds unseeded TPDF dither; prequantization endpoint equality not measured.",
+    "EDIT captions, transitions and sound excluded."
+  ],
+  "artifacts": {
+    "stills/f_02360.png": {
+      "sha256": "7bc2d133820d691c891701799e9e6d3f5894231effc625dbac5f2fe67b807d17",
+      "bytes": 392413
+    },
+    "stills/f_02460.png": {
+      "sha256": "f2f29726fda5486abd20ad44e52307a551967ed7fc96639f35688645441130d6",
+      "bytes": 392935
+    },
+    "stills/f_02510.png": {
+      "sha256": "277155fcaf26c3a2fc6b4448c9859d4badb9b8b1947e6b5fb2511cffaf4451a3",
+      "bytes": 416632
+    },
+    "stills/f_02560.png": {
+      "sha256": "6fc4817958ca3b4ad3dc193f2bebcbec81eda0d93d8cef01c7f1aafaf5d2bbfd",
+      "bytes": 420283
+    },
+    "stills/f_02639.jpg": {
+      "sha256": "0fbba570c9fed19f8f1c7edb43ef1de9322c4672597c4b03c7f879275138616c",
+      "bytes": 256848
+    },
+    "stills/f_02639.png": {
+      "sha256": "204a9d16cd00b9367282522a2471d7d047ab7d1af47bb476e84f6f0cbd7b6780",
+      "bytes": 430185
+    },
+    "stills/f_03847.png": {
+      "sha256": "7fabac3fb03b55a3692edf5c6fc747a34b1e976f788ae97cedb5263e13585f47",
+      "bytes": 430007
+    },
+    "stills/f_03848.png": {
+      "sha256": "9d64576fc85ae9379d4e76a56e1815d626b3a4046c0fef578ab0eab97b5461c5",
+      "bytes": 364224
+    },
+    "stills/f_03920.png": {
+      "sha256": "76cf2d1b6d8ead79a4a04d97c0f76555cad96ec156fff7f1e54515e046545d54",
+      "bytes": 364583
+    },
+    "stills/f_04000.png": {
+      "sha256": "784fa806a30670fbb7a6e7a8b69c3ef8eb5960d58a77655ddc00485c7c521fbb",
+      "bytes": 368404
+    },
+    "stills/f_04110.png": {
+      "sha256": "3013509e15fe746c64b2bad56761aaf1e2b421317447e1233bf84cabc7ef69fb",
+      "bytes": 344190
+    },
+    "stills/f_04216.png": {
+      "sha256": "f02cfa548f830486195066815d85229ca11398b34fd7f76cf530a66793f7c603",
+      "bytes": 329353
+    },
+    "stills/f_04239.png": {
+      "sha256": "bcc7d91d56a9db8c9b3909876d0db1ca0b3a38217707cd97e3290b3563dd6c8f",
+      "bytes": 328734
+    },
+    "motion/cooling-24.png": {
+      "sha256": "766e5745a7e1887cf8a958982850a3389e51fbead0d5a01013e9fcca87858d23",
+      "bytes": 517589
+    },
+    "motion/cooling-native-24.png": {
+      "sha256": "92a6e236f0aae27d9328c29e3eed9a486159e12d8c4baca67316d6140e4b6ad7",
+      "bytes": 891437
+    },
+    "motion/others-surge-24.png": {
+      "sha256": "bdb42fdcad15c0ed3010a4f4803010809facb7f6b96eeb99020cbd6e4e61b155",
+      "bytes": 701229
+    },
+    "motion/others-surge-native-24.png": {
+      "sha256": "cccb9786924b2afdad676ffdabab551f7230fe258629ee00ea897d0d95e2b907",
+      "bytes": 1142383
+    },
+    "motion/return-24.png": {
+      "sha256": "7819ab1704f855e8c9b8f7d8b294abdc6dd8dcd7e6b1c7de5933137f1f882098",
+      "bytes": 717836
+    },
+    "motion/return-native-24.png": {
+      "sha256": "d9b111580089ab076a4d8115f4b59e9a41b9ee24d2457530f777989c1d91e950",
+      "bytes": 1305254
+    },
+    "motion/rivals-24.png": {
+      "sha256": "7d36e41df7a1fe82b668cef544f837ab0235b55899718752dc23e685e35a2b38",
+      "bytes": 720975
+    },
+    "motion/rivals-native-24.png": {
+      "sha256": "23b449a33d254b8e2a9abc13d4c63d14acfd5d4b08c1b1814d1f65f6b1db65b2",
+      "bytes": 1593738
+    },
+    "motion/shutdown-24.png": {
+      "sha256": "250aacdbdc7a15033d5666799d54d2a58a39055842da054b910f40a44bb16ac9",
+      "bytes": 641509
+    },
+    "motion/shutdown-native-24.png": {
+      "sha256": "3df9caaffbde1bf31f6519d4b36323984a46f648b71f1dd52b08d5f73358e25a",
+      "bytes": 1633474
+    },
+    "motion/withdrawal-24.png": {
+      "sha256": "3c9994645069ba10453db68c01fb6f0653beae51fa7968fb215fe51920c576a7",
+      "bytes": 644283
+    },
+    "motion/withdrawal-native-24.png": {
+      "sha256": "e81a5d718bd5195d397a92c54383fb7f1a6df49d034d9aad7a111f8526648e0e",
+      "bytes": 898082
+    }
+  },
+  "group_delivery": {
+    "status": "complete",
+    "validated_frames": 720,
+    "receipt": "delivery/complete.json"
+  }
+}

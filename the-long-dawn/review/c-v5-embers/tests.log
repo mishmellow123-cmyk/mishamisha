@@ -1,0 +1,21 @@
+test_absolute_shot_ranges_reject_unchanged_first_half (test_c_v5.Timing.test_absolute_shot_ranges_reject_unchanged_first_half) ... ok
+test_actual_frame_dispatch_turns_every_flame_off_on_downbeat (test_c_v5.Timing.test_actual_frame_dispatch_turns_every_flame_off_on_downbeat) ... ok
+test_actual_tower_emission_override_kills_hot_edges_but_keeps_stone (test_c_v5.Timing.test_actual_tower_emission_override_kills_hot_edges_but_keeps_stone) ... ok
+test_camera_is_continuous_at_cold_ring_join_and_holds_clean (test_c_v5.Timing.test_camera_is_continuous_at_cold_ring_join_and_holds_clean) ... ok
+test_cold_ring_is_grey_with_same_solid_coverage (test_c_v5.Timing.test_cold_ring_is_grey_with_same_solid_coverage) ... ok
+test_cold_smoke_keeps_energy_and_has_no_orange_emission (test_c_v5.Timing.test_cold_smoke_keeps_energy_and_has_no_orange_emission) ... ok
+test_entire_canonical_band_stays_inside_frame_with_margin (test_c_v5.Timing.test_entire_canonical_band_stays_inside_frame_with_margin) ... ok
+test_flame_and_smoke_crown_follows_actual_bent_geometry (test_c_v5.Timing.test_flame_and_smoke_crown_follows_actual_bent_geometry) ... ok
+test_jobs_cover_only_assigned_frames_without_duplicates (test_c_v5.Timing.test_jobs_cover_only_assigned_frames_without_duplicates) ... ok
+test_one_forge_sinks_before_others_respond (test_c_v5.Timing.test_one_forge_sinks_before_others_respond) ... ok
+test_output_preflight_rejects_existing_and_duplicate_frames (test_c_v5.Timing.test_output_preflight_rejects_existing_and_duplicate_frames) ... ok
+test_response_height_does_not_start_early_or_sink_after_shutdown (test_c_v5.Timing.test_response_height_does_not_start_early_or_sink_after_shutdown) ... ok
+test_ring_cools_monotonically_and_last_second_is_clean (test_c_v5.Timing.test_ring_cools_monotonically_and_last_second_is_clean) ... ok
+test_rivals_share_existing_form_height_and_intensity_without_shared_edits (test_c_v5.Timing.test_rivals_share_existing_form_height_and_intensity_without_shared_edits) ... ok
+test_shutdown_is_simultaneous_and_does_not_dim_ring (test_c_v5.Timing.test_shutdown_is_simultaneous_and_does_not_dim_ring) ... ok
+test_world_restores_shared_defaults_even_on_exception (test_c_v5.Timing.test_world_restores_shared_defaults_even_on_exception) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.162s
+
+OK
