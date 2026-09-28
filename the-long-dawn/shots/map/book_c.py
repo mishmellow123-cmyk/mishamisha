@@ -339,14 +339,18 @@ def fire_lights(K, t):
     sparks, the ember and the flame into renders/embers_C3_e15; EDIT adds them over book_C)."""
     base = K.Fw + np.array([0, 0, 0.02])
     xl = []
+    # PAGES-C (EMBERS-C4 traced the "soft orange blob at ~800" to this page layer): the gathering ember's light sat
+    # 4 mm over the paper at 0.5 (a hot disc, 3x the page around it), and the new flame's light dropped to 2 mm as it
+    # caught (irradiance ~ 1/h, a hot spot). Now the ember's light is soft and held 11 mm up, and the flame's never
+    # sinks below 11 mm: the page under the heart warms, it does not glow on its own.
     e = K.ember(t)
     if e > 0.01:
-        xl.append([base[0], base[1], base[2] + 0.4, 0.5 * e, 0.22 * e, 0.06 * e])
+        xl.append([base[0], base[1], base[2] + 1.1, 0.2 * e, 0.09 * e, 0.025 * e])
     h = K.flame_h(t)
     if h > 0.02:
         calm = ramp(t, K.T_BURN + 2.0, K.T_BURN + 5.0)
         pw = 1.6 * h * (1.0 + (0.12 * math.sin(t * 17.0) + 0.08 * math.sin(t * 29.0)) * (1 - 0.6 * calm))
-        xl.append([base[0], base[1], base[2] + 0.6 * h, pw, pw * 0.5, pw * 0.16])
+        xl.append([base[0], base[1], base[2] + max(0.6 * h, 1.1), pw, pw * 0.5, pw * 0.16])
     return np.array(xl) if xl else None
 
 
@@ -967,12 +971,12 @@ class Book3:
             return cam
         # PAGES-C: after the two blank leaves the camera comes to the verso where T14 is written (inkline.py), then
         # crosses to the recto for the title
-        t14 = bk.page_to_world('L', np.array([9.4]), np.array([13.6]))[0]
+        t14 = bk.page_to_world('L', np.array([8.7]), np.array([13.6]))[0]
         keys_t = [(9.6, pl + [1.0, 0, 0]), (12.2, hv1 + [0.3, 0, 0]), (22.8, hv4),
                   (24.2, sp + [0, -0.5, 0]), (26.2, t14 + [0.8, 0, 0]), (31.2, t14 + [1.6, 0, 0]), (35.0, bl),
                   (43.33, bl + [0, 0.3, 0])]
         keys_o = [(9.6, (-1.8, -29.0, 27.0)), (12.2, (0.8, -24.0, 22.5)), (22.8, (0.4, -28.5, 27.0)),
-                  (24.2, (0.0, -52.0, 46.0)), (26.2, (0.4, -34.0, 31.0)), (31.2, (0.6, -32.0, 29.5)),
+                  (24.2, (0.0, -52.0, 46.0)), (26.2, (0.4, -33.0, 30.0)), (31.2, (0.6, -31.0, 28.5)),
                   (35.0, (0.0, -30.0, 28.0)), (43.33, (0.0, -28.0, 26.0))]
         cam = B.Cam(keyed(keys_t, t) + keyed(keys_o, t), keyed(keys_t, t), 38.0, self.W, self.H)
         cam.dof_k = 2.0
