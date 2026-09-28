@@ -1,29 +1,37 @@
 # PAGES-C (lane PAGES): C's BOOK, PAPER and PAGE material, and C's TRANSITIONS (succeeds MAP-L, the book's author)
 
-# >>> STATE (PAGES-C, 28 Sep ~01:25Z local 21:25) <<<
-* Diagnosis: `~/mishamisha/_local_logs/review/C_PAGES.md` (sheets `_local_logs/review/c_pages/`). Director approved the
-  C24->C25 PLATE version and asked for the transitions spec (below; relayed to EDIT-3 via main).
-* DONE + pushed (2c8cb6e, abe373c, a05da80, pass 2): burn edge v2 (`burn.field2`: torn at birth, crinkled char band
-  with a lit lip, beaded ember line, flecks; creep so C5's rim leaves the frame); smoke off the burning page
-  (`smoke.py`); incandescent fire letters (`fire_k`); paper tooth/laid+chain lines/pulp cloud/show-through; gold
-  crinkle so it glints; a living hearth (`B.hearth`); leaf z-fight fix; 16-sample turns, 24-sample riffle; the 6400
-  blank frame; the 320 pop; C2 opening (the hearth flares up on the red book; the hand at 140 px/cm); the C24->C25
-  plate (pixel match: mean diff 0.27/255 at 6160); the Havens framed closer; the end fade; C's ink lines T1/T14 written
-  into the page (`inkline.py`); C2's ship = the Havens' swan-ship; the Mountain's ring bolder, inner flame tongues;
-  the roundel 2.5 cm; `x1burn.py` (the two map X1s).
-* LANDED: renders/x1_map_C(+_matte,+_cover) 4150-4185 and x1_map_C71(+...) 5594-5640 (v2, one t_open each; EDIT kind
-  `burn` requested). Tests: renders/_farmtest/pages_book (47 stills, pass 1) and pages_book2 (22 stills, pass 2).
-* JOB READY SENT (~21:35 local) `cloud/jobs/pages_book.json` (2312 frames: 80-1039, 1680-1991, 6160-7199 ->
-  renders/book_C + _matte; C22's 5360-5519 untouched), after pass 3 (c67fec6): `farm.py ... --nodes 8`. On landing:
-  count the frames (2312 in each), spot-check 80-120 (the fade-up), 330-345 (riffle), 562-594 (turn), 840-1039 (burn),
-  1680-1717 (sweep), 1920-1991 (burn-through), 6160 (== runC_illum f_02877), 6400-6434, 6720-6792 (turns), 7160-7199
-  (fade); then delete renders/_farmtest/pages_book{,2,3} and pages_x1map. EDIT (told via main): drop T1 and T14 from
-  titles.py for C; `finish_ramp` #21 goes live on these frames; `burn` #17 #19 are live on the v2 layers (25e39dc).
-* Owned: book.py, book_c.py, burn.py (v2 additive; MAP-L2's road.py still calls the v1 `field`), pages.py, pen.py,
-  redbook.py, ringpage.py, titleburn.py, smoke.py, inkline.py, x1burn.py; jobs pages_book, pages_x1map.
-  Not mine: C19-C23 (council), C18's map (MAP-L2, paused), E15's sparks and flame (EMBERS-C).
-* Open notes for others: EMBERS-C's e15 streams swoop in two big arcs (764-788) and a soft orange blob at 800;
-  E5-C's first flame should match e15's at 1039/1040.
+# >>> HANDOFF / STATE (PAGES-C, 28 Sep ~22:50 local) -- READ THIS FIRST <<<
+**Delivered:** `pages_book` LANDED 22:39 (4624/4624: renders/book_C + _matte, C 80-1039, 1680-1991, 6160-7199; every
+frame fresh; C22 5360-5519 untouched). Verified: 6160 == runC_illum f_02877 (mean diff 0.27/255); C9's matte open by
+1991; the fade reaches black at 7199. Map X1s: renders/x1_map_C{,_matte,_cover} 4150-4185 and x1_map_C71{...}
+5594-5640 (x1burn.py, v2; EDIT kind `burn` live, 25e39dc).
+**LAUNCHED by main (--nodes 8, log _local_logs/jobs/pages_book_polish_farm.log); the director reviews the landed frames. Lane DONE. Lesson: keep passing check stills until the director has seen them.** Was: **JOB READY SENT (22:50 local): `pages_book_polish`** (cloud/jobs/pages_book_polish.json, 1425 frames: 80-331,
+360-594, 760-850, 1680-1991, 6160-6434, 6741-7000; code at the tip after 'PAGES-C polish 2'). The director's notes:
+T14 1.5x off the gutter; the initial re-illuminated (a burnished gold ground with an ink diaper and vermilion bezants,
+the vermilion letter filling it, penwork curls and frame lines, a gilt border stem with ivy down the margin;
+RB.Page ink_over_gilt); gold as hammered leaf (few large facets: gnoise 4.5 + 11 cycles/cm, rough 0.24); the Deep's
+seam one solid band; the ~800 orange blob (the page's fire lights held 11 mm up and softened, EMBERS-C4's find);
+the Deep's smoke thins away before 1992. Checked on 17 farm stills (deleted). ON LANDING: count the six spans in
+renders/book_C and _matte (1425 each, fresh), look at 118, 215, 520, 800-816, 1850, 1880, 6300, 6860; nothing
+else is pending in PAGES-C's area.
+**How it is built (for a successor):**
+* book.py = the engine (a numba ray-marched 2.5-D book; `shade_kernel` materials: paper(), ink, gilt, rubric, fire,
+  burn v2 via `BURN.field2`). book_c.py = C's shots on C's timeline (`Book3.shot_*`, cameras `cam_*`), the post burn
+  (`burn_post`), smoke (`smoke.py`), the C25 plate (`plate_hdr` in HDR per sample + `plate_post` in display space for
+  the match), ink lines (`inkline.py` via `RB.Page.texture(extra=)`). redbook.py = C2's last leaves (the initial, the
+  swan-ship) + the Epilogue. pages.py = the Mountain, the Deep, Plenty, the Havens (+ roundel). burn.py: v1 `field`
+  is MAP-L2's (road.py); v2 = 20-float blocks (`BURN.v2(block, rag, creep)`).
+* Tests: `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/pages_book.json --test K --frames ...
+  --local-out the-long-dawn/renders/_farmtest/<name>` (SAFE MODE: never render locally). Push before every farm run,
+  and NEVER push while a book job is rendering (units fetch the tip when they start).
+* EDIT owns: T7 (screen overlay), the dissolves, `burn`, `finish_ramp` 6160-6224; EDIT must drop T1/T14 (in book_C).
+**Open (not done):** the Deep's arcades are copy-paste identical (left: the H5 critic's "best graphic"); the Mountain's
+smoke is billow circles (engraving convention; could break the outlines); the C2 initial's ground is still a flat
+vermilion square at heart (now framed by penwork and gold). Notes for others: E15's two-arc swoosh (EMBERS-C4);
+E5-C's first flame should match e15 at 1039/1040.
+* Owned: book.py, book_c.py, burn.py (v2), pages.py, pen.py, redbook.py, ringpage.py, titleburn.py, smoke.py,
+  inkline.py, x1burn.py; jobs pages_book, pages_book_polish, pages_x1map. Not mine: C19-C23, C18's map, E15.
+* Diagnosis + status: `~/mishamisha/_local_logs/review/C_PAGES.md`.
 
 ## C's TRANSITIONS: the spec (PAGES-C, 28 Sep; director: "design each in the book's own language")
 C has three materials: the BOOK in a dark room (~0.3-0.55), the INK world on bright parchment (~0.75), and FIRE on

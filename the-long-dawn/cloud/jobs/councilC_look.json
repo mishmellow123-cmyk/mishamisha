@@ -3,8 +3,8 @@
  "branch": "claude/render-councilC-look",
  "setup": [],
  "render": [
-  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.02 MT3D_BLENDER=$HOME/bpyenv/bin/python python3 council_local.py councilc --final --force --samples 160 --outdir renders/accord_C --frames 5160",
-  "cd shots/montage3d && MT3D_ENGINE=CYCLES MT3D_NOISE=0.02 MT3D_BLENDER=$HOME/bpyenv/bin/python python3 council_local.py councilc --final --force --samples 160 --outdir renders/accord_C --frames 5566"
+  "cd shots/montage3d && NUMBA_NUM_THREADS=14 MT3D_ENGINE=CYCLES MT3D_NOISE=0.03 MT3D_BLENDER=$HOME/bpyenv/bin/python python3 council_local.py councilc --final --force --samples 96 --outdir renders/accord_C --frames 5160",
+  "cd shots/montage3d && NUMBA_NUM_THREADS=14 MT3D_ENGINE=CYCLES MT3D_NOISE=0.03 MT3D_BLENDER=$HOME/bpyenv/bin/python python3 council_local.py councilc --final --force --samples 96 --outdir renders/accord_C --frames 5566"
  ],
  "outputs": [
   {

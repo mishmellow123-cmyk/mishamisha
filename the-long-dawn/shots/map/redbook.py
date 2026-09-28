@@ -113,10 +113,11 @@ class Page:
     """Strokes of one page and its texture at a time t. `burning` strokes (the text of X1a) get per-stroke
     gains for ink, fire and ghost from a LettersToFire."""
 
-    def __init__(self, S, ppc, seed=0):
+    def __init__(self, S, ppc, seed=0, ink_over_gilt=False):
         self.S = S
         self.pk = S.pack()
         self.ppc = ppc
+        self.ink_over_gilt = ink_over_gilt    # PAGES-C: ink and vermilion painted over the gold hide it (the initial)
         self.tex = B.PageTex(PG.PW, PG.PH, ppc)
 
     def texture(self, t, gains=None, extra=None):
@@ -141,6 +142,8 @@ class Page:
             tx.chan[..., 4] = C
             C, _ = pen.raster(pk, 1e9, ppc, H, W, INK, gain=gains[2])
             tx.chan[..., 5] = np.clip(C, 0, 1)
+        if self.ink_over_gilt:
+            tx.chan[..., 2] *= np.clip(1.0 - 1.15 * tx.chan[..., 0] - 1.15 * tx.chan[..., 6], 0.0, 1.0)
         if extra is not None:
             extra(tx.chan)
         return tx.build()
@@ -160,7 +163,7 @@ def initial(S, x, y, size, seed, glyph='lp'):
     while yy < d - 0.004:
         xs = np.linspace(a + 0.004, c - 0.004, 9)
         ys = yy + 0.004 * np.sin(xs * 9.0 + yy * 13.0) + rng.normal(0, 0.0015, 9)
-        S.add(np.column_stack([xs, ys]), np.full(9, 0.024), np.full(9, 1.0), layer=R_)
+        S.add(np.column_stack([xs, ys]), np.full(9, 0.024), np.full(9, 1.0), layer=GILT)   # PAGES-C: a gold ground
         yy += 0.03
     # the diaper: a fine ink lattice on the red, a gold bezant in each lozenge
     n = 5
@@ -176,16 +179,16 @@ def initial(S, x, y, size, seed, glyph='lp'):
             if ok.sum() < 2:
                 continue
             P = P[ok]
-            S.add(P, np.full(len(P), 0.0085), np.full(len(P), 1.0))
+            S.add(P, np.full(len(P), 0.0125), np.full(len(P), 1.0))
     for iy in range(n):
         for ix in range(n + 1):
             cx_ = a + (ix + (0.5 if iy % 2 else 0.0)) * step
             cy_ = b + (iy + 0.5) * step
             if a + 0.05 < cx_ < c - 0.05:
                 S.add(np.array([[cx_, cy_], [cx_ + 0.001, cy_]]), np.array([0.028, 0.028]), np.array([1.0, 1.0]),
-                      layer=GILT)
+                      layer=R_)
     # the frame: a gilt bar, ruled in ink outside and in
-    for inset, w, lay in ((0.0, 0.012, INK), (0.5 * i0, 0.032, GILT), (i0, 0.009, INK)):
+    for inset, w, lay in ((0.0, 0.012, INK), (0.5 * i0, 0.05, GILT), (i0, 0.009, INK)):
         a2, b2, c2, d2 = x + inset, y + inset, x + size - inset, y + size - inset
         for (p0, p1) in (((a2 - 0.02, b2), (c2 + 0.02, b2)), ((c2, b2 - 0.02), (c2, d2 + 0.02)),
                          ((c2 + 0.02, d2), (a2 - 0.02, d2)), ((a2, d2 + 0.02), (a2, b2 - 0.02))):
@@ -197,13 +200,13 @@ def initial(S, x, y, size, seed, glyph='lp'):
     G = pen.GLYPHS[glyph]
     xs_ = [px for st in G['s'] for px, _ in pen._knots(st)]
     ys = [py for st in G['s'] for _, py in pen._knots(st)]
-    inner = size - 2 * i0 - 0.42
+    inner = size - 2 * i0 - 0.16                          # PAGES-C: the letter fills its square (was 0.42)
     em = inner / (max(xs_) - min(xs_) + 0.25)
     stretch = min(1.6, inner / max((max(ys) - min(ys)) * em, 1e-3))
     hx = x + 0.5 * size - 0.5 * (max(xs_) + min(xs_)) * em
     base = y + 0.5 * size + 0.5 * (max(ys) + min(ys)) * em
     cy0 = y + 0.5 * size
-    for lay, nib, thin in ((GILT, 0.17, 0.035), (INK, 0.025, 0.012)):
+    for lay, nib, thin in ((R_, 0.24, 0.05), (INK, 0.025, 0.012)):
         k0 = len(S)
         hh = pen.Hand(seed=seed + 1, xh=em, nib=nib, thin=thin, layer=lay, slant=0.0)
         hh.write_word(S, [glyph], hx, base)
@@ -213,7 +216,7 @@ def initial(S, x, y, size, seed, glyph='lp'):
     # the ink edge of the gold: the gilt letter traced again a hair wider in ink, under the gold (it shows as a
     # dark line round the leaf, as a painter outlines gilding)
     k0 = len(S)
-    hh = pen.Hand(seed=seed + 1, xh=em, nib=0.17 * 1.3, thin=0.065, layer=INK, slant=0.0, dens=0.9)
+    hh = pen.Hand(seed=seed + 1, xh=em, nib=0.24 * 1.22, thin=0.08, layer=INK, slant=0.0, dens=0.9)
     hh.write_word(S, [glyph], hx, base)
     for q in range(k0, len(S)):
         P = S.P[q]
@@ -235,31 +238,72 @@ def initial(S, x, y, size, seed, glyph='lp'):
             S.add(P, np.full(len(P), 0.022 * sz / 0.14), np.full(len(P), 1.0), layer=GILT)
         S.add(outline, np.full(len(outline), 0.006), np.full(len(outline), 1.0))
 
-    stem = catmull([(x + 0.02, y + size), (x - 0.22, y + size + 0.8), (x - 0.08, y + size + 1.7),
-                    (x - 0.3, y + size + 2.6), (x - 0.16, y + size + 3.5), (x - 0.34, y + size + 4.3)], 10)
-    pp, rr, dd = hand(stem, 0.011, int(rng.integers(1 << 30)), thin_end=0.25, taper=(0.05, 0.6))
-    S.add(pp, rr, dd)
-    for q in range(7):
-        i = int(len(stem) * (0.1 + 0.125 * q))
-        c0 = stem[min(i, len(stem) - 1)]
-        sg = 1 if q % 2 else -1
-        tw = catmull([c0, c0 + np.array([sg * 0.16, 0.06]), c0 + np.array([sg * 0.3, -0.02])], 6)
-        pp, rr, dd = hand(tw, 0.006, int(rng.integers(1 << 30)), thin_end=0.3)
-        S.add(pp, rr, dd)
-        end = tw[-1]
-        if q % 3 == 2:
-            for m in range(3):                               # a cluster of vermilion berries
-                bx_, by_ = end[0] + 0.05 * math.cos(m * 2.1), end[1] + 0.05 * math.sin(m * 2.1)
-                S.add(np.array([[bx_, by_], [bx_ + 0.001, by_]]), np.array([0.026, 0.026]), np.array([1.0, 1.0]),
-                      layer=R_)
-        else:
-            leaf(end[0], end[1], (0.0 if sg > 0 else math.pi) + rng.uniform(-0.4, 0.4), 0.2)
+    # (PAGES-C: the ink vine that grew down the margin is now the gilt border below)
     # a short spray over the top, from the upper-left corner
     top = catmull([(x, y + 0.02), (x - 0.35, y - 0.2), (x - 0.25, y - 0.55), (x - 0.5, y - 0.85)], 8)
     pp, rr, dd = hand(top, 0.008, int(rng.integers(1 << 30)), thin_end=0.25, taper=(0.05, 0.5))
     S.add(pp, rr, dd)
     leaf(top[-1][0], top[-1][1], -2.2, 0.12)
     leaf(top[len(top) // 2][0] + 0.02, top[len(top) // 2][1], 0.3, 0.1)
+
+    # PAGES-C (director, 28 Sep: "still reads as a red square"): the illuminator's penwork and a border of gold.
+    # Hairline curls in vermilion and ink round the frame's top and outer side (the text keeps the others), frame
+    # lines hugging the square, and a stem of gold growing down the margin beside the text, with gilt ivy, vermilion
+    # berries, gilt bezants and penwork curls, so the opening reads as illuminated from across the room.
+    def curl(cx_, cy_, r, a0, cw, lay_, w=0.009):
+        P = np.array(pen.coil(cx_, cy_, r, turns=1.3, a0=a0, cw=cw, n=26))
+        pp, rr, dd = hand(P, w, int(rng.integers(1 << 30)), thin_end=0.35, taper=(0.02, 0.06), dens=0.95)
+        S.add(pp, rr, dd, layer=lay_)
+
+    for si, (p0, p1, nrm) in enumerate((((x, y), (x + size, y), (0.0, -1.0)), ((x, y + size), (x, y), (-1.0, 0.0)))):
+        p0, p1, nrm = np.array(p0), np.array(p1), np.array(nrm)
+        for k_ in range(7):
+            f_ = (k_ + 0.5) / 7
+            b_ = p0 + (p1 - p0) * f_ + nrm * 0.075
+            r_ = 0.065 + 0.035 * rng.random()
+            c_ = b_ + nrm * (r_ + 0.05)
+            lay_ = R_ if (k_ + si) % 2 == 0 else INK
+            pp, rr, dd = hand(np.array([b_, c_ - nrm * r_ * 0.7]), 0.006, int(rng.integers(1 << 30)), thin_end=0.5)
+            S.add(pp, rr, dd, layer=lay_)
+            curl(c_[0], c_[1], r_, math.atan2(-nrm[1], -nrm[0]), k_ % 2 == 0, lay_)
+            if k_ % 2:
+                d_ = c_ + nrm * (r_ + 0.07)
+                S.add(np.array([d_, d_ + [0.001, 0]]), np.array([0.02, 0.02]), np.array([1.0, 1.0]), layer=GILT)
+    for q_, (pad, lay_) in enumerate(((0.035, R_), (0.06, INK))):
+        a2, b2, c2, d2 = x - pad, y - pad, x + size + pad, y + size + pad
+        for (p0, p1) in (((a2, b2), (c2, b2)), ((c2, b2), (c2, d2)), ((c2, d2), (a2, d2)), ((a2, d2), (a2, b2))):
+            pp, rr, dd = hand(np.array([p0, p1]), 0.005, int(rng.integers(1 << 30)), thin_end=0.7, slow=(4.0, 0.003))
+            S.add(pp, rr, dd, layer=lay_)
+    # the gilt border: a stem of gold down the margin, twigs of ink ending in gilt ivy, berries, bezants and curls
+    bx = x - 0.62
+    stem2 = catmull([(x - 0.05, y + size + 0.05), (bx + 0.08, y + size + 0.6), (bx - 0.04, y + size + 1.6),
+                     (bx + 0.05, y + size + 2.8), (bx - 0.05, y + size + 3.8), (bx + 0.02, y + size + 4.6)], 12)
+    pp, rr, dd = hand(stem2, 0.05, int(rng.integers(1 << 30)), thin_end=0.3, taper=(0.1, 0.9), dens=1.0)
+    S.add(pp, rr, dd, layer=GILT)
+    for side_ in (-1, 1):
+        nb_ = pen.normals(stem2)
+        pp, rr, dd = hand(stem2 + nb_ * (side_ * 0.03), 0.005, int(rng.integers(1 << 30)), thin_end=0.3,
+                          taper=(0.1, 0.9))
+        S.add(pp, rr, dd, layer=INK)
+    for q in range(12):
+        i = int(len(stem2) * (0.06 + 0.075 * q))
+        c0 = stem2[min(i, len(stem2) - 1)]
+        sg = 1 if q % 2 else -1
+        tw = catmull([c0, c0 + np.array([sg * 0.2, 0.05]), c0 + np.array([sg * 0.36, -0.04])], 6)
+        pp, rr, dd = hand(tw, 0.007, int(rng.integers(1 << 30)), thin_end=0.3)
+        S.add(pp, rr, dd)
+        end = tw[-1]
+        if q % 4 == 3:
+            for m in range(3):
+                bx_, by_ = end[0] + 0.055 * math.cos(m * 2.1), end[1] + 0.055 * math.sin(m * 2.1)
+                S.add(np.array([[bx_, by_], [bx_ + 0.001, by_]]), np.array([0.03, 0.03]), np.array([1.0, 1.0]),
+                      layer=R_)
+        elif q % 4 == 1:
+            curl(end[0] + sg * 0.06, end[1], 0.07, 0.0 if sg > 0 else math.pi, sg > 0, R_ if q % 8 == 1 else INK)
+            S.add(np.array([end + [sg * 0.2, 0.05], end + [sg * 0.2 + 0.001, 0.05]]), np.array([0.024, 0.024]),
+                  np.array([1.0, 1.0]), layer=GILT)
+        else:
+            leaf(end[0], end[1], (0.0 if sg > 0 else math.pi) + rng.uniform(-0.4, 0.4), 0.24)
 
 
 def rubricate(S, base, x_max, k0=0, pad=(0.32, 0.14)):
@@ -294,11 +338,11 @@ def leaves_last(seed=5):
         if li == 14:                            # the last chapter begins: a blank line, then the gilt initial
             return [(xa - 1, xb + 1)]
         if 15 <= li <= 18:
-            return [(xa - 1, xa + 2.72)]
+            return [(xa - 1, xa + 2.9)]
         return []
     recs = PG.text_page(R, seed + 1, lines=21, box=boxR, last_frac=0.42, skip=skipR)
     # the chapter's opening words in vermilion, beside the initial
-    rubricate(R, recs[15]['base'], boxR[0] + 2.72 + 5.2)
+    rubricate(R, recs[15]['base'], boxR[0] + 2.9 + 5.2)
     initial(R, boxR[0] + 0.02, 2.9 + 0.62 * 14.45, 2.5, seed + 50, glyph='lp')   # 'wc' read as a tick in a box
     yl = recs[-1]['base']
     # PAGES-C: the tale ends with the Havens' own swan-ship at the plates' line weight (the director's "230 ship

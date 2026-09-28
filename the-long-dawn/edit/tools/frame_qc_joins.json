@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "joins": [
+    {"film": "A", "from": 4879, "to": 4880, "label": "heart into lantern"},
+    {"film": "B", "from": 1519, "to": 1520, "label": "reveal into vigil"},
+    {"film": "B", "from": 3839, "to": 3840, "label": "vigil into crane"},
+    {"film": "A", "from": 3679, "to": 3680, "label": "H1 into reveal"}
+  ]
+}

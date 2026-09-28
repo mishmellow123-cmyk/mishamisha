@@ -852,7 +852,7 @@ def _traveller_v2(sc, pel, w, ank_l, ank_r, rgb, h=1.0, lean=0.10, hem=0.30, clo
         elif reach is not None:
             d = reach - shB
             d = d / (np.linalg.norm(d) + 1e-9)
-            out['reach_hand'] = arm(shB, shB + d * reach_len * h, -sl)
+            out['reach_hand'] = arm(shB, shB + d * 0.62 * h, -sl)
         else:
             hand_s = shB + (w * (0.08 - 0.5 * sw) - up * 0.52 - sl * 0.06) * h
             arm(shB, hand_s, -sl)

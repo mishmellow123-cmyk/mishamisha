@@ -770,6 +770,23 @@
    "desc": "Behind a backlit watcher at the seventh fire, looking to the cold glow; small figures on far ridges, eyelines only.",
    "takes": [
     {
+     "stem": "watchers_A_hearth3",
+     "off": 0,
+     "mode": "exact",
+     "note": "Codex restaged hearth (PR #7)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/watchers_A_hearth3"
+     ]
+    },
+    {
      "stem": "watchers",
      "off": 0,
      "mode": "v3",
@@ -1491,13 +1508,13 @@
    "cut": 5840,
    "kind": "watchfires",
    "lantern": [
-    1265,
+    1745,
     640
    ],
    "fires": [
     [
-     1640,
-     662,
+     430,
+     752,
      2.0,
      6240
     ],
@@ -1520,7 +1537,7 @@
      6390
     ],
     [
-     1265,
+     1745,
      640,
      2.6,
      99999
@@ -1528,23 +1545,23 @@
    ],
    "figures": [
     [
-     1236,
-     646,
+     1716,
+     644,
      16
     ],
     [
-     1250,
-     648,
+     1730,
+     646,
      14
     ],
     [
-     1286,
-     646,
+     1762,
+     643,
      17
     ],
     [
-     1301,
-     647,
+     1777,
+     645,
      15
     ]
    ],

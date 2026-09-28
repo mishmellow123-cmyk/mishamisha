@@ -698,17 +698,18 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 # three scales so some facet always glints as the fire breathes and the camera moves; the gold lies
                 # over the ink, as the initial's letter and the Deep's seam are laid)
                 if gilt > 0.0:
-                    # facets of 2-6 mm (burnished leaf, broad glints), not sub-pixel sparkle (read as glitter)
-                    cr = gnoise(u * 17.0, v * 17.0, 91) + 0.55 * gnoise(u * 43.0, v * 43.0, 93)
-                    cr2 = gnoise(u * 17.0 + 7.0, v * 17.0, 95) + 0.55 * gnoise(u * 43.0 + 3.0, v * 43.0, 97)
-                    nx = nx + 0.55 * cr * gilt
-                    ny = ny + 0.55 * cr2 * gilt
+                    # hammered leaf: few, large facets (~1-2 mm) that flash as broad sheens, the glint travelling as
+                    # the camera and the fire move (director, 28 Sep: finer facets read as glitter ribbon)
+                    cr = gnoise(u * 4.5, v * 4.5, 91) + 0.5 * gnoise(u * 11.0, v * 11.0, 93)
+                    cr2 = gnoise(u * 4.5 + 7.0, v * 4.5, 95) + 0.5 * gnoise(u * 11.0 + 3.0, v * 11.0, 97)
+                    nx = nx + 0.6 * cr * gilt
+                    ny = ny + 0.6 * cr2 * gilt
                     nn = math.sqrt(nx * nx + ny * ny + nz * nz)
                     nx /= nn
                     ny /= nn
                     nz /= nn
                     metal = gilt
-                    rough = rough * (1 - gilt) + 0.3 * gilt
+                    rough = rough * (1 - gilt) + 0.24 * gilt
                 # burn fields: browning, char, the hole, the glowing edge
                 bf = burnR if (m == M_PAGE_R or m == M_LEAF_F) else burnL
                 if bf[0] > 0.0 and BURN.is_v2(bf):

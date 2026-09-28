@@ -84,6 +84,9 @@ B_H1_ROAR_CROP = (0.20, 0.08, 0.30, 0.30)
 # director ~19:20Z: HEROINE-L's C-only hands-and-flint take (renders/h1_C, C frames 2960-2999 and 3150-3359) goes
 # first in both C14 H1-C rows; until it covers a row, the shared H1 take plays there
 H1_C = T('h1', 0, 'v3', 'H1-C hands and flint')
+# MONTAGE-3D-5 (28 Sep): C14's hands-only flint shots render into renders/ring_C (ringC_flint_a_1 2960-2999,
+# ringC_flint_b_1..7 3150-3359) and replace HEROINE-L's h1_C; until they cover the row the shared H1 plays
+RING_FLINT = T('ring', 0, 'v3', 'MONTAGE-3D-5 hands-only flint')
 EMB_A = [T('embers_A3', 0, 'exact', 'EMBERS v3, A timeline')]
 EMB_C = [T('embers_C3', 0, 'exact', 'EMBERS v3, C timeline'),
          T('embers_C3_half', 0, 'exact', 'EMBERS v3 half-res preview, pre-H5', final_eligible=False)]
@@ -162,7 +165,8 @@ A = [
       [T('beaconrun'), T('run')]),
     S('A15', 4240, 4400, 'R16', 'THE WATCHERS', 'RUN-A + HILLS',
       'Behind a backlit watcher at the seventh fire, looking to the cold glow; small figures on far ridges, eyelines only.',
-      [T('watchers'), T('run')]),
+      # Codex PR #7 (merged 287b1a1): the restaged hearth, job watchers_a_hearth3 -> renders/watchers_A_hearth3
+      [T('watchers_A_hearth3', 0, 'exact', 'Codex restaged hearth (PR #7)'), T('watchers'), T('run')]),
     S('A16', 4400, 4720, 'E10', 'TOWERS IN THE LIGHT', 'EMBERS',
       "Far ridge fires light the towers' backs; the surges stop; the two giants open their shutters to each other first.",
       EMB_A),
@@ -275,7 +279,7 @@ C = [
       [T('runC_ringfall', 0, 'exact', 'RUN-C ink final'), T('ringfall'), T('run')]),
     S('C14', 2960, 3000, 'H1-C', 'FLINT', 'HEROINE',
       'Dark, her breath, the scarf. Strike 1 on bar 38 b2: a spark in the dark.',
-      [H1_C] + h1(H1_S1 - 2980, grade='C')),
+      [RING_FLINT] + h1(H1_S1 - 2980, grade='C')),
     S('C14', 3000, 3080, 'H2', 'THE FIND', 'MONTAGE-3D-2 (Blender)',
       "Strike 2's spark shows a gold band in a melted hollow by her knee; she stops; her gloved hand closes on it.",
       ring('find_a')),
@@ -284,7 +288,7 @@ C = [
       ring('find_b')),
     S('C14', 3150, 3360, 'H1-C', 'FLINT · THE CATCH', 'HEROINE',
       'She strikes again (bar 40 b3.9); a long blow; the kindling catches (bar 42 b2.8). Hands only.',
-      [H1_C] + h1(H1_S3 - 3178, grade='C')),
+      [RING_FLINT] + h1(H1_S3 - 3178, grade='C')),
     S('C15', 3360, 3600, 'H2', 'THE FIRE TEST', 'MONTAGE-3D-2 (Blender)',
       'The roar. The Ring on the tip of her C-shaped fire-steel in the flames, unmarked; it will not fall; she draws it out.',
       ring('fire')),

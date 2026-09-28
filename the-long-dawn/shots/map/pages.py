@@ -925,10 +925,10 @@ class Deep:
                                       dens=0.45, taper=(0.1, 0.1))
                     S.add(pp, rd, dd, layer=lay)
             else:
-                # the gilt body: a band of overlapping pulls across its width, the edges wandering
-                for q in np.linspace(-0.42, 0.42, 5):
-                    wob = 0.08 * np.sin(np.arange(len(seg)) * 0.37 + q * 9.0)
-                    S.add(seg + nr * ((q + wob) * w_)[:, None], 0.3 * w_ + 0.004, np.ones(len(seg)), layer=GILT)
+                # the gilt body: one solid band of leaf laid between the edges (PAGES-C: five wobbling pulls read as
+                # a braided rope of gold; the vein's pinch and swell is in w_, its hand in the ink edges)
+                for q in np.linspace(-0.44, 0.44, 9):
+                    S.add(seg + nr * (q * w_)[:, None], 0.12 * w_ + 0.004, np.ones(len(seg)), layer=GILT)
                 for side in (-1, 1):
                     edge = seg + nr * (side * (0.5 * w_ + 0.01 + 0.012 * np.sin(np.arange(len(seg)) * 0.5 + side)))[:, None]
                     pp, rd, dd = hand(edge, 0.008, self.seed + 710 + k_h * 3 + side, dens=0.85, thin_end=0.5,

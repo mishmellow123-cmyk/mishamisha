@@ -34,6 +34,8 @@
   one line per file). NEVER run two preview jobs at once (the .part files collide). README fixes: it now names the
   provisional source itself (`AS.provisional_sources`: C9's burn-through = its under-layer embers_C3_half), names
   C's council takes (`accord`) as v1 timing renders (`previews.TIMING`), and says the film finish is in.
+- **Final QC (director, 28 Sep):** run Codex's `edit/tools/frame_qc.py` (PR #5; `edit/tools/FRAME_QC.md`) on A's and
+  C's finished renders, e.g. `python3 edit/tools/frame_qc.py renders/crossing_A --range 4880-5839 --film A --json ...`.
 - **Disk:** ~14 GB free; delivery/ 7.1 GB (grained masters 0.5-1 GB each + MP4 screeners); dropping the MP4
   screeners frees ~2.7 GB if space gets tight.
 - **B's H9 kit (for a fresh-context critic):** `~/mishamisha/_local_logs/review/h9_B/` (`h9_kit.py --cuts B --out`),

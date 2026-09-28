@@ -291,7 +291,7 @@ def _hood(m, F, zsh, hs, ws, seed, typ, lod):
     na = max(8, int(round(18 * lod)))
     nb = max(20, int(round(44 * lod / 4.0)) * 4)
     kk = {0: 1.00, 1: 1.02, 3: 1.10, 5: 1.08}.get(typ, 1.0) * (0.94 + 0.06 * hs)
-    pk = {0: 0.030, 1: 0.070, 3: 0.012, 5: 0.050}.get(typ, 0.04)
+    pk = {0: 0.050, 1: 0.095, 3: 0.025, 5: 0.075}.get(typ, 0.06)
     brim = {0: 0.050, 1: 0.060, 3: 0.035, 5: 0.075}.get(typ, 0.05)
     rx, ry, rz = 0.140 * kk, 0.128 * kk, 0.152 * kk
     a0 = 0.92 + 0.08 * math.sin(seed)
@@ -302,9 +302,13 @@ def _hood(m, F, zsh, hs, ws, seed, typ, lod):
     r = 1.0 / np.sqrt((dx / rx) ** 2 + (dy / ry) ** 2 + (dz / rz) ** 2)
     r = r + pk * np.exp(-((A - 2.45) / 0.38) ** 2) * np.clip(np.sin(B), 0, 1) ** 3
     near = sst(a0 + 0.75, a0, A)                                   # 1 at the rim
-    r = r + 0.0055 * np.sin(8.0 * B + seed) * near + 0.004 * np.sin(5.0 * B + 2.0 * A + seed)
+    r = r + 0.0085 * np.sin(8.0 * B + seed) * near + 0.004 * np.sin(5.0 * B + 2.0 * A + seed)
+    # cloth, not a shell: soft creases fanning back from the peak and the brim, a slump to one side
+    crown = np.clip(np.sin(B), 0, 1) * sst(1.2, 2.2, A)
+    r = r + 0.007 * crown * np.sin(6.0 * A + 3.0 * B + 1.7 * seed) + 0.005 * np.sin(11.0 * B - 4.0 * A + seed)
     r = r * (1.0 - 0.16 * near * np.clip(-np.sin(B), 0, 1))          # the lower rim closes round the throat
     X, Y, Zh = r * dx, r * dy, r * dz
+    Y = Y + 0.018 * math.sin(2.3 * seed) * np.clip(Zh / 0.15, 0, 1) ** 2      # the hood slumps a little to one side
     up = np.clip(np.sin(B), 0, 1) ** 1.4
     X = X + brim * near * up                                       # the upper rim drawn out over the face
     Zh = Zh - 0.022 * near * up
@@ -457,11 +461,11 @@ STONE_TOP = 0.30
 
 
 def slab_outline(th):
-    """The flat stone's edge radius: a weathered natural slab, irregular, with a few old chips (not a polygon)."""
-    r = (0.372 + 0.040 * np.sin(2 * th + 0.9) + 0.026 * np.sin(3 * th + 2.1) + 0.015 * np.sin(5 * th + 0.3)
-         + 0.008 * np.sin(9 * th + 1.7) + 0.004 * np.sin(17 * th + 0.4))
-    for a, w, dd in ((0.72, 0.10, 0.030), (2.45, 0.07, 0.020), (3.30, 0.13, 0.045), (4.95, 0.09, 0.026),
-                     (5.80, 0.05, 0.012)):
+    """The flat stone's edge radius: a weathered natural slab, irregular, with old bites out of it (not a polygon)."""
+    r = (0.372 + 0.042 * np.sin(2 * th + 0.9) + 0.030 * np.sin(3 * th + 2.1) + 0.017 * np.sin(5 * th + 0.3)
+         + 0.009 * np.sin(9 * th + 1.7) + 0.005 * np.sin(17 * th + 0.4) + 0.003 * np.sin(29 * th + 2.2))
+    for a, w, dd in ((0.72, 0.10, 0.038), (2.45, 0.07, 0.026), (3.30, 0.15, 0.055), (4.95, 0.09, 0.034),
+                     (5.80, 0.05, 0.016), (1.60, 0.04, 0.012)):
         dth = np.angle(np.exp(1j * (th - a)))
         r = r - dd * np.exp(-(dth / w) ** 2)
     return r
@@ -473,26 +477,30 @@ def slab_top(x, y):
             + 0.003 * np.sin(7.0 * x + 2.0 * y + 0.5) + 0.002 * np.sin(11.0 * y - 5.0 * x))
 
 
-def slab(n_r=26, n_t=160):
-    """The flat stone: top face (polar grid), a rounded weathered edge, the side falling into the ground."""
+def slab(n_r=26, n_t=200):
+    """The flat stone: a natural cleft top (polar grid); the edge weathered round and broken in layers (a lip here,
+    an undercut there), the side falling rough and uneven into the ground. No kerb, no rim, no machined wall."""
     th = np.linspace(0, 2 * np.pi, n_t, endpoint=False)
     R = slab_outline(th)
     rows = []
     rr = np.linspace(0.0, 1.0, n_r) ** 0.8
     for k in range(1, n_r):
-        f = rr[k] * (1.0 - 0.10 * rr[k] ** 6)                           # stop short of the edge (the bevel)
+        f = rr[k] * (1.0 - 0.08 * rr[k] ** 6)
         x, y = f * R * np.cos(th), f * R * np.sin(th)
         rows.append(np.stack([x, y, slab_top(x, y)], -1))
-    # the bevel and side: rounded over, weathered, falling to below the ground
+    ph = [1.3, 2.9, 0.4, 4.1, 5.2, 0.9, 3.3, 2.2, 1.8, 4.6]
     edge = []
-    for k, (fr, dz) in enumerate(((0.935, -0.006), (0.965, -0.018), (0.985, -0.040), (1.0, -0.075),
-                                  (1.01, -0.14), (1.02, -0.22), (1.03, -0.34), (1.00, -0.44))):
-        x, y = fr * R * np.cos(th), fr * R * np.sin(th)
-        zt = slab_top(x, y)
-        wob = 0.010 * np.sin(6 * th + k) * (k >= 3) + 0.006 * np.sin(13 * th + 2 * k) * (k >= 2)
-        x = x + wob * np.cos(th)
-        y = y + wob * np.sin(th)
-        edge.append(np.stack([x, y, zt + dz], -1))
+    prof = ((0.950, -0.004), (0.975, -0.014), (0.992, -0.032), (1.004, -0.060), (1.012, -0.095), (1.000, -0.130),
+            (1.018, -0.170), (1.035, -0.215), (1.030, -0.270), (1.050, -0.340), (1.020, -0.440))
+    for k, (fr, dz) in enumerate(prof):
+        # layers: each course of the edge juts or recedes on its own (cleft strata), lumps and small bites
+        strata = (0.018 * np.sin(3 * th + ph[k % 10]) + 0.012 * np.sin(7 * th + 2 * ph[(k + 3) % 10])
+                  + 0.006 * np.sin(15 * th + ph[(k + 5) % 10])) * (k >= 2)
+        rr_ = fr * R + strata
+        x, y = rr_ * np.cos(th), rr_ * np.sin(th)
+        zt = slab_top(x / max(fr, 1e-3), y / max(fr, 1e-3))
+        dzz = dz * (1.0 + 0.25 * np.sin(4 * th + ph[k % 10]) * (k >= 3)) + 0.006 * np.sin(11 * th + k) * (k >= 1)
+        edge.append(np.stack([x, y, zt + dzz], -1))
     P = np.stack(rows + edge, 0)
     m = Mesh()
     base = m.add_grid(P, 0)
@@ -541,8 +549,8 @@ def log(A, B, ra, seed, burn_a=0.35, n_l=36, n_a=18):
     U, Bt = np.meshgrid(u, be, indexing='ij')
     # wedge: a rounded triangle (split faces) with the bark arc; burnt ends round everything
     wedge = 1.0 - 0.22 * np.abs(np.cos(1.5 * (Bt + roll))) ** 1.5
-    taper = sst(0.0, burn_a, U) ** 0.55 * 0.75 + 0.25                  # the inner end burnt down
-    taper = taper * (1.0 - 0.35 * sst(0.93, 1.0, U))                    # the sawn/broken outer end rounds off
+    taper = 0.66 + 0.34 * sst(0.0, burn_a, U) ** 0.6                     # the inner end burnt down, blunt
+    taper = taper * (1.0 - 0.45 * sst(0.965, 1.0, U)) * (1.0 - 0.40 * sst(0.035, 0.0, U))   # rounded, broken ends
     knot = 0.10 * np.exp(-((U - rng.uniform(0.3, 0.8)) / 0.05) ** 2) * np.clip(np.cos(Bt - ph[0]), 0, 1) ** 4
     lumpy = 0.05 * np.sin(9 * U + 3 * Bt + ph[1]) + 0.03 * np.sin(23 * U - 2 * Bt + ph[2])
     R = ra * wedge * taper * (1.0 + knot + lumpy)
@@ -570,8 +578,8 @@ def stick(A, B, r, seed, n_l=14, n_a=8):
     u = np.linspace(0, 1, n_l)
     be = np.linspace(0, 2 * np.pi, n_a, endpoint=False)
     U, Bt = np.meshgrid(u, be, indexing='ij')
-    bend = 0.6 * r * np.sin(np.pi * U * 2.1 + ph[0]) + 0.3 * r * np.sin(7 * U + ph[1])
-    R = r * (1.0 - 0.25 * U) * (1.0 + 0.08 * np.sin(11 * U + 2 * Bt + ph[2]))
+    bend = 0.25 * r * np.sin(np.pi * U * 1.3 + ph[0]) + 0.12 * r * np.sin(5 * U + ph[1])
+    R = r * (1.0 - 0.18 * U) * (1.0 + 0.10 * np.sin(13 * U + 2 * Bt + ph[2]) + 0.06 * np.sin(3 * Bt + ph[3]))
     C = A[None, None] + (U * L)[..., None] * T + bend[..., None] * N
     P = C + R[..., None] * (np.cos(Bt)[..., None] * N + np.sin(Bt)[..., None] * Bn)
     m = Mesh()
@@ -611,32 +619,32 @@ def torch_mesh(n_a=14):
     head of cloth strips wound round it and soaked in pitch (lumpy, bulging, with the strip edges standing)."""
     m = Mesh()
     be = np.linspace(0, 2 * np.pi, n_a, endpoint=False)
-    zs = np.linspace(-0.30, 0.31, 16)
+    zs = np.linspace(-0.30, 0.27, 16)
     rows = []
     for z in zs:
-        r = 0.0155 + 0.0012 * math.sin(9 * z) + 0.0008 * np.sin(3 * be + 20 * z)
+        r = 0.0175 + 0.0014 * math.sin(9 * z) + 0.0009 * np.sin(3 * be + 20 * z)
         rows.append(np.stack([r * np.cos(be), r * np.sin(be), np.full(n_a, z)], -1))
     base = m.add_grid(np.stack(rows, 0), 0, attrs={'head': np.zeros((len(zs), n_a))})
     m.add_fan(base, n_a, (0, 0, -0.303), 0, flip=True, attrs={'head': [0.0]})
     # the head: 0.29 .. 0.45
     nb = 28
     be2 = np.linspace(0, 2 * np.pi, nb, endpoint=False)
-    zh = np.linspace(0.285, 0.452, 22)
+    zh = np.linspace(0.245, 0.452, 26)
     rows = []
     hv = []
     for z in zh:
-        u = (z - 0.285) / 0.167
-        prof = 0.018 + 0.024 * np.sin(np.pi * np.clip(u * 1.05, 0, 1)) ** 0.6
-        wind = 0.0030 * np.cos(2 * np.pi * (u * 5.5) - be2)            # the strips spiral round
-        lump = 0.0024 * np.sin(5 * be2 + 31 * z) + 0.0018 * np.sin(11 * be2 - 17 * z + 1.0)
+        u = (z - 0.245) / 0.207
+        prof = 0.020 + 0.030 * np.sin(np.pi * np.clip(u * 1.04, 0, 1)) ** 0.55
+        wind = 0.0042 * np.cos(2 * np.pi * (u * 6.0) - be2)            # the strips spiral round
+        lump = 0.0030 * np.sin(5 * be2 + 31 * z) + 0.0022 * np.sin(11 * be2 - 17 * z + 1.0)
         r = prof + wind + lump
         if u > 0.93:
             r = r * (1.0 - (u - 0.93) / 0.07 * 0.55)
         rows.append(np.stack([r * np.cos(be2), r * np.sin(be2), np.full(nb, z)], -1))
         hv.append(np.full(nb, 1.0))
     base = m.add_grid(np.stack(rows, 0), 1, attrs={'head': np.stack(hv, 0)})
-    m.add_fan(base, nb, (0, 0, 0.283), 1, flip=True, attrs={'head': [1.0]})
-    m.add_fan(base + 21 * nb, nb, (0, 0, 0.456), 1, attrs={'head': [1.0]})
+    m.add_fan(base, nb, (0, 0, 0.243), 1, flip=True, attrs={'head': [1.0]})
+    m.add_fan(base + 25 * nb, nb, (0, 0, 0.456), 1, attrs={'head': [1.0]})
     return m.arrays()
 
 
@@ -729,3 +737,28 @@ def _tube(m, C, r0, r1, na, mat, lumpy=None):
     P = np.stack(rows, 0)
     base = m.add_grid(P, mat)
     m.add_fan(base + (n - 1) * na, na, C[-1] + T[-1] * (r0 if not np.ndim(r0) else r0[-1]) * 0.8, mat)
+
+
+def pebble(seed, size):
+    """A small field pebble for the floor's litter (flattened, lumpy)."""
+    rng = np.random.default_rng(seed)
+    return rock((0.0, 0.0, 0.0), (size, size * rng.uniform(0.6, 0.9), size * rng.uniform(0.35, 0.6)), seed * 1.7,
+                nv=8, nu=12, rough=0.25, flat_bottom=-0.3 * size)
+
+
+def twig(seed, length):
+    """A broken stem of dead heather lying on the ground (crooked, forked once)."""
+    rng = np.random.default_rng(seed)
+    a = rng.uniform(0, 2 * np.pi)
+    A = np.array([0.0, 0.0, 0.0015])
+    B = A + length * np.array([math.cos(a), math.sin(a), 0.0])
+    V, F, M, at = stick(A, B, rng.uniform(0.0011, 0.0022), seed * 3.1, n_l=8, n_a=5)
+    m = Mesh()
+    m.add_grid(V[:40].reshape(8, 5, 3), 0)
+    fk = rng.uniform(0.3, 0.7)
+    C = A + (B - A) * fk
+    a2 = a + rng.choice([-1, 1]) * rng.uniform(0.4, 0.9)
+    D = C + 0.45 * length * np.array([math.cos(a2), math.sin(a2), 0.0])
+    V2, F2, M2, _ = stick(C, D, 0.0010, seed * 5.3, n_l=6, n_a=4)
+    m.add_grid(V2[:24].reshape(6, 4, 3), 0)
+    return m.arrays()
