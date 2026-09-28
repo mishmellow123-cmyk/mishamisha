@@ -8,7 +8,29 @@
 
 # >>> RUN-A (A . FALSE DAWN R1 · X2 DARK ADAPTATION · R2-A REVEAL · R3 BEACON RUN · R16 WATCHERS · R6 THE CROSSING · R7 THE BLUE HOUR · A20 title sky) <<<
 
-## RUN-A2 STATE AT PAUSE (27 Sep ~21:00Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
+## RUN-A4 STATE (took over from RUN-A2, 27 Sep ~23:40Z). Owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
+* **STATE (23:55Z):** crossing final LANDED (renders/crossing_A, 960/960). Blue hour NOT rendered. Reviewed look-dev 3
+  (renders/_farmtest/bluehour_a_lookdev3): FAILS the gate on (1) the seated people = black mounds (wide cloak bells, no
+  neck/shoulder read, no rim); (2) the horizon = one uniform comb of needles; (3) the lantern = a small box with a white
+  LED dot; (4) the valley = a bright lilac oval "spotlight/lake" with dark hair-like smoke strokes (story-critical: it
+  must read as a lived valley: dark-blue floor, warm hearth points, PALE smoke); (5) perfect-pyramid islands in the
+  cloud sea (an H5 terrain tell). Crossing final review: procession = even pawns (confirmed at full res, 5480); the
+  lantern = hexagonal onion-base glass; the stones = grey cubes. No straight vertical terrain cut seen in 5200/5440.
+* **HEART CONTRACT v2: RUN-A4 CONFIRMS RUN-A2's proposal below, unchanged, and implements it at 4880 via a shared pure
+  function `shots/run/heart2.py` (EMBERS-A3 may import it or port it). EMBERS-A3: please ACK here before either side
+  renders a final with it.** (Nothing of mine renders a final with it until you do.) Reference:
+  `import heart2; heart2.draw(img, zb, sx, sy, u, f_cut, col, I=1.0, z=..., zbias=0.4)`, additive into a linear
+  buffer, u = the core's sigma in THAT buffer's px (10 at full res on 4879/4880, 15 in a 1.5x source buffer),
+  f_cut = A's cut frame; `heart2.core_weight(dx, dy, u, f_cut)` gives the flame profile for a port. One addition
+  for both sides: **no filaments / rings round the core** (the crossing's v1 curling filaments are dropped: they
+  would pop in on 4880, and they read as a bulb's filament).
+* Plan: (a) crossing: lantern_v3 into sdfppl (horn panes, iron), heart2, rough snow-dusted stones, the irregular
+  procession (groups/pairs/gaps, a helper at a step, heights 0.80-1.10, cuts, lantern heights) -> farm stills ->
+  JOB READY (a full-take re-render: the lantern/heart and the line show in every job); (b) blue hour: the fixes above
+  -> farm stills -> JOB READY bluehour_a2_01..20; (c) switch a march ceiling to FD.terrain_hmax only if a look-dev
+  shows a vertical cut (Codex audits the rest).
+
+## (superseded by RUN-A4 above) RUN-A2 STATE AT PAUSE (27 Sep ~21:00Z, the account's usage window; RESUME ~23:30Z). A18 THE CROSSING, A19 THE BLUE HOUR, A20 title sky; owns crossing.py, bluehour.py, sdfppl.py, crossing_fires.npy
 * **RESUME HERE (~23:30Z).**
   0. **FREEZE:** `crossing_a2_01..18` (cut 4880-5839) were APPROVED and launched by main at ~20:50Z with --nodes 6
      (log `_local_logs/jobs/crossing_a2_farm.log`; ~2 h). Until they complete, push NOTHING that changes their output:
@@ -71,7 +93,24 @@
 * **Risks to check first on resume:** the blue hour's valley may not show (the carve is under a sea of peaks; the
   sub-window composite is untested in a picture); the people may still read plush at full res; A20's sky composition.
 
-## RUN-A3 STATE AT PAUSE (27 Sep ~20:40Z; the account's usage ends ~21:25Z, RESUME ~23:30Z)
+## RUN-A5 STATE (succeeds RUN-A3 + RUN-A-L, 27 Sep ~23:45Z). Owns A13 `reveal_a.py`, A14 `beaconrun_a.py`, A15 `watchers_a.py`, `nighta.py`, new `hearth_a.py`
+* **STATE (00:05Z):** RUN-A3's uncommitted reveal_a.py (the night ramp eases the A-night cloud/aerial knobs into
+  A13's world layer; 0 at 3680) committed as 886e05a. Scope: (1) A14 fixed -> JOB READY; (2) A15 fixed -> JOB READY;
+  (3) A13 re-render after the director's cloud-sea call (Codex studies the cumuliform relief on codex/*; not mine).
+* **Diagnosis (look3 + v4 at 1:1):** (a) the fire's depth bias is 3 m (`max(3, 0.004 z)`), so at 16 m the flame paints
+  over the front cairn stones (the "gas burner on a pedestal") and over any figure within 3 m in front (v2's flame
+  ON the hood); (b) sdfppl stone = flat albedo, no micro-normals, no joint occlusion, lit terrain through the gaps ->
+  potatoes/cubes; (c) the lit rock step 1-3 m behind the fire (+0.8..1.5 m) is the "clay"; (d) smoke ambient
+  (0.004,0.005,0.009) is far darker than the moonlit sky -> dark smudges and a bird-like puff; (e) one bright glow
+  shadow ray = a searchlight; (f) the "flag on a pole" = the 700 m march-ceiling cut (fixed by Codex's terrain_hmax).
+* **Plan:** `hearth_a.py` (own SDF tracer; sdfppl is RUN-A4's and in flux): a low battered dry-stone ring of flattened,
+  corner-chipped, pitted stones (per-stone albedo, flecks, soot, joint + ground occlusion, bounce), a rubble core, loose
+  half-sunk stones round the summit; a ground pass that shadows the seventh's pool behind the stones. nighta: near-fire
+  depth bias (<60 m only), moonlit smoke. The lighter 1.0 m in front of the fire, 0.3 m right (the body hides the
+  hearth, the flame rises beside the hood); plate pitched up ~1 deg; glow rays off in A14/A15. A14: near fires 1/3
+  bigger, catch flares with a hot core.
+
+## (superseded by RUN-A5 above) RUN-A3 STATE AT PAUSE (27 Sep ~20:40Z; the account's usage ends ~21:25Z, RESUME ~23:30Z)
 * **A13 R2-A THE REVEAL: APPROVED and RENDERED** (`reveal_a_1`: 120/120 in `renders/reveal_A` at 20:46Z, QC'd: no gaps,
   brightness smooth, max frame-to-frame jump 0.36/255). Continues H1's take in H1's own renderer (continuity 3680 vs
   h1_v3h5 1555 = 0.64/255).
@@ -114,7 +153,7 @@
   A14 (`beaconrun_a.py`, RUN-A-L) imports it, plus `watchers_a.plate/draw_figures/extra_fires`.
 * **Check stills:** `_local_logs/review/runA/runA3_reveal_*.jpg`.
 
-## RUN-A-L STATE AT THE USAGE GAP (27 Sep ~20:55Z; resume ~23:30Z). RESUME HERE
+## (superseded by RUN-A5 above for A13/A14/A15) RUN-A-L STATE AT THE USAGE GAP (27 Sep ~20:55Z)
 **Mine:** A2 FALSE DAWN (`falsedawn.py`), A11 X2 (`stars_a.py`) and A14 BEACON RUN (`beaconrun_a.py` +
 `beaconrun_a_chain.npy`). The final jobs are one per shot: `falsedawn_a`, `stars_a` and `beaconrun_a`. Launch only
 after the director approves JOB READY. Farm requests are in `~/.cache/ldfarm/req/`; see `farm.py status`.
@@ -551,6 +590,11 @@ every range where the cairn/plinth/her figure read: climb_b 640-879, reveal_b 13
 handback_b_{crane_a,crane_b,night,dawn_a,dawn_b} 3840-5199 (the join stays identical: all use the same bprops/bset).
 If cheap after that: RUN-B2's nitpicks (summit_snow on for vigil + hand-back together; the shawl passing in one
 frame; the Milky Way's cloudy texture; the flat fog veil).
+**Iterations since (00:30Z):** DUSK v2: strata zone now fades out at its reach (it had banded the whole range) and
+far_layers takes one far colour per frame (per-column sampling made mast-like streaks); cache key v2b. Cairn:
+v2 read as a snowy fir / stacked buns -> packed stones, patchy snow (bfig snow x a 2.6/m noise), drift drawn first
+(2a91760). Tests running: farm_dusk2_t4 (dusk_b2 0/320/575), farm_cairn_t2 (850/1372/3839/3840/4300 ->
+renders/_farmtest/cairn_t2/<job>), farm_title_t2 (dawntitle 5200/5276/5340/5439).
 **B14 TITLE plate (new scope, b69706b):** handback_b.py frames 5200-5439 (render_title): 5199's settled frame lifts
 6.8 deg into the dawn sky (eased over 76 f, then +0.45 deg drift), one tall source G-buffer (hbt_G_...) warped per
 frame; sun continues the hand-back's final rate (seamless at 5199/5200); high_cloud() = cirrus at 7.5 km lit gold
