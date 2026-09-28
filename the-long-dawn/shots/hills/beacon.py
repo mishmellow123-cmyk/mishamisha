@@ -414,7 +414,7 @@ AFIX = False
 AFIX_RAMP = 10                   # frames over which the kindling flame grows into the bonfire
 AFIX_FLINCH = 4                  # her flinch starts this many frames into the ramp (she reacts to the surge)
 AFIX_HFOV = (40.0, 33.0)         # the push-in: strike 1 -> the roar
-AFIX_TGT = ((0.40, 1.02, 0.0), (0.33, 1.06, 0.0))
+AFIX_TGT = ((0.24, 1.265, 0.0), (0.33, 1.06, 0.0))   # strike 1's spark lands on A11's ember (958, 547)
 AFIX_BREATH_COOL = np.array([0.10, 0.12, 0.16])   # moonlit breath (linear, x density): pale, never lit like a flame
 
 
@@ -888,7 +888,7 @@ def world_layer(cam, f, t, reveal):
     anyway. Stars are splatted afterwards, directly in our camera (never resampled)."""
     Wd = s1_world()
     WD = Wd['WD']
-    k = 0.25 if f < ROAR + 4 else 1.0
+    k = 0.25 if (f < ROAR + 4 or AFIX) else 1.0      # A-FIX holds the close-up: no switch to the full-res world
     m = 32.0 * cam.scale                      # canvas margin; the two projections differ by <= 16 px
     fl = cam.f * k
     Wl = int(math.ceil((cam.W + 2.0 * m) * k))
@@ -1228,7 +1228,7 @@ class FirstBeacon:
                 grow = min(lv, 1.3)             # held close: the bonfire's full 2 m would be a flat wall of flame
                 b0 = np.array([TINDER[0] - 0.05, TINDER[1] - 0.03, TINDER[2]])
                 fire.draw_flame(fimg, fa, cam, b0 + (FIRE_BASE - b0) * rm, 0.25 + (0.30 + 0.75 * grow) * rm,
-                                0.09 + 0.20 * rm, 0.55, t, 2.9, (5.0 + 5.0 * min(1.0, lv - 1.0 + 0.3)) * (0.35 + 0.30 * rm),
+                                0.09 + 0.12 * rm, 0.55, t, 2.9, (5.0 + 5.0 * min(1.0, lv - 1.0 + 0.3)) * (0.35 + 0.15 * rm),
                                 fire.BONFIRE_STYLE)
             elif f < ROAR and HEROINE_V2:
                 for b, h, w, lean, seed, k in ig_flames(f):

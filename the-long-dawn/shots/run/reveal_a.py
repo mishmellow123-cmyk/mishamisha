@@ -50,7 +50,7 @@ SRC1 = CUT1 - 1 - SRC_OFF                # 1675
 FIRES_NPY = os.path.join(HERE, 'reveal_a_fires.npy')
 
 GUARD = {'camera': '49dd99955a91d12e61f657c861031c7f',  # A-FIX branch only (AFIX False here)
-          'world_layer': '5041ad8575dd41016499c12ef2138ff2'}
+          'world_layer': 'f53a1f551995e845cb816731fb4be17b'}   # A-FIX branch only
 
 
 def _guard():
