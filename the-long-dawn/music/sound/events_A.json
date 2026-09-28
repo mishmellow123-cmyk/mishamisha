@@ -169,18 +169,19 @@
  {
   "id": "A.blow",
   "kind": "event",
-  "t": 143.625,
+  "t": 143.6667,
   "level": -36.2,
   "gain": -20.6,
-  "clip_start_s": 143.595,
+  "clip_start_s": 143.6367,
   "hit_offset_s": 0.03,
   "src": [
    "fs:848421",
    "fs:273979",
-   "fs:273979",
+   "fs:848421",
    "fs:273979",
    "fs:848421",
-   "fs:406648",
+   "fs:273979",
+   "fs:273979",
    "fs:595483"
   ]
  },
@@ -189,7 +190,7 @@
   "kind": "event",
   "t": 150.0,
   "level": -27.2,
-  "gain": -3.1,
+  "gain": -0.8,
   "clip_start_s": 149.316,
   "hit_offset_s": 0.684,
   "src": [
@@ -356,10 +357,10 @@
  {
   "id": "A.x.catch",
   "kind": "event",
-  "t": 148.4583,
+  "t": 148.1667,
   "level": -30.2,
   "gain": -9.4,
-  "clip_start_s": 147.7883,
+  "clip_start_s": 147.4967,
   "hit_offset_s": 0.67,
   "src": [
    "fs:595483"
