@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~13:10Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-28 ~13:45Z**, by the director (Claude, Opus 5.5).
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -239,12 +239,16 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
 - The farm daemon is restarted, and the queued requests (pages_book_plate test; beaconrun/watchers catches3 tests + finals) should now run.
 - BURN-C's watcher (5 h) fires when the plate test ends. It then renders the three first-half burns into renders/book_C_ft and stands down.
 
+- **13:45Z update:**
+  - BURN ROLLOUT DONE (ef90134): `renders/book_C_ft` and its matte hold the filmed burns plus flame tongues on clean plates for C 841-1039, 1680-1717 and 1905-1991. EDIT reads them when C's new EDL is built. The SOUND frames are in `review/BURN_NOTES.md`. BURN-C has stood down.
+  - The A14/A15 catches3 tests passed, and the finals are rendering (55/480 at 13:45Z) into `renders/beaconrun_A_catches3` and `renders/watchers_A_catches3`. When they land, compare the A14→A15 join (catches3 A15 vs the existing hearth3 A15), then rebuild A with `FILMS=A bash edit/refresh_watch.sh`.
+
 ## 7. Lanes (as of 07:30Z, 28 Sep)
 | Lane | State |
 |---|---|
 | Codex (M4) | building C's new shots overnight |
 | COMPOSER-C2 | Phase 2 re-score of C, running |
-| BURN-C | pass (a) flame tongues rendering; owns the pages_book_plate test/finals |
+| BURN-C | DONE, stood down (first-half burns in renders/book_C_ft) |
 | EDIT-3 | standing down; watcher on A only |
 | RUN-A4 | crossing HELD (2 fixes left) |
 | RACE-A, SOUND-C, FIRST-VIEWER-C | stalled/idle; reassign fresh if needed |
