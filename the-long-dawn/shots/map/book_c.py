@@ -600,7 +600,7 @@ class Book3:
             fire, xl = None, fire_lights(K, t)
         post = None
         smk = None
-        if t > K.T_FIRE:
+        if t > K.T_FIRE and not getattr(self, 'no_burn', False):     # BURN-C: --no-burn = the clean plate
             Fu, Fv = float(K.Fw[0]), float(0.5 * bk.PH - K.Fw[1])
             # PAGES-C: burn edge v2 (torn at birth, char, lip, beaded embers, flecks) and the paper's smoke
             post = BURN.v2(BURN.hold_params((Fu, Fv), K.T_BURN, 6.6, 1.2, amp=0.42, freq=0.35, seed=4, brown=2.8,
@@ -708,6 +708,8 @@ class Book3:
                                        char=0.3, edge=0.035, lead=3.0))
             # (the smoke thins away before the cut to the storm alone at 1992: no haze pops off)
             smk = (post, 'radial', (0.22, 0.15, 0.1), 0.24 * (1.0 - ramp(t, 11.9, 12.9)), 0.8, 0.6) if t > 7.0 else None
+        if getattr(self, 'no_burn', False):          # BURN-C: the clean plate (the glow's light stays, no burn/smoke)
+            post, smk = None, None
         return self.finish_layer(bk, cam, L, tL, tDp, t, xl=xl, post=post, texS=tL, st=0.04, smoke=smk)
 
     def cam_deep(self, bk, dp, t):
@@ -1034,12 +1036,15 @@ def main():
     ap.add_argument('--out', default=os.path.join(ROOT, 'renders', 'book_C'))
     ap.add_argument('--scale', type=float, default=1.0)
     ap.add_argument('--with-fire', action='store_true', help="C4-C5 tests: add MAP's own sparks and flame")
+    ap.add_argument('--no-burn', action='store_true', help='BURN-C: C4-C5 and C8-C9 without the burn and its smoke '
+                    '(clean plates for the filmed burn, ftburn.py)')
     a = ap.parse_args()
     W, H = int(1920 * a.scale), int(804 * a.scale)
     if a.what == 'export':
         export_letters(a.out, W, H)
         return
     b3 = Book3(W, H, with_fire=a.with_fire)
+    b3.no_burn = a.no_burn
     matte = a.out.rstrip('/') + '_matte'
     for f in frames_of(a.frames):
         t0 = time.time()
