@@ -46,8 +46,18 @@
   plain square iron lantern, pyramid roof, the frame masking the glow (PASS on the regional read); its panes read
   pale (frosted horn/glass) at the cut because the heart is ice-white there (they warm with it); the step boulder
   still reads as a rounded tub/box at 5584 (TODO: tilt it, make it a wedge of 2-3 lumps with stronger
-  displacement). LD3 (the restage, b9e266d) is on the farm (nodes lost and requeued; farm log
-  `_local_logs/jobs/crossing_a4_lookdev3_farm.log`).
+  displacement). LD3 (the restage, b9e266d, 51 f, renders/_farmtest/crossing_a4_lookdev3): PASS on motion.
+  The match cut is now exact: the 4880 flame core measures (959.9, 398.4) = (959.5, 401.5) with the contract's
+  3 px lift (it was 17 px right in RUN-A2's final). 1:1 strips, 24 consecutive frames each: the hold (5040-5063)
+  shows the bearers' boots planted and still, only the hem stirring; at the set-off (5230-5253) the bearers are
+  ~140 px tall with their feet behind the ridge crest, moving smoothly; the first walker (staff and crook
+  lantern) walks with planted feet and alternating legs, with no slide or pop.
+  **TODO before the finals (small, then one 5-frame look-dev):** (1) the step boulder at 5584 still reads as a
+  rounded tub/box: tilt it, build it from 2-3 displaced lumps; (2) the slack rope between standing walkers
+  dips into bumps in the snow and reads as a dotted line (5040/5063, bottom left): clamp each rope point to the
+  snow + 3 cm (one ground_many call); (3) optional: stronger horn texture on the panes. Cost of a 17-frame unit
+  in LD3: 170-210 s per frame of node wall time, with lost nodes requeued. Finals = crossing_a2_01..18 unchanged
+  (--range per job, --procs 8).
 * **HEART CONTRACT v2: RUN-A4 CONFIRMS RUN-A2's proposal below, unchanged, and implements it at 4880 via a shared pure
   function `shots/run/heart2.py` (EMBERS-A3 may import it or port it). EMBERS-A3: please ACK here before either side
   renders a final with it.** (Nothing of mine renders a final with it until you do.) Reference:
