@@ -232,6 +232,18 @@ def _frame_state(SC, G, CR, t, hf, dz, crowd_keep):
         torches.append(dict(hw=hw.tolist(), ax=ax.tolist(), lit=lit, base=(top - 0.03 * ax).tolist(),
                             lean=lean.tolist(), hf=float(hf[i]), seed=3.7 * i + 1.3,
                             fl=_flicker(3.7 * i + 1.3, t), HD=HD.tolist(), left=bool(left)))
+    her2 = None
+    if tucked < 0.5:
+        side = SC.FIG_SIDE[H]
+        pos, ang = Fa[H, G.F_X:G.F_Y + 1], Fa[H, G.F_ANG]
+        hw = SC.to_world(H, Fa[H, G.F_H2X:G.F_H2Z + 1], pos=pos, ang=ang)
+        fd = SC.to_world(H, Fa[H, G.F_H2X:G.F_H2Z + 1] + Fa[H, G.F_D2X:G.F_D2Z + 1], pos=pos, ang=ang) - hw
+        a = _unit(fd)
+        HD2 = SC.hand_frame(np.zeros(3), a, np.array([0.0, 0.0, 1.0]), scale=0.95, left=True)
+        HD2[0:3] = hw - a * 0.075
+        HD2[2] += dz
+        g2 = float(Fa[H, G.F_GRIP2])
+        her2 = dict(HD=HD2.tolist(), curl=[0.8 * g2, 0.86 * g2, 0.9 * g2, 0.95 * g2], thumb=0.25 + 0.5 * g2, spread=0.8)
     her = SC.her_hand(t)
     herd = None
     if her is not None:
@@ -254,7 +266,7 @@ def _frame_state(SC, G, CR, t, hf, dz, crowd_keep):
         CF, nmain = _p2_rows(SC, G, t), 0
     zf, amt = _focus(SC, G, t, cam)
     out = dict(cam=cam[:12].tolist(), focus=[zf, amt], expo=float(SC.exposure(t)), white=float(SC.white_level(t)),
-               plate=int(SC.plate(t)), figs=Fa.tolist(), tucked=tucked, torches=torches, her=herd,
+               plate=int(SC.plate(t)), figs=Fa.tolist(), tucked=tucked, torches=torches, her=herd, her2=her2,
                ring=RP.tolist(), fire={k: float(v) for k, v in fs.items()}, cf=CF.tolist(), nmain=int(nmain))
     if CR is not None and crowd_keep is not None and len(crowd_keep):
         cs = CR.state(t)
@@ -1434,6 +1446,17 @@ def _gloves(C, new_material, per, fr):
         g.key(fr[0], grip)
         for f in fr:
             g.key_place(f, _hand_matrix(per[f]['torches'][i]['HD']))
+    h2f = [f for f in fr if per[f].get('her2') is not None]
+    if h2f:
+        hl2 = GL.leather_material(new_material, base=(0.024, 0.015, 0.010), rough=0.56)
+        g2 = GL.Glove('her_glove_l', hl2, None, mirror=True, sub=2, sleeve=False)
+        g2.rig.scale = (0.95, -0.95, 0.95)
+        for f in fr:
+            h = per[f].get('her2') or per[h2f[0] if f < h2f[0] else h2f[-1]]['her2']
+            g2.key(f, _glove_pose(h['curl'], h['thumb'], h['spread']))
+            g2.key_place(f, _hand_matrix(h['HD']))
+            g2.mesh.hide_render = per[f].get('her2') is None
+            g2.mesh.keyframe_insert('hide_render', frame=f)
     her_f = [f for f in fr if per[f]['her'] is not None]
     if her_f:
         hl = GL.leather_material(new_material, base=(0.024, 0.015, 0.010), rough=0.56)
@@ -1512,6 +1535,8 @@ def build(job):
         blob = fh.read()
     sc = C.setup_render(scale=job['scale'], samples=job['samples'], mblur=True, shutter=0.5)
     C.use_cycles(sc, job['samples'])
+    if os.environ.get('COUNCIL_SCALE'):
+        sc.render.resolution_percentage = max(1, int(round(100 * float(os.environ['COUNCIL_SCALE']))))
     cy = sc.cycles
     cy.use_light_tree = True
     cy.max_bounces = 4
