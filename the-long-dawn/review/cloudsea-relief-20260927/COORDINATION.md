@@ -14,6 +14,8 @@ The frame-mapping question is resolved by commits `9613759` and `b1248e5`, verif
 - A3612–3659 uses reveal_B1372–1419 with the adopted crop.
 - A3660–3799 uses reveal_A (140 frames).
 
-Some comments retain the superseded 3680 start. Executable definitions agree at 3660. `A_FIX_NOTES.md` remains absent, but the earlier conditional 3612–3759 replacement is no longer the operative mapping. The night ramp now begins at 3660; the crane still begins at 3680. The EDL explicitly leaves the harvested B shot's grade match against new reveal_A3660 to check when renders arrive. The haze-slab fix from 2913ad7 is present.
+Some comments retain the superseded 3680 start. Executable definitions agree at 3660. The earlier conditional 3612–3759 replacement is no longer the operative mapping. The night ramp now begins at 3660; the crane still begins at 3680. The haze-slab fix from 2913ad7 is present.
+
+Update through production `742bcae`: `A_FIX_NOTES.md` is now present (commit `7611bf7`). It reports that reveal_A3660–3799 has already been re-rendered and checked, and that the harvested B shot is grade-matched. Codex has not independently inspected those new local renders. Reconcile the older EDL grade-check comment with A-FIX's receipts before scheduling duplicate work. The new notes contain no cloud-relief approval.
 
 Codex continues A14 while awaiting the relief decision. PR #7 contains the A15 comparison, its visual limitations and a separate near-fire volume following David's concern about the solid white cone.
