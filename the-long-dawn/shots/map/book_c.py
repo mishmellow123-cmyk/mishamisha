@@ -392,7 +392,8 @@ class Book3:
         # magnified into grey squiggles
         def mk():
             L, R, yl = RB.leaves_last()
-            return RB.Page(L, 140).texture(1e9), RB.Page(R, 140).texture(1e9), yl
+            return (RB.Page(L, 140, ink_over_gilt=True).texture(1e9), RB.Page(R, 140, ink_over_gilt=True).texture(1e9),
+                    yl)
         return self.once('last', mk)
 
     def tex_text(self, seed, ppc=45):
@@ -705,7 +706,8 @@ class Book3:
             Gu, Gv = float(gw[0]), float(0.5 * bk.PH - gw[1] - 0.25)
             post = BURN.v2(BURN.params((Gu, Gv), t_start=10.0, speed=3.2, p=1.9, amp=0.45, freq=0.35, seed=9, brown=3.6,
                                        char=0.3, edge=0.035, lead=3.0))
-            smk = (post, 'radial', (0.22, 0.15, 0.1), 0.24, 0.8, 0.6) if t > 7.0 else None
+            # (the smoke thins away before the cut to the storm alone at 1992: no haze pops off)
+            smk = (post, 'radial', (0.22, 0.15, 0.1), 0.24 * (1.0 - ramp(t, 11.9, 12.9)), 0.8, 0.6) if t > 7.0 else None
         return self.finish_layer(bk, cam, L, tL, tDp, t, xl=xl, post=post, texS=tL, st=0.04, smoke=smk)
 
     def cam_deep(self, bk, dp, t):

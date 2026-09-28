@@ -113,10 +113,11 @@ class Page:
     """Strokes of one page and its texture at a time t. `burning` strokes (the text of X1a) get per-stroke
     gains for ink, fire and ghost from a LettersToFire."""
 
-    def __init__(self, S, ppc, seed=0):
+    def __init__(self, S, ppc, seed=0, ink_over_gilt=False):
         self.S = S
         self.pk = S.pack()
         self.ppc = ppc
+        self.ink_over_gilt = ink_over_gilt    # PAGES-C: ink and vermilion painted over the gold hide it (the initial)
         self.tex = B.PageTex(PG.PW, PG.PH, ppc)
 
     def texture(self, t, gains=None, extra=None):
@@ -141,6 +142,8 @@ class Page:
             tx.chan[..., 4] = C
             C, _ = pen.raster(pk, 1e9, ppc, H, W, INK, gain=gains[2])
             tx.chan[..., 5] = np.clip(C, 0, 1)
+        if self.ink_over_gilt:
+            tx.chan[..., 2] *= np.clip(1.0 - 1.15 * tx.chan[..., 0] - 1.15 * tx.chan[..., 6], 0.0, 1.0)
         if extra is not None:
             extra(tx.chan)
         return tx.build()
@@ -160,7 +163,7 @@ def initial(S, x, y, size, seed, glyph='lp'):
     while yy < d - 0.004:
         xs = np.linspace(a + 0.004, c - 0.004, 9)
         ys = yy + 0.004 * np.sin(xs * 9.0 + yy * 13.0) + rng.normal(0, 0.0015, 9)
-        S.add(np.column_stack([xs, ys]), np.full(9, 0.024), np.full(9, 1.0), layer=R_)
+        S.add(np.column_stack([xs, ys]), np.full(9, 0.024), np.full(9, 1.0), layer=GILT)   # PAGES-C: a gold ground
         yy += 0.03
     # the diaper: a fine ink lattice on the red, a gold bezant in each lozenge
     n = 5
@@ -183,7 +186,7 @@ def initial(S, x, y, size, seed, glyph='lp'):
             cy_ = b + (iy + 0.5) * step
             if a + 0.05 < cx_ < c - 0.05:
                 S.add(np.array([[cx_, cy_], [cx_ + 0.001, cy_]]), np.array([0.028, 0.028]), np.array([1.0, 1.0]),
-                      layer=GILT)
+                      layer=R_)
     # the frame: a gilt bar, ruled in ink outside and in
     for inset, w, lay in ((0.0, 0.012, INK), (0.5 * i0, 0.05, GILT), (i0, 0.009, INK)):
         a2, b2, c2, d2 = x + inset, y + inset, x + size - inset, y + size - inset
@@ -203,7 +206,7 @@ def initial(S, x, y, size, seed, glyph='lp'):
     hx = x + 0.5 * size - 0.5 * (max(xs_) + min(xs_)) * em
     base = y + 0.5 * size + 0.5 * (max(ys) + min(ys)) * em
     cy0 = y + 0.5 * size
-    for lay, nib, thin in ((GILT, 0.24, 0.05), (INK, 0.025, 0.012)):
+    for lay, nib, thin in ((R_, 0.24, 0.05), (INK, 0.025, 0.012)):
         k0 = len(S)
         hh = pen.Hand(seed=seed + 1, xh=em, nib=nib, thin=thin, layer=lay, slant=0.0)
         hh.write_word(S, [glyph], hx, base)
