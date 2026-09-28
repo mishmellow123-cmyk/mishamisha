@@ -39,6 +39,7 @@ if HERE not in sys.path:
 
 import world as WD          # noqa: E402  (only for its constants and height queries; shading uses the caller's module)
 import fire2 as F2          # noqa: E402
+import fire_near_a as FN    # noqa: E402
 from falsedawn import glow_at as _glow_at, glow_params as _fd_glow_params   # noqa: E402  (RUN-A-L's; read-only)
 from mt import fire as F    # noqa: E402
 
@@ -99,12 +100,14 @@ def glow_I(f):
     return I0 * (1.0 + 0.07 * math.sin(2.0 * math.pi * f / BAR))
 
 
-def glow_gp(f):
+def glow_gp(f, shadow_rays=True):
     """falsedawn's arc at this frame's intensity, with no deck (GP[16] = 0) and A2's star kill (GP[17])."""
     GP = _fd_glow_params('arc', glow_I(f))
     GP[0] = math.radians(GLOW_AZ)
     GP[1] = math.radians(EL_S)
     GP[16] = 0.0
+    if not shadow_rays:
+        GP[11] = 0.0
     return GP
 
 
@@ -288,7 +291,15 @@ def _smoke(pos, f_ign, size, seed):
     return _SMOKE[key]
 
 
-def fire_layer(img, zb, scam, pos, f_ign, f, size=1.0, seed=0, pxs=1.0, smoke=True, trans=1.0):
+def fire_depth_bias(z, near_hearth=False):
+    """Metres of source-depth tolerance; close A14/A15 stones and cowls must occlude flame."""
+    if near_hearth and z < 60.0:
+        return max(0.025, min(0.08, 0.001 * z))
+    return max(3.0, 0.004 * z)
+
+
+def fire_layer(img, zb, scam, pos, f_ign, f, size=1.0, seed=0, pxs=1.0, smoke=True, trans=1.0,
+               near_hearth=False, base_offset=None):
     """Draw one fire in a lens-shift SOURCE camera (verticals vertical; scam.project, scam.f, scam.pos), depth-tested
     against zb (view depth, as world.shade writes it). pos = the base on the ground (world); f_ign, f = A cut frames;
     pxs = pixel scale vs a 1920-wide frame; trans = the air's transmittance to the fire (fire_trans). Beacons.py's
@@ -298,30 +309,43 @@ def fire_layer(img, zb, scam, pos, f_ign, f, size=1.0, seed=0, pxs=1.0, smoke=Tr
     if sz <= 0:
         return
     Hf0, Rb, pk, pe, ak, _, _, _ = fire_dims(size)
-    base = np.array([pos[0], pos[1] + 0.45 * Hf0, pos[2]])
+    offset = 0.45 * Hf0 if base_offset is None else float(base_offset)
+    volume = near_hearth and base_offset is not None
+    base = np.array([pos[0], pos[1] + offset, pos[2]])
     sx, sy, z = scam.project(base)
     if z <= 1.0:
         return
     Hh, Ww = img.shape[0], img.shape[1]
-    if sx < -300 or sx > Ww + 300 or sy < -300 or sy > Hh + 300:
+    if not volume and (sx < -300 or sx > Ww + 300 or sy < -300 or sy > Hh + 300):
         return
     ppm = scam.f / z
     fl = F.flicker(t, int(seed) + 11, 1.3)
-    zbias = max(3.0, 0.004 * z)
+    zbias = fire_depth_bias(z, near_hearth)
     Hf = Hf0 * sz
     if smoke and z < 4000.0:
+        # The revised local hearth gets moonlit smoke; all other shots retain their recipe.
+        smoke_amb = (0.024, 0.032, 0.051) if near_hearth and z < 60.0 else (0.004, 0.005, 0.009)
         _smoke(pos, f_ign, size, seed).render(img, zb, scam, t, base + np.array([0, 0.8 * Hf, 0]),
                                               (2.5 if size > 1.8 else 0.8) * size * light * fl, albedo=0.25,
-                                              amb=(0.004, 0.005, 0.009), zbias=zbias)
+                                              amb=smoke_amb, zbias=zbias)
     e = light * fl * trans
+    aura = .15 if volume else 1.0
     # the air glow round a fire, capped on screen: near a fire (tens of metres) a 7 m / 30 m world-sized halo would
     # wash the whole frame warm through everything behind it; beacons at their usual distances are unchanged
     sig1 = min(max(7.0 * ppm, 2.2 * pxs), 90.0 * pxs)
     sig2 = min(max(30.0 * ppm, 9.0 * pxs), 260.0 * pxs)
-    F2.halo(img, zb, sx, sy - 0.4 * Hf * ppm, sig1, 0.018 * pk * e, z=z, zbias=zbias)
-    F2.halo(img, zb, sx, sy - 0.4 * Hf * ppm, sig2, 0.0016 * pk * e, z=z, zbias=zbias)
-    F2.flame(img, zb, scam, base, Hf, Rb * sz, t, seed=int(seed) * 7 + 3, I=(24.0 + 6.0 * min(size - 1.0, 1.7) / 1.7)
-             * inten * trans, lean=0.25 * sz, zbias=zbias, tongues=7 if size > 1.8 else 5)
+    F2.halo(img, zb, sx, sy - 0.4 * Hf * ppm, sig1, aura * 0.018 * pk * e, z=z, zbias=zbias)
+    F2.halo(img, zb, sx, sy - 0.4 * Hf * ppm, sig2, aura * 0.0016 * pk * e, z=z, zbias=zbias)
+    if volume:
+        # Roots overlap the fuel; opaque cinders clip them into separate gaps
+        # instead of all tongues starting on a visible horizontal plane.
+        fuel_origin = base - np.array([0., .06 * sz, 0.])
+        FN.draw(img, zb, scam, fuel_origin, .85 * Hf, 1.2 * Rb * sz, t, seed=int(seed) * 7 + 3,
+                I=12.0 * inten, lean=(.16 * sz, .04 * sz), trans=trans)
+    else:
+        F2.flame(img, zb, scam, base, Hf, Rb * sz, t, seed=int(seed) * 7 + 3,
+                 I=(24.0 + 6.0 * min(size - 1.0, 1.7) / 1.7) * inten * trans,
+                 lean=0.25 * sz, zbias=zbias, tongues=7 if size > 1.8 else 5)
     if Hf * ppm < 3.0 * pxs:
         # too far to resolve: a warm hot point with a soft orange aura (a fire, not a lamp)
         F2.glow(img, zb, sx, sy - 0.3 * Hf * ppm, 0.95 * pxs, pe * e * pxs * pxs, z=z, zbias=zbias,
@@ -345,7 +369,8 @@ def fire_trans(cam_pos, pos, fogp, wmod=WD, k=TRANS_K):
     return math.exp(-k * tau)
 
 
-def fires_layer(img, zb, scam, fires, f, pxs=1.0, smoke=True, fogp=None, wmod=WD):
+def fires_layer(img, zb, scam, fires, f, pxs=1.0, smoke=True, fogp=None, wmod=WD,
+                near_hearth=False, base_offsets=None):
     """Every fire of a (N, 6) table, far to near; with fogp, each is dimmed by the air in front of it."""
     FR = np.asarray(fires, np.float64).reshape(-1, 6)
     if FR.shape[0] == 0:
@@ -355,7 +380,9 @@ def fires_layer(img, zb, scam, fires, f, pxs=1.0, smoke=True, fogp=None, wmod=WD
     for k in np.argsort(-d):
         x, y, z, f_ign, size, seed = FR[k]
         tr = 1.0 if fogp is None else fire_trans(cp, (x, y, z), fogp, wmod)
-        fire_layer(img, zb, scam, (x, y, z), f_ign, f, size, seed, pxs, smoke, tr)
+        offset = None if base_offsets is None else base_offsets.get(int(seed))
+        fire_layer(img, zb, scam, (x, y, z), f_ign, f, size, seed, pxs, smoke, tr,
+                   near_hearth=near_hearth, base_offset=offset)
 
 
 _SPARKS = {}

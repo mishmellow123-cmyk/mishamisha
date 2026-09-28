@@ -1,0 +1,66 @@
+{
+  "shot": "A15",
+  "head": "46c6831508f7a974870d08c7c64550d54883b18f",
+  "source_sha256": {
+    "watchers_a.py": "f8ecf33ebaa6f0d4c2c6c35566f9db73c9cd08fa4526e875e6b368f2c4ff10ff",
+    "beaconrun_a.py": "6e3d3317c94e3da0c23bae0bec6e0cd326d3b54ce23a2c2c312a5d4cd752e61f",
+    "nighta.py": "19e27b9082898e9a157296dcddeee879c48c32ec72c66af8190f408d2ba47939",
+    "sdfppl.py": "de599d1815bc8b37eb2a8a1a3bc1a71ba56868c6091444da09060768e13f6a9b",
+    "world.py": "401e3c2fa2dd092523c93656a500626440a6bb7566316c54db8cb47503bea147",
+    "falsedawn.py": "d673c601219fb1291e48b8299b3e81baecc8690cb338874b187ecc67558395f7",
+    "beaconrun_a_chain.npy": "dbba80a06281dc3b40399f4c894f3acd4b451db9b59e0aac9d8b8363d7f1a849",
+    "watchers_a_extra.npy": "26e3cf08dac35c8e3e635f7d3db626247a64396e4da5187a9dcd5497804e39b6",
+    "watchers_a_figs.npy": "a89022b4e5b6ee1cb5a1895e411aadf7b9f1165b708b3c3aa33cedcb77a0635c",
+    "reveal_a_fires.npy": "7b5f135066539a90790008eb328bb0e10d08ecc2805a44851b98ea35e6c0b284"
+  },
+  "scale": 0.5,
+  "threads": 2,
+  "opencv_threads": 1,
+  "frames": [
+    {
+      "frame": 4240,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "seconds": 466.14684291597223,
+      "rgb_sha256": "f4cda53a71a1cdfb5652cd410412d375dfc503a2520287ebcb667a5922d771e4",
+      "png_sha256": "8dd12dbe3f3bc036221341220312119d655220ad042a5146c6a8f9068740be73"
+    },
+    {
+      "frame": 4280,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "seconds": 9.05888408300234,
+      "rgb_sha256": "6e84c11a608fca6834c6c0792a5d2940fef5fc45177e5990aff829cc99819d41",
+      "png_sha256": "22e5bdd6360b143b2258eac8284e3cf0ea6d6d99972ebee262e9ae94100149a7"
+    },
+    {
+      "frame": 4360,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "seconds": 9.066645250015426,
+      "rgb_sha256": "2b418399fa281acb57396e68509690c0df1839c1ce147316391f3fbfc0c13e8b",
+      "png_sha256": "ba8c659a1ac4602b3ffb02115b35fc2957543ab222b036545c630bb90865c090"
+    },
+    {
+      "frame": 4399,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "seconds": 9.015339375007898,
+      "rgb_sha256": "f5b88980cf22ed14944fc27a47622a0542e261b5dd668bf9cae50a86dc565bf1",
+      "png_sha256": "1da61328f7d2185b7cc4882604f6436f688b615001a9ceb25e7e44434c1587d5"
+    }
+  ],
+  "status": "complete"
+}

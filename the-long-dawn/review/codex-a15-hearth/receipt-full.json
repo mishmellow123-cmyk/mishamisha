@@ -1,0 +1,42 @@
+{
+  "shot": "A15",
+  "head": "8f56370229415da1b273170d276854bc96628495",
+  "source_sha256": {
+    "watchers_a.py": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+    "beaconrun_a.py": "431ff5caf67c058a9baab02aac4e01f702efed3e0a815a52bf882c67d16dfe75",
+    "nighta.py": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+    "sdfppl.py": "de599d1815bc8b37eb2a8a1a3bc1a71ba56868c6091444da09060768e13f6a9b",
+    "hearth_a.py": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+    "fire_near_a.py": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+    "world.py": "401e3c2fa2dd092523c93656a500626440a6bb7566316c54db8cb47503bea147",
+    "falsedawn.py": "d673c601219fb1291e48b8299b3e81baecc8690cb338874b187ecc67558395f7",
+    "beaconrun_a_chain.npy": "dbba80a06281dc3b40399f4c894f3acd4b451db9b59e0aac9d8b8363d7f1a849",
+    "watchers_a_extra.npy": "26e3cf08dac35c8e3e635f7d3db626247a64396e4da5187a9dcd5497804e39b6",
+    "watchers_a_figs.npy": "a89022b4e5b6ee1cb5a1895e411aadf7b9f1165b708b3c3aa33cedcb77a0635c",
+    "reveal_a_fires.npy": "7b5f135066539a90790008eb328bb0e10d08ecc2805a44851b98ea35e6c0b284"
+  },
+  "scale": 1.0,
+  "threads": 2,
+  "opencv_threads": 1,
+  "overrides": {
+    "p7_offset": null,
+    "hearth_pool": null,
+    "hearth_clearance": null,
+    "pitch": null,
+    "figure_fill": null
+  },
+  "frames": [
+    {
+      "frame": 4360,
+      "shape": [
+        804,
+        1920,
+        3
+      ],
+      "seconds": 24.442384708003374,
+      "rgb_sha256": "4b15aa0cf8eefcf90e0fab2853ecafa5e4bb375bdd86f7f2a5c3f0cc795576a3",
+      "png_sha256": "e33996d82472b0efadcc114e223e0f33ee83a5c059e2312a669e437454d49301"
+    }
+  ],
+  "status": "complete"
+}
