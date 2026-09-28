@@ -113,7 +113,9 @@
       "receipt": "delivery/cold.json"
     },
     "unfinished": {
-      "status": "in_progress"
+      "status": "complete",
+      "validated_frames": 240,
+      "receipt": "delivery/unfinished.json"
     }
   },
   "farm_launched": false,
@@ -224,5 +226,10 @@
       "sha256": "e81a5d718bd5195d397a92c54383fb7f1a6df49d034d9aad7a111f8526648e0e",
       "bytes": 898082
     }
+  },
+  "group_delivery": {
+    "status": "complete",
+    "validated_frames": 720,
+    "receipt": "delivery/complete.json"
   }
 }

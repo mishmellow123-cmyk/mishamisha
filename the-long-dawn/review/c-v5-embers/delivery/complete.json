@@ -1,0 +1,69 @@
+{
+  "status": "complete",
+  "validated_frames": 720,
+  "source_commit": "9fa082209bb7231959f41fb357ad7333b05c3432",
+  "source_hashes": {
+    "the-long-dawn/shots/embers/c_v5.py": "3f0c3320d7098fc0883246fe6f2d6726bf7a18a9cce753b222a196b13cefdf4f",
+    "the-long-dawn/shots/embers/core.py": "c42ff0e583bca9d86e99570662c5327a869c161e6e449bc1b1f4252f8dca3008",
+    "the-long-dawn/shots/embers/scene_b.py": "12e9ddc1b7b3b44128000a53f187c40ec810a01f52235773f79ab6306fc84da3",
+    "the-long-dawn/shots/embers/towers2.py": "2a10df74fe267736684e8a966d16dc8793de4e5caeada49db1e7370b174cdde5",
+    "the-long-dawn/shots/embers/c3.py": "002cf46dc0c7f2f9062f51e81017899b02fed89f971612cd9e8219d345739738",
+    "the-long-dawn/shots/embers/c_eye.py": "9f0dc6b44d59681add014d71297cbd77a27c503e4c4fab30b4dc7b8dd430178b",
+    "the-long-dawn/shots/embers/c2.py": "bdc97306e0657ea69b5efc2f8a99d1d924b789fdb42524ceed7a189d0117e33a",
+    "the-long-dawn/shots/embers/cflame.py": "c4d9b0296174b2c4245b5955e780ccfdcd3cfbd6d1c2109d39b442525e55e692",
+    "the-long-dawn/shots/embers/ringsolid.py": "24443ff59f5555075454bb2864c5ef671bf6f70df4c718a6b614a0e619166252",
+    "the-long-dawn/shots/embers/variant.py": "a4b7adca9e469903086c2c2a5c25f12a310490ec268b912541e692cf11d03ca1",
+    "the-long-dawn/lib/look.py": "1a311e38a231ee9fda65aa8037759ded7b19ae215bd184afb0327dd4cdd70614"
+  },
+  "started_utc": "2026-09-28T07:42:28.192085+00:00",
+  "finished_utc": "2026-09-28T08:18:34.860941+00:00",
+  "wall_seconds": 2166.668856,
+  "raw_manifest_sha256": "cc3d153552281e2b402d60ab01315c9f633d58c3557890431c2847bc455c9ed2",
+  "raw_manifest_location": "<validation-root>/c-v5-embers-tests/final-delivery/manifest.json",
+  "shots": [
+    {
+      "shot": "trap",
+      "first": 2320,
+      "last": 2639,
+      "validated_frames": 320,
+      "receipt": "trap.json",
+      "receipt_sha256": "0c5299aa55b70412753d121a8598e58bbf49768b9749aecabd7b434c3cb63034",
+      "out": "~/ldfarm/out/embers_C5_trap",
+      "preview": "~/ldfarm/comms/files/C5_trap_pair_2320-2639_24fps.mp4",
+      "preview_sha256": "f0aa4d1b9e860a206624e96e1892fad4b0f7b256f79930a812215e1a587e030e",
+      "render_wall_seconds": 1184.3104468750244
+    },
+    {
+      "shot": "cold",
+      "first": 3840,
+      "last": 3999,
+      "validated_frames": 160,
+      "receipt": "cold.json",
+      "receipt_sha256": "8f993f08ccd5ce0a9714a2a2e9d46466922fa522019a1261c01df934f0ded400",
+      "out": "~/ldfarm/out/embers_C5_cold",
+      "preview": "~/ldfarm/comms/files/C5_cold_pair_3840-3999_24fps.mp4",
+      "preview_sha256": "57eb8ddd0eb4de04792d35b70622c373e9189a608dbbd8a3b19d626d6ab90b3a",
+      "render_wall_seconds": 453.2272352500004
+    },
+    {
+      "shot": "unfinished",
+      "first": 4000,
+      "last": 4239,
+      "validated_frames": 240,
+      "receipt": "unfinished.json",
+      "receipt_sha256": "c7adc86872a7bcb06a957714c0e943408bd7b2136ee2ffc69d5647c6c6d4df42",
+      "out": "~/ldfarm/out/embers_C5_unfinished",
+      "preview": "~/ldfarm/comms/files/C5_unfinished_pair_4000-4239_24fps.mp4",
+      "preview_sha256": "e9ad1e149a4b02a7420aa5185c99617c9b22bb8ab28884f839eacb9a194fbc93",
+      "render_wall_seconds": 476.39062299998477
+    }
+  ],
+  "operations_running_from_ember_lane": false,
+  "farm_launched": false,
+  "merged": false,
+  "review_limits": [
+    "Frame QC evaluated each shot internally, not joins to adjacent non-ember shots.",
+    "No blind audience test or full-sequence realtime playback.",
+    "Independent final Trap audit sampled29 unique delivered frames; withdrawal at480px depends on tracking position."
+  ]
+}
