@@ -531,11 +531,14 @@ def shade_claw(o, t, cam, W, H, Bm, Wp, A, R, ring_C):
     # rest-pose coordinates (the crust's pattern sticks to the skin)
     q = np.einsum('nji,nj->ni', R[J], P - A[J])
     Pr = A_REST[J] + np.einsum('nij,nj->ni', R_REST[J], q)
-    sharp, soft, plate, cre = SC.anat_cracks(Pr, J, SK, A_REST, R_REST)
+    # EMBERS-C4: the Voronoi seams are straight segments (they read as glowing scratches): wander them first
+    wv = np.stack([snoise(Pr, 38.0, (2.3, 5.1, 0.7), 2), snoise(Pr, 38.0, (7.4, 1.9, 3.3), 2),
+                   snoise(Pr, 38.0, (0.6, 8.8, 4.1), 2)], 1)
+    sharp, soft, plate, cre = SC.anat_cracks(Pr + 0.011 * wv, J, SK, A_REST, R_REST)
     # EMBERS-C4: at this size anat_cracks' Worley bands are wide; narrow them, and break the big plates' seams into
     # runs (closed cell outlines on the back of the hand read as drawn loops, not cracks in a crust)
     brk = np.clip((snoise(Pr, 26.0, (4.1, 0.7, 2.6), 2) + 0.12) * 3.0, 0.0, 1.0)
-    sharp_w = (sharp ** 2.6) * brk                       # the crust's own fissures (their fire)
+    sharp_w = (sharp ** 4.0) * brk                       # the crust's own fissures (their fire), thin
     sharp = np.maximum(cre, sharp_w)                     # (the creases stay dark lines in the crust)
     soft = soft * (0.45 + 0.55 * brk)
     # the long creases (tendons, knuckle and palm lines) never carry the blaze: glowing, they read as wires or an
@@ -578,9 +581,9 @@ def shade_claw(o, t, cam, W, H, Bm, Wp, A, R, ring_C):
     # plates between stay charcoal
     crack = np.maximum(cre * brk2 * (0.12 + 0.22 * hk), sharp_w * smoothstep(0.08, 0.6, hk))
     e_pore = pores * flick * (0.15 + 0.5 * hk) * 0.35
-    e_crack = crack * (0.2 + 1.5 * hk) * flick
+    e_crack = crack * (0.2 + 1.1 * hk) * flick
     e_soft = soft * hk * 0.22 * thin
-    T = np.clip(0.46 + 0.26 * hk + 0.04 * crack, 0.35, 0.68)             # never white: deep orange at the blaze
+    T = np.clip(0.44 + 0.22 * hk + 0.03 * crack, 0.35, 0.64)             # never white: deep orange at the blaze
     ecol = look.blackbody(T)
     col = col + ecol * (e_pore + e_crack + e_soft)[:, None]
     # ---- the Ring's gold leaking along the seams between the fingers (and the palm's crease)
