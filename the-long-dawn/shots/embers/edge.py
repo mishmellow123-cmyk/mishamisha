@@ -715,6 +715,7 @@ def _orbit_az(t):
 
 EDGE_R, EDGE_Y, EDGE_TY, EDGE_HF, EDGE_FALL = 27.0, -8.0, -12.5, 88.0, 0.22
 EDGE_PUSH = 5.0
+GOLD_GAIN, GOLD_FS = 2.4, 0.08       # A-FIX: the gold runs bolder, and down the grazing-lit sides we see (was x1, fs > 0.2)
 EDGE_ZOOM = 10.0
 EDGE_AZ0, EDGE_AZ1 = 2.93, 3.25      # rel. ALPHA_C, over THE EDGE (A-FIX: a wider orbit put a forge in the lens; the motion
                                      # is a creeping push + zoom instead, EDGE_PUSH / EDGE_ZOOM): the
@@ -1079,7 +1080,7 @@ class GoldRuns:
             V = cpos[None, :] - P
             dist = np.linalg.norm(V, axis=1)
             ndv = (N * V).sum(1) / np.maximum(dist, 1e-6)
-            sel = (fs > 0.2) & (ndv > 0.03)
+            sel = (fs > GOLD_FS) & (ndv > 0.03)
             if i in A.GIANTS:
                 sel &= P[:, 1] < 12.0
             if not sel.any():
@@ -1096,8 +1097,8 @@ class GoldRuns:
             head = np.exp(-(d / 0.8) ** 2) * fresh
             # A-FIX: no even gold skin (on the crust's point discs it read as glitter, so every tower looked gold
             # already); the gold is the RUNS: longer, brighter trails with dark wall between them
-            Lg = g * fs ** 0.6 * (0.008 + riv * (0.16 + 3.2 * trail * math.exp(-age / 22.0)))
-            Lh = g * fs ** 0.6 * riv * head * 6.0
+            Lg = GOLD_GAIN * g * fs ** 0.6 * (0.008 + riv * (0.16 + 3.2 * trail * math.exp(-age / 22.0)))
+            Lh = GOLD_GAIN * g * fs ** 0.6 * riv * head * 6.0
             if i in A.GIANTS:
                 k = 1.0 - smoothstep(6.0, 12.0, P[:, 1])
                 Lg, Lh = Lg * k, Lh * k
