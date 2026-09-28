@@ -719,10 +719,10 @@
    "desc": "Dark, her breath, the scarf. Strike 1 on bar 38 b2: a spark in the dark.",
    "takes": [
     {
-     "stem": "h1",
+     "stem": "ring",
      "off": 0,
      "mode": "v3",
-     "note": "H1-C hands and flint",
+     "note": "MONTAGE-3D-5 hands-only flint",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -732,8 +732,8 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/h1_C",
-      "renders/h1_v3"
+      "renders/ring_C",
+      "renders/ring_v3"
      ]
     },
     {
@@ -892,10 +892,10 @@
    "desc": "She strikes again (bar 40 b3.9); a long blow; the kindling catches (bar 42 b2.8). Hands only.",
    "takes": [
     {
-     "stem": "h1",
+     "stem": "ring",
      "off": 0,
      "mode": "v3",
-     "note": "H1-C hands and flint",
+     "note": "MONTAGE-3D-5 hands-only flint",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -905,8 +905,8 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/h1_C",
-      "renders/h1_v3"
+      "renders/ring_C",
+      "renders/ring_v3"
      ]
     },
     {
