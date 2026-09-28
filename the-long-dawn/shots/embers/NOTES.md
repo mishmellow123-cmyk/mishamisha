@@ -142,6 +142,30 @@ mottled stone (banded stacks, not offices). RELAUNCHED by me 21:14Z (director pr
 # (c_grasp.py tone-down), E12 THE EYE if still owed (it is: no final in renders/embers_C3 1920-2079; EDIT still plays
 # embers_C3_half). Then (low priority, director): E15 polish at 764-788 (spark streams swoop in two arcs) + ~800 (soft
 # orange blob), partial re-render only if cheap. <<<
+## EMBERS-C4 CLOSE-OUT (28 Sep ~02:40Z). My queue is empty after the gild JOB READY.
+* C (all approved, launched by the director; do not relaunch):
+  - embers_C3_fall (2720-2839) + embers_C3_grasp (2320-2479): --nodes 3, log _local_logs/jobs/embers_C3_fall_grasp_farm.log.
+  - embers_C3_eye (1920-2079): --nodes 2, log _local_logs/jobs/embers_C3_eye_farm.log. Final code f77620e: forge
+    designs for all 18 towers (_medieval), irregular heights, EyeSched.line_mod (the facade lines dark below the
+    crown, crenellations x2.2), smoke and embers over all 18 (_AllTowers / _all_smoke: TowerSmoke's hw table is 8
+    long, so crown widths go per design), a globe eye (limb darkening) with a wet highlight.
+  - If a landing check is needed: 120 / 160 / 160 frames in renders/embers_C3. EDIT then drops embers_C3_half.
+* A THE GILDING insert (A 1860-1919, MAIN + ALT): JOB READY sent (02:40Z) as embers_A3_gild / embers_A3_alt_gild at
+  29fda0a. It must be launched AFTER the EDGE finals' 1860-1919 frames have landed, because both write the same frames.
+  - Everything is behind LD_GILD=1: edge._cam_gild (inside the ring, looking up tower 7's fire-facing face, throat at
+    the top, 1-unit push), GoldRuns insert-only parameters (gain 1.6, heads x4.5, rivulets 0.65 freq, discs x1.4),
+    render.py's own shutter interval (1860, 1920) and a graduated filter on the lower third for T7.
+  - The rounds: 1 blown white and wide; 2 faint threads; 3 molten pale gold. A little granular at 1:1 (flagged).
+* E15: skipped (director). The ~800 blob is in book_C (PAGES-C). The 764-788 swoosh would need a 720-800 redo.
+* Review material: _local_logs/review/embers_C4/ (SHEET_{fall,grasp,eye,gild}.jpg, strips, full-res stills).
+* Lessons for the next agent:
+  - Height-field clouds read as rock. Ray-marched slabs read as cloud. Thin high layers read as smoke or a cotton
+    ball: skip them.
+  - A tiny glint handover needs the matching screen place. A static camera cannot park a receding object in a
+    corner, so the solved-camera path (ring_px + up_hint roll) is the tool.
+  - Every farm test must be checked against the tested commit ("done at <sha>" in the log).
+  - A farm setup failure shows the traceback in the log: the TowerSmoke 8-wide table was caught that way.
+
 ## EMBERS-C4 STATE (28 Sep ~02:25Z) -- READ THIS FIRST for C 1920-2079 / 2320-2479 / 2720-2839
 * JOB READY SENT (02:25Z) for embers_C3_fall (2720-2839), embers_C3_grasp (2320-2479), embers_C3_eye (1920-2079)
   at code 6d5ad54 (c2.ENABLED = eye/fall/grasp). NOT launched by me (finals need the director). If launched: check
