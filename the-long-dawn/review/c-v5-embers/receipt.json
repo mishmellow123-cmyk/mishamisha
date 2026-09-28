@@ -101,7 +101,19 @@
     "native_subject_crops": 144,
     "full_frame_realtime_playback": false
   },
-  "local_finals": null,
+  "local_finals": {
+    "trap": {
+      "status": "complete",
+      "validated_frames": 320,
+      "receipt": "delivery/trap.json"
+    },
+    "cold": {
+      "status": "in_progress"
+    },
+    "unfinished": {
+      "status": "queued"
+    }
+  },
   "farm_launched": false,
   "limitations": [
     "Internal visual review; no unbriefed-viewer comprehension test.",

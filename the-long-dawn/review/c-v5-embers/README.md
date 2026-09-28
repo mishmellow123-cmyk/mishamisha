@@ -61,7 +61,9 @@ NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 V
 
 The CLI requires an absolute output path and refuses existing frame files. Farm jobs use rewritable `--frames`; they render PNGs for `cloud/run_job.py` to ship as JPEG q95/4:4:4: [Trap](../../cloud/jobs/embers_C5_trap.json), [Cold](../../cloud/jobs/embers_C5_cold.json), [Unfinished](../../cloud/jobs/embers_C5_unfinished.json). No farm job has been launched.
 
-Local 720-frame delivery is authorized after the pair review, with AC power confirmed. It will use `--scale 1 --format jpg` in the three distinct `~/ldfarm/out/<stem>` directories, absolute C filenames, per-frame dimension/decode/hash checks and silent 24fps previews. Completion is reported separately; this review receipt does not assert that the full delivery has finished.
+Local delivery uses frozen renderer commit `9fa0822`, with AC power confirmed. **Trap is complete:** 320/320 frames at `~/ldfarm/out/embers_C5_trap/`, 1920×804 RGB JPEG q95/4:4:4, every frame decoded and hashed. The [delivery receipt](delivery/trap.json) records all file/pixel hashes and encoding checks. [Whole-shot frame QC](delivery/trap-qc.json) covers all 319 adjacent pairs, with no input errors or black/constant/hold/pop candidates at the tool's uncalibrated defaults. Final C2639 is byte-identical to the reviewed native sample. Silent preview: `~/ldfarm/comms/files/C5_trap_pair_2320-2639_24fps.mp4`, 320 frames at 24fps (13.333333 seconds).
+
+Cold is running next; Unfinished remains queued in the same sequential supervisor. The group is not yet fully delivered. Remaining completion receipts will be published separately.
 
 ## Handback
 
