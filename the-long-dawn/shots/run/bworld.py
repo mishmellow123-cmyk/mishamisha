@@ -428,6 +428,7 @@ def strata_zone(x, z, h, fp, CR, k):
     if ob <= 0.0:
         return 0.0
     A = CR[k, 2] * ob * smoothstep(CR[k, 3], CR[k, 4], r) * smoothstep(CLOUD_Y + 30.0, CLOUD_Y + 170.0, h)
+    A *= 1.0 - smoothstep(0.78 * CR[k, 13], CR[k, 13], r)          # only on this massif (never the whole range)
     mk = gnoise2(x / 1300.0 + 4.7, z / 1300.0 - 0.3, 291) + 0.30 * gnoise2(x / 500.0, z / 500.0, 292)
     A *= smoothstep(-0.20, 0.15, mk)
     if A <= 0.0:

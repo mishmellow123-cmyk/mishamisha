@@ -36,7 +36,7 @@ lin = CM.lin
 _ZONE = np.zeros(BW.NCR)
 _ZONE[:5] = [BW.TX, BW.TZ, 0.75, 650.0, 1150.0]
 _ZONE[12] = 4.0
-_ZONE[13] = 3000.0
+_ZONE[13] = 2900.0
 CR = np.vstack([BW.CR_B, _ZONE])
 CLOUD_RELIEF = 1.0
 TOP = np.array([BW.TX, BW.TOP_Y, BW.TZ])
@@ -280,7 +280,7 @@ def far_layers(img, G, px_scale):
     yy = np.arange(H, dtype=np.float64)[:, None]
     # the wall's own colour (the farthest terrain row band), per column, this frame
     ti = np.clip(top.astype(int) + int(2 * px_scale), 0, H - 1)
-    wall = img[ti, np.arange(W)]
+    wall = np.broadcast_to(np.median(img[ti, np.arange(W)], axis=0), (W, 3))   # ONE far colour (per-column = streaks)
     out = img
     for rj, op in zip(rows, (0.62, 0.42, 0.26)):                # nearest painted layer first, the farthest faintest
         m = (yy >= rj[None, :]) & (yy < top[None, :]) & sky
