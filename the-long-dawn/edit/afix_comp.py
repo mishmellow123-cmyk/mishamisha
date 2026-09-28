@@ -309,10 +309,12 @@ _EMBER_TRACK = [(2836, 1030, 160), (2846, 1021, 215), (2850, 1009, 269), (2856, 
 # A19-A20 over dawnrev_A (dusk_B2 reversed): four watch-fires pale, near to farthest, ON COMPOSER-A2's horn frames
 # (final_A.wav: the near, far, farther and farthest horns fall silent at 6240, 6290, 6340, 6390); the lantern stays
 # lit among them (the fade to black is 6456)
-WATCHFIRES = dict(f0=5840, f1=6480, cut=5840, kind='watchfires', lantern=(1265, 640),
-                  fires=[(1640, 662, 2.0, 6240), (1330, 452, 1.6, 6290), (180, 470, 1.5, 6340), (1560, 350, 1.2, 6390),
-                         (1265, 640, 2.6, 99999)],
-                  figures=[(1236, 646, 16), (1250, 648, 14), (1286, 646, 17), (1301, 647, 15)],
+WATCHFIRES = dict(f0=5840, f1=6480, cut=5840, kind='watchfires', lantern=(1745, 640),
+                  # (EDIT-3: the group sat level with T14 at y 648, 40 px from its last word; it now sits on the
+                  # ridge's small summit at the right, ~520 px clear of the caption)
+                  fires=[(430, 752, 2.0, 6240), (1330, 452, 1.6, 6290), (180, 470, 1.5, 6340), (1560, 350, 1.2, 6390),
+                         (1745, 640, 2.6, 99999)],
+                  figures=[(1716, 644, 16), (1730, 646, 14), (1762, 643, 17), (1777, 645, 15)],
                   destreak=(520, 690, 2.2), note='A-FIX ENDING: the watch-fires pale as the long dawn comes')
 A_TRANS = [
     # A2 -> A3: the push INTO the glow, which floods to white on bar 8 (was a one-frame slam at 560)
