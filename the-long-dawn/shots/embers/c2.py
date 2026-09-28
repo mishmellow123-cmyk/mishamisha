@@ -27,7 +27,7 @@ T_EYE, T_SLIT, T_EYE_END = bar(25), bar(26), bar(27)                            
 T_GRASP, T_CLOSE, T_CRACK, T_SLIP, T_GRASP_END = bar(30), bar(30, 3), bar(31), bar(31, 3), bar(32)
 T_FALL, T_FALL_END = bar(35), bar(36, 3)                                             # 2720, 2840
 SHOTS2 = [(T_EYE, T_EYE_END, 'eye'), (T_GRASP, T_GRASP_END, 'grasp'), (T_FALL, T_FALL_END, 'fall')]
-ENABLED = {'eye'}           # shots not yet rebuilt here stay on EMBERS-C's timeline (its stand-ins)
+ENABLED = {'eye', 'fall'}   # shots not yet rebuilt here stay on EMBERS-C's timeline (its stand-ins)
 
 
 def mine(t):
