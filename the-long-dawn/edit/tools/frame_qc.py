@@ -187,7 +187,7 @@ def analyze(directory, start, end, *, film=None, config=None, joins=None):
     previous_image = previous_feature = None
     previous_number = None
     segment = 0
-    cv2.setNumThreads(1)
+    cv2.setNumThreads(0)  # sequential, with unambiguous reporting on the macOS GCD backend
     for number in range(start, end + 1):
         record, image, feature = _read_frame(directory, number, config)
         records.append(record)
