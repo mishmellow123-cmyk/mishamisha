@@ -1,0 +1,42 @@
+{
+  "purpose": "Packaging provenance for compiled test evidence; measurements were not rerun during packaging.",
+  "normalization": {
+    "<WORKSPACE>": "Original local workspace root; machine-specific prefix removed.",
+    "<PRIVATE_TEMP_PATH>": "Original per-user temporary path, if present."
+  },
+  "readme_original_sha256": "604054db8b28cc79897bb9c397c2991d0e6a06bbc2945d178300371eb6ffb396",
+  "measurement_head": "5890f876a4eec9b1577bec5fdd4eada41a455169",
+  "packaging_head": "67880970c018bf0b1bf1ef21a88adeac81546886",
+  "files": {
+    "focused-tests.log": {
+      "original_artifact": "work/compiler-study/focused-tests/focused-tests.log",
+      "original_sha256": "1033d123292e7814ea9c81b097e61de6d1946473a0bc36f9686dba0a09eae047",
+      "packaged_sha256": "1033d123292e7814ea9c81b097e61de6d1946473a0bc36f9686dba0a09eae047",
+      "transformation": "Byte-identical copy."
+    },
+    "full-suite.log": {
+      "original_artifact": "work/compiler-study/focused-tests/full-suite.log",
+      "original_sha256": "c94d23fa0096e732ff367f7eaa86a7b65a50b67f838eb6ff76370cc7cc743fdd",
+      "packaged_sha256": "31e2dcbde3b3149c498aae662b260e72234e46f52e1157eaa5edb679e7a6ef97",
+      "transformation": "Absolute workspace/temp prefixes replaced with descriptive placeholders; all measurements and source hashes unchanged."
+    },
+    "suite-receipt.json": {
+      "original_artifact": "work/compiler-study/focused-tests/suite-receipt.json",
+      "original_sha256": "4f0c5f83bdb64a8f395a7c4c117ae74181b9269e1f1a4192fb13f478957735de",
+      "packaged_sha256": "4099809f73361f81cb6b4951291a6b1197199410e6a7bcc578aee8a5e370f37a",
+      "transformation": "Absolute workspace/temp prefixes replaced with descriptive placeholders; all measurements and source hashes unchanged."
+    },
+    "run_suite_original.py": {
+      "original_artifact": "work/compiler-study/focused-tests/run_suite.py",
+      "original_sha256": "1fce4d0419198f664ad4917c243df38773291ddeee3eb7934317f42e3ee382cf",
+      "packaged_sha256": "1fce4d0419198f664ad4917c243df38773291ddeee3eb7934317f42e3ee382cf",
+      "transformation": "Byte-identical original runner; historical sibling-directory layout retained."
+    },
+    "run_suite.py": {
+      "original_artifact": "work/compiler-study/focused-tests/run_suite.py",
+      "original_sha256": "1fce4d0419198f664ad4917c243df38773291ddeee3eb7934317f42e3ee382cf",
+      "packaged_sha256": "2f4d559fd71b5bbe33487bb4b18e7c11fc87766a2d1b70afc9c5d2ef2401013f",
+      "transformation": "Portable derivative: explicit --tree/--out, new output directory guard, explanatory docstring. Not the script that generated the historical receipt."
+    }
+  }
+}
