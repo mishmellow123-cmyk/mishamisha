@@ -132,11 +132,11 @@ def main():
     wait_for_load(args.max_load)
     import numpy as np
     import cv2
-    cv2.setNumThreads(1)
+    cv2.setNumThreads(0)  # sequential, with unambiguous reporting on the macOS GCD backend
     print(f'Loading {args.shot} adapter (first use can compile render kernels)', flush=True)
     WD, render, reset, scope, source = adapter(args.shot, args.scale)
     # Shot imports load look.py, which resets OpenCV to two threads.
-    cv2.setNumThreads(1)
+    cv2.setNumThreads(0)  # sequential, with unambiguous reporting on the macOS GCD backend
     march = WD.march
     args.out.mkdir(parents=True, exist_ok=True)
     report = dict(shot=args.shot, scope=scope, scale=args.scale, threads=args.threads,

@@ -70,7 +70,7 @@ Final source check: all eight main shot files still match their recorded SHA-256
 
 Run one shot per fresh process to isolate legacy module names and caches. Use an absolute output directory; the CLI defaults to two Numba threads, one thread for other math/image libraries, and pauses between conditions at one-minute load ≥8. The run was also manually suspended during a higher-load interval. No farm operations occurred.
 
-After these measurements, the harness was corrected to reapply its OpenCV limit after shot imports: the shared `look.py` sets OpenCV to two threads during import. The recorded runs therefore used up to two OpenCV threads, still within the four-thread limit; subsequent reports record the reapplied limit explicitly. Raw report hashes identify the earlier harness and have not been rewritten.
+After these measurements, the harness was corrected to force sequential OpenCV processing after shot imports. The shared `look.py` requests two OpenCV threads during import, but this installed OpenCV 5.0 GCD backend does not enforce that requested cap. The recorded runs used two Numba threads; actual OpenCV concurrency was not measured, so the earlier claim that every stage stayed below four threads is withdrawn. `setNumThreads(0)` now bypasses parallel work and reports one thread; subsequent reports record this value. This follows the [OpenCV 5.0 implementation](https://github.com/opencv/opencv/blob/5.0.0/modules/core/src/parallel.cpp#L510-L620), checked against the local build. Raw report hashes identify the earlier harness and have not been rewritten.
 
 ```sh
 python -B the-long-dawn/edit/tools/terrain_ceiling_audit.py --shot A18 --frames 4880,5100,5300,5480,5700,5839 --out /absolute/audit/A18
