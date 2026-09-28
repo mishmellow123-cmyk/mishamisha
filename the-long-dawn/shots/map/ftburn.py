@@ -162,15 +162,17 @@ CW, CH, CFPS = 3840, 2160, 25.0
 class Reader:
     """Sequential frames of a clip (optionally cropped: x0, y0, w, h in clip px), as uint8 RGB, one at a time."""
 
-    def __init__(self, path, crop=None, start=0):
+    def __init__(self, path, crop=None, start=0, scale=None):
         self.crop = crop
         vf = []
+        if scale:                                  # (the whole clip scaled first; crop is then in scaled px)
+            vf.append('scale=%d:%d' % scale)
         if crop:
             x0, y0, w, h = crop
             vf.append('crop=%d:%d:%d:%d' % (w, h, x0, y0))
             self.w, self.h = w, h
         else:
-            self.w, self.h = CW, CH
+            self.w, self.h = scale if scale else (CW, CH)
         args = [FF, '-loglevel', 'error']
         if start:
             args += ['-ss', '%.4f' % (start / CFPS)]
@@ -276,16 +278,16 @@ def backdrop_fit(im):
 class FootageBurn:
     """The clip keyed frame by frame, in order (a running union for the hole)."""
 
-    def __init__(self, clip=CLIP, roi=ROI):
+    def __init__(self, clip=CLIP, roi=ROI, plate_frame=825, scale=None):
         self.roi = roi
         x0, y0, w, h = roi
-        # the backdrop from a late frame (the sheet is almost gone at 33 s)
-        r = Reader(clip, crop=roi, start=825)
+        # the backdrop from a late frame (the sheet is almost gone: 8828893 at 33 s)
+        r = Reader(clip, crop=roi, start=plate_frame, scale=scale)
         late = r.read().astype(np.float32) / 255
         r.close()
         self.plate_srgb = backdrop_fit(late)
         self.plate_lin = to_lin(self.plate_srgb)
-        self.reader = Reader(clip, crop=roi)
+        self.reader = Reader(clip, crop=roi, scale=scale)
         self.state = np.zeros((h, w), np.float32)
         self.hist = []                 # the union a few clip frames back (the front's speed)
         self.cur = None
@@ -495,7 +497,7 @@ def frame_path(folder, f):
 
 def cmd_c5(a):
     frames = []
-    for part in a.frames.split(','):
+    for part in (a.frames or '841-1039').split(','):
         lo, _, hi = part.partition('-')
         frames += list(range(int(lo), int(hi or lo) + 1))
     frames = sorted(set(frames))
@@ -550,10 +552,199 @@ def cmd_c5(a):
     FBn.reader.close()
 
 
+# ============================================================ the rollout: C5, the sweep, the Eye ===
+
+SHOTS = {
+    # C4-C5 the letters burn through onto black (e15's flame added by EDIT): the leaf's own geometry, real time
+    'c5': dict(frames='841-1039', clip='pexels_8828893_4k.mp4', roi=ROI, plate_frame=825, map='leaf',
+               retime='real', stand=840),
+    # C8 the sweep (X1 reversed): the held race (embers_C3 f1679) burns away down the frame and leaves the Deep's
+    # parchment; screen space, the clip flipped (its burn climbs from the lower left), timed to the render's cover
+    'sweep': dict(frames='1680-1717', clip='pexels_8828892_1080.mp4', roi=(0, 0, 1920, 1080), plate_frame=292,
+                  map='screen', sx=1.0, sy=-1080.0 / 804.0, ox=0.0, oy=1079.0, retime='page', bake=('embers_C3', 1679),
+                  stand=1708),
+    # C8-C9 the Deep's glow burns through into the storm (EDIT adds the live embers_C3 through the matte): screen
+    # space pinned on the glow (tracked from the render's hole: born 1037,602 at 1922, drifting up with the camera),
+    # foreshortened 0.72 like the page, the clip flipped so its long growth climbs the frame, timed to the render's hole
+    'eye': dict(frames='1905-1991', clip='pexels_8829001_4k.mp4', scale=(1920, 1080), roi=(0, 0, 1920, 1080),
+                plate_frame=545,
+                map='anchor', anchor=(1037.0, 602.0, -0.7, -0.95, 1922), birth=(998.0, 313.0), s=1.2, squash=0.72,
+                retime='hole', stand=1905),
+}
+
+
+def frames_list(spec):
+    out = []
+    for part in spec.split(','):
+        lo, _, hi = part.partition('-')
+        out += list(range(int(lo), int(hi or lo) + 1))
+    return sorted(set(out))
+
+
+def screen_maps(sh, f):
+    """Screen -> ROI px (the clip) for the screen-space shots."""
+    ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
+    x0, y0 = sh['roi'][0], sh['roi'][1]
+    if sh['map'] == 'screen':
+        return xs * sh['sx'] + sh['ox'] - x0, ys * sh['sy'] + sh['oy'] - y0
+    ax0, ay0, dx, dy, fa = sh['anchor']
+    ax, ay = ax0 + dx * (f - fa), ay0 + dy * (f - fa)
+    bx, by = sh['birth']
+    return bx + (xs - ax) / sh['s'] - x0, by - (ys - ay) / (sh['s'] * sh['squash']) - y0
+
+
+def ref_cover(kind, frames):
+    """The render's own burn per frame (SOUND-C is synced to it): 'page' = parchment shown, 'hole' = hole."""
+    out = {}
+    for f in frames:
+        m = cv2.imread(frame_path(os.path.join(TLD, 'renders', 'book_C_matte'), f), cv2.IMREAD_GRAYSCALE)
+        m = m.astype(np.float32) / 255
+        out[f] = float(m.mean()) if kind == 'page' else float((m < 0.5).mean())
+    return out
+
+
+def clip_cover(sh, f_mid):
+    """The clip's hole (the same union key) over the part of it the screen sees, per clip frame (a quarter-res
+    pre-pass)."""
+    x0, y0, w, h = sh['roi']
+    q = 4
+    fx, fy = screen_maps(sh, f_mid)
+    gx = np.clip(fx[::8, ::8] / q, 0, w / q - 1).astype(np.int64)
+    gy = np.clip(fy[::8, ::8] / q, 0, h / q - 1).astype(np.int64)
+    inside = (fx[::8, ::8] >= 0) & (fx[::8, ::8] < w) & (fy[::8, ::8] >= 0) & (fy[::8, ::8] < h)
+    pre = ('scale=%d:%d,' % sh['scale']) if sh.get('scale') else ''
+    p = subprocess.Popen([FF, '-loglevel', 'error', '-i', os.path.join(FOOT, sh['clip']), '-vf',
+                          pre + 'crop=%d:%d:%d:%d,scale=%d:%d' % (w, h, x0, y0, w // q, h // q), '-f', 'rawvideo',
+                          '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE)
+    st = np.zeros((h // q, w // q), np.float32)
+    cov = []
+    while True:
+        b = p.stdout.read((w // q) * (h // q) * 3)
+        if len(b) < (w // q) * (h // q) * 3:
+            break
+        im = np.frombuffer(b, np.uint8).reshape(h // q, w // q, 3).astype(np.float32) / 255
+        a = smooth((im[..., 2] - 0.35) / 0.2) * smooth((im[..., 1] - im[..., 0] + 0.03) / 0.08)
+        near = cv2.dilate((st > 0.5).astype(np.uint8), np.ones((11, 11), np.uint8)).astype(np.float32)
+        a = np.maximum(a, smooth((im.min(-1) - 0.62) / 0.15) * near)
+        np.maximum(st, a, out=st)
+        cov.append(float(np.where(inside, st[gy, gx] > 0.5, 0).mean()))
+    p.wait()
+    return np.maximum.accumulate(np.array(cov))
+
+
+def retime(sh, frames):
+    """Clip frame per C frame: 'real' = the clip's birth on the render's, then real time; 'page'/'hole' = the clip
+    frame whose hole covers the screen as much as the render's burn does at that frame (monotonic)."""
+    if sh['retime'] == 'real':
+        return {f: int(round(tau_of(f))) for f in frames}, F_BIRTH
+    ref = ref_cover(sh['retime'], frames)
+    cov = clip_cover(sh, frames[len(frames) // 2])
+    born = int(np.argmax(cov > 0.0005))
+    out, last = {}, 0
+    f_birth = None
+    for f in frames:
+        r = ref[f]
+        if r <= 0.0005:
+            n = max(born - 1, 0)
+        else:
+            f_birth = f if f_birth is None else f_birth
+            n = int(np.searchsorted(cov, min(r, cov[-1])))
+        last = max(last, n)
+        out[f] = last
+    return out, (f_birth or frames[-1])
+
+
+def cmd_shot(a):
+    sh = dict(SHOTS[a.shot])
+    frames = frames_list(a.frames or sh['frames'])
+    R = os.path.join(TLD, 'renders')
+    out_rgb = a.out
+    out_m = a.out.rstrip('/') + '_matte'
+    os.makedirs(out_rgb, exist_ok=True)
+    os.makedirs(out_m, exist_ok=True)
+    if a.preview:
+        os.makedirs(a.preview, exist_ok=True)
+    taus, f_birth = retime(sh, frames)
+    FBn = FootageBurn(os.path.join(FOOT, sh['clip']), sh['roi'], sh['plate_frame'], sh.get('scale'))
+    bank = FlameBank()
+    stand = read_rgb(frame_path(os.path.join(R, 'book_C'), sh['stand']))
+    cam_s = cam_letters(sh['stand']) if sh['map'] == 'leaf' else None
+    bake = read_rgb(frame_path(os.path.join(R, sh['bake'][0]), sh['bake'][1])) if sh.get('bake') else None
+    grade = np.array(a.grade, np.float32)
+    for f in frames:
+        hole, flame, dist = FBn.advance(taus[f])
+        if sh['map'] == 'leaf':
+            fx, fy, P = maps_for(f)
+        else:
+            fx, fy = screen_maps(sh, f)
+            fx, fy = np.ascontiguousarray(fx), np.ascontiguousarray(fy)
+        # the page: the farm's clean plate (book_C_plate, the burn off) or, until it lands, a stand-in
+        pp_ = frame_path(os.path.join(R, 'book_C_plate'), f)
+        if pp_:
+            O = to_lin(read_rgb(pp_))
+            src = 'plate'
+        elif cam_s is not None:
+            pp = cam_s.project(P).astype(np.float32)
+            O = to_lin(cv2.remap(stand, np.ascontiguousarray(pp[..., 0]), np.ascontiguousarray(pp[..., 1]),
+                                 cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE))
+            src = 'stand-in %d reprojected' % sh['stand']
+        else:
+            O = to_lin(stand)
+            src = 'stand-in %d held' % sh['stand']
+        hs = cv2.remap(hole, fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+        fl = cv2.remap(flame, fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+        ds = cv2.remap(dist, fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=99.0)
+        nz = cv2.remap(FBn.noise, fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+        # before the render's burn begins the clip's flames stay off (they fade in over the 4 frames before it)
+        gate = float(np.clip((f - f_birth + 4) / 4.0, 0, 1))
+        fl = fl * gate
+        sp = cv2.remap(FBn.speed(), fx, fy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+        tg = flame_tongues(hs, sp, fx, fy, bank, f) * a.tgain
+        fl = fl + tg + cv2.GaussianBlur(tg, (0, 0), 10) * 0.35
+        lum = fl @ np.array([0.5, 0.35, 0.15], np.float32)
+        small = cv2.resize(lum, (W // 4, H // 4), interpolation=cv2.INTER_AREA)
+        pool = cv2.resize(cv2.GaussianBlur(small, (0, 0), 18), (W, H), interpolation=cv2.INTER_LINEAR)
+        pool = pool[..., None] * np.array([1.0, 0.62, 0.3], np.float32) * a.pool
+        cover = 1.0 - hs
+        glow = fl * a.gain * grade
+        if bake is not None:
+            # the sweep: what burns is the held race (the page shows through the hole); baked, matte 1
+            burnt = to_lin(bake) * char_keep(ds * (1.0 + 0.3 * np.tanh(nz))) * (1.0 + pool)
+            lin = burnt * cover[..., None] + O * (1.0 + 0.5 * pool) * hs[..., None] + glow
+            matte = np.ones((H, W), np.float32)
+        else:
+            keep = char_keep(ds * (1.0 + 0.3 * np.tanh(nz)))
+            lin = O * keep * (1.0 + pool) * cover[..., None] + glow
+            matte = cover
+        rgb = to_srgb(lin)
+        cv2.imwrite(os.path.join(out_rgb, 'f_%05d.jpg' % f), (rgb[..., ::-1] * 255 + 0.5).astype(np.uint8),
+                    [cv2.IMWRITE_JPEG_QUALITY, 94])
+        cv2.imwrite(os.path.join(out_m, 'f_%05d.jpg' % f), (np.repeat(matte[..., None], 3, -1) * 255 + 0.5)
+                    .astype(np.uint8), [cv2.IMWRITE_JPEG_QUALITY, 94])
+        if a.preview:
+            # as EDIT will show it: + e15 (C5), + the live storm through the matte (the Eye)
+            pv = rgb
+            if a.shot == 'c5':
+                e = frame_path(os.path.join(R, 'embers_C3_e15'), f)
+                pv = np.clip(pv + (read_rgb(e) if e else 0), 0, 1)
+            elif a.shot == 'eye' and f >= 1920:
+                e = frame_path(os.path.join(R, 'embers_C3'), f) or frame_path(os.path.join(R, 'embers_C3_half'), f)
+                if e:
+                    und = cv2.resize(read_rgb(e), (W, H), interpolation=cv2.INTER_LINEAR)
+                    pv = np.clip(pv + (1 - matte)[..., None] * und, 0, 1)
+            cv2.imwrite(os.path.join(a.preview, 'f_%05d.jpg' % f), (pv[..., ::-1] * 255 + 0.5).astype(np.uint8),
+                        [cv2.IMWRITE_JPEG_QUALITY, 90])
+        print('ftburn', a.shot, f, 'clip', FBn.n, 'hole %.3f' % hs.mean(), src, flush=True)
+    FBn.reader.close()
+
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('cmd')
-    ap.add_argument('--frames', default='841-1039')
+    ap.add_argument('--shot', default='c5')
+    ap.add_argument('--preview', default='')
+    ap.add_argument('--frames', default='')
     ap.add_argument('--out', default='')
     ap.add_argument('--speed', type=float, default=1.0)
     ap.add_argument('--gain', type=float, default=1.6)
@@ -564,4 +755,4 @@ if __name__ == '__main__':
     ap.add_argument('--tongues', type=int, default=1, help='(a) real flame tongues along the front')
     ap.add_argument('--tgain', type=float, default=1.0)
     a = ap.parse_args()
-    {'geo': cmd_geo, 'probe': cmd_probe, 'c5': cmd_c5}[a.cmd](a)
+    {'geo': cmd_geo, 'probe': cmd_probe, 'c5': cmd_c5, 'shot': cmd_shot}[a.cmd](a)

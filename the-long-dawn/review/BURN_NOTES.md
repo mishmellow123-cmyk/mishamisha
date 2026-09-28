@@ -1,26 +1,29 @@
 # BURN-C: real filmed burn elements on C's pages (user: "the paper burning should look far more realistic")
 
-## STATE (BURN-C, 28 Sep ~03:05 local) -- READ FIRST
-* main 02:55: "go on (a)": real flame tongues along the front (hold (b) curl and (c) ash until main has seen (a)).
-  Deliver a 24-frame strip + a side-by-side (footage matte on top, footage + (a) below), then STOP and send
-  "BURN (a) READY". Usage is nearly spent: no side experiments.
-* (a) BUILT (ftburn.flame_tongues, `--tongues 1 --tgain`): real flames on black (the first seconds of PureRaw
-  8828898 [24:96] and 8828892 [36:84], before the green shows; 640x360 uint8 bank, crossfaded loops) stood on the
-  hole's contour and rising screen-up: one strip column per edge pixel, the column picked by a page-fixed coordinate
-  (fx + 0.7 fy) x SU 3.5, overlapping tiles crossfaded (M 120), height 8-140 px and brightness by the front's speed
-  (the union swept over 4 clip frames), short on near-vertical edge runs (else they stack into streaks).
-  DONE 03:14 (full 841-1039, scratchpad fullA): BURN (a) READY sent. Review: _local_logs/review/burn_C/A_* and
-  C5_A_matte_vs_tongues.mp4 (top = footage matte, bottom = + (a)). Fixes on the way: tongue bases smoothed along
-  the contour (+-12 px; 1-px columns on slanted edges sheared into slivers), no tongues on steep runs, the clip's
-  black level clipped (its noise stacked into faint streaks), the over-hole cores dropped (h264 blocks).
-* CLEAN PLATES: job `cloud/jobs/pages_book_plate.json` (book_c `--no-burn`, pushed 339b1e3; 324 frames: 841-1039,
-  1680-1717, 1905-1991 -> renders/book_C_plate + _matte). main launched the TEST (req 0928-025304-pagesbookplate-31317,
-  log ~/.cache/ldfarm/req/0928-025304-pagesbookplate-31317.log; frames 900, 1700, 1930, 1985 -> renders/_farmtest/
-  pages_book_plate/). I OWN THE REST: check at 1:1 (burn off, light kept, nothing else changed); if clean launch
-  finals `python3 the-long-dawn/cloud/farm.py the-long-dawn/cloud/jobs/pages_book_plate.json --nodes 3 --detach`
-  and add a row "(lane-launched)" to _local_logs/handoff/LAUNCHED_BY_MAIN.md; if not, fix, push, re-test.
-* The C5 test verdict (sent 02:50): PARTLY: the footage FRONT is far more real; the footage's own flames don't
-  transfer; hybrid recommended -> (a) now.
+## STATE (BURN-C, 28 Sep ~03:30 local) -- READ FIRST
+* main 03:20: (a) ADOPTED (the user: "pretty decent"; stop at diminishing returns). (b) curl and (c) ash CANCELLED.
+  Remaining, then stand down: (1) clean plates: check at 1:1 when the test lands, then launch the finals (lane-launched
+  row in _local_logs/handoff/LAUNCHED_BY_MAIN.md); (2) roll (a) out: C5 841-1039 + the sweep 1680-1717 + the Eye
+  1905-1991 -> renders/book_C_ft + book_C_ft_matte (EDIT reads them unchanged; C is on hold in EDIT until the new
+  EDL: no need to message EDIT), one 24-frame strip each for my own check; (3) SOUND frames (below); (4) commit, push,
+  one line to main: "BURN ROLLOUT DONE". The farm queue waits on provider capacity: let the watcher wait, no resubmit.
+* ROLLOUT CODE READY (ftburn.py `shot --shot c5|sweep|eye [--frames] --out renders/book_C_ft [--preview DIR]`):
+  - c5: as adopted (leaf geometry, real time from the clip's birth at 841, tongues);
+  - sweep: Pexels 8828892 in screen space, flipped (its burn climbs from the lower left -> falls from the upper left),
+    what burns is the HELD RACE (embers_C3 f1679), BAKED into book_C_ft with matte 1 (so EDIT's under adds nothing),
+    the page shows through the hole;
+  - eye: Pexels 8829001 (2560x1440, scaled to 1920x1080) in screen space pinned on the glow (1037,602 at 1922,
+    drifting -0.7,-0.95 px/f with the camera), foreshortened 0.72, flipped; matte = cover, EDIT adds the live storm;
+  - sweep + eye are RETIMED BY COVER: each frame takes the clip frame whose hole covers the screen as much as the
+    render's burn does (book_C_matte), so every hole-open/sweep frame SOUND-C synced to is kept.
+  - The page = renders/book_C_plate (the farm's clean plates) when present, else a stand-in (tests only: c5 = f840
+    reprojected, sweep = f1708 held, eye = f1905 held). FINALS WAIT FOR THE PLATES.
+* SOUND (SOUND-C's picture_sync_C.json; C is on hold in EDIT, so this is for the re-sync when C comes back):
+  | burn | hole opens | before (burn v2) | now (filmed) |
+  |---|---|---|---|
+  | letters C5 | 841-842 (unchanged) | the hole fills the frame by ~900 | a slit tears open 842-870, the flames flare 845-900 (the fast tear), the page LINGERS: the rim leaves frame ~1000-1020 (last paper ~1020) |
+  | the Deep's sweep | edge 1689-1705, peak ~1699 (unchanged: retimed by cover) | same | same frames; the flames flare with the front (1690-1704) |
+  | the Eye | 1921-1922, open by ~1965 (unchanged: retimed by cover) | same | same frames; flames lick the tear 1925-1960 |
 * Review files (not in git): `~/mishamisha/_local_logs/review/burn_C/` (SHEET_compare.jpg: now vs footage at 12
   frames; STRIP24_866-889.jpg; STILL_898_975.jpg; C5_burn_now_vs_footage.mp4: top now, bottom footage, 841-1039).
   Frames: session scratchpad `burn/full3/` (199 JPGs; delete when superseded).
