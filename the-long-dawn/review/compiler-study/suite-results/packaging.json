@@ -1,0 +1,75 @@
+{
+  "normalization": "Machine-specific workspace prefixes are replaced with <WORKSPACE>; source/output hashes and numerical values are unchanged.",
+  "raw_arrays": "Preserved locally under work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold; no NPY or cache files are packaged.",
+  "reference_commit": "61cf28b390cf00fdf860401127ca3e7f6cf33491",
+  "candidate_sdfppl_sha256": "9140e4ccd060db8895a2952ea5aab74a3c444bda12e29fd43ab8ec12909b2855",
+  "harness_sha256": "d22693e1e1f2f8539dca7ebf20c07ef757251fcf5c3e8310f38ea4868e83075c",
+  "artifacts": {
+    "candidate-cold-receipt.json": {
+      "local_source": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/receipt.json",
+      "original_sha256": "94a18ede531f6a32e4b8d0a0a25012f78c6edb7c007dfb01112bcab3b0e6492d",
+      "packaged_sha256": "6c3ab205674e80d9ff92e139a09e1ea58f00910cd4f23f776866acebbedcfc48",
+      "normalized_workspace_prefix": true
+    },
+    "candidate-cold.log": {
+      "local_source": "work/compiler-study/bench/suite-61cf28b/candidate-cold.log",
+      "original_sha256": "ddac71216472728799d8feb0ad6d50a8c9f230486c77270a0713116e441b5344",
+      "packaged_sha256": "ddac71216472728799d8feb0ad6d50a8c9f230486c77270a0713116e441b5344",
+      "normalized_workspace_prefix": false
+    },
+    "sources.json": {
+      "local_source": "work/compiler-study/bench/suite-61cf28b/sources.json",
+      "original_sha256": "87fc9b3c9b22aa7e6277bc68fb30997ca2195c2b62a6f1132219dc40f24b6c2a",
+      "packaged_sha256": "87fc9b3c9b22aa7e6277bc68fb30997ca2195c2b62a6f1132219dc40f24b6c2a",
+      "normalized_workspace_prefix": false
+    },
+    "preview-receipt.json": {
+      "local_source": "work/compiler-study/previews/receipt.json",
+      "original_sha256": "611bd0564eb505fe379dd9f993f5fe83d68d8b533a0b71a9fe771ba1cffcc8d9",
+      "packaged_sha256": "96104713fcf063e89e5afb84a3fb1195cf2133b45046b77cd17a30159acd9ad7",
+      "normalized_workspace_prefix": true
+    },
+    "A14-4202.png": {
+      "local_source": "work/compiler-study/previews/A14-4202.png",
+      "original_sha256": "76fa922c0344790973da221097c84f04e000201b8699395de869e6c96e8d588c",
+      "packaged_sha256": "76fa922c0344790973da221097c84f04e000201b8699395de869e6c96e8d588c",
+      "normalized_workspace_prefix": false
+    },
+    "A14-4208.png": {
+      "local_source": "work/compiler-study/previews/A14-4208.png",
+      "original_sha256": "5b6de3a4897f0867fd3dfecc4411211491a19cf5a7eb9d107c12824e167b6f7f",
+      "packaged_sha256": "5b6de3a4897f0867fd3dfecc4411211491a19cf5a7eb9d107c12824e167b6f7f",
+      "normalized_workspace_prefix": false
+    },
+    "A14-4239.png": {
+      "local_source": "work/compiler-study/previews/A14-4239.png",
+      "original_sha256": "577667b2bc6251f9f78551690f451200968a14dcea2f9e351e997f97417ba054",
+      "packaged_sha256": "577667b2bc6251f9f78551690f451200968a14dcea2f9e351e997f97417ba054",
+      "normalized_workspace_prefix": false
+    },
+    "A15-4240.png": {
+      "local_source": "work/compiler-study/previews/A15-4240.png",
+      "original_sha256": "8aac8d4c75eb6649966d78f04d6779252b32da879d81f0cdd5369dcdb37bb317",
+      "packaged_sha256": "8aac8d4c75eb6649966d78f04d6779252b32da879d81f0cdd5369dcdb37bb317",
+      "normalized_workspace_prefix": false
+    },
+    "A15-4360.png": {
+      "local_source": "work/compiler-study/previews/A15-4360.png",
+      "original_sha256": "b66978d07d1bf59e7ce4738b506e0365046c03a0e69e58a606d6d93d9d1b91cd",
+      "packaged_sha256": "b66978d07d1bf59e7ce4738b506e0365046c03a0e69e58a606d6d93d9d1b91cd",
+      "normalized_workspace_prefix": false
+    },
+    "candidate-cache-receipt.json": {
+      "local_source": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/receipt.json",
+      "original_sha256": "86fad5b3619f2820c10df93541d7c189078aafc0b44f66749d8b7d112ca7213f",
+      "packaged_sha256": "24abca6a297d0776eb06fa8ad35c9a46e8d1a8603aca9feb2032af7a60a61da0",
+      "normalized_workspace_prefix": true
+    },
+    "candidate-cache.log": {
+      "local_source": "work/compiler-study/bench/suite-61cf28b/candidate-cache.log",
+      "original_sha256": "97b451ec04c53702179db8dbe8327172e642fc2c6e356a14ff0dcbf13b218535",
+      "packaged_sha256": "97b451ec04c53702179db8dbe8327172e642fc2c6e356a14ff0dcbf13b218535",
+      "normalized_workspace_prefix": false
+    }
+  }
+}

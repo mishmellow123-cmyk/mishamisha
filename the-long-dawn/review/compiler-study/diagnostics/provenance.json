@@ -1,0 +1,39 @@
+{
+  "packaged_utc": "2026-09-28T06:17:20.986124+00:00",
+  "kind": "Normalized existing diagnostic artifacts; no new sampling",
+  "normalization_rules": [
+    {
+      "replacement": "<WORKSPACE>",
+      "description": "Session workspace absolute path prefix"
+    },
+    {
+      "replacement": "<PYTHON_RUNTIME>",
+      "description": "Local Anaconda installation root"
+    },
+    {
+      "replacement": "<USER_HOME>",
+      "description": "Any /Users/<name> prefix, including the wildcard user redaction already supplied by macOS sample"
+    }
+  ],
+  "preserved": "All non-path text in the raw receipt and sample, including counts, numeric observations, timestamps, symbols, addresses and existing wildcard suffixes.",
+  "files": [
+    {
+      "file": "reference-98102-20260928T061113Z.json",
+      "original_location": "<WORKSPACE>/work/compiler-study/diagnostics/reference-98102-20260928T061113Z.json",
+      "original_sha256": "cdd757e3d24ff438d26f21508e16f6518bb84e5e11c70dbe4e868d982ac3cefc",
+      "packaged_sha256": "4ea3376b6379042a724f854975f049df857c7079dbecb5e4868406bd54640a90",
+      "original_bytes": 2784,
+      "packaged_bytes": 2408
+    },
+    {
+      "file": "reference-98102-20260928T061113Z.sample.txt",
+      "original_location": "<WORKSPACE>/work/compiler-study/diagnostics/reference-98102-20260928T061113Z.sample.txt",
+      "original_sha256": "76615373df2a9e49b626025486a3ea77a5f6a701a5ada8bb9c84dd61f74bc6de",
+      "packaged_sha256": "2f804a1a3d4374db544568e71c9c79b367e135b71a33e47467eb681f5215d00f",
+      "original_bytes": 132619,
+      "packaged_bytes": 133181
+    }
+  ],
+  "readme_sha256": "ec9478c301f49985d0eb98a39404fa0ff1caf7925e6541ce09a83f555c8515ca",
+  "limits": "One second of native stacks and adjacent ps snapshots. Exact Numba pass and causal explanation unproven; no output-equivalence verdict."
+}

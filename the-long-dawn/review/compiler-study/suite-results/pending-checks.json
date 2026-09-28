@@ -1,0 +1,22 @@
+{
+  "status": "candidate_cold_and_reload_verified_original_pending",
+  "packaged_utc": "2026-09-28T06:09:23.071694+00:00",
+  "original_vs_candidate": {
+    "status": "pending",
+    "receipt": null,
+    "raw_pixel_depth_hit_mask_verdict": null
+  },
+  "candidate_cache_reload": {
+    "status": "complete",
+    "receipt": "candidate-cache-receipt.json",
+    "exact_match": true
+  },
+  "original_cache_reload": {
+    "status": "pending",
+    "receipt": null,
+    "exact_match": null
+  },
+  "adoption_verdict": null,
+  "note": "Candidate cold and fresh-process reload are complete. The original comparison and original reload remain pending.",
+  "updated_utc": "2026-09-28T06:16:34.318201+00:00"
+}

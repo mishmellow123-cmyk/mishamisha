@@ -1,0 +1,136 @@
+{
+  "input": "<WORKSPACE>/work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold",
+  "input_receipt_sha256": "94a18ede531f6a32e4b8d0a0a25012f78c6edb7c007dfb01112bcab3b0e6492d",
+  "input_status": "complete",
+  "conversion": "np.rint(np.clip(finished_rgb, 0, 1) * 255).astype(np.uint8)",
+  "color_order": "RGB; BGR conversion only for OpenCV PNG encoding",
+  "enhancements": "none; no gamma, exposure, contrast, scaling or crop",
+  "contact_sheet": "native pixels; labels and gutters outside each image",
+  "utility_sha256": "b26af5f0a0830bf3724677afa229c8a904372cf058cebf65aa65fcc19ee19aef",
+  "opencv_threads": 1,
+  "available": [
+    {
+      "frame": 4202,
+      "shot": "A14",
+      "input": "A14-4202-finished.npy",
+      "input_npy_sha256": "77b3582813193500fad7af4e4d16a76bd6d6d31fd62a1cb4dae765c8c39e831e",
+      "input_rgb_sha256": "64f263942e881dbb3d657c660c6e7e4c2b350e72e4fa0533f8ddab491b891062",
+      "output": "A14-4202.png",
+      "output_png_sha256": "76fa922c0344790973da221097c84f04e000201b8699395de869e6c96e8d588c",
+      "shape": [
+        402,
+        960,
+        3
+      ]
+    },
+    {
+      "frame": 4208,
+      "shot": "A14",
+      "input": "A14-4208-finished.npy",
+      "input_npy_sha256": "55d81602262bb2a7c25dbe84ece0cfac00542a24e650dadd538eaff50d864e58",
+      "input_rgb_sha256": "179b1c3f16f5f1d569658fafbab3e0858cbdb0fc4147939f3610cfde29ec797f",
+      "output": "A14-4208.png",
+      "output_png_sha256": "5b6de3a4897f0867fd3dfecc4411211491a19cf5a7eb9d107c12824e167b6f7f",
+      "shape": [
+        402,
+        960,
+        3
+      ]
+    },
+    {
+      "frame": 4239,
+      "shot": "A14",
+      "input": "A14-4239-finished.npy",
+      "input_npy_sha256": "ea23f60ee6b005dba8fd532ac7a5e19a3df5605e0f2c5df6d4260a67a5a2c7c5",
+      "input_rgb_sha256": "d9b16a66dee2c6ab0d8ccedf404ab3259da5679ecedf4214ae6369a5272cc20d",
+      "output": "A14-4239.png",
+      "output_png_sha256": "577667b2bc6251f9f78551690f451200968a14dcea2f9e351e997f97417ba054",
+      "shape": [
+        402,
+        960,
+        3
+      ]
+    },
+    {
+      "frame": 4240,
+      "shot": "A15",
+      "input": "A15-4240-finished.npy",
+      "input_npy_sha256": "40b0ed80ded31023fa5145267e81d394b6dd8a7c7f40b2ef198f4c3a9057c5a5",
+      "input_rgb_sha256": "d0e66f67dfb5e8a0340e93bb0194520d8f2c9bdbd2d4a13d7c9592c1736b07e1",
+      "output": "A15-4240.png",
+      "output_png_sha256": "8aac8d4c75eb6649966d78f04d6779252b32da879d81f0cdd5369dcdb37bb317",
+      "shape": [
+        402,
+        960,
+        3
+      ]
+    },
+    {
+      "frame": 4360,
+      "shot": "A15",
+      "input": "A15-4360-finished.npy",
+      "input_npy_sha256": "9b01c089852f5ecdca1c01f6ef1219084daf618c5d546642a2ef58ff060144d0",
+      "input_rgb_sha256": "4dedc80dd65e2f3a86f03e6bcc2d5fd41b1b266345507f03e8d217cea58f5159",
+      "output": "A15-4360.png",
+      "output_png_sha256": "b66978d07d1bf59e7ce4738b506e0365046c03a0e69e58a606d6d93d9d1b91cd",
+      "shape": [
+        402,
+        960,
+        3
+      ]
+    }
+  ],
+  "pending": [],
+  "sheet": {
+    "file": "five-frame-contact-sheet.png",
+    "png_sha256": "d8ee590cbb4a95506b92a42debb6d013ba5aeceb4e0866e9c40a40d235b9b7e9",
+    "shape": [
+      1326,
+      1956,
+      3
+    ],
+    "placements": [
+      {
+        "shot": "A14",
+        "frame": 4202,
+        "x": 12,
+        "y": 36,
+        "width": 960,
+        "height": 402
+      },
+      {
+        "shot": "A14",
+        "frame": 4208,
+        "x": 984,
+        "y": 36,
+        "width": 960,
+        "height": 402
+      },
+      {
+        "shot": "A14",
+        "frame": 4239,
+        "x": 12,
+        "y": 474,
+        "width": 960,
+        "height": 402
+      },
+      {
+        "shot": "A15",
+        "frame": 4240,
+        "x": 984,
+        "y": 474,
+        "width": 960,
+        "height": 402
+      },
+      {
+        "shot": "A15",
+        "frame": 4360,
+        "x": 12,
+        "y": 912,
+        "width": 960,
+        "height": 402
+      }
+    ]
+  },
+  "status": "complete"
+}
