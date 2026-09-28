@@ -1,0 +1,27 @@
+{
+  "status": "complete",
+  "scale": 1.0,
+  "ss": 2.0,
+  "source_camera_frames": [
+    200
+  ],
+  "catalogue_sha256": "2b0f5a62f588c287539a2c4c534deb9e8965a480e0622b2616de1cd0e6f71bc9",
+  "beacon_count": 8,
+  "ignition_frame": -400.0,
+  "numba_threads": 1,
+  "cv_threads": 1,
+  "frames": [
+    {
+      "frame": 4600,
+      "seconds": 30.36841625001398,
+      "shape": [
+        804,
+        1920,
+        3
+      ],
+      "file": "f_04600.jpg",
+      "file_sha256": "e49287eb93f2f406f187f4338e0fa1e9dd05075d7c7510398cfcb29067cca44e",
+      "float_rgb_sha256": "d9efdca86a134c691976edff4b1427687b7ce3493a98390654a93e868005054e"
+    }
+  ]
+}

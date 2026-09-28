@@ -1,0 +1,18 @@
+{
+  "command": [
+    "<WORKSPACE>/work/validation-venv/bin/python",
+    "-B",
+    "the-long-dawn/shots/run/watch_c_v5.py",
+    "--frames",
+    "4480",
+    "--format",
+    "png",
+    "--out",
+    "<WORKSPACE>/work/c-v5-watch-tests/pass1"
+  ],
+  "returncode": 2,
+  "stderr": "usage: watch_c_v5.py [-h] (--frames FRAMES | --range RANGE) [--scale SCALE]\n                     [--ss SS] [--threads THREADS] --out OUT\n                     [--format {png,jpg}]\nwatch_c_v5.py: error: Output frame already exists; select a fresh review/final directory\n",
+  "sha256_before": "557652110afeff1ca20ea184318f5afc7548dcfb5356d9a36cd70595b7a9e323",
+  "sha256_after": "557652110afeff1ca20ea184318f5afc7548dcfb5356d9a36cd70595b7a9e323",
+  "unchanged": true
+}

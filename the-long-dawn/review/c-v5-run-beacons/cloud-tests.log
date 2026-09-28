@@ -1,0 +1,52 @@
+test_failed_renderer_and_missing_frame_both_remain_visible (test_run_job_exit.RunJobExitTests.test_failed_renderer_and_missing_frame_both_remain_visible) ... <WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:89: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpkvg2i4_p/job.json' mode='r' encoding='UTF-8'>
+  job = json.load(open(sys.argv[1]))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:57: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpkvg2i4_p/cloud_logs/exit-test_0.log' mode='r' encoding='UTF-8'>
+  tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_missing_frame_still_fails_after_successful_renderer (test_run_job_exit.RunJobExitTests.test_missing_frame_still_fails_after_successful_renderer) ... <WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:89: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmptu5u6p54/job.json' mode='r' encoding='UTF-8'>
+  job = json.load(open(sys.argv[1]))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:57: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmptu5u6p54/cloud_logs/exit-test_0.log' mode='r' encoding='UTF-8'>
+  tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_nonzero_exit_fails_even_after_all_frames_were_pushed (test_run_job_exit.RunJobExitTests.test_nonzero_exit_fails_even_after_all_frames_were_pushed) ... <WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:89: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpcwwmhgyb/job.json' mode='r' encoding='UTF-8'>
+  job = json.load(open(sys.argv[1]))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:57: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpcwwmhgyb/cloud_logs/exit-test_0.log' mode='r' encoding='UTF-8'>
+  tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:89: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpf18zhm18/job.json' mode='r' encoding='UTF-8'>
+  job = json.load(open(sys.argv[1]))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:57: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpf18zhm18/cloud_logs/exit-test_0.log' mode='r' encoding='UTF-8'>
+  tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_one_failed_renderer_fails_after_all_concurrent_renderers_finish (test_run_job_exit.RunJobExitTests.test_one_failed_renderer_fails_after_all_concurrent_renderers_finish) ... <WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:89: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpeb562jqy/job.json' mode='r' encoding='UTF-8'>
+  job = json.load(open(sys.argv[1]))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:57: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpeb562jqy/cloud_logs/exit-test_0.log' mode='r' encoding='UTF-8'>
+  tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:57: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmpeb562jqy/cloud_logs/exit-test_1.log' mode='r' encoding='UTF-8'>
+  tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_successful_renderers_and_all_frames_complete (test_run_job_exit.RunJobExitTests.test_successful_renderers_and_all_frames_complete) ... <WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:89: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmp49zil3_3/job.json' mode='r' encoding='UTF-8'>
+  job = json.load(open(sys.argv[1]))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:57: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmp49zil3_3/cloud_logs/exit-test_0.log' mode='r' encoding='UTF-8'>
+  tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<WORKSPACE>/work/c5-watch/the-long-dawn/cloud/run_job.py:57: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/jt/y5whm9zd5jj6t4ns76vr7mbw0000gn/T/tmp49zil3_3/cloud_logs/exit-test_1.log' mode='r' encoding='UTF-8'>
+  tail = open(lf.name, errors='ignore').read().splitlines()[-25:]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.065s
+
+OK

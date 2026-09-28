@@ -1,0 +1,10 @@
+{
+  "fullres_size": [
+    1920,
+    804
+  ],
+  "jpeg_sampling": 0,
+  "same_decoded_pixels_1_vs_4_threads": true,
+  "same_jpeg_bytes_1_vs_4_threads": true,
+  "motion_count": 24
+}
