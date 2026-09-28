@@ -8,7 +8,7 @@
 | A fallback | `music/out/v3/fallback_A.wav` (stems `fallback_A_score.wav`, `fallback_A_sfx.wav`) | **DONE 18:58Z** (re-rendered on the current engine so the file matches the committed source): battery all PASS (level map 20/20, sync 8/8, notes 0, clicks 0) | COMPOSER-A |
 | B fallback | `music/out/v3/fallback_B.wav` (stems `fallback_B_score.wav`, `fallback_B_sfx.wav`) | **DONE 11:45Z**: battery all PASS (level map 14/14, sync 5/5, notes 0, clicks 0) | - |
 | C fallback | `music/out/v3/fallback_C.wav` (stems `fallback_C_score.wav`, `fallback_C_sfx.wav`) | **DONE 18:54Z**: battery all PASS (level map 28/28, sync 7/7, notes 0, clicks 0). Fix: the ride (C2 bar-2 horn -6.5 dB, C12 piano -4.5 dB) + C11's race drone now falls away after the slip into C12's black (its tail was C12's peak, -6.4 LU) | COMPOSER-A |
-| A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`; review copy `score_A.wav`) | **FINAL v2 (28 Sep, COMPOSER-A2): the race re-voiced as dread** (see COMPOSER-A2 below). Battery ALL PASS: level map 20/20, rules 3/3 (the edge -1.6 LU under the brink; the blue hour -4.9; the first fire -14.6), centroid arc 5/5 (A7 275 Hz), sync 55/55, notes 0, clicks 0, -16.03 LUFS, TP -1.29 dBTP. **v1 kept for A/B:** `final_A_v1.wav` (+ `final_A_v1_score.wav`, report `analysis/v3/final_A_v1_report.txt`, manifest `cache/v3/manifest_final_A_v1.json`) | COMPOSER-A2 |
+| A score | `music/out/v3/final_A.wav` (stems `final_A_score.wav`, `final_A_sfx.wav`; review copy `score_A.wav`) | **FINAL v2 (28 Sep, COMPOSER-A2): the race re-voiced as dread** (see COMPOSER-A2 below). Battery ALL PASS: level map 20/20, rules 3/3 (the edge -1.6 LU under the brink; the blue hour -5.0; the first fire -14.6), centroid arc 5/5 (A7 275 Hz), sync 59/59 (incl. A20's four passing horns), notes 0, clicks 0, -16.03 LUFS, TP -1.29 dBTP. **v1 kept for A/B:** `final_A_v1.wav` (+ `final_A_v1_score.wav`, report `analysis/v3/final_A_v1_report.txt`, manifest `cache/v3/manifest_final_A_v1.json`) | COMPOSER-A2 |
 | C score (THE LAST PAGES) | `music/out/v3/final_C.wav` (stems `final_C_score.wav`, `final_C_sfx.wav`) | **FINAL 21:05Z**: battery all PASS (format/length/stems, -16.03 LUFS, TP -1.30 dBTP; level map 28/28; sync 51/51; rules 3/3: the slit is C's loudest, the dawn -2.5 LU under it, the prologue -8.7 LU; breaths 44-56 dB deep; notes 0; clicks 0). Review sheet `analysis/v3/final_C/review_C.jpg` | COMPOSER-C |
 | B with REAL effects (SOUND) | `music/out/v3/sound_B.wav` (stems `sound_B_score.wav` = final_B's score through the same master, `sound_B_sfx.wav` = `sfx_B.wav`) | **PASS 21:10Z**: battery all PASS (level map 14/14, dawn -2.3 LU, first half -6.1 LU, sync 25/25, notes 0, clicks 0); effects hits on their frames 15/15 (strikes 0.0-0.1 ms). 48 kHz/24-bit, 10,880,000 samples, -16.05 LUFS, TP -1.30 | SOUND |
 | C with REAL effects (SOUND-C) | `music/out/v3/sound_C.wav` (stems `sound_C_score.wav` = final_C's pre-master score through the same master, `sound_C_sfx.wav` = `sfx_C.wav`) | **APPROVED by the director 28 Sep ~01:05Z; EDIT-3 adopts it.** PASS 01:00Z: every page/pen/burn on its MEASURED picture frame (`sound/picture_sync_C.json`); battery all PASS: level map 28/28, rules 3/3, sync 51/51, notes 0, clicks 0, -16.03 LUFS, TP -1.30, 14,400,000 samples. Council on v1 frames: re-check after the Cycles rebuild. **For EDIT:** use in place of `final_C.wav` once the director approves | SOUND-C |
@@ -157,11 +157,15 @@ in the master): the snow strike ~2900, the roar 3360, the cold tick 3400.
   section creeps up (+0.6 LU over the two renders). RIDE A2 -2.3, A3 -2.3, A4 -3.5 (were -1.5/-1.5/-2.8). Margins now thin:
   A2, A3, A4 and A10 are 0.2 LU from their band tops, A17 0.3, the edge rule 0.1 (it was 0.0 in v1). If a re-master (SOUND's
   `sound_v3.py`) tips one: trim that section's RIDE by 0.3 (A10: check the silence-piano syncs, +/-10 ms, after any change).
-- **B is dropped. Proposal only (not done):** B's ending passed the ANSWER note by note from horn to farther horn, each then
-  silent, and brought back the dead of night's high harmonic at the hand-off. For A20: as the title crumbles, pass the ANSWER
-  (D C# B F#) outward, horn -> far -> farther, one note each, each falling silent, over the D add9; and let A11's pure harmonic
-  A5 (the false dawn's beating A made pure) return ppp as the rose sky pales. It closes A's false-dawn / true-dawn circle and says
-  "carried by many" without getting louder. About one render; the blue hour's whole theme and cadence stay as they are.
+- **A20: B's passing ANSWER, DONE (v2b, the director approved it, 28 Sep).** Over the ringing D add9 the violins hand HOME's D
+  to the near horn on the title (79 b1). The ANSWER then passes outward one note per horn, each horn falling silent as the next
+  enters: D4 `hn` 79 b1, C#4 `hn_far` 79 b3.5, B3 `hn_farther` 80 b2, F#3 `hn_farthest` (new seat, toward the horizon) 80 b4.5,
+  fading with the picture. A11's pure A5 (`harmonic` + `harm_str`) returns ppp from 80 b1. Each horn leads its window, each
+  farther and softer (-31, -34, -38, -49 LUFS); sync -19 to -28 ms. **To re-time to A-FIX's fire-paling frames** (if the
+  ending is B's sunrise), edit `PASS_FRAMES` (one frame per note, in order, from 6200 to before the fade; the build asserts this)
+  and `HARM_RETURN_FRAME` at the top of `score_v3_A.py`, then re-render (only the horns, vln1 and the harmonic re-render). A's
+  length is unchanged. If the fires pale inside A19 (before 6200), the pass would collide with the whole theme and cadence, so
+  that needs a rethink, not a re-time.
 
 ## COMPOSER-A (cut A) · STATE 20:40Z: BOTH TASKS DONE
 - **1. C fallback: DONE** (table). The ride alone fixed C2 but not C12: C12's loudest 3 s was C11's race drone
