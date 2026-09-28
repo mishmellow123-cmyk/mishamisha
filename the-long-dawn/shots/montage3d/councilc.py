@@ -33,7 +33,8 @@ WIND = (0.40, -0.16)
 TORCH_W = float(os.environ.get('COUNCIL_TORCH_W', '6.0'))        # a torch flame's light (W, before flicker)
 FIRE_W = float(os.environ.get('COUNCIL_FIRE_W', '90.0'))         # the hearth fire's light per m^2 of flame
 FLAME_E = float(os.environ.get('COUNCIL_FLAME_E', '60.0'))        # flame volume emission scale
-CLIP_LC = float(os.environ.get('COUNCIL_CLIP', '1.8'))            # hue-preserving roll-off (after exposure)
+CLIP_LC = float(os.environ.get('COUNCIL_CLIP', '1.8'))
+GLINT_W = float(os.environ.get('COUNCIL_GLINT_W', '2.0'))         # the Ring's own glint light (lights only the Ring)            # hue-preserving roll-off (after exposure)
 
 
 def flame_specs():
@@ -526,14 +527,23 @@ def _bake(st, per, fr, cache, tag):
         V, Fc, Mt, _ = CG.chunk((x, y, z), (a, b, c), sd_)
         B.mesh(f'chunk{k}', V, Fc, Mt, {'u': np.full(len(V), 0.9)})
     if any(per[str(f)]['plate'] == 3 for f in fr):
-        for k in range(240):
+        pile = CG.Mesh()
+        for k in range(300):
             a = rng.uniform(0, 2 * np.pi)
             r = 0.27 * math.sqrt(rng.uniform(0, 1))
             x, y = r * math.cos(a), r * math.sin(a)
             sz = rng.uniform(0.012, 0.045) * (1.0 - 0.45 * r / 0.27)
             z = float(CG.slab_top(x, y)) + 0.25 * sz + 0.06 * max(0.0, 1.0 - (r / 0.20) ** 2) * rng.uniform(0.2, 1.0)
             V, Fc, Mt, _ = CG.chunk((x, y, z), (sz, sz * rng.uniform(0.6, 0.9), sz * 0.55), 50.0 + k)
-            B.mesh(f'coal{k}', V, Fc, Mt, {'u': np.full(len(V), rng.uniform(0.0, 0.3))})
+            base = pile.n
+            pile.V.append(V)
+            pile._attrs({'u': np.full(len(V), rng.uniform(0.0, 0.3))}, len(V))
+            pile.n += len(V)
+            for f_ in Fc:
+                pile.F.append(f_ + base)
+                pile.M.append(np.zeros(len(f_), np.int32))
+        V, Fc, Mt, at = pile.arrays()
+        B.mesh('coalpile', V, Fc, Mt, at)
     V, Fc, Mt, at = CG.torch_mesh()
     B.mesh('torch', V, Fc, Mt, at)
     V, Fc, Mt = _ring_geo()
@@ -754,13 +764,13 @@ def mat_torch(new_material):
     bs = nb.principled(Base_Color=col, Roughness=nb.mixf(pitch, 0.80, 0.30))
     bs.inputs['Specular IOR Level'].default_value = 0.4
     nb.link(nb.bump(nb.add(strands.outputs['Fac'], nb.mul(lump.outputs['Fac'], 0.5)), 0.45, 0.0015), bs.inputs['Normal'])
-    crev = nb.sstep(0.46, 0.30, strands.outputs['Fac'])
+    crev = nb.sstep(0.40, 0.27, strands.outputs['Fac'])
     fl = nb.noise(P, scale=40.0, detail=1.0, dims='4D', w=nb.attr('tseed', 'OBJECT').outputs['Fac'])
     glow = nb.mul(nb.mul(crev, lit), nb.madd(fl.outputs['Fac'], 1.2, 0.2))
     glow = nb.mul(glow, nb.sstep(0.33, 0.40, z))
     bb = nb.n('ShaderNodeBlackbody')
     bb.inputs['Temperature'].default_value = 1300.0
-    em = nb.emission(bb.outputs['Color'], nb.mul(glow, 1.6))
+    em = nb.emission(bb.outputs['Color'], nb.mul(glow, 0.9))
     nb.output(surface=nb.addshader(bs, em))
     ms.append(m)
     return ms
@@ -809,7 +819,10 @@ def mat_flame(new_material, C, fr):
     n2 = nb.noise(Q2, scale=1.0, detail=2.0, rough=0.55)
     thr = nb.mul(h2c, 0.85)
     tongue = nb.sstep(nb.sub(thr, 0.03), nb.add(thr, 0.12), nb.madd(n2.outputs['Fac'], 1.25, -0.10))
-    dens = nb.mul(core, tongue)
+    l3 = nb.mul(lam, 0.30)
+    Q3 = nb.comb(nb.sub(nb.div(qx2, l3), sd), nb.div(qy2, l3), nb.div(nb.sub(qz2, nb.mul(T, nb.mul(rise, 1.6))), l3))
+    n3 = nb.noise(Q3, scale=1.0, detail=1.0, rough=0.5)
+    dens = nb.mul(nb.mul(core, tongue), nb.madd(n3.outputs['Fac'], 1.3, 0.35))
     dens = nb.mul(dens, nb.sstep(-0.03, 0.05, h2))
     dens = nb.mul(dens, nb.sstep(1.05, 0.90, h2))
     temp = nb.add(1100.0, nb.mul(1250.0, nb.mul(nb.pw(nb.sub(1.0, h2c), 1.2), nb.sub(1.0, nb.mul(nb.clamp01(rr), 0.45)))))
@@ -877,14 +890,14 @@ def mat_slab(new_material):
     gr, _, _ = nb.sep(grain.outputs['Color'])
     pits = nb.noise(P, scale=90.0, detail=6.0, rough=0.65)
     stain = nb.noise(P, scale=9.0, detail=4.0, rough=0.6)
-    col = nb.colscale((0.078, 0.073, 0.066), nb.mul(nb.madd(stain.outputs['Fac'], 0.55, 0.72), nb.madd(gr, 0.25, 0.88)))
+    col = nb.colscale((0.092, 0.087, 0.078), nb.mul(nb.madd(stain.outputs['Fac'], 0.60, 0.70), nb.madd(gr, 0.30, 0.85)))
     sootn = nb.noise(P, scale=11.0, detail=4.0, rough=0.6)
-    soot = nb.sstep(0.21, 0.07, nb.add(rl, nb.mul(nb.sub(sootn.outputs['Fac'], 0.5), 0.20)))
+    soot = nb.mul(nb.sstep(0.15, 0.04, nb.add(rl, nb.mul(nb.sub(sootn.outputs['Fac'], 0.5), 0.16))), 0.45)
     streak = nb.mul(nb.sstep(0.55, 0.70, nb.noise(nb.vmul(P, (1.0, 1.0, 0.2)), scale=30.0, detail=2.0).outputs['Fac']),
                     nb.sstep(0.34, 0.18, rl))
-    soot = nb.mx(soot, nb.mul(streak, 0.7))
-    side = nb.sstep(0.75, 0.35, nz)
-    soot = nb.mx(soot, nb.mul(side, 0.75))
+    soot = nb.mx(soot, nb.mul(streak, 0.25))
+    side = nb.sstep(0.80, 0.40, nz)
+    soot = nb.mx(soot, nb.mul(side, 0.85))
     col = nb.mixcol(soot, col, (0.011, 0.010, 0.0095))
     dust = nb.mul(nb.sstep(0.52, 0.36, pits.outputs['Fac']), nb.mul(nb.sstep(0.16, 0.30, rl), nb.sub(1.0, side)))
     col = nb.mixcol(nb.mul(dust, 0.40), col, (0.15, 0.145, 0.14))
@@ -895,9 +908,11 @@ def mat_slab(new_material):
     col = nb.mixcol(nb.mul(lic, 0.85), col, (0.20, 0.215, 0.17))
     bs = nb.principled(Base_Color=col, Roughness=nb.madd(soot, -0.08, 0.90))
     bs.inputs['Specular IOR Level'].default_value = 0.22
+    flake = nb.noise(P, scale=7.0, detail=3.0, rough=0.5)
+    steps = nb.sstep(0.48, 0.52, flake.outputs['Fac'])                   # layers flaked off the cleft face
     h = nb.add(pits.outputs['Fac'], nb.mul(grain.outputs['Distance'], 0.4))
-    h = nb.add(h, nb.mul(lic, 0.5))
-    nb.link(nb.bump(h, 0.5, 0.0025), bs.inputs['Normal'])
+    h = nb.add(nb.add(h, nb.mul(lic, 0.5)), nb.mul(steps, 1.6))
+    nb.link(nb.bump(h, 0.6, 0.0030), bs.inputs['Normal'])
     nb.output(surface=bs)
     return m
 
@@ -1230,7 +1245,7 @@ def _torch_matrix(hw, ax):
     return Matrix(((x[0], y[0], z[0], hw[0]), (x[1], y[1], z[1], hw[1]), (x[2], y[2], z[2], hw[2]), (0, 0, 0, 1)))
 
 
-def _flame_obj(C, name, mat, Hmax, Rmax, lean_max):
+def _flame_obj(C, name, mat, Hmax, Rmax, lean_max, glossy=True):
     """A box domain round a flame's root (z up, metres, identity scale)."""
     import bpy
     w = 2.3 * Rmax + lean_max * Hmax * 0.9 + 0.02
@@ -1247,6 +1262,7 @@ def _flame_obj(C, name, mat, Hmax, Rmax, lean_max):
             setattr(ob, attr, False)
         except Exception:
             pass
+    ob.visible_glossy = bool(glossy)
     return ob
 
 
@@ -1275,13 +1291,15 @@ def _torches(C, G, blob, mats_t, flame_m, per, fr):
         c = s['crowd']
         return c['hw'][j], c['ax'][j], c['lit'][j], c['base'][j], c['lean'][j], c['hf'][j], c['seed'][j], c['fl'][j]
 
+    ring_vis = any(per[f]['ring'][0] > 0.5 for f in fr)
     for k in range(n_c + n_k):
         ob = C.link_obj(bpy.data.objects.new(f'torch{k}', tm))
         ob.rotation_mode = 'QUATERNION'
         lits = [tdata(f, k)[2] for f in fr]
         hfs = [tdata(f, k)[5] for f in fr]
         leans = [math.hypot(*tdata(f, k)[4]) for f in fr]
-        fl_ob = _flame_obj(C, f'flame{k}', flame_m, max(hfs) * 1.40, 0.075, max(leans) * 0.9) if max(lits) > 0.01 else None
+        fl_ob = (_flame_obj(C, f'flame{k}', flame_m, max(hfs) * 1.40, 0.075, max(leans) * 0.9, glossy=ring_vis)
+                 if max(lits) > 0.01 else None)
         light = None
         if max(lits) > 0.01:
             ld = bpy.data.lights.new(f'tl{k}', 'POINT')
@@ -1334,7 +1352,7 @@ def _hearth_fire(C, flame_m, per, fr):
         Hk = max([r[3] for r in rk] + [0.05])
         Rk = max([r[4] for r in rk] + [0.03])
         Lk = max([math.hypot(r[5], r[6]) for r in rk] + [0.1])
-        obs.append(_flame_obj(C, f'hf{k}', flame_m, Hk * 1.15, Rk, Lk / 0.9))
+        obs.append(_flame_obj(C, f'hf{k}', flame_m, Hk * 1.15, Rk, Lk / 0.9, glossy=False))
     lights = []
     for k in range(4):
         ld = bpy.data.lights.new(f'hl{k}', 'POINT')
@@ -1418,8 +1436,12 @@ def _gloves(C, new_material, per, fr):
             g.key_place(f, _hand_matrix(per[f]['torches'][i]['HD']))
     her_f = [f for f in fr if per[f]['her'] is not None]
     if her_f:
-        g = GL.Glove('her_glove', GL.leather_material(new_material, base=(0.045, 0.028, 0.018)), None, mirror=False,
-                     sub=2, sleeve=False)
+        hl = GL.leather_material(new_material, base=(0.024, 0.015, 0.010), rough=0.56)
+        for nd in hl.node_tree.nodes:
+            if nd.type == 'BSDF_PRINCIPLED':
+                nd.inputs['Specular IOR Level'].default_value = 0.40
+                nd.inputs['Coat Weight'].default_value = 0.08
+        g = GL.Glove('her_glove', hl, None, mirror=False, sub=2, sleeve=False)
         for f in fr:
             h = per[f]['her'] or per[her_f[0] if f < her_f[0] else her_f[-1]]['her']
             g.key(f, _glove_pose(h['curl'], h['thumb'], h['spread']))
@@ -1440,6 +1462,38 @@ def _ring(C, new_material, G, blob, per, fr):
         ob.keyframe_insert('rotation_quaternion', frame=f)
         ob.hide_render = RP[0] < 0.5
         ob.keyframe_insert('hide_render', frame=f)
+    if any(per[f]['ring'][0] > 0.5 for f in fr):
+        import bpy
+        try:
+            coll = bpy.data.collections.new('ring_recv')
+            coll.objects.link(ob)
+            ld = bpy.data.lights.new('ringglint', 'POINT')
+            ld.color = (1.0, 0.62, 0.30)
+            ld.shadow_soft_size = 0.03
+            lo = C.link_obj(bpy.data.objects.new('ringglint', ld))
+            lo.light_linking.receiver_collection = coll
+            try:
+                lo.visible_camera = False
+            except Exception:
+                pass
+            for f in fr:
+                RP = per[f]['ring']
+                c = Vector(RP[1:4])
+                cam = Vector(per[f]['cam'][0:3])
+                d = (cam - c).normalized()
+                side = d.cross(Vector((0.0, 0.0, 1.0)))
+                if side.length < 1e-3:
+                    side = Vector((1.0, 0.0, 0.0))
+                lo.location = c + d * 0.22 + side.normalized() * 0.08 + Vector((0.0, 0.0, 0.06))
+                lo.keyframe_insert('location', frame=f)
+                ld.energy = GLINT_W if RP[0] > 0.5 else 0.0
+                ld.keyframe_insert('energy', frame=f)
+        except Exception as e:
+            print('ring glint (light linking) unavailable:', e, flush=True)
+            try:
+                bpy.data.objects.remove(bpy.data.objects['ringglint'])
+            except Exception:
+                pass
     return ob
 
 
