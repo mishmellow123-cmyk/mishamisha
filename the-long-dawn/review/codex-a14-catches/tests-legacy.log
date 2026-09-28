@@ -1,0 +1,31 @@
+JIT disabled=0; Numba threads=2; OpenCV threads=1
+test_all_in_range_poses_and_shutter_samples_are_unchanged (test_beaconrun_camera.BeaconRunCameraTests.test_all_in_range_poses_and_shutter_samples_are_unchanged) ... ok
+test_first_frame_velocity_samples_are_finite (test_beaconrun_camera.BeaconRunCameraTests.test_first_frame_velocity_samples_are_finite) ... ok
+test_pre_start_camera_holds_first_pose (test_beaconrun_camera.BeaconRunCameraTests.test_pre_start_camera_holds_first_pose) ... ok
+test_carry_targets_take_precedence_over_reach_in_both_paths (test_legacy_reach.LegacyReachTests.test_carry_targets_take_precedence_over_reach_in_both_paths) ... ok
+test_default_cloth_path_keeps_custom_reach_length (test_legacy_reach.LegacyReachTests.test_default_cloth_path_keeps_custom_reach_length) ... ok
+test_default_legacy_reach_retains_original_length_and_glove_endpoint (test_legacy_reach.LegacyReachTests.test_default_legacy_reach_retains_original_length_and_glove_endpoint) ... ok
+test_legacy_hand_meets_a_target_at_its_reach_distance (test_legacy_reach.LegacyReachTests.test_legacy_hand_meets_a_target_at_its_reach_distance) ... ok
+test_legacy_without_reach_and_staff_override_still_construct (test_legacy_reach.LegacyReachTests.test_legacy_without_reach_and_staff_override_still_construct) ... ok
+test_a15_farwall_survives_foreground_column_history (test_terrain_horizon.TerrainHorizonTests.test_a15_farwall_survives_foreground_column_history) ... ok
+test_all_a_world_entrypoints_supply_the_scene_bound (test_terrain_horizon.TerrainHorizonTests.test_all_a_world_entrypoints_supply_the_scene_bound) ... ok
+test_ceiling_tracks_changed_crest_heights_without_resampling (test_terrain_horizon.TerrainHorizonTests.test_ceiling_tracks_changed_crest_heights_without_resampling) ... ok
+test_pipeline_default_remains_700_for_other_worlds (test_terrain_horizon.TerrainHorizonTests.test_pipeline_default_remains_700_for_other_worlds) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 2.295s
+
+OK
+real 10.81
+user 8.81
+sys 1.16
+
+Validation provenance:
+Worktree: <workspace>/work/sdfppl-v2-reach
+Commit: 634a40de864a4c4000f7971fef27fd1b56eb74d9
+sdfppl.py SHA256: 137110a7446b013816ebf60d7d9315ca2e826814a9340fa25a69da99d297a193
+Fix source and targeted test match director merge 9473112 (git diff exit 0).
+Python 3.13.9 arm64
+Packages: numba 0.62.1, llvmlite 0.45.1, numpy 2.3.5, opencv-python-headless 5.0.0.93
+Runner set OMP/OPENBLAS/MKL/VECLIB threads=1, Numba=2, cv2.setNumThreads(0); JIT enabled.
+Stack tools: py-spy/pystack absent from PATH and validation runtime; LLDB present, not attached.

@@ -1,0 +1,2063 @@
+{
+  "created_utc": "2026-09-28T03:04:06.665839+00:00",
+  "method": "Python standard-library AST, JSON, shlex and Git blob reads; no project imports, JIT, rendering or farm calls",
+  "repo": "<repository>",
+  "commits": {
+    "reference": "04874ca1a2640c0b11c01e5ff56733cfb57d73ba",
+    "production": "6ae71801bae7b188a8f2d9533761c7e13824fc06",
+    "since": "742bcaee2e752db23594de5c2ed523538995f5a6"
+  },
+  "observed_worktree_head": "04874ca1a2640c0b11c01e5ff56733cfb57d73ba",
+  "script_sha256": "b51491ddf2eeaad080efc20521e0cd583b3fe88cc2cd79c6123c83febcdec9f6",
+  "sdfppl": {
+    "path": "the-long-dawn/shots/run/sdfppl.py",
+    "reports": {
+      "reference": {
+        "source_sha256": "0feff19d5baf983d7decca3bdd06318093f974506eff5a4db3fe900b114b2376",
+        "module_ast_sha256": "c9bf156c462ff65ca24689b340d26a17ed706a78b33c2d785eddff8e17e5d6d3",
+        "functions": {
+          "Scene.__init__": {
+            "line": 34,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "d7718c2ca10fe8e52ae54391e0070b861eb190abc02403e440642be095ba3668"
+          },
+          "Scene.begin": {
+            "line": 38,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "a2a2faa1215681d1a5463a5648b625306ae85dd342342006cc5aee49ebef50de"
+          },
+          "Scene._add": {
+            "line": 43,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "5fc91eefbddd20ec063c7d144241bfc3bf7f78cdf7ea94a000bc32d2d7f7e58f"
+          },
+          "Scene.cone": {
+            "line": 48,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "d6dd87cf59e5b3bf2bc79e4a613e6d61dc32146551e49b1b09496ee76290fa4c"
+          },
+          "Scene.box": {
+            "line": 61,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "e0a6cfce638bb6b2c3f8d3051e7f019b617a5fda55c8888cae836ba89be5d030"
+          },
+          "Scene.bell": {
+            "line": 75,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "e987e297c707d216705998c9cd33cb62b433b01167309fc191ad581fdddce66c"
+          },
+          "Scene.pyramid": {
+            "line": 99,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f044f845703907a84010d53cbcf9d4242ea737a9d7951ed227cb07c1055dbeab"
+          },
+          "Scene.torus": {
+            "line": 114,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "945c89fe70ea04d01f15ce18889746190845d2dd599aca16667d65f30cf73e78"
+          },
+          "Scene.end": {
+            "line": 125,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ca03b0be797dc90d3292e129939365d43a209e0009927b10a6c5462932256d69"
+          },
+          "Scene.arrays": {
+            "line": 135,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "1d175b334655993de99973b0ec49a9e801afddf39963c0ae45aaad3cb6310015"
+          },
+          "_sd_cone": {
+            "line": 144,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "94f37af8bf73ab225c26c74bf071589e09ce2d7867e35f6d6bd24f870d804829"
+          },
+          "_sd_box": {
+            "line": 158,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "344755ca8e0e2c65cd6f14be6e1267617ada0072370b20dc6e6a368f5f13f018"
+          },
+          "_sd_torus": {
+            "line": 179,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "d7be0344f2c5b229fa7e0a26453dd730f7d4b6169b2f99e10fe551c8a1743f01"
+          },
+          "_sd_bell": {
+            "line": 186,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "ecfcbff3a2dd1d863c60c57def87b31212120e31253cbcb67c44ec66a3770694"
+          },
+          "_sd_pyr": {
+            "line": 253,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "c5a9bd7dc2468053c30eeb6300272b9543ad69f5179f024d44f22df7030c2f20"
+          },
+          "_prim": {
+            "line": 283,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "536cff4e9570c0719ee084ce602ab2c9f59f5b5713660ef2d417fbf8af481378"
+          },
+          "_smin": {
+            "line": 297,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "096cfea302e32f4f81e685648ae3e044748163dea0c98067cc81169738195403"
+          },
+          "_map": {
+            "line": 305,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "a268a5f0198a1ed2f8de9e5a1cf67e152f04143d359a83811674cb84dc44b033"
+          },
+          "_glass": {
+            "line": 320,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "1e1500a0e89af1f9c5fa84b2f20c5119bdc3b7083ec2b41b43000c7a60d4fd99"
+          },
+          "_horn": {
+            "line": 331,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "52ff94eb989fd97e930fa795c4e0c4d0556b5dea4e96cd4645e4f4b13c84ee66"
+          },
+          "render": {
+            "line": 344,
+            "decorators": [
+              "njit(parallel=True, fastmath=True, cache=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "e8d784d24595322ce9fb7ccf6c6dff0c3a4fb3d1544b42432bb73afe529fb31f"
+          },
+          "_unit": {
+            "line": 604,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "3d66daf2a7534201432c75494a9df2cf2c1f1e213468d0ab5b045359d156674d"
+          },
+          "_knee": {
+            "line": 609,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "be360eec79051b27e0b331afcfbc46285f3b2ce43c96db1a4035a3965c648591"
+          },
+          "_bell_wind_ang": {
+            "line": 623,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "df5718d269684e9538b4934f036c326106bc0f83862d427fb70b4f2c82602385"
+          },
+          "traveller": {
+            "line": 634,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "b9b50f935662d21da092c074a6510b4176adacc22ff089469bae4ec6d7f8f015"
+          },
+          "traveller.arm": {
+            "line": 713,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "4b7357612e3f121032d1fd42bf0ca3eed0096a6b22c193010fb3bba6f8ccacd7"
+          },
+          "_traveller_v2": {
+            "line": 774,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "cc166b248c5e2e606e238508a9cb624e90b75bc2324714386a338c2d8ddffc43"
+          },
+          "_traveller_v2.arm": {
+            "line": 822,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "1e8e5391b3995669e764e309a3de54ec01806b62d5bcdfd62fc749d50b40a477"
+          },
+          "seated": {
+            "line": 870,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f68bfdd16eac5a9f591bbdca42f9e1611bb197c7f6c8c174cafe55f977ba2883"
+          },
+          "seated.gnd": {
+            "line": 889,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "cf6e73006312806ae8fa848758f6635acbb3677f50ed444c1f70f9c7083eb387"
+          },
+          "seated.arm": {
+            "line": 983,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ca40c21fbeba2a7c36d479cd7b05dad490b26a093a2713892703c0408b8693e9"
+          },
+          "small_lantern": {
+            "line": 1024,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "7336a6661332b712d3932ce2dd7e70d5d700d54fbcd62e984f0958354c85b1d9"
+          },
+          "great_lantern": {
+            "line": 1037,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ff76fb6360c70067b713f24b3064a9595e4715b47a7815909d91216701bfcb14"
+          },
+          "lantern_v3": {
+            "line": 1070,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "767b08d0b3cfa1a82cc094c809fef5dd4516bced352ae331f85078e4d6705268"
+          },
+          "lantern_v3.P": {
+            "line": 1083,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "b0e256c529a2df84183111bcadcdc7a2e7d04177161056d3806b2a07562c3127"
+          },
+          "stone_ring": {
+            "line": 1134,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f141ff0ac37adeb96ed91476bea4618cdd0c48fb80ffdd441bc89d66f541f6f0"
+          }
+        },
+        "top_level_nodes": {
+          "0:Expr:\"Small 3-D SDF objects for the mountain world: roped walkers, the great lantern of iron and glass, poles,\\ncairns. Each object is a union of round cones / capsu": {
+            "line": 1,
+            "ast_sha256": "7c9dd1510b02363e948ad52885456925ae5ced05f43073c070e924b3b3a8a21f"
+          },
+          "1:Import:import math": {
+            "line": 22,
+            "ast_sha256": "f329650e2c61a07a1bab85b32296a6d93760e313e108904819fa27d09cf3954d"
+          },
+          "2:Import:import numpy as np": {
+            "line": 24,
+            "ast_sha256": "271fc31378e1108a9784c29c3c4768de571ce080301b4ad9721ba767fcf5842b"
+          },
+          "3:ImportFrom:from numba import njit, prange": {
+            "line": 25,
+            "ast_sha256": "c3a544646ea8f4e7b3fb69475ccfdf365bfed447c2f127e6fbfc009b49de94cc"
+          },
+          "4:ImportFrom:from mt.noise import gnoise3": {
+            "line": 27,
+            "ast_sha256": "186bba9575d074dafaeb635613e11d5250f807e54acd5f47ce12d43ec4a5f913"
+          },
+          "5:Assign:NP = 20": {
+            "line": 29,
+            "ast_sha256": "e61c10eff9ade83a3b53cdb71cc3580c5e542045cd5f0c478f5e2e45d21bc332"
+          },
+          "6:Assign:NO = 16": {
+            "line": 30,
+            "ast_sha256": "9a44797b8449a295ccc1286de3cae95fbe4371d19c653cac9aacf91781666558"
+          },
+          "ClassDef:Scene": {
+            "line": 33,
+            "ast_sha256": "c0b5abe4147b1d7be5c093ae8f5cf0434544f2efa081eeb23f5e4d395d9573f2"
+          },
+          "FunctionDef:_sd_cone": {
+            "line": 144,
+            "ast_sha256": "94f37af8bf73ab225c26c74bf071589e09ce2d7867e35f6d6bd24f870d804829"
+          },
+          "FunctionDef:_sd_box": {
+            "line": 158,
+            "ast_sha256": "344755ca8e0e2c65cd6f14be6e1267617ada0072370b20dc6e6a368f5f13f018"
+          },
+          "FunctionDef:_sd_torus": {
+            "line": 179,
+            "ast_sha256": "d7be0344f2c5b229fa7e0a26453dd730f7d4b6169b2f99e10fe551c8a1743f01"
+          },
+          "FunctionDef:_sd_bell": {
+            "line": 186,
+            "ast_sha256": "ecfcbff3a2dd1d863c60c57def87b31212120e31253cbcb67c44ec66a3770694"
+          },
+          "FunctionDef:_sd_pyr": {
+            "line": 253,
+            "ast_sha256": "c5a9bd7dc2468053c30eeb6300272b9543ad69f5179f024d44f22df7030c2f20"
+          },
+          "FunctionDef:_prim": {
+            "line": 283,
+            "ast_sha256": "536cff4e9570c0719ee084ce602ab2c9f59f5b5713660ef2d417fbf8af481378"
+          },
+          "FunctionDef:_smin": {
+            "line": 297,
+            "ast_sha256": "096cfea302e32f4f81e685648ae3e044748163dea0c98067cc81169738195403"
+          },
+          "FunctionDef:_map": {
+            "line": 305,
+            "ast_sha256": "a268a5f0198a1ed2f8de9e5a1cf67e152f04143d359a83811674cb84dc44b033"
+          },
+          "FunctionDef:_glass": {
+            "line": 320,
+            "ast_sha256": "1e1500a0e89af1f9c5fa84b2f20c5119bdc3b7083ec2b41b43000c7a60d4fd99"
+          },
+          "FunctionDef:_horn": {
+            "line": 331,
+            "ast_sha256": "52ff94eb989fd97e930fa795c4e0c4d0556b5dea4e96cd4645e4f4b13c84ee66"
+          },
+          "FunctionDef:render": {
+            "line": 344,
+            "ast_sha256": "e8d784d24595322ce9fb7ccf6c6dff0c3a4fb3d1544b42432bb73afe529fb31f"
+          },
+          "FunctionDef:_unit": {
+            "line": 604,
+            "ast_sha256": "3d66daf2a7534201432c75494a9df2cf2c1f1e213468d0ab5b045359d156674d"
+          },
+          "FunctionDef:_knee": {
+            "line": 609,
+            "ast_sha256": "be360eec79051b27e0b331afcfbc46285f3b2ce43c96db1a4035a3965c648591"
+          },
+          "FunctionDef:_bell_wind_ang": {
+            "line": 623,
+            "ast_sha256": "df5718d269684e9538b4934f036c326106bc0f83862d427fb70b4f2c82602385"
+          },
+          "FunctionDef:traveller": {
+            "line": 634,
+            "ast_sha256": "b9b50f935662d21da092c074a6510b4176adacc22ff089469bae4ec6d7f8f015"
+          },
+          "FunctionDef:_traveller_v2": {
+            "line": 774,
+            "ast_sha256": "cc166b248c5e2e606e238508a9cb624e90b75bc2324714386a338c2d8ddffc43"
+          },
+          "24:Assign:SEAT_POSES = ('knees', 'cross', 'back', 'side', 'kneel', 'lie')": {
+            "line": 867,
+            "ast_sha256": "f729b347c355b27777af8c61152b515012af3bc511ab0462ff38facb884b5b19"
+          },
+          "FunctionDef:seated": {
+            "line": 870,
+            "ast_sha256": "f68bfdd16eac5a9f591bbdca42f9e1611bb197c7f6c8c174cafe55f977ba2883"
+          },
+          "FunctionDef:small_lantern": {
+            "line": 1024,
+            "ast_sha256": "7336a6661332b712d3932ce2dd7e70d5d700d54fbcd62e984f0958354c85b1d9"
+          },
+          "FunctionDef:great_lantern": {
+            "line": 1037,
+            "ast_sha256": "ff76fb6360c70067b713f24b3064a9595e4715b47a7815909d91216701bfcb14"
+          },
+          "FunctionDef:lantern_v3": {
+            "line": 1070,
+            "ast_sha256": "767b08d0b3cfa1a82cc094c809fef5dd4516bced352ae331f85078e4d6705268"
+          },
+          "FunctionDef:stone_ring": {
+            "line": 1134,
+            "ast_sha256": "f141ff0ac37adeb96ed91476bea4618cdd0c48fb80ffdd441bc89d66f541f6f0"
+          }
+        }
+      },
+      "production": {
+        "source_sha256": "137110a7446b013816ebf60d7d9315ca2e826814a9340fa25a69da99d297a193",
+        "module_ast_sha256": "5f4bfee2918543616d5d0a27de8f2b90481cf1ede3d4b33679804e102270804a",
+        "functions": {
+          "Scene.__init__": {
+            "line": 34,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "d7718c2ca10fe8e52ae54391e0070b861eb190abc02403e440642be095ba3668"
+          },
+          "Scene.begin": {
+            "line": 38,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "a2a2faa1215681d1a5463a5648b625306ae85dd342342006cc5aee49ebef50de"
+          },
+          "Scene._add": {
+            "line": 43,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "5fc91eefbddd20ec063c7d144241bfc3bf7f78cdf7ea94a000bc32d2d7f7e58f"
+          },
+          "Scene.cone": {
+            "line": 48,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "d6dd87cf59e5b3bf2bc79e4a613e6d61dc32146551e49b1b09496ee76290fa4c"
+          },
+          "Scene.box": {
+            "line": 61,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "e0a6cfce638bb6b2c3f8d3051e7f019b617a5fda55c8888cae836ba89be5d030"
+          },
+          "Scene.bell": {
+            "line": 75,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "e987e297c707d216705998c9cd33cb62b433b01167309fc191ad581fdddce66c"
+          },
+          "Scene.pyramid": {
+            "line": 99,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f044f845703907a84010d53cbcf9d4242ea737a9d7951ed227cb07c1055dbeab"
+          },
+          "Scene.torus": {
+            "line": 114,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "945c89fe70ea04d01f15ce18889746190845d2dd599aca16667d65f30cf73e78"
+          },
+          "Scene.end": {
+            "line": 125,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ca03b0be797dc90d3292e129939365d43a209e0009927b10a6c5462932256d69"
+          },
+          "Scene.arrays": {
+            "line": 135,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "1d175b334655993de99973b0ec49a9e801afddf39963c0ae45aaad3cb6310015"
+          },
+          "_sd_cone": {
+            "line": 144,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "94f37af8bf73ab225c26c74bf071589e09ce2d7867e35f6d6bd24f870d804829"
+          },
+          "_sd_box": {
+            "line": 158,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "344755ca8e0e2c65cd6f14be6e1267617ada0072370b20dc6e6a368f5f13f018"
+          },
+          "_sd_torus": {
+            "line": 179,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "d7be0344f2c5b229fa7e0a26453dd730f7d4b6169b2f99e10fe551c8a1743f01"
+          },
+          "_sd_bell": {
+            "line": 186,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "ecfcbff3a2dd1d863c60c57def87b31212120e31253cbcb67c44ec66a3770694"
+          },
+          "_sd_pyr": {
+            "line": 253,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "c5a9bd7dc2468053c30eeb6300272b9543ad69f5179f024d44f22df7030c2f20"
+          },
+          "_prim": {
+            "line": 283,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "536cff4e9570c0719ee084ce602ab2c9f59f5b5713660ef2d417fbf8af481378"
+          },
+          "_smin": {
+            "line": 297,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "096cfea302e32f4f81e685648ae3e044748163dea0c98067cc81169738195403"
+          },
+          "_map": {
+            "line": 305,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "a268a5f0198a1ed2f8de9e5a1cf67e152f04143d359a83811674cb84dc44b033"
+          },
+          "_glass": {
+            "line": 320,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "1e1500a0e89af1f9c5fa84b2f20c5119bdc3b7083ec2b41b43000c7a60d4fd99"
+          },
+          "_horn": {
+            "line": 331,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "52ff94eb989fd97e930fa795c4e0c4d0556b5dea4e96cd4645e4f4b13c84ee66"
+          },
+          "render": {
+            "line": 344,
+            "decorators": [
+              "njit(parallel=True, fastmath=True, cache=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "e8d784d24595322ce9fb7ccf6c6dff0c3a4fb3d1544b42432bb73afe529fb31f"
+          },
+          "_unit": {
+            "line": 604,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "3d66daf2a7534201432c75494a9df2cf2c1f1e213468d0ab5b045359d156674d"
+          },
+          "_knee": {
+            "line": 609,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "be360eec79051b27e0b331afcfbc46285f3b2ce43c96db1a4035a3965c648591"
+          },
+          "_bell_wind_ang": {
+            "line": 623,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "df5718d269684e9538b4934f036c326106bc0f83862d427fb70b4f2c82602385"
+          },
+          "traveller": {
+            "line": 634,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "b9b50f935662d21da092c074a6510b4176adacc22ff089469bae4ec6d7f8f015"
+          },
+          "traveller.arm": {
+            "line": 713,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "4b7357612e3f121032d1fd42bf0ca3eed0096a6b22c193010fb3bba6f8ccacd7"
+          },
+          "_traveller_v2": {
+            "line": 774,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "b521999163abe1ae5b327ff853e8f61f0e4e23c136780cef9c1e34f4318196da"
+          },
+          "_traveller_v2.arm": {
+            "line": 822,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "1e8e5391b3995669e764e309a3de54ec01806b62d5bcdfd62fc749d50b40a477"
+          },
+          "seated": {
+            "line": 870,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f68bfdd16eac5a9f591bbdca42f9e1611bb197c7f6c8c174cafe55f977ba2883"
+          },
+          "seated.gnd": {
+            "line": 889,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "cf6e73006312806ae8fa848758f6635acbb3677f50ed444c1f70f9c7083eb387"
+          },
+          "seated.arm": {
+            "line": 983,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ca40c21fbeba2a7c36d479cd7b05dad490b26a093a2713892703c0408b8693e9"
+          },
+          "small_lantern": {
+            "line": 1024,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "7336a6661332b712d3932ce2dd7e70d5d700d54fbcd62e984f0958354c85b1d9"
+          },
+          "great_lantern": {
+            "line": 1037,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ff76fb6360c70067b713f24b3064a9595e4715b47a7815909d91216701bfcb14"
+          },
+          "lantern_v3": {
+            "line": 1070,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "767b08d0b3cfa1a82cc094c809fef5dd4516bced352ae331f85078e4d6705268"
+          },
+          "lantern_v3.P": {
+            "line": 1083,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "b0e256c529a2df84183111bcadcdc7a2e7d04177161056d3806b2a07562c3127"
+          },
+          "stone_ring": {
+            "line": 1134,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f141ff0ac37adeb96ed91476bea4618cdd0c48fb80ffdd441bc89d66f541f6f0"
+          }
+        },
+        "top_level_nodes": {
+          "0:Expr:\"Small 3-D SDF objects for the mountain world: roped walkers, the great lantern of iron and glass, poles,\\ncairns. Each object is a union of round cones / capsu": {
+            "line": 1,
+            "ast_sha256": "7c9dd1510b02363e948ad52885456925ae5ced05f43073c070e924b3b3a8a21f"
+          },
+          "1:Import:import math": {
+            "line": 22,
+            "ast_sha256": "f329650e2c61a07a1bab85b32296a6d93760e313e108904819fa27d09cf3954d"
+          },
+          "2:Import:import numpy as np": {
+            "line": 24,
+            "ast_sha256": "271fc31378e1108a9784c29c3c4768de571ce080301b4ad9721ba767fcf5842b"
+          },
+          "3:ImportFrom:from numba import njit, prange": {
+            "line": 25,
+            "ast_sha256": "c3a544646ea8f4e7b3fb69475ccfdf365bfed447c2f127e6fbfc009b49de94cc"
+          },
+          "4:ImportFrom:from mt.noise import gnoise3": {
+            "line": 27,
+            "ast_sha256": "186bba9575d074dafaeb635613e11d5250f807e54acd5f47ce12d43ec4a5f913"
+          },
+          "5:Assign:NP = 20": {
+            "line": 29,
+            "ast_sha256": "e61c10eff9ade83a3b53cdb71cc3580c5e542045cd5f0c478f5e2e45d21bc332"
+          },
+          "6:Assign:NO = 16": {
+            "line": 30,
+            "ast_sha256": "9a44797b8449a295ccc1286de3cae95fbe4371d19c653cac9aacf91781666558"
+          },
+          "ClassDef:Scene": {
+            "line": 33,
+            "ast_sha256": "c0b5abe4147b1d7be5c093ae8f5cf0434544f2efa081eeb23f5e4d395d9573f2"
+          },
+          "FunctionDef:_sd_cone": {
+            "line": 144,
+            "ast_sha256": "94f37af8bf73ab225c26c74bf071589e09ce2d7867e35f6d6bd24f870d804829"
+          },
+          "FunctionDef:_sd_box": {
+            "line": 158,
+            "ast_sha256": "344755ca8e0e2c65cd6f14be6e1267617ada0072370b20dc6e6a368f5f13f018"
+          },
+          "FunctionDef:_sd_torus": {
+            "line": 179,
+            "ast_sha256": "d7be0344f2c5b229fa7e0a26453dd730f7d4b6169b2f99e10fe551c8a1743f01"
+          },
+          "FunctionDef:_sd_bell": {
+            "line": 186,
+            "ast_sha256": "ecfcbff3a2dd1d863c60c57def87b31212120e31253cbcb67c44ec66a3770694"
+          },
+          "FunctionDef:_sd_pyr": {
+            "line": 253,
+            "ast_sha256": "c5a9bd7dc2468053c30eeb6300272b9543ad69f5179f024d44f22df7030c2f20"
+          },
+          "FunctionDef:_prim": {
+            "line": 283,
+            "ast_sha256": "536cff4e9570c0719ee084ce602ab2c9f59f5b5713660ef2d417fbf8af481378"
+          },
+          "FunctionDef:_smin": {
+            "line": 297,
+            "ast_sha256": "096cfea302e32f4f81e685648ae3e044748163dea0c98067cc81169738195403"
+          },
+          "FunctionDef:_map": {
+            "line": 305,
+            "ast_sha256": "a268a5f0198a1ed2f8de9e5a1cf67e152f04143d359a83811674cb84dc44b033"
+          },
+          "FunctionDef:_glass": {
+            "line": 320,
+            "ast_sha256": "1e1500a0e89af1f9c5fa84b2f20c5119bdc3b7083ec2b41b43000c7a60d4fd99"
+          },
+          "FunctionDef:_horn": {
+            "line": 331,
+            "ast_sha256": "52ff94eb989fd97e930fa795c4e0c4d0556b5dea4e96cd4645e4f4b13c84ee66"
+          },
+          "FunctionDef:render": {
+            "line": 344,
+            "ast_sha256": "e8d784d24595322ce9fb7ccf6c6dff0c3a4fb3d1544b42432bb73afe529fb31f"
+          },
+          "FunctionDef:_unit": {
+            "line": 604,
+            "ast_sha256": "3d66daf2a7534201432c75494a9df2cf2c1f1e213468d0ab5b045359d156674d"
+          },
+          "FunctionDef:_knee": {
+            "line": 609,
+            "ast_sha256": "be360eec79051b27e0b331afcfbc46285f3b2ce43c96db1a4035a3965c648591"
+          },
+          "FunctionDef:_bell_wind_ang": {
+            "line": 623,
+            "ast_sha256": "df5718d269684e9538b4934f036c326106bc0f83862d427fb70b4f2c82602385"
+          },
+          "FunctionDef:traveller": {
+            "line": 634,
+            "ast_sha256": "b9b50f935662d21da092c074a6510b4176adacc22ff089469bae4ec6d7f8f015"
+          },
+          "FunctionDef:_traveller_v2": {
+            "line": 774,
+            "ast_sha256": "b521999163abe1ae5b327ff853e8f61f0e4e23c136780cef9c1e34f4318196da"
+          },
+          "24:Assign:SEAT_POSES = ('knees', 'cross', 'back', 'side', 'kneel', 'lie')": {
+            "line": 867,
+            "ast_sha256": "f729b347c355b27777af8c61152b515012af3bc511ab0462ff38facb884b5b19"
+          },
+          "FunctionDef:seated": {
+            "line": 870,
+            "ast_sha256": "f68bfdd16eac5a9f591bbdca42f9e1611bb197c7f6c8c174cafe55f977ba2883"
+          },
+          "FunctionDef:small_lantern": {
+            "line": 1024,
+            "ast_sha256": "7336a6661332b712d3932ce2dd7e70d5d700d54fbcd62e984f0958354c85b1d9"
+          },
+          "FunctionDef:great_lantern": {
+            "line": 1037,
+            "ast_sha256": "ff76fb6360c70067b713f24b3064a9595e4715b47a7815909d91216701bfcb14"
+          },
+          "FunctionDef:lantern_v3": {
+            "line": 1070,
+            "ast_sha256": "767b08d0b3cfa1a82cc094c809fef5dd4516bced352ae331f85078e4d6705268"
+          },
+          "FunctionDef:stone_ring": {
+            "line": 1134,
+            "ast_sha256": "f141ff0ac37adeb96ed91476bea4618cdd0c48fb80ffdd441bc89d66f541f6f0"
+          }
+        }
+      },
+      "since": {
+        "source_sha256": "0feff19d5baf983d7decca3bdd06318093f974506eff5a4db3fe900b114b2376",
+        "module_ast_sha256": "c9bf156c462ff65ca24689b340d26a17ed706a78b33c2d785eddff8e17e5d6d3",
+        "functions": {
+          "Scene.__init__": {
+            "line": 34,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "d7718c2ca10fe8e52ae54391e0070b861eb190abc02403e440642be095ba3668"
+          },
+          "Scene.begin": {
+            "line": 38,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "a2a2faa1215681d1a5463a5648b625306ae85dd342342006cc5aee49ebef50de"
+          },
+          "Scene._add": {
+            "line": 43,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "5fc91eefbddd20ec063c7d144241bfc3bf7f78cdf7ea94a000bc32d2d7f7e58f"
+          },
+          "Scene.cone": {
+            "line": 48,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "d6dd87cf59e5b3bf2bc79e4a613e6d61dc32146551e49b1b09496ee76290fa4c"
+          },
+          "Scene.box": {
+            "line": 61,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "e0a6cfce638bb6b2c3f8d3051e7f019b617a5fda55c8888cae836ba89be5d030"
+          },
+          "Scene.bell": {
+            "line": 75,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "e987e297c707d216705998c9cd33cb62b433b01167309fc191ad581fdddce66c"
+          },
+          "Scene.pyramid": {
+            "line": 99,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f044f845703907a84010d53cbcf9d4242ea737a9d7951ed227cb07c1055dbeab"
+          },
+          "Scene.torus": {
+            "line": 114,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "945c89fe70ea04d01f15ce18889746190845d2dd599aca16667d65f30cf73e78"
+          },
+          "Scene.end": {
+            "line": 125,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ca03b0be797dc90d3292e129939365d43a209e0009927b10a6c5462932256d69"
+          },
+          "Scene.arrays": {
+            "line": 135,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "1d175b334655993de99973b0ec49a9e801afddf39963c0ae45aaad3cb6310015"
+          },
+          "_sd_cone": {
+            "line": 144,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "94f37af8bf73ab225c26c74bf071589e09ce2d7867e35f6d6bd24f870d804829"
+          },
+          "_sd_box": {
+            "line": 158,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "344755ca8e0e2c65cd6f14be6e1267617ada0072370b20dc6e6a368f5f13f018"
+          },
+          "_sd_torus": {
+            "line": 179,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "d7be0344f2c5b229fa7e0a26453dd730f7d4b6169b2f99e10fe551c8a1743f01"
+          },
+          "_sd_bell": {
+            "line": 186,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "ecfcbff3a2dd1d863c60c57def87b31212120e31253cbcb67c44ec66a3770694"
+          },
+          "_sd_pyr": {
+            "line": 253,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "c5a9bd7dc2468053c30eeb6300272b9543ad69f5179f024d44f22df7030c2f20"
+          },
+          "_prim": {
+            "line": 283,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "536cff4e9570c0719ee084ce602ab2c9f59f5b5713660ef2d417fbf8af481378"
+          },
+          "_smin": {
+            "line": 297,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "096cfea302e32f4f81e685648ae3e044748163dea0c98067cc81169738195403"
+          },
+          "_map": {
+            "line": 305,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "a268a5f0198a1ed2f8de9e5a1cf67e152f04143d359a83811674cb84dc44b033"
+          },
+          "_glass": {
+            "line": 320,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "1e1500a0e89af1f9c5fa84b2f20c5119bdc3b7083ec2b41b43000c7a60d4fd99"
+          },
+          "_horn": {
+            "line": 331,
+            "decorators": [
+              "njit(inline='always', fastmath=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "52ff94eb989fd97e930fa795c4e0c4d0556b5dea4e96cd4645e4f4b13c84ee66"
+          },
+          "render": {
+            "line": 344,
+            "decorators": [
+              "njit(parallel=True, fastmath=True, cache=True)"
+            ],
+            "compiled": true,
+            "ast_sha256": "e8d784d24595322ce9fb7ccf6c6dff0c3a4fb3d1544b42432bb73afe529fb31f"
+          },
+          "_unit": {
+            "line": 604,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "3d66daf2a7534201432c75494a9df2cf2c1f1e213468d0ab5b045359d156674d"
+          },
+          "_knee": {
+            "line": 609,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "be360eec79051b27e0b331afcfbc46285f3b2ce43c96db1a4035a3965c648591"
+          },
+          "_bell_wind_ang": {
+            "line": 623,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "df5718d269684e9538b4934f036c326106bc0f83862d427fb70b4f2c82602385"
+          },
+          "traveller": {
+            "line": 634,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "b9b50f935662d21da092c074a6510b4176adacc22ff089469bae4ec6d7f8f015"
+          },
+          "traveller.arm": {
+            "line": 713,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "4b7357612e3f121032d1fd42bf0ca3eed0096a6b22c193010fb3bba6f8ccacd7"
+          },
+          "_traveller_v2": {
+            "line": 774,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "cc166b248c5e2e606e238508a9cb624e90b75bc2324714386a338c2d8ddffc43"
+          },
+          "_traveller_v2.arm": {
+            "line": 822,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "1e8e5391b3995669e764e309a3de54ec01806b62d5bcdfd62fc749d50b40a477"
+          },
+          "seated": {
+            "line": 870,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f68bfdd16eac5a9f591bbdca42f9e1611bb197c7f6c8c174cafe55f977ba2883"
+          },
+          "seated.gnd": {
+            "line": 889,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "cf6e73006312806ae8fa848758f6635acbb3677f50ed444c1f70f9c7083eb387"
+          },
+          "seated.arm": {
+            "line": 983,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ca40c21fbeba2a7c36d479cd7b05dad490b26a093a2713892703c0408b8693e9"
+          },
+          "small_lantern": {
+            "line": 1024,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "7336a6661332b712d3932ce2dd7e70d5d700d54fbcd62e984f0958354c85b1d9"
+          },
+          "great_lantern": {
+            "line": 1037,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "ff76fb6360c70067b713f24b3064a9595e4715b47a7815909d91216701bfcb14"
+          },
+          "lantern_v3": {
+            "line": 1070,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "767b08d0b3cfa1a82cc094c809fef5dd4516bced352ae331f85078e4d6705268"
+          },
+          "lantern_v3.P": {
+            "line": 1083,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "b0e256c529a2df84183111bcadcdc7a2e7d04177161056d3806b2a07562c3127"
+          },
+          "stone_ring": {
+            "line": 1134,
+            "decorators": [],
+            "compiled": false,
+            "ast_sha256": "f141ff0ac37adeb96ed91476bea4618cdd0c48fb80ffdd441bc89d66f541f6f0"
+          }
+        },
+        "top_level_nodes": {
+          "0:Expr:\"Small 3-D SDF objects for the mountain world: roped walkers, the great lantern of iron and glass, poles,\\ncairns. Each object is a union of round cones / capsu": {
+            "line": 1,
+            "ast_sha256": "7c9dd1510b02363e948ad52885456925ae5ced05f43073c070e924b3b3a8a21f"
+          },
+          "1:Import:import math": {
+            "line": 22,
+            "ast_sha256": "f329650e2c61a07a1bab85b32296a6d93760e313e108904819fa27d09cf3954d"
+          },
+          "2:Import:import numpy as np": {
+            "line": 24,
+            "ast_sha256": "271fc31378e1108a9784c29c3c4768de571ce080301b4ad9721ba767fcf5842b"
+          },
+          "3:ImportFrom:from numba import njit, prange": {
+            "line": 25,
+            "ast_sha256": "c3a544646ea8f4e7b3fb69475ccfdf365bfed447c2f127e6fbfc009b49de94cc"
+          },
+          "4:ImportFrom:from mt.noise import gnoise3": {
+            "line": 27,
+            "ast_sha256": "186bba9575d074dafaeb635613e11d5250f807e54acd5f47ce12d43ec4a5f913"
+          },
+          "5:Assign:NP = 20": {
+            "line": 29,
+            "ast_sha256": "e61c10eff9ade83a3b53cdb71cc3580c5e542045cd5f0c478f5e2e45d21bc332"
+          },
+          "6:Assign:NO = 16": {
+            "line": 30,
+            "ast_sha256": "9a44797b8449a295ccc1286de3cae95fbe4371d19c653cac9aacf91781666558"
+          },
+          "ClassDef:Scene": {
+            "line": 33,
+            "ast_sha256": "c0b5abe4147b1d7be5c093ae8f5cf0434544f2efa081eeb23f5e4d395d9573f2"
+          },
+          "FunctionDef:_sd_cone": {
+            "line": 144,
+            "ast_sha256": "94f37af8bf73ab225c26c74bf071589e09ce2d7867e35f6d6bd24f870d804829"
+          },
+          "FunctionDef:_sd_box": {
+            "line": 158,
+            "ast_sha256": "344755ca8e0e2c65cd6f14be6e1267617ada0072370b20dc6e6a368f5f13f018"
+          },
+          "FunctionDef:_sd_torus": {
+            "line": 179,
+            "ast_sha256": "d7be0344f2c5b229fa7e0a26453dd730f7d4b6169b2f99e10fe551c8a1743f01"
+          },
+          "FunctionDef:_sd_bell": {
+            "line": 186,
+            "ast_sha256": "ecfcbff3a2dd1d863c60c57def87b31212120e31253cbcb67c44ec66a3770694"
+          },
+          "FunctionDef:_sd_pyr": {
+            "line": 253,
+            "ast_sha256": "c5a9bd7dc2468053c30eeb6300272b9543ad69f5179f024d44f22df7030c2f20"
+          },
+          "FunctionDef:_prim": {
+            "line": 283,
+            "ast_sha256": "536cff4e9570c0719ee084ce602ab2c9f59f5b5713660ef2d417fbf8af481378"
+          },
+          "FunctionDef:_smin": {
+            "line": 297,
+            "ast_sha256": "096cfea302e32f4f81e685648ae3e044748163dea0c98067cc81169738195403"
+          },
+          "FunctionDef:_map": {
+            "line": 305,
+            "ast_sha256": "a268a5f0198a1ed2f8de9e5a1cf67e152f04143d359a83811674cb84dc44b033"
+          },
+          "FunctionDef:_glass": {
+            "line": 320,
+            "ast_sha256": "1e1500a0e89af1f9c5fa84b2f20c5119bdc3b7083ec2b41b43000c7a60d4fd99"
+          },
+          "FunctionDef:_horn": {
+            "line": 331,
+            "ast_sha256": "52ff94eb989fd97e930fa795c4e0c4d0556b5dea4e96cd4645e4f4b13c84ee66"
+          },
+          "FunctionDef:render": {
+            "line": 344,
+            "ast_sha256": "e8d784d24595322ce9fb7ccf6c6dff0c3a4fb3d1544b42432bb73afe529fb31f"
+          },
+          "FunctionDef:_unit": {
+            "line": 604,
+            "ast_sha256": "3d66daf2a7534201432c75494a9df2cf2c1f1e213468d0ab5b045359d156674d"
+          },
+          "FunctionDef:_knee": {
+            "line": 609,
+            "ast_sha256": "be360eec79051b27e0b331afcfbc46285f3b2ce43c96db1a4035a3965c648591"
+          },
+          "FunctionDef:_bell_wind_ang": {
+            "line": 623,
+            "ast_sha256": "df5718d269684e9538b4934f036c326106bc0f83862d427fb70b4f2c82602385"
+          },
+          "FunctionDef:traveller": {
+            "line": 634,
+            "ast_sha256": "b9b50f935662d21da092c074a6510b4176adacc22ff089469bae4ec6d7f8f015"
+          },
+          "FunctionDef:_traveller_v2": {
+            "line": 774,
+            "ast_sha256": "cc166b248c5e2e606e238508a9cb624e90b75bc2324714386a338c2d8ddffc43"
+          },
+          "24:Assign:SEAT_POSES = ('knees', 'cross', 'back', 'side', 'kneel', 'lie')": {
+            "line": 867,
+            "ast_sha256": "f729b347c355b27777af8c61152b515012af3bc511ab0462ff38facb884b5b19"
+          },
+          "FunctionDef:seated": {
+            "line": 870,
+            "ast_sha256": "f68bfdd16eac5a9f591bbdca42f9e1611bb197c7f6c8c174cafe55f977ba2883"
+          },
+          "FunctionDef:small_lantern": {
+            "line": 1024,
+            "ast_sha256": "7336a6661332b712d3932ce2dd7e70d5d700d54fbcd62e984f0958354c85b1d9"
+          },
+          "FunctionDef:great_lantern": {
+            "line": 1037,
+            "ast_sha256": "ff76fb6360c70067b713f24b3064a9595e4715b47a7815909d91216701bfcb14"
+          },
+          "FunctionDef:lantern_v3": {
+            "line": 1070,
+            "ast_sha256": "767b08d0b3cfa1a82cc094c809fef5dd4516bced352ae331f85078e4d6705268"
+          },
+          "FunctionDef:stone_ring": {
+            "line": 1134,
+            "ast_sha256": "f141ff0ac37adeb96ed91476bea4618cdd0c48fb80ffdd441bc89d66f541f6f0"
+          }
+        }
+      }
+    },
+    "compiled_function_count": 11,
+    "compiled_functions": [
+      "_sd_cone",
+      "_sd_box",
+      "_sd_torus",
+      "_sd_bell",
+      "_sd_pyr",
+      "_prim",
+      "_smin",
+      "_map",
+      "_glass",
+      "_horn",
+      "render"
+    ],
+    "all_compiled_function_records_identical": true,
+    "changed_function_asts": [
+      "_traveller_v2"
+    ],
+    "changed_top_level_nodes": [
+      "FunctionDef:_traveller_v2"
+    ],
+    "exact_single_line_substitution_proved": true,
+    "reference_to_production_diff": "--- 04874ca1a2640c0b11c01e5ff56733cfb57d73ba:the-long-dawn/shots/run/sdfppl.py\n+++ 6ae71801bae7b188a8f2d9533761c7e13824fc06:the-long-dawn/shots/run/sdfppl.py\n@@ -852,7 +852,7 @@\n         elif reach is not None:\n             d = reach - shB\n             d = d / (np.linalg.norm(d) + 1e-9)\n-            out['reach_hand'] = arm(shB, shB + d * reach_len * h, -sl)\n+            out['reach_hand'] = arm(shB, shB + d * 0.62 * h, -sl)\n         else:\n             hand_s = shB + (w * (0.08 - 0.5 * sw) - up * 0.52 - sl * 0.06) * h\n             arm(shB, hand_s, -sl)\n"
+  },
+  "all_production_changes_since_prior_tip": [
+    "M\tthe-long-dawn/cloud/jobs/councilC_look.json",
+    "A\tthe-long-dawn/cloud/jobs/embers_A3_alt_gild.json",
+    "A\tthe-long-dawn/cloud/jobs/embers_A3_gild.json",
+    "A\tthe-long-dawn/cloud/jobs/pages_book_polish.json",
+    "A\tthe-long-dawn/cloud/jobs/watchers_a_hearth3.json",
+    "A\tthe-long-dawn/edit/CODEX_HANDOVER_4.md",
+    "M\tthe-long-dawn/edit/NOTES_v3.md",
+    "M\tthe-long-dawn/edit/edl/edl_A.json",
+    "M\tthe-long-dawn/edit/edl/edl_C.json",
+    "M\tthe-long-dawn/edit/edl_v3.py",
+    "A\tthe-long-dawn/edit/tools/FRAME_QC.md",
+    "A\tthe-long-dawn/edit/tools/frame_qc.py",
+    "A\tthe-long-dawn/edit/tools/frame_qc_joins.json",
+    "A\tthe-long-dawn/edit/tools/tests/test_frame_qc.py",
+    "A\tthe-long-dawn/review/codex-a15-hearth/README.md",
+    "A\tthe-long-dawn/review/codex-a15-hearth/before-after.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/check-4240.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/check-4280.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/check-4360.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/check-4399.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/detail-4360.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/filmstrip.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/full-4360.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/join.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/motion-detail-1.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/motion-detail-2.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/motion-detail-3.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/motion-detail-4.png",
+    "A\tthe-long-dawn/review/codex-a15-hearth/packaging.json",
+    "A\tthe-long-dawn/review/codex-a15-hearth/receipt-baseline.json",
+    "A\tthe-long-dawn/review/codex-a15-hearth/receipt-final.json",
+    "A\tthe-long-dawn/review/codex-a15-hearth/receipt-full.json",
+    "A\tthe-long-dawn/review/codex-a15-hearth/receipt-join.json",
+    "M\tthe-long-dawn/shots/embers/NOTES.md",
+    "M\tthe-long-dawn/shots/embers/c_eye.py",
+    "M\tthe-long-dawn/shots/embers/edge.py",
+    "M\tthe-long-dawn/shots/embers/render.py",
+    "M\tthe-long-dawn/shots/map/NOTES_PAGES.md",
+    "M\tthe-long-dawn/shots/map/book.py",
+    "M\tthe-long-dawn/shots/map/book_c.py",
+    "M\tthe-long-dawn/shots/map/inkline.py",
+    "M\tthe-long-dawn/shots/map/pages.py",
+    "M\tthe-long-dawn/shots/map/redbook.py",
+    "M\tthe-long-dawn/shots/montage3d/council_geo.py",
+    "M\tthe-long-dawn/shots/montage3d/councilc.py",
+    "M\tthe-long-dawn/shots/run/beaconrun_a.py",
+    "A\tthe-long-dawn/shots/run/fire_near_a.py",
+    "A\tthe-long-dawn/shots/run/hearth_a.py",
+    "M\tthe-long-dawn/shots/run/nighta.py",
+    "M\tthe-long-dawn/shots/run/sdfppl.py",
+    "A\tthe-long-dawn/shots/run/tests/test_fire_near_a.py",
+    "A\tthe-long-dawn/shots/run/tests/test_hearth_a.py",
+    "A\tthe-long-dawn/shots/run/tests/test_legacy_reach.py",
+    "A\tthe-long-dawn/shots/run/tests/test_night_hearth.py",
+    "A\tthe-long-dawn/shots/run/tests/test_night_join.py",
+    "M\tthe-long-dawn/shots/run/watchers_a.py"
+  ],
+  "run_source_and_test_changes_since_prior_tip": [
+    {
+      "status": "M",
+      "path": "the-long-dawn/shots/run/beaconrun_a.py",
+      "reference_source_sha256": "3f3a165565d2b9e8a5058f92407f78dee9ee6ee8bbd43aff21dd4986cb26d0f7",
+      "production_source_sha256": "431ff5caf67c058a9baab02aac4e01f702efed3e0a815a52bf882c67d16dfe75",
+      "since_source_sha256": "6e3d3317c94e3da0c23bae0bec6e0cd326d3b54ce23a2c2c312a5d4cd752e61f"
+    },
+    {
+      "status": "A",
+      "path": "the-long-dawn/shots/run/fire_near_a.py",
+      "reference_source_sha256": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+      "production_source_sha256": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+      "since_source_sha256": null
+    },
+    {
+      "status": "A",
+      "path": "the-long-dawn/shots/run/hearth_a.py",
+      "reference_source_sha256": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+      "production_source_sha256": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+      "since_source_sha256": null
+    },
+    {
+      "status": "M",
+      "path": "the-long-dawn/shots/run/nighta.py",
+      "reference_source_sha256": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+      "production_source_sha256": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+      "since_source_sha256": "19e27b9082898e9a157296dcddeee879c48c32ec72c66af8190f408d2ba47939"
+    },
+    {
+      "status": "M",
+      "path": "the-long-dawn/shots/run/sdfppl.py",
+      "reference_source_sha256": "0feff19d5baf983d7decca3bdd06318093f974506eff5a4db3fe900b114b2376",
+      "production_source_sha256": "137110a7446b013816ebf60d7d9315ca2e826814a9340fa25a69da99d297a193",
+      "since_source_sha256": "0feff19d5baf983d7decca3bdd06318093f974506eff5a4db3fe900b114b2376"
+    },
+    {
+      "status": "A",
+      "path": "the-long-dawn/shots/run/tests/test_fire_near_a.py",
+      "reference_source_sha256": "9f3e54f1a51582ccbde11dc18fbe56a90672ffe84abbcf3a5c34edc1bc733bd4",
+      "production_source_sha256": "9f3e54f1a51582ccbde11dc18fbe56a90672ffe84abbcf3a5c34edc1bc733bd4",
+      "since_source_sha256": null
+    },
+    {
+      "status": "A",
+      "path": "the-long-dawn/shots/run/tests/test_hearth_a.py",
+      "reference_source_sha256": "472480197885a7202908713f5ffaac744f8823f74c4ddfacbbf3c1ccb7ee6799",
+      "production_source_sha256": "472480197885a7202908713f5ffaac744f8823f74c4ddfacbbf3c1ccb7ee6799",
+      "since_source_sha256": null
+    },
+    {
+      "status": "A",
+      "path": "the-long-dawn/shots/run/tests/test_legacy_reach.py",
+      "reference_source_sha256": null,
+      "production_source_sha256": "7e7456373786b74e4eb802409f5de6a4045da9be44b3b1bbe9c400136a40f93a",
+      "since_source_sha256": null
+    },
+    {
+      "status": "A",
+      "path": "the-long-dawn/shots/run/tests/test_night_hearth.py",
+      "reference_source_sha256": "9bcb210943a1718699450bdbf5948da7b6bcbd5005bf4dbe863036920ee585c4",
+      "production_source_sha256": "9bcb210943a1718699450bdbf5948da7b6bcbd5005bf4dbe863036920ee585c4",
+      "since_source_sha256": null
+    },
+    {
+      "status": "A",
+      "path": "the-long-dawn/shots/run/tests/test_night_join.py",
+      "reference_source_sha256": "4f3731d8913885346ea73f1d62711e6c2c4e5b8b3d3d9f2cad168a083de21dda",
+      "production_source_sha256": "573e76e1c8874b19ce3304fadc694e70aaac427c74af98c22edb983bd8d7c507",
+      "since_source_sha256": null
+    },
+    {
+      "status": "M",
+      "path": "the-long-dawn/shots/run/watchers_a.py",
+      "reference_source_sha256": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+      "production_source_sha256": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+      "since_source_sha256": "f8ecf33ebaa6f0d4c2c6c35566f9db73c9cd08fa4526e875e6b368f2c4ff10ff"
+    }
+  ],
+  "current_job_reports": {
+    "watchers_a_catches3": {
+      "path": "the-long-dawn/cloud/jobs/watchers_a_catches3.json",
+      "job_source_sha256": "7e69cfbf206b52f74969a33398e31ab8c27da8d794bf45d76e1c8006d402a330",
+      "name": "watchers_a_catches3",
+      "legacy_output_branch": "codex/render-watchers-a-catches3",
+      "renderer": "shots/run/watchers_a.py",
+      "renderer_source_sha256": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+      "frame_count": 160,
+      "first_frame": 4240,
+      "last_frame": 4399,
+      "complete_frame_list": [
+        4240,
+        4241,
+        4242,
+        4243,
+        4244,
+        4245,
+        4246,
+        4247,
+        4248,
+        4249,
+        4250,
+        4251,
+        4252,
+        4253,
+        4254,
+        4255,
+        4256,
+        4257,
+        4258,
+        4259,
+        4260,
+        4261,
+        4262,
+        4263,
+        4264,
+        4265,
+        4266,
+        4267,
+        4268,
+        4269,
+        4270,
+        4271,
+        4272,
+        4273,
+        4274,
+        4275,
+        4276,
+        4277,
+        4278,
+        4279,
+        4280,
+        4281,
+        4282,
+        4283,
+        4284,
+        4285,
+        4286,
+        4287,
+        4288,
+        4289,
+        4290,
+        4291,
+        4292,
+        4293,
+        4294,
+        4295,
+        4296,
+        4297,
+        4298,
+        4299,
+        4300,
+        4301,
+        4302,
+        4303,
+        4304,
+        4305,
+        4306,
+        4307,
+        4308,
+        4309,
+        4310,
+        4311,
+        4312,
+        4313,
+        4314,
+        4315,
+        4316,
+        4317,
+        4318,
+        4319,
+        4320,
+        4321,
+        4322,
+        4323,
+        4324,
+        4325,
+        4326,
+        4327,
+        4328,
+        4329,
+        4330,
+        4331,
+        4332,
+        4333,
+        4334,
+        4335,
+        4336,
+        4337,
+        4338,
+        4339,
+        4340,
+        4341,
+        4342,
+        4343,
+        4344,
+        4345,
+        4346,
+        4347,
+        4348,
+        4349,
+        4350,
+        4351,
+        4352,
+        4353,
+        4354,
+        4355,
+        4356,
+        4357,
+        4358,
+        4359,
+        4360,
+        4361,
+        4362,
+        4363,
+        4364,
+        4365,
+        4366,
+        4367,
+        4368,
+        4369,
+        4370,
+        4371,
+        4372,
+        4373,
+        4374,
+        4375,
+        4376,
+        4377,
+        4378,
+        4379,
+        4380,
+        4381,
+        4382,
+        4383,
+        4384,
+        4385,
+        4386,
+        4387,
+        4388,
+        4389,
+        4390,
+        4391,
+        4392,
+        4393,
+        4394,
+        4395,
+        4396,
+        4397,
+        4398,
+        4399
+      ],
+      "renderer_limits": [
+        4240,
+        160
+      ],
+      "path_expressions": {
+        "out": "a.out if os.path.isabs(a.out) else os.path.join(ROOT, a.out)"
+      },
+      "resolved_writer_directory": "<repository>/the-long-dawn/renders/watchers_A_catches3",
+      "resolved_collector_directory": "<repository>/the-long-dawn/renders/watchers_A_catches3",
+      "warmup_directory": "<repository>/the-long-dawn/warm_watchers_a_catches3",
+      "writer_matches_collector": true,
+      "covers_entire_shot": true,
+      "output_directory_exists_locally": false,
+      "json": {
+        "name": "watchers_a_catches3",
+        "branch": "codex/render-watchers-a-catches3",
+        "setup": [
+          "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+          "NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/watchers_a.py --frames 4240 --scale 0.12 --out warm_watchers_a_catches3"
+        ],
+        "render": [
+          "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/watchers_a.py --range 4240-4399 --procs 2 --out renders/watchers_A_catches3 --skip"
+        ],
+        "out_dir": "renders/watchers_A_catches3",
+        "frames": "4240-4399",
+        "push_every": 300,
+        "ship": "jpg"
+      }
+    },
+    "beaconrun_a_catches3": {
+      "path": "the-long-dawn/cloud/jobs/beaconrun_a_catches3.json",
+      "job_source_sha256": "9bddce314709821f518d3c282a07a5eed85e987a153c8165fd0433199c4be5bf",
+      "name": "beaconrun_a_catches3",
+      "legacy_output_branch": "codex/render-beaconrun-a-catches3",
+      "renderer": "shots/run/beaconrun_a.py",
+      "renderer_source_sha256": "3f3a165565d2b9e8a5058f92407f78dee9ee6ee8bbd43aff21dd4986cb26d0f7",
+      "frame_count": 320,
+      "first_frame": 3920,
+      "last_frame": 4239,
+      "complete_frame_list": [
+        3920,
+        3921,
+        3922,
+        3923,
+        3924,
+        3925,
+        3926,
+        3927,
+        3928,
+        3929,
+        3930,
+        3931,
+        3932,
+        3933,
+        3934,
+        3935,
+        3936,
+        3937,
+        3938,
+        3939,
+        3940,
+        3941,
+        3942,
+        3943,
+        3944,
+        3945,
+        3946,
+        3947,
+        3948,
+        3949,
+        3950,
+        3951,
+        3952,
+        3953,
+        3954,
+        3955,
+        3956,
+        3957,
+        3958,
+        3959,
+        3960,
+        3961,
+        3962,
+        3963,
+        3964,
+        3965,
+        3966,
+        3967,
+        3968,
+        3969,
+        3970,
+        3971,
+        3972,
+        3973,
+        3974,
+        3975,
+        3976,
+        3977,
+        3978,
+        3979,
+        3980,
+        3981,
+        3982,
+        3983,
+        3984,
+        3985,
+        3986,
+        3987,
+        3988,
+        3989,
+        3990,
+        3991,
+        3992,
+        3993,
+        3994,
+        3995,
+        3996,
+        3997,
+        3998,
+        3999,
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007,
+        4008,
+        4009,
+        4010,
+        4011,
+        4012,
+        4013,
+        4014,
+        4015,
+        4016,
+        4017,
+        4018,
+        4019,
+        4020,
+        4021,
+        4022,
+        4023,
+        4024,
+        4025,
+        4026,
+        4027,
+        4028,
+        4029,
+        4030,
+        4031,
+        4032,
+        4033,
+        4034,
+        4035,
+        4036,
+        4037,
+        4038,
+        4039,
+        4040,
+        4041,
+        4042,
+        4043,
+        4044,
+        4045,
+        4046,
+        4047,
+        4048,
+        4049,
+        4050,
+        4051,
+        4052,
+        4053,
+        4054,
+        4055,
+        4056,
+        4057,
+        4058,
+        4059,
+        4060,
+        4061,
+        4062,
+        4063,
+        4064,
+        4065,
+        4066,
+        4067,
+        4068,
+        4069,
+        4070,
+        4071,
+        4072,
+        4073,
+        4074,
+        4075,
+        4076,
+        4077,
+        4078,
+        4079,
+        4080,
+        4081,
+        4082,
+        4083,
+        4084,
+        4085,
+        4086,
+        4087,
+        4088,
+        4089,
+        4090,
+        4091,
+        4092,
+        4093,
+        4094,
+        4095,
+        4096,
+        4097,
+        4098,
+        4099,
+        4100,
+        4101,
+        4102,
+        4103,
+        4104,
+        4105,
+        4106,
+        4107,
+        4108,
+        4109,
+        4110,
+        4111,
+        4112,
+        4113,
+        4114,
+        4115,
+        4116,
+        4117,
+        4118,
+        4119,
+        4120,
+        4121,
+        4122,
+        4123,
+        4124,
+        4125,
+        4126,
+        4127,
+        4128,
+        4129,
+        4130,
+        4131,
+        4132,
+        4133,
+        4134,
+        4135,
+        4136,
+        4137,
+        4138,
+        4139,
+        4140,
+        4141,
+        4142,
+        4143,
+        4144,
+        4145,
+        4146,
+        4147,
+        4148,
+        4149,
+        4150,
+        4151,
+        4152,
+        4153,
+        4154,
+        4155,
+        4156,
+        4157,
+        4158,
+        4159,
+        4160,
+        4161,
+        4162,
+        4163,
+        4164,
+        4165,
+        4166,
+        4167,
+        4168,
+        4169,
+        4170,
+        4171,
+        4172,
+        4173,
+        4174,
+        4175,
+        4176,
+        4177,
+        4178,
+        4179,
+        4180,
+        4181,
+        4182,
+        4183,
+        4184,
+        4185,
+        4186,
+        4187,
+        4188,
+        4189,
+        4190,
+        4191,
+        4192,
+        4193,
+        4194,
+        4195,
+        4196,
+        4197,
+        4198,
+        4199,
+        4200,
+        4201,
+        4202,
+        4203,
+        4204,
+        4205,
+        4206,
+        4207,
+        4208,
+        4209,
+        4210,
+        4211,
+        4212,
+        4213,
+        4214,
+        4215,
+        4216,
+        4217,
+        4218,
+        4219,
+        4220,
+        4221,
+        4222,
+        4223,
+        4224,
+        4225,
+        4226,
+        4227,
+        4228,
+        4229,
+        4230,
+        4231,
+        4232,
+        4233,
+        4234,
+        4235,
+        4236,
+        4237,
+        4238,
+        4239
+      ],
+      "renderer_limits": [
+        3920,
+        320
+      ],
+      "path_expressions": {
+        "base": "os.path.join(PI.CM.ROOT, 'renders', 'beaconrun_A')",
+        "out": "base if a.out is None else os.path.join(base, a.out)"
+      },
+      "resolved_writer_directory": "<repository>/the-long-dawn/renders/beaconrun_A_catches3",
+      "resolved_collector_directory": "<repository>/the-long-dawn/renders/beaconrun_A_catches3",
+      "warmup_directory": "<repository>/the-long-dawn/renders/beaconrun_A/warm_catches3",
+      "writer_matches_collector": true,
+      "covers_entire_shot": true,
+      "output_directory_exists_locally": false,
+      "json": {
+        "name": "beaconrun_a_catches3",
+        "branch": "codex/render-beaconrun-a-catches3",
+        "setup": [
+          "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+          "NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/beaconrun_a.py --frames 4202 --scale 0.12 --out warm_catches3"
+        ],
+        "render": [
+          "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/beaconrun_a.py --range 3920-4239 --procs 2 --out ../beaconrun_A_catches3 --skip"
+        ],
+        "out_dir": "renders/beaconrun_A_catches3",
+        "frames": "3920-4239",
+        "push_every": 300,
+        "ship": "jpg"
+      }
+    }
+  },
+  "production_a15_base_job": {
+    "path": "the-long-dawn/cloud/jobs/watchers_a_hearth3.json@6ae71801bae7b188a8f2d9533761c7e13824fc06",
+    "job_source_sha256": "4428d85abc802311e4a21d9ff5ac020efde755c8e08cae0eb39125047df4e880",
+    "name": "watchers_a_hearth3",
+    "legacy_output_branch": "codex/render-watchers-a-hearth3",
+    "renderer": "shots/run/watchers_a.py",
+    "renderer_source_sha256": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+    "frame_count": 160,
+    "first_frame": 4240,
+    "last_frame": 4399,
+    "complete_frame_list": [
+      4240,
+      4241,
+      4242,
+      4243,
+      4244,
+      4245,
+      4246,
+      4247,
+      4248,
+      4249,
+      4250,
+      4251,
+      4252,
+      4253,
+      4254,
+      4255,
+      4256,
+      4257,
+      4258,
+      4259,
+      4260,
+      4261,
+      4262,
+      4263,
+      4264,
+      4265,
+      4266,
+      4267,
+      4268,
+      4269,
+      4270,
+      4271,
+      4272,
+      4273,
+      4274,
+      4275,
+      4276,
+      4277,
+      4278,
+      4279,
+      4280,
+      4281,
+      4282,
+      4283,
+      4284,
+      4285,
+      4286,
+      4287,
+      4288,
+      4289,
+      4290,
+      4291,
+      4292,
+      4293,
+      4294,
+      4295,
+      4296,
+      4297,
+      4298,
+      4299,
+      4300,
+      4301,
+      4302,
+      4303,
+      4304,
+      4305,
+      4306,
+      4307,
+      4308,
+      4309,
+      4310,
+      4311,
+      4312,
+      4313,
+      4314,
+      4315,
+      4316,
+      4317,
+      4318,
+      4319,
+      4320,
+      4321,
+      4322,
+      4323,
+      4324,
+      4325,
+      4326,
+      4327,
+      4328,
+      4329,
+      4330,
+      4331,
+      4332,
+      4333,
+      4334,
+      4335,
+      4336,
+      4337,
+      4338,
+      4339,
+      4340,
+      4341,
+      4342,
+      4343,
+      4344,
+      4345,
+      4346,
+      4347,
+      4348,
+      4349,
+      4350,
+      4351,
+      4352,
+      4353,
+      4354,
+      4355,
+      4356,
+      4357,
+      4358,
+      4359,
+      4360,
+      4361,
+      4362,
+      4363,
+      4364,
+      4365,
+      4366,
+      4367,
+      4368,
+      4369,
+      4370,
+      4371,
+      4372,
+      4373,
+      4374,
+      4375,
+      4376,
+      4377,
+      4378,
+      4379,
+      4380,
+      4381,
+      4382,
+      4383,
+      4384,
+      4385,
+      4386,
+      4387,
+      4388,
+      4389,
+      4390,
+      4391,
+      4392,
+      4393,
+      4394,
+      4395,
+      4396,
+      4397,
+      4398,
+      4399
+    ],
+    "renderer_limits": [
+      4240,
+      160
+    ],
+    "path_expressions": {
+      "out": "a.out if os.path.isabs(a.out) else os.path.join(ROOT, a.out)"
+    },
+    "resolved_writer_directory": "<repository>/the-long-dawn/renders/watchers_A_hearth3",
+    "resolved_collector_directory": "<repository>/the-long-dawn/renders/watchers_A_hearth3",
+    "warmup_directory": "<repository>/the-long-dawn/warm_watchers_a_hearth3",
+    "writer_matches_collector": true,
+    "covers_entire_shot": true,
+    "output_directory_exists_locally": false,
+    "json": {
+      "name": "watchers_a_hearth3",
+      "branch": "codex/render-watchers-a-hearth3",
+      "setup": [
+        "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
+        "NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/watchers_a.py --frames 4240 --scale 0.12 --out warm_watchers_a_hearth3"
+      ],
+      "render": [
+        "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/watchers_a.py --range 4240-4399 --procs 2 --out renders/watchers_A_hearth3 --skip"
+      ],
+      "out_dir": "renders/watchers_A_hearth3",
+      "frames": "4240-4399",
+      "push_every": 300,
+      "ship": "jpg"
+    }
+  },
+  "job_namespace_only_change_from_a15_base": true,
+  "three_distinct_output_directories": true,
+  "consumer_source_sha256": {
+    "the-long-dawn/cloud/farm.py": "830a03c5df317f1ba4bf9f794b1be9cf0921f419a068dba96d81b8578aea1a77",
+    "the-long-dawn/cloud/farm_node.py": "f17833cbb73ef0f81423c8f527a2c69c32f85cd56d6d3d714ad73daaa0b17f8e",
+    "the-long-dawn/cloud/run_job.py": "f7a638ae1b2e18344195700dfbe8e9d21fa51448ba77de8184f7d6bc4674c754"
+  },
+  "consumer_contract": {
+    "farm_output": "ROOT/out_dir; farm.py Job.__init__",
+    "farm_source_branch": "claude/long-dawn-v2; farm_node.py BRANCH",
+    "branch_json_meaning": "legacy run_job.py output branch, not farm source selection",
+    "farm_skip": "node clears both requested PNG/JPEG before render; farm --missing recognizes both on receiver",
+    "cli_skip": "A15 recognizes PNG/JPEG; A14 recognizes PNG only",
+    "legacy_resume_limit": "run_job.py discovers PNG only; A15 JPEG-only resume skips rendering but is not collected"
+  },
+  "limits": [
+    "Static identity is not a compiled binary, pixel or visual-quality test.",
+    "Job files are local worktree snapshots; hashes identify their exact content.",
+    "Distinct output namespaces do not prove those paths are empty on remote workers.",
+    "No cloud run, source checkout, receipt or rendered frame was queried."
+  ],
+  "publication_note": "Only the local repository path prefix was normalized to <repository>; measured values, source hashes and historical commit identities are unchanged."
+}
