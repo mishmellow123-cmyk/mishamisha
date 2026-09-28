@@ -221,9 +221,12 @@ def build_cage():
     return C
 
 
-def leather_material(new_material, base=(0.050, 0.030, 0.018), rough=0.46):
-    """Thin, supple leather: dark brown, a soft waxy sheen, a fine pebble grain, the side seams a faint ridge,
-    and the palm's working creases (in rest-pose coordinates, so they stay on the leather as the hand moves)."""
+def leather_material(new_material, base=(0.050, 0.030, 0.018), rough=0.46, detail=True, thread=None):
+    """Thin, supple leather: dark brown, a soft waxy sheen, a pebble grain you can see, the palm's working creases
+    and (detail=True) what makes it read as a GLOVE at a glance: bunched wrinkles over every finger joint on the
+    back, a flexion crease at each joint on the palm side, the knuckles burnished lighter by wear, the three
+    stitched points on the back of the hand and stitch dashes along the finger side seams (thread: its colour).
+    Everything lives in rest-pose coordinates (the 'rest' attribute), so it rides the leather as the hand moves."""
     m, nb = new_material('leather')
     R = nb.attr('rest').outputs['Vector']
     grain = nb.voronoi(R, scale=2600.0, feature='SMOOTH_F1')
@@ -248,16 +251,80 @@ def leather_material(new_material, base=(0.050, 0.030, 0.018), rough=0.46):
     cr = nb.mx(cr, line(0.030, 0.9, 0.0, 0.002, 0.034, 0.0022))           # round the thumb's mound
     cr = nb.mx(cr, line(0.012, 0.0, 0.0, -0.028, 0.028, 0.0026))          # the wrist
     cr = nb.mul(cr, palm)
-    col = nb.colscale(base, nb.mul(nb.mul(nb.madd(mottle.outputs['Fac'], 0.45, 0.78), nb.madd(ridge, -0.35, 1.0)),
-                                   nb.madd(cr, -0.16, 1.0)))
-    bs = nb.principled(Base_Color=col, Roughness=nb.madd(fine.outputs['Fac'], 0.16, rough - 0.08))
+    dk = nb.value(0.0).outputs[0]                    # joint wrinkles (dark grooves)
+    pk = nb.value(0.0).outputs[0]                    # palm-side flexion creases
+    wear = nb.value(0.0).outputs[0]                  # burnished knuckles
+    stitch = nb.value(0.0).outputs[0]
+    if detail:
+        wob2 = nb.noise(R, scale=520.0, detail=2.0).outputs['Fac']
+        dors = nb.sstep(0.0004, 0.0040, rz)
+        palmf = nb.sstep(-0.0030, -0.0065, rz)
+        for f in FING:
+            yc, xk, L, hw0, hh0, spl = FD[f]
+            sp_ = math.radians(spl)
+            cs_, sn_ = math.cos(sp_), math.sin(sp_)
+            dx = nb.sub(rx, xk - 0.0060)
+            dy = nb.sub(ry, yc)
+            a = nb.add(nb.mul(dx, cs_), nb.mul(dy, sn_))                  # along the finger from its knuckle joint
+            v = nb.math('ABSOLUTE', nb.sub(nb.mul(dy, cs_), nb.mul(dx, sn_)))
+            lat = nb.sstep(hw0 * 1.05, hw0 * 0.50, v)
+            aw = nb.add(a, nb.mul(nb.sub(wob2, 0.5), 0.0012))              # the lines wander a little
+            for aj, nl, spc, k in ((L[0], 3, 0.0015, 1.0), (L[0] + L[1], 2, 0.0013, 0.8), (0.0035, 2, 0.0018, 0.45)):
+                d = nb.sub(aw, aj)
+                ad = nb.math('ABSOLUTE', d)
+                win = nb.sstep(spc * (0.5 * nl + 0.35), spc * 0.5 * nl * 0.55, ad)
+                per = nb.math('ABSOLUTE', nb.math('SINE', nb.mul(d, math.pi / spc)))
+                grooves = nb.mul(nb.sstep(0.42, 0.0, per), nb.mul(nb.mul(win, lat), dors))
+                dk = nb.mx(dk, nb.mul(grooves, k))
+                flex = nb.mul(nb.sstep(0.0011, 0.0, ad), nb.mul(lat, palmf))  # one deep flexion crease
+                pk = nb.mx(pk, flex)
+            for aj, wk in ((0.0, 1.0), (L[0], 0.7)):                      # the knuckles, burnished by wear
+                q_ = nb.div(nb.sub(a, aj), 0.0065)
+                blob = nb.exp(nb.mul(nb.mul(q_, q_), -1.0))
+                wear = nb.mx(wear, nb.mul(nb.mul(blob, nb.mul(lat, dors)), wk))
+            pk = nb.mx(pk, nb.mul(nb.mul(nb.sstep(0.0012, 0.0, nb.math('ABSOLUTE', nb.sub(aw, 0.012))), lat), palmf))
+        # the three stitched points on the back of the hand, from the knuckle gaps toward the wrist
+        back = nb.sstep(0.0085, 0.0125, rz)
+        xr = nb.mul(nb.sstep(0.024, 0.030, rx), nb.sstep(0.074, 0.068, rx))
+        ph = nb.math('FRACT', nb.div(rx, 0.0023))
+        dash = nb.mul(nb.sstep(0.06, 0.16, ph), nb.sstep(0.74, 0.64, ph))
+        yw = nb.add(ry, nb.mul(nb.sub(wob, 0.5), 0.0006))
+        pts = nb.value(0.0).outputs[0]
+        for y0 in (0.0205, 0.0, -0.0195):
+            for dy_ in (-0.0017, 0.0017):
+                pts = nb.mx(pts, nb.sstep(0.00042, 0.00010, nb.math('ABSOLUTE', nb.sub(yw, y0 + dy_))))
+        stitch = nb.mul(nb.mul(pts, dash), nb.mul(xr, back))
+        # stitch dashes along the finger side seams (the fourchettes)
+        side = nb.mul(nb.sstep(0.80, 0.97, seam), nb.sstep(0.050, 0.070, rx))
+        stitch = nb.mx(stitch, nb.mul(side, dash))
+    rnd = nb.sstep(0.022, 0.0, nb.math('ABSOLUTE', nb.sub(nb.noise(R, scale=120.0, detail=2.0).outputs['Fac'], 0.5)))
+    rnd = nb.mul(rnd, 0.5)                                                # a web of fine creases: worn, not new
+    pebble = nb.noise(R, scale=420.0, detail=3.0, rough=0.55).outputs['Fac']
+    tone = nb.mul(nb.madd(mottle.outputs['Fac'], 0.45, 0.78), nb.madd(ridge, -0.35, 1.0))
+    tone = nb.mul(tone, nb.madd(cr, -0.16, 1.0))
+    tone = nb.mul(tone, nb.madd(nb.mx(dk, pk), -0.45, 1.0))
+    tone = nb.mul(tone, nb.madd(rnd, -0.25, 1.0))
+    tone = nb.mul(tone, nb.madd(wear, 0.85, 1.0))
+    col = nb.colscale(base, tone)
+    col = nb.mixcol(nb.mul(wear, 0.35), col, (base[0] * 2.2, base[1] * 2.0, base[2] * 1.9))
+    th = thread or (min(1.0, base[0] * 2.6), min(1.0, base[1] * 2.4), min(1.0, base[2] * 2.0))
+    col = nb.mixcol(nb.mul(stitch, 0.85), col, th)
+    rgh = nb.madd(fine.outputs['Fac'], 0.16, rough - 0.08)
+    rgh = nb.sub(rgh, nb.mul(wear, 0.10))
+    rgh = nb.add(rgh, nb.mul(nb.mx(dk, pk), 0.10))
+    bs = nb.principled(Base_Color=col, Roughness=rgh)
     bs.inputs['Specular IOR Level'].default_value = 0.55
     bs.inputs['Coat Weight'].default_value = 0.18
     bs.inputs['Coat Roughness'].default_value = 0.34
     h = nb.add(nb.mul(grain.outputs['Distance'], 0.8), nb.mul(fine.outputs['Fac'], 0.3))
+    h = nb.add(h, nb.mul(pebble, 0.9))
     h = nb.add(h, nb.mul(ridge, 2.2))
     h = nb.sub(h, nb.mul(cr, 1.1))
-    nb.link(nb.bump(h, 0.35, 0.00018), bs.inputs['Normal'])
+    h = nb.sub(h, nb.mul(dk, 1.8))
+    h = nb.sub(h, nb.mul(pk, 1.5))
+    h = nb.sub(h, nb.mul(rnd, 0.8))
+    h = nb.add(h, nb.mul(stitch, 1.6))
+    nb.link(nb.bump(h, 0.35, 0.00020), bs.inputs['Normal'])
     nb.output(surface=bs)
     return m
 

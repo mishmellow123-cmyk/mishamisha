@@ -1,5 +1,15 @@
 # MONTAGE-3D — notes
 
+## >>> STATE AT HANDOFF (MONTAGE-3D-5, 27 Sep ~23:55Z; succeeds MONTAGE-3D-4) <<<
+**Scope (director):** (1) C14 hands-only: strike 1 (C 2960-2999) and strike 3 -> blow -> catch (C 3150-3359), new
+RING_SHOTs `flint_a` / `flint_b` in ringc.py; (2) C15 fire test fixes: restage the left-hand catch (the doll hand), no
+hand poking in at the roar (it was the waiting LEFT glove, parked near the lens), break the flat flame wall, make her
+C-shaped steel read (a longer back, both bends clear the fist), grained + creased leather; (3) find polish (find_a
+3009 flash: cold-white snow, warmth only in speculars/sparks; 3033-3060 warm knuckle rims + a stitch line; find_b
+cam_dists 0.20/0.165 -> 0.28/0.24). meltC (5360-5519) belongs to MONTAGE-MELT: never touch meltc.py or its jobs;
+kit/*.py, fireparts.py and render.py are shared with it, so they stay unchanged.
+**In progress:** glove leather v2 (joint creases, stitched points, knuckle burnish), the new steel, flint_a/flint_b.
+
 ## >>> LAST-HOUR UPDATE (MONTAGE-3D-4, 27 Sep ~21:00Z): find_a APPROVED + LAUNCHED; find_b JOB READY sent <<<
 * **find_a (3000-3079): APPROVED by the director, launched by main** (`ringC_find_a_{1,2,3}`, --nodes 3, log
   `_local_logs/jobs/ringC_find_a_farm.log`) -> `renders/ring_C/f_03000-03079`. When it lands: decode + contact-sheet
