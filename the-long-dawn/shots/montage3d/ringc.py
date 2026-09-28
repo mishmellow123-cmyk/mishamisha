@@ -1664,7 +1664,7 @@ def _flint(C, new_material, R, opts, T):
     if sc.render.engine == 'CYCLES':
         sc.cycles.volume_step_rate = opts.get('vol_step', 0.25)
         sc.cycles.volume_max_steps = 512
-    _plane(C, 'snow_far', -0.45, 6.0, snow_material(new_material))           # the moonlit ground, far behind
+    _plane(C, 'snow_far', -0.45, 40.0, snow_material(new_material))          # the moonlit ground, far behind
     # the basket's floor under the kindling: old ash and cold cinders (no bars in frame: they read as a cage)
     ash = _plane(C, 'ash', -0.046, 0.40, _ash_material(new_material))
     ash.location = (N.x, N.y, 0.0)
@@ -1706,7 +1706,7 @@ def _flint(C, new_material, R, opts, T):
         _charcloth(C, new_material, N, E, [(f, er(f)) for f in fr], [(f, ek(f)) for f in fr])
         el = C.point('ember', tuple(E + Vector((0.0, 0.0, 0.006))), (1.0, 0.32, 0.07), 0.0, radius=0.003)
         for f in fr:
-            C.key(el.data, 'energy', f, opts.get('ember_w', 0.004) * ek(f) * (0.3 + er(f) / 0.004))
+            C.key(el.data, 'energy', f, opts.get('ember_w', 0.012) * ek(f) * (0.3 + er(f) / 0.004))
     _nest(C, new_material, N, E, [(f, rf(f) if has_ember else 0.0) for f in fr],
           [(f, kg(f) if has_ember else 0.0) for f in fr])
     stick_g = [(f, 0.0 if f < F_['kindle'] else 0.6 * _ease((f - F_['kindle']) / 18.0) * _flick(f, 9, 0.6)) for f in fr]
@@ -1716,8 +1716,13 @@ def _flint(C, new_material, R, opts, T):
                               ((0.05, -0.05, -0.030), (0.10, 0.07, -0.022), 0.0045)], stick_g)
 
     # ---- the hands. The steel's plane is y = Y_STEEL; the flint rides her left fist.
-    leather = GL.leather_material(new_material, base=opts.get('leather', (0.058, 0.036, 0.021)),
-                                  rough=opts.get('leather_rough', 0.44))
+    leather = GL.leather_material(new_material, base=opts.get('leather', (0.050, 0.031, 0.019)),
+                                  rough=opts.get('leather_rough', 0.38))
+    for nd in leather.node_tree.nodes:                 # a waxy sheen: the moon and the flash draw the forms
+        if nd.type == 'BSDF_PRINCIPLED':
+            nd.inputs['Specular IOR Level'].default_value = 0.50
+            nd.inputs['Coat Weight'].default_value = 0.25
+            nd.inputs['Coat Roughness'].default_value = 0.26
     wool = GL.wool_material(new_material)
     heat = [(f, 0.0) for f in fr]
     stl = _steel_mesh(C, steel_material(new_material, heat))
@@ -1739,8 +1744,8 @@ def _flint(C, new_material, R, opts, T):
     zl = xl.cross(yl)
     Rl = Matrix((xl, yl, zl)).transposed().to_4x4()
     LF0 = Vector(opts.get('lf', (0.030, 0.024, 0.056)))
-    LF2 = Vector((0.020, 0.040, 0.030))
-    LF3 = Vector((0.004, 0.050, 0.046))
+    LF2 = Vector(opts.get('lf2', (0.036, 0.036, 0.026)))       # close by the nest: a windbreak the ember lights
+    LF3 = Vector((0.012, 0.050, 0.044))
     fl_off = Vector(opts.get('flint_off', (-0.006, -0.013, 0.026)))
     flint = _flint_stone(C, new_material)
     flint.rotation_mode = 'XYZ'
@@ -1843,11 +1848,11 @@ def _flint(C, new_material, R, opts, T):
     # ---- breath: two slow exhales in strike 1; in flint_b the tension (3149) and then the long blow at the ember
     mouth_a = Vector(opts.get('mouth_a', (-0.15, 0.10, 0.22)))
     _breath(C, new_material, 'breath_rest', mouth_a, Vector((0.10, -0.01, 0.09)) - mouth_a,
-            [(fa, fb) for fa, fb, _k in F_['breaths']], speed=0.34, dens=opts.get('breath_dens', 30.0), cone=0.34)
+            [(fa, fb) for fa, fb, _k in F_['breaths']], speed=0.34, dens=opts.get('breath_dens', 90.0), cone=0.34)
     if has_ember:
         mouth_b = Vector(opts.get('mouth_b', (-0.11, 0.05, 0.17)))
         _breath(C, new_material, 'breath_blow', mouth_b, (E + Vector((0.0, 0.0, 0.004))) - mouth_b, list(blows),
-                speed=0.85, dens=opts.get('blow_dens', 16.0), cone=0.16, length=0.30)
+                speed=0.85, dens=opts.get('blow_dens', 60.0), cone=0.16, length=0.30)
         sk = [(f, 0.0 if f < F_['ember'] + 4 else (0.25 + 0.75 * _ease((f - 3190) / 110.0)) *
                (1.0 + 0.6 * bpulse(f)) * (1.0 - 0.5 * _ease((f - F_['catch']) / 10.0))) for f in fr]
         wind = [(f, 0.12 + 0.9 * bpulse(f)) for f in fr]
@@ -1871,14 +1876,14 @@ def _flint(C, new_material, R, opts, T):
     # cold fill from the lens side keeps the leather from going black
     C.sun('moon', opts.get('moon_dir', (0.30, 0.85, 0.42)), (0.55, 0.66, 1.0), opts.get('moon', 0.40), angle_deg=1.5,
           volume=1.0)
-    C.sun('nightfill', opts.get('fill_dir', (-0.35, -0.85, 0.40)), (0.50, 0.60, 1.0), opts.get('fill', 0.05),
+    C.sun('nightfill', opts.get('fill_dir', (-0.35, -0.85, 0.40)), (0.50, 0.60, 1.0), opts.get('fill', 0.11),
           angle_deg=20.0)
     # ---- the camera: the strike framing (both fists, the steel's whole C, the nest below); in flint_b a slow push
     # to the nest through the blow, easing back and up as the flame rises
-    tA = Vector(opts.get('tgtA', (0.028, 0.012, 0.048)))
-    pA = tA + Vector(opts.get('camA_off', (-0.045, -0.465, 0.19)))
-    tB = Vector(opts.get('tgtB', tuple(E + Vector((-0.006, 0.0, 0.004)))))
-    pB = tB + Vector(opts.get('camB_off', (-0.025, -0.205, 0.175)))
+    tA = Vector(opts.get('tgtA', (0.004, 0.006, 0.068)))
+    pA = tA + Vector(opts.get('camA_off', (-0.02, -0.49, 0.085)))
+    tB = Vector(opts.get('tgtB', tuple(E + Vector((-0.016, 0.004, 0.010)))))
+    pB = tB + Vector(opts.get('camB_off', (-0.035, -0.225, 0.155)))
     tC = Vector(opts.get('tgtC', tuple(N + Vector((-0.004, 0.0, 0.030)))))
     pC = tC + Vector(opts.get('camC_off', (-0.03, -0.30, 0.15)))
     cam = _camera(pA, tA, opts.get('lens', 50.0), opts.get('fstop', 8.0))
@@ -2238,7 +2243,7 @@ def _fire_catch(C, new_material, R, opts, T):
 
     # ---- the steel: from the upper left (her right fist, out of frame), its tip over the palm; it tips, the band
     # goes over the lip, and the steel withdraws up and away to the left
-    heat = [(f, 0.28 * (1.0 - 0.5 * _ease((f - START) / 34.0))) for f in range(START - 2, END + 3)]
+    heat = [(f, 0.12 * (1.0 - 0.5 * _ease((f - START) / 34.0))) for f in range(START - 2, END + 3)]
     stl = _steel_mesh(C, steel_material(new_material, heat))
     stl.rotation_mode = 'QUATERNION'
     yaw = math.radians(opts.get('steel_yaw', -25.0))                 # the arm comes from the upper left
@@ -2346,11 +2351,26 @@ def _fire_catch(C, new_material, R, opts, T):
         C.key(rim.data, 'energy', f, opts.get('rim_w', 0.35) * _flick(f, 7, 0.6))
     C.sun('nightfill', opts.get('fill_dir', (-0.45, -0.70, 0.55)), (0.50, 0.60, 1.0), opts.get('fill', 0.05),
           angle_deg=20.0)
+    # the fire's glow as the gold sees it: a warm card above and beyond the palm, seen only in reflections (lying in
+    # the palm the band mirrored the dark and went black)
+    gm, gnb = new_material('fireglow_card')
+    gnb.output(surface=gnb.emission((1.0, 0.42, 0.12), opts.get('glow_card_w', 2.2)))
+    gc = C.mesh_obj('fireglow_card', [(-0.12, 0.0, -0.07), (0.12, 0.0, -0.07), (0.12, 0.0, 0.07), (-0.12, 0.0, 0.07)],
+                    [(0, 1, 2, 3)], mat=gm, smooth=False)
+    gc.location = tgt + Vector(opts.get('glow_card_off', (0.10, 0.26, 0.24)))
+    gc.rotation_mode = 'QUATERNION'
+    gc.rotation_quaternion = (tgt - gc.location).to_track_quat('Y', 'Z')
+    for attr, v in (('visible_camera', False), ('visible_diffuse', False), ('visible_shadow', False),
+                    ('visible_transmission', False), ('visible_volume_scatter', False), ('visible_glossy', True)):
+        try:
+            setattr(gc, attr, v)
+        except Exception:
+            pass
     # ---- the camera: looking down on the palm from her side of it, a slow push
     el = math.radians(opts.get('cam_el', 50.0))
     az = math.radians(opts.get('cam_az', -12.0))
     vdir = Vector((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el)))
-    d0 = opts.get('cam_dist', 0.34)
+    d0 = opts.get('cam_dist', 0.50)
     cam = _camera(tgt + vdir * d0, tgt, opts.get('lens', 80.0), opts.get('fstop', 14.0))
     for f in range(START - 2, END + 3):
         p_ = tgt + vdir * (d0 * (1.0 - 0.04 * _ease((f - START) / float(END - START))))
