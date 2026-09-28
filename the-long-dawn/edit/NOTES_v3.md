@@ -2,6 +2,10 @@
 
 ## >>> STATE (EDIT-3, from 27 Sep 23:45Z; succeeds EDIT-2) <<<
 
+- **C IS ON HOLD (director, 28 Sep ~04:30Z):** C's second half is being rewritten (script v5, not locked: the Mirror,
+  the claw, the fall, the find, the fire test, the council and the Havens go). C's queued rebuild was cancelled and
+  the watcher runs `FILMS=A`; the director sends a new C EDL when the script locks. Last C master: 28 Sep 03:28Z
+  (`C_FULL_WIP_11.28pm.mp4` in PREVIEWS). EDIT-3 stands down after A's bars 54-81 preview (usage nearly spent).
 - **FILM B IS DROPPED (user, 28 Sep ~01:00Z: its story was too unclear).** The deliverables are A (+ A's coded-towers
   ALT master) and C. B is out of the watcher (`FILMS`, default AC), the masters (`deliver.sh` CUTS default "A C"),
   the animatics, the H9 kit, the titles (`title_v3.sh`: A only) and the previews (`previews.FILMS`). B's renders and
