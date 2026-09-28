@@ -1,10 +1,22 @@
 {
  "_doc": "SOUND-C: A's picture events measured from the frames (music/src/sync_audit_v3.py on _local_logs/delivery/A_master_codedtowers.mp4, 27 Sep 20:38 local; A12 is h1_v3h5). 'f' = the frame the effect's hit is placed on; 'cue' = the locked cue frame; 'heard' = where final_A's synthesized effect sits (what the user heard).",
  "t": {
-  "A.blow":    {"f": 3447, "cue": 3444, "heard": "one steady blow 3446-3528, then silence to 3597", "what": "she leans in 3436-3444; the ember brightens on three blows 3447-3469, 3479-3503, 3513-3539 (dims on each in-breath), a last puff 3556-3561: the take is laid on those"},
-  "A.x.catch": {"f": 3563, "cue": 3556, "heard": "nothing (A's sheet has no catch; final_A is silent 3540-3597)", "what": "the kindling takes on 3563 and grows to the roar (3600)"}
+  "A.blow": {
+   "f": 3447,
+   "cue": 3444,
+   "heard": "one steady blow 3446-3528, then silence to 3597",
+   "what": "she leans in 3436-3444; the ember brightens on three blows 3447-3469, 3479-3503, 3513-3539 (dims on each in-breath), a last puff 3556-3561: the take is laid on those"
+  },
+  "A.x.catch": {
+   "f": 3563,
+   "cue": 3556,
+   "heard": "nothing (A's sheet has no catch; final_A is silent 3540-3597)",
+   "what": "the kindling takes on 3563 and grows to the roar (3600)"
+  }
  },
  "on_frame": "strike1 3360 (the shot's first frame is the spark), strike2 3389, strike3 3418; the roar 3600 (the cut to the fire); the karst flare 3815; the desert fire 3880; watch-fire 1 passes 4990-5040 (its sound peaks 5000)",
- "offsets_not_moved": {"A.impact": "the camera lurches into the fire's heart on 2600 and the frame whites out 2606-2622; the impact (score + effect, with the score's 2-frame breath before it) is on 2640, 18-40 f after: the score is COMPOSER-A2's, so the effect stays with the score's hit; for the director: move the whiteout later or the impact earlier, together"},
+ "offsets_not_moved": {
+  "A.impact": "DIRECTOR 01:25Z: the hit stays ON THE BAR (2640, bar 34 b1, A9's first frame); A-FIX moves the PICTURE's whiteout onto 2640 (measured before: plunge 2600, white 2606-2622). Effect + score hit stay; SOUND-C re-measures when A-FIX's frames land."
+ },
  "not_measurable": "A14 3920-4240 (the beacon run: run_1..7) and A15, A19 are slates in the master; watch-fires 2-4 are too small in the wide frames to time"
 }
