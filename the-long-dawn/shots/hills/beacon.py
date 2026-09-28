@@ -1516,6 +1516,8 @@ class FirstBeacon:
             age = (f - fs) / FPS
             if age < 0 or age > dur:
                 continue
+            if AFIX and fs >= CATCH - 2:        # A-FIX: no breath after the catch (a lit puff floats like a ball)
+                continue
             an = hero_anchors(fs)
             mouth = an['mouth']
             fwd = an['head'].U

@@ -95,6 +95,9 @@ def _window(H, W, f, t, k):
     oy = t.get('lift', 0.0) * s * k                                    # the window's centre rises off the fire as it opens
     xx, yy = _grid(H, W)
     dx, dy = (xx - cx) / max(rx, 1.0), (yy - (cy - oy)) / max(ry, 1.0)
+    td = t.get('teardrop', 0.0) * (1.0 - s) ** 2                       # small, it is a flame's shape (tip up)
+    if td > 0.0:
+        dx = dx / np.maximum(1.0 - td * np.clip(-dy, 0.0, 1.0) ** 0.8, 0.12)
     rr = np.sqrt(dx * dx + dy * dy)
     th = np.arctan2(dy, dx)
     tt = f / 24.0
@@ -170,8 +173,11 @@ def vision(o, i, f, t):
     a, rim, (cx, cy), s = _window(H, W, f, t, k)
     fm = _flame_key(i, f, t, k) if t.get('flame_key') else None
     src = i
+    if t.get('shift_y'):                                                 # move the vision with its window
+        src = cv2.warpAffine(i, np.float32([[1, 0, 0], [0, 1, t['shift_y'] * k]]), (W, H),
+                             flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
     if fm is not None:                                                  # the fire stands in front of its vision
-        src = np.clip(_srgb(_fill(_lin(i), cv2.dilate(fm, np.ones((5, 5), np.uint8)), k)), 0.0, 1.0)
+        src = np.clip(_srgb(_fill(_lin(src), cv2.dilate(fm, np.ones((5, 5), np.uint8)), k)), 0.0, 1.0)
     vis = _shimmer(src, f, t.get('shimmer', 1.6) * s, k)
     vis_l = _lin(vis) * np.float32(t.get('inside_tint', (1.0, 1.0, 1.0))) * t.get('inside_gain', 1.0)
     gl = t.get('inside_glow', 0.35)                                   # a vision is luminous: a soft glow of itself
@@ -275,8 +281,9 @@ A_TRANS = [
     dict(f0=2520, f1=2640, cut=2520, kind='iceheart', ramp=(2528, 2620), gain=1.35, lift=0.0,
          note='A-FIX E3: the fall into the ice-white fire'),
     # A9 THE DEAD VALLEY, bars 34-35: the fire's second vision, in the same window, closing to a point
-    dict(f0=2640, f1=2800, cut=2684, kind='vision', track=[(2640, 958, 440), (2800, 958, 440)], open=(2656, 2692),
-         close=(2762, 2796), r0=(10, 10), r1=(600, 300), lift=60, breath=0.035, bar0=2640, feather=0.07,
+    dict(f0=2640, f1=2800, cut=2684, kind='vision', track=[(2640, 958, 440), (2800, 958, 440)], open=(2656, 2688),
+         close=(2762, 2796), r0=(46, 105), r1=(620, 250), lift=120, shift_y=-120, teardrop=0.85, breath=0.035, bar0=2640,
+         feather=0.07,
          rim=(1.0, 0.9, 0.8), rim_gain=0.7, inside_glow=0.25, shimmer=1.2, outside='glow', glow_r=520,
          glow_floor=0.0, glow_keys=[(2640, 1.0, 1.0, 1.0), (2664, 0.9, 0.86, 0.8), (2692, 0.12, 0.07, 0.035),
                                     (2730, 0.05, 0.028, 0.014), (2780, 0.02, 0.011, 0.005), (2800, 0.0, 0.0, 0.0)],
