@@ -1,0 +1,53 @@
+{
+  "shot": "A15",
+  "head": "4bce0e82f9aae4e4b2279a1e192cc2561a041fbf",
+  "source_sha256": {
+    "watchers_a.py": "9701a245f359fb6f8cda5a418961e03107dfbc8cc9033fe7108f652e01c911fd",
+    "beaconrun_a.py": "3f3a165565d2b9e8a5058f92407f78dee9ee6ee8bbd43aff21dd4986cb26d0f7",
+    "nighta.py": "467252a45fa435d5400297d55069ee3ead6044d12feb3bb0e7a82b780e5a0bb2",
+    "sdfppl.py": "0feff19d5baf983d7decca3bdd06318093f974506eff5a4db3fe900b114b2376",
+    "hearth_a.py": "1d69907225d0154807613986d35cb6406cc265ca647d8dd298de69e4d38b8198",
+    "fire_near_a.py": "e5a75d207b5becdd813e65efa52a30c85fc238c1a1d4ed34c923c1df84b10838",
+    "world.py": "401e3c2fa2dd092523c93656a500626440a6bb7566316c54db8cb47503bea147",
+    "falsedawn.py": "d673c601219fb1291e48b8299b3e81baecc8690cb338874b187ecc67558395f7",
+    "beaconrun_a_chain.npy": "dbba80a06281dc3b40399f4c894f3acd4b451db9b59e0aac9d8b8363d7f1a849",
+    "watchers_a_extra.npy": "26e3cf08dac35c8e3e635f7d3db626247a64396e4da5187a9dcd5497804e39b6",
+    "watchers_a_figs.npy": "a89022b4e5b6ee1cb5a1895e411aadf7b9f1165b708b3c3aa33cedcb77a0635c",
+    "reveal_a_fires.npy": "7b5f135066539a90790008eb328bb0e10d08ecc2805a44851b98ea35e6c0b284"
+  },
+  "scale": 0.5,
+  "threads": 2,
+  "opencv_threads": 1,
+  "overrides": {
+    "p7_offset": null,
+    "hearth_pool": null,
+    "hearth_clearance": null,
+    "pitch": null,
+    "figure_fill": null
+  },
+  "frames": [
+    {
+      "frame": 4240,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "seconds": 2050.893321792013,
+      "rgb_sha256": "0864e9ca32afcdd2ca0830c7868848276a78f94061ac4a2163e56cee0843bf1d",
+      "png_sha256": "a4b8b4e3469d237fc297733ba37c05f3334d13293afb503df7b55576844aae35"
+    },
+    {
+      "frame": 4360,
+      "shape": [
+        402,
+        960,
+        3
+      ],
+      "seconds": 5.960845458001131,
+      "rgb_sha256": "bea16795e5ef6926e45a837b7ae0ddbb54807ed348df60bbec5c0f0458f99c7d",
+      "png_sha256": "31dd0da5de6756b714655aa63511617d6a99e3144f88ffc5d55fd6e31436156d"
+    }
+  ],
+  "status": "complete"
+}

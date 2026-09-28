@@ -1,0 +1,45 @@
+{
+  "reference_receipt": "receipt-a15-after.json",
+  "updated_receipt": "receipt-integration.json",
+  "ordered_frames": [
+    4240,
+    4360
+  ],
+  "changed_source_files": [
+    "sdfppl.py"
+  ],
+  "reference_head": "7ab77932ebe7fbd143638980ef706ded90bdc2ab",
+  "updated_head": "4bce0e82f9aae4e4b2279a1e192cc2561a041fbf",
+  "frames": [
+    {
+      "frame": 4240,
+      "float_rgb_hash_equal": true,
+      "png_file_hash_equal": true,
+      "pixel_count": 385920,
+      "changed_pixels": 0,
+      "max_channel_difference_0_255": 0,
+      "mean_absolute_channel_difference_0_255": 0.0,
+      "changed_pixel_bounds_xyxy_exclusive": null,
+      "prior_rgb_sha256": "0864e9ca32afcdd2ca0830c7868848276a78f94061ac4a2163e56cee0843bf1d",
+      "current_rgb_sha256": "0864e9ca32afcdd2ca0830c7868848276a78f94061ac4a2163e56cee0843bf1d",
+      "prior_png_sha256": "a4b8b4e3469d237fc297733ba37c05f3334d13293afb503df7b55576844aae35",
+      "current_png_sha256": "a4b8b4e3469d237fc297733ba37c05f3334d13293afb503df7b55576844aae35"
+    },
+    {
+      "frame": 4360,
+      "float_rgb_hash_equal": true,
+      "png_file_hash_equal": true,
+      "pixel_count": 385920,
+      "changed_pixels": 0,
+      "max_channel_difference_0_255": 0,
+      "mean_absolute_channel_difference_0_255": 0.0,
+      "changed_pixel_bounds_xyxy_exclusive": null,
+      "prior_rgb_sha256": "bea16795e5ef6926e45a837b7ae0ddbb54807ed348df60bbec5c0f0458f99c7d",
+      "current_rgb_sha256": "bea16795e5ef6926e45a837b7ae0ddbb54807ed348df60bbec5c0f0458f99c7d",
+      "prior_png_sha256": "31dd0da5de6756b714655aa63511617d6a99e3144f88ffc5d55fd6e31436156d",
+      "current_png_sha256": "31dd0da5de6756b714655aa63511617d6a99e3144f88ffc5d55fd6e31436156d"
+    }
+  ],
+  "method": "Reopen each PNG, verify manifest SHA256, compare every RGB channel. Compare stored hashes of finished unquantized RGB; raw floating arrays were not retained.",
+  "limits": "Two 960x402 A15 checks only, same ordered frames and renderer settings. No claim of full-shot rerender, final farm-frame equivalence or approval."
+}

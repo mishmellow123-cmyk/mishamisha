@@ -1,0 +1,123 @@
+{
+  "created_utc": "2026-09-28T03:20:27.691713+00:00",
+  "scope": "Compiled primitive smoke only; no SP.render or pixel comparison.",
+  "pinned_shader_commit": "70d102b148ff225947f252f3183aca9503a6d4fd",
+  "worktree_head": "ee085f19eb1d6d01fb8b170a592db5f1c56a6b59",
+  "source_path": "<workspace>/work/night-a14/the-long-dawn/shots/run/sdfppl.py",
+  "source_sha256": "2d02ef0aa2d7bf8787daf1f95b0500dca6899d3b4422d5209b6f09b9a6cc77b5",
+  "probe_sha256": "7602c1d6b1d97172acb296c1d5e891ef346a3afba2896e4472f1565769d0caa0",
+  "saved_geometry_path": "<workspace>/work/night3/latest-sp-compat/geometry-extracts/geometry-new-4208.npz",
+  "saved_geometry_sha256": "889e03b36dd9487e9f0a83905b5081ba05d020983a4628176bf37ec87e34c700",
+  "saved_geometry_frame": 4208,
+  "primitive_index": 2,
+  "original_primitive": [
+    1.0,
+    -1003.1247394720092,
+    -194.56709668320988,
+    -508.66230345463333,
+    -0.27925268031909267,
+    0.0,
+    0.0,
+    0.033,
+    0.0,
+    0.0,
+    0.02,
+    0.052,
+    0.048,
+    0.13,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "copied_rough_primitive": [
+    1.0,
+    -1003.1247394720092,
+    -194.56709668320988,
+    -508.66230345463333,
+    -0.27925268031909267,
+    0.0,
+    0.0,
+    0.033,
+    0.0,
+    0.0,
+    0.02,
+    0.052,
+    0.048,
+    0.13,
+    0.03,
+    7.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "numba_version": "0.62.1",
+  "numpy_version": "2.3.5",
+  "jit_disabled": false,
+  "numba_threads": 1,
+  "opencv_sequential_requested": true,
+  "opencv_threads_reported": 1,
+  "elapsed_seconds": 2.5988495420024265,
+  "primitive_nopython_signatures": [
+    "(float64, float64, float64, Array(float64, 1, 'C', False, aligned=True)) -> float64"
+  ],
+  "render_compiled_signatures": [],
+  "all_default_equal_sd_box": true,
+  "all_rough_match_formula": true,
+  "all_finite": true,
+  "samples": [
+    {
+      "point": [
+        -1003.1247394720092,
+        -194.56709668320988,
+        -508.66230345463333
+      ],
+      "default": -0.048,
+      "sd_box": -0.048,
+      "rough": -0.025984045691538546,
+      "rough_formula": -0.02598404569153137,
+      "rough_differs_from_default": true
+    },
+    {
+      "point": [
+        -1003.0747394720092,
+        -194.48709668320987,
+        -508.6923034546333
+      ],
+      "default": 0.03524506534485865,
+      "sd_box": 0.03524506534485865,
+      "rough": 0.01706390889551877,
+      "rough_formula": 0.017063908895501904,
+      "rough_differs_from_default": true
+    },
+    {
+      "point": [
+        -1002.9747394720092,
+        -194.44709668320988,
+        -508.5623034546333
+      ],
+      "default": 0.15236039475982704,
+      "sd_box": 0.15236039475982704,
+      "rough": 0.07906022128044456,
+      "rough_formula": 0.07906022128044456,
+      "rough_differs_from_default": true
+    },
+    {
+      "point": [
+        -1003.3247394720092,
+        -194.66709668320988,
+        -508.59230345463334
+      ],
+      "default": 0.1446905828703745,
+      "sd_box": 0.1446905828703745,
+      "rough": 0.0796777135627385,
+      "rough_formula": 0.07967771356272993,
+      "rough_differs_from_default": true
+    }
+  ],
+  "limits": "Four points on one actual watcher box; copied positive roughness exercises typing and formula. No full-render typing, pixel equivalence, silhouette quality, or exhaustive primitive correctness claim.",
+  "publication_note": "Local path prefix normalized; measurements unchanged."
+}
