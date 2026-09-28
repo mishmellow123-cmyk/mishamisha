@@ -80,7 +80,8 @@ BK.V3_REKEY = True           # == render.py make_shot('beacon_v3_roar2')
 BK.use_master_timing()
 BK.apply_h5_calls()
 BK.apply_roar2()
-BK.BEACON_SMOKE_AMB = (0.020, 0.026, 0.045)   # A-FIX: her smoke a pale moonlit veil, not a dark smudge over the sky
+BK.BEACON_SMOKE_AMB = (0.05, 0.062, 0.105)    # A-FIX: her smoke a pale moonlit veil, not a dark smudge over the sky
+BK.BEACON_SMOKE_OPACITY = 0.30
 assert BK.ROAR == 1476 and BK.F1 == TAKE_END, (BK.ROAR, BK.F1)
 _orig_s1_world = BK.s1_world
 

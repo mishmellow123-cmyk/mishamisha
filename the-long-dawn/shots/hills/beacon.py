@@ -419,6 +419,7 @@ AFIX_BREATH_COOL = np.array([0.10, 0.12, 0.16])   # moonlit breath (linear, x de
 
 
 BEACON_SMOKE_AMB = (0.004, 0.005, 0.009)          # the beacon smoke's ambient (reveal_a lifts it to moonlight)
+BEACON_SMOKE_OPACITY = 0.55
 
 
 def roar_mix(f):
@@ -1158,7 +1159,7 @@ class FirstBeacon:
                 I = min(lv, 2.5) * flick
                 fire.render_smoke(sm_rgb, sm_a, cam.params(), float(b[0]), float(b[1]), float(b[2]),
                                   (t - SMOKE_T0) if HEROINE_V2 else t, 1.7,
-                                  7.0, 0.25, 0.30, 0.9, 0.9, 0.55 * smoothstep(ROAR, ROAR + 12, f),
+                                  7.0, 0.25, 0.30, 0.9, 0.9, BEACON_SMOKE_OPACITY * smoothstep(ROAR, ROAR + 12, f),
                                   0.30 * I, 0.11 * I, 0.03 * I, 0.9, *BEACON_SMOKE_AMB,
                                   int(min(sx)) - 20, int(min(sy)) - 20, int(max(sx)) + 20, int(max(sy)) + 20)
                 over(img, sm_rgb, sm_a)
