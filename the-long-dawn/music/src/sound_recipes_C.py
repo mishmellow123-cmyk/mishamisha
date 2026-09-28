@@ -6,7 +6,14 @@ C is the BOOK: the storyteller's hearth, heavy old pages, a quill, paper that bu
 (wind, fire, beacons), the council's torches and a hooded murmur that falls silent when she sets the Ring down, the
 sea at the Havens, and the hearth again.  Levels are matched to COMPOSER-C's designs cue by cue.
 """
+import json
+import os
 import sound_flint_v3 as FL
+
+# SOUND-C: every page, pen and burn (and the council's dips) sits on the frame where the PICTURE does it, measured
+# from the frames by sync_audit_v3.py (the table, with what was measured and why: sound/picture_sync_C.json)
+_PS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sound", "picture_sync_C.json")
+PICTURE = {k: v["f"] for k, v in json.load(open(_PS))["t"].items()}
 
 HEARTH = [("fs:681366", 1.0, 82.5, 1.0)]                    # a small wood fire, close, on a very quiet night
 FIRE = [("fs:595483", 12.0, 90.0, 1.0)]                      # a wood fire, established
@@ -21,6 +28,11 @@ FLIP = "sn:flicking_pages"                                   # 344 Audio: the sa
 
 
 def page(src, hit, pre=0.5, post=1.0, **kw):
+    """a leaf turned: the lift's rustle rises under the page as it lifts (-14 dB at the clip's start), the loudest
+    moment is the leaf crossing over (the hit, on the measured crossing frame), then it lands and settles"""
+    # after the crossing the leaf lands within 0.1-0.2 s and lies still: its later rustles are held down, so no
+    # second "page" is heard over a still page (the blank take has a pop +0.42 s nearly as loud as its crossing)
+    kw.setdefault("env", [(-pre, -14.0), (-0.12, -4.0), (0.0, 0.0), (0.2, -2.0), (0.45, -9.0), (post, -15.0)])
     return dict(src=(src, hit), pre=pre, post=post, hp=120, fi=0.08, fo=0.3, crest=13.0, **kw)
 
 
@@ -45,20 +57,27 @@ RECIPES = {
     # ---------------------------------------------------------------- the storyteller's hearth, the book
     "C.hearth.open": dict(src=HEARTH, seg=(10, 18), xf=2.5, hp=80, lp=9000, width=0.7),
     "C.page_turn_0": page(PAGES, 7.028, pre=0.6, post=0.9),
-    "C.riffle": page(FLIP, 0.607, pre=0.5, post=1.25),
-    "C.page_turn": page(PAGES, 0.705, pre=0.6, post=1.0),
-    "C+.pen.mountain": pen(14.0, 2.4),
+    # the riffle: the flicking take's bursts span 29 frames, exactly the picture's flutter (320 -> lands 349)
+    "C.riffle": page(FLIP, 0.208, pre=0.1, post=1.6, env=[(-0.1, -6.0), (0.0, 0.0), (1.25, 0.0), (1.6, -12.0)]),
+    "C.page_turn": page(PAGES, 0.705, pre=0.45, post=1.0),
+    # the pen draws the mountain 355-535 (crater, slopes, hatching, cloud 355-454; the dense sky hatching 455-491;
+    # hills and rocks to 535): one quill take whose level follows the drawing
+    "C+.pen.mountain": dict(pen(63.5, 7.8), fo=0.25, env=[(0.0, -5.0), (1.2, -4.0), (4.1, -3.0), (4.2, 0.0),
+                                                        (5.65, 0.0), (5.75, -4.0), (7.1, -6.0), (7.5, -14.0)]),
     "C+.pen.T1": pen(9.15, 1.0),
-    "C+.pen.deep": pen(17.3, 9.0),
+    "C+.pen.deep": pen(17.3, 8.6),                       # first stroke 1705, the last ~1912
     "C+.pen.T7": pen(28.75, 1.0),
     "C+.pen.T9": pen(31.55, 1.0),
     "C+.pen.T14": pen(40.6, 1.0),
     "C+.burn.letters": burn(8.0, 3.0, 0.6),
-    "C+.burn.deep": burn(22.0, 2.2),
-    "C+.burn.eye": burn(33.5, 2.2),
-    "C+.burn.map": burn(45.0, 2.6),
-    "C+.burn.remains": burn(52.0, 2.0),
-    "C+.burn.title": burn(58.5, 2.6, 0.8),
+    # the ember edge 1686 -> 1700: rises with it, loudest mid-sweep, and dies with it (clean parchment from 1700,
+    # the pen from 1705)
+    "C+.burn.deep": dict(burn(22.0, 1.0, 0.33), env=[(-0.33, -10.0), (0.0, 0.0), (0.25, -3.0), (0.6, -14.0),
+                                                   (1.0, -30.0)]),
+    "C+.burn.eye": burn(33.5, 2.2, 0.3),                 # the glow 1921, the hole 1924
+    "C+.burn.map": burn(45.0, 2.6, 0.08),                # a hard cut (X1 not built yet): starts ON the cut
+    "C+.burn.remains": burn(52.0, 2.0, 0.08),            # a hard cut: starts ON the cut
+    "C+.burn.title": burn(58.5, 2.6, 0.5),               # first spark 6983, the letters burn on to 7016
     # ---------------------------------------------------------------- the fire born from the page, the forge
     "C.fire.born": dict(layers=[dict(src=FIRE, seg=(10, 18), xf=2.5, g=0.0),
                                 dict(src=HEARTH, seg=(8, 14), xf=2.0, g=-3.0)], hp=70),
@@ -106,7 +125,8 @@ RECIPES = {
     "C.air.dawn": dict(src=[("fs:725630", 108.0, 150.0, 1.0)], seg=(12, 20), xf=4.0, hp=60, lp=2500, trim=-3.0),
     # ---------------------------------------------------------------- plenty, the Havens, the last pages
     "C.hearth.end": dict(src=HEARTH, seg=(10, 18), xf=2.5, hp=80, lp=9000, width=0.7),
-    "C.page.plenty": page(PAGES, 2.799, pre=0.6, post=0.9),
+    "C.page.plenty": dict(skip=True, why="the picture cuts to the book on 6160 and no page turns (measured): a page "
+                                         "sound there is the wrong event (PAGES-C: a turn into C25 gets it back)"),
     "C.sea": dict(src=SEA, seg=(14, 24), xf=3.5, hp=40, lp=10000),
     "C.page.havens": page(PAGES, 9.016, pre=0.6, post=0.9),
     "C.page.blank": page(PAGES, 12.443, pre=0.6, post=0.9),

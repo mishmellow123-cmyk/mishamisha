@@ -152,7 +152,7 @@
   "kind": "event",
   "t": 1.6667,
   "level": -32.8,
-  "gain": 7.3,
+  "gain": 8.1,
   "clip_start_s": 1.0667,
   "hit_offset_s": 0.6,
   "src": [
@@ -165,8 +165,8 @@
   "t": 13.3333,
   "level": -33.7,
   "gain": 2.1,
-  "clip_start_s": 12.8333,
-  "hit_offset_s": 0.5,
+  "clip_start_s": 13.2333,
+  "hit_offset_s": 0.1,
   "src": [
    "sn:flicking_pages"
   ]
@@ -174,11 +174,11 @@
  {
   "id": "C.page_turn",
   "kind": "event",
-  "t": 23.3333,
+  "t": 23.9583,
   "level": -34.9,
-  "gain": 6.0,
-  "clip_start_s": 22.7333,
-  "hit_offset_s": 0.6,
+  "gain": 7.3,
+  "clip_start_s": 23.5083,
+  "hit_offset_s": 0.45,
   "src": [
    "sn:slow_page_turns"
   ]
@@ -348,22 +348,16 @@
  {
   "id": "C.page.plenty",
   "kind": "event",
-  "t": 256.6667,
-  "level": -35.3,
-  "gain": 10.0,
-  "clip_start_s": 256.0667,
-  "hit_offset_s": 0.6,
-  "src": [
-   "sn:slow_page_turns"
-  ]
+  "status": "SKIP",
+  "why": "the picture cuts to the book on 6160 and no page turns (measured): a page sound there is the wrong event (PAGES-C: a turn into C25 gets it back)"
  },
  {
   "id": "C.page.havens",
   "kind": "event",
-  "t": 266.6667,
+  "t": 267.375,
   "level": -37.2,
-  "gain": 7.5,
-  "clip_start_s": 266.0667,
+  "gain": 10.6,
+  "clip_start_s": 266.775,
   "hit_offset_s": 0.6,
   "src": [
    "sn:slow_page_turns"
@@ -372,10 +366,10 @@
  {
   "id": "C.page.blank",
   "kind": "event",
-  "t": 280.0,
+  "t": 280.875,
   "level": -36.0,
-  "gain": 10.2,
-  "clip_start_s": 279.4,
+  "gain": 12.0,
+  "clip_start_s": 280.275,
   "hit_offset_s": 0.6,
   "src": [
    "sn:slow_page_turns"
@@ -384,10 +378,10 @@
  {
   "id": "C.page.blank_2",
   "kind": "event",
-  "t": 281.6667,
+  "t": 282.5417,
   "level": -35.2,
-  "gain": 5.6,
-  "clip_start_s": 281.2167,
+  "gain": 6.5,
+  "clip_start_s": 282.0917,
   "hit_offset_s": 0.45,
   "src": [
    "sn:slow_page_turns"
@@ -408,10 +402,10 @@
  {
   "id": "C+.pen.mountain",
   "kind": "event",
-  "t": 14.0333,
+  "t": 14.7917,
   "level": -45.1,
-  "gain": -2.0,
-  "clip_start_s": 14.0333,
+  "gain": -4.0,
+  "clip_start_s": 14.7917,
   "hit_offset_s": 0.0,
   "src": [
    "fs:194905"
@@ -432,10 +426,10 @@
  {
   "id": "C+.pen.deep",
   "kind": "event",
-  "t": 70.4,
+  "t": 71.0417,
   "level": -46.0,
   "gain": -5.3,
-  "clip_start_s": 70.4,
+  "clip_start_s": 71.0417,
   "hit_offset_s": 0.0,
   "src": [
    "fs:194905"
@@ -468,10 +462,10 @@
  {
   "id": "C+.pen.T14",
   "kind": "event",
-  "t": 282.9167,
+  "t": 283.0417,
   "level": -42.8,
   "gain": -0.2,
-  "clip_start_s": 282.9167,
+  "clip_start_s": 283.0417,
   "hit_offset_s": 0.0,
   "src": [
    "fs:194905"
@@ -480,10 +474,10 @@
  {
   "id": "C+.burn.letters",
   "kind": "event",
-  "t": 35.0,
+  "t": 35.0833,
   "level": -33.4,
   "gain": -0.5,
-  "clip_start_s": 34.4,
+  "clip_start_s": 34.4833,
   "hit_offset_s": 0.6,
   "src": [
    "fs:528662"
@@ -492,11 +486,11 @@
  {
   "id": "C+.burn.deep",
   "kind": "event",
-  "t": 70.0,
+  "t": 70.5833,
   "level": -29.7,
-  "gain": 3.4,
-  "clip_start_s": 69.5,
-  "hit_offset_s": 0.5,
+  "gain": 4.4,
+  "clip_start_s": 70.2533,
+  "hit_offset_s": 0.33,
   "src": [
    "fs:528662"
   ]
@@ -504,11 +498,11 @@
  {
   "id": "C+.burn.eye",
   "kind": "event",
-  "t": 80.0,
+  "t": 80.1667,
   "level": -28.7,
   "gain": 4.4,
-  "clip_start_s": 79.5,
-  "hit_offset_s": 0.5,
+  "clip_start_s": 79.8667,
+  "hit_offset_s": 0.3,
   "src": [
    "fs:528662"
   ]
@@ -519,8 +513,8 @@
   "t": 173.3333,
   "level": -32.6,
   "gain": 0.1,
-  "clip_start_s": 172.8333,
-  "hit_offset_s": 0.5,
+  "clip_start_s": 173.2533,
+  "hit_offset_s": 0.08,
   "src": [
    "fs:528662"
   ]
@@ -530,9 +524,9 @@
   "kind": "event",
   "t": 233.3333,
   "level": -40.6,
-  "gain": -6.0,
-  "clip_start_s": 232.8333,
-  "hit_offset_s": 0.5,
+  "gain": -6.5,
+  "clip_start_s": 233.2533,
+  "hit_offset_s": 0.08,
   "src": [
    "fs:528662"
   ]
@@ -540,11 +534,11 @@
  {
   "id": "C+.burn.title",
   "kind": "event",
-  "t": 290.8333,
+  "t": 291.4583,
   "level": -49.4,
-  "gain": -15.8,
-  "clip_start_s": 290.0333,
-  "hit_offset_s": 0.8,
+  "gain": -15.7,
+  "clip_start_s": 290.9583,
+  "hit_offset_s": 0.5,
   "src": [
    "fs:528662"
   ]
@@ -609,10 +603,10 @@
  {
   "id": "C+.dip.0",
   "kind": "event",
-  "t": 230.4,
+  "t": 230.7083,
   "level": -36.2,
   "gain": -25.3,
-  "clip_start_s": 230.05,
+  "clip_start_s": 230.3583,
   "hit_offset_s": 0.35,
   "src": [
    "fs:426208"
@@ -621,10 +615,10 @@
  {
   "id": "C+.dip.1",
   "kind": "event",
-  "t": 230.95,
+  "t": 231.0417,
   "level": -36.2,
   "gain": -25.5,
-  "clip_start_s": 230.579,
+  "clip_start_s": 230.6707,
   "hit_offset_s": 0.371,
   "src": [
    "fs:426208"
@@ -633,10 +627,10 @@
  {
   "id": "C+.dip.2",
   "kind": "event",
-  "t": 231.5,
+  "t": 231.375,
   "level": -36.5,
   "gain": -25.7,
-  "clip_start_s": 231.1675,
+  "clip_start_s": 231.0425,
   "hit_offset_s": 0.3325,
   "src": [
    "fs:426208"
@@ -645,10 +639,10 @@
  {
   "id": "C+.dip.3",
   "kind": "event",
-  "t": 232.1,
+  "t": 231.7083,
   "level": -38.0,
   "gain": -27.3,
-  "clip_start_s": 231.715,
+  "clip_start_s": 231.3233,
   "hit_offset_s": 0.385,
   "src": [
    "fs:426208"
@@ -657,10 +651,10 @@
  {
   "id": "C+.dip.4",
   "kind": "event",
-  "t": 232.6,
+  "t": 232.0417,
   "level": -37.5,
   "gain": -26.6,
-  "clip_start_s": 232.278,
+  "clip_start_s": 231.7197,
   "hit_offset_s": 0.322,
   "src": [
    "fs:426208"
@@ -669,10 +663,10 @@
  {
   "id": "C+.roads",
   "kind": "event",
-  "t": 233.5833,
+  "t": 233.5,
   "level": -50.9,
   "gain": -10.2,
-  "clip_start_s": 233.5833,
+  "clip_start_s": 233.5,
   "hit_offset_s": 0.0,
   "src": [
    "fs:681366",

@@ -459,7 +459,11 @@ def build(cut, only=None, verbose=True):
     for e in evs:
         if e.get("extra"):
             e["t"] = _resolve_t(e["t"], sync)
-    live = lambda it: (not it.get("extra") and it["id"] in R.RECIPES and not R.RECIPES[it["id"]].get("skip")
+    pic = getattr(R, "PICTURE", {})                    # SOUND-C: the cue's hit moved onto the MEASURED picture
+    for e in evs:                                      # event (sound/picture_sync_<cut>.json); levels unaffected
+        if e["id"] in pic:
+            e["cue_t"], e["t"] = e["t"], pic[e["id"]] / 24.0
+    live =lambda it: (not it.get("extra") and it["id"] in R.RECIPES and not R.RECIPES[it["id"]].get("skip")
                        and (not only or it["id"] in only or any(
                            R.RECIPES.get(o, {}).get("level_from") == it["id"] for o in only)))
     refs = ref_levels(bm, [(b, "bed") for b in beds if live(b)] + [(e, "event") for e in evs if live(e)])
