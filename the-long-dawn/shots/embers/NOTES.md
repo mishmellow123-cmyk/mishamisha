@@ -142,28 +142,33 @@ mottled stone (banded stacks, not offices). RELAUNCHED by me 21:14Z (director pr
 # (c_grasp.py tone-down), E12 THE EYE if still owed (it is: no final in renders/embers_C3 1920-2079; EDIT still plays
 # embers_C3_half). Then (low priority, director): E15 polish at 764-788 (spark streams swoop in two arcs) + ~800 (soft
 # orange blob), partial re-render only if cheap. <<<
-## EMBERS-C4 STATE (28 Sep ~01:50Z) -- READ THIS FIRST for C 2320-2479 / 2720-2839
-* ROUTING: c2.ENABLED = {'eye', 'fall', 'grasp'} (pushed e6583b0). All three of my ranges now run MY code.
-* FALL v2 (44c52ab): new c_fall.py. Camera solved per frame so the band lands on a designed screen path
-  (ring_px: (640,262) while we fall together -> the upper-left corner (220,17) at 2833 -> (240,28) at 2839, moving
-  (4.4, 2.4) px/f = 29 deg down-right, 5 px; RUN-C's star is at (248,31) at 2840, a static ~3 px warm-white dot,
-  then streaks ~16 px/f at 29 deg). The band falls straight down in the world; we fall with it (V0 6/f) until
-  2760, brake to a hover by 2800 and tilt after it past the vertical with a slow roll (up_hint, PHI -60 deg), so
-  its motion against the clouds turns from down to down-right (29 deg at 2825-2839, checked numerically:
-  scratchpad ec4/chk.py). Clouds: DECK_Y -2700 sea of cloud = height-field billows (_sea_h: |perlin| octaves,
-  rotated, sqrt big domes) lit by a 30-deg moon from the FINAL frame's upper-left (moon_dir), 6-step shadow march,
-  cavities, haze, octaves faded by the pixel footprint; WISP_Y -600 sparse high wisps (_wisps) the band crosses at
-  ~2798 (they glow warm round it and tear open: the tear keeps the final glint clear). Plane layers are motion-
-  blurred by reprojection (_mblur) during the tilt (deck up to ~48 px/f at 2780). The glint sprite (core 2.6 HDR,
-  halo warm) fades in as the band drops below ~16 px.
-* GRASP (e6583b0): shade_claw only (scene_c.anat_cracks untouched, it is shared): T cap 0.74, e_crack 0.22+2.0*hk,
-  sharp -> max(cre, sharp^2.6 * brk) with brk a 26-freq break-up noise (the big dorsal plates' seams become runs,
-  not loops), soft *= 0.45+0.55*brk.
-* FARM TESTS IN FLIGHT (renders/_farmtest/embers_C3_{fall,grasp}; logs scratchpad ec4/farm_{fall,grasp}1.log):
-  fall 2730,2760,2780,2800,2820,2839; grasp 2330,2356,2364,2420,2432,2446,2465.
-* NEXT: look at both against the four gates; fix; JOB READY embers_C3_fall, then embers_C3_grasp; then the Eye
-  (farm test 1925-2006 exists from 27 Sep 15:56 local in _farmtest/embers_C3_eye: EMBERS-C's era, re-test with
-  the iris chroma fix from the C2 notes); then E15 polish.
+## EMBERS-C4 STATE (28 Sep ~02:25Z) -- READ THIS FIRST for C 1920-2079 / 2320-2479 / 2720-2839
+* JOB READY SENT (02:25Z) for embers_C3_fall (2720-2839), embers_C3_grasp (2320-2479), embers_C3_eye (1920-2079)
+  at code 6d5ad54 (c2.ENABLED = eye/fall/grasp). NOT launched by me (finals need the director). If launched: check
+  the counts in renders/embers_C3 (120 / 160 / 160) and that EDIT swaps embers_C3_half out for 1992-2079/2320-2479.
+  Review stills + strips: _local_logs/review/embers_C4/ (SHEET_{fall,grasp,eye}.jpg).
+* FALL (c_fall.py v2, final design): the band tumbles out of the black (the kept opening, ring at (640,262), 170 px
+  outer diameter); a vast moonlit SEA OF CLOUD (ray-marched slab, `_sea_vol`: billowed 3-D tops, moon shadow march
+  + multiple-scatter softening, sky light by height, haze; 0.7 px soften kills the march grain) comes up (dark()
+  2724-2764); we fall with it (V0 6/f) to 2760, brake to a hover by 2800 and tilt after it past the vertical with a
+  slow roll (solved camera, `ring_px` screen path, up_hint PHI -60 deg); it drops away (DROP_A/K) to a 5 px glint
+  that eases into the corner (220,17) at 2833 and sinks down-right to (240,28) at 2839 (4.2 px/f, 29 deg). Measured
+  against RUN-C's 2840: glint 237/230/222 vs 243/234/217 at (248,31); frame mean 97/110/136 vs 102/113/144.
+  Moon: 30 deg up, off the FINAL frame's upper-left (moon_dir). CUT (tried, failed): round-1 height-field sea (read
+  as rock), a thin high layer (grey smoke), small high clouds (a cotton ball). Plane layers are motion-blurred by
+  reprojection (_mblur). Numeric geometry check: scratchpad-only (chk2.py logic = solve_cam + project).
+* GRASP (c_grasp.shade_claw only; scene_c.anat_cracks untouched): the rest-pose coords are wandered (0.011 * 38-freq
+  snoise) before anat_cracks (the Voronoi seams were straight scratches), crust fissures sharp^4 * a 26-freq break-up
+  (no closed loops), the long creases (tendons/palm) out of the blaze (cre * brk2 * (0.12+0.22hk)), e_crack
+  0.2+1.1hk, T <= 0.64 (deep orange, never white). GraspSched.ashlar_k = 1 (no lit window grid on the towers).
+* EYE (c_eye.py): iris chroma (mid g 0.42 b 0.04, pupillary b 0.16), x1.6 round the collarette; EyeSched.ashlar_k=1.
+  The page's burn-through (book_C_matte) opens bottom-centre at 1940 (the forges show first), the Eye's glow is
+  above it (revealed by ~1950-1960); left as is (flagged to the director).
+* E15 (director's low-priority polish): the ~800 soft orange blob is in book_C (PAGES-C), not in embers_C3_e15; the
+  764-788 two-arc swoosh is the draught's precomputed paths: a fix changes 720-800 (not a cheap partial) -> skipped,
+  offered to the director.
+* NEXT (director, queued 02:20Z): FILM A's GILDING INSERT, 60 f under T7 (A ~1860-1920), spec in
+  the-long-dawn/review/A_FIX_NOTES.md ("SPEC for EMBERS-C4"); + the ALT if tower 7 exists there.
 
 # >>> EMBERS-C2 (split off EMBERS-C, 27 Sep ~19:15Z): C9 E12 THE EYE ONTO NOTHING (1920-2079), C11 E8-C THE GRASP
 # THAT CANNOT HOLD (2320-2479), C13a E13a THE RING FALLS (2720-2839). EMBERS-C keeps E15, E5-C, E11 + the Ring/flame. <<<
