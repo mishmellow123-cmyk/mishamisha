@@ -1,0 +1,22 @@
+[
+  {
+    "shot": "A2",
+    "frame": 500,
+    "opencv_threads": 1,
+    "matches_prior": {
+      "finished_rgb_sha256": true,
+      "quantized_rgb_sha256": true,
+      "march_depths": true
+    }
+  },
+  {
+    "shot": "A13",
+    "frame": 3799,
+    "opencv_threads": 1,
+    "matches_prior": {
+      "finished_rgb_sha256": true,
+      "quantized_rgb_sha256": true,
+      "march_depths": true
+    }
+  }
+]

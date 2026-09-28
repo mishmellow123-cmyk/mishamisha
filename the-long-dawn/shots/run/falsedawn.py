@@ -181,8 +181,10 @@ def terrain_hmax(CR=None):
     # S1.h_near: base <= .55*.9*1.3 + .05*2 + .2; each of its five
     # boulders updates h <= max(h, 1.6*bh + .3*h), leaving h < 3 m.
     # h_cloud <= CLOUD_Y + 150*2 + 55 + 10*2 + 7 (world's extra billows).
+    # Optional A relief adds <=180 m: still below 3 m at CLOUD_Y=-650, so the
+    # scene bound is unchanged even for the study's maximum runtime strength.
     # S1.h_far: prom,r <= 1, plus the nonnegative beacon Gaussian.
-    ceiling = max(3.0, WD.CLOUD_Y + 382.0, 300.0 + max(WD.S1.HB + 450.0, 0.0))
+    ceiling = max(3.0, WD.CLOUD_Y + 382.0 + WD.CLOUD_RELIEF_MAX, 300.0 + max(WD.S1.HB + 450.0, 0.0))
     for row in CR:
         kind = row[12]
         if kind < -2.5:                       # track/carve/hole rows add no height
