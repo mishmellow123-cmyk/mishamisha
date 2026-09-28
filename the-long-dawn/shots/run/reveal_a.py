@@ -43,7 +43,7 @@ if HILLS not in sys.path:
     sys.path.insert(0, HILLS)                                       # hills first: beacon's own imports
 os.environ.setdefault('NUMBA_NUM_THREADS', '1')
 
-CUT0, CUT1 = 3680, 3800                  # A13 R2-A: bar 47 b1 .. bar 48 b3 (KARST from 3800)
+CUT0, CUT1 = 3660, 3800                  # A13 R2-A: from 3660 (A-FIX: after B's reveal 3612-3659) .. bar 48 b3 (KARST from 3800)
 SRC_OFF = 3600 - 1476                    # cut = src + 2124 (the roar: src 1476 = cut 3600, bar 46 b1)
 TAKE_END = 1555                          # H1's last src frame (cut 3679)
 SRC1 = CUT1 - 1 - SRC_OFF                # 1675
