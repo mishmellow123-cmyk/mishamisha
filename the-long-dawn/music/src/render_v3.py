@@ -264,6 +264,18 @@ def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_
     return paths
 
 
+def fader_curve(n, pts):
+    """a premaster fader ride: [(t_s, dB), ...] breakpoints, cosine-interpolated, 0 dB outside (COMPOSER-C2: C5's
+    headroom fix, which takes the master's fast gain reduction at the slit over as a slow ride)"""
+    g = np.zeros(n, np.float32)
+    for (x0, y0), (x1, y1) in zip(pts[:-1], pts[1:]):
+        a, b = int(round(x0 * SR)), min(n, int(round(x1 * SR)))
+        if b > a:
+            u = np.linspace(0.0, 1.0, b - a, endpoint=False, dtype=np.float32)
+            g[a:b] = y0 + (y1 - y0) * (1 - np.cos(np.pi * u)) / 2
+    return (10 ** (g / 20)).astype(np.float32)
+
+
 def hall_ir():
     # OPTION (SOUND lane, agreed with COMPOSER-A 20:44Z): LONGDAWN_HALL=church uses a MEASURED stone church
     # (ir_v3.irs("church"): Freesound CC0 balloon IRs, T30 ~2.2 s mid).  Unset = the synthesized hall below, so
@@ -299,6 +311,8 @@ def render(cut, barmap=None, fallback=False, force=False, only=(), do_sfx=True, 
     score_mix, rep = mix_score(parts, manifest, irs, S.breaths, bm.render_n, eq=S.eq, groups=S.groups)
     if S.push:
         score_mix = apply_push(score_mix, S.push)
+    if getattr(S, "fader", None):             # ADDITIVE (COMPOSER-C2): a slow premaster fader ride, only if a score sets it
+        score_mix *= fader_curve(len(score_mix), S.fader)[:, None]
     np.save(os.path.join(CACHE, f"premaster_score_{name}.npy"), score_mix[:bm.n])
     json.dump(BREATH_PROBES, open(os.path.join(CACHE, f"breath_probe_{name}.json"), "w"), indent=1)
     print(f"score mixed ({time.time() - t0:.0f}s)", flush=True)

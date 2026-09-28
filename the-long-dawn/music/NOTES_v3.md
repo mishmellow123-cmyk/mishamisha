@@ -235,8 +235,21 @@ in the master): the snow strike ~2900, the roar 3360, the cold tick 3400.
   * Tool: `src/who_v3.py <cut> <name> t0 t1 ...` ranks the parts by loudness in a window (from the part cache).
 
 ## COMPOSER-C2 (cut C, from 28 Sep 05:30Z) · STATE
-**STATE 07:10Z: PHASE 1: A/B render 2 is running (fixes: sfizz's early stop, the 16-bit floor gate). Then the README
-and the verdict to main. Phase 2 waits for the LOCKED C script (the draft is `_local_logs/review/script/C_SCRIPT_v2.md`).**
+**STATE ~08:00Z: PHASE 1 DONE. The pairs and README are in `~/Downloads/The Long Dawn v3 - PREVIEWS/music_AB/`,
+and the verdict went to main. PHASE 2 (C v5.2) render 1 is queued in renderq.**
+- **C5 = the v5.2 film** (5920 f, 74 bars; script `_local_logs/review/script/C_SCRIPT_v5.md`, timeline
+  `C_V5_TIMELINE_and_codex_night_brief.md`). Files: `v3/barmap_C5.json` and `v3/cues_C5.json` (made by
+  scratchpad `make_c5_maps.py`: v1's events below frame 2080 are copied, and v1's existing shots are moved by
+  -720 for the run/reveal, -960 for the illumination/plenty and -1280 for the title; "(est.)" marks the new shots'
+  internal frames). `src/score_v3_C5.py` holds the plan in its docstring: C1-C9 are score_v3_C's own functions,
+  unchanged except the tam bloom (3.2 s) and the headroom fader.
+- **render_v3.py gains ONE additive hook**: `S.fader` (a premaster fader ride, `fader_curve`). It is inert unless
+  a score sets it, so no one else's output changes.
+- Effects: none in C5's render (`cues_C5.json` has empty sfx/ambience). SOUND-C re-masters
+  `cache/v3/premaster_score_final_C5.npy` with the real effects (the hammers in the trap and under the pause, the
+  flint, the beacons).
+- **Next**: the battery on final_C5, a listen-through of the numbers, the preview to PREVIEWS, a message to main,
+  then stop.
 - `src/sfizz_v3.py` (new, mine) has the commands `export`, `check <part> t0 t1` and `ab`. Checks so far: my window
   mixer re-mixes A's stems to within -111 to -135 dB of A's premaster, so the chain is exact. B's orchestral parts
   land within +-1 dB of A (single notes +0.5 dB), and at the sync points their onsets agree within 0-8 ms per part.
