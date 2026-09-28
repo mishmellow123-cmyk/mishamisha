@@ -23,6 +23,9 @@ class ThroatFire:
         self.k = towers.k
         self.t0, self.t1 = float(t0), float(t1)
         self.giants = set(giants)
+        import variant
+        # the ALT's giants are the coded pagoda and obelisk, not forges: no fire in their throats there
+        self.skip = set(giants) if getattr(variant, 'TOWERS_ALT', False) else set()
         k = self.k
         n = k * per
         self.fi = np.repeat(np.arange(k), per)                  # flame particles: short, rising, cooling
@@ -47,7 +50,8 @@ class ThroatFire:
             return
         on = float(smoothstep(self.t0, self.t0 + 40.0, t))
         race = B.SCHED.race(t) if B.SCHED is not None else 1.0
-        gro = np.array([1.0 + (0.8 * float(smoothstep(1730.0, 1780.0, t)) if i in self.giants else 0.0)
+        gro = np.array([0.0 if i in self.skip else
+                        1.0 + (0.8 * float(smoothstep(1730.0, 1780.0, t)) if i in self.giants else 0.0)
                         for i in range(self.k)])
         tops = self._tops(t)
         beat_age = t % BEAT                                     # on the beat (the grid: beats at multiples of 20)
