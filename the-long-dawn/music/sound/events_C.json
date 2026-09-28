@@ -354,10 +354,10 @@
  {
   "id": "C.page.havens",
   "kind": "event",
-  "t": 267.375,
+  "t": 267.3333,
   "level": -37.2,
   "gain": 10.6,
-  "clip_start_s": 266.775,
+  "clip_start_s": 266.7333,
   "hit_offset_s": 0.6,
   "src": [
    "sn:slow_page_turns"
@@ -426,10 +426,10 @@
  {
   "id": "C+.pen.deep",
   "kind": "event",
-  "t": 71.0417,
+  "t": 71.1667,
   "level": -46.0,
   "gain": -5.3,
-  "clip_start_s": 71.0417,
+  "clip_start_s": 71.1667,
   "hit_offset_s": 0.0,
   "src": [
    "fs:194905"
@@ -486,11 +486,11 @@
  {
   "id": "C+.burn.deep",
   "kind": "event",
-  "t": 70.5833,
+  "t": 70.7917,
   "level": -29.7,
-  "gain": 4.4,
-  "clip_start_s": 70.2533,
-  "hit_offset_s": 0.33,
+  "gain": 4.3,
+  "clip_start_s": 70.3717,
+  "hit_offset_s": 0.42,
   "src": [
    "fs:528662"
   ]
@@ -498,10 +498,10 @@
  {
   "id": "C+.burn.eye",
   "kind": "event",
-  "t": 80.1667,
+  "t": 80.0833,
   "level": -28.7,
   "gain": 4.4,
-  "clip_start_s": 79.8667,
+  "clip_start_s": 79.7833,
   "hit_offset_s": 0.3,
   "src": [
    "fs:528662"
@@ -510,11 +510,11 @@
  {
   "id": "C+.burn.map",
   "kind": "event",
-  "t": 173.3333,
+  "t": 173.625,
   "level": -32.6,
-  "gain": 0.1,
-  "clip_start_s": 173.2533,
-  "hit_offset_s": 0.08,
+  "gain": 1.1,
+  "clip_start_s": 173.005,
+  "hit_offset_s": 0.62,
   "src": [
    "fs:528662"
   ]
@@ -522,11 +522,11 @@
  {
   "id": "C+.burn.remains",
   "kind": "event",
-  "t": 233.3333,
+  "t": 234.0,
   "level": -40.6,
-  "gain": -6.5,
-  "clip_start_s": 233.2533,
-  "hit_offset_s": 0.08,
+  "gain": -4.4,
+  "clip_start_s": 233.21,
+  "hit_offset_s": 0.79,
   "src": [
    "fs:528662"
   ]
@@ -537,8 +537,8 @@
   "t": 291.4583,
   "level": -49.4,
   "gain": -15.7,
-  "clip_start_s": 290.9583,
-  "hit_offset_s": 0.5,
+  "clip_start_s": 290.9183,
+  "hit_offset_s": 0.54,
   "src": [
    "fs:528662"
   ]
