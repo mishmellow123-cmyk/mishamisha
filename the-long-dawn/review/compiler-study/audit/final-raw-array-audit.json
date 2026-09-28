@@ -1,0 +1,2793 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "recorded_utc": "2026-09-28T06:34:02.720943+00:00",
+  "audit_performed_utc": null,
+  "audit_performed_utc_note": "Exact check timestamp was not recorded; these direct checks were completed earlier in this session and preserved here at the parent agent request.",
+  "auditor": "check_transcript",
+  "scope": "Independent read-only audit of saved candidate cold/cache-hit NPY outputs, material-control liveness, and five published finished-frame PNGs. No original-versus-candidate comparison.",
+  "recording_method": "The direct checks below were already performed on actual saved arrays, one case/frame pair at a time. This serialization re-read receipt metadata for paths and expected hashes but did not repeat array comparisons. Hash match flags, equality results and liveness counts preserve those measured audit results.",
+  "source_provenance": {
+    "reference_commit": "61cf28b390cf00fdf860401127ca3e7f6cf33491",
+    "candidate_sdfppl_sha256": "9140e4ccd060db8895a2952ea5aab74a3c444bda12e29fd43ab8ec12909b2855",
+    "harness_sha256": "d22693e1e1f2f8539dca7ebf20c07ef757251fcf5c3e8310f38ea4868e83075c",
+    "all_recorded_source_hashes_equal_between_phases": true,
+    "recorded_harness_hash_equal_between_phases": true,
+    "recorded_settings_equal_between_phases": true,
+    "settings": {
+      "mode": "suite",
+      "frames": "4202,4208,4239,4240,4360",
+      "frame_requests": [
+        {
+          "mode": "A14",
+          "frame": 4202
+        },
+        {
+          "mode": "A14",
+          "frame": 4208
+        },
+        {
+          "mode": "A14",
+          "frame": 4239
+        },
+        {
+          "mode": "A15",
+          "frame": 4240
+        },
+        {
+          "mode": "A15",
+          "frame": 4360
+        }
+      ],
+      "scale": 0.5,
+      "ss": 1.5,
+      "repeats": 3,
+      "material_size": 96
+    },
+    "receipts": {
+      "cold": {
+        "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/receipt.json",
+        "sha256": "94a18ede531f6a32e4b8d0a0a25012f78c6edb7c007dfb01112bcab3b0e6492d"
+      },
+      "cache-hit": {
+        "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/receipt.json",
+        "sha256": "86fad5b3619f2820c10df93541d7c189078aafc0b44f66749d8b7d112ca7213f"
+      }
+    },
+    "preview_receipt": {
+      "path": "work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/preview-receipt.json",
+      "sha256": "96104713fcf063e89e5afb84a3fb1195cf2133b45046b77cd17a30159acd9ad7"
+    },
+    "source_provenance_limit": "Source and settings agreement was checked from receipts; this audit did not import project modules or re-hash every source file."
+  },
+  "execution": {
+    "render_or_compilation_started": false,
+    "project_modules_imported": false,
+    "raw_inputs_modified": false,
+    "processes_signalled": false,
+    "array_processing": "One case/frame pair at a time; NumPy/cv2 only, single-thread environment and cv2.setNumThreads(0).",
+    "files_written": [
+      "work/compiler-study/audit/final-raw-array-audit.json"
+    ]
+  },
+  "denominators": {
+    "phases": 2,
+    "saved_npy_files": 122,
+    "saved_npy_files_per_phase": 61,
+    "cold_cache_pairs": 61,
+    "material_cases": 12,
+    "film_frames": 5,
+    "pairs_by_category": {
+      "material_sp_array": 36,
+      "film_sp_array": 15,
+      "linear_full_frame_rgb": 5,
+      "finished_full_frame_rgb": 5
+    },
+    "sp_array_components": [
+      "RGB",
+      "depth",
+      "changed-depth mask"
+    ],
+    "published_finished_pngs": 5
+  },
+  "summary": {
+    "saved_files_matching_file_sha256": 122,
+    "saved_arrays_matching_decoded_sha256": 122,
+    "saved_arrays_matching_dtype_and_shape": 122,
+    "finite_arrays": 122,
+    "receipt_and_directory_npy_inventory_match_by_phase": {
+      "cold": true,
+      "cache-hit": true
+    },
+    "missing_files": [],
+    "unlisted_npy_files": [],
+    "cold_cache_byte_identical_pairs": 61,
+    "cold_cache_decoded_exact_pairs": 61,
+    "material_cases_with_nonzero_rgb_and_depth_changes": 12,
+    "material_saved_masks_equal_recomputed_depth_change_masks": 12,
+    "published_png_hashes_matching_receipt": 5,
+    "published_pngs_exact_finished_array_quantization": 5,
+    "failure_count": 0,
+    "failures": []
+  },
+  "direct_array_checks": [
+    {
+      "output": "A14-4202-finished",
+      "category": "finished_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4202-finished.npy",
+          "file_sha256": "77b3582813193500fad7af4e4d16a76bd6d6d31fd62a1cb4dae765c8c39e831e",
+          "decoded_array_sha256": "64f263942e881dbb3d657c660c6e7e4c2b350e72e4fa0533f8ddab491b891062",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4202-finished.npy",
+          "file_sha256": "77b3582813193500fad7af4e4d16a76bd6d6d31fd62a1cb4dae765c8c39e831e",
+          "decoded_array_sha256": "64f263942e881dbb3d657c660c6e7e4c2b350e72e4fa0533f8ddab491b891062",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4202-linear",
+      "category": "linear_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4202-linear.npy",
+          "file_sha256": "25766b46dea0d06507434f0125eb3c0a859932b8f5c75f1f05b6f416f90dc8b9",
+          "decoded_array_sha256": "f7007ec119f9672da4f41422cfb95ecb00a44ccc41161c60d6d3b108ad95a91f",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4202-linear.npy",
+          "file_sha256": "25766b46dea0d06507434f0125eb3c0a859932b8f5c75f1f05b6f416f90dc8b9",
+          "decoded_array_sha256": "f7007ec119f9672da4f41422cfb95ecb00a44ccc41161c60d6d3b108ad95a91f",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4202-sp0-depth-changed-mask",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4202-sp0-depth-changed-mask.npy",
+          "file_sha256": "f51c5ffc7d134623b6ac8417dee93604160cad031a8a6737ccbcad652a8e888a",
+          "decoded_array_sha256": "afaa13a8729b9e486f3beaa36c53d5353c9387a878c402e087d4cb10209495c8",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4202-sp0-depth-changed-mask.npy",
+          "file_sha256": "f51c5ffc7d134623b6ac8417dee93604160cad031a8a6737ccbcad652a8e888a",
+          "decoded_array_sha256": "afaa13a8729b9e486f3beaa36c53d5353c9387a878c402e087d4cb10209495c8",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4202-sp0-img",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4202-sp0-img.npy",
+          "file_sha256": "d5af4b9c6992175800de19ebe5b96c3d1ee6fc79065ae705cd6721977c3df428",
+          "decoded_array_sha256": "fca5c13efb8fd497943a6006e52d99ca4b3dc18fb415a136cf3c404adb8ac550",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4202-sp0-img.npy",
+          "file_sha256": "d5af4b9c6992175800de19ebe5b96c3d1ee6fc79065ae705cd6721977c3df428",
+          "decoded_array_sha256": "fca5c13efb8fd497943a6006e52d99ca4b3dc18fb415a136cf3c404adb8ac550",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4202-sp0-zb",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4202-sp0-zb.npy",
+          "file_sha256": "f8703b34b205e2ab4dced797fabe9ab01de8ce2e42e2ae66485d036fbf4e4dea",
+          "decoded_array_sha256": "b0288aab308f604936549bbb31cb7113606ca350d9fd2fb6cb5c24948d9aa8be",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4202-sp0-zb.npy",
+          "file_sha256": "f8703b34b205e2ab4dced797fabe9ab01de8ce2e42e2ae66485d036fbf4e4dea",
+          "decoded_array_sha256": "b0288aab308f604936549bbb31cb7113606ca350d9fd2fb6cb5c24948d9aa8be",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4208-finished",
+      "category": "finished_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4208-finished.npy",
+          "file_sha256": "55d81602262bb2a7c25dbe84ece0cfac00542a24e650dadd538eaff50d864e58",
+          "decoded_array_sha256": "179b1c3f16f5f1d569658fafbab3e0858cbdb0fc4147939f3610cfde29ec797f",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4208-finished.npy",
+          "file_sha256": "55d81602262bb2a7c25dbe84ece0cfac00542a24e650dadd538eaff50d864e58",
+          "decoded_array_sha256": "179b1c3f16f5f1d569658fafbab3e0858cbdb0fc4147939f3610cfde29ec797f",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4208-linear",
+      "category": "linear_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4208-linear.npy",
+          "file_sha256": "decaac1805554ef7e822d46f00499bf74bd27d1d667e932aaa2d3f3e3a8b0b89",
+          "decoded_array_sha256": "f0ce280cc18097a860313a468c823a54efe30b2fffc138ec9e4c52efccbb4d42",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4208-linear.npy",
+          "file_sha256": "decaac1805554ef7e822d46f00499bf74bd27d1d667e932aaa2d3f3e3a8b0b89",
+          "decoded_array_sha256": "f0ce280cc18097a860313a468c823a54efe30b2fffc138ec9e4c52efccbb4d42",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4208-sp0-depth-changed-mask",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4208-sp0-depth-changed-mask.npy",
+          "file_sha256": "bc4c45a0d8680ab51d1971ca938b29ab1e3f15315791fc0d8d78351e1f434308",
+          "decoded_array_sha256": "4039e14d18ad9bb9d2c5713386a475bf7226fba9bcc7b37b8b531f87a16e95bf",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4208-sp0-depth-changed-mask.npy",
+          "file_sha256": "bc4c45a0d8680ab51d1971ca938b29ab1e3f15315791fc0d8d78351e1f434308",
+          "decoded_array_sha256": "4039e14d18ad9bb9d2c5713386a475bf7226fba9bcc7b37b8b531f87a16e95bf",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4208-sp0-img",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4208-sp0-img.npy",
+          "file_sha256": "594c86995811d09f71ec9f5f46c9fca50f02ad91505cb446ad8e5eb529f673ca",
+          "decoded_array_sha256": "39a87bd68f127b68589146aa2651a11cb9c47f99c3809f95c3fdc02bb423738f",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4208-sp0-img.npy",
+          "file_sha256": "594c86995811d09f71ec9f5f46c9fca50f02ad91505cb446ad8e5eb529f673ca",
+          "decoded_array_sha256": "39a87bd68f127b68589146aa2651a11cb9c47f99c3809f95c3fdc02bb423738f",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4208-sp0-zb",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4208-sp0-zb.npy",
+          "file_sha256": "78027739f3622aab29ea58ad75380dfdf6c80884f211c1af1a811225561eb0a1",
+          "decoded_array_sha256": "7c574b662c56e0c8b3a45a9e9d420c624f1999e31f3411d8f81f53cce65968aa",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4208-sp0-zb.npy",
+          "file_sha256": "78027739f3622aab29ea58ad75380dfdf6c80884f211c1af1a811225561eb0a1",
+          "decoded_array_sha256": "7c574b662c56e0c8b3a45a9e9d420c624f1999e31f3411d8f81f53cce65968aa",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4239-finished",
+      "category": "finished_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4239-finished.npy",
+          "file_sha256": "ea23f60ee6b005dba8fd532ac7a5e19a3df5605e0f2c5df6d4260a67a5a2c7c5",
+          "decoded_array_sha256": "d9b16a66dee2c6ab0d8ccedf404ab3259da5679ecedf4214ae6369a5272cc20d",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4239-finished.npy",
+          "file_sha256": "ea23f60ee6b005dba8fd532ac7a5e19a3df5605e0f2c5df6d4260a67a5a2c7c5",
+          "decoded_array_sha256": "d9b16a66dee2c6ab0d8ccedf404ab3259da5679ecedf4214ae6369a5272cc20d",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4239-linear",
+      "category": "linear_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4239-linear.npy",
+          "file_sha256": "9d50776256f4fff700fe16974e1bc1f6945afca6f6fce040e79b32fd1a915348",
+          "decoded_array_sha256": "db10bde4272f62fd1eff81828a1cf5830c463fd034cf748b7100408debebf8f4",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4239-linear.npy",
+          "file_sha256": "9d50776256f4fff700fe16974e1bc1f6945afca6f6fce040e79b32fd1a915348",
+          "decoded_array_sha256": "db10bde4272f62fd1eff81828a1cf5830c463fd034cf748b7100408debebf8f4",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4239-sp0-depth-changed-mask",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4239-sp0-depth-changed-mask.npy",
+          "file_sha256": "bb79d34e683cb6354f0e45a7d68dae07d0eea4f3528b294c5866a38430c1d7b7",
+          "decoded_array_sha256": "4ba696cdbc25d2f948d5f049110cc8a88c52f066e14cea66b1292d6eb054e030",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4239-sp0-depth-changed-mask.npy",
+          "file_sha256": "bb79d34e683cb6354f0e45a7d68dae07d0eea4f3528b294c5866a38430c1d7b7",
+          "decoded_array_sha256": "4ba696cdbc25d2f948d5f049110cc8a88c52f066e14cea66b1292d6eb054e030",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4239-sp0-img",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4239-sp0-img.npy",
+          "file_sha256": "9e8e89acbbe105f03d7eadcb0984ff2a2a93d193becec96223d27ee0906d193a",
+          "decoded_array_sha256": "6a63147aa6af161b7845da1a1a6c4266fd321ebd5184195ef8912ef64630a08a",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4239-sp0-img.npy",
+          "file_sha256": "9e8e89acbbe105f03d7eadcb0984ff2a2a93d193becec96223d27ee0906d193a",
+          "decoded_array_sha256": "6a63147aa6af161b7845da1a1a6c4266fd321ebd5184195ef8912ef64630a08a",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A14-4239-sp0-zb",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A14-4239-sp0-zb.npy",
+          "file_sha256": "ebcb396ff6876403e9ab631061dfc21b79747ac56def179945fcda9c7976eadb",
+          "decoded_array_sha256": "6ceea354eb0c83647de18b60861bb21d91c145c62bb17851f3041419de3de0b5",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A14-4239-sp0-zb.npy",
+          "file_sha256": "ebcb396ff6876403e9ab631061dfc21b79747ac56def179945fcda9c7976eadb",
+          "decoded_array_sha256": "6ceea354eb0c83647de18b60861bb21d91c145c62bb17851f3041419de3de0b5",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4240-finished",
+      "category": "finished_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4240-finished.npy",
+          "file_sha256": "40b0ed80ded31023fa5145267e81d394b6dd8a7c7f40b2ef198f4c3a9057c5a5",
+          "decoded_array_sha256": "d0e66f67dfb5e8a0340e93bb0194520d8f2c9bdbd2d4a13d7c9592c1736b07e1",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4240-finished.npy",
+          "file_sha256": "40b0ed80ded31023fa5145267e81d394b6dd8a7c7f40b2ef198f4c3a9057c5a5",
+          "decoded_array_sha256": "d0e66f67dfb5e8a0340e93bb0194520d8f2c9bdbd2d4a13d7c9592c1736b07e1",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4240-linear",
+      "category": "linear_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4240-linear.npy",
+          "file_sha256": "042b61bfb4f32772389a4e09202a4754facbad91ec03578e1395f4286f760bb1",
+          "decoded_array_sha256": "526f42dd314acd1099cf1859df7ef9ff8d3e8c7e272b6e090ff3237a26a1adc7",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4240-linear.npy",
+          "file_sha256": "042b61bfb4f32772389a4e09202a4754facbad91ec03578e1395f4286f760bb1",
+          "decoded_array_sha256": "526f42dd314acd1099cf1859df7ef9ff8d3e8c7e272b6e090ff3237a26a1adc7",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4240-sp0-depth-changed-mask",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4240-sp0-depth-changed-mask.npy",
+          "file_sha256": "38fa96462b91fd3e2c474b2f1a268e25c427d5b5513c3f2ab4c0a3baf80474e6",
+          "decoded_array_sha256": "fa1563acfc2d0618d4ff42aa748020541284feb26e56af523a995c1b1c676f70",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4240-sp0-depth-changed-mask.npy",
+          "file_sha256": "38fa96462b91fd3e2c474b2f1a268e25c427d5b5513c3f2ab4c0a3baf80474e6",
+          "decoded_array_sha256": "fa1563acfc2d0618d4ff42aa748020541284feb26e56af523a995c1b1c676f70",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4240-sp0-img",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4240-sp0-img.npy",
+          "file_sha256": "654da56ec947342bdc1390a8698908d51c9a943ec3a07881e449863f4508aed0",
+          "decoded_array_sha256": "d6948435cba9b6f8b2a66e79cc4705d1e8fad5531c85bd5486076a2c3a925f5d",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4240-sp0-img.npy",
+          "file_sha256": "654da56ec947342bdc1390a8698908d51c9a943ec3a07881e449863f4508aed0",
+          "decoded_array_sha256": "d6948435cba9b6f8b2a66e79cc4705d1e8fad5531c85bd5486076a2c3a925f5d",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4240-sp0-zb",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4240-sp0-zb.npy",
+          "file_sha256": "71d7bc3c5dd39278bf18412728fe6925cd12761701e4cc3e8dd942b8d55e4de6",
+          "decoded_array_sha256": "fe4558bd745dd6097849a15eb4afe74e57c73f998ce9e8273dd5727c423b6639",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4240-sp0-zb.npy",
+          "file_sha256": "71d7bc3c5dd39278bf18412728fe6925cd12761701e4cc3e8dd942b8d55e4de6",
+          "decoded_array_sha256": "fe4558bd745dd6097849a15eb4afe74e57c73f998ce9e8273dd5727c423b6639",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4360-finished",
+      "category": "finished_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4360-finished.npy",
+          "file_sha256": "9b01c089852f5ecdca1c01f6ef1219084daf618c5d546642a2ef58ff060144d0",
+          "decoded_array_sha256": "4dedc80dd65e2f3a86f03e6bcc2d5fd41b1b266345507f03e8d217cea58f5159",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4360-finished.npy",
+          "file_sha256": "9b01c089852f5ecdca1c01f6ef1219084daf618c5d546642a2ef58ff060144d0",
+          "decoded_array_sha256": "4dedc80dd65e2f3a86f03e6bcc2d5fd41b1b266345507f03e8d217cea58f5159",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4360-linear",
+      "category": "linear_full_frame_rgb",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4360-linear.npy",
+          "file_sha256": "595c9def8cd1a8689bc72b5b60c22de3a157bff54ef5ffafc7e0f0e928a1e013",
+          "decoded_array_sha256": "12e843e613d365a10a21e78bf4ad23da0cd3db5e4cc036e40b832dc368ac460e",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4360-linear.npy",
+          "file_sha256": "595c9def8cd1a8689bc72b5b60c22de3a157bff54ef5ffafc7e0f0e928a1e013",
+          "decoded_array_sha256": "12e843e613d365a10a21e78bf4ad23da0cd3db5e4cc036e40b832dc368ac460e",
+          "dtype": "float32",
+          "shape": [
+            402,
+            960,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4360-sp0-depth-changed-mask",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4360-sp0-depth-changed-mask.npy",
+          "file_sha256": "ece92332f216756900331e09f64675a107d1669f4fd64b4481e1155103cbba8a",
+          "decoded_array_sha256": "a4d5a7715d3d855630e77ae877894fc9aa1b22a81c7c5c8bf231f9166c8d6107",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4360-sp0-depth-changed-mask.npy",
+          "file_sha256": "ece92332f216756900331e09f64675a107d1669f4fd64b4481e1155103cbba8a",
+          "decoded_array_sha256": "a4d5a7715d3d855630e77ae877894fc9aa1b22a81c7c5c8bf231f9166c8d6107",
+          "dtype": "bool",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4360-sp0-img",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4360-sp0-img.npy",
+          "file_sha256": "9fe178a4e42e556bcbeb3f71dc5934461ac9e1a6b9ea2e24298a0858c6dc8727",
+          "decoded_array_sha256": "aa285cfe7df5d27c2960e228d075e913085af9a6076de6f1e6de7b09207291b0",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4360-sp0-img.npy",
+          "file_sha256": "9fe178a4e42e556bcbeb3f71dc5934461ac9e1a6b9ea2e24298a0858c6dc8727",
+          "decoded_array_sha256": "aa285cfe7df5d27c2960e228d075e913085af9a6076de6f1e6de7b09207291b0",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "A15-4360-sp0-zb",
+      "category": "film_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/A15-4360-sp0-zb.npy",
+          "file_sha256": "d54b58d73fedb72e34c79c8da7caf23fd608a5899c5437029ea350e739da7aef",
+          "decoded_array_sha256": "c5e2684621f09b8a4494c5e4850916d7644f3d5ab4b15c8f026c93cbf56445cc",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/A15-4360-sp0-zb.npy",
+          "file_sha256": "d54b58d73fedb72e34c79c8da7caf23fd608a5899c5437029ea350e739da7aef",
+          "decoded_array_sha256": "c5e2684621f09b8a4494c5e4850916d7644f3d5ab4b15c8f026c93cbf56445cc",
+          "dtype": "float32",
+          "shape": [
+            616,
+            1456
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z16-block0-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z16-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "27b3d7a13b52a4e6ad89868caa9b4282618b5e236b5f1e734e29f9331fff4230",
+          "decoded_array_sha256": "61e1a7b0cf6a206b12e76450f1bbbb6561f6c5ccbb322b239c069d922cc5ad1f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z16-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "27b3d7a13b52a4e6ad89868caa9b4282618b5e236b5f1e734e29f9331fff4230",
+          "decoded_array_sha256": "61e1a7b0cf6a206b12e76450f1bbbb6561f6c5ccbb322b239c069d922cc5ad1f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z16-block0-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z16-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "dedff21844b223650bd9f1355b187b8fd168040a65ae7b1b9d139a97b6973a3b",
+          "decoded_array_sha256": "8049f72b95b708bf444e774877b378bbc6c10b28772b6df3e823d2de9bd1f618",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z16-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "dedff21844b223650bd9f1355b187b8fd168040a65ae7b1b9d139a97b6973a3b",
+          "decoded_array_sha256": "8049f72b95b708bf444e774877b378bbc6c10b28772b6df3e823d2de9bd1f618",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z16-block0-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z16-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "8ba3294f443fdcf4d002e2ce83c2665365388c4edc24137d26057c8675538949",
+          "decoded_array_sha256": "1715ae35543a9d9de955d3f9b5fc5ef36ed9c491052dcdfc821ab332c560ff44",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z16-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "8ba3294f443fdcf4d002e2ce83c2665365388c4edc24137d26057c8675538949",
+          "decoded_array_sha256": "1715ae35543a9d9de955d3f9b5fc5ef36ed9c491052dcdfc821ab332c560ff44",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block0-fog0-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block0-fog0-sp0-depth-changed-mask.npy",
+          "file_sha256": "f13915b90f21ab4d64757d6131cac07feb8e9c875536e9d50f90e072ad4a99d2",
+          "decoded_array_sha256": "6c00c666bccd8cf139662dfda7aa93a6155599576df2fb47c4955720bafe4ea7",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block0-fog0-sp0-depth-changed-mask.npy",
+          "file_sha256": "f13915b90f21ab4d64757d6131cac07feb8e9c875536e9d50f90e072ad4a99d2",
+          "decoded_array_sha256": "6c00c666bccd8cf139662dfda7aa93a6155599576df2fb47c4955720bafe4ea7",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block0-fog0-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block0-fog0-sp0-img.npy",
+          "file_sha256": "2722f4ac1f5720fac2f4a7f9e1b7bcf2331f2479700cb7243bff455f08015377",
+          "decoded_array_sha256": "841ae7c56b24ae358915b7b291a7542a237e0440a54ae2ceba7a7a1a6d2ed60a",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block0-fog0-sp0-img.npy",
+          "file_sha256": "2722f4ac1f5720fac2f4a7f9e1b7bcf2331f2479700cb7243bff455f08015377",
+          "decoded_array_sha256": "841ae7c56b24ae358915b7b291a7542a237e0440a54ae2ceba7a7a1a6d2ed60a",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block0-fog0-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block0-fog0-sp0-zb.npy",
+          "file_sha256": "c9723c6bd5e91706baa7ed38b7e3184a0aec741ddbd06f1a5941a69de587f557",
+          "decoded_array_sha256": "4dcfdde38cf6286694ba741288b2501997a19a68d9e35ed60eea3dd8742d0aa7",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block0-fog0-sp0-zb.npy",
+          "file_sha256": "c9723c6bd5e91706baa7ed38b7e3184a0aec741ddbd06f1a5941a69de587f557",
+          "decoded_array_sha256": "4dcfdde38cf6286694ba741288b2501997a19a68d9e35ed60eea3dd8742d0aa7",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block0-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "f13915b90f21ab4d64757d6131cac07feb8e9c875536e9d50f90e072ad4a99d2",
+          "decoded_array_sha256": "6c00c666bccd8cf139662dfda7aa93a6155599576df2fb47c4955720bafe4ea7",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "f13915b90f21ab4d64757d6131cac07feb8e9c875536e9d50f90e072ad4a99d2",
+          "decoded_array_sha256": "6c00c666bccd8cf139662dfda7aa93a6155599576df2fb47c4955720bafe4ea7",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block0-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "273cd4d33e6910215c950d66d3cfd57841b580b9cd4db528a733755153c516da",
+          "decoded_array_sha256": "c0a2629ca2f8c84a70e087481cf2bd321f46e55210472124911cc6e59e960504",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "273cd4d33e6910215c950d66d3cfd57841b580b9cd4db528a733755153c516da",
+          "decoded_array_sha256": "c0a2629ca2f8c84a70e087481cf2bd321f46e55210472124911cc6e59e960504",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block0-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "c9723c6bd5e91706baa7ed38b7e3184a0aec741ddbd06f1a5941a69de587f557",
+          "decoded_array_sha256": "4dcfdde38cf6286694ba741288b2501997a19a68d9e35ed60eea3dd8742d0aa7",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "c9723c6bd5e91706baa7ed38b7e3184a0aec741ddbd06f1a5941a69de587f557",
+          "decoded_array_sha256": "4dcfdde38cf6286694ba741288b2501997a19a68d9e35ed60eea3dd8742d0aa7",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block1-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block1-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "d9c7961abd38f8222a14904fb17914780c5ff37b2e8c97e073614c9672c3b106",
+          "decoded_array_sha256": "d7d3242b4bb47450bd1f24d789c2a39364a1ce5ed370d2f48234f0c063bc6f54",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block1-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "d9c7961abd38f8222a14904fb17914780c5ff37b2e8c97e073614c9672c3b106",
+          "decoded_array_sha256": "d7d3242b4bb47450bd1f24d789c2a39364a1ce5ed370d2f48234f0c063bc6f54",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block1-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block1-fog0.025-sp0-img.npy",
+          "file_sha256": "1959e5396505aaafc6d5a3788ef83a6a4c86c5c6c9e1de0ace3bf56b63d90d31",
+          "decoded_array_sha256": "e0976781152aebec359b27d3cdaa93fcaaef7ad0da6892fc7bce06b21697c684",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block1-fog0.025-sp0-img.npy",
+          "file_sha256": "1959e5396505aaafc6d5a3788ef83a6a4c86c5c6c9e1de0ace3bf56b63d90d31",
+          "decoded_array_sha256": "e0976781152aebec359b27d3cdaa93fcaaef7ad0da6892fc7bce06b21697c684",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "cloth-z3.8-block1-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/cloth-z3.8-block1-fog0.025-sp0-zb.npy",
+          "file_sha256": "b323e1cfede173dcc879539ff34e6b1ffa26d31e502065a8d091f8bee4531a41",
+          "decoded_array_sha256": "a38ad96017a620af71a9db27f74f6180da76edbf59c9a0cbd338d947e20ccf1d",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/cloth-z3.8-block1-fog0.025-sp0-zb.npy",
+          "file_sha256": "b323e1cfede173dcc879539ff34e6b1ffa26d31e502065a8d091f8bee4531a41",
+          "decoded_array_sha256": "a38ad96017a620af71a9db27f74f6180da76edbf59c9a0cbd338d947e20ccf1d",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "glass-no-emission-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/glass-no-emission-sp0-depth-changed-mask.npy",
+          "file_sha256": "2d90f4e14654adcfd1a7a5541bebb14ec017d3030dc079ac345f1ebf68fef6fa",
+          "decoded_array_sha256": "ab61516c44b05586926f21bff1953331ff4731f18e6a93a3793a94a3ceb2759f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/glass-no-emission-sp0-depth-changed-mask.npy",
+          "file_sha256": "2d90f4e14654adcfd1a7a5541bebb14ec017d3030dc079ac345f1ebf68fef6fa",
+          "decoded_array_sha256": "ab61516c44b05586926f21bff1953331ff4731f18e6a93a3793a94a3ceb2759f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "glass-no-emission-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/glass-no-emission-sp0-img.npy",
+          "file_sha256": "a17b58053145875f97e2a1081c12d96472ec4ef3516414c581d83dd425deb6ec",
+          "decoded_array_sha256": "fbf90718a6fd2e5bbfdccbcc1425a1824872b8808fc70e17b2fea37b13ef4605",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/glass-no-emission-sp0-img.npy",
+          "file_sha256": "a17b58053145875f97e2a1081c12d96472ec4ef3516414c581d83dd425deb6ec",
+          "decoded_array_sha256": "fbf90718a6fd2e5bbfdccbcc1425a1824872b8808fc70e17b2fea37b13ef4605",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "glass-no-emission-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/glass-no-emission-sp0-zb.npy",
+          "file_sha256": "efdb9b338f59d1119bf7ff510ddf20a5ebc59b232daeb5e01afcb607960d68f0",
+          "decoded_array_sha256": "09a273670bb0eb1b4240cfa479db0470a342d4ada6b941798490bf3a06ccd58b",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/glass-no-emission-sp0-zb.npy",
+          "file_sha256": "efdb9b338f59d1119bf7ff510ddf20a5ebc59b232daeb5e01afcb607960d68f0",
+          "decoded_array_sha256": "09a273670bb0eb1b4240cfa479db0470a342d4ada6b941798490bf3a06ccd58b",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "glass-z3.8-block0-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/glass-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "2d90f4e14654adcfd1a7a5541bebb14ec017d3030dc079ac345f1ebf68fef6fa",
+          "decoded_array_sha256": "ab61516c44b05586926f21bff1953331ff4731f18e6a93a3793a94a3ceb2759f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/glass-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "2d90f4e14654adcfd1a7a5541bebb14ec017d3030dc079ac345f1ebf68fef6fa",
+          "decoded_array_sha256": "ab61516c44b05586926f21bff1953331ff4731f18e6a93a3793a94a3ceb2759f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "glass-z3.8-block0-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/glass-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "d8758ed8e86647484372fcad1a031efa95a726c4055e19c66f0148f653022d40",
+          "decoded_array_sha256": "0dd123a9d32df16c970760567b798d8da09cac1e490ef3926f4e65c955edadc5",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/glass-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "d8758ed8e86647484372fcad1a031efa95a726c4055e19c66f0148f653022d40",
+          "decoded_array_sha256": "0dd123a9d32df16c970760567b798d8da09cac1e490ef3926f4e65c955edadc5",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "glass-z3.8-block0-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/glass-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "efdb9b338f59d1119bf7ff510ddf20a5ebc59b232daeb5e01afcb607960d68f0",
+          "decoded_array_sha256": "09a273670bb0eb1b4240cfa479db0470a342d4ada6b941798490bf3a06ccd58b",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/glass-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "efdb9b338f59d1119bf7ff510ddf20a5ebc59b232daeb5e01afcb607960d68f0",
+          "decoded_array_sha256": "09a273670bb0eb1b4240cfa479db0470a342d4ada6b941798490bf3a06ccd58b",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "horn-z3.8-block0-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/horn-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "2d90f4e14654adcfd1a7a5541bebb14ec017d3030dc079ac345f1ebf68fef6fa",
+          "decoded_array_sha256": "ab61516c44b05586926f21bff1953331ff4731f18e6a93a3793a94a3ceb2759f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/horn-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "2d90f4e14654adcfd1a7a5541bebb14ec017d3030dc079ac345f1ebf68fef6fa",
+          "decoded_array_sha256": "ab61516c44b05586926f21bff1953331ff4731f18e6a93a3793a94a3ceb2759f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "horn-z3.8-block0-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/horn-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "524aada1141fc9b1fbd5249dbc0e7492a452c944072d51b545894487c6aed05d",
+          "decoded_array_sha256": "10aa6c88da5a3b444d743e212372a1db6c93460a9cb3ab95682e937c15311992",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/horn-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "524aada1141fc9b1fbd5249dbc0e7492a452c944072d51b545894487c6aed05d",
+          "decoded_array_sha256": "10aa6c88da5a3b444d743e212372a1db6c93460a9cb3ab95682e937c15311992",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "horn-z3.8-block0-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/horn-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "efdb9b338f59d1119bf7ff510ddf20a5ebc59b232daeb5e01afcb607960d68f0",
+          "decoded_array_sha256": "09a273670bb0eb1b4240cfa479db0470a342d4ada6b941798490bf3a06ccd58b",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/horn-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "efdb9b338f59d1119bf7ff510ddf20a5ebc59b232daeb5e01afcb607960d68f0",
+          "decoded_array_sha256": "09a273670bb0eb1b4240cfa479db0470a342d4ada6b941798490bf3a06ccd58b",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "iron_wood-z3.8-block0-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/iron_wood-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "2cfdfc3438149e1398a0d25a5cc34e510a0b232caaf420896aaeba42d0c13c71",
+          "decoded_array_sha256": "ab2744f7b5241d07a1498c81d7cf8c66dbe639c5f3ef5b1a7d6d55117c6c13b7",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/iron_wood-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "2cfdfc3438149e1398a0d25a5cc34e510a0b232caaf420896aaeba42d0c13c71",
+          "decoded_array_sha256": "ab2744f7b5241d07a1498c81d7cf8c66dbe639c5f3ef5b1a7d6d55117c6c13b7",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "iron_wood-z3.8-block0-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/iron_wood-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "2e701d9aef79a480d5850368e483510e086dead4afb807b972c73623d20ef047",
+          "decoded_array_sha256": "ba21b985e0aef22b174271e5ccb73c321bbaeb888bb5b39b47c21028274017da",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/iron_wood-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "2e701d9aef79a480d5850368e483510e086dead4afb807b972c73623d20ef047",
+          "decoded_array_sha256": "ba21b985e0aef22b174271e5ccb73c321bbaeb888bb5b39b47c21028274017da",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "iron_wood-z3.8-block0-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/iron_wood-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "8a771991f85a1a1989f6a6b7c0c6e54c9a05d09be3bedac451d2b46f2ef9410c",
+          "decoded_array_sha256": "457257d9b9131eacd71b429aa2a21d2e4ad32eb6bfb059c9f207b0db7059a1ef",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/iron_wood-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "8a771991f85a1a1989f6a6b7c0c6e54c9a05d09be3bedac451d2b46f2ef9410c",
+          "decoded_array_sha256": "457257d9b9131eacd71b429aa2a21d2e4ad32eb6bfb059c9f207b0db7059a1ef",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "rough_rock-no-displacement-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/rough_rock-no-displacement-sp0-depth-changed-mask.npy",
+          "file_sha256": "dbbc3097ded074c595a6151a0db5111554f0eb45375f1a6cf8434021a7fafedf",
+          "decoded_array_sha256": "14371056c45a2bc0ae282f462a136349857d0a507a6aa92285ffe0e3c8a04e2e",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/rough_rock-no-displacement-sp0-depth-changed-mask.npy",
+          "file_sha256": "dbbc3097ded074c595a6151a0db5111554f0eb45375f1a6cf8434021a7fafedf",
+          "decoded_array_sha256": "14371056c45a2bc0ae282f462a136349857d0a507a6aa92285ffe0e3c8a04e2e",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "rough_rock-no-displacement-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/rough_rock-no-displacement-sp0-img.npy",
+          "file_sha256": "7c5d2d418e2b80c38fc26f761f6cbeeaf98b915d5389b2999820deeb2f368f38",
+          "decoded_array_sha256": "b5d08784bf892ddbd7231dcf4c4e0d93a778dcecd4a1c5f0cb4c196a79fbd65a",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/rough_rock-no-displacement-sp0-img.npy",
+          "file_sha256": "7c5d2d418e2b80c38fc26f761f6cbeeaf98b915d5389b2999820deeb2f368f38",
+          "decoded_array_sha256": "b5d08784bf892ddbd7231dcf4c4e0d93a778dcecd4a1c5f0cb4c196a79fbd65a",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "rough_rock-no-displacement-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/rough_rock-no-displacement-sp0-zb.npy",
+          "file_sha256": "1c5362366180f607e22feb4a3c5a36bb93dcac4418ff10e2402126594a02523f",
+          "decoded_array_sha256": "4ada9acd670826f54adcc936d0912b34151a5a81604729ae59c0dc01486f9eb6",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/rough_rock-no-displacement-sp0-zb.npy",
+          "file_sha256": "1c5362366180f607e22feb4a3c5a36bb93dcac4418ff10e2402126594a02523f",
+          "decoded_array_sha256": "4ada9acd670826f54adcc936d0912b34151a5a81604729ae59c0dc01486f9eb6",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "rough_rock-z3.8-block0-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/rough_rock-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "9167fca6af9b8ce8a9e559f5159e5333c3bb321dac8499913c0dcb24f4101931",
+          "decoded_array_sha256": "87d3ef9f99a9189fef5f3f5c45697957cca8113c0d2dd0dd2de3461c97e385c0",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/rough_rock-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "9167fca6af9b8ce8a9e559f5159e5333c3bb321dac8499913c0dcb24f4101931",
+          "decoded_array_sha256": "87d3ef9f99a9189fef5f3f5c45697957cca8113c0d2dd0dd2de3461c97e385c0",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "rough_rock-z3.8-block0-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/rough_rock-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "2b575ef59b36f0ada902787407231bb31cc5018e0ee06af34d4a27d8835705be",
+          "decoded_array_sha256": "6001cbbf7a8cc98f6c3a559657008a835f16db4d63f0c41995a3614eccf06f1f",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/rough_rock-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "2b575ef59b36f0ada902787407231bb31cc5018e0ee06af34d4a27d8835705be",
+          "decoded_array_sha256": "6001cbbf7a8cc98f6c3a559657008a835f16db4d63f0c41995a3614eccf06f1f",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "rough_rock-z3.8-block0-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/rough_rock-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "01739c92df3a452a3e489601e15634edbb838726c80759caed444047df825a6d",
+          "decoded_array_sha256": "7347632e96ffaa24290e76a78bb111bf0637440d9b148e870bdf218d72b27850",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/rough_rock-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "01739c92df3a452a3e489601e15634edbb838726c80759caed444047df825a6d",
+          "decoded_array_sha256": "7347632e96ffaa24290e76a78bb111bf0637440d9b148e870bdf218d72b27850",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "small_glass-z3.8-block0-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/small_glass-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "cb1e2c5f19e1d519967e92bac88a3351640dcabd99c1d7b444cc7b05ae2d9b2e",
+          "decoded_array_sha256": "72cccf68eeee165582b2cde039f9356ab8b2ba2e7df5b9b8f5bae3bd316b663f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/small_glass-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "cb1e2c5f19e1d519967e92bac88a3351640dcabd99c1d7b444cc7b05ae2d9b2e",
+          "decoded_array_sha256": "72cccf68eeee165582b2cde039f9356ab8b2ba2e7df5b9b8f5bae3bd316b663f",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "small_glass-z3.8-block0-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/small_glass-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "c61ca3ffb315d322057849fcd0ddee9bacd6acff5007953223aeafd53f45ccb2",
+          "decoded_array_sha256": "08242c4b0db080520acb0c7ab198284a531b112dbd6a0a58921ba3edb66f4abd",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/small_glass-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "c61ca3ffb315d322057849fcd0ddee9bacd6acff5007953223aeafd53f45ccb2",
+          "decoded_array_sha256": "08242c4b0db080520acb0c7ab198284a531b112dbd6a0a58921ba3edb66f4abd",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "small_glass-z3.8-block0-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/small_glass-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "66f19705a6237a5bd0fc1aaaee04834e9ee406931bebe12159ad4078090ab1a0",
+          "decoded_array_sha256": "3b22011b4fcf760fa43f7fbce1551baf4abfd06fb4bd5eb6ba84db6cade5bfe3",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/small_glass-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "66f19705a6237a5bd0fc1aaaee04834e9ee406931bebe12159ad4078090ab1a0",
+          "decoded_array_sha256": "3b22011b4fcf760fa43f7fbce1551baf4abfd06fb4bd5eb6ba84db6cade5bfe3",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "stone_ring-z3.8-block0-fog0.025-sp0-depth-changed-mask",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/stone_ring-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "4c1dd5eff0b4b17d910a929d720361e43d05143994680ddca3763e7af7ef84c3",
+          "decoded_array_sha256": "79bc1e5f072544ebb7169356f5f5644458cd1214bc896ca09bef997b6a999b27",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/stone_ring-z3.8-block0-fog0.025-sp0-depth-changed-mask.npy",
+          "file_sha256": "4c1dd5eff0b4b17d910a929d720361e43d05143994680ddca3763e7af7ef84c3",
+          "decoded_array_sha256": "79bc1e5f072544ebb7169356f5f5644458cd1214bc896ca09bef997b6a999b27",
+          "dtype": "bool",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "stone_ring-z3.8-block0-fog0.025-sp0-img",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/stone_ring-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "a7d698b47056fd01244cd824c907395b8ccc0542fe622b957c3dfe48c395da53",
+          "decoded_array_sha256": "e4a446916ee2636bfbec25370bee088c7d51cbf3997bb72efbfa16aa38606c60",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/stone_ring-z3.8-block0-fog0.025-sp0-img.npy",
+          "file_sha256": "a7d698b47056fd01244cd824c907395b8ccc0542fe622b957c3dfe48c395da53",
+          "decoded_array_sha256": "e4a446916ee2636bfbec25370bee088c7d51cbf3997bb72efbfa16aa38606c60",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96,
+            3
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    },
+    {
+      "output": "stone_ring-z3.8-block0-fog0.025-sp0-zb",
+      "category": "material_sp_array",
+      "phases": {
+        "cold": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/stone_ring-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "e09f048deea8c3e44613437ba05ebfff4ed575d167181184fde2dd0960db178c",
+          "decoded_array_sha256": "58ae594065c2e7d98d3fe489618c617e45a980c8222b33f4d4f256c87bdb3098",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        },
+        "cache-hit": {
+          "path": "work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/stone_ring-z3.8-block0-fog0.025-sp0-zb.npy",
+          "file_sha256": "e09f048deea8c3e44613437ba05ebfff4ed575d167181184fde2dd0960db178c",
+          "decoded_array_sha256": "58ae594065c2e7d98d3fe489618c617e45a980c8222b33f4d4f256c87bdb3098",
+          "dtype": "float32",
+          "shape": [
+            96,
+            96
+          ],
+          "finite": true,
+          "direct_file_hash_matches_receipt": true,
+          "direct_decoded_hash_matches_receipt": true,
+          "direct_dtype_matches_receipt": true,
+          "direct_shape_matches_receipt": true,
+          "direct_all_finite": true
+        }
+      },
+      "cold_cache_file_bytes_exact": true,
+      "cold_cache_decoded_array_exact": true
+    }
+  ],
+  "material_liveness": {
+    "measurement_phase": "cold; all corresponding cache-hit arrays were separately found exact",
+    "initial_rgb": "float32 (0.021, 0.026, 0.035)",
+    "initial_depth": "float32 1e9, except blocked cloth left half is 1",
+    "pixel_difference_definition": "A pixel differs if at least one decoded RGB component differs; depth differences are exact scalar comparisons.",
+    "case_measurements": [
+      {
+        "case": "cloth-z16-block0-fog0.025",
+        "changed_rgb_pixels": 89,
+        "changed_depth_pixels": 89,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "cloth-z3.8-block0-fog0",
+        "changed_rgb_pixels": 1282,
+        "changed_depth_pixels": 1282,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "cloth-z3.8-block0-fog0.025",
+        "changed_rgb_pixels": 1282,
+        "changed_depth_pixels": 1282,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "cloth-z3.8-block1-fog0.025",
+        "changed_rgb_pixels": 665,
+        "changed_depth_pixels": 665,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "glass-no-emission",
+        "changed_rgb_pixels": 2083,
+        "changed_depth_pixels": 2083,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "glass-z3.8-block0-fog0.025",
+        "changed_rgb_pixels": 2083,
+        "changed_depth_pixels": 2083,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "horn-z3.8-block0-fog0.025",
+        "changed_rgb_pixels": 2083,
+        "changed_depth_pixels": 2083,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "iron_wood-z3.8-block0-fog0.025",
+        "changed_rgb_pixels": 1736,
+        "changed_depth_pixels": 1736,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "rough_rock-no-displacement",
+        "changed_rgb_pixels": 1500,
+        "changed_depth_pixels": 1500,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "rough_rock-z3.8-block0-fog0.025",
+        "changed_rgb_pixels": 1678,
+        "changed_depth_pixels": 1678,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "small_glass-z3.8-block0-fog0.025",
+        "changed_rgb_pixels": 692,
+        "changed_depth_pixels": 692,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      },
+      {
+        "case": "stone_ring-z3.8-block0-fog0.025",
+        "changed_rgb_pixels": 362,
+        "changed_depth_pixels": 362,
+        "saved_changed_depth_mask_equals_depth_inequality": true
+      }
+    ],
+    "controls": {
+      "horn_vs_ordinary_glass": {
+        "differing_rgb_pixels": 488,
+        "max_absolute_rgb_component_delta": 0.8380109518766403
+      },
+      "ordinary_glass_emission_on_vs_off": {
+        "differing_rgb_pixels": 488,
+        "max_absolute_rgb_component_delta": 0.9000000357627869
+      },
+      "cloth_fog_vs_no_fog": {
+        "differing_rgb_pixels": 1282,
+        "max_absolute_rgb_component_delta": 0.01577242324128747
+      },
+      "rough_displacement_on_vs_off": {
+        "common_hit_pixels": 1499,
+        "common_hit_pixels_with_changed_depth": 1499,
+        "changed_hit_miss_mask_pixels": 180,
+        "differing_depth_pixels_total": 1679,
+        "max_absolute_depth_delta_metres_common_hits_only": 0.5470719337463379,
+        "sentinel_limit": "The depth maximum excludes hit/miss changes against the 1e9 miss sentinel."
+      },
+      "cloth_left_half_blocker": {
+        "otherwise_visible_left_half_pixels_suppressed": 617,
+        "foreground_rgb_changed_pixels": 0,
+        "foreground_depth_changed_pixels": 0,
+        "visible_right_half_rgb_mismatch_pixels_vs_unblocked": 0
+      },
+      "iron_and_wood": {
+        "iron_left_box_depth_hit_pixels": 870,
+        "wood_right_box_depth_hit_pixels": 866
+      }
+    }
+  },
+  "film_sp_saved_masks": {
+    "nonzero_changed_depth_pixels": {
+      "A14-4202": 7298,
+      "A14-4208": 8583,
+      "A14-4239": 17269,
+      "A15-4240": 17271,
+      "A15-4360": 25524
+    },
+    "limit": "These counts come from saved masks. Pre-SP film depth arrays were not saved, so film masks were not independently recomputed against their input depth arrays."
+  },
+  "preview_checks": {
+    "conversion": "np.rint(np.clip(finished_rgb, 0, 1) * 255).astype(np.uint8)",
+    "color_order": "RGB; decoded OpenCV BGR converted to RGB for the comparison",
+    "enhancements": "none",
+    "frames": [
+      {
+        "output": "work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A14-4202.png",
+        "png_sha256": "76fa922c0344790973da221097c84f04e000201b8699395de869e6c96e8d588c",
+        "finished_array_sha256": "64f263942e881dbb3d657c660c6e7e4c2b350e72e4fa0533f8ddab491b891062",
+        "direct_png_file_hash_matches_receipt": true,
+        "decoded_pixels_exact_conversion": true
+      },
+      {
+        "output": "work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A14-4208.png",
+        "png_sha256": "5b6de3a4897f0867fd3dfecc4411211491a19cf5a7eb9d107c12824e167b6f7f",
+        "finished_array_sha256": "179b1c3f16f5f1d569658fafbab3e0858cbdb0fc4147939f3610cfde29ec797f",
+        "direct_png_file_hash_matches_receipt": true,
+        "decoded_pixels_exact_conversion": true
+      },
+      {
+        "output": "work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A14-4239.png",
+        "png_sha256": "577667b2bc6251f9f78551690f451200968a14dcea2f9e351e997f97417ba054",
+        "finished_array_sha256": "d9b16a66dee2c6ab0d8ccedf404ab3259da5679ecedf4214ae6369a5272cc20d",
+        "direct_png_file_hash_matches_receipt": true,
+        "decoded_pixels_exact_conversion": true
+      },
+      {
+        "output": "work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A15-4240.png",
+        "png_sha256": "8aac8d4c75eb6649966d78f04d6779252b32da879d81f0cdd5369dcdb37bb317",
+        "finished_array_sha256": "d0e66f67dfb5e8a0340e93bb0194520d8f2c9bdbd2d4a13d7c9592c1736b07e1",
+        "direct_png_file_hash_matches_receipt": true,
+        "decoded_pixels_exact_conversion": true
+      },
+      {
+        "output": "work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A15-4360.png",
+        "png_sha256": "b66978d07d1bf59e7ce4738b506e0365046c03a0e69e58a606d6d93d9d1b91cd",
+        "finished_array_sha256": "4dedc80dd65e2f3a86f03e6bcc2d5fd41b1b266345507f03e8d217cea58f5159",
+        "direct_png_file_hash_matches_receipt": true,
+        "decoded_pixels_exact_conversion": true
+      }
+    ],
+    "contact_sheet_audited": false
+  },
+  "cache_evidence_from_receipts": {
+    "cold": {
+      "first_sp_dispatcher_cache_hits": 0,
+      "first_sp_dispatcher_cache_misses": 1
+    },
+    "cache-hit": {
+      "first_sp_dispatcher_cache_hits": 1,
+      "first_sp_dispatcher_cache_misses": 0
+    }
+  },
+  "limitations": [
+    "This is candidate cold/cache-hit consistency, not original-versus-candidate equivalence or approval to adopt the source change.",
+    "Only repeat-zero arrays are saved for each output in each phase. Later warm repeats have receipt hashes but were not available as independent saved NPY files for this audit.",
+    "SP output RGB/depth/masks and finished full-frame RGB are separately counted; their equality claims must not be conflated.",
+    "Material masks were recomputed from known fixture initial depths; film masks were counted but could not be recomputed because pre-SP film depths were not saved.",
+    "The finite sampled material fixtures and five frames do not prove equivalence across all scenes, seeds, camera positions or production frames.",
+    "No render, compilation, timing experiment, artistic judgment or original-reference comparison was performed by this audit.",
+    "The study uses the recorded 61cf28b base and excludes later PR8 catch changes."
+  ]
+}

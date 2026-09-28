@@ -1,0 +1,32 @@
+{
+  "status": "candidate_verified_original_timed_out_equivalence_unresolved",
+  "packaged_utc": "2026-09-28T06:09:23.071694+00:00",
+  "original_vs_candidate": {
+    "status": "unresolved_original_has_no_outputs",
+    "receipt": null,
+    "raw_pixel_depth_hit_mask_verdict": null
+  },
+  "candidate_cache_reload": {
+    "status": "complete",
+    "receipt": "candidate-cache-receipt.json",
+    "exact_match": true
+  },
+  "original_cache_reload": {
+    "status": "not_run_original_cold_incomplete",
+    "receipt": null,
+    "exact_match": null
+  },
+  "adoption_verdict": null,
+  "note": "Candidate cold and fresh-process reload are complete. The original worker timed out before its first SP call returned. No original-versus-candidate pixel/depth/mask verdict or adoption approval is available; PR remains draft. No benchmark process remains running.",
+  "updated_utc": "2026-09-28T06:43:59.974417+00:00",
+  "original_cold_attempt": {
+    "status": "timed_out",
+    "launcher": "reference-cold-launcher.json",
+    "partial_receipt": "reference-cold-partial-receipt.json",
+    "log": "reference-cold.log",
+    "timeout_seconds": 2400,
+    "launcher_elapsed_seconds": 2400.086786083004,
+    "completed_sp_calls": 0,
+    "saved_outputs": 0
+  }
+}

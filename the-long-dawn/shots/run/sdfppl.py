@@ -24,7 +24,18 @@ import math
 import numpy as np
 from numba import njit, prange
 
-from mt.noise import gnoise3
+from mt.noise import gnoise3 as _shared_gnoise3
+
+
+@njit(inline='never', fastmath=True, cache=True)
+def gnoise3(x, y, z, seed):
+    """Limit noise IR expansion while retaining this shader's fastmath policy.
+
+    Inlining the noise/hash tree at every material and SDF sample makes the
+    renderer expensive to compile. Pin fastmath so a scalar-first call cannot
+    change the cached specialization. Other mt.noise consumers keep their policy.
+    """
+    return _shared_gnoise3(x, y, z, seed)
 
 NP = 20
 NO = 16

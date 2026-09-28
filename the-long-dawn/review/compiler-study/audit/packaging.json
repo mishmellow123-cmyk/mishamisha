@@ -1,0 +1,14 @@
+[
+  {
+    "file": "final-harness-audit.json",
+    "original_sha256": "dd8306093d5f2ff2d23503ac1e04ebba20a36e395d93cefc4b238fa8070a3471",
+    "published_sha256": "c03a0b19460e025354ca3a923fe512b3e68d37c5318e17bbe67d38f318c1b6d8",
+    "normalization": "Replace local workspace and home directory prefixes only."
+  },
+  {
+    "file": "final-raw-array-audit.json",
+    "original_sha256": "941acb11b1a1eb14e4f5a16a98b8ff4e3d886b45f6f38254a2018f5ed26a543f",
+    "published_sha256": "941acb11b1a1eb14e4f5a16a98b8ff4e3d886b45f6f38254a2018f5ed26a543f",
+    "normalization": "Replace local workspace and home directory prefixes only."
+  }
+]

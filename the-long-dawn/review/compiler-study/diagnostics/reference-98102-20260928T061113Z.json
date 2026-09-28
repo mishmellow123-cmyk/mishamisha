@@ -1,0 +1,35 @@
+{
+  "observed_utc": "20260928T061113Z",
+  "pid": 98102,
+  "verification": "98102 98101 08:26 3042288  72.9 <WORKSPACE>/work/validation-venv/bin/python -B <WORKSPACE>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py _worker --out <WORKSPACE>/work/compiler-study/bench/suite-61cf28b --variant reference --mode suite --phase cold --frames 4202,4208,4239,4240,4360 --scale 0.5 --ss 1.5 --repeats 3 --size 96",
+  "sample_command": [
+    "/usr/bin/sample",
+    "98102",
+    "1",
+    "-file",
+    "<WORKSPACE>/work/compiler-study/diagnostics/reference-98102-20260928T061113Z.sample.txt"
+  ],
+  "sample_returncode": 0,
+  "sample_stdout": "",
+  "sample_stderr": "Sampling process 98102 for 1 second with 1 millisecond of run time between samples\nSampling completed, processing symbols...\nSample analysis of process 98102 written to file <WORKSPACE>/work/compiler-study/diagnostics/reference-98102-20260928T061113Z.sample.txt\n",
+  "after_ps": "98102 98101 08:28 2525216  68.7 <WORKSPACE>/work/validation-venv/bin/python -B <WORKSPACE>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py _worker --out <WORKSPACE>/work/compiler-study/bench/suite-61cf28b --variant reference --mode suite --phase cold --frames 4202,4208,4239,4240,4360 --scale 0.5 --ss 1.5 --repeats 3 --size 96",
+  "after_ps_returncode": 0,
+  "limits": "One second stack sample and ps snapshots of the verified session-owned reference worker. No debugger, signals, or process lifecycle action requested.",
+  "rss_units": "1024 bytes (macOS ps(1), rss field)",
+  "sample_observations": {
+    "main_thread_samples": 787,
+    "compile_and_invoke_in_main_stack_samples": 787,
+    "PyNumber_And_main_stack_samples": 696,
+    "set_contains_entry_inside_set_intersection_samples": 595,
+    "idle_tbb_worker_threads": 9,
+    "sample_physical_footprint_display": "8.1G",
+    "sample_peak_physical_footprint_display": "8.2G",
+    "stage_supported": "Numba dispatcher compile_and_invoke, executing Python set operations during this one-second sample. Native stacks do not identify the exact Python compiler pass.",
+    "after_snapshot": {
+      "elapsed": "08:28",
+      "rss_1024_byte_units": 2525216,
+      "ps_pcpu": 68.7
+    },
+    "scope_limit": "Sample reports activity during one second only; cannot identify a specific compiler pass, diagnose an inlining bottleneck conclusively, or predict completion."
+  }
+}

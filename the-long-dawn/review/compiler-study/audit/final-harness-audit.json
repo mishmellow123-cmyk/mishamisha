@@ -1,0 +1,267 @@
+{
+  "recorded_utc": "2026-09-28T06:29:29.884688+00:00",
+  "purpose": "Preserve the completed read-only final harness/evidence audit; no new benchmark or verification run was performed to produce this record.",
+  "audited_head": "dc82b0db9c4085b2f79dcd139276a2c977a5ae61",
+  "audited_harness": {
+    "path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py",
+    "sha256": "d22693e1e1f2f8539dca7ebf20c07ef757251fcf5c3e8310f38ea4868e83075c",
+    "method": "Independently recomputed SHA-256 of the current harness and compared with both published receipts."
+  },
+  "conclusion": "No new actionable correctness gap found within the inspected source and published candidate evidence.",
+  "direct_checks": [
+    {
+      "check": "Receipt populations and same-run full-frame repeatability",
+      "method": "Read-only Python assertions over both published JSON receipts; not renderer execution.",
+      "denominator": {
+        "receipts": 2,
+        "distinct_film_frames_per_receipt": 5,
+        "runs_per_frame": 4,
+        "frame_records_per_receipt": 20
+      },
+      "fields_checked": [
+        "mode",
+        "frame",
+        "repeat",
+        "linear",
+        "finished",
+        "sp_calls",
+        "mblur"
+      ],
+      "result": "Both receipts contain repeat indices 0,1,2,3 for every frame. Linear/finished array metadata and hashes, SP call count and motion-blur flag match the initial run.",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cold-receipt.json",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cache-receipt.json"
+      ]
+    },
+    {
+      "check": "SP same-run repeatability and call-input coverage",
+      "method": "Read-only Python assertions over both published JSON receipts.",
+      "denominator": {
+        "receipts": 2,
+        "distinct_case_frame_call_groups_per_receipt": 17,
+        "runs_per_group": 4,
+        "sp_call_records_per_receipt": 68,
+        "input_records_per_call": 10
+      },
+      "fields_checked": [
+        "mode",
+        "name",
+        "call",
+        "repeat",
+        "input_hashes",
+        "img",
+        "zb",
+        "depth_changed_mask"
+      ],
+      "result": "Every group contains repeats 0,1,2,3. All ten input records and RGB, depth and depth-change-mask records match the initial call.",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cold-receipt.json",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cache-receipt.json"
+      ]
+    },
+    {
+      "check": "Candidate cold versus fresh-process cache equality",
+      "method": "Independent field-by-field JSON comparisons; did not rely solely on cache_reload_exact.",
+      "denominator": {
+        "paired_receipts": 1,
+        "paired_frame_records": 20,
+        "paired_sp_call_records": 68,
+        "paired_saved_output_records": 61
+      },
+      "fields_checked": [
+        "settings",
+        "source_sha256",
+        "harness_sha256",
+        "outputs",
+        "frame identities and linear/finished records",
+        "SP identities, input hashes, RGB, depth and masks"
+      ],
+      "result": "All inspected records agree exactly across phases. Cache receipt records one first-call SP cache hit; cold receipt records one miss and no hits.",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cold-receipt.json",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cache-receipt.json"
+      ]
+    },
+    {
+      "check": "Frozen runtime source isolation",
+      "method": "Compared reference and candidate source-hash inventories.",
+      "denominator": {
+        "inventory_pairs": 1
+      },
+      "result": "The differing-file list is exactly the-long-dawn/shots/run/sdfppl.py.",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/sources.json"
+      ]
+    },
+    {
+      "check": "Published artifact provenance",
+      "method": "Independently recomputed file SHA-256 values for each local original and packaged counterpart and asserted equality with packaging.json.",
+      "denominator": {
+        "artifact_pairs": 11,
+        "file_hash_checks": 22
+      },
+      "result": "All hashes matched.",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/packaging.json"
+      ],
+      "artifacts": [
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cold-receipt.json",
+          "original_path": "<workspace>/work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cold/receipt.json",
+          "original_sha256": "94a18ede531f6a32e4b8d0a0a25012f78c6edb7c007dfb01112bcab3b0e6492d",
+          "packaged_sha256": "6c3ab205674e80d9ff92e139a09e1ea58f00910cd4f23f776866acebbedcfc48",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cold.log",
+          "original_path": "<workspace>/work/compiler-study/bench/suite-61cf28b/candidate-cold.log",
+          "original_sha256": "ddac71216472728799d8feb0ad6d50a8c9f230486c77270a0713116e441b5344",
+          "packaged_sha256": "ddac71216472728799d8feb0ad6d50a8c9f230486c77270a0713116e441b5344",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/sources.json",
+          "original_path": "<workspace>/work/compiler-study/bench/suite-61cf28b/sources.json",
+          "original_sha256": "87fc9b3c9b22aa7e6277bc68fb30997ca2195c2b62a6f1132219dc40f24b6c2a",
+          "packaged_sha256": "87fc9b3c9b22aa7e6277bc68fb30997ca2195c2b62a6f1132219dc40f24b6c2a",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/preview-receipt.json",
+          "original_path": "<workspace>/work/compiler-study/previews/receipt.json",
+          "original_sha256": "611bd0564eb505fe379dd9f993f5fe83d68d8b533a0b71a9fe771ba1cffcc8d9",
+          "packaged_sha256": "96104713fcf063e89e5afb84a3fb1195cf2133b45046b77cd17a30159acd9ad7",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A14-4202.png",
+          "original_path": "<workspace>/work/compiler-study/previews/A14-4202.png",
+          "original_sha256": "76fa922c0344790973da221097c84f04e000201b8699395de869e6c96e8d588c",
+          "packaged_sha256": "76fa922c0344790973da221097c84f04e000201b8699395de869e6c96e8d588c",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A14-4208.png",
+          "original_path": "<workspace>/work/compiler-study/previews/A14-4208.png",
+          "original_sha256": "5b6de3a4897f0867fd3dfecc4411211491a19cf5a7eb9d107c12824e167b6f7f",
+          "packaged_sha256": "5b6de3a4897f0867fd3dfecc4411211491a19cf5a7eb9d107c12824e167b6f7f",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A14-4239.png",
+          "original_path": "<workspace>/work/compiler-study/previews/A14-4239.png",
+          "original_sha256": "577667b2bc6251f9f78551690f451200968a14dcea2f9e351e997f97417ba054",
+          "packaged_sha256": "577667b2bc6251f9f78551690f451200968a14dcea2f9e351e997f97417ba054",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A15-4240.png",
+          "original_path": "<workspace>/work/compiler-study/previews/A15-4240.png",
+          "original_sha256": "8aac8d4c75eb6649966d78f04d6779252b32da879d81f0cdd5369dcdb37bb317",
+          "packaged_sha256": "8aac8d4c75eb6649966d78f04d6779252b32da879d81f0cdd5369dcdb37bb317",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/A15-4360.png",
+          "original_path": "<workspace>/work/compiler-study/previews/A15-4360.png",
+          "original_sha256": "b66978d07d1bf59e7ce4738b506e0365046c03a0e69e58a606d6d93d9d1b91cd",
+          "packaged_sha256": "b66978d07d1bf59e7ce4738b506e0365046c03a0e69e58a606d6d93d9d1b91cd",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cache-receipt.json",
+          "original_path": "<workspace>/work/compiler-study/bench/suite-61cf28b/results/suite/candidate/cache-hit/receipt.json",
+          "original_sha256": "86fad5b3619f2820c10df93541d7c189078aafc0b44f66749d8b7d112ca7213f",
+          "packaged_sha256": "24abca6a297d0776eb06fa8ad35c9a46e8d1a8603aca9feb2032af7a60a61da0",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        },
+        {
+          "packaged_path": "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cache.log",
+          "original_path": "<workspace>/work/compiler-study/bench/suite-61cf28b/candidate-cache.log",
+          "original_sha256": "97b451ec04c53702179db8dbe8327172e642fc2c6e356a14ff0dcbf13b218535",
+          "packaged_sha256": "97b451ec04c53702179db8dbe8327172e642fc2c6e356a14ff0dcbf13b218535",
+          "verification": "Both file hashes independently recomputed and matched during the preceding audit. Values here copied from the verified packaging manifest."
+        }
+      ]
+    },
+    {
+      "check": "Preview linkage and PNG identity",
+      "method": "For every preview, matched input NPY hash and float-RGB hash to its cold-receipt output record, then independently hashed the packaged PNG.",
+      "denominator": {
+        "previews": 5,
+        "receipt_linkage_checks": 10,
+        "png_hash_checks": 5
+      },
+      "result": "All preview source links and PNG hashes agree. Original NPY bytes were not rehashed or decoded in this audit.",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/preview-receipt.json",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cold-receipt.json"
+      ]
+    },
+    {
+      "check": "Published timing and pending-state claims",
+      "method": "Compared README claims with receipt fields; directly subtracted the original and candidate receipt creation timestamps.",
+      "denominator": {
+        "candidate_phase_receipts": 2,
+        "reference_receipts_read": 1,
+        "timestamp_differences_recomputed": 1
+      },
+      "measured_values": {
+        "candidate_total_seconds": 348.6580202499754,
+        "candidate_first_sp_call_seconds": 47.584665499976836,
+        "cache_total_seconds": 240.34256779198768,
+        "cache_first_sp_call_seconds": 0.014632290985900909,
+        "reference_creation_minus_candidate_seconds": 191.712453
+      },
+      "result": "Published rounded timings, one-signature reuse and cache claims match receipts. The original receipt status was starting when inspected; original comparison, original cache reload and adoption are marked pending.",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/README.md",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/pending-checks.json",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cold-receipt.json",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/candidate-cache-receipt.json",
+        "<workspace>/work/compiler-study/bench/suite-61cf28b/results/suite/reference/cold/receipt.json"
+      ]
+    }
+  ],
+  "code_inspection": [
+    {
+      "subject": "Changes since prior harness review",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py"
+      ],
+      "git_diff": "6788097..dc82b0d -- the-long-dawn/review/compiler-study/benchmark.py",
+      "finding": "Suite mode records explicit frame requests and mode identities; full-frame warm equality checks linear and finished records. Cache-reload equality also checks every full-frame record and per-call input/output records."
+    },
+    {
+      "subject": "Array capture and timing boundaries",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py"
+      ],
+      "finding": "Each real SP call hashes all ten inputs before execution and captures post-call RGB, forward depth and changed-depth mask. Copy/hash/save instrumentation lies outside the recorded SP call timer. First full-frame linear and finished arrays are saved; every repeat records their hashes."
+    },
+    {
+      "subject": "Finish does not overwrite the captured linear input",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/lib/look.py",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/shots/run/watchers_a.py"
+      ],
+      "finding": "look.finish starts from hdr.astype(np.float32); watchers.finish delegates to that function. Inspection found no in-place modification of the input linear array in this path."
+    },
+    {
+      "subject": "Scope wording",
+      "sources": [
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/README.md",
+        "<workspace>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/suite-results/pending-checks.json"
+      ],
+      "finding": "Publication labels candidate-only evidence, excludes PR8 catch changes, discloses overlapping reference compilation/load, and withholds original-output equivalence and adoption."
+    }
+  ],
+  "limitations": [
+    "No renderer, JIT compilation, sampling, process control, tests or source edits were performed during this audit.",
+    "Array equality was independently checked through the captured shape/dtype/finite/hash records. The raw NPY arrays were not decoded or independently rehashed during this audit.",
+    "The review covers the named linear/finished RGB outputs and SP RGB/forward-depth/mask/input records. It does not certify every intermediate array, every frame or all-input equivalence.",
+    "The original comparison and original cache reload were pending when inspected. This audit supplies no original-versus-candidate output verdict, speedup ratio or adoption decision.",
+    "The published previews were verified by hash/provenance here; this audit did not repeat the implementing session's visual assessment.",
+    "Recorded timing fields were verified against receipts, not independently timed. Concurrent workload prevents a controlled throughput conclusion."
+  ]
+}

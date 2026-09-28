@@ -1,0 +1,96 @@
+SP enter cloth-z3.8-block0-fog0.025 repeat=0 signatures=0
+SP exit cloth-z3.8-block0-fog0.025: 47.007849s
+SP enter cloth-z3.8-block0-fog0.025 repeat=1 signatures=1
+SP exit cloth-z3.8-block0-fog0.025: 0.008715s
+SP enter cloth-z3.8-block0-fog0.025 repeat=2 signatures=1
+SP exit cloth-z3.8-block0-fog0.025: 0.008711s
+SP enter cloth-z3.8-block0-fog0.025 repeat=3 signatures=1
+SP exit cloth-z3.8-block0-fog0.025: 0.008627s
+SP enter iron_wood-z3.8-block0-fog0.025 repeat=0 signatures=1
+SP exit iron_wood-z3.8-block0-fog0.025: 0.001325s
+SP enter iron_wood-z3.8-block0-fog0.025 repeat=1 signatures=1
+SP exit iron_wood-z3.8-block0-fog0.025: 0.001346s
+SP enter iron_wood-z3.8-block0-fog0.025 repeat=2 signatures=1
+SP exit iron_wood-z3.8-block0-fog0.025: 0.001317s
+SP enter iron_wood-z3.8-block0-fog0.025 repeat=3 signatures=1
+SP exit iron_wood-z3.8-block0-fog0.025: 0.001310s
+SP enter horn-z3.8-block0-fog0.025 repeat=0 signatures=1
+SP exit horn-z3.8-block0-fog0.025: 0.013132s
+SP enter horn-z3.8-block0-fog0.025 repeat=1 signatures=1
+SP exit horn-z3.8-block0-fog0.025: 0.013326s
+SP enter horn-z3.8-block0-fog0.025 repeat=2 signatures=1
+SP exit horn-z3.8-block0-fog0.025: 0.012889s
+SP enter horn-z3.8-block0-fog0.025 repeat=3 signatures=1
+SP exit horn-z3.8-block0-fog0.025: 0.013157s
+SP enter glass-z3.8-block0-fog0.025 repeat=0 signatures=1
+SP exit glass-z3.8-block0-fog0.025: 0.013334s
+SP enter glass-z3.8-block0-fog0.025 repeat=1 signatures=1
+SP exit glass-z3.8-block0-fog0.025: 0.013372s
+SP enter glass-z3.8-block0-fog0.025 repeat=2 signatures=1
+SP exit glass-z3.8-block0-fog0.025: 0.013288s
+SP enter glass-z3.8-block0-fog0.025 repeat=3 signatures=1
+SP exit glass-z3.8-block0-fog0.025: 0.013572s
+SP enter glass-no-emission repeat=0 signatures=1
+SP exit glass-no-emission: 0.012927s
+SP enter glass-no-emission repeat=1 signatures=1
+SP exit glass-no-emission: 0.013020s
+SP enter glass-no-emission repeat=2 signatures=1
+SP exit glass-no-emission: 0.012803s
+SP enter glass-no-emission repeat=3 signatures=1
+SP exit glass-no-emission: 0.013076s
+SP enter small_glass-z3.8-block0-fog0.025 repeat=0 signatures=1
+SP exit small_glass-z3.8-block0-fog0.025: 0.000287s
+SP enter small_glass-z3.8-block0-fog0.025 repeat=1 signatures=1
+SP exit small_glass-z3.8-block0-fog0.025: 0.000272s
+SP enter small_glass-z3.8-block0-fog0.025 repeat=2 signatures=1
+SP exit small_glass-z3.8-block0-fog0.025: 0.000271s
+SP enter small_glass-z3.8-block0-fog0.025 repeat=3 signatures=1
+SP exit small_glass-z3.8-block0-fog0.025: 0.000270s
+SP enter stone_ring-z3.8-block0-fog0.025 repeat=0 signatures=1
+SP exit stone_ring-z3.8-block0-fog0.025: 0.085904s
+SP enter stone_ring-z3.8-block0-fog0.025 repeat=1 signatures=1
+SP exit stone_ring-z3.8-block0-fog0.025: 0.084045s
+SP enter stone_ring-z3.8-block0-fog0.025 repeat=2 signatures=1
+SP exit stone_ring-z3.8-block0-fog0.025: 0.084020s
+SP enter stone_ring-z3.8-block0-fog0.025 repeat=3 signatures=1
+SP exit stone_ring-z3.8-block0-fog0.025: 0.084347s
+SP enter rough_rock-z3.8-block0-fog0.025 repeat=0 signatures=1
+SP exit rough_rock-z3.8-block0-fog0.025: 0.014493s
+SP enter rough_rock-z3.8-block0-fog0.025 repeat=1 signatures=1
+SP exit rough_rock-z3.8-block0-fog0.025: 0.014433s
+SP enter rough_rock-z3.8-block0-fog0.025 repeat=2 signatures=1
+SP exit rough_rock-z3.8-block0-fog0.025: 0.014578s
+SP enter rough_rock-z3.8-block0-fog0.025 repeat=3 signatures=1
+SP exit rough_rock-z3.8-block0-fog0.025: 0.014460s
+SP enter rough_rock-no-displacement repeat=0 signatures=1
+SP exit rough_rock-no-displacement: 0.001642s
+SP enter rough_rock-no-displacement repeat=1 signatures=1
+SP exit rough_rock-no-displacement: 0.001597s
+SP enter rough_rock-no-displacement repeat=2 signatures=1
+SP exit rough_rock-no-displacement: 0.001549s
+SP enter rough_rock-no-displacement repeat=3 signatures=1
+SP exit rough_rock-no-displacement: 0.001516s
+SP enter cloth-z16-block0-fog0.025 repeat=0 signatures=1
+SP exit cloth-z16-block0-fog0.025: 0.000499s
+SP enter cloth-z16-block0-fog0.025 repeat=1 signatures=1
+SP exit cloth-z16-block0-fog0.025: 0.000443s
+SP enter cloth-z16-block0-fog0.025 repeat=2 signatures=1
+SP exit cloth-z16-block0-fog0.025: 0.000417s
+SP enter cloth-z16-block0-fog0.025 repeat=3 signatures=1
+SP exit cloth-z16-block0-fog0.025: 0.000412s
+SP enter cloth-z3.8-block1-fog0.025 repeat=0 signatures=1
+SP exit cloth-z3.8-block1-fog0.025: 0.004726s
+SP enter cloth-z3.8-block1-fog0.025 repeat=1 signatures=1
+SP exit cloth-z3.8-block1-fog0.025: 0.004892s
+SP enter cloth-z3.8-block1-fog0.025 repeat=2 signatures=1
+SP exit cloth-z3.8-block1-fog0.025: 0.004953s
+SP enter cloth-z3.8-block1-fog0.025 repeat=3 signatures=1
+SP exit cloth-z3.8-block1-fog0.025: 0.004816s
+SP enter cloth-z3.8-block0-fog0 repeat=0 signatures=1
+SP exit cloth-z3.8-block0-fog0: 0.008986s
+SP enter cloth-z3.8-block0-fog0 repeat=1 signatures=1
+SP exit cloth-z3.8-block0-fog0: 0.008996s
+SP enter cloth-z3.8-block0-fog0 repeat=2 signatures=1
+SP exit cloth-z3.8-block0-fog0: 0.009875s
+SP enter cloth-z3.8-block0-fog0 repeat=3 signatures=1
+SP exit cloth-z3.8-block0-fog0: 0.009228s

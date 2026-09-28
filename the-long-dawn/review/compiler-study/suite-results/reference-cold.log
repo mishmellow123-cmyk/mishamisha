@@ -1,0 +1,16 @@
+SP enter cloth-z3.8-block0-fog0.025 repeat=0 signatures=0
+Traceback (most recent call last):
+  File "<WORKSPACE>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py", line 501, in <module>
+    main()
+    ~~~~^^
+  File "<WORKSPACE>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py", line 497, in main
+    {'prepare': prepare, 'run': run, '_worker': worker, 'compare': compare}[args.action](args)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "<WORKSPACE>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py", line 134, in run
+    code = child.wait(timeout=args.timeout)
+  File "<PYTHON_RUNTIME>/lib/python3.13/subprocess.py", line 1280, in wait
+    return self._wait(timeout=timeout)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "<PYTHON_RUNTIME>/lib/python3.13/subprocess.py", line 2058, in _wait
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['<WORKSPACE>/work/validation-venv/bin/python', '-B', '<WORKSPACE>/work/sdf-noise-compile/the-long-dawn/review/compiler-study/benchmark.py', '_worker', '--out', '<WORKSPACE>/work/compiler-study/bench/suite-61cf28b', '--variant', 'reference', '--mode', 'suite', '--phase', 'cold', '--frames', '4202,4208,4239,4240,4360', '--scale', '0.5', '--ss', '1.5', '--repeats', '3', '--size', '96']' timed out after 2400.0 seconds
