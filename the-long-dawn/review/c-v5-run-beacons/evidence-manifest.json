@@ -1,0 +1,128 @@
+[
+  {
+    "published_file": "run-tests.log",
+    "raw_local_source": "work/c-v5-watch-tests/compiled-run-tests-pair.log",
+    "raw_sha256": "31198f775473415f7295c64838a211ce6e8625dd344935495de091cab44a1a00",
+    "published_sha256": "31198f775473415f7295c64838a211ce6e8625dd344935495de091cab44a1a00",
+    "path_normalized": false
+  },
+  {
+    "published_file": "cloud-tests.log",
+    "raw_local_source": "work/c-v5-watch-tests/cloud-tests.log",
+    "raw_sha256": "87c1a23748e9dee42551c75eeb158ad9fe7ccc1a6b2e3f7c9c0b5ba337a142d0",
+    "published_sha256": "a5e234eeaa861e49bb5c9ee2ac4f423de66f7910b0c4422fe1eafb1ecf0b5a0b",
+    "path_normalized": true
+  },
+  {
+    "published_file": "watch-visual-input-check.json",
+    "raw_local_source": "work/c-v5-watch-tests/visual-input-check.json",
+    "raw_sha256": "d2e9db013f1681dcc774e8a4c7cbdda229948517a0cedbb876bd3604af2254f5",
+    "published_sha256": "d2e9db013f1681dcc774e8a4c7cbdda229948517a0cedbb876bd3604af2254f5",
+    "path_normalized": false
+  },
+  {
+    "published_file": "overwrite-refusal.json",
+    "raw_local_source": "work/c-v5-watch-tests/overwrite-refusal.json",
+    "raw_sha256": "503fa0eae0fe105513165937f518ddab30b084c1110fc5b303b64793128adc02",
+    "published_sha256": "b7bd2109d8bb17da43e2f291f9bdd3ef3cf64dd796e0521ec6ad45e112ffa13d",
+    "path_normalized": true
+  },
+  {
+    "published_file": "watch-fullres-receipt.json",
+    "raw_local_source": "work/c-v5-watch-tests/fullres/receipt_04600_04600.json",
+    "raw_sha256": "70e3c1d92eb811ed480d8328fe52479ad763cdf829a36fbcfaaacd2830b05222",
+    "published_sha256": "70e3c1d92eb811ed480d8328fe52479ad763cdf829a36fbcfaaacd2830b05222",
+    "path_normalized": false
+  },
+  {
+    "published_file": "watch-C4600.jpg",
+    "raw_local_source": "work/c-v5-watch-tests/fullres/f_04600.jpg",
+    "raw_sha256": "e49287eb93f2f406f187f4338e0fa1e9dd05075d7c7510398cfcb29067cca44e",
+    "published_sha256": "e49287eb93f2f406f187f4338e0fa1e9dd05075d7c7510398cfcb29067cca44e",
+    "path_normalized": false
+  },
+  {
+    "published_file": "watch-C4719.png",
+    "raw_local_source": "work/c-v5-watch-tests/motion/f_04719.png",
+    "raw_sha256": "d7b23bdc115e4a6b1f6e03d15a3d2560e1110a2591c5bccba380bf72c92885fa",
+    "published_sha256": "d7b23bdc115e4a6b1f6e03d15a3d2560e1110a2591c5bccba380bf72c92885fa",
+    "path_normalized": false
+  },
+  {
+    "published_file": "watch-motion-receipt.json",
+    "raw_local_source": "work/c-v5-watch-tests/motion/receipt_04482_04719.json",
+    "raw_sha256": "be8f9ca21fef311d95a3e9349cbcdab9396d344a01ef929c48d7dd5b7e49bcbe",
+    "published_sha256": "be8f9ca21fef311d95a3e9349cbcdab9396d344a01ef929c48d7dd5b7e49bcbe",
+    "path_normalized": false
+  },
+  {
+    "published_file": "watch-composition-24.png",
+    "raw_local_source": "work/c-v5-watch-tests/sheets/composition-24.png",
+    "raw_sha256": "f4990a544dbbebcf336a598040142062f7ff45ab16d6d1a36256c4dc1ffab96c",
+    "published_sha256": "f4990a544dbbebcf336a598040142062f7ff45ab16d6d1a36256c4dc1ffab96c",
+    "path_normalized": false
+  },
+  {
+    "published_file": "watch-detail-24.png",
+    "raw_local_source": "work/c-v5-watch-tests/sheets/detail-24.png",
+    "raw_sha256": "3178edfc2db350e1d32201a6f3fe1122fd4cf99de556f940c21323b209f04ef0",
+    "published_sha256": "3178edfc2db350e1d32201a6f3fe1122fd4cf99de556f940c21323b209f04ef0",
+    "path_normalized": false
+  },
+  {
+    "published_file": "pair-visual-input-check.json",
+    "raw_local_source": "work/c-v5-reveal-pair-tests/visual-input-check.json",
+    "raw_sha256": "3183629d0660d47bdad4a61f9970ee4c0aec6df0627cc3104f703e918556637c",
+    "published_sha256": "3183629d0660d47bdad4a61f9970ee4c0aec6df0627cc3104f703e918556637c",
+    "path_normalized": false
+  },
+  {
+    "published_file": "pair-fullres-receipt.json",
+    "raw_local_source": "work/c-v5-reveal-pair-tests/fullres/receipt_02960_03119.json",
+    "raw_sha256": "c8eb90330a384c281f5b7879dbc4c26c7eb5653696620d297da4dc01cddd5016",
+    "published_sha256": "c8eb90330a384c281f5b7879dbc4c26c7eb5653696620d297da4dc01cddd5016",
+    "path_normalized": false
+  },
+  {
+    "published_file": "pair-C2960.jpg",
+    "raw_local_source": "work/c-v5-reveal-pair-tests/fullres/f_02960.jpg",
+    "raw_sha256": "d6433ce1f4a0e90e27a41a5c8c39e37fc88efe9e6eed27fd453a27a58a7521f7",
+    "published_sha256": "d6433ce1f4a0e90e27a41a5c8c39e37fc88efe9e6eed27fd453a27a58a7521f7",
+    "path_normalized": false
+  },
+  {
+    "published_file": "pair-C3119.jpg",
+    "raw_local_source": "work/c-v5-reveal-pair-tests/fullres/f_03119.jpg",
+    "raw_sha256": "af4eb6837afe03fd41af9f0c3441a9038530841b5a56d1bbd98ccced3d232d84",
+    "published_sha256": "af4eb6837afe03fd41af9f0c3441a9038530841b5a56d1bbd98ccced3d232d84",
+    "path_normalized": false
+  },
+  {
+    "published_file": "pair-motion-receipt.json",
+    "raw_local_source": "work/c-v5-reveal-pair-tests/motion/receipt_02880_02903.json",
+    "raw_sha256": "9aeb21b162b906b3f028603f73aacd07c069169935aa5c2692f1323842523102",
+    "published_sha256": "9aeb21b162b906b3f028603f73aacd07c069169935aa5c2692f1323842523102",
+    "path_normalized": false
+  },
+  {
+    "published_file": "pair-composition-24.png",
+    "raw_local_source": "work/c-v5-reveal-pair-tests/sheets/composition-24.png",
+    "raw_sha256": "ff20ab734b70d1c8bcbd9fd4e06a571ab16bd87caec139b9403033acd68f2655",
+    "published_sha256": "ff20ab734b70d1c8bcbd9fd4e06a571ab16bd87caec139b9403033acd68f2655",
+    "path_normalized": false
+  },
+  {
+    "published_file": "pair-detail-24.png",
+    "raw_local_source": "work/c-v5-reveal-pair-tests/sheets/detail-24.png",
+    "raw_sha256": "c7194723da7927c6b5d976ec4a16ab31004d6f709f729351be8287c067366d4f",
+    "published_sha256": "c7194723da7927c6b5d976ec4a16ab31004d6f709f729351be8287c067366d4f",
+    "path_normalized": false
+  },
+  {
+    "published_file": "pair-candidates.json",
+    "raw_local_source": "work/c-v5-reveal-pair-tests/candidates.json",
+    "raw_sha256": "15289cb7472d90421830decb670df595e923eaf2805309bde8d7db8d9b595d6a",
+    "published_sha256": "15289cb7472d90421830decb670df595e923eaf2805309bde8d7db8d9b595d6a",
+    "path_normalized": false
+  }
+]

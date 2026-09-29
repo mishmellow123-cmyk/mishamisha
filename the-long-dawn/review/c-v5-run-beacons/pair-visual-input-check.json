@@ -1,0 +1,12 @@
+{
+  "motion_frames": 24,
+  "exact_range": [
+    2880,
+    2903
+  ],
+  "all_receipt_hashes_match": true,
+  "full_resolution_frames": [
+    2960,
+    3119
+  ]
+}

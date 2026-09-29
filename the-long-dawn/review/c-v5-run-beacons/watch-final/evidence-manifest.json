@@ -1,0 +1,72 @@
+[
+  {
+    "published_file": "audit.md",
+    "raw_local_source": "work/c-v5-watch-final-audit/audit.md",
+    "raw_sha256": "57e11f7859e0c4405d5fd5cc155797ceb95ff9b7183d348aefe9ac943b798afb",
+    "published_sha256": "57e11f7859e0c4405d5fd5cc155797ceb95ff9b7183d348aefe9ac943b798afb",
+    "path_normalized": false
+  },
+  {
+    "published_file": "evidence.json",
+    "raw_local_source": "work/c-v5-watch-final-audit/evidence.json",
+    "raw_sha256": "a69c0ed9ca6fd1b4bf7369a5aa0b1cc99c03836b8c38b64058033a0e46588466",
+    "published_sha256": "a69c0ed9ca6fd1b4bf7369a5aa0b1cc99c03836b8c38b64058033a0e46588466",
+    "path_normalized": false
+  },
+  {
+    "published_file": "frame-qc.json",
+    "raw_local_source": "work/c-v5-watch-final-audit/frame-qc.json",
+    "raw_sha256": "52d6a6c77925cc6581e09332cc1496dbdb76e10a114bdb481109271200dfd1d9",
+    "published_sha256": "64edc99b20ca359887662938c44c96612e8b32c0dcb418c9dc40c53b77fa8742",
+    "path_normalized": true
+  },
+  {
+    "published_file": "frame-qc.log",
+    "raw_local_source": "work/c-v5-watch-final-audit/frame-qc.log",
+    "raw_sha256": "2135ed34012b51e31e7eae287e25cc38627c31a9ae3ca32693a69249c038e19a",
+    "published_sha256": "aadd2c657959d9869b684ca4c7ed38c94a41237f16d1434116979097bbbc6796",
+    "path_normalized": true
+  },
+  {
+    "published_file": "worker-join.jpg",
+    "raw_local_source": "work/c-v5-watch-final-audit/worker-join.jpg",
+    "raw_sha256": "8724cff1fb379609ea63f881598267b3efab61199b3f60f2a3789e814cc2fda9",
+    "published_sha256": "8724cff1fb379609ea63f881598267b3efab61199b3f60f2a3789e814cc2fda9",
+    "path_normalized": false
+  },
+  {
+    "published_file": "shot-samples.jpg",
+    "raw_local_source": "work/c-v5-watch-final-audit/shot-samples.jpg",
+    "raw_sha256": "e6fc10c90a27b24d72ae3451855d92dd0fba07a749db4e1491031789021fab22",
+    "published_sha256": "e6fc10c90a27b24d72ae3451855d92dd0fba07a749db4e1491031789021fab22",
+    "path_normalized": false
+  },
+  {
+    "published_file": "delivery.json",
+    "raw_local_source": "~/ldfarm/comms/files/c5_watch_v5_delivery.json",
+    "raw_sha256": "adfa5569738086df615aae437f35bd12d7c40f30e1c6647916c1717ad56a2c39",
+    "published_sha256": "ff260e71a6fd55d1267e74d340a66f8120b36d5c30763319f545530c1ba1c3c0",
+    "path_normalized": true
+  },
+  {
+    "published_file": "C4480.jpg",
+    "raw_local_source": "~/ldfarm/out/runC_watch_v5/f_04480.jpg",
+    "raw_sha256": "332452f70030db467aeb1c798cc6919575e6aeea11bc41790917986af9d1bf9f",
+    "published_sha256": "332452f70030db467aeb1c798cc6919575e6aeea11bc41790917986af9d1bf9f",
+    "path_normalized": false
+  },
+  {
+    "published_file": "C4600.jpg",
+    "raw_local_source": "~/ldfarm/out/runC_watch_v5/f_04600.jpg",
+    "raw_sha256": "e49287eb93f2f406f187f4338e0fa1e9dd05075d7c7510398cfcb29067cca44e",
+    "published_sha256": "e49287eb93f2f406f187f4338e0fa1e9dd05075d7c7510398cfcb29067cca44e",
+    "path_normalized": false
+  },
+  {
+    "published_file": "C4719.jpg",
+    "raw_local_source": "~/ldfarm/out/runC_watch_v5/f_04719.jpg",
+    "raw_sha256": "4183a271e18fe2fbc43710e3da6eccb0a8c41e4388a0985b8f3e036f88ab146f",
+    "published_sha256": "4183a271e18fe2fbc43710e3da6eccb0a8c41e4388a0985b8f3e036f88ab146f",
+    "path_normalized": false
+  }
+]

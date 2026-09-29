@@ -1,0 +1,15 @@
+{
+  "name": "runC_reveal_pair_v5",
+  "branch": "codex/render-runC-reveal-pair-v5",
+  "setup": [
+    "python3 -m pip install -q numpy==2.3.5 numba==0.62.1 scipy==1.16.3 opencv-python-headless==5.0.0.93 Pillow==12.0.0"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=4 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/run/reveal_pair_c_v5.py --range 2880-3119 --scale 1 --ss 2 --threads 4 --format png --out renders/runC_reveal_pair_v5"
+  ],
+  "out_dir": "renders/runC_reveal_pair_v5",
+  "frames": "2880-3119",
+  "shape": [804, 1920],
+  "push_every": 300,
+  "ship": "jpg"
+}
