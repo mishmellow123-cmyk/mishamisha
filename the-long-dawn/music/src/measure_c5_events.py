@@ -1,13 +1,13 @@
-"""THE LONG DAWN C5: the MEASURED event map of the delivered second-half shots (SOUND-SCORE-C, 29 Sep 2026).
+"""THE LONG DAWN C5: the MEASURED event map of the delivered C5 picture (SOUND-SCORE-C, 29 Sep 2026).
 
     python measure_c5_events.py                         # every shot -> music/v3/events_C5_measured.json
     python measure_c5_events.py --shots map,cold --dry  # print a subset, write nothing
-    python measure_c5_events.py --frames-root DIR       # default: $LD_FRAMES, else ~/ldfarm/out
+    python measure_c5_events.py --frames-root DIR       # default: $LD_FRAMES, else project renders/
 
 Why this exists. barmap_C5.json was written before the picture existed: its frames inside the new shots are
 musical estimates ("(est.)"), its holdout catch sits at 3760 and its wording has one leader and one first fire.
-The nine delivered shots (f_%05d.jpg, ABSOLUTE C frame numbers, 1920x804) are the authority on where a physical
-sound must land. This script reads them one frame at a time (never a whole shot in memory), measures pixels, and
+The nine original C5 shots use absolute source-frame numbers; nine added ranges use EDIT's EDL resolver
+and compositor to map the reused sources into cut numbering. This script reads them one frame at a time (never a whole shot in memory), measures pixels, and
 writes one table: per event its frame(s), the method, the region, the numbers that decided it, and a confidence.
 It never edits barmap_C5.json or cues_C5.json; `disagreements` lists where they differ from the picture.
 
@@ -47,17 +47,23 @@ SHOTS = {
     "watch": ("runC_watch_v5", 4480, 4719, "C19"),
     "pen": ("book_C5_pen", 5440, 5679, "C22"),
 }
+from measure_c5_delivered import EXTRA_SHOTS
+SHOTS.update(EXTRA_SHOTS)
+# Keep imports from helper modules attached to this same module when run as a script.
+if __name__ == "__main__":
+    sys.modules["measure_c5_events"] = sys.modules[__name__]
 
-RSS_ABORT = 2 * 1024 ** 3          # the night plan's per-job ceiling (05:25Z amendment)
+RSS_ABORT = 1_500_000_000   # lane A: one sequential reader, at most 1.5 GB
 
 
 # ------------------------------------------------------------------------------------------------ io + guards
 def frames_root(arg=None):
-    return os.path.expanduser(arg or os.environ.get("LD_FRAMES") or "~/ldfarm/out")
+    return os.path.expanduser(arg or os.environ.get("LD_FRAMES") or os.path.join(os.path.dirname(MUSIC), "renders"))
 
 
 def fpath(root, stem, f):
-    return os.path.join(root, stem, f"f_{f:05d}.jpg")
+    png = os.path.join(root, stem, f"f_{f:05d}.png")
+    return png if os.path.exists(png) else os.path.join(root, stem, f"f_{f:05d}.jpg")
 
 
 _N_READ = [0]
@@ -66,7 +72,7 @@ _N_READ = [0]
 def _guard():
     rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == "darwin" else 1024)
     if rss > RSS_ABORT:
-        raise SystemExit(f"ABORT: peak RSS {rss / 2 ** 20:.0f} MiB > 2 GiB")
+        raise SystemExit(f"ABORT: peak RSS {rss / 2 ** 20:.0f} MiB > 1.5 GB")
     _N_READ[0] += 1
     if _N_READ[0] % 100 == 0 and sys.platform == "darwin":
         try:
@@ -161,12 +167,14 @@ def ramp(s, a, lo_frac=0.1, hi_frac=0.9, base=None, top=None):
     base = float(s[0] if base is None else base)
     top = float(s[-1] if top is None else top)
     span = top - base
-    u = (np.asarray(s, float) - base) / (span if abs(span) > 1e-9 else 1e-9)
+    if abs(span) <= 1e-9:
+        return None, None, None, None
+    u = (np.asarray(s, float) - base) / span
 
     def cross(q):
         return int(np.argmax(u >= q)) if np.any(u >= q) else None
     d = np.diff(u)
-    i_fast = int(np.argmax(d)) + 1 if len(d) else None
+    i_fast = int(np.argmax(d)) + 1 if len(d) and np.max(d) > 0 and np.any(u >= lo_frac) else None
     f = (lambda i: None if i is None else a + i)
     return f(cross(lo_frac)), f(cross(hi_frac)), f(i_fast), f(cross(0.5))
 
@@ -219,6 +227,12 @@ def m_trap(root):
              for f, bl in per]
     tr = track(per_b, radius=16, min_len=10, key=("bx", "by"), wy=0.3)
     events = []
+    from measure_c5_analysis import control
+
+    def ctrl(values, interval, threshold, direction=1):
+        return control([dict(f=a+i, signal=float(v)) for i,v in enumerate(values)],
+                       "signal", interval, threshold, direction, "fixed pre-event control; original detector threshold")
+
     # 1. the withdrawing forge: a full-size flame from the first frame that goes out for a stretch and returns
     low = None
     for t in (t for t in tr if t["frames"][0] == a):
@@ -240,6 +254,10 @@ def m_trap(root):
                          dict(x=round(lb["bx"] * 2), y=round(lb["by"] * 2), space="1920x804, flame base"),
                          dict(area_base_px960=round(base), area=win(sl, a, a + i_start, 2, 0) | win(sl, a, a + i_gone, 3, 0)),
                          "high"))
+        events[-1]["diagnostic_controls"] = [ctrl(sl, (2320,2379), -0.9*base, -1)]
+        events[-1]["diagnostic_controls"][0]["selection_reason"] = "90% alone also detects ordinary flicker; the full sink rule additionally requires a subsequent extinction crossing"
+        events[-1]["negative_controls"] = [ctrl(sl, (2320,2379), -0.1*base, -1)]
+        events[-1]["negative_controls"][0]["selection_reason"] = "no extinction crossing below 10% in the opening plateau; the 90% onset is assigned only before that crossing"
         back = [u for u in tr if u["frames"][0] > a + i_gone and abs(u["blobs"][0]["bx"] - lb["bx"]) < 20]
         back = max(back, key=lambda u: len(u["frames"])) if back else None
         if back:
@@ -256,6 +274,7 @@ def m_trap(root):
                              dict(area_ref_px960=round(ref), area=win(sb, a, fb, 3, 0),
                                   base_y960_first_last=[round(back["blobs"][0]["by"]), round(back["blobs"][-1]["by"])]),
                              "high"))
+            events[-1]["negative_controls"] = [ctrl(sb, (2500,2530), 20)]
     # 2. the others surge: the forge-flame total steps up; three steady single flames show it is simultaneous
     base_tot, hi_tot = float(np.median(tot[:80])), float(np.median(tot[190:226]))
     lo_f, hi_f, fast_f, half_f = ramp(tot[120:226], a + 120, base=base_tot, top=hi_tot)
@@ -274,6 +293,7 @@ def m_trap(root):
                      dict(whole="forge band", space="1920x804"),
                      dict(total_base_px960=round(base_tot), total_after_px960=round(hi_tot),
                           total=win(tot, a, fast_f, 4, 0), each=each), "high"))
+    events[-1]["negative_controls"] = [ctrl(tot, (2320,2399), base_tot+.1*(hi_tot-base_tot))]
     # 3. the two leaders: the tallest flame (its top row) either side of the Ring, per frame
     for k, (x0, x1, side) in enumerate(((rc[0] - 110, rc[0] - 8, "left"), (rc[0] + 8, rc[0] + 110, "right"))):
         topy, area = np.zeros(b - a + 1), np.zeros(b - a + 1)
@@ -294,6 +314,7 @@ def m_trap(root):
                          dict(top_y960_before=round(y_before), top_y960_end=round(y_end),
                               top_y960=win(topy, a, half, 3, 0), area_px960_end=round(float(np.median(area[-8:])))),
                          "high"))
+        events[-1]["negative_controls"] = [ctrl(topy, (2520,2559), -y_before+.1*(y_before-y_end), -1)]
     # 4. hammer strikes: a strike would be an impulse (a flash or spark burst at a crown): a one-frame spike in the
     # frame difference over the forge band against its running median
     from scipy.ndimage import median_filter
@@ -308,6 +329,7 @@ def m_trap(root):
                      "high" if not spikes else "medium",
                      note=("no impulse: the hammers are not drawn; they are SOUND's, placed musically (not on a "
                            "visible strike)") if not spikes else "inspect these frames"))
+    events[-1]["negative_controls"] = [ctrl(dY-3*med, (2321,2399), .5)]
     return events, dict(total=tot, dY=dY)
 
 
@@ -392,6 +414,12 @@ def m_map(root):
                      dict(first=last["full"], last=b, all_visible_from=last["first"]),
                      "from the last beacon's full frame; every tracked beacon stays lit to the shot's last frame",
                      dict(whole="frame", space="1920x804"), dict(beacons=n, lit_at_end=int(lit[-1])), "high"))
+    # Track births are the catch detector; already-burning tracks are not new catches.
+    from measure_c5_analysis import control
+    births = [dict(f=f, births=sum(q["first"] == f for q in beacons)) for f in range(a,b+1)]
+    c = control(births, "births", (3792,3839), 1, why="all eight established fires, no new catch")
+    for event in events:
+        event["negative_controls"] = [c]
     return events, dict(lit=lit)
 
 
@@ -481,6 +509,11 @@ def m_refusal(root):
               dict(whole="page", space="1920x804"),
               dict(pixels=win(n, a, last, 2, 0), max_pixels_after=int(n[last - a + 1:].max()) if last < b else 0,
                    segments=info), "high")]
+    from measure_c5_analysis import control
+    c = control([dict(f=a+i, ink=float(v)) for i,v in enumerate(n)], "ink", (2251,2319), 10,
+                why="completed drawing, no more ink strokes")
+    for event in ev_:
+        event["negative_controls"] = [c]
     return ev_, dict(n=n)
 
 
@@ -521,6 +554,14 @@ def m_reveal(root):
               dict(ink_px=win(dn, a, a + 3, 3, 0)), "medium",
               note="the far flame is ~30 px tall: its outline is too small for this count; OBSERVED crops show it "
                    "growing over the same frames")]
+    from measure_c5_analysis import control
+    ev_[0]["negative_controls"] = [control([dict(f=a+i, wash=float(v)) for i,v in enumerate(w)],
+        "wash", (3000,3119), .9*float(w.max()), why="settled already-burning fire; fixed 90% peak wash")
+        for w in (wn,wf)]
+    ev_[0]["note"] = "First-frame glow peak is left-censored: 2880 is the latest possible ignition, not proof of a within-shot onset. The control tests recurrence of that peak wash."
+    ev_[1]["negative_controls"] = [control([dict(f=a+i, ink=float(v)) for i,v in enumerate(dn)],
+        "ink", (2880,2880), float(dn[0])+.1*(float(np.median(dn[8:30]))-float(dn[0])),
+        why="only one available pre-growth frame; limited negative-control coverage")]
     return ev_, dict(wn=wn, wf=wf, dn=dn)
 
 
@@ -770,6 +811,21 @@ def disagreements(events):
             row["measured_frame"] = fr
             row["delta_frames"] = None if fr is None or old.get("f") is None else int(fr - old["f"])
         out.append(row)
+    for event in events:
+        sid = event.get("sync_id")
+        if sid:
+            old = sync[sid]
+            f = event["frames"].get(event["sync_field"])
+            out = [r for r in out if r["barmap_id"] != sid]
+            out.append(dict(barmap_id=sid, barmap_frame=old["f"], barmap_says=old["what"],
+                            measured=event["id"], measured_frame=f,
+                            delta_frames=None if f is None else f-old["f"],
+                            what=event.get("note", event["event"])))
+    out = [r for r in out if r["barmap_id"] != "beacon_1..7"]
+    from measure_c5_analysis import PASS1_REASONS
+    for row in out:
+        if row["barmap_id"] in PASS1_REASONS and not row.get("measured_frame"):
+            row["what"] = PASS1_REASONS[row["barmap_id"]]
     return out
 
 
@@ -790,7 +846,7 @@ def build_table(events, identity):
                 e["observed_stale"] = "an OBSERVED note exists for an older frame set of this shot: re-inspect"
     return dict(
         schema="long-dawn/c5-events-measured/1",
-        cut="C5", fps=FPS, frames="absolute C frame numbers (the delivered f_%05d.jpg names)",
+        cut="C5", fps=FPS, frames="absolute C5 cut frame numbers; reused-source offsets and composite layers are recorded in shots",
         generated_by="music/src/measure_c5_events.py", generator_sha256=sha_file(os.path.abspath(__file__)),
         basis_labels=dict(MEASURED="a pixel statistic decided the frame(s) (see method)",
                           OBSERVED="checked by eye on native-resolution stills (never in motion)",
@@ -801,12 +857,14 @@ def build_table(events, identity):
             ramp="a gradual change: first/half/full = 10%/50%/90% of the way",
             ink="a drawing stroke: frames where ink arrives (a pen/quill sound follows them)"),
         shots=identity,
-        not_on_this_mac="FLINT 2640-2879 (the hands-only 'ring' stem), the BEACON RUN 3120-3439 (runC_scroll), "
-                        "the ILLUMINATION 4720-5199, PLENTY 5200-5439, the TITLE 5680-5919 and the first half "
-                        "0-2079: none of their events are in this table",
+        not_on_this_mac=[],
+        generator_dependencies={name: sha_file(os.path.join(HERE, name)) for name in
+                                ("measure_c5_delivered.py", "measure_c5_analysis.py")},
         events=events,
         barmap_C5_vs_picture=disagreements(events),
-        cues_C5_vs_picture=CUES_VS_PICTURE)
+        cues_C5_vs_picture=[CUES_VS_PICTURE[0],
+                           "Beacon Run catches are now measured from delivered frames; map catches remain measured.",
+                           CUES_VS_PICTURE[2]])
 
 
 SCHEMA = "long-dawn/c5-events-measured/1"
@@ -873,18 +931,72 @@ def validate_table(d, text=None):
 
 def is_current(d):
     """True when the table was written by this very script (a stale table after an edit of the measurer fails)"""
-    return d.get("generator_sha256") == sha_file(os.path.abspath(__file__))
+    return (d.get("generator_sha256") == sha_file(os.path.abspath(__file__)) and
+            d.get("generator_dependencies") == {name: sha_file(os.path.join(HERE, name)) for name in
+            ("measure_c5_delivered.py", "measure_c5_analysis.py")})
 
 
-def run(shots, root, verbose=True):
+def inherited_controls(key, events, stats, root):
+    """Audit controls for the previously measured shots, retaining their original event frames."""
+    from measure_c5_analysis import control
+    a, b = SHOTS[key][1:3]
+    def test(values, interval, threshold, direction=1, why="pre-event interval, same fixed threshold"):
+        return control([dict(f=a+i, signal=float(v)) for i,v in enumerate(values)],
+                       "signal", interval, threshold, direction, why)
+    if key == "cold":
+        values = stats["total"]
+        drop = np.r_[0, -np.diff(values)]
+        # Argmin alone always selects a frame. Require a drop of half the pre-shutdown median.
+        threshold = .5 * float(np.median(values[:8]))
+        assert drop.max() >= threshold, "no abrupt shutdown: argmin alone is insufficient"
+        events[0]["method"] += "; accepted only if the drop exceeds half the median area C3840-3847"
+        events[0]["negative_controls"] = [test(drop, (3860,3999), threshold,
+            why="post-shutdown Ring and cold forges; same absolute drop threshold")]
+    elif key == "unfinished":
+        for event, field in zip(events[:2], ("warmth", "sky")):
+            v = stats[field]
+            threshold = -v[0] + .1*(v[0]-float(np.median(v[-20:])))
+            event["negative_controls"] = [test(v, (4000,4010), threshold, -1)]
+        hs = [file_sha(root, SHOTS[key][0], f) for f in range(4199,4217)]
+        same = [dict(f=4200+i, same=int(x==y)) for i,(x,y) in enumerate(zip(hs,hs[1:]))]
+        events[2]["negative_controls"] = [control(same,"same",(4200,4216),1,
+            why="before the final held frame, adjacent files must still differ")]
+    elif key in ("deep", "pen"):
+        v = stats["d"]
+        events[0]["negative_controls"] = [test(v, (a+1,b), 3*float(np.median(v[1:]))+.5,
+            why="held illustration, all frame differences examined")]
+    elif key == "watch":
+        hits = events[0]["frames"]["appear_in_frame"]
+        events[0]["negative_controls"] = [control(
+            [dict(f=f,births=hits.count(f)) for f in range(a,b+1)], "births", (a,b), 1,
+            why="already-burning beacons across the full shot; occlusion remains a possible false positive"),
+            control([dict(f=f,births=hits.count(f)) for f in range(a,b+1)], "births", (4480,4600), 1,
+                    why="opening already-burning landscape, before either later ridge-uncovering candidate")]
+
+
+def run(shots, root, verbose=True, trace_dir=None):
     fns = {"refusal": m_refusal, "trap": m_trap, "reveal": m_reveal, "map": m_map, "cold": m_cold,
            "unfinished": m_unfinished, "deep": m_deep, "watch": m_watch, "pen": m_pen}
     events, identity = [], {}
+    picture = None
     for s in shots:
         stem, a, b, sec = SHOTS[s]
-        e, _ = fns[s](root)
+        if s in EXTRA_SHOTS:
+            from measure_c5_delivered import Picture, scan
+            from measure_c5_analysis import analyze
+            picture = picture or Picture(root)
+            rows = scan(picture, s)
+            if trace_dir:
+                with open(os.path.join(trace_dir, s+"_trace.json"), "w") as fh:
+                    json.dump(rows, fh, separators=(",", ":"))
+            e = analyze(s, rows)
+            identity[s] = picture.identity(s)
+        else:
+            e, stats = fns[s](root)
+            inherited_controls(s, e, stats, root)
+            identity[s] = dict(stem=stem, first=a, last=b, section=sec,
+                               frame_set_sha256=frame_set_sha256(root, stem, a, b))
         events += e
-        identity[s] = dict(stem=stem, first=a, last=b, section=sec, frame_set_sha256=frame_set_sha256(root, stem, a, b))
         if verbose:
             for x in e:
                 print(json.dumps({k: x[k] for k in ("id", "frames", "confidence")}, default=str), flush=True)
@@ -892,11 +1004,14 @@ def run(shots, root, verbose=True):
 
 
 def main():
+    import cv2
+    cv2.setNumThreads(1)
     ap = argparse.ArgumentParser()
     ap.add_argument("--shots", default=",".join(SHOTS))
     ap.add_argument("--frames-root", default=None)
     ap.add_argument("--dry", action="store_true", help="print, write nothing")
     ap.add_argument("--out", default=OUT_JSON)
+    ap.add_argument("--trace-dir", help="optional existing directory for reproducible scalar traces")
     a = ap.parse_args()
     root = frames_root(a.frames_root)
     shots = [s for s in a.shots.split(",") if s]
@@ -904,12 +1019,14 @@ def main():
     if unknown:
         ap.error(f"unknown shots {unknown}; known: {list(SHOTS)}")
     for s in shots:
+        if s in EXTRA_SHOTS:
+            continue  # Picture.sources validates EDIT's resolved sources and every composite layer.
         stem, f0, f1, _ = SHOTS[s]
         missing = [f for f in range(f0, f1 + 1) if not os.path.exists(fpath(root, stem, f))]
         if missing:
             raise SystemExit(f"{stem}: {len(missing)} of {f1 - f0 + 1} frames missing under {root} "
                              f"(first {missing[0]}): refusing to measure a partial shot")
-    events, identity = run(shots, root)
+    events, identity = run(shots, root, trace_dir=a.trace_dir)
     if a.dry:
         return 0
     if set(shots) != set(SHOTS):
@@ -919,6 +1036,8 @@ def main():
         json.dump(table, fh, indent=1, default=str)
         fh.write("\n")
     print(f"wrote {a.out}: {len(events)} events over {len(identity)} shots")
+    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == "darwin" else 1024)
+    print(f"peak RSS: {rss} bytes; limit {RSS_ABORT} bytes")
     return 0
 
 

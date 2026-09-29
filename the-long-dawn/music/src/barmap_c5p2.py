@@ -11,7 +11,7 @@ frames, measured). Each sync entry says where its frame came from:
     source = "measured"   the frame IS a measured picture frame (measured_ref names the event and field)
              "verified"   pass 1's frame lies inside the measured window of that event, so it is kept
              "derived"    a musical placement computed from measured frames (derived_from says how)
-             "pass 1"     not measurable on this Mac (FLINT, the BEACON RUN, the second half's dawn...): unchanged
+             "pass 1"     not a discrete picture event, or detector unresolved: unchanged (reason recorded)
 
 Nothing here invents a frame: an event the picture cannot place keeps pass 1's value and says so.
 """
@@ -131,6 +131,24 @@ def build():
         e.pop("was_f", None)
         out["sync"].append(e)
         sync[sid] = e
+    # Newly delivered shots declare their synchronization ids and accepted fields in the table.
+    for event in ms["events"]:
+        sid = event.get("sync_id")
+        if not sid or event.get("status") == "unresolved":
+            continue
+        field = event["sync_field"]
+        f = event["frames"].get(field)
+        if f is None:
+            raise ValueError(f"{event['id']}: accepted event has no {field}")
+        if any(c["triggers"] for c in event.get("negative_controls", [])):
+            raise ValueError(f"{event['id']}: failed negative control")
+        put(sync[sid], f, what=event["event"] + " (measured)", source="measured",
+            measured_ref=f"{event['id']}.{field}", confidence=event["confidence"])
+    from measure_c5_analysis import PASS1_REASONS
+    for event in out["sync"]:
+        if event["source"] == "pass 1" and event["id"] not in DERIVED:
+            event["why"] = PASS1_REASONS[event["id"]]
+    sync["flint_black"]["what"] = "FLINT: musical silence at the cut; delivered hands/sky picture is not black"
     for sid, (base, df, why) in DERIVED.items():
         put(sync[sid], sync[base]["f"] + df, what=why, source="derived",
             derived_from=f"{base} + {df} frames")

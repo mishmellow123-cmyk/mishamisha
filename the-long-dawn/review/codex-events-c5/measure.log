@@ -1,0 +1,100 @@
+{"id": "refusal.ink_begins", "frames": {"first": 2089}, "confidence": "high"}
+{"id": "refusal.offering_hand", "frames": {"first": 2114, "last": 2135}, "confidence": "high"}
+{"id": "refusal.ring_on_palm", "frames": {"first": 2138, "last": 2150}, "confidence": "high"}
+{"id": "refusal.pause_before_figure", "frames": {"first": 2151, "last": 2155}, "confidence": "high"}
+{"id": "refusal.figure_begins", "frames": {"first": 2156}, "confidence": "high"}
+{"id": "refusal.raised_hand", "frames": {"first": 2195, "last": 2202}, "confidence": "high"}
+{"id": "refusal.ink_ends", "frames": {"last": 2249, "still_from": 2250, "still_to": 2319}, "confidence": "high"}
+{"id": "trap.low_forge_sinks", "frames": {"first": 2423, "out": 2428}, "confidence": "high"}
+{"id": "trap.low_forge_returns", "frames": {"first": 2546, "full": 2557}, "confidence": "high"}
+{"id": "trap.forges_surge", "frames": {"first": 2483, "fastest": 2486, "half": 2487, "full": 2490}, "confidence": "high"}
+{"id": "trap.leader_left_pulls_ahead", "frames": {"first": 2588, "half": 2607, "full": 2626}, "confidence": "high"}
+{"id": "trap.leader_right_pulls_ahead", "frames": {"first": 2591, "half": 2603, "full": 2624}, "confidence": "high"}
+{"id": "trap.hammer_strikes", "frames": {"found": []}, "confidence": "high"}
+{"id": "reveal.both_fires_ignite", "frames": {"frame": 2880, "near_glow_peak": 2880, "far_glow_peak": 2880}, "confidence": "high"}
+{"id": "reveal.near_flame_grows", "frames": {"first": 2881, "half": 2883, "full": 2886}, "confidence": "medium"}
+{"id": "map.beacon_1", "frames": {"lit_from": 3440, "lit_through": 3839}, "confidence": "high"}
+{"id": "map.beacon_2", "frames": {"first": 3468, "fastest": 3471, "full": 3472, "lit_through": 3839}, "confidence": "high"}
+{"id": "map.beacon_3", "frames": {"first": 3523, "fastest": 3525, "full": 3527, "lit_through": 3839}, "confidence": "high"}
+{"id": "map.beacon_4", "frames": {"first": 3584, "fastest": 3588, "full": 3588, "lit_through": 3839}, "confidence": "high"}
+{"id": "map.beacon_5", "frames": {"first": 3647, "fastest": 3650, "full": 3651, "lit_through": 3839}, "confidence": "high"}
+{"id": "map.beacon_6", "frames": {"first": 3680, "fastest": 3683, "full": 3684, "lit_through": 3839}, "confidence": "high"}
+{"id": "map.beacon_7", "frames": {"first": 3718, "fastest": 3722, "full": 3722, "lit_through": 3839}, "confidence": "high"}
+{"id": "map.beacon_8", "frames": {"first": 3786, "fastest": 3789, "full": 3791, "lit_through": 3839}, "confidence": "high"}
+{"id": "map.one_dark", "frames": {"first": 3722, "last": 3785, "seventh_first_visible": 3718}, "confidence": "high"}
+{"id": "map.last_catch", "frames": {"first": 3786, "fastest": 3789, "full": 3791}, "confidence": "high"}
+{"id": "map.all_lit", "frames": {"first": 3791, "last": 3839, "all_visible_from": 3786}, "confidence": "high"}
+{"id": "cold.forges_off", "frames": {"frame": 3848}, "confidence": "high"}
+{"id": "unfinished.ring_drains", "frames": {"first": 4025, "half": 4072, "full": 4135}, "confidence": "high"}
+{"id": "unfinished.storm_thins", "frames": {"first": 4087, "half": 4138, "full": 4181}, "confidence": "high"}
+{"id": "unfinished.still_hold", "frames": {"first": 4217, "last": 4239}, "confidence": "high"}
+{"id": "deep.no_discrete_event", "frames": {"spikes": []}, "confidence": "high"}
+{"id": "watch.beacons_burn_on", "frames": {"appear_in_frame": [4609, 4671]}, "confidence": "high"}
+{"id": "pen.no_discrete_event", "frames": {"spikes": []}, "confidence": "high"}
+~/ldfarm/venv/lib/python3.12/site-packages/PIL/ImageFont.py:272: UserWarning: Raqm layout was requested, but Raqm is not available. Falling back to basic layout.
+  warnings.warn(
+opening: C0
+opening: C100
+opening: C200
+opening: C300
+opening: C400
+opening: C500
+{"id": "opening.riffle", "frames": {"first": 326}, "confidence": "medium"}
+letters: C600
+letters: C700
+letters: C800
+letters: C900
+letters: C1000
+{"id": "letters.page_turn", "frames": {"first": 574}, "confidence": "medium"}
+{"id": "letters.glow", "frames": {"first": 705, "half": 707, "full": 709}, "confidence": "medium"}
+{"id": "letters.lift", "frames": {"first": 744, "half": 750, "full": 755}, "confidence": "medium"}
+{"id": "letters.catch", "frames": {"first": 801, "fastest": 810, "full": 817}, "confidence": "medium"}
+{"id": "letters.burn", "frames": {"first": 856, "half": 884, "full": 925}, "confidence": "medium"}
+forge: C1100
+forge: C1200
+forge: C1300
+forge: C1400
+forge: C1500
+forge: C1600
+{"id": "forge.towers", "frames": {"first": 1069, "half": 1088, "full": 1089}, "confidence": "medium"}
+{"id": "forge.inscription", "frames": {"first": 1321}, "confidence": "medium"}
+{"id": "forge.ring_rises", "frames": {"first": 1389, "half": 1405, "full": 1435}, "confidence": "medium"}
+{"id": "forge.anvil_test", "frames": {"found": [1262]}, "confidence": "medium"}
+eye: C1700
+eye: C1800
+eye: C1900
+eye: C2000
+{"id": "eye.burn", "frames": {"first": 1933, "half": 1939, "full": 1942}, "confidence": "medium"}
+{"id": "eye.slit", "frames": {"first": 2003, "half": 2005, "full": 2033}, "confidence": "medium"}
+flint: C2700
+flint: C2800
+{"id": "flint.strike1", "frames": {"first": 2650, "peak": 2651}, "confidence": "medium"}
+{"id": "flint.strike3", "frames": {"first": 2698, "peak": 2699}, "confidence": "medium"}
+{"id": "flint.black_test", "frames": {"found": []}, "confidence": "high"}
+{"id": "flint.catch_test", "frames": {"first": null, "fastest": null, "full": null}, "confidence": "low"}
+{"id": "flint.blow_test", "frames": {"first": null, "fastest": null, "full": null}, "confidence": "low"}
+run: C3200
+run: C3300
+run: C3400
+{"id": "run.beacon_1", "frames": {"first": 3160, "fastest": null, "full": null}, "confidence": "medium"}
+{"id": "run.beacon_2", "frames": {"first": 3200, "fastest": null, "full": null}, "confidence": "medium"}
+{"id": "run.beacon_3", "frames": {"first": 3240, "fastest": null, "full": null}, "confidence": "medium"}
+{"id": "run.beacon_4", "frames": {"first": 3280, "fastest": null, "full": null}, "confidence": "medium"}
+{"id": "run.beacon_5", "frames": {"first": 3320, "fastest": null, "full": null}, "confidence": "medium"}
+{"id": "run.beacon_6", "frames": {"first": 3360, "fastest": null, "full": null}, "confidence": "medium"}
+{"id": "run.beacon_7", "frames": {"first": 3400, "fastest": null, "full": null}, "confidence": "medium"}
+illumination: C4800
+illumination: C4900
+illumination: C5000
+illumination: C5100
+{"id": "illumination.sun_already_visible", "frames": {"visible_from": 4720, "onset": null}, "confidence": "medium"}
+plenty: C5200
+plenty: C5300
+plenty: C5400
+{"id": "plenty.continuous_page", "frames": {}, "confidence": "low"}
+title: C5700
+title: C5800
+title: C5900
+{"id": "title.first_light", "frames": {"first": 5702}, "confidence": "medium"}
+wrote <worktree>/the-long-dawn/music/v3/events_C5_measured.json: 60 events over 18 shots
+peak RSS: 291913728 bytes; limit 1500000000 bytes

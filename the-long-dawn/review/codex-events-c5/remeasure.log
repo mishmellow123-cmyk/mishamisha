@@ -1,0 +1,9 @@
+{"id": "trap.low_forge_sinks", "frames": {"first": 2423, "out": 2428}, "confidence": "high"}
+{"id": "trap.low_forge_returns", "frames": {"first": 2546, "full": 2557}, "confidence": "high"}
+{"id": "trap.forges_surge", "frames": {"first": 2483, "fastest": 2486, "half": 2487, "full": 2490}, "confidence": "high"}
+{"id": "trap.leader_left_pulls_ahead", "frames": {"first": 2588, "half": 2607, "full": 2626}, "confidence": "high"}
+{"id": "trap.leader_right_pulls_ahead", "frames": {"first": 2591, "half": 2603, "full": 2624}, "confidence": "high"}
+{"id": "trap.hammer_strikes", "frames": {"found": []}, "confidence": "high"}
+{"id": "watch.beacons_burn_on", "frames": {"appear_in_frame": [4609, 4671]}, "confidence": "high"}
+Original TRAP frame decisions: {'trap.low_forge_sinks': {'first': 2423, 'out': 2428}, 'trap.low_forge_returns': {'first': 2546, 'full': 2557}, 'trap.forges_surge': {'first': 2483, 'fastest': 2486, 'half': 2487, 'full': 2490}, 'trap.leader_left_pulls_ahead': {'first': 2588, 'half': 2607, 'full': 2626}, 'trap.leader_right_pulls_ahead': {'first': 2591, 'half': 2603, 'full': 2624}, 'trap.hammer_strikes': {'found': []}}
+Final table current and valid; only control annotations refreshed after the full scan.

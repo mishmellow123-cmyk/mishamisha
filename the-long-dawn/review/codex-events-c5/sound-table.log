@@ -1,0 +1,18 @@
+wrote <worktree>/the-long-dawn/music/sound/c5_sound_events.json: 50 rows; 14 blocked, 1 ready with an unheard design choice, 1 dropped
+  C5.burn.to_trap            needs frame (EDIT transition)
+  C5.hammer.trap_1           needs source (no hammer/anvil recording in the library)
+  C5.hammer.trap_2           needs source (no hammer/anvil recording in the library)
+  C5.hammer.trap_3           needs source (no hammer/anvil recording in the library)
+  C5.hammer.trap_4           needs source (no hammer/anvil recording in the library)
+  C5.hammer.trap_5           needs source (no hammer/anvil recording in the library)
+  C5.hammer.trap_6           needs source (no hammer/anvil recording in the library)
+  C5.hammer.trap_7           needs source (no hammer/anvil recording in the library)
+  C5.burn.to_map             needs frame (EDIT transition)
+  C5.hammer.alone_1          needs source (no hammer/anvil recording in the library)
+  C5.hammer.alone_2          needs source (no hammer/anvil recording in the library)
+  C5.hammer.cut              needs source (no hammer/anvil recording in the library)
+  C5.page.to_blank           needs frame (EDIT: the turn's crossing frame)
+  C5.pen.caption_22          needs frame (EDIT caption timing)
+  C5.storm.unfinished        ready (design trim: listen)
+  C5.flint.strike2           DROPPED: SOUND-C's second strike (flash on v1 3009) lies inside ring_C's retired find/vision 3000-3149, which no C5 FLINT candidate may read (EDIT-C5 975d644 edl_v3.FLINT['retired']): C5 has two strikes, not three
+c5_sound_events.json is current

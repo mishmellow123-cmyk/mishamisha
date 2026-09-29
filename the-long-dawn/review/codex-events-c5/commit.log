@@ -1,0 +1,3 @@
+git add (the lane’s explicit file list) && git commit -m "Measure delivered C5 picture events and retime score cues"
+Exit 128: could not create shared .git/worktrees/codex-events/index.lock: Operation not permitted.
+No commit or push.

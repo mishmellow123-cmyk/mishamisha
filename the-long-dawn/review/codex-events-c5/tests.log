@@ -1,0 +1,13 @@
+........................................................................ [ 47%]
+...................................................................... [ 93%]
+..........                                                           [100%]
+=============================== warnings summary ===============================
+edit/tests/test_c5_captions.py::CaptionBlockTests::test_a_break_keeps_the_words_and_stacks_two_lines
+edit/tests/test_c5_readiness.py::C5ReadinessTests::test_a_caption_whose_glyphs_leave_the_picture_fails_both_modes
+edit/tests/test_c5_tools.py::PartialLabelTests::test_the_review_label_reads_on_parchment_as_well_as_on_black
+edit/tests/test_c5_tools.py::PartialPrimaryTests::test_a_row_with_an_incomplete_primary_never_plays_the_fallback
+  /opt/anaconda3/lib/python3.13/site-packages/PIL/ImageFont.py:244: UserWarning: Raqm layout was requested, but Raqm is not available. Falling back to basic layout.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+152 passed, 4 warnings, 6 subtests passed in 69.51s (0:01:09)

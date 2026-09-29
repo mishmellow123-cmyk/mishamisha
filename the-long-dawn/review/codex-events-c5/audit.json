@@ -1,0 +1,77 @@
+{
+  "frames_covered": 5920,
+  "shots": 18,
+  "events": 60,
+  "syncs": 72,
+  "sources": {
+    "pass 1": 32,
+    "measured": 37,
+    "verified": 2,
+    "derived": 1
+  },
+  "new_moves": {
+    "riffle": {
+      "old": 320,
+      "new": 326,
+      "delta": 6
+    },
+    "page_turn": {
+      "old": 560,
+      "new": 574,
+      "delta": 14
+    },
+    "letters_glow": {
+      "old": 700,
+      "new": 705,
+      "delta": 5
+    },
+    "letters_lift": {
+      "old": 720,
+      "new": 744,
+      "delta": 24
+    },
+    "fire_catches": {
+      "old": 800,
+      "new": 801,
+      "delta": 1
+    },
+    "burn_through": {
+      "old": 840,
+      "new": 856,
+      "delta": 16
+    },
+    "towers_rise": {
+      "old": 1040,
+      "new": 1069,
+      "delta": 29
+    },
+    "inscription": {
+      "old": 1320,
+      "new": 1321,
+      "delta": 1
+    },
+    "ring_rises": {
+      "old": 1360,
+      "new": 1389,
+      "delta": 29
+    },
+    "eye_burn": {
+      "old": 1920,
+      "new": 1933,
+      "delta": 13
+    },
+    "slit_nothing": {
+      "old": 2000,
+      "new": 2003,
+      "delta": 3
+    },
+    "title": {
+      "old": 5680,
+      "new": 5702,
+      "delta": 22
+    }
+  },
+  "trace_decisions_match": true,
+  "inherited_frame_hashes_match": true,
+  "sound_event_rows_unchanged": true
+}
