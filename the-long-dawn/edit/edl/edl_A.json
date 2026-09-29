@@ -721,7 +721,7 @@
      "stem": "beaconrun_A_catches3",
      "off": 0,
      "mode": "exact",
-     "note": "PR #8 catches (farm 4027-4239, M4 3920-4026)",
+     "note": "PR #8 catches (farm: 4027-4239, then 3920-4026 on 29 Sep; the joins 3955|3956, 3990|3991 and 4026|4027 differ from their neighbours by 0.93/0.92/1.00 vs 0.92/0.92/1.00 mean |diff|)",
      "crop": null,
      "grade": null,
      "matte": null,

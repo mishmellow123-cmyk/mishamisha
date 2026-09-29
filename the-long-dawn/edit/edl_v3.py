@@ -186,7 +186,7 @@ A = [
       # Codex PR #8 (merged d6ef556): job beaconrun_a_catches3 -> renders/beaconrun_A_catches3. The farm landed
       # 4027-4239 only; 3920-4026 is rendered on the M4 from the same shots/run code (unchanged d6ef556 -> 6059baf ->
       # this branch). need: it plays only once all 320 frames are there (the delivered A master had A14 as a SLATE).
-      [T('beaconrun_A_catches3', 0, 'exact', 'PR #8 catches (farm 4027-4239, M4 3920-4026)', need=(3920, 4239)),
+      [T('beaconrun_A_catches3', 0, 'exact', 'PR #8 catches (farm: 4027-4239, then 3920-4026 on 29 Sep; the joins 3955|3956, 3990|3991 and 4026|4027 differ from their neighbours by 0.93/0.92/1.00 vs 0.92/0.92/1.00 mean |diff|)', need=(3920, 4239)),
        T('beaconrun'), T('run')]),
     S('A15', 4240, 4400, 'R16', 'THE WATCHERS', 'RUN-A + HILLS',
       'Behind a backlit watcher at the seventh fire, looking to the cold glow; small figures on far ridges, eyelines only.',

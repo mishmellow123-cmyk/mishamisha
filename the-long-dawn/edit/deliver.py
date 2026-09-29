@@ -12,7 +12,7 @@ minutes. The same engine makes the half-res animatics (--profile animatic).
     python3 edit/deliver.py --cut C --qc-only              # QC the existing master again
     python3 edit/deliver.py --cut A --profile animatic     # the half-res animatic, incrementally
 
-Outputs in ~/mishamisha/_local_logs/delivery/ (animatics in _local_logs/animatic/ as before):
+Outputs in $LD_DELIVERY, else ~/mishamisha/_local_logs/delivery/ (animatics in _local_logs/animatic/ as before):
     <cut>_master[_codedtowers].mov     H.264 High (x264 CRF 14, slow, BT.709 limited, 1920x804, 24 fps) + the
                                        cut's sound master as 24-bit PCM, 48 kHz stereo
     <cut>_master[_codedtowers].mp4     the same picture with AAC 320k: the screener for players
@@ -40,7 +40,7 @@ import assemble as AS  # noqa: E402
 EDL = AS.EDL
 titles = AS.titles
 FPS, SR = 24, 48000
-DELIVERY = os.path.expanduser('~/mishamisha/_local_logs/delivery')
+DELIVERY = os.environ.get('LD_DELIVERY') or os.path.expanduser('~/mishamisha/_local_logs/delivery')
 ENGINE = 'x5.1'                                        # bump when the encode itself changes
 PROFILES = {
     'master': dict(scale=1.0, clean=True, crf=14, preset='slow', out=DELIVERY, finish=True),   # FINISH
