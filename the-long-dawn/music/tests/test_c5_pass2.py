@@ -59,12 +59,17 @@ def test_barmap_p2_events_are_the_measured_frames(scores):
 
 
 def test_pass1_and_pass2_share_everything_outside_the_resynchronised_span(scores, patches):
-    """the note lists are identical before the Trap (2320) and after the Ring's entry (4000); dynamics of notes
-    outside differ only where a curve interpolates into the changed span, by < 0.01 dB"""
+    """Shared composition stays identical outside the pass-2 rewrite, on the SAME picture timings.
+
+    Newly measured first-half/title cues now intentionally move both shared functions' notes.
+    The separate pass-1 digest test still pins the original score on its original barmap.
+    """
     import score_v3_C5P2 as P2
     from dsl import dyn_at
     from timeline_v3 import BEAT_S
-    (S1, _), (S2, _) = scores["C5"], scores["C5P2"]
+    import score_v3_C5 as P1
+    S2, bm2 = scores["C5P2"]
+    S1 = P1.build(bm2)
     u1, u2 = S1.used(), S2.used()
     assert set(u1) == set(u2)
     lo, hi = beat(2320), beat(4000) + 0.03

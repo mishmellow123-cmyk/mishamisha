@@ -2,9 +2,9 @@
  "schema": "long-dawn/c5-events-measured/1",
  "cut": "C5",
  "fps": 24,
- "frames": "absolute C frame numbers (the delivered f_%05d.jpg names)",
+ "frames": "absolute C5 cut frame numbers; reused-source offsets and composite layers are recorded in shots",
  "generated_by": "music/src/measure_c5_events.py",
- "generator_sha256": "a10a667fb274e6a17a637ee800c2ec3d6b691d47e0b6cd6d5847fda4208dd063",
+ "generator_sha256": "2a85ddeb87aabc4db405ae45ad2bafd4312cc6406fe8e3c17f10ff97ff43bb25",
  "basis_labels": {
   "MEASURED": "a pixel statistic decided the frame(s) (see method)",
   "OBSERVED": "checked by eye on native-resolution stills (never in motion)",
@@ -78,9 +78,556 @@
    "last": 5679,
    "section": "C22",
    "frame_set_sha256": "67fe59598bd1a0ec4df779ce42f7e94bf970641dbcb96266aacee6c149297b71"
+  },
+  "opening": {
+   "stem": "EDIT:book",
+   "first": 0,
+   "last": 559,
+   "section": "C1-C3",
+   "frame_set_sha256": "59b4bd4e647fcd6687cbdb4cab0bd35153d0087e3c3f0c6b5343de4bec9299a1",
+   "pieces": [
+    {
+     "first": 0,
+     "last": 79,
+     "kind": "black",
+     "take": null
+    },
+    {
+     "first": 80,
+     "last": 319,
+     "kind": "take",
+     "take": {
+      "stem": "book_C",
+      "off": 0,
+      "mode": "exact",
+      "note": "MAP-v3 book engine",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C"
+      ]
+     }
+    },
+    {
+     "first": 320,
+     "last": 559,
+     "kind": "take",
+     "take": {
+      "stem": "book_C",
+      "off": 0,
+      "mode": "exact",
+      "note": "MAP-v3 book engine",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+  },
+  "letters": {
+   "stem": "EDIT:letters+fire",
+   "first": 560,
+   "last": 1039,
+   "section": "C4-C5",
+   "frame_set_sha256": "78c499d385af51e0782f5c18a27c32b7cb47590b7c5c4d17be069883900d238b",
+   "pieces": [
+    {
+     "first": 560,
+     "last": 699,
+     "kind": "take",
+     "take": {
+      "stem": "book_C",
+      "off": 0,
+      "mode": "exact",
+      "note": "MAP-v3 book engine",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C"
+      ]
+     }
+    },
+    {
+     "first": 700,
+     "last": 840,
+     "kind": "take",
+     "take": {
+      "stem": "book_C",
+      "off": 0,
+      "mode": "exact",
+      "note": "MAP-L page (page-only) + EMBERS-C E15 fire, additive",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": "embers_C3_e15",
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C"
+      ]
+     }
+    },
+    {
+     "first": 841,
+     "last": 879,
+     "kind": "take",
+     "take": {
+      "stem": "book_C_ft",
+      "off": 0,
+      "mode": "exact",
+      "note": "BURN-C filmed burn (a): letters page + fire; e15 added",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_ft_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": "embers_C3_e15",
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C_ft"
+      ]
+     }
+    },
+    {
+     "first": 880,
+     "last": 1039,
+     "kind": "take",
+     "take": {
+      "stem": "book_C_ft",
+      "off": 0,
+      "mode": "exact",
+      "note": "BURN-C filmed burn (a): letters page + fire; e15 added",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_ft_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": "embers_C3_e15",
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C_ft"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+  },
+  "forge": {
+   "stem": "EDIT:forge",
+   "first": 1040,
+   "last": 1679,
+   "section": "C6-C7",
+   "frame_set_sha256": "baf2ca00ff41b99239413e1d44bbf1ca77acd9564bbb6eed39ec59c9c21cc518",
+   "pieces": [
+    {
+     "first": 1040,
+     "last": 1439,
+     "kind": "take",
+     "take": {
+      "stem": "embers_C3",
+      "off": 0,
+      "mode": "exact",
+      "note": "EMBERS v3, C timeline",
+      "crop": null,
+      "grade": null,
+      "matte": null,
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/embers_C3"
+      ]
+     }
+    },
+    {
+     "first": 1440,
+     "last": 1679,
+     "kind": "take",
+     "take": {
+      "stem": "embers_C3",
+      "off": 0,
+      "mode": "exact",
+      "note": "EMBERS v3, C timeline",
+      "crop": null,
+      "grade": null,
+      "matte": null,
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/embers_C3"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+  },
+  "eye": {
+   "stem": "EDIT:deep+eye",
+   "first": 1680,
+   "last": 2079,
+   "section": "C8-C9",
+   "frame_set_sha256": "724b5cef7aabbfadafdedf31981d1ae1c1c8ed448019b3482d6fb34ec0d821cc",
+   "pieces": [
+    {
+     "first": 1680,
+     "last": 1717,
+     "kind": "take",
+     "take": {
+      "stem": "book_C_ft",
+      "off": 0,
+      "mode": "exact",
+      "note": "BURN-C filmed sweep: the held race baked in (matte 1, no under)",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_ft_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C_ft"
+      ]
+     }
+    },
+    {
+     "first": 1718,
+     "last": 1904,
+     "kind": "take",
+     "take": {
+      "stem": "book_C",
+      "off": 0,
+      "mode": "exact",
+      "note": "MAP-v3 book engine",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_matte",
+      "under": [
+       "hold",
+       "embers_C3",
+       1679
+      ],
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C"
+      ]
+     }
+    },
+    {
+     "first": 1905,
+     "last": 1919,
+     "kind": "take",
+     "take": {
+      "stem": "book_C_ft",
+      "off": 0,
+      "mode": "exact",
+      "note": "BURN-C filmed Eye burn-through: page + fire; the storm held at 1920 under an opaque matte",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_ft_matte",
+      "under": [
+       "hold",
+       "embers_C3",
+       1920
+      ],
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C_ft"
+      ]
+     }
+    },
+    {
+     "first": 1920,
+     "last": 1991,
+     "kind": "take",
+     "take": {
+      "stem": "book_C_ft",
+      "off": 0,
+      "mode": "exact",
+      "note": "BURN-C filmed Eye burn-through: page + fire, live storm under",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_ft_matte",
+      "under": [
+       "same",
+       "embers_C3"
+      ],
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C_ft"
+      ]
+     }
+    },
+    {
+     "first": 1992,
+     "last": 2079,
+     "kind": "take",
+     "take": {
+      "stem": "embers_C3",
+      "off": 0,
+      "mode": "exact",
+      "note": "EMBERS v3, C timeline",
+      "crop": null,
+      "grade": null,
+      "matte": null,
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/embers_C3"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+  },
+  "flint": {
+   "stem": "EDIT:flint",
+   "first": 2640,
+   "last": 2879,
+   "section": "C12",
+   "frame_set_sha256": "7a146d55a15c6ef40e89d6debe9c4fe7eccc89212848c5c773e038958474e0dd",
+   "pieces": [
+    {
+     "first": 2640,
+     "last": 2669,
+     "kind": "take",
+     "take": {
+      "stem": "ring_C",
+      "off": 330,
+      "mode": "exact",
+      "note": "MONTAGE-3D-5 hands-only flint, candidate A",
+      "crop": null,
+      "grade": null,
+      "matte": null,
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/ring_C"
+      ]
+     }
+    },
+    {
+     "first": 2670,
+     "last": 2879,
+     "kind": "take",
+     "take": {
+      "stem": "ring_C",
+      "off": 480,
+      "mode": "exact",
+      "note": "MONTAGE-3D-5 hands-only flint, candidate A",
+      "crop": null,
+      "grade": null,
+      "matte": null,
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/ring_C"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+  },
+  "run": {
+   "stem": "EDIT:beacon-run",
+   "first": 3120,
+   "last": 3439,
+   "section": "C14",
+   "frame_set_sha256": "e78fc309cd257ff4b3bf329c0d46ed957366ba312f86c2fde3b0e0f02e6e94a6",
+   "pieces": [
+    {
+     "first": 3120,
+     "last": 3439,
+     "kind": "take",
+     "take": {
+      "stem": "runC_scroll",
+      "off": -3120,
+      "mode": "exact",
+      "note": "RUN-C ink final",
+      "crop": null,
+      "grade": null,
+      "matte": null,
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/runC_scroll"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+  },
+  "illumination": {
+   "stem": "EDIT:illumination",
+   "first": 4720,
+   "last": 5199,
+   "section": "C20",
+   "frame_set_sha256": "992f4ea0d60a8628e1f79ce6b6c5e6e3d4714b2c19229892c517403de748989a",
+   "pieces": [
+    {
+     "first": 4720,
+     "last": 5199,
+     "kind": "take",
+     "take": {
+      "stem": "runC_illum",
+      "off": -2322,
+      "mode": "exact",
+      "note": "RUN-C ink final",
+      "crop": null,
+      "grade": null,
+      "matte": null,
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/runC_illum"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+  },
+  "plenty": {
+   "stem": "EDIT:plenty",
+   "first": 5200,
+   "last": 5439,
+   "section": "C21",
+   "frame_set_sha256": "a7c999a36ad9089d7d62c512d162d97bbd576821abe5554600bf4f524be3e431",
+   "pieces": [
+    {
+     "first": 5200,
+     "last": 5439,
+     "kind": "take",
+     "take": {
+      "stem": "book_C",
+      "off": 960,
+      "mode": "exact",
+      "note": "MAP-v3 book engine",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+  },
+  "title": {
+   "stem": "EDIT:title",
+   "first": 5680,
+   "last": 5919,
+   "section": "C23",
+   "frame_set_sha256": "ec634e6855bf710ba577e6dcb2b698820704c51d58aee6524ada30ab9789e7b2",
+   "pieces": [
+    {
+     "first": 5680,
+     "last": 5919,
+     "kind": "take",
+     "take": {
+      "stem": "book_C",
+      "off": 1280,
+      "mode": "exact",
+      "note": "MAP-v3 book engine",
+      "crop": null,
+      "grade": null,
+      "matte": "book_C_matte",
+      "under": null,
+      "video": null,
+      "need": null,
+      "add": null,
+      "final_eligible": true,
+      "folders": [
+       "renders/book_C"
+      ]
+     }
+    }
+   ],
+   "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
+   "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
+   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
   }
  },
- "not_on_this_mac": "FLINT 2640-2879 (the hands-only 'ring' stem), the BEACON RUN 3120-3439 (runC_scroll), the ILLUMINATION 4720-5199, PLENTY 5200-5439, the TITLE 5680-5919 and the first half 0-2079: none of their events are in this table",
+ "not_on_this_mac": [],
+ "generator_dependencies": {
+  "measure_c5_delivered.py": "c0e4bbe7504e477a338b10ed143895530e597c5fe5f3405b409304b839ecb0c8",
+  "measure_c5_analysis.py": "e2a28da6a68c2f477a213146981cbeae8b40b37bac01e448da2baa96ac43d57a"
+ },
  "events": [
   {
    "id": "refusal.ink_begins",
@@ -100,15 +647,29 @@
     "pixels": {
      "2087": 0.0,
      "2088": 0.0,
-     "2089": 23.0,
+     "2089": 20.0,
      "2090": 3.0,
-     "2091": 49.0
+     "2091": 46.0
     }
    },
    "confidence": "high",
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "ink",
+     "first": 2251,
+     "last": 2319,
+     "frames_examined": 69,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "completed drawing, no more ink strokes"
+    }
    ],
    "observed": {
     "frames": "2088, 2089, 2095, 2116",
@@ -126,35 +687,49 @@
    },
    "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; the stroke segment before the Ring's",
    "region": {
-    "x0": 624,
-    "y0": 244,
+    "x0": 632,
+    "y0": 246,
     "x1": 982,
-    "y1": 382,
+    "y1": 384,
     "space": "1920x804"
    },
    "evidence": {
     "segment": {
      "first": 2114,
      "last": 2135,
-     "frames": 21,
-     "ink_px960": 1075,
+     "frames": 22,
+     "ink_px960": 977,
      "centroid": [
-      829,
-      306
+      826,
+      307
      ]
     },
     "pixels": {
      "2112": 4.0,
-     "2113": 8.0,
-     "2114": 11.0,
-     "2115": 7.0,
-     "2116": 39.0
+     "2113": 7.0,
+     "2114": 10.0,
+     "2115": 13.0,
+     "2116": 36.0
     }
    },
    "confidence": "high",
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "ink",
+     "first": 2251,
+     "last": 2319,
+     "frames_examined": 69,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "completed drawing, no more ink strokes"
+    }
    ],
    "observed": {
     "frames": "2116, 2134",
@@ -172,10 +747,10 @@
    },
    "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; the stroke segment just before the pause and the figure (segments = stroke runs split by >= 2 empty frames)",
    "region": {
-    "x0": 844,
+    "x0": 846,
     "y0": 220,
     "x1": 912,
-    "y1": 344,
+    "y1": 346,
     "space": "1920x804"
    },
    "evidence": {
@@ -183,7 +758,7 @@
      "first": 2138,
      "last": 2150,
      "frames": 13,
-     "ink_px960": 303,
+     "ink_px960": 298,
      "centroid": [
       878,
       243
@@ -191,16 +766,30 @@
     },
     "pixels": {
      "2136": 5.0,
-     "2137": 7.0,
+     "2137": 6.0,
      "2138": 16.0,
      "2139": 24.0,
-     "2140": 26.0
+     "2140": 25.0
     }
    },
    "confidence": "high",
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "ink",
+     "first": 2251,
+     "last": 2319,
+     "frames_examined": 69,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "completed drawing, no more ink strokes"
+    }
    ],
    "observed": {
     "frames": "2134, 2138, 2150, 2155",
@@ -223,10 +812,10 @@
    },
    "evidence": {
     "pixels": {
-     "2149": 19.0,
-     "2150": 20.0,
+     "2149": 17.0,
+     "2150": 19.0,
      "2151": 1.0,
-     "2152": 0.0,
+     "2152": 1.0,
      "2153": 3.0
     }
    },
@@ -234,6 +823,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "ink",
+     "first": 2251,
+     "last": 2319,
+     "frames_examined": 69,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "completed drawing, no more ink strokes"
+    }
    ],
    "observed": {
     "frames": "2150, 2155",
@@ -251,7 +854,7 @@
    "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; the first segment centred right of x 1000",
    "region": {
     "x0": 900,
-    "y0": 74,
+    "y0": 76,
     "x1": 1438,
     "y1": 600,
     "space": "1920x804"
@@ -261,24 +864,38 @@
      "first": 2156,
      "last": 2183,
      "frames": 28,
-     "ink_px960": 1910,
+     "ink_px960": 1805,
      "centroid": [
       1236,
-      298
+      296
      ]
     },
     "pixels": {
      "2154": 0.0,
      "2155": 1.0,
-     "2156": 41.0,
-     "2157": 96.0,
-     "2158": 121.0
+     "2156": 35.0,
+     "2157": 87.0,
+     "2158": 113.0
     }
    },
    "confidence": "high",
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "ink",
+     "first": 2251,
+     "last": 2319,
+     "frames_examined": 69,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "completed drawing, no more ink strokes"
+    }
    ],
    "observed": {
     "frames": "2156, 2168",
@@ -298,30 +915,30 @@
    "region": {
     "x0": 1010,
     "y0": 106,
-    "x1": 1214,
+    "x1": 1212,
     "y1": 310,
     "space": "1920x804"
    },
    "evidence": {
     "pixels": {
-     "2193": 8.0,
-     "2194": 10.0,
-     "2195": 40.0,
-     "2196": 60.0,
-     "2197": 92.0
+     "2193": 5.0,
+     "2194": 8.0,
+     "2195": 32.0,
+     "2196": 57.0,
+     "2197": 83.0
     },
     "centroids": [
      [
-      1168,
-      176
+      1167,
+      175
      ],
      [
-      1047,
-      233
+      1043,
+      236
      ],
      [
       1037,
-      189
+      190
      ],
      [
       1056,
@@ -336,11 +953,11 @@
       165
      ],
      [
-      1107,
+      1105,
       227
      ],
      [
-      1180,
+      1178,
       268
      ]
     ]
@@ -349,6 +966,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "ink",
+     "first": 2251,
+     "last": 2319,
+     "frames_examined": 69,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "completed drawing, no more ink strokes"
+    }
    ],
    "observed": {
     "frames": "2194, 2195, 2201",
@@ -372,9 +1003,9 @@
    },
    "evidence": {
     "pixels": {
-     "2247": 54.0,
-     "2248": 50.0,
-     "2249": 25.0,
+     "2247": 60.0,
+     "2248": 53.0,
+     "2249": 28.0,
      "2250": 0.0,
      "2251": 0.0
     },
@@ -384,37 +1015,37 @@
       "first": 2089,
       "last": 2095,
       "frames": 6,
-      "ink_px960": 273,
+      "ink_px960": 248,
       "centroid": [
-       629,
-       351
+       630,
+       349
       ]
      },
      {
       "first": 2098,
       "last": 2099,
       "frames": 2,
-      "ink_px960": 31,
+      "ink_px960": 34,
       "centroid": [
-       621,
-       343
+       622,
+       341
       ]
      },
      {
       "first": 2114,
       "last": 2135,
-      "frames": 21,
-      "ink_px960": 1075,
+      "frames": 22,
+      "ink_px960": 977,
       "centroid": [
-       829,
-       306
+       826,
+       307
       ]
      },
      {
       "first": 2138,
       "last": 2150,
       "frames": 13,
-      "ink_px960": 303,
+      "ink_px960": 298,
       "centroid": [
        878,
        243
@@ -424,30 +1055,30 @@
       "first": 2156,
       "last": 2183,
       "frames": 28,
-      "ink_px960": 1910,
+      "ink_px960": 1805,
       "centroid": [
        1236,
-       298
+       296
       ]
      },
      {
       "first": 2187,
       "last": 2191,
       "frames": 4,
-      "ink_px960": 55,
+      "ink_px960": 58,
       "centroid": [
        1244,
-       160
+       159
       ]
      },
      {
-      "first": 2194,
+      "first": 2195,
       "last": 2249,
-      "frames": 56,
-      "ink_px960": 4801,
+      "frames": 55,
+      "ink_px960": 4861,
       "centroid": [
-       1243,
-       379
+       1244,
+       382
       ]
      }
     ]
@@ -456,6 +1087,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "ink",
+     "first": 2251,
+     "last": 2319,
+     "frames_examined": 69,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "completed drawing, no more ink strokes"
+    }
    ],
    "observed": {
     "frames": "2249, 2250, 2319",
@@ -473,20 +1118,20 @@
    },
    "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; its flame tracked on the base; first = first frame under 90% of its median area over the shot's first 60 frames, out = first frame under 10% (the flame's core leaves the mask; the renderer keeps a 6% flame)",
    "region": {
-    "x": 676,
+    "x": 675,
     "y": 494,
     "space": "1920x804, flame base"
    },
    "evidence": {
-    "area_base_px960": 153,
+    "area_base_px960": 152,
     "area": {
-     "2421": 154.0,
-     "2422": 146.0,
+     "2421": 153.0,
+     "2422": 145.0,
      "2423": 124.0,
      "2424": 109.0,
-     "2425": 84.0,
+     "2425": 83.0,
      "2426": 60.0,
-     "2427": 33.0,
+     "2427": 34.0,
      "2428": 0.0,
      "2429": 0.0,
      "2430": 0.0,
@@ -497,6 +1142,44 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "diagnostic_controls": [
+    {
+     "detector": "signal",
+     "first": 2320,
+     "last": 2379,
+     "frames_examined": 60,
+     "threshold": -137.25,
+     "direction": -1,
+     "trigger_frames": [
+      2344,
+      2345,
+      2346,
+      2347,
+      2348,
+      2349,
+      2353,
+      2355,
+      2356
+     ],
+     "triggers": 9,
+     "maximum": -129.0,
+     "selection_reason": "90% alone also detects ordinary flicker; the full sink rule additionally requires a subsequent extinction crossing"
+    }
+   ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 2320,
+     "last": 2379,
+     "frames_examined": 60,
+     "threshold": -15.25,
+     "direction": -1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": -129.0,
+     "selection_reason": "no extinction crossing below 10% in the opening plateau; the 90% onset is assigned only before that crossing"
+    }
    ],
    "observed": {
     "frames": "2418, 2423, 2425, 2427, 2428, 2432, 2440",
@@ -524,10 +1207,10 @@
      "2543": 0.0,
      "2544": 0.0,
      "2545": 0.0,
-     "2546": 34.0,
-     "2547": 83.0,
+     "2546": 33.0,
+     "2547": 82.0,
      "2548": 141.0,
-     "2549": 212.0
+     "2549": 210.0
     },
     "base_y960_first_last": [
      242,
@@ -538,6 +1221,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 2500,
+     "last": 2530,
+     "frames_examined": 31,
+     "threshold": 20,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "fixed pre-event control; original detector threshold"
+    }
    ],
    "observed": {
     "frames": "2540, 2545, 2546, 2548, 2557",
@@ -561,24 +1258,24 @@
     "space": "1920x804"
    },
    "evidence": {
-    "total_base_px960": 1860,
-    "total_after_px960": 6365,
+    "total_base_px960": 1840,
+    "total_after_px960": 6324,
     "total": {
-     "2482": 2116.0,
-     "2483": 2462.0,
-     "2484": 2804.0,
-     "2485": 3293.0,
-     "2486": 3923.0,
-     "2487": 4466.0,
-     "2488": 5060.0,
-     "2489": 5650.0,
-     "2490": 6133.0
+     "2482": 2119.0,
+     "2483": 2438.0,
+     "2484": 2802.0,
+     "2485": 3249.0,
+     "2486": 3889.0,
+     "2487": 4412.0,
+     "2488": 5011.0,
+     "2489": 5600.0,
+     "2490": 6074.0
     },
     "each": [
      {
       "x": 1490,
       "first": 2481,
-      "fastest": 2486,
+      "fastest": 2487,
       "full": 2490
      },
      {
@@ -600,6 +1297,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 2320,
+     "last": 2399,
+     "frames_examined": 80,
+     "threshold": 2287.9,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 1972.0,
+     "selection_reason": "fixed pre-event control; original detector threshold"
+    }
+   ],
    "observed": {
     "frames": "2478, 2482, 2484, 2486, 2488, 2492",
     "saw": "every other flame grows taller together from 2482-2484 to 2492"
@@ -615,10 +1326,10 @@
     "half": 2607,
     "full": 2626
    },
-   "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; per frame the flame with the highest top within x 726-930 (1920 px) of the Ring; first/full = 10%/90% of its top's climb from the median over frames 200-239 to the last 8 frames' median; half = its 50% crossing (a one-frame 'fastest' is not reported: the tallest flame can switch to a neighbour's blob for a frame)",
+   "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; per frame the flame with the highest top within x 727-931 (1920 px) of the Ring; first/full = 10%/90% of its top's climb from the median over frames 200-239 to the last 8 frames' median; half = its 50% crossing (a one-frame 'fastest' is not reported: the tallest flame can switch to a neighbour's blob for a frame)",
    "region": {
-    "x0": 726,
-    "x1": 930,
+    "x0": 727,
+    "x1": 931,
     "space": "1920x804, beside the Ring"
    },
    "evidence": {
@@ -640,6 +1351,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 2520,
+     "last": 2559,
+     "frames_examined": 40,
+     "threshold": -202.05,
+     "direction": -1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": -214.0,
+     "selection_reason": "fixed pre-event control; original detector threshold"
+    }
+   ],
    "observed": {
     "frames": "2560, 2580, 2590, 2600, 2610, 2620, 2626, 2639",
     "saw": "two towers either side of the Ring climb together from ~2590; by 2620 their flames reach the Ring's height and by 2626-2639 stand beside it; the same form, no marking tells them apart"
@@ -652,33 +1377,47 @@
    "event": "the right of the two front-runners (same form, uncoded) climbs toward the Ring",
    "frames": {
     "first": 2591,
-    "half": 2601,
+    "half": 2603,
     "full": 2624
    },
-   "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; per frame the flame with the highest top within x 962-1166 (1920 px) of the Ring; first/full = 10%/90% of its top's climb from the median over frames 200-239 to the last 8 frames' median; half = its 50% crossing (a one-frame 'fastest' is not reported: the tallest flame can switch to a neighbour's blob for a frame)",
+   "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; per frame the flame with the highest top within x 963-1167 (1920 px) of the Ring; first/full = 10%/90% of its top's climb from the median over frames 200-239 to the last 8 frames' median; half = its 50% crossing (a one-frame 'fastest' is not reported: the tallest flame can switch to a neighbour's blob for a frame)",
    "region": {
-    "x0": 962,
-    "x1": 1166,
+    "x0": 963,
+    "x1": 1167,
     "space": "1920x804, beside the Ring"
    },
    "evidence": {
     "top_y960_before": 214,
     "top_y960_end": 70,
     "top_y960": {
-     "2598": 172.0,
-     "2599": 168.0,
      "2600": 165.0,
-     "2601": 89.0,
-     "2602": 89.0,
+     "2601": 162.0,
+     "2602": 158.0,
      "2603": 89.0,
-     "2604": 89.0
+     "2604": 89.0,
+     "2605": 89.0,
+     "2606": 89.0
     },
-    "area_px960_end": 596
+    "area_px960_end": 599
    },
    "confidence": "high",
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 2520,
+     "last": 2559,
+     "frames_examined": 40,
+     "threshold": -199.6,
+     "direction": -1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": -212.0,
+     "selection_reason": "fixed pre-event control; original detector threshold"
+    }
    ],
    "observed": {
     "frames": "as trap.leader_left_pulls_ahead",
@@ -699,17 +1438,17 @@
     "space": "960x402"
    },
    "evidence": {
-    "dY_median": 0.632,
-    "dY_max": 2.395,
-    "dY_max_frame": 2511,
+    "dY_median": 0.606,
+    "dY_max": 2.295,
+    "dY_max_frame": 2510,
     "dY_around_max": {
-     "2508": 2.39,
-     "2509": 2.39,
-     "2510": 2.39,
-     "2511": 2.4,
-     "2512": 2.39,
-     "2513": 2.37,
-     "2514": 2.35
+     "2507": 2.28,
+     "2508": 2.28,
+     "2509": 2.28,
+     "2510": 2.3,
+     "2511": 2.29,
+     "2512": 2.29,
+     "2513": 2.28
     }
    },
    "confidence": "high",
@@ -718,6 +1457,20 @@
     "OBSERVED"
    ],
    "note": "no impulse: the hammers are not drawn; they are SOUND's, placed musically (not on a visible strike)",
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 2321,
+     "last": 2399,
+     "frames_examined": 79,
+     "threshold": 0.5,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": -0.9351064562797546,
+     "selection_reason": "fixed pre-event control; original detector threshold"
+    }
+   ],
    "observed": {
     "frames": "overview 2320-2620 every 20; the crops above",
     "saw": "no hammer, anvil flash or spark burst is drawn: sparks drift continuously; nothing strikes"
@@ -786,7 +1539,33 @@
     "MEASURED",
     "OBSERVED"
    ],
-   "note": "2880 is the shot's FIRST frame: its glow peak there is the latest the ignition can be; whether it began inside FLINT (2640-2879, not on this Mac) cannot be measured here",
+   "note": "First-frame glow peak is left-censored: 2880 is the latest possible ignition, not proof of a within-shot onset. The control tests recurrence of that peak wash.",
+   "negative_controls": [
+    {
+     "detector": "wash",
+     "first": 3000,
+     "last": 3119,
+     "frames_examined": 120,
+     "threshold": 9756.0,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 5378.0,
+     "selection_reason": "settled already-burning fire; fixed 90% peak wash"
+    },
+    {
+     "detector": "wash",
+     "first": 3000,
+     "last": 3119,
+     "frames_examined": 120,
+     "threshold": 1342.8,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 889.0,
+     "selection_reason": "settled already-burning fire; fixed 90% peak wash"
+    }
+   ],
    "observed": {
     "frames": "2880, 2881, 2882, 2884, 2888, 2896, 2920, 3000",
     "saw": "on 2880 both summits carry a small drawn flame inside a broad warm glow; the flames are larger on 2881 and 2882 and full by 2884; the glow fades over the next seconds; the far fire is a small gold mark on its peak"
@@ -825,6 +1604,20 @@
     "OBSERVED"
    ],
    "note": "the far flame is ~30 px tall: its outline is too small for this count; OBSERVED crops show it growing over the same frames",
+   "negative_controls": [
+    {
+     "detector": "ink",
+     "first": 2880,
+     "last": 2880,
+     "frames_examined": 1,
+     "threshold": 866.15,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 840.0,
+     "selection_reason": "only one available pre-growth frame; limited negative-control coverage"
+    }
+   ],
    "observed": {
     "frames": "2880-2888",
     "saw": "as above"
@@ -862,6 +1655,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
    ],
    "observed": {
     "frames": "overview 3440-3815 every 25",
@@ -904,6 +1711,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
+   ],
    "observed": {
     "frames": "first - 1, first, full",
     "saw": "on the frame before `first` a faint glow is already on the unlit ink stack; on `first` the flame's outline begins; on `full` the drawn flame stands in its glow"
@@ -944,6 +1765,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
    ],
    "observed": {
     "frames": "first - 1, first, full",
@@ -986,6 +1821,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
+   ],
    "observed": {
     "frames": "first - 1, first, full",
     "saw": "on the frame before `first` a faint glow is already on the unlit ink stack; on `first` the flame's outline begins; on `full` the drawn flame stands in its glow"
@@ -1026,6 +1875,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
    ],
    "observed": {
     "frames": "first - 1, first, full",
@@ -1068,6 +1931,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
+   ],
    "observed": {
     "frames": "first - 1, first, full",
     "saw": "on the frame before `first` a faint glow is already on the unlit ink stack; on `first` the flame's outline begins; on `full` the drawn flame stands in its glow"
@@ -1108,6 +1985,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
    ],
    "observed": {
     "frames": "3716, 3718, 3720, 3722, 3724, 3783",
@@ -1150,6 +2041,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
+   ],
    "observed": {
     "frames": "as map.last_catch",
     "saw": "as map.last_catch"
@@ -1191,6 +2096,20 @@
     "OBSERVED"
    ],
    "note": "the renderer states one-dark C3724-3783 (its 7th catch ramp COMPLETES at 3724); by visibility 7 are lit from 3718",
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
+   ],
    "observed": {
     "frames": "overview 3440-3815 every 25, and the crops above",
     "saw": "the parchment greys toward night through the shot; seven flames burn and one site stays an unlit stack until 3785"
@@ -1232,6 +2151,20 @@
     "OBSERVED"
    ],
    "note": "a faint glow is already visible on the first frame before (OBSERVED); the renderer states the catch as C3784-3791",
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
+   ],
    "observed": {
     "frames": "3716, 3783, 3785, 3786, 3788, 3789, 3791, 3792",
     "saw": "the stack is unlit through 3783; 3785 a faint glow; 3786 a small flame; 3788 the flame's outline drawn; 3791-3792 full"
@@ -1261,6 +2194,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 3792,
+     "last": 3839,
+     "frames_examined": 48,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "all eight established fires, no new catch"
+    }
+   ],
    "observed": {
     "frames": "3792 and overview 3790-3815",
     "saw": "eight flames burn"
@@ -1274,29 +2221,43 @@
    "frames": {
     "frame": 3848
    },
-   "method": "sum of flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode per frame (the Ring's gold included, so the floor is the Ring); the frame of the largest one-frame drop",
+   "method": "sum of flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode per frame (the Ring's gold included, so the floor is the Ring); the frame of the largest one-frame drop; accepted only if the drop exceeds half the median area C3840-3847",
    "region": {
     "whole": "frame",
     "space": "960x402"
    },
    "evidence": {
     "flame_px960": {
-     "3845": 7858.0,
-     "3846": 7869.0,
-     "3847": 7829.0,
-     "3848": 181.0,
+     "3845": 7758.0,
+     "3846": 7759.0,
+     "3847": 7758.0,
+     "3848": 176.0,
      "3849": 179.0,
-     "3850": 181.0,
-     "3851": 181.0
+     "3850": 180.0,
+     "3851": 176.0
     },
-    "median_before": 7872,
-    "median_after": 183,
+    "median_before": 7774,
+    "median_after": 179,
     "drop_ratio": 0.023
    },
    "confidence": "high",
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 3860,
+     "last": 3999,
+     "frames_examined": 140,
+     "threshold": 3887.0,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 16.0,
+     "selection_reason": "post-shutdown Ring and cold forges; same absolute drop threshold"
+    }
    ],
    "observed": {
     "frames": "3846, 3847, 3848, 3849",
@@ -1323,8 +2284,8 @@
    },
    "evidence": {
     "ring_R_minus_B": {
-     "4000": 104.8,
-     "4072": 50.6,
+     "4000": 104.9,
+     "4072": 50.1,
      "4239": 0.0
     }
    },
@@ -1332,6 +2293,20 @@
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 4000,
+     "last": 4010,
+     "frames_examined": 11,
+     "threshold": -94.38228149414063,
+     "direction": -1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": -103.29618835449219,
+     "selection_reason": "pre-event interval, same fixed threshold"
+    }
    ],
    "observed": {
     "frames": "4000, 4040, 4072, 4100, 4135, 4184, 4216, 4239",
@@ -1365,6 +2340,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 4000,
+     "last": 4010,
+     "frames_examined": 11,
+     "threshold": -9.369588760379703,
+     "direction": -1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": -10.41098403930664,
+     "selection_reason": "pre-event interval, same fixed threshold"
+    }
+   ],
    "observed": {
     "frames": "the same",
     "saw": "the red storm behind the Ring fades from ~4100; by 4184 only a trace; 4216-4239 dark"
@@ -1391,6 +2380,20 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "same",
+     "first": 4200,
+     "last": 4216,
+     "frames_examined": 17,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "before the final held frame, adjacent files must still differ"
+    }
+   ],
    "observed": {
     "frames": "4216, 4239",
     "saw": "no visible difference: a grey Ring over dark towers"
@@ -1410,14 +2413,28 @@
     "space": "960x402"
    },
    "evidence": {
-    "dY_median": 0.198,
-    "dY_max": 0.377,
+    "dY_median": 0.204,
+    "dY_max": 0.383,
     "dY_max_frame": 4264
    },
    "confidence": "high",
    "basis": [
     "MEASURED",
     "OBSERVED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 4241,
+     "last": 4479,
+     "frames_examined": 239,
+     "threshold": 1.1132685393095016,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.38332775235176086,
+     "selection_reason": "held illustration, all frame differences examined"
+    }
    ],
    "observed": {
     "frames": "4240, 4360, 4479",
@@ -1447,7 +2464,7 @@
      {
       "first": 4609,
       "x": 1741,
-      "y": 477,
+      "y": 478,
       "area0": 56,
       "median_area": 548
      },
@@ -1455,12 +2472,12 @@
       "first": 4671,
       "x": 1200,
       "y": 517,
-      "area0": 49,
-      "median_area": 422
+      "area0": 48,
+      "median_area": 423
      }
     ],
-    "flicker_cv_median": 0.112,
-    "camera_dx_px_per_frame_1920": -6.85
+    "flicker_cv_median": 0.109,
+    "camera_dx_px_per_frame_1920": -6.87
    },
    "confidence": "high",
    "basis": [
@@ -1468,6 +2485,35 @@
     "OBSERVED"
    ],
    "note": "flicker_cv = the flame area's standard deviation / median, per long track: the fires flicker continuously (a bed), with no discrete hit",
+   "negative_controls": [
+    {
+     "detector": "births",
+     "first": 4480,
+     "last": 4719,
+     "frames_examined": 240,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [
+      4609,
+      4671
+     ],
+     "triggers": 2,
+     "maximum": 1.0,
+     "selection_reason": "already-burning beacons across the full shot; occlusion remains a possible false positive"
+    },
+    {
+     "detector": "births",
+     "first": 4480,
+     "last": 4600,
+     "frames_examined": 121,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "opening already-burning landscape, before either later ridge-uncovering candidate"
+    }
+   ],
    "observed": {
     "frames": "4600-4630 and 4660-4690 (the two appear_in_frame tracks)",
     "saw": "both are flames coming out from behind a ridge as the camera drifts, not new ignitions; the renderer lights every beacon before the shot (shots/run/watch_c_v5.py ALREADY_LIT)"
@@ -1487,8 +2533,8 @@
     "space": "960x402"
    },
    "evidence": {
-    "dY_median": 0.303,
-    "dY_max": 0.591,
+    "dY_median": 0.289,
+    "dY_max": 0.586,
     "dY_max_frame": 5671
    },
    "confidence": "high",
@@ -1496,10 +2542,2631 @@
     "MEASURED",
     "OBSERVED"
    ],
+   "negative_controls": [
+    {
+     "detector": "signal",
+     "first": 5441,
+     "last": 5679,
+     "frames_examined": 239,
+     "threshold": 1.3657788038253784,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.5860305428504944,
+     "selection_reason": "held illustration, all frame differences examined"
+    }
+   ],
    "observed": {
     "frames": "5440, 5560, 5679",
     "saw": "a dip pen resting across the blank pages in the gutter's shadow; no hand, no page turn; identical content"
    }
+  },
+  {
+   "id": "opening.riffle",
+   "shot": "opening",
+   "stem": "EDIT:book",
+   "event": "rapid page riffle begins",
+   "frames": {
+    "first": 326
+   },
+   "method": "mean absolute luma change from previous frame; threshold separates the rapid leaf sweep from the inspected slow camera drift; first = first sample >= 10",
+   "region": {
+    "box": [
+     0,
+     0,
+     960,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "delta",
+    "search": [
+     320,
+     359
+    ],
+    "frames_examined": 40,
+    "threshold": 10,
+    "values": {
+     "320": 8.525677680969238,
+     "321": 2.661170721054077,
+     "322": 3.734407424926758,
+     "323": 4.462372303009033,
+     "324": 4.88462495803833,
+     "325": 5.056278705596924,
+     "326": 18.549108505249023,
+     "327": 10.966567993164062,
+     "328": 8.755937576293945,
+     "329": 16.62632942199707,
+     "330": 5.509653568267822,
+     "331": 2.8859121799468994,
+     "332": 5.435999870300293,
+     "333": 15.113672256469727,
+     "334": 17.588762283325195,
+     "335": 22.35300636291504,
+     "336": 22.823144912719727,
+     "337": 13.5097017288208,
+     "338": 25.362003326416016,
+     "339": 24.71966552734375,
+     "340": 40.67152786254883,
+     "341": 41.86774826049805,
+     "342": 45.292320251464844,
+     "343": 46.83247375488281,
+     "344": 38.915245056152344,
+     "345": 38.68943405151367,
+     "346": 33.69284439086914,
+     "347": 48.422698974609375,
+     "348": 30.49424171447754,
+     "349": 6.7949042320251465,
+     "350": 3.444491147994995,
+     "351": 3.4991488456726074,
+     "352": 3.709855079650879,
+     "353": 3.537590980529785,
+     "354": 3.5296194553375244,
+     "355": 3.9538068771362305,
+     "356": 4.316966533660889,
+     "357": 4.330321788787842,
+     "358": 4.37470006942749,
+     "359": 4.4216718673706055
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "delta",
+     "first": 380,
+     "last": 399,
+     "frames_examined": 20,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.8655069470405579,
+     "selection_reason": "inspected interval without this event"
+    }
+   ],
+   "sync_id": "riffle",
+   "sync_field": "first"
+  },
+  {
+   "id": "letters.page_turn",
+   "shot": "letters",
+   "stem": "EDIT:letters+fire",
+   "event": "rapid sweep to the script leaf",
+   "frames": {
+    "first": 574
+   },
+   "method": "mean absolute luma change from previous frame; the event is the rapid sweep, not an inferred physical hand contact; first = first sample >= 10",
+   "region": {
+    "box": [
+     0,
+     0,
+     960,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "delta",
+    "search": [
+     560,
+     599
+    ],
+    "frames_examined": 40,
+    "threshold": 10,
+    "values": {
+     "560": 0.0,
+     "561": 4.691673278808594,
+     "562": 0.46702563762664795,
+     "563": 0.9305595755577087,
+     "564": 3.1763243675231934,
+     "565": 6.427605628967285,
+     "566": 6.107665538787842,
+     "567": 4.895601272583008,
+     "568": 4.80578088760376,
+     "569": 4.873953819274902,
+     "570": 4.946758270263672,
+     "571": 4.853316307067871,
+     "572": 4.3167643547058105,
+     "573": 5.680337905883789,
+     "574": 11.699888229370117,
+     "575": 20.83959197998047,
+     "576": 14.834162712097168,
+     "577": 10.904739379882812,
+     "578": 11.224328994750977,
+     "579": 9.652162551879883,
+     "580": 6.625537872314453,
+     "581": 4.785099983215332,
+     "582": 4.997957706451416,
+     "583": 5.182754039764404,
+     "584": 5.319080352783203,
+     "585": 5.320793628692627,
+     "586": 5.226083278656006,
+     "587": 5.134243011474609,
+     "588": 5.136453151702881,
+     "589": 5.233173847198486,
+     "590": 5.2800469398498535,
+     "591": 5.255281925201416,
+     "592": 5.2120041847229,
+     "593": 5.199492931365967,
+     "594": 5.554193019866943,
+     "595": 5.883591175079346,
+     "596": 5.936901569366455,
+     "597": 5.963944435119629,
+     "598": 6.027364253997803,
+     "599": 6.086596488952637
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "delta",
+     "first": 650,
+     "last": 679,
+     "frames_examined": 30,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 1.4116322994232178,
+     "selection_reason": "inspected interval without this event"
+    }
+   ],
+   "sync_id": "page_turn",
+   "sync_field": "first"
+  },
+  {
+   "id": "letters.glow",
+   "shot": "letters",
+   "stem": "EDIT:letters+fire",
+   "event": "the script glows",
+   "frames": {
+    "first": 705,
+    "half": 707,
+    "full": 709
+   },
+   "method": "count R>90, R-G>20 and luma minus Gaussian(sigma=3)>8; baseline median C680-699, end median C716-729; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "region": {
+    "box": [
+     0,
+     0,
+     960,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "glow",
+    "search": [
+     690,
+     729
+    ],
+    "frames_examined": 40,
+    "base": 0.0,
+    "top": 31236.5,
+    "values": {
+     "690": 0,
+     "691": 0,
+     "692": 0,
+     "693": 0,
+     "694": 0,
+     "695": 0,
+     "696": 0,
+     "697": 0,
+     "698": 0,
+     "699": 0,
+     "700": 0,
+     "701": 0,
+     "702": 0,
+     "703": 99,
+     "704": 1212,
+     "705": 6078,
+     "706": 13270,
+     "707": 20745,
+     "708": 26106,
+     "709": 28908,
+     "710": 30095,
+     "711": 30742,
+     "712": 31012,
+     "713": 30989,
+     "714": 31087,
+     "715": 31091,
+     "716": 31122,
+     "717": 31042,
+     "718": 31160,
+     "719": 31223,
+     "720": 31177,
+     "721": 31180,
+     "722": 31250,
+     "723": 31200,
+     "724": 31299,
+     "725": 31308,
+     "726": 31274,
+     "727": 31277,
+     "728": 31333,
+     "729": 31341
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "glow",
+     "first": 680,
+     "last": 699,
+     "frames_examined": 20,
+     "threshold": 3123.65,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    }
+   ],
+   "sync_id": "letters_glow",
+   "sync_field": "first"
+  },
+  {
+   "id": "letters.lift",
+   "shot": "letters",
+   "stem": "EDIT:letters+fire",
+   "event": "glowing letters leave their original positions",
+   "frames": {
+    "first": 744,
+    "half": 750,
+    "full": 755
+   },
+   "method": "count the glow mask outside a 3-pixel dilation of the C730 glyph mask; camera drift within that dilation is tolerated; measures displaced area, not a physical lift height; baseline median C730-734, end median C756-765; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "region": {
+    "box": [
+     0,
+     0,
+     960,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "lift",
+    "search": [
+     730,
+     765
+    ],
+    "frames_examined": 36,
+    "base": 0.0,
+    "top": 7174.5,
+    "values": {
+     "730": 0,
+     "731": 0,
+     "732": 0,
+     "733": 0,
+     "734": 0,
+     "735": 12,
+     "736": 19,
+     "737": 26,
+     "738": 72,
+     "739": 102,
+     "740": 188,
+     "741": 247,
+     "742": 362,
+     "743": 531,
+     "744": 777,
+     "745": 1195,
+     "746": 1621,
+     "747": 2234,
+     "748": 2816,
+     "749": 3410,
+     "750": 4009,
+     "751": 4619,
+     "752": 5088,
+     "753": 5884,
+     "754": 6280,
+     "755": 6650,
+     "756": 7038,
+     "757": 7144,
+     "758": 7545,
+     "759": 7639,
+     "760": 7713,
+     "761": 7483,
+     "762": 7205,
+     "763": 6999,
+     "764": 7079,
+     "765": 6915
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "lift",
+     "first": 730,
+     "last": 734,
+     "frames_examined": 5,
+     "threshold": 717.45,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    }
+   ],
+   "sync_id": "letters_lift",
+   "sync_field": "first"
+  },
+  {
+   "id": "letters.catch",
+   "shot": "letters",
+   "stem": "EDIT:letters+fire",
+   "event": "fire catches at the page heart",
+   "frames": {
+    "first": 801,
+    "fastest": 810,
+    "full": 817
+   },
+   "method": "count luma>150 and R>180 in the central fire ROI; first = first sample >= 100; fastest = largest core-area increase through C840; full = 90% of median core area C818-830 (the catch flash)",
+   "region": {
+    "box": [
+     430,
+     180,
+     530,
+     340
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "fire",
+    "search": [
+     797,
+     840
+    ],
+    "frames_examined": 44,
+    "threshold": 100,
+    "values": {
+     "797": 0,
+     "798": 0,
+     "799": 0,
+     "800": 0,
+     "801": 126,
+     "802": 127,
+     "803": 130,
+     "804": 190,
+     "805": 295,
+     "806": 478,
+     "807": 709,
+     "808": 1229,
+     "809": 2921,
+     "810": 5557,
+     "811": 7053,
+     "812": 7174,
+     "813": 6654,
+     "814": 6845,
+     "815": 8152,
+     "816": 9436,
+     "817": 10150,
+     "818": 10366,
+     "819": 10768,
+     "820": 11321,
+     "821": 11542,
+     "822": 11042,
+     "823": 9858,
+     "824": 9045,
+     "825": 9952,
+     "826": 11249,
+     "827": 11827,
+     "828": 11403,
+     "829": 10475,
+     "830": 10027,
+     "831": 9838,
+     "832": 8996,
+     "833": 6799,
+     "834": 5800,
+     "835": 7301,
+     "836": 9381,
+     "837": 9906,
+     "838": 8616,
+     "839": 5039,
+     "840": 4003
+    },
+    "area_reference": 10768.0
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "fire",
+     "first": 797,
+     "last": 800,
+     "frames_examined": 4,
+     "threshold": 100,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "inspected interval without this event"
+    }
+   ],
+   "sync_id": "fire_catches",
+   "sync_field": "first",
+   "note": "Scoped to the catch after the last flying glyph disappears at C797. Earlier glyph sparks also pass this brightness threshold; it is not a general flame classifier."
+  },
+  {
+   "id": "letters.burn",
+   "shot": "letters",
+   "stem": "EDIT:letters+fire",
+   "event": "the page burns open onto black",
+   "frames": {
+    "first": 856,
+    "half": 884,
+    "full": 925
+   },
+   "method": "pixels with luma<10 in the page interior; composed book_C_ft plus embers_C3_e15, never the matte alone; baseline median C820-839, end median C940-959; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "region": {
+    "box": [
+     250,
+     60,
+     730,
+     390
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "hole",
+    "search": [
+     820,
+     960
+    ],
+    "frames_examined": 141,
+    "base": 0.0,
+    "top": 144003.5,
+    "values": {
+     "820": 0,
+     "821": 0,
+     "822": 0,
+     "823": 0,
+     "824": 0,
+     "825": 0,
+     "826": 0,
+     "827": 0,
+     "828": 0,
+     "829": 0,
+     "830": 0,
+     "831": 0,
+     "832": 0,
+     "833": 0,
+     "834": 0,
+     "835": 0,
+     "836": 0,
+     "837": 0,
+     "838": 0,
+     "839": 0,
+     "840": 0,
+     "841": 0,
+     "842": 0,
+     "843": 0,
+     "844": 0,
+     "845": 73,
+     "846": 91,
+     "847": 45,
+     "848": 562,
+     "849": 2159,
+     "850": 3861,
+     "851": 5938,
+     "852": 6729,
+     "853": 7588,
+     "854": 10643,
+     "855": 13993,
+     "856": 16010,
+     "857": 16986,
+     "858": 18255,
+     "859": 19910,
+     "860": 20147,
+     "861": 22102,
+     "862": 23103,
+     "863": 22447,
+     "864": 27912,
+     "865": 29175,
+     "866": 30738,
+     "867": 31021,
+     "868": 32660,
+     "869": 33616,
+     "870": 35543,
+     "871": 36841,
+     "872": 38606,
+     "873": 38976,
+     "874": 39980,
+     "875": 41965,
+     "876": 45920,
+     "877": 52252,
+     "878": 54224,
+     "879": 57203,
+     "880": 61317,
+     "881": 64355,
+     "882": 67660,
+     "883": 71953,
+     "884": 74219,
+     "885": 78100,
+     "886": 80714,
+     "887": 85630,
+     "888": 89488,
+     "889": 94080,
+     "890": 98355,
+     "891": 100424,
+     "892": 103088,
+     "893": 105497,
+     "894": 107185,
+     "895": 108397,
+     "896": 109454,
+     "897": 113286,
+     "898": 114583,
+     "899": 115647,
+     "900": 117593,
+     "901": 118462,
+     "902": 119116,
+     "903": 119203,
+     "904": 119142,
+     "905": 119843,
+     "906": 119539,
+     "907": 120128,
+     "908": 120209,
+     "909": 120453,
+     "910": 120736,
+     "911": 121333,
+     "912": 121481,
+     "913": 122712,
+     "914": 122958,
+     "915": 123217,
+     "916": 123841,
+     "917": 124320,
+     "918": 124610,
+     "919": 124654,
+     "920": 125454,
+     "921": 125499,
+     "922": 126092,
+     "923": 126306,
+     "924": 127559,
+     "925": 130876,
+     "926": 131789,
+     "927": 132663,
+     "928": 133342,
+     "929": 134143,
+     "930": 135287,
+     "931": 135872,
+     "932": 135832,
+     "933": 135907,
+     "934": 136437,
+     "935": 136378,
+     "936": 136892,
+     "937": 137399,
+     "938": 139155,
+     "939": 139675,
+     "940": 140440,
+     "941": 140826,
+     "942": 138960,
+     "943": 142428,
+     "944": 144044,
+     "945": 144342,
+     "946": 144361,
+     "947": 144290,
+     "948": 144220,
+     "949": 144190,
+     "950": 144252,
+     "951": 144303,
+     "952": 144343,
+     "953": 144223,
+     "954": 143963,
+     "955": 143528,
+     "956": 143007,
+     "957": 142438,
+     "958": 141960,
+     "959": 141575,
+     "960": 141384
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "hole",
+     "first": 820,
+     "last": 839,
+     "frames_examined": 20,
+     "threshold": 14400.35,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    }
+   ],
+   "sync_id": "burn_through",
+   "sync_field": "first"
+  },
+  {
+   "id": "forge.towers",
+   "shot": "forge",
+   "stem": "EDIT:forge",
+   "event": "forge towers become visible around the central fire",
+   "frames": {
+    "first": 1069,
+    "half": 1088,
+    "full": 1089
+   },
+   "method": "count luma>55 and R-B>25 outside x380-589 (exclude the lone central flame); apparent emergence in the moving camera; baseline median C1040-1059, end median C1110-1120; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "region": {
+    "box": [
+     0,
+     0,
+     960,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "towers",
+    "search": [
+     1040,
+     1120
+    ],
+    "frames_examined": 81,
+    "base": 0.0,
+    "top": 23801.0,
+    "values": {
+     "1040": 0,
+     "1041": 0,
+     "1042": 0,
+     "1043": 0,
+     "1044": 0,
+     "1045": 0,
+     "1046": 0,
+     "1047": 0,
+     "1048": 0,
+     "1049": 0,
+     "1050": 0,
+     "1051": 0,
+     "1052": 0,
+     "1053": 0,
+     "1054": 0,
+     "1055": 0,
+     "1056": 0,
+     "1057": 0,
+     "1058": 0,
+     "1059": 0,
+     "1060": 0,
+     "1061": 0,
+     "1062": 0,
+     "1063": 0,
+     "1064": 0,
+     "1065": 0,
+     "1066": 0,
+     "1067": 0,
+     "1068": 1833,
+     "1069": 5265,
+     "1070": 5214,
+     "1071": 7294,
+     "1072": 7568,
+     "1073": 8252,
+     "1074": 9430,
+     "1075": 9046,
+     "1076": 8947,
+     "1077": 9010,
+     "1078": 8863,
+     "1079": 9226,
+     "1080": 9323,
+     "1081": 10283,
+     "1082": 10673,
+     "1083": 10868,
+     "1084": 10336,
+     "1085": 10472,
+     "1086": 9803,
+     "1087": 9813,
+     "1088": 13243,
+     "1089": 23247,
+     "1090": 24808,
+     "1091": 29905,
+     "1092": 29445,
+     "1093": 29241,
+     "1094": 26896,
+     "1095": 18982,
+     "1096": 15846,
+     "1097": 16980,
+     "1098": 16786,
+     "1099": 16549,
+     "1100": 17182,
+     "1101": 18187,
+     "1102": 19238,
+     "1103": 18914,
+     "1104": 18510,
+     "1105": 19227,
+     "1106": 19070,
+     "1107": 19066,
+     "1108": 19566,
+     "1109": 21541,
+     "1110": 22636,
+     "1111": 22898,
+     "1112": 23714,
+     "1113": 23801,
+     "1114": 23123,
+     "1115": 23717,
+     "1116": 24129,
+     "1117": 24702,
+     "1118": 25338,
+     "1119": 26476,
+     "1120": 27690
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "towers",
+     "first": 1040,
+     "last": 1059,
+     "frames_examined": 20,
+     "threshold": 2380.1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    }
+   ],
+   "sync_id": "towers_rise",
+   "sync_field": "first"
+  },
+  {
+   "id": "forge.inscription",
+   "shot": "forge",
+   "stem": "EDIT:forge",
+   "event": "the first inscription glyph glows on the Ring",
+   "frames": {
+    "first": 1321
+   },
+   "method": "count luma-Gaussian(sigma=3)>3, luma<235, R>160 in the inspected first-glyph ROI; reject the saturated reflection; first = first sample >= 120",
+   "region": {
+    "box": [
+     430,
+     52,
+     455,
+     82
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "inscription",
+    "search": [
+     1310,
+     1330
+    ],
+    "frames_examined": 21,
+    "threshold": 120,
+    "values": {
+     "1310": 93,
+     "1311": 92,
+     "1312": 93,
+     "1313": 78,
+     "1314": 78,
+     "1315": 73,
+     "1316": 62,
+     "1317": 65,
+     "1318": 71,
+     "1319": 71,
+     "1320": 77,
+     "1321": 177,
+     "1322": 210,
+     "1323": 223,
+     "1324": 229,
+     "1325": 218,
+     "1326": 218,
+     "1327": 203,
+     "1328": 196,
+     "1329": 187,
+     "1330": 180
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "inscription",
+     "first": 1310,
+     "last": 1319,
+     "frames_examined": 10,
+     "threshold": 120,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 93.0,
+     "selection_reason": "inspected interval without this event"
+    }
+   ],
+   "sync_id": "inscription",
+   "sync_field": "first"
+  },
+  {
+   "id": "forge.ring_rises",
+   "shot": "forge",
+   "stem": "EDIT:forge",
+   "event": "the Ring climbs within the picture",
+   "frames": {
+    "first": 1389,
+    "half": 1405,
+    "full": 1435
+   },
+   "method": "centroid y of the largest connected gold body (R-B>25,R>60,area>=30) in x380-629; track the body rather than its specular highlights; apparent screen-space rise during the camera pullback; baseline median C1378-1384, end median C1440-1450; first/half/full = 10/50/90%; presence requires span >= 20 and no baseline trigger",
+   "region": {
+    "box": [
+     380,
+     0,
+     630,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "body_y",
+    "search": [
+     1378,
+     1450
+    ],
+    "frames_examined": 73,
+    "base": -290.5030874381334,
+    "top": -68.69915914045468,
+    "values": {
+     "1378": 288.99173452268917,
+     "1379": 289.9757534938542,
+     "1380": 290.6774151718176,
+     "1381": 290.8855209863355,
+     "1382": 290.8107971976739,
+     "1383": 290.5030874381334,
+     "1384": 289.45565183526435,
+     "1385": 287.4646326654523,
+     "1386": 284.4174921862584,
+     "1387": 278.50102040816324,
+     "1388": 270.9260779029887,
+     "1389": 265.8859836012654,
+     "1390": 260.91193259037783,
+     "1391": 256.0867336039308,
+     "1392": 251.02867195687978,
+     "1393": 245.8071321735023,
+     "1394": 240.47394150302426,
+     "1395": 235.0626577321382,
+     "1396": 229.43488606204815,
+     "1397": 223.92878452506977,
+     "1398": 218.36779404341243,
+     "1399": 212.7485720330019,
+     "1400": 206.82656580264768,
+     "1401": 201.0612483897412,
+     "1402": 195.4477519762846,
+     "1403": 190.018542700444,
+     "1404": 184.67819112155996,
+     "1405": 179.5945748869768,
+     "1406": 174.83015090853095,
+     "1407": 170.2864337936637,
+     "1408": 166.0622427983539,
+     "1409": 162.08502972437398,
+     "1410": 158.15797458752132,
+     "1411": 154.43344641788067,
+     "1412": 150.8421937381803,
+     "1413": 147.33244739756367,
+     "1414": 144.04130688448075,
+     "1415": 140.82443682664055,
+     "1416": 137.7319587628866,
+     "1417": 134.76158222703873,
+     "1418": 131.88330995792427,
+     "1419": 128.91772151898735,
+     "1420": 126.09751773049645,
+     "1421": 123.3125,
+     "1422": 120.69838856795378,
+     "1423": 118.14894913189157,
+     "1424": 115.60612557427258,
+     "1425": 113.26965601965603,
+     "1426": 110.877457002457,
+     "1427": 108.48830769230769,
+     "1428": 106.27368421052631,
+     "1429": 103.98421052631579,
+     "1430": 101.78413685847589,
+     "1431": 99.49097135740972,
+     "1432": 97.33510804885688,
+     "1433": 95.19084926355374,
+     "1434": 92.95667189952904,
+     "1435": 90.70930232558139,
+     "1436": 88.50440251572327,
+     "1437": 86.2255924170616,
+     "1438": 84.02701853597236,
+     "1439": 81.71698707847463,
+     "1440": 79.32315921963499,
+     "1441": 76.93922305764411,
+     "1442": 74.74546591619762,
+     "1443": 72.58646616541354,
+     "1444": 70.58886107634544,
+     "1445": 68.69915914045468,
+     "1446": 66.9202243689623,
+     "1447": 65.14844720496895,
+     "1448": 63.56876746352064,
+     "1449": 62.09748525302701,
+     "1450": 60.76401362650976
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "body_y",
+     "first": 1378,
+     "last": 1384,
+     "frames_examined": 7,
+     "threshold": -268.3226946083655,
+     "direction": -1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": -288.99173452268917,
+     "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    }
+   ],
+   "sync_id": "ring_rises",
+   "sync_field": "first"
+  },
+  {
+   "id": "forge.anvil_test",
+   "shot": "forge",
+   "stem": "EDIT:forge",
+   "event": "search for a pictured anvil impulse",
+   "frames": {
+    "found": [
+     1262
+    ]
+   },
+   "method": "mean absolute luma difference; impulse >3x 15-frame running median+0.5; a candidate would still require a pictured strike, not a camera move",
+   "region": {
+    "box": [
+     0,
+     0,
+     960,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 639,
+    "maximum": 9.898902893066406
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "anvil impulse",
+     "first": 1041,
+     "last": 1199,
+     "frames_examined": 159,
+     "trigger_frames": [],
+     "triggers": 0,
+     "selection_reason": "the opening tower emergence, with no pictured anvil contact",
+     "threshold": "dY > 3 * 15-frame running median + 0.5"
+    }
+   ]
+  },
+  {
+   "id": "eye.burn",
+   "shot": "eye",
+   "stem": "EDIT:deep+eye",
+   "event": "the mine page opens into the storm",
+   "frames": {
+    "first": 1933,
+    "half": 1939,
+    "full": 1942
+   },
+   "method": "count luma<30 in the page interior of EDIT RGB+(1-matte)*embers_C3; the backing storm is not black; baseline median C1905-1920, end median C1955-1970; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "region": {
+    "box": [
+     300,
+     50,
+     650,
+     380
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "hole",
+    "search": [
+     1905,
+     1970
+    ],
+    "frames_examined": 66,
+    "base": 202.0,
+    "top": 51831.5,
+    "values": {
+     "1905": 156,
+     "1906": 171,
+     "1907": 209,
+     "1908": 194,
+     "1909": 191,
+     "1910": 225,
+     "1911": 253,
+     "1912": 282,
+     "1913": 216,
+     "1914": 239,
+     "1915": 183,
+     "1916": 158,
+     "1917": 262,
+     "1918": 256,
+     "1919": 186,
+     "1920": 195,
+     "1921": 203,
+     "1922": 195,
+     "1923": 149,
+     "1924": 139,
+     "1925": 138,
+     "1926": 323,
+     "1927": 359,
+     "1928": 669,
+     "1929": 991,
+     "1930": 1656,
+     "1931": 2617,
+     "1932": 4219,
+     "1933": 7377,
+     "1934": 7550,
+     "1935": 11072,
+     "1936": 16054,
+     "1937": 18748,
+     "1938": 24537,
+     "1939": 33024,
+     "1940": 36000,
+     "1941": 38541,
+     "1942": 47235,
+     "1943": 51423,
+     "1944": 57673,
+     "1945": 59533,
+     "1946": 59915,
+     "1947": 64576,
+     "1948": 65453,
+     "1949": 63240,
+     "1950": 62076,
+     "1951": 60648,
+     "1952": 59280,
+     "1953": 57356,
+     "1954": 55489,
+     "1955": 55537,
+     "1956": 55314,
+     "1957": 54517,
+     "1958": 53704,
+     "1959": 53185,
+     "1960": 52698,
+     "1961": 52360,
+     "1962": 52112,
+     "1963": 51551,
+     "1964": 51393,
+     "1965": 51075,
+     "1966": 50599,
+     "1967": 49923,
+     "1968": 48974,
+     "1969": 48444,
+     "1970": 48677
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "hole",
+     "first": 1905,
+     "last": 1920,
+     "frames_examined": 16,
+     "threshold": 5364.950000000001,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 282.0,
+     "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    }
+   ],
+   "sync_id": "eye_burn",
+   "sync_field": "first"
+  },
+  {
+   "id": "eye.slit",
+   "shot": "eye",
+   "stem": "EDIT:deep+eye",
+   "event": "the Eye slit opens onto darkness",
+   "frames": {
+    "first": 2003,
+    "half": 2005,
+    "full": 2033
+   },
+   "method": "count luma<25 in the iris central strip; exclude the earlier page tear by starting after the composited burn; baseline median C1992-2000, end median C2060-2079; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "region": {
+    "box": [
+     470,
+     80,
+     490,
+     280
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "slit",
+    "search": [
+     1992,
+     2079
+    ],
+    "frames_examined": 88,
+    "base": 16.0,
+    "top": 3864.0,
+    "values": {
+     "1992": 52,
+     "1993": 45,
+     "1994": 39,
+     "1995": 31,
+     "1996": 16,
+     "1997": 2,
+     "1998": 0,
+     "1999": 0,
+     "2000": 0,
+     "2001": 0,
+     "2002": 145,
+     "2003": 820,
+     "2004": 1688,
+     "2005": 2589,
+     "2006": 2943,
+     "2007": 3056,
+     "2008": 3094,
+     "2009": 3114,
+     "2010": 3141,
+     "2011": 3159,
+     "2012": 3179,
+     "2013": 3192,
+     "2014": 3218,
+     "2015": 3230,
+     "2016": 3255,
+     "2017": 3274,
+     "2018": 3286,
+     "2019": 3301,
+     "2020": 3317,
+     "2021": 3324,
+     "2022": 3348,
+     "2023": 3359,
+     "2024": 3364,
+     "2025": 3374,
+     "2026": 3378,
+     "2027": 3399,
+     "2028": 3408,
+     "2029": 3428,
+     "2030": 3438,
+     "2031": 3454,
+     "2032": 3464,
+     "2033": 3490,
+     "2034": 3509,
+     "2035": 3518,
+     "2036": 3532,
+     "2037": 3547,
+     "2038": 3556,
+     "2039": 3567,
+     "2040": 3578,
+     "2041": 3592,
+     "2042": 3606,
+     "2043": 3621,
+     "2044": 3637,
+     "2045": 3635,
+     "2046": 3649,
+     "2047": 3649,
+     "2048": 3663,
+     "2049": 3665,
+     "2050": 3674,
+     "2051": 3700,
+     "2052": 3701,
+     "2053": 3728,
+     "2054": 3737,
+     "2055": 3753,
+     "2056": 3776,
+     "2057": 3784,
+     "2058": 3797,
+     "2059": 3808,
+     "2060": 3816,
+     "2061": 3823,
+     "2062": 3830,
+     "2063": 3835,
+     "2064": 3841,
+     "2065": 3852,
+     "2066": 3849,
+     "2067": 3854,
+     "2068": 3858,
+     "2069": 3864,
+     "2070": 3864,
+     "2071": 3869,
+     "2072": 3873,
+     "2073": 3878,
+     "2074": 3878,
+     "2075": 3877,
+     "2076": 3881,
+     "2077": 3881,
+     "2078": 3882,
+     "2079": 3885
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "slit",
+     "first": 1992,
+     "last": 2000,
+     "frames_examined": 9,
+     "threshold": 400.8,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 52.0,
+     "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    }
+   ],
+   "sync_id": "slit_nothing",
+   "sync_field": "first"
+  },
+  {
+   "id": "flint.strike1",
+   "shot": "flint",
+   "stem": "EDIT:flint",
+   "event": "FLINT strike1: the spark flash begins",
+   "frames": {
+    "first": 2650,
+    "peak": 2651
+   },
+   "method": "count luma>150 and R>180 around the flint contact, excluding the tinder bed; first = first sample >= 1000",
+   "region": {
+    "box": [
+     350,
+     40,
+     650,
+     230
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "flash",
+    "search": [
+     2640,
+     2669
+    ],
+    "frames_examined": 30,
+    "threshold": 1000,
+    "values": {
+     "2640": 123,
+     "2641": 121,
+     "2642": 122,
+     "2643": 125,
+     "2644": 124,
+     "2645": 122,
+     "2646": 123,
+     "2647": 115,
+     "2648": 111,
+     "2649": 108,
+     "2650": 8526,
+     "2651": 15329,
+     "2652": 11773,
+     "2653": 11109,
+     "2654": 2035,
+     "2655": 239,
+     "2656": 147,
+     "2657": 32,
+     "2658": 67,
+     "2659": 129,
+     "2660": 133,
+     "2661": 130,
+     "2662": 130,
+     "2663": 129,
+     "2664": 126,
+     "2665": 133,
+     "2666": 136,
+     "2667": 133,
+     "2668": 131,
+     "2669": 128
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "flash",
+     "first": 2640,
+     "last": 2649,
+     "frames_examined": 10,
+     "threshold": 1000,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 125.0,
+     "selection_reason": "inspected interval without this event"
+    }
+   ]
+  },
+  {
+   "id": "flint.strike3",
+   "shot": "flint",
+   "stem": "EDIT:flint",
+   "event": "FLINT strike3: the spark flash begins",
+   "frames": {
+    "first": 2698,
+    "peak": 2699
+   },
+   "method": "count luma>150 and R>180 around the flint contact, excluding the tinder bed; first = first sample >= 1000",
+   "region": {
+    "box": [
+     350,
+     40,
+     650,
+     230
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "flash",
+    "search": [
+     2670,
+     2720
+    ],
+    "frames_examined": 51,
+    "threshold": 1000,
+    "values": {
+     "2670": 126,
+     "2671": 129,
+     "2672": 126,
+     "2673": 129,
+     "2674": 130,
+     "2675": 127,
+     "2676": 132,
+     "2677": 128,
+     "2678": 132,
+     "2679": 129,
+     "2680": 127,
+     "2681": 128,
+     "2682": 130,
+     "2683": 128,
+     "2684": 130,
+     "2685": 131,
+     "2686": 130,
+     "2687": 120,
+     "2688": 119,
+     "2689": 119,
+     "2690": 115,
+     "2691": 112,
+     "2692": 107,
+     "2693": 108,
+     "2694": 105,
+     "2695": 81,
+     "2696": 41,
+     "2697": 1,
+     "2698": 8945,
+     "2699": 13214,
+     "2700": 9685,
+     "2701": 6183,
+     "2702": 1039,
+     "2703": 221,
+     "2704": 158,
+     "2705": 105,
+     "2706": 113,
+     "2707": 119,
+     "2708": 123,
+     "2709": 123,
+     "2710": 121,
+     "2711": 118,
+     "2712": 117,
+     "2713": 115,
+     "2714": 121,
+     "2715": 107,
+     "2716": 113,
+     "2717": 115,
+     "2718": 108,
+     "2719": 106,
+     "2720": 103
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "flash",
+     "first": 2670,
+     "last": 2697,
+     "frames_examined": 28,
+     "threshold": 1000,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 132.0,
+     "selection_reason": "inspected interval without this event"
+    }
+   ]
+  },
+  {
+   "id": "flint.black_test",
+   "shot": "flint",
+   "stem": "EDIT:flint",
+   "event": "search for FLINT black frames",
+   "frames": {
+    "found": []
+   },
+   "method": "black = maximum composed-frame luma <=2 (8-bit units)",
+   "region": {
+    "box": [
+     0,
+     0,
+     960,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 240,
+    "minimum_frame_max_luma": 196.67098999023438
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "max_luma",
+     "first": 2640,
+     "last": 2649,
+     "frames_examined": 10,
+     "threshold": -2,
+     "direction": -1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": -230.01199340820312,
+     "selection_reason": "inspected hands and blue sky at the opening"
+    }
+   ]
+  },
+  {
+   "id": "flint.catch_test",
+   "shot": "flint",
+   "stem": "EDIT:flint",
+   "event": "unresolved flame catch",
+   "frames": {
+    "first": null,
+    "fastest": null,
+    "full": null
+   },
+   "method": "candidate gold-pixel area above the tinder; first = first sample >= 100",
+   "region": {
+    "box": [
+     430,
+     100,
+     600,
+     240
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "flame",
+    "search": [
+     2721,
+     2879
+    ],
+    "frames_examined": 159,
+    "threshold": 100,
+    "values": {
+     "2721": 0,
+     "2722": 0,
+     "2723": 0,
+     "2724": 0,
+     "2725": 0,
+     "2726": 0,
+     "2727": 0,
+     "2728": 0,
+     "2729": 0,
+     "2730": 0,
+     "2731": 0,
+     "2732": 0,
+     "2733": 0,
+     "2734": 0,
+     "2735": 0,
+     "2736": 0,
+     "2737": 0,
+     "2738": 0,
+     "2739": 0,
+     "2740": 0,
+     "2741": 0,
+     "2742": 0,
+     "2743": 2,
+     "2744": 0,
+     "2745": 8,
+     "2746": 2,
+     "2747": 6,
+     "2748": 6,
+     "2749": 8,
+     "2750": 5,
+     "2751": 0,
+     "2752": 0,
+     "2753": 0,
+     "2754": 0,
+     "2755": 0,
+     "2756": 0,
+     "2757": 0,
+     "2758": 0,
+     "2759": 0,
+     "2760": 0,
+     "2761": 0,
+     "2762": 7,
+     "2763": 32,
+     "2764": 63,
+     "2765": 74,
+     "2766": 76,
+     "2767": 87,
+     "2768": 83,
+     "2769": 94,
+     "2770": 79,
+     "2771": 246,
+     "2772": 482,
+     "2773": 299,
+     "2774": 401,
+     "2775": 975,
+     "2776": 1237,
+     "2777": 999,
+     "2778": 1838,
+     "2779": 1600,
+     "2780": 1997,
+     "2781": 1655,
+     "2782": 2035,
+     "2783": 598,
+     "2784": 1005,
+     "2785": 996,
+     "2786": 587,
+     "2787": 767,
+     "2788": 237,
+     "2789": 99,
+     "2790": 238,
+     "2791": 258,
+     "2792": 194,
+     "2793": 392,
+     "2794": 564,
+     "2795": 1094,
+     "2796": 1453,
+     "2797": 1835,
+     "2798": 10277,
+     "2799": 8614,
+     "2800": 9914,
+     "2801": 10992,
+     "2802": 10281,
+     "2803": 10544,
+     "2804": 12559,
+     "2805": 11110,
+     "2806": 13281,
+     "2807": 13810,
+     "2808": 12610,
+     "2809": 14004,
+     "2810": 13259,
+     "2811": 13322,
+     "2812": 13142,
+     "2813": 12840,
+     "2814": 12397,
+     "2815": 10500,
+     "2816": 11210,
+     "2817": 2937,
+     "2818": 2642,
+     "2819": 2741,
+     "2820": 2577,
+     "2821": 2840,
+     "2822": 3623,
+     "2823": 4010,
+     "2824": 4738,
+     "2825": 5397,
+     "2826": 16222,
+     "2827": 13415,
+     "2828": 15560,
+     "2829": 15749,
+     "2830": 14735,
+     "2831": 14850,
+     "2832": 16622,
+     "2833": 14215,
+     "2834": 15609,
+     "2835": 14711,
+     "2836": 14129,
+     "2837": 15316,
+     "2838": 14423,
+     "2839": 12770,
+     "2840": 9165,
+     "2841": 7435,
+     "2842": 6833,
+     "2843": 7668,
+     "2844": 7696,
+     "2845": 7156,
+     "2846": 7416,
+     "2847": 8099,
+     "2848": 8138,
+     "2849": 6685,
+     "2850": 7877,
+     "2851": 6773,
+     "2852": 6661,
+     "2853": 6704,
+     "2854": 6011,
+     "2855": 5864,
+     "2856": 6400,
+     "2857": 4948,
+     "2858": 5034,
+     "2859": 5419,
+     "2860": 5180,
+     "2861": 5773,
+     "2862": 4704,
+     "2863": 5627,
+     "2864": 6482,
+     "2865": 6205,
+     "2866": 6717,
+     "2867": 7794,
+     "2868": 8813,
+     "2869": 8014,
+     "2870": 7765,
+     "2871": 8117,
+     "2872": 7693,
+     "2873": 8462,
+     "2874": 7498,
+     "2875": 8041,
+     "2876": 8521,
+     "2877": 9224,
+     "2878": 9784,
+     "2879": 10391
+    }
+   },
+   "confidence": "low",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "flame",
+     "first": 2828,
+     "last": 2835,
+     "frames_examined": 8,
+     "threshold": 100,
+     "direction": 1,
+     "trigger_frames": [
+      2828,
+      2829,
+      2830,
+      2831,
+      2832,
+      2833,
+      2834,
+      2835
+     ],
+     "triggers": 8,
+     "maximum": 16622.0,
+     "selection_reason": "inspected interval without this event"
+    }
+   ],
+   "status": "unresolved",
+   "note": "The candidate also fires on glowing tinder/smoke before the distinct flame. No measured catch frame; retain pass 1 pending a reliable flame-shape boundary."
+  },
+  {
+   "id": "flint.blow_test",
+   "shot": "flint",
+   "stem": "EDIT:flint",
+   "event": "unresolved blowing onset",
+   "frames": {
+    "first": null,
+    "fastest": null,
+    "full": null
+   },
+   "method": "candidate smoke/plume mean luma; first = first sample >= 20",
+   "region": {
+    "box": [
+     490,
+     180,
+     630,
+     280
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "plume",
+    "search": [
+     2721,
+     2879
+    ],
+    "frames_examined": 159,
+    "threshold": 20,
+    "values": {
+     "2721": 18.14710235595703,
+     "2722": 19.098209381103516,
+     "2723": 19.761877059936523,
+     "2724": 20.18269157409668,
+     "2725": 20.328672409057617,
+     "2726": 20.19963836669922,
+     "2727": 19.8762149810791,
+     "2728": 19.519975662231445,
+     "2729": 19.123924255371094,
+     "2730": 18.75075912475586,
+     "2731": 18.454355239868164,
+     "2732": 20.43536376953125,
+     "2733": 27.158964157104492,
+     "2734": 29.541622161865234,
+     "2735": 29.526227951049805,
+     "2736": 30.1864013671875,
+     "2737": 30.696874618530273,
+     "2738": 31.453031539916992,
+     "2739": 31.146408081054688,
+     "2740": 31.292325973510742,
+     "2741": 33.296302795410156,
+     "2742": 33.40446472167969,
+     "2743": 33.02540969848633,
+     "2744": 33.40996170043945,
+     "2745": 33.608787536621094,
+     "2746": 31.973297119140625,
+     "2747": 31.751482009887695,
+     "2748": 30.190397262573242,
+     "2749": 29.12994956970215,
+     "2750": 27.497432708740234,
+     "2751": 26.10377311706543,
+     "2752": 26.848861694335938,
+     "2753": 22.523836135864258,
+     "2754": 16.81723976135254,
+     "2755": 10.594399452209473,
+     "2756": 10.489566802978516,
+     "2757": 10.645585060119629,
+     "2758": 10.908509254455566,
+     "2759": 11.121075630187988,
+     "2760": 11.262354850769043,
+     "2761": 11.318212509155273,
+     "2762": 12.248946189880371,
+     "2763": 14.005098342895508,
+     "2764": 16.100069046020508,
+     "2765": 24.17708396911621,
+     "2766": 58.614070892333984,
+     "2767": 61.95307540893555,
+     "2768": 62.542911529541016,
+     "2769": 69.38275909423828,
+     "2770": 74.31531524658203,
+     "2771": 78.33187866210938,
+     "2772": 82.61628723144531,
+     "2773": 83.9342269897461,
+     "2774": 90.1084976196289,
+     "2775": 94.71585845947266,
+     "2776": 98.64412689208984,
+     "2777": 104.38401794433594,
+     "2778": 106.77890014648438,
+     "2779": 108.11058807373047,
+     "2780": 106.69046783447266,
+     "2781": 104.49075317382812,
+     "2782": 103.10246276855469,
+     "2783": 85.70625305175781,
+     "2784": 91.53472137451172,
+     "2785": 90.61210632324219,
+     "2786": 79.26375579833984,
+     "2787": 79.1659164428711,
+     "2788": 48.65692138671875,
+     "2789": 36.20626449584961,
+     "2790": 42.08879470825195,
+     "2791": 43.549598693847656,
+     "2792": 43.34965515136719,
+     "2793": 47.49886703491211,
+     "2794": 52.878150939941406,
+     "2795": 67.72913360595703,
+     "2796": 78.65986633300781,
+     "2797": 87.91580200195312,
+     "2798": 137.89739990234375,
+     "2799": 172.0598602294922,
+     "2800": 164.439208984375,
+     "2801": 164.97067260742188,
+     "2802": 173.3337860107422,
+     "2803": 171.55043029785156,
+     "2804": 166.08160400390625,
+     "2805": 173.98553466796875,
+     "2806": 169.37564086914062,
+     "2807": 170.6402130126953,
+     "2808": 179.96728515625,
+     "2809": 179.79664611816406,
+     "2810": 179.20811462402344,
+     "2811": 181.57757568359375,
+     "2812": 175.78341674804688,
+     "2813": 175.7821044921875,
+     "2814": 162.4979248046875,
+     "2815": 146.0568389892578,
+     "2816": 136.07420349121094,
+     "2817": 84.24726104736328,
+     "2818": 79.71109008789062,
+     "2819": 80.71855926513672,
+     "2820": 79.00472259521484,
+     "2821": 82.8808364868164,
+     "2822": 95.32816314697266,
+     "2823": 109.9552001953125,
+     "2824": 127.16851806640625,
+     "2825": 136.4042205810547,
+     "2826": 162.73828125,
+     "2827": 188.4080047607422,
+     "2828": 185.3165740966797,
+     "2829": 184.77194213867188,
+     "2830": 188.05142211914062,
+     "2831": 187.4123992919922,
+     "2832": 186.88912963867188,
+     "2833": 185.2341766357422,
+     "2834": 179.40281677246094,
+     "2835": 166.77978515625,
+     "2836": 171.04139709472656,
+     "2837": 162.8655548095703,
+     "2838": 158.66015625,
+     "2839": 162.68190002441406,
+     "2840": 152.81631469726562,
+     "2841": 142.874755859375,
+     "2842": 150.80506896972656,
+     "2843": 147.43887329101562,
+     "2844": 146.62095642089844,
+     "2845": 156.24453735351562,
+     "2846": 156.23294067382812,
+     "2847": 157.89695739746094,
+     "2848": 157.09471130371094,
+     "2849": 162.33392333984375,
+     "2850": 157.5297088623047,
+     "2851": 156.5747528076172,
+     "2852": 149.33819580078125,
+     "2853": 145.12734985351562,
+     "2854": 142.22189331054688,
+     "2855": 140.4324493408203,
+     "2856": 133.95826721191406,
+     "2857": 130.40126037597656,
+     "2858": 130.07601928710938,
+     "2859": 128.34780883789062,
+     "2860": 131.0936737060547,
+     "2861": 126.55897521972656,
+     "2862": 123.60255432128906,
+     "2863": 130.6781463623047,
+     "2864": 129.32333374023438,
+     "2865": 131.90065002441406,
+     "2866": 130.1370391845703,
+     "2867": 138.90980529785156,
+     "2868": 144.76722717285156,
+     "2869": 145.8307647705078,
+     "2870": 139.9372100830078,
+     "2871": 141.2539825439453,
+     "2872": 147.5055389404297,
+     "2873": 151.69065856933594,
+     "2874": 147.2602081298828,
+     "2875": 151.69488525390625,
+     "2876": 154.46360778808594,
+     "2877": 156.92745971679688,
+     "2878": 150.90199279785156,
+     "2879": 157.19117736816406
+    }
+   },
+   "confidence": "low",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "plume",
+     "first": 2698,
+     "last": 2703,
+     "frames_examined": 6,
+     "threshold": 20,
+     "direction": 1,
+     "trigger_frames": [
+      2698,
+      2699,
+      2700,
+      2701,
+      2702,
+      2703
+     ],
+     "triggers": 6,
+     "maximum": 85.10260009765625,
+     "selection_reason": "inspected interval without this event"
+    }
+   ],
+   "status": "unresolved",
+   "note": "The candidate also fires on the strike flash when nobody is visibly blowing. The mouth is outside this framing; no unique visible onset was isolated. Do not infer it from smoke brightness."
+  },
+  {
+   "id": "run.beacon_1",
+   "shot": "run",
+   "stem": "EDIT:beacon-run",
+   "event": "Beacon Run catch 1",
+   "frames": {
+    "first": 3160,
+    "fastest": null,
+    "full": null
+   },
+   "method": "warm pixels R-B>80,R>170; register preceding mask using phase correlation of landscape rows220-389; warp then dilate by 3px; a new connected warm component >=50px is a catch. First is the arrival of new warm area. Fastest/full are null: registered glow novelty is not flame-size growth.",
+   "region": {
+    "box": [
+     635,
+     164,
+     657,
+     203
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 319,
+    "novel_area": 474,
+    "camera_dx": -2.954745232612936,
+    "camera_dy": -0.018042873043512486,
+    "registration_response": 0.7403707674697594,
+    "neighborhood": {
+     "3158": 0,
+     "3159": 0,
+     "3160": 474,
+     "3161": 0,
+     "3162": 0,
+     "3163": 0
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "novel_area",
+     "first": 3121,
+     "last": 3159,
+     "frames_examined": 39,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "opening landscape with no burning beacon"
+    },
+    {
+     "detector": "novel_area",
+     "first": 3208,
+     "last": 3231,
+     "frames_examined": 24,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "camera and already-burning beacons; no new catch"
+    }
+   ],
+   "sync_id": "beacon_1",
+   "sync_field": "first"
+  },
+  {
+   "id": "run.beacon_2",
+   "shot": "run",
+   "stem": "EDIT:beacon-run",
+   "event": "Beacon Run catch 2",
+   "frames": {
+    "first": 3200,
+    "fastest": null,
+    "full": null
+   },
+   "method": "warm pixels R-B>80,R>170; register preceding mask using phase correlation of landscape rows220-389; warp then dilate by 3px; a new connected warm component >=50px is a catch. First is the arrival of new warm area. Fastest/full are null: registered glow novelty is not flame-size growth.",
+   "region": {
+    "box": [
+     779,
+     177,
+     851,
+     220
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 319,
+    "novel_area": 1126,
+    "camera_dx": -3.317214834970798,
+    "camera_dy": 0.14389696328704815,
+    "registration_response": 0.8782983181211683,
+    "neighborhood": {
+     "3198": 0,
+     "3199": 0,
+     "3200": 1126,
+     "3201": 0,
+     "3202": 0,
+     "3203": 0
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "novel_area",
+     "first": 3121,
+     "last": 3159,
+     "frames_examined": 39,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "opening landscape with no burning beacon"
+    },
+    {
+     "detector": "novel_area",
+     "first": 3208,
+     "last": 3231,
+     "frames_examined": 24,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "camera and already-burning beacons; no new catch"
+    }
+   ],
+   "sync_id": "beacon_2",
+   "sync_field": "first"
+  },
+  {
+   "id": "run.beacon_3",
+   "shot": "run",
+   "stem": "EDIT:beacon-run",
+   "event": "Beacon Run catch 3",
+   "frames": {
+    "first": 3240,
+    "fastest": null,
+    "full": null
+   },
+   "method": "warm pixels R-B>80,R>170; register preceding mask using phase correlation of landscape rows220-389; warp then dilate by 3px; a new connected warm component >=50px is a catch. First is the arrival of new warm area. Fastest/full are null: registered glow novelty is not flame-size growth.",
+   "region": {
+    "box": [
+     730,
+     144,
+     740,
+     161
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 319,
+    "novel_area": 98,
+    "camera_dx": -3.494444869579297,
+    "camera_dy": 0.1587391311574322,
+    "registration_response": 0.8624091873345552,
+    "neighborhood": {
+     "3238": 0,
+     "3239": 0,
+     "3240": 98,
+     "3241": 0,
+     "3242": 0,
+     "3243": 0
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "novel_area",
+     "first": 3121,
+     "last": 3159,
+     "frames_examined": 39,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "opening landscape with no burning beacon"
+    },
+    {
+     "detector": "novel_area",
+     "first": 3208,
+     "last": 3231,
+     "frames_examined": 24,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "camera and already-burning beacons; no new catch"
+    }
+   ],
+   "sync_id": "beacon_3",
+   "sync_field": "first"
+  },
+  {
+   "id": "run.beacon_4",
+   "shot": "run",
+   "stem": "EDIT:beacon-run",
+   "event": "Beacon Run catch 4",
+   "frames": {
+    "first": 3280,
+    "fastest": null,
+    "full": null
+   },
+   "method": "warm pixels R-B>80,R>170; register preceding mask using phase correlation of landscape rows220-389; warp then dilate by 3px; a new connected warm component >=50px is a catch. First is the arrival of new warm area. Fastest/full are null: registered glow novelty is not flame-size growth.",
+   "region": {
+    "box": [
+     663,
+     157,
+     725,
+     200
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 319,
+    "novel_area": 1496,
+    "camera_dx": -3.7542170040089786,
+    "camera_dy": 0.13524385737137834,
+    "registration_response": 0.8640144544177585,
+    "neighborhood": {
+     "3278": 0,
+     "3279": 0,
+     "3280": 1496,
+     "3281": 0,
+     "3282": 0,
+     "3283": 0
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "novel_area",
+     "first": 3121,
+     "last": 3159,
+     "frames_examined": 39,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "opening landscape with no burning beacon"
+    },
+    {
+     "detector": "novel_area",
+     "first": 3208,
+     "last": 3231,
+     "frames_examined": 24,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "camera and already-burning beacons; no new catch"
+    }
+   ],
+   "sync_id": "beacon_4",
+   "sync_field": "first"
+  },
+  {
+   "id": "run.beacon_5",
+   "shot": "run",
+   "stem": "EDIT:beacon-run",
+   "event": "Beacon Run catch 5",
+   "frames": {
+    "first": 3320,
+    "fastest": null,
+    "full": null
+   },
+   "method": "warm pixels R-B>80,R>170; register preceding mask using phase correlation of landscape rows220-389; warp then dilate by 3px; a new connected warm component >=50px is a catch. First is the arrival of new warm area. Fastest/full are null: registered glow novelty is not flame-size growth.",
+   "region": {
+    "box": [
+     792,
+     247,
+     841,
+     279
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 319,
+    "novel_area": 790,
+    "camera_dx": -4.117333868156152,
+    "camera_dy": 0.05368718090662128,
+    "registration_response": 0.8062169746116356,
+    "neighborhood": {
+     "3318": 0,
+     "3319": 0,
+     "3320": 790,
+     "3321": 0,
+     "3322": 0,
+     "3323": 0
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "novel_area",
+     "first": 3121,
+     "last": 3159,
+     "frames_examined": 39,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "opening landscape with no burning beacon"
+    },
+    {
+     "detector": "novel_area",
+     "first": 3208,
+     "last": 3231,
+     "frames_examined": 24,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "camera and already-burning beacons; no new catch"
+    }
+   ],
+   "sync_id": "beacon_5",
+   "sync_field": "first"
+  },
+  {
+   "id": "run.beacon_6",
+   "shot": "run",
+   "stem": "EDIT:beacon-run",
+   "event": "Beacon Run catch 6",
+   "frames": {
+    "first": 3360,
+    "fastest": null,
+    "full": null
+   },
+   "method": "warm pixels R-B>80,R>170; register preceding mask using phase correlation of landscape rows220-389; warp then dilate by 3px; a new connected warm component >=50px is a catch. First is the arrival of new warm area. Fastest/full are null: registered glow novelty is not flame-size growth.",
+   "region": {
+    "box": [
+     646,
+     222,
+     694,
+     261
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 319,
+    "novel_area": 520,
+    "camera_dx": -4.089510549069473,
+    "camera_dy": 0.00839365358233124,
+    "registration_response": 0.6037215279649805,
+    "neighborhood": {
+     "3358": 7,
+     "3359": 0,
+     "3360": 520,
+     "3361": 11,
+     "3362": 0,
+     "3363": 0
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "novel_area",
+     "first": 3121,
+     "last": 3159,
+     "frames_examined": 39,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "opening landscape with no burning beacon"
+    },
+    {
+     "detector": "novel_area",
+     "first": 3208,
+     "last": 3231,
+     "frames_examined": 24,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "camera and already-burning beacons; no new catch"
+    }
+   ],
+   "sync_id": "beacon_6",
+   "sync_field": "first"
+  },
+  {
+   "id": "run.beacon_7",
+   "shot": "run",
+   "stem": "EDIT:beacon-run",
+   "event": "Beacon Run catch 7",
+   "frames": {
+    "first": 3400,
+    "fastest": null,
+    "full": null
+   },
+   "method": "warm pixels R-B>80,R>170; register preceding mask using phase correlation of landscape rows220-389; warp then dilate by 3px; a new connected warm component >=50px is a catch. First is the arrival of new warm area. Fastest/full are null: registered glow novelty is not flame-size growth.",
+   "region": {
+    "box": [
+     618,
+     245,
+     671,
+     279
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 319,
+    "novel_area": 1100,
+    "camera_dx": -4.0103193326432915,
+    "camera_dy": -0.004474709636042462,
+    "registration_response": 0.5682476711273193,
+    "neighborhood": {
+     "3398": 0,
+     "3399": 41,
+     "3400": 1100,
+     "3401": 16,
+     "3402": 21,
+     "3403": 14
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "novel_area",
+     "first": 3121,
+     "last": 3159,
+     "frames_examined": 39,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "opening landscape with no burning beacon"
+    },
+    {
+     "detector": "novel_area",
+     "first": 3208,
+     "last": 3231,
+     "frames_examined": 24,
+     "threshold": 50,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "camera and already-burning beacons; no new catch"
+    }
+   ],
+   "sync_id": "beacon_7",
+   "sync_field": "first"
+  },
+  {
+   "id": "illumination.sun_already_visible",
+   "shot": "illumination",
+   "stem": "EDIT:illumination",
+   "event": "the sun is already partly above the ridge at the incoming cut",
+   "frames": {
+    "visible_from": 4720,
+    "onset": null
+   },
+   "method": "all 480 composed frames scanned; inspected C4720-4840 crops show the disc already present at C4720; a within-shot argmax cannot locate an onset that precedes the delivered interval",
+   "region": {
+    "box": [
+     200,
+     90,
+     340,
+     190
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 480,
+    "sky_mean_min": 195.3954620361328,
+    "sky_mean_max": 197.56008911132812
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": []
+  },
+  {
+   "id": "plenty.continuous_page",
+   "shot": "plenty",
+   "stem": "EDIT:plenty",
+   "event": "the landscape becomes a book page with a tree drawing",
+   "frames": {},
+   "method": "all 240 composed frames scanned; mean frame difference and local ink counts are non-specific during camera motion; the barmap cue is the section/hymn entry",
+   "region": {
+    "box": [
+     0,
+     0,
+     960,
+     402
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "frames_examined": 240,
+    "largest_change_frame": 5227
+   },
+   "confidence": "low",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": []
+  },
+  {
+   "id": "title.first_light",
+   "shot": "title",
+   "stem": "EDIT:title",
+   "event": "the first title lettering glows on the blank page",
+   "frames": {
+    "first": 5702
+   },
+   "method": "count R>150 and luma-Gaussian(sigma=3)>12 in the title line; excludes the book gutter; first = first sample >= 3",
+   "region": {
+    "box": [
+     240,
+     170,
+     800,
+     320
+    ],
+    "space": "960x402 composed RGB"
+   },
+   "evidence": {
+    "field": "glow",
+    "search": [
+     5680,
+     5759
+    ],
+    "frames_examined": 80,
+    "threshold": 3,
+    "values": {
+     "5680": 0,
+     "5681": 0,
+     "5682": 0,
+     "5683": 0,
+     "5684": 0,
+     "5685": 0,
+     "5686": 0,
+     "5687": 0,
+     "5688": 0,
+     "5689": 0,
+     "5690": 0,
+     "5691": 0,
+     "5692": 0,
+     "5693": 0,
+     "5694": 0,
+     "5695": 0,
+     "5696": 0,
+     "5697": 0,
+     "5698": 0,
+     "5699": 0,
+     "5700": 0,
+     "5701": 1,
+     "5702": 10,
+     "5703": 24,
+     "5704": 48,
+     "5705": 105,
+     "5706": 185,
+     "5707": 231,
+     "5708": 279,
+     "5709": 323,
+     "5710": 403,
+     "5711": 478,
+     "5712": 554,
+     "5713": 621,
+     "5714": 677,
+     "5715": 724,
+     "5716": 790,
+     "5717": 861,
+     "5718": 951,
+     "5719": 1032,
+     "5720": 1095,
+     "5721": 1121,
+     "5722": 1190,
+     "5723": 1222,
+     "5724": 1238,
+     "5725": 1255,
+     "5726": 1298,
+     "5727": 1402,
+     "5728": 1507,
+     "5729": 1586,
+     "5730": 1696,
+     "5731": 1745,
+     "5732": 1771,
+     "5733": 1745,
+     "5734": 1736,
+     "5735": 1759,
+     "5736": 1772,
+     "5737": 1764,
+     "5738": 1782,
+     "5739": 1801,
+     "5740": 1769,
+     "5741": 1737,
+     "5742": 1666,
+     "5743": 1588,
+     "5744": 1472,
+     "5745": 1383,
+     "5746": 1302,
+     "5747": 1232,
+     "5748": 1213,
+     "5749": 1210,
+     "5750": 1206,
+     "5751": 1194,
+     "5752": 1174,
+     "5753": 1149,
+     "5754": 1121,
+     "5755": 1068,
+     "5756": 1047,
+     "5757": 993,
+     "5758": 974,
+     "5759": 977
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "negative_controls": [
+    {
+     "detector": "glow",
+     "first": 5680,
+     "last": 5700,
+     "frames_examined": 21,
+     "threshold": 3,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "inspected interval without this event"
+    }
+   ],
+   "sync_id": "title",
+   "sync_field": "first",
+   "note": "Onset threshold only; later glow and ink phases are not one monotone ramp, so no full-title frame is inferred from their maximum."
   }
  ],
  "barmap_C5_vs_picture": [
@@ -1526,7 +5193,7 @@
    "barmap_frame": 2320,
    "barmap_says": "THE TRAP: burn-through to the forge-towers under the storm, hammers ringing (SOUND)",
    "measured": null,
-   "what": "the barmap has 'hammers ringing': no hammer strike is drawn anywhere in the Trap (see trap.hammer_strikes); hammers are a sound design choice, not a sync point"
+   "what": "Section cut; inter-shot burn is not supplied by Ctx.picture."
   },
   {
    "barmap_id": "low_fire",
@@ -1569,14 +5236,14 @@
    "barmap_frame": 2640,
    "barmap_says": "FLINT: black and silence; the click of a flint",
    "measured": null,
-   "what": "not measurable here: FLINT (2640-2879) is not on this Mac; the Trap's last frame 2639 is not black"
+   "what": "No black in 240 examined FLINT frames (maximum-luma threshold <=2); retain musical cut at 2640 without claiming pictured black."
   },
   {
    "barmap_id": "catch",
    "barmap_frame": 2836,
    "barmap_says": "the kindling catches: an ordinary orange fire (est.: v1's catch relative to strike 3)",
    "measured": null,
-   "what": "not measurable here: FLINT is not on this Mac"
+   "what": "Flame-area detector fails its pre-catch control on glowing tinder/smoke; onset, fastest and full unresolved. SOUND 2836 remains derived."
   },
   {
    "barmap_id": "reveal",
@@ -1592,14 +5259,14 @@
    "barmap_frame": 2960,
    "barmap_says": "'It was a promise to stop, if all the others would.' (est.)",
    "measured": null,
-   "what": "a caption time (EDIT's), not a picture event"
+   "what": "Caption timing, excluded from picture-only measurements."
   },
   {
    "barmap_id": "run",
    "barmap_frame": 3120,
    "barmap_says": "THE BEACON RUN (v1's run, -720 f)",
    "measured": null,
-   "what": "not measurable here: the BEACON RUN (runC_scroll, 3120-3439) and its beacon_1..7 are not on this Mac"
+   "what": "Section cut into Beacon Run; separate catches are measured."
   },
   {
    "barmap_id": "one_dark",
@@ -1640,7 +5307,7 @@
    "barmap_frame": 3920,
    "barmap_says": "smoke rising from cold stone (est.)",
    "measured": null,
-   "what": "no discrete smoke event: smoke rises continuously from the shutdown"
+   "what": "Smoke continues from shutdown; no discrete onset."
   },
   {
    "barmap_id": "storm_gone",
@@ -1656,12 +5323,183 @@
    "barmap_frame": 5440,
    "barmap_says": "(v5: no Havens) the hymn's end: the page turns to blank pages",
    "measured": null,
-   "what": "the PEN shot (5440-5679) has no page turn in its frames: EDIT still owes the incoming turn, so the page-turn sound has no measured frame yet"
+   "what": "Section cut; incoming page-turn transition absent from delivered PEN frames."
+  },
+  {
+   "barmap_id": "riffle",
+   "barmap_frame": 320,
+   "barmap_says": "the leaves riffle back to an early page; the pen begins",
+   "measured": "opening.riffle",
+   "measured_frame": 326,
+   "delta_frames": 6,
+   "what": "rapid page riffle begins"
+  },
+  {
+   "barmap_id": "page_turn",
+   "barmap_frame": 560,
+   "barmap_says": "the page turns to a leaf of script; the hearth sinks low",
+   "measured": "letters.page_turn",
+   "measured_frame": 574,
+   "delta_frames": 14,
+   "what": "rapid sweep to the script leaf"
+  },
+  {
+   "barmap_id": "letters_glow",
+   "barmap_frame": 700,
+   "barmap_says": "the ink letters begin to glow",
+   "measured": "letters.glow",
+   "measured_frame": 705,
+   "delta_frames": 5,
+   "what": "the script glows"
+  },
+  {
+   "barmap_id": "letters_lift",
+   "barmap_frame": 720,
+   "barmap_says": "the letters lift off the page as sparks; the glass arpeggio under harp",
+   "measured": "letters.lift",
+   "measured_frame": 744,
+   "delta_frames": 24,
+   "what": "glowing letters leave their original positions"
+  },
+  {
+   "barmap_id": "fire_catches",
+   "barmap_frame": 800,
+   "barmap_says": "the fire catches at the page's heart",
+   "measured": "letters.catch",
+   "measured_frame": 801,
+   "delta_frames": 1,
+   "what": "Scoped to the catch after the last flying glyph disappears at C797. Earlier glyph sparks also pass this brightness threshold; it is not a general flame classifier."
+  },
+  {
+   "barmap_id": "burn_through",
+   "barmap_frame": 840,
+   "barmap_says": "the page burns open onto black: chamber to orchestra, never a hit",
+   "measured": "letters.burn",
+   "measured_frame": 856,
+   "delta_frames": 16,
+   "what": "the page burns open onto black"
+  },
+  {
+   "barmap_id": "towers_rise",
+   "barmap_frame": 1040,
+   "barmap_says": "the forge-towers of every realm rise",
+   "measured": "forge.towers",
+   "measured_frame": 1069,
+   "delta_frames": 29,
+   "what": "forge towers become visible around the central fire"
+  },
+  {
+   "barmap_id": "inscription",
+   "barmap_frame": 1320,
+   "barmap_says": "the inscription burns up out of the metal",
+   "measured": "forge.inscription",
+   "measured_frame": 1321,
+   "delta_frames": 1,
+   "what": "the first inscription glyph glows on the Ring"
+  },
+  {
+   "barmap_id": "ring_rises",
+   "barmap_frame": 1360,
+   "barmap_says": "the Ring rises above the towers",
+   "measured": "forge.ring_rises",
+   "measured_frame": 1389,
+   "delta_frames": 29,
+   "what": "the Ring climbs within the picture"
+  },
+  {
+   "barmap_id": "eye_burn",
+   "barmap_frame": 1920,
+   "barmap_says": "the glow burns through into the storm: THE EYE; tam-tam swell",
+   "measured": "eye.burn",
+   "measured_frame": 1933,
+   "delta_frames": 13,
+   "what": "the mine page opens into the storm"
+  },
+  {
+   "barmap_id": "slit_nothing",
+   "barmap_frame": 2000,
+   "barmap_says": "the slit opens onto nothing: C's loudest moment",
+   "measured": "eye.slit",
+   "measured_frame": 2003,
+   "delta_frames": 3,
+   "what": "the Eye slit opens onto darkness"
+  },
+  {
+   "barmap_id": "beacon_1",
+   "barmap_frame": 3160,
+   "barmap_says": "beacon 1 (v1 3880 - 720)",
+   "measured": "run.beacon_1",
+   "measured_frame": 3160,
+   "delta_frames": 0,
+   "what": "Beacon Run catch 1"
+  },
+  {
+   "barmap_id": "beacon_2",
+   "barmap_frame": 3200,
+   "barmap_says": "beacon 2 (v1 3920 - 720)",
+   "measured": "run.beacon_2",
+   "measured_frame": 3200,
+   "delta_frames": 0,
+   "what": "Beacon Run catch 2"
+  },
+  {
+   "barmap_id": "beacon_3",
+   "barmap_frame": 3240,
+   "barmap_says": "beacon 3 (v1 3960 - 720)",
+   "measured": "run.beacon_3",
+   "measured_frame": 3240,
+   "delta_frames": 0,
+   "what": "Beacon Run catch 3"
+  },
+  {
+   "barmap_id": "beacon_4",
+   "barmap_frame": 3280,
+   "barmap_says": "beacon 4 (v1 4000 - 720)",
+   "measured": "run.beacon_4",
+   "measured_frame": 3280,
+   "delta_frames": 0,
+   "what": "Beacon Run catch 4"
+  },
+  {
+   "barmap_id": "beacon_5",
+   "barmap_frame": 3320,
+   "barmap_says": "beacon 5 (v1 4040 - 720)",
+   "measured": "run.beacon_5",
+   "measured_frame": 3320,
+   "delta_frames": 0,
+   "what": "Beacon Run catch 5"
+  },
+  {
+   "barmap_id": "beacon_6",
+   "barmap_frame": 3360,
+   "barmap_says": "beacon 6 (v1 4080 - 720)",
+   "measured": "run.beacon_6",
+   "measured_frame": 3360,
+   "delta_frames": 0,
+   "what": "Beacon Run catch 6"
+  },
+  {
+   "barmap_id": "beacon_7",
+   "barmap_frame": 3400,
+   "barmap_says": "beacon 7 (v1 4120 - 720)",
+   "measured": "run.beacon_7",
+   "measured_frame": 3400,
+   "delta_frames": 0,
+   "what": "Beacon Run catch 7"
+  },
+  {
+   "barmap_id": "title",
+   "barmap_frame": 5680,
+   "barmap_says": "TITLE (v1 6960 - 1280)",
+   "measured": "title.first_light",
+   "measured_frame": 5702,
+   "delta_frames": 22,
+   "what": "Onset threshold only; later glow and ink phases are not one monotone ramp, so no full-title frame is inferred from their maximum."
   }
  ],
  "cues_C5_vs_picture": [
   "breaths: 'forges_cold' cuts the hall for 1.2 s (3848 -> 3876.8) only; nothing in the cue sheet or the level map can fail on sound between 3877 and 3999 (C16's band is -99..-1 LU relative), so the hard silence through 3999 was a property of the note list, unchecked. Pass 1's Ring entry at 4000 may start up to 0.52 s early (ANTIC_HI for the quiet strings), i.e. inside the silence",
-  "events: the run's beacon_1..7 tags (call/answer) are on fires this Mac cannot see; the map's measured catches (3468-3791) have no cue-sheet events at all",
+  "Beacon Run catches are now measured from delivered frames; map catches remain measured.",
   "sfx/ambience: empty by design (the effects are SOUND's); see sound/c5_sound_events.json"
  ]
 }

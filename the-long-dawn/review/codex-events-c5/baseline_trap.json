@@ -1,0 +1,32 @@
+{
+  "source_sha256": "a10a667fb274e6a17a637ee800c2ec3d6b691d47e0b6cd6d5847fda4208dd063",
+  "events": {
+    "trap.low_forge_sinks": {
+      "first": 2423,
+      "out": 2428
+    },
+    "trap.low_forge_returns": {
+      "first": 2546,
+      "full": 2557
+    },
+    "trap.forges_surge": {
+      "first": 2483,
+      "fastest": 2486,
+      "half": 2487,
+      "full": 2490
+    },
+    "trap.leader_left_pulls_ahead": {
+      "first": 2588,
+      "half": 2607,
+      "full": 2626
+    },
+    "trap.leader_right_pulls_ahead": {
+      "first": 2591,
+      "half": 2603,
+      "full": 2624
+    },
+    "trap.hammer_strikes": {
+      "found": []
+    }
+  }
+}

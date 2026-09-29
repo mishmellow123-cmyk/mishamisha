@@ -245,7 +245,8 @@
    "t": 0.0,
    "f": 0,
    "what": "a hearth crackles close by",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Sound cue over EDIT black; no visible hearth event."
   },
   {
    "id": "page_turn_0",
@@ -254,7 +255,8 @@
    "t": 1.667,
    "f": 40,
    "what": "a heavy page turns",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "C0-79 are EDIT black; no visible page turn at C40."
   },
   {
    "id": "book",
@@ -263,7 +265,8 @@
    "t": 3.333,
    "f": 80,
    "what": "THE RED BOOK; the cor anglais CALL (doubled, on a pad)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section/music entry at C80; the book fades in after this boundary."
   },
   {
    "id": "blank_sheaf",
@@ -272,16 +275,20 @@
    "t": 10.0,
    "f": 240,
    "what": "the drift reaches the sheaf of blank pages",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Camera drift across illustrated pages; no isolated blank-sheaf arrival established."
   },
   {
    "id": "riffle",
    "bar": 5,
-   "beat": 1.0,
-   "t": 13.333,
-   "f": 320,
-   "what": "the leaves riffle back to an early page; the pen begins",
-   "source": "pass 1"
+   "beat": 1.3,
+   "t": 13.583,
+   "f": 326,
+   "what": "rapid page riffle begins (measured)",
+   "source": "measured",
+   "was_f": 320,
+   "measured_ref": "opening.riffle.first",
+   "confidence": "medium"
   },
   {
    "id": "ring_motif",
@@ -290,52 +297,68 @@
    "t": 15.0,
    "f": 360,
    "what": "the pen draws the ring; the RING motif enters on stopped horns",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical motif entry over a mountain illustration; no separate small Ring stroke isolated."
   },
   {
    "id": "page_turn",
    "bar": 8,
-   "beat": 1.0,
-   "t": 23.333,
-   "f": 560,
-   "what": "the page turns to a leaf of script; the hearth sinks low",
-   "source": "pass 1"
+   "beat": 1.7,
+   "t": 23.917,
+   "f": 574,
+   "what": "rapid sweep to the script leaf (measured)",
+   "source": "measured",
+   "was_f": 560,
+   "measured_ref": "letters.page_turn.first",
+   "confidence": "medium"
   },
   {
    "id": "letters_glow",
    "bar": 9,
-   "beat": 4.0,
-   "t": 29.167,
-   "f": 700,
-   "what": "the ink letters begin to glow",
-   "source": "pass 1"
+   "beat": 4.25,
+   "t": 29.375,
+   "f": 705,
+   "what": "the script glows (measured)",
+   "source": "measured",
+   "was_f": 700,
+   "measured_ref": "letters.glow.first",
+   "confidence": "medium"
   },
   {
    "id": "letters_lift",
    "bar": 10,
-   "beat": 1.0,
-   "t": 30.0,
-   "f": 720,
-   "what": "the letters lift off the page as sparks; the glass arpeggio under harp",
-   "source": "pass 1"
+   "beat": 2.2,
+   "t": 31.0,
+   "f": 744,
+   "what": "glowing letters leave their original positions (measured)",
+   "source": "measured",
+   "was_f": 720,
+   "measured_ref": "letters.lift.first",
+   "confidence": "medium"
   },
   {
    "id": "fire_catches",
    "bar": 11,
-   "beat": 1.0,
-   "t": 33.333,
-   "f": 800,
-   "what": "the fire catches at the page's heart",
-   "source": "pass 1"
+   "beat": 1.05,
+   "t": 33.375,
+   "f": 801,
+   "what": "fire catches at the page heart (measured)",
+   "source": "measured",
+   "was_f": 800,
+   "measured_ref": "letters.catch.first",
+   "confidence": "medium"
   },
   {
    "id": "burn_through",
    "bar": 11,
-   "beat": 3.0,
-   "t": 35.0,
-   "f": 840,
-   "what": "the page burns open onto black: chamber to orchestra, never a hit",
-   "source": "pass 1"
+   "beat": 3.8,
+   "t": 35.667,
+   "f": 856,
+   "what": "the page burns open onto black (measured)",
+   "source": "measured",
+   "was_f": 840,
+   "measured_ref": "letters.burn.first",
+   "confidence": "medium"
   },
   {
    "id": "fire_alone",
@@ -344,16 +367,20 @@
    "t": 36.667,
    "f": 880,
    "what": "THE FIRE, ALONE: its chord blooms once; one warm line",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section/chord entry during the continuing page burn; no separate ignition at C880."
   },
   {
    "id": "towers_rise",
    "bar": 14,
-   "beat": 1.0,
-   "t": 43.333,
-   "f": 1040,
-   "what": "the forge-towers of every realm rise",
-   "source": "pass 1"
+   "beat": 2.45,
+   "t": 44.542,
+   "f": 1069,
+   "what": "forge towers become visible around the central fire (measured)",
+   "source": "measured",
+   "was_f": 1040,
+   "measured_ref": "forge.towers.first",
+   "confidence": "medium"
   },
   {
    "id": "anvil",
@@ -362,25 +389,32 @@
    "t": 50.0,
    "f": 1200,
    "what": "first anvil stroke: the light beaten into a band",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "No pictured hammer contact identified. Impulse C1262 shows a rotating Ring in adjacent stills, not a strike."
   },
   {
    "id": "inscription",
    "bar": 17,
-   "beat": 3.0,
-   "t": 55.0,
-   "f": 1320,
-   "what": "the inscription burns up out of the metal",
-   "source": "pass 1"
+   "beat": 3.05,
+   "t": 55.042,
+   "f": 1321,
+   "what": "the first inscription glyph glows on the Ring (measured)",
+   "source": "measured",
+   "was_f": 1320,
+   "measured_ref": "forge.inscription.first",
+   "confidence": "medium"
   },
   {
    "id": "ring_rises",
    "bar": 18,
-   "beat": 1.0,
-   "t": 56.667,
-   "f": 1360,
-   "what": "the Ring rises above the towers",
-   "source": "pass 1"
+   "beat": 2.45,
+   "t": 57.875,
+   "f": 1389,
+   "what": "the Ring climbs within the picture (measured)",
+   "source": "measured",
+   "was_f": 1360,
+   "measured_ref": "forge.ring_rises.first",
+   "confidence": "medium"
   },
   {
    "id": "hush",
@@ -389,7 +423,8 @@
    "t": 60.0,
    "f": 1440,
    "what": "the hush: the Ring hangs; the first gold falls slowly",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical hush at the section cut; no discrete picture onset measured."
   },
   {
    "id": "breath_race",
@@ -398,7 +433,8 @@
    "t": 64.792,
    "f": 1555,
    "what": "200 ms breath",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical breath, not a picture event."
   },
   {
    "id": "race",
@@ -407,7 +443,8 @@
    "t": 65.0,
    "f": 1560,
    "what": "THE RACE: surges on every beat; timpani, taiko, glass glitter",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical acceleration; continuous tower/camera motion, no accepted discrete onset."
   },
   {
    "id": "deep",
@@ -416,7 +453,8 @@
    "t": 70.0,
    "f": 1680,
    "what": "swept to parchment: THE DEEP; the anvil tick in quarters",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section boundary within a continuing transition onto parchment."
   },
   {
    "id": "tick_8",
@@ -425,7 +463,8 @@
    "t": 73.333,
    "f": 1760,
    "what": "the tick divides to eighths",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical subdivision, not a picture event."
   },
   {
    "id": "tick_16",
@@ -434,25 +473,32 @@
    "t": 76.667,
    "f": 1840,
    "what": "the tick divides to sixteenths",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical subdivision, not a picture event."
   },
   {
    "id": "eye_burn",
    "bar": 25,
-   "beat": 1.0,
-   "t": 80.0,
-   "f": 1920,
-   "what": "the glow burns through into the storm: THE EYE; tam-tam swell",
-   "source": "pass 1"
+   "beat": 1.65,
+   "t": 80.542,
+   "f": 1933,
+   "what": "the mine page opens into the storm (measured)",
+   "source": "measured",
+   "was_f": 1920,
+   "measured_ref": "eye.burn.first",
+   "confidence": "medium"
   },
   {
    "id": "slit_nothing",
    "bar": 26,
-   "beat": 1.0,
-   "t": 83.333,
-   "f": 2000,
-   "what": "the slit opens onto nothing: C's loudest moment",
-   "source": "pass 1"
+   "beat": 1.15,
+   "t": 83.458,
+   "f": 2003,
+   "what": "the Eye slit opens onto darkness (measured)",
+   "source": "measured",
+   "was_f": 2000,
+   "measured_ref": "eye.slit.first",
+   "confidence": "medium"
   },
   {
    "id": "mirror",
@@ -461,7 +507,8 @@
    "t": 86.667,
    "f": 2080,
    "what": "(v5) the Eye ends: the hearth flares, THE REFUSAL (alias kept for the rules)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section boundary/legacy alias for refusal."
   },
   {
    "id": "refusal",
@@ -470,7 +517,8 @@
    "t": 86.667,
    "f": 2080,
    "what": "THE REFUSAL: the hearth flares, back at the book; the chamber music returns",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section cut into the Refusal page; no new within-shot event."
   },
   {
    "id": "old_story",
@@ -501,7 +549,8 @@
    "t": 96.667,
    "f": 2320,
    "what": "THE TRAP: burn-through to the forge-towers under the storm (no hammer strike is drawn: the hammers are SOUND's, on the music's pulse)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section cut; inter-shot burn is not supplied by Ctx.picture."
   },
   {
    "id": "low_fire",
@@ -563,8 +612,9 @@
    "beat": 1.0,
    "t": 110.0,
    "f": 2640,
-   "what": "FLINT: black and silence; the click of a flint",
-   "source": "pass 1"
+   "what": "FLINT: musical silence at the cut; delivered hands/sky picture is not black",
+   "source": "pass 1",
+   "why": "No black in 240 examined FLINT frames (maximum-luma threshold <=2); retain musical cut at 2640 without claiming pictured black."
   },
   {
    "id": "catch",
@@ -573,7 +623,8 @@
    "t": 118.167,
    "f": 2836,
    "what": "the kindling catches: an ordinary orange fire (est.: v1's catch relative to strike 3)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Flame-area detector fails its pre-catch control on glowing tinder/smoke; onset, fastest and full unresolved. SOUND 2836 remains derived."
   },
   {
    "id": "reveal",
@@ -593,7 +644,8 @@
    "t": 123.333,
    "f": 2960,
    "what": "'It was a promise to stop, if all the others would.' (caption: EDIT's timing)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Caption timing, excluded from picture-only measurements."
   },
   {
    "id": "run",
@@ -602,7 +654,8 @@
    "t": 130.0,
    "f": 3120,
    "what": "THE BEACON RUN (v1's run, -720 f)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section cut into Beacon Run; separate catches are measured."
   },
   {
    "id": "beacon_1",
@@ -610,8 +663,11 @@
    "beat": 3.0,
    "t": 131.667,
    "f": 3160,
-   "what": "beacon 1 (v1 3880 - 720)",
-   "source": "pass 1"
+   "what": "Beacon Run catch 1 (measured)",
+   "source": "measured",
+   "was_f": 3160,
+   "measured_ref": "run.beacon_1.first",
+   "confidence": "medium"
   },
   {
    "id": "beacon_2",
@@ -619,8 +675,11 @@
    "beat": 1.0,
    "t": 133.333,
    "f": 3200,
-   "what": "beacon 2 (v1 3920 - 720)",
-   "source": "pass 1"
+   "what": "Beacon Run catch 2 (measured)",
+   "source": "measured",
+   "was_f": 3200,
+   "measured_ref": "run.beacon_2.first",
+   "confidence": "medium"
   },
   {
    "id": "beacon_3",
@@ -628,8 +687,11 @@
    "beat": 3.0,
    "t": 135.0,
    "f": 3240,
-   "what": "beacon 3 (v1 3960 - 720)",
-   "source": "pass 1"
+   "what": "Beacon Run catch 3 (measured)",
+   "source": "measured",
+   "was_f": 3240,
+   "measured_ref": "run.beacon_3.first",
+   "confidence": "medium"
   },
   {
    "id": "beacon_4",
@@ -637,8 +699,11 @@
    "beat": 1.0,
    "t": 136.667,
    "f": 3280,
-   "what": "beacon 4 (v1 4000 - 720)",
-   "source": "pass 1"
+   "what": "Beacon Run catch 4 (measured)",
+   "source": "measured",
+   "was_f": 3280,
+   "measured_ref": "run.beacon_4.first",
+   "confidence": "medium"
   },
   {
    "id": "beacon_5",
@@ -646,8 +711,11 @@
    "beat": 3.0,
    "t": 138.333,
    "f": 3320,
-   "what": "beacon 5 (v1 4040 - 720)",
-   "source": "pass 1"
+   "what": "Beacon Run catch 5 (measured)",
+   "source": "measured",
+   "was_f": 3320,
+   "measured_ref": "run.beacon_5.first",
+   "confidence": "medium"
   },
   {
    "id": "beacon_6",
@@ -655,8 +723,11 @@
    "beat": 1.0,
    "t": 140.0,
    "f": 3360,
-   "what": "beacon 6 (v1 4080 - 720)",
-   "source": "pass 1"
+   "what": "Beacon Run catch 6 (measured)",
+   "source": "measured",
+   "was_f": 3360,
+   "measured_ref": "run.beacon_6.first",
+   "confidence": "medium"
   },
   {
    "id": "beacon_7",
@@ -664,8 +735,11 @@
    "beat": 3.0,
    "t": 141.667,
    "f": 3400,
-   "what": "beacon 7 (v1 4120 - 720)",
-   "source": "pass 1"
+   "what": "Beacon Run catch 7 (measured)",
+   "source": "measured",
+   "was_f": 3400,
+   "measured_ref": "run.beacon_7.first",
+   "confidence": "medium"
   },
   {
    "id": "map",
@@ -674,7 +748,8 @@
    "t": 143.333,
    "f": 3440,
    "what": "THE LAST BEACON: the map of all the kingdoms; beacons flare near and far",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section cut to map; separate catches already measured."
   },
   {
    "id": "map_beacon_2",
@@ -797,7 +872,8 @@
    "t": 163.333,
    "f": 3920,
    "what": "(no discrete picture event: smoke rises continuously from the shutdown at 3848)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Smoke continues from shutdown; no discrete onset."
   },
   {
    "id": "ring_unfinished",
@@ -806,7 +882,8 @@
    "t": 166.667,
    "f": 4000,
    "what": "THE RING, UNFINISHED: its glow drains to dull grey; the storm thins",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section cut; separate gold-drain and storm-thinning ramps measured."
   },
   {
    "id": "ring_grey",
@@ -836,7 +913,8 @@
    "t": 176.667,
    "f": 4240,
    "what": "THE DEEP, ABANDONED: the still mine, a lantern, empty ladders",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section cut to held mine drawing; no discrete within-shot event."
   },
   {
    "id": "watch",
@@ -845,7 +923,8 @@
    "t": 186.667,
    "f": 4480,
    "what": "THE WATCH: a beacon burns on every peak as the camera drifts",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section cut into already-burning beacons; no catch in the shot."
   },
   {
    "id": "sunrise",
@@ -854,7 +933,8 @@
    "t": 196.667,
    "f": 4720,
    "what": "THE ILLUMINATION: the sun rises slowly (v1 5680 - 960)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Sun already partly above ridge at C4720; no onset within delivered 480-frame interval. Preserve section entry."
   },
   {
    "id": "home",
@@ -863,7 +943,8 @@
    "t": 210.0,
    "f": 5040,
    "what": "the line settles home (v1 6000 - 960)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical resolution, not a discrete sunrise event."
   },
   {
    "id": "plenty",
@@ -872,7 +953,8 @@
    "t": 216.667,
    "f": 5200,
    "what": "THE YEAR OF PLENTY: the hymn (v1 6160 - 960)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section/hymn entry; camera pulls from landscape to illustrated book page continuously."
   },
   {
    "id": "havens",
@@ -881,7 +963,8 @@
    "t": 226.667,
    "f": 5440,
    "what": "(v5: no Havens) the hymn's end: the page turns to blank pages",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Section cut; incoming page-turn transition absent from delivered PEN frames."
   },
   {
    "id": "line_in",
@@ -890,7 +973,8 @@
    "t": 227.5,
    "f": 5460,
    "what": "a single spoken line may go here: the music leaves 5460-5540 clean",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Optional spoken-line placement, not a picture event."
   },
   {
    "id": "blank",
@@ -899,16 +983,20 @@
    "t": 230.833,
    "f": 5540,
    "what": "after the line: the chorale chord (Bb/D) returns, the pen across the blank pages",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical return after spoken line; existing PEN frames have no discrete ink event."
   },
   {
    "id": "title",
    "bar": 72,
-   "beat": 1.0,
-   "t": 236.667,
-   "f": 5680,
-   "what": "TITLE (v1 6960 - 1280)",
-   "source": "pass 1"
+   "beat": 2.1,
+   "t": 237.583,
+   "f": 5702,
+   "what": "the first title lettering glows on the blank page (measured)",
+   "source": "measured",
+   "was_f": 5680,
+   "measured_ref": "title.first_light.first",
+   "confidence": "medium"
   },
   {
    "id": "plagal",
@@ -917,7 +1005,8 @@
    "t": 243.333,
    "f": 5840,
    "what": "the plagal close, G/D to D (v1 7120 - 1280)",
-   "source": "pass 1"
+   "source": "pass 1",
+   "why": "Musical cadence, not a picture event."
   }
  ],
  "text": [
@@ -961,7 +1050,7 @@
  "conventions": "24 fps, 72 BPM, 4/4: beat = 20 frames, bar = 80 frames. Frames count from 0 on this cut's own timeline. Sections are half-open [f0, f1): f1 is the next section's f0; t = f / 24. bar and beat are 1-based; a fractional beat is a frame between beats (beat = 1 + (f mod 80) / 20). Text f_in is the first frame of the fade-in or write-on, f_out the first frame after the fade-out. Generated from the same source as BIBLE_V3.md '# REVISION 1 \u00b7 LOCKED BEAT SHEETS'; change both or neither. | C5: script v5.2 (C_SCRIPT_v5.md), timeline C_V5_TIMELINE_and_codex_night_brief.md; (est.) frames are musical estimates until the picture lands. | C5P2: barmap_C5 re-timed from events_C5_measured.json by music/src/barmap_c5p2.py; each sync entry's `source` says whether its frame is measured, verified, derived or pass 1's.",
  "measured_table": {
   "file": "music/v3/events_C5_measured.json",
-  "generator_sha256": "a10a667fb274e6a17a637ee800c2ec3d6b691d47e0b6cd6d5847fda4208dd063",
+  "generator_sha256": "2a85ddeb87aabc4db405ae45ad2bafd4312cc6406fe8e3c17f10ff97ff43bb25",
   "shots": {
    "refusal": "3a29c217e78312368dd913bbba40833ee53a3fde4bfe0f31a65e45e237dea2ab",
    "trap": "37cddbda0bb0b4300df2d9c7d5b148114f69c4bb302d0d3f49d4c6085720c48f",
@@ -971,7 +1060,16 @@
    "unfinished": "8a72077f1b63828e3cb5db3a5c0949b23b862145d84afa4288d98b40f0c2a8f6",
    "deep": "d0353d9b8315f2b806322bee574095515464566407227ae84044fdb83d11d100",
    "watch": "e8886465b38f727190248aadc07b441af22e9a5ea286d0618374595b58b522ec",
-   "pen": "67fe59598bd1a0ec4df779ce42f7e94bf970641dbcb96266aacee6c149297b71"
+   "pen": "67fe59598bd1a0ec4df779ce42f7e94bf970641dbcb96266aacee6c149297b71",
+   "opening": "59b4bd4e647fcd6687cbdb4cab0bd35153d0087e3c3f0c6b5343de4bec9299a1",
+   "letters": "78c499d385af51e0782f5c18a27c32b7cb47590b7c5c4d17be069883900d238b",
+   "forge": "baf2ca00ff41b99239413e1d44bbf1ca77acd9564bbb6eed39ec59c9c21cc518",
+   "eye": "724b5cef7aabbfadafdedf31981d1ae1c1c8ed448019b3482d6fb34ec0d821cc",
+   "flint": "7a146d55a15c6ef40e89d6debe9c4fe7eccc89212848c5c773e038958474e0dd",
+   "run": "e78fc309cd257ff4b3bf329c0d46ed957366ba312f86c2fde3b0e0f02e6e94a6",
+   "illumination": "992f4ea0d60a8628e1f79ce6b6c5e6e3d4714b2c19229892c517403de748989a",
+   "plenty": "a7c999a36ad9089d7d62c512d162d97bbd576821abe5554600bf4f524be3e431",
+   "title": "ec634e6855bf710ba577e6dcb2b698820704c51d58aee6524ada30ab9789e7b2"
   }
  }
 }
