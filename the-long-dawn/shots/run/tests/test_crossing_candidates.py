@@ -1,0 +1,188 @@
+"""Tiny geometry/contracts only: no production imports, JIT or image renders."""
+import ast
+import hashlib
+import math
+from pathlib import Path
+import subprocess
+import sys
+from types import SimpleNamespace
+import unittest
+from unittest import mock
+
+RUN = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(RUN))
+import crossing_candidates as CC
+
+
+class RopeGeometryTests(unittest.TestCase):
+    def test_module_import_has_no_render_or_thread_effects(self):
+        code = ('import sys, os; before=dict(os.environ); sys.path.insert(0,sys.argv[1]); '
+                'import crossing_candidates; '
+                'assert not {"numpy","numba","cv2","crossing"}.intersection(sys.modules); '
+                'assert before==dict(os.environ)')
+        subprocess.run([sys.executable, '-B', '-c', code, str(RUN)], check=True,
+                       capture_output=True, text=True)
+
+    def test_frozen_crossing_source_identity(self):
+        self.assertEqual(hashlib.sha256((RUN / 'crossing.py').read_bytes()).hexdigest(),
+                         CC.BASELINE_SHA256)
+
+    def test_clear_terrain_preserves_every_point_and_attachments(self):
+        points = CC.sag_points((0, 1, 0), (4, 1.2, 0))
+        solved = CC.clear_rope(points, lambda q: [-2.0] * len(q))
+        self.assertEqual(points, solved.points)
+        self.assertEqual(solved.max_lift, 0.0)
+
+    def test_sag_penetration_negative_control_and_restored_clearance(self):
+        points = CC.sag_points((0, 0.4, 0), (5, 0.4, 0))
+        calls = []
+        def ground(q):
+            calls.append(q)
+            return [0.0] * len(q)
+        solved = CC.clear_rope(points, ground)
+        self.assertLess(solved.original_minimum_sampled_clearance, 0.0)
+        self.assertGreaterEqual(solved.minimum_sampled_clearance, 0.03 - 1e-12)
+        self.assertGreater(solved.max_lift, 0)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(solved.points[0], points[0])
+        self.assertEqual(solved.points[-1], points[-1])
+        self.assertEqual([(p[0], p[2]) for p in solved.points], [(p[0], p[2]) for p in points])
+
+    def test_between_vertex_bump_defeats_vertex_only_clamp(self):
+        points = ((0., .15, 0.), (.5, .15, 0.), (1., .15, 0.))
+        def height(x):
+            return .25 * max(0., 1. - abs(x - .25) / .10)
+        solved = CC.clear_rope(points, lambda q: [height(p[0]) for p in q], probe_spacing=.01)
+        # Every original vertex clears snow, yet the actual first chord crosses it.
+        self.assertTrue(all(p[1] >= height(p[0]) + .03 for p in points))
+        self.assertLess(.15 - height(.25), 0.)
+        self.assertGreater(solved.points[1][1], points[1][1])
+        for i in range(1001):
+            x = i / 1000
+            k = min(int(x * 2), 1)
+            a, b = solved.points[k:k + 2]
+            u = (x - a[0]) / (b[0] - a[0])
+            self.assertGreaterEqual((1-u)*a[1] + u*b[1] - height(x), .03 - 1e-10)
+        self.assertEqual(solved.points[0], points[0])
+        self.assertEqual(solved.points[-1], points[-1])
+
+    def test_last_attachment_segment_is_also_checked(self):
+        pts = ((0., .15, 0.), (.5, .15, 0.), (1., .15, 0.))
+        solved = CC.clear_rope(pts, lambda q: [.25 * max(0., 1-abs(p[0]-.75)/.1) for p in q],
+                               probe_spacing=.01)
+        self.assertGreater(solved.points[1][1], .15)
+        self.assertEqual(solved.points[-1], pts[-1])
+        self.assertGreaterEqual(solved.minimum_sampled_clearance, .03-1e-12)
+
+    def test_bad_attachment_or_terrain_is_explicit_failure(self):
+        pts = ((0., .02, 0.), (.5, .1, 0.), (1., .1, 0.))
+        with self.assertRaisesRegex(ValueError, 'attachment'):
+            CC.clear_rope(pts, lambda q: [0.] * len(q))
+        for heights in (lambda q: [], lambda q: [math.nan] * len(q)):
+            with self.assertRaisesRegex(ValueError, 'heights'):
+                CC.clear_rope(pts, heights)
+        with self.assertRaisesRegex(ValueError, 'budget'):
+            CC.clear_rope(pts, lambda q: [0.] * len(q), max_probes=4)
+
+
+class OriginalPassContractTests(unittest.TestCase):
+    def test_sag_and_pass_style_match_actual_original_on_clear_terrain(self):
+        import numpy as np
+        source = ast.parse((RUN / 'crossing.py').read_text())
+        node = next(n for n in source.body if isinstance(n, ast.FunctionDef) and n.name == 'draw_rope')
+        captured, original_calls, candidate_calls = [], [], []
+        class Cam:
+            f = 100.
+            def project(self, points):
+                captured.append(points.copy())
+                return points[:, 0] * 10, points[:, 1] * 10, points[:, 2] + 10
+        def capture(target):
+            return lambda *args: target.append(args[2:])
+        namespace = dict(np=np, math=math, UP=np.array([0., 1., 0.]),
+                         _rope_seg=capture(original_calls))
+        exec(compile(ast.Module(body=[node], type_ignores=[]), str(RUN/'crossing.py'), 'exec'), namespace)
+        waists = [(0., .8, 0.), (3., 1.1, .2), (4., 1., .7)]
+        lights = [(1., 2., 2., .6, .4, .2, 2., .12)]
+        args = (object(), object(), Cam(), waists, lights, None, .7)
+        namespace['draw_rope'](*args)
+        renderer = SimpleNamespace(np=np, ground_many=lambda q: [-2.] * len(q),
+                                   _rope_seg=capture(candidate_calls))
+        CC.draw_clear_rope(renderer, *args)
+        self.assertEqual(len(original_calls), 26)
+        self.assertEqual(len(candidate_calls), len(original_calls))
+        for a, b in zip(captured[:2], captured[2:]):
+            np.testing.assert_allclose(a, b, atol=1e-14, rtol=0)
+        for a, b in zip(original_calls, candidate_calls):
+            for old, new in zip(a, b):
+                np.testing.assert_allclose(old, new, atol=1e-13, rtol=0)
+
+
+class RenderHookTests(unittest.TestCase):
+    def renderer(self):
+        return SimpleNamespace(render=mock.Mock(return_value=object()),
+                               draw_rope=mock.Mock(), build_scene=mock.Mock())
+
+    def test_accepted_calls_original_directly_with_exact_return_and_no_hooks(self):
+        cr = self.renderer()
+        old_rope, old_scene = cr.draw_rope, cr.build_scene
+        result = CC.render_cut(5040, renderer=cr)
+        self.assertIs(result, cr.render.return_value)
+        cr.render.assert_called_once_with(160, scale=.5, ss=1.5, variant='main', trail=True)
+        self.assertIs(cr.draw_rope, old_rope)
+        self.assertIs(cr.build_scene, old_scene)
+        old_rope.assert_not_called()
+        old_scene.assert_not_called()
+
+    def test_rope_only_changes_rope_hook_and_always_restores(self):
+        cr = self.renderer()
+        old_rope, old_scene = cr.draw_rope, cr.build_scene
+        def failing_render(*args, **kwargs):
+            self.assertIsNot(cr.draw_rope, old_rope)
+            self.assertIs(cr.build_scene, old_scene)
+            raise RuntimeError('controlled failure')
+        cr.render.side_effect = failing_render
+        with self.assertRaisesRegex(RuntimeError, 'controlled failure'):
+            CC.render_cut(5584, rope='snow_clearance', renderer=cr)
+        self.assertIs(cr.draw_rope, old_rope)
+        self.assertIs(cr.build_scene, old_scene)
+
+    def test_rock_hook_preserves_tuple_and_composes_independently(self):
+        for rope in CC.ROPE_OPTIONS:
+            cr = self.renderer()
+            old_rope, old_scene = cr.draw_rope, cr.build_scene
+            scene, replacement, cfg = object(), object(), object()
+            remaining = tuple(object() for _ in range(4))
+            old_scene.return_value = (scene, *remaining)
+            modifier = mock.Mock(return_value=replacement)
+            def render(*args, **kwargs):
+                changed = cr.build_scene(1.25, cfg)
+                self.assertIs(changed[0], replacement)
+                self.assertEqual(changed[1:], remaining)
+                self.assertEqual(cr.draw_rope is old_rope, rope == 'accepted')
+                return changed
+            cr.render.side_effect = render
+            CC.render_cut(5584, rope=rope, rock='explicit_study', rock_modifier=modifier, renderer=cr)
+            modifier.assert_called_once_with(scene, cr, cfg)
+            old_scene.assert_called_once_with(1.25, cfg)
+            self.assertIs(cr.draw_rope, old_rope)
+            self.assertIs(cr.build_scene, old_scene)
+
+    def test_invalid_options_do_not_load_renderer(self):
+        with mock.patch.object(CC, 'load_renderer') as loader:
+            for kwargs in ({'frame':4879}, {'frame':5840}, {'frame':5040.5},
+                           {'frame':5040,'rope':'unknown'}, {'frame':5040,'rock':'missing'},
+                           {'frame':5040,'rock_modifier':lambda *a:None}):
+                with self.assertRaises(ValueError):
+                    CC.render_cut(**kwargs)
+            loader.assert_not_called()
+
+    def test_missing_cache_fails_before_any_production_import(self):
+        with mock.patch.object(Path, 'is_file', return_value=False), \
+             mock.patch.object(CC.importlib, 'import_module') as importer:
+            with self.assertRaisesRegex(FileNotFoundError, 'regeneration'):
+                CC.load_renderer()
+            importer.assert_not_called()
+
+
+if __name__ == '__main__':
+    unittest.main()
