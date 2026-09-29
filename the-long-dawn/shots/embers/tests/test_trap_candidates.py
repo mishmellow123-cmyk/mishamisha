@@ -19,12 +19,36 @@ class Schedules(unittest.TestCase):
         self.towers.rest = np.linspace(26., 39., 18)
         self.towers.rest[list(C.LEADERS)] = 33.
 
-    def test_default_values_are_exactly_accepted_across_all_three_shots(self):
-        for a, b in C.SHOTS.values():
-            for f in range(a, b):
-                for i in range(18):
-                    self.assertEqual(T.forge_level(i, f), C.forge_level(i, f))
-                    self.assertEqual(T.forge_height(self.towers, i, f), self.towers.height(i, f))
+    def test_default_schedule_matches_independent_story_milestones(self):
+        # Fixed contract values, not another call to the same delegated function.
+        # These distinguish the accepted 6% remnant from both candidate recipes.
+        levels = ((8, 2420, 1.), (8, 2429, .53), (8, 2438, .06),
+                  (8, 2540, .06), (8, 2546, .68), (8, 2552, 1.30),
+                  (0, 2480, 1.), (0, 2492, 1.65),
+                  (4, 2598, 2.10), (5, 2639, 2.10),
+                  (8, 3840, 1.30), (0, 3847, 1.65), (4, 3847, 2.10))
+        for i, f, expected in levels:
+            with self.subTest(forge=i, frame=f):
+                self.assertAlmostEqual(T.forge_level(i, f), expected)
+        for f in (3848, 3999, 4000, 4217, 4239):
+            for i in range(18):
+                self.assertEqual(T.forge_level(i, f), 0.)
+        for i, f, rise in ((0, 2480, 0.), (0, 2509, 3.), (0, 2538, 6.),
+                           (8, 2540, 0.), (8, 2559, 3.5), (8, 2578, 7.)):
+            self.assertAlmostEqual(T.forge_height(self.towers, i, f), self.towers.rest[i] + rise)
+        for i in (4, 5):
+            for f, expected in ((2580, 39.), (2608, 47.), (2636, 55.),
+                                (3840, 55.), (4239, 55.)):
+                self.assertAlmostEqual(T.forge_height(self.towers, i, f), expected)
+
+    def test_default_schedule_routes_original_arguments_and_result(self):
+        level, height = object(), object()
+        with patch.object(T, '_ACCEPTED_FORGE_LEVEL', return_value=level) as original:
+            self.assertIs(T.forge_level(8, 2479.25), level)
+            original.assert_called_once_with(8, 2479.25)
+        with patch.object(T, '_ACCEPTED_HEIGHT', return_value=height) as original:
+            self.assertIs(T.forge_height(self.towers, 4, 2608.25), height)
+            original.assert_called_once_with(self.towers, 4, 2608.25)
 
     def test_pilot_is_visible_in_schedule_but_not_a_restored_full_fire(self):
         low = C.LOW_FORGE

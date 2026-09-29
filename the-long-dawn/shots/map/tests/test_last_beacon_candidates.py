@@ -28,11 +28,16 @@ class TerritoryCandidates(unittest.TestCase):
             constructor.return_value.render_c.assert_called_with(3724, .5)
         self.assertIs(C.composite(image, 3724, None, None, 'accepted'), image)
 
-    def test_partition_is_exact_original_and_catches_never_move(self):
-        rng = np.random.default_rng(48)
-        x, y = rng.uniform(-45, 54, 300), rng.uniform(-14, 42, 300)
-        state = C.territory_maps(x, y, 1., 0.)
-        np.testing.assert_array_equal(state['labels'], B.kingdom_at(x, y))
+    def test_partition_matches_fixed_map_space_samples_and_event_contract(self):
+        # Labels recorded from the accepted partition before candidate changes.
+        # Off-beacon points catch joint drift of the delegate and its caller;
+        # calling B.kingdom_at again would compare that function with itself.
+        points = np.array([(-35, -5), (-35, 30), (-15, -5), (-15, 18),
+                           (-15, 35), (0, -5), (0, 12), (0, 33),
+                           (15, -5), (15, 15), (15, 35), (40, -5),
+                           (40, 20), (40, 38), (8, 10), (-5, 0)], float)
+        state = C.territory_maps(points[:, 0], points[:, 1], 1., 0.)
+        np.testing.assert_array_equal(state['labels'], [1, 2, 1, 2, 2, 7, 4, 3, 7, 0, 5, 6, 6, 5, 0, 4])
         np.testing.assert_array_equal(self.beacon_maps()['labels'], np.arange(8))
         self.assertEqual((B.F0, B.F1, B.LAST), (3440, 3840, 4))
         np.testing.assert_array_equal(B.IGNITION, [3432, 3645, 3466, 3678, 3784, 3582, 3716, 3521])
@@ -46,7 +51,9 @@ class TerritoryCandidates(unittest.TestCase):
                 np.testing.assert_array_equal(np.delete(field, B.LAST), 1.)
             last = [C.warmth_field(f, state, variant)[B.LAST] for f in range(3784, 3793)]
             self.assertTrue(all(a < b for a, b in zip(last, last[1:])))
-            np.testing.assert_allclose(last, [B.catch_at(f)[B.LAST] for f in range(3784, 3793)], atol=3e-8)
+            # Eight-frame catch, with quarter/half/three-quarter milestones.
+            np.testing.assert_allclose(last, [0., .04296875, .15625, .31640625, .5,
+                                             .68359375, .84375, .95703125, 1.], atol=3e-8)
             for f in (3792, 3816, 3839):
                 np.testing.assert_array_equal(C.warmth_field(f, state, variant), 1.)
 

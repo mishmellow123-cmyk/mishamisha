@@ -1,8 +1,12 @@
-"""Default-off Deep studies: portable lamp and separated empty ladder rungs.
+"""Default-off Deep studies: two combined lamp-and-ladder alternatives.
 
 ``make_renderer()`` returns the *original* PagesV5('deep_abandoned', ...).
-The opt-in names are ``round_bail`` and ``leaned_ladders``. The returned
-renderer has the accepted ``frame(absolute_C_frame) -> (hdr, alpha)`` API;
+Both ``round_bail`` and ``leaned_ladders`` replace the accepted lantern and
+every added ladder; their names do not denote isolated equipment changes.
+``round_bail`` pairs the rounded lamp with wider, more widely spaced ladder
+rungs. Relative to that option, ``leaned_ladders`` widens the entire lamp by
+15%, reduces its cap rise, and further widens, spaces and inclines the ladders.
+The returned renderer has the accepted ``frame(absolute_C_frame) -> (hdr, alpha)`` API;
 callers must use book_c_v5's existing grade and save functions. This module
 does not write files, change production dispatch, or bake textures on import.
 Use validate_output_dir() before a study runner writes any frame.
@@ -57,7 +61,13 @@ class Ladder:
 
 
 class CandidateDeep(P.AbandonedDeep):
-    """Keep the accepted mine/miner RNG contract; replace added equipment only."""
+    """Keep the accepted mine/miner RNG contract; replace lamp and ladders together.
+
+    Both options retain the inherited mine, gold and miner-removal behavior.
+    They replace the accepted additions with a curved lamp at its own local
+    surface height and ladders fitted within the end bays below the vaults.
+    Neither option isolates a lamp change from a ladder change.
+    """
     def __init__(self, candidate='round_bail', seed=23):
         if candidate not in CANDIDATES[1:]:
             raise ValueError('unknown Deep candidate')
@@ -67,8 +77,13 @@ class CandidateDeep(P.AbandonedDeep):
     def lamp_paths(self):
         """An unlit cage lamp: oval bail, domed cap, curved cage, round reservoir.
 
-        Its x centre matches the accepted lantern. A rounded reservoir touches
-        the surface at that x rather than borrowing the shaft-mouth height.
+        Both options replace the accepted pitched-roof lantern. ``round_bail``
+        uses the coordinates below unchanged; ``leaned_ladders`` scales every
+        horizontal offset by 1.15 and reduces cap rise from .19 to .13 page cm.
+        That 15% widening is relative to ``round_bail``, not the accepted lamp.
+        The x centre matches the accepted lantern. The reservoir's bottom is
+        .035 page cm above the surface at that x; accepted uses the shaft-mouth
+        surface height for its base instead.
         No pointed roof, rectangular handle, flame, or new gold is introduced.
         """
         wide = self.candidate == 'leaned_ladders'
@@ -96,6 +111,14 @@ class CandidateDeep(P.AbandonedDeep):
         return [q*np.array([scale_x, 1.]) + [lx, ly] for q in paths]
 
     def ladders(self):
+        """Replace every added ladder in both options; dimensions are page cm.
+
+        Accepted rails are .24 apart with .17 rung pitch. ``round_bail`` uses
+        .44 separation, .30 pitch and up to .06 horizontal top-to-bottom lean;
+        ``leaned_ladders`` uses .54, .36 and up to .26 respectively. Bay clipping
+        can reduce the lean. Both move rails clear of walls and pillar plinths
+        and put the top cross-section below the actual vaulted ceiling.
+        """
         wide = self.candidate == 'leaned_ladders'
         half = .27 if wide else .22
         pitch = .36 if wide else .30

@@ -46,6 +46,26 @@ class RevealCandidates(unittest.TestCase):
                 self.assertIs(candidates.render(2880, self.shot), marker)
         render.assert_called_once_with(2880, self.shot, scale=.5, ss=2.)
 
+    def test_shared_accepted_compose_and_resize_match_canonical_driver(self):
+        """Real driver/resize code, synthetic AOV and compose output; no march."""
+        import cv2
+
+        yy, xx = np.mgrid[:23, :41]
+        field = ((7*yy + 13*xx) % 17).astype(np.float32)/16.
+        composed = np.stack((field, field[::-1], field[:, ::-1]), axis=-1)
+        self.assertFalse(np.array_equal(cv2.resize(composed, (19, 8), interpolation=cv2.INTER_AREA),
+                                        cv2.resize(composed, (19, 8), interpolation=cv2.INTER_LINEAR)))
+        ri = types.SimpleNamespace(render_aov=mock.Mock(side_effect=lambda *a: {}))
+        ip = types.SimpleNamespace(compose=mock.Mock(side_effect=lambda *a, **k: (composed.copy(), {})))
+        with mock.patch.dict(sys.modules, {'inkpass': ip, 'render_ink': ri}):
+            expected = candidates.pair.render(2881, self.shot, scale=.01, ss=1.75)
+            actual = candidates.render_variants(2881, self.shot, variants=('accepted',),
+                                                 scale=.01, ss=1.75)['accepted']
+        np.testing.assert_array_equal(actual, expected)
+        self.assertEqual(ri.render_aov.call_args_list, [mock.call(self.shot, 1, .01, 1.75)]*2)
+        self.assertEqual(ip.compose.call_args_list,
+                         [mock.call({'kpx': .0175}, B=self.shot.B, CR=self.shot.CR)]*2)
+
     def test_near_glyph_is_exactly_the_original_result_and_call(self):
         for variant in ('far-ink', 'far-scale'):
             with self.subTest(variant=variant):

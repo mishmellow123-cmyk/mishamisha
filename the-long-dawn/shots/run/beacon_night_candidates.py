@@ -1,6 +1,6 @@
 """Default-off, shared Reveal/Watch night-fire illustration studies.
 
-Accepted calls delegate to the frozen drivers. Candidates retain their camera,
+The accepted ``render`` call delegates to its driver. Candidates retain its camera,
 terrain, catalogue and fire clocks. Three unequal curved tongues replace the
 flat rooted glyph; the original ink_flames pass still projects and occludes
 them. A second invocation of that pass carries geometric core alpha, rather
@@ -12,6 +12,15 @@ optional ``return_layers=True`` returns (images, masks), with output-resolution
 flame/core/smoke/glow arrays for candidate diagnostics. None are colour keys.
 No functions are patched outside an exception-safe context. Use one render
 thread per process; simultaneous calls into inkpass by other code are unsafe.
+
+The retained 2026-09-29 probe receipts, night-reveal-v1-probe-gcd and
+night-watch-v1-probe, record actual float-array equality between each driver,
+default render and shared-AOV accepted output at Reveal C3040 and Watch C4599
+(960x402, ss=2). Their candidate source SHA256 was
+ab38edc2e302582633bc269bf16ec8351ece105ae3e252e916b26c60995819f4.
+Those sampled frozen runs establish no all-frame or visual-approval claim.
+Lightweight tests compare current accepted compose/resize with both actual
+driver functions using synthetic AOV/compose outputs; no scene render is involved.
 """
 from contextlib import contextmanager
 import math

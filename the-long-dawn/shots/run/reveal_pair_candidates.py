@@ -14,8 +14,13 @@ functions; a context temporarily replaces them and restores them even if a
 compose fails. Public calls reject overlap/re-entry instead of racing. Other
 code must not call inkpass directly concurrently with these candidate calls.
 ``render_variants`` ray-marches once, then composes each requested variant
-sequentially from the same AOV. Accepted image equivalence still needs a real
-render comparison; the lightweight tests only pin the delegation boundaries.
+sequentially from the same AOV. The retained 2026-09-29 reveal-v2-probe receipt
+records actual float-array equality between the driver, default render and
+shared-AOV accepted output at C2960 (960x402, ss=2), for candidate source SHA256
+a6343cbecec6fc5c5e31fe339582991f7e458e7b41f14e3943cadb5cb15cb1ed.
+That sampled frozen run does not establish all-frame equivalence or visual
+approval. Lightweight tests separately compare the current compose/resize
+path with the actual driver using synthetic AOV/compose output, without a march.
 """
 from contextlib import contextmanager
 from dataclasses import dataclass
