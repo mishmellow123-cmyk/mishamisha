@@ -183,11 +183,18 @@ A = [
          final_eligible=False)]),
     S('A14', 3920, 4240, 'R3', 'THE BEACON RUN', 'RUN-A',
       "Following her look, fires link across the ranges every two beats, seven of them; the red under-glow pulses.",
-      [T('beaconrun'), T('run')]),
+      # Codex PR #8 (merged d6ef556): job beaconrun_a_catches3 -> renders/beaconrun_A_catches3. The farm landed
+      # 4027-4239 only; 3920-4026 is rendered on the M4 from the same shots/run code (unchanged d6ef556 -> 6059baf ->
+      # this branch). need: it plays only once all 320 frames are there (the delivered A master had A14 as a SLATE).
+      [T('beaconrun_A_catches3', 0, 'exact', 'PR #8 catches (farm 4027-4239, M4 3920-4026)', need=(3920, 4239)),
+       T('beaconrun'), T('run')]),
     S('A15', 4240, 4400, 'R16', 'THE WATCHERS', 'RUN-A + HILLS',
       'Behind a backlit watcher at the seventh fire, looking to the cold glow; small figures on far ridges, eyelines only.',
-      # Codex PR #7 (merged 287b1a1): the restaged hearth, job watchers_a_hearth3 -> renders/watchers_A_hearth3
-      [T('watchers_A_hearth3', 0, 'exact', 'Codex restaged hearth (PR #7)'), T('watchers'), T('run')]),
+      # PR #8's companion job watchers_a_catches3 (160/160) carries A14 catches3's fire sizes across the cut: the
+      # right-hand ridge fire measures 117 px at A14 4239, 128 px at catches3 4240, but 52 px at hearth3 4240 (the
+      # contraction PR #8 warned of; warm-pixel blobs, 29 Sep). Codex PR #7's restaged hearth (hearth3) stays next.
+      [T('watchers_A_catches3', 0, 'exact', 'PR #8 companion: A14 catches3 fire sizes', need=(4240, 4399)),
+       T('watchers_A_hearth3', 0, 'exact', 'Codex restaged hearth (PR #7)'), T('watchers'), T('run')]),
     S('A16', 4400, 4720, 'E10', 'TOWERS IN THE LIGHT', 'EMBERS',
       "Far ridge fires light the towers' backs; the surges stop; the two giants open their shutters to each other first.",
       EMB_A),
