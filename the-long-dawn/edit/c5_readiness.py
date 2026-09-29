@@ -59,6 +59,7 @@ COLD_LEAD_STEM = 'cand_cold_lead24'          # Cold's lit lead-in, COLD_CUT-3839
 # The one movable picture cut, edl_v3.COLD_CUT (the last beacon -> the forges): anywhere from 3792 to the section line
 # 3840. Measured 29 Sep from the delivered frames, stated here independently: map_last_beacon_C's last kingdom catches
 # 3785-3791, so an earlier cut loses the catch; embers_C5_cold goes dark at 3848 whatever the cut.
+QUIET_KINDS = ('floor',)   # EDIT windows that only ease the black floor (REVIEW 29 Sep): no caption conflict
 COLD_HOLD = (3792, 3840)
 # The Pages mattes delivered with C5 are opaque (255 in every pixel of all 240 frames of each, decoded 29 Sep): a
 # transition that took its hole from one would reveal nothing.
@@ -484,6 +485,8 @@ def check_captions(rep):
                 bad.append(f"{r['id']}: its glyphs span x {ext[0]}-{ext[2]}, y {ext[1]}-{ext[3]}, outside the "
                            '1920x804 picture')
         for t in wins:
+            if t['kind'] in QUIET_KINDS:                         # moves no picture under the words
+                continue
             if t['f0'] < r['f_out'] and r['f_in'] < t['f1']:
                 warn.append(f"{r['id']} overlaps the {t['kind']} window {t['f0']}-{t['f1'] - 1}")
         for c, (a, b) in sorted(cuts.items()):

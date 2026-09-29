@@ -544,6 +544,10 @@ def build(cut, only=None, verbose=True):
             continue
         rng = rng_for(rid)
         y, hit = event(rc, rng)
+        if rc.get("env_after"):                   # ADDITIVE (owner night, 29 Sep): [(t_rel_to_hit_s, dB)] over the whole
+            pts = np.array(rc["env_after"], float)          # event, layers included; inert unless a recipe sets it
+            tt = (np.arange(len(y)) - hit) / SR
+            y = y * db(np.interp(tt, pts[:, 0], pts[:, 1]))[:, None].astype(np.float32)
         if rc.get("pan") is not None:
             y = pan(y, rc["pan"])
         dist = rc.get("dist", ev.get("dist"))
@@ -559,7 +563,7 @@ def build(cut, only=None, verbose=True):
             y, i0 = y[-i0:], 0
         e = min(total, i0 + len(y))
         y = y[: e - i0]
-        if wins:
+        if wins and not rc.get("no_breath"):      # ADDITIVE (owner night, 29 Sep): a row may sound through a breath
             y = y * R2.breath_env(len(y), wins, offset=i0)[:, None]
         stem[i0:e] += y
         send[i0:e] += y * np.float32(rc.get("send", R.SPACE.get("event_send", 0.0)))

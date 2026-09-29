@@ -859,8 +859,25 @@ def _tk_finish_ramp(img, src, f, t, fin, cut):
     return fin.ink(img, cut, f) * (1 - a) + fin.film(img, cut, f) * a
 
 
+FILM_BASE = 0.004        # lib/look.py's film-base lift in linear light: a rendered black is 14/255 in sRGB, EDIT's is 0
+
+
+def _tk_floor(img, src, f, t, fin, cut):
+    """REVIEW (29 Sep): where a rendered (film-base) black meets a true black at a join the whole screen stepped by
+    14/255 (C 80 and 1040, A 80 and 2800; all four reviewers). Over the window the film base goes from k0 to k1 of
+    its removal (1 = taken out, a true black; 0 = as rendered), eased, so the floor moves imperceptibly instead."""
+    img = fin(img, src, cut, f) if fin else img
+    a = min(1.0, max(0.0, (f - t['f0']) / max(1, t['f1'] - 1 - t['f0'])))
+    k = t['k0'] + (t['k1'] - t['k0']) * a * a * (3 - 2 * a)
+    if k <= 0:
+        return img
+    lin = look.srgb_to_linear(np.clip(img, 0, 1))
+    lin = np.maximum(lin - k * FILM_BASE * (1 - lin) / (1 - FILM_BASE), 0.0)
+    return look.linear_to_srgb(lin).astype(np.float32)
+
+
 TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell, page_turn=_tk_page_turn)
-TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp)
+TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor)
 KIND_HELPERS = dict(swell=_swell, page_turn=page_turn)             # a kind's own helper keys its windows too
 
 

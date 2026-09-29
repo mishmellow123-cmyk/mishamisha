@@ -1652,6 +1652,22 @@
     0.94
    ],
    "note": "HER FIRE (reveal_B, cropped) matched to reveal_A's sky: top-third means (.101 .142 .263) -> (.119 .140 .246) (reveal_A 3680; re-check on 3660 when reveal_a_1 lands)"
+  },
+  {
+   "f0": 80,
+   "f1": 128,
+   "kind": "floor",
+   "k0": 1.0,
+   "k1": 0.0,
+   "note": "A black (0) -> A1, whose sky opens at the film base: the base eases in over two seconds"
+  },
+  {
+   "f0": 2800,
+   "f1": 2836,
+   "kind": "floor",
+   "k0": 1.0,
+   "k1": 0.0,
+   "note": "A9's true black -> A10's void (film base): the base eases in before the ember's window"
   }
  ],
  "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first"

@@ -525,8 +525,9 @@ TRANS = {'A': [], 'B': [], 'C': [
          note='C10 the Refusal page burns through onto C11 the Trap, born at the drawn ring (x1burn v2)'),
     # the same source pair as the 7,200-frame cut's #16 (runC_reveal pose 239 -> runC_scroll 0): two parchment views
     # of the range read as a jump cut; runC_scroll is not on the EDIT-C5 Mac, so this is unseen here
-    dict(f0=3117, f1=3123, cut=3120, kind='dissolve',
-         note='C13 the Reveal -> C14 the beacon run: two parchment views of the range (old #16, same sources)'),
+    dict(f0=3112, f1=3128, cut=3120, kind='dissolve',
+         note='C13 the Reveal -> C14 the beacon run: two parchment views of the range (old #16, same sources); '
+              'REVIEW (29 Sep): 6 frames read as a stutter between two sets of peaks, now 16'),
     # the 7,200-frame cut's #17 (the seventh beacon burns through onto the map) on the NEW map: its x1_map_C layers
     # were aligned to the retired map_C, so it needs new ones. DESIGNED, NOT BUILT; folder names PROPOSED.
     # BUILT 29 Sep: the 7,200-frame cut's #17 parameters shifted -720 (x1burn v2 --center 1130,485 --t-open 3432
@@ -553,6 +554,15 @@ TRANS = {'A': [], 'B': [], 'C': [
          note='C21 Plenty -> C22 the Pen: the page turns onto the blank spread (EDIT 2D curl; UNRENDERED here)'),
     dict(f0=5668, f1=5692, cut=5680, kind='dissolve',
          note='C22 the pen insert -> C23 the blank recto the title burns onto (UNSEEN: book_C not here)'),
+    # REVIEW (29 Sep, all four picture reviewers; measured on the finished frames): a rendered black carries the film
+    # base (14/255), EDIT's black is 0, and at these joins the whole screen stepped between them. The film base now
+    # eases in over the incoming shot's first two seconds (floor: assemble._tk_floor), and C ends on a true black.
+    dict(f0=80, f1=128, kind='floor', k0=1.0, k1=0.0,
+         note='C1 black (0) -> C2 the red book, whose dark opens at the film base: the base eases in with the hearth'),
+    dict(f0=1040, f1=1088, kind='floor', k0=1.0, k1=0.0,
+         note='C5 the fire alone (true black) -> C6 the forging (film base) under the same flame'),
+    dict(f0=5884, f1=5920, kind='floor', k0=0.0, k1=1.0,
+         note="C's last 36 frames take the film base out, so C ends on a true black like A"),
 ]}
 
 # A (28 Sep, approved): A-FIX's six windows (edit/afix_comp.py: bloom, dissolve, vision x2, iceheart, ember) + EDIT's
@@ -566,6 +576,12 @@ TRANS['A'] = list(afix_comp.A_TRANS) + [afix_comp.WATCHFIRES] + [      # + A-FIX
     dict(f0=3612, f1=3660, kind='grade', gain=(1.18, 0.99, 0.94),
          note="HER FIRE (reveal_B, cropped) matched to reveal_A's sky: top-third means (.101 .142 .263) -> (.119 .140 "
               ".246) (reveal_A 3680; re-check on 3660 when reveal_a_1 lands)"),
+    # REVIEW (29 Sep): the film base eases in after A's two true blacks (see C's floor windows); the second ends at
+    # 2836, where A-FIX's ember window begins, so no two windows share a frame
+    dict(f0=80, f1=128, kind='floor', k0=1.0, k1=0.0,
+         note='A black (0) -> A1, whose sky opens at the film base: the base eases in over two seconds'),
+    dict(f0=2800, f1=2836, kind='floor', k0=1.0, k1=0.0,
+         note="A9's true black -> A10's void (film base): the base eases in before the ember's window"),
 ]
 
 

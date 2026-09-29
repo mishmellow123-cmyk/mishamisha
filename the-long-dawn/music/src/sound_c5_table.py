@@ -132,8 +132,10 @@ def build(pulse_cut="C5P2", edl_path=None):
     # the page turn, both burn-throughs), the hit moves onto the measurement.
     def first_half(eid, f, sync_note):
         return f"inherited:SOUND-C sound/events_C.json {eid} (frame {f}; the same picture frame in C5){sync_note}"
+    # REVIEW (29 Sep, sound-to-picture): alone in C1's black the hearth measured M -61..-68 LUFS, 45 LU under the
+    # programme, so the first thing heard was the page; +12 dB in the black, easing back as the book comes up
     bed("C5.hearth.open", 0, 600, first_half("C.hearth.open", 0, ": from black to 26 frames after the page turn"),
-        "C.hearth.open", "C.hearth.open")
+        "C.hearth.open", "C.hearth.open", env_f=[[0, 12.0], [80, 12.0], [140, 0.0]])
     event("C5.page.turn_0", 40, first_half("C.page_turn_0", 40, ": over EDIT black, heard, not seen"),
           "C.page_turn_0", "C.page_turn_0")
     event("C5.riffle", M("opening.riffle", "first"), "measured:opening.riffle.first (SOUND-C had 320, the camera's "
@@ -192,8 +194,11 @@ def build(pulse_cut="C5P2", edl_path=None):
     for key, rid, lid in (("strike1", "C.strike1", "C.strike1"), ("strike3", "C.strike3", "C.strike3"),
                           ("blow", "C.blow", "C.blow"), ("catch", "C.x.catch", "C.x.catch")):
         f = flint_frame(edl, key)
+        # REVIEW (29 Sep): the score's breath at the FLINT cut (109.970-110.800 s) muted strike 1 to -49 dBFS under a
+        # full burst of sparks; "black and silence; the click of a flint" is exactly a strike heard in that breath
         event(f"C5.flint.{key}", f, f"edl:ring_C@{FLINT_SOURCE[key]} ({edl_note})", rid, lid,
-              status="ready" if f is not None else "needs frame (EDIT's C5 EDL for FLINT)")
+              status="ready" if f is not None else "needs frame (EDIT's C5 EDL for FLINT)",
+              **({"no_breath": True} if key == "strike1" else {}))
     bed("C5.wind.flint_to_run", 2640, 3440, "inherited:C.wind.fall (the ranges' wind, v1 from the flint to the run)",
         "C.wind.fall", "C.wind.fall", fade_in=3.0, fade_out=1.5)
     # C13 THE REVEAL: both first fires, together (measured 2880); hers near and centred, the rival's far and right
@@ -220,7 +225,10 @@ def build(pulse_cut="C5P2", edl_path=None):
     for k in range(2, 9):
         eid = f"map.beacon_{k}"
         event(f"C5.map.beacon{k}", M(eid, "first"), f"measured:{eid}.first", rec[k], rec[k], pan=pan_of(eid),
-              **({"note": "the holdout: SOUND-C's nearest flare"} if k == 8 else {}))
+              **({"note": "the holdout: SOUND-C's nearest flare"} if k == 8 else {}),
+              # REVIEW (29 Sep): the seventh flare's 2.6 s tail filled the holdout's pause (the master at M -14..-18
+              # where the score thins to -31); it now dies within 0.6 s of its full (3722)
+              **({"env_after": [[0.2, 0.0], [0.8, -40.0]]} if k == 7 else {}))
     ham = B["hammer_alone"]["f"]
     for k, f in enumerate((ham, ham + 20)):
         event(f"C5.hammer.alone_{k + 1}", f, f"score:barmap_{pulse_cut} hammer_alone (C5P2: one beat into the measured "
@@ -240,9 +248,13 @@ def build(pulse_cut="C5P2", edl_path=None):
                      "the Ring's cut", status="ready", note="no effect sounds here; the renderer mutes it besides"))
     # C17 THE RING, UNFINISHED: the storm's wind thins with the measured storm
     s0, sh, s1 = (M("unfinished.storm_thins", k) for k in ("first", "half", "full"))
-    bed("C5.storm.unfinished", RING_CUT, s1, "measured:unfinished.storm_thins (first/half/full)", "C.storm.eye",
-        "C.storm.eye", fade_in=0.02, fade_out=0.5, trim_db=-9.0, design=True, status="ready (design trim: listen)",
-        env_f=[[RING_CUT, 0.0], [s0, 0.0], [sh, -6.0], [s1, -30.0]])
+    # REVIEW (29 Sep): the storm came back at RING_CUT from digital zero to -33 dBFS in 15 ms, on a join with no visible
+    # change (a dropout recovering); the score's return (4000) now breaks the silence and the storm fades in under the
+    # Ring's measured drain over 2.5 s, then thins with the measured storm
+    drain = M("unfinished.ring_drains", "first")
+    bed("C5.storm.unfinished", drain, s1, "measured:unfinished.ring_drains.first .. storm_thins (first/half/full)",
+        "C.storm.eye", "C.storm.eye", fade_in=2.5, fade_out=0.5, trim_db=-9.0, design=True,
+        status="ready (design trim: listen)", env_f=[[drain, 0.0], [s0, 0.0], [sh, -6.0], [s1, -30.0]])
     # C18 THE DEEP (still), C19 THE WATCH (every beacon burns on: no hit), the second half (not on this Mac)
     bed("C5.hearth.deep", 4240, 4480, "measured:deep.no_discrete_event (a still page)", "C.hearth.open",
         "C.hearth.open", fade_in=0.5, fade_out=0.5)
@@ -255,8 +267,12 @@ def build(pulse_cut="C5P2", edl_path=None):
     event("C5.page.to_blank", 5440, "edit:the page turn into the PEN shot (kind page_turn, 5430-5452, cut 5440): its fold "
           "crosses the frame's centre at eased progress 0.445, frame 5439.7 (assemble.page_turn's geometry)",
           "C.page.blank", "C.page.blank")
-    event("C5.pen.caption_22", 5462, "edit:caption R22 is an ink write-on (titles.py set='ink': a pen-shaped wipe over its "
-          "first 24 frames from f_in 5462)", "pen", "C+.pen.T14", src_start=40.6, dur_f=24)
+    # REVIEW (29 Sep, sound-to-picture): the tree of plenty was the one drawing with no quill (first strokes after 5268,
+    # trunk 5302, crown 5337, hills 5371, detail 5405, the leaf turns 5430; contact sheet 27_C21), and a quill scratched
+    # under R22 while the pen lies still (the loudest sound there, -25.5 dBFS): the tree gets the mountain's take, R22
+    # writes on in the hush like every other ink line (R13 R14 R18 R19 R20 have no pen sound)
+    event("C5.pen.tree", 5280, "contact sheet 27_C21 (5268 blank .. 5405 detail; the page turns at 5430)", "pen",
+          "C+.pen.deep", src_start=63.5, dur_f=145)
     event("C5.burn.title", 5715, "inherited:C+.burn.title (v1 6995, first spark 6982) - 1280", "C+.burn.title",
           "C+.burn.title", verify="the TITLE is not on this Mac")
     for r in rows:
@@ -273,7 +289,7 @@ def build(pulse_cut="C5P2", edl_path=None):
 # (sound_recipes_C "C5.hammer"), the score's own forging anvil. Level, a design choice between SOUND-C's approved
 # neighbours: the Trap's strikes 0.4 dB under the x1burn (C+.burn.map -32.6) and 3.6 dB over the loudest flint strike
 # (C.strike3 -36.6); the lone hammer under the map's pause at the quietest strike (C.strike1 -39.0), as its note asks.
-HAMMER_DB, HAMMER_FAINT_DB = -33.0, -39.0
+HAMMER_DB, HAMMER_FAINT_DB = -33.0, -48.0     # REVIEW (29 Sep): the lone hammers 9 dB under C.strike1, a pause's pulse
 HAMMER_NOTE = "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6"
 
 

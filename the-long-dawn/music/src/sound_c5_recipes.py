@@ -22,6 +22,10 @@ def _recipe(r):
     if r.get("post_max_f") is not None:                       # cut mid-stroke on the shutdown
         rc["post"] = min(rc.get("post", 1.0), r["post_max_f"] / T.FPS)
         rc["fo"] = min(rc.get("fo", 0.08), 0.02)
+    if r.get("env_after"):                                    # a shaped tail over every layer (sound_v3, 29 Sep)
+        rc["env_after"] = r["env_after"]
+    if r.get("no_breath"):                                    # heard through the score's breath (sound_v3, 29 Sep)
+        rc["no_breath"] = True
     return rc
 
 

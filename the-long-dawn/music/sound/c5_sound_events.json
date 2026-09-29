@@ -31,6 +31,20 @@
    "level": -65.4,
    "level_from": "sound/events_C.json C.hearth.open",
    "status": "ready",
+   "env_f": [
+    [
+     0,
+     12.0
+    ],
+    [
+     80,
+     12.0
+    ],
+    [
+     140,
+     0.0
+    ]
+   ],
    "design": false
   },
   {
@@ -369,6 +383,7 @@
    "level": -39.0,
    "level_from": "sound/events_C.json C.strike1",
    "status": "ready",
+   "no_breath": true,
    "design": false
   },
   {
@@ -609,6 +624,16 @@
    "level_from": "sound/events_C.json C.beacon7",
    "status": "ready",
    "pan": 0.52,
+   "env_after": [
+    [
+     0.2,
+     0.0
+    ],
+    [
+     0.8,
+     -40.0
+    ]
+   ],
    "design": false
   },
   {
@@ -630,7 +655,7 @@
    "hit_f": 3742,
    "sync": "score:barmap_C5P2 hammer_alone (C5P2: one beat into the measured pause) + one beat",
    "recipe": "C5.hammer.faint",
-   "level": -39.0,
+   "level": -48.0,
    "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
    "status": "ready (design: listen)",
    "design": true,
@@ -642,7 +667,7 @@
    "hit_f": 3762,
    "sync": "score:barmap_C5P2 hammer_alone (C5P2: one beat into the measured pause) + one beat",
    "recipe": "C5.hammer.faint",
-   "level": -39.0,
+   "level": -48.0,
    "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
    "status": "ready (design: listen)",
    "design": true,
@@ -687,20 +712,20 @@
   {
    "id": "C5.storm.unfinished",
    "kind": "bed",
-   "f0": 4000,
+   "f0": 4025,
    "f1": 4181,
-   "sync": "measured:unfinished.storm_thins (first/half/full)",
+   "sync": "measured:unfinished.ring_drains.first .. storm_thins (first/half/full)",
    "recipe": "C.storm.eye",
    "level": -34.2,
    "level_from": "sound/events_C.json C.storm.eye",
    "status": "ready (design trim: listen)",
-   "fade_in": 0.02,
+   "fade_in": 2.5,
    "fade_out": 0.5,
    "trim_db": -9.0,
    "design": true,
    "env_f": [
     [
-     4000,
+     4025,
      0.0
     ],
     [
@@ -786,16 +811,16 @@
    "design": false
   },
   {
-   "id": "C5.pen.caption_22",
+   "id": "C5.pen.tree",
    "kind": "event",
-   "hit_f": 5462,
-   "sync": "edit:caption R22 is an ink write-on (titles.py set='ink': a pen-shaped wipe over its first 24 frames from f_in 5462)",
+   "hit_f": 5280,
+   "sync": "contact sheet 27_C21 (5268 blank .. 5405 detail; the page turns at 5430)",
    "recipe": "pen",
-   "level": -42.8,
-   "level_from": "sound/events_C.json C+.pen.T14",
+   "level": -46.0,
+   "level_from": "sound/events_C.json C+.pen.deep",
    "status": "ready",
-   "src_start": 40.6,
-   "dur_f": 24,
+   "src_start": 63.5,
+   "dur_f": 145,
    "design": false
   },
   {

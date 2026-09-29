@@ -1310,11 +1310,11 @@
    "note": "C10 the Refusal page burns through onto C11 the Trap, born at the drawn ring (x1burn v2)"
   },
   {
-   "f0": 3117,
-   "f1": 3123,
+   "f0": 3112,
+   "f1": 3128,
    "cut": 3120,
    "kind": "dissolve",
-   "note": "C13 the Reveal -> C14 the beacon run: two parchment views of the range (old #16, same sources)"
+   "note": "C13 the Reveal -> C14 the beacon run: two parchment views of the range (old #16, same sources); REVIEW (29 Sep): 6 frames read as a stutter between two sets of peaks, now 16"
   },
   {
    "f0": 3430,
@@ -1368,6 +1368,30 @@
    "cut": 5680,
    "kind": "dissolve",
    "note": "C22 the pen insert -> C23 the blank recto the title burns onto (UNSEEN: book_C not here)"
+  },
+  {
+   "f0": 80,
+   "f1": 128,
+   "kind": "floor",
+   "k0": 1.0,
+   "k1": 0.0,
+   "note": "C1 black (0) -> C2 the red book, whose dark opens at the film base: the base eases in with the hearth"
+  },
+  {
+   "f0": 1040,
+   "f1": 1088,
+   "kind": "floor",
+   "k0": 1.0,
+   "k1": 0.0,
+   "note": "C5 the fire alone (true black) -> C6 the forging (film base) under the same flame"
+  },
+  {
+   "f0": 5884,
+   "f1": 5920,
+   "kind": "floor",
+   "k0": 0.0,
+   "k1": 1.0,
+   "note": "C's last 36 frames take the film base out, so C ends on a true black like A"
   }
  ],
  "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first",
