@@ -87,7 +87,7 @@ def build(kind, route, option=None, scale=1.0):
         raise ValueError('Unknown kind or route')
     if not math.isfinite(scale) or not 0 < scale <= 1 or int(804 * scale) < 1:
         raise ValueError('Scale must produce positive dimensions, at most native')
-    if route == 'candidate' and option != OPTIONS[kind]:
+    if route == 'candidate' and option not in (OPTIONS[kind],) + MORE.get(kind, ()):
         raise ValueError('Unsupported candidate')
     imports(kind)
     W, H = int(1920 * scale), int(804 * scale)
