@@ -1,0 +1,91 @@
+{
+  "published_utc": "2026-09-28T09:08:40.644793+00:00",
+  "source_audit_folder": "<validation-root>/c-v5-deep-final-audit",
+  "raw_mirror": "~/ldfarm/comms/files/C5_deep_final_audit/",
+  "sample_pairs": 30,
+  "original_delivery_receipt_sha256": "e38f4aa429647f18703f9321e06a7ce6ded0234806a6cfbba6139cc3489de73c",
+  "files": [
+    {
+      "file": "audit.md",
+      "original_sha256": "5a162088b0dd9feab0b1e27804c08044dbf3443131be21d7dba47bafab5ece43",
+      "public_sha256": "a25253e16a4cd562f3c92b206892813922ad68f0ade3fc1b5744269f7a11d653",
+      "raw_mirror_sha256": "5a162088b0dd9feab0b1e27804c08044dbf3443131be21d7dba47bafab5ece43",
+      "transformations": [
+        "Publication note added."
+      ]
+    },
+    {
+      "file": "deep-consecutive-4352-4375-480.png",
+      "original_sha256": "bebc3c236a1b2c4c8761ed3562dfec2022b1c893201923f7c615831666053ecc",
+      "public_sha256": "bebc3c236a1b2c4c8761ed3562dfec2022b1c893201923f7c615831666053ecc",
+      "raw_mirror_sha256": "bebc3c236a1b2c4c8761ed3562dfec2022b1c893201923f7c615831666053ecc",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "deep-end-480.png",
+      "original_sha256": "de978c120a163004f631a4050bb06754e037f86d13f9a74d1de4475e071ed969",
+      "public_sha256": "de978c120a163004f631a4050bb06754e037f86d13f9a74d1de4475e071ed969",
+      "raw_mirror_sha256": "de978c120a163004f631a4050bb06754e037f86d13f9a74d1de4475e071ed969",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "deep-end-bottom-ladder-native.png",
+      "original_sha256": "3cfa0a7d73ac221ece9e5e292ac87bef6c00b400f2cb9d8089ebb1eb4b819c44",
+      "public_sha256": "3cfa0a7d73ac221ece9e5e292ac87bef6c00b400f2cb9d8089ebb1eb4b819c44",
+      "raw_mirror_sha256": "3cfa0a7d73ac221ece9e5e292ac87bef6c00b400f2cb9d8089ebb1eb4b819c44",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "deep-end-gold-vein-native.png",
+      "original_sha256": "8c97dec1bdaf22a5373a51bd5b11df4d9b30bb670a0a4978a231477731802e4e",
+      "public_sha256": "8c97dec1bdaf22a5373a51bd5b11df4d9b30bb670a0a4978a231477731802e4e",
+      "raw_mirror_sha256": "8c97dec1bdaf22a5373a51bd5b11df4d9b30bb670a0a4978a231477731802e4e",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "deep-end-lantern-top-native.png",
+      "original_sha256": "7671f399ecda4406e36474f0bc0acf8e2be140ca9cfe58c1d4378a5520236aa7",
+      "public_sha256": "7671f399ecda4406e36474f0bc0acf8e2be140ca9cfe58c1d4378a5520236aa7",
+      "raw_mirror_sha256": "7671f399ecda4406e36474f0bc0acf8e2be140ca9cfe58c1d4378a5520236aa7",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "deep-keyframes-480.png",
+      "original_sha256": "926ec55482694a25cb675c70e58b0f91b67a75a21db3f1b70ffc3519b74b9881",
+      "public_sha256": "926ec55482694a25cb675c70e58b0f91b67a75a21db3f1b70ffc3519b74b9881",
+      "raw_mirror_sha256": "926ec55482694a25cb675c70e58b0f91b67a75a21db3f1b70ffc3519b74b9881",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "root-native-C4360-reduced.png",
+      "original_sha256": "004a828fb28bd3047ce007f67682d1c30cd1ea4af6a4438ddccc4402ebd6226b",
+      "public_sha256": "004a828fb28bd3047ce007f67682d1c30cd1ea4af6a4438ddccc4402ebd6226b",
+      "raw_mirror_sha256": "004a828fb28bd3047ce007f67682d1c30cd1ea4af6a4438ddccc4402ebd6226b",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "sample-verification.json",
+      "original_sha256": "ecd2ae54dd1639cf65bacb06065511903b631a6a200fd250a47127c19719c954",
+      "public_sha256": "6e28ead096b64d94839d3d47449ccacdfc056eb62778825dc6acd4126de6b282",
+      "raw_mirror_sha256": "ecd2ae54dd1639cf65bacb06065511903b631a6a200fd250a47127c19719c954",
+      "transformations": [
+        "Private absolute paths normalized to <validation-root> or ~/ldfarm."
+      ]
+    }
+  ],
+  "policy": "Reports/evidence/images only. Helper scripts excluded. Original local audits and delivery receipts unchanged."
+}

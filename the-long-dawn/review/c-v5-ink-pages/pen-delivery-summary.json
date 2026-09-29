@@ -1,0 +1,113 @@
+{
+  "shot": "pen",
+  "verified_utc": "2026-09-28T09:05:54.275156+00:00",
+  "range": [
+    5440,
+    5679
+  ],
+  "rgb_frames": 240,
+  "matte_frames": 240,
+  "source_commit": "ebcdd0a0b51691a74f3635f7a64c55d6546a2aa0",
+  "render_seconds": 1747.4811416250013,
+  "frame_qc_coverage": {
+    "expected_frames": 240,
+    "frame_status_counts": {
+      "ok": 240,
+      "missing": 0,
+      "decode_error": 0,
+      "wrong_dimensions": 0,
+      "unsupported_format": 0
+    },
+    "expected_adjacent_pairs": 239,
+    "compared_adjacent_pairs": 239,
+    "skipped_adjacent_pairs": 0,
+    "joins_measured": 0,
+    "joins_unavailable": 0,
+    "joins_outside_range": 0,
+    "extra_join_endpoint_frames": 0
+  },
+  "frame_candidates": {
+    "black": [],
+    "constant": [],
+    "near_constant": [],
+    "transparent": []
+  },
+  "duplicate_pairs": [],
+  "pop_candidates": [],
+  "preview": {
+    "file": "book_C5_pen_preview.mp4",
+    "sha256": "55b659c1a08c1b496c51f8625a94261860144924d384bb0dc197d09e00412855",
+    "streams": [
+      {
+        "codec_type": "video",
+        "codec_name": "h264",
+        "width": 960,
+        "height": 402,
+        "r_frame_rate": "24/1",
+        "nb_frames": "240",
+        "duration": "10.000000"
+      }
+    ]
+  },
+  "artifacts": {
+    "pen-delivery.json": {
+      "original_sha256": "c538ee84db0c6c861140cc7788aeb30d7560d39145c27812e99a63517fc5b17b",
+      "packaged_sha256": "8046f1bb7adc0b73c4eecc4bea4e8e3b6fe6c309f4f5b60683315d6bfea1aabe"
+    },
+    "pen-delivery.log": {
+      "original_sha256": "3494085494613ea4d74c1a93434aea8df52ebe892824fc047b05fb24165bb558",
+      "packaged_sha256": "3494085494613ea4d74c1a93434aea8df52ebe892824fc047b05fb24165bb558"
+    },
+    "pen-delivery-qc.json": {
+      "original_sha256": "f357f3cc5f70db65e22207c37ea24ab82735ba53a0d215d13aa7d3be819bd83d",
+      "packaged_sha256": "46122f656c5db79f2678d73f091efe70de7b548b93da544594c1bfb6cf1097a5"
+    },
+    "pen-delivery-sheet.jpg": {
+      "packaged_sha256": "6593726d71ce3766b7d60d3dcb670cf601496e0170566da89341eb8ac0bd6096",
+      "frames": [
+        5440,
+        5450,
+        5461,
+        5471,
+        5482,
+        5492,
+        5502,
+        5513,
+        5523,
+        5534,
+        5544,
+        5554,
+        5565,
+        5575,
+        5585,
+        5596,
+        5606,
+        5617,
+        5627,
+        5637,
+        5648,
+        5658,
+        5669,
+        5679
+      ],
+      "note": "24 evenly spaced samples, not a consecutive motion strip"
+    },
+    "pen-delivery-5440.jpg": {
+      "packaged_sha256": "60f7858ecef28d088754c312486ec12ef3c7de707f15bff90b8e1de5d45fa27e",
+      "frame": 5440
+    },
+    "pen-delivery-5559.jpg": {
+      "packaged_sha256": "06a73d4e0e0dcf5835841d3756e485ca6e0946da19569b74388b8c593c5a93d3",
+      "frame": 5559
+    },
+    "pen-delivery-5679.jpg": {
+      "packaged_sha256": "cfb4c3dd67f782c726a6df04fa57438d4ae55cb10f58e730685f396bf247fa4b",
+      "frame": 5679
+    }
+  },
+  "normalization": "Workspace and farm prefixes replaced; original and packaged hashes retained.",
+  "limitations": [
+    "Frame-QC thresholds are review aids, not artistic approval.",
+    "Adjacent-shot joins, captions and EDIT adoption are not checked here."
+  ]
+}

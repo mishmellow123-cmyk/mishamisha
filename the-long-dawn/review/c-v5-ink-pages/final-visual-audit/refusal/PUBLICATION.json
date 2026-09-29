@@ -1,0 +1,76 @@
+{
+  "published_utc": "2026-09-28T09:08:40.622953+00:00",
+  "source_audit_folder": "<validation-root>/c-v5-refusal-final-audit",
+  "raw_mirror": "~/ldfarm/comms/files/C5_refusal_final_audit/",
+  "sample_pairs": 33,
+  "original_delivery_receipt_sha256": "a85cd6a07cbf14fcbd5bf4162c8f43c81d8b5ff72fab2b45a9dcb9284810a574",
+  "files": [
+    {
+      "file": "audit.md",
+      "original_sha256": "86bbfd862fbc6f84337a99cd0b79d66072cf5cab37a5de048efa56dbd45989ce",
+      "public_sha256": "a636aa3583a8d239aef486a23abcbd6abec419affa838f7905942fd172ecdb68",
+      "raw_mirror_sha256": "86bbfd862fbc6f84337a99cd0b79d66072cf5cab37a5de048efa56dbd45989ce",
+      "transformations": [
+        "Publication note added."
+      ]
+    },
+    {
+      "file": "refusal-consecutive-2192-2215-480.png",
+      "original_sha256": "7f5c758543189a8dec48b0287d05e194c64319a1d72b3809efbae45b5ac498b0",
+      "public_sha256": "7f5c758543189a8dec48b0287d05e194c64319a1d72b3809efbae45b5ac498b0",
+      "raw_mirror_sha256": "7f5c758543189a8dec48b0287d05e194c64319a1d72b3809efbae45b5ac498b0",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "refusal-end-480.png",
+      "original_sha256": "40aef471c8b090eefef7071bb658f17afaf37ceab5e3cb3883bdd72d475111a2",
+      "public_sha256": "40aef471c8b090eefef7071bb658f17afaf37ceab5e3cb3883bdd72d475111a2",
+      "raw_mirror_sha256": "40aef471c8b090eefef7071bb658f17afaf37ceab5e3cb3883bdd72d475111a2",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "refusal-end-matte-960.png",
+      "original_sha256": "33446bf907b41de8d550cf338e826f76b56d196e0706c450299218fb509ff4b5",
+      "public_sha256": "33446bf907b41de8d550cf338e826f76b56d196e0706c450299218fb509ff4b5",
+      "raw_mirror_sha256": "33446bf907b41de8d550cf338e826f76b56d196e0706c450299218fb509ff4b5",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "refusal-end-native-art-crop.png",
+      "original_sha256": "fbcc2fcad5a8db99c25e0af13ed7a5a92b574984bb0622ed8c7e1ff57411bfa0",
+      "public_sha256": "fbcc2fcad5a8db99c25e0af13ed7a5a92b574984bb0622ed8c7e1ff57411bfa0",
+      "raw_mirror_sha256": "fbcc2fcad5a8db99c25e0af13ed7a5a92b574984bb0622ed8c7e1ff57411bfa0",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "refusal-keyframes-480.png",
+      "original_sha256": "87ee6044801a7127100dc4aff537c179332c9211ada86893547df505cb683333",
+      "public_sha256": "87ee6044801a7127100dc4aff537c179332c9211ada86893547df505cb683333",
+      "raw_mirror_sha256": "87ee6044801a7127100dc4aff537c179332c9211ada86893547df505cb683333",
+      "transformations": [
+        "Image bytes unchanged."
+      ]
+    },
+    {
+      "file": "sample-verification.json",
+      "original_sha256": "e4d9d99f2a810a9252d17639047ed5eb5b02500ca657d1b33fa406b45ac845a1",
+      "public_sha256": "39125e7a35352e7e240d0b011d48d87267dab3c6cd0ac46e0cf01f00fdfd51d3",
+      "raw_mirror_sha256": "e4d9d99f2a810a9252d17639047ed5eb5b02500ca657d1b33fa406b45ac845a1",
+      "transformations": [
+        "Private absolute paths normalized to <validation-root> or ~/ldfarm."
+      ]
+    }
+  ],
+  "policy": "Reports/evidence/images only. Helper scripts excluded. Original local audits and delivery receipts unchanged.",
+  "excluded_files": [
+    "Historical pr12-comment.md progress message; original retained locally."
+  ]
+}

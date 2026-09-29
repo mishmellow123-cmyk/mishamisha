@@ -1,0 +1,26 @@
+test_absolute_ranges_exclude_existing_first_half (test_book_c_v5.V5PageContracts.test_absolute_ranges_exclude_existing_first_half) ... ok
+test_cli_requires_explicit_absolute_output (test_book_c_v5.V5PageContracts.test_cli_requires_explicit_absolute_output) ... ok
+test_job_output_and_range_contracts (test_book_c_v5.V5PageContracts.test_job_output_and_range_contracts) ... ok
+test_jpeg_is_444_and_absolute_numbering_preserved (test_book_c_v5.V5PageContracts.test_jpeg_is_444_and_absolute_numbering_preserved) ... ok
+test_mine_retains_every_non_miner_stroke_exactly (test_book_c_v5.V5PageContracts.test_mine_retains_every_non_miner_stroke_exactly) ... ok
+test_pen_compositor_hits_visible_volume_and_respects_foreground_depth (test_book_c_v5.V5PageContracts.test_pen_compositor_hits_visible_volume_and_respects_foreground_depth) ... ok
+test_physical_pen_has_volume_and_clears_cockled_page (test_book_c_v5.V5PageContracts.test_physical_pen_has_volume_and_clears_cockled_page) ... ok
+test_projection_depth_is_camera_forward_and_perspective_correct (test_book_c_v5.V5PageContracts.test_projection_depth_is_camera_forward_and_perspective_correct) ... ok
+test_refusal_drawing_is_deterministic_progressive_and_leaves_caption_band (test_book_c_v5.V5PageContracts.test_refusal_drawing_is_deterministic_progressive_and_leaves_caption_band) ... ok
+test_resting_pen_has_support_on_both_sides_of_mass (test_book_c_v5.V5PageContracts.test_resting_pen_has_support_on_both_sides_of_mass) ... ok
+test_cleanup_failure_does_not_mask_encoder_exception (test_look_io.SavePngTests.test_cleanup_failure_does_not_mask_encoder_exception) ... ok
+test_cleanup_failure_does_not_mask_false_encoder_result (test_look_io.SavePngTests.test_cleanup_failure_does_not_mask_false_encoder_result) ... ok
+test_encoder_exception_preserves_destination_and_cleans_partial (test_look_io.SavePngTests.test_encoder_exception_preserves_destination_and_cleans_partial) ... ok
+test_false_encoder_result_preserves_destination_and_cleans_partial (test_look_io.SavePngTests.test_false_encoder_result_preserves_destination_and_cleans_partial) ... ok
+test_real_png_roundtrip_preserves_shape_rgb_and_dither_range (test_look_io.SavePngTests.test_real_png_roundtrip_preserves_shape_rgb_and_dither_range) ... ok
+test_replace_failure_preserves_destination_and_cleans_encoded_temp (test_look_io.SavePngTests.test_replace_failure_preserves_destination_and_cleans_encoded_temp) ... ok
+test_failed_renderer_and_missing_frame_both_remain_visible (test_run_job_exit.RunJobExitTests.test_failed_renderer_and_missing_frame_both_remain_visible) ... ok
+test_missing_frame_still_fails_after_successful_renderer (test_run_job_exit.RunJobExitTests.test_missing_frame_still_fails_after_successful_renderer) ... ok
+test_nonzero_exit_fails_even_after_all_frames_were_pushed (test_run_job_exit.RunJobExitTests.test_nonzero_exit_fails_even_after_all_frames_were_pushed) ... ok
+test_one_failed_renderer_fails_after_all_concurrent_renderers_finish (test_run_job_exit.RunJobExitTests.test_one_failed_renderer_fails_after_all_concurrent_renderers_finish) ... ok
+test_successful_renderers_and_all_frames_complete (test_run_job_exit.RunJobExitTests.test_successful_renderers_and_all_frames_complete) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 16.504s
+
+OK

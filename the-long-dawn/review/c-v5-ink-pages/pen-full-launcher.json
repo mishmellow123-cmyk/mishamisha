@@ -1,0 +1,22 @@
+{
+  "command": [
+    "<WORKSPACE>/work/validation-venv/bin/python",
+    "-B",
+    "shots/map/book_c_v5.py",
+    "--shot",
+    "pen",
+    "--frames",
+    "5560",
+    "--scale",
+    "1",
+    "--out",
+    "<WORKSPACE>/work/c5-page-review/pen-full"
+  ],
+  "status": 0,
+  "elapsed_seconds": 12.600772125006188,
+  "sources": {
+    "v5_pen.py": "997abb874ae5fda4b9f0f4f7be2bcb61f6d197f603ea57f111092a7cc18bde69",
+    "book_c_v5.py": "8ac783e6a3edf7e53f49bcf6e5abe66033332a3638ad52e38c663495b41c7f2f",
+    "v5_inkpages.py": "00a1d80055f8b73e71fa131c9af57247c0653179bca4829c0ddf68c8aefbfa05"
+  }
+}
