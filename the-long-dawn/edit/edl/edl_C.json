@@ -1422,6 +1422,15 @@
    }
   }
  ],
+ "movable_cuts": [
+  {
+   "id": "COLD_CUT",
+   "frame": 3840,
+   "section_line": 3840,
+   "shutdown": 3848,
+   "note": "the last beacon -> the forges; may move earlier into the map's all-lit hold (3792-3839) for a lit lead-in while the shutdown stays at 3848. The edit changes edl_v3.COLD_CUT alone; embers_C5_cold must then hold the lead-in frames"
+  }
+ ],
  "baked_text": [
   {
    "stem": "book_C",

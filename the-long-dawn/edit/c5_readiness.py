@@ -52,6 +52,13 @@ SHOT_MAP = {
     'C19': (4480, 4720, 'runC_watch_v5', 0), 'C20': (4720, 5200, 'runC_illum', 2398 - 4720),
     'C21': (5200, 5440, 'book_C', 960), 'C22': (5440, 5680, 'book_C5_pen', 0), 'C23': (5680, 5920, 'book_C', 1280),
 }
+# The one movable picture cut, edl_v3.COLD_CUT (the last beacon -> the forges): anywhere from 3792 to the section line
+# 3840. Measured 29 Sep from the delivered frames, stated here independently: map_last_beacon_C's last kingdom catches
+# 3785-3791, so an earlier cut loses the catch; embers_C5_cold goes dark at 3848 whatever the cut.
+COLD_HOLD = (3792, 3840)
+# The Pages mattes delivered with C5 are opaque (255 in every pixel of all 240 frames of each, decoded 29 Sep): a
+# transition that took its hole from one would reveal nothing.
+OPAQUE_MATTES = ('book_C5_refusal_matte', 'book_C5_deep_abandoned_matte', 'book_C5_pen_matte')
 FT_CONVENTION = {(841, 1040): dict(add='embers_C3_e15', under=None),             # BURN_NOTES: page + fire, e15
                  (1680, 1718): dict(add=None, under=None),                       # the sweep: race baked, matte 1
                  (1905, 1992): dict(add=None, under=('same', 'embers_C3'))}      # the Eye: the live storm under
@@ -160,23 +167,41 @@ def check_tiling(rep):
     rep.add('FAIL' if bad else 'INFO', 'coverage',
             '; '.join(bad) if bad else f'{len(shots)} rows cover {n} of {total} frames exactly once (no gap, no overlap)')
     off = sorted({s['f0'] for s in shots if s['f0'] % BAR} | {s['f1'] for s in shots if s['f1'] % BAR})
-    rep.add('INFO', 'sub-row boundaries', f'{len(off)} row boundaries fall between bar lines, all inside a section '
-                                          f"(the filmed-burn splits and the old first-half splits): {off}")
+    rep.add('INFO', 'sub-row boundaries', f'{len(off)} row boundaries fall between bar lines, each inside a section '
+                                          f'(the bar map fixes only the section lines): {off}')
+
+
+def expected_rows(sec):
+    """[(f0, f1, stem, off)] a section must hold: SHOT_MAP's one row, except C15 once COLD_CUT moves before 3840
+    (the map, then Cold's lit lead-in at its own C5 numbers)."""
+    f0, f1, stem, off = SHOT_MAP[sec]
+    cc = EDL.COLD_CUT
+    if sec == 'C15' and cc != f1:
+        return [(f0, cc, stem, off), (cc, f1, 'embers_C5_cold', 0)]
+    return [(f0, f1, stem, off)]
 
 
 def check_shot_map(rep):
     bad = []
-    for sec, (f0, f1, stem, off) in SHOT_MAP.items():
+    cc = EDL.COLD_CUT
+    if not COLD_HOLD[0] <= cc <= COLD_HOLD[1]:
+        bad.append(f"edl_v3.COLD_CUT {cc} is outside {COLD_HOLD[0]}-{COLD_HOLD[1]}: before {COLD_HOLD[0]} the cut loses "
+                   f"the last kingdom's catch (3785-3791), and {COLD_HOLD[1]} is the bar map's section line")
+    for sec in SHOT_MAP:
+        want = expected_rows(sec)
         rs = rows_of(sec)
-        if len(rs) != 1 or (rs[0]['f0'], rs[0]['f1']) != (f0, f1):
-            bad.append(f'{sec}: rows {[(r["f0"], r["f1"]) for r in rs]}, expected one row {f0}-{f1}')
+        if [(r['f0'], r['f1']) for r in rs] != [(a, b) for a, b, _, _ in want]:
+            bad.append(f'{sec}: rows {[(r["f0"], r["f1"]) for r in rs]}, expected {[(a, b) for a, b, _, _ in want]}'
+                       + (f' (edl_v3.COLD_CUT = {cc})' if sec == 'C15' else ''))
             continue
-        t = rs[0]['takes'][0] if rs[0]['takes'] else None
-        if not t or (t['stem'], t['off'], t['mode']) != (stem, off, 'exact'):
-            bad.append(f"{sec}: primary take {None if not t else (t['stem'], t['off'], t['mode'])}, expected "
-                       f"({stem}, {off}, 'exact')")
-        if len(rs[0]['takes']) != 1:
-            bad.append(f'{sec}: {len(rs[0]["takes"])} takes; a C5 shot has exactly one source, no fallback')
+        for r, (_, _, stem, off) in zip(rs, want):
+            t = r['takes'][0] if r['takes'] else None
+            if not t or (t['stem'], t['off'], t['mode']) != (stem, off, 'exact'):
+                bad.append(f"{sec} {r['f0']}-{r['f1']}: primary take "
+                           f"{None if not t else (t['stem'], t['off'], t['mode'])}, expected ({stem}, {off}, 'exact')")
+            if len(r['takes']) != 1:
+                bad.append(f"{sec} {r['f0']}-{r['f1']}: {len(r['takes'])} takes; a C5 shot has exactly one source, "
+                           'no fallback')
     for s in EDL.EDL[CUT]:
         if s['f0'] >= 2080:
             for t in s['takes']:
@@ -204,7 +229,8 @@ def check_shot_map(rep):
     if tuple(EDL.FT_RANGES) != tuple(FT_CONVENTION):
         bad.append(f'edl_v3.FT_RANGES {EDL.FT_RANGES} differ from BURN_NOTES {list(FT_CONVENTION)}')
     rep.add('FAIL' if bad else 'INFO', 'shot map',
-            '; '.join(bad) if bad else f'{len(SHOT_MAP)} C5 shots map to their exact sources and offsets; the filmed '
+            '; '.join(bad) if bad else f'{len(SHOT_MAP)} C5 shots map to their exact sources and offsets (the map -> '
+                                       f'Cold cut at edl_v3.COLD_CUT = {cc}); the filmed '
                                        f'burns ({", ".join(f"{a}-{b - 1}" for a, b in EDL.FT_RANGES)}) keep their '
                                        'BURN_NOTES comps and no superseded book_C burn can play there')
 
@@ -347,6 +373,21 @@ def script_v52(path=HANDOVER):
     return rows
 
 
+def hard_cuts():
+    """{frame: (source before, source after)}: row boundaries where the picture's source changes with no transition
+    window over them. The filmed-burn edges are left out (BURN_NOTES: there the burn continues the same page)."""
+    shots = EDL.EDL[CUT]
+    ft_edges = {x for r in EDL.FT_RANGES for x in r}
+    out = {}
+    for s, n in zip(shots, shots[1:]):
+        c = n['f0']
+        a = s['takes'][0]['stem'] if s['takes'] else s['kind']
+        b = n['takes'][0]['stem'] if n['takes'] else n['kind']
+        if a != b and c not in ft_edges and not any(t['f0'] <= c < t['f1'] for t in EDL.TRANS[CUT]):
+            out[c] = (a, b)
+    return out
+
+
 def check_captions(rep):
     table = titles.text_table(CUT)
     try:
@@ -373,6 +414,7 @@ def check_captions(rep):
             bad.append(f'row {n} {mine[0]["id"]}: {mine[0]["line"]!r} is not verbatim {words!r}')
     secs = {s['id']: s for s in load_barmap()['sections']}
     wins = [t for t in EDL.TRANS[CUT]]
+    cuts = hard_cuts()
     for r in sorted(table, key=lambda r: r['f_in']):
         if not 0 <= r['f_in'] < r['f_out'] <= EDL.TOTAL[CUT]:
             bad.append(f"{r['id']} {r['f_in']}-{r['f_out']} outside the cut")
@@ -389,6 +431,10 @@ def check_captions(rep):
         for t in wins:
             if t['f0'] < r['f_out'] and r['f_in'] < t['f1']:
                 warn.append(f"{r['id']} overlaps the {t['kind']} window {t['f0']}-{t['f1'] - 1}")
+        for c, (a, b) in sorted(cuts.items()):
+            if r['f_in'] < c < r['f_out']:
+                warn.append(f"{r['id']} {r['f_in']}-{r['f_out'] - 1} runs across the hard cut at {c} ({a} -> {b}): "
+                            f'its words change picture mid-line; end it by {c}, or keep it across on purpose')
     srt = sorted(table, key=lambda r: r['f_in'])
     for a, b in zip(srt, srt[1:]):
         if b['f_in'] < a['f_out']:
@@ -502,6 +548,10 @@ def check_transitions(rep):
             if (c is None or not t['f0'] <= c <= t['f1'] or c not in bounds or prev is None
                     or prev['sec'] == bounds[c]['sec']):
                 bad.append(f'{span}: cut {c} is not a boundary between two shots inside the window')
+        opaque = [t[k] for k in ('glow', 'keep', 'cover') if t.get(k) in OPAQUE_MATTES]
+        if opaque:
+            bad.append(f'{span}: takes a layer from {opaque}, a delivered page matte that is opaque on every frame (no '
+                       'hole to burn or turn through); build the hole in the edit or render its own layers')
         if not t.get('ready', True):
             planned += 1
             rep.add('GAP', f'transition {span}', 'DESIGNED, NOT BUILT (plays as a hard cut): ' + t.get('note', ''))
@@ -529,6 +579,11 @@ def check_assets(rep):
     import c5_assets as CA
     need = CA.needed_frames(CUT)
     for stem, (a, b) in CA.DELIVERED.items():
+        _, owed = CA.split_need(stem, need.get(stem, set()))
+        if owed:
+            rep.add('GAP', f'asset {stem}', f'the EDL reads {CA.fmt_frames(owed)} ({len(owed)} frames) beyond the '
+                                            f'recorded delivery {a}-{b}: OWED by a new delivery (then record its range '
+                                            'in tools/c5_assets.DELIVERED)', frames=len(owed))
         p = os.path.join(AS.RENDERS, stem)
         if not os.path.isdir(p):
             continue

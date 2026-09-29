@@ -258,8 +258,11 @@ B = [
 # are read in ABSOLUTE C5 frames (off 0), by their exact folder names (mode 'exact': no other name is ever tried).
 # Reused sources keep their own numbering: src = C5 frame + off (runC_scroll -3120, runC_illum 2398-4720, book_C
 # +960 for Plenty and +1280 for the title), the same source frames the 7,200-frame cut played there.
-# Pages' mattes (book_C5_*_matte) are delivered opaque (255 everywhere in the 9 frames EDIT-C5 measured); they are
-# declared so the pair travels together, and with no under-layer they composite nothing.
+# Pages' mattes (book_C5_*_matte) are delivered opaque: 255 in every pixel of all 720 frames (240 each, decoded by
+# EDIT-C5 on 29 Sep; REVIEW-C's count agrees). They are declared so the pair travels together, and with no under-layer
+# they composite nothing. They carry no burn or page-turn hole either, so no transition may take its hole from them
+# (edit/c5_readiness.py FAILS a window that names a shot's matte): the page turn into the Pen is EDIT's own comp, and
+# the Refusal's burn needs its own layers.
 PR11, PR12, PR13, PR14 = ('Codex PR11 (embers, 9fa0822)', 'Codex PR12 (ink pages, ebcdd0a)',
                           'Codex PR13 (last beacon, 2bdfb09)', 'Codex PR14 (run, 7412f2a)')
 
@@ -317,6 +320,33 @@ def flint_events(key):
         out[ev] = next((a + sf - s0 for a, b, s0 in FLINT_CANDIDATES[key]['pieces']
                         if s0 is not None and s0 <= sf < s0 + (b - a)), None)
     return out
+
+
+# ------------------------------------------------------------------------ C15 | C16: the one movable picture cut
+# The picture cut from the last beacon to the forges is ONE number. As briefed it sits on the bar map's section line
+# (3840). A queued picture candidate (Codex's, 29 Sep, not adopted) would move it EARLIER, into the map's all-lit hold,
+# and give the forges a lit lead-in; the shutdown stays at 3848 because Cold is read at its own C5 frame numbers.
+# Measured 29 Sep from the delivered frames: the last kingdom catches 3785-3791 (the region's luminance 78 -> 118), so
+# 3792-3839 is all lit; embers_C5_cold goes dark between 3847 and 3848 (mean luminance 24.0 -> 18.1). Setting
+# COLD_CUT anywhere in 3792-3840 is the whole edit: the map ends there and Cold plays from there as a second C15 row
+# (the bar map's section line does not move). The gates then name what must exist: the lead-in frames (embers_C5_cold
+# COLD_CUT-3839, outside PR11's 3840-3999; edit/c5_readiness.py GAPs them, tools/c5_assets.py reports them OWED and
+# records the new delivery's range in its DELIVERED once it lands) and any caption left running across the new cut
+# (R15 3740-3835 would be: the gate WARNs by name). A lead-in delivered under another folder name changes the stem
+# below as well.
+COLD_CUT = 3840
+
+
+def last_beacon_rows(cold_cut):
+    """Section C15 (3440-3840 in the bar map): the map up to cold_cut, then, if earlier than 3840, Cold's lit lead-in."""
+    rows = [S('C15', 3440, cold_cut, '#15', 'THE LAST BEACON', 'MAP',
+              'The map of the kingdoms: beacons flare in no order; one kingdom stays dark (3724-3783), then catches.',
+              [c5('map_last_beacon_C', PR13)])]
+    if cold_cut < 3840:
+        rows.append(S('C15', cold_cut, 3840, '#16', 'THE FORGES GO COLD · LIT LEAD-IN', 'EMBERS',
+                      f'Every forge still burning, {3848 - cold_cut} frames before 3848 puts them all out.',
+                      [c5('embers_C5_cold', f'{PR11}; the lead-in {cold_cut}-3839 is not in that delivery')]))
+    return rows
 
 
 def flint_rows(choice):
@@ -384,9 +414,7 @@ C = [
     S('C14', 3120, 3440, '#14', 'THE BEACON RUN', 'RUN-C',
       'A lateral track at beacon height like a scroll unrolling; beacons bloom along the peaks, every two beats.',
       [T('runC_scroll', -3120, 'exact', 'RUN-C ink final')]),
-    S('C15', 3440, 3840, '#15', 'THE LAST BEACON', 'MAP',
-      'The map of the kingdoms: beacons flare in no order; one kingdom stays dark (3724-3783), then catches.',
-      [c5('map_last_beacon_C', PR13)]),
+] + last_beacon_rows(COLD_CUT) + [
     S('C16', 3840, 4000, '#16', 'THE FORGES GO COLD', 'EMBERS',
       'Every forge goes dark at the same instant (3848); smoke over cold masonry; the Ring still gold.',
       [c5('embers_C5_cold', PR11)]),
@@ -431,12 +459,13 @@ EDL = {'A': A, 'B': B, 'C': C}
 #   page_turn    EDIT-C5: the outgoing page curls over right to left onto the incoming (assemble.page_turn)
 # Kept as hard cuts on purpose: 2080 (the Eye -> the Refusal: the hearth flare that brings us back to the book is in
 # the render), 2640 (the Trap's roar -> the dark of the flint), 2880 (the catch -> the Reveal's simultaneous ignition,
-# which must land on the cut), 3840 (the last beacon -> the forges, lit for 8 frames before 3848 puts them all out),
-# 4000 (Cold -> Unfinished: one renderer, one camera, continuous).
+# which must land on the cut), COLD_CUT (3840 as briefed: the last beacon -> the forges, lit for 8 frames before 3848
+# puts them all out; movable, see COLD_CUT), 4000 (Cold -> Unfinished: one renderer, one camera, continuous).
 TRANS = {'A': [], 'B': [], 'C': [
     # the ember README (PR11) leaves "the page burn" to EDIT: the book's grammar for page -> ember world is the
     # burn-through (C4-C5, C8-C9). DESIGNED, NOT BUILT: it needs burn layers for the Refusal page (ftburn/x1burn,
-    # BURN/PAGES); the three folder names are PROPOSED, nothing has been rendered. Until then: a hard cut.
+    # BURN/PAGES), because the page's delivered matte is opaque on all 240 frames and holds no hole; the three folder
+    # names are PROPOSED, nothing has been rendered. Until then: a hard cut.
     dict(f0=2310, f1=2346, cut=2320, kind='burn', glow='x1_refusal_C5', keep='x1_refusal_C5_matte',
          cover='x1_refusal_C5_cover', ready=False,
          note='C10 the Refusal page burns through onto C11 the Trap (DESIGNED; layers PROPOSED, not rendered)'),
@@ -461,7 +490,8 @@ TRANS = {'A': [], 'B': [], 'C': [
          note="C21 opens pixel for pixel on C20's last frame (runC_illum 2877, ink look) and takes the film look by "
               "5264 (the 7,200-frame cut's #21, 6160-6224, same sources)"),
     # PR12: the Pen "starts on the blank spread, so EDIT must join it to the preceding page turn"; centred on bar 69 b1,
-    # done before the score's voice-line window opens at 5460. UNRENDERED: Plenty (book_C) is not on the EDIT-C5 Mac.
+    # done before the score's voice-line window opens at 5460. The curl is EDIT's own comp (the Pen's delivered matte
+    # is opaque, with no turn in it). UNRENDERED: Plenty (book_C) is not on the EDIT-C5 Mac.
     dict(f0=5430, f1=5452, cut=5440, kind='page_turn', tilt=8.0, radius=0.11,
          note='C21 Plenty -> C22 the Pen: the page turns onto the blank spread (EDIT 2D curl; UNRENDERED here)'),
     dict(f0=5668, f1=5692, cut=5680, kind='dissolve',
@@ -521,4 +551,9 @@ def c5_export_extra():
                                 candidates={k: dict(pieces=[list(p) for p in v['pieces']], note=v['note'],
                                                     events=flint_events(k))
                                             for k, v in FLINT_CANDIDATES.items()})],
+                movable_cuts=[dict(id='COLD_CUT', frame=COLD_CUT, section_line=3840, shutdown=3848,
+                                   note="the last beacon -> the forges; may move earlier into the map's all-lit hold "
+                                        '(3792-3839) for a lit lead-in while the shutdown stays at 3848. The edit '
+                                        'changes edl_v3.COLD_CUT alone; embers_C5_cold must then hold the lead-in '
+                                        'frames')],
                 baked_text=[dict(b, src=list(b['src'])) for b in titles.BAKED_TEXT])

@@ -97,10 +97,33 @@ def survey(d):
     return frames, other
 
 
+def split_need(stem, need):
+    """(frames inside the recorded delivery, frames beyond it). Frames the EDL reads beyond a delivery are OWED by a new
+    delivery (a lit lead-in once edl_v3.COLD_CUT moves earlier, say), not a fault of the folder that was delivered."""
+    if stem not in DELIVERED:
+        return set(need), set()
+    a, b = DELIVERED[stem]
+    inside = {f for f in need if a <= f <= b}
+    return inside, set(need) - inside
+
+
+def fmt_frames(frames):
+    """'3816-3839, 4100' for a set of ints."""
+    runs = []
+    for f in sorted(frames):
+        if runs and runs[-1][1] == f - 1:
+            runs[-1][1] = f
+        else:
+            runs.append([f, f])
+    return ', '.join(f'{a}-{b}' if b > a else f'{a}' for a, b in runs)
+
+
 def verify(stem, d, need):
-    """Problems (a list of strings) with directory d as stem's source; [] when it is exactly right."""
+    """Problems (a list of strings) with directory d as stem's source; [] when it is exactly right. A delivered stem is
+    judged against its delivery: frames needed beyond it are OWED (split_need), reported by the callers."""
     if not os.path.isdir(d):
         return [f'{stem}: {d} is not a directory']
+    need, _ = split_need(stem, need)
     frames, other = survey(d)
     probs = []
     miss = sorted(need - set(frames))
@@ -162,12 +185,17 @@ def run(cmd, out_root=None, dry=False):
             print(f'  SKIP {stem}: the C5 EDL reads nothing from it')
             continue
         probs = verify(stem, d, need[stem])
+        _, owed = split_need(stem, need[stem])
         state, detail = link_state(stem, d)
         frames, _ = survey(d) if os.path.isdir(d) else ({}, [])
         size = sum(os.path.getsize(os.path.join(d, n)) for n in frames.values()) if frames else 0
         row = dict(stem=stem, target=d, frames=len(frames), needed=len(need[stem]), bytes=size,
                    first=min(frames) if frames else None, last=max(frames) if frames else None, link=state,
-                   problems=probs)
+                   problems=probs, owed=fmt_frames(owed) if owed else None)
+        if owed:
+            a, b = DELIVERED[stem]
+            print(f'  OWED {stem}: the EDL reads {fmt_frames(owed)} ({len(owed)} frames) beyond the recorded delivery '
+                  f'{a}-{b}; they need a new delivery, whose range then goes in DELIVERED')
         if probs:
             rc = 1
             print(f'  FAIL {stem}: ' + '; '.join(probs))

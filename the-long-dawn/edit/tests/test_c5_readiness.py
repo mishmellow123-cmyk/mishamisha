@@ -14,7 +14,9 @@ from unittest import mock
 
 EDIT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(EDIT))
+sys.path.insert(0, str(EDIT / 'tools'))
 import assemble as AS  # noqa: E402
+import c5_assets as CA  # noqa: E402
 import c5_readiness as RD  # noqa: E402
 import edl_v3 as EDL  # noqa: E402
 import titles  # noqa: E402
@@ -41,12 +43,19 @@ class C5ReadinessTests(unittest.TestCase):
     def drop(self, stem, frame):
         del self.index[os.path.join(AS.RENDERS, stem)][frame]
 
-    def green(self, flint='A'):
+    def green(self, flint='A', cold_cut=None, set_cold_cut=True):
         """C5 with every source present, a Flint candidate realised, the designed-but-unbuilt transitions left out,
-        T1's pixels re-rendered with the v5.2 words, and edl_C.json regenerated: the full gate must pass."""
+        T1's pixels re-rendered with the v5.2 words, and edl_C.json regenerated: the full gate must pass. cold_cut
+        rebuilds C15 as edl_v3 would with COLD_CUT set there (and sets it, unless set_cold_cut is False)."""
         cut = [r for r in EDL.EDL['C'] if r['sec'] != 'C12']
         i = next(k for k, r in enumerate(cut) if r['f0'] == 2880)
         cut = cut[:i] + EDL.flint_rows(flint) + cut[i:]
+        if cold_cut is not None:
+            cut = [r for r in cut if r['sec'] != 'C15']
+            j = next(k for k, r in enumerate(cut) if r['f0'] == 3840)
+            cut = cut[:j] + EDL.last_beacon_rows(cold_cut) + cut[j:]
+            if set_cold_cut:
+                self.enterContext(mock.patch.object(EDL, 'COLD_CUT', cold_cut))
         self.enterContext(mock.patch.dict(EDL.EDL, {'C': cut}))
         self.enterContext(mock.patch.object(EDL, 'FLINT_CHOICE', flint))      # as setting it in edl_v3.py would
         self.enterContext(mock.patch.dict(EDL.TRANS, {'C': [t for t in EDL.TRANS['C'] if t.get('ready', True)]}))
@@ -163,6 +172,60 @@ class C5ReadinessTests(unittest.TestCase):
         with mock.patch.dict(EDL.EDL, {'C': rows}):
             rep, keys, text = self.run_gate(partial=True)
         self.assertIn('overlaps at 3832-3839', text)
+
+    # ------------------------------------------------ the movable map -> Cold cut (edl_v3.COLD_CUT, one number)
+    def test_committed_cold_cut_is_the_briefed_timeline(self):
+        self.assertEqual(EDL.COLD_CUT, 3840)
+        self.assertEqual([(r['f0'], r['f1'], r['takes'][0]['stem']) for r in _ORIGINAL_C if r['sec'] in ('C15', 'C16')],
+                         [(3440, 3840, 'map_last_beacon_C'), (3840, 4000, 'embers_C5_cold')])
+        self.assertEqual(RD.hard_cuts().get(3840), ('map_last_beacon_C', 'embers_C5_cold'))
+        self.assertFalse([i for i in RD.run(True).items if 'runs across the hard cut' in i['msg']])
+
+    def test_cold_cut_moves_in_one_place_and_names_what_follows(self):
+        """COLD_CUT 3816 (a 24-frame lit lead-in) plus the new delivery's range is green; R15 is WARNed by name."""
+        self.green(cold_cut=3816)
+        self.enterContext(mock.patch.dict(CA.DELIVERED, {'embers_C5_cold': (3816, 3999)}))   # the new delivery
+        rep, _, text = self.run_gate()
+        self.assertGreen(rep, text)
+        self.assertEqual([(r['f0'], r['f1'], r['takes'][0]['stem'], r['takes'][0]['off']) for r in RD.rows_of('C15')],
+                         [(3440, 3816, 'map_last_beacon_C', 0), (3816, 3840, 'embers_C5_cold', 0)])
+        warns = [i['msg'] for i in rep.items if i['level'] == 'WARN']
+        self.assertIn('R15 3740-3835 runs across the hard cut at 3816 (map_last_beacon_C -> embers_C5_cold): its '
+                      'words change picture mid-line; end it by 3816, or keep it across on purpose', warns)
+        self.assertEqual(CA.needed_frames()['embers_C5_cold'], set(range(3816, 4000)))
+
+    def test_moved_cold_cut_before_its_delivery_is_owed_not_broken(self):
+        self.green(cold_cut=3816)
+        for f in range(3816, 3840):
+            self.drop('embers_C5_cold', f)                        # the lead-in has not been rendered yet
+        rep, keys, text = self.run_gate()
+        self.assertTrue(rep.failed())
+        self.assertEqual(rep.count('FAIL'), 0, text)
+        self.assertIn('24 of 24 frames not resolvable from embers_C5_cold 3816-3839', text)
+        self.assertIn('the EDL reads 3816-3839 (24 frames) beyond the recorded delivery 3840-3999', text)
+        self.assertFalse(self.run_gate(partial=True)[0].failed())
+
+    def test_cold_cut_outside_the_hold_or_unrecorded_fails_both_modes(self):
+        self.green(cold_cut=3780)                                 # would cut away the last kingdom's catch
+        rep, _, text = self.run_gate(partial=True)
+        self.assertTrue(rep.failed())
+        self.assertIn('edl_v3.COLD_CUT 3780 is outside 3792-3840', text)
+
+    def test_c15_rows_for_a_cut_the_constant_does_not_name_fail(self):
+        self.green(cold_cut=3816, set_cold_cut=False)             # rows edited by hand, COLD_CUT still 3840
+        rep, _, text = self.run_gate(partial=True)
+        self.assertTrue(rep.failed())
+        self.assertIn('C15: rows [(3440, 3816), (3816, 3840)], expected [(3440, 3840)] (edl_v3.COLD_CUT = 3840)', text)
+
+    def test_transition_hole_from_an_opaque_page_matte_fails_both_modes(self):
+        self.green()
+        wins = [t for t in EDL.TRANS['C'] if t['kind'] != 'page_turn'] + [
+            dict(f0=5430, f1=5452, cut=5440, kind='burn', glow='x1_pen', keep='book_C5_pen_matte', cover='x1_pen_c')]
+        with mock.patch.dict(EDL.TRANS, {'C': wins}):
+            self.write_json()
+            rep, _, text = self.run_gate(partial=True)
+        self.assertTrue(rep.failed())
+        self.assertIn("burn 5430-5451: takes a layer from ['book_C5_pen_matte']", text)
 
     def test_stale_json_fails_both_modes(self):
         self.green()

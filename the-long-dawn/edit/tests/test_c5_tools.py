@@ -3,6 +3,8 @@ Synthetic images and temporary folders only.
 
 Run: python -B -m unittest discover -s the-long-dawn/edit/tests -p 'test_*.py'
 """
+import contextlib
+import io
 import json
 import os
 from pathlib import Path
@@ -128,6 +130,21 @@ class AssetMapTests(unittest.TestCase):
         self.assertEqual(CA.run('check'), 0)
         (d / 'notes.txt').write_text('x')
         self.assertEqual(CA.run('check'), 1)
+
+    def test_a_moved_cold_cut_owes_the_lead_in_and_still_links_the_delivery(self):
+        cut = [r for r in EDL.EDL['C'] if r['sec'] != 'C15']
+        j = next(k for k, r in enumerate(cut) if r['f0'] == 3840)
+        self.enterContext(mock.patch.dict(EDL.EDL, {'C': cut[:j] + EDL.last_beacon_rows(3816) + cut[j:]}))
+        self.deliver('embers_C5_cold')                                        # PR11's 3840-3999: no lead-in
+        self.write_map(['embers_C5_cold'])
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(CA.run('link'), 0)
+        self.assertIn('OWED embers_C5_cold: the EDL reads 3816-3839 (24 frames) beyond the recorded delivery '
+                      '3840-3999', out.getvalue())
+        self.assertTrue((self.renders / 'embers_C5_cold').is_symlink())
+        self.assertEqual(CA.split_need('embers_C5_cold', set(range(3816, 4000))),
+                         (set(range(3840, 4000)), set(range(3816, 3840))))
 
     def test_needed_frames_come_from_the_edl(self):
         need = CA.needed_frames('C')
