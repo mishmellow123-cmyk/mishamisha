@@ -1,6 +1,6 @@
 # THE LONG DAWN: full-context handover (resume here)
 
-Last updated: **2026-09-28 ~14:50Z**, by the director (Claude, Opus 5.5).
+Last updated: **2026-09-29 ~07:20Z**, by the new owner (Claude, Opus 5.5, on David's M4). Section 0 is current; sections 6b and 7 are the previous director's record and are historical.
 
 **Purpose.** Anyone (a Claude or GPT/Codex session, on any machine) should be able to pick the project up from this file alone. Update it at every milestone, and more often when usage or battery is running low.
 
@@ -14,6 +14,49 @@ Last updated: **2026-09-28 ~14:50Z**, by the director (Claude, Opus 5.5).
 3. `the-long-dawn/edit/NOTES_v3.md` (edit pipeline state, the transitions table).
 4. `the-long-dawn/music/NOTES_v3.md` (score state and the user's score notes, at the top).
 5. The `shots/*/NOTES.md` file for whichever department you touch.
+
+---
+
+## 0. Owner night, 29 Sep 2026 (current state; supersedes the "next session" lists in 6b)
+
+Production `claude/long-dawn-v2` is unchanged at 6059baf. The night's work is on **`claude/owner-night-20260929`** (pushed, not merged):
+- **Integrated:** Codex PRs 11-14, which are still open on GitHub.
+- **C5 cut:** now emitted by the generator. `edit/edl_v3.py` writes a 5,920-frame `edit/edl/edl_C.json`.
+- **Readiness gate** (`edit/c5_readiness.py`): FAILS the full build on 21 source gaps plus the Flint decision, and passes `--partial`.
+- **Labelled partial** (`edit/c5_partial.py`): slates stand in for missing shots.
+- **Captions:** v5.2 plus the paired-rivals amendment, in `edit/titles.py`. They are placed by measured backdrop contrast (`edit/tools/c5_caption_backdrop.py`).
+- **Score pass 2:** cut id `C5P2`, in `music/src/score_v3_C5P2.py`, `music/v3/barmap_C5P2.json` and `cues_C5P2.json`. It is unrendered, because no sample library or sfizz is on the M4.
+- **Picture events:** measured from the delivered frames into `music/v3/events_C5_measured.json`.
+- **C5 sound table:** `music/sound/c5_sound_events.json`. Stale-artefact guards are in `music/src/audio_guard_v3.py`.
+- **Pass 1 bug, fixed in pass 2:** pass 1's Ring entry sounded at 3987, inside the 3848-3999 hard silence.
+- **Pages mattes:** the ones delivered with PR12 are uniformly white. Burns and page turns into those shots must be built in the edit.
+- **Silent wrong-source paths in the old pipeline:** now guarded or documented in `edit/NOTES_v3.md`. They are:
+  - `chain()` variant names;
+  - the `Ctx.under` `_half` fallback;
+  - the `plan_shot` coverage fallback;
+  - `index()` preferring png over jpg;
+  - `snapshot_audio` reading from a still-changing file;
+  - the 7,200-frame `sound_C.wav`, now refused by length (including in `refresh_watch.sh`).
+
+**Candidates:** none adopted. They are on Codex's `codex/c-v5-candidates`, which is default-off: accepted frames reproduce exactly.
+- **Reveal and Watch "night-fire":** the page is darkened and the flame cores are brighter than anything else. It passes a no-caption blind read, where the accepted frame reads as "a faint yellow-gold highlight".
+- **Trap `front_smoke_near`:** the solo withdrawal and then the pair both read. The accepted control read shows no withdrawal.
+- **Map `beacon-falloff`:** territories warm as their beacons light, and the holdout reads as a dark kingdom.
+- **Deep leaned ladders.**
+- **Tests in progress:** a Cold lead-in, the Pen gutter and nib, and T1 baked text.
+
+**Decisions for the user:**
+- the night look for Reveal, then Beacon Run, then Watch;
+- whether to adopt Trap B, Map falloff and Deep leaned ladders;
+- T1 (the old line is baked into book_C 400-539): re-bake the v5.2 words, or render with no baked text;
+- Flint (the candidates are in `edl_v3.FLINT_CANDIDATES`; choosing needs the `ring` frames);
+- A's ending. The recommendation is to keep it and fix the crossing's tub read at A5584 and the dotted-line rope at A5040-5063.
+
+**Blocked on the production laptop:**
+- **Picture:** C 0-2079, Flint, Beacon Run, Illumination, Plenty and Title, plus every A final.
+- **Audio:** all audio, caches and sample libraries.
+
+A tiered push script and include lists, derived from these EDLs, are in the M4 mailbox at `~/ldfarm/comms/files/recovery/`. Run it on the production laptop: it pushes over the existing laptop-to-M4 SSH route, measures first, skips tiers that don't fit, and copies no credentials.
 
 ---
 

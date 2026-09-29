@@ -1,5 +1,65 @@
 # EDIT v3 (lane EDIT): the three EDLs, text, animatics
 
+## >>> STATE (EDIT-C5, 29 Sep; branch claude/owner-edit-c5, for the director to merge) <<<
+
+C is now C5, THE LAST PAGES: script v5.2 with the paired-rivals amendment, 5,920 frames (74 bars x 80 at 24 fps,
+`music/v3/barmap_C5.json`). It lives in `edl_v3.py`'s C list, exported to `edl/edl_C.json` by
+`python3 edit/assemble.py --edl` (never edit the JSON alone). Nothing in it is approved or final.
+
+- **0-2079** is the first half as it was, split only where BURN-C's filmed burns take over (`FT_RANGES`: 841-1039,
+  1680-1717, 1905-1991), each on its own BURN_NOTES comp. The sweep has the held race baked in, so it has no under.
+- **From 2080** every row reads one folder by its exact name at absolute C5 frame numbers. The reused sources keep
+  their numbering: runC_scroll -3120, runC_illum 2398-4720, book_C +960 (Plenty) and +1280 (the title).
+- **The gate:** `python3 edit/c5_readiness.py` (full: exit 1 on any FAIL or GAP), `--partial` (FAILs only),
+  `--json FILE`. On the EDIT-C5 Mac on 29 Sep it gave FAIL 0, GAP 21, WARN 1, with 2400 of 5920 frames from real
+  sources.
+- **Open, by name:**
+  - C12 FLINT: `FLINT_CHOICE` is None. Pick one of candidates A-D (`FLINT_CANDIDATES`) from the frames.
+  - R02: book_C 400-539 still bakes the old T1 words. Re-render it with the v5.2 words (inkline.py T1), or clear it
+    and set R02 to ink.
+  - The burns at 2310-2345 and 3430-3465 are designed but their layers are not rendered. The Pages mattes are opaque,
+    so neither can come from them.
+  - The page turn at 5430-5451 (`assemble.page_turn`) has never run on the real Plenty.
+  - The captions are PROVISIONAL. R04, R09, R14 and R20 were placed without their pictures. R02, R03, R05-R08
+    keep the 7,200-frame cut's slots.
+- **`COLD_CUT`** (`edl_v3.py`) is the map -> forges cut: 3840 as briefed, movable anywhere in 3792-3840 for a lit
+  lead-in. Set that constant alone. The gate then names the lead-in frames the Cold delivery owes, and any caption left
+  across the new cut.
+- **Local frames:** `python3 edit/tools/c5_assets.py init --out-root DIR`, then `link` and `check`. The map is
+  gitignored in `edit/cache/` (or named by `LD_C5_ASSET_MAP`); nothing is found by name or date.
+- **Partial review cut:** `python3 edit/c5_partial.py --out DIR` runs the gate first. It builds a silent, labelled
+  cut with a slate for each missing section, and each row plays only its primary take.
+- **Caption backdrops:** `python3 edit/tools/c5_caption_backdrop.py measure` scores every EDIT caption over its
+  delivered frames at 1920x804: drawn-edge fraction, texture, and the WCAG contrast of its worst eighth of a line.
+  `search ID [--lines 'ID=first|second']` ranks placements. BUSY means edge > 0.03 or texture > 0.015. These are the
+  midpoints of the gap between clean and line-art backdrops measured on 29 Sep, not a standard. LOW-CONTRAST means a
+  slice under 3:1 in any steady frame.
+  - On 29 Sep R11, R15, R18 and R22 were flagged, and the other four were clean.
+  - R18 moved to the facing page as two lines (C5_TEXT `lines`, words unchanged; the gate FAILs a break that changes
+    them).
+  - R11 moved up to y 330 and R22 to y 520.
+  - R15 moved up to y 220 and stays BUSY on texture: no band of the map that long is clean.
+- **Deterministic since 29 Sep (owner night):** TextV3 used to seed its noise and sparks with Python's
+  per-process string hash, and nothing set PYTHONHASHSEED. That was worse than run-to-run drift, because
+  assemble.py's spawned Pool workers each rebuild the captions: all 32 caption noise fields differed between two
+  workers. Every 16-frame imap chunk could therefore bring its own flicker, crumble order and sparks, and 9 of C5's
+  17 captions have a chunk start inside their last 12 frames. The measured effect at a switch is small: in R04 at
+  848 the frame-to-frame change inside the caption box equals an ordinary crumble step (1.24 vs 1.23 /255). At the
+  switch 55 glyph pixels come back at half scale, and nothing was visible in stills. Fire captions' measured contrast
+  also moved by a few hundredths (R11's worst frame read 2.29 to 2.33:1 over three runs). The seeds are now crc32
+  (`titles._seed`), and the same fix went into book_C's baked ink lines (shots/map/inkline.py).
+  `edit/tests/test_render_seeds.py` compares two processes with different PYTHONHASHSEED values and bans the
+  pattern, reading the source as tokens. The realized noise is a new draw, so re-measure before quoting old
+  contrast figures.
+- **Where assemble.py picks a source silently, and what catches it for C5:**
+  - `chain()` tries name variants for mode 'v3' and wider modes. The gate FAILs any non-exact take from 2080.
+  - `Ctx.under` falls back from stem to stem_half. The gate GAPs it as provisional.
+  - `plan_shot` gives an incomplete row to the take covering the most frames. The gate says "would play fallback",
+    and the partial pins primaries.
+  - `index()` prefers png over jpg. `c5_assets` refuses a delivered folder that has both.
+  - C's sound is refused unless it is within 0.01 s of 5,920 frames long; sound_C.wav belongs to the 7,200-frame
+    cut.
+
 ## >>> STATE (EDIT-3, from 27 Sep 23:45Z; succeeds EDIT-2) <<<
 
 - **C IS ON HOLD (director, 28 Sep ~04:30Z):** C's second half is being rewritten (script v5, not locked: the Mirror,

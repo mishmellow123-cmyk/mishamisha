@@ -8,6 +8,7 @@ The same text table as EDIT (music/v3/barmap_C.json via edit/titles.py; frames i
 EDIT's did). The ink's density follows a dip cycle along the line (dark after the dip, paler toward the end).
 """
 import os
+import zlib
 
 import cv2
 import numpy as np
@@ -51,7 +52,7 @@ class InkLine:
         hh, ww = a.shape
         yy, xx = np.mgrid[0:hh, 0:ww].astype(np.float32)
         self.xx, self.yy = xx, yy
-        rng = np.random.default_rng(hash(key) & 0xffff)
+        rng = np.random.default_rng(zlib.crc32(str(key).encode()) & 0xffff)   # not hash(): salted per process
         n = cv2.resize(rng.random((max(2, hh // 6), max(2, ww // 6))).astype(np.float32), (ww, hh))
         self.noise = cv2.GaussianBlur(n, (0, 0), 1.5)
         # the dip cycle: dark after each dip (every ~9 cm of writing), paler as the pen runs dry; a little grain

@@ -62,8 +62,9 @@ def _code_hash():
                                        AS.plan_shot)]
     slate = [ctx['slate'], inspect.getsource(AS.make_slate), inspect.getsource(AS.draw_slate_clock)]
     title = [ctx['ember'], open(os.path.join(ROOT, 'edit', 'title_scene.py')).read()]
-    text = [inspect.getsource(o) for o in (titles.TextV3, titles.render_line, titles.lines_v3, titles.composite_v3,
-                                           titles._noise, titles._heat_rgb, titles.smooth, titles._font)]
+    text = [inspect.getsource(o) for o in (titles.TextV3, titles.render_line, titles.render_block, titles.lines_v3,
+                                           titles.composite_v3, titles._noise, titles._heat_rgb, titles.smooth,
+                                           titles._font)]
     text.append(repr([titles.Y_LOWER, titles.Y_TOP, titles.Y_BOTTOM, titles.Y_MID, titles.PARCH.tolist(),
                       titles.IRON.tolist(), titles.FIRE_RAMP.tolist(), titles.INK.tolist(), titles.GLOW.tolist(),
                       titles.W, titles.ITALIC, titles.EBG_ITALIC, titles.CINZEL]))
@@ -144,8 +145,9 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table, fin=None):
     take = plan['take']
     tdesc = None if take is None else {k: take.get(k) for k in ('stem', 'off', 'mode', 'crop', 'grade', 'matte',
                                                                   'under', 'video', 'note', 'add')}
-    rows = [(r['id'], r['line'], r['f_in'], r['f_out'], r['set']) for r in table
-            if r['f_in'] < shot['f1'] and r['f_out'] > shot['f0']]
+    rows = [(r['id'], r['line'], r['f_in'], r['f_out'], r['set'])
+            + tuple((k, r[k]) for k in ('x', 'y', 'lines') if k in r)
+            for r in table if r['f_in'] < shot['f1'] and r['f_out'] > shot['f0']]   # C5 rows key their placement
     n = shot['f1'] - shot['f0']
     slated = plan['kind'] == 'slate' or (plan['kind'] == 'take' and plan['have'] < n)
     head = [ENGINE, code['frame'], code['text'] if rows else None, code['slate'] if slated else None,

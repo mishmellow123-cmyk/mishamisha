@@ -1,7 +1,9 @@
 """Typography for THE LONG DAWN: story lines and the title card.
 
 v3 (BIBLE_V3 locked sheets as amended by the DIRECTOR'S H5 CALLS): `lines_v3(cut)` + `composite_v3(img, lines, f,
-scale)`. The words come from music/v3/barmap_<cut>.json with the H5 wording applied on top (in/out frames unchanged).
+scale)`. A's and B's words come from music/v3/barmap_<cut>.json with the H5 wording applied on top (in/out frames
+unchanged); C's are C5's own table (C5_TEXT: HANDOVER.md script v5.2, provisional), with BAKED_TEXT recording the
+words already inside the renders.
 A: Cormorant italic, lower third, 12-frame fades inside the in/out frames; T10a/b centred on black.
 B: the title only.  C: ink write-ons (a pen-shaped wipe over 24 frames, dissolve out over 12) and fire lines
 (kindle over 12, crumble over 12); T8a/b stacked on black.  Titles (X3) kindle in place: A crumbles into rising
@@ -17,6 +19,7 @@ soft dark halo for legibility and a faint warm glow so the words feel lit.
 """
 import functools
 import os
+import zlib
 
 import cv2
 import numpy as np
@@ -86,6 +89,42 @@ def render_line(text, path=ITALIC, size=50, weight=560, tracking=0.02):
     # spread stagger into the anti-aliased fringe so edges fade with their glyph
     stag = cv2.dilate(stag, np.ones((3, 3), np.uint8))
     return a, stag, a.shape[1], a.shape[0]
+
+
+@functools.lru_cache(maxsize=64)
+def render_block(lines, path=ITALIC, size=50, weight=560, tracking=0.02, leading=1.3):
+    """Two or more render_line lines set as ONE caption, each centred, `leading` x size apart. Returns (alpha,
+    stagger, reading-order x in [0, 1], slant y, bands), all HxW but bands. The stagger and the reading-order x run
+    through the lines in order, so a write-on or a kindle takes them one after another; slant y puts every line's own
+    centre at the block's mid-height, so the ink's slanted nib front leans the same way on each line. bands:
+    ((y0, y1, x0, x1) of each line's glyphs, alpha > 0.5) in block pixels."""
+    parts = [render_line(t, path, size, weight, tracking) for t in lines]
+    ph = parts[0][3]                                  # render_line crops every line to the same font metrics
+    ww = max(p[2] for p in parts)
+    pitch = int(round(leading * size))
+    hh = pitch * (len(parts) - 1) + ph
+    alpha = np.zeros((hh, ww), np.float32)
+    stag, xr, ys = np.zeros_like(alpha), np.zeros_like(alpha), np.zeros_like(alpha)
+    letters = [sum(c != ' ' for c in t) for t in lines]
+    total_px, total_n = float(sum(p[2] for p in parts)), float(sum(letters))
+    done_px, done_n, bands = 0.0, 0.0, []
+    cols = np.arange(ww, dtype=np.float32)
+    for i, (a, st, pw, _) in enumerate(parts):
+        y0, x0 = i * pitch, (ww - pw) // 2
+        alpha[y0:y0 + ph, x0:x0 + pw] = np.maximum(alpha[y0:y0 + ph, x0:x0 + pw], a)
+        c = y0 + ph / 2.0                                          # this line's centre row
+        lo = 0 if i == 0 else int(round(c - pitch / 2.0))         # the rows it owns: halfway to its neighbours
+        hi = hh if i == len(parts) - 1 else int(round(c + pitch / 2.0))
+        own = np.zeros((hh, pw), np.float32)
+        own[y0:y0 + ph] = st * letters[i]
+        stag[lo:hi, x0:x0 + pw] = (done_n + own[lo:hi]) / total_n
+        xr[lo:hi] = (done_px + np.clip(cols - x0, 0, pw)) / total_px
+        ys[lo:hi] = np.arange(lo, hi, dtype=np.float32)[:, None] - c + hh / 2.0
+        gy, gx = np.nonzero(a > 0.5)
+        bands.append((y0 + int(gy.min()), y0 + int(gy.max()) + 1, x0 + int(gx.min()), x0 + int(gx.max()) + 1))
+        done_px += pw
+        done_n += letters[i]
+    return alpha, stag, xr, ys, tuple(bands)
 
 
 def smooth(x):
@@ -240,6 +279,8 @@ import json  # noqa: E402
 EBG_ITALIC = os.path.join(FONTS, 'EBGaramond-Italic.ttf')
 
 # H5 CALL 3: new words, the same in/out frames ("everything else stays as locked")
+# C's H5 words belonged to the 7,200-frame cut and are RETIRED with it (C5 below carries its own verbatim table; the
+# old T7 'They delved deeper...' is superseded by v5.2's 'They dug deeper...').
 H5_WORDS = {
     'A': {'T2': 'We fed it everything we knew.',
           # USER-APPROVED caption changes (28 Sep, via the director): T6a, T7, T9, T10a, T10b; same IDs, slots, frames
@@ -249,18 +290,80 @@ H5_WORDS = {
           'T9': 'Whoever won, no morning would come.',
           'T10a': 'They feared the fire.',
           'T10b': 'They feared each other more.'},
-    'C': {'T6': 'Each said: better us than them.',
-          'T7': 'They delved deeper every year, for the gold ran deeper still.'},
 }
-# how each line is set (BIBLE_V3 "the complete text" tables)
+# how each line is set (BIBLE_V3 "the complete text" tables); C5's settings live in C5_TEXT below
 SET_AS = {
     'A': dict(T10a='black_top', T10b='black_bottom', T6a='row', T6b='row', title='title'),
     'B': dict(title='title'),
-    'C': dict(T1='in_picture', T7='ink', T9='ink', T14='in_picture', T8a='fire_black_top', T8b='fire_black_bottom',
-              title='in_picture'),        # director ~19:20Z: MAP-L burns C's title into the page (book space)
-    # 28 Sep (director): T1 and T14 are written INTO the page by PAGES-C's pages_book render (perspective, iron-gall
-    # ink), so titles.py no longer draws them; T7 stays EDIT's (the camera travels down the Deep)
 }
+
+# ================================================================================================= C5 ===
+# THE LAST PAGES, C5 (5,920 f, 74 bars): the words of HANDOVER.md "Script v5.2", whose table already carries the
+# paired-rivals amendment (12 none; 13 "So the two furthest ahead..."; 14 "It was a promise to stop..."). PROVISIONAL:
+# the structure is approved, the words are not locked, and nothing here improves them (edit/c5_readiness.py compares
+# every line against that table, row by row). Frames are C5 frames, each line inside its own script shot (row).
+#   set: 'fire' kindles and crumbles; 'ink' writes on with the pen nib (iron-gall on the paper); 'in_picture' is
+#        baked into the render and EDIT draws nothing (BAKED_TEXT must then hold the same words on those frames).
+#   y, x: picture coordinates at 1920x804 (the line's centre row, and centre column) where the lower third would
+#        cover the action; measured on the delivered frames (EDIT-C5, 29 Sep) unless marked UNVERIFIED.
+C5_TEXT = [
+    dict(id='R02', row=2, line='In the old story, a Dark Lord forges a Ring to rule the world.', f_in=400, f_out=540,
+         set='in_picture'),       # PAGES-C writes it into the Mountain's caption band (shots/map/inkline.py T1)
+    dict(id='R03', row=3, line='Our Ring was kindled from every tale we had ever told.', f_in=580, f_out=716, set='fire'),
+    dict(id='R04', row=4, line='It read every word we had ever written, and learned to answer.', f_in=728, f_out=856,
+         set='fire'),             # new slot: the letters lift (720) into the flame; e15 has no text dim here
+    dict(id='R05', row=5, line='In our story, there was no Dark Lord.', f_in=920, f_out=1030, set='fire'),
+    dict(id='R06', row=6, line='Only smiths in every kingdom, each racing to finish it first.', f_in=1056, f_out=1190,
+         set='fire'),             # embers_C3 dims (1056, 1190) under this slot (shots/embers/render.py TEXT['C3'])
+    dict(id='R07', row=7, line='Each said: better us than them.', f_in=1446, f_out=1550, set='fire'),   # dim (1446, 1550)
+    dict(id='R08', row=8, line='They dug deeper every year, for the gold ran deeper still.', f_in=1710, f_out=1850,
+         set='ink'),
+    dict(id='R09', row=9, line='But whoever won the race, the Ring would rule us all.', f_in=1972, f_out=2076,
+         set='fire'),             # new slot: after the burn-through (1921-1965), over the slit onto nothing (2000)
+    dict(id='R10', row=10, line='In the old story, the wise refused the Ring.', f_in=2168, f_out=2306, set='ink',
+         x=1065),                 # on the right-hand page below the drawing (v5_inkpages keeps page y > 18 cm clear)
+    dict(id='R11', row=11, line='In ours, no smith could refuse it alone.', f_in=2452, f_out=2572, set='fire',
+         y=330),                  # between the Ring and the forge crowns. At y 372 the crowns' flare (2555-2559)
+                                  # rose behind 'In ours' (worst slice 2.32:1); here the worst frame is 4.28:1
+    dict(id='R13', row=13, line='So the two furthest ahead lit the first beacons, together.', f_in=2900, f_out=3040,
+         set='ink', y=150),       # the near fire sits at ~(960, 607), the far one at ~(1380, 383): the sky is clear
+    dict(id='R14', row=14, line='It was a promise to stop, if all the others would.', f_in=3160, f_out=3300,
+         set='ink', y=150),       # UNVERIFIED: runC_scroll is not on the EDIT-C5 Mac; the Reveal/Watch sky placement
+    dict(id='R15', row=15, line='When the last beacon caught, every forge went cold.', f_in=3740, f_out=3836,
+         set='fire', y=220),      # under the top row of beacons, clear of the catch (3785-3791 at ~(692, 448)) and
+                                  # the lower third's beacon (~(994, 646)). The map has no clean band a line this long
+                                  # fits: moving up from y 300 halves the drawn edges under it (0.047 -> 0.022), but
+                                  # its stipple keeps the texture over the threshold (0.017; tools/c5_caption_backdrop)
+    dict(id='R17', row=17, line='The Ring hung there, unfinished.', f_in=4040, f_out=4180, set='fire'),
+    dict(id='R18', row=18, line='They left the gold in the ground.', f_in=4276, f_out=4416, set='ink',
+         x=310, y=300, lines=('They left the gold', 'in the ground.')),
+                                  # on the facing page, off the plate: over the plate (y 590) the words crossed the
+                                  # arches, a ladder and the vein ('gold' on the gold; edge 0.101, texture 0.042,
+                                  # worst slice 2.81:1). One line (694 px of glyphs) cannot fit the left page without
+                                  # crossing the gutter, so it breaks in two; the words are unchanged. Over the page's
+                                  # faint script: edge 0.000, texture 0.014, worst slice 5.43:1
+    dict(id='R19', row=19, line='And the beacons burned on, so no forge could be lit in secret.', f_in=4504,
+         f_out=4664, set='ink', y=150),
+    dict(id='R20', row=20, line='Without the Ring, the dawn came slowly. But it came.', f_in=4860, f_out=5020,
+         set='ink', y=150),       # UNVERIFIED: runC_illum is not on the EDIT-C5 Mac
+    dict(id='R22', row=22, line='The last pages were left for us.', f_in=5462, f_out=5602, set='ink',
+         x=440, y=520),           # EDIT's, on the blank verso: the pen frames bake no text and the gutter runs
+                                  # through the centre (~870-960); 5460-5540 is the score's window for a voice line.
+                                  # Raised from the lower third (y 648), where the verso darkens: worst slice
+                                  # 2.93:1 -> 3.33:1
+    dict(id='title', row=23, line='THE LONG DAWN', f_in=5700, f_out=5880, set='in_picture'),   # book_C 6980-7160
+]
+
+# Text BAKED into delivered pixels (what the renders show, not what their source says today): stem, source frames
+# [a, b), the words, and the code that baked them. A caption set 'in_picture' needs a record with its words on every
+# frame; any other caption must not sit on baked words; baked words the cut shows must belong to an in_picture line.
+BAKED_TEXT = [
+    dict(stem='book_C', src=(400, 540), line='In the old story, a Dark Lord forges the Ring in secret.',
+         by="shots/map/inkline.py LINES['T1'] (PAGES-C, 28 Sep)"),
+    dict(stem='book_C', src=(6790, 6930), line='The last pages were left for us.',
+         by="shots/map/inkline.py LINES['T14'] (PAGES-C, 28 Sep; the old C27 verso, not in C5)"),
+    dict(stem='book_C', src=(6980, 7160), line='THE LONG DAWN', by='shots/map/titleburn.py via book_c.py TITLE'),
+]
 DEFAULT_SET = {'A': 'lower', 'B': 'lower', 'C': 'fire'}
 Y_LOWER, Y_TOP, Y_BOTTOM, Y_MID = 648, 372, 440, 402          # 1920x804 picture coordinates
 PARCH = np.array([0.925, 0.875, 0.765], np.float32)            # ink lines on a dark ground
@@ -270,9 +373,15 @@ FIRE_RAMP = np.array([[0.00, 0.00, 0.00], [0.40, 0.035, 0.0], [1.00, 0.34, 0.05]
 
 
 def text_table(cut):
-    """[{id, line, f_in, f_out, set, locked}] for a cut: the bar map's frames, the H5 words."""
+    """[{id, line, f_in, f_out, set, locked}] for a cut: the bar map's frames, the H5 words. C is C5's own table
+    (C5_TEXT: its bar map's text block carries retired single-leader wording, so C never reads it), each row also
+    carrying its script row and any placement (x, y)."""
     cut = cut.upper()
-    bm = json.load(open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')))
+    if cut == 'C':
+        return [dict(id=r['id'], line=r['line'], f_in=r['f_in'], f_out=r['f_out'], set=r['set'], locked=None,
+                     row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines') if r.get(k) is not None}) for r in C5_TEXT]
+    with open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')) as fh:
+        bm = json.load(fh)
     ids = {t['id'] for t in bm['text']}
     missing = set(H5_WORDS.get(cut, {})) - ids
     assert not missing, f'H5 words for lines not in the bar map: {missing}'
@@ -289,6 +398,12 @@ def _heat_rgb(h):
     i = np.minimum(np.floor(h).astype(np.int32), 3)
     u = (h - i)[..., None]
     return FIRE_RAMP[i] * (1 - u) + FIRE_RAMP[i + 1] * u
+
+
+def _seed(*parts):
+    """A seed that is the same in every process. hash() of a str is salted per process (PYTHONHASHSEED), so it gave
+    each spawned render worker its own flicker, crumble order and sparks for the same line (29 Sep)."""
+    return zlib.crc32(':'.join(map(str, parts)).encode()) & 0xffff
 
 
 def _noise(shape, seed, sigma):
@@ -318,15 +433,28 @@ class TextV3:
         else:
             self.font, size, weight, track = ITALIC, 58 if k.startswith('black') else 56, 560, 0.02
             self.y = (Y_TOP if k == 'black_top' else Y_BOTTOM if k == 'black_bottom' else Y_LOWER) * s
+        if row.get('y') is not None:                                  # C5: a placed line (picture coordinates)
+            self.y = row['y'] * s
         self.size = max(8, int(round(size * s)))
-        self.alpha, self.stag, self.w, self.h = render_line(self.text, self.font, self.size, weight, track)
+        if row.get('lines'):                                          # C5: an explicit break; the words unchanged
+            if ' '.join(row['lines']) != self.text:
+                raise ValueError(f"{self.id}: lines {row['lines']!r} do not rejoin to {self.text!r}")
+            self.alpha, self.stag, self.xn, self.yy, self.bands = render_block(
+                tuple(row['lines']), self.font, self.size, weight, track)
+            self.h, self.w = self.alpha.shape
+        else:
+            self.alpha, self.stag, self.w, self.h = render_line(self.text, self.font, self.size, weight, track)
+            yy, xx = np.mgrid[0:self.h, 0:self.w].astype(np.float32)
+            self.xn = xx / max(1, self.w - 1)
+            self.yy = yy
+            gy, gx = np.nonzero(self.alpha > 0.5)
+            self.bands = ((int(gy.min()), int(gy.max()) + 1, int(gx.min()), int(gx.max()) + 1),)
+        if x is None and row.get('x') is not None:
+            x = row['x'] * s - self.w / 2                             # 'x' is the line's centre
         self.x0 = int(round((W * s / 2 - self.w / 2) if x is None else x))
         self.y0 = int(round(self.y - self.h / 2))
         hh, ww = self.alpha.shape
-        yy, xx = np.mgrid[0:hh, 0:ww].astype(np.float32)
-        self.xn = xx / max(1, ww - 1)
-        self.yy = yy
-        self.noise = _noise((hh, ww), hash((cut, self.id)) & 0xffff, 1.2 * s)
+        self.noise = _noise((hh, ww), _seed(cut, self.id), 1.2 * s)
         self._sparks = None
 
     def active(self, f):
@@ -379,7 +507,7 @@ class TextV3:
     def _sparks_at(self, u, te, n_max=420):
         """Rising sparks born where the letters crumble (u: crumble progress 0..1)."""
         if self._sparks is None:
-            rng = np.random.default_rng(hash((self.cut, self.id, 'sp')) & 0xffff)
+            rng = np.random.default_rng(_seed(self.cut, self.id, 'sp'))
             ys, xs = np.nonzero(self.alpha > 0.5)
             n = min(len(xs), int(n_max * max(0.35, self.s)))
             pick = rng.choice(len(xs), n, replace=False) if len(xs) > n else np.arange(len(xs))
@@ -395,7 +523,9 @@ class TextV3:
         return sp, age, on
 
     # -------------------------------------------------------------------------------------------- draw
-    def draw(self, img, f):
+    def draw(self, img, f, dark_ground=False):
+        """dark_ground: C's ink lines go parchment-white instead of iron-gall, for a partial review cut's slates only
+        (every master draws ink on paper, where iron-gall is right whatever the light)."""
         if not self.active(f):
             return img
         k, s = self.kind, self.s
@@ -429,8 +559,9 @@ class TextV3:
         big[Y0 - HY0:Y1 - HY0, X0 - HX0:X1 - HX0] = sub_a
         bg = float(region.mean())
         if self.cut == 'C' and k.startswith('ink'):
-            col = IRON        # every C ink line is written on paper (book pages, the ink world): ink is darker than
-            # its paper whatever the light (PAGES-C 28 Sep: PARCH below a 0.33 mean turned T14 on C27's page white)
+            col = PARCH if dark_ground else IRON   # every C ink line is written on paper (book pages, the ink world):
+            # ink is darker than its paper whatever the light (PAGES-C 28 Sep: PARCH below a 0.33 mean turned T14 on
+            # C27's page white); only a slate (no paper at all) takes parchment-white
             region[:] = region * (1 - big[..., None]) + col * big[..., None]
             return img
         # legibility halo (a soft darkening under the words), strongest over bright pictures
@@ -529,9 +660,9 @@ def lines_v3(cut, scale=1.0):
     return out
 
 
-def composite_v3(img, lines, f):
-    """img: sRGB float32 in [0,1] at the lines' scale. Draws the active lines in place."""
+def composite_v3(img, lines, f, dark_ground=False):
+    """img: sRGB float32 in [0,1] at the lines' scale. Draws the active lines in place (dark_ground: see draw)."""
     for ln in lines:
         if ln.active(f):
-            ln.draw(img, f)
+            ln.draw(img, f, dark_ground)
     return img
