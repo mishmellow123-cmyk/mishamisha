@@ -1,0 +1,96 @@
+{
+  "utc": "2026-09-28T07:19:21.468976+00:00",
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:11:29) [Clang 20.1.8 ]",
+  "executable": "<validation-root>/bin/python",
+  "machine": "arm64",
+  "versions": {
+    "numpy": "2.3.5",
+    "numba": "0.62.1",
+    "llvmlite": "0.45.1",
+    "scipy": "1.16.3",
+    "opencv-python-headless": "5.0.0.93",
+    "pillow": "12.0.0"
+  },
+  "base": "339b1e370f6cbd01acc18c6d8a2e50f5e7f302e2",
+  "atlas": {
+    "format": 1,
+    "world": 5,
+    "atlas": {
+      "x0": -46.0,
+      "y1": 42.0,
+      "width": 4800,
+      "height": 2688,
+      "ppd": 48.0
+    },
+    "sources": {
+      "bake.py": "830accc502a774003f6225a6a3fe731d33cb8de3ae2ffc0eab72f9f5cf81ddcc",
+      "geo.py": "589e8b0f127996d5cfc514b16a887ba67c15c653980f03aa02e805f092d948f0",
+      "terra.py": "5db5229fe599323b6ad09f262a6ea7a9b89351d0e9667d93e85fa1008d95383e",
+      "features.py": "c0f91bcbf41debf742f9f1b5ad831a1a25e453db622f83f4b56d3e74b852eb5f",
+      "sheet.py": "36d4ffde36db46ba490c2e696a7e19e4c6e05990e827333f8dd6162ec7038ff9",
+      "ink.py": "2ba3867e4852086e9586605610a723187ceae371355ab678495bafd95b88cc1c",
+      "pen.py": "02d61a14fa7bb84e6386c02314092a94354f7364ca2dbf051d1b4356f669da1a",
+      "noise.py": "fb50160a7dc071a2f2c29a6d50b31794612f163f9ef7ccf368ab4e8976161e29",
+      "../../lib/look.py": "1a311e38a231ee9fda65aa8037759ded7b19ae215bd184afb0327dd4cdd70614"
+    }
+  },
+  "thread_limits": {
+    "NUMBA_NUM_THREADS": 1,
+    "OPENBLAS_NUM_THREADS": 1,
+    "OMP_NUM_THREADS": 1,
+    "MKL_NUM_THREADS": 1,
+    "VECLIB_MAXIMUM_THREADS": 1,
+    "OpenCV": 0
+  },
+  "bootstrap_renderer_sha256": "66529aa4ab70c73e681a7ec3631249d568e12fb1fad2ad84cc945e95db8d47f4",
+  "first_frame": {
+    "frame": 3724,
+    "size": [
+      960,
+      402
+    ],
+    "jpeg_sampling": 0,
+    "sha256": "65e54eeafae7b7500382efd4f487f9a54e5356ba2e8b32226c628a54909af23a",
+    "render_seconds": 1.91,
+    "process_wall_seconds": 3.8,
+    "max_rss_bytes": 630276096,
+    "path_at_capture": "reduced/f_03724.jpg",
+    "superseded": "Initial960 preview preceded the unlit-stack weight revision; current review files and hashes are in validation.json."
+  },
+  "bootstrap": {
+    "wall_seconds": 674.6,
+    "max_rss_bytes": 1264549888,
+    "peak_footprint_bytes": 1202620528,
+    "exit_code": 0
+  },
+  "initial_960_renderer_sha256": "6adb94173008dcadcc67e510007b6b3917ab7358a7a483b33f6b572dc294d911",
+  "frozen_renderer_sha256": "cee6cc2a7b6fd97c497503ace1578b1877333833f69c4026b95f64e096b41601",
+  "native_review": {
+    "frames": [
+      3724,
+      3792
+    ],
+    "render_seconds": [
+      1.4,
+      0.98
+    ],
+    "wall_seconds": 4.87,
+    "max_rss_bytes": 755302400
+  },
+  "reduced_review": {
+    "frame_count": 33,
+    "wall_seconds": 15.15,
+    "max_rss_bytes": 569458688
+  },
+  "final_render": {
+    "wall_seconds": 256.47,
+    "max_rss_bytes": 1085554688,
+    "peak_footprint_bytes": 542230016,
+    "exit_code": 0
+  },
+  "preview": {
+    "path": "~/ldfarm/comms/files/c5_map_last_beacon_3440_3839_silent_24fps.mp4",
+    "sha256": "34ddaabfec27af2a54b9cbbb8ca22ff2bdd28483553f24eba27dc356ee38a256",
+    "probe": "preview-probe.json"
+  }
+}
