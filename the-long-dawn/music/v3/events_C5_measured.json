@@ -4,7 +4,7 @@
  "fps": 24,
  "frames": "absolute C frame numbers (the delivered f_%05d.jpg names)",
  "generated_by": "music/src/measure_c5_events.py",
- "generator_sha256": "fe7c5590450768774a8fac65b4c6cc16f7cb6ee760039e40e25f145129cdb57f",
+ "generator_sha256": "a10a667fb274e6a17a637ee800c2ec3d6b691d47e0b6cd6d5847fda4208dd063",
  "basis_labels": {
   "MEASURED": "a pixel statistic decided the frame(s) (see method)",
   "OBSERVED": "checked by eye on native-resolution stills (never in motion)",
@@ -113,6 +113,52 @@
    "observed": {
     "frames": "2088, 2089, 2095, 2116",
     "saw": "2088 is a blank page; 2089 the first short stroke (the sleeve); 2095 the sleeve's outline; 2116 the sleeve hatched. No pen or drawing hand is visible: the lines appear on the page by themselves"
+   }
+  },
+  {
+   "id": "refusal.offering_hand",
+   "shot": "refusal",
+   "stem": "book_C5_refusal",
+   "event": "the offering arm is hatched and its open hand drawn",
+   "frames": {
+    "first": 2114,
+    "last": 2135
+   },
+   "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; the stroke segment before the Ring's",
+   "region": {
+    "x0": 624,
+    "y0": 244,
+    "x1": 982,
+    "y1": 382,
+    "space": "1920x804"
+   },
+   "evidence": {
+    "segment": {
+     "first": 2114,
+     "last": 2135,
+     "frames": 21,
+     "ink_px960": 1075,
+     "centroid": [
+      829,
+      306
+     ]
+    },
+    "pixels": {
+     "2112": 4.0,
+     "2113": 8.0,
+     "2114": 11.0,
+     "2115": 7.0,
+     "2116": 39.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2116, 2134",
+    "saw": "2116 the sleeve hatched; 2134 the open hand complete, empty"
    }
   },
   {

@@ -456,6 +456,10 @@ def m_refusal(root):
     ev_ = [ev("refusal.ink_begins", "refusal", "the first stroke: the offering sleeve and arm begin, left of the page",
               dict(first=first), INK, dict(x=int(cx[first - a]), y=int(cy[first - a]), space="1920x804, centroid"),
               dict(pixels=win(n, a, first, 2, 0)), "high"),
+           ev("refusal.offering_hand", "refusal", "the offering arm is hatched and its open hand drawn",
+              dict(first=info[ring_k - 1]["first"], last=info[ring_k - 1]["last"]), INK + "; the stroke segment "
+              "before the Ring's", union(segs[ring_k - 1]),
+              dict(segment=info[ring_k - 1], pixels=win(n, a, info[ring_k - 1]["first"], 2, 0)), "high"),
            ev("refusal.ring_on_palm", "refusal", "the Ring is drawn on the open palm (the old story's offer)",
               dict(first=info[ring_k]["first"], last=info[ring_k]["last"]), INK + "; the stroke segment just "
               "before the pause and the figure (segments = stroke runs split by >= 2 empty frames)", union(ring_sg),
@@ -630,6 +634,7 @@ OBSERVED = {
         "refusal.ink_begins": ("2088, 2089, 2095, 2116", "2088 is a blank page; 2089 the first short stroke (the "
                                "sleeve); 2095 the sleeve's outline; 2116 the sleeve hatched. No pen or drawing hand "
                                "is visible: the lines appear on the page by themselves"),
+        "refusal.offering_hand": ("2116, 2134", "2116 the sleeve hatched; 2134 the open hand complete, empty"),
         "refusal.ring_on_palm": ("2134, 2138, 2150, 2155", "2134 the open palm complete, empty; 2138 a first small "
                                  "mark on it; 2150 the Ring complete on the palm; 2155 unchanged"),
         "refusal.figure_begins": ("2156, 2168", "2156 a first stroke at the right; 2168 the hooded figure's "
@@ -802,6 +807,73 @@ def build_table(events, identity):
         events=events,
         barmap_C5_vs_picture=disagreements(events),
         cues_C5_vs_picture=CUES_VS_PICTURE)
+
+
+SCHEMA = "long-dawn/c5-events-measured/1"
+EVENT_KEYS = ("id", "shot", "stem", "event", "frames", "method", "region", "evidence", "confidence", "basis")
+
+
+def _frame_values(x):
+    if isinstance(x, bool):
+        return []
+    if isinstance(x, int):
+        return [x]
+    if isinstance(x, list):
+        return [v for y in x for v in _frame_values(y)]
+    return []
+
+
+def validate_table(d, text=None):
+    """the table's schema and invariants -> [problems] (empty when sound): every event names a delivered shot, its
+    frames lie inside that shot, its basis says MEASURED, and no private path leaked into a public file"""
+    out = []
+    for k in ("schema", "cut", "fps", "generator_sha256", "shots", "events", "barmap_C5_vs_picture"):
+        if k not in d:
+            out.append(f"missing top-level {k}")
+    if d.get("schema") != SCHEMA:
+        out.append(f"schema {d.get('schema')!r} != {SCHEMA!r}")
+    for s, (stem, a, b, sec) in SHOTS.items():
+        got = d.get("shots", {}).get(s)
+        if not got or got.get("stem") != stem or (got.get("first"), got.get("last")) != (a, b):
+            out.append(f"shot {s}: identity missing or not {stem} {a}-{b}")
+        elif len(got.get("frame_set_sha256", "")) != 64:
+            out.append(f"shot {s}: no frame-set sha256")
+    seen = set()
+    for e in d.get("events", []):
+        eid = e.get("id", "?")
+        miss = [k for k in EVENT_KEYS if k not in e]
+        if miss:
+            out.append(f"{eid}: missing {miss}")
+            continue
+        if eid in seen:
+            out.append(f"{eid}: duplicate id")
+        seen.add(eid)
+        if e["shot"] not in SHOTS or e["stem"] != SHOTS[e["shot"]][0]:
+            out.append(f"{eid}: unknown shot/stem {e['shot']}/{e['stem']}")
+            continue
+        a, b = SHOTS[e["shot"]][1:3]
+        for k, v in e["frames"].items():
+            for f in _frame_values(v):
+                if not a <= f <= b:
+                    out.append(f"{eid}: frames.{k} = {f} outside its shot {a}-{b}")
+        if e["confidence"] not in ("high", "medium", "low"):
+            out.append(f"{eid}: confidence {e['confidence']!r}")
+        if "MEASURED" not in e["basis"]:
+            out.append(f"{eid}: basis {e['basis']} lacks MEASURED")
+        if "observed_stale" in e:
+            out.append(f"{eid}: its OBSERVED note is for another frame set")
+        if "OBSERVED" in e["basis"] and not (e.get("observed") or {}).get("saw"):
+            out.append(f"{eid}: OBSERVED without a note")
+    text = text if text is not None else json.dumps(d)
+    for bad in ("/Users/", "/home/", "/private/"):
+        if bad in text:
+            out.append(f"a private path ({bad}...) in the table")
+    return out
+
+
+def is_current(d):
+    """True when the table was written by this very script (a stale table after an edit of the measurer fails)"""
+    return d.get("generator_sha256") == sha_file(os.path.abspath(__file__))
 
 
 def run(shots, root, verbose=True):
