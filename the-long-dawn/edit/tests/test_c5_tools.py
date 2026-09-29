@@ -151,7 +151,10 @@ class AssetMapTests(unittest.TestCase):
         self.assertEqual(need['runC_illum'], set(range(2398, 2878)))
         self.assertEqual(need['book_C5_pen_matte'], set(range(5440, 5680)))
         self.assertEqual(need['embers_C3'] & {1679}, {1679})                  # C8's held race
-        self.assertNotIn('ring_C', need)                                      # C12 is an open decision
+        import edl_v3 as EDL                                                  # C12: what the chosen candidate reads
+        want = set() if EDL.FLINT_CHOICE is None else {s0 + k for a, b, s0 in EDL.FLINT_CANDIDATES[EDL.FLINT_CHOICE]['pieces']
+                                                       if s0 is not None for k in range(b - a)}
+        self.assertEqual(need.get('ring_C', set()), want)
 
 
 class PartialLabelTests(unittest.TestCase):

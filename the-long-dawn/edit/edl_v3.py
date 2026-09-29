@@ -306,7 +306,9 @@ FLINT_CANDIDATES = {
                    "strike 1, no a|b join. Look at: whether one strike reads as a first attempt, and whether the Trap's "
                    "roar cut to black is wanted."),
 }
-FLINT_CHOICE = None      # None = decision_required. Set a key above only after looking at the frames.
+FLINT_CHOICE = 'A'       # chosen 29 Sep from the frames (renders/ring_C): both strikes, no fade to lose at 2960-2969
+                         # (luma flat 27.7-27.9), and the a|b join 2999|3150 changes less (0.0044) than the take's own
+                         # wind-up onset 2969|2970 (0.0067); B, C and D stay above as one-constant alternatives.
 FLINT_DESC = ('Hands only in the dark: the flint struck, sparks into the tinder, a long blow, the kindling catches. '
               'SOURCE SELECTION UNDECIDED (edl_v3.FLINT_CANDIDATES).')
 

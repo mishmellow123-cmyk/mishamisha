@@ -98,11 +98,13 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertEqual(present, 5920)
 
     def test_committed_state_fails_full_and_passes_partial(self):
-        """The branch as committed: no source here, Flint undecided, T1's old words baked, two burns unbuilt."""
+        """The branch as committed: no source here, Flint chosen (29 Sep), T1's old words baked, two burns unbuilt."""
         rep, keys, text = self.run_gate(partial=False)
         self.assertTrue(rep.failed())
         self.assertEqual(rep.count('FAIL'), 0, text)
-        self.assertIn(('GAP', 'C12 FLINT 2640-2879: decision_required'), keys)
+        self.assertIsNotNone(EDL.FLINT_CHOICE)
+        self.assertNotIn(('GAP', 'C12 FLINT 2640-2879: decision_required'), keys)
+        self.assertTrue(any(k[1].startswith('C12 FLINT ') for k in keys if k[0] == 'GAP'), text)   # realised rows, no source here
         self.assertTrue(any('RE-RENDER book_C 400-539' in i['msg'] for i in rep.items if i['level'] == 'GAP'))
         self.assertEqual(sum(i['what'].startswith('transition burn') for i in rep.items if i['level'] == 'GAP'), 2)
         rep_p, _, _ = self.run_gate(partial=True)
@@ -134,7 +136,7 @@ class C5ReadinessTests(unittest.TestCase):
 
     def test_open_flint_decision_fails_full_only(self):
         self.green()
-        self.enterContext(mock.patch.dict(EDL.EDL, {'C': list(_ORIGINAL_C)}))   # C12 back to the decision row
+        self.enterContext(mock.patch.dict(EDL.EDL, {'C': _with_flint(_ORIGINAL_C, None)}))   # C12 back to the decision row
         self.enterContext(mock.patch.object(EDL, 'FLINT_CHOICE', None))
         self.write_json()
         rep, keys, text = self.run_gate()
@@ -364,6 +366,14 @@ class C5ReadinessTests(unittest.TestCase):
 
 
 _ORIGINAL_C = list(EDL.EDL['C'])
+
+
+def _with_flint(rows, choice):
+    """rows with C12 rebuilt as edl_v3 builds it for `choice` (None: the single decision row). _ORIGINAL_C carries
+    whatever edl_v3.FLINT_CHOICE was at import, so a test about the open decision must not rely on it."""
+    out = [r for r in rows if r['sec'] != 'C12']
+    i = next(k for k, r in enumerate(out) if r['f0'] == 2880)
+    return out[:i] + EDL.flint_rows(choice) + out[i:]
 _ORIGINAL_BAKED = [dict(b) for b in titles.BAKED_TEXT]
 _ORIGINAL_TRANS = list(EDL.TRANS['C'])
 

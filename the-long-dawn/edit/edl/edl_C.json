@@ -645,13 +645,64 @@
   {
    "sec": "C12",
    "f0": 2640,
+   "f1": 2670,
+   "code": "#12",
+   "name": "FLINT",
+   "owner": "MONTAGE-3D-5 (renders/ring_C)",
+   "desc": "Hands only in the dark: the flint struck, sparks, the long blow, the catch.",
+   "takes": [
+    {
+     "stem": "ring_C",
+     "off": 330,
+     "mode": "exact",
+     "note": "MONTAGE-3D-5 hands-only flint, candidate A",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/ring_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    34,
+    34
+   ]
+  },
+  {
+   "sec": "C12",
+   "f0": 2670,
    "f1": 2880,
    "code": "#12",
    "name": "FLINT",
    "owner": "MONTAGE-3D-5 (renders/ring_C)",
-   "desc": "Hands only in the dark: the flint struck, sparks into the tinder, a long blow, the kindling catches. SOURCE SELECTION UNDECIDED (edl_v3.FLINT_CANDIDATES).",
-   "takes": [],
-   "kind": "decision",
+   "desc": "Hands only in the dark: the flint struck, sparks, the long blow, the catch.",
+   "takes": [
+    {
+     "stem": "ring_C",
+     "off": 480,
+     "mode": "exact",
+     "note": "MONTAGE-3D-5 hands-only flint, candidate A",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/ring_C"
+     ]
+    }
+   ],
+   "kind": "takes",
    "bars": [
     34,
     36
@@ -1309,8 +1360,8 @@
     2640,
     2880
    ],
-   "status": "decision_required",
-   "choice": null,
+   "status": "chosen:A",
+   "choice": "A",
    "source": "ring_C",
    "takes": {
     "flint_a": [

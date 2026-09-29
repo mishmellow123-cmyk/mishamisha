@@ -19,7 +19,7 @@
   "music/v3/barmap_C5P2.json": "44b39d9ad37b9d3e2757bf0d1d5f2a9a3413bd54d4bf3f2341189ba034256314",
   "music/sound/events_C.json": "20f43e1f25e756b3b42c170f989af7f8c676661245aa84df17033a4676b82031"
  },
- "edl": "edit/edl/edl_C.json (5,920 frames): its FLINT is still a decision (C12_FLINT decision_required)",
+ "edl": "edit/edl/edl_C.json (5,920 frames)",
  "events": [
   {
    "id": "C5.hearth.refusal",
@@ -206,45 +206,45 @@
   {
    "id": "C5.flint.strike1",
    "kind": "event",
-   "hit_f": null,
-   "sync": "edl:ring_C@2980 (edit/edl/edl_C.json (5,920 frames): its FLINT is still a decision (C12_FLINT decision_required))",
+   "hit_f": 2650,
+   "sync": "edl:ring_C@2980 (edit/edl/edl_C.json (5,920 frames))",
    "recipe": "C.strike1",
    "level": -39.0,
    "level_from": "sound/events_C.json C.strike1",
-   "status": "needs frame (EDIT's C5 EDL for FLINT)",
+   "status": "ready",
    "design": false
   },
   {
    "id": "C5.flint.strike3",
    "kind": "event",
-   "hit_f": null,
-   "sync": "edl:ring_C@3178 (edit/edl/edl_C.json (5,920 frames): its FLINT is still a decision (C12_FLINT decision_required))",
+   "hit_f": 2698,
+   "sync": "edl:ring_C@3178 (edit/edl/edl_C.json (5,920 frames))",
    "recipe": "C.strike3",
    "level": -36.6,
    "level_from": "sound/events_C.json C.strike3",
-   "status": "needs frame (EDIT's C5 EDL for FLINT)",
+   "status": "ready",
    "design": false
   },
   {
    "id": "C5.flint.blow",
    "kind": "event",
-   "hit_f": null,
-   "sync": "edl:ring_C@3204 (edit/edl/edl_C.json (5,920 frames): its FLINT is still a decision (C12_FLINT decision_required))",
+   "hit_f": 2724,
+   "sync": "edl:ring_C@3204 (edit/edl/edl_C.json (5,920 frames))",
    "recipe": "C.blow",
    "level": -36.6,
    "level_from": "sound/events_C.json C.blow",
-   "status": "needs frame (EDIT's C5 EDL for FLINT)",
+   "status": "ready",
    "design": false
   },
   {
    "id": "C5.flint.catch",
    "kind": "event",
-   "hit_f": null,
-   "sync": "edl:ring_C@3316 (edit/edl/edl_C.json (5,920 frames): its FLINT is still a decision (C12_FLINT decision_required))",
+   "hit_f": 2836,
+   "sync": "edl:ring_C@3316 (edit/edl/edl_C.json (5,920 frames))",
    "recipe": "C.x.catch",
    "level": -35.6,
    "level_from": "sound/events_C.json C.x.catch",
-   "status": "needs frame (EDIT's C5 EDL for FLINT)",
+   "status": "ready",
    "design": false
   },
   {
