@@ -519,7 +519,12 @@ def masters_table():
 # TP -1.30 dBTP). Outside deliver._code_hash(): a change re-muxes, it never re-encodes picture.
 ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master'),
                  # C: SOUND-C's sound_C.wav (director, 28 Sep ~01:10Z) fits the RETIRED 7,200-frame cut, so it is no
-                 # longer C's master (EDIT-C5, 29 Sep); C5's is adopted here by name only when the director adopts one
+                 # longer C's master (EDIT-C5, 29 Sep). C5's (owner, under the director's standing delegation, 29 Sep):
+                 # score pass 2 on the measured picture + the C5 effects table (SOUND-C's recordings, the first half's
+                 # included) through the master chain: 5,920 frames, -16.06 LUFS, TP -1.30 dBTP; verify_c5_render
+                 # 24/24, render sync 49/49, level map 23/23 with its effects, rules 3/3, notes 0, clicks 0.
+                 # Alternative: pass 1 (music/out/v3/final_C5.wav, score only, pass 1's estimated timings).
+                 'C': ('music/out/v3/sound_C5P2.wav', 'SOUND master (C5 pass 2)'),
                  # A (director, 28 Sep ~02:20Z): COMPOSER-A2's v2 score + SOUND-C's real effects re-synced to the
                  # measured picture (incl. A-FIX's h1_A fire); sync 59/59. Re-renders are picked up by name.
                  'A': ('music/out/v3/sound_A.wav', 'SOUND master')}

@@ -44,21 +44,26 @@ ROW_SECTIONS = {1: ('C1', 'C2'), 2: ('C3',), 3: ('C4',), 4: ('C4',), 5: ('C5',),
 # primary take's stem, off). Delivered shots are absolute (off 0); reused ones read the source frames the 7,200-frame
 # cut played (verified 29 Sep against edl_C.json at 69a1788: runC_scroll 0-319, runC_illum 2398-2877, book_C
 # 6160-6399 Plenty and 6960-7199 the title).
+# 29 Sep: C11, C15 (+ the Cold lead-in), C18, C19 and C22 play the adopted farm-rendered candidates (edl_v3.CAND;
+# the accepted takes they replaced are edl_v3.ALTERNATIVES).
 SHOT_MAP = {
-    'C10': (2080, 2320, 'book_C5_refusal', 0), 'C11': (2320, 2640, 'embers_C5_trap', 0),
+    'C10': (2080, 2320, 'book_C5_refusal', 0), 'C11': (2320, 2640, 'cand_trap_front_smoke_near', 0),
     'C13': (2880, 3120, 'runC_reveal_pair_v5', 0), 'C14': (3120, 3440, 'runC_scroll', -3120),
-    'C15': (3440, 3840, 'map_last_beacon_C', 0), 'C16': (3840, 4000, 'embers_C5_cold', 0),
-    'C17': (4000, 4240, 'embers_C5_unfinished', 0), 'C18': (4240, 4480, 'book_C5_deep_abandoned', 0),
-    'C19': (4480, 4720, 'runC_watch_v5', 0), 'C20': (4720, 5200, 'runC_illum', 2398 - 4720),
-    'C21': (5200, 5440, 'book_C', 960), 'C22': (5440, 5680, 'book_C5_pen', 0), 'C23': (5680, 5920, 'book_C', 1280),
+    'C15': (3440, 3840, 'cand_map_beacon-falloff', 0), 'C16': (3840, 4000, 'embers_C5_cold', 0),
+    'C17': (4000, 4240, 'embers_C5_unfinished', 0), 'C18': (4240, 4480, 'cand_deep_leaned_ladders', 0),
+    'C19': (4480, 4720, 'cand_watch_night-fire', 0), 'C20': (4720, 5200, 'runC_illum', 2398 - 4720),
+    'C21': (5200, 5440, 'book_C', 960), 'C22': (5440, 5680, 'cand_pen_soft_spine_metal', 0),
+    'C23': (5680, 5920, 'book_C', 1280),
 }
+COLD_LEAD_STEM = 'cand_cold_lead24'          # Cold's lit lead-in, COLD_CUT-3839, when COLD_CUT < 3840
 # The one movable picture cut, edl_v3.COLD_CUT (the last beacon -> the forges): anywhere from 3792 to the section line
 # 3840. Measured 29 Sep from the delivered frames, stated here independently: map_last_beacon_C's last kingdom catches
 # 3785-3791, so an earlier cut loses the catch; embers_C5_cold goes dark at 3848 whatever the cut.
 COLD_HOLD = (3792, 3840)
 # The Pages mattes delivered with C5 are opaque (255 in every pixel of all 240 frames of each, decoded 29 Sep): a
 # transition that took its hole from one would reveal nothing.
-OPAQUE_MATTES = ('book_C5_refusal_matte', 'book_C5_deep_abandoned_matte', 'book_C5_pen_matte')
+OPAQUE_MATTES = ('book_C5_refusal_matte', 'book_C5_deep_abandoned_matte', 'book_C5_pen_matte',
+                 'cand_deep_leaned_ladders_matte', 'cand_pen_soft_spine_metal_matte')   # the candidates' too (29 Sep)
 FT_CONVENTION = {(841, 1040): dict(add='embers_C3_e15', under=None),             # BURN_NOTES: page + fire, e15
                  (1680, 1718): dict(add=None, under=None),                       # the sweep: race baked, matte 1
                  (1905, 1992): dict(add=None, under=('same', 'embers_C3'))}      # the Eye: the live storm under
@@ -182,7 +187,7 @@ def expected_rows(sec):
     f0, f1, stem, off = SHOT_MAP[sec]
     cc = EDL.COLD_CUT
     if sec == 'C15' and cc != f1:
-        return [(f0, cc, stem, off), (cc, f1, 'embers_C5_cold', 0)]
+        return [(f0, cc, stem, off), (cc, f1, COLD_LEAD_STEM, 0)]
     return [(f0, f1, stem, off)]
 
 
@@ -436,7 +441,7 @@ def check_captions(rep):
     except (OSError, ValueError) as e:
         rep.add('FAIL', 'captions', f'cannot read the script table in {HANDOVER}: {e}')
         return
-    bad, warn = [], []
+    bad, warn, kept = [], [], []
     if sorted(script) != list(range(1, 24)):
         bad.append(f'HANDOVER.md v5.2 table rows {sorted(script)}, expected 1-23')
     for n, words in AMENDMENT.items():
@@ -482,7 +487,9 @@ def check_captions(rep):
             if t['f0'] < r['f_out'] and r['f_in'] < t['f1']:
                 warn.append(f"{r['id']} overlaps the {t['kind']} window {t['f0']}-{t['f1'] - 1}")
         for c, (a, b) in sorted(cuts.items()):
-            if r['f_in'] < c < r['f_out']:
+            if r['f_in'] < c < r['f_out'] and (r.get('across') or (None,))[0] == c:
+                kept.append(f"{r['id']} runs across the cut at {c} on purpose: {r['across'][1]}")
+            elif r['f_in'] < c < r['f_out']:
                 warn.append(f"{r['id']} {r['f_in']}-{r['f_out'] - 1} runs across the hard cut at {c} ({a} -> {b}): "
                             f'its words change picture mid-line; end it by {c}, or keep it across on purpose')
     srt = sorted(table, key=lambda r: r['f_in'])
@@ -495,6 +502,8 @@ def check_captions(rep):
             'overlapping (PROVISIONAL words)')
     for w in warn:
         rep.add('WARN', 'captions', w)
+    for k in kept:
+        rep.add('INFO', 'captions', k)
 
 
 def _take_at(f):

@@ -61,20 +61,20 @@
    "desc": "The leaves riffle back; a pen draws a mountain with a fire in its throat and in it a small gold ring.",
    "takes": [
     {
-     "stem": "book_C",
+     "stem": "cand_t1_current-words",
      "off": 0,
      "mode": "exact",
-     "note": "MAP-v3 book engine",
+     "note": "current-words: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
-     "matte": "book_C_matte",
+     "matte": "cand_t1_current-words_matte",
      "under": null,
      "video": null,
      "need": null,
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/book_C"
+      "renders/cand_t1_current-words"
      ]
     }
    ],
@@ -620,10 +620,10 @@
    "desc": "One forge sinks, the others surge, it flares back and races; two matching towers pull ahead, neck and neck.",
    "takes": [
     {
-     "stem": "embers_C5_trap",
+     "stem": "cand_trap_front_smoke_near",
      "off": 0,
      "mode": "exact",
-     "note": "Codex PR11 (embers, 9fa0822)",
+     "note": "front_smoke_near: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -633,7 +633,7 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/embers_C5_trap"
+      "renders/cand_trap_front_smoke_near"
      ]
     }
    ],
@@ -778,17 +778,17 @@
   {
    "sec": "C15",
    "f0": 3440,
-   "f1": 3840,
+   "f1": 3816,
    "code": "#15",
    "name": "THE LAST BEACON",
    "owner": "MAP",
    "desc": "The map of the kingdoms: beacons flare in no order; one kingdom stays dark (3724-3783), then catches.",
    "takes": [
     {
-     "stem": "map_last_beacon_C",
+     "stem": "cand_map_beacon-falloff",
      "off": 0,
      "mode": "exact",
-     "note": "Codex PR13 (last beacon, 2bdfb09)",
+     "note": "beacon-falloff: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -798,13 +798,46 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/map_last_beacon_C"
+      "renders/cand_map_beacon-falloff"
      ]
     }
    ],
    "kind": "takes",
    "bars": [
     44,
+    48
+   ]
+  },
+  {
+   "sec": "C15",
+   "f0": 3816,
+   "f1": 3840,
+   "code": "#16",
+   "name": "THE FORGES GO COLD \u00b7 LIT LEAD-IN",
+   "owner": "EMBERS",
+   "desc": "Every forge still burning, 32 frames before 3848 puts them all out.",
+   "takes": [
+    {
+     "stem": "cand_cold_lead24",
+     "off": 0,
+     "mode": "exact",
+     "note": "lead24: Codex PR #15 candidate, farm 29 Sep (5bc5fe9); its 3840-3999 equal embers_C5_cold (mean |diff| 0.0 at every 8th frame, JPEG max 2)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_cold_lead24"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    48,
     48
    ]
   },
@@ -884,20 +917,20 @@
    "desc": "The mine page again, still: empty ladders, a lantern set down, the gold vein still glinting.",
    "takes": [
     {
-     "stem": "book_C5_deep_abandoned",
+     "stem": "cand_deep_leaned_ladders",
      "off": 0,
      "mode": "exact",
-     "note": "Codex PR12 (ink pages, ebcdd0a)",
+     "note": "leaned_ladders: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
-     "matte": "book_C5_deep_abandoned_matte",
+     "matte": "cand_deep_leaned_ladders_matte",
      "under": null,
      "video": null,
      "need": null,
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/book_C5_deep_abandoned"
+      "renders/cand_deep_leaned_ladders"
      ]
     }
    ],
@@ -917,10 +950,10 @@
    "desc": "The ink range with a beacon burning on every peak as the camera drifts (the run's poses 80-319, all lit).",
    "takes": [
     {
-     "stem": "runC_watch_v5",
+     "stem": "cand_watch_night-fire",
      "off": 0,
      "mode": "exact",
-     "note": "Codex PR14 (run, 7412f2a)",
+     "note": "night-fire: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -930,7 +963,7 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/runC_watch_v5"
+      "renders/cand_watch_night-fire"
      ]
     }
    ],
@@ -1016,20 +1049,20 @@
    "desc": "The blank spread with a wooden dip pen resting across it; the camera and the hearth light move slowly.",
    "takes": [
     {
-     "stem": "book_C5_pen",
+     "stem": "cand_pen_soft_spine_metal",
      "off": 0,
      "mode": "exact",
-     "note": "Codex PR12 (ink pages, ebcdd0a)",
+     "note": "soft_spine_metal: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
-     "matte": "book_C5_pen_matte",
+     "matte": "cand_pen_soft_spine_metal_matte",
      "under": null,
      "video": null,
      "need": null,
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/book_C5_pen"
+      "renders/cand_pen_soft_spine_metal"
      ]
     }
    ],
@@ -1194,7 +1227,11 @@
    "set": "fire",
    "locked": null,
    "row": 15,
-   "y": 220
+   "y": 220,
+   "across": [
+    3816,
+    "the line names both pictures: its first half on the lit map, \"every forge went cold\" read over the burning forges, ending 12 frames before they go out at 3848"
+   ]
   },
   {
    "id": "R17",
@@ -1481,13 +1518,22 @@
  "movable_cuts": [
   {
    "id": "COLD_CUT",
-   "frame": 3840,
+   "frame": 3816,
    "section_line": 3840,
    "shutdown": 3848,
    "note": "the last beacon -> the forges; may move earlier into the map's all-lit hold (3792-3839) for a lit lead-in while the shutdown stays at 3848. The edit changes edl_v3.COLD_CUT alone; embers_C5_cold must then hold the lead-in frames"
   }
  ],
  "baked_text": [
+  {
+   "stem": "cand_t1_current-words",
+   "src": [
+    400,
+    540
+   ],
+   "line": "In the old story, a Dark Lord forges a Ring to rule the world.",
+   "by": "shots/map/book_c_t1_candidates.py current-words (Codex PR #15; farm 29 Sep at 5bc5fe9); read off the delivered frames 430-538"
+  },
   {
    "stem": "book_C",
    "src": [

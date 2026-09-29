@@ -70,6 +70,12 @@ ANTIC_DT5P2 = {("pulls_ahead", "vln1"): -0.010, ("pulls_ahead", "vln2"): -2.18 /
 # its real attack ever earlier: in render 1 of pass 2 it sounds from -280 ms, on a plateau from -160 ms, while the
 # octave violins arrive at +26 ms, and the arrivew probe (8 dB under a peak 0.8 s into a 10 dB crescendo) still read
 # +170 ms. Its onset now sits on the beat (the kit's bloom rule, 0.05 s) and it is probed as a bloom.
+# the ride (the players play softer; the sampler's layers follow): pass 1's, and C13. Pass 2's Reveal gives the two
+# first fires two voices at once, and render 1 of pass 2 measured the section at -3.4 LU under the film's loudest
+# (score) and -2.3 (with its effects) against a band of -24..-6: a night, pp, two fires far apart. -5 dB of dynamics
+# (render 3: -4 left the score's loudest 3 s at -16.0 LUFS, the band's edge on its own) with the two ignitions
+# trimmed in sound_c5_table.py brings the section into its band, the voices' balance unchanged.
+RIDE = dict(P1.RIDE, C13=-5.0)
 SVLN_ANSWER = ("sunrise", 8)
 ANTIC_SET5[(SVLN_ANSWER, "svln")] = 0.05
 
@@ -262,7 +268,7 @@ def build(bm):
     for pn in ("hn", "hn2", "hn3", "hn_far", "hn_farther", "hn_far2", "hn_ans", "hn_st", "hn_st2", "ca", "ca_dbl",
                "cl_c", "ob_c", "bsn_c", "svln"):
         K.breathe(S, pn, 0, end, depth=0.1, min_dur=1.4)
-    K.ride(S, bm, P1.RIDE)
+    K.ride(S, bm, RIDE)
     for pn in ("ca", "ca_dbl", "cl_c", "cl_dbl", "ob_c", "ob_dbl", "bsn_c", "hn", "hn2", "hn3", "hn_st", "hn_st2",
                "hn_far", "hn_farther", "hn_far2", "hn_ans", "tbn", "tbn2", "tuba", "svln", "svln2", "vla_q",
                "vc_ring", "line_vla", "line_vc", "vla", "vc_trem", "vln1", "vc_q", "cb_q", "vln1_q", "vln2_q", "vc", "cb",

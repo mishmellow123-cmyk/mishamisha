@@ -104,32 +104,34 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertEqual(present, 5920)
 
     def test_committed_state_fails_full_and_passes_partial(self):
-        """The branch as committed: no source here, Flint chosen (29 Sep), T1's old words baked, two burns unbuilt."""
+        """The branch as committed: no source here, Flint chosen (29 Sep), T1 re-rendered with the current words and
+        both burns built (29 Sep): FULL fails only on this machine's missing sources."""
         rep, keys, text = self.run_gate(partial=False)
         self.assertTrue(rep.failed())
         self.assertEqual(rep.count('FAIL'), 0, text)
         self.assertIsNotNone(EDL.FLINT_CHOICE)
         self.assertNotIn(('GAP', 'C12 FLINT 2640-2879: decision_required'), keys)
         self.assertTrue(any(k[1].startswith('C12 FLINT ') for k in keys if k[0] == 'GAP'), text)   # realised rows, no source here
-        self.assertTrue(any('RE-RENDER book_C 400-539' in i['msg'] for i in rep.items if i['level'] == 'GAP'))
+        # T1 plays the adopted re-render with R02's current words (29 Sep): no re-render is owed any more
+        self.assertFalse(any('RE-RENDER' in i['msg'] for i in rep.items if i['level'] == 'GAP'))
         self.assertEqual(sum(i['what'].startswith('transition burn') for i in rep.items if i['level'] == 'GAP'), 2)
         rep_p, _, _ = self.run_gate(partial=True)
         self.assertFalse(rep_p.failed())
 
     def test_missing_source_frame_fails_full_only(self):
         self.green()
-        self.drop('embers_C5_trap', 2500)
+        self.drop('cand_trap_front_smoke_near', 2500)
         rep, keys, text = self.run_gate()
         self.assertTrue(rep.failed())
-        self.assertIn('1 of 320 frames not resolvable from embers_C5_trap 2320-2639', text)
+        self.assertIn('1 of 320 frames not resolvable from cand_trap_front_smoke_near 2320-2639', text)
         self.assertFalse(self.run_gate(partial=True)[0].failed())
 
     def test_missing_matte_or_under_is_a_missing_source(self):
         self.green()
-        self.drop('book_C5_pen_matte', 5500)
+        self.drop('cand_pen_soft_spine_metal_matte', 5500)
         self.drop('embers_C3', 1950)                             # the Eye's live storm under the filmed burn
         rep, _, text = self.run_gate()
-        self.assertIn('(missing: book_C5_pen_matte)', text)
+        self.assertIn('(missing: cand_pen_soft_spine_metal_matte)', text)
         self.assertIn('(missing: under:embers_C3)', text)
 
     def test_provisional_under_is_not_final(self):
@@ -182,35 +184,41 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertIn('overlaps at 3832-3839', text)
 
     # ------------------------------------------------ the movable map -> Cold cut (edl_v3.COLD_CUT, one number)
-    def test_committed_cold_cut_is_the_briefed_timeline(self):
-        self.assertEqual(EDL.COLD_CUT, 3840)
+    def test_committed_cold_cut_is_the_adopted_lead_in(self):
+        """29 Sep: COLD_CUT 3816 plays Codex's lead24 (cand_cold_lead24) after the adopted map; R15 crosses that cut on
+        purpose (titles.C5_TEXT R15 across=3816), which the gate reports as INFO, never as a WARN."""
+        self.assertEqual(EDL.COLD_CUT, 3816)
         self.assertEqual([(r['f0'], r['f1'], r['takes'][0]['stem']) for r in _ORIGINAL_C if r['sec'] in ('C15', 'C16')],
-                         [(3440, 3840, 'map_last_beacon_C'), (3840, 4000, 'embers_C5_cold')])
-        self.assertEqual(RD.hard_cuts().get(3840), ('map_last_beacon_C', 'embers_C5_cold'))
-        self.assertFalse([i for i in RD.run(True).items if 'runs across the hard cut' in i['msg']])
+                         [(3440, 3816, 'cand_map_beacon-falloff'), (3816, 3840, 'cand_cold_lead24'),
+                          (3840, 4000, 'embers_C5_cold')])
+        self.assertEqual(RD.hard_cuts().get(3816), ('cand_map_beacon-falloff', 'cand_cold_lead24'))
+        items = RD.run(True).items
+        self.assertFalse([i for i in items if 'runs across the hard cut' in i['msg']])
+        self.assertTrue([i for i in items if i['level'] == 'INFO' and 'runs across the cut at 3816 on purpose' in i['msg']])
 
     def test_cold_cut_moves_in_one_place_and_names_what_follows(self):
-        """COLD_CUT 3816 (a 24-frame lit lead-in) plus the new delivery's range is green; R15 is WARNed by name."""
-        self.green(cold_cut=3816)
-        self.enterContext(mock.patch.dict(CA.DELIVERED, {'embers_C5_cold': (3816, 3999)}))   # the new delivery
+        """COLD_CUT 3800 plus a delivery covering its lead-in is green; R15's marker names 3816, so crossing 3800
+        is WARNed by name (a crossing nobody reviewed)."""
+        self.green(cold_cut=3800)
+        self.enterContext(mock.patch.dict(CA.DELIVERED, {'cand_cold_lead24': (3800, 3999)}))   # a longer delivery
         rep, _, text = self.run_gate()
         self.assertGreen(rep, text)
         self.assertEqual([(r['f0'], r['f1'], r['takes'][0]['stem'], r['takes'][0]['off']) for r in RD.rows_of('C15')],
-                         [(3440, 3816, 'map_last_beacon_C', 0), (3816, 3840, 'embers_C5_cold', 0)])
+                         [(3440, 3800, 'cand_map_beacon-falloff', 0), (3800, 3840, 'cand_cold_lead24', 0)])
         warns = [i['msg'] for i in rep.items if i['level'] == 'WARN']
-        self.assertIn('R15 3740-3835 runs across the hard cut at 3816 (map_last_beacon_C -> embers_C5_cold): its '
-                      'words change picture mid-line; end it by 3816, or keep it across on purpose', warns)
-        self.assertEqual(CA.needed_frames()['embers_C5_cold'], set(range(3816, 4000)))
+        self.assertIn('R15 3740-3835 runs across the hard cut at 3800 (cand_map_beacon-falloff -> cand_cold_lead24): '
+                      'its words change picture mid-line; end it by 3800, or keep it across on purpose', warns)
+        self.assertEqual(CA.needed_frames()['cand_cold_lead24'], set(range(3800, 3840)))
 
     def test_moved_cold_cut_before_its_delivery_is_owed_not_broken(self):
-        self.green(cold_cut=3816)
-        for f in range(3816, 3840):
-            self.drop('embers_C5_cold', f)                        # the lead-in has not been rendered yet
+        self.green(cold_cut=3800)
+        for f in range(3800, 3816):
+            self.drop('cand_cold_lead24', f)                      # the delivered lead-in starts at 3816
         rep, keys, text = self.run_gate()
         self.assertTrue(rep.failed())
         self.assertEqual(rep.count('FAIL'), 0, text)
-        self.assertIn('24 of 24 frames not resolvable from embers_C5_cold 3816-3839', text)
-        self.assertIn('the EDL reads 3816-3839 (24 frames) beyond the recorded delivery 3840-3999', text)
+        self.assertIn('16 of 40 frames not resolvable from cand_cold_lead24 3800-3839', text)
+        self.assertIn('the EDL reads 3800-3815 (16 frames) beyond the recorded delivery 3816-3999', text)
         self.assertFalse(self.run_gate(partial=True)[0].failed())
 
     def test_cold_cut_outside_the_hold_or_unrecorded_fails_both_modes(self):
@@ -220,10 +228,11 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertIn('edl_v3.COLD_CUT 3780 is outside 3792-3840', text)
 
     def test_c15_rows_for_a_cut_the_constant_does_not_name_fail(self):
-        self.green(cold_cut=3816, set_cold_cut=False)             # rows edited by hand, COLD_CUT still 3840
+        self.green(cold_cut=3800, set_cold_cut=False)             # rows edited by hand, COLD_CUT still 3816
         rep, _, text = self.run_gate(partial=True)
         self.assertTrue(rep.failed())
-        self.assertIn('C15: rows [(3440, 3816), (3816, 3840)], expected [(3440, 3840)] (edl_v3.COLD_CUT = 3840)', text)
+        self.assertIn('C15: rows [(3440, 3800), (3800, 3840)], expected [(3440, 3816), (3816, 3840)] '
+                      '(edl_v3.COLD_CUT = 3816)', text)
 
     def test_transition_hole_from_an_opaque_page_matte_fails_both_modes(self):
         self.green()
@@ -320,7 +329,14 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertIn('silently vanish', text)
 
     def test_old_baked_words_need_a_rerender_and_edit_text_on_them_is_double(self):
+        """The accepted mountain page (edl_v3.ALTERNATIVES['C3']: book_C with the old T1 words) played again."""
         self.green()
+        rows = copy.deepcopy(EDL.EDL['C'])
+        k = next(i for i, r in enumerate(rows) if r['sec'] == 'C3')
+        rows[k]['takes'] = [EDL.book()]
+        self.enterContext(mock.patch.dict(EDL.EDL, {'C': rows}))
+        self.put('book_C', range(320, 560))
+        self.put('book_C_matte', range(320, 560))
         self.enterContext(mock.patch.object(titles, 'BAKED_TEXT', [dict(b) for b in _ORIGINAL_BAKED]))
         self.write_json()                                         # edl_C.json carries the registry too
         rep, _, text = self.run_gate()

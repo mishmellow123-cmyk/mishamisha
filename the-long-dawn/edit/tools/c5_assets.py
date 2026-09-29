@@ -41,6 +41,15 @@ DELIVERED = {
     'book_C5_deep_abandoned': (4240, 4479), 'book_C5_deep_abandoned_matte': (4240, 4479),
     'runC_watch_v5': (4480, 4719),
     'book_C5_pen': (5440, 5679), 'book_C5_pen_matte': (5440, 5679),
+    # Codex PR #15's candidates, farm-rendered 29 Sep (5bc5fe9); adopted in edl_v3 but for the Reveal's (an alternative)
+    'cand_t1_current-words': (320, 559), 'cand_t1_current-words_matte': (320, 559),
+    'cand_trap_front_smoke_near': (2320, 2639),
+    'cand_reveal_night-fire': (2880, 3119),
+    'cand_map_beacon-falloff': (3440, 3839),
+    'cand_cold_lead24': (3816, 3999),
+    'cand_deep_leaned_ladders': (4240, 4479), 'cand_deep_leaned_ladders_matte': (4240, 4479),
+    'cand_watch_night-fire': (4480, 4719),
+    'cand_pen_soft_spine_metal': (5440, 5679), 'cand_pen_soft_spine_metal_matte': (5440, 5679),
 }
 
 

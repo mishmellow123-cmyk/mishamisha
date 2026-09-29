@@ -22,6 +22,164 @@
  "edl": "edit/edl/edl_C.json (5,920 frames)",
  "events": [
   {
+   "id": "C5.hearth.open",
+   "kind": "bed",
+   "f0": 0,
+   "f1": 600,
+   "sync": "inherited:SOUND-C sound/events_C.json C.hearth.open (frame 0; the same picture frame in C5): from black to 26 frames after the page turn",
+   "recipe": "C.hearth.open",
+   "level": -65.4,
+   "level_from": "sound/events_C.json C.hearth.open",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.page.turn_0",
+   "kind": "event",
+   "hit_f": 40,
+   "sync": "inherited:SOUND-C sound/events_C.json C.page_turn_0 (frame 40; the same picture frame in C5): over EDIT black, heard, not seen",
+   "recipe": "C.page_turn_0",
+   "level": -32.8,
+   "level_from": "sound/events_C.json C.page_turn_0",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.riffle",
+   "kind": "event",
+   "hit_f": 326,
+   "sync": "measured:opening.riffle.first (SOUND-C had 320, the camera's first move; the leaves sweep from 326)",
+   "recipe": "C.riffle",
+   "level": -33.7,
+   "level_from": "sound/events_C.json C.riffle",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.pen.mountain",
+   "kind": "event",
+   "hit_f": 355,
+   "sync": "inherited:SOUND-C sound/events_C.json C+.pen.mountain (frame 355; the same picture frame in C5)",
+   "recipe": "C+.pen.mountain",
+   "level": -45.1,
+   "level_from": "sound/events_C.json C+.pen.mountain",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.pen.T1",
+   "kind": "event",
+   "hit_f": 400,
+   "sync": "inherited:SOUND-C sound/events_C.json C+.pen.T1 (frame 400; the same picture frame in C5): R02's write-on, in_picture from 400",
+   "recipe": "C+.pen.T1",
+   "level": -40.9,
+   "level_from": "sound/events_C.json C+.pen.T1",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.page.turn",
+   "kind": "event",
+   "hit_f": 574,
+   "sync": "measured:letters.page_turn.first (SOUND-C had 575)",
+   "recipe": "C.page_turn",
+   "level": -34.9,
+   "level_from": "sound/events_C.json C.page_turn",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.fire.born",
+   "kind": "bed",
+   "f0": 800,
+   "f1": 1080,
+   "sync": "inherited:SOUND-C sound/events_C.json C.fire.born (frame 800; the same picture frame in C5): the fire catches at 801 (measured) .. into the forge's bed",
+   "recipe": "C.fire.born",
+   "level": -65.2,
+   "level_from": "sound/events_C.json C.fire.born",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.burn.letters",
+   "kind": "event",
+   "hit_f": 845,
+   "sync": "measured:letters.burn.onset, the page's first see-through pixel (SOUND-C had 842, on the old page's burn; C5 plays the filmed burn book_C_ft)",
+   "recipe": "C+.burn.letters",
+   "level": -33.4,
+   "level_from": "sound/events_C.json C+.burn.letters",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.fire.forge",
+   "kind": "bed",
+   "f0": 1040,
+   "f1": 1680,
+   "sync": "inherited:SOUND-C sound/events_C.json C.fire.forge (frame 1040; the same picture frame in C5): the cut to the forge .. the Deep",
+   "recipe": "C.fire.forge",
+   "level": -66.1,
+   "level_from": "sound/events_C.json C.fire.forge",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.burn.deep",
+   "kind": "event",
+   "hit_f": 1699,
+   "sync": "inherited:SOUND-C sound/events_C.json C+.burn.deep (frame 1699; the same picture frame in C5); checked on C5's filmed burn-in (1682-1703): inside its closing, the hole area 80k -> 7k px over 1697-1702",
+   "recipe": "C+.burn.deep",
+   "level": -29.7,
+   "level_from": "sound/events_C.json C+.burn.deep",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.pen.deep",
+   "kind": "event",
+   "hit_f": 1708,
+   "sync": "inherited:SOUND-C sound/events_C.json C+.pen.deep (frame 1708; the same picture frame in C5): the mine drawn after the burn-in",
+   "recipe": "C+.pen.deep",
+   "level": -46.0,
+   "level_from": "sound/events_C.json C+.pen.deep",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.pen.T7",
+   "kind": "event",
+   "hit_f": 1710,
+   "sync": "inherited:SOUND-C sound/events_C.json C+.pen.T7 (frame 1710; the same picture frame in C5): R08's write-on from 1710",
+   "recipe": "C+.pen.T7",
+   "level": -42.7,
+   "level_from": "sound/events_C.json C+.pen.T7",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.storm.eye",
+   "kind": "bed",
+   "f0": 1924,
+   "f1": 2080,
+   "sync": "measured:eye.burn.onset (SOUND-C had 1920) .. the cut to the Refusal",
+   "recipe": "C.storm.eye",
+   "level": -34.2,
+   "level_from": "sound/events_C.json C.storm.eye",
+   "status": "ready",
+   "design": false
+  },
+  {
+   "id": "C5.burn.eye",
+   "kind": "event",
+   "hit_f": 1924,
+   "sync": "measured:eye.burn.onset, the scorch's sudden landing (SOUND-C had 1922)",
+   "recipe": "C+.burn.eye",
+   "level": -28.7,
+   "level_from": "sound/events_C.json C+.burn.eye",
+   "status": "ready",
+   "design": false
+  },
+  {
    "id": "C5.hearth.refusal",
    "kind": "bed",
    "f0": 2080,
@@ -268,9 +426,10 @@
    "recipe": "C.beacon1",
    "level": -30.0,
    "level_from": "sound/events_C.json C.beacon1",
-   "status": "ready",
+   "status": "ready (design trim: listen)",
    "pan": -0.01,
-   "design": false
+   "trim_db": -8.0,
+   "design": true
   },
   {
    "id": "C5.fire.first_far",
@@ -280,9 +439,10 @@
    "recipe": "C.beacon7",
    "level": -31.9,
    "level_from": "sound/events_C.json C.beacon7",
-   "status": "ready",
+   "status": "ready (design trim: listen)",
    "pan": 0.36,
-   "design": false
+   "trim_db": -8.0,
+   "design": true
   },
   {
    "id": "C5.run.beacon1",
@@ -491,9 +651,9 @@
   {
    "id": "C5.forge.cold",
    "kind": "bed",
-   "f0": 3840,
+   "f0": 3816,
    "f1": 3848,
-   "sync": "measured:cold.forges_off.frame (the bed is cut on it)",
+   "sync": "edl:the forges' first lit frame (3816) .. measured:cold.forges_off.frame (the bed is cut on it)",
    "recipe": "C.fire.forge",
    "level": -66.1,
    "level_from": "sound/events_C.json C.fire.forge",

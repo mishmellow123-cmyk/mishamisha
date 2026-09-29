@@ -125,6 +125,40 @@ def build(pulse_cut="C5P2", edl_path=None):
                          level=lv[level_of]["level"] if level_of else None,
                          level_from=f"sound/events_C.json {level_of}" if level_of else None, status=status, **kw))
 
+    # C1-C9 THE BOOK, THE FORGE, THE DEEP, THE EYE (0-2079): the 7,200-frame cut's picture, frame for frame. edl_C of
+    # the old cut (0536a3e) and C5's give every row in 0-2079 the same stems at the same offsets, but for the filmed burns
+    # (book_C_ft) now on the three burn-throughs at the same offsets. SOUND-C's approved effects there therefore land on
+    # the same frames, with SOUND-C's recordings, recipes and levels; where C5 has MEASURED the event itself (the riffle,
+    # the page turn, both burn-throughs), the hit moves onto the measurement.
+    def first_half(eid, f, sync_note):
+        return f"inherited:SOUND-C sound/events_C.json {eid} (frame {f}; the same picture frame in C5){sync_note}"
+    bed("C5.hearth.open", 0, 600, first_half("C.hearth.open", 0, ": from black to 26 frames after the page turn"),
+        "C.hearth.open", "C.hearth.open")
+    event("C5.page.turn_0", 40, first_half("C.page_turn_0", 40, ": over EDIT black, heard, not seen"),
+          "C.page_turn_0", "C.page_turn_0")
+    event("C5.riffle", M("opening.riffle", "first"), "measured:opening.riffle.first (SOUND-C had 320, the camera's "
+          "first move; the leaves sweep from 326)", "C.riffle", "C.riffle")
+    event("C5.pen.mountain", 355, first_half("C+.pen.mountain", 355, ""), "C+.pen.mountain", "C+.pen.mountain")
+    event("C5.pen.T1", 400, first_half("C+.pen.T1", 400, ": R02's write-on, in_picture from 400"), "C+.pen.T1",
+          "C+.pen.T1")
+    event("C5.page.turn", M("letters.page_turn", "first"), "measured:letters.page_turn.first (SOUND-C had 575)",
+          "C.page_turn", "C.page_turn")
+    bed("C5.fire.born", 800, 1080, first_half("C.fire.born", 800, ": the fire catches at 801 (measured) .. into the "
+        "forge's bed"), "C.fire.born", "C.fire.born")
+    event("C5.burn.letters", M("letters.burn", "onset"), "measured:letters.burn.onset, the page's first see-through "
+          "pixel (SOUND-C had 842, on the old page's burn; C5 plays the filmed burn book_C_ft)", "C+.burn.letters",
+          "C+.burn.letters")
+    bed("C5.fire.forge", 1040, 1680, first_half("C.fire.forge", 1040, ": the cut to the forge .. the Deep"),
+        "C.fire.forge", "C.fire.forge")
+    event("C5.burn.deep", 1699, first_half("C+.burn.deep", 1699, "; checked on C5's filmed burn-in (1682-1703): "
+          "inside its closing, the hole area 80k -> 7k px over 1697-1702"), "C+.burn.deep", "C+.burn.deep")
+    event("C5.pen.deep", 1708, first_half("C+.pen.deep", 1708, ": the mine drawn after the burn-in"), "C+.pen.deep",
+          "C+.pen.deep")
+    event("C5.pen.T7", 1710, first_half("C+.pen.T7", 1710, ": R08's write-on from 1710"), "C+.pen.T7", "C+.pen.T7")
+    bed("C5.storm.eye", M("eye.burn", "onset"), 2080, "measured:eye.burn.onset (SOUND-C had 1920) .. the cut to the "
+        "Refusal", "C.storm.eye", "C.storm.eye")
+    event("C5.burn.eye", M("eye.burn", "onset"), "measured:eye.burn.onset, the scorch's sudden landing (SOUND-C had "
+          "1922)", "C+.burn.eye", "C+.burn.eye")
     # C10 THE REFUSAL: the book by the hearth; a quill follows the drawing (no pen is seen: the lines draw themselves)
     bed("C5.hearth.refusal", 2080, 2320, "measured:shot refusal (2080-2319)", "C.hearth.open", "C.hearth.open",
         fade_in=0.5, fade_out=0.3)
@@ -164,10 +198,14 @@ def build(pulse_cut="C5P2", edl_path=None):
         "C.wind.fall", "C.wind.fall", fade_in=3.0, fade_out=1.5)
     # C13 THE REVEAL: both first fires, together (measured 2880); hers near and centred, the rival's far and right
     rev = M("reveal.both_fires_ignite", "frame")
+    # the recordings are the Beacon Run's, at its approved levels; the Reveal is a night (band -24..-6 LU, pp) where the
+    # run is the film's fire (-16..-2). Render 3 of pass 2 measured C13's loudest 3 s at -3.2 LU (score -16.0 LUFS,
+    # these two -14.8): -8 dB gives the two ignitions the Reveal's level, not the run's
+    REVEAL_TRIM = dict(trim_db=-8.0, design=True, status="ready (design trim: listen)")
     event("C5.fire.first_near", rev, "measured:reveal.both_fires_ignite.frame", "C.beacon1", "C.beacon1",
-          pan=round(0.8 * (2 * 950 / 1920 - 1), 2))
+          pan=round(0.8 * (2 * 950 / 1920 - 1), 2), **REVEAL_TRIM)
     event("C5.fire.first_far", rev, "measured:reveal.both_fires_ignite.frame", "C.beacon7", "C.beacon7",
-          pan=round(0.8 * (2 * 1390 / 1920 - 1), 2))
+          pan=round(0.8 * (2 * 1390 / 1920 - 1), 2), **REVEAL_TRIM)
     # C14 THE BEACON RUN (not on this Mac): v1's measured catches, moved by the run's re-use offset. The offset is
     # exact: the retired EDL shows runC_scroll 0-319 at 3840 (off -3840), EDIT-C5's at 3120 (off -3120)
     for k in range(1, 8):
@@ -188,10 +226,13 @@ def build(pulse_cut="C5P2", edl_path=None):
         event(f"C5.hammer.alone_{k + 1}", f, f"score:barmap_{pulse_cut} hammer_alone (C5P2: one beat into the measured "
               "pause) + one beat", "C5.hammer.faint", None, status="ready (design: listen)", level_db=HAMMER_FAINT_DB,
               level_note=HAMMER_NOTE, design=True, note="faint; the last stroke ends before the catch at 3786")
-    # C16 THE FORGES GO COLD: 8 frames of forge and a hammer, cut mid-stroke on the measured shutdown; then nothing
+    # C16 THE FORGES GO COLD: the forge from the cut that shows them lit (EDIT's COLD_CUT: 3840, or 3816 with the
+    # adopted lit lead-in), a hammer 8 frames before the measured shutdown, cut mid-stroke on it; then nothing
     off = M("cold.forges_off", "frame")
-    bed("C5.forge.cold", 3840, off, "measured:cold.forges_off.frame (the bed is cut on it)", "C.fire.forge",
-        "C.fire.forge", fade_in=0.01, fade_out=0.005)
+    lit = [r["f0"] for r in (edl or {}).get("shots", []) if r.get("name", "").startswith("THE FORGES GO COLD")]
+    cold_cut = min(lit) if lit else 3840
+    bed("C5.forge.cold", cold_cut, off, f"edl:the forges' first lit frame ({cold_cut}) .. measured:cold.forges_off"
+        ".frame (the bed is cut on it)", "C.fire.forge", "C.fire.forge", fade_in=0.01, fade_out=0.005)
     event("C5.hammer.cut", 3840, "measured:shot cold (3840) .. cold.forges_off.frame: cut mid-stroke", "C5.hammer", None,
           status="ready (design: listen)", level_db=HAMMER_DB, level_note=HAMMER_NOTE, design=True,
           post_max_f=off - 3840)

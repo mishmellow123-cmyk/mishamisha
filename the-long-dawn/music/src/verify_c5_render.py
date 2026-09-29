@@ -21,8 +21,11 @@ Each check is MEASURED on the rendered arrays; none of them is listening.
               (30 dB under that peak) in the 1.5 s before the search window is NOT ISOLATED: a failure to look at,
               never a pass
   swells      the violins' climb on pulls_ahead is a bowed SWELL (render 1 of pass 2: -63 to -45 dB across its
-              0.44 s first note), whose arrival moves ~160 ms between the two thresholds in use (8 dB under the peak,
-              analyze_v3's arrivew; 6 dB, this module's): the frame must lie inside that arrival zone, widened by
+              0.44 s first note, with a flat stretch at -53 dB around the frame), so its arrival depends on where the
+              threshold meets that stretch: render 2 moved the note 10 ms and this module's own 8 dB crossing 2.8
+              frames. Its arrival zone is bounded by the two instruments that judge it: the probe the score declares
+              for it (analyze_v3.measure3 'arrivew', 8 dB under the peak on the 60 Hz-highpassed 10 ms envelope, run
+              on the same stem) and this module's 6 dB arrival. The frame must lie inside that zone, widened by
               +-1 frame, so a swell wholly before or after its frame still fails
   bloom onsets the resolution's brass on all_lit is a BLOOM by design (score_v3_C5.py's battery: "a bloom's ONSET
               sits on its beat", anticipation fixed at 0.05 s, then a crescendo from 0.1 to 0.25 over a beat), so
@@ -50,7 +53,7 @@ SHUTDOWN, RING_CUT = 3848, 4000
 ARRIVALS = [("reveal", "hn3"), ("reveal", "hn_far"), ("low_fire", "hn3"), ("surge", "tbn"), ("flares_back", "hn3"),
             ("map_beacon_3", "hn_far"), ("map_beacon_4", "hn_farther"), ("one_dark", "vln1")]
 SWELLS = [("pulls_ahead", "vln1"), ("pulls_ahead", "vln2")]
-SWELL_DB = (8.0, 6.0)              # analyze_v3's arrivew threshold, and this module's arrival threshold
+SWELL_W = 0.25                     # the climb's sync window as the score declares it (score_v3_C5P2.trap)
 BLOOMS = [("all_lit", pn) for pn in ("hn", "hn2", "hn3", "tbn", "tuba")]
 BLOOM_ONSET_DB = 30.0
 RING_ENTRY = ("cb_q", "vc_q", "vla_q")
@@ -125,6 +128,17 @@ def arrival(y, offset, frame, under_db=6.0):
     return dict(d, status="ON" if abs(delta_s) <= 1.0 / FPS else "OFF")
 
 
+def arrivew(y, offset, frame, W=SWELL_W):
+    """analyze_v3.measure3's 'arrivew' (analyze_v3.py, the probe the score declares for a swell) on this stem, as
+    the render's own sync report runs it: -> frames from the event, or None"""
+    import analyze_v3 as A3
+    T = frame / FPS
+    a = max(0, int((T - W - 0.6) * SR))
+    x = part_window(y, offset, a, int((T + W + 1.0) * SR))
+    tm, _ = A3.measure3(x, T - a / SR, W, "arrivew")
+    return None if tm is None else round((tm + a / SR - T) * FPS, 2)
+
+
 def check_not_before(y, offset, frame, floor_db, first_from=SHUTDOWN):
     i0, i1 = first_from * FR, frame * FR
     x = part_window(y, offset, i0, i1)
@@ -183,12 +197,13 @@ def run(cut="C5P2", floor_db=-90.0, cache=CACHE, out_dir=OUT, parts_dir=PARTS):
             rep.append(dict(check="swell", event=eid, part=pn, ok=False, status="PART NOT RENDERED"))
             continue
         off, yp = load_part(pn, manifest[pn], parts_dir)
-        early, late = (arrival(yp, off, int(ev[eid]), under_db=d) for d in SWELL_DB)
-        if "delta_frames" not in early or "delta_frames" not in late or "NOT ISOLATED" in (early["status"], late["status"]):
+        late = arrival(yp, off, int(ev[eid]))
+        early = arrivew(yp, off, int(ev[eid]))
+        if "delta_frames" not in late or late["status"] == "NOT ISOLATED" or early is None:
             rep.append(dict(check="swell", event=eid, frame=ev[eid], part=pn, ok=False,
-                            status=late["status"] if late["status"] != "ON" and late["status"] != "OFF" else early["status"]))
+                            status="NOT FOUND" if early is None else late["status"]))
             continue
-        zone = (early["delta_frames"], late["delta_frames"])
+        zone = (early, late["delta_frames"])
         ok = zone[0] - 1.0 <= 0.0 <= zone[1] + 1.0
         rep.append(dict(check="swell", event=eid, frame=ev[eid], part=pn, ok=ok, status="ON" if ok else "OFF",
                         zone_frames=zone, peak_db=late["peak_db"], pre_db=late["pre_db"]))

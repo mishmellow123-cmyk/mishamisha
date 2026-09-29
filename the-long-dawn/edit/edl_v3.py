@@ -279,6 +279,27 @@ def c5(stem, note, **kw):
     return T(stem, 0, 'exact', note, **kw)
 
 
+# Codex PR #15's candidates (ADOPTION.md), rendered natively on the farm 29 Sep from claude/owner-night-20260929 at
+# 5bc5fe9, each unit's setup first proving the candidate's default path pixel-equal to the accepted renderer. An
+# ADOPTED candidate plays first, guarded by need= (it switches over whole, never frame by frame), and the accepted take
+# stays second as the alternative: deleting the first take restores the accepted shot.
+CAND = 'Codex PR #15 candidate, farm 29 Sep (5bc5fe9)'
+# ADOPTED candidates play as their shot's ONE take (a C5 shot has exactly one source, no fallback: c5_readiness). The
+# accepted takes they replaced stay delivered and untouched; restoring one is swapping its take back into the row (and
+# its stem back into c5_readiness.SHOT_MAP), or COLD_CUT = 3840 for the Cold lead-in. Section -> the accepted take.
+ALTERNATIVES = {
+    'C3': ("book()", 'book_C 320-559: the old wording "...forges the Ring in secret." baked at 400-539'),
+    'C11': ("c5('embers_C5_trap', PR11)", 'no smoke: the sunk forge simply goes dark, then relights'),
+    'C13': ("c5('cand_reveal_night-fire', CAND)", 'NOT adopted (the accepted runC_reveal_pair_v5 plays): the night '
+            'grade of the Reveal, rendered and kept'),
+    'C15': ("c5('map_last_beacon_C', PR13) with COLD_CUT = 3840", 'beacons as points on a greying map; the Cold cut at '
+            '3840 (8 lit frames before 3848)'),
+    'C18': ("c5('book_C5_deep_abandoned', PR12, matte='book_C5_deep_abandoned_matte')", 'upright ladders, box lamp'),
+    'C19': ("c5('runC_watch_v5', PR14)", 'the parchment Watch'),
+    'C22': ("c5('book_C5_pen', PR12, matte='book_C5_pen_matte')", 'pale nib, hard black gutter'),
+}
+
+
 # ---------------------------------------------------------------------------------- C12 FLINT: a DECISION
 # The adopted hands-only flint (HANDOVER "existing `ring` stem (C14 hands-only frames)") is MONTAGE-3D-5's, delivered
 # into renders/ring_C in the numbering of the OLD cut: flint_a 2960-2999 (strike 1 at 2980) and flint_b 3150-3359
@@ -343,18 +364,23 @@ def flint_events(key):
 # records the new delivery's range in its DELIVERED once it lands) and any caption left running across the new cut
 # (R15 3740-3835 would be: the gate WARNs by name). A lead-in delivered under another folder name changes the stem
 # below as well.
-COLD_CUT = 3840
+COLD_CUT = 3816     # ADOPTED 29 Sep (Codex's lead24): 32 lit frames before 3848 instead of 8; the map keeps 24 all-lit
+                    # frames (3792-3815). The alternative is 3840 (the accepted cut): set it back to restore it.
 
 
 def last_beacon_rows(cold_cut):
     """Section C15 (3440-3840 in the bar map): the map up to cold_cut, then, if earlier than 3840, Cold's lit lead-in."""
     rows = [S('C15', 3440, cold_cut, '#15', 'THE LAST BEACON', 'MAP',
               'The map of the kingdoms: beacons flare in no order; one kingdom stays dark (3724-3783), then catches.',
-              [c5('map_last_beacon_C', PR13)])]
+              # ADOPTED 29 Sep: beacon-falloff. Each kingdom lights as a territory when its beacon catches, so the
+              # holdout (3724-3783) is one dark kingdom among lit ones and its catch (3785-3791, measured on the
+              # candidate) lights a region, not a point; line art aligned at zero shift with the delivered map
+              [c5('cand_map_beacon-falloff', f'beacon-falloff: {CAND}')])]
     if cold_cut < 3840:
         rows.append(S('C15', cold_cut, 3840, '#16', 'THE FORGES GO COLD · LIT LEAD-IN', 'EMBERS',
                       f'Every forge still burning, {3848 - cold_cut} frames before 3848 puts them all out.',
-                      [c5('embers_C5_cold', f'{PR11}; the lead-in {cold_cut}-3839 is not in that delivery')]))
+                      [c5('cand_cold_lead24', f'lead24: {CAND}; its 3840-3999 equal embers_C5_cold '
+                           '(mean |diff| 0.0 at every 8th frame, JPEG max 2)')]))
     return rows
 
 
@@ -379,7 +405,10 @@ C = [
       'An old red-bound book open by a hearth: flowing unknown script, small drawings; then a sheaf of blank leaves.',
       [book()]),
     S('C3', 320, 560, 'P2', 'INK PAGE · THE MOUNTAIN', 'MAP',
-      'The leaves riffle back; a pen draws a mountain with a fire in its throat and in it a small gold ring.', [book()]),
+      'The leaves riffle back; a pen draws a mountain with a fire in its throat and in it a small gold ring.',
+      # ADOPTED 29 Sep: current-words. The book engine re-run with R02's current line baked into the handwriting
+      # (400-539); elsewhere it matches book_C (mean |diff| ~1, no pixel over 20); the accepted page (old wording) second
+      [c5('cand_t1_current-words', f'current-words: {CAND}', matte='cand_t1_current-words_matte')]),
     S('C4', 560, 700, 'E15 · X1', 'LETTERS TO FIRE', 'MAP',
       'A dense leaf darkens; its letters glow, lift as sparks and pour into one point.',
       [book(), X1_TEST]),
@@ -417,7 +446,9 @@ C = [
       [c5('book_C5_refusal', PR12, matte='book_C5_refusal_matte')]),
     S('C11', 2320, 2640, '#11', 'THE TRAP', 'EMBERS',
       'One forge sinks, the others surge, it flares back and races; two matching towers pull ahead, neck and neck.',
-      [c5('embers_C5_trap', PR11)]),
+      # ADOPTED 29 Sep: front_smoke_near. The sunk forge smokes (a wisp at 2436, a column by 2490) and flares back
+      # through its smoke at 2546, so its going out reads as going out; every other pixel and event frame as accepted
+      [c5('cand_trap_front_smoke_near', f'front_smoke_near: {CAND}')]),
 ] + flint_rows(FLINT_CHOICE) + [
     S('C13', 2880, 3120, '#13', 'THE REVEAL · A PROMISE', 'RUN',
       'The vast ink range: her small fire and, at the same moment, a second fire on a far peak.',
@@ -435,10 +466,16 @@ C = [
       [c5('embers_C5_unfinished', PR11)]),
     S('C18', 4240, 4480, '#18', 'THE DEEP, ABANDONED', 'PAGES',
       'The mine page again, still: empty ladders, a lantern set down, the gold vein still glinting.',
-      [c5('book_C5_deep_abandoned', PR12, matte='book_C5_deep_abandoned_matte')]),
+      # ADOPTED 29 Sep: leaned_ladders. The ladders lean askew in a firmer line (left where they stood, not fixtures)
+      # and the lamp is a globe lamp on its base where the accepted one reads as a small house at film size
+      [c5('cand_deep_leaned_ladders', f'leaned_ladders: {CAND}', matte='cand_deep_leaned_ladders_matte')]),
     S('C19', 4480, 4720, '#19', 'THE WATCH', 'RUN',
       'The ink range with a beacon burning on every peak as the camera drifts (the run\'s poses 80-319, all lit).',
-      [c5('runC_watch_v5', PR14)]),
+      # ADOPTED 29 Sep: night-fire. The watch through the night: grey ink, every beacon a drawn flame, so the dissolve
+      # into the Illumination (4712-4728) is the night lightening into the dawn that fills the ink with colour. The
+      # Reveal's night-fire (cand_reveal_night-fire, rendered) is NOT adopted: it dissolves (3117-3123) into the
+      # Beacon Run, which is parchment and has no night version, over the same range on the same night.
+      [c5('cand_watch_night-fire', f'night-fire: {CAND}')]),
     # the 7,200-frame cut's C24 (5680-6159 = runC_illum 2398-2877), the same 480 source frames
     S('C20', 4720, 5200, '#20', 'THE ILLUMINATION', 'RUN-C',
       "The sun breaks over the drawn world's eastern ranges; wherever its light touches, the ink fills with colour.",
@@ -449,7 +486,9 @@ C = [
       [book(off=960)]),
     S('C22', 5440, 5680, '#22', 'THE LAST PAGES · THE PEN', 'PAGES',
       'The blank spread with a wooden dip pen resting across it; the camera and the hearth light move slowly.',
-      [c5('book_C5_pen', PR12, matte='book_C5_pen_matte')]),
+      # ADOPTED 29 Sep: soft_spine_metal. A steel nib with its vent and slit (the accepted tip is a pale cone: a pencil,
+      # a spill) and the gutter a graded fold into the spine instead of a flat black band
+      [c5('cand_pen_soft_spine_metal', f'soft_spine_metal: {CAND}', matte='cand_pen_soft_spine_metal_matte')]),
     # the 7,200-frame cut's C28 (6960-7199): THE LONG DAWN burns on in book space (book_C 6980-7160 = C5 5700-5880)
     S('C23', 5680, 5920, 'X3', 'TITLE', 'MAP',
       'The blank recto: THE LONG DAWN burns on in fire-letters and cools to ink; the book goes back into the dark.',

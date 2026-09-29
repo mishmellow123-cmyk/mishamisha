@@ -165,6 +165,10 @@ def build():
     c["events"]["last_beacon"] = dict(kind="fire", tags=["map", "holdout"])
     c["events"]["reveal"] = dict(kind="fire", tags=["call", "first_fires"],
                                  desc="two first fires, together: two voices, one gesture")
+    # C16's band was written as -99..-1 LU; pass 1 met it only because its Ring entry could start inside the silence.
+    # Pass 2's silence is silent, and a silent window reads as the meter's -120 floor (-110 relative), so the floor of a
+    # band that must admit the designed silence lies under it.
+    c["sections"]["C16"]["rel"] = [-130, -1]
     return out, c
 
 

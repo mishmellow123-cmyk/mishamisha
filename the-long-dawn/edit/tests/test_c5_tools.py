@@ -124,9 +124,9 @@ class AssetMapTests(unittest.TestCase):
         self.assertFalse((self.renders / 'embers_C5_cold').is_symlink())
 
     def test_receipts_beside_run_frames_are_allowed_other_files_are_not(self):
-        d = self.deliver('runC_watch_v5')
-        (d / 'receipt_04480_04719.json').write_text('{}')
-        self.write_map(['runC_watch_v5'])
+        d = self.deliver('runC_reveal_pair_v5')                               # a run delivery the EDL still plays
+        (d / 'receipt_02880_03119.json').write_text('{}')
+        self.write_map(['runC_reveal_pair_v5'])
         self.assertEqual(CA.run('check'), 0)
         (d / 'notes.txt').write_text('x')
         self.assertEqual(CA.run('check'), 1)
@@ -134,22 +134,22 @@ class AssetMapTests(unittest.TestCase):
     def test_a_moved_cold_cut_owes_the_lead_in_and_still_links_the_delivery(self):
         cut = [r for r in EDL.EDL['C'] if r['sec'] != 'C15']
         j = next(k for k, r in enumerate(cut) if r['f0'] == 3840)
-        self.enterContext(mock.patch.dict(EDL.EDL, {'C': cut[:j] + EDL.last_beacon_rows(3816) + cut[j:]}))
-        self.deliver('embers_C5_cold')                                        # PR11's 3840-3999: no lead-in
-        self.write_map(['embers_C5_cold'])
+        self.enterContext(mock.patch.dict(EDL.EDL, {'C': cut[:j] + EDL.last_beacon_rows(3800) + cut[j:]}))
+        self.deliver('cand_cold_lead24')                                      # the farm's lead24: 3816-3999
+        self.write_map(['cand_cold_lead24'])
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             self.assertEqual(CA.run('link'), 0)
-        self.assertIn('OWED embers_C5_cold: the EDL reads 3816-3839 (24 frames) beyond the recorded delivery '
-                      '3840-3999', out.getvalue())
-        self.assertTrue((self.renders / 'embers_C5_cold').is_symlink())
-        self.assertEqual(CA.split_need('embers_C5_cold', set(range(3816, 4000))),
-                         (set(range(3840, 4000)), set(range(3816, 3840))))
+        self.assertIn('OWED cand_cold_lead24: the EDL reads 3800-3815 (16 frames) beyond the recorded delivery '
+                      '3816-3999', out.getvalue())
+        self.assertTrue((self.renders / 'cand_cold_lead24').is_symlink())
+        self.assertEqual(CA.split_need('cand_cold_lead24', set(range(3800, 3840))),
+                         (set(range(3816, 3840)), set(range(3800, 3816))))
 
     def test_needed_frames_come_from_the_edl(self):
         need = CA.needed_frames('C')
         self.assertEqual(need['runC_illum'], set(range(2398, 2878)))
-        self.assertEqual(need['book_C5_pen_matte'], set(range(5440, 5680)))
+        self.assertEqual(need['cand_pen_soft_spine_metal_matte'], set(range(5440, 5680)))   # the adopted Pen
         self.assertEqual(need['embers_C3'] & {1679}, {1679})                  # C8's held race
         import edl_v3 as EDL                                                  # C12: what the chosen candidate reads
         want = set() if EDL.FLINT_CHOICE is None else {s0 + k for a, b, s0 in EDL.FLINT_CANDIDATES[EDL.FLINT_CHOICE]['pieces']
@@ -211,7 +211,11 @@ class SoundGuardTests(unittest.TestCase):
                 path, label = AS.resolve_audio('C')
         self.assertEqual(path, 'click.wav')
         self.assertTrue(label.startswith('CLICK track'))
-        self.assertNotIn('C', AS.ADOPTED_AUDIO)
+        # 29 Sep: C adopts the 5,920-frame pass-2 mix by name; the guard, not the name, still decides
+        self.assertEqual(AS.ADOPTED_AUDIO['C'][0], 'music/out/v3/sound_C5P2.wav')
+        real = os.path.join(AS.ROOT, AS.ADOPTED_AUDIO['C'][0])
+        if os.path.isfile(real):
+            self.assertTrue(AS.audio_fits(real, 'C'))
 
     def test_the_watcher_signs_only_the_sound_a_master_would_carry(self):
         """refresh_watch.sh once walked the candidates itself, with no length check, so C's term named a file of the

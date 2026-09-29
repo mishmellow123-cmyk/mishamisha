@@ -330,7 +330,9 @@ C5_TEXT = [
     dict(id='R14', row=14, line='It was a promise to stop, if all the others would.', f_in=3160, f_out=3300,
          set='ink', y=150),       # UNVERIFIED: runC_scroll is not on the EDIT-C5 Mac; the Reveal/Watch sky placement
     dict(id='R15', row=15, line='When the last beacon caught, every forge went cold.', f_in=3740, f_out=3836,
-         set='fire', y=220),      # under the top row of beacons, clear of the catch (3785-3791 at ~(692, 448)) and
+         set='fire', y=220,
+         across=(3816, 'the line names both pictures: its first half on the lit map, "every forge went cold" read '
+                       'over the burning forges, ending 12 frames before they go out at 3848')),      # under the top row of beacons, clear of the catch (3785-3791 at ~(692, 448)) and
                                   # the lower third's beacon (~(994, 646)). The map has no clean band a line this long
                                   # fits: moving up from y 300 halves the drawn edges under it (0.047 -> 0.022), but
                                   # its stipple keeps the texture over the threshold (0.017; tools/c5_caption_backdrop)
@@ -358,6 +360,9 @@ C5_TEXT = [
 # [a, b), the words, and the code that baked them. A caption set 'in_picture' needs a record with its words on every
 # frame; any other caption must not sit on baked words; baked words the cut shows must belong to an in_picture line.
 BAKED_TEXT = [
+    dict(stem='cand_t1_current-words', src=(400, 540), line='In the old story, a Dark Lord forges a Ring to rule the world.',
+         by="shots/map/book_c_t1_candidates.py current-words (Codex PR #15; farm 29 Sep at 5bc5fe9); read off the "
+            "delivered frames 430-538"),
     dict(stem='book_C', src=(400, 540), line='In the old story, a Dark Lord forges the Ring in secret.',
          by="shots/map/inkline.py LINES['T1'] (PAGES-C, 28 Sep)"),
     dict(stem='book_C', src=(6790, 6930), line='The last pages were left for us.',
@@ -379,7 +384,7 @@ def text_table(cut):
     cut = cut.upper()
     if cut == 'C':
         return [dict(id=r['id'], line=r['line'], f_in=r['f_in'], f_out=r['f_out'], set=r['set'], locked=None,
-                     row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines') if r.get(k) is not None}) for r in C5_TEXT]
+                     row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines', 'across') if r.get(k) is not None}) for r in C5_TEXT]
     with open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')) as fh:
         bm = json.load(fh)
     ids = {t['id'] for t in bm['text']}
