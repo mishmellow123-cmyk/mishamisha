@@ -34,8 +34,8 @@ OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire',
            'trap': 'front_smoke_near', 'map': 'beacon-falloff',
            'deep': 'leaned_ladders', 'cold': 'lead24',
            'pen': 'soft_spine_metal', 't1': 'current-words', 'crossing': 'both'}
-# More than one renderable option per kind: the crossing's rope decal (owner night, 29 Sep) renders beside 'both'
-MORE = {'crossing': ('both_decal',)}
+# Explicit review alternatives leave OPTIONS and omitted renderer defaults unchanged.
+MORE = {'crossing': ('both_decal',), 't1': ('current-words-held',)}
 PAGES = ('deep', 'pen', 't1')
 _FAMILY = None
 

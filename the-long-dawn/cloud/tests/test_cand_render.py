@@ -225,6 +225,53 @@ class CandidateAdapterTests(unittest.TestCase):
     def setUp(self):
         self.wrapper = load_module(WRAPPER, 'cand_render_contract_target')
 
+    def test_t1_held_camera_requires_explicit_candidate_option(self):
+        self.assertEqual(self.wrapper.OPTIONS['t1'], 'current-words')
+        renderer = mock.Mock()
+        module = mock.Mock()
+        module.make_renderer.return_value = renderer
+        with mock.patch.object(self.wrapper, 'imports'), \
+             mock.patch.object(self.wrapper.importlib, 'import_module', return_value=module), \
+             mock.patch.object(self.wrapper, 'book_output', return_value='output'):
+            default = self.wrapper.build('t1', 'default')
+            module.make_renderer.assert_called_once_with(scale=1.0, with_fire=False)
+            module.make_renderer.reset_mock()
+            candidate = self.wrapper.build('t1', 'candidate', 'current-words-held')
+            module.make_renderer.assert_called_once_with(
+                'current-words-held', scale=1.0, with_fire=False)
+            self.assertTrue(renderer.no_burn)
+            self.assertEqual(candidate(527), 'output')
+            renderer.frame.assert_called_once_with(527)
+            self.assertTrue(callable(default))
+
+    def test_t1_held_cli_routes_picture_and_matte_before_build(self):
+        class StopBeforeRendering(Exception):
+            pass
+
+        with tempfile.TemporaryDirectory(prefix='cand-t1-held-cli-') as temporary:
+            fixture = Path(temporary)
+            picture = fixture / 'renders/cand_t1_current-words-held'
+            matte = picture.with_name(picture.name + '_matte')
+            with mock.patch.object(self.wrapper, 'ROOT', fixture), \
+                 mock.patch.object(self.wrapper, 'build', side_effect=StopBeforeRendering) as build:
+                with self.assertRaises(StopBeforeRendering):
+                    self.wrapper.main([
+                        't1', 'current-words-held', '--range', '320-559',
+                        '--out', 'renders/cand_t1_current-words-held'])
+                build.assert_called_once_with('t1', 'candidate', 'current-words-held')
+            self.assertTrue(picture.is_dir())
+            self.assertTrue(matte.is_dir())
+            self.assertEqual(list(picture.iterdir()), [])
+            self.assertEqual(list(matte.iterdir()), [])
+
+    def test_t1_held_manifest_preserves_current_words_setup(self):
+        directory = ROOT / 'cloud/jobs'
+        original = json.loads((directory / 'cand_t1_current-words.json').read_text())
+        held = json.loads((directory / 'cand_t1_current-words-held.json').read_text())
+        self.assertEqual(held['setup'], original['setup'])
+        for key in ('branch', 'frames', 'shape', 'ship'):
+            self.assertEqual(held[key], original[key])
+
     def test_non_native_cli_render_rejected_before_build(self):
         with mock.patch.object(self.wrapper, 'build') as build:
             with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
@@ -335,14 +382,15 @@ class CandidateAdapterTests(unittest.TestCase):
 
     def test_each_manifest_is_rewritable_into_three_units(self):
         farm = load_module(ROOT / 'cloud/farm.py', 'cand_farm_contract_target')
-        options = {**recipe_options(), 'crossing': 'both'}
+        options = list({**recipe_options(), 'crossing': 'both'}.items())
+        options.append(('t1', 'current-words-held'))
         ranges = recipe_literal('ranges')
         probes = dict(re.findall(r'`ld_candidate equal (\w+) (\d+)`',
                                  (ROOT / 'ADOPTION.md').read_text()))
-        self.assertEqual(len(options), 9)
-        self.assertEqual(set(probes), set(options))
-        for kind, option in options.items():
-            with self.subTest(kind=kind):
+        self.assertEqual(len(options), 10)
+        self.assertEqual(set(probes), {kind for kind, _ in options})
+        for kind, option in options:
+            with self.subTest(kind=kind, option=option):
                 path = ROOT / 'cloud/jobs' / f'cand_{kind}_{option}.json'
                 args = farm.parse_run_args([str(path), '--nodes', '3', '--dry-run'])
                 job = farm.Job(str(path), args)

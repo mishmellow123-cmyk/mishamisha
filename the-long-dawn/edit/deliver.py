@@ -408,7 +408,16 @@ def status_frames(cut, variant):
             missing.append(f"{s['sec']} {s['code']} ({gap} f)")
     if cut == 'A':
         planned_black.append((6456, 6480))                    # the fade to black from bar 81 b3.8
-    return slate, planned_black, missing, proxy, proxies
+    # REVIEW (29 Sep): a floor window eases the film base in after a true black (or out at C's end), so the black runs
+    # into it; count its frames as planned and merge touching intervals, so one run across both reads as planned
+    planned_black += [(t['f0'], t['f1']) for t in EDL.TRANS.get(cut, ()) if t.get('kind') == 'floor']
+    merged = []
+    for a, b in sorted(planned_black):
+        if merged and a <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+        else:
+            merged.append((a, b))
+    return slate, merged, missing, proxy, proxies
 
 
 def provisional_frames(cut, variant):

@@ -1,0 +1,29 @@
+{
+  "name": "cand_t1_current-words-held",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py t1 --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py t1 --equal 430 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py t1 current-words-held --range 320-559 --out renders/cand_t1_current-words-held"
+  ],
+  "out_dir": "renders/cand_t1_current-words-held",
+  "frames": "320-559",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Review candidate: current-words with the opt-in Mountain camera hold. For the owner to render after review and incorporation into claude/owner-night-20260929. Setup retains the current-words default-route equality proof; it does not compare the intentionally changed camera against the original.",
+  "outputs": [
+    {
+      "out_dir": "renders/cand_t1_current-words-held",
+      "frames": "320-559"
+    },
+    {
+      "out_dir": "renders/cand_t1_current-words-held_matte",
+      "frames": "320-559"
+    }
+  ]
+}
