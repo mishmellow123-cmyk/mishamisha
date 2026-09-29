@@ -38,25 +38,27 @@ Production `claude/long-dawn-v2` is unchanged at 6059baf. The night's work is on
   - `snapshot_audio` reading from a still-changing file;
   - the 7,200-frame `sound_C.wav`, now refused by length (including in `refresh_watch.sh`).
 
-**Candidates:** none adopted. They are on Codex's `codex/c-v5-candidates`, which is default-off: accepted frames reproduce exactly.
+**Candidates:** none adopted. They are on Codex's `codex/c-v5-candidates` (draft PR 15), which only adds files: nothing in the base imports them, so accepted renders cannot change. Each study proved with a real render that its default path reproduces the accepted frame exactly, at one probe frame. The PR's unit tests do not re-run that proof, so re-run it for a shot before adopting its candidate.
 - **Reveal and Watch "night-fire":** the page is darkened and the flame cores are brighter than anything else. It passes a no-caption blind read, where the accepted frame reads as "a faint yellow-gold highlight".
 - **Trap `front_smoke_near`:** the solo withdrawal and then the pair both read. The accepted control read shows no withdrawal.
 - **Map `beacon-falloff`:** territories warm as their beacons light, and the holdout reads as a dark kingdom.
-- **Deep leaned ladders.**
-- **Tests in progress:** a Cold lead-in, the Pen gutter and nib, and T1 baked text.
+- **Deep `leaned_ladders`:** readers name the ladders. The candidate also redesigns the lantern, a rounded lamp that is wider, with a flatter cap.
+- **Cold `lead24`:** 24 lit frames before the same shutdown at 3848. The cut moves from 3840 to 3816, and 20 frames of R15 fall over the lit forges.
+- **Pen `soft_spine_metal`:** the gutter is lifted and the nib is steel; a reader called it "a pen with metallic nib".
+- **T1:** the v5.2 words re-baked in the same hand, at one frame (C430). The probe exceeded this Mac's memory ceiling.
 
 **Decisions for the user:**
 - the night look for Reveal, then Beacon Run, then Watch;
-- whether to adopt Trap B, Map falloff and Deep leaned ladders;
+- whether to adopt Trap B, Map falloff, Deep `leaned_ladders`, the Pen candidate and the Cold lead-in (watch its two silent previews first);
 - T1 (the old line is baked into book_C 400-539): re-bake the v5.2 words, or render with no baked text;
 - Flint (the candidates are in `edl_v3.FLINT_CANDIDATES`; choosing needs the `ring` frames);
-- A's ending. The recommendation is to keep it and fix the crossing's tub read at A5584 and the dotted-line rope at A5040-5063.
+- A's ending. The recommendation is to keep it and fix the crossing's tub read at A5584 and the dotted-line rope at A5040-5063. Candidate code for both is on PR 15 but unrendered: the probe exceeded this Mac's memory.
 
 **Blocked on the production laptop:**
 - **Picture:** C 0-2079, Flint, Beacon Run, Illumination, Plenty and Title, plus every A final.
 - **Audio:** all audio, caches and sample libraries.
 
-A tiered push script and include lists, derived from these EDLs, are in the M4 mailbox at `~/ldfarm/comms/files/recovery/`. Run it on the production laptop: it pushes over the existing laptop-to-M4 SSH route, measures first, skips tiers that don't fit, and copies no credentials.
+A tiered push script and include lists, derived from these EDLs, are in the M4 mailbox at `~/ldfarm/comms/files/recovery/`. Run it on the production laptop: it pushes over the existing laptop-to-M4 SSH route, measures first, skips tiers that don't fit, and copies no credentials. A closure check beside it proves that every frame the C and A masters read through each shot's primary take is either on the M4 or on a list: stem chain, add, matte and under layers, and the ember title. It also covers the guard ranges of every take the lists ship. It does not claim that every alternate is complete.
 
 ---
 
