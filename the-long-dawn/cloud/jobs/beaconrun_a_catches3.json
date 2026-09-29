@@ -1,6 +1,6 @@
 {
   "name": "beaconrun_a_catches3",
-  "branch": "codex/render-beaconrun-a-catches3",
+  "branch": "claude/owner-night-20260929",
   "setup": [
     "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy || python3 -m pip install -q numba numpy scipy opencv-python-headless",
     "NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 shots/run/beaconrun_a.py --frames 4202 --scale 0.12 --out warm_catches3"
