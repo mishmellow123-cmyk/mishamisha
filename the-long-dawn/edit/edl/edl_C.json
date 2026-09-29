@@ -1112,7 +1112,7 @@
    "set": "fire",
    "locked": null,
    "row": 11,
-   "y": 372
+   "y": 330
   },
   {
    "id": "R13",
@@ -1142,7 +1142,7 @@
    "set": "fire",
    "locked": null,
    "row": 15,
-   "y": 300
+   "y": 220
   },
   {
    "id": "R17",
@@ -1161,7 +1161,12 @@
    "set": "ink",
    "locked": null,
    "row": 18,
-   "y": 590
+   "x": 310,
+   "y": 300,
+   "lines": [
+    "They left the gold",
+    "in the ground."
+   ]
   },
   {
    "id": "R19",
@@ -1191,7 +1196,8 @@
    "set": "ink",
    "locked": null,
    "row": 22,
-   "x": 440
+   "x": 440,
+   "y": 520
   },
   {
    "id": "title",
