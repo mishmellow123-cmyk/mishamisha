@@ -117,10 +117,10 @@ def ft_sweep():
     return T('book_C_ft', 0, 'exact', 'BURN-C filmed sweep: the held race baked in (matte 1, no under)', **FT)
 
 
-def ft_eye():
-    """1905-1991: the page + the fire; matte = cover; EDIT adds the live storm through it (under = same frame)."""
-    return T('book_C_ft', 0, 'exact', 'BURN-C filmed Eye burn-through: page + fire, live storm under',
-             under=('same', 'embers_C3'), **FT)
+def ft_eye(under=('same', 'embers_C3'), note='BURN-C filmed Eye burn-through: page + fire, live storm under'):
+    """1905-1991: the page + the fire; matte = cover; EDIT adds the live storm through it (under = same frame).
+    THE GLOW (1905-1919) holds the storm's first live frame instead: c5_readiness.FT_HELD says why."""
+    return T('book_C_ft', 0, 'exact', note, under=under, **FT)
 
 
 def book_e15():
@@ -396,7 +396,10 @@ C = [
       'The pen draws pillared halls down a gilt vein; a red glow wakes.',
       [book(under=('hold', 'embers_C3', 1679))]),
     S('C8', 1905, 1920, 'P2', 'INK PAGE · THE DEEP · THE GLOW', 'BURN-C',
-      'The red glow at the bottom of the Deep catches: the page begins to burn.', [ft_eye()]),
+      'The red glow at the bottom of the Deep catches: the page begins to burn.',
+      # the matte is opaque in all 15 frames and embers_C3 1680-1919 was never rendered: hold 1920 (FT_HELD)
+      [ft_eye(('hold', 'embers_C3', 1920), 'BURN-C filmed Eye burn-through: page + fire; the storm held at 1920 under '
+              'an opaque matte')]),
     S('C9', 1920, 1992, 'E12', 'THE EYE (burn-through)', 'BURN-C + EMBERS',
       'The glow burns through the page into the storm, which resolves into a lidless Eye over all the towers.',
       [ft_eye()]),

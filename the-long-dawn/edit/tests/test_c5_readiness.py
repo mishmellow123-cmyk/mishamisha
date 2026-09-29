@@ -33,6 +33,7 @@ class C5ReadinessTests(unittest.TestCase):
         self.enterContext(mock.patch.object(AS, '_INDEX', self.index))
         self.enterContext(mock.patch.object(AS, 'RENDERS', str(self.root / 'renders')))
         self.enterContext(mock.patch.object(RD, '_size', lambda p: 1))   # synthetic paths: present and non-empty
+        self.enterContext(mock.patch.object(RD, '_matte_holes', lambda paths: []))   # synthetic mattes: opaque
 
     # --------------------------------------------------------------------------------------------- helpers
     def put(self, stem, frames):
@@ -357,6 +358,44 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertTrue(rep.failed())
         self.assertIn('1 frames outside the delivered 3840-3999', text)
 
+    def test_held_under_fails_once_its_matte_has_a_hole(self):
+        self.green()
+        self.assertGreen(*self.run_gate()[::2])
+        self.enterContext(mock.patch.object(RD, '_matte_holes', lambda paths: [f for f in paths if f == 1910]))
+        rep, keys, text = self.run_gate()
+        self.assertTrue(rep.failed())
+        self.assertIn(('FAIL', 'held under'), keys)
+        self.assertIn('holds embers_C3 1920, but book_C_ft_matte lets it through at 1910-1910', text)
+
+    def test_held_under_without_its_matte_frames_is_a_gap(self):
+        self.green()
+        self.drop('book_C_ft_matte', 1912)
+        rep, keys, text = self.run_gate()
+        self.assertIn(('GAP', 'held under 1905-1919'), keys)
+        self.assertIn('cannot confirm the held storm is hidden', text)
+
+    def test_glow_row_holds_what_ft_held_names_and_nothing_else_passes(self):
+        glow = next(r for r in EDL.EDL['C'] if (r['f0'], r['f1']) == (1905, 1920))
+        self.assertEqual(tuple(glow['takes'][0]['under']), RD.FT_HELD[(1905, 1920)])
+        self.green()
+        live = [dict(r, takes=[dict(glow['takes'][0], under=['same', 'embers_C3'])]) if r is glow else r
+                for r in EDL.EDL['C']]
+        self.enterContext(mock.patch.dict(EDL.EDL, {'C': live}))
+        rep, _, text = self.run_gate()
+        self.assertTrue(rep.failed())
+        self.assertIn("C8 1905-1920: book_C_ft comp", text)
+
+    def test_matte_holes_reads_real_pixels(self):
+        import cv2
+        import numpy as np
+        opaque, pinhole, broken = (str(self.root / n) for n in ('o.png', 'p.png', 'b.png'))
+        cv2.imwrite(opaque, np.full((8, 8), 255, np.uint8))
+        img = np.full((8, 8), 255, np.uint8)
+        img[3, 5] = 254                                          # one pixel lets 1/255 of the under-layer through
+        cv2.imwrite(pinhole, img)
+        Path(broken).write_bytes(b'not an image')
+        self.assertEqual(REAL_MATTE_HOLES({1: opaque, 2: pinhole, 3: broken}), [2, 3])
+
     def test_script_parser_reads_the_handover_table(self):
         rows = RD.script_v52()
         self.assertEqual(sorted(rows), list(range(1, 24)))
@@ -374,6 +413,7 @@ def _with_flint(rows, choice):
     out = [r for r in rows if r['sec'] != 'C12']
     i = next(k for k, r in enumerate(out) if r['f0'] == 2880)
     return out[:i] + EDL.flint_rows(choice) + out[i:]
+REAL_MATTE_HOLES = RD._matte_holes                          # captured before setUp mocks it
 _ORIGINAL_BAKED = [dict(b) for b in titles.BAKED_TEXT]
 _ORIGINAL_TRANS = list(EDL.TRANS['C'])
 

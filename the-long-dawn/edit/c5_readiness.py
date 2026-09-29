@@ -62,6 +62,11 @@ OPAQUE_MATTES = ('book_C5_refusal_matte', 'book_C5_deep_abandoned_matte', 'book_
 FT_CONVENTION = {(841, 1040): dict(add='embers_C3_e15', under=None),             # BURN_NOTES: page + fire, e15
                  (1680, 1718): dict(add=None, under=None),                       # the sweep: race baked, matte 1
                  (1905, 1992): dict(add=None, under=('same', 'embers_C3'))}      # the Eye: the live storm under
+# THE GLOW, 1905-1919: book_C_ft_matte is opaque in every pixel of all 15 frames (decoded 29 Sep) and the storm was
+# never rendered there (embers_C3 holds 1040-1679 and 1920-2079), so the row holds the storm's first live frame, 1920.
+# The composite img + (1 - m) * under is then the same whatever is held. The gate decodes the matte again on every
+# run, so a re-delivered matte with any hole in these frames fails here instead of showing a frozen storm.
+FT_HELD = {(1905, 1920): ('hold', 'embers_C3', 1920)}
 
 
 class Report:
@@ -218,6 +223,7 @@ def check_shot_map(rep):
                     continue
                 want = FT_CONVENTION[rng]
                 got_under = tuple(t['under']) if t.get('under') else None
+                want = dict(want, under=FT_HELD.get((s['f0'], s['f1']), want['under']))
                 if t.get('matte') != 'book_C_ft_matte' or t.get('add') != want['add'] or got_under != want['under']:
                     bad.append(f"{s['sec']} {s['f0']}-{s['f1']}: book_C_ft comp (matte {t.get('matte')}, add "
                                f"{t.get('add')}, under {got_under}) is not BURN_NOTES' {want} for {rng[0]}-{rng[1] - 1}")
@@ -233,6 +239,41 @@ def check_shot_map(rep):
                                        f'Cold cut at edl_v3.COLD_CUT = {cc}); the filmed '
                                        f'burns ({", ".join(f"{a}-{b - 1}" for a, b in EDL.FT_RANGES)}) keep their '
                                        'BURN_NOTES comps and no superseded book_C burn can play there')
+
+
+def _matte_holes(paths):
+    """The frames (keys of {frame: path}) whose matte lets any of the under-layer through: a pixel below 255, or a file
+    that does not decode (unverifiable counts as a hole)."""
+    import cv2
+    holes = []
+    for f, p in sorted(paths.items()):
+        m = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
+        if m is None or (m < 255).any():
+            holes.append(f)
+    return holes
+
+
+def check_held_under(rep):
+    """FT_HELD's rows hold an under-layer frame, which is sound only while the matte hides it completely."""
+    bad, n = [], 0
+    for (a, b), under in FT_HELD.items():
+        rows = [s for s in EDL.EDL[CUT] if (s['f0'], s['f1']) == (a, b)]
+        takes = [t for s in rows for t in s['takes'] if t.get('under') and tuple(t['under']) == under]
+        if not takes:
+            continue                                          # no row holds this under: check_shot_map reports it
+        have = AS.index(os.path.join(AS.RENDERS, takes[0]['matte']))
+        missing = [f for f in range(a, b) if f not in have]
+        if missing:
+            rep.add('GAP', f'held under {a}-{b - 1}', f"{takes[0]['matte']} lacks {fmt_runs(runs_of(missing))}: "
+                    'cannot confirm the held storm is hidden')
+            continue
+        holes = _matte_holes({f: have[f] for f in range(a, b)})
+        n += b - a
+        if holes:
+            bad.append(f"{a}-{b - 1} holds {under[1]} {under[2]}, but {takes[0]['matte']} lets it through at "
+                       f'{fmt_runs(runs_of(holes))}: render {under[1]} there or cut the hold')
+    rep.add('FAIL' if bad else 'INFO', 'held under', '; '.join(bad) if bad else
+            f'{n} frames hold an under-layer frame behind a matte decoded opaque in every pixel: the hold cannot show')
 
 
 def _size(path):
@@ -634,7 +675,7 @@ def frame_runs():
 
 
 CHECKS = (check_generator_json, check_grid, check_tiling, check_shot_map, check_sources, check_flint, check_captions,
-          check_baked, check_transitions, check_assets, check_audio)
+          check_baked, check_transitions, check_assets, check_audio, check_held_under)
 
 
 def run(partial=False):

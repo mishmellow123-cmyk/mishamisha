@@ -467,13 +467,14 @@
      "stem": "book_C_ft",
      "off": 0,
      "mode": "exact",
-     "note": "BURN-C filmed Eye burn-through: page + fire, live storm under",
+     "note": "BURN-C filmed Eye burn-through: page + fire; the storm held at 1920 under an opaque matte",
      "crop": null,
      "grade": null,
      "matte": "book_C_ft_matte",
      "under": [
-      "same",
-      "embers_C3"
+      "hold",
+      "embers_C3",
+      1920
      ],
      "video": null,
      "need": null,
