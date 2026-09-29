@@ -34,6 +34,8 @@ OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire',
            'trap': 'front_smoke_near', 'map': 'beacon-falloff',
            'deep': 'leaned_ladders', 'cold': 'lead24',
            'pen': 'soft_spine_metal', 't1': 'current-words', 'crossing': 'both'}
+# More than one renderable option per kind: the crossing's rope decal (owner night, 29 Sep) renders beside 'both'
+MORE = {'crossing': ('both_decal',)}
 PAGES = ('deep', 'pen', 't1')
 _FAMILY = None
 
@@ -158,9 +160,10 @@ def build(kind, route, option=None, scale=1.0):
             hdr = X.render_cut(f, renderer=cr, scale=scale, ss=1.5, variant='main', trail=True)
         else:
             modifier = (lambda scene, renderer, cfg: rock.apply_to_scene(
-                scene, renderer, cfg, candidate='low_shoulders')) if option in ('rock', 'both') else None
+                scene, renderer, cfg, candidate='low_shoulders')) if option in ('rock', 'both', 'both_decal') else None
             hdr = X.render_cut(f, renderer=cr, scale=scale, ss=1.5, variant='main', trail=True,
-                               rope='snow_clearance' if option in ('rope', 'both') else 'accepted',
+                               rope=('snow_decal' if option == 'both_decal' else
+                                     'snow_clearance' if option in ('rope', 'both') else 'accepted'),
                                rock='low_shoulders' if modifier else 'accepted', rock_modifier=modifier)
         return dict(hdr=hdr, rgb=cr.PI.look.finish(hdr, **cr.FINISH))
     return call
@@ -312,7 +315,7 @@ def main(argv=None):
         writable_renders()
         equal(args.kind, args.equal, args.scale)
     else:
-        if args.option != OPTIONS[args.kind] or not args.frame_range or not args.out or args.scale != 1.0:
+        if args.option not in (OPTIONS[args.kind],) + MORE.get(args.kind, ()) or not args.frame_range or not args.out or args.scale != 1.0:
             parser.error('render requires this kind\'s candidate, --range A-B, --out DIR, native scale')
         match = re.fullmatch(r'(\d+)-(\d+)', args.frame_range)
         if not match:

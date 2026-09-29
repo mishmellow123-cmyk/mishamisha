@@ -1,0 +1,18 @@
+{
+  "name": "cand_crossing_both_decal",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py crossing --prepare"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py crossing both_decal --range 4880-5839 --out renders/cand_crossing_both_decal"
+  ],
+  "out_dir": "renders/cand_crossing_both_decal",
+  "frames": "4880-5839",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Owner night 29 Sep: cand_crossing_both (the RUN-A4 restage with the low-shoulders rock and the snow-clearance rope) still drew the slack rope on the snow as dashes (5011-5113+); this renders the same candidate with the rope rasterized as a decal on the terrain (crossing_candidates.snow_decal). The equality proof of the default route ran on ldf-c01 in request 0929-172258 and is not repeated per node."
+}

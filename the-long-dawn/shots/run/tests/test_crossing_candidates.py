@@ -184,5 +184,52 @@ class RenderHookTests(unittest.TestCase):
             importer.assert_not_called()
 
 
+class RopeDecalTests(unittest.TestCase):
+    """snow_decal (29 Sep): a rope over rippled snow reads as one line; a figure in front still hides it."""
+
+    def draw(self, zb, zt):
+        import numpy as np
+        img = np.ones((20, 60, 3), np.float32)
+        CC._rope_seg_decal(np, img, zb, zt, 5.0, 10.0, 6.0, 55.0, 10.0, 7.0, 1.5, (0.0, 0.0, 0.0), 1.0)
+        return img[10, 5:55, 0]
+
+    def rippled(self):
+        """Terrain behind the rope (8 m) with a ripple every third column 15 cm in FRONT of the rope's own depth there:
+        inside the decal margin (0.06 + 0.025 z, ~0.21-0.24 m here), outside the original 5 cm one."""
+        import numpy as np
+        zb = np.full((20, 60), 8.0, np.float32)
+        x = np.arange(60)
+        zr = 6.0 + (np.clip((x + 0.5 - 5.0) / 50.0, 0, 1))
+        zb[:, ::3] = (zr - 0.15)[::3]
+        return zb, zr
+
+    def test_ripples_in_front_within_the_margin_do_not_cut_the_line(self):
+        zb, _ = self.rippled()
+        line = self.draw(zb, zb.copy())
+        self.assertTrue((line < 0.5).all(), line)
+
+    def test_the_mean_depth_rasterizer_would_have_cut_it(self):
+        # the defect this replaces: one depth per sub-segment (its mean, 6.5) and a 5 cm margin
+        zb, _ = self.rippled()
+        hidden = zb[10, 5:55] < 6.5 - 0.05
+        self.assertGreater(int(hidden.sum()), 5)
+
+    def test_a_figure_in_front_still_hides_the_rope(self):
+        import numpy as np
+        zt = np.full((20, 60), 9.0, np.float32)
+        zb = zt.copy()
+        zb[:, 20:30] = 5.8                    # a figure 0.2+ m in front of the rope, over terrain further back
+        line = self.draw(zb, zt)
+        self.assertTrue((line[16:24] > 0.99).all(), line[16:24])
+        self.assertTrue((line[:12] < 0.5).all())
+
+    def test_far_terrain_ridge_in_front_hides_it(self):
+        import numpy as np
+        zb = np.full((20, 60), 9.0, np.float32)
+        zb[:, 20:30] = 4.0                    # a snow crest 2+ m in front: beyond any decal margin
+        line = self.draw(zb, zb.copy())
+        self.assertTrue((line[16:24] > 0.99).all())
+
+
 if __name__ == '__main__':
     unittest.main()

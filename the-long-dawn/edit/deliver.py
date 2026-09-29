@@ -67,7 +67,8 @@ def _code_hash():
                                            titles._font)]
     text.append(repr([titles.Y_LOWER, titles.Y_TOP, titles.Y_BOTTOM, titles.Y_MID, titles.PARCH.tolist(),
                       titles.IRON.tolist(), titles.FIRE_RAMP.tolist(), titles.INK.tolist(), titles.GLOW.tolist(),
-                      titles.W, titles.ITALIC, titles.EBG_ITALIC, titles.CINZEL]))
+                      titles.W, titles.ITALIC, titles.EBG_ITALIC, titles.CINZEL, titles.LUMA.tolist(),
+                      titles.RIM_FLOOR, titles.RIM_GAIN, titles.RIM_MAX, titles.GLOW_BACKOFF, titles.HEAT_LIFT]))
     h = lambda xs: hashlib.sha1('\n'.join(xs).encode()).hexdigest()[:12]
     return dict(frame=h(frame), text=h(text), slate=h(slate), x2=h([ctx['x2']]), title=h(title))
 

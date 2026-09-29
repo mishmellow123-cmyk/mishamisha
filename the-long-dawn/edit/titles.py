@@ -35,6 +35,12 @@ CINZEL = os.path.join(FONTS, 'Cinzel.ttf')
 
 INK = np.array([0.953, 0.925, 0.871], np.float32)       # warm paper white (sRGB)
 GLOW = np.array([1.0, 0.78, 0.52], np.float32)
+LUMA = np.array([0.2126, 0.7152, 0.0722], np.float32)
+RIM_FLOOR = float(os.environ.get('LD_RIM_FLOOR', '0.10'))   # contact shadow: none under a picture darker than this
+RIM_GAIN = float(os.environ.get('LD_RIM_GAIN', '2.2'))      # rising with the local luma above it ...
+RIM_MAX = float(os.environ.get('LD_RIM_MAX', '0.75'))        # ... to at most this much darkening at the strokes
+GLOW_BACKOFF = float(os.environ.get('LD_GLOW_BACKOFF', '1.2'))  # a fire line's glow fades over lit ground
+HEAT_LIFT = float(os.environ.get('LD_HEAT_LIFT', '0.5'))    # and its letters run hotter there
 TAGLINE = os.environ.get('TAGLINE', '1') == '1'
 STORY_SIZE = int(os.environ.get('STORY_SIZE', '56'))
 END_TAG = 2856                                   # 119.0 s when the tagline card is on
@@ -571,7 +577,12 @@ class TextV3:
             return img
         # legibility halo (a soft darkening under the words), strongest over bright pictures
         halo = cv2.GaussianBlur(big, (0, 0), 12 * s + 1) * (0.35 + 0.5 * min(1.0, bg * 2.5))
-        region *= (1 - np.clip(halo, 0, 0.6))[..., None]
+        # REVIEW (29 Sep): a contact shadow hugging the strokes, as strong as the picture under them is bright. The
+        # wide halo alone left gold on the flame and on lit parchment at 2.3-2.4:1 (C R03 592, R06 1068/1123; A T6 at
+        # 1720); over a dark picture `local` is near 0 and this adds nothing
+        local = cv2.GaussianBlur(region @ LUMA, (0, 0), 8 * s + 1)
+        rim = cv2.GaussianBlur(cv2.dilate(big, np.ones((3, 3), np.uint8)), (0, 0), 1.6 * s + 0.4)
+        region *= (1 - np.clip(halo + rim * np.clip((local - RIM_FLOOR) * RIM_GAIN, 0, RIM_MAX), 0, 0.8))[..., None]
         if heat is None:                                        # A's warm paper-white letters, faintly lit
             g = cv2.GaussianBlur(big, (0, 0), 5 * s + 0.5) * 0.12
             region += g[..., None] * GLOW
@@ -579,13 +590,16 @@ class TextV3:
         else:
             hb = np.zeros_like(big)
             hb[Y0 - HY0:Y1 - HY0, X0 - HX0:X1 - HX0] = (heat * np.ones_like(a))[Y0 - y0:Y1 - y0, X0 - x0:X1 - x0]
+            if HEAT_LIFT > 0 and k != 'title':                  # REVIEW (29 Sep): over lit ground the letters burn
+                hb = np.clip(hb + HEAT_LIFT * np.clip(local - 0.15, 0, 0.6), 0, 1)   # hotter than the page
             col = _heat_rgb(hb)
             if ink > 0:                                         # C's title cools from fire to ink
                 col = col * (1 - ink) + (IRON if bg > 0.33 else PARCH) * ink
             if glow_k > 0:
                 g1 = cv2.GaussianBlur(big * np.clip(hb, 0, 1), (0, 0), 5 * s + 0.5)
                 g2 = cv2.GaussianBlur(big * np.clip(hb, 0, 1), (0, 0), 16 * s + 1)
-                region += (g1 * 0.5 + g2 * 0.35)[..., None] * glow_k * np.array([1.0, 0.45, 0.12], np.float32)
+                g = (g1 * 0.5 + g2 * 0.35) * (1 - np.clip(local * GLOW_BACKOFF, 0, 0.8))   # the glow reads on the
+                region += g[..., None] * glow_k * np.array([1.0, 0.45, 0.12], np.float32)  # dark, washes out the lit
             region[:] = region * (1 - big[..., None]) + col * big[..., None]
         if sparks is not None:
             sp, age, on, u = sparks
