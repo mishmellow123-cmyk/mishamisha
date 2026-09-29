@@ -207,9 +207,17 @@ def test_table_contract_catches(table, mutate, expect):
     assert any(expect in p for p in T.problems(t)), T.problems(t)
 
 
-def test_edl_of_the_retired_cut_is_refused():
+def test_edl_of_the_retired_cut_is_refused(tmp_path):
+    p = tmp_path / "edl_C.json"
+    p.write_text(json.dumps(dict(frames=7200, shots=[])))           # the retired cut, as a fixture, not repo state
+    edl, note = T.c5_edl(str(p))
+    assert edl is None and "7200-frame" in note
+
+
+def test_committed_edl_is_the_c5_cut():
+    """Since EDIT-C5 (975d644) the committed edl_C.json is the 5,920-frame cut, and the table reads it."""
     edl, note = T.c5_edl()
-    assert edl is None and "7200-frame" in note                  # this branch still carries the 7,200-frame edl_C
+    assert edl is not None and edl["frames"] == T.FRAMES, note
 
 
 def _c5_edl(tmp_path, pieces):
