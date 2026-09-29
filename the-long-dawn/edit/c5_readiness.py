@@ -428,6 +428,15 @@ def check_captions(rep):
             bad.append(f"{r['id']}: set {r['set']!r} (C5 uses fire, ink, in_picture)")
         if not (0 <= r.get('x', 960) < 1920 and 0 <= r.get('y', 402) < 804):
             bad.append(f"{r['id']}: placement {r.get('x')}, {r.get('y')} outside the 1920x804 picture")
+        if r.get('lines') and ' '.join(r['lines']) != r['line']:
+            bad.append(f"{r['id']}: its line breaks {list(r['lines'])} do not rejoin to the verbatim line")
+        elif r['set'] in ('ink', 'fire'):                        # EDIT draws it: every glyph must land in the picture
+            ln = titles.TextV3(CUT, r, 1.0)
+            ys, xs = np.nonzero(ln.alpha > 0.5)
+            ext = (ln.x0 + xs.min(), ln.y0 + ys.min(), ln.x0 + xs.max(), ln.y0 + ys.max())
+            if ext[0] < 0 or ext[1] < 0 or ext[2] >= 1920 or ext[3] >= 804:
+                bad.append(f"{r['id']}: its glyphs span x {ext[0]}-{ext[2]}, y {ext[1]}-{ext[3]}, outside the "
+                           '1920x804 picture')
         for t in wins:
             if t['f0'] < r['f_out'] and r['f_in'] < t['f1']:
                 warn.append(f"{r['id']} overlaps the {t['kind']} window {t['f0']}-{t['f1'] - 1}")
@@ -597,11 +606,7 @@ def check_assets(rep):
 
 
 def check_audio(rep):
-    path, label = None, None
-    for p, lab in AS._audio_candidates(CUT):
-        if p and os.path.isfile(p) and AS.audio_fits(p, CUT):
-            path, label = p, lab
-            break
+    path, label, _ = AS.audio_choice(CUT)
     rep.add('WARN' if path is None else 'INFO', 'sound (separate gate)',
             'no C sound file of exactly 5920 frames: a master would carry the click track (sound_C.wav and its '
             'siblings belong to the retired 7,200-frame cut and are refused by length)' if path is None else

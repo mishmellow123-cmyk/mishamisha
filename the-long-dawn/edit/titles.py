@@ -90,6 +90,42 @@ def render_line(text, path=ITALIC, size=50, weight=560, tracking=0.02):
     return a, stag, a.shape[1], a.shape[0]
 
 
+@functools.lru_cache(maxsize=64)
+def render_block(lines, path=ITALIC, size=50, weight=560, tracking=0.02, leading=1.3):
+    """Two or more render_line lines set as ONE caption, each centred, `leading` x size apart. Returns (alpha,
+    stagger, reading-order x in [0, 1], slant y, bands), all HxW but bands. The stagger and the reading-order x run
+    through the lines in order, so a write-on or a kindle takes them one after another; slant y puts every line's own
+    centre at the block's mid-height, so the ink's slanted nib front leans the same way on each line. bands:
+    ((y0, y1, x0, x1) of each line's glyphs, alpha > 0.5) in block pixels."""
+    parts = [render_line(t, path, size, weight, tracking) for t in lines]
+    ph = parts[0][3]                                  # render_line crops every line to the same font metrics
+    ww = max(p[2] for p in parts)
+    pitch = int(round(leading * size))
+    hh = pitch * (len(parts) - 1) + ph
+    alpha = np.zeros((hh, ww), np.float32)
+    stag, xr, ys = np.zeros_like(alpha), np.zeros_like(alpha), np.zeros_like(alpha)
+    letters = [sum(c != ' ' for c in t) for t in lines]
+    total_px, total_n = float(sum(p[2] for p in parts)), float(sum(letters))
+    done_px, done_n, bands = 0.0, 0.0, []
+    cols = np.arange(ww, dtype=np.float32)
+    for i, (a, st, pw, _) in enumerate(parts):
+        y0, x0 = i * pitch, (ww - pw) // 2
+        alpha[y0:y0 + ph, x0:x0 + pw] = np.maximum(alpha[y0:y0 + ph, x0:x0 + pw], a)
+        c = y0 + ph / 2.0                                          # this line's centre row
+        lo = 0 if i == 0 else int(round(c - pitch / 2.0))         # the rows it owns: halfway to its neighbours
+        hi = hh if i == len(parts) - 1 else int(round(c + pitch / 2.0))
+        own = np.zeros((hh, pw), np.float32)
+        own[y0:y0 + ph] = st * letters[i]
+        stag[lo:hi, x0:x0 + pw] = (done_n + own[lo:hi]) / total_n
+        xr[lo:hi] = (done_px + np.clip(cols - x0, 0, pw)) / total_px
+        ys[lo:hi] = np.arange(lo, hi, dtype=np.float32)[:, None] - c + hh / 2.0
+        gy, gx = np.nonzero(a > 0.5)
+        bands.append((y0 + int(gy.min()), y0 + int(gy.max()) + 1, x0 + int(gx.min()), x0 + int(gx.max()) + 1))
+        done_px += pw
+        done_n += letters[i]
+    return alpha, stag, xr, ys, tuple(bands)
+
+
 def smooth(x):
     x = np.clip(x, 0.0, 1.0)
     return x * x * (3 - 2 * x)
@@ -286,25 +322,34 @@ C5_TEXT = [
     dict(id='R10', row=10, line='In the old story, the wise refused the Ring.', f_in=2168, f_out=2306, set='ink',
          x=1065),                 # on the right-hand page below the drawing (v5_inkpages keeps page y > 18 cm clear)
     dict(id='R11', row=11, line='In ours, no smith could refuse it alone.', f_in=2452, f_out=2572, set='fire',
-         y=372),                  # the lower third crosses the forge crowns, the withdrawing forge among them
+         y=330),                  # between the Ring and the forge crowns. At y 372 the crowns' flare (2555-2559)
+                                  # rose behind 'In ours' (worst slice 2.32:1); here the worst frame is 4.28:1
     dict(id='R13', row=13, line='So the two furthest ahead lit the first beacons, together.', f_in=2900, f_out=3040,
          set='ink', y=150),       # the near fire sits at ~(960, 607), the far one at ~(1380, 383): the sky is clear
     dict(id='R14', row=14, line='It was a promise to stop, if all the others would.', f_in=3160, f_out=3300,
          set='ink', y=150),       # UNVERIFIED: runC_scroll is not on the EDIT-C5 Mac; the Reveal/Watch sky placement
     dict(id='R15', row=15, line='When the last beacon caught, every forge went cold.', f_in=3740, f_out=3836,
-         set='fire', y=300),      # a beacon sits at ~(994, 646) on the lower third; the catch is 3784-3791
+         set='fire', y=220),      # under the top row of beacons, clear of the catch (3785-3791 at ~(692, 448)) and
+                                  # the lower third's beacon (~(994, 646)). The map has no clean band a line this long
+                                  # fits: moving up from y 300 halves the drawn edges under it (0.047 -> 0.022), but
+                                  # its stipple keeps the texture over the threshold (0.017; tools/c5_caption_backdrop)
     dict(id='R17', row=17, line='The Ring hung there, unfinished.', f_in=4040, f_out=4180, set='fire'),
     dict(id='R18', row=18, line='They left the gold in the ground.', f_in=4276, f_out=4416, set='ink',
-         y=590),                  # on the lighter stratum between the plate's 4th and 5th tiers: at the lower third
-                                  # the words sat on hatched arches, 'gold' on the vein, and covered the 5th tier's
-                                  # ladder (~x 1225-1250, y 615-735), one of the empty ladders that say "abandoned"
+         x=310, y=300, lines=('They left the gold', 'in the ground.')),
+                                  # on the facing page, off the plate: over the plate (y 590) the words crossed the
+                                  # arches, a ladder and the vein ('gold' on the gold; edge 0.101, texture 0.042,
+                                  # worst slice 2.81:1). One line (694 px of glyphs) cannot fit the left page without
+                                  # crossing the gutter, so it breaks in two; the words are unchanged. Over the page's
+                                  # faint script: edge 0.000, texture 0.014, worst slice 5.43:1
     dict(id='R19', row=19, line='And the beacons burned on, so no forge could be lit in secret.', f_in=4504,
          f_out=4664, set='ink', y=150),
     dict(id='R20', row=20, line='Without the Ring, the dawn came slowly. But it came.', f_in=4860, f_out=5020,
          set='ink', y=150),       # UNVERIFIED: runC_illum is not on the EDIT-C5 Mac
     dict(id='R22', row=22, line='The last pages were left for us.', f_in=5462, f_out=5602, set='ink',
-         x=440),                  # EDIT's, on the blank verso: the pen frames bake no text and the gutter runs
-                                  # through the centre (~870-960); 5460-5540 is the score's window for a voice line
+         x=440, y=520),           # EDIT's, on the blank verso: the pen frames bake no text and the gutter runs
+                                  # through the centre (~870-960); 5460-5540 is the score's window for a voice line.
+                                  # Raised from the lower third (y 648), where the verso darkens: worst slice
+                                  # 2.93:1 -> 3.33:1
     dict(id='title', row=23, line='THE LONG DAWN', f_in=5700, f_out=5880, set='in_picture'),   # book_C 6980-7160
 ]
 
@@ -333,7 +378,7 @@ def text_table(cut):
     cut = cut.upper()
     if cut == 'C':
         return [dict(id=r['id'], line=r['line'], f_in=r['f_in'], f_out=r['f_out'], set=r['set'], locked=None,
-                     row=r['row'], **{k: r[k] for k in ('x', 'y') if r.get(k) is not None}) for r in C5_TEXT]
+                     row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines') if r.get(k) is not None}) for r in C5_TEXT]
     with open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')) as fh:
         bm = json.load(fh)
     ids = {t['id'] for t in bm['text']}
@@ -384,15 +429,24 @@ class TextV3:
         if row.get('y') is not None:                                  # C5: a placed line (picture coordinates)
             self.y = row['y'] * s
         self.size = max(8, int(round(size * s)))
-        self.alpha, self.stag, self.w, self.h = render_line(self.text, self.font, self.size, weight, track)
+        if row.get('lines'):                                          # C5: an explicit break; the words unchanged
+            if ' '.join(row['lines']) != self.text:
+                raise ValueError(f"{self.id}: lines {row['lines']!r} do not rejoin to {self.text!r}")
+            self.alpha, self.stag, self.xn, self.yy, self.bands = render_block(
+                tuple(row['lines']), self.font, self.size, weight, track)
+            self.h, self.w = self.alpha.shape
+        else:
+            self.alpha, self.stag, self.w, self.h = render_line(self.text, self.font, self.size, weight, track)
+            yy, xx = np.mgrid[0:self.h, 0:self.w].astype(np.float32)
+            self.xn = xx / max(1, self.w - 1)
+            self.yy = yy
+            gy, gx = np.nonzero(self.alpha > 0.5)
+            self.bands = ((int(gy.min()), int(gy.max()) + 1, int(gx.min()), int(gx.max()) + 1),)
         if x is None and row.get('x') is not None:
             x = row['x'] * s - self.w / 2                             # 'x' is the line's centre
         self.x0 = int(round((W * s / 2 - self.w / 2) if x is None else x))
         self.y0 = int(round(self.y - self.h / 2))
         hh, ww = self.alpha.shape
-        yy, xx = np.mgrid[0:hh, 0:ww].astype(np.float32)
-        self.xn = xx / max(1, ww - 1)
-        self.yy = yy
         self.noise = _noise((hh, ww), hash((cut, self.id)) & 0xffff, 1.2 * s)
         self._sparks = None
 

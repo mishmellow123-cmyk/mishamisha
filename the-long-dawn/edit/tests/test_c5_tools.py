@@ -210,6 +210,30 @@ class SoundGuardTests(unittest.TestCase):
         self.assertTrue(label.startswith('CLICK track'))
         self.assertNotIn('C', AS.ADOPTED_AUDIO)
 
+    def test_the_watcher_signs_only_the_sound_a_master_would_carry(self):
+        """refresh_watch.sh once walked the candidates itself, with no length check, so C's term named a file of the
+        7,200-frame cut; it now signs assemble.audio_choice's pick, and a refused file never enters it."""
+        from types import SimpleNamespace
+        lengths = {'final_C.wav': 7200 / 24, 'fallback_C.wav': 7200 / 24, 'final_A.wav': 6480 / 24}
+        cands = {'C': (('/x/final_C.wav', 'COMPOSER master'), ('/x/fallback_C.wav', 'FALLBACK master')),
+                 'A': (('/x/final_A.wav', 'COMPOSER master'),)}
+        with mock.patch('soundfile.info', lambda p: SimpleNamespace(duration=lengths[os.path.basename(p)])), \
+                mock.patch.object(AS, '_audio_candidates', lambda cut: cands[cut]), \
+                mock.patch.object(AS.os.path, 'isfile', lambda p: True), \
+                mock.patch.object(AS.os.path, 'getmtime', lambda p: 123.0):
+            self.assertEqual(AS.audio_signature('C'), 'click')
+            self.assertEqual([p for p, _ in AS.audio_choice('C')[2]], ['/x/final_C.wav', '/x/fallback_C.wav'])
+            self.assertEqual(AS.audio_choice('C')[0], None)
+            lengths['fallback_C.wav'] = 5920 / 24                                   # a C5 file lands under that name
+            self.assertEqual(AS.audio_signature('C'), 'fallback_C.wav@123')
+            label = AS.resolve_audio_label('C')
+            self.assertTrue(label.startswith('FALLBACK master') and label.endswith('fallback_C.wav`'), label)
+            self.assertEqual(AS.audio_signature('A'), 'final_A.wav@123')           # A: unguarded, as before
+        script = (EDIT / 'refresh_watch.sh').read_text()
+        self.assertIn('AS.audio_signature(c)', script)
+        for own_walk in ("final_{c}.wav", 'adopted_audio', 'masters_table'):
+            self.assertNotIn(own_walk, script)
+
 
 if __name__ == '__main__':
     unittest.main()

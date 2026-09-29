@@ -276,6 +276,28 @@ class C5ReadinessTests(unittest.TestCase):
             self.write_json()
             self.assertIn("R17 4040-4259 is not inside one of its row's shots", self.run_gate(partial=True)[2])
 
+    def test_a_line_break_that_changes_the_words_fails_both_modes(self):
+        self.green()
+        rows = copy.deepcopy(titles.C5_TEXT)
+        k = [r['id'] for r in rows].index('R18')
+        self.assertEqual(rows[k]['lines'], ('They left the gold', 'in the ground.'))     # as committed: verbatim
+        rows[k]['lines'] = ('They left the gold', 'in the ground')                     # the full stop lost
+        with mock.patch.object(titles, 'C5_TEXT', rows):
+            self.write_json()
+            rep, _, text = self.run_gate(partial=True)
+        self.assertTrue(rep.failed())
+        self.assertIn('R18: its line breaks', text)
+
+    def test_a_caption_whose_glyphs_leave_the_picture_fails_both_modes(self):
+        self.green()
+        rows = copy.deepcopy(titles.C5_TEXT)
+        rows[[r['id'] for r in rows].index('R13')]['x'] = 300                # a 1,187-px line centred at x 300
+        with mock.patch.object(titles, 'C5_TEXT', rows):
+            self.write_json()
+            rep, _, text = self.run_gate(partial=True)
+        self.assertTrue(rep.failed())
+        self.assertIn('R13: its glyphs span x -', text)
+
     def test_in_picture_over_unbaked_pen_frames_fails_both_modes(self):
         """The old T14 suppression: flag the ending line in_picture over the new, text-free Pen frames and it would
         silently vanish."""

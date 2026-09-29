@@ -29,6 +29,19 @@ C is now C5, THE LAST PAGES: script v5.2 with the paired-rivals amendment, 5,920
   gitignored in `edit/cache/` (or named by `LD_C5_ASSET_MAP`); nothing is found by name or date.
 - **Partial review cut:** `python3 edit/c5_partial.py --out DIR` runs the gate first. It builds a silent, labelled
   cut with a slate for each missing section, and each row plays only its primary take.
+- **Caption backdrops:** `python3 edit/tools/c5_caption_backdrop.py measure` scores every EDIT caption over its
+  delivered frames at 1920x804: drawn-edge fraction, texture, and the WCAG contrast of its worst eighth of a line.
+  `search ID [--lines 'ID=first|second']` ranks placements. BUSY means edge > 0.03 or texture > 0.015. These are the
+  midpoints of the gap between clean and line-art backdrops measured on 29 Sep, not a standard. LOW-CONTRAST means a
+  slice under 3:1 in any steady frame.
+  - On 29 Sep R11, R15, R18 and R22 were flagged, and the other four were clean.
+  - R18 moved to the facing page as two lines (C5_TEXT `lines`, words unchanged; the gate FAILs a break that changes
+    them).
+  - R11 moved up to y 330 and R22 to y 520.
+  - R15 moved up to y 220 and stays BUSY on texture: no band of the map that long is clean.
+- **Not deterministic:** TextV3 seeds its noise with Python's per-process string hash, and nothing sets
+  PYTHONHASHSEED. Fire flicker and every crumble or dissolve pattern therefore differ from run to run. A fire
+  caption's measured contrast moves by a few hundredths: R11's worst frame read 2.29 to 2.33:1 over three runs.
 - **Where assemble.py picks a source silently, and what catches it for C5:**
   - `chain()` tries name variants for mode 'v3' and wider modes. The gate FAILs any non-exact take from 2080.
   - `Ctx.under` falls back from stem to stem_half. The gate GAPs it as provisional.
