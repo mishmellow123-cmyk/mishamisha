@@ -28,7 +28,7 @@ def validate_output_dir(path):
     path = path.resolve()
     root = (Path.home() / 'ldfarm' / 'out').resolve()
     if path.parent != root or not path.name.startswith('cand_deep_'):
-        raise ValueError('use a new ~/ldfarm/out/cand_deep_* directory')
+        raise ValueError('use a new cand_deep_* directory under the configured candidate output root')
     if path == root / 'cand_deep_':
         raise ValueError('study directory needs a candidate name')
     return path
