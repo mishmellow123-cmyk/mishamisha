@@ -200,9 +200,15 @@ A = [
       EMB_A),
     S('A17', 4720, 4880, 'E10', 'THE FIRE, SEEN', 'EMBERS',
       'The camera walks down to the calm fire; small lights come to the rim; it gathers into one small heart.', EMB_A),
+    # OWNER NIGHT (29 Sep): the RUN-A4 restage, held since 27 Sep for two fixes, rendered on the farm with both: the
+    # line stands at the first watch-fire through the close and medium shots and sets off from 5180 (the user: "the
+    # walking at ~5050 was glitchy"), the rock step at 5584 lowered (low_shoulders: it read as a tub) and the slack rope
+    # drawn as a decal on the snow (it read as a dotted line, 5011-5113+). need= keeps the accepted crossing until all
+    # 960 frames have landed; ALTERNATIVES['A18'] is the accepted crossing.
     S('A18', 4880, 5840, 'R6', 'THE CROSSING', 'RUN-A',
       'One take: the great lantern on poles; forty roped bearers on a knife-edge above the cloud; the sky wheels.',
-      [T('crossing'), T('run')]),
+      [T('cand_crossing_both_decal', 0, 'exact', 'RUN-A4 restage + low_shoulders rock + rope decal (farm 29 Sep)',
+         need=(4880, 5839)), T('crossing'), T('run')]),
     S('A19', 5840, 6240, 'R7', 'THE BLUE HOUR', 'RUN-A',
       'The lantern set down among the watch-fires; they sit and unrope; the east pales to rose; hearth smoke below.',
       [T('dawnrev'), T('bluehour'), T('run')]),       # A-FIX ENDING (approved 28 Sep): B's dusk reversed into a dawn
@@ -297,6 +303,8 @@ ALTERNATIVES = {
     'C18': ("c5('book_C5_deep_abandoned', PR12, matte='book_C5_deep_abandoned_matte')", 'upright ladders, box lamp'),
     'C19': ("c5('runC_watch_v5', PR14)", 'the parchment Watch'),
     'C22': ("c5('book_C5_pen', PR12, matte='book_C5_pen_matte')", 'pale nib, hard black gutter'),
+    'A18': ("T('crossing')", 'the accepted crossing (renders/crossing_A, 27 Sep): the walking line the user found '
+            'glitchy at ~5050'),
 }
 
 

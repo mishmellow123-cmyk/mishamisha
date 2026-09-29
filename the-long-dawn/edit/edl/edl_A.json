@@ -945,6 +945,26 @@
    "desc": "One take: the great lantern on poles; forty roped bearers on a knife-edge above the cloud; the sky wheels.",
    "takes": [
     {
+     "stem": "cand_crossing_both_decal",
+     "off": 0,
+     "mode": "exact",
+     "note": "RUN-A4 restage + low_shoulders rock + rope decal (farm 29 Sep)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      4880,
+      5839
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_crossing_both_decal"
+     ]
+    },
+    {
      "stem": "crossing",
      "off": 0,
      "mode": "v3",
