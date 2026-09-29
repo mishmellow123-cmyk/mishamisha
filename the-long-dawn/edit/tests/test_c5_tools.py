@@ -154,6 +154,25 @@ class AssetMapTests(unittest.TestCase):
         self.assertNotIn('ring_C', need)                                      # C12 is an open decision
 
 
+class PartialLabelTests(unittest.TestCase):
+    def test_the_review_label_reads_on_parchment_as_well_as_on_black(self):
+        """The first label (cream glyphs over a blurred glyph shadow) all but vanished on the Reveal's paper."""
+        from types import SimpleNamespace
+        import c5_partial as CP
+        for W in (960, 1920):
+            fake = SimpleNamespace(W=W, storyboard=False)
+            fake._label = CP.PartialCtx._make_label(fake, CP.LABEL)
+            a, plate = fake._label
+            h, w = a.shape
+            y0 = int(round(8 * W / 1920))
+            for ground in (0.0, 0.93):                                       # black; the Reveal's parchment
+                img = np.full((W * 804 // 1920, W, 3), ground, np.float32)
+                CP.PartialCtx._burn_label(fake, img, 0)
+                reg = img[y0:y0 + h, y0:y0 + w].mean(-1)
+                text, back = reg[a > 0.9].mean(), reg[(a < 0.05) & (plate > 0.95)].mean()
+                self.assertGreater(text - back, 0.4, (W, ground, text, back))
+
+
 class SoundGuardTests(unittest.TestCase):
     def test_c_refuses_a_sound_file_of_another_length_and_a_keeps_its_behaviour(self):
         from types import SimpleNamespace

@@ -116,6 +116,8 @@ class PartialCtx(AS.Ctx):
 
     # ------------------------------------------------------------------------------------------------ labels
     def _make_label(self, text):
+        """(glyph alpha, backing plate alpha) for the label: the plate is a feathered box behind the whole text, so the
+        label reads on parchment as well as on black (a glyph shadow alone all but vanished on the Reveal's paper)."""
         s = self.W / 1920.0
         size = max(9, int(round(26 * s)))
         font = AS._pil_font('Cinzel.ttf', size)
@@ -124,16 +126,21 @@ class PartialCtx(AS.Ctx):
         th = int(size * 1.8)
         a = Image.new('L', (tw, th), 0)
         ImageDraw.Draw(a).text((size, th / 2), text, font=font, fill=255, anchor='lm')
-        return np.asarray(a, np.float32) / 255.0
+        inset = max(2, size // 4)
+        plate = np.zeros((th, tw), np.float32)
+        plate[inset:th - inset, inset:tw - inset] = 1.0
+        plate = cv2.GaussianBlur(plate, (0, 0), max(1.0, inset / 2))
+        return np.asarray(a, np.float32) / 255.0, plate
 
     def _burn_label(self, img, f):
-        a = self._label
+        a, plate = self._label
         h, w = a.shape
         y0 = int(round(8 * self.W / 1920.0))
         x0 = self.W - w - y0 if self.storyboard else y0
         reg = img[y0:y0 + h, x0:x0 + w]
-        reg *= (1 - 0.55 * np.clip(cv2.GaussianBlur(a, (0, 0), 3), 0, 1))[..., None]
-        reg[:] = reg * (1 - a[..., None] * 0.85) + np.array([0.93, 0.86, 0.72], np.float32) * a[..., None] * 0.85
+        reg *= (1 - 0.68 * plate)[..., None]
+        reg[:] = reg * (1 - a[..., None] * 0.9) + np.array([0.93, 0.86, 0.72], np.float32) * a[..., None] * 0.9
+
     def _burn_number(self, out, f):
         """The video (not the storyboard) carries its C5 frame number, top right, for review notes."""
         txt = f'C {f:04d}'
