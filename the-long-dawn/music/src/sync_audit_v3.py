@@ -40,6 +40,11 @@ def extract(cut):
 
 def frames(cut):
     n = os.path.getsize(raw(cut)) // (W * H * 3)
+    import audio_guard_v3 as AG             # SOUND-SCORE-C: a newest-by-mtime master of another cut fails loud
+    try:
+        AG.check_video_frames(n, cut, NF.get(cut))
+    except AG.StaleArtefact as e:
+        raise SystemExit(f"REFUSED: {e}")
     return np.memmap(raw(cut), dtype=np.uint8, mode="r", shape=(n, H, W, 3))
 
 

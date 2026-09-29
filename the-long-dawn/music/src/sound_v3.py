@@ -436,6 +436,17 @@ def sync_table(cut):
     return {e["id"]: e for e in d["sync"]}
 
 
+def apply_silence(stem, windows, fade=0.005):
+    """a HARD silence in the effects stem: zero over each [t0, t1) s window, a 5 ms fade into it (C5: the shutdown
+    3848 to the Ring's cut 4000; nothing else is touched). Windows come from a recipes module's SILENCE."""
+    for t0, t1 in windows:
+        i0, i1 = int(round(t0 * SR)), min(len(stem), int(round(t1 * SR)))
+        k = min(int(fade * SR), i0)
+        stem[i0 - k:i0] *= np.linspace(1.0, 0.0, k, dtype=np.float32)[:, None]
+        stem[i0:i1] = 0.0
+    return stem
+
+
 def build(cut, only=None, verbose=True):
     import importlib
     R = importlib.import_module(f"sound_recipes_{cut}")
@@ -556,6 +567,7 @@ def build(cut, only=None, verbose=True):
         wet = R2.convolve_with_breaths(send, irs, wins, total) if wins else convolve(send, irs)
         stem = stem + proc(wet, hp=R.SPACE.get("wet_hp", 150), lp=R.SPACE.get("wet_lp", 9000))
     stem = proc(stem, hp=R.SPACE.get("stem_hp", 25), hp_order=2)
+    stem = apply_silence(stem, getattr(R, "SILENCE", ()))   # ADDITIVE (SOUND-SCORE-C): inert unless a recipe sets it
     if verbose:
         for m in meta:
             if m.get("status"):
@@ -609,7 +621,7 @@ def levels_report(cut, only=None):
               f"{L['I'] + g:6.1f} {L['S3'] + g:6.1f} {L['M'] + g:6.1f} {L['pk'] + g:6.1f} | {g:6.1f} {bound}")
 
 
-def write(cut, stem, meta, bm):
+def write(cut, stem, meta, bm, allow_unverified=False):
     """the pre-master stem, then the REAL master: COMPOSER's own chain (render_v3.master: -16 LUFS, glue comp,
     limiter with the score-stem ceiling, fades, true-peak safety) run on the saved pre-master score of
     final_<cut> + this stem -> sound_<cut>.wav = sound_<cut>_score.wav + sound_<cut>_sfx.wav; sfx_<cut>.wav is
@@ -623,6 +635,13 @@ def write(cut, stem, meta, bm):
         print(f"  no {os.path.basename(sp)} yet: pre-master stem only")
         return pre, None
     import shutil
+    import audio_guard_v3 as AG          # SOUND-SCORE-C: a saved premaster must provably be this cut's current one
+    try:
+        for w in AG.check_premaster(sp, cut, bm.frames, bm.path, os.path.join(V3, f"cues_{cut}.json"),
+                                    allow_unverified):
+            print("  " + w)
+    except AG.StaleArtefact as e:
+        raise SystemExit(f"REFUSED: {e}")
     import render_v3 as RV
     score = np.load(sp)
     G = db(-16.0 - RV.lufs(score[:n] + pre)) * db(1.2)          # the master's gain, a little on the safe side
@@ -674,10 +693,14 @@ def report(cut, pre, post):
     import pyloudnorm as pyln
     m = pyln.Meter(SR)
     L = lambda x: m.integrated_loudness(np.asarray(x, np.float64))
-    old, _ = sf.read(os.path.join(OUT, f"final_{cut}_sfx.wav"), dtype="float32", always_2d=True)
+    op = os.path.join(OUT, f"final_{cut}_sfx.wav")
     mix, _ = sf.read(os.path.join(OUT, f"sound_{cut}.wav"), dtype="float32", always_2d=True)
-    print(f"  real sfx stem {L(post):6.2f} LUFS  TP {R2.true_peak_db(post):6.2f} dBTP   | old synthesized sfx stem "
-          f"{L(old):6.2f} LUFS")
+    if os.path.exists(op):
+        old, _ = sf.read(op, dtype="float32", always_2d=True)
+        print(f"  real sfx stem {L(post):6.2f} LUFS  TP {R2.true_peak_db(post):6.2f} dBTP   | old synthesized sfx stem "
+              f"{L(old):6.2f} LUFS")
+    else:                                   # a cut scored without synthesized effects (C5, C5P2)
+        print(f"  real sfx stem {L(post):6.2f} LUFS  TP {R2.true_peak_db(post):6.2f} dBTP   | (no synthesized stem)")
     print(f"  sound_{cut}.wav (score + real sfx, mastered): {L(mix):6.2f} LUFS  TP {R2.true_peak_db(mix):6.2f} dBTP")
 
 
@@ -689,18 +712,27 @@ if __name__ == "__main__":
     ap.add_argument("--solo", default="")
     ap.add_argument("--no-battery", action="store_true")
     ap.add_argument("--levels", action="store_true")
+    ap.add_argument("--retired-c-7200", action="store_true", help="allow the retired 7,200-frame C (writes sound_C.*)")
+    ap.add_argument("--premaster-unverified", action="store_true",
+                    help="accept a saved premaster with no identity sidecar for a strict cut (C5P2)")
     a = ap.parse_args()
     cut = a.cut.upper()
     only = set(x for x in a.only.split(",") if x) or None
     if a.levels:
         levels_report(cut, only)
         sys.exit(0)
+    import audio_guard_v3 as AG
+    if not a.solo:                          # SOUND-SCORE-C: the retired cut's outputs are what the edit picks by name
+        try:
+            AG.check_cut_allowed(cut, a.retired_c_7200)
+        except AG.StaleArtefact as e:
+            sys.exit(f"REFUSED: {e}")
     bm, stem, meta = build(cut, only)
     if a.solo:
         sf.write(a.solo, stem[: bm.n], SR, subtype="PCM_24")
         print("solo ->", a.solo)
         sys.exit(0)
-    pre, post = write(cut, stem, meta, bm)
+    pre, post = write(cut, stem, meta, bm, allow_unverified=a.premaster_unverified)
     if post is not None:
         report(cut, pre, post)
         if not a.no_battery:
