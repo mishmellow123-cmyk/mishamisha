@@ -597,11 +597,7 @@ def check_assets(rep):
 
 
 def check_audio(rep):
-    path, label = None, None
-    for p, lab in AS._audio_candidates(CUT):
-        if p and os.path.isfile(p) and AS.audio_fits(p, CUT):
-            path, label = p, lab
-            break
+    path, label, _ = AS.audio_choice(CUT)
     rep.add('WARN' if path is None else 'INFO', 'sound (separate gate)',
             'no C sound file of exactly 5920 frames: a master would carry the click track (sound_C.wav and its '
             'siblings belong to the retired 7,200-frame cut and are refused by length)' if path is None else

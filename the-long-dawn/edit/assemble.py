@@ -554,16 +554,38 @@ def _audio_candidates(cut):
             (os.path.join(v3, f'fallback_{cut}.wav'), 'FALLBACK master'))
 
 
+def audio_choice(cut):
+    """(path, label, refused): the first candidate that exists and, for a guarded cut (LENGTH_GUARD), is exactly the
+    cut's length, or (None, None, refused); refused lists the (path, label) that exist but were refused. The ONE walk:
+    the masters (resolve_audio), their labels, the C5 gate and refresh_watch.sh's signature all read it, so no reader
+    can take a file another would refuse."""
+    refused = []
+    for path, label in _audio_candidates(cut):
+        if path and os.path.isfile(path):
+            if audio_fits(path, cut):
+                return path, label, refused
+            refused.append((path, label))
+    return None, None, refused
+
+
+def audio_signature(cut):
+    """refresh_watch.sh's audio term: the file a master would carry now, with its mtime, or 'click'. A refused file
+    never enters it, so re-rendering a stale file cannot stand in for the cut's sound or trigger a refresh, and a file
+    that starts to fit changes the term, which is the refresh that should happen. No spaces: the watcher splits its
+    signature on them."""
+    path, _, _ = audio_choice(cut)
+    return f'{os.path.basename(path)}@{int(os.path.getmtime(path))}' if path else 'click'
+
+
 def resolve_audio(cut):
     """(wav path, label): the adopted master, the composer's master, else the fallback master, else a click. A guarded
     cut (LENGTH_GUARD) refuses, loudly, any file that is not exactly its length."""
-    for path, label in _audio_candidates(cut):
-        if path and os.path.isfile(path):
-            if not audio_fits(path, cut):
-                print(f'  AUDIO REFUSED for {cut}: {os.path.relpath(path, ROOT)} is not {EDL.TOTAL[cut]} frames long '
-                      f'(a sound master for another cut)', flush=True)
-                continue
-            return path, f'{label} ({os.path.relpath(path, ROOT)}, {time.strftime("%d %b %H:%M", time.localtime(os.path.getmtime(path)))} local)'
+    path, label, refused = audio_choice(cut)
+    for p, _ in refused:
+        print(f'  AUDIO REFUSED for {cut}: {os.path.relpath(p, ROOT)} is not {EDL.TOTAL[cut]} frames long '
+              f'(a sound master for another cut)', flush=True)
+    if path:
+        return path, f'{label} ({os.path.relpath(path, ROOT)}, {time.strftime("%d %b %H:%M", time.localtime(os.path.getmtime(path)))} local)'
     return click_track(cut), 'CLICK track (soft click each bar, accented on section starts)'
 
 
@@ -1016,9 +1038,9 @@ def coverage_md(variant=None):
 
 
 def resolve_audio_label(cut):
-    for path, label in _audio_candidates(cut):
-        if path and os.path.isfile(path) and audio_fits(path, cut):
-            return f'{label} `{os.path.relpath(path, ROOT)}`'
+    path, label, _ = audio_choice(cut)
+    if path:
+        return f'{label} `{os.path.relpath(path, ROOT)}`'
     return 'click track (no score or fallback yet' + (' of the right length)' if cut in LENGTH_GUARD else ')')
 
 

@@ -23,8 +23,6 @@ sig() {
 import os, sys
 sys.path.insert(0, 'edit')
 import assemble as AS
-tab = AS.masters_table()
-v3 = os.path.join(AS.ROOT, 'music', 'out', 'v3')
 import hashlib
 def dmt(d):
     try:
@@ -53,12 +51,10 @@ for c in os.environ.get('FILMS', 'AC'):                # film B was dropped (use
     if c == 'A':                                         # lane A-FIX iterates on its comps: a change refreshes A
         h.update(repr(dmt(os.path.join(AS.ROOT, 'edit', 'afix_comp.py'))).encode())
     alt = h.hexdigest()[:10]                    # which take each shot plays and when its folders last changed
-    audio = 'click'
-    for p in (AS.adopted_audio(c)[0], tab.get((c, 'score')), os.path.join(v3, f'final_{c}.wav'), tab.get((c, 'fallback')),
-              os.path.join(v3, f'fallback_{c}.wav')):
-        if p and os.path.isfile(p):
-            audio = f'{os.path.basename(p)}@{int(os.path.getmtime(p))}'
-            break
+    # the sound a master would carry now, through assemble.audio_choice (C: only a file of exactly 5920 frames;
+    # the 7,200-frame cut's sound_C / final_C / fallback_C are refused by length, so they can neither be taken nor
+    # trigger a refresh)
+    audio = AS.audio_signature(c)
     print(f'{c}:{have}+{alt}:{audio}')
 EOF
 }
