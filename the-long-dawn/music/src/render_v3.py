@@ -31,7 +31,7 @@ sys.path.insert(0, HERE)
 
 import mix as MX  # noqa: E402
 import render_v2 as R2  # noqa: E402  (length-agnostic helpers: breaths, limiter, true peak, LUFS)
-from timeline_v3 import SR, BEAT_N, BarMap  # noqa: E402
+from timeline_v3 import SR, BEAT_N, V3, BarMap  # noqa: E402
 
 MUSIC = os.path.dirname(HERE)
 CACHE = os.path.join(MUSIC, "cache", "v3")
@@ -300,10 +300,12 @@ def render(cut, barmap=None, fallback=False, force=False, only=(), do_sfx=True, 
         import fallback_v3
         S = fallback_v3.build(bm)
         name = f"fallback_{bm.cut}"
+        score_src = fallback_v3.__file__
     else:
         mod = __import__(f"score_v3_{bm.cut}")
         S = mod.build(bm)
         name = f"final_{bm.cut}" if do_sfx else f"score_{bm.cut}"
+        score_src = mod.__file__
     parts = S.used()
     manifest = render_parts(parts, bm.render_n, force=force, only=set(only))
     json.dump(manifest, open(os.path.join(CACHE, f"manifest_{name}.json"), "w"), indent=1)
@@ -314,6 +316,9 @@ def render(cut, barmap=None, fallback=False, force=False, only=(), do_sfx=True, 
     if getattr(S, "fader", None):             # ADDITIVE (COMPOSER-C2): a slow premaster fader ride, only if a score sets it
         score_mix *= fader_curve(len(score_mix), S.fader)[:, None]
     np.save(os.path.join(CACHE, f"premaster_score_{name}.npy"), score_mix[:bm.n])
+    import audio_guard_v3 as AG             # ADDITIVE (SOUND-SCORE-C): who made this premaster, for sound_v3's guard
+    AG.write_premaster_identity(os.path.join(CACHE, f"premaster_score_{name}.npy"), name, bm.cut, bm.frames, bm.n,
+                                bm.path, os.path.join(V3, f"cues_{bm.cut}.json"), score_src)
     json.dump(BREATH_PROBES, open(os.path.join(CACHE, f"breath_probe_{name}.json"), "w"), indent=1)
     print(f"score mixed ({time.time() - t0:.0f}s)", flush=True)
     sfx_mix = None

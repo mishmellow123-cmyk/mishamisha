@@ -1,0 +1,1667 @@
+{
+ "schema": "long-dawn/c5-events-measured/1",
+ "cut": "C5",
+ "fps": 24,
+ "frames": "absolute C frame numbers (the delivered f_%05d.jpg names)",
+ "generated_by": "music/src/measure_c5_events.py",
+ "generator_sha256": "a10a667fb274e6a17a637ee800c2ec3d6b691d47e0b6cd6d5847fda4208dd063",
+ "basis_labels": {
+  "MEASURED": "a pixel statistic decided the frame(s) (see method)",
+  "OBSERVED": "checked by eye on native-resolution stills (never in motion)",
+  "INFERRED": "not used for any frame in this table"
+ },
+ "sync_definitions": {
+  "catch": "a fire catching: first = the first frame its flame is visible, fastest = its fastest growth, full = 90% of its size; a sound's burst ARRIVES on first..fastest, a score's resolution on full",
+  "ramp": "a gradual change: first/half/full = 10%/50%/90% of the way",
+  "ink": "a drawing stroke: frames where ink arrives (a pen/quill sound follows them)"
+ },
+ "shots": {
+  "refusal": {
+   "stem": "book_C5_refusal",
+   "first": 2080,
+   "last": 2319,
+   "section": "C10",
+   "frame_set_sha256": "3a29c217e78312368dd913bbba40833ee53a3fde4bfe0f31a65e45e237dea2ab"
+  },
+  "trap": {
+   "stem": "embers_C5_trap",
+   "first": 2320,
+   "last": 2639,
+   "section": "C11",
+   "frame_set_sha256": "37cddbda0bb0b4300df2d9c7d5b148114f69c4bb302d0d3f49d4c6085720c48f"
+  },
+  "reveal": {
+   "stem": "runC_reveal_pair_v5",
+   "first": 2880,
+   "last": 3119,
+   "section": "C13",
+   "frame_set_sha256": "14da848fad5754b3fc46acb7c60bc602b863b29cf8a373c2b24044d7966afd53"
+  },
+  "map": {
+   "stem": "map_last_beacon_C",
+   "first": 3440,
+   "last": 3839,
+   "section": "C15",
+   "frame_set_sha256": "44fe23611860a7db67fc63b35a0e48b342279076ddb650392d19f51622039541"
+  },
+  "cold": {
+   "stem": "embers_C5_cold",
+   "first": 3840,
+   "last": 3999,
+   "section": "C16",
+   "frame_set_sha256": "cf73c14d31851e9a8fe5911631d1ad7796287fb2d330dbdb78ca308171ef4038"
+  },
+  "unfinished": {
+   "stem": "embers_C5_unfinished",
+   "first": 4000,
+   "last": 4239,
+   "section": "C17",
+   "frame_set_sha256": "8a72077f1b63828e3cb5db3a5c0949b23b862145d84afa4288d98b40f0c2a8f6"
+  },
+  "deep": {
+   "stem": "book_C5_deep_abandoned",
+   "first": 4240,
+   "last": 4479,
+   "section": "C18",
+   "frame_set_sha256": "d0353d9b8315f2b806322bee574095515464566407227ae84044fdb83d11d100"
+  },
+  "watch": {
+   "stem": "runC_watch_v5",
+   "first": 4480,
+   "last": 4719,
+   "section": "C19",
+   "frame_set_sha256": "e8886465b38f727190248aadc07b441af22e9a5ea286d0618374595b58b522ec"
+  },
+  "pen": {
+   "stem": "book_C5_pen",
+   "first": 5440,
+   "last": 5679,
+   "section": "C22",
+   "frame_set_sha256": "67fe59598bd1a0ec4df779ce42f7e94bf970641dbcb96266aacee6c149297b71"
+  }
+ },
+ "not_on_this_mac": "FLINT 2640-2879 (the hands-only 'ring' stem), the BEACON RUN 3120-3439 (runC_scroll), the ILLUMINATION 4720-5199, PLENTY 5200-5439, the TITLE 5680-5919 and the first half 0-2079: none of their events are in this table",
+ "events": [
+  {
+   "id": "refusal.ink_begins",
+   "shot": "refusal",
+   "stem": "book_C5_refusal",
+   "event": "the first stroke: the offering sleeve and arm begin, left of the page",
+   "frames": {
+    "first": 2089
+   },
+   "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804",
+   "region": {
+    "x": 519,
+    "y": 346,
+    "space": "1920x804, centroid"
+   },
+   "evidence": {
+    "pixels": {
+     "2087": 0.0,
+     "2088": 0.0,
+     "2089": 23.0,
+     "2090": 3.0,
+     "2091": 49.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2088, 2089, 2095, 2116",
+    "saw": "2088 is a blank page; 2089 the first short stroke (the sleeve); 2095 the sleeve's outline; 2116 the sleeve hatched. No pen or drawing hand is visible: the lines appear on the page by themselves"
+   }
+  },
+  {
+   "id": "refusal.offering_hand",
+   "shot": "refusal",
+   "stem": "book_C5_refusal",
+   "event": "the offering arm is hatched and its open hand drawn",
+   "frames": {
+    "first": 2114,
+    "last": 2135
+   },
+   "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; the stroke segment before the Ring's",
+   "region": {
+    "x0": 624,
+    "y0": 244,
+    "x1": 982,
+    "y1": 382,
+    "space": "1920x804"
+   },
+   "evidence": {
+    "segment": {
+     "first": 2114,
+     "last": 2135,
+     "frames": 21,
+     "ink_px960": 1075,
+     "centroid": [
+      829,
+      306
+     ]
+    },
+    "pixels": {
+     "2112": 4.0,
+     "2113": 8.0,
+     "2114": 11.0,
+     "2115": 7.0,
+     "2116": 39.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2116, 2134",
+    "saw": "2116 the sleeve hatched; 2134 the open hand complete, empty"
+   }
+  },
+  {
+   "id": "refusal.ring_on_palm",
+   "shot": "refusal",
+   "stem": "book_C5_refusal",
+   "event": "the Ring is drawn on the open palm (the old story's offer)",
+   "frames": {
+    "first": 2138,
+    "last": 2150
+   },
+   "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; the stroke segment just before the pause and the figure (segments = stroke runs split by >= 2 empty frames)",
+   "region": {
+    "x0": 844,
+    "y0": 220,
+    "x1": 912,
+    "y1": 344,
+    "space": "1920x804"
+   },
+   "evidence": {
+    "segment": {
+     "first": 2138,
+     "last": 2150,
+     "frames": 13,
+     "ink_px960": 303,
+     "centroid": [
+      878,
+      243
+     ]
+    },
+    "pixels": {
+     "2136": 5.0,
+     "2137": 7.0,
+     "2138": 16.0,
+     "2139": 24.0,
+     "2140": 26.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2134, 2138, 2150, 2155",
+    "saw": "2134 the open palm complete, empty; 2138 a first small mark on it; 2150 the Ring complete on the palm; 2155 unchanged"
+   }
+  },
+  {
+   "id": "refusal.pause_before_figure",
+   "shot": "refusal",
+   "stem": "book_C5_refusal",
+   "event": "the pen pauses: no stroke between the Ring and the figure",
+   "frames": {
+    "first": 2151,
+    "last": 2155
+   },
+   "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; the frames between the two segments",
+   "region": {
+    "whole": "page",
+    "space": "1920x804"
+   },
+   "evidence": {
+    "pixels": {
+     "2149": 19.0,
+     "2150": 20.0,
+     "2151": 1.0,
+     "2152": 0.0,
+     "2153": 3.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2150, 2155",
+    "saw": "the same drawing: hand and Ring, no figure yet"
+   }
+  },
+  {
+   "id": "refusal.figure_begins",
+   "shot": "refusal",
+   "stem": "book_C5_refusal",
+   "event": "the hooded figure begins, right of the page, already turned away",
+   "frames": {
+    "first": 2156
+   },
+   "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; the first segment centred right of x 1000",
+   "region": {
+    "x0": 900,
+    "y0": 74,
+    "x1": 1438,
+    "y1": 600,
+    "space": "1920x804"
+   },
+   "evidence": {
+    "segment": {
+     "first": 2156,
+     "last": 2183,
+     "frames": 28,
+     "ink_px960": 1910,
+     "centroid": [
+      1236,
+      298
+     ]
+    },
+    "pixels": {
+     "2154": 0.0,
+     "2155": 1.0,
+     "2156": 41.0,
+     "2157": 96.0,
+     "2158": 121.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2156, 2168",
+    "saw": "2156 a first stroke at the right; 2168 the hooded figure's outline, turned away"
+   }
+  },
+  {
+   "id": "refusal.raised_hand",
+   "shot": "refusal",
+   "stem": "book_C5_refusal",
+   "event": "the figure's hand is raised against it (the refusal gesture)",
+   "frames": {
+    "first": 2195,
+    "last": 2202
+   },
+   "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804; more than 20 frames after the figure begins, the first run of stroke frames centred at x < 1190, y < 300 (beside the hood)",
+   "region": {
+    "x0": 1010,
+    "y0": 106,
+    "x1": 1214,
+    "y1": 310,
+    "space": "1920x804"
+   },
+   "evidence": {
+    "pixels": {
+     "2193": 8.0,
+     "2194": 10.0,
+     "2195": 40.0,
+     "2196": 60.0,
+     "2197": 92.0
+    },
+    "centroids": [
+     [
+      1168,
+      176
+     ],
+     [
+      1047,
+      233
+     ],
+     [
+      1037,
+      189
+     ],
+     [
+      1056,
+      153
+     ],
+     [
+      1081,
+      143
+     ],
+     [
+      1120,
+      165
+     ],
+     [
+      1107,
+      227
+     ],
+     [
+      1180,
+      268
+     ]
+    ]
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2194, 2195, 2201",
+    "saw": "2194-2195 the hood's shadow filled, no raised hand; 2201 the hand raised against the Ring"
+   }
+  },
+  {
+   "id": "refusal.ink_ends",
+   "shot": "refusal",
+   "stem": "book_C5_refusal",
+   "event": "the last stroke (the cloak's hatching); the drawing then holds still to the end of the shot",
+   "frames": {
+    "last": 2249,
+    "still_from": 2250,
+    "still_to": 2319
+   },
+   "method": "ink arrival: pixels whose luma DROPS by > 18 from the previous frame (960x402, frame to frame, so a slow drift never accumulates); a stroke frame has >= 10 such pixels; positions in 1920x804",
+   "region": {
+    "whole": "page",
+    "space": "1920x804"
+   },
+   "evidence": {
+    "pixels": {
+     "2247": 54.0,
+     "2248": 50.0,
+     "2249": 25.0,
+     "2250": 0.0,
+     "2251": 0.0
+    },
+    "max_pixels_after": 0,
+    "segments": [
+     {
+      "first": 2089,
+      "last": 2095,
+      "frames": 6,
+      "ink_px960": 273,
+      "centroid": [
+       629,
+       351
+      ]
+     },
+     {
+      "first": 2098,
+      "last": 2099,
+      "frames": 2,
+      "ink_px960": 31,
+      "centroid": [
+       621,
+       343
+      ]
+     },
+     {
+      "first": 2114,
+      "last": 2135,
+      "frames": 21,
+      "ink_px960": 1075,
+      "centroid": [
+       829,
+       306
+      ]
+     },
+     {
+      "first": 2138,
+      "last": 2150,
+      "frames": 13,
+      "ink_px960": 303,
+      "centroid": [
+       878,
+       243
+      ]
+     },
+     {
+      "first": 2156,
+      "last": 2183,
+      "frames": 28,
+      "ink_px960": 1910,
+      "centroid": [
+       1236,
+       298
+      ]
+     },
+     {
+      "first": 2187,
+      "last": 2191,
+      "frames": 4,
+      "ink_px960": 55,
+      "centroid": [
+       1244,
+       160
+      ]
+     },
+     {
+      "first": 2194,
+      "last": 2249,
+      "frames": 56,
+      "ink_px960": 4801,
+      "centroid": [
+       1243,
+       379
+      ]
+     }
+    ]
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2249, 2250, 2319",
+    "saw": "2249 and 2250 the cloak hatched; 2319 the same drawing"
+   }
+  },
+  {
+   "id": "trap.low_forge_sinks",
+   "shot": "trap",
+   "stem": "embers_C5_trap",
+   "event": "one forge's flame sinks almost out (it tries to stop alone)",
+   "frames": {
+    "first": 2423,
+    "out": 2428
+   },
+   "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; its flame tracked on the base; first = first frame under 90% of its median area over the shot's first 60 frames, out = first frame under 10% (the flame's core leaves the mask; the renderer keeps a 6% flame)",
+   "region": {
+    "x": 676,
+    "y": 494,
+    "space": "1920x804, flame base"
+   },
+   "evidence": {
+    "area_base_px960": 153,
+    "area": {
+     "2421": 154.0,
+     "2422": 146.0,
+     "2423": 124.0,
+     "2424": 109.0,
+     "2425": 84.0,
+     "2426": 60.0,
+     "2427": 33.0,
+     "2428": 0.0,
+     "2429": 0.0,
+     "2430": 0.0,
+     "2431": 0.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2418, 2423, 2425, 2427, 2428, 2432, 2440",
+    "saw": "the flame on one crown (left of centre, 1920x804 x~676) shrinks from 2418 through 2427, is a sliver at 2428 and all but gone by 2432; 2440 its crown is dark but for its ember-lit windows"
+   }
+  },
+  {
+   "id": "trap.low_forge_returns",
+   "shot": "trap",
+   "stem": "embers_C5_trap",
+   "event": "the low forge flares back up and races after the others (its tower climbs)",
+   "frames": {
+    "first": 2546,
+    "full": 2557
+   },
+   "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; the longest new track within 20 px (x) of where the low flame went out; full = first frame at >= 90% of its median area 12-30 frames after it reappears",
+   "region": {
+    "x": 672,
+    "y": 484,
+    "space": "1920x804, flame base"
+   },
+   "evidence": {
+    "area_ref_px960": 394,
+    "area": {
+     "2543": 0.0,
+     "2544": 0.0,
+     "2545": 0.0,
+     "2546": 34.0,
+     "2547": 83.0,
+     "2548": 141.0,
+     "2549": 212.0
+    },
+    "base_y960_first_last": [
+     242,
+     167
+    ]
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2540, 2545, 2546, 2548, 2557",
+    "saw": "2540 dark crown; 2545 a small flame; 2548 larger; 2557 a tall flame on a visibly higher crown"
+   }
+  },
+  {
+   "id": "trap.forges_surge",
+   "shot": "trap",
+   "stem": "embers_C5_trap",
+   "event": "at once the other forges surge up (every flame taller)",
+   "frames": {
+    "first": 2483,
+    "fastest": 2486,
+    "half": 2487,
+    "full": 2490
+   },
+   "method": "sum of flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode (Ring blobs excluded) per frame; first/full = 10%/90% of the way from its median over frames 0-79 to its median over 190-225; fastest = largest one-frame rise; the same ramp on the three largest steady single flames (evidence.each) shows the surge is simultaneous",
+   "region": {
+    "whole": "forge band",
+    "space": "1920x804"
+   },
+   "evidence": {
+    "total_base_px960": 1860,
+    "total_after_px960": 6365,
+    "total": {
+     "2482": 2116.0,
+     "2483": 2462.0,
+     "2484": 2804.0,
+     "2485": 3293.0,
+     "2486": 3923.0,
+     "2487": 4466.0,
+     "2488": 5060.0,
+     "2489": 5650.0,
+     "2490": 6133.0
+    },
+    "each": [
+     {
+      "x": 1490,
+      "first": 2481,
+      "fastest": 2486,
+      "full": 2490
+     },
+     {
+      "x": 493,
+      "first": 2484,
+      "fastest": 2488,
+      "full": 2491
+     },
+     {
+      "x": 1123,
+      "first": 2482,
+      "fastest": 2488,
+      "full": 2489
+     }
+    ]
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2478, 2482, 2484, 2486, 2488, 2492",
+    "saw": "every other flame grows taller together from 2482-2484 to 2492"
+   }
+  },
+  {
+   "id": "trap.leader_left_pulls_ahead",
+   "shot": "trap",
+   "stem": "embers_C5_trap",
+   "event": "the left of the two front-runners (same form, uncoded) climbs toward the Ring",
+   "frames": {
+    "first": 2588,
+    "half": 2607,
+    "full": 2626
+   },
+   "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; per frame the flame with the highest top within x 726-930 (1920 px) of the Ring; first/full = 10%/90% of its top's climb from the median over frames 200-239 to the last 8 frames' median; half = its 50% crossing (a one-frame 'fastest' is not reported: the tallest flame can switch to a neighbour's blob for a frame)",
+   "region": {
+    "x0": 726,
+    "x1": 930,
+    "space": "1920x804, beside the Ring"
+   },
+   "evidence": {
+    "top_y960_before": 217,
+    "top_y960_end": 68,
+    "top_y960": {
+     "2604": 151.0,
+     "2605": 146.0,
+     "2606": 144.0,
+     "2607": 141.0,
+     "2608": 138.0,
+     "2609": 134.0,
+     "2610": 131.0
+    },
+    "area_px960_end": 660
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "2560, 2580, 2590, 2600, 2610, 2620, 2626, 2639",
+    "saw": "two towers either side of the Ring climb together from ~2590; by 2620 their flames reach the Ring's height and by 2626-2639 stand beside it; the same form, no marking tells them apart"
+   }
+  },
+  {
+   "id": "trap.leader_right_pulls_ahead",
+   "shot": "trap",
+   "stem": "embers_C5_trap",
+   "event": "the right of the two front-runners (same form, uncoded) climbs toward the Ring",
+   "frames": {
+    "first": 2591,
+    "half": 2601,
+    "full": 2624
+   },
+   "method": "flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode; per frame the flame with the highest top within x 962-1166 (1920 px) of the Ring; first/full = 10%/90% of its top's climb from the median over frames 200-239 to the last 8 frames' median; half = its 50% crossing (a one-frame 'fastest' is not reported: the tallest flame can switch to a neighbour's blob for a frame)",
+   "region": {
+    "x0": 962,
+    "x1": 1166,
+    "space": "1920x804, beside the Ring"
+   },
+   "evidence": {
+    "top_y960_before": 214,
+    "top_y960_end": 70,
+    "top_y960": {
+     "2598": 172.0,
+     "2599": 168.0,
+     "2600": 165.0,
+     "2601": 89.0,
+     "2602": 89.0,
+     "2603": 89.0,
+     "2604": 89.0
+    },
+    "area_px960_end": 596
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "as trap.leader_left_pulls_ahead",
+    "saw": "the right-hand one of the pair; it climbs with the left one"
+   }
+  },
+  {
+   "id": "trap.hammer_strikes",
+   "shot": "trap",
+   "stem": "embers_C5_trap",
+   "event": "visible hammer strikes (flash or spark impulses at the crowns)",
+   "frames": {
+    "found": []
+   },
+   "method": "mean |luma difference| to the previous frame over the forge band (rows 160-401 of 960x402); a strike would be a one-frame spike > 3x its 15-frame running median + 0.5",
+   "region": {
+    "rows": "160-401 of 402",
+    "space": "960x402"
+   },
+   "evidence": {
+    "dY_median": 0.632,
+    "dY_max": 2.395,
+    "dY_max_frame": 2511,
+    "dY_around_max": {
+     "2508": 2.39,
+     "2509": 2.39,
+     "2510": 2.39,
+     "2511": 2.4,
+     "2512": 2.39,
+     "2513": 2.37,
+     "2514": 2.35
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "note": "no impulse: the hammers are not drawn; they are SOUND's, placed musically (not on a visible strike)",
+   "observed": {
+    "frames": "overview 2320-2620 every 20; the crops above",
+    "saw": "no hammer, anvil flash or spark burst is drawn: sparks drift continuously; nothing strikes"
+   }
+  },
+  {
+   "id": "reveal.both_fires_ignite",
+   "shot": "reveal",
+   "stem": "runC_reveal_pair_v5",
+   "event": "both first beacons ignite at the same moment (hers near, the rival's on the far peak)",
+   "frames": {
+    "frame": 2880,
+    "near_glow_peak": 2880,
+    "far_glow_peak": 2880
+   },
+   "method": "warm wash: R - B > 80 and R > 170 (1920x804) counted in a 220x170 px window around each fire; the flame glyph's ink outline: luma < 120 in the near window; the ignition frame = the frame of each window's largest warm wash (the catch glow flashes, then settles)",
+   "region": {
+    "near": {
+     "x": 950,
+     "y": 640
+    },
+    "far": {
+     "x": 1390,
+     "y": 390
+    },
+    "space": "1920x804"
+   },
+   "evidence": {
+    "near": {
+     "name": "near",
+     "peak_frame": 2880,
+     "peak": 10840,
+     "settled": 5105,
+     "half_frame": 2890,
+     "monotone_first_12": true
+    },
+    "far": {
+     "name": "far",
+     "peak_frame": 2880,
+     "peak": 1492,
+     "settled": 856,
+     "half_frame": 2886,
+     "monotone_first_12": true
+    },
+    "near_window": {
+     "2880": 10840.0,
+     "2881": 10765.0,
+     "2882": 10603.0,
+     "2883": 10203.0,
+     "2887": 8717.0,
+     "2888": 8422.0,
+     "2889": 8156.0
+    },
+    "far_window": {
+     "2880": 1492.0,
+     "2881": 1478.0,
+     "2882": 1437.0,
+     "2883": 1369.0,
+     "2887": 1135.0,
+     "2888": 1102.0,
+     "2889": 1084.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "note": "2880 is the shot's FIRST frame: its glow peak there is the latest the ignition can be; whether it began inside FLINT (2640-2879, not on this Mac) cannot be measured here",
+   "observed": {
+    "frames": "2880, 2881, 2882, 2884, 2888, 2896, 2920, 3000",
+    "saw": "on 2880 both summits carry a small drawn flame inside a broad warm glow; the flames are larger on 2881 and 2882 and full by 2884; the glow fades over the next seconds; the far fire is a small gold mark on its peak"
+   }
+  },
+  {
+   "id": "reveal.near_flame_grows",
+   "shot": "reveal",
+   "stem": "runC_reveal_pair_v5",
+   "event": "her flame's drawn glyph grows to full size",
+   "frames": {
+    "first": 2881,
+    "half": 2883,
+    "full": 2886
+   },
+   "method": "warm wash: R - B > 80 and R > 170 (1920x804) counted in a 220x170 px window around each fire; the flame glyph's ink outline: luma < 120 in the near window; ink-outline pixel count in the near window, 10%/50%/90% of the way from frame 2880 to its median over 2888-2909",
+   "region": {
+    "x": 950,
+    "y": 640,
+    "space": "1920x804"
+   },
+   "evidence": {
+    "ink_px": {
+     "2880": 840.0,
+     "2881": 932.0,
+     "2882": 963.0,
+     "2883": 1019.0,
+     "2884": 1019.0,
+     "2885": 1075.0,
+     "2886": 1100.0
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "note": "the far flame is ~30 px tall: its outline is too small for this count; OBSERVED crops show it growing over the same frames",
+   "observed": {
+    "frames": "2880-2888",
+    "saw": "as above"
+   }
+  },
+  {
+   "id": "map.beacon_1",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "beacon 1 is already burning when the map opens",
+   "frames": {
+    "lit_from": 3440,
+    "lit_through": 3839
+   },
+   "method": "bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears",
+   "region": {
+    "x": 1108,
+    "y": 484,
+    "space": "1920x804, 12 frames after it appears"
+   },
+   "evidence": {
+    "area_ref_px": 136,
+    "area": {
+     "3440": 191.0,
+     "3441": 189.0,
+     "3442": 189.0,
+     "3443": 192.0,
+     "3444": 187.0,
+     "3445": 189.0,
+     "3446": 184.0,
+     "3447": 185.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "overview 3440-3815 every 25",
+    "saw": "a flame already burns on the range at 3440"
+   }
+  },
+  {
+   "id": "map.beacon_2",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "beacon 2 of 8 catches",
+   "frames": {
+    "first": 3468,
+    "fastest": 3471,
+    "full": 3472,
+    "lit_through": 3839
+   },
+   "method": "bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears",
+   "region": {
+    "x": 558,
+    "y": 130,
+    "space": "1920x804, 12 frames after it appears"
+   },
+   "evidence": {
+    "area_ref_px": 102,
+    "area": {
+     "3464": 0.0,
+     "3465": 0.0,
+     "3466": 0.0,
+     "3467": 0.0,
+     "3468": 17.0,
+     "3469": 36.0,
+     "3470": 53.0,
+     "3471": 81.0,
+     "3472": 103.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "first - 1, first, full",
+    "saw": "on the frame before `first` a faint glow is already on the unlit ink stack; on `first` the flame's outline begins; on `full` the drawn flame stands in its glow"
+   }
+  },
+  {
+   "id": "map.beacon_3",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "beacon 3 of 8 catches",
+   "frames": {
+    "first": 3523,
+    "fastest": 3525,
+    "full": 3527,
+    "lit_through": 3839
+   },
+   "method": "bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears",
+   "region": {
+    "x": 954,
+    "y": 651,
+    "space": "1920x804, 12 frames after it appears"
+   },
+   "evidence": {
+    "area_ref_px": 157,
+    "area": {
+     "3519": 0.0,
+     "3520": 0.0,
+     "3521": 0.0,
+     "3522": 0.0,
+     "3523": 33.0,
+     "3524": 55.0,
+     "3525": 101.0,
+     "3526": 141.0,
+     "3527": 181.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "first - 1, first, full",
+    "saw": "on the frame before `first` a faint glow is already on the unlit ink stack; on `first` the flame's outline begins; on `full` the drawn flame stands in its glow"
+   }
+  },
+  {
+   "id": "map.beacon_4",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "beacon 4 of 8 catches",
+   "frames": {
+    "first": 3584,
+    "fastest": 3588,
+    "full": 3588,
+    "lit_through": 3839
+   },
+   "method": "bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears",
+   "region": {
+    "x": 1439,
+    "y": 133,
+    "space": "1920x804, 12 frames after it appears"
+   },
+   "evidence": {
+    "area_ref_px": 120,
+    "area": {
+     "3580": 0.0,
+     "3581": 0.0,
+     "3582": 0.0,
+     "3583": 0.0,
+     "3584": 18.0,
+     "3585": 39.0,
+     "3586": 61.0,
+     "3587": 96.0,
+     "3588": 135.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "first - 1, first, full",
+    "saw": "on the frame before `first` a faint glow is already on the unlit ink stack; on `first` the flame's outline begins; on `full` the drawn flame stands in its glow"
+   }
+  },
+  {
+   "id": "map.beacon_5",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "beacon 5 of 8 catches",
+   "frames": {
+    "first": 3647,
+    "fastest": 3650,
+    "full": 3651,
+    "lit_through": 3839
+   },
+   "method": "bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears",
+   "region": {
+    "x": 321,
+    "y": 554,
+    "space": "1920x804, 12 frames after it appears"
+   },
+   "evidence": {
+    "area_ref_px": 134,
+    "area": {
+     "3643": 0.0,
+     "3644": 0.0,
+     "3645": 0.0,
+     "3646": 0.0,
+     "3647": 22.0,
+     "3648": 42.0,
+     "3649": 70.0,
+     "3650": 104.0,
+     "3651": 137.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "first - 1, first, full",
+    "saw": "on the frame before `first` a faint glow is already on the unlit ink stack; on `first` the flame's outline begins; on `full` the drawn flame stands in its glow"
+   }
+  },
+  {
+   "id": "map.beacon_6",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "beacon 6 of 8 catches",
+   "frames": {
+    "first": 3680,
+    "fastest": 3683,
+    "full": 3684,
+    "lit_through": 3839
+   },
+   "method": "bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears",
+   "region": {
+    "x": 953,
+    "y": 111,
+    "space": "1920x804, 12 frames after it appears"
+   },
+   "evidence": {
+    "area_ref_px": 126,
+    "area": {
+     "3676": 0.0,
+     "3677": 0.0,
+     "3678": 0.0,
+     "3679": 0.0,
+     "3680": 19.0,
+     "3681": 37.0,
+     "3682": 65.0,
+     "3683": 100.0,
+     "3684": 132.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "first - 1, first, full",
+    "saw": "on the frame before `first` a faint glow is already on the unlit ink stack; on `first` the flame's outline begins; on `full` the drawn flame stands in its glow"
+   }
+  },
+  {
+   "id": "map.beacon_7",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "beacon 7 of 8 catches",
+   "frames": {
+    "first": 3718,
+    "fastest": 3722,
+    "full": 3722,
+    "lit_through": 3839
+   },
+   "method": "bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears",
+   "region": {
+    "x": 1588,
+    "y": 504,
+    "space": "1920x804, 12 frames after it appears"
+   },
+   "evidence": {
+    "area_ref_px": 138,
+    "area": {
+     "3714": 0.0,
+     "3715": 0.0,
+     "3716": 0.0,
+     "3717": 0.0,
+     "3718": 28.0,
+     "3719": 50.0,
+     "3720": 86.0,
+     "3721": 121.0,
+     "3722": 160.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "3716, 3718, 3720, 3722, 3724, 3783",
+    "saw": "3716 only the unlit ink stack; 3718 a small flame; 3722 full with its glow; steady to 3783"
+   }
+  },
+  {
+   "id": "map.beacon_8",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "beacon 8 of 8 catches",
+   "frames": {
+    "first": 3786,
+    "fastest": 3789,
+    "full": 3791,
+    "lit_through": 3839
+   },
+   "method": "bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears",
+   "region": {
+    "x": 690,
+    "y": 442,
+    "space": "1920x804, 12 frames after it appears"
+   },
+   "evidence": {
+    "area_ref_px": 198,
+    "area": {
+     "3782": 0.0,
+     "3783": 0.0,
+     "3784": 0.0,
+     "3785": 0.0,
+     "3786": 30.0,
+     "3787": 54.0,
+     "3788": 91.0,
+     "3789": 136.0,
+     "3790": 176.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "as map.last_catch",
+    "saw": "as map.last_catch"
+   }
+  },
+  {
+   "id": "map.one_dark",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "exactly one kingdom is still dark: the long pause before the last beacon",
+   "frames": {
+    "first": 3722,
+    "last": 3785,
+    "seventh_first_visible": 3718
+   },
+   "method": "from the 2nd-to-last beacon's full frame to the frame before the last beacon's first visible frame (bright warm local-contrast blobs (luma minus its 12 px Gaussian > 40, R > G > B), native 1920x804, tracked (40 px, >= 20 frames); first = first frame with a blob of >= 4 px, fastest = largest one-frame area rise in its first 12 frames, full = first frame at >= 90% of its median area 10-40 frames after it appears)",
+   "region": {
+    "whole": "frame",
+    "space": "1920x804"
+   },
+   "evidence": {
+    "beacons": 8,
+    "lit_count": {
+     "3716": 6.0,
+     "3717": 6.0,
+     "3718": 7.0,
+     "3719": 7.0,
+     "3720": 7.0,
+     "3784": 7.0,
+     "3785": 7.0,
+     "3786": 8.0,
+     "3787": 8.0,
+     "3788": 8.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "note": "the renderer states one-dark C3724-3783 (its 7th catch ramp COMPLETES at 3724); by visibility 7 are lit from 3718",
+   "observed": {
+    "frames": "overview 3440-3815 every 25, and the crops above",
+    "saw": "the parchment greys toward night through the shot; seven flames burn and one site stays an unlit stack until 3785"
+   }
+  },
+  {
+   "id": "map.last_catch",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "the last kingdom's beacon catches (the holdout joins)",
+   "frames": {
+    "first": 3786,
+    "fastest": 3789,
+    "full": 3791
+   },
+   "method": "as map.beacon_k, for the last beacon to appear",
+   "region": {
+    "x": 690,
+    "y": 442,
+    "space": "1920x804"
+   },
+   "evidence": {
+    "area": {
+     "3782": 0.0,
+     "3783": 0.0,
+     "3784": 0.0,
+     "3785": 0.0,
+     "3786": 30.0,
+     "3787": 54.0,
+     "3788": 91.0,
+     "3789": 136.0,
+     "3790": 176.0
+    },
+    "area_ref_px": 198
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "note": "a faint glow is already visible on the first frame before (OBSERVED); the renderer states the catch as C3784-3791",
+   "observed": {
+    "frames": "3716, 3783, 3785, 3786, 3788, 3789, 3791, 3792",
+    "saw": "the stack is unlit through 3783; 3785 a faint glow; 3786 a small flame; 3788 the flame's outline drawn; 3791-3792 full"
+   }
+  },
+  {
+   "id": "map.all_lit",
+   "shot": "map",
+   "stem": "map_last_beacon_C",
+   "event": "every beacon burning (to the end of the shot)",
+   "frames": {
+    "first": 3791,
+    "last": 3839,
+    "all_visible_from": 3786
+   },
+   "method": "from the last beacon's full frame; every tracked beacon stays lit to the shot's last frame",
+   "region": {
+    "whole": "frame",
+    "space": "1920x804"
+   },
+   "evidence": {
+    "beacons": 8,
+    "lit_at_end": 8
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "3792 and overview 3790-3815",
+    "saw": "eight flames burn"
+   }
+  },
+  {
+   "id": "cold.forges_off",
+   "shot": "cold",
+   "stem": "embers_C5_cold",
+   "event": "every forge goes dark at the same instant",
+   "frames": {
+    "frame": 3848
+   },
+   "method": "sum of flame pixels: luma > 150 and R > 180 (the forge flames' yellow-white cores), 960x402 decode per frame (the Ring's gold included, so the floor is the Ring); the frame of the largest one-frame drop",
+   "region": {
+    "whole": "frame",
+    "space": "960x402"
+   },
+   "evidence": {
+    "flame_px960": {
+     "3845": 7858.0,
+     "3846": 7869.0,
+     "3847": 7829.0,
+     "3848": 181.0,
+     "3849": 179.0,
+     "3850": 181.0,
+     "3851": 181.0
+    },
+    "median_before": 7872,
+    "median_after": 183,
+    "drop_ratio": 0.023
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "3846, 3847, 3848, 3849",
+    "saw": "3846-3847 every forge burning; 3848 every flame and window out at once, the Ring still gold over dark towers; 3849 the same"
+   }
+  },
+  {
+   "id": "unfinished.ring_drains",
+   "shot": "unfinished",
+   "stem": "embers_C5_unfinished",
+   "event": "the Ring's gold drains to dull grey",
+   "frames": {
+    "first": 4025,
+    "half": 4072,
+    "full": 4135
+   },
+   "method": "mean R - B of the Ring's bright pixels (luma > 110 in x 840-1080, y 120-360 of 1920x804); 10%/50%/90% of the way from frame 4000 to the last 20 frames' median",
+   "region": {
+    "x0": 840,
+    "y0": 120,
+    "x1": 1080,
+    "y1": 360,
+    "space": "1920x804"
+   },
+   "evidence": {
+    "ring_R_minus_B": {
+     "4000": 104.8,
+     "4072": 50.6,
+     "4239": 0.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "4000, 4040, 4072, 4100, 4135, 4184, 4216, 4239",
+    "saw": "4000 gold with falling gold beads; 4072 paler; 4100 pale gold-grey; 4135 grey; grey to the end"
+   }
+  },
+  {
+   "id": "unfinished.storm_thins",
+   "shot": "unfinished",
+   "stem": "embers_C5_unfinished",
+   "event": "the storm's red thins away to nothing",
+   "frames": {
+    "first": 4087,
+    "half": 4138,
+    "full": 4181
+   },
+   "method": "mean R - B over the top 400 rows (1920x804); 10%/50%/90% of the way from frame 4000 to the last 20 frames' median",
+   "region": {
+    "rows": "0-399",
+    "space": "1920x804"
+   },
+   "evidence": {
+    "sky_R_minus_B": {
+     "4000": 10.4,
+     "4138": 5.1,
+     "4239": -0.0
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "the same",
+    "saw": "the red storm behind the Ring fades from ~4100; by 4184 only a trace; 4216-4239 dark"
+   }
+  },
+  {
+   "id": "unfinished.still_hold",
+   "shot": "unfinished",
+   "stem": "embers_C5_unfinished",
+   "event": "the picture holds byte-identical to the end (intentional)",
+   "frames": {
+    "first": 4217,
+    "last": 4239
+   },
+   "method": "sha256 of each delivered file, frames 4199-4239: the first frame of the final run of identical files",
+   "region": {
+    "whole": "frame"
+   },
+   "evidence": {
+    "identical_frames": 23
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "4216, 4239",
+    "saw": "no visible difference: a grey Ring over dark towers"
+   }
+  },
+  {
+   "id": "deep.no_discrete_event",
+   "shot": "deep",
+   "stem": "book_C5_deep_abandoned",
+   "event": "the abandoned mine page holds still (the vein, the ladders and the lantern do not move; only a slow camera drift and paper grain change): no discrete sync event",
+   "frames": {
+    "spikes": []
+   },
+   "method": "mean |luma difference| to the previous frame over the whole frame (960x402); an event would be a frame > 3x the shot's median + 0.5",
+   "region": {
+    "whole": "frame",
+    "space": "960x402"
+   },
+   "evidence": {
+    "dY_median": 0.198,
+    "dY_max": 0.377,
+    "dY_max_frame": 4264
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "4240, 4360, 4479",
+    "saw": "the ink page of the mine: arched galleries, ladders, the gold vein, a small roofed lantern-like mark at the top left; identical content in all three"
+   }
+  },
+  {
+   "id": "watch.beacons_burn_on",
+   "shot": "watch",
+   "stem": "runC_watch_v5",
+   "event": "every beacon keeps burning; none catches or goes out in shot (as the camera drifts, beacons enter at the frame edge or come out from behind a ridge, already lit)",
+   "frames": {
+    "appear_in_frame": [
+     4609,
+     4671
+    ]
+   },
+   "method": "warm blobs (R - B > 80 and R > 170, >= 30 px at 960x402) tracked (25 px, >= 10 frames); a track that starts inside the frame at < 30% of its median area is listed in appear_in_frame: an ignition OR a flame uncovered by the foreground (the pixels cannot tell which; see OBSERVED)",
+   "region": {
+    "whole": "frame",
+    "space": "960x402"
+   },
+   "evidence": {
+    "tracks": 18,
+    "entering": 16,
+    "appear_in_frame": [
+     {
+      "first": 4609,
+      "x": 1741,
+      "y": 477,
+      "area0": 56,
+      "median_area": 548
+     },
+     {
+      "first": 4671,
+      "x": 1200,
+      "y": 517,
+      "area0": 49,
+      "median_area": 422
+     }
+    ],
+    "flicker_cv_median": 0.112,
+    "camera_dx_px_per_frame_1920": -6.85
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "note": "flicker_cv = the flame area's standard deviation / median, per long track: the fires flicker continuously (a bed), with no discrete hit",
+   "observed": {
+    "frames": "4600-4630 and 4660-4690 (the two appear_in_frame tracks)",
+    "saw": "both are flames coming out from behind a ridge as the camera drifts, not new ignitions; the renderer lights every beacon before the shot (shots/run/watch_c_v5.py ALREADY_LIT)"
+   }
+  },
+  {
+   "id": "pen.no_discrete_event",
+   "shot": "pen",
+   "stem": "book_C5_pen",
+   "event": "the resting dip pen on the blank pages holds still (no hand, no page turn; only a slow drift): no discrete sync event",
+   "frames": {
+    "spikes": []
+   },
+   "method": "mean |luma difference| to the previous frame over the whole frame (960x402); an event would be a frame > 3x the shot's median + 0.5",
+   "region": {
+    "whole": "frame",
+    "space": "960x402"
+   },
+   "evidence": {
+    "dY_median": 0.303,
+    "dY_max": 0.591,
+    "dY_max_frame": 5671
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "frames": "5440, 5560, 5679",
+    "saw": "a dip pen resting across the blank pages in the gutter's shadow; no hand, no page turn; identical content"
+   }
+  }
+ ],
+ "barmap_C5_vs_picture": [
+  {
+   "barmap_id": "old_story",
+   "barmap_frame": 2120,
+   "barmap_says": "the pen draws the old story: a ring held out on an open palm (est.)",
+   "measured": "refusal.ring_on_palm",
+   "what": "the Ring is drawn on the palm 2138-2150; the open hand before it 2114-2135 (est. 2120)",
+   "measured_frame": 2138,
+   "delta_frames": 18
+  },
+  {
+   "barmap_id": "turns_away",
+   "barmap_frame": 2200,
+   "barmap_says": "the cloaked figure turns away from it, one hand raised (est.)",
+   "measured": "refusal.raised_hand",
+   "what": "the figure does not turn (it is drawn already turned away from 2156); the refusal gesture, the raised hand, is drawn 2195-2202",
+   "measured_frame": 2195,
+   "delta_frames": -5
+  },
+  {
+   "barmap_id": "trap",
+   "barmap_frame": 2320,
+   "barmap_says": "THE TRAP: burn-through to the forge-towers under the storm, hammers ringing (SOUND)",
+   "measured": null,
+   "what": "the barmap has 'hammers ringing': no hammer strike is drawn anywhere in the Trap (see trap.hammer_strikes); hammers are a sound design choice, not a sync point"
+  },
+  {
+   "barmap_id": "low_fire",
+   "barmap_frame": 2400,
+   "barmap_says": "one tower's fire sinks low (est.)",
+   "measured": "trap.low_forge_sinks",
+   "what": "the one forge sinks 2423-2428 (flame gone from the mask; shrinking visibly from ~2420)",
+   "measured_frame": 2423,
+   "delta_frames": 23
+  },
+  {
+   "barmap_id": "surge",
+   "barmap_frame": 2440,
+   "barmap_says": "at once the others surge up toward the ring (est.)",
+   "measured": "trap.forges_surge",
+   "what": "the others surge 2483-2490, 43 frames after the barmap's estimate",
+   "measured_frame": 2483,
+   "delta_frames": 43
+  },
+  {
+   "barmap_id": "flares_back",
+   "barmap_frame": 2480,
+   "barmap_says": "the low fire flares back up; its tower races after them (est.)",
+   "measured": "trap.low_forge_returns",
+   "what": "the low forge comes back 2546-2557, 66 frames later",
+   "measured_frame": 2546,
+   "delta_frames": 66
+  },
+  {
+   "barmap_id": "pulls_ahead",
+   "barmap_frame": 2560,
+   "barmap_says": "one tower pulls ahead of all the rest, its top almost touching the ring (est.)",
+   "measured": "trap.leader_left_pulls_ahead",
+   "what": "TWO front-runners (not one tower) climb together 2588-2626",
+   "measured_frame": 2588,
+   "delta_frames": 28
+  },
+  {
+   "barmap_id": "flint_black",
+   "barmap_frame": 2640,
+   "barmap_says": "FLINT: black and silence; the click of a flint",
+   "measured": null,
+   "what": "not measurable here: FLINT (2640-2879) is not on this Mac; the Trap's last frame 2639 is not black"
+  },
+  {
+   "barmap_id": "catch",
+   "barmap_frame": 2836,
+   "barmap_says": "the kindling catches: an ordinary orange fire (est.: v1's catch relative to strike 3)",
+   "measured": null,
+   "what": "not measurable here: FLINT is not on this Mac"
+  },
+  {
+   "barmap_id": "reveal",
+   "barmap_frame": 2880,
+   "barmap_says": "THE REVEAL: her fire, one point of light on the vast dark ink range",
+   "measured": "reveal.both_fires_ignite",
+   "what": "the frame agrees (2880); the barmap's wording has ONE fire ('her fire, one point of light'): the picture has two, igniting together",
+   "measured_frame": 2880,
+   "delta_frames": 0
+  },
+  {
+   "barmap_id": "promise",
+   "barmap_frame": 2960,
+   "barmap_says": "'It was a promise to stop, if all the others would.' (est.)",
+   "measured": null,
+   "what": "a caption time (EDIT's), not a picture event"
+  },
+  {
+   "barmap_id": "run",
+   "barmap_frame": 3120,
+   "barmap_says": "THE BEACON RUN (v1's run, -720 f)",
+   "measured": null,
+   "what": "not measurable here: the BEACON RUN (runC_scroll, 3120-3439) and its beacon_1..7 are not on this Mac"
+  },
+  {
+   "barmap_id": "one_dark",
+   "barmap_frame": 3600,
+   "barmap_says": "only one kingdom is still dark (est.)",
+   "measured": "map.one_dark",
+   "what": "one kingdom is dark only from the 7th beacon's catch (3718 visible, 3722 full; the renderer states 3724) to 3785, not from 3600",
+   "measured_frame": 3722,
+   "delta_frames": 122
+  },
+  {
+   "barmap_id": "hammer_alone",
+   "barmap_frame": 3700,
+   "barmap_says": "faintly, a lone hammer still rings: the long held pause (SOUND)",
+   "measured": null,
+   "what": "no hammer is drawn on the map: a lone hammer under the pause is SOUND's choice inside map.one_dark"
+  },
+  {
+   "barmap_id": "last_beacon",
+   "barmap_frame": 3760,
+   "barmap_says": "the last beacon catches",
+   "measured": "map.last_catch",
+   "what": "the holdout catches 3786-3791 (a faint glow on 3785; the renderer states 3784-3791), not 3760: 26 frames (1.08 s) later",
+   "measured_frame": 3786,
+   "delta_frames": 26
+  },
+  {
+   "barmap_id": "forges_cold",
+   "barmap_frame": 3848,
+   "barmap_says": "every forge goes dark at the same instant: HARD SILENCE, the hammering cut mid-stroke",
+   "measured": "cold.forges_off",
+   "what": "agrees: every forge goes dark on 3848, in one frame",
+   "measured_frame": 3848,
+   "delta_frames": 0
+  },
+  {
+   "barmap_id": "smoke",
+   "barmap_frame": 3920,
+   "barmap_says": "smoke rising from cold stone (est.)",
+   "measured": null,
+   "what": "no discrete smoke event: smoke rises continuously from the shutdown"
+  },
+  {
+   "barmap_id": "storm_gone",
+   "barmap_frame": 4160,
+   "barmap_says": "dull and grey; the storm thins to nothing (est.)",
+   "measured": "unfinished.storm_thins",
+   "what": "the storm thins 4087-4181 (half 4138); the Ring's gold drains 4025-4135 (half 4072); the picture then holds byte-identical 4217-4239",
+   "measured_frame": 4181,
+   "delta_frames": 21
+  },
+  {
+   "barmap_id": "havens",
+   "barmap_frame": 5440,
+   "barmap_says": "(v5: no Havens) the hymn's end: the page turns to blank pages",
+   "measured": null,
+   "what": "the PEN shot (5440-5679) has no page turn in its frames: EDIT still owes the incoming turn, so the page-turn sound has no measured frame yet"
+  }
+ ],
+ "cues_C5_vs_picture": [
+  "breaths: 'forges_cold' cuts the hall for 1.2 s (3848 -> 3876.8) only; nothing in the cue sheet or the level map can fail on sound between 3877 and 3999 (C16's band is -99..-1 LU relative), so the hard silence through 3999 was a property of the note list, unchecked. Pass 1's Ring entry at 4000 may start up to 0.52 s early (ANTIC_HI for the quiet strings), i.e. inside the silence",
+  "events: the run's beacon_1..7 tags (call/answer) are on fires this Mac cannot see; the map's measured catches (3468-3791) have no cue-sheet events at all",
+  "sfx/ambience: empty by design (the effects are SOUND's); see sound/c5_sound_events.json"
+ ]
+}

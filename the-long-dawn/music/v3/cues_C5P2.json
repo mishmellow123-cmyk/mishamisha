@@ -1,0 +1,385 @@
+{
+ "cut": "C5P2",
+ "sections": {
+  "C1": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -40,
+    -12
+   ]
+  },
+  "C2": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ]
+  },
+  "C3": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ]
+  },
+  "C4": {
+   "tags": [
+    "book"
+   ],
+   "level": "p",
+   "rel": [
+    -22,
+    -6
+   ]
+  },
+  "C5": {
+   "tags": [
+    "lydian"
+   ],
+   "level": "p",
+   "rel": [
+    -18,
+    -4
+   ]
+  },
+  "C6": {
+   "tags": [
+    "race"
+   ],
+   "level": "p",
+   "rel": [
+    -16,
+    -3
+   ]
+  },
+  "C7": {
+   "tags": [
+    "race"
+   ],
+   "level": "mp",
+   "rel": [
+    -14,
+    -1
+   ]
+  },
+  "C8": {
+   "tags": [
+    "race"
+   ],
+   "level": "p",
+   "rel": [
+    -16,
+    -2
+   ]
+  },
+  "C9": {
+   "tags": [
+    "race",
+    "brink"
+   ],
+   "level": "mf",
+   "rel": [
+    -12,
+    0
+   ]
+  },
+  "C10": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -26,
+    -8
+   ]
+  },
+  "C11": {
+   "tags": [
+    "race"
+   ],
+   "level": "mf",
+   "rel": [
+    -14,
+    -1
+   ]
+  },
+  "C12": {
+   "tags": [
+    "night"
+   ],
+   "level": "ppp",
+   "rel": [
+    -44,
+    -1
+   ]
+  },
+  "C13": {
+   "tags": [
+    "night"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -6
+   ]
+  },
+  "C14": {
+   "tags": [
+    "run"
+   ],
+   "level": "mf",
+   "rel": [
+    -16,
+    -2
+   ]
+  },
+  "C15": {
+   "tags": [
+    "map"
+   ],
+   "level": "mp",
+   "rel": [
+    -20,
+    -2
+   ]
+  },
+  "C16": {
+   "tags": [
+    "silence"
+   ],
+   "level": "-",
+   "rel": [
+    -99,
+    -1
+   ]
+  },
+  "C17": {
+   "tags": [
+    "night"
+   ],
+   "level": "pp",
+   "rel": [
+    -34,
+    -10
+   ]
+  },
+  "C18": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -34,
+    -10
+   ]
+  },
+  "C19": {
+   "tags": [
+    "night"
+   ],
+   "level": "pp",
+   "rel": [
+    -28,
+    -8
+   ]
+  },
+  "C20": {
+   "tags": [
+    "dawn"
+   ],
+   "level": "mf",
+   "rel": [
+    -16,
+    -2
+   ]
+  },
+  "C21": {
+   "tags": [
+    "book"
+   ],
+   "level": "p",
+   "rel": [
+    -24,
+    -6
+   ]
+  },
+  "C22": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -40,
+    -8
+   ]
+  },
+  "C23": {
+   "tags": [
+    "book"
+   ],
+   "level": "pp",
+   "rel": [
+    -30,
+    -8
+   ]
+  }
+ },
+ "events": {
+  "book": {
+   "kind": "music",
+   "tags": [
+    "call"
+   ],
+   "desc": "the storyteller's CALL (in the finished score: the cor anglais)"
+  },
+  "beacon_1": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "beacon_3": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "beacon_5": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "beacon_7": {
+   "kind": "fire",
+   "tags": [
+    "call"
+   ]
+  },
+  "beacon_2": {
+   "kind": "fire",
+   "tags": [
+    "answer"
+   ],
+   "desc": "the ANSWER first heard"
+  },
+  "beacon_4": {
+   "kind": "fire"
+  },
+  "beacon_6": {
+   "kind": "fire"
+  },
+  "map_beacon_2": {
+   "kind": "fire",
+   "tags": [
+    "map"
+   ]
+  },
+  "map_beacon_3": {
+   "kind": "fire",
+   "tags": [
+    "map"
+   ]
+  },
+  "map_beacon_4": {
+   "kind": "fire",
+   "tags": [
+    "map"
+   ]
+  },
+  "map_beacon_5": {
+   "kind": "fire",
+   "tags": [
+    "map"
+   ]
+  },
+  "map_beacon_6": {
+   "kind": "fire",
+   "tags": [
+    "map"
+   ]
+  },
+  "map_beacon_7": {
+   "kind": "fire",
+   "tags": [
+    "map"
+   ]
+  },
+  "last_beacon": {
+   "kind": "fire",
+   "tags": [
+    "map",
+    "holdout"
+   ]
+  },
+  "reveal": {
+   "kind": "fire",
+   "tags": [
+    "call",
+    "first_fires"
+   ],
+   "desc": "two first fires, together: two voices, one gesture"
+  }
+ },
+ "extra_events": [],
+ "breaths": [
+  {
+   "t0": {
+    "at": "race",
+    "s": -0.2
+   },
+   "t1": {
+    "at": "race"
+   },
+   "exempt": [],
+   "why": "200 ms before the race"
+  },
+  {
+   "t0": {
+    "at": "flint_black",
+    "s": -0.03
+   },
+   "t1": {
+    "at": "flint_black",
+    "s": 0.8
+   },
+   "exempt": [],
+   "why": "the trap cuts to black"
+  },
+  {
+   "t0": {
+    "at": "forges_cold",
+    "s": -0.03
+   },
+   "t1": {
+    "at": "forges_cold",
+    "s": 1.2
+   },
+   "exempt": [],
+   "why": "every forge goes dark: hard silence"
+  },
+  {
+   "t0": {
+    "at": "sunrise",
+    "s": -0.275
+   },
+   "t1": {
+    "at": "sunrise"
+   },
+   "exempt": [],
+   "why": "275 ms before the sunrise"
+  }
+ ],
+ "ambience": [],
+ "sfx": [],
+ "note": "C5P2 (score pass 2): cues_C5 with the same section levels and breaths (the breath at forges_cold now lands on the MEASURED 3848, which it already was); the measured map catches are fire events. Effects remain SOUND's (sound/c5_sound_events.json)."
+}
