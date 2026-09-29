@@ -270,11 +270,27 @@ def _import(mod, env_extra=None):
 
 
 @pytest.mark.parametrize("mod", ["sound_recipes_C5P2", "sound_recipes_C5"])
-def test_recipes_refuse_unresolved_rows_unless_told(mod):
+def test_every_c5_row_is_resolved(mod):
+    """29 Sep: the burns are built (hits on their measured half-open frames), the page turn and R22 are placed, and the
+    forge hammers play the VSCO anvil: both tables import with nothing skipped. The refusal itself is pinned below on a
+    synthetic row, so it stays tested now that the real tables have nothing to refuse."""
     r = _import(mod)
-    assert r.returncode != 0 and "REFUSED" in r.stderr and "C5.hammer.trap_1" in r.stderr, r.stderr[-400:]
-    r = _import(mod, {"LD_SOUND_ALLOW_UNRESOLVED": "1"})
     assert r.returncode == 0, r.stderr[-400:]
     n_recipes, n_skipped, silence = r.stdout.strip().splitlines()[-1].split(" ", 2)
-    assert int(n_recipes) > 0 and int(n_skipped) > 0
+    assert int(n_recipes) > 0 and int(n_skipped) == 0
     assert silence == str([(3848 / 24, 4000 / 24)])
+
+
+def test_an_unresolved_row_is_refused_unless_told(monkeypatch):
+    code = ("import sound_c5_table as T, sound_c5_recipes as R; t = T.build('C5P2'); "
+            "t = dict(t, events=t['events'] + [dict(id='X.unresolved', kind='event', hit_f=100, sync='test', recipe=None, "
+            "level=None, level_from=None, status='needs source (test)', design=False)]); "
+            "rc, ev, beds, sk, de = R.assemble(t, 'T'); print(len(rc), [r['id'] for r in sk])")
+    env = dict(os.environ)
+    env.pop("LD_SOUND_ALLOW_UNRESOLVED", None)
+    r = subprocess.run([PY, "-c", code], cwd=SRC, capture_output=True, text=True, env=env)
+    assert r.returncode != 0 and "REFUSED: T sound rows not ready" in r.stderr and "X.unresolved" in r.stderr, r.stderr[-400:]
+    env["LD_SOUND_ALLOW_UNRESOLVED"] = "1"
+    r = subprocess.run([PY, "-c", code], cwd=SRC, capture_output=True, text=True, env=env)
+    assert r.returncode == 0, r.stderr[-400:]
+    assert r.stdout.strip().splitlines()[-1].endswith("['X.unresolved']")

@@ -478,17 +478,23 @@ TRANS = {'A': [], 'B': [], 'C': [
     # burn-through (C4-C5, C8-C9). DESIGNED, NOT BUILT: it needs burn layers for the Refusal page (ftburn/x1burn,
     # BURN/PAGES), because the page's delivered matte is opaque on all 240 frames and holds no hole; the three folder
     # names are PROPOSED, nothing has been rendered. Until then: a hard cut.
+    # BUILT 29 Sep (x1burn v2: --center 870,234 --t-open 2312 --speed 9.4 --frames 2310-2345): the burn is born at the
+    # drawn ring the hand offers, 100 px from where the Trap's Ring hangs (972,224), so the hole opens onto the Ring.
+    # Hole 1% 2316, 13% 2322, 62% 2331 (fastest), 100% by 2340 (measured from _cover).
     dict(f0=2310, f1=2346, cut=2320, kind='burn', glow='x1_refusal_C5', keep='x1_refusal_C5_matte',
-         cover='x1_refusal_C5_cover', ready=False,
-         note='C10 the Refusal page burns through onto C11 the Trap (DESIGNED; layers PROPOSED, not rendered)'),
+         cover='x1_refusal_C5_cover',
+         note='C10 the Refusal page burns through onto C11 the Trap, born at the drawn ring (x1burn v2)'),
     # the same source pair as the 7,200-frame cut's #16 (runC_reveal pose 239 -> runC_scroll 0): two parchment views
     # of the range read as a jump cut; runC_scroll is not on the EDIT-C5 Mac, so this is unseen here
     dict(f0=3117, f1=3123, cut=3120, kind='dissolve',
          note='C13 the Reveal -> C14 the beacon run: two parchment views of the range (old #16, same sources)'),
     # the 7,200-frame cut's #17 (the seventh beacon burns through onto the map) on the NEW map: its x1_map_C layers
     # were aligned to the retired map_C, so it needs new ones. DESIGNED, NOT BUILT; folder names PROPOSED.
+    # BUILT 29 Sep: the 7,200-frame cut's #17 parameters shifted -720 (x1burn v2 --center 1130,485 --t-open 3432
+    # --speed 9.4 --frames 3430-3465). The seventh beacon's flame sits at (1129-1135, 481) over 3432-3439 (measured);
+    # the new map's lit beacon is 20 px away at (1111,468). Hole 1% 3436, 12% 3442, fastest 3450, 100% by 3460.
     dict(f0=3430, f1=3466, cut=3440, kind='burn', glow='x1_map_C5', keep='x1_map_C5_matte', cover='x1_map_C5_cover',
-         ready=False, note='C14 the seventh beacon burns through onto C15 the map (DESIGNED; layers PROPOSED)'),
+         note='C14 the seventh beacon burns through onto C15 the map (x1burn v2, the old #17 at -720)'),
     # PR11 leaves "the page dissolve" to EDIT: the grey Ring over the dark towers into the abandoned mine; centred on
     # the downbeat, it keeps 4217-4227 of the intended final hold clean and fades through the rest
     dict(f0=4228, f1=4252, cut=4240, kind='dissolve',

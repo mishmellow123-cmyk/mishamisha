@@ -1,0 +1,19 @@
+{
+  "name": "cand_map_beacon-falloff",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py map --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py map --equal 3724 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py map beacon-falloff --range 3440-3839 --out renders/cand_map_beacon-falloff"
+  ],
+  "out_dir": "renders/cand_map_beacon-falloff",
+  "frames": "3440-3839",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Review candidate only. Launch blocked until farm branch handling is reconciled with claude/owner-night-20260929; the branch field is currently ignored. See C5_CANDIDATES.md."
+}

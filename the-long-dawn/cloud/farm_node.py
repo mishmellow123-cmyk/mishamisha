@@ -28,6 +28,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -92,11 +93,20 @@ def base_env(extra=None):
     return env
 
 
+def unit_branch(spec):
+    """The unit's job branch (farm.py job_branch), else BRANCH; checked again here, since it reaches a shell."""
+    b = spec.get('branch') or BRANCH
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]{0,200}', b) or '..' in b:
+        raise RuntimeError(f'bad branch name {b!r}')
+    return b
+
+
 def git_update(u):
-    """Bring the repo to the branch tip; returns the short commit. Three tries, then the unit fails."""
+    """Bring the repo to the tip of the unit's branch; returns the short commit. Three tries, then the unit fails."""
     err = ''
+    branch = unit_branch(u.spec)
     for attempt in range(3):
-        r = subprocess.run(f'git -C {REPO} fetch -q --depth 1 origin {BRANCH} && git -C {REPO} reset -q --hard FETCH_HEAD',
+        r = subprocess.run(f'git -C {REPO} fetch -q --depth 1 origin {branch} && git -C {REPO} reset -q --hard FETCH_HEAD',
                            shell=True, capture_output=True, text=True)
         if r.returncode == 0:
             c = subprocess.run(['git', '-C', REPO, 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True)

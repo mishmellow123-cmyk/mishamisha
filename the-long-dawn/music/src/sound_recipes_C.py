@@ -149,6 +149,12 @@ RECIPES["C.x.murmur"] = dict(src=[("fs:766658", 4.0, 150.0, 1.0)], seg=(12, 20),
 RECIPES["C.x.catch"] = dict(FL.CATCH, level_from="C.blow", trim=1.0)
 RECIPES.pop("C.catch", None)                                  # C's sheet has no catch cue: C.x.catch is it
 RECIPES["C+.sea.near"] = dict(src=SEA, seg=(14, 24), xf=3.5, hp=40, width=1.0)   # the Havens, nearer the water
+# C5's forge hammers (the Trap's ostinato accents, the lone hammer under the map's pause, the stroke cut on the
+# shutdown): VSCO-2-CE's anvil, the recording the score's forging already plays (score_v3_C "anvil"), so the Trap's
+# strikes are the forges' own. Hard hit v3: peak at 0.002 s, 40 dB down by 0.67 s; medium hit v2 for the faint one.
+ANVIL, ANVIL_SOFT = "vsco:Percussion/Anvil_Hit1_v3_Sum.wav", "vsco:Percussion/Anvil_Hit1_v2_Sum.wav"
+RECIPES["C5.hammer"] = dict(src=(ANVIL, 0.002), pre=0.002, post=1.4, hp=90, fo=0.4, width=0.4, dist=0.5)
+RECIPES["C5.hammer.faint"] = dict(src=(ANVIL_SOFT, 0.002), pre=0.002, post=1.2, hp=90, fo=0.4, width=0.3, dist=0.8)
 
 SPACE = dict(distance="forest20", outdoor="forest20", event_send=0.08, bed_send=0.0, wet_hp=150, wet_lp=9000,
              stem_hp=25, bed_crest=14.0)

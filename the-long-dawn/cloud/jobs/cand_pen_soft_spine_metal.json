@@ -1,0 +1,29 @@
+{
+  "name": "cand_pen_soft_spine_metal",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py pen --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py pen --equal 5560 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py pen soft_spine_metal --range 5440-5679 --out renders/cand_pen_soft_spine_metal"
+  ],
+  "out_dir": "renders/cand_pen_soft_spine_metal",
+  "frames": "5440-5679",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Review candidate only. Launch blocked until farm branch handling is reconciled with claude/owner-night-20260929; the branch field is currently ignored. See C5_CANDIDATES.md.",
+  "outputs": [
+    {
+      "out_dir": "renders/cand_pen_soft_spine_metal",
+      "frames": "5440-5679"
+    },
+    {
+      "out_dir": "renders/cand_pen_soft_spine_metal_matte",
+      "frames": "5440-5679"
+    }
+  ]
+}

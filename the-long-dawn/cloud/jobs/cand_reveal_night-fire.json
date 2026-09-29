@@ -1,0 +1,19 @@
+{
+  "name": "cand_reveal_night-fire",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py reveal --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py reveal --equal 3040 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py reveal night-fire --range 2880-3119 --out renders/cand_reveal_night-fire"
+  ],
+  "out_dir": "renders/cand_reveal_night-fire",
+  "frames": "2880-3119",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Review candidate only. Launch blocked until farm branch handling is reconciled with claude/owner-night-20260929; the branch field is currently ignored. See C5_CANDIDATES.md."
+}

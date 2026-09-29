@@ -74,6 +74,11 @@ class C5ReadinessTests(unittest.TestCase):
             if t.get('under'):
                 how, stem, *rest = t['under']
                 self.put(stem, [rest[0]] if how == 'hold' else range(s['f0'], s['f1']))
+        for t in EDL.TRANS['C']:                  # a built transition's layer frames are delivered too (29 Sep: the burns)
+            if t.get('ready', True):
+                for k in ('glow', 'keep', 'cover'):
+                    if t.get(k):
+                        self.put(t[k], range(t['f0'], t['f1']))
         self.write_json()
 
     def write_json(self):
@@ -338,7 +343,9 @@ class C5ReadinessTests(unittest.TestCase):
 
     def test_designed_transition_fails_full_only_and_bad_windows_fail_both(self):
         self.green()
-        self.enterContext(mock.patch.dict(EDL.TRANS, {'C': list(_ORIGINAL_TRANS)}))
+        # the Refusal burn as it stood before its layers were built (29 Sep): designed, not ready
+        designed = [dict(t, ready=False) if t['f0'] == 2310 else t for t in _ORIGINAL_TRANS]
+        self.enterContext(mock.patch.dict(EDL.TRANS, {'C': designed}))
         self.write_json()
         rep, keys, _ = self.run_gate()
         self.assertIn(('GAP', 'transition burn 2310-2345'), keys)

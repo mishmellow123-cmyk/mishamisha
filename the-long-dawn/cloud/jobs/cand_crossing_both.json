@@ -1,0 +1,19 @@
+{
+  "name": "cand_crossing_both",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py crossing --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py crossing --equal 5584 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py crossing both --range 4880-5839 --out renders/cand_crossing_both"
+  ],
+  "out_dir": "renders/cand_crossing_both",
+  "frames": "4880-5839",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Review candidate only. Launch blocked until farm branch handling is reconciled with claude/owner-night-20260929; the branch field is currently ignored. See C5_CANDIDATES.md. BLOCKED: full-shot conservative coverage, not the requested proven minimal interval. Unchanged join controls and actual contact remain unproved."
+}

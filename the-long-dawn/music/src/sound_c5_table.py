@@ -114,10 +114,11 @@ def build(pulse_cut="C5P2", edl_path=None):
         return round(0.8 * (2 * r["x"] / 1920 - 1), 2)
     rows = []
 
-    def event(eid, hit, sync, recipe, level_of, status="ready", **kw):
+    def event(eid, hit, sync, recipe, level_of, status="ready", level_db=None, level_note=None, **kw):
+        """level_of: SOUND-C's approved level for that kind of event; else level_db with level_note saying its basis"""
         rows.append(dict(id=eid, kind="event", hit_f=hit, sync=sync, recipe=recipe,
-                         level=lv[level_of]["level"] if level_of else None,
-                         level_from=f"sound/events_C.json {level_of}" if level_of else None, status=status, **kw))
+                         level=lv[level_of]["level"] if level_of else level_db,
+                         level_from=f"sound/events_C.json {level_of}" if level_of else level_note, status=status, **kw))
 
     def bed(eid, f0, f1, sync, recipe, level_of, status="ready", **kw):
         rows.append(dict(id=eid, kind="bed", f0=f0, f1=f1, sync=sync, recipe=recipe,
@@ -133,9 +134,10 @@ def build(pulse_cut="C5P2", edl_path=None):
     event("C5.pen.refusal_figure", M("refusal.figure_begins", "first"), "measured:refusal.figure_begins.first",
           "pen", "C+.pen.deep", src_start=20.3, dur_f=M("refusal.ink_ends", "last") - M("refusal.figure_begins", "first") + 1,
           note="the figure, its raised hand (2195-2202) and the cloak's hatching, to the last stroke")
-    event("C5.burn.to_trap", None, "edit:the Refusal page's burn-through into THE TRAP (EDIT-C5 975d644: kind burn, "
-          "2310-2346, cut 2320, ready=false: designed, not rendered)", "C+.burn.eye", "C+.burn.eye",
-          status="needs frame (EDIT transition)", note="measure the built burn's frames; do not place on 2320 unseen")
+    # the built x1burn (29 Sep): C+.burn.map is the recipe written for x1burn's opening ("the crackle rises from its
+    # first frame, peaks as half the sheet is open"), so it syncs on the half-open frame, measured from _cover
+    event("C5.burn.to_trap", 2330, "measured:the built burn renders/x1_refusal_C5_cover: 1% open 2316, half open 2330 "
+          "(52%), full 2340 (x1burn v2, t_open 2312, born at the drawn ring)", "C+.burn.map", "C+.burn.map")
     # C11 THE TRAP: the forges; the surge, the low forge's return and the front-runners' climb are measured; the
     # hammers are the music's (no strike is drawn), on the ostinato's accents, silent while the one forge is low
     bed("C5.forge.trap", 2320, 2640, "measured:shot trap (2320-2639); cut to FLINT's black at 2640",
@@ -150,8 +152,8 @@ def build(pulse_cut="C5P2", edl_path=None):
     accents = [f for a, b in ((t0, low), (surge, black)) for f in range(a, b, 40)]
     for k, f in enumerate(accents):
         event(f"C5.hammer.trap_{k + 1}", f, f"score:barmap_{pulse_cut}'s trap ostinato accent (every 2 beats from trap "
-              "and from surge; none while the one forge is low)", None, None, status="needs source (no hammer/anvil "
-              "recording in the library)", design=True)
+              "and from surge; none while the one forge is low)", "C5.hammer", None, status="ready (design: listen)",
+              level_db=HAMMER_DB, level_note=HAMMER_NOTE, design=True)
     # C12 FLINT (not on this Mac): SOUND-C's shared flint take, through EDIT's C5 EDL (strike 2 is DROPPED)
     for key, rid, lid in (("strike1", "C.strike1", "C.strike1"), ("strike3", "C.strike3", "C.strike3"),
                           ("blow", "C.blow", "C.blow"), ("catch", "C.x.catch", "C.x.catch")):
@@ -172,9 +174,8 @@ def build(pulse_cut="C5P2", edl_path=None):
         event(f"C5.run.beacon{k}", B[f"beacon_{k}"]["f"], f"inherited:v1 beacon {k} (on the v1 picture within 2 f, "
               f"sound/picture_sync_C.json) - 720 = barmap beacon_{k}", f"C.beacon{k}", f"C.beacon{k}",
               status="ready", verify="re-measure on the C5 assembly (runC_scroll is not on this Mac)")
-    event("C5.burn.to_map", None, "edit:the seventh beacon's burn-through onto THE MAP (EDIT-C5 975d644: kind burn, "
-          "3430-3466, cut 3440, ready=false: designed, not rendered)", "C+.burn.eye", "C+.burn.eye",
-          status="needs frame (EDIT transition)", note="measure the built burn's frames; do not place on 3440 unseen")
+    event("C5.burn.to_map", 3449, "measured:the built burn renders/x1_map_C5_cover: 1% open 3436, half open 3449 (51%), "
+          "full 3460 (x1burn v2, t_open 3432: the 7,200-frame cut's #17 at -720)", "C+.burn.map", "C+.burn.map")
     # C15 THE LAST BEACON: every catch measured; the holdout nearest; a lone hammer in the pause (the music's)
     rec = {2: "C.beacon2", 3: "C.beacon3", 4: "C.beacon4", 5: "C.beacon5", 6: "C.beacon6", 7: "C.beacon7",
            8: "C.beacon1"}
@@ -185,14 +186,15 @@ def build(pulse_cut="C5P2", edl_path=None):
     ham = B["hammer_alone"]["f"]
     for k, f in enumerate((ham, ham + 20)):
         event(f"C5.hammer.alone_{k + 1}", f, f"score:barmap_{pulse_cut} hammer_alone (C5P2: one beat into the measured "
-              "pause) + one beat", None, None, status="needs source (no hammer/anvil recording in the library)",
-              design=True, note="faint; the last stroke ends before the catch at 3786")
+              "pause) + one beat", "C5.hammer.faint", None, status="ready (design: listen)", level_db=HAMMER_FAINT_DB,
+              level_note=HAMMER_NOTE, design=True, note="faint; the last stroke ends before the catch at 3786")
     # C16 THE FORGES GO COLD: 8 frames of forge and a hammer, cut mid-stroke on the measured shutdown; then nothing
     off = M("cold.forges_off", "frame")
     bed("C5.forge.cold", 3840, off, "measured:cold.forges_off.frame (the bed is cut on it)", "C.fire.forge",
         "C.fire.forge", fade_in=0.01, fade_out=0.005)
-    event("C5.hammer.cut", 3840, "measured:shot cold (3840) .. cold.forges_off.frame: cut mid-stroke", None, None,
-          status="needs source (no hammer/anvil recording in the library)", design=True, post_max_f=off - 3840)
+    event("C5.hammer.cut", 3840, "measured:shot cold (3840) .. cold.forges_off.frame: cut mid-stroke", "C5.hammer", None,
+          status="ready (design: listen)", level_db=HAMMER_DB, level_note=HAMMER_NOTE, design=True,
+          post_max_f=off - 3840)
     rows.append(dict(id="C5.silence", kind="silence", f0=off, f1=RING_CUT, sync="measured:cold.forges_off.frame .. "
                      "the Ring's cut", status="ready", note="no effect sounds here; the renderer mutes it besides"))
     # C17 THE RING, UNFINISHED: the storm's wind thins with the measured storm
@@ -209,11 +211,11 @@ def build(pulse_cut="C5P2", edl_path=None):
         "C.air.dawn", fade_in=1.5, fade_out=1.5, verify="the ILLUMINATION is not on this Mac")
     bed("C5.hearth.end", 5200, FRAMES, "inherited:C.hearth.end (from PLENTY to the end)", "C.hearth.end",
         "C.hearth.end", fade_in=1.5, fade_out=1.5)
-    event("C5.page.to_blank", None, "edit:the incoming page turn into the PEN shot (EDIT-C5 975d644: kind page_turn, "
-          "5430-5452, cut 5440, unrendered)", "C.page.blank", "C.page.blank",
-          status="needs frame (EDIT: the turn's crossing frame)")
-    event("C5.pen.caption_22", None, "edit:caption 22's write-on (titles.py), if it is written rather than faded",
-          "pen", "C+.pen.T14", src_start=40.6, dur_f=24, status="needs frame (EDIT caption timing)")
+    event("C5.page.to_blank", 5440, "edit:the page turn into the PEN shot (kind page_turn, 5430-5452, cut 5440): its fold "
+          "crosses the frame's centre at eased progress 0.445, frame 5439.7 (assemble.page_turn's geometry)",
+          "C.page.blank", "C.page.blank")
+    event("C5.pen.caption_22", 5462, "edit:caption R22 is an ink write-on (titles.py set='ink': a pen-shaped wipe over its "
+          "first 24 frames from f_in 5462)", "pen", "C+.pen.T14", src_start=40.6, dur_f=24)
     event("C5.burn.title", 5715, "inherited:C+.burn.title (v1 6995, first spark 6982) - 1280", "C+.burn.title",
           "C+.burn.title", verify="the TITLE is not on this Mac")
     for r in rows:
@@ -224,6 +226,14 @@ def build(pulse_cut="C5P2", edl_path=None):
                          f"music/v3/barmap_{pulse_cut}.json": sha(os.path.join(V3, f"barmap_{pulse_cut}.json")),
                          "music/sound/events_C.json": sha(os.path.join(MUSIC, "sound", "events_C.json"))},
                 edl=edl_note, events=rows)
+
+
+# The forge hammers had no approved recording or level (SOUND-C's library has no anvil). Recording: VSCO-2-CE's anvil
+# (sound_recipes_C "C5.hammer"), the score's own forging anvil. Level, a design choice between SOUND-C's approved
+# neighbours: the Trap's strikes 0.4 dB under the x1burn (C+.burn.map -32.6) and 3.6 dB over the loudest flint strike
+# (C.strike3 -36.6); the lone hammer under the map's pause at the quietest strike (C.strike1 -39.0), as its note asks.
+HAMMER_DB, HAMMER_FAINT_DB = -33.0, -39.0
+HAMMER_NOTE = "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6"
 
 
 def problems(t):

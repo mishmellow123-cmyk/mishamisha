@@ -43,7 +43,7 @@ def rng_for(name):
 # ------------------------------------------------------------------ sources
 def src_path(ref):
     """'fs:499027' (Freesound original, else its HQ preview), 'el:B_roar_02' (ElevenLabs), 'sn:pine_branches'
-    (a Sonniss GDC 2026 pick, a trimmed 48 kHz copy in cache/sound/sn/)"""
+    (a Sonniss GDC 2026 pick, a trimmed 48 kHz copy in cache/sound/sn/), 'vsco:<path>' (VSCO-2-CE, CC0)"""
     kind, name = ref.split(":", 1)
     if kind == "fs":
         d = os.path.join(LIB, "fs")
@@ -59,6 +59,10 @@ def src_path(ref):
             return p
     elif kind == "sn":
         p = os.path.join(LIB, "sn", name + ".wav")
+        if os.path.exists(p):
+            return p
+    elif kind == "vsco":                       # 'vsco:Percussion/Anvil_Hit1_v3_Sum.wav': the score's CC0 sample library
+        p = os.path.join(MUSIC, "samples", "VSCO-2-CE", name)
         if os.path.exists(p):
             return p
     raise FileNotFoundError(ref)

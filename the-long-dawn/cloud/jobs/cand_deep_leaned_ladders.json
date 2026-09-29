@@ -1,0 +1,29 @@
+{
+  "name": "cand_deep_leaned_ladders",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py deep --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py deep --equal 4360 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py deep leaned_ladders --range 4240-4479 --out renders/cand_deep_leaned_ladders"
+  ],
+  "out_dir": "renders/cand_deep_leaned_ladders",
+  "frames": "4240-4479",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Review candidate only. Launch blocked until farm branch handling is reconciled with claude/owner-night-20260929; the branch field is currently ignored. See C5_CANDIDATES.md.",
+  "outputs": [
+    {
+      "out_dir": "renders/cand_deep_leaned_ladders",
+      "frames": "4240-4479"
+    },
+    {
+      "out_dir": "renders/cand_deep_leaned_ladders_matte",
+      "frames": "4240-4479"
+    }
+  ]
+}

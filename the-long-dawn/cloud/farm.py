@@ -103,6 +103,20 @@ KINDS = {'cpu': dict(chip='cpu-8', prefix='ldf-c', cpu=8, cap=MAX_CPU),
          'ssh': dict(chip='ssh', prefix='ldf-m', cpu=8, cap=0)}      # our own machines over ssh (ssh_nodes.json)
 BATCH = 16                                                        # frames per download request
 
+BRANCH_RE = re.compile(r'[A-Za-z0-9][A-Za-z0-9._/-]{0,200}')
+
+
+def job_branch(spec):
+    """The branch a job's units render from: the job's own "branch" (the node agent fetches it for every unit; a
+    render must run the code it was written against), else the agent's default. Checked, since it reaches a shell."""
+    b = spec.get('branch')
+    if b is None:
+        return None
+    if not isinstance(b, str) or not BRANCH_RE.fullmatch(b) or '..' in b:
+        raise SystemExit(f'farm: bad branch name in job {spec.get("name")!r}: {b!r}')
+    return b
+
+
 BOOT = r'''set -e
 export PATH=$HOME/.local/bin:$PATH
 mkdir -p ~/ld/runs && cd ~/ld
@@ -590,7 +604,7 @@ class Job:
                    for o in self.outputs]
         outputs = [o for o in outputs if o['frames']]
         return dict(id=re.sub(r'[^A-Za-z0-9_.-]', '_', uid), job=self.name, setup=self.setup, items=items,
-                    concurrency=conc, outputs=outputs, shape=list(self.shape), env={},
+                    branch=job_branch(self.spec), concurrency=conc, outputs=outputs, shape=list(self.shape), env={},
                     _job=self, _retry=retry_of or 0, _d=max(1, round(d)))
 
 

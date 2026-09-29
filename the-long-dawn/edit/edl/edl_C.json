@@ -1270,8 +1270,7 @@
    "glow": "x1_refusal_C5",
    "keep": "x1_refusal_C5_matte",
    "cover": "x1_refusal_C5_cover",
-   "ready": false,
-   "note": "C10 the Refusal page burns through onto C11 the Trap (DESIGNED; layers PROPOSED, not rendered)"
+   "note": "C10 the Refusal page burns through onto C11 the Trap, born at the drawn ring (x1burn v2)"
   },
   {
    "f0": 3117,
@@ -1288,8 +1287,7 @@
    "glow": "x1_map_C5",
    "keep": "x1_map_C5_matte",
    "cover": "x1_map_C5_cover",
-   "ready": false,
-   "note": "C14 the seventh beacon burns through onto C15 the map (DESIGNED; layers PROPOSED)"
+   "note": "C14 the seventh beacon burns through onto C15 the map (x1burn v2, the old #17 at -720)"
   },
   {
    "f0": 4228,
