@@ -141,7 +141,9 @@ def scan(picture, key):
             row['body_y']=body[0]['cy'] if body else None
         elif key == 'eye':
             row.update(hole=int((y[50:380,300:650]<30).sum()),
-                       slit=int((y[80:280,470:490]<25).sum()),ink=int((hp<-8).sum()))
+                       slit=int((y[80:280,470:490]<25).sum()),ink=int((hp<-8).sum()),
+                       scorch=float(y[220:370,380:580].mean()),       # the Eye's burn region (onset: its drop)
+                       slit90=int((y[80:280,470:490]<90).sum()))       # the parting lens, before it is black
         elif key == 'flint':
             row.update(flash=int(hot[40:230,350:650].sum()),
                        core=int(hot[170:350,400:650].sum()),

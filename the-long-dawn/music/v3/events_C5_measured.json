@@ -4,7 +4,7 @@
  "fps": 24,
  "frames": "absolute C5 cut frame numbers; reused-source offsets and composite layers are recorded in shots",
  "generated_by": "music/src/measure_c5_events.py",
- "generator_sha256": "2a85ddeb87aabc4db405ae45ad2bafd4312cc6406fe8e3c17f10ff97ff43bb25",
+ "generator_sha256": "5b22a4442f2411598f94bbae42b9a8eceec529012828ddfd3e06d03f5c6e047e",
  "basis_labels": {
   "MEASURED": "a pixel statistic decided the frame(s) (see method)",
   "OBSERVED": "checked by eye on native-resolution stills (never in motion)",
@@ -139,7 +139,7 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   },
   "letters": {
    "stem": "EDIT:letters+fire",
@@ -239,7 +239,7 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   },
   "forge": {
    "stem": "EDIT:forge",
@@ -295,7 +295,7 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   },
   "eye": {
    "stem": "EDIT:deep+eye",
@@ -428,7 +428,7 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   },
   "flint": {
    "stem": "EDIT:flint",
@@ -484,7 +484,7 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   },
   "run": {
    "stem": "EDIT:beacon-run",
@@ -518,7 +518,7 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   },
   "illumination": {
    "stem": "EDIT:illumination",
@@ -552,7 +552,7 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   },
   "plenty": {
    "stem": "EDIT:plenty",
@@ -586,7 +586,7 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   },
   "title": {
    "stem": "EDIT:title",
@@ -620,13 +620,13 @@
    ],
    "identity_method": "sha256 of cut-frame/source/layer names and file hashes; includes EDIT black",
    "composition": "assemble.Ctx.picture at scale 0.5; before caption overlay",
-   "edl_sha256": "f5b8eb2239d4b84b411dbbf0805b74ffda8d347639b68048e8c34ee75771a0e0"
+   "edl_sha256": "584fff99cbbc47fecb1889b6fbe1f46b5db64e2ca4095711b0db562895994f18"
   }
  },
  "not_on_this_mac": [],
  "generator_dependencies": {
-  "measure_c5_delivered.py": "c0e4bbe7504e477a338b10ed143895530e597c5fe5f3405b409304b839ecb0c8",
-  "measure_c5_analysis.py": "e2a28da6a68c2f477a213146981cbeae8b40b37bac01e448da2baa96ac43d57a"
+  "measure_c5_delivered.py": "2a4008a4f24e772cf6bdb14ba470b79a4395bf1ea60517394e4d3e878c6b191d",
+  "measure_c5_analysis.py": "a0d48c96d0e1c8320bbb17c854437ae322b7e486a455f4165805605b81386d6c"
  },
  "events": [
   {
@@ -3029,9 +3029,10 @@
    "frames": {
     "first": 856,
     "half": 884,
-    "full": 925
+    "full": 925,
+    "onset": 845
    },
-   "method": "pixels with luma<10 in the page interior; composed book_C_ft plus embers_C3_e15, never the matte alone; baseline median C820-839, end median C940-959; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "method": "pixels with luma<10 in the page interior; composed book_C_ft plus embers_C3_e15, never the matte alone; baseline median C820-839, end median C940-959; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger; onset = first frame C820-960 with any see-through (luma<10) pixel >= 1 (fixed; see its control)",
    "region": {
     "box": [
      250,
@@ -3192,6 +3193,57 @@
      "958": 141960,
      "959": 141575,
      "960": 141384
+    },
+    "onset": {
+     "field": "hole",
+     "search": [
+      820,
+      960
+     ],
+     "threshold": 1,
+     "values": {
+      "820": 0,
+      "821": 0,
+      "822": 0,
+      "823": 0,
+      "824": 0,
+      "825": 0,
+      "826": 0,
+      "827": 0,
+      "828": 0,
+      "829": 0,
+      "830": 0,
+      "831": 0,
+      "832": 0,
+      "833": 0,
+      "834": 0,
+      "835": 0,
+      "836": 0,
+      "837": 0,
+      "838": 0,
+      "839": 0,
+      "840": 0,
+      "841": 0,
+      "842": 0,
+      "843": 0,
+      "844": 0,
+      "845": 73,
+      "846": 91,
+      "847": 45,
+      "848": 562,
+      "849": 2159,
+      "850": 3861,
+      "851": 5938,
+      "852": 6729,
+      "853": 7588,
+      "854": 10643,
+      "855": 13993,
+      "856": 16010,
+      "857": 16986,
+      "858": 18255,
+      "859": 19910,
+      "860": 20147
+     }
     }
    },
    "confidence": "medium",
@@ -3210,10 +3262,22 @@
      "triggers": 0,
      "maximum": 0.0,
      "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    },
+    {
+     "detector": "hole",
+     "first": 560,
+     "last": 839,
+     "frames_examined": 280,
+     "threshold": 1,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 0.0,
+     "selection_reason": "the whole page before its burn: no see-through pixel in 280 frames"
     }
    ],
    "sync_id": "burn_through",
-   "sync_field": "first"
+   "sync_field": "onset"
   },
   {
    "id": "forge.towers",
@@ -3595,9 +3659,10 @@
    "frames": {
     "first": 1933,
     "half": 1939,
-    "full": 1942
+    "full": 1942,
+    "onset": 1924
    },
-   "method": "count luma<30 in the page interior of EDIT RGB+(1-matte)*embers_C3; the backing storm is not black; baseline median C1905-1920, end median C1955-1970; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "method": "count luma<30 in the page interior of EDIT RGB+(1-matte)*embers_C3; the backing storm is not black; baseline median C1905-1920, end median C1955-1970; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger; onset = first frame C1905-1940 with a one-frame drop of the mean luma in the burn region (x380-579, y220-369) >= 10 (fixed; see its control)",
    "region": {
     "box": [
      300,
@@ -3683,6 +3748,57 @@
      "1968": 48974,
      "1969": 48444,
      "1970": 48677
+    },
+    "onset": {
+     "field": "scorch_drop",
+     "search": [
+      1905,
+      1940
+     ],
+     "threshold": 10,
+     "values": {
+      "1905": -14.29742431640625,
+      "1906": 1.8598785400390625,
+      "1907": 3.94940185546875,
+      "1908": 0.3798065185546875,
+      "1909": -4.2319183349609375,
+      "1910": -4.1547393798828125,
+      "1911": -1.183074951171875,
+      "1912": -0.294586181640625,
+      "1913": -5.4736785888671875,
+      "1914": -6.9412384033203125,
+      "1915": -3.25439453125,
+      "1916": 1.77496337890625,
+      "1917": 2.9738311767578125,
+      "1918": -0.5724029541015625,
+      "1919": -2.7526397705078125,
+      "1920": 0.01202392578125,
+      "1921": 3.4268951416015625,
+      "1922": 0.56805419921875,
+      "1923": -6.0830078125,
+      "1924": 15.086273193359375,
+      "1925": 0.270233154296875,
+      "1926": 5.669219970703125,
+      "1927": 1.263275146484375,
+      "1928": 1.608917236328125,
+      "1929": 5.18603515625,
+      "1930": 6.2083892822265625,
+      "1931": 13.495986938476562,
+      "1932": 13.106536865234375,
+      "1933": 14.504867553710938,
+      "1934": 3.50592041015625,
+      "1935": 7.95440673828125,
+      "1936": 3.7673416137695312,
+      "1937": 1.216949462890625,
+      "1938": 21.997539520263672,
+      "1939": 0.8279075622558594,
+      "1940": 2.0002479553222656,
+      "1941": -0.2977027893066406,
+      "1942": 9.266368865966797,
+      "1943": 6.016754150390625,
+      "1944": 2.3506298065185547,
+      "1945": 2.042844772338867
+     }
     }
    },
    "confidence": "medium",
@@ -3701,10 +3817,22 @@
      "triggers": 0,
      "maximum": 282.0,
      "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    },
+    {
+     "detector": "scorch_drop",
+     "first": 1681,
+     "last": 1922,
+     "frames_examined": 242,
+     "threshold": 10,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 8.870986938476562,
+     "selection_reason": "the Deep and the glow before the burn: its tick-lit growth never darkens the region this fast"
     }
    ],
    "sync_id": "eye_burn",
-   "sync_field": "first"
+   "sync_field": "onset"
   },
   {
    "id": "eye.slit",
@@ -3714,9 +3842,10 @@
    "frames": {
     "first": 2003,
     "half": 2005,
-    "full": 2033
+    "full": 2033,
+    "onset": 2001
    },
-   "method": "count luma<25 in the iris central strip; exclude the earlier page tear by starting after the composited burn; baseline median C1992-2000, end median C2060-2079; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger",
+   "method": "count luma<25 in the iris central strip; exclude the earlier page tear by starting after the composited burn; baseline median C1992-2000, end median C2060-2079; first/half/full = 10/50/90%; presence requires span >= 100 and no baseline trigger; onset = first frame C1992-2079 with pixels with luma<90 in the iris central strip (the lens) >= 2000 (fixed; see its control)",
    "region": {
     "box": [
      470,
@@ -3824,6 +3953,57 @@
      "2077": 3881,
      "2078": 3882,
      "2079": 3885
+    },
+    "onset": {
+     "field": "slit90",
+     "search": [
+      1992,
+      2079
+     ],
+     "threshold": 2000,
+     "values": {
+      "1992": 989,
+      "1993": 881,
+      "1994": 793,
+      "1995": 729,
+      "1996": 705,
+      "1997": 695,
+      "1998": 698,
+      "1999": 712,
+      "2000": 466,
+      "2001": 2335,
+      "2002": 3625,
+      "2003": 3761,
+      "2004": 3820,
+      "2005": 3859,
+      "2006": 3920,
+      "2007": 3936,
+      "2008": 3934,
+      "2009": 3914,
+      "2010": 3884,
+      "2011": 3856,
+      "2012": 3836,
+      "2013": 3850,
+      "2014": 3883,
+      "2015": 3928,
+      "2016": 3933,
+      "2017": 3922,
+      "2018": 3904,
+      "2019": 3891,
+      "2020": 3909,
+      "2021": 3937,
+      "2022": 3950,
+      "2023": 3950,
+      "2024": 3956,
+      "2025": 3960,
+      "2026": 3970,
+      "2027": 3976,
+      "2028": 3990,
+      "2029": 4000,
+      "2030": 4000,
+      "2031": 4000,
+      "2032": 4000
+     }
     }
    },
    "confidence": "medium",
@@ -3842,10 +4022,22 @@
      "triggers": 0,
      "maximum": 52.0,
      "selection_reason": "inspected pre-event interval; same fixed 10% presence threshold as the event"
+    },
+    {
+     "detector": "slit90",
+     "first": 1992,
+     "last": 2000,
+     "frames_examined": 9,
+     "threshold": 2000,
+     "direction": 1,
+     "trigger_frames": [],
+     "triggers": 0,
+     "maximum": 989.0,
+     "selection_reason": "the resolved Eye with its slit closed to a line"
     }
    ],
    "sync_id": "slit_nothing",
-   "sync_field": "first"
+   "sync_field": "onset"
   },
   {
    "id": "flint.strike1",
@@ -5375,8 +5567,8 @@
    "barmap_frame": 840,
    "barmap_says": "the page burns open onto black: chamber to orchestra, never a hit",
    "measured": "letters.burn",
-   "measured_frame": 856,
-   "delta_frames": 16,
+   "measured_frame": 845,
+   "delta_frames": 5,
    "what": "the page burns open onto black"
   },
   {
@@ -5411,8 +5603,8 @@
    "barmap_frame": 1920,
    "barmap_says": "the glow burns through into the storm: THE EYE; tam-tam swell",
    "measured": "eye.burn",
-   "measured_frame": 1933,
-   "delta_frames": 13,
+   "measured_frame": 1924,
+   "delta_frames": 4,
    "what": "the mine page opens into the storm"
   },
   {
@@ -5420,8 +5612,8 @@
    "barmap_frame": 2000,
    "barmap_says": "the slit opens onto nothing: C's loudest moment",
    "measured": "eye.slit",
-   "measured_frame": 2003,
-   "delta_frames": 3,
+   "measured_frame": 2001,
+   "delta_frames": 1,
    "what": "the Eye slit opens onto darkness"
   },
   {

@@ -62,6 +62,25 @@ def onset_event(key, rows, eid, field, search, absent, threshold, what, method, 
     return e
 
 
+def add_onset(e, rows, field, search, absent, threshold, what, why):
+    """A breach (a page burning through, a slit parting) is visible frames before its ramp reaches 10% of the size it
+    grows to, and the music answers the breach, not the growth: onset = the first frame in `search` whose value
+    reaches a FIXED threshold set just above the no-event level, checked against an interval without the event.
+    The ramp's first/half/full stay as measured; the onset becomes the sync field only when its control is clean."""
+    if e.get('status') == 'unresolved':
+        return e
+    c=control(rows,field,absent,threshold,why=why)
+    hits=[r['f'] for r in rows if search[0]<=r['f']<=search[1] and r[field]>=threshold]
+    e['frames']['onset']=hits[0] if hits and c['triggers']==0 else None
+    e['negative_controls'].append(c)
+    e['method']+=f'; onset = first frame C{search[0]}-{search[1]} with {what} >= {threshold} (fixed; see its control)'
+    e['evidence']['onset']=dict(field=field,search=list(search),threshold=threshold,
+                                values={str(r['f']):r[field] for r in rows if search[0]<=r['f']<=search[0]+40})
+    if e['frames']['onset'] is not None:
+        e['sync_field']='onset'
+    return e
+
+
 def analyze(key, rows):
     events=[]
     if key=='opening':
@@ -91,9 +110,11 @@ def analyze(key, rows):
             fire['method']+='; fastest = largest core-area increase through C840; full = 90% of median core area C818-830 (the catch flash)'
             fire['evidence']['area_reference']=reference
         events.append(fire)
-        events.append(ramp_event(key,rows,'burn','hole',(820,960),(820,839),(940,959),
+        events.append(add_onset(ramp_event(key,rows,'burn','hole',(820,960),(820,839),(940,959),
             'the page burns open onto black','pixels with luma<10 in the page interior; composed '
-            'book_C_ft plus embers_C3_e15, never the matte alone',[250,60,730,390],sync='burn_through',min_span=100))
+            'book_C_ft plus embers_C3_e15, never the matte alone',[250,60,730,390],sync='burn_through',min_span=100),
+            rows,'hole',(820,960),(560,839),1,'any see-through (luma<10) pixel',
+            'the whole page before its burn: no see-through pixel in 280 frames'))
     elif key=='forge':
         events.append(ramp_event(key,rows,'towers','towers',(1040,1120),(1040,1059),(1110,1120),
             'forge towers become visible around the central fire','count luma>55 and R-B>25 outside '
@@ -121,13 +142,21 @@ def analyze(key, rows):
             'a candidate would still require a pictured strike, not a camera move',[0,0,960,402],
             dict(frames_examined=len(rows)-1,maximum=float(d.max())),controls=controls))
     elif key=='eye':
-        events.append(ramp_event(key,rows,'burn','hole',(1905,1970),(1905,1920),(1955,1970),
+        for a,b in zip(rows,rows[1:]):             # the scorch lands as a sudden darkening of the glowing spot
+            b['scorch_drop']=a['scorch']-b['scorch']
+        rows[0]['scorch_drop']=0.
+        events.append(add_onset(ramp_event(key,rows,'burn','hole',(1905,1970),(1905,1920),(1955,1970),
             'the mine page opens into the storm','count luma<30 in the page interior of '
-            'EDIT RGB+(1-matte)*embers_C3; the backing storm is not black',[300,50,650,380],sync='eye_burn',min_span=100))
-        events.append(ramp_event(key,rows,'slit','slit',(1992,2079),(1992,2000),(2060,2079),
+            'EDIT RGB+(1-matte)*embers_C3; the backing storm is not black',[300,50,650,380],sync='eye_burn',min_span=100),
+            rows,'scorch_drop',(1905,1940),(1681,1922),10,
+            'a one-frame drop of the mean luma in the burn region (x380-579, y220-369)',
+            'the Deep and the glow before the burn: its tick-lit growth never darkens the region this fast'))
+        events.append(add_onset(ramp_event(key,rows,'slit','slit',(1992,2079),(1992,2000),(2060,2079),
             'the Eye slit opens onto darkness','count luma<25 in the iris central strip; '
             'exclude the earlier page tear by starting after the composited burn',[470,80,490,280],
-            sync='slit_nothing',min_span=100))
+            sync='slit_nothing',min_span=100),
+            rows,'slit90',(1992,2079),(1992,2000),2000,'pixels with luma<90 in the iris central strip (the lens)',
+            'the resolved Eye with its slit closed to a line'))
     elif key=='flint':
         for eid,search,absent in [('strike1',(2640,2669),(2640,2649)),('strike3',(2670,2720),(2670,2697))]:
             e=onset_event(key,rows,eid,'flash',search,absent,1000,

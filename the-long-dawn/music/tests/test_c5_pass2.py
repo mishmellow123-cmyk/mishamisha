@@ -74,11 +74,26 @@ def test_pass1_and_pass2_share_everything_outside_the_resynchronised_span(scores
     assert set(u1) == set(u2)
     lo, hi = beat(2320), beat(4000) + 0.03
 
-    def outside(parts, pn):
-        return sorted(json.dumps(n.to_dict(), sort_keys=True) for n in parts[pn].notes
-                      if not lo <= n.start < hi)
+    # the one pass-2 edit outside the span, named: the dawn's ANSWER on the solo violin blooms from the beat
+    ans = bm2.ev(P2.SVLN_ANSWER[0]) + P2.SVLN_ANSWER[1]
+    edited = {("svln", ans): ("antic", P2.ANTIC_SET5[(P2.SVLN_ANSWER, "svln")])}
+    seen = set()
+
+    def outside(parts, pn, apply_edits=False):
+        out = []
+        for n in parts[pn].notes:
+            if lo <= n.start < hi:
+                continue
+            d = n.to_dict()
+            if apply_edits and (pn, n.start) in edited:
+                k, v = edited[(pn, n.start)]
+                d["kw"] = dict(d["kw"], **{k: v})
+                seen.add((pn, n.start))
+            out.append(json.dumps(d, sort_keys=True))
+        return sorted(out)
     for pn in u1:
-        assert outside(u1, pn) == outside(u2, pn), pn
+        assert outside(u1, pn, apply_edits=True) == outside(u2, pn), pn
+    assert seen == set(edited)                   # the named edit exists, and it is the only one
     worst = 0.0
     for pn in u1:
         d1, d2 = u1[pn].dyn, u2[pn].dyn

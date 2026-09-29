@@ -24,6 +24,7 @@ import json
 import os
 import resource
 import subprocess
+import time
 import sys
 
 import numpy as np
@@ -69,6 +70,9 @@ def fpath(root, stem, f):
 _N_READ = [0]
 
 
+PRESSURE_WAIT_S = 1800
+
+
 def _guard():
     rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == "darwin" else 1024)
     if rss > RSS_ABORT:
@@ -80,8 +84,16 @@ def _guard():
                                      text=True).stdout.strip() or 0)
         except (OSError, ValueError):
             lvl = 0
+        waited = 0
+        while lvl >= 4 and waited < PRESSURE_WAIT_S:     # a critical spike is usually someone else's, and passes:
+            time.sleep(15)                                # hold still (no new frame is read) rather than lose the run
+            waited += 15
+            lvl = int(subprocess.run(["sysctl", "-n", "kern.memorystatus_vm_pressure_level"], capture_output=True,
+                                     text=True).stdout.strip() or 0)
         if lvl >= 4:
-            raise SystemExit(f"ABORT: memory pressure level {lvl}")
+            raise SystemExit(f"ABORT: memory pressure level {lvl} for {waited} s")
+        if waited:
+            print(f"(held {waited} s for memory pressure)", flush=True)
 
 
 def read(root, stem, f, half=False):

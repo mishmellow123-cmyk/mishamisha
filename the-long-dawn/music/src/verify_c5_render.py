@@ -20,6 +20,15 @@ Each check is MEASURED on the rendered arrays; none of them is listening.
               definition kit_v3.anticipate aims at), must lie within +-1 frame of the event. A part not quiet
               (30 dB under that peak) in the 1.5 s before the search window is NOT ISOLATED: a failure to look at,
               never a pass
+  swells      the violins' climb on pulls_ahead is a bowed SWELL (render 1 of pass 2: -63 to -45 dB across its
+              0.44 s first note), whose arrival moves ~160 ms between the two thresholds in use (8 dB under the peak,
+              analyze_v3's arrivew; 6 dB, this module's): the frame must lie inside that arrival zone, widened by
+              +-1 frame, so a swell wholly before or after its frame still fails
+  bloom onsets the resolution's brass on all_lit is a BLOOM by design (score_v3_C5.py's battery: "a bloom's ONSET
+              sits on its beat", anticipation fixed at 0.05 s, then a crescendo from 0.1 to 0.25 over a beat), so
+              its -6 dB point is meant to fall after the frame (render 1 of pass 2: +1.1 to +6.3 frames). Its ONSET,
+              the first point in the same window where the envelope comes within 30 dB of the entry's early peak,
+              must lie within +-1 frame of the event; the same isolation rule applies
   not before  the Ring's entry (cb_q, vc_q, vla_q): no sample of those parts above --floor-db before frame 4000
 """
 import argparse
@@ -39,8 +48,11 @@ SR, FPS = 48000, 24
 FR = SR // FPS
 SHUTDOWN, RING_CUT = 3848, 4000
 ARRIVALS = [("reveal", "hn3"), ("reveal", "hn_far"), ("low_fire", "hn3"), ("surge", "tbn"), ("flares_back", "hn3"),
-            ("pulls_ahead", "vln1"), ("map_beacon_3", "hn_far"), ("map_beacon_4", "hn_farther"), ("one_dark", "vln1"),
-            ("all_lit", "hn"), ("all_lit", "tuba")]
+            ("map_beacon_3", "hn_far"), ("map_beacon_4", "hn_farther"), ("one_dark", "vln1")]
+SWELLS = [("pulls_ahead", "vln1"), ("pulls_ahead", "vln2")]
+SWELL_DB = (8.0, 6.0)              # analyze_v3's arrivew threshold, and this module's arrival threshold
+BLOOMS = [("all_lit", pn) for pn in ("hn", "hn2", "hn3", "tbn", "tuba")]
+BLOOM_ONSET_DB = 30.0
 RING_ENTRY = ("cb_q", "vc_q", "vla_q")
 PRE_S, PRE_GAP_S, WIN_BEFORE_S, WIN_AFTER_S = 1.5, 0.7, 0.7, 0.5
 
@@ -92,8 +104,8 @@ def part_window(y, offset, i0, i1):
     return out
 
 
-def arrival(y, offset, frame):
-    """-> dict(status, delta_frames, ...): see the module doc"""
+def arrival(y, offset, frame, under_db=6.0):
+    """-> dict(status, delta_frames, ...): see the module doc (under_db=BLOOM_ONSET_DB measures a bloom's onset)"""
     i_ev = frame * FR
     i0 = i_ev - int((PRE_S + PRE_GAP_S) * SR)
     x = part_window(y, offset, i0, i_ev + int(WIN_AFTER_S * SR))
@@ -105,7 +117,7 @@ def arrival(y, offset, frame):
     if peak < -100.0:
         return dict(status="SILENT", peak_db=round(peak, 1))
     pre = float(env[:k_pre].max())
-    j = int(np.argmax(win >= peak - 6.0))
+    j = int(np.argmax(win >= peak - under_db))
     delta_s = (i0 + k_win + j - i_ev) / SR
     d = dict(delta_frames=round(delta_s * FPS, 2), peak_db=round(peak, 1), pre_db=round(pre, 1))
     if pre > peak - 30.0:
@@ -166,6 +178,27 @@ def run(cut="C5P2", floor_db=-90.0, cache=CACHE, out_dir=OUT, parts_dir=PARTS):
         off, yp = load_part(pn, manifest[pn], parts_dir)
         a = arrival(yp, off, int(ev[eid]))
         rep.append(dict(check="arrival", event=eid, frame=ev[eid], part=pn, ok=a["status"] == "ON", **a))
+    for eid, pn in SWELLS:
+        if pn not in manifest:
+            rep.append(dict(check="swell", event=eid, part=pn, ok=False, status="PART NOT RENDERED"))
+            continue
+        off, yp = load_part(pn, manifest[pn], parts_dir)
+        early, late = (arrival(yp, off, int(ev[eid]), under_db=d) for d in SWELL_DB)
+        if "delta_frames" not in early or "delta_frames" not in late or "NOT ISOLATED" in (early["status"], late["status"]):
+            rep.append(dict(check="swell", event=eid, frame=ev[eid], part=pn, ok=False,
+                            status=late["status"] if late["status"] != "ON" and late["status"] != "OFF" else early["status"]))
+            continue
+        zone = (early["delta_frames"], late["delta_frames"])
+        ok = zone[0] - 1.0 <= 0.0 <= zone[1] + 1.0
+        rep.append(dict(check="swell", event=eid, frame=ev[eid], part=pn, ok=ok, status="ON" if ok else "OFF",
+                        zone_frames=zone, peak_db=late["peak_db"], pre_db=late["pre_db"]))
+    for eid, pn in BLOOMS:
+        if pn not in manifest:
+            rep.append(dict(check="bloom onset", event=eid, part=pn, ok=False, status="PART NOT RENDERED"))
+            continue
+        off, yp = load_part(pn, manifest[pn], parts_dir)
+        a = arrival(yp, off, int(ev[eid]), under_db=BLOOM_ONSET_DB)
+        rep.append(dict(check="bloom onset", event=eid, frame=ev[eid], part=pn, ok=a["status"] == "ON", **a))
     for pn in RING_ENTRY:
         off, yp = load_part(pn, manifest[pn], parts_dir)
         rep.append(dict(check="not before", event="ring_unfinished", frame=RING_CUT, part=pn,

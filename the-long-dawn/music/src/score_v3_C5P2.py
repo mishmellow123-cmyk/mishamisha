@@ -55,6 +55,23 @@ CUT_REL_S = 0.03                   # the release of a note cut on the shutdown (
 ANTIC_SET5 = {k: v for k, v in P1.ANTIC_SET5.items() if k[0] != ("last_beacon", 0.5)}
 ANTIC_SET5.update({("all_lit", pn): 0.05 for pn in ("cb", "vc", "vla", "vln2", "vln1", "hn", "hn2", "hn3", "tbn",
                                                      "tuba")})
+# render 1 of pass 2's battery (2026-09-29), in seconds added to one entry's anticipation. A shift moves a note's start,
+# never its sample or level, so its arrival moves with it.
+#   one_dark vln1: an attack onto a plateau, arriving 2.74 frames EARLY (verify_c5_render.py): its lateness, -114 ms.
+#   pulls_ahead vln2: the climb's lower octave, arriving 2.18 frames early: -91 ms (pass 1's shared +0.20 s for the
+#     climb left the two octaves 4.9 frames apart).
+#   pulls_ahead vln1: a SWELL (-63 to -45 dB across its 0.44 s D5), so its "arrival" depends on the threshold: -51 ms
+#     at -8 dB under the peak (analyze_v3's arrivew, +-50 ms) and +114 ms at -6 dB (verify_c5_render.py); the frame
+#     already lies between the two, and 10 ms later brings the render's own probe inside its tolerance.
+ANTIC_DT5P2 = {("pulls_ahead", "vln1"): -0.010, ("pulls_ahead", "vln2"): -2.18 / 24,
+               ("one_dark", "vln1"): -2.74 / 24}
+# the dawn's ANSWER: the solo violin (svln, D6) above the octave violins is a BLOOM out of their arrival, not a second
+# arrival. Pass 1 chased its crescendo with anticipation (0.23 s, then 0.325 s after render 4's +95 ms) and so moved
+# its real attack ever earlier: in render 1 of pass 2 it sounds from -280 ms, on a plateau from -160 ms, while the
+# octave violins arrive at +26 ms, and the arrivew probe (8 dB under a peak 0.8 s into a 10 dB crescendo) still read
+# +170 ms. Its onset now sits on the beat (the kit's bloom rule, 0.05 s) and it is probed as a bloom.
+SVLN_ANSWER = ("sunrise", 8)
+ANTIC_SET5[(SVLN_ANSWER, "svln")] = 0.05
 
 
 # ---------------------------------------------------------------------------
@@ -270,10 +287,19 @@ def build(bm):
         for n in S.P(pn).notes:
             if abs(n.start - b0) < 1e-6:
                 n.kw["antic"] = a
-    for (eid, pn), dt in P1.ANTIC_DT5.items():
-        for n in S.P(pn).notes:
-            if abs(n.start - bm.ev(eid)) < 1e-6 and not n.legato:
-                n.kw["antic"] = max(0.02, n.kw.get("antic", 0.0) + dt)
+    for (eid, pn), dt in list(P1.ANTIC_DT5.items()) + list(ANTIC_DT5P2.items()):
+        hit = [n for n in S.P(pn).notes if abs(n.start - bm.ev(eid)) < 1e-6 and not n.legato]
+        if (eid, pn) in ANTIC_DT5P2 and len(hit) != 1:
+            raise ValueError(f"ANTIC_DT5P2 {eid}/{pn}: {len(hit)} attacked notes on the event, not 1")
+        for n in hit:
+            n.kw["antic"] = max(0.02, n.kw.get("antic", 0.0) + dt)
+    # the dawn's ANSWER on the solo violin is probed as the bloom it now is (SVLN_ANSWER, above)
+    t_ans = (bm.ev(SVLN_ANSWER[0]) + SVLN_ANSWER[1]) * BEAT_S
+    hit = [k for k, x in enumerate(S.sync) if x[2] == "svln" and abs(x[0] - t_ans) < 1e-6]
+    if len(hit) != 1:
+        raise ValueError(f"the solo violin's ANSWER: {len(hit)} sync entries at {t_ans:.3f} s, not 1")
+    x = S.sync[hit[0]]
+    S.sync[hit[0]] = (x[0], x[1] + ": a bloom, its onset on the beat", x[2], x[3], "bloom")
     S.pinned = pin_after_silence(S, bm)
     S.cut_at_shutdown = end_on_the_cut(S, bm, _patches())
     for p in S.parts.values():

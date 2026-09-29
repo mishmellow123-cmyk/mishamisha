@@ -23,10 +23,34 @@ def add_tone(y, offset, start, dur=1.0):
 
 def stem_arriving_at(frames, lead=100, tail=60):
     """-> (offset, mono stem) whose entries ARRIVE on the given frames, stored like render_v3's cropped part stems"""
+    return stem_with([(f, "arrival") for f in frames], lead, tail)
+
+
+def add_swell(y, offset, t0, rise=0.8):
+    """mono, in place: a 440 Hz tone rising from -20 dB to 0 dB, linear in dB, over `rise` s from t0, then held: its
+    -8 dB point is at t0 + 0.6 * rise and its -6 dB point at t0 + 0.7 * rise"""
+    i0 = int(t0 * SR) - offset
+    t = np.arange(int((rise + 0.6) * SR)) / SR
+    lvl = 10 ** ((-20 + 20 * np.minimum(1.0, t / rise)) / 20)
+    y[i0:i0 + len(t)] += (0.5 * lvl * np.sin(2 * np.pi * 440 * t)).astype(np.float32)
+    return y
+
+
+def stem_with(entries, lead=100, tail=60):
+    """-> (offset, mono stem) with each (frame, kind) entry shaped as its check expects to find it ON:
+    'arrival' arrives on the frame, 'bloom' starts on it, 'swell' puts the frame midway between its -8 and -6 dB
+    points (early_s moves a swell earlier)"""
+    frames = [e[0] for e in entries]
     offset = (min(frames) - lead) * FR
     y = np.zeros((max(frames) + tail) * FR - offset, np.float32)
-    for f in frames:
-        add_tone(y, offset, f / V.FPS - ATTACK / 3)
+    for e in entries:
+        f, kind, early = e[0], e[1], (e[2] if len(e) > 2 else 0.0)
+        if kind == "arrival":
+            add_tone(y, offset, f / V.FPS - ATTACK / 3)
+        elif kind == "bloom":
+            add_tone(y, offset, f / V.FPS)
+        else:
+            add_swell(y, offset, f / V.FPS - 0.52 - early)
     return offset, y
 
 
@@ -90,11 +114,12 @@ def fake_render(tmp_path):
     np.lib.format.open_memmap(cache / "premaster_score_final_C5P2.npy", mode="w+", dtype=np.float32,
                               shape=(bm["frames"] * FR, 2)).flush()
     want = {}
-    for eid, pn in V.ARRIVALS:
-        want.setdefault(pn, []).append(int(ev[eid]))
+    for kind, pairs in (("arrival", V.ARRIVALS), ("swell", V.SWELLS), ("bloom", V.BLOOMS)):
+        for eid, pn in pairs:
+            want.setdefault(pn, []).append((int(ev[eid]), kind))
     manifest = {}
-    for pn, frames in list(want.items()) + [(pn, [4010]) for pn in V.RING_ENTRY]:
-        off, y = stem_arriving_at(frames, lead=8 if pn in V.RING_ENTRY else 100)
+    for pn, entries in list(want.items()) + [(pn, [(4010, "arrival")]) for pn in V.RING_ENTRY]:
+        off, y = stem_with(entries, lead=8 if pn in V.RING_ENTRY else 100)
         np.save(parts / f"{pn}__k.npy", y)
         (parts / f"{pn}__k.json").write_text(json.dumps(dict(offset=off, n=len(y))))
         manifest[pn] = "k"
@@ -109,6 +134,10 @@ def test_run_on_a_fake_render(fake_render):
     assert [(r["check"], r["what"]) for r in bad] == [("inputs", "final_C5P2.wav")]    # the only thing missing
     arr = [r for r in rep if r["check"] == "arrival"]
     assert len(arr) == len(V.ARRIVALS) and all(r["status"] == "ON" for r in arr)
+    sw = [r for r in rep if r["check"] == "swell"]
+    assert len(sw) == len(V.SWELLS) and all(r["status"] == "ON" for r in sw), sw
+    bl = [r for r in rep if r["check"] == "bloom onset"]
+    assert len(bl) == len(V.BLOOMS) and all(r["status"] == "ON" for r in bl), bl
     assert all(r["ok"] for r in rep if r["check"] in ("length", "silence", "not before"))
 
 
@@ -121,3 +150,40 @@ def test_run_catches_a_late_voice(fake_render):
     rep = V.run("C5P2", **kw)
     late = [r for r in rep if r["check"] == "arrival" and r["part"] == "hn_far" and r["event"] == "reveal"]
     assert late and late[0]["status"] == "OFF" and not late[0]["ok"]
+
+
+def _replace_stem(parts, pn, entries):
+    off, y = stem_with(entries)
+    np.save(parts / f"{pn}__k.npy", y)
+    (parts / f"{pn}__k.json").write_text(json.dumps(dict(offset=off, n=len(y))))
+
+
+def test_run_catches_a_late_bloom(fake_render):
+    """a bloom is judged by its ONSET: the same stem started 3 frames late is OFF"""
+    kw, parts = fake_render
+    ev, _ = V.barmap_frames("C5P2")
+    entries = [(int(ev[e]), "arrival") for e, p in V.ARRIVALS if p == "tuba"] + [(int(ev["all_lit"]) + 3, "bloom")]
+    _replace_stem(parts, "tuba", entries)
+    rep = V.run("C5P2", **kw)
+    r = [x for x in rep if x["check"] == "bloom onset" and x["part"] == "tuba"]
+    assert r and r[0]["status"] == "OFF" and not r[0]["ok"] and r[0]["delta_frames"] > 2
+
+
+def test_a_bloom_is_not_judged_by_its_arrival():
+    """the same bloom, on its frame: ON by onset, but its -6 dB point (the arrival) is a few ms later; a swell's
+    arrival lands frames later still, which is why the brass on all_lit is a bloom check, not an arrival check"""
+    off, y = stem_with([(3791, "bloom")])
+    assert V.arrival(y, off, 3791, under_db=V.BLOOM_ONSET_DB)["status"] == "ON"
+    off, y = stem_with([(3791, "swell")])
+    late = V.arrival(y, off, 3791)
+    assert late["status"] == "ON" or late["delta_frames"] > 0
+
+
+def test_run_catches_a_swell_wholly_early(fake_render):
+    """a swell whose whole arrival zone lies before its frame (here 0.17 s early) is OFF"""
+    kw, parts = fake_render
+    ev, _ = V.barmap_frames("C5P2")
+    _replace_stem(parts, "vln2", [(int(ev["pulls_ahead"]), "swell", 0.17)])
+    rep = V.run("C5P2", **kw)
+    r = [x for x in rep if x["check"] == "swell" and x["part"] == "vln2"]
+    assert r and r[0]["status"] == "OFF" and not r[0]["ok"] and r[0]["zone_frames"][1] < -1.0

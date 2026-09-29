@@ -15,8 +15,8 @@
   }
  ],
  "sources": {
-  "music/v3/events_C5_measured.json": "77fad6f4ad0a5655adda62bb6f65d133ea04927168b68d722fa47241d8552316",
-  "music/v3/barmap_C5P2.json": "f2d4e0d1107a3a584dd337ae35d47f96f827e668808f6c2df39e8d7a244fdf87",
+  "music/v3/events_C5_measured.json": "e5016090fad9fdda00c492db5c6c2aecb0404f1a18bcb383faf32f46f68300c9",
+  "music/v3/barmap_C5P2.json": "fbf279098f1a863a3e1961371f73e762218388ca429859e2885c01eb6dba6211",
   "music/sound/events_C.json": "20f43e1f25e756b3b42c170f989af7f8c676661245aa84df17033a4676b82031"
  },
  "edl": "edit/edl/edl_C.json (5,920 frames)",

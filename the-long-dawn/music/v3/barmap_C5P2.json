@@ -351,13 +351,13 @@
   {
    "id": "burn_through",
    "bar": 11,
-   "beat": 3.8,
-   "t": 35.667,
-   "f": 856,
+   "beat": 3.25,
+   "t": 35.208,
+   "f": 845,
    "what": "the page burns open onto black (measured)",
    "source": "measured",
    "was_f": 840,
-   "measured_ref": "letters.burn.first",
+   "measured_ref": "letters.burn.onset",
    "confidence": "medium"
   },
   {
@@ -479,25 +479,25 @@
   {
    "id": "eye_burn",
    "bar": 25,
-   "beat": 1.65,
-   "t": 80.542,
-   "f": 1933,
+   "beat": 1.2,
+   "t": 80.167,
+   "f": 1924,
    "what": "the mine page opens into the storm (measured)",
    "source": "measured",
    "was_f": 1920,
-   "measured_ref": "eye.burn.first",
+   "measured_ref": "eye.burn.onset",
    "confidence": "medium"
   },
   {
    "id": "slit_nothing",
    "bar": 26,
-   "beat": 1.15,
-   "t": 83.458,
-   "f": 2003,
+   "beat": 1.05,
+   "t": 83.375,
+   "f": 2001,
    "what": "the Eye slit opens onto darkness (measured)",
    "source": "measured",
    "was_f": 2000,
-   "measured_ref": "eye.slit.first",
+   "measured_ref": "eye.slit.onset",
    "confidence": "medium"
   },
   {
@@ -1050,7 +1050,7 @@
  "conventions": "24 fps, 72 BPM, 4/4: beat = 20 frames, bar = 80 frames. Frames count from 0 on this cut's own timeline. Sections are half-open [f0, f1): f1 is the next section's f0; t = f / 24. bar and beat are 1-based; a fractional beat is a frame between beats (beat = 1 + (f mod 80) / 20). Text f_in is the first frame of the fade-in or write-on, f_out the first frame after the fade-out. Generated from the same source as BIBLE_V3.md '# REVISION 1 \u00b7 LOCKED BEAT SHEETS'; change both or neither. | C5: script v5.2 (C_SCRIPT_v5.md), timeline C_V5_TIMELINE_and_codex_night_brief.md; (est.) frames are musical estimates until the picture lands. | C5P2: barmap_C5 re-timed from events_C5_measured.json by music/src/barmap_c5p2.py; each sync entry's `source` says whether its frame is measured, verified, derived or pass 1's.",
  "measured_table": {
   "file": "music/v3/events_C5_measured.json",
-  "generator_sha256": "2a85ddeb87aabc4db405ae45ad2bafd4312cc6406fe8e3c17f10ff97ff43bb25",
+  "generator_sha256": "5b22a4442f2411598f94bbae42b9a8eceec529012828ddfd3e06d03f5c6e047e",
   "shots": {
    "refusal": "3a29c217e78312368dd913bbba40833ee53a3fde4bfe0f31a65e45e237dea2ab",
    "trap": "37cddbda0bb0b4300df2d9c7d5b148114f69c4bb302d0d3f49d4c6085720c48f",
