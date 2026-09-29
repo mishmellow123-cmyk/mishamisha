@@ -173,6 +173,27 @@ class PartialLabelTests(unittest.TestCase):
                 self.assertGreater(text - back, 0.4, (W, ground, text, back))
 
 
+class PartialPrimaryTests(unittest.TestCase):
+    def test_a_row_with_an_incomplete_primary_never_plays_the_fallback(self):
+        """assemble.plan_shot hands such a row to the take covering the most frames; the partial must not."""
+        import c5_partial as CP
+        import c5_readiness as RD
+        index = {}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(AS, '_INDEX', index), \
+                mock.patch.object(AS, 'RENDERS', tmp), mock.patch.object(RD, '_size', lambda p: 1):
+            def put(stem, frames):
+                folder = os.path.join(AS.RENDERS, stem)
+                for f in frames:
+                    index.setdefault(folder, {})[f] = os.path.join(folder, f'f_{f:05d}.jpg')
+            put('embers_C3', range(1040, 1430))                              # C6's primary lacks its last 10 frames
+            put('embers_C3_half', range(1040, 1440))                         # the half-res preview has all 400
+            i = next(k for k, s in enumerate(EDL.EDL['C']) if s['sec'] == 'C6')
+            self.assertEqual(AS.plan_shot(EDL.EDL['C'][i], 'C', None)['take']['stem'], 'embers_C3_half')
+            ctx = CP.PartialCtx(RD.frame_runs(), 0.25)
+            self.assertEqual(ctx.plans[i]['take']['stem'], 'embers_C3')
+            self.assertEqual([f for f in range(1040, 1440) if f in ctx.missing], list(range(1430, 1440)))
+
+
 class SoundGuardTests(unittest.TestCase):
     def test_c_refuses_a_sound_file_of_another_length_and_a_keeps_its_behaviour(self):
         from types import SimpleNamespace

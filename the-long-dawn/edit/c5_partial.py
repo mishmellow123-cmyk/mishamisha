@@ -62,6 +62,11 @@ class PartialCtx(AS.Ctx):
 
     def __init__(self, runs, scale=0.5, storyboard=False):
         super().__init__(CUT, None, scale, True)
+        # Each row plays its PRIMARY take or a slate. assemble.plan_shot gives a row whose primary is incomplete to
+        # whichever take covers the most frames (embers_C3_half, the X1 test mp4), which would silently stand in
+        # for the primary frames that ARE here; the frames the primary lacks are slated below instead.
+        self.plans = [dict(kind='take', take=s['takes'][0], have=0, alt=0) if s['kind'] == 'takes' and s['takes']
+                      else p for s, p in zip(self.shots, self.plans)]
         self.storyboard = storyboard
         self.spans = slate_spans(runs)
         self.missing = {}
