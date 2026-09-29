@@ -19,6 +19,7 @@ soft dark halo for legibility and a faint warm glow so the words feel lit.
 """
 import functools
 import os
+import zlib
 
 import cv2
 import numpy as np
@@ -399,6 +400,12 @@ def _heat_rgb(h):
     return FIRE_RAMP[i] * (1 - u) + FIRE_RAMP[i + 1] * u
 
 
+def _seed(*parts):
+    """A seed that is the same in every process. hash() of a str is salted per process (PYTHONHASHSEED), so it gave
+    each spawned render worker its own flicker, crumble order and sparks for the same line (29 Sep)."""
+    return zlib.crc32(':'.join(map(str, parts)).encode()) & 0xffff
+
+
 def _noise(shape, seed, sigma):
     rng = np.random.default_rng(seed)
     n = cv2.GaussianBlur(rng.random(shape).astype(np.float32), (0, 0), max(0.6, sigma))
@@ -447,7 +454,7 @@ class TextV3:
         self.x0 = int(round((W * s / 2 - self.w / 2) if x is None else x))
         self.y0 = int(round(self.y - self.h / 2))
         hh, ww = self.alpha.shape
-        self.noise = _noise((hh, ww), hash((cut, self.id)) & 0xffff, 1.2 * s)
+        self.noise = _noise((hh, ww), _seed(cut, self.id), 1.2 * s)
         self._sparks = None
 
     def active(self, f):
@@ -500,7 +507,7 @@ class TextV3:
     def _sparks_at(self, u, te, n_max=420):
         """Rising sparks born where the letters crumble (u: crumble progress 0..1)."""
         if self._sparks is None:
-            rng = np.random.default_rng(hash((self.cut, self.id, 'sp')) & 0xffff)
+            rng = np.random.default_rng(_seed(self.cut, self.id, 'sp'))
             ys, xs = np.nonzero(self.alpha > 0.5)
             n = min(len(xs), int(n_max * max(0.35, self.s)))
             pick = rng.choice(len(xs), n, replace=False) if len(xs) > n else np.arange(len(xs))

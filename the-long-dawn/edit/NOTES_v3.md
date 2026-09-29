@@ -39,9 +39,18 @@ C is now C5, THE LAST PAGES: script v5.2 with the paired-rivals amendment, 5,920
     them).
   - R11 moved up to y 330 and R22 to y 520.
   - R15 moved up to y 220 and stays BUSY on texture: no band of the map that long is clean.
-- **Not deterministic:** TextV3 seeds its noise with Python's per-process string hash, and nothing sets
-  PYTHONHASHSEED. Fire flicker and every crumble or dissolve pattern therefore differ from run to run. A fire
-  caption's measured contrast moves by a few hundredths: R11's worst frame read 2.29 to 2.33:1 over three runs.
+- **Deterministic since 29 Sep (owner night):** TextV3 used to seed its noise and sparks with Python's
+  per-process string hash, and nothing set PYTHONHASHSEED. That was worse than run-to-run drift, because
+  assemble.py's spawned Pool workers each rebuild the captions: all 32 caption noise fields differed between two
+  workers. Every 16-frame imap chunk could therefore bring its own flicker, crumble order and sparks, and 9 of C5's
+  17 captions have a chunk start inside their last 12 frames. The measured effect at a switch is small: in R04 at
+  848 the frame-to-frame change inside the caption box equals an ordinary crumble step (1.24 vs 1.23 /255). At the
+  switch 55 glyph pixels come back at half scale, and nothing was visible in stills. Fire captions' measured contrast
+  also moved by a few hundredths (R11's worst frame read 2.29 to 2.33:1 over three runs). The seeds are now crc32
+  (`titles._seed`), and the same fix went into book_C's baked ink lines (shots/map/inkline.py).
+  `edit/tests/test_render_seeds.py` compares two processes with different PYTHONHASHSEED values and bans the
+  pattern, reading the source as tokens. The realized noise is a new draw, so re-measure before quoting old
+  contrast figures.
 - **Where assemble.py picks a source silently, and what catches it for C5:**
   - `chain()` tries name variants for mode 'v3' and wider modes. The gate FAILs any non-exact take from 2080.
   - `Ctx.under` falls back from stem to stem_half. The gate GAPs it as provisional.
