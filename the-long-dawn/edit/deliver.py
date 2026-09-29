@@ -147,7 +147,7 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table, fin=None):
     tdesc = None if take is None else {k: take.get(k) for k in ('stem', 'off', 'mode', 'crop', 'grade', 'matte',
                                                                   'under', 'video', 'note', 'add')}
     rows = [(r['id'], r['line'], r['f_in'], r['f_out'], r['set'])
-            + tuple((k, r[k]) for k in ('x', 'y', 'lines') if k in r)
+            + tuple((k, r[k]) for k in ('x', 'y', 'lines', 'parts') if k in r)
             for r in table if r['f_in'] < shot['f1'] and r['f_out'] > shot['f0']]   # C5 rows key their placement
     n = shot['f1'] - shot['f0']
     slated = plan['kind'] == 'slate' or (plan['kind'] == 'take' and plan['have'] < n)

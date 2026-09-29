@@ -335,13 +335,18 @@ C5_TEXT = [
          set='ink', y=150),       # the near fire sits at ~(960, 607), the far one at ~(1380, 383): the sky is clear
     dict(id='R14', row=14, line='It was a promise to stop, if all the others would.', f_in=3160, f_out=3300,
          set='ink', y=150),       # UNVERIFIED: runC_scroll is not on the EDIT-C5 Mac; the Reveal/Watch sky placement
-    dict(id='R15', row=15, line='When the last beacon caught, every forge went cold.', f_in=3740, f_out=3836,
-         set='fire', y=220,
-         across=(3816, 'the line names both pictures: its first half on the lit map, "every forge went cold" read '
-                       'over the burning forges, ending 12 frames before they go out at 3848')),      # under the top row of beacons, clear of the catch (3785-3791 at ~(692, 448)) and
-                                  # the lower third's beacon (~(994, 646)). The map has no clean band a line this long
-                                  # fits: moving up from y 300 halves the drawn edges under it (0.047 -> 0.022), but
-                                  # its stipple keeps the texture over the threshold (0.017; tools/c5_caption_backdrop)
+    # REVIEW (29 Sep; the captions, director, editor and sound reviewers): up at 3740, the line announced a catch that
+    # comes at 3786 (the holdout's pause was spent on the outcome) and read "every forge went cold" over forges still
+    # burning (the lit lead-in, 3816-3839), with "caught" under the Ring. Staged in two parts, the words unchanged:
+    # the first kindles as the last beacon catches (full by 3788) and carries across the lead-in; the second kindles as
+    # the forges go out (3848) and holds into the silence, clearing well before the score returns (4000). Both sit top
+    # right, clear of the catch (~692, 448) and the Ring (~960, 190): worst slices 4.72:1 and 8.50:1, edge 0.018 and
+    # 0.002 (c5_caption_backdrop measure, 29 Sep). Script beat 16 was bare; its first 3 s now carry the line's end.
+    dict(id='R15', row=15, line='When the last beacon caught, every forge went cold.', f_in=3776, f_out=3922,
+         set='fire', parts=(dict(line='When the last beacon caught,', f_in=3776, f_out=3840, x=1400, y=132),
+                            dict(line='every forge went cold.', f_in=3850, f_out=3922, x=1400, y=132)),
+         across=(3816, 'the first part names the catch on the map and carries over the forges lit for 32 frames '
+                       'before they go out at 3848, where the second part begins')),
     dict(id='R17', row=17, line='The Ring hung there, unfinished.', f_in=4040, f_out=4180, set='fire'),
     dict(id='R18', row=18, line='They left the gold in the ground.', f_in=4276, f_out=4416, set='ink',
          x=310, y=300, lines=('They left the gold', 'in the ground.')),
@@ -390,7 +395,8 @@ def text_table(cut):
     cut = cut.upper()
     if cut == 'C':
         return [dict(id=r['id'], line=r['line'], f_in=r['f_in'], f_out=r['f_out'], set=r['set'], locked=None,
-                     row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines', 'across') if r.get(k) is not None}) for r in C5_TEXT]
+                     row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines', 'across', 'parts') if r.get(k) is not None})
+                for r in C5_TEXT]
     with open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')) as fh:
         bm = json.load(fh)
     ids = {t['id'] for t in bm['text']}
@@ -664,6 +670,10 @@ def lines_v3(cut, scale=1.0):
     byid = {r['id']: r for r in rows}
     for r in rows:
         if r['set'] in ('row', 'in_picture'):   # row: A's T6a/T6b are set together below; in_picture: in the render
+            continue
+        if r.get('parts'):                      # C5: one line staged in parts (R15); each part is its own element
+            for k, p in enumerate(r['parts']):
+                out.append(TextV3(cut, dict(r, id=f"{r['id']}{'abcdefgh'[k]}", **p), scale))
             continue
         out.append(TextV3(cut, r, scale))
     row_ids = [r['id'] for r in rows if r['set'] == 'row']

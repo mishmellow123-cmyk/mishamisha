@@ -39,7 +39,8 @@ AMENDMENT = {12: None, 13: 'So the two furthest ahead lit the first beacons, tog
              14: 'It was a promise to stop, if all the others would.'}
 # script v5.2 row -> the bar-map sections that picture it (row 1 is the black and the red book)
 ROW_SECTIONS = {1: ('C1', 'C2'), 2: ('C3',), 3: ('C4',), 4: ('C4',), 5: ('C5',), 6: ('C6',), 7: ('C7',), 8: ('C8',),
-                9: ('C9',), **{n: (f'C{n}',) for n in range(10, 24)}}
+                9: ('C9',), **{n: (f'C{n}',) for n in range(10, 24)},
+                15: ('C15', 'C16')}   # REVIEW (29 Sep): R15's second part lands on the forges going out (C16)
 # The C5 shot map, stated here independently of edl_v3 so a mistyped stem or offset fails: section -> (f0, f1, the
 # primary take's stem, off). Delivered shots are absolute (off 0); reused ones read the source frames the 7,200-frame
 # cut played (verified 29 Sep against edl_C.json at 69a1788: runC_scroll 0-319, runC_illum 2398-2877, book_C
@@ -467,34 +468,45 @@ def check_captions(rep):
             bad.append(f"{r['id']} {r['f_in']}-{r['f_out']} outside the cut")
             continue
         home = [secs[k] for k in ROW_SECTIONS.get(r['row'], ()) if k in secs]
-        inside = [s for s in home if s['f0'] <= r['f_in'] and r['f_out'] <= s['f1']]
-        if not inside:
-            bad.append(f"{r['id']} {r['f_in']}-{r['f_out'] - 1} is not inside one of its row's shots "
-                       f"{[(s['id'], s['f0'], s['f1'] - 1) for s in home]}")
+        spans = [dict(r, id=f"{r['id']}{'abcdefgh'[k]}", **p) for k, p in enumerate(r['parts'])] if r.get('parts') \
+            else [r]                                             # a line staged in parts: each part is checked
+        if r.get('parts') and ' '.join(p['line'] for p in r['parts']) != r['line']:
+            bad.append(f"{r['id']}: its parts {[p['line'] for p in r['parts']]} do not rejoin to the verbatim line")
+        if r.get('parts') and any(q['f_in'] < p['f_out'] for p, q in zip(r['parts'], r['parts'][1:])):
+            bad.append(f"{r['id']}: its parts overlap in time")
+        for sp in spans:
+            inside = [s for s in home if s['f0'] <= sp['f_in'] and sp['f_out'] <= s['f1']]
+            if not inside:
+                bad.append(f"{sp['id']} {sp['f_in']}-{sp['f_out'] - 1} is not inside one of its row's shots "
+                           f"{[(s['id'], s['f0'], s['f1'] - 1) for s in home]}")
         if r['set'] not in ('fire', 'ink', 'in_picture'):
             bad.append(f"{r['id']}: set {r['set']!r} (C5 uses fire, ink, in_picture)")
-        if not (0 <= r.get('x', 960) < 1920 and 0 <= r.get('y', 402) < 804):
-            bad.append(f"{r['id']}: placement {r.get('x')}, {r.get('y')} outside the 1920x804 picture")
+        for sp in spans:
+            if not (0 <= sp.get('x', 960) < 1920 and 0 <= sp.get('y', 402) < 804):
+                bad.append(f"{sp['id']}: placement {sp.get('x')}, {sp.get('y')} outside the 1920x804 picture")
         if r.get('lines') and ' '.join(r['lines']) != r['line']:
             bad.append(f"{r['id']}: its line breaks {list(r['lines'])} do not rejoin to the verbatim line")
         elif r['set'] in ('ink', 'fire'):                        # EDIT draws it: every glyph must land in the picture
-            ln = titles.TextV3(CUT, r, 1.0)
-            ys, xs = np.nonzero(ln.alpha > 0.5)
-            ext = (ln.x0 + xs.min(), ln.y0 + ys.min(), ln.x0 + xs.max(), ln.y0 + ys.max())
-            if ext[0] < 0 or ext[1] < 0 or ext[2] >= 1920 or ext[3] >= 804:
-                bad.append(f"{r['id']}: its glyphs span x {ext[0]}-{ext[2]}, y {ext[1]}-{ext[3]}, outside the "
-                           '1920x804 picture')
+            for sp in spans:
+                ln = titles.TextV3(CUT, sp, 1.0)
+                ys, xs = np.nonzero(ln.alpha > 0.5)
+                ext = (ln.x0 + xs.min(), ln.y0 + ys.min(), ln.x0 + xs.max(), ln.y0 + ys.max())
+                if ext[0] < 0 or ext[1] < 0 or ext[2] >= 1920 or ext[3] >= 804:
+                    bad.append(f"{sp['id']}: its glyphs span x {ext[0]}-{ext[2]}, y {ext[1]}-{ext[3]}, outside the "
+                               '1920x804 picture')
         for t in wins:
             if t['kind'] in QUIET_KINDS:                         # moves no picture under the words
                 continue
-            if t['f0'] < r['f_out'] and r['f_in'] < t['f1']:
-                warn.append(f"{r['id']} overlaps the {t['kind']} window {t['f0']}-{t['f1'] - 1}")
+            for sp in spans:
+                if t['f0'] < sp['f_out'] and sp['f_in'] < t['f1']:
+                    warn.append(f"{sp['id']} overlaps the {t['kind']} window {t['f0']}-{t['f1'] - 1}")
         for c, (a, b) in sorted(cuts.items()):
-            if r['f_in'] < c < r['f_out'] and (r.get('across') or (None,))[0] == c:
-                kept.append(f"{r['id']} runs across the cut at {c} on purpose: {r['across'][1]}")
-            elif r['f_in'] < c < r['f_out']:
-                warn.append(f"{r['id']} {r['f_in']}-{r['f_out'] - 1} runs across the hard cut at {c} ({a} -> {b}): "
-                            f'its words change picture mid-line; end it by {c}, or keep it across on purpose')
+            for sp in spans:
+                if sp['f_in'] < c < sp['f_out'] and (r.get('across') or (None,))[0] == c:
+                    kept.append(f"{sp['id']} runs across the cut at {c} on purpose: {r['across'][1]}")
+                elif sp['f_in'] < c < sp['f_out']:
+                    warn.append(f"{sp['id']} {sp['f_in']}-{sp['f_out'] - 1} runs across the hard cut at {c} ({a} -> "
+                                f'{b}): its words change picture mid-line; end it by {c}, or keep it across on purpose')
     srt = sorted(table, key=lambda r: r['f_in'])
     for a, b in zip(srt, srt[1:]):
         if b['f_in'] < a['f_out']:

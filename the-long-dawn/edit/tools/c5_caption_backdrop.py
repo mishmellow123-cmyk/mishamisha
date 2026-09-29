@@ -148,10 +148,13 @@ def delivered_rows(ids=None):
             present.update(range(a, b))
     rows = []
     for r in titles.text_table(CUT):
-        if r['set'] not in ('ink', 'fire') or (ids and r['id'] not in ids):
-            continue
-        if all(f in present for f in range(r['f_in'], r['f_out'])):
-            rows.append(r)
+        # a line staged in parts (R15, 29 Sep) is measured part by part, as R15a, R15b ...
+        for q in ([dict(r, id=f"{r['id']}{'abcdefgh'[k]}", **p) for k, p in enumerate(r['parts'])]
+                  if r.get('parts') else [r]):
+            if q['set'] not in ('ink', 'fire') or (ids and q['id'] not in ids and r['id'] not in ids):
+                continue
+            if all(f in present for f in range(q['f_in'], q['f_out'])):
+                rows.append({k: v for k, v in q.items() if k != 'parts'})
     return rows
 
 

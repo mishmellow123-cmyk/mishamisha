@@ -196,9 +196,31 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertFalse([i for i in items if 'runs across the hard cut' in i['msg']])
         self.assertTrue([i for i in items if i['level'] == 'INFO' and 'runs across the cut at 3816 on purpose' in i['msg']])
 
+    def test_a_staged_line_must_rejoin_and_each_part_stay_in_its_rows_shots(self):
+        """R15 in parts (REVIEW 29 Sep): the parts must rejoin to the verbatim line, not overlap, and each lie inside one
+        of row 15's shots (C15, C16); breaking any of the three FAILs by name."""
+        self.green()
+        rep, _, text = self.run_gate()
+        self.assertGreen(rep, text)
+        base = [dict(r) for r in titles.C5_TEXT]
+        r15 = next(r for r in base if r['id'] == 'R15')
+        for label, parts, needle in (
+                ('words', (dict(r15['parts'][0]), dict(r15['parts'][1], line='every forge went dark.')),
+                 'do not rejoin to the verbatim line'),
+                ('overlap', (dict(r15['parts'][0]), dict(r15['parts'][1], f_in=3830)), 'its parts overlap in time'),
+                ('outside', (dict(r15['parts'][0]), dict(r15['parts'][1], f_out=4010)),
+                 "R15b 3850-4009 is not inside one of its row's shots")):
+            with self.subTest(label):
+                rows = [dict(r, parts=parts) if r['id'] == 'R15' else r for r in base]
+                with mock.patch.object(titles, 'C5_TEXT', rows):
+                    rep, _, text = self.run_gate()
+                fails = ' '.join(i['msg'] for i in rep.items if i['level'] == 'FAIL')
+                self.assertIn(needle, fails)
+
     def test_cold_cut_moves_in_one_place_and_names_what_follows(self):
         """COLD_CUT 3800 plus a delivery covering its lead-in is green; R15's marker names 3816, so crossing 3800
-        is WARNed by name (a crossing nobody reviewed)."""
+        is WARNed by name (a crossing nobody reviewed). Since the review (29 Sep) R15 is staged in parts and the part
+        that crosses is named: R15a, the catch."""
         self.green(cold_cut=3800)
         self.enterContext(mock.patch.dict(CA.DELIVERED, {'cand_cold_lead24': (3800, 3999)}))   # a longer delivery
         rep, _, text = self.run_gate()
@@ -206,7 +228,7 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertEqual([(r['f0'], r['f1'], r['takes'][0]['stem'], r['takes'][0]['off']) for r in RD.rows_of('C15')],
                          [(3440, 3800, 'cand_map_beacon-falloff', 0), (3800, 3840, 'cand_cold_lead24', 0)])
         warns = [i['msg'] for i in rep.items if i['level'] == 'WARN']
-        self.assertIn('R15 3740-3835 runs across the hard cut at 3800 (cand_map_beacon-falloff -> cand_cold_lead24): '
+        self.assertIn('R15a 3776-3839 runs across the hard cut at 3800 (cand_map_beacon-falloff -> cand_cold_lead24): '
                       'its words change picture mid-line; end it by 3800, or keep it across on purpose', warns)
         self.assertEqual(CA.needed_frames()['cand_cold_lead24'], set(range(3800, 3840)))
 

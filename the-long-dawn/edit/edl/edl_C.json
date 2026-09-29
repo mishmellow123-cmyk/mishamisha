@@ -1222,15 +1222,30 @@
   {
    "id": "R15",
    "line": "When the last beacon caught, every forge went cold.",
-   "f_in": 3740,
-   "f_out": 3836,
+   "f_in": 3776,
+   "f_out": 3922,
    "set": "fire",
    "locked": null,
    "row": 15,
-   "y": 220,
    "across": [
     3816,
-    "the line names both pictures: its first half on the lit map, \"every forge went cold\" read over the burning forges, ending 12 frames before they go out at 3848"
+    "the first part names the catch on the map and carries over the forges lit for 32 frames before they go out at 3848, where the second part begins"
+   ],
+   "parts": [
+    {
+     "line": "When the last beacon caught,",
+     "f_in": 3776,
+     "f_out": 3840,
+     "x": 1400,
+     "y": 132
+    },
+    {
+     "line": "every forge went cold.",
+     "f_in": 3850,
+     "f_out": 3922,
+     "x": 1400,
+     "y": 132
+    }
    ]
   },
   {
