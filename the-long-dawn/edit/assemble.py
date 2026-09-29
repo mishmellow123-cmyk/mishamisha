@@ -17,6 +17,7 @@ The v2 assembler is kept as edit/assemble_v2.py.
 """
 import argparse
 import json
+import math
 import os
 import re
 import subprocess
@@ -517,12 +518,14 @@ def masters_table():
 # recorded effects through COMPOSER's master chain (battery: level map 14/14, sync 25/25, dawn rule, -16.05 LUFS,
 # TP -1.30 dBTP). Outside deliver._code_hash(): a change re-muxes, it never re-encodes picture.
 ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master'),
-                 # C (director, 28 Sep ~01:10Z): SOUND-C's sound_C.wav, every effect re-synced to the measured picture
-                 # (music/sound/picture_sync_C.json); passes the battery
-                 'C': ('music/out/v3/sound_C.wav', 'SOUND master'),
+                 # C: SOUND-C's sound_C.wav (director, 28 Sep ~01:10Z) fits the RETIRED 7,200-frame cut, so it is no
+                 # longer C's master (EDIT-C5, 29 Sep); C5's is adopted here by name only when the director adopts one
                  # A (director, 28 Sep ~02:20Z): COMPOSER-A2's v2 score + SOUND-C's real effects re-synced to the
                  # measured picture (incl. A-FIX's h1_A fire); sync 59/59. Re-renders are picked up by name.
                  'A': ('music/out/v3/sound_A.wav', 'SOUND master')}
+# Every C sound file on record (sound_C, final_C, fallback_C, the MASTERS table's C rows) was made for the 7,200-frame
+# cut: C takes a file only when its length is the cut's, so a stale file is never picked by its name (EDIT-C5).
+LENGTH_GUARD = {'C'}
 
 
 def adopted_audio(cut):
@@ -532,17 +535,34 @@ def adopted_audio(cut):
     return (p, label) if p and os.path.isfile(p) else (None, None)
 
 
-def resolve_audio(cut):
-    """(wav path, label): the adopted master, the composer's master, else the fallback master, else a click."""
+def audio_fits(path, cut):
+    """True when a guarded cut's wav is exactly the cut's length (unguarded cuts: always True)."""
+    if cut not in LENGTH_GUARD:
+        return True
+    try:
+        import soundfile as sf
+        return abs(sf.info(path).duration - EDL.TOTAL[cut] / FPS) < 0.01
+    except Exception:
+        return False
+
+
+def _audio_candidates(cut):
     tab = masters_table()
     v3 = os.path.join(ROOT, 'music', 'out', 'v3')
-    ad, ad_label = adopted_audio(cut)
-    for key, path, label in ((None, ad, ad_label),
-                             ((cut, 'score'), tab.get((cut, 'score')), 'COMPOSER master'),
-                             (None, os.path.join(v3, f'final_{cut}.wav'), 'COMPOSER master'),
-                             ((cut, 'fallback'), tab.get((cut, 'fallback')), 'FALLBACK master'),
-                             (None, os.path.join(v3, f'fallback_{cut}.wav'), 'FALLBACK master')):
+    return (adopted_audio(cut), (tab.get((cut, 'score')), 'COMPOSER master'),
+            (os.path.join(v3, f'final_{cut}.wav'), 'COMPOSER master'), (tab.get((cut, 'fallback')), 'FALLBACK master'),
+            (os.path.join(v3, f'fallback_{cut}.wav'), 'FALLBACK master'))
+
+
+def resolve_audio(cut):
+    """(wav path, label): the adopted master, the composer's master, else the fallback master, else a click. A guarded
+    cut (LENGTH_GUARD) refuses, loudly, any file that is not exactly its length."""
+    for path, label in _audio_candidates(cut):
         if path and os.path.isfile(path):
+            if not audio_fits(path, cut):
+                print(f'  AUDIO REFUSED for {cut}: {os.path.relpath(path, ROOT)} is not {EDL.TOTAL[cut]} frames long '
+                      f'(a sound master for another cut)', flush=True)
+                continue
             return path, f'{label} ({os.path.relpath(path, ROOT)}, {time.strftime("%d %b %H:%M", time.localtime(os.path.getmtime(path)))} local)'
     return click_track(cut), 'CLICK track (soft click each bar, accented on section starts)'
 
@@ -579,7 +599,8 @@ def click_track(cut):
     n = EDL.TOTAL[cut] * sr // FPS
     y = np.zeros(n, np.float32)
     starts = {s['f0'] for s in EDL.EDL[cut]}
-    bm = json.load(open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')))
+    with open(EDL.barmap_path(cut, os.path.join(ROOT, 'music', 'v3'))) as fh:
+        bm = json.load(fh)
     sec_starts = {s['f0'] for s in bm['sections']}
     t = np.arange(int(0.03 * sr)) / sr
     for f in range(0, EDL.TOTAL[cut], 80):
@@ -726,6 +747,77 @@ def _tk_swell(o, i, f, t, ctx, lay, first):
     return _swell(o, i, first(), f, t, ctx.W / 1920.0)
 
 
+def page_turn(o, i, p, tilt=8.0, radius=0.11):
+    """The outgoing page o turns over, right to left, onto the incoming i at progress p (0: o exactly; 1: i exactly).
+
+    Screen space (it bridges two cameras; the book's own leaves are book_c's 3D renders). A cylinder of radius R rolls
+    along a fold tilted `tilt` degrees, so the lower corner leads as a lifting hand would. Left of the fold the page lies
+    flat (o). The near half of the cylinder shows o's front bending away, foreshortened by the geometry and shaded for
+    a hearth low on the left; the far half and the leaf laid back over the flat page show the paper's back: the
+    incoming's own paper colour (its brightest 40%) under the light the leaf carried on its front, with its fibres and
+    ink showing through, mirrored by the geometry itself. The incoming lies bare right of the curl under the soft
+    shadow the lifted leaf casts right and down (shifted, never wrapped round the frame)."""
+    H, W = o.shape[:2]
+    R = max(2.0, radius * W)
+    a = math.radians(tilt)
+    ca, sa = math.cos(a), math.sin(a)
+    ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
+    u = xs * ca + (ys - H / 2) * sa                                  # across the fold; the fold is u == uc
+    lo, hi = float(u.min()), float(u.max())
+    uc = hi + 0.02 * R + ((lo - 1.2 * R) - (hi + 0.02 * R)) * float(p)   # enters past the right edge, leaves past left
+
+    def where(us):
+        """Source coordinates of the page point with across-coordinate us on each pixel's own line, and coverage."""
+        d = us - u
+        sx, sy = xs + d * ca, ys + d * sa
+        cov = np.clip(np.minimum(np.minimum(sx, W - 1 - sx), np.minimum(sy, H - 1 - sy)) + 0.5, 0.0, 1.0)
+        return sx, sy, cov
+
+    def at(img, sx, sy):
+        return cv2.remap(img, sx, sy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
+    lum = i @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    paper = np.median(i[lum >= np.quantile(lum, 0.6)], axis=0).astype(np.float32)
+    o_lum = o @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    light = cv2.GaussianBlur(o_lum, (0, 0), 0.05 * W)                 # the page's own light, carried by the leaf
+    light = np.clip(light / max(1e-4, float(light.mean())), 0.75, 1.15).astype(np.float32)
+    grain = (o - cv2.GaussianBlur(o, (0, 0), 1.5)).astype(np.float32)   # fibres and ink, seen through from behind
+
+    def back(sx, sy, shade):                                         # the leaf's back: paper, lit where it is
+        return np.clip(paper * (shade * at(light, sx, sy))[..., None] + 0.3 * at(grain, sx, sy), 0.0, 1.0)
+
+    out = np.where((u < uc)[..., None], o, i)
+    d = u - uc
+    on_cyl = (d >= 0) & (d <= R)
+    th1 = np.arcsin(np.clip(d / R, 0.0, 1.0))                        # near half: 0 (flat) .. pi/2 (the ridge)
+    sx1, sy1, cov1 = where(uc + R * th1)
+    shade1 = np.clip(0.35 + 0.65 * (0.5 * np.sin(th1) + np.cos(th1)), 0.3, 1.1)
+    m1 = (on_cyl * cov1)[..., None]
+    th2 = np.pi - th1                                                # far half: pi/2 .. pi (upside down)
+    sx2, sy2, cov2 = where(uc + R * th2)
+    shade2 = np.clip(0.35 + 0.65 * (-0.5 * np.sin(th2) - np.cos(th2)), 0.3, 1.1)
+    m2 = (on_cyl * cov2)[..., None]
+    sx3, sy3, cov3 = where(2.0 * uc + np.pi * R - u)                 # the leaf laid back over the flat page
+    m3 = ((u < uc) * cov3)[..., None]
+    leaf = np.clip(m1[..., 0] + m2[..., 0] + m3[..., 0], 0.0, 1.0)
+    if leaf.any():                                                   # its shadow, cast right and a little down
+        k = max(1, int(round(0.3 * R)))
+        moved = np.zeros_like(leaf)                                  # shifted, never wrapped round the frame
+        moved[k // 3:, k:] = leaf[:H - k // 3, :W - k]
+        sh = cv2.GaussianBlur(moved, (0, 0), 0.35 * R)
+        out = out * (1.0 - 0.45 * np.clip(sh - leaf, 0.0, 1.0))[..., None]
+    out = out * (1 - m1) + np.clip(at(o, sx1, sy1) * shade1[..., None], 0.0, 1.0) * m1
+    out = out * (1 - m2) + back(sx2, sy2, shade2) * m2
+    out = out * (1 - m3) + back(sx3, sy3, np.full_like(u, 0.97)) * m3
+    return np.clip(out, 0.0, 1.0).astype(np.float32)
+
+
+def _tk_page_turn(o, i, f, t, ctx, lay, first):
+    n = t['f1'] - t['f0']
+    p = min(1.0, max(0.0, (f - t['f0']) / max(1, n - 1)))
+    return page_turn(o, i, p * p * (3 - 2 * p), t.get('tilt', 8.0), t.get('radius', 0.11))
+
+
 # One-shot kinds (no cut) take (img, src, f, t, fin, cut) and return the finished frame, or None for the plain one.
 def _tk_grade(img, src, f, t, fin, cut):
     img = np.clip(img * np.asarray(t['gain'], np.float32), 0, 1)
@@ -740,8 +832,9 @@ def _tk_finish_ramp(img, src, f, t, fin, cut):
     return fin.ink(img, cut, f) * (1 - a) + fin.film(img, cut, f) * a
 
 
-TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell)
+TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell, page_turn=_tk_page_turn)
 TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp)
+KIND_HELPERS = dict(swell=_swell, page_turn=page_turn)             # a kind's own helper keys its windows too
 
 
 def transition_code(kind):
@@ -750,7 +843,7 @@ def transition_code(kind):
         return inspect.getsource(AFIX)
     fn = TKINDS_PAIR.get(kind) or TKINDS_SHOT.get(kind)
     src = inspect.getsource(fn) if fn else ''
-    return src + (inspect.getsource(_swell) if kind == 'swell' else '')
+    return src + (inspect.getsource(KIND_HELPERS[kind]) if kind in KIND_HELPERS else '')
 
 
 def _transitions(ctx, finish=None):
@@ -923,14 +1016,10 @@ def coverage_md(variant=None):
 
 
 def resolve_audio_label(cut):
-    tab = masters_table()
-    v3 = os.path.join(ROOT, 'music', 'out', 'v3')
-    for path, label in (adopted_audio(cut), (tab.get((cut, 'score')), 'COMPOSER master'), (os.path.join(v3, f'final_{cut}.wav'),
-                        'COMPOSER master'), (tab.get((cut, 'fallback')), 'FALLBACK master'),
-                        (os.path.join(v3, f'fallback_{cut}.wav'), 'FALLBACK master')):
-        if path and os.path.isfile(path):
+    for path, label in _audio_candidates(cut):
+        if path and os.path.isfile(path) and audio_fits(path, cut):
             return f'{label} `{os.path.relpath(path, ROOT)}`'
-    return 'click track (no score or fallback yet)'
+    return 'click track (no score or fallback yet' + (' of the right length)' if cut in LENGTH_GUARD else ')')
 
 
 def write_notes_coverage(md):
@@ -950,19 +1039,27 @@ def export_edl():
     d = os.path.join(ROOT, 'edit', 'edl')
     os.makedirs(d, exist_ok=True)
     for cut in 'ABC':
-        shots = []
-        for s in EDL.EDL[cut]:
-            takes = [dict(t, folders=[os.path.relpath(x, ROOT) for x in chain(t, cut)] if t['mode'] != 'video'
-                          else [t['video']]) for t in s['takes']]
-            b0, _ = bar_beat(s['f0'])
-            shots.append(dict(s, takes=takes, bars=[b0, bar_beat(s['f1'] - 1)[0]]))
-        txt = titles.text_table(cut)
-        json.dump(dict(cut=cut, fps=FPS, frames=EDL.TOTAL[cut], shots=shots, text=txt, transitions=EDL.TRANS.get(cut, []),
-                       lookup='per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; '
-                              'exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>'
-                              '_alt_codedtowers first'),
-                  open(os.path.join(d, f'edl_{cut}.json'), 'w'), indent=1)
+        with open(os.path.join(d, f'edl_{cut}.json'), 'w') as fh:
+            json.dump(edl_doc(cut), fh, indent=1)
     return d
+
+
+def edl_doc(cut):
+    """The exported EDL of a cut, exactly as edit/edl/edl_<cut>.json holds it (the readiness check compares them)."""
+    shots = []
+    for s in EDL.EDL[cut]:
+        takes = [dict(t, folders=['renders/' + os.path.relpath(x, RENDERS) for x in chain(t, cut)]   # never a
+                      if t['mode'] != 'video' else [t['video']]) for t in s['takes']]     # machine path
+        b0, _ = bar_beat(s['f0'])
+        shots.append(dict(s, takes=takes, bars=[b0, bar_beat(s['f1'] - 1)[0]]))
+    doc = dict(cut=cut, fps=FPS, frames=EDL.TOTAL[cut], shots=shots, text=titles.text_table(cut),
+               transitions=EDL.TRANS.get(cut, []),
+               lookup='per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; '
+                      'exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>'
+                      '_alt_codedtowers first')
+    if cut == 'C':
+        doc.update(EDL.c5_export_extra())
+    return json.loads(json.dumps(doc))                        # the JSON form (tuples as lists), as written
 
 
 if __name__ == '__main__':

@@ -1,5 +1,9 @@
 """Picture-source readiness contracts; synthetic frame indexes, no rendering or live paths.
 
+C is C5 (EDIT-C5, 29 Sep): C8/C9's composited rows are BURN-C's filmed-burn rows (book_C_ft + book_C_ft_matte), the
+held-race under lives on C8's middle row (1718-1904), and C cannot be complete while C12 FLINT is an open decision,
+so the completeness tests realise one written candidate (edl_v3.flint_rows) first.
+
 Run: python -B -m unittest discover -s the-long-dawn/edit/tests -p 'test_*.py'
 """
 from contextlib import redirect_stdout
@@ -33,6 +37,13 @@ class PictureReadinessTests(unittest.TestCase):
         self.enterContext(mock.patch.object(AS, 'RENDERS', str(self.root / 'renders')))
         self.c6 = next(s for s in EDL.EDL['C'] if s['sec'] == 'C6')
         self.c9 = next(s for s in EDL.EDL['C'] if s['sec'] == 'C9' and s['f0'] == 1920)
+        self.c8 = next(s for s in EDL.EDL['C'] if s['sec'] == 'C8' and s['takes'][0].get('under'))  # held race
+
+    def decided(self, choice='A'):
+        """C5 with C12 FLINT realised from a written candidate (the open decision is itself a slate)."""
+        cut = [r for r in EDL.EDL['C'] if r['sec'] != 'C12']
+        i = next(k for k, r in enumerate(cut) if r['f0'] == 2880)
+        self.enterContext(mock.patch.dict(EDL.EDL, {'C': cut[:i] + EDL.flint_rows(choice) + cut[i:]}))
 
     def add_folder(self, stem, frames):
         folder = os.path.join(AS.RENDERS, stem)
@@ -70,7 +81,7 @@ class PictureReadinessTests(unittest.TestCase):
 
     def full_c(self, provisional_c6=False):
         for shot in EDL.EDL['C']:
-            if shot['kind'] == 'black':
+            if shot['kind'] in ('black', 'decision'):
                 continue
             take = shot['takes'][1 if provisional_c6 and shot is self.c6 else 0]
             self.add_take(take, range(shot['f0'], shot['f1']))
@@ -128,6 +139,7 @@ class PictureReadinessTests(unittest.TestCase):
         self.assertTrue(EDL.check(str(EDIT.parent / 'music' / 'v3')))
 
     def test_full_provisional_c6_stays_visible_but_cannot_notify_complete(self):
+        self.decided()
         self.full_c(provisional_c6=True)
         plan = AS.plan_shot(self.c6, 'C', None)
         self.assertEqual(plan['take']['stem'], 'embers_C3_half')
@@ -141,19 +153,21 @@ class PictureReadinessTests(unittest.TestCase):
         self.assertEqual(self.notified(report), [])
 
     def test_preferred_final_restores_completion_and_planned_black_is_valid(self):
+        self.decided()
         self.full_c(provisional_c6=True)
         self.add_take(self.c6['takes'][0], range(self.c6['f0'], self.c6['f1']))
         self.assertEqual(AS.plan_shot(self.c6, 'C', None)['take']['stem'], 'embers_C3')
         film = H9.Film('C')
         self.assertEqual(film.status(self.c6['f0']), ('RENDERED', False))
-        self.assertEqual(film.status(0), ('BLACK', False))
-        self.assertEqual(film.status(2480), ('BLACK', False))
+        self.assertEqual(film.status(0), ('BLACK', False))        # C5's only planned black is C1 (0-79)
+        self.assertEqual(film.status(80), ('RENDERED', False))
         _, report = self.qc()
         self.assertTrue(report['complete'])
         self.assertEqual(report['provisional_frames'], 0)
         self.assertEqual(self.notified(report), ['C_master'])
 
     def test_partial_provisional_counts_only_present_frames(self):
+        self.decided()
         self.full_c(provisional_c6=True)
         folder = AS.chain(self.c6['takes'][1], 'C', None)[0]
         del self.index[folder][self.c6['f0']]
@@ -161,14 +175,15 @@ class PictureReadinessTests(unittest.TestCase):
         self.assertEqual(D.status_frames('C', None)[0], 1)
 
     def test_c9_provisional_under_composes_but_cannot_notify_complete(self):
+        self.decided()
         self.full_c()
         frames = range(self.c9['f0'], self.c9['f1'])
-        self.add_folder('book_C_matte', frames)
+        self.add_folder('book_C_ft_matte', frames)
         self.add_folder('embers_C3_half', frames)
         take = AS.plan_shot(self.c9, 'C', None)['take']
-        self.assertEqual(take['stem'], 'book_C')
+        self.assertEqual(take['stem'], 'book_C_ft')
         picture, reads = self.trace_frame(take, 1920)
-        self.assertEqual(reads, [('book_C', 1920), ('book_C_matte', 1920), ('embers_C3_half', 1920)])
+        self.assertEqual(reads, [('book_C_ft', 1920), ('book_C_ft_matte', 1920), ('embers_C3_half', 1920)])
         np.testing.assert_array_equal(picture, np.full((1, 1, 3), 0.5, np.float32))
         _, report = self.qc()
         self.assertFalse(report['complete'])
@@ -178,9 +193,10 @@ class PictureReadinessTests(unittest.TestCase):
         self.assertEqual(self.notified(report), [])
 
     def test_c9_final_under_arrival_restores_readiness_and_rekeys_picture(self):
+        self.decided()
         self.full_c()
         frames = range(self.c9['f0'], self.c9['f1'])
-        self.add_folder('book_C_matte', frames)
+        self.add_folder('book_C_ft_matte', frames)
         self.add_folder('embers_C3_half', frames)
         plan = AS.plan_shot(self.c9, 'C', None)
         i = EDL.EDL['C'].index(self.c9)
@@ -206,7 +222,7 @@ class PictureReadinessTests(unittest.TestCase):
     def test_under_metadata_change_refreshes_qc_without_reencoding_picture(self):
         self.full_c()
         frames = range(self.c9['f0'], self.c9['f1'])
-        self.add_folder('book_C_matte', frames)
+        self.add_folder('book_C_ft_matte', frames)
         self.add_folder('embers_C3_half', frames)
         plan = AS.plan_shot(self.c9, 'C', None)
         i = EDL.EDL['C'].index(self.c9)
@@ -221,12 +237,13 @@ class PictureReadinessTests(unittest.TestCase):
             self.assertEqual(key(), before_key)
 
     def test_c8_held_under_uses_1679_for_every_composited_frame(self):
-        shot = next(s for s in EDL.EDL['C'] if s['sec'] == 'C8')
+        shot = self.c8
+        self.assertEqual((shot['f0'], shot['f1']), (1718, 1905))
         take = shot['takes'][0]
-        self.add_take(take, range(1680, 1920))
-        self.add_folder('book_C_matte', range(1680, 1920))
-        self.add_folder('embers_C3_half', [1679, 1680, 1919])
-        for f in (1680, 1919):
+        self.add_take(take, range(1718, 1905))
+        self.add_folder('book_C_matte', range(1718, 1905))
+        self.add_folder('embers_C3_half', [1679, 1718, 1904])
+        for f in (1718, 1904):
             with self.subTest(frame=f):
                 picture, reads = self.trace_frame(take, f)
                 path, stem = AS.locate_under(take['under'], f)
@@ -234,22 +251,35 @@ class PictureReadinessTests(unittest.TestCase):
                 self.assertEqual(Path(path).name, 'f_01679.jpg')
                 np.testing.assert_array_equal(picture, np.full((1, 1, 3), 0.5, np.float32))
                 self.assertEqual(AS.provisional_sources(take, 'C', None, f), ('under:embers_C3_half',))
-        self.assertIn('C8 P2 (240 f, under:embers_C3_half)', D.provisional_frames('C', None)[1])
+        self.assertIn('C8 P2 (187 f, under:embers_C3_half)', D.provisional_frames('C', None)[1])
         self.add_folder('embers_C3', [1679])
-        self.assertEqual(AS.provisional_sources(take, 'C', None, 1919), ())
-        self.assertEqual(self.trace_frame(take, 1919)[1][-1], ('embers_C3', 1679))
+        self.assertEqual(AS.provisional_sources(take, 'C', None, 1904), ())
+        self.assertEqual(self.trace_frame(take, 1904)[1][-1], ('embers_C3', 1679))
+
+    def test_filmed_sweep_never_composites_the_held_race_again(self):
+        """BURN_NOTES: 1680-1717 bakes the held race into book_C_ft with matte 1; an under there is the double-comp
+        defect, so the sweep reads its page and matte and nothing else, even with every race frame on disk."""
+        sweep = next(s for s in EDL.EDL['C'] if s['sec'] == 'C8' and s['f0'] == 1680)
+        take = sweep['takes'][0]
+        self.assertEqual((sweep['f1'], take['stem'], take.get('under')), (1718, 'book_C_ft', None))
+        self.add_take(take, range(1680, 1718))
+        self.add_folder('book_C_ft_matte', range(1680, 1718))
+        self.add_folder('embers_C3', [1679] + list(range(1680, 1718)))
+        for f in (1680, 1717):
+            with self.subTest(frame=f):
+                self.assertEqual(self.trace_frame(take, f)[1], [('book_C_ft', f), ('book_C_ft_matte', f)])
 
     def test_optional_layers_and_first_present_decode_failure_keep_existing_behavior(self):
         take = self.c9['takes'][0]
         self.add_take(take, [1920])
         self.add_folder('embers_C3_half', [1920])
         # The under source is unused without a matte path.
-        self.assertEqual(self.trace_frame(take, 1920)[1], [('book_C', 1920)])
+        self.assertEqual(self.trace_frame(take, 1920)[1], [('book_C_ft', 1920)])
         self.assertEqual(AS.provisional_sources(take, 'C', None, 1920), ())
-        self.add_folder('book_C_matte', [1920])
+        self.add_folder('book_C_ft_matte', [1920])
         half = self.index.pop(os.path.join(AS.RENDERS, 'embers_C3_half'))
         self.assertEqual(AS.locate_under(take['under'], 1920), (None, None))
-        self.assertEqual(self.trace_frame(take, 1920)[1], [('book_C', 1920), ('book_C_matte', 1920)])
+        self.assertEqual(self.trace_frame(take, 1920)[1], [('book_C_ft', 1920), ('book_C_ft_matte', 1920)])
         self.assertEqual(AS.provisional_sources(take, 'C', None, 1920), ())
         self.index[os.path.join(AS.RENDERS, 'embers_C3_half')] = half
         self.add_folder('embers_C3', [1920])
@@ -276,6 +306,7 @@ class PictureReadinessTests(unittest.TestCase):
                     self.assertNotEqual(self.watch_signature(), before)
 
     def test_eligibility_change_refreshes_qc_without_reencoding_picture(self):
+        self.decided()
         self.full_c()
         shot = self.c6
         i = EDL.EDL['C'].index(shot)
@@ -289,6 +320,7 @@ class PictureReadinessTests(unittest.TestCase):
             self.assertEqual(key(), before_key)
 
     def test_picture_completeness_does_not_silently_add_audio_or_finish_policy(self):
+        self.decided()
         self.full_c()
         build = dict(segments=len(EDL.EDL['C']), encoded=0, frames_encoded=0, seconds=0,
                      finish='synthetic-look', finish_backlog_segments=1, finish_backlog_frames=400)
