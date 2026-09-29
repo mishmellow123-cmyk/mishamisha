@@ -1,0 +1,26 @@
+towers v3: forges 153094 254944 318131 266223 197390 450043 259923 211927 | skyline 1123570
+{"import_seconds": 0.5333822079992387, "initialization_seconds": 3.1110712079971563, "opencv_threads": 1}
+{"frame": 2592, "seconds": 1.050161791004939, "peak_rss_bytes": 721993728, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02592.png"}
+{"frame": 2593, "seconds": 0.9448261669895146, "peak_rss_bytes": 738721792, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02593.png"}
+{"frame": 2594, "seconds": 0.9730756249919068, "peak_rss_bytes": 752664576, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02594.png"}
+{"frame": 2595, "seconds": 0.9133319999964442, "peak_rss_bytes": 768999424, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02595.png"}
+{"frame": 2596, "seconds": 0.8803640000114683, "peak_rss_bytes": 773718016, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02596.png"}
+{"frame": 2597, "seconds": 0.8385448750050273, "peak_rss_bytes": 783564800, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02597.png"}
+{"frame": 2598, "seconds": 0.7276032909867354, "peak_rss_bytes": 788217856, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02598.png"}
+{"frame": 2599, "seconds": 0.6521356659941375, "peak_rss_bytes": 794394624, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02599.png"}
+{"frame": 2600, "seconds": 0.6741062910004985, "peak_rss_bytes": 794476544, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02600.png"}
+{"frame": 2601, "seconds": 0.6228650830162223, "peak_rss_bytes": 794673152, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02601.png"}
+{"frame": 2602, "seconds": 0.6459212079935241, "peak_rss_bytes": 794689536, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02602.png"}
+{"frame": 2603, "seconds": 0.6340030419814866, "peak_rss_bytes": 795508736, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02603.png"}
+{"frame": 2604, "seconds": 0.7151338339899667, "peak_rss_bytes": 797196288, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02604.png"}
+{"frame": 2605, "seconds": 0.601466000021901, "peak_rss_bytes": 798064640, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02605.png"}
+{"frame": 2606, "seconds": 0.6126159160048701, "peak_rss_bytes": 798081024, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02606.png"}
+{"frame": 2607, "seconds": 0.7414429170021322, "peak_rss_bytes": 798097408, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02607.png"}
+{"frame": 2608, "seconds": 0.7358404170081485, "peak_rss_bytes": 798490624, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02608.png"}
+{"frame": 2609, "seconds": 0.6790020829939749, "peak_rss_bytes": 804683776, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02609.png"}
+{"frame": 2610, "seconds": 0.6794510830077343, "peak_rss_bytes": 804880384, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02610.png"}
+{"frame": 2611, "seconds": 0.7095574580016546, "peak_rss_bytes": 804880384, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02611.png"}
+{"frame": 2612, "seconds": 0.6547909999790136, "peak_rss_bytes": 804896768, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02612.png"}
+{"frame": 2613, "seconds": 0.6641914999927394, "peak_rss_bytes": 804896768, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02613.png"}
+{"frame": 2614, "seconds": 0.6595782079966739, "peak_rss_bytes": 804896768, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02614.png"}
+{"frame": 2615, "seconds": 0.6626712090219371, "peak_rss_bytes": 804896768, "output": "<WORKSPACE>/work/c-v5-embers-tests/pair-motion/f_02615.png"}

@@ -1,0 +1,18 @@
+{
+  "name": "embers_C5_cold",
+  "branch": "codex/render-embers-c5-cold",
+  "setup": [
+    "python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/embers/c_v5.py --frames 3840-3999:4 --out \"$PWD/renders/embers_C5_cold\" --format png",
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/embers/c_v5.py --frames 3841-3999:4 --out \"$PWD/renders/embers_C5_cold\" --format png",
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/embers/c_v5.py --frames 3842-3999:4 --out \"$PWD/renders/embers_C5_cold\" --format png",
+    "NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/embers/c_v5.py --frames 3843-3999:4 --out \"$PWD/renders/embers_C5_cold\" --format png"
+  ],
+  "out_dir": "renders/embers_C5_cold",
+  "frames": "3840-3999",
+  "push_every": 80,
+  "ship": "jpg",
+  "note": "C v5 absolute frames. Opt-in entrypoint; existing C0-2079 unchanged. Render PNG; farm runner ships JPEG quality95 chroma4:4:4. EDIT owns captions/burn/dissolve, sound remains separate."
+}

@@ -1,0 +1,36 @@
+{
+  "file_hash_groups": [
+    [
+      4216
+    ],
+    [
+      4217,
+      4218,
+      4219,
+      4220,
+      4221,
+      4222,
+      4223,
+      4224,
+      4225,
+      4226,
+      4227,
+      4228,
+      4229,
+      4230,
+      4231,
+      4232,
+      4233,
+      4234,
+      4235,
+      4236,
+      4237,
+      4238,
+      4239
+    ]
+  ],
+  "max_decoded_channel_delta": 2,
+  "differing_rgb_pixels": 111,
+  "mean_absolute_code_delta": 6.262092316196794e-05,
+  "limit": "Measured delivered JPEGs only; prequantization floats were not saved. Camera/Ring central pose holds from4216, while4216 shutter begins4215.75."
+}
