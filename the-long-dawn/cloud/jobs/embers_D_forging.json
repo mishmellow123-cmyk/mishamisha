@@ -15,5 +15,5 @@
   ],
   "push_every": 300,
   "ship": "jpg",
-  "note": "Cut D v2, Round 3; locally measured native 1920x804: D2080: 0.449564 s/frame, 855982080 bytes peak RSS; D2240: 0.678339 s/frame, 855982080 bytes peak RSS. Seconds time Scene.frame only, excluding scene initialization and PNG encoding. RSS is cumulative process high-water within a fresh process for this shot, including scene construction. These local samples are not farm throughput estimates. Draft only; not submitted. Render file frame numbers equal D v2 frames."
+  "note": "Cut D v2, Round 4 thinking-fire hand-off; locally measured native 1920x804: D2080: 0.553761 s/frame, 729661440 bytes peak RSS; D2399: 0.958907 s/frame, 883671040 bytes peak RSS. Seconds time Scene.frame only, excluding scene initialization and PNG encoding. RSS is cumulative process high-water within a fresh process for this shot, including scene construction. These local samples are not farm throughput estimates. Draft only; not submitted. Render file frame numbers equal D v2 frames. Opening uses the committed glyph atlas also used by inscription."
 }

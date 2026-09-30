@@ -71,8 +71,10 @@ class CutDContracts(unittest.TestCase):
             geometry.assert_not_called()
 
     def test_no_crown_flame_call_from_any_actual_frame_pipeline(self):
+        import d_thinking_fire
         def oracle(inject_flame=False):
             with patch.object(C.V5.CF, 'draw') as draw, \
+                 patch.object(d_thinking_fire, 'draw') as thinking_draw, \
                  patch.object(C, 'Frame', RecordingFrame), \
                  patch.object(C.look, 'finish', side_effect=lambda hdr, **kw: hdr):
                 for shot in C.D.SHOTS:
@@ -83,16 +85,16 @@ class CutDContracts(unittest.TestCase):
                     scene.drops = lambda ctx: None
                     frame = C.D.shot_range(shot)[0] + 24
                     draw.reset_mock()
+                    thinking_draw.reset_mock()
                     result = scene.frame(frame, .05)
                     if inject_flame:
                         C.V5.CF.draw(None, (0., 0.), (0., 0.), frame)
-                    self.assertEqual(draw.call_count, int(shot == 'forging'))
+                    self.assertEqual(draw.call_count, 0)
+                    self.assertEqual(thinking_draw.call_count, int(shot == 'forging'))
                     if shot == 'forging':
-                        root = C.c3.FIRE_ROOT
-                        tip = root + [0., C.c3.HF, 0.]
-                        x, y, _ = scene.camera(frame).project(np.array([root, tip]), 1920, 804)
-                        np.testing.assert_allclose(draw.call_args.args[1], [x[0], y[0]])
-                        np.testing.assert_allclose(draw.call_args.args[2], [x[1], y[1]])
+                        root, tip = scene.central_fire_anchors(frame)
+                        np.testing.assert_allclose(thinking_draw.call_args.args[1], root)
+                        np.testing.assert_allclose(thinking_draw.call_args.args[2], tip)
                     self.assertEqual(result.shape, (40, 96, 3))
                     scene.towers.emit.assert_called_once()
                     scene.smoke.emit.assert_called_once()

@@ -317,8 +317,25 @@ class Scene:
             state.reading_light = ReadingLights(lamps, powers=5. * amount)
             for p, k in zip(lamps, amount):
                 env.point(p, GOLD_WHITE * 2. * k, .4)
-        rgb, alpha, depth = RS.render(ctx.cam, ctx.fr.W, ctx.fr.H, rotation, centre, size,
-                                     state, env, th_range=D.theta_range(ctx.t))
+        handoff = float(ease(FORGING_START, FORGING_START + 10., ctx.t)) if self.shot == 'forging' else 1.
+        if handoff > 0.:
+            rgb, alpha, depth = RS.render(ctx.cam, ctx.fr.W, ctx.fr.H, rotation, centre, size,
+                                         state, env, th_range=D.theta_range(ctx.t))
+        if handoff < 1.:
+            # Local import avoids inscription's intentional dependency on our
+            # frozen camera. Reuse its material, including the narrow hot ends,
+            # instead of maintaining a second approximation of the cut frame.
+            import d_inscription as incoming
+            entry_rgb, entry_alpha, entry_depth = RS.render(
+                ctx.cam, ctx.fr.W, ctx.fr.H, rotation, centre, size,
+                incoming.ring_state(incoming.END - 1), incoming.environment(incoming.END - 1),
+                th_range=incoming.theta_range(incoming.END - 1), ss=2, nt=1000, npp=64)
+            if handoff == 0.:
+                rgb, alpha, depth = entry_rgb, entry_alpha, entry_depth
+            else:
+                rgb = entry_rgb * (1. - handoff) + rgb * handoff
+                alpha = entry_alpha * (1. - handoff) + alpha * handoff
+                depth = np.minimum(entry_depth, depth)
         before = RS.merge_occluder(ctx.fr, alpha, depth)
         return rgb * RS.visibility(before, depth, ctx.fr.H, ctx.fr.W)[..., None]
 
@@ -435,6 +452,8 @@ class Scene:
 
     def glare_layer(self, ctx):
         score = D.glare(ctx.t)
+        if self.shot == 'forging':
+            score = score._replace(gain=score.gain * float(ease(FORGING_START, FORGING_START + 10., ctx.t)))
         if score.gain <= 0.:
             return np.zeros((ctx.fr.H, ctx.fr.W, 3), np.float32)
         ends = self.ends(ctx.t)
@@ -446,6 +465,29 @@ class Scene:
         visibility = c3.occ_vis(ctx.fr, depth - .65, ctx.fr.H, ctx.fr.W)
         return d_glare.render(ctx.cam, ctx.fr.W, ctx.fr.H, ends, caps, score,
                               self.schedule.beat_pulse(ctx.t), visibility)
+
+    def central_fire_anchors(self, t):
+        """Continue the source at the cut, then keep it below the rising band.
+
+        Only this fire's screen staging changes. The locked camera otherwise
+        sends the ground source below picture by D2240. Over the first 80 frames
+        the same live source rises above the caption area as towers surround it.
+        Coordinates are native pixels, as required by d_thinking_fire.draw.
+        """
+        points = np.array([c3.FIRE_ROOT, c3.FIRE_ROOT + [0., c3.HF, 0.]])
+        x, y, _ = self.camera(FORGING_START).project(points, 1920, 804)
+        amount = float(ease(FORGING_START, FORGING_START + 80., t))
+        root = np.array([x[0], y[0] + (540. - y[0]) * amount])
+        height = (y[0] - y[1]) * (1. + .25 * amount)
+        return root, root - np.array([0., height])
+
+    def draw_central_fire(self, hdr, ctx):
+        if self.shot != 'forging': return
+        import d_thinking_fire as thinking_fire
+        root, tip = self.central_fire_anchors(ctx.t)
+        depth = float((c3.FIRE_ROOT - ctx.cam.pos) @ ctx.cam.R[2])
+        visibility = c3.occ_vis(ctx.fr, depth, ctx.fr.H, ctx.fr.W)
+        thinking_fire.draw(hdr, root, tip, ctx.t, bright=1.1, vis=visibility, scale=ctx.scale)
 
     def frame(self, f, scale=1.):
         a, b = D.shot_range(self.shot)
@@ -467,15 +509,7 @@ class Scene:
             grade = caption_backdrop_gain(self.shot, f, np.arange(ctx.fr.H) / scale)
             city *= grade[:, None, None]
             hdr = city + ring + self.glare_layer(ctx)
-            if self.shot == 'forging':
-                # One established central forge fire, below the open band.
-                # No tower crown is passed to this emitter.
-                root = c3.FIRE_ROOT
-                tip = root + [0., c3.HF, 0.]
-                x, y, z = ctx.cam.project(np.array([root, tip]), 1920, 804)
-                visibility = c3.occ_vis(ctx.fr, float(z[0]), ctx.fr.H, ctx.fr.W)
-                V5.CF.draw(hdr, (x[0], y[0]), (x[1], y[1]), f, bright=1.1,
-                           calm=.8, vis=visibility, scale=scale)
+            self.draw_central_fire(hdr, ctx)
         if not np.isfinite(hdr).all(): raise ValueError(f'Non-finite D{f}')
         return look.finish(hdr, exposure=1.05, bloom_strength=.08, bloom_threshold=1.1,
                            streak_strength=0., vignette_amount=.20)
