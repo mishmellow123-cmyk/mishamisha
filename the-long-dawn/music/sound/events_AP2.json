@@ -96,14 +96,8 @@
  {
   "id": "A.fire.blue",
   "kind": "bed",
-  "t0": 243.333,
-  "t1": 269.833,
-  "level": -69.8,
-  "gain": -38.6,
-  "src": [
-   "fs:595483",
-   "fs:681366"
-  ]
+  "status": "SKIP",
+  "why": "the same recordings and level, now framed on the measured ending: A.fire.blue.measured pales with the four watch-fires EDIT pales (measured) and ends in the picture's fade"
  },
  {
   "id": "A.x.take",
@@ -114,6 +108,54 @@
   "gain": -5.2,
   "src": [
    "fs:595483"
+  ]
+ },
+ {
+  "id": "A.near_fire",
+  "kind": "bed",
+  "t0": 175.0,
+  "t1": 183.333,
+  "level": -36.0,
+  "gain": -3.7,
+  "src": [
+   "fs:595483",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "A.watchfire_1",
+  "kind": "bed",
+  "t0": 203.333,
+  "t1": 243.333,
+  "level": -36.0,
+  "gain": -4.2,
+  "src": [
+   "fs:595483",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "A.watchfire_far",
+  "kind": "bed",
+  "t0": 203.333,
+  "t1": 215.042,
+  "level": -57.3,
+  "gain": -24.2,
+  "src": [
+   "fs:595483",
+   "fs:681366"
+  ]
+ },
+ {
+  "id": "A.fire.blue.measured",
+  "kind": "bed",
+  "t0": 243.333,
+  "t1": 270.0,
+  "level": -69.8,
+  "gain": -38.8,
+  "src": [
+   "fs:595483",
+   "fs:681366"
   ]
  },
  {
@@ -225,134 +267,68 @@
  {
   "id": "A.run_1",
   "kind": "event",
-  "t": 165.0,
-  "level": -31.5,
-  "gain": 9.7,
-  "clip_start_s": 164.7,
-  "hit_offset_s": 0.3,
-  "src": [
-   "sn:oil_flare"
-  ]
+  "status": "SKIP",
+  "why": "laid on the bar grid while A14 was a slate, distanced 0.2 -> 0.65 as the picture's fires came nearer: replaced by A.run.link_* on the measured catches of the delivered run"
  },
  {
   "id": "A.run_2",
   "kind": "event",
-  "t": 166.6667,
-  "level": -32.2,
-  "gain": -6.8,
-  "clip_start_s": 166.3577,
-  "hit_offset_s": 0.309,
-  "src": [
-   "fs:595483"
-  ]
+  "status": "SKIP",
+  "why": "laid on the bar grid while A14 was a slate, distanced 0.2 -> 0.65 as the picture's fires came nearer: replaced by A.run.link_* on the measured catches of the delivered run"
  },
  {
   "id": "A.run_3",
   "kind": "event",
-  "t": 168.3333,
-  "level": -33.3,
-  "gain": 0.9,
-  "clip_start_s": 168.0453,
-  "hit_offset_s": 0.288,
-  "src": [
-   "sn:oil_flare"
-  ]
+  "status": "SKIP",
+  "why": "laid on the bar grid while A14 was a slate, distanced 0.2 -> 0.65 as the picture's fires came nearer: replaced by A.run.link_* on the measured catches of the delivered run"
  },
  {
   "id": "A.run_4",
   "kind": "event",
-  "t": 170.0,
-  "level": -32.6,
-  "gain": -6.6,
-  "clip_start_s": 169.688,
-  "hit_offset_s": 0.312,
-  "src": [
-   "fs:595483"
-  ]
+  "status": "SKIP",
+  "why": "laid on the bar grid while A14 was a slate, distanced 0.2 -> 0.65 as the picture's fires came nearer: replaced by A.run.link_* on the measured catches of the delivered run"
  },
  {
   "id": "A.run_5",
   "kind": "event",
-  "t": 171.6667,
-  "level": -31.7,
-  "gain": 13.8,
-  "clip_start_s": 171.3727,
-  "hit_offset_s": 0.294,
-  "src": [
-   "sn:oil_flare"
-  ]
+  "status": "SKIP",
+  "why": "laid on the bar grid while A14 was a slate, distanced 0.2 -> 0.65 as the picture's fires came nearer: replaced by A.run.link_* on the measured catches of the delivered run"
  },
  {
   "id": "A.run_6",
   "kind": "event",
-  "t": 173.3333,
-  "level": -35.5,
-  "gain": -9.9,
-  "clip_start_s": 173.0273,
-  "hit_offset_s": 0.306,
-  "src": [
-   "fs:595483"
-  ]
+  "status": "SKIP",
+  "why": "laid on the bar grid while A14 was a slate, distanced 0.2 -> 0.65 as the picture's fires came nearer: replaced by A.run.link_* on the measured catches of the delivered run"
  },
  {
   "id": "A.run_7",
   "kind": "event",
-  "t": 175.0,
-  "level": -33.1,
-  "gain": 5.6,
-  "clip_start_s": 174.685,
-  "hit_offset_s": 0.315,
-  "src": [
-   "sn:oil_flare"
-  ]
+  "status": "SKIP",
+  "why": "laid on the bar grid while A14 was a slate, distanced 0.2 -> 0.65 as the picture's fires came nearer: replaced by A.run.link_* on the measured catches of the delivered run"
  },
  {
   "id": "A.watchfire1",
   "kind": "event",
-  "t": 208.3333,
-  "level": -61.0,
-  "gain": -17.3,
-  "clip_start_s": 205.8333,
-  "hit_offset_s": 2.5,
-  "src": [
-   "fs:681366"
-  ]
+  "status": "SKIP",
+  "why": "a 5 s pass heard from 4940 (-61 LUFS): watch-fire 1 burns large from the cut at 4880; replaced by the bed A.watchfire_1 on its measured footprint"
  },
  {
   "id": "A.watchfire2",
   "kind": "event",
-  "t": 218.3333,
-  "level": -61.3,
-  "gain": -15.6,
-  "clip_start_s": 215.8333,
-  "hit_offset_s": 2.5,
-  "src": [
-   "fs:681366"
-  ]
+  "status": "SKIP",
+  "why": "a pass on the old staging's bar (5280/5520/5760): in the restaged crossing the far fires are one small fire visible 4880-5160 (A.watchfire_far), then hidden behind the great lantern"
  },
  {
   "id": "A.watchfire3",
   "kind": "event",
-  "t": 228.3333,
-  "level": -60.4,
-  "gain": -13.8,
-  "clip_start_s": 225.8333,
-  "hit_offset_s": 2.5,
-  "src": [
-   "fs:681366"
-  ]
+  "status": "SKIP",
+  "why": "a pass on the old staging's bar (5280/5520/5760): in the restaged crossing the far fires are one small fire visible 4880-5160 (A.watchfire_far), then hidden behind the great lantern"
  },
  {
   "id": "A.watchfire4",
   "kind": "event",
-  "t": 238.3333,
-  "level": -60.8,
-  "gain": -13.8,
-  "clip_start_s": 235.8333,
-  "hit_offset_s": 2.5,
-  "src": [
-   "fs:681366"
-  ]
+  "status": "SKIP",
+  "why": "a pass on the old staging's bar (5280/5520/5760): in the restaged crossing the far fires are one small fire visible 4880-5160 (A.watchfire_far), then hidden behind the great lantern"
  },
  {
   "id": "A.x.catch",
@@ -364,6 +340,630 @@
   "hit_offset_s": 0.67,
   "src": [
    "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_34",
+  "kind": "event",
+  "t": 153.5833,
+  "level": -44.2,
+  "gain": 7.3,
+  "clip_start_s": 153.5833,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_38",
+  "kind": "event",
+  "t": 153.5833,
+  "level": -51.1,
+  "gain": -20.1,
+  "clip_start_s": 153.5833,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_40",
+  "kind": "event",
+  "t": 153.6667,
+  "level": -48.8,
+  "gain": 1.2,
+  "clip_start_s": 153.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_45",
+  "kind": "event",
+  "t": 153.6667,
+  "level": -50.1,
+  "gain": -20.4,
+  "clip_start_s": 153.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_52",
+  "kind": "event",
+  "t": 153.6667,
+  "level": -48.8,
+  "gain": 2.5,
+  "clip_start_s": 153.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_13",
+  "kind": "event",
+  "t": 153.7083,
+  "level": -45.0,
+  "gain": -13.7,
+  "clip_start_s": 153.7083,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_43",
+  "kind": "event",
+  "t": 153.7083,
+  "level": -50.8,
+  "gain": -0.5,
+  "clip_start_s": 153.7083,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_23",
+  "kind": "event",
+  "t": 153.7917,
+  "level": -47.1,
+  "gain": -17.7,
+  "clip_start_s": 153.7917,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_49",
+  "kind": "event",
+  "t": 153.7917,
+  "level": -47.6,
+  "gain": 2.9,
+  "clip_start_s": 153.7917,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_57",
+  "kind": "event",
+  "t": 153.8333,
+  "level": -49.2,
+  "gain": -18.5,
+  "clip_start_s": 153.8333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_63",
+  "kind": "event",
+  "t": 153.8333,
+  "level": -52.1,
+  "gain": -0.5,
+  "clip_start_s": 153.8333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_62",
+  "kind": "event",
+  "t": 153.875,
+  "level": -50.1,
+  "gain": -20.6,
+  "clip_start_s": 153.875,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_61",
+  "kind": "event",
+  "t": 153.9167,
+  "level": -50.1,
+  "gain": 0.3,
+  "clip_start_s": 153.9167,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_27",
+  "kind": "event",
+  "t": 153.9583,
+  "level": -45.1,
+  "gain": -14.0,
+  "clip_start_s": 153.9583,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_17",
+  "kind": "event",
+  "t": 154.0,
+  "level": -46.3,
+  "gain": 2.9,
+  "clip_start_s": 154.0,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_7",
+  "kind": "event",
+  "t": 154.0,
+  "level": -43.7,
+  "gain": -13.9,
+  "clip_start_s": 154.0,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_53",
+  "kind": "event",
+  "t": 154.0833,
+  "level": -49.7,
+  "gain": 3.9,
+  "clip_start_s": 154.0833,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_3",
+  "kind": "event",
+  "t": 154.1667,
+  "level": -44.2,
+  "gain": -12.8,
+  "clip_start_s": 154.1667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_9",
+  "kind": "event",
+  "t": 154.2083,
+  "level": -45.9,
+  "gain": 3.3,
+  "clip_start_s": 154.2083,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_56",
+  "kind": "event",
+  "t": 154.25,
+  "level": -49.4,
+  "gain": -20.1,
+  "clip_start_s": 154.25,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_5",
+  "kind": "event",
+  "t": 154.2917,
+  "level": -44.2,
+  "gain": 7.4,
+  "clip_start_s": 154.2917,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_46",
+  "kind": "event",
+  "t": 154.3333,
+  "level": -48.8,
+  "gain": -17.8,
+  "clip_start_s": 154.3333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_31",
+  "kind": "event",
+  "t": 154.5,
+  "level": -46.8,
+  "gain": 2.8,
+  "clip_start_s": 154.5,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_42",
+  "kind": "event",
+  "t": 154.5,
+  "level": -49.7,
+  "gain": -20.1,
+  "clip_start_s": 154.5,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_2",
+  "kind": "event",
+  "t": 154.5833,
+  "level": -44.5,
+  "gain": 4.0,
+  "clip_start_s": 154.5833,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_37",
+  "kind": "event",
+  "t": 154.5833,
+  "level": -50.0,
+  "gain": -18.9,
+  "clip_start_s": 154.5833,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_18",
+  "kind": "event",
+  "t": 154.625,
+  "level": -47.1,
+  "gain": 6.3,
+  "clip_start_s": 154.625,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_39",
+  "kind": "event",
+  "t": 154.625,
+  "level": -50.1,
+  "gain": -20.8,
+  "clip_start_s": 154.625,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_0",
+  "kind": "event",
+  "t": 154.6667,
+  "level": -43.8,
+  "gain": 7.3,
+  "clip_start_s": 154.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_11",
+  "kind": "event",
+  "t": 154.7083,
+  "level": -48.1,
+  "gain": -17.2,
+  "clip_start_s": 154.7083,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_33",
+  "kind": "event",
+  "t": 154.7083,
+  "level": -44.5,
+  "gain": 6.0,
+  "clip_start_s": 154.7083,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_41",
+  "kind": "event",
+  "t": 154.75,
+  "level": -48.8,
+  "gain": -19.3,
+  "clip_start_s": 154.75,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_55",
+  "kind": "event",
+  "t": 154.75,
+  "level": -48.8,
+  "gain": 4.5,
+  "clip_start_s": 154.75,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_54",
+  "kind": "event",
+  "t": 154.8333,
+  "level": -47.8,
+  "gain": -17.0,
+  "clip_start_s": 154.8333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_67",
+  "kind": "event",
+  "t": 154.8333,
+  "level": -53.2,
+  "gain": 0.1,
+  "clip_start_s": 154.8333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_21",
+  "kind": "event",
+  "t": 154.9583,
+  "level": -44.4,
+  "gain": -14.6,
+  "clip_start_s": 154.9583,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_30",
+  "kind": "event",
+  "t": 154.9583,
+  "level": -46.2,
+  "gain": 4.4,
+  "clip_start_s": 154.9583,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_47",
+  "kind": "event",
+  "t": 155.25,
+  "level": -47.0,
+  "gain": -15.8,
+  "clip_start_s": 155.25,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_32",
+  "kind": "event",
+  "t": 155.3333,
+  "level": -46.3,
+  "gain": 7.6,
+  "clip_start_s": 155.3333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_29",
+  "kind": "event",
+  "t": 155.375,
+  "level": -45.6,
+  "gain": -15.8,
+  "clip_start_s": 155.375,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_60",
+  "kind": "event",
+  "t": 155.4583,
+  "level": -51.5,
+  "gain": 1.8,
+  "clip_start_s": 155.4583,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_44",
+  "kind": "event",
+  "t": 155.5,
+  "level": -48.6,
+  "gain": -17.7,
+  "clip_start_s": 155.5,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_36",
+  "kind": "event",
+  "t": 155.5417,
+  "level": -47.5,
+  "gain": 2.1,
+  "clip_start_s": 155.5417,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_64",
+  "kind": "event",
+  "t": 155.5833,
+  "level": -51.7,
+  "gain": -22.3,
+  "clip_start_s": 155.5833,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.ridge.fire_20",
+  "kind": "event",
+  "t": 155.75,
+  "level": -48.7,
+  "gain": 3.0,
+  "clip_start_s": 155.75,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.run.link_1",
+  "kind": "event",
+  "t": 164.0,
+  "level": -35.2,
+  "gain": 13.3,
+  "clip_start_s": 164.0,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.run.link_2",
+  "kind": "event",
+  "t": 166.6667,
+  "level": -34.8,
+  "gain": -3.0,
+  "clip_start_s": 166.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.run.link_3",
+  "kind": "event",
+  "t": 168.3333,
+  "level": -34.2,
+  "gain": 11.6,
+  "clip_start_s": 168.3333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.run.link_4",
+  "kind": "event",
+  "t": 170.0,
+  "level": -32.9,
+  "gain": -2.5,
+  "clip_start_s": 170.0,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.run.link_5",
+  "kind": "event",
+  "t": 171.6667,
+  "level": -32.7,
+  "gain": 9.5,
+  "clip_start_s": 171.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
+  ]
+ },
+ {
+  "id": "A.run.link_6",
+  "kind": "event",
+  "t": 173.3333,
+  "level": -31.9,
+  "gain": 0.1,
+  "clip_start_s": 173.3333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "A.run.link_7",
+  "kind": "event",
+  "t": 175.0,
+  "level": -30.0,
+  "gain": 10.7,
+  "clip_start_s": 175.0,
+  "hit_offset_s": 0.0,
+  "src": [
+   "sn:oil_flare"
   ]
  }
 ]
