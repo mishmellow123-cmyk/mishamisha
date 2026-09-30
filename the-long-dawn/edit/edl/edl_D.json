@@ -329,7 +329,29 @@
    "name": "THE RACE",
    "owner": "OPENRING",
    "desc": "NEW embers_D_race: surges on every beat; glare hides the narrowing gap, gold reaches the nearest windows, and two giants pull ahead.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "cutd_deep_race",
+     "off": 0,
+     "mode": "exact",
+     "note": "STAND-IN native open-Ring race held at D2719",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      2719,
+      2719
+     ],
+     "add": null,
+     "final_eligible": false,
+     "hold": 2719,
+     "folders": [
+      "renders/cutd_deep_race"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     31,
@@ -343,8 +365,51 @@
    "code": "D11a",
    "name": "THE DEEP \u00b7 THE SWEEP ENTRY",
    "owner": "BURN-C reuse",
-   "desc": "C sweep soft entry; needs re-bake over embers_D_race D2719: the baked held race shows C's closed Ring.",
+   "desc": "Filmed soft-entry re-bake over embers_D_race D2719; explicit local assets use a provisional open-Ring plate. C's closed-Ring baked picture remains the unconfigured fallback.",
    "takes": [
+    {
+     "stem": "cutd_deep_clean",
+     "off": 0,
+     "mode": "exact",
+     "note": "Filmed re-bake over embers_D_race D2719; provisional local sources",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": [
+      "take",
+      {
+       "stem": "cutd_deep_race",
+       "off": 0,
+       "mode": "exact",
+       "note": "STAND-IN native open-Ring race held at D2719",
+       "crop": null,
+       "grade": null,
+       "matte": null,
+       "under": null,
+       "video": null,
+       "need": [
+        2719,
+        2719
+       ],
+       "add": null,
+       "final_eligible": false,
+       "hold": 2719
+      },
+      2719,
+      "D"
+     ],
+     "video": null,
+     "need": [
+      2720,
+      2757
+     ],
+     "add": null,
+     "final_eligible": false,
+     "linear_mix": "cutd_deep_sweep_coeff",
+     "folders": [
+      "renders/cutd_deep_clean"
+     ]
+    },
     {
      "stem": "cand_sweep_soft-entry",
      "off": -1040,
@@ -376,8 +441,51 @@
    "code": "D11b",
    "name": "THE DEEP \u00b7 THE SWEEP",
    "owner": "BURN-C reuse",
-   "desc": "The ember edge sweeps to parchment; needs re-bake over embers_D_race D2719: C's closed-Ring race is baked in.",
+   "desc": "The original filmed ember edge sweeps to parchment in a re-bake over embers_D_race D2719; the local plate is provisional and C's closed-Ring bake remains the unconfigured fallback.",
    "takes": [
+    {
+     "stem": "cutd_deep_clean",
+     "off": 0,
+     "mode": "exact",
+     "note": "Filmed re-bake over embers_D_race D2719; provisional local sources",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": [
+      "take",
+      {
+       "stem": "cutd_deep_race",
+       "off": 0,
+       "mode": "exact",
+       "note": "STAND-IN native open-Ring race held at D2719",
+       "crop": null,
+       "grade": null,
+       "matte": null,
+       "under": null,
+       "video": null,
+       "need": [
+        2719,
+        2719
+       ],
+       "add": null,
+       "final_eligible": false,
+       "hold": 2719
+      },
+      2719,
+      "D"
+     ],
+     "video": null,
+     "need": [
+      2720,
+      2757
+     ],
+     "add": null,
+     "final_eligible": false,
+     "linear_mix": "cutd_deep_sweep_coeff",
+     "folders": [
+      "renders/cutd_deep_clean"
+     ]
+    },
     {
      "stem": "book_C_ft",
      "off": -1040,
@@ -409,8 +517,47 @@
    "code": "D11c",
    "name": "THE DEEP",
    "owner": "MAP-C reuse",
-   "desc": "The pen follows a gilt vein down pillared halls; needs re-bake over embers_D_race D2719: the current under-layer holds C's closed-Ring race at source1679.",
+   "desc": "The pen follows a gilt vein down pillared halls; the re-bake under-layer holds embers_D_race D2719 through the Deep. The unconfigured fallback holds C's closed-Ring race at source1679.",
    "takes": [
+    {
+     "stem": "book_C",
+     "off": -1040,
+     "mode": "exact",
+     "note": "Filmed re-bake under embers_D_race D2719 from the explicitly adopted D10 plate; provisional local sources",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": [
+      "take",
+      {
+       "stem": "cutd_deep_race",
+       "off": 0,
+       "mode": "exact",
+       "note": "STAND-IN native open-Ring race held at D2719",
+       "crop": null,
+       "grade": null,
+       "matte": null,
+       "under": null,
+       "video": null,
+       "need": [
+        2719,
+        2719
+       ],
+       "add": null,
+       "final_eligible": false,
+       "hold": 2719
+      },
+      2719,
+      "D"
+     ],
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "renders/book_C"
+     ]
+    },
     {
      "stem": "book_C",
      "off": -1040,
@@ -446,8 +593,50 @@
    "code": "D11d",
    "name": "THE DEEP \u00b7 THE GLOW",
    "owner": "BURN-C reuse",
-   "desc": "The red glow wakes below; C's opaque filmed page holds storm source1920. Needs re-bake over embers_D_race D2719 and future embers_D_brink D2960 when those plates are available.",
+   "desc": "The red glow opens onto embers_D_brink D2960 in a 36-frame filmed re-bake through D2980; the local Brink plate is provisional. The unconfigured fallback holds C's storm source1920.",
    "takes": [
+    {
+     "stem": "cutd_deep_exit",
+     "off": 0,
+     "mode": "exact",
+     "note": "Filmed re-bake onto embers_D_brink D2960; 36-frame exit",
+     "crop": null,
+     "grade": null,
+     "matte": "cutd_deep_exit_matte",
+     "under": [
+      "take",
+      {
+       "stem": "cutd_deep_brink",
+       "off": 0,
+       "mode": "exact",
+       "note": "STAND-IN native brink held at D2960",
+       "crop": null,
+       "grade": null,
+       "matte": null,
+       "under": null,
+       "video": null,
+       "need": [
+        2960,
+        2960
+       ],
+       "add": null,
+       "final_eligible": false,
+       "hold": 2960
+      },
+      2960,
+      "D"
+     ],
+     "video": null,
+     "need": [
+      2945,
+      2980
+     ],
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "renders/cutd_deep_exit"
+     ]
+    },
     {
      "stem": "book_C_ft",
      "off": -1040,
@@ -484,7 +673,29 @@
    "name": "THE BRINK",
    "owner": "VISION",
    "desc": "NEW embers_D_brink: the red glow burns through onto the Ring, its gap at the narrowest yet; towers lean in.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "cutd_deep_brink",
+     "off": 0,
+     "mode": "exact",
+     "note": "STAND-IN native brink held at D2960",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      2960,
+      2960
+     ],
+     "add": null,
+     "final_eligible": false,
+     "hold": 2960,
+     "folders": [
+      "renders/cutd_deep_brink"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     38,
@@ -621,7 +832,7 @@
    "code": "D20",
    "name": "EVERY RIDGE",
    "owner": "RUN-A reuse",
-   "desc": "Fires to the horizon over a cloud sea lit warm from beneath.",
+   "desc": "Fires to the horizon over a cloud sea lit warm from beneath; the nearest fire burns the picture open.",
    "takes": [
     {
      "stem": "reveal_A",
@@ -654,7 +865,7 @@
    "code": "D21a",
    "name": "THE LAST KINGDOM",
    "owner": "MAP-C reuse",
-   "desc": "Kingdoms light in no order until one stays dark. NEW map burn pending; its under-plate must match D5180.",
+   "desc": "The nearest ridge fire burns open the held A3799 image onto C3440 and the advancing map; kingdoms light in no order until one stays dark.",
    "takes": [
     {
      "stem": "cand_map_beacon-falloff",
@@ -1515,6 +1726,19 @@
    "note": "x1burn v2 at the measured gilt Ring on held C559; real burn with explicit stand-in incoming fire"
   },
   {
+   "f0": 2945,
+   "f1": 2981,
+   "kind": "deep_reveal",
+   "under_start": 2960,
+   "glow": "cutd_deep_exit",
+   "cover": "cutd_deep_exit_matte",
+   "tail_clear": [
+    2976,
+    2980
+   ],
+   "note": "Original filmed C1905-1991 remapped across36 D frames; reveal the selected brink throughD2980"
+  },
+  {
    "f0": 3750,
    "f1": 3786,
    "cut": 3760,
@@ -1524,6 +1748,20 @@
    "cover": "x1_refusal_C5_cover",
    "layer_off": -1440,
    "note": "D15 refusal -> D16 trap: C burn source2310-2345; requires NEW trap under-plate D3760"
+  },
+  {
+   "f0": 5180,
+   "f1": 5220,
+   "cut": 5180,
+   "kind": "ring_burn",
+   "center": [
+    1136.0,
+    623.0
+   ],
+   "t_open": 5182.0,
+   "speed": 9.4,
+   "seed": 12,
+   "note": "Nearest ridge flame on held reveal_A A3799 (D5179); x1burn v2 opens onto map C3440 at D5180"
   },
   {
    "f0": 6388,
@@ -1582,15 +1820,16 @@
    "note": "D33 title takes out the film base before D34 ends in black"
   }
  ],
- "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first; optional hold fixes the source frame for colour/matte/add; under keeps its own spec",
+ "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first; optional hold fixes the source frame for colour/matte/add; under keeps its own spec; explicit cutd_* stems use CUTD_LOCAL_RENDERS when set for RGB, matte, add, under and transition layers; exported folders retain their logical renders/<stem> names",
  "version": "D",
  "status": "treatment; new picture pending",
  "script": "THE LONG DAWN cut D treatment v2 (30 Sep 2026): 34 beats, 115 bars",
  "barmap": "music/v3/barmap_D.json",
  "bars": 115,
  "beats": 34,
- "pending_picture": "NEW rows have no takes until explicitly adopted, even if expected folders exist",
- "rebake": "D11 C sweep/held race need re-bake over embers_D_race D2719; glow onto embers_D_brink D2960",
- "pending_map_burn": "Requires exact under-plate D5180; no new map burn adopted",
+ "pending_picture": "NEW plates require an explicit D_NEW_TAKES entry; approved stand-ins stay provisional. Folder arrival alone never adopts a plate.",
+ "adoption": "Uncomment one literal T(...) line in D_NEW_TAKES after review. D08 gates all 1680-2079 for D07/D08 together. D23 declares baked_text=(D14,) and its complete selection changes that caption to in_picture; missing/partial delivery retains the overlay.",
+ "rebake": "D11 local entry coefficients composite over the selected D10 plate held at D2719; the C page body uses the same input. Filmed C1905-1991 exits across D2945-2980 over the selected D12 brink. A D-only cubic tail clear scales both premultiplied RGB and cover across D2976-2980, reaching the incoming plate exactly at D2980 before finish. Held direct takes honor their complete need gates. Original C fallback pictures, local stand-ins and current Deep composites remain provisional.",
+ "map_burn": "Adopted x1burn v2 at D5180-5219, born at nearest ridge flame (1136,623) on held reveal_A A3799; opens onto the advancing map from C3440. t_open=5182 and speed=9.4 are renderer parameters; cover-grid timing measurements are recorded separately.",
  "score_status": "stand-in required until D score exists"
 }

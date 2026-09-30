@@ -60,7 +60,7 @@ def _code_hash():
     ctx = {n: inspect.getsource(o) for n, o in inspect.getmembers(AS.Ctx, inspect.isfunction)}
     frame = [ctx[n] for n in sorted(ctx) if n not in ('x2', 'slate', 'ember')] + [
         inspect.getsource(o) for o in (AS.grade, AS.burn_in, AS.smooth, AS.bar_beat, AS.locate, AS.chain,
-                                       AS.plan_shot, EDL.source_frame)]
+                                       AS.plan_shot, AS.render_dir, AS.under_take, AS.locate_under, EDL.source_frame)]
     slate = [ctx['slate'], inspect.getsource(AS.make_slate), inspect.getsource(AS.draw_slate_clock)]
     title = [ctx['ember'], open(os.path.join(ROOT, 'edit', 'title_scene.py')).read()]
     text = [inspect.getsource(o) for o in (titles.TextV3, titles.render_line, titles.render_block, titles.lines_v3,
@@ -102,15 +102,22 @@ def frame_sources(cut, variant, plan, f):
     if take.get('screen_transform'):
         out.append(json.dumps(take['screen_transform'], sort_keys=True))
         out.append(hashlib.sha256(inspect.getsource(AS.RB.screen_transform).encode()).hexdigest())
-    if video:
+    explicit=AS.under_take(take.get('under'))
+    if video and not explicit:
         return out
+    if take.get('linear_mix'):
+        out.append(_stat(AS.DEEP.coeff_path(AS.render_dir(take['linear_mix']),EDL.source_frame(take,f))))
+        out.append(hashlib.sha256(AS.DEEP.source().encode()).hexdigest())
+    if explicit:
+        ut,uf,uc=explicit
+        out+=frame_sources(uc,None,dict(kind='take',take=ut),uf)
     if take.get('add'):
-        out.append(_stat(AS.index(os.path.join(AS.RENDERS, take['add']))[EDL.source_frame(take, f)]))
+        out.append(_stat(AS.index(AS.render_dir(take['add']))[EDL.source_frame(take, f)]))
     if take.get('matte'):
-        mp = AS.index(os.path.join(AS.RENDERS, take['matte'])).get(EDL.source_frame(take, f))
+        mp = AS.index(AS.render_dir(take['matte'])).get(EDL.source_frame(take, f))
         out.append(_stat(mp) if mp else 'matte:none')
         spec = take.get('under')
-        if spec:
+        if spec and not explicit:
             up, _ = AS.locate_under(spec, f)
             out.append(_stat(up) if up else 'under:none')
     return out
@@ -152,7 +159,7 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table, fin=None):
     tdesc = None if take is None else {k: take.get(k) for k in ('stem', 'off', 'mode', 'crop', 'grade', 'matte',
                                                                   'under', 'video', 'note', 'add')}
     if take is not None:
-        for key in ('hold', 'clamp', 'screen_transform'):
+        for key in ('hold', 'clamp', 'screen_transform', 'linear_mix'):
             if key in take:
                 tdesc[key] = take[key]
     rows = [(r['id'], r['line'], r['f_in'], r['f_out'], r['set'])

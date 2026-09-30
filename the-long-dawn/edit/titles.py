@@ -9,7 +9,8 @@ B: the title only.  C: ink write-ons (a pen-shaped wipe over 24 frames, dissolve
 (kindle over 12, crumble over 12); T8a/b stacked on black.  Titles (X3) kindle in place: A crumbles into rising
 sparks, B fades into the light, C cools from fire to ink.  Everything scales (0.5 for the half-res animatic).
 D: the consolidated treatment's own D_TEXT; Cormorant lower-third narration with 12-frame fades, plus text
-already baked into the reused old-story and title plates. New old-fire text remains an overlay until baked.
+already baked into the reused old-story and title plates. New old-fire text remains an overlay until its
+explicitly adopted, complete take declares that caption baked.
 
 v2 (kept for edit/assemble_v2.py): `story_lines(cut)` + `composite(img, lines, f)`, as below.
 
@@ -410,7 +411,7 @@ D_TEXT = [
     _d_caption(11, 4332, 4536, 'So the two furthest ahead lit the first beacons, together.'),
     _d_caption(12, 4584, 4824, 'Each fire said: I will wait, if you will.'),
     _d_caption(13, 5612, 5816, 'When the last beacon caught, every forge fell into step.'),
-    _d_caption(14, 5864, 6056, 'In the old story, the Ring is unmade in the fire that forged it.'),  # PENDING BAKE: book_D_oldfire
+    _d_caption(14, 5864, 6056, 'In the old story, the Ring is unmade in the fire that forged it.'),  # D23 adoption declares baked_text=('D14',)
     _d_caption(15, 6104, 6376, 'Ours was left unfinished, and they lit lamps to read it by.'),
     _d_caption(16, 6664, 6880, 'It took longer than anyone wanted.'),
     _d_caption(17, 7064, 7336, 'And the beacons burned on, so no forge could be lit in secret.'),
@@ -473,10 +474,17 @@ def text_table(cut):
     carrying its script row and any placement (x, y)."""
     cut = cut.upper()
     if cut in ('C', 'D'):
-        return [dict(id=r['id'], line=r['line'], f_in=r['f_in'], f_out=r['f_out'], set=r['set'], locked=None,
+        rows = [dict(id=r['id'], line=r['line'], f_in=r['f_in'], f_out=r['f_out'], set=r['set'], locked=None,
                      row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines', 'across', 'parts', 'backing')
                                      if r.get(k) is not None})
                 for r in (D_TEXT if cut == 'D' else C5_TEXT)]
+        if cut == 'D':
+            from cutd_adoption import baked_caption_ids
+            baked = baked_caption_ids(rows)
+            for row in rows:
+                if row['id'] in baked:
+                    row['set'] = 'in_picture'
+        return rows
     with open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')) as fh:
         bm = json.load(fh)
     ids = {t['id'] for t in bm['text']}

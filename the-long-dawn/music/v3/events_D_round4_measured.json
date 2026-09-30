@@ -1,0 +1,757 @@
+{
+ "schema": "long-dawn/d-round4-events-measured/1",
+ "cut": "D",
+ "fps": 24,
+ "ridge_burn": {
+  "source_basename": "ridge_burn_measure.json",
+  "source_sha256": "ba8aef60ab13a86e7281a9b0b0e97adc778edc7d28c35cbe9a7440c7352eaf4d",
+  "collector_basename": "ridge_burn_probe.py",
+  "collector_sha256": "35deb6045a293b0cefe9dbda6d4eed99b70cd873f842d3a04f0454b645cae489",
+  "implementation": "edit/ring_burn.py:layers; edit/edl_v3.py TRANS[D] ring_burn at D5180",
+  "implementation_sha256": {
+   "edit/ring_burn.py": "cdf2e1f78eb00eb4e720295ededc6fe719b81e51b263d430ed5e90f1f8ca7b37",
+   "shots/map/x1burn.py": "5a4b900f5a77fdd013c81380dd3af521fd5a32d5b104ef58a87b64d6c0716bb7",
+   "shots/map/burn.py": "afa6b0cbffa97aae8a533ad3b6d49b5ff09cd55906532af3ee24703330c04ffc",
+   "shots/map/noise.py": "fb50160a7dc071a2f2c29a6d50b31794612f163f9ef7ccf368ab4e8976161e29"
+  },
+  "parameters": {
+   "f0": 5180,
+   "f1": 5220,
+   "cut": 5180,
+   "kind": "ring_burn",
+   "center": [
+    1136.0,
+    623.0
+   ],
+   "t_open": 5182.0,
+   "speed": 9.4,
+   "seed": 12,
+   "note": "Nearest ridge flame on held reveal_A A3799 (D5179); x1burn v2 opens onto map C3440 at D5180"
+  },
+  "sample_grid": [
+   480,
+   201
+  ],
+  "native_frame": [
+   1920,
+   804
+  ],
+  "definitions": {
+   "first_open": "First scanned frame with any cover < 0.999 on the 480x201 sample grid.",
+   "first_fully_gone": "First scanned frame with no cover > 0.001 on the 480x201 sample grid; all later scanned frames remain so.",
+   "t_open": "Renderer parameter; not a measured visible onset."
+  },
+  "limitations": "Quarter-resolution generated cover measurement, not native-resolution or finished-picture timing. The two native composites inspected by the collector do not establish native onset or completion.",
+  "first_open_on_sample_grid": 5183,
+  "first_fully_gone_on_sample_grid": 5212,
+  "remains_gone_through": 5219,
+  "frames": [
+   {
+    "frame": 5180,
+    "open_pixels": 0,
+    "uncovered_fraction": 0.0,
+    "remaining_cover_pixels": 96480
+   },
+   {
+    "frame": 5181,
+    "open_pixels": 0,
+    "uncovered_fraction": 0.0,
+    "remaining_cover_pixels": 96480
+   },
+   {
+    "frame": 5182,
+    "open_pixels": 0,
+    "uncovered_fraction": 0.0,
+    "remaining_cover_pixels": 96480
+   },
+   {
+    "frame": 5183,
+    "open_pixels": 4,
+    "uncovered_fraction": 2.7202504497836344e-05,
+    "remaining_cover_pixels": 96478
+   },
+   {
+    "frame": 5184,
+    "open_pixels": 94,
+    "uncovered_fraction": 0.0009385801386088133,
+    "remaining_cover_pixels": 96393
+   },
+   {
+    "frame": 5185,
+    "open_pixels": 341,
+    "uncovered_fraction": 0.003488364163786173,
+    "remaining_cover_pixels": 96148
+   },
+   {
+    "frame": 5186,
+    "open_pixels": 671,
+    "uncovered_fraction": 0.006861232686787844,
+    "remaining_cover_pixels": 95825
+   },
+   {
+    "frame": 5187,
+    "open_pixels": 1463,
+    "uncovered_fraction": 0.014963236637413502,
+    "remaining_cover_pixels": 95055
+   },
+   {
+    "frame": 5188,
+    "open_pixels": 2749,
+    "uncovered_fraction": 0.028348922729492188,
+    "remaining_cover_pixels": 93760
+   },
+   {
+    "frame": 5189,
+    "open_pixels": 4451,
+    "uncovered_fraction": 0.04586482793092728,
+    "remaining_cover_pixels": 92083
+   },
+   {
+    "frame": 5190,
+    "open_pixels": 7303,
+    "uncovered_fraction": 0.07532641291618347,
+    "remaining_cover_pixels": 89246
+   },
+   {
+    "frame": 5191,
+    "open_pixels": 9771,
+    "uncovered_fraction": 0.1009417325258255,
+    "remaining_cover_pixels": 86762
+   },
+   {
+    "frame": 5192,
+    "open_pixels": 11987,
+    "uncovered_fraction": 0.1239885687828064,
+    "remaining_cover_pixels": 84545
+   },
+   {
+    "frame": 5193,
+    "open_pixels": 14739,
+    "uncovered_fraction": 0.1525171399116516,
+    "remaining_cover_pixels": 81788
+   },
+   {
+    "frame": 5194,
+    "open_pixels": 18008,
+    "uncovered_fraction": 0.186270609498024,
+    "remaining_cover_pixels": 78547
+   },
+   {
+    "frame": 5195,
+    "open_pixels": 22205,
+    "uncovered_fraction": 0.22977566719055176,
+    "remaining_cover_pixels": 74348
+   },
+   {
+    "frame": 5196,
+    "open_pixels": 26578,
+    "uncovered_fraction": 0.27498364448547363,
+    "remaining_cover_pixels": 70002
+   },
+   {
+    "frame": 5197,
+    "open_pixels": 32229,
+    "uncovered_fraction": 0.33357784152030945,
+    "remaining_cover_pixels": 64354
+   },
+   {
+    "frame": 5198,
+    "open_pixels": 37080,
+    "uncovered_fraction": 0.3839970827102661,
+    "remaining_cover_pixels": 59470
+   },
+   {
+    "frame": 5199,
+    "open_pixels": 42753,
+    "uncovered_fraction": 0.4425973892211914,
+    "remaining_cover_pixels": 53826
+   },
+   {
+    "frame": 5200,
+    "open_pixels": 48615,
+    "uncovered_fraction": 0.5033841729164124,
+    "remaining_cover_pixels": 47966
+   },
+   {
+    "frame": 5201,
+    "open_pixels": 56127,
+    "uncovered_fraction": 0.580779492855072,
+    "remaining_cover_pixels": 40527
+   },
+   {
+    "frame": 5202,
+    "open_pixels": 64399,
+    "uncovered_fraction": 0.6669292449951172,
+    "remaining_cover_pixels": 32192
+   },
+   {
+    "frame": 5203,
+    "open_pixels": 70779,
+    "uncovered_fraction": 0.7331451177597046,
+    "remaining_cover_pixels": 25786
+   },
+   {
+    "frame": 5204,
+    "open_pixels": 76843,
+    "uncovered_fraction": 0.7960970997810364,
+    "remaining_cover_pixels": 19709
+   },
+   {
+    "frame": 5205,
+    "open_pixels": 81833,
+    "uncovered_fraction": 0.8479148745536804,
+    "remaining_cover_pixels": 14701
+   },
+   {
+    "frame": 5206,
+    "open_pixels": 85072,
+    "uncovered_fraction": 0.8815526962280273,
+    "remaining_cover_pixels": 11450
+   },
+   {
+    "frame": 5207,
+    "open_pixels": 87636,
+    "uncovered_fraction": 0.9081488847732544,
+    "remaining_cover_pixels": 8875
+   },
+   {
+    "frame": 5208,
+    "open_pixels": 90340,
+    "uncovered_fraction": 0.9360984563827515,
+    "remaining_cover_pixels": 6186
+   },
+   {
+    "frame": 5209,
+    "open_pixels": 92807,
+    "uncovered_fraction": 0.9617553353309631,
+    "remaining_cover_pixels": 3706
+   },
+   {
+    "frame": 5210,
+    "open_pixels": 95084,
+    "uncovered_fraction": 0.9853790998458862,
+    "remaining_cover_pixels": 1422
+   },
+   {
+    "frame": 5211,
+    "open_pixels": 96213,
+    "uncovered_fraction": 0.9972181916236877,
+    "remaining_cover_pixels": 273
+   },
+   {
+    "frame": 5212,
+    "open_pixels": 96480,
+    "uncovered_fraction": 1.0,
+    "remaining_cover_pixels": 0
+   },
+   {
+    "frame": 5213,
+    "open_pixels": 96480,
+    "uncovered_fraction": 1.0,
+    "remaining_cover_pixels": 0
+   },
+   {
+    "frame": 5214,
+    "open_pixels": 96480,
+    "uncovered_fraction": 1.0,
+    "remaining_cover_pixels": 0
+   },
+   {
+    "frame": 5215,
+    "open_pixels": 96480,
+    "uncovered_fraction": 1.0,
+    "remaining_cover_pixels": 0
+   },
+   {
+    "frame": 5216,
+    "open_pixels": 96480,
+    "uncovered_fraction": 1.0,
+    "remaining_cover_pixels": 0
+   },
+   {
+    "frame": 5217,
+    "open_pixels": 96480,
+    "uncovered_fraction": 1.0,
+    "remaining_cover_pixels": 0
+   },
+   {
+    "frame": 5218,
+    "open_pixels": 96480,
+    "uncovered_fraction": 1.0,
+    "remaining_cover_pixels": 0
+   },
+   {
+    "frame": 5219,
+    "open_pixels": 96480,
+    "uncovered_fraction": 1.0,
+    "remaining_cover_pixels": 0
+   }
+  ],
+  "origin": {
+   "source_basename": "ridge_origin.json",
+   "source_sha256": "10aac745f3b8bc2ed7297cd1ffc61c695953d66ae6be89783fecc1936cce749e",
+   "collector_basename": "ridge_probe.py",
+   "collector_sha256": "8efec4dae225ee969f0e6f284155eb4e38bf0629da55e5293624ede1655cd90d",
+   "source": "reveal_A/f_03799.jpg",
+   "sha256": "f6c3c945337dede23bd45a8d7c1caad70114bc98764ed21e8a182fe53f948d06",
+   "shape": [
+    804,
+    1920,
+    3
+   ],
+   "roi": [
+    1100,
+    580,
+    1180,
+    660
+   ],
+   "mask": "R>150,G>85,R>1.2*B; largest 8-connected component in near-fire ROI",
+   "bbox": [
+    1126,
+    600,
+    19,
+    39
+   ],
+   "area": 317,
+   "centre": [
+    1135.7255520504732,
+    622.9400630914827
+   ],
+   "luma_weighted_centroid": [
+    1135.6503914277052,
+    623.391651813966
+   ],
+   "chosen_origin": [
+    1136,
+    623
+   ],
+   "bbox_format": "native pixels: x, y, width, height"
+  },
+  "thresholds": {
+   "open_cover_below": 0.999,
+   "remaining_cover_above": 0.001
+  }
+ },
+ "deep_exit_source": {
+  "source_basename": "deep_exit_layers.json",
+  "source_sha256": "7bdfac43f598db35f8dc640e178966dfe36a43656be6034fb7e4f6fda85df660",
+  "collector": "edit/tools/rebake_cutd_deep.py:exit_layers",
+  "collector_sha256": "0e56ee2a7332fe7b27cfb9f02dcbe2e94f0607ae9bbeefde9cffaa2bda1452c2",
+  "source_stems": [
+   "book_C_ft",
+   "book_C_ft_matte"
+  ],
+  "source_clock": "C5 edit and book_C_ft frame",
+  "destination_stems": [
+   "cutd_deep_exit",
+   "cutd_deep_exit_matte"
+  ],
+  "destination_clock": "D edit",
+  "source_range_inclusive": [
+   1905,
+   1991
+  ],
+  "destination_range_inclusive": [
+   2945,
+   2980
+  ],
+  "mapping": "source = int(round(1905 + (D_frame - 2945) * 86 / 35))",
+  "sample_grid": [
+   1920,
+   804
+  ],
+  "dimensions_verification": "All 36 selected source cover image headers were read and reported 1920x804.",
+  "definitions": {
+   "first_open": "First selected source mask with cover_mean < 1.0; reported on its mapped D frame.",
+   "first_fully_gone": "First selected source mask with cover_max == 0; null when none qualifies."
+  },
+  "first_open_on_selected_source_masks": 2953,
+  "first_open_source_frame": 1925,
+  "first_fully_gone_on_selected_source_masks": null,
+  "visible_glow_onset": null,
+  "limitations": "These are native source-mask measurements across the 36 selected source frames, before the D-only exit-tail envelope. They do not measure visible glow onset or finished-picture onset. The final source cover remains nonzero; the runtime tail removes that remnant separately.",
+  "frames": [
+   {
+    "frame": 2945,
+    "source_frame": 1905,
+    "rgb_sha256": "7b7b8ce03233f4a083bac8658a4534fedada03deabb3eb1b046029607306634e",
+    "cover_sha256": "6023c6ced0c3669a522c12c26fa55609f47a285c879e420a4e27644d9cdcd063",
+    "cover_mean": 1.0,
+    "cover_max": 255
+   },
+   {
+    "frame": 2946,
+    "source_frame": 1907,
+    "rgb_sha256": "31e66e1af491dd0c5464ad6e1afd60d765dfd3939642d64e758977b01fc74e74",
+    "cover_sha256": "6023c6ced0c3669a522c12c26fa55609f47a285c879e420a4e27644d9cdcd063",
+    "cover_mean": 1.0,
+    "cover_max": 255
+   },
+   {
+    "frame": 2947,
+    "source_frame": 1910,
+    "rgb_sha256": "0bbcd1b54725ed8e967df2c53f1b2f8fa706d2011d7daab67b531ed5dfd4dafa",
+    "cover_sha256": "6023c6ced0c3669a522c12c26fa55609f47a285c879e420a4e27644d9cdcd063",
+    "cover_mean": 1.0,
+    "cover_max": 255
+   },
+   {
+    "frame": 2948,
+    "source_frame": 1912,
+    "rgb_sha256": "b75882813f28a190ae1915ef48264e5c77d4cb33d661e822229222081c08b73a",
+    "cover_sha256": "6023c6ced0c3669a522c12c26fa55609f47a285c879e420a4e27644d9cdcd063",
+    "cover_mean": 1.0,
+    "cover_max": 255
+   },
+   {
+    "frame": 2949,
+    "source_frame": 1915,
+    "rgb_sha256": "80674337b97857e27f84775ca97cfb2328a6438548e5c92f6d2c91029e6a8335",
+    "cover_sha256": "6023c6ced0c3669a522c12c26fa55609f47a285c879e420a4e27644d9cdcd063",
+    "cover_mean": 1.0,
+    "cover_max": 255
+   },
+   {
+    "frame": 2950,
+    "source_frame": 1917,
+    "rgb_sha256": "d4a8922e1a242f6122340167cbdaa72ed81bbd6b518d324fb75ceef329f3e815",
+    "cover_sha256": "6023c6ced0c3669a522c12c26fa55609f47a285c879e420a4e27644d9cdcd063",
+    "cover_mean": 1.0,
+    "cover_max": 255
+   },
+   {
+    "frame": 2951,
+    "source_frame": 1920,
+    "rgb_sha256": "a71e2a7b273f537c07e84486671fea0845984c1427a923d5a782b2d1892e73c8",
+    "cover_sha256": "6023c6ced0c3669a522c12c26fa55609f47a285c879e420a4e27644d9cdcd063",
+    "cover_mean": 1.0,
+    "cover_max": 255
+   },
+   {
+    "frame": 2952,
+    "source_frame": 1922,
+    "rgb_sha256": "599e6182b2ba7302e2985768918587b70b244fe96ef93a85cd75f5cd527c5687",
+    "cover_sha256": "6023c6ced0c3669a522c12c26fa55609f47a285c879e420a4e27644d9cdcd063",
+    "cover_mean": 1.0,
+    "cover_max": 255
+   },
+   {
+    "frame": 2953,
+    "source_frame": 1925,
+    "rgb_sha256": "026e3c3d222ac917fde3e1d79429e11a6d43455f7f480a56995ed25df59186a6",
+    "cover_sha256": "22537c360669af0e212302c79b86e8f3f69adaa3418404c523801901586dc0da",
+    "cover_mean": 0.9984429415422886,
+    "cover_max": 255
+   },
+   {
+    "frame": 2954,
+    "source_frame": 1927,
+    "rgb_sha256": "8e47a1aa5ffb82dc28db904ea05e640d3bbc5e31648c139d3eb4cae462a7dacb",
+    "cover_sha256": "9c90722fdce2104a85ac3478536e4f7b22b2632a698fb921f8a2ac27aba443b0",
+    "cover_mean": 0.9955170049466718,
+    "cover_max": 255
+   },
+   {
+    "frame": 2955,
+    "source_frame": 1930,
+    "rgb_sha256": "9479ceecaccd0f5f4eb920bd2fd828620e096564bc3ce4fd01fea3b004296a25",
+    "cover_sha256": "941b4068f4d44336a4e43e2e44ee267caa4cd72ed180df0dbc587eee859f64ad",
+    "cover_mean": 0.9892567798263584,
+    "cover_max": 255
+   },
+   {
+    "frame": 2956,
+    "source_frame": 1932,
+    "rgb_sha256": "a3c500fc90ca17aa66a06e400306f94e2a0bd35efc7f92415514f28b1a16a717",
+    "cover_sha256": "1df1b74f9560198ad160d6021c93faaf3a3308ee1f34df96b26c57e4aea49a14",
+    "cover_mean": 0.9772650762730466,
+    "cover_max": 255
+   },
+   {
+    "frame": 2957,
+    "source_frame": 1934,
+    "rgb_sha256": "3865bf18539f0e2a0d868793b9c7f209e0c8350b80ed8d3d60f872f497418eaa",
+    "cover_sha256": "72ddfb888dddb4375d94789fd5126a2317447685e87bba1e2a797634cda6c615",
+    "cover_mean": 0.9559202989342503,
+    "cover_max": 255
+   },
+   {
+    "frame": 2958,
+    "source_frame": 1937,
+    "rgb_sha256": "34dddd5b4f338d9fd011bd597cabc3bd51f42eb3e30c323dd0e93f167d6b64ee",
+    "cover_sha256": "8c9e3bcd0afa5051a7298ae02f00df64cf62170ea96224b75675277a484d87fd",
+    "cover_mean": 0.912447461934608,
+    "cover_max": 255
+   },
+   {
+    "frame": 2959,
+    "source_frame": 1939,
+    "rgb_sha256": "933420b0166f5a0aa6162aef2d69160810f301a198e8f624f90d5a0d94b8a09a",
+    "cover_sha256": "1188adadd17207e9c1f5bf4051dba19d3d497bbbad462983c5c0643f6c9ad203",
+    "cover_mean": 0.8618329410951777,
+    "cover_max": 255
+   },
+   {
+    "frame": 2960,
+    "source_frame": 1942,
+    "rgb_sha256": "45940f38fe5c7415db950f2199cf1280f1d854c137f2feb5b31b86b5431b1f26",
+    "cover_sha256": "147c1e8f68caa3efe9c8990d41221f691f9ffdb6b665c13aa95b7131e3471169",
+    "cover_mean": 0.7591133283744675,
+    "cover_max": 255
+   },
+   {
+    "frame": 2961,
+    "source_frame": 1944,
+    "rgb_sha256": "f5f217eaee5e2d06b5dea07ded15216443cc6492629c3517286a25875c94249c",
+    "cover_sha256": "4d7b86f5509157e036cf4f7b13041958b0fcf3585864ad116d3015279668c07d",
+    "cover_mean": 0.712219727546906,
+    "cover_max": 255
+   },
+   {
+    "frame": 2962,
+    "source_frame": 1947,
+    "rgb_sha256": "00ba44d1d5f94a3ad2180772fa0bf39744aa389dbc6b28bad5d588ff32aa1bdb",
+    "cover_sha256": "c0848426f243b373f3467657f0719c795a6ba89bfd32a220c2d11741ca7c4e55",
+    "cover_mean": 0.5868521541597567,
+    "cover_max": 255
+   },
+   {
+    "frame": 2963,
+    "source_frame": 1949,
+    "rgb_sha256": "a683b20f38b2f4aea35fc08434d10568965d440b8ce0ca043faee328d5a7506d",
+    "cover_sha256": "f89f5481fd027910340121fadfbf683ef7bcadd03c4438b40f27d6bad56a50a3",
+    "cover_mean": 0.5049422439477449,
+    "cover_max": 255
+   },
+   {
+    "frame": 2964,
+    "source_frame": 1952,
+    "rgb_sha256": "24dc9b16e5dabc30a54d4e00e7fbed81a2abced5718091b29354e4c69aa0e1a9",
+    "cover_sha256": "202c231ef956453ed393b78c61011b572776c3d8664712aacb6d38e9f2e9335b",
+    "cover_mean": 0.34975230820976816,
+    "cover_max": 255
+   },
+   {
+    "frame": 2965,
+    "source_frame": 1954,
+    "rgb_sha256": "80eaacbd59dcd2713e7d5f371f5c33619c2fc65399eef0842cc83dc6b8aa8d93",
+    "cover_sha256": "3abe4393da5c554db45bbb3b1c6f13a9be19dfdf7673c356816d1f22fe7baea8",
+    "cover_mean": 0.2664760272371801,
+    "cover_max": 255
+   },
+   {
+    "frame": 2966,
+    "source_frame": 1957,
+    "rgb_sha256": "331426bf63e553a21493ce6acf74732e7e71acbd1bc278355fbde13796894393",
+    "cover_sha256": "36fc007453d6ad6cb42835a63986989ddd40b5887e8f1a9537b98d5c33cca016",
+    "cover_mean": 0.12984103939046596,
+    "cover_max": 255
+   },
+   {
+    "frame": 2967,
+    "source_frame": 1959,
+    "rgb_sha256": "f353f98468a4423d0c2f9d42031e59547d59f4a652f0ea8ec901c1ed02c60427",
+    "cover_sha256": "a86a870699069892f7d57fd49f531de6540770cd11c200c42e4340cd279b14d0",
+    "cover_mean": 0.09033074771160537,
+    "cover_max": 255
+   },
+   {
+    "frame": 2968,
+    "source_frame": 1962,
+    "rgb_sha256": "464b8ccb63ad08912c2359d7338656f8dfd44f7ccaf0bf4b42eb1e8fc3a901a9",
+    "cover_sha256": "8ff5439e1b63caa5182b12db7a69a559750be4e7649be2dac73de28d50b32b70",
+    "cover_mean": 0.017859596523103437,
+    "cover_max": 255
+   },
+   {
+    "frame": 2969,
+    "source_frame": 1964,
+    "rgb_sha256": "b4d7a8667d17d45cf1cbf83b7ccdc538c01a2d90c8b2d66b1e38e7dbbb0dedd8",
+    "cover_sha256": "33afe5dcb7b1bb939e12f07fbb3641e21fd549bd658007cc1baaebcb8c72496f",
+    "cover_mean": 0.005694383474782948,
+    "cover_max": 255
+   },
+   {
+    "frame": 2970,
+    "source_frame": 1966,
+    "rgb_sha256": "8afe2455a79d18c58c88507c0e30af4db168af347c74adfb56f52e5d398ab7a7",
+    "cover_sha256": "a39c165f0f3df5f6f12fe22b831659bdfcf0d8861d8e54eb1448ffe87ee1e512",
+    "cover_mean": 0.0034551532574057815,
+    "cover_max": 255
+   },
+   {
+    "frame": 2971,
+    "source_frame": 1969,
+    "rgb_sha256": "b64093a89a8be0d10658f0a56460b5cc0790f0266046b6b26909faf2a14bbaeb",
+    "cover_sha256": "8d5c356fa040b407dec8d16ccd89b4d6ccc46967d6477f6dd2dbc9dad3ab1ad5",
+    "cover_mean": 0.004054807661041199,
+    "cover_max": 255
+   },
+   {
+    "frame": 2972,
+    "source_frame": 1971,
+    "rgb_sha256": "a9f27896615ab56b57ad61bf0b31d3fdaa7289132fb85a6969b75cfbe08a5a75",
+    "cover_sha256": "89780418cd2f3ef3521e24b739696c495008b65bf41663f4f047cfca9f9788d7",
+    "cover_mean": 0.004471199964231132,
+    "cover_max": 255
+   },
+   {
+    "frame": 2973,
+    "source_frame": 1974,
+    "rgb_sha256": "717f65cd09f8d4a927d186a3086517761a56dfa39502ed1db74ea4b433c27ef1",
+    "cover_sha256": "da6d35a72656b81d1148acdb6d443766f0b9ad26d7c0771e7b1158e92502d55c",
+    "cover_mean": 0.005116980457191168,
+    "cover_max": 255
+   },
+   {
+    "frame": 2974,
+    "source_frame": 1976,
+    "rgb_sha256": "71e604d44341d26bbd5859a5d174503cf3d44a086cd8f0f6ddc69d9a579b92d4",
+    "cover_sha256": "ae9effe9e5f76155cc4e94cde75863f38a3e5a07007f9f772eca38e7c9c1e363",
+    "cover_mean": 0.005561721112574383,
+    "cover_max": 255
+   },
+   {
+    "frame": 2975,
+    "source_frame": 1979,
+    "rgb_sha256": "a75b294cfe21c8e98ca2a65d6e5f5593a9586ef76882eace6f042e4be7872638",
+    "cover_sha256": "0b9fafd5e740a7914cdad1432b73f18eb95a58ed81af1866be9adef303eab653",
+    "cover_mean": 0.006253246634474685,
+    "cover_max": 255
+   },
+   {
+    "frame": 2976,
+    "source_frame": 1981,
+    "rgb_sha256": "4048880c1b338f12c24e9dc44357b1f5cb068ba12d38cd2851359bc235e8735e",
+    "cover_sha256": "9910e7802769e2cbca36ff6d49c36ed1fe02de8206dd00618a8eedf6495fe06a",
+    "cover_mean": 0.006730712755666114,
+    "cover_max": 255
+   },
+   {
+    "frame": 2977,
+    "source_frame": 1984,
+    "rgb_sha256": "dffbebd5f848ccebeb52359514420daac42ebf117e2ffb9d8630db8bf4216dc6",
+    "cover_sha256": "9e04fe77ae456cf5df90e8fd6a6e2d3ab78443eac7c17699eef9d391f7b74732",
+    "cover_mean": 0.007469233184567359,
+    "cover_max": 255
+   },
+   {
+    "frame": 2978,
+    "source_frame": 1986,
+    "rgb_sha256": "3c6b9de528435b750c4d08dfd22f6fec56aa7b2400459d877ec944f9a3358052",
+    "cover_sha256": "fea8210f0c4f97ceda5fdf5cf734aea8590f2facb833f9ee8744382decc638e7",
+    "cover_mean": 0.007976256889571749,
+    "cover_max": 255
+   },
+   {
+    "frame": 2979,
+    "source_frame": 1989,
+    "rgb_sha256": "35a8ac7d4abf91e28363ea008e558c201814b1c7dabe5c7b931639a49c5a7620",
+    "cover_sha256": "31db4e5d02ff956bd20dcc517e50f5de57b344fa9e20755dbee7c54ee0d3420e",
+    "cover_mean": 0.008756445001300687,
+    "cover_max": 255
+   },
+   {
+    "frame": 2980,
+    "source_frame": 1991,
+    "rgb_sha256": "225cfdc99a7b1cbc3d64b6fed6332d091db38b233cde12983a5aa40f24843b74",
+    "cover_sha256": "ff344f3ec12dc300eda1e5a916a68f8a8116243f31be8930eb0c2ee1cc258e94",
+    "cover_mean": 0.009283720795532142,
+    "cover_max": 255
+   }
+  ]
+ },
+ "deep_exit_tail": {
+  "source_basename": "deep_tail_clear.json",
+  "source_sha256": "c53af477676a672da0f6f0f19bfa07a1d034c13ef28aabac86df12b938de35c6",
+  "collector_basename": "deep_tail_probe.py",
+  "collector_sha256": "046a556ad60a7c2b17057e72a3a8f52d50cdf1340826f6ecb308f718fdd17aad",
+  "implementation": "edit/cutd_deep.py:tail_weight and reveal; edit/edl_v3.py TRANS[D] deep_reveal tail_clear",
+  "implementation_sha256": {
+   "edit/cutd_deep.py": "9f292b53964dfd50fb905670cf7b5efa44f37a8bd159d619de082c1bd8472a75"
+  },
+  "native_frame": [
+   1920,
+   804
+  ],
+  "tail_clear": [
+   2976,
+   2980
+  ],
+  "formula": "weight = 1 - u*u*(3-2*u), u = clip((D_frame-2976)/4, 0, 1); scale both premultiplied RGB and cover",
+  "clear_frame_before_finish": 2980,
+  "first_modified_frame": 2977,
+  "definitions": {
+   "cover_values": "Normalized float32 cover in [0,1]; original source receipt also retains uint8 maxima.",
+   "after_vs_incoming_max": "Maximum absolute channel difference of the composited result and the same frame incoming plate, before finish."
+  },
+  "limitations": "Native tail samples verify the runtime envelope and same-frame identity at D2980 before finish. They do not assert identical finished pixels on adjacent frames or measure visible glow onset. The original source layers and 36-frame remap remain unchanged.",
+  "frames": [
+   {
+    "frame": 2976,
+    "weight": 1.0,
+    "original_cover_mean": 0.0067307124845683575,
+    "original_cover_max": 1.0,
+    "effective_cover_mean": 0.0067307124845683575,
+    "effective_cover_max": 1.0,
+    "before_vs_incoming_max": 0.886274516582489,
+    "after_vs_incoming_max": 0.886274516582489,
+    "changed_pixels": 0,
+    "finished_sha256": "f144231763924c1238088ef4a7a678d0db7b0dc80119c0de4484068265ab292c"
+   },
+   {
+    "frame": 2977,
+    "weight": 0.84375,
+    "original_cover_mean": 0.007469233125448227,
+    "original_cover_max": 1.0,
+    "effective_cover_mean": 0.006302165798842907,
+    "effective_cover_max": 0.84375,
+    "before_vs_incoming_max": 0.572549045085907,
+    "after_vs_incoming_max": 0.48308825492858887,
+    "changed_pixels": 18867,
+    "finished_sha256": "c02ef3f9f9b71fa1047eb3d4116e668dd147357a676692af95305fe49d1770ee"
+   },
+   {
+    "frame": 2978,
+    "weight": 0.5,
+    "original_cover_mean": 0.007976257242262363,
+    "original_cover_max": 1.0,
+    "effective_cover_mean": 0.003988128621131182,
+    "effective_cover_max": 0.5,
+    "before_vs_incoming_max": 0.4000000059604645,
+    "after_vs_incoming_max": 0.20000001788139343,
+    "changed_pixels": 16170,
+    "finished_sha256": "d442b989379768be9d701c28752de8b493f034de7eca18ae1c31137350ce0c06"
+   },
+   {
+    "frame": 2979,
+    "weight": 0.15625,
+    "original_cover_mean": 0.008756445720791817,
+    "original_cover_max": 1.0,
+    "effective_cover_mean": 0.0013681945856660604,
+    "effective_cover_max": 0.15625,
+    "before_vs_incoming_max": 0.3960784375667572,
+    "after_vs_incoming_max": 0.061887260526418686,
+    "changed_pixels": 17307,
+    "finished_sha256": "4c477290a7710424c39a6561c7ef01ea8825b52ca140e6a99976714fe39ff3ce"
+   },
+   {
+    "frame": 2980,
+    "weight": 0.0,
+    "original_cover_mean": 0.009283720515668392,
+    "original_cover_max": 1.0,
+    "effective_cover_mean": 0.0,
+    "effective_cover_max": 0.0,
+    "before_vs_incoming_max": 0.3960784375667572,
+    "after_vs_incoming_max": 0.0,
+    "changed_pixels": 18282,
+    "finished_sha256": "130f1b49633593cc7f1abc5594e39cbbbbd83dcb19a5cc5aaa8b831dd07f8dd0"
+   },
+   {
+    "frame": 2981,
+    "status": "plain live D12",
+    "finished_sha256": "9c36b79c5d67ac2a252da36c2d499ca2c6a3e847270929990bea68a531b04f3d"
+   }
+  ]
+ }
+}

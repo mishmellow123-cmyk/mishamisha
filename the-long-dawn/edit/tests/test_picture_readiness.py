@@ -135,10 +135,13 @@ class PictureReadinessTests(unittest.TestCase):
                        if not EDL.is_final_take(t)}
         self.assertEqual(provisional, {'h1_v3', 'montage', 'run_b_tests/dusk_motion',
                                        'x1_letters_C_test', 'embers_C3_half'})
-        expected_d = {'D07': 'embers_A3', 'D11a': 'cand_sweep_soft-entry', 'D11b': 'book_C_ft',
-                      'D11c': 'book_C', 'D11d': 'book_C_ft'}
+        expected_d = {'D07': {'embers_A3'}, 'D10': {'cutd_deep_race'},
+                      'D11a': {'cutd_deep_clean','cand_sweep_soft-entry'},
+                      'D11b': {'cutd_deep_clean','book_C_ft'}, 'D11c': {'book_C'},
+                      'D11d': {'cutd_deep_exit','book_C_ft'}, 'D12': {'cutd_deep_brink'}}
         def pending(rows):
-            return {s['code']: t['stem'] for s in rows for t in s['takes'] if not EDL.is_final_take(t)}
+            return {s['code']: {t['stem'] for t in s['takes'] if not EDL.is_final_take(t)}
+                    for s in rows if any(not EDL.is_final_take(t) for t in s['takes'])}
         self.assertEqual(pending(EDL.D), expected_d)
         for code in ('D07', 'D11a'):
             broken = [dict(s, takes=[dict(t, final_eligible=True) for t in s['takes']])

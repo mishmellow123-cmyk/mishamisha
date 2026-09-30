@@ -35,7 +35,7 @@ def bf(bar, beat=1.0):
 
 
 def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=None, video=None, need=None,
-      add=None, final_eligible=True, hold=None, clamp=None, screen_transform=None):
+      add=None, final_eligible=True, hold=None, clamp=None, screen_transform=None, baked_text=(), linear_mix=None):
     """need=(a, b): the take is used only once its folder holds every src frame a..b (a shared take such as H1
     switches over in one piece, never frame by frame while a render is still landing).
     add='<folder>': an additive layer in the same src numbering (renders/<folder>/), added after the matte comp;
@@ -46,6 +46,10 @@ def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=
     hold=<integer source frame>: repeat that frame for RGB, matte and add; omit it for the legacy offset clock.
     clamp=(first,last): clamp the offset source clock to this inclusive range; mutually exclusive with hold.
     screen_transform=<dict>: explicit screen camera applied after the take's composition and grade.
+    under=('take', take, frame, cut): hold an explicit direct plate take, including its source clock/transform.
+    linear_mix=<stem>: independent filmed-sweep coefficients, with this required explicit under take.
+    baked_text=('D14',): explicitly declares captions written into this adopted plate. D's overlay changes
+    to in_picture only when the complete take is selected; a missing or partial delivery keeps the overlay.
     final_eligible=False: an explicitly provisional take may still play in partial masters and previews,
     but cannot establish picture-source completeness. Approved reuse remains eligible."""
     take = dict(stem=stem, off=off, mode=mode, note=note, crop=crop, grade=grade, matte=matte, under=under,
@@ -60,6 +64,14 @@ def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=
         take['clamp'] = tuple(clamp)
     if screen_transform is not None:
         take['screen_transform'] = deepcopy(screen_transform)
+    if baked_text:
+        if isinstance(baked_text, str) or any(not isinstance(i, str) or not i for i in baked_text):
+            raise ValueError('baked_text must be a sequence of caption ids')
+        take['baked_text'] = tuple(baked_text)
+    if linear_mix is not None:
+        if not under or under[0] != 'take' or any(v is not None for v in (crop,grade,matte,add,screen_transform)):
+            raise ValueError('linear_mix requires an explicit under take and no second crop/grade/layer/transform')
+        take['linear_mix'] = linear_mix
     return take
 
 
@@ -611,16 +623,57 @@ C = [
 # document D numbering without making folder arrival an adoption. D07's separately approved burn is integrated
 # by the burn lane. Reused source clocks and holds are explicit, and A's entire opening is copied independently.
 D_CROSSING_SOURCE_START = 5180  # Reviewed A5180-5579: walk set-off; excludes the A4960 silhouette openings.
+# Explicit adoption switches. Uncomment ONE line after reviewing its complete delivery; folder arrival alone
+# changes nothing. D08's shared 400-frame plate feeds both D07's pre-roll and D08's body. D23's same one-line
+# adoption declares caption14 baked; titles keeps its overlay until this complete take actually wins the plan.
+D_NEW_TAKES = {
+    # 'D08': [T('embers_D_inscription', 0, 'exact', need=(1680, 2079))],
+    # 'D09': [T('embers_D_forging', 0, 'exact', need=(2080, 2399))],
+    # 'D10': [T('embers_D_race', 0, 'exact', need=(2400, 2719))],
+    # 'D12': [T('embers_D_brink', 0, 'exact', need=(2960, 3199))],
+    # 'D13': [T('embers_D_vision', 0, 'exact', need=(3200, 3439))],
+    # 'D14': [T('embers_D_gap', 0, 'exact', need=(3440, 3519))],
+    # 'D16': [T('embers_D_trap', 0, 'exact', need=(3760, 4079))],
+    # 'D17': [T('falsedawn_brink', 0, 'exact', need=(4080, 4239))],
+    # 'D18': [T('embers_D_crowns', 0, 'exact', need=(4240, 4559))],
+    # 'D19': [T('falsedawn_twofires', 0, 'exact', need=(4560, 5039))],
+    # 'D21b': [T('embers_D_holdout', 0, 'exact', need=(5480, 5519))],
+    # 'D22': [T('embers_D_instep', 0, 'exact', need=(5680, 5839))],
+    # 'D23': [T('book_D_oldfire', 0, 'exact', need=(5840, 6079), baked_text=('D14',))],
+    # 'D24': [T('embers_D_unfinished', 0, 'exact', need=(6080, 6399))],
+    # 'D27': [T('falsedawn_watch', 0, 'exact', need=(7040, 7359))],
+    # 'D28': [T('falsedawn_truedawn', 0, 'exact', need=(7360, 7839))],
+    # 'D31': [T('book_lastleaf_open', 0, 'exact', need=(8320, 8639))],
+    # 'D33': [T('book_D_title', 0, 'exact', need=(8880, 9119))],  # optional replacement
+}
+# D10/D12 also supply Deep's held under-plates; a fallback list could select a different picture in the row.
+for _d_code, _d_takes in D_NEW_TAKES.items():
+    if not isinstance(_d_takes, (list, tuple)) or len(_d_takes) != 1:
+        raise ValueError(f'D_NEW_TAKES[{_d_code!r}] requires exactly one explicit take')
 # D07: explicit stand-in adoption. C559's gilt Ring component is 59x29 px, centred at approximately (998,92).
 # The measured white-core centroids of A1400 and A1439 anchor the flame, never the whole valley's bounding box.
-# ONE-LINE future adoption (camera already aligned at D1680; D08 remains a separate NEW slate):
-# D_BURN_PLATE = T('embers_D_inscription', 0, 'exact', need=(1680, 1759))
+# ONE-LINE future adoption: uncomment D08 in D_NEW_TAKES above (camera aligned from D1680;
+# need=(1680, 2079) gates the whole 400-frame incoming plate and forging front together).
 D_BURN_PLATE = T('embers_A3', -280, 'exact', 'STAND-IN A1400-1439 thinking fire; source1439 held thereafter',
                  need=(1400, 1439), clamp=(1400, 1439), final_eligible=False,
                  screen_transform=dict(f0=1680, f1=1760, source_f0=1680, source_f1=1719,
                                        anchor0=(960.293, 460.242), anchor1=(959.523, 515.664),
                                        target0=(998., 92.), target1=(960., 402.), scale0=.10, scale1=1.,
                                        border=(14/255., 14/255., 14/255.)))
+# Explicit local stand-ins; one-line future adoption is D10/D12 in D_NEW_TAKES. The same selected plate feeds
+# each held under-layer. These local takes stay provisional even when every local file is present.
+D_DEEP_RACE_PLATE = T('cutd_deep_race',0,'exact','STAND-IN native open-Ring race held at D2719',
+                      hold=2719,need=(2719,2719),final_eligible=False)
+D_DEEP_BRINK_PLATE = T('cutd_deep_brink',0,'exact','STAND-IN native brink held at D2960',
+                       hold=2960,need=(2960,2960),final_eligible=False)
+D_DEEP_RACE_SOURCE = D_NEW_TAKES.get('D10',[D_DEEP_RACE_PLATE])[0]
+D_DEEP_BRINK_SOURCE = D_NEW_TAKES.get('D12',[D_DEEP_BRINK_PLATE])[0]
+D_DEEP_RACE_UNDER = ('take',D_DEEP_RACE_SOURCE,2719,'D')
+D_DEEP_BRINK_UNDER = ('take',D_DEEP_BRINK_SOURCE,2960,'D')
+D_DEEP_ENTRY = T('cutd_deep_clean',0,'exact','Filmed re-bake over embers_D_race D2719; provisional local sources',
+                 under=D_DEEP_RACE_UNDER,linear_mix='cutd_deep_sweep_coeff',need=(2720,2757),final_eligible=False)
+D_DEEP_EXIT = T('cutd_deep_exit',0,'exact','Filmed re-bake onto embers_D_brink D2960; 36-frame exit',
+                matte='cutd_deep_exit_matte',under=D_DEEP_BRINK_UNDER,need=(2945,2980),final_eligible=False)
 D = [dict(deepcopy(row), sec='D0', code=f'D{number:02d}') for number, row in enumerate(A[:5], 1)] + [
     S('D1', 1440, 1680, 'D06', 'THE OLD STORY', 'PAGES-C reuse',
       'The red book: a pen draws a mountain with fire in its throat and a small closed gold ring.',
@@ -629,75 +682,90 @@ D = [dict(deepcopy(row), sec='D0', code=f'D{number:02d}') for number, row in enu
     # x1burn_D_drawnring: generated x1burn v2 transition at D1680-1759; no shared layer-folder writes.
     S('D1', 1680, 1760, 'D07', 'THE BURN', 'EDIT',
       'A burn born at the drawn gold Ring opens the page onto ours; incoming fire is an explicit A stand-in.',
-      [D_BURN_PLATE]),
-    # NEW: expected stem embers_D_inscription, off=0, need=(1760, 2079); no take until explicitly adopted.
+      D_NEW_TAKES.get('D08', [D_BURN_PLATE])),
+    # NEW: D_NEW_TAKES['D08']; its need=(1680, 2079) includes the preceding burn pre-roll.
     S('D1', 1760, 2080, 'D08', 'THE FORGING FRONT', 'VISION',
       'NEW embers_D_inscription: A5\'s ice-white thinking fire, edged in gold, draws out into a band; the camera '
-      'rides the front as it writes every script, stops mid-letter, and leaves the band hanging open.'),
+      'rides the front as it writes every script, stops mid-letter, and leaves the band hanging open.',
+      D_NEW_TAKES.get('D08', [])),
     # NEW: expected stem embers_D_forging, off=0, need=(2080, 2399); no take until explicitly adopted.
     S('D1', 2080, 2400, 'D09', 'THE FORGING', 'OPENRING',
       'NEW embers_D_forging: towers rise under the open band; only the two tallest towers send sparks to its ends; '
-      'each hammer stroke pays gold into the striker\'s windows.'),
-    # NEW: expected stem embers_D_race, off=0, need=(2400, 2719); no take until explicitly adopted.
+      'each hammer stroke pays gold into the striker\'s windows.',
+      D_NEW_TAKES.get('D09', [])),
+    # NEW: expected stem embers_D_race, off=0, need=(2400, 2719); D_NEW_TAKES replaces the provisional still.
     S('D2', 2400, 2720, 'D10', 'THE RACE', 'OPENRING',
       'NEW embers_D_race: surges on every beat; glare hides the narrowing gap, gold reaches the nearest windows, '
-      'and two giants pull ahead.'),
+      'and two giants pull ahead.',D_NEW_TAKES.get('D10',[D_DEEP_RACE_PLATE])),
     S('D2', 2720, 2728, 'D11a', 'THE DEEP · THE SWEEP ENTRY', 'BURN-C reuse',
-      'C sweep soft entry; needs re-bake over embers_D_race D2719: the baked held race shows C\'s closed Ring.',
-      [dict(ft_sweep_entry(), off=-1040, final_eligible=False,
+      'Filmed soft-entry re-bake over embers_D_race D2719; explicit local assets use a provisional open-Ring plate. '
+      'C\'s closed-Ring baked picture remains the unconfigured fallback.',
+      [deepcopy(D_DEEP_ENTRY), dict(ft_sweep_entry(), off=-1040, final_eligible=False,
             note='C1680-1687 reused; needs re-bake over embers_D_race D2719 (baked C closed-Ring race)')]),
     S('D2', 2728, 2758, 'D11b', 'THE DEEP · THE SWEEP', 'BURN-C reuse',
-      'The ember edge sweeps to parchment; needs re-bake over embers_D_race D2719: C\'s closed-Ring race is baked in.',
-      [dict(ft_sweep(), off=-1040, final_eligible=False,
+      'The original filmed ember edge sweeps to parchment in a re-bake over embers_D_race D2719; '
+      'the local plate is provisional and C\'s closed-Ring bake remains the unconfigured fallback.',
+      [deepcopy(D_DEEP_ENTRY), dict(ft_sweep(), off=-1040, final_eligible=False,
             note='C1688-1717 reused; needs re-bake over embers_D_race D2719 (baked C closed-Ring race)')]),
     S('D2', 2758, 2945, 'D11c', 'THE DEEP', 'MAP-C reuse',
-      'The pen follows a gilt vein down pillared halls; needs re-bake over embers_D_race D2719: the current '
-      'under-layer holds C\'s closed-Ring race at source1679.',
-      [book('C1718-1904 reused; holds embers_C3 source1679; needs re-bake over embers_D_race D2719',
+      'The pen follows a gilt vein down pillared halls; the re-bake under-layer holds embers_D_race D2719 '
+      'through the Deep. The unconfigured fallback holds C\'s closed-Ring race at source1679.',
+      [book('Filmed re-bake under embers_D_race D2719 from the explicitly adopted D10 plate; provisional local sources',
+            off=-1040,under=D_DEEP_RACE_UNDER,final_eligible=False),
+       book('C1718-1904 reused; holds embers_C3 source1679; needs re-bake over embers_D_race D2719',
             off=-1040, under=('hold', 'embers_C3', 1679), final_eligible=False)]),
     S('D2', 2945, 2960, 'D11d', 'THE DEEP · THE GLOW', 'BURN-C reuse',
-      'The red glow wakes below; C\'s opaque filmed page holds storm source1920. Needs re-bake over '
-      'embers_D_race D2719 and future embers_D_brink D2960 when those plates are available.',
-      [dict(ft_eye(('hold', 'embers_C3', 1920)), off=-1040, final_eligible=False,
+      'The red glow opens onto embers_D_brink D2960 in a 36-frame filmed re-bake through D2980; '
+      'the local Brink plate is provisional. The unconfigured fallback holds C\'s storm source1920.',
+      [deepcopy(D_DEEP_EXIT), dict(ft_eye(('hold', 'embers_C3', 1920)), off=-1040, final_eligible=False,
             note='C1905-1919 reused; holds source1920; needs re-bake over embers_D_race D2719 / embers_D_brink D2960')]),
-    # NEW: expected stem embers_D_brink, off=0, need=(2960, 3199); no take until explicitly adopted.
+    # NEW: expected stem embers_D_brink, off=0, need=(2960, 3199); D_NEW_TAKES replaces the provisional still.
     S('D2', 2960, 3200, 'D12', 'THE BRINK', 'VISION',
-      'NEW embers_D_brink: the red glow burns through onto the Ring, its gap at the narrowest yet; towers lean in.'),
+      'NEW embers_D_brink: the red glow burns through onto the Ring, its gap at the narrowest yet; towers lean in.',
+      D_NEW_TAKES.get('D12',[D_DEEP_BRINK_PLATE])),
     # NEW: expected stem embers_D_vision, off=0, need=(3200, 3439); no take until explicitly adopted.
     S('D2', 3200, 3440, 'D13', 'IF IT CLOSED', 'VISION',
       'NEW embers_D_vision: the ends touch; a white seam and missing letters kindle; the circle becomes an '
-      'ice-white Eye; the two giants bow first, then every tower; push into the slit.'),
+      'ice-white Eye; the two giants bow first, then every tower; push into the slit.',
+      D_NEW_TAKES.get('D13', [])),
     # NEW: expected stem embers_D_gap, off=0, need=(3440, 3519); no take until explicitly adopted.
     S('D2', 3440, 3520, 'D14', 'THE GAP', 'VISION',
-      'NEW embers_D_gap: hard cut on the downbeat from slit to open gap as the next hammer stroke lands.'),
+      'NEW embers_D_gap: hard cut on the downbeat from slit to open gap as the next hammer stroke lands.',
+      D_NEW_TAKES.get('D14', [])),
     S('D3', 3520, 3760, 'D15', 'THE REFUSAL', 'PAGES-C reuse',
       'A gloved palm offers a closed ring; a hooded figure turns away.',
       [T('book_C5_refusal', -1440, 'exact', 'C10 whole source2080-2319', matte='book_C5_refusal_matte')]),
     # NEW: expected stem embers_D_trap, off=0, need=(3760, 4079); no take until explicitly adopted.
     S('D3', 3760, 4080, 'D16', 'THE TRAP', 'OPENRING',
       'NEW embers_D_trap: the page burns onto ours; one forge slows, loses gold to its neighbours and is passed; '
-      'it flares back into the race; two giants run neck and neck.'),
+      'it flares back into the race; two giants run neck and neck.',
+      D_NEW_TAKES.get('D16', [])),
     # NEW: expected stem falsedawn_brink, off=0, need=(4080, 4239); no take until explicitly adopted.
     S('D4', 4080, 4240, 'D17', 'THE GLOW AT THE BRINK', 'GLOWVARS',
-      'NEW falsedawn_brink: the opening ridge again; the glow pulses on the race\'s beat over red cloud.'),
+      'NEW falsedawn_brink: the opening ridge again; the glow pulses on the race\'s beat over red cloud.',
+      D_NEW_TAKES.get('D17', [])),
     # NEW: expected stem embers_D_crowns, off=0, need=(4240, 4559); no take until explicitly adopted.
     S('D4', 4240, 4560, 'D18', 'THE TWO CROWNS', 'VISION',
       'NEW embers_D_crowns: a locked frame; two orange beacons kindle together at D4320 on the giants\' crowns, '
-      'each lighting the other\'s face while both forges keep hammering.'),
+      'each lighting the other\'s face while both forges keep hammering.',
+      D_NEW_TAKES.get('D18', [])),
     # NEW: expected stem falsedawn_twofires, off=0, need=(4560, 5039); no take until explicitly adopted.
     S('D4', 4560, 5040, 'D19', 'THE TWO FIRES', 'GLOWVARS',
-      'NEW falsedawn_twofires: match the crowns to two beacons either side of the glow; fires answer toward us.'),
+      'NEW falsedawn_twofires: match the crowns to two beacons either side of the glow; fires answer toward us.',
+      D_NEW_TAKES.get('D19', [])),
     S('D4', 5040, 5180, 'D20', 'EVERY RIDGE', 'RUN-A reuse',
-      'Fires to the horizon over a cloud sea lit warm from beneath.',
+      'Fires to the horizon over a cloud sea lit warm from beneath; the nearest fire burns the picture open.',
       [T('reveal_A', -1380, 'exact', 'A13 source3660-3799')]),
-    # The NEW reveal-to-map burn needs an exact under-plate at D5180. No active window or layer stem is invented.
+    # D5180-5219: the same x1burn v2 grammar as D07, born at A3799's measured nearest ridge fire.
     S('D4', 5180, 5480, 'D21a', 'THE LAST KINGDOM', 'MAP-C reuse',
-      'Kingdoms light in no order until one stays dark. NEW map burn pending; its under-plate must match D5180.',
+      'The nearest ridge fire burns open the held A3799 image onto C3440 and the advancing map; '
+      'kingdoms light in no order until one stays dark.',
       [T('cand_map_beacon-falloff', -1740, 'exact', 'C15 source3440-3739; pause in the dark holdout stretch')]),
     # NEW: expected stem embers_D_holdout, off=0, need=(5480, 5519); no take until explicitly adopted.
     S('D4', 5480, 5520, 'D21b', 'THE HOLDOUT', 'OPENRING',
       'NEW embers_D_holdout: the dark kingdom\'s hammer rings; planned first contact D5496; its sparks reach '
-      'the band and narrow the gap a notch.'),
+      'the band and narrow the gap a notch.',
+      D_NEW_TAKES.get('D21b', [])),
     S('D4', 5520, 5554, 'D21c', 'THE LAST KINGDOM · WAIT', 'MAP-C reuse',
       'Return to the map and hold source3739, the frame just before the holdout insert.',
       [T('cand_map_beacon-falloff', 0, 'exact', 'Hold C15 source3739 for34 frames', hold=3739)]),
@@ -710,14 +778,17 @@ D = [dict(deepcopy(row), sec='D0', code=f'D{number:02d}') for number, row in enu
     # NEW: expected stem embers_D_instep, off=0, need=(5680, 5839); no take until explicitly adopted.
     S('D4', 5680, 5840, 'D22', 'IN STEP', 'OPENRING',
       'NEW embers_D_instep: every forge eases into a shared working glow; hammers land together, the ends cool '
-      'from white to gold, and the glare clears.'),
+      'from white to gold, and the glare clears.',
+      D_NEW_TAKES.get('D22', [])),
     # NEW: expected stem book_D_oldfire, off=0, need=(5840, 6079); no take until explicitly adopted.
     S('D5', 5840, 6080, 'D23', 'THE OLD FIRE', 'LASTPAGE',
-      'NEW book_D_oldfire: in the book, the drawn Ring drops into the Mountain\'s drawn fire.'),
+      'NEW book_D_oldfire: in the book, the drawn Ring drops into the Mountain\'s drawn fire.',
+      D_NEW_TAKES.get('D23', [])),
     # NEW: expected stem embers_D_unfinished, off=0, need=(6080, 6399); no take until explicitly adopted.
     S('D5', 6080, 6400, 'D24', 'THE RING, UNFINISHED', 'OPENRING',
       'NEW embers_D_unfinished: the gap stands sharp over working towers; lamps rise around the band to light its '
-      'letters, and gold falls into every window.'),
+      'letters, and gold falls into every window.',
+      D_NEW_TAKES.get('D24', [])),
     S('D5', 6400, 6640, 'D25', 'THE DEEP, ABANDONED', 'PAGES-C reuse',
       'Falling gold becomes the vein; empty ladders and a lantern set down where its light ends.',
       [T('cand_deep_leaned_ladders', -2160, 'exact', 'C18 source4240-4479',
@@ -730,10 +801,12 @@ D = [dict(deepcopy(row), sec='D0', code=f'D{number:02d}') for number, row in enu
          need=(D_CROSSING_SOURCE_START, D_CROSSING_SOURCE_START + 399))]),
     # NEW: expected stem falsedawn_watch, off=0, need=(7040, 7359); no take until explicitly adopted.
     S('D6', 7040, 7360, 'D27', 'THE WATCH', 'GLOWVARS',
-      'NEW falsedawn_watch: hours later, fires surround the warm steady glow, which breathes once a bar.'),
+      'NEW falsedawn_watch: hours later, fires surround the warm steady glow, which breathes once a bar.',
+      D_NEW_TAKES.get('D27', [])),
     # NEW: expected stem falsedawn_truedawn, off=0, need=(7360, 7839); no take until explicitly adopted.
     S('D7', 7360, 7840, 'D28', 'THE LONG DAWN', 'GLOWVARS',
-      'NEW falsedawn_truedawn: the same ridge; rose light rises where the false dawn stood; the beacons still burn.'),
+      'NEW falsedawn_truedawn: the same ridge; rose light rises where the false dawn stood; the beacons still burn.',
+      D_NEW_TAKES.get('D28', [])),
     S('D7', 7840, 8080, 'D29', 'THE TERRACES', 'RUN-A reuse',
       'The first light reaches the terraced summits across the cloud sea.',
       [T('dawnrev_A', -1840, 'exact', 'A19 source6000-6239')]),
@@ -743,7 +816,8 @@ D = [dict(deepcopy(row), sec='D0', code=f'D{number:02d}') for number, row in enu
     # NEW: expected stem book_lastleaf_open, off=0, need=(8320, 8639); no take until explicitly adopted.
     S('D7', 8320, 8640, 'D31', 'THE LAST WRITTEN LEAF', 'LASTPAGE',
       'NEW book_lastleaf_open: the storyteller\'s last written line breaks off mid-word beside the drawn open Ring; '
-      'the facing page is blank and the pen rests.'),
+      'the facing page is blank and the pen rests.',
+      D_NEW_TAKES.get('D31', [])),
     S('D7', 8640, 8880, 'D32', 'THE LAST PAGES', 'PAGES-C reuse',
       'The blank spread with the pen resting across it.',
       [T('cand_pen_soft_spine_metal', -3200, 'exact', 'C22 source5440-5679',
@@ -751,7 +825,7 @@ D = [dict(deepcopy(row), sec='D0', code=f'D{number:02d}') for number, row in enu
     # Optional NEW book_D_title, off=0, need=(8880, 9119), is not adopted; retain the accepted C title.
     S('D7', 8880, 9120, 'D33', 'TITLE', 'MAP-C reuse',
       'THE LONG DAWN burns onto the blank recto and cools to ink; C\'s title remains until a replacement is adopted.',
-      [book('C title source6960-7199; caption source6980-7159', off=-1920)]),
+      D_NEW_TAKES.get('D33', [book('C title source6960-7199; caption source6980-7159', off=-1920)])),
     S('D7', 9120, 9200, 'D34', 'THE HEARTH GOES OUT', 'EDIT', 'Black; the hearth goes out.', kind='black'),
 ]
 EDL = {'A': A, 'B': B, 'C': C, 'D': D}
@@ -879,7 +953,7 @@ TRANS['A'] = list(afix_comp.A_TRANS) + [afix_comp.WATCHFIRES, edge_polish.WINDOW
 
 
 # Restore A's delivered opening windows only after TRANS['A'] is fully initialized; the nested tracks are D-owned.
-# New pair windows remain plain cuts while either side is a slate. The map burn is pending its exact D5180 under.
+# New pair windows remain plain cuts while either side is a slate.
 TRANS['D'] = [deepcopy(t) for t in TRANS['A'] if 0 <= t['f0'] and t['f1'] <= 1440] + [
     dict(f0=1520, f1=1660, kind='caption_grade', id='R02', full0=1550, full1=1648,
          source_stem='cand_t1_current-words-held', source_off=-1120, band_frame_off=-1120,
@@ -887,9 +961,15 @@ TRANS['D'] = [deepcopy(t) for t in TRANS['A'] if 0 <= t['f0'] and t['f1'] <= 144
          note='D06 old-story inscription: C caption geometry400-539 on the same source pixels'),
     dict(f0=1680, f1=1760, cut=1680, kind='ring_burn', center=(998., 92.), t_open=1682., speed=2.8, seed=12,
          note='x1burn v2 at the measured gilt Ring on held C559; real burn with explicit stand-in incoming fire'),
+    dict(f0=2945,f1=2981,kind='deep_reveal',under_start=2960,glow='cutd_deep_exit',cover='cutd_deep_exit_matte',
+         tail_clear=(2976,2980),
+         note='Original filmed C1905-1991 remapped across36 D frames; reveal the selected brink throughD2980'),
     dict(f0=3750, f1=3786, cut=3760, kind='burn', glow='x1_refusal_C5', keep='x1_refusal_C5_matte',
          cover='x1_refusal_C5_cover', layer_off=-1440,
          note='D15 refusal -> D16 trap: C burn source2310-2345; requires NEW trap under-plate D3760'),
+    dict(f0=5180, f1=5220, cut=5180, kind='ring_burn', center=(1136., 623.),
+         t_open=5182., speed=9.4, seed=12,
+         note='Nearest ridge flame on held reveal_A A3799 (D5179); x1burn v2 opens onto map C3440 at D5180'),
     dict(f0=6388, f1=6412, cut=6400, kind='dissolve',
          note='D24 unfinished Ring -> D25 abandoned Deep; suppressed while unfinished is a slate'),
     dict(f0=6636, f1=6644, cut=6640, kind='dissolve',
@@ -959,7 +1039,18 @@ def d_export_extra():
     return dict(version='D', status='treatment; new picture pending',
                 script='THE LONG DAWN cut D treatment v2 (30 Sep 2026): 34 beats, 115 bars',
                 barmap='music/v3/' + BARMAP['D'], bars=TOTAL['D'] // BAR, beats=34,
-                pending_picture='NEW rows have no takes until explicitly adopted, even if expected folders exist',
-                rebake='D11 C sweep/held race need re-bake over embers_D_race D2719; glow onto embers_D_brink D2960',
-                pending_map_burn='Requires exact under-plate D5180; no new map burn adopted',
+                pending_picture='NEW plates require an explicit D_NEW_TAKES entry; approved stand-ins stay '
+                                'provisional. Folder arrival alone never adopts a plate.',
+                adoption='Uncomment one literal T(...) line in D_NEW_TAKES after review. D08 gates all '
+                         '1680-2079 for D07/D08 together. D23 declares baked_text=(D14,) and its complete '
+                         'selection changes that caption to in_picture; missing/partial delivery retains the overlay.',
+                rebake='D11 local entry coefficients composite over the selected D10 plate held at D2719; '
+                       'the C page body uses the same input. Filmed C1905-1991 exits across D2945-2980 over '
+                       'the selected D12 brink. A D-only cubic tail clear scales both premultiplied RGB and '
+                       'cover across D2976-2980, reaching the incoming plate exactly at D2980 before finish. '
+                       'Held direct takes honor their complete need gates. Original '
+                       'C fallback pictures, local stand-ins and current Deep composites remain provisional.',
+                map_burn='Adopted x1burn v2 at D5180-5219, born at nearest ridge flame (1136,623) on held '
+                         'reveal_A A3799; opens onto the advancing map from C3440. t_open=5182 and speed=9.4 '
+                         'are renderer parameters; cover-grid timing measurements are recorded separately.',
                 score_status='stand-in required until D score exists')

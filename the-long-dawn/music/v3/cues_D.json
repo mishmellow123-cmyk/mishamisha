@@ -743,18 +743,24 @@
    "tags": []
   },
   "brink_burnthrough": {
-   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #12 (THE BRINK); provisional musical placement within [2960, 3200), awaiting picture timing.",
-   "timing_status": "estimated",
+   "source": "music/v3/events_D_round4_measured.json deep_exit_source.first_open_on_selected_source_masks; source C1925 maps to D2953 under the 36-frame resampling. All 36 selected native 1920×804 source masks were measured before the D-only exit-tail envelope; this is not visible-glow or finished-picture timing.",
+   "timing_status": "measured_source_cover",
    "picture_frame": null,
    "shot": 12,
    "timing_window": [
-    2960,
-    3200
+    2945,
+    2981
    ],
-   "lock": "soft",
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "deep_exit_source.first_open_on_selected_source_masks",
+   "measurement_scope": "All 36 selected native 1920×804 source masks were measured before the D-only exit-tail envelope; this is not visible-glow or finished-picture timing.",
+   "mask_frame": 2953,
+   "source_frame": 1925,
+   "source_clock": "C5 edit and book_C_ft frame",
+   "lock": "hard",
    "kind": "picture",
    "tags": [
-    "provisional"
+    "source_cover"
    ]
   },
   "brink_gap_narrowest": {
@@ -1271,18 +1277,22 @@
    "tags": []
   },
   "last_kingdom_burn": {
-   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #21 (THE LAST KINGDOM); provisional musical placement within [5180, 5680), awaiting picture timing.",
-   "timing_status": "estimated",
+   "source": "music/v3/events_D_round4_measured.json ridge_burn.first_open_on_sample_grid; All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "timing_status": "measured_D_cover",
    "picture_frame": null,
    "shot": 21,
    "timing_window": [
     5180,
-    5263
+    5220
    ],
-   "lock": "soft",
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "ridge_burn.first_open_on_sample_grid",
+   "measurement_scope": "All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "mask_frame": 5183,
+   "lock": "hard",
    "kind": "picture",
    "tags": [
-    "provisional"
+    "cover"
    ]
   },
   "map_cue": {
@@ -2189,6 +2199,61 @@
    "lock": "hard",
    "kind": "parameter",
    "tags": []
+  },
+  "last_kingdom_burn_t_open": {
+   "source": "music/v3/events_D_round4_measured.json ridge_burn.parameters.t_open; All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "timing_status": "renderer_parameter",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5180,
+    5220
+   ],
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "ridge_burn.parameters.t_open",
+   "measurement_scope": "All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "lock": "hard",
+   "kind": "parameter",
+   "tags": [
+    "parameter"
+   ]
+  },
+  "last_kingdom_burn_ridge_gone": {
+   "source": "music/v3/events_D_round4_measured.json ridge_burn.first_fully_gone_on_sample_grid; All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "timing_status": "measured_D_cover",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5180,
+    5220
+   ],
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "ridge_burn.first_fully_gone_on_sample_grid",
+   "measurement_scope": "All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "mask_frame": 5212,
+   "lock": "hard",
+   "kind": "picture",
+   "tags": [
+    "cover"
+   ]
+  },
+  "brink_burn_clear": {
+   "source": "music/v3/events_D_round4_measured.json deep_exit_tail.clear_frame_before_finish; D2976-2981 sampled at native 1920×804; D2980 composite equals its same-frame incoming Brink before finish. Raw source cover remains nonzero and is recorded separately.",
+   "timing_status": "measured_D_composite",
+   "picture_frame": null,
+   "shot": 12,
+   "timing_window": [
+    2945,
+    2981
+   ],
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "deep_exit_tail.clear_frame_before_finish",
+   "measurement_scope": "D2976-2981 sampled at native 1920×804; D2980 composite equals its same-frame incoming Brink before finish. Raw source cover remains nonzero and is recorded separately.",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": [
+    "composite"
+   ]
   }
  },
  "extra_events": [],

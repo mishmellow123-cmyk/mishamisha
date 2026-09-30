@@ -45,6 +45,7 @@ import titles  # noqa: E402
 import caption_grade as CG  # noqa: E402
 import edge_polish as EP  # noqa: E402
 import ring_burn as RB  # noqa: E402
+import cutd_deep as DEEP  # noqa: E402
 
 cv2.setNumThreads(1)
 RENDERS = os.path.join(ROOT, 'renders')
@@ -70,6 +71,21 @@ def bar_beat(f):
 _INDEX = {}
 
 
+def render_dir(stem):
+    """Explicit local D assets; existing render stems always retain their original source root.
+
+    CUTD_LOCAL_RENDERS only applies to reserved single-component cutd_* names. It does not overlay the shared
+    render tree or adopt any source: the EDL still names every take/layer. Missing local files remain missing.
+    """
+    if stem.startswith('cutd_'):
+        if not re.fullmatch(r'cutd_[A-Za-z0-9_]+', stem):
+            raise ValueError('A local D render stem must be one safe cutd_* name')
+        local = os.environ.get('CUTD_LOCAL_RENDERS')
+        if local:
+            return os.path.join(os.path.abspath(os.path.expanduser(local)), stem)
+    return os.path.join(RENDERS, stem)
+
+
 def index(d):
     """{src frame: path} of a render folder (png preferred over jpg, as look.find_frame)."""
     if d not in _INDEX:
@@ -85,7 +101,8 @@ def index(d):
     return _INDEX[d]
 
 
-def chain(take, cut, variant=None):
+def chain(take, cut, variant=None, *, logical=False):
+    """Source folders; logical=True keeps portable shared-tree names for EDL export only."""
     st, mode = take['stem'], take['mode']
     if mode == 'exact':
         dirs = [st]
@@ -95,7 +112,7 @@ def chain(take, cut, variant=None):
         dirs = [f'{st}_{cut}', f'{st}_v3', f'{st}_v2', st]
     if variant == 'codedtowers':
         dirs = [x for d in dirs for x in (d + ALT, d)]
-    return [os.path.join(RENDERS, d) for d in dirs]
+    return [os.path.join(RENDERS, d) if logical else render_dir(d) for d in dirs]
 
 
 _VIDN = {}
@@ -116,16 +133,32 @@ def video_frames(take):
 def locate(take, cut, variant, f):
     """(path or ('video', path, index), from_alt) for cut frame f in this take, or (None, False)."""
     src = EDL.source_frame(take, f)
+    if under_take(take.get('under')):
+        if locate_under(take['under'],f)[0] is None:
+            return None,False
+        if take.get('matte') and not index(render_dir(take['matte'])).get(src):
+            return None,False
+    if take.get('linear_mix') and not os.path.isfile(DEEP.coeff_path(render_dir(take['linear_mix']),src)):
+        return None,False
     if take['mode'] == 'video':
         n = video_frames(take)
         return ((('video', os.path.join(ROOT, take['video']), src), False) if 0 <= src < n else (None, False))
-    if take.get('add') and not index(os.path.join(RENDERS, take['add'])).get(src):
+    if take.get('add') and not index(render_dir(take['add'])).get(src):
         return None, False                                    # an additive layer must be there as well
     for d in chain(take, cut, variant):
         p = index(d).get(src)
         if p:
             return p, d.endswith(ALT)
     return None, False
+
+
+def under_take(spec):
+    """An explicit held direct take, or None for the unchanged legacy under-layer formats."""
+    if not spec or spec[0] != 'take':
+        return None
+    if len(spec) != 4 or not isinstance(spec[1],dict) or spec[1].get('under'):
+        raise ValueError('A held under take needs (take, direct take, frame, cut); nested unders are unsupported')
+    return spec[1],spec[2],spec[3]
 
 
 def locate_under(spec, f):
@@ -136,6 +169,12 @@ def locate_under(spec, f):
     """
     if not spec:
         return None, None
+    explicit=under_take(spec)
+    if explicit:
+        take,frame,cut=explicit
+        if take.get('need') and not complete(take,cut,None,*take['need']):
+            return None,take['stem']
+        return locate(take,cut,None,frame)[0],take['stem']
     how, stem, *rest = spec
     g = rest[0] if (how == 'hold' and rest) else f
     if how == 'offset':
@@ -143,7 +182,7 @@ def locate_under(spec, f):
             raise ValueError('An offset under-layer requires one integer frame offset')
         g = f + rest[0]
     for d in (stem, stem + '_half'):
-        p = index(os.path.join(RENDERS, d)).get(g)
+        p = index(render_dir(d)).get(g)
         if p:
             return p, d
     return None, None
@@ -159,7 +198,10 @@ def provisional_sources(take, cut, variant, f):
     if not p:
         return ()
     sources = [] if EDL.is_final_take(take) else [take['stem']]
-    if take.get('matte') and index(os.path.join(RENDERS, take['matte'])).get(EDL.source_frame(take, f)):
+    explicit=under_take(take.get('under'))
+    if explicit and not EDL.is_final_take(explicit[0]):
+        sources.append('under:'+explicit[0]['stem'])
+    if take.get('matte') and index(render_dir(take['matte'])).get(EDL.source_frame(take, f)):
         up, stem = locate_under(take.get('under'), f)
         if up and not EDL.UNDER_FINAL_ELIGIBILITY.get(stem, True):
             sources.append('under:' + stem)
@@ -170,7 +212,17 @@ def complete(take, cut, variant, a, b):
     got = set()
     for d in chain(take, cut, variant):
         got |= set(index(d))
-    return all(k in got for k in range(a, b + 1))
+    if not all(k in got for k in range(a, b + 1)):
+        return False
+    if take.get('linear_mix'):
+        folder=render_dir(take['linear_mix'])
+        if not all(os.path.isfile(DEEP.coeff_path(folder,k)) for k in range(a,b+1)):
+            return False
+    if under_take(take.get('under')) and take.get('matte'):
+        masks=index(render_dir(take['matte']))
+        if not all(k in masks for k in range(a,b+1)):
+            return False
+    return True
 
 
 def plan_shot(shot, cut, variant):
@@ -266,15 +318,23 @@ class Ctx:
         img = self.read(p, take.get('crop'))
         if img is None:
             return None
+        explicit=under_take(take.get('under'))
+        required=self.under(take['under'],f) if explicit else None
+        if explicit and required is None:
+            return None
+        if take.get('linear_mix'):
+            return DEEP.sweep(required,DEEP.coeff_path(render_dir(take['linear_mix']),EDL.source_frame(take,f)),f)
         if take.get('matte'):                                     # MAP's book layer: rgb + (1 - matte) * under
-            mp = index(os.path.join(RENDERS, take['matte'])).get(EDL.source_frame(take, f))
+            mp = index(render_dir(take['matte'])).get(EDL.source_frame(take, f))
             if mp:
                 m = self.read(mp, gray=True)
-                under = self.under(take.get('under'), f)
+                if explicit and m is None:
+                    return None
+                under = required if explicit else self.under(take.get('under'), f)
                 if m is not None and under is not None:
                     img = np.clip(img + (1 - m)[..., None] * under, 0, 1)
         if take.get('add'):                                       # e.g. EMBERS' fire added over MAP's page
-            ap = index(os.path.join(RENDERS, take['add'])).get(EDL.source_frame(take, f))
+            ap = index(render_dir(take['add'])).get(EDL.source_frame(take, f))
             layer = self.read(ap) if ap else None
             if layer is not None:
                 img = np.clip(img + layer, 0, 1)
@@ -288,6 +348,14 @@ class Ctx:
     def under(self, spec, f):
         if not spec:
             return None
+        explicit=under_take(spec)
+        if explicit:
+            take,frame,cut=explicit
+            if cut != self.cut:
+                raise ValueError('An explicit under take must use the compositor cut')
+            if locate_under(spec,f)[0] is None:
+                return None
+            return self.take_frame(take,frame)
         how, stem, *rest = spec
         g = rest[0] if (how == 'hold' and rest) else f
         if how == 'offset':
@@ -295,7 +363,7 @@ class Ctx:
                 raise ValueError('An offset under-layer requires one integer frame offset')
             g = f + rest[0]
         for d in (stem, stem + '_half'):
-            p = index(os.path.join(RENDERS, d)).get(g)
+            p = index(render_dir(d)).get(g)
             if p:
                 return self.read(p)
         return None
@@ -792,7 +860,7 @@ def transition_layers(t, f):
     layer_frame = f + t.get('layer_off', 0)
     for k in ('glow', 'keep', 'cover'):
         if t.get(k):
-            p = index(os.path.join(RENDERS, t[k])).get(layer_frame)
+            p = index(render_dir(t[k])).get(layer_frame)
             if not p:
                 return None
             out[k] = p
@@ -867,6 +935,14 @@ def _tk_burn(o, i, f, t, ctx, lay, first):
 
 def _tk_ring_burn(o, i, f, t, ctx, lay, first):
     return RB.composite(o, i, f, t)
+
+
+def _tk_deep_reveal(img, src, f, t, fin, cut):
+    # D11d already has the same page composite; after2960 it continues across the D12 row boundary.
+    if f >= t['under_start']:
+        lay=transition_layers(t,f)
+        img=DEEP.reveal(img,lay['glow'],lay['cover'],frame=f,tail_clear=t.get('tail_clear'))
+    return fin(img,src,cut,f) if fin else img
 
 
 def _tk_x1(o, i, f, t, ctx, lay, first):
@@ -1102,6 +1178,7 @@ TKINDS_PAIR['impact_white'] = _tk_impact_white
 TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor, dawn_sweep=_tk_dawn_sweep,
                   caption_grade=_tk_caption_grade)
 TKINDS_SHOT['exposure'] = _tk_exposure
+TKINDS_SHOT['deep_reveal'] = _tk_deep_reveal
 KIND_HELPERS = dict(swell=_swell, page_turn=page_turn, dawn_dissolve=dawn_sweep, dawn_sweep=dawn_sweep)
 AFIX_WRAPPED = dict(impact_white=_tk_impact_white, exposure=_tk_exposure)   # kinds whose comp lives in afix_comp
 
@@ -1153,6 +1230,8 @@ def transition_code(kind):
     """The source that decides a window of this kind (for deliver's segment keys)."""
     if kind == 'ring_burn':
         return inspect.getsource(_tk_ring_burn) + RB.source()
+    if kind == 'deep_reveal':
+        return inspect.getsource(_tk_deep_reveal) + DEEP.source()
     if kind == 'edge_polish':
         return ''.join(inspect.getsource(o) for o in (_edge_plate, _tk_edge_polish, EP))
     if kind in AFIX_WRAPPED:
@@ -1379,8 +1458,8 @@ def edl_doc(cut):
     """The exported EDL of a cut, exactly as edit/edl/edl_<cut>.json holds it (the readiness check compares them)."""
     shots = []
     for s in EDL.EDL[cut]:
-        takes = [dict(t, folders=['renders/' + os.path.relpath(x, RENDERS) for x in chain(t, cut)]   # never a
-                      if t['mode'] != 'video' else [t['video']]) for t in s['takes']]     # machine path
+        takes = [dict(t, folders=['renders/' + os.path.relpath(x, RENDERS) for x in chain(t, cut, logical=True)]
+                      if t['mode'] != 'video' else [t['video']]) for t in s['takes']]
         b0, _ = bar_beat(s['f0'])
         shots.append(dict(s, takes=takes, bars=[b0, bar_beat(s['f1'] - 1)[0]]))
     doc = dict(cut=cut, fps=FPS, frames=EDL.TOTAL[cut], shots=shots, text=titles.text_table(cut),
@@ -1393,6 +1472,8 @@ def edl_doc(cut):
     elif cut == 'D':
         doc.update(EDL.d_export_extra())
         doc['lookup'] += '; optional hold fixes the source frame for colour/matte/add; under keeps its own spec'
+        doc['lookup'] += ('; explicit cutd_* stems use CUTD_LOCAL_RENDERS when set for RGB, matte, add, under '
+                          'and transition layers; exported folders retain their logical renders/<stem> names')
     return json.loads(json.dumps(doc))                        # the JSON form (tuples as lists), as written
 
 

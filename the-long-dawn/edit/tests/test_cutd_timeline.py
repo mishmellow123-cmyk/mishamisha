@@ -20,8 +20,8 @@ BEATS = [(0, 80), (80, 560), (560, 960), (960, 1040), (1040, 1440), (1440, 1680)
          (6400, 6640), (6640, 7040), (7040, 7360), (7360, 7840), (7840, 8080), (8080, 8320),
          (8320, 8640), (8640, 8880), (8880, 9120), (9120, 9200)]
 # D07 is the separately authorized drawn-ring burn; its provisional/replacement routing has dedicated tests.
-NEW = {'D08': 'embers_D_inscription', 'D09': 'embers_D_forging', 'D10': 'embers_D_race',
-       'D12': 'embers_D_brink', 'D13': 'embers_D_vision', 'D14': 'embers_D_gap',
+NEW = {'D08': 'embers_D_inscription', 'D09': 'embers_D_forging',
+       'D13': 'embers_D_vision', 'D14': 'embers_D_gap',
        'D16': 'embers_D_trap', 'D17': 'falsedawn_brink', 'D18': 'embers_D_crowns',
        'D19': 'falsedawn_twofires', 'D21b': 'embers_D_holdout', 'D22': 'embers_D_instep',
        'D23': 'book_D_oldfire', 'D24': 'embers_D_unfinished', 'D27': 'falsedawn_watch',
@@ -92,7 +92,10 @@ def test_new_stems_cannot_auto_promote_when_a_folder_arrives(monkeypatch):
     for code, expected in NEW.items():
         row = by_code[code]
         assert expected in row['desc']
-        assert f'expected stem {expected}, off=0, need=({row["f0"]}, {row["f1"] - 1})' in source
+        if code=='D08':
+            assert "D_NEW_TAKES['D08']; its need=(1680, 2079)" in source
+        else:
+            assert f'expected stem {expected}, off=0, need=({row["f0"]}, {row["f1"] - 1})' in source
         assert_new_is_slate(row)
         bad = dict(row, takes=[EDL.T(expected, mode='exact')])
         with pytest.raises(AssertionError):
@@ -115,7 +118,8 @@ REUSE = {
 
 
 def assert_source_range(row, expected):
-    take, = row['takes']
+    # D11's original takes remain the explicit unconfigured fallback behind its local re-bake.
+    take = row['takes'][-1]
     stem, first, last = expected
     assert take['mode'] == 'exact' and take['stem'] == stem
     frames = [EDL.source_frame(take, f) for f in range(row['f0'], row['f1'])]
@@ -129,13 +133,13 @@ def test_reuse_source_clocks_and_holds_match_the_treatment():
         row = by_code[code]
         assert_source_range(row, expected)
         bad = deepcopy(row)
-        key = 'hold' if 'hold' in bad['takes'][0] else 'off'
-        bad['takes'][0][key] += 1
+        key = 'hold' if 'hold' in bad['takes'][-1] else 'off'
+        bad['takes'][-1][key] += 1
         with pytest.raises(AssertionError):
             assert_source_range(bad, expected)
     assert EDL.source_frame(by_code['D21d']['takes'][0], 5600) == 3786
-    assert by_code['D11c']['takes'][0]['under'] == ('hold', 'embers_C3', 1679)
-    assert by_code['D11d']['takes'][0]['under'] == ('hold', 'embers_C3', 1920)
+    assert by_code['D11c']['takes'][-1]['under'] == ('hold', 'embers_C3', 1679)
+    assert by_code['D11d']['takes'][-1]['under'] == ('hold', 'embers_C3', 1920)
     assert EDL.D_CROSSING_SOURCE_START == 5180
     assert by_code['D26']['takes'][0]['need'] == (5180, 5579)
     map_rows = [r for r in EDL.D if r['code'].startswith('D21')]
@@ -146,9 +150,10 @@ def test_reuse_source_clocks_and_holds_match_the_treatment():
 
 
 def assert_rebake_required(row):
-    assert 're-bake' in row['desc'] and 'embers_D_race D2719' in row['desc']
+    plate='embers_D_brink D2960' if row['code']=='D11d' else 'embers_D_race D2719'
+    assert 're-bake' in row['desc'] and plate in row['desc']
     for take in row['takes']:
-        assert 're-bake' in take['note'] and 'embers_D_race D2719' in take['note']
+        assert 're-bake' in take['note'] and plate in take['note']
         assert not EDL.is_final_take(take)
 
 
@@ -179,7 +184,8 @@ def assert_transition_clocks(windows):
     # D07's burn is covered by its integration tests and may add a separately authored window at1680–1760.
     retained = [t for t in windows if t['f0'] >= 1440 and not (t['f0'] == 1680 and t['f1'] == 1760)]
     assert [(t['f0'], t['f1'], t['kind']) for t in retained] == [
-        (1520, 1660, 'caption_grade'), (3750, 3786, 'burn'), (6388, 6412, 'dissolve'),
+        (1520, 1660, 'caption_grade'), (2945, 2981, 'deep_reveal'), (3750, 3786, 'burn'),
+        (5180, 5220, 'ring_burn'), (6388, 6412, 'dissolve'),
         (6636, 6644, 'dissolve'), (8630, 8652, 'page_turn'), (8868, 8892, 'dissolve'),
         (8948, 9080, 'caption_grade'), (9084, 9120, 'floor')]
     burn = next(t for t in windows if t.get('cut') == 3760)

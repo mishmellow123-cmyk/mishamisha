@@ -914,6 +914,28 @@
    "t": 120.833
   },
   {
+   "id": "brink_burnthrough",
+   "f": 2953,
+   "what": "First opening in the selected filmed source mask onto the Brink (native source-mask measurement)",
+   "source": "music/v3/events_D_round4_measured.json deep_exit_source.first_open_on_selected_source_masks; source C1925 maps to D2953 under the 36-frame resampling. All 36 selected native 1920×804 source masks were measured before the D-only exit-tail envelope; this is not visible-glow or finished-picture timing.",
+   "timing_status": "measured_source_cover",
+   "picture_frame": null,
+   "shot": 12,
+   "timing_window": [
+    2945,
+    2981
+   ],
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "deep_exit_source.first_open_on_selected_source_masks",
+   "measurement_scope": "All 36 selected native 1920×804 source masks were measured before the D-only exit-tail envelope; this is not visible-glow or finished-picture timing.",
+   "mask_frame": 2953,
+   "source_frame": 1925,
+   "source_clock": "C5 edit and book_C_ft frame",
+   "bar": 37,
+   "beat": 4.65,
+   "t": 123.042
+  },
+  {
    "id": "brink",
    "f": 2960,
    "what": "THE BRINK: edit entry",
@@ -927,20 +949,23 @@
    "t": 123.333
   },
   {
-   "id": "brink_burnthrough",
-   "f": 2960,
-   "what": "The red glow burns through onto the Ring (est.; no measured D picture frame yet)",
-   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #12 (THE BRINK); provisional musical placement within [2960, 3200), awaiting picture timing.",
-   "timing_status": "estimated",
+   "id": "brink_burn_clear",
+   "f": 2980,
+   "what": "The D-only tail clear removes the page and fire completely; the incoming Brink is exact before finish",
+   "source": "music/v3/events_D_round4_measured.json deep_exit_tail.clear_frame_before_finish; D2976-2981 sampled at native 1920×804; D2980 composite equals its same-frame incoming Brink before finish. Raw source cover remains nonzero and is recorded separately.",
+   "timing_status": "measured_D_composite",
    "picture_frame": null,
    "shot": 12,
    "timing_window": [
-    2960,
-    3200
+    2945,
+    2981
    ],
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "deep_exit_tail.clear_frame_before_finish",
+   "measurement_scope": "D2976-2981 sampled at native 1920×804; D2980 composite equals its same-frame incoming Brink before finish. Raw source cover remains nonzero and is recorded separately.",
    "bar": 38,
-   "beat": 1.0,
-   "t": 123.333
+   "beat": 2.0,
+   "t": 124.167
   },
   {
    "id": "brink_gap_narrowest",
@@ -1527,22 +1552,6 @@
    "t": 215.833
   },
   {
-   "id": "last_kingdom_burn",
-   "f": 5180,
-   "what": "The nearest ridge fire burns onto the map (est.; no measured D picture frame yet)",
-   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #21 (THE LAST KINGDOM); provisional musical placement within [5180, 5680), awaiting picture timing.",
-   "timing_status": "estimated",
-   "picture_frame": null,
-   "shot": 21,
-   "timing_window": [
-    5180,
-    5263
-   ],
-   "bar": 65,
-   "beat": 4.0,
-   "t": 215.833
-  },
-  {
    "id": "map_cue",
    "f": 5180,
    "what": "THE LAST BEACON: the map of all the kingdoms; beacons flare near and far",
@@ -1560,6 +1569,45 @@
    "bar": 65,
    "beat": 4.0,
    "t": 215.833
+  },
+  {
+   "id": "last_kingdom_burn_t_open",
+   "f": 5182,
+   "what": "Ridge-fire burn opening parameter (not a measured visible onset)",
+   "source": "music/v3/events_D_round4_measured.json ridge_burn.parameters.t_open; All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "timing_status": "renderer_parameter",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5180,
+    5220
+   ],
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "ridge_burn.parameters.t_open",
+   "measurement_scope": "All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "bar": 65,
+   "beat": 4.1,
+   "t": 215.917
+  },
+  {
+   "id": "last_kingdom_burn",
+   "f": 5183,
+   "what": "First opening in the ridge-fire transition cover (480×201 sample grid)",
+   "source": "music/v3/events_D_round4_measured.json ridge_burn.first_open_on_sample_grid; All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "timing_status": "measured_D_cover",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5180,
+    5220
+   ],
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "ridge_burn.first_open_on_sample_grid",
+   "measurement_scope": "All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "bar": 65,
+   "beat": 4.15,
+   "t": 215.958,
+   "mask_frame": 5183
   },
   {
    "id": "map_beacon_2",
@@ -1580,6 +1628,26 @@
    "bar": 66,
    "beat": 1.4,
    "t": 217.0
+  },
+  {
+   "id": "last_kingdom_burn_ridge_gone",
+   "f": 5212,
+   "what": "Ridge cover is below the removal threshold throughout the sample grid (480×201)",
+   "source": "music/v3/events_D_round4_measured.json ridge_burn.first_fully_gone_on_sample_grid; All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "timing_status": "measured_D_cover",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5180,
+    5220
+   ],
+   "measurement_file": "music/v3/events_D_round4_measured.json",
+   "measured_ref": "ridge_burn.first_fully_gone_on_sample_grid",
+   "measurement_scope": "All 40 generated cover frames D5180-5219 scanned at 480×201; not native-resolution or finished-picture timing.",
+   "bar": 66,
+   "beat": 1.6,
+   "t": 217.167,
+   "mask_frame": 5212
   },
   {
    "id": "map_beacon_3",
@@ -2758,5 +2826,5 @@
  "status": "treatment; new picture pending",
  "score_status": "pending",
  "audio": "STAND-IN silence",
- "conventions": "24 fps, 72 BPM, 4/4: beat 20 frames, bar 80 frames. Ranges are half-open. Numeric f is the edit or provisional musical placement; estimated internal events carry picture_frame=null. AP2 opening events retain source_original=pass 1; no measured opening timings were supplied by that bar map. Inherited C measurements name their actual C5 source and remap; they were not remeasured for D. source_frame uses source_clock; render_source identifies a different physical frame where necessary. Captions mirror edit/titles.py D_TEXT. D composition and effects remain pending; current delivery is STAND-IN silence. The inscription incoming asset extends across D1680-2079 by the latest edit instruction, superseding the v2_frames.md 1760 start. Crossing uses A5180-5579 with original framing and an eight-frame dissolve. AP2 crossing measurement provenance is inherited, including its camera-projection scope; the lantern positions do not spatially match. D burn measurements refer only to generated cover on a 480×201 grid, with all 80 frames scanned; their native-resolution and finished-picture timings are not established by this receipt."
+ "conventions": "24 fps, 72 BPM, 4/4: beat 20 frames, bar 80 frames. Ranges are half-open. Numeric f is the edit or provisional musical placement; estimated internal events carry picture_frame=null. AP2 opening events retain source_original=pass 1; no measured opening timings were supplied by that bar map. Inherited C measurements name their actual C5 source and remap; they were not remeasured for D. source_frame uses source_clock; render_source identifies a different physical frame where necessary. Captions mirror edit/titles.py D_TEXT. D composition and effects remain pending; current delivery is STAND-IN silence. The inscription incoming asset extends across D1680-2079 by the latest edit instruction, superseding the v2_frames.md 1760 start. Crossing uses A5180-5579 with original framing and an eight-frame dissolve. AP2 crossing measurement provenance is inherited, including its camera-projection scope; the lantern positions do not spatially match. The drawn-ring and ridge-burn receipts measure generated cover on a 480×201 grid (all 80 and 40 frames respectively); they do not establish native-resolution or finished-picture timing. The separate Round 4 Deep receipt preserves all 36 native source-mask samples and the native D2976-2981 tail probe; visible glow onset is unmeasured, and D2980 equality is before finish against that same frame incoming plate."
 }

@@ -443,7 +443,7 @@ def text_md(films, stamp):
                   'ink.',
              'D': 'The 115-bar consolidated edit: Cormorant italic narration in the lower third. Caption 5 and the '
                   'title are photographed onto their pages; caption 14 remains a lower-third line until its '
-                  'book plate arrives. New picture remains visibly slated; the score is pending.'}
+                  'complete book plate is explicitly adopted. New picture remains visibly slated; the score is pending.'}
     for cut, film in films.items():
         L.append(f'## {cut} · {FILM[cut]}')
         L.append('')

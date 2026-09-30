@@ -20,7 +20,7 @@ DELIV="$HOME/mishamisha/_local_logs/delivery"
 RUN=edit/cache/refresh_watch.run
 sig() {
   python3 - <<'EOF'
-import os, sys
+import os, re, sys
 sys.path.insert(0, 'edit')
 import assemble as AS
 import hashlib
@@ -29,6 +29,36 @@ def dmt(d):
         return os.stat(d).st_mtime_ns
     except OSError:
         return 0
+def source_dirs(t, cut, variant):
+    dirs = AS.chain(t, cut, variant) if t and t['mode'] != 'video' else []
+    dirs += [AS.render_dir(x) for x in (t.get('matte'), t.get('add'), t.get('linear_mix')) if x]
+    spec = t.get('under')
+    if (t.get('matte') or t.get('linear_mix')) and spec:
+        if spec[0] == 'take':
+            under_take, held_frame, source_cut = AS.under_take(spec)
+            dirs += source_dirs(under_take, source_cut, None)
+        else:
+            stem = spec[1]
+            dirs += [AS.render_dir(x) for x in (stem, stem + '_half')]
+    return dirs
+def local_sources(dirs):
+    # Native D plates/coefficients may be overwritten in place without changing their folder mtime.
+    records = []
+    for folder in dirs:
+        files = []
+        if os.path.basename(folder).startswith('cutd_'):
+            try:
+                for name in sorted(os.listdir(folder)):
+                    if re.fullmatch(r'f_\d+\.(png|jpg|npz)', name):
+                        try:
+                            st = os.stat(os.path.join(folder, name))
+                            files.append((name, st.st_size, st.st_mtime_ns))
+                        except OSError:
+                            pass  # a landing file will be observed on the next poll
+            except OSError:
+                pass
+        records.append((folder, files))
+    return records
 for c in os.environ.get('FILMS', 'AC'):                # film B was dropped (user, 28 Sep)
     h, have = hashlib.sha1(), 0
     for v in ((None, 'codedtowers') if c == 'A' else (None,)):
@@ -36,18 +66,19 @@ for c in os.environ.get('FILMS', 'AC'):                # film B was dropped (use
             pl = AS.plan_shot(s, c, v)
             have += pl['have'] if v is None and s['kind'] != 'black' else 0
             t = pl['take'] or {}
-            dirs = AS.chain(t, c, v) if t and t['mode'] != 'video' else []
-            dirs += [os.path.join(AS.RENDERS, x) for x in (t.get('matte'), t.get('add')) if x]
-            if t.get('matte') and t.get('under'):
-                stem = t['under'][1]
-                dirs += [os.path.join(AS.RENDERS, x) for x in (stem, stem + '_half')]
+            dirs = source_dirs(t, c, v)
+            if c == 'D' and any(os.path.basename(d).startswith('cutd_') for d in dirs):
+                h.update(repr(('D source folders', local_sources(dirs))).encode())
             h.update(repr((s['f0'], pl['kind'], t.get('stem'), pl['have'], pl['alt'],
                            AS.EDL.is_final_take(pl['take']), [dmt(d) for d in dirs])).encode())
             if pl['kind'] == 'take':
                 for f in range(s['f0'], s['f1']):
                     h.update(repr(AS.provisional_sources(t, c, v, f)).encode())
     for t in AS.EDL.TRANS.get(c, ()):             # EDIT transition windows (EDL.TRANS) and their layer folders
-        h.update(repr((t, [dmt(os.path.join(AS.RENDERS, t[k])) for k in ('glow', 'keep', 'cover') if t.get(k)])).encode())
+        layers = [AS.render_dir(t[k]) for k in ('glow', 'keep', 'cover') if t.get(k)]
+        if c == 'D' and any(os.path.basename(d).startswith('cutd_') for d in layers):
+            h.update(repr(('D transition folders', local_sources(layers))).encode())
+        h.update(repr((t, [dmt(d) for d in layers])).encode())
     if c == 'A':                                         # lane A-FIX iterates on its comps: a change refreshes A
         h.update(repr(dmt(os.path.join(AS.ROOT, 'edit', 'afix_comp.py'))).encode())
     alt = h.hexdigest()[:10]                    # which take each shot plays and when its folders last changed
