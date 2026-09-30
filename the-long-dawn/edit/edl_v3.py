@@ -974,8 +974,11 @@ TRANS['D'] = [deepcopy(t) for t in TRANS['A'] if 0 <= t['f0'] and t['f1'] <= 144
          note='D24 unfinished Ring -> D25 abandoned Deep; suppressed while unfinished is a slate'),
     dict(f0=6636, f1=6644, cut=6640, kind='dissolve',
          note='D25 abandoned Deep -> D26 crossing: eight-frame dissolve, original framing; lantern positions differ'),
-    dict(f0=8630, f1=8652, cut=8640, kind='page_turn', tilt=8.0, radius=0.11,
-         note='D31 last written leaf -> D32 blank spread and pen; suppressed while the last leaf is a slate'),
+    # Retired after picture review: black fore-edge wedge, jagged curl and two visible pen nibs.
+    # dict(f0=8630, f1=8652, cut=8640, kind='page_turn', tilt=8.0, radius=0.11,
+    #      note='D31 last written leaf -> D32 blank spread and pen; suppressed while the last leaf is a slate'),
+    dict(f0=8628, f1=8652, cut=8640, kind='dissolve',
+         note='D31 last written leaf -> D32 blank spread and pen: 24-frame dissolve'),
     dict(f0=8868, f1=8892, cut=8880, kind='dissolve',
          note='D32 pen insert -> D33 title on the blank recto'),
     dict(f0=8948, f1=9080, kind='caption_grade', id='title', full0=9008, full1=9047,

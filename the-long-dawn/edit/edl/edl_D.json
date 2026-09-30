@@ -2057,13 +2057,11 @@
    "note": "D25 abandoned Deep -> D26 crossing: eight-frame dissolve, original framing; lantern positions differ"
   },
   {
-   "f0": 8630,
+   "f0": 8628,
    "f1": 8652,
    "cut": 8640,
-   "kind": "page_turn",
-   "tilt": 8.0,
-   "radius": 0.11,
-   "note": "D31 last written leaf -> D32 blank spread and pen; suppressed while the last leaf is a slate"
+   "kind": "dissolve",
+   "note": "D31 last written leaf -> D32 blank spread and pen: 24-frame dissolve"
   },
   {
    "f0": 8868,

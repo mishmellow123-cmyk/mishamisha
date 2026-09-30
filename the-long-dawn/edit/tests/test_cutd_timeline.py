@@ -213,8 +213,9 @@ def assert_transition_clocks(windows):
     assert [(t['f0'], t['f1'], t['kind']) for t in retained] == [
         (1520, 1660, 'caption_grade'), (2945, 2981, 'deep_reveal'), (3750, 3786, 'burn'),
         (5180, 5220, 'ring_burn'), (6388, 6412, 'dissolve'),
-        (6636, 6644, 'dissolve'), (8630, 8652, 'page_turn'), (8868, 8892, 'dissolve'),
+        (6636, 6644, 'dissolve'), (8628, 8652, 'dissolve'), (8868, 8892, 'dissolve'),
         (8948, 9080, 'caption_grade'), (9084, 9120, 'floor')]
+    assert next(t for t in windows if t['f0'] == 8628)['cut'] == 8640
     burn = next(t for t in windows if t.get('cut') == 3760)
     assert burn['layer_off'] == -1440
     assert (burn['f0'] + burn['layer_off'], burn['f1'] + burn['layer_off']) == (2310, 2346)
@@ -225,6 +226,11 @@ def assert_transition_clocks(windows):
 
 def test_transition_windows_follow_d_clocks_and_keep_c_layer_clocks():
     assert_transition_clocks(EDL.TRANS['D'])
+    for key, value in (('f0', 8630), ('f1', 8651), ('kind', 'page_turn'), ('cut', 8641)):
+        bad = deepcopy(EDL.TRANS['D'])
+        next(t for t in bad if t.get('cut') == 8640)[key] = value
+        with pytest.raises(AssertionError):
+            assert_transition_clocks(bad)
     bad = deepcopy(EDL.TRANS['D'])
     next(t for t in bad if t.get('cut') == 3760)['layer_off'] = 0
     with pytest.raises(AssertionError):
