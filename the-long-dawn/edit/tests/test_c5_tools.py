@@ -124,9 +124,9 @@ class AssetMapTests(unittest.TestCase):
         self.assertFalse((self.renders / 'embers_C5_cold').is_symlink())
 
     def test_receipts_beside_run_frames_are_allowed_other_files_are_not(self):
-        d = self.deliver('runC_reveal_pair_v5')                               # a run delivery the EDL still plays
+        d = self.deliver('cand_reveal_night-fire')     # a run delivery the EDL plays (C13 since 29 Sep's night pair)
         (d / 'receipt_02880_03119.json').write_text('{}')
-        self.write_map(['runC_reveal_pair_v5'])
+        self.write_map(['cand_reveal_night-fire'])
         self.assertEqual(CA.run('check'), 0)
         (d / 'notes.txt').write_text('x')
         self.assertEqual(CA.run('check'), 1)
