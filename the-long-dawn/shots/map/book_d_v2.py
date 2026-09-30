@@ -42,9 +42,11 @@ class RetainedTitle:
         return self.source.frame(frame-2000)
 
 
-def make_renderer(shot, scale=1., ppc=90, gap_degrees=50.):
+def make_renderer(shot, scale=1., ppc=90, gap_degrees=50., caption_hold=False):
     if shot not in RANGES:
         raise ValueError('unknown D-v2 book shot')
+    if caption_hold and shot != 'oldfire':
+        raise ValueError('caption_hold is only defined for oldfire')
     if not math.isfinite(scale) or not 0 < scale <= 1 or int(804*scale) < 1:
         raise ValueError('scale must produce positive dimensions, at most native')
     if not isinstance(ppc, int) or isinstance(ppc, bool) or ppc <= 0:
@@ -52,7 +54,7 @@ def make_renderer(shot, scale=1., ppc=90, gap_degrees=50.):
     width, height = int(1920*scale), int(804*scale)
     if shot == 'oldfire':
         from oldfire_v2 import OldFireV2
-        return OldFireV2(width, height, ppc)
+        return OldFireV2(width, height, ppc, caption_hold=caption_hold)
     if shot == 'lastleaf':
         from lastleaf_v2 import LastLeafV2
         return LastLeafV2(width, height, ppc, gap_degrees)
@@ -67,7 +69,11 @@ def main(argv=None):
     parser.add_argument('--scale', type=float, default=1.)
     parser.add_argument('--ppc', type=int, default=90)
     parser.add_argument('--gap-degrees', type=float, default=50.)
+    parser.add_argument('--caption-hold', action='store_true',
+                        help='oldfire only: retain the fall/flare, complete caption by D5983')
     args = parser.parse_args(argv)
+    if args.caption_hold and args.shot != 'oldfire':
+        parser.error('--caption-hold requires --shot oldfire')
     frames = BC.frames_of(args.frames)
     try:
         if not frames:
@@ -76,7 +82,7 @@ def main(argv=None):
             phase(args.shot, frame)
     except ValueError as exc:
         parser.error(str(exc))
-    renderer = make_renderer(args.shot, args.scale, args.ppc, args.gap_degrees)
+    renderer = make_renderer(args.shot, args.scale, args.ppc, args.gap_degrees, args.caption_hold)
     matte = args.out.with_name(args.out.name+'_matte')
     for frame in frames:
         started = time.perf_counter()

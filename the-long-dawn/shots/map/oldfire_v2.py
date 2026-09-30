@@ -22,6 +22,10 @@ CAPTION = R3.CAPTION
 CLOSE_END = 140
 PULL_END = 184
 CAPTION_START = 176
+# Round 5 is explicit so the adopted Round 4 take remains reproducible.
+HOLD_CLOSE_END, HOLD_PULL_END, HOLD_CAPTION_START = 99, 123, 119
+HOLD_BEAD_FRAME = 91
+HOLD_FIRST_CHANGED = 5922
 
 
 def local_time(frame):
@@ -36,8 +40,12 @@ def smooth01(value):
     return value * value * (3. - 2. * value)
 
 
-def unmaking_time(t):
+def unmaking_time(t, caption_hold=False):
     """Canonical fall; flare at local 60, full bead by the close's last frame."""
+    if caption_hold and t > (HOLD_FIRST_CHANGED-START-1)/FPS:
+        boundary = (HOLD_FIRST_CHANGED-START-1)/FPS
+        return float(np.interp(t, [boundary, HOLD_BEAD_FRAME/FPS, 239/FPS],
+                               [unmaking_time(boundary), 5.4, 6.3]))
     return float(np.interp(t, [0., .55, .90, 2.5, 3.6, 140/24., 239/24.],
                           [.2, .2, .55, 2.65, 3.5, 5.4, 6.3]))
 
@@ -179,18 +187,22 @@ class DetailStrip:
 
 
 class OldFireV2(R3.OldFire):
-    def __init__(self, W=1920, H=804, ppc=110):
+    def __init__(self, W=1920, H=804, ppc=110, caption_hold=False):
         super().__init__(W, H, ppc)
+        self.caption_hold = bool(caption_hold)
+        self.close_end, self.pull_end, self.caption_start = (
+            (HOLD_CLOSE_END, HOLD_PULL_END, HOLD_CAPTION_START) if self.caption_hold
+            else (CLOSE_END, PULL_END, CAPTION_START))
         # Multiples of 64 align all seven mip levels with the full page.
         self.detail_ppc = 64 * math.ceil(max(ppc, 320*W/1920.) / 64)
 
     def layout(self, t):
         book = self.book(.6, 2.8, seed=3)
-        q = float(smooth01((t*FPS-CLOSE_END)/(PULL_END-CLOSE_END)))
+        q = float(smooth01((t*FPS-self.close_end)/(self.pull_end-self.close_end)))
         close_v = 3.8 + .4 * float(smooth01(t/.95))
         # Aim down the page slightly ahead of the pull, so the caption enters
         # before its ink reveal. Both motions arrive with zero velocity.
-        aim = float(smooth01((t*FPS-CLOSE_END)/(PULL_END-CLOSE_END)*1.18))
+        aim = float(smooth01((t*FPS-self.close_end)/(self.pull_end-self.close_end)*1.18))
         uv = np.array([10.62, close_v]) * (1-aim) + np.array([9.8, 8.8]) * aim
         target = book.page_to_world('R', uv[:1], uv[1:])[0]
         close = np.array([-.1, -4.9, 5.8])
@@ -202,7 +214,7 @@ class OldFireV2(R3.OldFire):
     def caption(self):
         def make():
             line = T1.TextInkLine(CAPTION, self.ppc)
-            line.f_in, line.f_out = START+CAPTION_START, END+12
+            line.f_in, line.f_out = START+self.caption_start, END+12
             return line
         return self.once('oldfire_v2_caption', make)
 
@@ -220,7 +232,7 @@ class OldFireV2(R3.OldFire):
         offsets = ((np.arange(9)+.5)/9./48.-1./96. if .55 < t < .97 else (0.,))
         patch = None
         for dt in offsets:
-            sample = ring.texture(unmaking_time(t+dt)).chan[i0:i1, j0:j1]
+            sample = ring.texture(unmaking_time(t+dt, self.caption_hold)).chan[i0:i1, j0:j1]
             if patch is None:
                 patch = sample.copy()
             else:
