@@ -259,15 +259,17 @@ class PictureReadinessTests(unittest.TestCase):
     def test_filmed_sweep_never_composites_the_held_race_again(self):
         """BURN_NOTES: 1680-1717 bakes the held race into book_C_ft with matte 1; an under there is the double-comp
         defect, so the sweep reads its page and matte and nothing else, even with every race frame on disk."""
-        sweep = next(s for s in EDL.EDL['C'] if s['sec'] == 'C8' and s['f0'] == 1680)
-        take = sweep['takes'][0]
-        self.assertEqual((sweep['f1'], take['stem'], take.get('under')), (1718, 'book_C_ft', None))
-        self.add_take(take, range(1680, 1718))
-        self.add_folder('book_C_ft_matte', range(1680, 1718))
+        # the soft entry (1680-1687, sweepC) keeps the same convention: its own page and opaque matte, no under
         self.add_folder('embers_C3', [1679] + list(range(1680, 1718)))
-        for f in (1680, 1717):
-            with self.subTest(frame=f):
-                self.assertEqual(self.trace_frame(take, f)[1], [('book_C_ft', f), ('book_C_ft_matte', f)])
+        for f0, f1, stem in ((1680, 1688, 'cand_sweep_soft-entry'), (1688, 1718, 'book_C_ft')):
+            sweep = next(s for s in EDL.EDL['C'] if s['sec'] == 'C8' and s['f0'] == f0)
+            take = sweep['takes'][0]
+            self.assertEqual((sweep['f1'], take['stem'], take.get('under')), (f1, stem, None))
+            self.add_take(take, range(f0, f1))
+            self.add_folder(take['matte'], range(f0, f1))
+            for f in (f0, f1 - 1):
+                with self.subTest(frame=f):
+                    self.assertEqual(self.trace_frame(take, f)[1], [(stem, f), (take['matte'], f)])
 
     def test_optional_layers_and_first_present_decode_failure_keep_existing_behavior(self):
         take = self.c9['takes'][0]

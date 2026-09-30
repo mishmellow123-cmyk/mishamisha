@@ -234,6 +234,11 @@ def check_shot_map(rep):
                 if t.get('matte') != 'book_C_ft_matte' or t.get('add') != want['add'] or got_under != want['under']:
                     bad.append(f"{s['sec']} {s['f0']}-{s['f1']}: book_C_ft comp (matte {t.get('matte')}, add "
                                f"{t.get('add')}, under {got_under}) is not BURN_NOTES' {want} for {rng[0]}-{rng[1] - 1}")
+            if t['stem'] == 'cand_sweep_soft-entry' and (
+                    (s['f0'], s['f1']) != (1680, 1688) or t.get('matte') != 'cand_sweep_soft-entry_matte'
+                    or t.get('under') or t.get('add') or t['off'] != 0):
+                bad.append(f"{s['sec']} {s['f0']}-{s['f1']}: the sweep's soft entry is 1680-1687 only, offset 0, its own "
+                           'opaque matte, no under or add (the race is baked in, as in ft_sweep)')
             if t['stem'] == 'book_C' and t['off'] == 0:
                 clash = [r for r in EDL.FT_RANGES if s['f0'] < r[1] and r[0] < s['f1']]
                 if clash:

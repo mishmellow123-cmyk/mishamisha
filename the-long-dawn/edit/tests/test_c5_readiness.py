@@ -291,14 +291,20 @@ class C5ReadinessTests(unittest.TestCase):
             self.assertIn('superseded book_C burn can play inside the filmed range', self.run_gate(partial=True)[2])
 
     def test_double_composited_sweep_fails(self):
+        """Both sweep rows bake the held race in (the soft entry 1680-1687, the filmed sweep 1688-1717): an under on
+        either is the double-comp defect."""
         self.green()
-        rows = copy.deepcopy(EDL.EDL['C'])
-        k = next(i for i, r in enumerate(rows) if r['sec'] == 'C8' and r['f0'] == 1680)
-        rows[k]['takes'][0]['under'] = ('hold', 'embers_C3', 1679)
-        with mock.patch.dict(EDL.EDL, {'C': rows}):
-            rep, _, text = self.run_gate(partial=True)
-        self.assertTrue(rep.failed())
-        self.assertIn('is not BURN_NOTES', text)
+        for f0, stem, message in ((1688, 'book_C_ft', 'is not BURN_NOTES'),
+                                  (1680, 'cand_sweep_soft-entry', "the sweep's soft entry is 1680-1687 only")):
+            with self.subTest(row=f0):
+                rows = copy.deepcopy(EDL.EDL['C'])
+                k = next(i for i, r in enumerate(rows) if r['sec'] == 'C8' and r['f0'] == f0)
+                self.assertEqual(rows[k]['takes'][0]['stem'], stem)
+                rows[k]['takes'][0]['under'] = ('hold', 'embers_C3', 1679)
+                with mock.patch.dict(EDL.EDL, {'C': rows}):
+                    rep, _, text = self.run_gate(partial=True)
+                self.assertTrue(rep.failed())
+                self.assertIn(message, text)
 
     def test_caption_not_verbatim_or_outside_its_shot_fails_both_modes(self):
         self.green()

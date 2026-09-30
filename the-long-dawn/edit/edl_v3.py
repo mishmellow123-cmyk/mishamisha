@@ -117,6 +117,16 @@ def ft_sweep():
     return T('book_C_ft', 0, 'exact', 'BURN-C filmed sweep: the held race baked in (matte 1, no under)', **FT)
 
 
+def ft_sweep_entry():
+    """1680-1687: the same filmed sweep eased in over the held race (Codex lane sweepC, soft-entry): the delivered
+    burn image blended from embers_C3 f1679 in linear light, a cubic opacity 0 -> 1 over 1680-1688, rendered 29 Sep
+    from the delivered frames (renders/cand_sweep_soft-entry; inputs pinned by assets/burn_footage/sweep_entry/
+    source.json and kept out of git). Same convention as ft_sweep(): race baked in, matte 1, no under. The 1679|1680
+    step drops from RGB MAD 13.33 to 0.38; no step over 1680-1688 exceeds 3.04 (the embers' own is ~3.05)."""
+    return T('cand_sweep_soft-entry', 0, 'exact', 'sweepC soft entry: the filmed sweep eased in over the held race '
+             '(matte 1, no under)', matte='cand_sweep_soft-entry_matte')
+
+
 def ft_eye(under=('same', 'embers_C3'), note='BURN-C filmed Eye burn-through: page + fire, live storm under'):
     """1905-1991: the page + the fire; matte = cover; EDIT adds the live storm through it (under = same frame).
     THE GLOW (1905-1919) holds the storm's first live frame instead: c5_readiness.FT_HELD says why."""
@@ -319,6 +329,8 @@ ALTERNATIVES = {
     'C3': ("c5('cand_t1_current-words', f'current-words: {CAND}', matte='cand_t1_current-words_matte')",
            'the unheld current-words camera (R02 cut by the frame bottom ~515-538); further back, book(): book_C '
            '320-559 with the old wording "...forges the Ring in secret." baked at 400-539'),
+    'C8 sweep': ("one row S('C8', 1680, 1718, ...) with [ft_sweep()]", 'the hard entry: the filmed sweep pops on at '
+                 '1680 (RGB MAD 13.33 against ~3 either side)'),
     'C11': ("c5('embers_C5_trap', PR11)", 'no smoke: the sunk forge simply goes dark, then relights'),
     'C13': ("c5('runC_reveal_pair_v5', PR14)", 'the parchment Reveal (day page, gold beacon marks); restore together '
             "with C14's parchment scroll, or the 3112-3127 dissolve goes night into day"),
@@ -469,7 +481,9 @@ C = [
       'Forge-towers of every realm rise round the fire, none tallest; its light is beaten into a band: the Ring.', EMB_C),
     S('C7', 1440, 1680, 'E11', 'THE RACE UNDER THE RING', 'EMBERS',
       'A hush; gold falls from the Ring into the nearest windows; then the towers surge and walls of red rise.', EMB_C),
-    S('C8', 1680, 1718, 'P2', 'INK PAGE · THE DEEP · THE SWEEP', 'BURN-C',
+    S('C8', 1680, 1688, 'P2', 'INK PAGE · THE DEEP · THE SWEEP', 'BURN-C',
+      'The filmed ember edge eases in over the held race (sweepC soft entry).', [ft_sweep_entry()]),
+    S('C8', 1688, 1718, 'P2', 'INK PAGE · THE DEEP · THE SWEEP', 'BURN-C',
       'A filmed ember edge sweeps the held race away to parchment (the race is baked into the burn).', [ft_sweep()]),
     S('C8', 1718, 1905, 'P2', 'INK PAGE · THE DEEP', 'MAP',
       'The pen draws pillared halls down a gilt vein; a red glow wakes.',

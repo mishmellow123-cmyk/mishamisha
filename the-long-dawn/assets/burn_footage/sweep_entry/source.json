@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "note": "Exact delivered pre-finish JPEG bytes; copied without decoding or re-encoding. The held race is ftburn.SHOTS[sweep].bake. Only C1680..1687 require new candidate outputs.",
+  "inputs": {
+    "race": {
+      "file": "race_01679.jpg",
+      "source": "renders/embers_C3/f_01679.jpg",
+      "bytes": 600690,
+      "sha256": "6818c6cbab63357f7e8ed4d5dfcdc95987333fb89e197a84fa999c41071df6a4"
+    },
+    "1680": {
+      "file": "sweep_01680.jpg",
+      "source": "renders/book_C_ft/f_01680.jpg",
+      "bytes": 379770,
+      "sha256": "ea94f0358d4e25b05fff43942d12fb6593a112f9df4da8f307096c3f3cba823f"
+    },
+    "1681": {
+      "file": "sweep_01681.jpg",
+      "source": "renders/book_C_ft/f_01681.jpg",
+      "bytes": 379360,
+      "sha256": "5b30b7165a1831322f8a56dfeb202050317d986430a014ef6c7cffdf9e81be4a"
+    },
+    "1682": {
+      "file": "sweep_01682.jpg",
+      "source": "renders/book_C_ft/f_01682.jpg",
+      "bytes": 379394,
+      "sha256": "751a92e87737c141019a1fc1901ed7fee26fb4a24f5b320e902ffb05dea2e4e7"
+    },
+    "1683": {
+      "file": "sweep_01683.jpg",
+      "source": "renders/book_C_ft/f_01683.jpg",
+      "bytes": 379259,
+      "sha256": "477537a2fabe97be15973b7561e2db91a3c8608460b821e110c747f641eb4231"
+    },
+    "1684": {
+      "file": "sweep_01684.jpg",
+      "source": "renders/book_C_ft/f_01684.jpg",
+      "bytes": 379100,
+      "sha256": "5c6d25548936c52008f7b2c94f594858037c37ca62d08258eb6fe82d4e97e324"
+    },
+    "1685": {
+      "file": "sweep_01685.jpg",
+      "source": "renders/book_C_ft/f_01685.jpg",
+      "bytes": 379083,
+      "sha256": "368fa38fee9de347e862fab927a711e8628a17861f62de523372db5e0320a605"
+    },
+    "1686": {
+      "file": "sweep_01686.jpg",
+      "source": "renders/book_C_ft/f_01686.jpg",
+      "bytes": 378914,
+      "sha256": "74ce3d6a602d0d171c2cde724b70a34bb664c98fe7e9f80555e35474117c33c8"
+    },
+    "1687": {
+      "file": "sweep_01687.jpg",
+      "source": "renders/book_C_ft/f_01687.jpg",
+      "bytes": 378857,
+      "sha256": "909b69b31cda97b290c1a64081f1a810eb052869aaf360b90ae2426852648bfc"
+    }
+  }
+}

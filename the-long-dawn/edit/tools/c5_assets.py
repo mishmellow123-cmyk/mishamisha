@@ -51,6 +51,8 @@ DELIVERED = {
     'cand_deep_leaned_ladders': (4240, 4479), 'cand_deep_leaned_ladders_matte': (4240, 4479),
     'cand_watch_night-fire': (4480, 4719),
     'cand_pen_soft_spine_metal': (5440, 5679), 'cand_pen_soft_spine_metal_matte': (5440, 5679),
+    # sweepC's soft entry, rendered on the owner Mac 29 Sep (its inputs are footage and stay out of git)
+    'cand_sweep_soft-entry': (1680, 1687), 'cand_sweep_soft-entry_matte': (1680, 1687),
 }
 
 

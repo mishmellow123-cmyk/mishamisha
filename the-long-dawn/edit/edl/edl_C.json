@@ -387,6 +387,39 @@
   {
    "sec": "C8",
    "f0": 1680,
+   "f1": 1688,
+   "code": "P2",
+   "name": "INK PAGE \u00b7 THE DEEP \u00b7 THE SWEEP",
+   "owner": "BURN-C",
+   "desc": "The filmed ember edge eases in over the held race (sweepC soft entry).",
+   "takes": [
+    {
+     "stem": "cand_sweep_soft-entry",
+     "off": 0,
+     "mode": "exact",
+     "note": "sweepC soft entry: the filmed sweep eased in over the held race (matte 1, no under)",
+     "crop": null,
+     "grade": null,
+     "matte": "cand_sweep_soft-entry_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_sweep_soft-entry"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    22,
+    22
+   ]
+  },
+  {
+   "sec": "C8",
+   "f0": 1688,
    "f1": 1718,
    "code": "P2",
    "name": "INK PAGE \u00b7 THE DEEP \u00b7 THE SWEEP",

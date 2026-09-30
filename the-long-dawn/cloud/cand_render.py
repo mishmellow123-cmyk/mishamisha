@@ -31,16 +31,16 @@ RANGES = {'reveal': (2880, 3119), 'watch': (4480, 4719), 'scroll': (0, 319),
           'trap': (2320, 2639), 'map': (3440, 3839),
           'deep': (4240, 4479), 'cold': (3816, 3999),
           'pen': (5440, 5679), 't1': (320, 559), 'crossing': (4880, 5839),
-          'falsedawn': (80, 559)}
+          'falsedawn': (80, 559), 'sweep': (1680, 1687)}
 OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire', 'scroll': 'night-fire',
            'beaconrun': 'linked-fires', 'watchers': 'linked-fires',
            'trap': 'front_smoke_near', 'map': 'beacon-falloff',
            'deep': 'leaned_ladders', 'cold': 'lead24',
            'pen': 'soft_spine_metal', 't1': 'current-words', 'crossing': 'both',
-           'falsedawn': 'clear_high_deck'}
+           'falsedawn': 'clear_high_deck', 'sweep': 'soft-entry'}
 # Explicit review alternatives leave OPTIONS and omitted renderer defaults unchanged.
 MORE = {'crossing': ('both_decal', 'both_decal_cap'), 't1': ('current-words-held',)}
-PAGES = ('deep', 'pen', 't1')
+PAGES = ('deep', 'pen', 't1', 'sweep')
 _FAMILY = None
 
 
@@ -175,6 +175,15 @@ def build(kind, route, option=None, scale=1.0):
         else:
             call = lambda f: X.render(f, shot, candidate=option, scale=scale)
         return lambda f: dict(rgb=call(f))
+    if kind == 'sweep':
+        import sweep_entry_candidates as X
+        # C 1680-1687 keeps the filmed scorch and baked race. These inputs are
+        # already display RGB; another book finish would grade them twice.
+        if route == 'original':
+            return lambda f: X.render_original(f, scale=scale)
+        if route == 'default':
+            return X.make_renderer(scale=scale)
+        return X.make_renderer('accepted' if route == 'shared' else option, scale=scale)
     if page_kind:
         name = {'deep': 'book_c_v5_deep_candidates', 'pen': 'book_c_v5_pen_candidates',
                 't1': 'book_c_t1_candidates'}[kind]
@@ -234,7 +243,7 @@ def equal(kind, frame, scale=1.0):
     del original
     gc.collect()
     proofs = {}
-    routes = ('default', 'shared') if kind in ('reveal', 'watch', 'scroll', 'map', 'beaconrun', 'watchers') else ('default',)
+    routes = ('default', 'shared') if kind in ('reveal', 'watch', 'scroll', 'map', 'beaconrun', 'watchers', 'sweep') else ('default',)
     for route in routes:
         render = build(kind, route, scale=scale)
         actual = checked(render, frame, scale)
@@ -333,7 +342,14 @@ def prepare(kind):
         if not path.is_file():
             raise RuntimeError(f'Required tracked input is missing: {name}')
         assets[name] = hashlib.sha256(path.read_bytes()).hexdigest()
-    print(json.dumps(dict(kind=kind, python=sys.version, packages=versions, assets=assets)), flush=True)
+    receipt = dict(kind=kind, python=sys.version, packages=versions, assets=assets)
+    if kind == 'sweep':
+        imports(kind)
+        import sweep_entry_candidates as X
+        # The farm checkout has no local delivered renders. Require the pinned
+        # input bundle before equality or any candidate frame can be produced.
+        receipt['inputs'] = X.validate_inputs()
+    print(json.dumps(receipt), flush=True)
     if kind == 'crossing':
         # Check without importing the large renderer; load_renderer repeats it.
         text = (ROOT / 'shots/run/crossing_candidates.py').read_text()

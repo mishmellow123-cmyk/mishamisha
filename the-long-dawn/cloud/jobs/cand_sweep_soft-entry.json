@@ -1,0 +1,26 @@
+{
+  "name": "cand_sweep_soft-entry",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py sweep --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py sweep --equal 1680 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py sweep soft-entry --range 1680-1687 --out renders/cand_sweep_soft-entry"
+  ],
+  "out_dir": "renders/cand_sweep_soft-entry",
+  "frames": "1680-1687",
+  "shape": [804, 1920],
+  "ship": "jpg",
+  "note": "Default-off review candidate for C's filmed sweep onset only. Requires the source-pinned assets/burn_footage/sweep_entry input bundle on this branch. Setup validates the bundle and proves original/default/shared equality at C1680; the explicit candidate changes C1680-1687 only. The race remains baked and the matte opaque. No EDL adoption is included.",
+  "outputs": [
+    {
+      "out_dir": "renders/cand_sweep_soft-entry",
+      "frames": "1680-1687"
+    },
+    {
+      "out_dir": "renders/cand_sweep_soft-entry_matte",
+      "frames": "1680-1687"
+    }
+  ]
+}
