@@ -356,7 +356,10 @@ C5_TEXT = [
                                   # crossing the gutter, so it breaks in two; the words are unchanged. Over the page's
                                   # faint script: edge 0.000, texture 0.014, worst slice 5.43:1
     dict(id='R19', row=19, line='And the beacons burned on, so no forge could be lit in secret.', f_in=4504,
-         f_out=4664, set='ink', y=150),
+         f_out=4664, set='fire', y=150),
+                                  # fire, not ink, since C19 plays the night-fire Watch (grey page ~95-101, beacons
+                                  # 232-244): iron-gall on that grey measured 2.27:1, worst slice 2.21:1 (low in 16 of
+                                  # 16 frames); the fire letters 4.98:1, worst slice 4.92:1 (c5_caption_backdrop)
     dict(id='R20', row=20, line='Without the Ring, the dawn came slowly. But it came.', f_in=4860, f_out=5020,
          set='ink', y=150),       # UNVERIFIED: runC_illum is not on the EDIT-C5 Mac
     dict(id='R22', row=22, line='The last pages were left for us.', f_in=5462, f_out=5602, set='ink',
