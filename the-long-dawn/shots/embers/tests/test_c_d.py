@@ -91,8 +91,8 @@ class CutDContracts(unittest.TestCase):
                     if inject_flame:
                         C.V5.CF.draw(None, (0., 0.), (0., 0.), frame)
                     self.assertEqual(draw.call_count, 0)
-                    self.assertEqual(thinking_draw.call_count, int(shot == 'forging'))
-                    if shot == 'forging':
+                    self.assertEqual(thinking_draw.call_count, int(shot in ('forging', 'race')))
+                    if shot in ('forging', 'race'):
                         root, tip = scene.central_fire_anchors(frame)
                         np.testing.assert_allclose(thinking_draw.call_args.args[1], root)
                         np.testing.assert_allclose(thinking_draw.call_args.args[2], tip)

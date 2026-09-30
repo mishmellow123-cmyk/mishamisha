@@ -118,7 +118,7 @@ class ThinkingFireHandoff(unittest.TestCase):
             return np.column_stack([x, y])
         self.rejects(oracle, old_ground_projection)
 
-    def test_actual_pipeline_emits_central_source_only_in_forging(self):
+    def test_actual_pipeline_emits_central_source_in_forging_and_race(self):
         def oracle(extra_fire=False):
             with patch.object(C, 'Frame', RecordingFrame), \
                  patch.object(C.look, 'finish', side_effect=lambda hdr, **kw: hdr), \
@@ -133,7 +133,7 @@ class ThinkingFireHandoff(unittest.TestCase):
                     scene.frame(frame, .05)
                     if extra_fire:
                         F.draw(None, (0., 0.), (0., 10.), frame)
-                    self.assertEqual(thinking.call_count, int(shot == 'forging'))
+                    self.assertEqual(thinking.call_count, int(shot in ('forging', 'race')))
                     old.assert_not_called()
         oracle()
         self.rejects(oracle, True)

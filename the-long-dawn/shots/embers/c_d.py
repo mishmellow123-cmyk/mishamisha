@@ -346,11 +346,12 @@ class Scene:
 
     def ring_layer(self, ctx):
         rotation, centre, size = self.ring_frame(ctx.t)
-        state = ring_state(ctx.t)
+        shading_frame = self.ring_shading_frame(ctx.t)
+        state = ring_state(shading_frame)
         env = RS.Env(above=(.18, .19, .21), horizon=(.42, .35, .23), below=(.10, .045, .015))
         env.lobe([-.7, .6, .4], [.85, .88, .92], 5.)
         for i in range(self.towers.k_all):
-            env.point(self.towers.top(i, ctx.t), np.array([4., 1.7, .5]) * forge_level(i, ctx.t), 2.)
+            env.point(self.towers.top(i, shading_frame), np.array([4., 1.7, .5]) * forge_level(i, shading_frame), 2.)
         if self.shot == 'unfinished':
             lamps, amount = self.lamp_positions(ctx.t)
             state.letters, state.exposure = .055, .65
@@ -381,8 +382,13 @@ class Scene:
 
     def spark_paths(self, t):
         """Actual rendered trajectories with tower identity and frontier reach."""
-        points, energy, owners = [], [], []
-        for hit in self.schedule.beats:
+        return self._spark_samples(t)[:3]
+
+    def _spark_samples(self, t):
+        """Particle keys also identify packets across shutter-boundary changes."""
+        points, energy, owners, keys = [], [], [], []
+        count = self.spark_jitter.shape[1]
+        for packet, hit in enumerate(self.schedule.beats):
             stream = self.shot == 'race' and hit > RACE_START
             if stream and t <= RACE_START:
                 continue
@@ -412,20 +418,43 @@ class Scene:
                 points.append(q)
                 energy.append(e)
                 owners.extend([i] * len(q))
+                keys.extend((packet * self.towers.k_all + i) * count + np.arange(len(q)))
         if not points:
-            return np.empty((0, 3)), np.empty(0), np.empty(0, dtype=int)
-        return np.concatenate(points), np.concatenate(energy), np.array(owners)
+            return np.empty((0, 3)), np.empty(0), np.empty(0, dtype=int), np.empty(0, dtype=int)
+        return np.concatenate(points), np.concatenate(energy), np.array(owners), np.array(keys)
+
+    def race_handoff(self, t):
+        return float(ease(RACE_START, RACE_START + 10., t)) if self.shot == 'race' else 1.
+
+    def ring_shading_frame(self, t):
+        amount = self.race_handoff(t)
+        return (RACE_START - 1.) * (1. - amount) + t * amount if amount < 1. else t
 
     def sparks(self, ctx):
         # Incandescent grains shed heat rapidly: show a short luminous streak,
         # not the entire mechanical-shutter path of a persistent bright rod.
-        p0, _, ids0 = self.spark_paths(max(ctx.t - .06, ctx.t0))
-        p1, energy, ids1 = self.spark_paths(min(ctx.t + .06, ctx.t1))
-        if not len(p1): return
-        if not np.array_equal(ids0, ids1): p0 = p1
-        z = np.maximum((p1 - ctx.cam.pos) @ ctx.cam.R[2], 1.)
-        ctx.fr.splat(p0, p1, .014, energy * .012 * (ctx.cam.f_px(1920) / z) ** 2,
-                     [1., .72, .3], ctx.cam0, ctx.cam1, zref=0.)
+        amount = self.race_handoff(ctx.t)
+        def draw(p0, p1, energy, gain):
+            if not len(p1) or gain <= 0.: return
+            z = np.maximum((p1 - ctx.cam.pos) @ ctx.cam.R[2], 1.)
+            ctx.fr.splat(p0, p1, .014, energy * .012 * (ctx.cam.f_px(1920) / z) ** 2 * gain,
+                         [1., .72, .3], ctx.cam0, ctx.cam1, zref=0.)
+        if amount < 1.:
+            # Continue the outgoing centred shutter. Dead future packets must
+            # not erase the live packet's streak when their row counts differ.
+            before, _, _, keys0 = self._spark_samples(ctx.t - .06)
+            after, energy, _, keys1 = self._spark_samples(ctx.t + .06)
+            p0 = after.copy()
+            rows = np.searchsorted(keys0, keys1)
+            valid = rows < len(keys0)
+            valid[valid] &= keys0[rows[valid]] == keys1[valid]
+            p0[valid] = before[rows[valid]]
+            draw(p0, after, energy, 1. - amount)
+        if amount > 0.:
+            p0, _, ids0 = self.spark_paths(max(ctx.t - .06, ctx.t0))
+            p1, energy, ids1 = self.spark_paths(min(ctx.t + .06, ctx.t1))
+            if not np.array_equal(ids0, ids1): p0 = p1
+            draw(p0, p1, energy, amount)
 
     def window_sources(self):
         if self._windows is None:
@@ -498,6 +527,12 @@ class Scene:
 
     def glare_layer(self, ctx):
         score = D.glare(ctx.t)
+        pulse = self.schedule.beat_pulse(ctx.t)
+        amount = self.race_handoff(ctx.t)
+        if amount < 1.:
+            incoming = D.glare(RACE_START - 1.)
+            score = D.Glare(*(a * (1. - amount) + b * amount for a, b in zip(incoming, score)))
+            pulse = self.schedule.beat_pulse(RACE_START - 1.) * (1. - amount) + pulse * amount
         if self.shot == 'forging':
             score = score._replace(gain=score.gain * float(ease(FORGING_START, FORGING_START + 10., ctx.t)))
         if score.gain <= 0.:
@@ -510,7 +545,23 @@ class Scene:
         depth = float(np.min((ends - ctx.cam.pos) @ ctx.cam.R[2]))
         visibility = c3.occ_vis(ctx.fr, depth - .65, ctx.fr.H, ctx.fr.W)
         return d_glare.render(ctx.cam, ctx.fr.W, ctx.fr.H, ends, caps, score,
-                              self.schedule.beat_pulse(ctx.t), visibility)
+                              pulse, visibility)
+
+    @lru_cache(maxsize=8)
+    def race_fire_world(self):
+        """Lift the last forging anchors onto the vertical plane at the axis.
+
+        The screen-space forging ease is already settled at D2399. Intersect
+        its two pixel rays from the D2400 camera with this fixed world plane;
+        subsequent cameras project the same root and tip, without screen locks.
+        """
+        pixels = np.array(self.central_fire_anchors(RACE_START - 1.))
+        cam = self.camera(RACE_START)
+        xy = (pixels - np.array([959.5, 401.5])) / cam.f_px(1920)
+        rays = cam.R[2] + xy[:, :1] * cam.R[0] - xy[:, 1:] * cam.R[1]
+        normal = cam.pos * np.array([1., 0., 1.])
+        distance = -np.dot(cam.pos - c3.FIRE_ROOT, normal) / (rays @ normal)
+        return cam.pos + rays * distance[:, None]
 
     def central_fire_anchors(self, t):
         """Continue the source at the cut, then keep it below the rising band.
@@ -520,6 +571,9 @@ class Scene:
         the same live source rises above the caption area as towers surround it.
         Coordinates are native pixels, as required by d_thinking_fire.draw.
         """
+        if self.shot == 'race' and t >= RACE_START:
+            x, y, _ = self.camera(t).project(self.race_fire_world(), 1920, 804)
+            return np.array([x[0], y[0]]), np.array([x[1], y[1]])
         points = np.array([c3.FIRE_ROOT, c3.FIRE_ROOT + [0., c3.HF, 0.]])
         x, y, _ = self.camera(FORGING_START).project(points, 1920, 804)
         amount = float(ease(FORGING_START, FORGING_START + 80., t))
@@ -528,10 +582,11 @@ class Scene:
         return root, root - np.array([0., height])
 
     def draw_central_fire(self, hdr, ctx):
-        if self.shot != 'forging': return
+        if self.shot not in ('forging', 'race'): return
         import d_thinking_fire as thinking_fire
         root, tip = self.central_fire_anchors(ctx.t)
-        depth = float((c3.FIRE_ROOT - ctx.cam.pos) @ ctx.cam.R[2])
+        world_root = self.race_fire_world()[0] if self.shot == 'race' else c3.FIRE_ROOT
+        depth = float((world_root - ctx.cam.pos) @ ctx.cam.R[2])
         visibility = c3.occ_vis(ctx.fr, depth, ctx.fr.H, ctx.fr.W)
         thinking_fire.draw(hdr, root, tip, ctx.t, bright=1.1, vis=visibility, scale=ctx.scale)
 
