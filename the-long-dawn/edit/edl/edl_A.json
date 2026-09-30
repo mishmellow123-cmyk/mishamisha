@@ -232,6 +232,26 @@
    "desc": "On every beat the towers surge; the ground falls into a crater of fire; the gilded lean in and the rim crumbles.",
    "takes": [
     {
+     "stem": "embers_A3_crater_pulse",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 A7: accepted 1840-1919, eased towers 1920-2399",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1840,
+      2399
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_A3_crater_pulse"
+     ]
+    },
+    {
      "stem": "embers_A3",
      "off": 0,
      "mode": "exact",

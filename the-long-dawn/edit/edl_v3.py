@@ -165,7 +165,13 @@ A = [
       EMB_A),
     S('A7', 1840, 2400, 'E6', 'THE EDGE', 'EMBERS',
       'On every beat the towers surge; the ground falls into a crater of fire; the gilded lean in and the rim crumbles.',
-      EMB_A),
+      # owner (30 Sep; "jumpy and unpolished"): the crater view 1920-2399 from the eased-tower re-render (LD_SURGE_EASE
+      # + LD_TOWER_PULSE_EASE, farm 0930-102643, renders/embers_A3_pulse): per-beat peak one-frame MAD 12.38 -> 9.28,
+      # max 15.67 -> 11.20, better on 23/23 beats. THE EDGE and the gilding insert 1840-1919 stay the accepted
+      # embers_A3 frames (APFS clones): in that wide view the eased flashes line up (peak 10.22 -> 12.46 at 1844).
+      # ALTERNATIVES['A7 plates'] lists the other folders.
+      [T('embers_A3_crater_pulse', 0, 'exact', 'EMBERS v3 A7: accepted 1840-1919, eased towers 1920-2399',
+         need=(1840, 2399))] + EMB_A),
     S('A8', 2400, 2640, 'E7-A', 'THE BRINK · OVER THE RIM', 'EMBERS',
       'One roaring updraft strips the tower tops; the rim gives way; a gilded crown falls; the camera follows it into white.',
       EMB_A),
@@ -344,6 +350,11 @@ ALTERNATIVES = {
     'C18': ("c5('book_C5_deep_abandoned', PR12, matte='book_C5_deep_abandoned_matte')", 'upright ladders, box lamp'),
     'C19': ("c5('runC_watch_v5', PR14)", 'the parchment Watch'),
     'C22': ("c5('book_C5_pen', PR12, matte='book_C5_pen_matte')", 'pale nib, hard black gutter'),
+    'A7 plates': ("EMB_A (T('embers_A3', ...)) for the whole row; or T('embers_A3_pulse', ...) for eased towers over all of "
+                  "1840-2399; renders/embers_A3_eased is the height-only ease (LD_SURGE_EASE)",
+                  'the accepted towers: each flashes to (1 + 0.9 pulse) x (1 + 2.5 heat band) in one frame on its beat '
+                  '(per-beat peak one-frame MAD 12.38); the all-pulse folder also eases THE EDGE, where the flashes '
+                  'line up (1844 MAD 10.22 -> 12.46); the height-only ease measured no better (12.38 -> 11.97)'),
     'A2': ("T('falsedawn')", 'the accepted sky: the high mackerel deck, silvering late, drawn as dark dashes over the Milky Way'),
     'A14': ("T('beaconrun_A_catches3', 0, 'exact', need=(3920, 4239))", 'PR #8 catches3: the run as 1-2 px specks '
             'until 4148, the camera on the left-hand ranges'),
