@@ -320,8 +320,9 @@ ALTERNATIVES = {
            'the unheld current-words camera (R02 cut by the frame bottom ~515-538); further back, book(): book_C '
            '320-559 with the old wording "...forges the Ring in secret." baked at 400-539'),
     'C11': ("c5('embers_C5_trap', PR11)", 'no smoke: the sunk forge simply goes dark, then relights'),
-    'C13': ("c5('cand_reveal_night-fire', CAND)", 'NOT adopted (the accepted runC_reveal_pair_v5 plays): the night '
-            'grade of the Reveal, rendered and kept'),
+    'C13': ("c5('runC_reveal_pair_v5', PR14)", 'the parchment Reveal (day page, gold beacon marks); restore together '
+            "with C14's parchment scroll, or the 3112-3127 dissolve goes night into day"),
+    'C14': ("T('runC_scroll', -3120, 'exact', 'RUN-C ink final')", 'the parchment scroll (RUN-C ink final)'),
     'C15': ("c5('map_last_beacon_C', PR13) with COLD_CUT = 3840", 'beacons as points on a greying map; the Cold cut at '
             '3840 (8 lit frames before 3848)'),
     'C18': ("c5('book_C5_deep_abandoned', PR12, matte='book_C5_deep_abandoned_matte')", 'upright ladders, box lamp'),
@@ -494,11 +495,19 @@ C = [
 ] + flint_rows(FLINT_CHOICE) + [
     S('C13', 2880, 3120, '#13', 'THE REVEAL · A PROMISE', 'RUN',
       'The vast ink range: her small fire and, at the same moment, a second fire on a far peak.',
-      [c5('runC_reveal_pair_v5', PR14)]),
+      # ADOPTED 29 Sep with C14 as a night pair (director #1, editor #1: the parchment Reveal and Scroll showed the
+      # first beacons as gold marks at or below the paper, glyph peaks 210-216 on a page of 194-200, the night as bright
+      # as C20's dawn, and the cut at 2880 jumped from FLINT's mean luma 31 to 186). The night-fire grade of the Reveal
+      # (rendered and kept since this afternoon) now pairs with C14's night-fire scroll, so the 3112-3127 dissolve is
+      # night into night; ALTERNATIVES['C13'] is the parchment Reveal
+      [c5('cand_reveal_night-fire', CAND)]),
     # the 7,200-frame cut's C17 (3840-4159 = runC_scroll 0-319), the same 320 source frames
     S('C14', 3120, 3440, '#14', 'THE BEACON RUN', 'RUN-C',
       'A lateral track at beacon height like a scroll unrolling; beacons bloom along the peaks, every two beats.',
-      [T('runC_scroll', -3120, 'exact', 'RUN-C ink final')]),
+      # ADOPTED 29 Sep: the night-fire scroll (Codex lane beacons; ink_final's frames through the shared night-fire
+      # compositor, default route pixel-equal to runC_scroll at source 199; farm 29 Sep, 320/320): the beacons are
+      # fires on the grey night page, as in C13 and C19. Source numbering 0-319 as runC_scroll's; ALTERNATIVES['C14']
+      [T('cand_scroll_night-fire', -3120, 'exact', 'night-fire scroll (Codex lane beacons, farm 29 Sep)')]),
 ] + last_beacon_rows(COLD_CUT) + [
     S('C16', 3840, 4000, '#16', 'THE FORGES GO COLD', 'EMBERS',
       'Every forge goes dark at the same instant (3848); smoke over cold masonry; the Ring still gold.',

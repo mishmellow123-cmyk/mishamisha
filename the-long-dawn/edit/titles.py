@@ -332,9 +332,12 @@ C5_TEXT = [
          y=330),                  # between the Ring and the forge crowns. At y 372 the crowns' flare (2555-2559)
                                   # rose behind 'In ours' (worst slice 2.32:1); here the worst frame is 4.28:1
     dict(id='R13', row=13, line='So the two furthest ahead lit the first beacons, together.', f_in=2900, f_out=3040,
-         set='ink', y=150),       # the near fire sits at ~(960, 607), the far one at ~(1380, 383): the sky is clear
+         set='fire', y=150),      # the near fire sits at ~(960, 607), the far one at ~(1380, 383): the sky is clear.
+                                  # Fire since C13 plays the night-fire Reveal (29 Sep): iron-gall on its grey page
+                                  # measured 2.30:1, worst slice 2.22:1 in 102 of 102 steady frames
     dict(id='R14', row=14, line='It was a promise to stop, if all the others would.', f_in=3160, f_out=3300,
-         set='ink', y=150),       # UNVERIFIED: runC_scroll is not on the EDIT-C5 Mac; the Reveal/Watch sky placement
+         set='fire', y=150),      # the Reveal/Watch sky placement. Fire since C14 plays the night-fire scroll (29 Sep):
+                                  # iron-gall on its grey page measured 2.29:1, worst slice 2.22:1 in 102 of 102 frames
     # REVIEW (29 Sep; the captions, director, editor and sound reviewers): up at 3740, the line announced a catch that
     # comes at 3786 (the holdout's pause was spent on the outcome) and read "every forge went cold" over forges still
     # burning (the lit lead-in, 3816-3839), with "caught" under the Ring. Staged in two parts, the words unchanged:

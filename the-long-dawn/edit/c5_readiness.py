@@ -49,7 +49,7 @@ ROW_SECTIONS = {1: ('C1', 'C2'), 2: ('C3',), 3: ('C4',), 4: ('C4',), 5: ('C5',),
 # the accepted takes they replaced are edl_v3.ALTERNATIVES).
 SHOT_MAP = {
     'C10': (2080, 2320, 'book_C5_refusal', 0), 'C11': (2320, 2640, 'cand_trap_front_smoke_near', 0),
-    'C13': (2880, 3120, 'runC_reveal_pair_v5', 0), 'C14': (3120, 3440, 'runC_scroll', -3120),
+    'C13': (2880, 3120, 'cand_reveal_night-fire', 0), 'C14': (3120, 3440, 'cand_scroll_night-fire', -3120),
     'C15': (3440, 3840, 'cand_map_beacon-falloff', 0), 'C16': (3840, 4000, 'embers_C5_cold', 0),
     'C17': (4000, 4240, 'embers_C5_unfinished', 0), 'C18': (4240, 4480, 'cand_deep_leaned_ladders', 0),
     'C19': (4480, 4720, 'cand_watch_night-fire', 0), 'C20': (4720, 5200, 'runC_illum', 2398 - 4720),

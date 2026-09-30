@@ -719,10 +719,10 @@
    "desc": "The vast ink range: her small fire and, at the same moment, a second fire on a far peak.",
    "takes": [
     {
-     "stem": "runC_reveal_pair_v5",
+     "stem": "cand_reveal_night-fire",
      "off": 0,
      "mode": "exact",
-     "note": "Codex PR14 (run, 7412f2a)",
+     "note": "Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -732,7 +732,7 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/runC_reveal_pair_v5"
+      "renders/cand_reveal_night-fire"
      ]
     }
    ],
@@ -752,10 +752,10 @@
    "desc": "A lateral track at beacon height like a scroll unrolling; beacons bloom along the peaks, every two beats.",
    "takes": [
     {
-     "stem": "runC_scroll",
+     "stem": "cand_scroll_night-fire",
      "off": -3120,
      "mode": "exact",
-     "note": "RUN-C ink final",
+     "note": "night-fire scroll (Codex lane beacons, farm 29 Sep)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -765,7 +765,7 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/runC_scroll"
+      "renders/cand_scroll_night-fire"
      ]
     }
    ],
@@ -1204,7 +1204,7 @@
    "line": "So the two furthest ahead lit the first beacons, together.",
    "f_in": 2900,
    "f_out": 3040,
-   "set": "ink",
+   "set": "fire",
    "locked": null,
    "row": 13,
    "y": 150
@@ -1214,7 +1214,7 @@
    "line": "It was a promise to stop, if all the others would.",
    "f_in": 3160,
    "f_out": 3300,
-   "set": "ink",
+   "set": "fire",
    "locked": null,
    "row": 14,
    "y": 150
