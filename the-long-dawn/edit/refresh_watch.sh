@@ -90,7 +90,7 @@ while :; do
     fi
     sleep 60
   done
-  cuts=$(diff <(echo "$last" | tr ' ' '\n') <(echo "$cur" | tr ' ' '\n') | sed -n 's/^> \([ABC]\):.*/\1/p' | sort -u | tr '\n' ' ')
+  cuts=$(diff <(echo "$last" | tr ' ' '\n') <(echo "$cur" | tr ' ' '\n') | sed -n 's/^> \([ABCD]\):.*/\1/p' | sort -u | tr '\n' ' ')
   echo "== refresh_watch: $(date -u +%H:%MZ) changed: ${cuts}"
   : > "$RUN.all"
   export CUTS="${cuts% }"
@@ -103,7 +103,7 @@ while :; do
   step bash edit/h9_kit.sh || fail=1
   step bash edit/deliver.sh || fail=1
   unset CUTS
-  step bash edit/previews.sh || fail=1        # the finished stretches -> ~/Downloads/The Long Dawn v3 - PREVIEWS/
+  step bash edit/previews.sh --cuts "${FILMS:-AC}" || fail=1  # include D when this watcher explicitly tracks D
   echo "$cur" > "$STATE"; last="$cur"
   if [ "$fail" = "1" ] || grep -q 'RESULT: FAIL' "$RUN.all"; then
     echo "refresh_watch: a step or a QC FAILED ($(date -u +%H:%MZ)); see $RUN.all"; exit 2

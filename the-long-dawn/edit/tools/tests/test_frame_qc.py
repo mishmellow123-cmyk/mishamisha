@@ -84,6 +84,34 @@ class FrameQCTests(unittest.TestCase):
         report = self.analyze(0, 0, config=config)
         self.assertEqual(self.frames(report)[0]['status'], 'wrong_dimensions')
 
+    def test_d_joins_are_explicit_and_do_not_select_another_films_join(self):
+        self.write(0)
+        self.write(1, self.gradient(2))
+        joins = [{'film': c, 'from': 0, 'to': 1, 'label': f'{c} fixture'} for c in ('C', 'D')]
+        report = self.analyze(0, 1, film='D', joins=joins)
+        self.assertEqual(report['film'], 'D')
+        self.assertEqual([j['label'] for j in report['joins']], ['D fixture'])
+        self.assertTrue(report['transitions'][0]['declared_join'])
+        # Wrong-cut metadata is a negative fixture: it must not exempt D's transition.
+        unselected = self.analyze(0, 1, film='D', joins=joins[:1])
+        self.assertEqual(unselected['joins'], [])
+        self.assertFalse(unselected['transitions'][0]['declared_join'])
+
+    def test_d_cli_uses_d_join_records(self):
+        self.write(0)
+        self.write(1, self.gradient(2))
+        custom = self.root / 'd_joins.json'
+        custom.write_text(json.dumps([{'film': 'D', 'from': 0, 'to': 1, 'label': 'D fixture'}]))
+        output = self.root / 'd_qc.json'
+        completed = subprocess.run([sys.executable, '-B', str(SOURCE), str(self.root), '--range', '0-1',
+                                    '--film', 'D', '--width', str(self.W), '--height', str(self.H),
+                                    '--json', str(output), '--joins', str(custom)],
+                                   capture_output=True, text=True, timeout=30)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        report = json.loads(output.read_text())
+        self.assertEqual(report['film'], 'D')
+        self.assertEqual(report['joins'][0]['status'], 'measured')
+
     def test_black_constant_and_near_constant_frames_have_review_flags(self):
         self.write(0, np.zeros((self.H, self.W, 3), np.uint8))
         self.write(1, np.full((self.H, self.W, 3), 110, np.uint8))

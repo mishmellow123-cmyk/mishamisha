@@ -29,7 +29,7 @@ def stale_keys(cut):
     return [k for k in sorted(set(doc) | set(disk)) if doc.get(k) != disk.get(k)]
 
 
-@pytest.mark.parametrize('cut', 'ABC')
+@pytest.mark.parametrize('cut', 'ABCD')
 def test_exported_edl_matches_the_generator(cut):
     assert not stale_keys(cut), f'edl_{cut}.json is stale; run python3 edit/assemble.py --edl'
 

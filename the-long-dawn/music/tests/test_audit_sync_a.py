@@ -511,13 +511,14 @@ def test_current_walk_contract_and_every_expected_step_are_pinned():
     assert all(not row["ok"] and row["status"] == "UNRESOLVED" for row in rows)
 
 
-@pytest.mark.parametrize("changed", ["src/score_v3_A.py", "src/kit_v3.py", "v3/cues_A.json"])
+@pytest.mark.parametrize("changed", ["src/score_v3_A.py", "src/kit_v3.py", "src/timeline_v3.py", "v3/cues_A.json"])
 def test_changed_step_source_or_cue_override_requires_contract_review(tmp_path, changed):
     for key in A.STEP_CONTRACT:
         relative = key.split(":")[0]
         path = tmp_path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text((A.MUSIC / relative).read_text())
+    assert A.step_source_contract(tmp_path)["ok"]  # prove the copied baseline passes before changing one source
     relative = changed.split(":")[0]
     path = tmp_path / relative
     source = path.read_text()
@@ -525,6 +526,8 @@ def test_changed_step_source_or_cue_override_requires_contract_review(tmp_path, 
         changed_source = source.replace('"feet", lan, narrow', '"feet", lan + 1, narrow')
     elif relative == "src/kit_v3.py":
         changed_source = source.replace("t += 2.0", "t += 3.0")
+    elif relative == "src/timeline_v3.py":
+        changed_source = source.replace("BPM = 72", "BPM = 73")
     else:
         data = json.loads(source)
         data["events"]["lantern"] = dict(frame=5000, t=5000 / A.FPS)

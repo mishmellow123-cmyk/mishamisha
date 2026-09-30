@@ -17,7 +17,7 @@ import numpy as np
 
 
 DEFAULT_JOINS = Path(__file__).with_name('frame_qc_joins.json')
-FILMS = ('A', 'B', 'C')
+FILMS = ('A', 'B', 'C', 'D')
 
 
 @dataclass(frozen=True)
@@ -55,7 +55,7 @@ def validate_joins(joins):
             raise ValueError('each join must be an object')
         film, a, b = item.get('film'), item.get('from'), item.get('to')
         if film not in FILMS or type(a) is not int or type(b) is not int or a < 0 or b <= a:
-            raise ValueError('each join needs film A/B/C and integer 0 <= from < to')
+            raise ValueError('each join needs film A/B/C/D and integer 0 <= from < to')
         key = film, a, b
         if key in seen:
             raise ValueError(f'duplicate join: {film} {a}->{b}')
@@ -171,7 +171,7 @@ def analyze(directory, start, end, *, film=None, config=None, joins=None):
     if type(start) is not int or type(end) is not int or start < 0 or end < start:
         raise ValueError('range must have integer 0 <= start <= end')
     if film is not None and film not in FILMS:
-        raise ValueError('film must be A, B or C')
+        raise ValueError('film must be A, B, C or D')
     if joins is not None and film is None:
         raise ValueError('explicit joins require --film to select their film')
     directory = Path(directory).resolve()

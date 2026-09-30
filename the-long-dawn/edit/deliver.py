@@ -11,6 +11,7 @@ minutes. The same engine makes the half-res animatics (--profile animatic).
     python3 edit/deliver.py --cut A --variant codedtowers  # A's ALT master
     python3 edit/deliver.py --cut C --qc-only              # QC the existing master again
     python3 edit/deliver.py --cut A --profile animatic     # the half-res animatic, incrementally
+    python3 edit/deliver.py --cut D --audio silence       # D scaffold, explicit STAND-IN audio in QC
 
 Outputs in $LD_DELIVERY, else ~/mishamisha/_local_logs/delivery/ (animatics in _local_logs/animatic/ as before):
     <cut>_master[_codedtowers].mov     H.264 High (x264 CRF 14, slow, BT.709 limited, 1920x804, 24 fps) + the
@@ -49,7 +50,7 @@ PROFILES = {
 }
 # the segments' SPS carries only the matrix; this stamps full BT.709 (primaries, transfer, matrix, limited range)
 VUI = 'h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0'
-FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES'}
+FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES', 'D': 'CONSOLIDATED FILM (SCAFFOLD)'}
 
 
 def _code_hash():
@@ -396,7 +397,7 @@ def status_frames(cut, variant):
         if pl['kind'] in ('black', 'x2') or 'BLACK' in s['name']:
             planned_black.append((s['f0'], s['f1']))
         gap = n - pl['have'] if pl['kind'] == 'take' else 0
-        if pl['kind'] in ('x2', 'titlesky') or (s['kind'] == 'title' and gap):
+        if pl['kind'] in ('x2', 'titlesky') or (s['kind'] == 'title' and gap and cut != 'D'):
             k = n if pl['kind'] != 'take' else gap
             proxy += k
             proxies.append(f"{s['sec']} {s['code']}" + (f' ({k} f)' if k < n else ''))
@@ -519,7 +520,10 @@ def qc(cut, variant, mov, mp4, audio_label, build):
         y = decode_audio(mp4)
         tq = true_peak_db(y) if len(y) else -120.0
         check('PASS' if tq <= -0.5 else 'WARN', 'screener sound (AAC)', f'true peak {tq:.2f} dBTP after encoding')
-    check('INFO', 'sound source', audio_label)
+    standin = 'STAND-IN' in audio_label.upper()
+    check('WARN' if standin else 'INFO', 'sound source', audio_label)
+    if cut == 'D':
+        res['audio_stand_in'] = None if audio_label.startswith('STAND-IN status UNKNOWN') else standin
     check('INFO' if slate == 0 else 'WARN', 'coverage',
           'every frame rendered' if slate == 0 else f'{slate:,} of {total:,} frames are slates: ' + ', '.join(missing))
     if proxy:
@@ -548,15 +552,42 @@ def qc(cut, variant, mov, mp4, audio_label, build):
 
 
 # ---------------------------------------------------------------------------------------------------- main
+def write_audio_receipt(out, label):
+    """D's QC-only run must describe the mix actually muxed, even after LD_D_AUDIO or the score changes."""
+    st = os.stat(out)
+    receipt = dict(label=label, media_size=st.st_size, media_mtime_ns=st.st_mtime_ns)
+    path = out + '.audio.json'
+    tmp = path + f'.{os.getpid()}.part'
+    with open(tmp, 'w') as fh:
+        json.dump(receipt, fh, indent=1)
+    os.replace(tmp, path)
+
+
+def recorded_audio_label(out):
+    try:
+        with open(out + '.audio.json') as fh:
+            receipt = json.load(fh)
+        st = os.stat(out)
+        if ((receipt['media_size'], receipt['media_mtime_ns']) == (st.st_size, st.st_mtime_ns)
+                and isinstance(receipt['label'], str) and receipt['label']):
+            return receipt['label']
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return 'STAND-IN status UNKNOWN (no matching D delivery audio receipt; source is unverified)'
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--cut', required=True, type=str.upper, choices=['A', 'B', 'C'])
+    ap.add_argument('--cut', required=True, type=str.upper, choices=['A', 'B', 'C', 'D'])
     ap.add_argument('--variant', default=None, choices=[None, 'codedtowers'])
     ap.add_argument('--profile', default='master', choices=list(PROFILES))
     ap.add_argument('--workers', type=int, default=3)
     ap.add_argument('--qc-only', action='store_true')
     ap.add_argument('--no-screener', action='store_true')
+    ap.add_argument('--audio', default=None, help="D stand-in path or 'silence'; defaults to LD_D_AUDIO, then D's score")
     a = ap.parse_args()
+    if a.audio is not None and a.cut != 'D':
+        ap.error('--audio overrides are only enabled for cut D')
     EDL.check(os.path.join(ROOT, 'music', 'v3'))
     prof = PROFILES[a.profile]
     os.makedirs(prof['out'], exist_ok=True)
@@ -564,13 +595,19 @@ def main():
     log = lambda m: print(m, flush=True)
     ext = '.mov' if a.profile == 'master' else '.mp4'
     out = os.path.join(prof['out'], name + ext)
-    audio, label = AS.resolve_audio(a.cut)
+    if a.cut == 'D' and a.qc_only:
+        audio, label = None, recorded_audio_label(out)
+    else:
+        audio, label = AS.resolve_audio(a.cut, a.audio) if a.cut == 'D' else AS.resolve_audio(a.cut)
     build = dict(segments=0, encoded=0, frames_encoded=0, seconds=0)
     if not a.qc_only:
         segs, build = build_video(a.cut, a.variant, a.profile, a.workers, log)
-        snap = AS.snapshot_audio(audio, a.cut) if not os.path.basename(audio).startswith('click_') else audio
+        snap = AS.snapshot_audio(audio, a.cut) if not (os.path.basename(audio).startswith('click_') or
+                                                       label.startswith('STAND-IN')) else audio
         try:
             join_and_mux(segs, snap, out, a.profile, a.cut)
+            if a.cut == 'D':
+                write_audio_receipt(out, label)
         finally:
             if snap != audio and os.path.exists(snap):
                 os.remove(snap)

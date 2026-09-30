@@ -97,9 +97,9 @@ class BakedGradeIntegrationTests(unittest.TestCase):
             (window['full0'], True, 1), (window['full1'], True, 1),
             (window['f1'] - 1, True, 0), (window['f1'], False, 0))]
         with mock.patch.object(AS, 'Ctx', Context), mock.patch.object(AS, '_CTX', None), \
-                mock.patch.dict(AS.EDL.TRANS, {'A': [], 'B': [], 'C': windows}), \
+                mock.patch.dict(AS.EDL.TRANS, {'A': [], 'B': [], 'C': windows, 'D': deepcopy(windows)}), \
                 mock.patch.dict(sys.modules, stage=fake_stage), mock.patch.object(CG, 'apply', side_effect=grade):
-            for cut in ('A', 'B', 'C'):
+            for cut in ('A', 'B', 'C', 'D'):
                 AS._init(cut, None, 0.5, True, True)
                 for window, frame, active, amount in cases:
                     with self.subTest(cut=cut, frame=frame):
@@ -107,7 +107,7 @@ class BakedGradeIntegrationTests(unittest.TestCase):
                         finish_calls.clear()
                         grade_calls.clear()
                         out, _, status, _ = AS._CTX.picture(frame)
-                        enabled = cut == 'C' and active
+                        enabled = cut in ('C', 'D') and active
                         self.assertEqual(raw_reads, [(cut, frame)])
                         self.assertEqual(finish_calls, [(cut, frame)])
                         self.assertEqual(grade_calls, [(frame, window['id'])] if enabled else [])
@@ -128,7 +128,7 @@ class BakedGradeIntegrationTests(unittest.TestCase):
             def keys():
                 out = {}
                 with mock.patch.object(D, '_TRANS_CODE', []):
-                    for cut in ('A', 'B', 'C'):
+                    for cut in ('A', 'B', 'C', 'D'):
                         for index, shot in enumerate(AS.EDL.EDL[cut]):
                             take = shot['takes'][0] if shot['takes'] else None
                             plan = dict(kind='take' if take else shot['kind'], take=take,
@@ -137,10 +137,11 @@ class BakedGradeIntegrationTests(unittest.TestCase):
                                                             plan, code, [])
                 return out
 
-            expected = {('C', index) for index, shot in enumerate(AS.EDL.EDL['C']) if shot['sec'] in ('C3', 'C23')}
-            self.assertEqual(len(expected), 2, 'The fixtures must cover both baked-caption shots')
+            expected = {(cut, index) for cut in ('C', 'D') for index, shot in enumerate(AS.EDL.EDL[cut])
+                        if shot['sec'] in ('C3', 'C23')}
+            self.assertEqual(len(expected), 4, 'Both C and D must cover both baked-caption shots')
             with mock.patch.object(CG, '__file__', str(helper)), mock.patch.object(CG, 'DATA_PATH', geometry), \
-                    mock.patch.dict(AS.EDL.TRANS, {'A': [], 'B': [], 'C': deepcopy(WINDOWS)}), \
+                    mock.patch.dict(AS.EDL.TRANS, {'A': [], 'B': [], 'C': deepcopy(WINDOWS), 'D': deepcopy(WINDOWS)}), \
                     mock.patch.object(D, 'frame_sources', side_effect=lambda *args: []), \
                     mock.patch.object(D, '_stat', return_value='synthetic-source-stat'):
                 before = keys()
@@ -148,7 +149,7 @@ class BakedGradeIntegrationTests(unittest.TestCase):
                 changed_file.write_bytes(changed_file.read_bytes() + b'\n')
                 after = keys()
             self.assertEqual({key for key in before if before[key] != after[key]}, expected,
-                             'Helper and geometry contents must rekey C3/C23 only; other C shots and A/B retain keys')
+                             'Helper and geometry contents must rekey C3/C23 in C and D only; other shots retain keys')
 
     def test_helper_source_changes_rekey_only_c3_and_c23(self):
         self.assert_only_baked_shots_rekey('helper')

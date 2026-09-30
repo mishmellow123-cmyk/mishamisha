@@ -101,7 +101,9 @@ METHOD = "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop"
 STEP_CONTRACT = {
     "src/score_v3_A.py": "3fc11ea1ee6ccbf15bcf9720101d601836d4c9313ce23d3499d0a43c7c7940fd",
     "src/kit_v3.py": "fbd46ec15ac2226626326af31e2e0fe113d498006d4b23e19f4359dc232b878b",
-    "src/timeline_v3.py": "a5ba3d9526c294ff93bb8e04c0f7d9423b23e39addc7aee6b10897e5fe4917fb",
+    # Reviewed 30 Sep (cutd): D-only status and CLI --all selection; the grid/score paths are unchanged.
+    # Full BarMap state and validation compared equal before/after for A/B/C/C5/C5P2/AP2. Other pins unchanged.
+    "src/timeline_v3.py": "e804f11da8d41867a14ad01cd1c74fba4c8d9586291ebe34df784ec6f6e6c5f5",
     "v3/cues_A.json": "0f8680be6cccb38fbffc95abad437e3ca674cdf85a01813b0a440225ff8c5e2f",
 }
 

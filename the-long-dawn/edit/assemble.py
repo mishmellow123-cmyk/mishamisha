@@ -6,6 +6,8 @@ by the DIRECTOR'S H5 CALLS; bar maps music/v3/barmap_{A,B,C}.json; EDLs in edit/
     python3 edit/assemble.py --cut C --stills 1200,2600       # half-res review stills -> edit/cache/stills/
     python3 edit/assemble.py --coverage [--notes]             # coverage of all three cuts (and write it into NOTES_v3)
     python3 edit/assemble.py --edl                            # edit/edl/edl_{A,B,C}.json for the departments
+    python3 edit/assemble.py --cut D --edl                    # D scaffold only; keeps the ABC exports untouched
+    python3 edit/assemble.py --cut D --animatic --audio silence   # or a mix path / LD_D_AUDIO
 
 Picture: per shot, the first take that covers every frame (else the take covering most; its gaps are slates).
 Folders: renders/<stem>_<CUT>/ -> _v3 -> _v2 -> base (per take mode, see edl_v3.py). Anything missing is a SLATE:
@@ -16,6 +18,7 @@ exists (music/NOTES_v3.md MASTERS table, then music/out/v3/final_<cut>.wav), els
 The v2 assembler is kept as edit/assemble_v2.py.
 """
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -125,15 +128,19 @@ def locate(take, cut, variant, f):
 
 
 def locate_under(spec, f):
-    """Metadata-only (path, folder stem) matching Ctx.under's first-present source and held-frame rules.
+    """Metadata-only (path, folder stem) matching Ctx.under's first-present source and frame rules.
 
-    Keep the renderer unchanged to preserve existing segment hashes. The parity tests exercise its actual
-    reads against this lookup, including decode failure (which never tries the next folder).
+    The parity tests exercise actual reads against this lookup, including decode failure (which never tries
+    the next folder). 'same' uses the cut frame; explicit ('offset', stem, off) reads f + off for harvested comps.
     """
     if not spec:
         return None, None
     how, stem, *rest = spec
     g = rest[0] if (how == 'hold' and rest) else f
+    if how == 'offset':
+        if len(rest) != 1 or not isinstance(rest[0], int):
+            raise ValueError('An offset under-layer requires one integer frame offset')
+        g = f + rest[0]
     for d in (stem, stem + '_half'):
         p = index(os.path.join(RENDERS, d)).get(g)
         if p:
@@ -187,7 +194,7 @@ def plan_shot(shot, cut, variant):
         return best
     if shot['kind'] == 'x2':
         return dict(kind='x2', take=None, have=shot['f1'] - shot['f0'], alt=0)
-    if shot['kind'] == 'title':                               # X3: the stand-in sky until the plate lands
+    if shot['kind'] == 'title' and cut != 'D':                 # D has no adopted stand-in title sky
         return dict(kind='titlesky', take=None, have=shot['f1'] - shot['f0'], alt=0)
     return dict(kind='slate', take=None, have=0, alt=0)
 
@@ -280,6 +287,10 @@ class Ctx:
             return None
         how, stem, *rest = spec
         g = rest[0] if (how == 'hold' and rest) else f
+        if how == 'offset':
+            if len(rest) != 1 or not isinstance(rest[0], int):
+                raise ValueError('An offset under-layer requires one integer frame offset')
+            g = f + rest[0]
         for d in (stem, stem + '_half'):
             p = index(os.path.join(RENDERS, d)).get(g)
             if p:
@@ -352,7 +363,7 @@ class Ctx:
             status = 'EDIT proxy (stand-in sky)'
         elif plan['kind'] == 'take':
             img = self.take_frame(plan['take'], f)
-            if img is None and shot['kind'] == 'title':
+            if img is None and shot['kind'] == 'title' and self.cut != 'D':
                 img = TS.standin_sky(self.cut, f, self.W, self.H)
                 status = 'EDIT proxy (stand-in sky)'
             elif img is None:
@@ -503,7 +514,7 @@ def masters_table():
         return out
     for line in open(p):
         # e.g. "| B score (THE VIGIL) | `music/out/v3/final_B.wav` (stems ...) | ..." -> the first .wav in cell 2
-        m = re.match(r'\|\s*([ABC])\s+(score|fallback|master)\b[^|]*\|([^|]*)\|', line)
+        m = re.match(r'\|\s*([ABCD])\s+(score|fallback|master)\b[^|]*\|([^|]*)\|', line)
         w = re.search(r'([\w./-]+\.wav)', m.group(3)) if m else None
         if w:
             path = w.group(1)
@@ -536,7 +547,7 @@ ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master'),
                  'A': ('music/out/v3/sound_AP2.wav', 'SOUND master (A pass 2)')}
 # Every C sound file on record (sound_C, final_C, fallback_C, the MASTERS table's C rows) was made for the 7,200-frame
 # cut: C takes a file only when its length is the cut's, so a stale file is never picked by its name (EDIT-C5).
-LENGTH_GUARD = {'C'}
+LENGTH_GUARD = {'C', 'D'}
 
 
 def adopted_audio(cut):
@@ -552,7 +563,10 @@ def audio_fits(path, cut):
         return True
     try:
         import soundfile as sf
-        return abs(sf.info(path).duration - EDL.TOTAL[cut] / FPS) < 0.01
+        info = sf.info(path)
+        if cut == 'D':
+            return info.frames * FPS == EDL.TOTAL[cut] * info.samplerate
+        return abs(info.duration - EDL.TOTAL[cut] / FPS) < 0.01
     except Exception:
         return False
 
@@ -565,36 +579,99 @@ def _audio_candidates(cut):
             (os.path.join(v3, f'fallback_{cut}.wav'), 'FALLBACK master'))
 
 
-def audio_choice(cut):
+def audio_choice(cut, audio=None):
     """(path, label, refused): the first candidate that exists and, for a guarded cut (LENGTH_GUARD), is exactly the
     cut's length, or (None, None, refused); refused lists the (path, label) that exist but were refused. The ONE walk:
     the masters (resolve_audio), their labels, the C5 gate and refresh_watch.sh's signature all read it, so no reader
-    can take a file another would refuse."""
+    can take a file another would refuse. D's explicit stand-in bypasses the master-length guard (resolve_audio
+    pads/trims it); D without a score returns a STAND-IN label and no path, to request D-length silence."""
+    if audio is not None and cut != 'D':
+        raise ValueError('Audio resolver overrides are only enabled for cut D')
+    # D's temporary mix is a deliberate override, even when a D score has since arrived. Never infer that a
+    # borrowed mix belongs to D from its filename. This metadata-only path also feeds coverage and the watcher.
+    if cut == 'D':
+        request = audio if audio is not None else os.environ.get('LD_D_AUDIO')
+        if request:
+            if request == 'silence':
+                return None, 'STAND-IN silence (explicit; D score pending)', []
+            path = os.path.abspath(os.path.expanduser(os.fspath(request)))
+            if not os.path.isfile(path):
+                raise FileNotFoundError(f'D stand-in mix does not exist: {path}')
+            import soundfile as sf
+            if sf.info(path).frames <= 0:
+                raise ValueError(f'D stand-in mix has no audio samples: {path}')
+            return path, 'STAND-IN mix (padded or trimmed to D; timing is not a D score)', []
     refused = []
     for path, label in _audio_candidates(cut):
         if path and os.path.isfile(path):
             if audio_fits(path, cut):
                 return path, label, refused
             refused.append((path, label))
-    return None, None, refused
+    return None, 'STAND-IN silence (no D sound master)' if cut == 'D' else None, refused
 
 
-def audio_signature(cut):
+def audio_signature(cut, audio=None):
     """refresh_watch.sh's audio term: the file a master would carry now, with its mtime, or 'click'. A refused file
     never enters it, so re-rendering a stale file cannot stand in for the cut's sound or trigger a refresh, and a file
     that starts to fit changes the term, which is the refresh that should happen. No spaces: the watcher splits its
     signature on them."""
-    path, _, _ = audio_choice(cut)
+    path, label, _ = audio_choice(cut, audio)
+    if cut == 'D':
+        spec = ('silence', EDL.TOTAL[cut], label)
+        if path:
+            st = os.stat(path)
+            spec = (os.path.realpath(path), st.st_size, st.st_mtime_ns, EDL.TOTAL[cut], label)
+        return 'D@' + hashlib.sha256(repr(spec).encode()).hexdigest()[:24]
     return f'{os.path.basename(path)}@{int(os.path.getmtime(path))}' if path else 'click'
 
 
-def resolve_audio(cut):
+def standin_audio(cut, source=None):
+    """An immutable 48 kHz stereo WAV, padded/trimmed to D's own length; source=None means true silence.
+
+    Normalize before preview seeks: apad after seeking past a shorter source's EOF cannot supply that range.
+    Cache identity includes source metadata and the target length, so neither a changed mix nor a changed EDL
+    reuses the old file. Outputs stay in edit/cache, never beside a borrowed source or in music/out.
+    """
+    if cut != 'D':
+        raise ValueError('Stand-in normalization is only enabled for cut D')
+    stat = os.stat(source) if source else None
+    spec = (os.path.realpath(source), stat.st_size, stat.st_mtime_ns) if source else ('silence',)
+    key = hashlib.sha256(repr((spec, EDL.TOTAL[cut], FPS, 48000, 2, 'pcm_s24le')).encode()).hexdigest()[:24]
+    os.makedirs(CACHE, exist_ok=True)
+    out = os.path.join(CACHE, f'standin_D_{key}.wav')
+    if os.path.isfile(out) and audio_fits(out, cut):
+        return out
+    tmp = out + f'.{os.getpid()}.part.wav'
+    inputs = ['-i', source] if source else ['-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo']
+    cmd = ['ffmpeg', '-y', '-v', 'error'] + inputs + [
+        '-map', '0:a:0', '-af', 'apad', '-t', f'{EDL.TOTAL[cut] / FPS:.9f}',
+        '-ar', '48000', '-ac', '2', '-c:a', 'pcm_s24le', tmp]
+    try:
+        subprocess.run(cmd, check=True, capture_output=True)
+        if not audio_fits(tmp, cut):
+            raise ValueError('D stand-in normalization did not produce the declared cut length')
+        if source:
+            after = os.stat(source)
+            if (stat.st_size, stat.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
+                raise RuntimeError('D stand-in mix changed during normalization; retry with a settled mix')
+        os.replace(tmp, out)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+    return out
+
+
+def resolve_audio(cut, audio=None):
     """(wav path, label): the adopted master, the composer's master, else the fallback master, else a click. A guarded
-    cut (LENGTH_GUARD) refuses, loudly, any file that is not exactly its length."""
-    path, label, refused = audio_choice(cut)
+    cut (LENGTH_GUARD) refuses, loudly, any file that is not exactly its length. D additionally accepts a borrowed
+    mix or 'silence' through audio/LD_D_AUDIO, and falls back to labelled silence while its own score is absent."""
+    path, label, refused = audio_choice(cut, audio)
     for p, _ in refused:
         print(f'  AUDIO REFUSED for {cut}: {os.path.relpath(p, ROOT)} is not {EDL.TOTAL[cut]} frames long '
               f'(a sound master for another cut)', flush=True)
+    if cut == 'D' and label and label.startswith('STAND-IN'):
+        source = f' ({os.path.relpath(path, ROOT)})' if path else ''
+        return standin_audio(cut, path), f'{label}{source}; {EDL.TOTAL[cut]} frames'
     if path:
         return path, f'{label} ({os.path.relpath(path, ROOT)}, {time.strftime("%d %b %H:%M", time.localtime(os.path.getmtime(path)))} local)'
     return click_track(cut), 'CLICK track (soft click each bar, accented on section starts)'
@@ -969,8 +1046,8 @@ def _tk_dawn_sweep(img, src, f, t, fin, cut):
 
 def _tk_caption_grade(img, src, f, t, fin, cut):
     # The words are already photographed onto the page. Grade those finished pixels once; no second text layer.
-    if cut != 'C':
-        raise ValueError('Baked-caption grades belong to cut C')
+    if cut not in ('C', 'D'):
+        raise ValueError('Baked-caption grades belong to cut C or its cut D scaffold')
     return CG.apply(fin(img, src, cut, f) if fin else img, f, t, src)
 
 
@@ -1124,12 +1201,12 @@ def _job(f):
 def render(cut, out_path, variant=None, scale=0.5, clean=False, workers=3, rng=None, crf=23, audio=None):
     ctx = Ctx(cut, variant, scale, clean)
     start, end = rng or (0, EDL.TOTAL[cut])
-    if audio is None:
-        audio, alabel = resolve_audio(cut)
+    if audio is None or cut == 'D':
+        audio, alabel = resolve_audio(cut, audio)
     else:
         alabel = f'given ({audio})'
     snap = None
-    if audio and not os.path.basename(audio).startswith('click_'):
+    if audio and not os.path.basename(audio).startswith('click_') and not alabel.startswith('STAND-IN'):
         snap = audio = snapshot_audio(audio, cut)
         if not snap.startswith(CACHE):
             snap = None
@@ -1214,9 +1291,9 @@ def coverage(cut, variant=None):
     return rows
 
 
-def coverage_md(variant=None):
+def coverage_md(variant=None, cuts='ABC'):
     lines = []
-    for cut in 'ABC':
+    for cut in cuts:
         rows = coverage(cut, None)
         nf = sum(r['f1'] - r['f0'] for r in rows if r['status'].startswith(('RENDERED', 'EDIT', 'VARIANT')))
         lines.append(f"**{cut}** ({EDL.TOTAL[cut]} f): {nf} f picture ({100 * nf / EDL.TOTAL[cut]:.0f}%), "
@@ -1238,10 +1315,12 @@ def coverage_md(variant=None):
     return '\n'.join(lines)
 
 
-def resolve_audio_label(cut):
-    path, label, _ = audio_choice(cut)
+def resolve_audio_label(cut, audio=None):
+    path, label, _ = audio_choice(cut, audio)
     if path:
         return f'{label} `{os.path.relpath(path, ROOT)}`'
+    if cut == 'D':
+        return f'{label}; {EDL.TOTAL[cut]} frames'
     return 'click track (no score or fallback yet' + (' of the right length)' if cut in LENGTH_GUARD else ')')
 
 
@@ -1258,10 +1337,10 @@ def write_notes_coverage(md):
     open(NOTES, 'w').write(s)
 
 
-def export_edl():
+def export_edl(cuts='ABC'):
     d = os.path.join(ROOT, 'edit', 'edl')
     os.makedirs(d, exist_ok=True)
-    for cut in 'ABC':
+    for cut in cuts:
         with open(os.path.join(d, f'edl_{cut}.json'), 'w') as fh:
             json.dump(edl_doc(cut), fh, indent=1)
     return d
@@ -1282,12 +1361,14 @@ def edl_doc(cut):
                       '_alt_codedtowers first')
     if cut == 'C':
         doc.update(EDL.c5_export_extra())
+    elif cut == 'D':
+        doc.update(EDL.d_export_extra())
     return json.loads(json.dumps(doc))                        # the JSON form (tuples as lists), as written
 
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('--cut', default='A', type=str.upper, choices=['A', 'B', 'C'])
+    ap.add_argument('--cut', default='A', type=str.upper, choices=['A', 'B', 'C', 'D'])
     ap.add_argument('--animatic', action='store_true')
     ap.add_argument('--variant', default=None, choices=[None, 'codedtowers'])
     ap.add_argument('--clean', action='store_true', help='no burn-ins (slates stay)')
@@ -1295,7 +1376,7 @@ if __name__ == '__main__':
     ap.add_argument('--range', nargs=2, type=int, default=None)
     ap.add_argument('--workers', type=int, default=3)
     ap.add_argument('--crf', type=int, default=23)
-    ap.add_argument('--audio', default=None)
+    ap.add_argument('--audio', default=None, help="audio path; D also accepts 'silence' (or LD_D_AUDIO)")
     ap.add_argument('--stills', default=None)
     ap.add_argument('--coverage', action='store_true')
     ap.add_argument('--notes', action='store_true', help='with --coverage: write the table into edit/NOTES_v3.md')
@@ -1303,9 +1384,9 @@ if __name__ == '__main__':
     a = ap.parse_args()
     EDL.check(os.path.join(ROOT, 'music', 'v3'))
     if a.edl:
-        print('wrote', export_edl())
+        print('wrote', export_edl('D' if a.cut == 'D' else 'ABC'))
     if a.coverage:
-        md = coverage_md()
+        md = coverage_md(cuts='D' if a.cut == 'D' else 'ABC')
         print(md)
         if a.notes:
             write_notes_coverage(md)

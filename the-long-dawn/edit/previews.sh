@@ -10,4 +10,4 @@ if [ "${EDIT_Q:-0}" != "1" ]; then           # every local render goes through t
   exec python3 "$HOME/mishamisha/_local_logs/renderq.py" -- bash "$SELF" "$@"
 fi
 source ~/.venvs/longdawn/env.sh
-python3 edit/previews.py
+python3 edit/previews.py "$@"

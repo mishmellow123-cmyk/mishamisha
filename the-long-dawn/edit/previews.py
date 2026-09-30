@@ -12,6 +12,7 @@ frames are final renders. A stretch that grows replaces its old file; one whose 
 the text, the score) is re-exported under the same name. Each new file prints `NEW: <name>` (the watcher then
 wakes EDIT, who tells the director).
 """
+import argparse
 import json
 import os
 import subprocess
@@ -23,7 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'edit'))
 import assemble as AS  # noqa: E402
 import deliver as D  # noqa: E402
-from h9_kit import Film, FILM  # noqa: E402
+from h9_kit import Film, FILM, cut_selection  # noqa: E402
 
 OUT = os.path.expanduser('~/Downloads/The Long Dawn v3 - PREVIEWS')
 MANIFEST = os.path.join(OUT, '.previews.json')
@@ -121,9 +122,14 @@ def master_current(film, idx, keys):
     return all(m in ks for m, ks in zip(master_segments(film, idx), keys))
 
 
-def key(film, idx, audio):
+def key(film, idx, audio, audio_label=None):
     """What the preview is cut from: the master's own segments for these shots (finish included) and the sound."""
     st = os.stat(audio) if os.path.isfile(audio) else None
+    if film.cut == 'D':
+        # D's audio was selected when its master was muxed. Current environment
+        # settings cannot attest to that soundtrack; bind the preview to the media and receipt.
+        return json.dumps([master_segments(film, idx), audio, st.st_mtime_ns if st else 0,
+                           st.st_size if st else 0, audio_label])
     return json.dumps([master_segments(film, idx), audio, st.st_mtime_ns if st else 0])
 
 
@@ -144,18 +150,29 @@ def export(mov, a, b, path):
     os.replace(tmp, path)
 
 
-def main():
+def main(cuts=FILMS):
+    cuts = cut_selection(cuts)
     os.makedirs(OUT, exist_ok=True)
     man = json.load(open(MANIFEST)) if os.path.exists(MANIFEST) else {}
     stamp = time.strftime('%d %b %H:%MZ', time.gmtime())
-    lines, keep, new = [], set(), []
-    for cut in FILMS:
+    # An explicit D-only refresh shares this directory with the existing A/C exports.
+    # Keep their files and their exact README entries until those cuts are refreshed.
+    keep = {name for name, entry in man.items() if entry.get('cut', name[:1]) not in cuts}
+    readme = os.path.join(OUT, 'README.txt')
+    previous = open(readme).read().splitlines() if keep and os.path.exists(readme) else []
+    lines = [line for line in previous if line.split(':', 1)[0] in keep]
+    new = []
+    for cut in cuts:
         mov = os.path.join(D.DELIVERY, f'{cut}_master.mov')
         if not os.path.exists(mov):
             continue
         film = Film(cut)
-        audio, label = AS.resolve_audio(cut)
-        score = label.split(' (')[0] + ' ' + os.path.basename(audio) if 'CLICK' not in label.upper() else 'no score yet'
+        if cut == 'D':
+            audio, label = mov, D.recorded_audio_label(mov)
+            score = label
+        else:
+            audio, label = AS.resolve_audio(cut)
+            score = label.split(' (')[0] + ' ' + os.path.basename(audio) if 'CLICK' not in label.upper() else 'no score yet'
         for a, b, c in stretches(film):
             idx, what, temp = describe(film, a, b)
             b0, b1 = a // 80 + 1, (b - 1) // 80 + 1
@@ -166,7 +183,7 @@ def main():
                 if name in man and os.path.exists(path):
                     keep.add(name)
                 continue
-            k = key(film, idx, audio)
+            k = key(film, idx, audio, label)
             if man.get(name, {}).get('key') != k or not os.path.exists(path):
                 export(mov, a, b, path)
                 if name not in man:
@@ -198,4 +215,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--cuts', default=FILMS, type=cut_selection,
+                        help='cut letters (default AC; opt in to D with --cuts D)')
+    main(parser.parse_args().cuts)

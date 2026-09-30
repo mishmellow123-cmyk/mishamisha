@@ -1,0 +1,1524 @@
+{
+ "cut": "D",
+ "fps": 24,
+ "frames": 5920,
+ "shots": [
+  {
+   "sec": "C1",
+   "f0": 0,
+   "f1": 80,
+   "code": "C1",
+   "name": "BLACK \u00b7 THE HEARTH",
+   "owner": "EDIT",
+   "desc": "Black; a hearth crackles; a heavy page turns.",
+   "takes": [],
+   "kind": "black",
+   "bars": [
+    1,
+    1
+   ]
+  },
+  {
+   "sec": "C2",
+   "f0": 80,
+   "f1": 320,
+   "code": "P1",
+   "name": "THE RED BOOK",
+   "owner": "MAP",
+   "desc": "An old red-bound book open by a hearth: flowing unknown script, small drawings; then a sheaf of blank leaves.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    2,
+    4
+   ]
+  },
+  {
+   "sec": "C3",
+   "f0": 320,
+   "f1": 560,
+   "code": "P2",
+   "name": "INK PAGE \u00b7 THE MOUNTAIN",
+   "owner": "MAP",
+   "desc": "The leaves riffle back; a pen draws a mountain with a fire in its throat and in it a small gold ring.",
+   "takes": [
+    {
+     "stem": "cand_t1_current-words-held",
+     "off": 0,
+     "mode": "exact",
+     "note": "current-words-held: Codex lane r02, farm 29 Sep (ea7cdf3)",
+     "crop": null,
+     "grade": null,
+     "matte": "cand_t1_current-words-held_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_t1_current-words-held"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    5,
+    7
+   ]
+  },
+  {
+   "sec": "C4",
+   "f0": 560,
+   "f1": 700,
+   "code": "E15 \u00b7 X1",
+   "name": "LETTERS TO FIRE",
+   "owner": "MAP",
+   "desc": "A dense leaf darkens; its letters glow, lift as sparks and pour into one point.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C"
+     ]
+    },
+    {
+     "stem": "x1_letters_C_test",
+     "off": -560,
+     "mode": "video",
+     "note": "MAP-v3 X1 motion test (half-res mp4, C 560-906)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": "edit/cache/x1_letters_C_test.mp4",
+     "need": null,
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "edit/cache/x1_letters_C_test.mp4"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    8,
+    9
+   ]
+  },
+  {
+   "sec": "C4",
+   "f0": 700,
+   "f1": 841,
+   "code": "E15 \u00b7 X1",
+   "name": "LETTERS TO FIRE \u00b7 THE FIRE CATCHES",
+   "owner": "MAP + EMBERS",
+   "desc": "At that point a fire catches and burns the page open; the burnt rim glows.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-L page (page-only) + EMBERS-C E15 fire, additive",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": "embers_C3_e15",
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C"
+     ]
+    },
+    {
+     "stem": "x1_letters_C_test",
+     "off": -560,
+     "mode": "video",
+     "note": "MAP-v3 X1 motion test (half-res mp4, C 560-906)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": "edit/cache/x1_letters_C_test.mp4",
+     "need": null,
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "edit/cache/x1_letters_C_test.mp4"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    9,
+    11
+   ]
+  },
+  {
+   "sec": "C4",
+   "f0": 841,
+   "f1": 880,
+   "code": "E15 \u00b7 X1",
+   "name": "LETTERS TO FIRE \u00b7 THE BURN",
+   "owner": "BURN-C + EMBERS",
+   "desc": "A slit tears open in the page (842-870) and the flames flare along it; the page lingers.",
+   "takes": [
+    {
+     "stem": "book_C_ft",
+     "off": 0,
+     "mode": "exact",
+     "note": "BURN-C filmed burn (a): letters page + fire; e15 added",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_ft_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": "embers_C3_e15",
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C_ft"
+     ]
+    },
+    {
+     "stem": "x1_letters_C_test",
+     "off": -560,
+     "mode": "video",
+     "note": "MAP-v3 X1 motion test (half-res mp4, C 560-906)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": "edit/cache/x1_letters_C_test.mp4",
+     "need": null,
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "edit/cache/x1_letters_C_test.mp4"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    11,
+    11
+   ]
+  },
+  {
+   "sec": "C5",
+   "f0": 880,
+   "f1": 1040,
+   "code": "E15",
+   "name": "THE FIRE, ALONE",
+   "owner": "BURN-C + EMBERS",
+   "desc": "The fire burns alone in the black, gold and calm, a few letters still legible in it; the burnt rim glows.",
+   "takes": [
+    {
+     "stem": "book_C_ft",
+     "off": 0,
+     "mode": "exact",
+     "note": "BURN-C filmed burn (a): letters page + fire; e15 added",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_ft_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": "embers_C3_e15",
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C_ft"
+     ]
+    },
+    {
+     "stem": "x1_letters_C_test",
+     "off": -560,
+     "mode": "video",
+     "note": "MAP-v3 X1 motion test (half-res mp4, C 560-906)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": "edit/cache/x1_letters_C_test.mp4",
+     "need": null,
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "edit/cache/x1_letters_C_test.mp4"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    12,
+    13
+   ]
+  },
+  {
+   "sec": "C6",
+   "f0": 1040,
+   "f1": 1440,
+   "code": "E5-C",
+   "name": "THE FORGING",
+   "owner": "EMBERS",
+   "desc": "Forge-towers of every realm rise round the fire, none tallest; its light is beaten into a band: the Ring.",
+   "takes": [
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    14,
+    18
+   ]
+  },
+  {
+   "sec": "C7",
+   "f0": 1440,
+   "f1": 1680,
+   "code": "E11",
+   "name": "THE RACE UNDER THE RING",
+   "owner": "EMBERS",
+   "desc": "A hush; gold falls from the Ring into the nearest windows; then the towers surge and walls of red rise.",
+   "takes": [
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    19,
+    21
+   ]
+  },
+  {
+   "sec": "C8",
+   "f0": 1680,
+   "f1": 1688,
+   "code": "P2",
+   "name": "INK PAGE \u00b7 THE DEEP \u00b7 THE SWEEP",
+   "owner": "BURN-C",
+   "desc": "The filmed ember edge eases in over the held race (sweepC soft entry).",
+   "takes": [
+    {
+     "stem": "cand_sweep_soft-entry",
+     "off": 0,
+     "mode": "exact",
+     "note": "sweepC soft entry: the filmed sweep eased in over the held race (matte 1, no under)",
+     "crop": null,
+     "grade": null,
+     "matte": "cand_sweep_soft-entry_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_sweep_soft-entry"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    22,
+    22
+   ]
+  },
+  {
+   "sec": "C8",
+   "f0": 1688,
+   "f1": 1718,
+   "code": "P2",
+   "name": "INK PAGE \u00b7 THE DEEP \u00b7 THE SWEEP",
+   "owner": "BURN-C",
+   "desc": "A filmed ember edge sweeps the held race away to parchment (the race is baked into the burn).",
+   "takes": [
+    {
+     "stem": "book_C_ft",
+     "off": 0,
+     "mode": "exact",
+     "note": "BURN-C filmed sweep: the held race baked in (matte 1, no under)",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_ft_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C_ft"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    22,
+    22
+   ]
+  },
+  {
+   "sec": "C8",
+   "f0": 1718,
+   "f1": 1905,
+   "code": "P2",
+   "name": "INK PAGE \u00b7 THE DEEP",
+   "owner": "MAP",
+   "desc": "The pen draws pillared halls down a gilt vein; a red glow wakes.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 0,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": [
+      "hold",
+      "embers_C3",
+      1679
+     ],
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    22,
+    24
+   ]
+  },
+  {
+   "sec": "C8",
+   "f0": 1905,
+   "f1": 1920,
+   "code": "P2",
+   "name": "INK PAGE \u00b7 THE DEEP \u00b7 THE GLOW",
+   "owner": "BURN-C",
+   "desc": "The red glow at the bottom of the Deep catches: the page begins to burn.",
+   "takes": [
+    {
+     "stem": "book_C_ft",
+     "off": 0,
+     "mode": "exact",
+     "note": "BURN-C filmed Eye burn-through: page + fire; the storm held at 1920 under an opaque matte",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_ft_matte",
+     "under": [
+      "hold",
+      "embers_C3",
+      1920
+     ],
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C_ft"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    24,
+    24
+   ]
+  },
+  {
+   "sec": "C9",
+   "f0": 1920,
+   "f1": 1992,
+   "code": "E12",
+   "name": "THE EYE (burn-through)",
+   "owner": "BURN-C + EMBERS",
+   "desc": "The glow burns through the page into the storm, which resolves into a lidless Eye over all the towers.",
+   "takes": [
+    {
+     "stem": "book_C_ft",
+     "off": 0,
+     "mode": "exact",
+     "note": "BURN-C filmed Eye burn-through: page + fire, live storm under",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_ft_matte",
+     "under": [
+      "same",
+      "embers_C3"
+     ],
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C_ft"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    25,
+    25
+   ]
+  },
+  {
+   "sec": "C9",
+   "f0": 1992,
+   "f1": 2080,
+   "code": "E12",
+   "name": "THE EYE ONTO NOTHING",
+   "owner": "EMBERS",
+   "desc": "On bar 26 b1 its slit opens for the first time, onto empty black: no one is behind it.",
+   "takes": [
+    {
+     "stem": "embers_C3",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3, C timeline",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_C3"
+     ]
+    },
+    {
+     "stem": "embers_C3_half",
+     "off": 0,
+     "mode": "exact",
+     "note": "EMBERS v3 half-res preview, pre-H5",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": false,
+     "folders": [
+      "renders/embers_C3_half"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    25,
+    26
+   ]
+  },
+  {
+   "sec": "C10",
+   "f0": 2080,
+   "f1": 2320,
+   "code": "#10",
+   "name": "THE REFUSAL",
+   "owner": "PAGES",
+   "desc": "Back at the book: a gloved palm offers the ring; a hooded figure turns away, one hand raised.",
+   "takes": [
+    {
+     "stem": "book_C5_refusal",
+     "off": 0,
+     "mode": "exact",
+     "note": "Codex PR12 (ink pages, ebcdd0a)",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C5_refusal_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C5_refusal"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    27,
+    29
+   ]
+  },
+  {
+   "sec": "C11",
+   "f0": 2320,
+   "f1": 2640,
+   "code": "#11",
+   "name": "THE TRAP",
+   "owner": "EMBERS",
+   "desc": "One forge sinks, the others surge, it flares back and races; two matching towers pull ahead, neck and neck.",
+   "takes": [
+    {
+     "stem": "cand_trap_front_smoke_near",
+     "off": 0,
+     "mode": "exact",
+     "note": "front_smoke_near: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_trap_front_smoke_near"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    30,
+    33
+   ]
+  },
+  {
+   "sec": "C12",
+   "f0": 2640,
+   "f1": 2670,
+   "code": "#12",
+   "name": "FLINT",
+   "owner": "MONTAGE-3D-5 (renders/ring_C)",
+   "desc": "Hands only in the dark: the flint struck, sparks, the long blow, the catch.",
+   "takes": [
+    {
+     "stem": "ring_C",
+     "off": 330,
+     "mode": "exact",
+     "note": "MONTAGE-3D-5 hands-only flint, candidate A",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/ring_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    34,
+    34
+   ]
+  },
+  {
+   "sec": "C12",
+   "f0": 2670,
+   "f1": 2880,
+   "code": "#12",
+   "name": "FLINT",
+   "owner": "MONTAGE-3D-5 (renders/ring_C)",
+   "desc": "Hands only in the dark: the flint struck, sparks, the long blow, the catch.",
+   "takes": [
+    {
+     "stem": "ring_C",
+     "off": 480,
+     "mode": "exact",
+     "note": "MONTAGE-3D-5 hands-only flint, candidate A",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/ring_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    34,
+    36
+   ]
+  },
+  {
+   "sec": "C13",
+   "f0": 2880,
+   "f1": 3120,
+   "code": "#13",
+   "name": "THE REVEAL \u00b7 A PROMISE",
+   "owner": "RUN",
+   "desc": "The vast ink range: her small fire and, at the same moment, a second fire on a far peak.",
+   "takes": [
+    {
+     "stem": "cand_reveal_night-fire",
+     "off": 0,
+     "mode": "exact",
+     "note": "Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_reveal_night-fire"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    37,
+    39
+   ]
+  },
+  {
+   "sec": "C14",
+   "f0": 3120,
+   "f1": 3440,
+   "code": "#14",
+   "name": "THE BEACON RUN",
+   "owner": "RUN-C",
+   "desc": "A lateral track at beacon height like a scroll unrolling; beacons bloom along the peaks, every two beats.",
+   "takes": [
+    {
+     "stem": "cand_scroll_night-fire",
+     "off": -3120,
+     "mode": "exact",
+     "note": "night-fire scroll (Codex lane beacons, farm 29 Sep)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_scroll_night-fire"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    40,
+    43
+   ]
+  },
+  {
+   "sec": "C15",
+   "f0": 3440,
+   "f1": 3816,
+   "code": "#15",
+   "name": "THE LAST BEACON",
+   "owner": "MAP",
+   "desc": "The map of the kingdoms: beacons flare in no order; one kingdom stays dark (3724-3783), then catches.",
+   "takes": [
+    {
+     "stem": "cand_map_beacon-falloff",
+     "off": 0,
+     "mode": "exact",
+     "note": "beacon-falloff: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_map_beacon-falloff"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    44,
+    48
+   ]
+  },
+  {
+   "sec": "C15",
+   "f0": 3816,
+   "f1": 3840,
+   "code": "#16",
+   "name": "THE FORGES FALL INTO STEP \u00b7 LIT LEAD-IN",
+   "owner": "EMBERS",
+   "desc": "Every forge still racing, 32 frames before 3848 brings them into step.",
+   "takes": [
+    {
+     "stem": "cand_cold_in-step",
+     "off": 0,
+     "mode": "exact",
+     "note": "in-step: Codex PR #15 candidate, farm 29 Sep (5bc5fe9); before 3848 it equals the accepted lead24 (proved at 3816, 3840, 3847)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_cold_in-step"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    48,
+    48
+   ]
+  },
+  {
+   "sec": "C16",
+   "f0": 3840,
+   "f1": 4000,
+   "code": "#16",
+   "name": "THE FORGES FALL INTO STEP",
+   "owner": "EMBERS",
+   "desc": "At the last beacon no forge goes dark: from 3848 every forge eases to one shared working glow (by 3872) and breathes on the beat; faint warm chimney smoke; the Ring still gold.",
+   "takes": [
+    {
+     "stem": "cand_cold_in-step",
+     "off": 0,
+     "mode": "exact",
+     "note": "in-step: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_cold_in-step"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    49,
+    50
+   ]
+  },
+  {
+   "sec": "C17",
+   "f0": 4000,
+   "f1": 4240,
+   "code": "#17",
+   "name": "THE RING, UNFINISHED",
+   "owner": "EMBERS",
+   "desc": "The Ring hangs, unfinished and gold, over working towers; its gold falls into every tower's windows; the storm thins; a held final frame (4217-4239).",
+   "takes": [
+    {
+     "stem": "cand_unfinished_in-step",
+     "off": 0,
+     "mode": "exact",
+     "note": "in-step: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_unfinished_in-step"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    51,
+    53
+   ]
+  },
+  {
+   "sec": "C18",
+   "f0": 4240,
+   "f1": 4480,
+   "code": "#18",
+   "name": "THE DEEP, ABANDONED",
+   "owner": "PAGES",
+   "desc": "The mine page again, still: empty ladders, a lantern set down, the gold vein still glinting.",
+   "takes": [
+    {
+     "stem": "cand_deep_leaned_ladders",
+     "off": 0,
+     "mode": "exact",
+     "note": "leaned_ladders: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "crop": null,
+     "grade": null,
+     "matte": "cand_deep_leaned_ladders_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_deep_leaned_ladders"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    54,
+    56
+   ]
+  },
+  {
+   "sec": "C19",
+   "f0": 4480,
+   "f1": 4720,
+   "code": "#19",
+   "name": "THE WATCH",
+   "owner": "RUN",
+   "desc": "The ink range with a beacon burning on every peak as the camera drifts (the run's poses 80-319, all lit).",
+   "takes": [
+    {
+     "stem": "cand_watch_night-fire",
+     "off": 0,
+     "mode": "exact",
+     "note": "night-fire: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_watch_night-fire"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    57,
+    59
+   ]
+  },
+  {
+   "sec": "C20",
+   "f0": 4720,
+   "f1": 5200,
+   "code": "#20",
+   "name": "THE ILLUMINATION",
+   "owner": "RUN-C",
+   "desc": "The sun breaks over the drawn world's eastern ranges; wherever its light touches, the ink fills with colour.",
+   "takes": [
+    {
+     "stem": "runC_illum",
+     "off": -2322,
+     "mode": "exact",
+     "note": "RUN-C ink final",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/runC_illum"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    60,
+    65
+   ]
+  },
+  {
+   "sec": "C21",
+   "f0": 5200,
+   "f1": 5440,
+   "code": "#21",
+   "name": "THE YEAR OF PLENTY",
+   "owner": "MAP",
+   "desc": "The red book again, the hearth low: a silver-barked tree in golden flower alone in a field; hearth smoke beyond.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 960,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    66,
+    68
+   ]
+  },
+  {
+   "sec": "C22",
+   "f0": 5440,
+   "f1": 5680,
+   "code": "#22",
+   "name": "THE LAST PAGES \u00b7 THE PEN",
+   "owner": "PAGES",
+   "desc": "The blank spread with a wooden dip pen resting across it; the camera and the hearth light move slowly.",
+   "takes": [
+    {
+     "stem": "cand_pen_soft_spine_metal",
+     "off": 0,
+     "mode": "exact",
+     "note": "soft_spine_metal: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "crop": null,
+     "grade": null,
+     "matte": "cand_pen_soft_spine_metal_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_pen_soft_spine_metal"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    69,
+    71
+   ]
+  },
+  {
+   "sec": "C23",
+   "f0": 5680,
+   "f1": 5920,
+   "code": "X3",
+   "name": "TITLE",
+   "owner": "MAP",
+   "desc": "The blank recto: THE LONG DAWN burns on in fire-letters and cools to ink; the book goes back into the dark.",
+   "takes": [
+    {
+     "stem": "book_C",
+     "off": 1280,
+     "mode": "exact",
+     "note": "MAP-v3 book engine",
+     "crop": null,
+     "grade": null,
+     "matte": "book_C_matte",
+     "under": null,
+     "video": null,
+     "need": null,
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_C"
+     ]
+    }
+   ],
+   "kind": "takes",
+   "bars": [
+    72,
+    74
+   ]
+  }
+ ],
+ "text": [
+  {
+   "id": "R02",
+   "line": "In the old story, a Dark Lord forges a Ring to rule the world.",
+   "f_in": 400,
+   "f_out": 540,
+   "set": "in_picture",
+   "locked": null,
+   "row": 2
+  },
+  {
+   "id": "R03",
+   "line": "Our Ring was kindled from every tale we had ever told.",
+   "f_in": 580,
+   "f_out": 716,
+   "set": "fire",
+   "locked": null,
+   "row": 3,
+   "backing": 0.35
+  },
+  {
+   "id": "R04",
+   "line": "It read every word we had ever written, and learned to answer.",
+   "f_in": 728,
+   "f_out": 856,
+   "set": "fire",
+   "locked": null,
+   "row": 4,
+   "backing": 0.35
+  },
+  {
+   "id": "R05",
+   "line": "In our story, there was no Dark Lord.",
+   "f_in": 920,
+   "f_out": 1030,
+   "set": "fire",
+   "locked": null,
+   "row": 5,
+   "y": 600
+  },
+  {
+   "id": "R06",
+   "line": "Only smiths in every kingdom, each racing to finish it first.",
+   "f_in": 1056,
+   "f_out": 1190,
+   "set": "fire",
+   "locked": null,
+   "row": 6,
+   "backing": 0.4
+  },
+  {
+   "id": "R07",
+   "line": "Each said: better us than them.",
+   "f_in": 1446,
+   "f_out": 1550,
+   "set": "fire",
+   "locked": null,
+   "row": 7
+  },
+  {
+   "id": "R08",
+   "line": "They dug deeper every year, for the gold ran deeper still.",
+   "f_in": 1710,
+   "f_out": 1850,
+   "set": "ink",
+   "locked": null,
+   "row": 8,
+   "y": 720,
+   "backing": 0.3
+  },
+  {
+   "id": "R09",
+   "line": "But whoever won the race, the Ring would rule us all.",
+   "f_in": 1972,
+   "f_out": 2076,
+   "set": "fire",
+   "locked": null,
+   "row": 9
+  },
+  {
+   "id": "R10",
+   "line": "In the old story, the wise refused the Ring.",
+   "f_in": 2168,
+   "f_out": 2306,
+   "set": "ink",
+   "locked": null,
+   "row": 10,
+   "x": 1065,
+   "backing": 0.35
+  },
+  {
+   "id": "R11",
+   "line": "In ours, no smith could refuse it alone.",
+   "f_in": 2452,
+   "f_out": 2572,
+   "set": "fire",
+   "locked": null,
+   "row": 11,
+   "y": 330
+  },
+  {
+   "id": "R13",
+   "line": "So the two furthest ahead lit the first beacons, together.",
+   "f_in": 2900,
+   "f_out": 3040,
+   "set": "fire",
+   "locked": null,
+   "row": 13,
+   "y": 150
+  },
+  {
+   "id": "R14",
+   "line": "It was a promise to stop racing, if all the others would.",
+   "f_in": 3160,
+   "f_out": 3300,
+   "set": "fire",
+   "locked": null,
+   "row": 14,
+   "y": 150
+  },
+  {
+   "id": "R15",
+   "line": "When the last beacon caught, every forge fell into step.",
+   "f_in": 3776,
+   "f_out": 3922,
+   "set": "fire",
+   "locked": null,
+   "row": 15,
+   "across": [
+    3816,
+    "the first part names the catch on the map and carries over the forges lit for 32 frames before they go out at 3848, where the second part begins"
+   ],
+   "parts": [
+    {
+     "line": "When the last beacon caught,",
+     "f_in": 3776,
+     "f_out": 3840,
+     "x": 1400,
+     "y": 132
+    },
+    {
+     "line": "every forge fell into step.",
+     "f_in": 3850,
+     "f_out": 3922,
+     "x": 1400,
+     "y": 132
+    }
+   ]
+  },
+  {
+   "id": "R17",
+   "line": "The Ring hung there, unfinished, where all of them could study it.",
+   "f_in": 4040,
+   "f_out": 4180,
+   "set": "fire",
+   "locked": null,
+   "row": 17,
+   "x": 960,
+   "y": 132
+  },
+  {
+   "id": "R18",
+   "line": "They dug no deeper than they could see.",
+   "f_in": 4276,
+   "f_out": 4416,
+   "set": "ink",
+   "locked": null,
+   "row": 18,
+   "x": 310,
+   "y": 300,
+   "lines": [
+    "They dug no deeper",
+    "than they could see."
+   ],
+   "backing": 0.3
+  },
+  {
+   "id": "R19",
+   "line": "And the beacons burned on, so no forge could be lit in secret.",
+   "f_in": 4504,
+   "f_out": 4664,
+   "set": "fire",
+   "locked": null,
+   "row": 19,
+   "y": 150
+  },
+  {
+   "id": "R20",
+   "line": "Even unfinished, the Ring brought the dawn.",
+   "f_in": 4860,
+   "f_out": 5020,
+   "set": "ink",
+   "locked": null,
+   "row": 20,
+   "y": 150,
+   "backing": 0.3
+  },
+  {
+   "id": "R22",
+   "line": "The last pages were left for us.",
+   "f_in": 5462,
+   "f_out": 5602,
+   "set": "ink",
+   "locked": null,
+   "row": 22,
+   "x": 440,
+   "y": 520,
+   "backing": 0.4
+  },
+  {
+   "id": "title",
+   "line": "THE LONG DAWN",
+   "f_in": 5700,
+   "f_out": 5880,
+   "set": "in_picture",
+   "locked": null,
+   "row": 23
+  }
+ ],
+ "transitions": [
+  {
+   "f0": 400,
+   "f1": 540,
+   "kind": "caption_grade",
+   "id": "R02",
+   "full0": 430,
+   "full1": 528,
+   "source_stem": "cand_t1_current-words-held",
+   "source_off": 0,
+   "band_sha256": "9089b1f9e46ef507c80c1fc91b7e3f5173889691b6c0a5f1d9bf9bbe0f021e0c",
+   "curve": {
+    "kind": "shadow_shoulder",
+    "low": 0.04,
+    "high": 0.14,
+    "gain": 1.3
+   },
+   "note": "C3: deepen the dry ink and lift its paper gently, using the held-camera caption band"
+  },
+  {
+   "f0": 5748,
+   "f1": 5880,
+   "kind": "caption_grade",
+   "id": "title",
+   "full0": 5808,
+   "full1": 5847,
+   "source_stem": "book_C",
+   "source_off": 1280,
+   "band_sha256": "9089b1f9e46ef507c80c1fc91b7e3f5173889691b6c0a5f1d9bf9bbe0f021e0c",
+   "curve": {
+    "kind": "blackpoint_gain",
+    "blackpoint": 0.0,
+    "gain": 2.5
+   },
+   "note": "C23: a broad paper exposure lift as the fire cools to ink; fade with the sinking title"
+  },
+  {
+   "f0": 2310,
+   "f1": 2346,
+   "cut": 2320,
+   "kind": "burn",
+   "glow": "x1_refusal_C5",
+   "keep": "x1_refusal_C5_matte",
+   "cover": "x1_refusal_C5_cover",
+   "note": "C10 the Refusal page burns through onto C11 the Trap, born at the drawn ring (x1burn v2)"
+  },
+  {
+   "f0": 3112,
+   "f1": 3128,
+   "cut": 3120,
+   "kind": "dissolve",
+   "note": "C13 the Reveal -> C14 the beacon run: two parchment views of the range (old #16, same sources); REVIEW (29 Sep): 6 frames read as a stutter between two sets of peaks, now 16"
+  },
+  {
+   "f0": 3430,
+   "f1": 3466,
+   "cut": 3440,
+   "kind": "burn",
+   "glow": "x1_map_C5",
+   "keep": "x1_map_C5_matte",
+   "cover": "x1_map_C5_cover",
+   "note": "C14 the seventh beacon burns through onto C15 the map (x1burn v2, the old #17 at -720)"
+  },
+  {
+   "f0": 4228,
+   "f1": 4252,
+   "cut": 4240,
+   "kind": "dissolve",
+   "note": "C17 the Ring, unfinished -> C18 the Deep, abandoned: the page dissolve PR11 leaves to EDIT"
+  },
+  {
+   "f0": 4468,
+   "f1": 4492,
+   "cut": 4480,
+   "kind": "dissolve",
+   "note": "C18 the mine page -> C19 the watch: ink drawing into ink range, through the paper"
+  },
+  {
+   "f0": 4712,
+   "f1": 4728,
+   "cut": 4720,
+   "kind": "dawn_dissolve",
+   "start": 4728,
+   "done": 5160,
+   "width": 0.85,
+   "prelight": 0.2,
+   "night_rgb": [
+    0.532361384,
+    0.538582617,
+    0.53336432
+   ],
+   "note": "C19 the watch -> C20 the illumination: grey into grey; preserve the outgoing beacon fade"
+  },
+  {
+   "f0": 4728,
+   "f1": 5161,
+   "kind": "dawn_sweep",
+   "start": 4728,
+   "done": 5160,
+   "width": 0.85,
+   "prelight": 0.2,
+   "night_rgb": [
+    0.532361384,
+    0.538582617,
+    0.53336432
+   ],
+   "note": "C20: daylight fills the ink from frame left, centre at 4944 under R20, unchanged from 5160; C5P2 sunrise 4720, home 5040, plenty 5200"
+  },
+  {
+   "f0": 5200,
+   "f1": 5264,
+   "kind": "finish_ramp",
+   "note": "C21 opens pixel for pixel on C20's last frame (runC_illum 2877, ink look) and takes the film look by 5264 (the 7,200-frame cut's #21, 6160-6224, same sources)"
+  },
+  {
+   "f0": 5430,
+   "f1": 5452,
+   "cut": 5440,
+   "kind": "page_turn",
+   "tilt": 8.0,
+   "radius": 0.11,
+   "note": "C21 Plenty -> C22 the Pen: EDIT curl with the outgoing leaf's sampled edge, fibres and light"
+  },
+  {
+   "f0": 5668,
+   "f1": 5692,
+   "cut": 5680,
+   "kind": "dissolve",
+   "note": "C22 the pen insert -> C23 the blank recto the title burns onto (UNSEEN: book_C not here)"
+  },
+  {
+   "f0": 80,
+   "f1": 128,
+   "kind": "floor",
+   "k0": 1.0,
+   "k1": 0.0,
+   "note": "C1 black (0) -> C2 the red book, whose dark opens at the film base: the base eases in with the hearth"
+  },
+  {
+   "f0": 1040,
+   "f1": 1088,
+   "kind": "floor",
+   "k0": 1.0,
+   "k1": 0.0,
+   "note": "C5 the fire alone (true black) -> C6 the forging (film base) under the same flame"
+  },
+  {
+   "f0": 5884,
+   "f1": 5920,
+   "kind": "floor",
+   "k0": 0.0,
+   "k1": 1.0,
+   "note": "C's last 36 frames take the film base out, so C ends on a true black like A"
+  }
+ ],
+ "lookup": "per take: v3 = <stem>_<cut>, <stem>_v3; layered = + <stem>_v2, <stem>; exact = <stem>; src = cut frame + off; --variant codedtowers tries <dir>_alt_codedtowers first",
+ "version": "D",
+ "status": "scaffold",
+ "scaffold_from": "C (C5 current edit, 30 Sep 2026)",
+ "script": "C scaffold only; replace D rows, transitions and D_TEXT with the consolidated film",
+ "barmap": "music/v3/barmap_D.json",
+ "bars": 74,
+ "score_status": "stand-in required until D score exists"
+}

@@ -1,4 +1,4 @@
-"""THE LONG DAWN v3: the three EDLs on the bar grid (edit X4).
+"""THE LONG DAWN v3: the EDLs on the bar grid (edit X4), including cut D's scaffold.
 
 Source of truth: BIBLE_V3.md "REVISION 1 · LOCKED BEAT SHEETS" as amended by the DIRECTOR'S H5 CALLS, and
 music/v3/barmap_{A,B}.json and barmap_C5.json (BARMAP; section boundaries are checked by check()). C is C5: the
@@ -18,12 +18,14 @@ covering the most frames wins and the missing frames become the SLATE. Nothing f
 
 To point a shot at a department's new folder: edit one T(...) line below and re-run edit/animatic.sh.
 """
+from copy import deepcopy
 
 BAR, BEAT = 80, 20
 # C is C5 (29 Sep, EDIT-C5): THE LAST PAGES on script v5.2, 5,920 f = 74 bars. The 7,200-frame C is retired; it
 # lives in git history (edl_C.json before this change), never beside C5.
-TOTAL = {'A': 6480, 'B': 5440, 'C': 5920}
-BARMAP = {'A': 'barmap_A.json', 'B': 'barmap_B.json', 'C': 'barmap_C5.json'}   # C5: sections and grid only; its
+TOTAL = {'A': 6480, 'B': 5440, 'C': 5920, 'D': 5920}
+BARMAP = {'A': 'barmap_A.json', 'B': 'barmap_B.json', 'C': 'barmap_C5.json', 'D': 'barmap_D.json'}
+# C5: sections and grid only; its
 # text block and several sync notes carry retired single-leader wording (titles.C5_TEXT holds C's words)
 
 
@@ -38,6 +40,9 @@ def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=
     switches over in one piece, never frame by frame while a render is still landing).
     add='<folder>': an additive layer in the same src numbering (renders/<folder>/), added after the matte comp;
     a frame counts as rendered only when the add layer has it too.
+    under=('same', stem) reads the cut frame, independent of the take's off; ('hold', stem, frame) holds one frame.
+    For a harvested composite, under=('offset', stem, offset) reads cut frame + offset (set explicitly for that
+    under-layer; matching the foreground's off is appropriate only when both sources share frame numbering).
     final_eligible=False: an explicitly provisional take may still play in partial masters and previews,
     but cannot establish picture-source completeness. Approved reuse remains eligible."""
     return dict(stem=stem, off=off, mode=mode, note=note, crop=crop, grade=grade, matte=matte, under=under,
@@ -578,7 +583,12 @@ C = [
       [book(off=1280)]),
 ]
 
-EDL = {'A': A, 'B': B, 'C': C}
+# D is an opt-in plumbing scaffold (30 Sep), copied from the current C edit. The owner replaces this list with
+# D's consolidated shot rows; 5,920 frames is this scaffold's length, not a constraint on the final film. TOTAL['D']
+# and music/v3/barmap_D.json are independent declarations and must move with D's own sections when it grows.
+# Deep copying matters: takes and their nested settings must never mutate the preserved C alternative.
+D = deepcopy(C)
+EDL = {'A': A, 'B': B, 'C': C, 'D': D}
 
 # EDIT transitions (assemble._transitions; the comp, not a cut). A's are A-FIX's; C5's are EDIT-C5's (29 Sep), designed
 # around the adopted shots (the 7,200-frame cut's C windows are retired with it).
@@ -678,6 +688,9 @@ TRANS = {'A': [], 'B': [], 'C': [
          note="C's last 36 frames take the film base out, so C ends on a true black like A"),
 ]}
 
+# D's windows start as C's scaffold and are edited independently with D's rows.
+TRANS['D'] = deepcopy(TRANS['C'])
+
 # A (28 Sep, approved): A-FIX's six windows (edit/afix_comp.py: bloom, dissolve, vision x2, iceheart, ember) + EDIT's
 # grade-match of the harvested B reveal (B's sky is a touch darker and cooler than reveal_A's at the 3680 cut)
 import afix_comp  # noqa: E402
@@ -747,3 +760,11 @@ def c5_export_extra():
                                         'changes edl_v3.COLD_CUT alone; embers_C5_cold must then hold the lead-in '
                                         'frames')],
                 baked_text=[dict(b, src=list(b['src'])) for b in titles.BAKED_TEXT])
+
+
+def d_export_extra():
+    """Label the temporary C-derived scaffold; no D story lock or score is implied."""
+    return dict(version='D', status='scaffold', scaffold_from='C (C5 current edit, 30 Sep 2026)',
+                script='C scaffold only; replace D rows, transitions and D_TEXT with the consolidated film',
+                barmap='music/v3/' + BARMAP['D'], bars=TOTAL['D'] // BAR,
+                score_status='stand-in required until D score exists')

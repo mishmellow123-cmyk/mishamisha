@@ -22,7 +22,7 @@ class CaptionBackingCacheTests(unittest.TestCase):
 
     def keys(self):
         out = {}
-        for cut in ('A', 'B', 'C'):
+        for cut in ('A', 'B', 'C', 'D'):
             table = D.titles.text_table(cut)
             for index, shot in enumerate(D.EDL.EDL[cut]):
                 take = shot['takes'][0] if shot['takes'] else None

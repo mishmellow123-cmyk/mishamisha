@@ -17,6 +17,7 @@ frame: staggered letter fade-in (a soft left-to-right breath), a small upward
 settle, blur-to-sharp, and a slow fade out. Composited over the picture with a
 soft dark halo for legibility and a faint warm glow so the words feel lit.
 """
+from copy import deepcopy
 import functools
 from numbers import Real
 import os
@@ -383,6 +384,10 @@ C5_TEXT = [
     dict(id='title', row=23, line='THE LONG DAWN', f_in=5700, f_out=5880, set='in_picture'),   # book_C 6980-7160
 ]
 
+# Cut D is an explicitly selected scaffold until the owner supplies the consolidated film's words and timing.
+# It owns nested part/placement settings as well as its row list; changing D must not change the C alternative.
+D_TEXT = deepcopy(C5_TEXT)
+
 # Text BAKED into delivered pixels (what the renders show, not what their source says today): stem, source frames
 # [a, b), the words, and the code that baked them. A caption set 'in_picture' needs a record with its words on every
 # frame; any other caption must not sit on baked words; baked words the cut shows must belong to an in_picture line.
@@ -400,7 +405,7 @@ BAKED_TEXT = [
          by="shots/map/inkline.py LINES['T14'] (PAGES-C, 28 Sep; the old C27 verso, not in C5)"),
     dict(stem='book_C', src=(6980, 7160), line='THE LONG DAWN', by='shots/map/titleburn.py via book_c.py TITLE'),
 ]
-DEFAULT_SET = {'A': 'lower', 'B': 'lower', 'C': 'fire'}
+DEFAULT_SET = {'A': 'lower', 'B': 'lower', 'C': 'fire', 'D': 'fire'}
 Y_LOWER, Y_TOP, Y_BOTTOM, Y_MID = 648, 372, 440, 402          # 1920x804 picture coordinates
 # A19: T14 sits just left of the set-down lantern (1745,640), above the foreground ridge.
 # Keep the bar map's words/timing; placement belongs to EDIT and must survive text_table() for film A too.
@@ -435,11 +440,11 @@ def text_table(cut):
     (C5_TEXT: its bar map's text block carries retired single-leader wording, so C never reads it), each row also
     carrying its script row and any placement (x, y)."""
     cut = cut.upper()
-    if cut == 'C':
+    if cut in ('C', 'D'):
         return [dict(id=r['id'], line=r['line'], f_in=r['f_in'], f_out=r['f_out'], set=r['set'], locked=None,
                      row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines', 'across', 'parts', 'backing')
                                      if r.get(k) is not None})
-                for r in C5_TEXT]
+                for r in (D_TEXT if cut == 'D' else C5_TEXT)]
     with open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')) as fh:
         bm = json.load(fh)
     ids = {t['id'] for t in bm['text']}
@@ -480,7 +485,7 @@ class TextV3:
     def __init__(self, cut, row, scale=1.0, x=None):
         self.cut, self.id, self.text = cut, row['id'], row['line']
         self.f_in, self.f_out, self.kind, self.s = row['f_in'], row['f_out'], row['set'], scale
-        self.backing = row.get('backing', 0.0) if cut == 'C' else 0.0
+        self.backing = row.get('backing', 0.0) if cut in ('C', 'D') else 0.0
         if (isinstance(self.backing, bool) or not isinstance(self.backing, Real)
                 or not np.isfinite(self.backing) or not 0 <= self.backing <= 1):
             raise ValueError(f'{self.id}: backing must be a finite number in [0, 1]')
@@ -489,10 +494,10 @@ class TextV3:
         if k == 'title':
             self.font, size, weight, track = CINZEL, 92, 500, 0.28
             self.y = (360 if cut in 'AB' else Y_MID) * s               # A, B: in the sky; C: the blank page
-        elif cut == 'C' and k.startswith('ink'):
+        elif cut in ('C', 'D') and k.startswith('ink'):
             self.font, size, weight, track = EBG_ITALIC, 54, 500, 0.015
             self.y = (Y_MID if k == 'ink_page' else Y_LOWER) * s
-        elif cut == 'C':
+        elif cut in ('C', 'D'):
             self.font, size, weight, track = ITALIC, 58, 600, 0.02
             self.y = (Y_TOP if k.endswith('top') else Y_BOTTOM if k.endswith('bottom') else Y_LOWER) * s
         else:
@@ -603,9 +608,9 @@ class TextV3:
         ink = 0.0
         if k == 'title':
             a, heat, sparks, glow_k, ink = self._title(f)
-        elif self.cut == 'C' and k.startswith('ink'):
+        elif self.cut in ('C', 'D') and k.startswith('ink'):
             a = self._ink(f)
-        elif self.cut == 'C':
+        elif self.cut in ('C', 'D'):
             a, heat, u, te = self._fire(f)
             glow_k = 0.55
             if u > 0:
@@ -645,7 +650,7 @@ class TextV3:
             else:
                 region *= 1 - backing[..., None]
         bg = float(region.mean())
-        if self.cut == 'C' and k.startswith('ink'):
+        if self.cut in ('C', 'D') and k.startswith('ink'):
             col = PARCH if dark_ground else IRON   # every C ink line is written on paper (book pages, the ink world):
             # ink is darker than its paper whatever the light (PAGES-C 28 Sep: PARCH below a 0.33 mean turned T14 on
             # C27's page white); only a slate (no paper at all) takes parchment-white

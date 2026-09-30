@@ -149,7 +149,8 @@ def _from_showrunner(d, cues_path):
     cues = json.load(open(cues_path)) if os.path.exists(cues_path) else {}
     sync = {e["id"]: e for e in d["sync"]}
     out = dict(cut=d["cut"], title=d.get("title", ""), fps=d["fps"], bpm=d["bpm"], bars=d["bars"],
-               status="locked (SHOWRUNNER-REV)" + (" + cues" if cues else ""), text=d.get("text", []))
+               status=(d["status"] if d["cut"] == "D" else "locked (SHOWRUNNER-REV)")
+                      + (" + cues" if cues else ""), text=d.get("text", []))
     secs = []
     for sec in d["sections"]:
         x = dict(sec)
@@ -247,7 +248,9 @@ def table(bm):
 
 
 if __name__ == "__main__":
-    cuts = ["A", "B", "C"] if (len(sys.argv) < 2 or sys.argv[1] == "--all") else [sys.argv[1].upper()]
+    # Preserve the no-argument legacy selection; --all explicitly includes the D scaffold.
+    cuts = (["A", "B", "C"] if len(sys.argv) < 2 else
+            ["A", "B", "C", "D"] if sys.argv[1] == "--all" else [sys.argv[1].upper()])
     bad = 0
     for c in cuts:
         p = os.path.join(V3, f"barmap_{c}.json")

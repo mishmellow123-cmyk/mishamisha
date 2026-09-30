@@ -38,7 +38,8 @@ titles = AS.titles
 OUT = os.path.expanduser('~/mishamisha/_local_logs/review/h9')
 FPS, BAR = 24, 80
 TW, TH = 480, 201                                   # sheet thumbnail: a quarter of the 1920x804 picture
-FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES'}
+FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES',
+        'D': 'THE LONG DAWN (consolidated scaffold)'}
 AVENIR = '/System/Library/Fonts/Avenir Next Condensed.ttc'
 FACE = {'bold': 0, 'demi': 2, 'medium': 5, 'italic': 6, 'regular': 7}
 PER_PAGE, COLS = 12, 3
@@ -436,7 +437,9 @@ def text_md(films, stamp):
              'B': 'Wordless: the title only, kindling in the dawn sky and fading into the light.',
              'C': 'Ink lines (EB Garamond italic) write on with a pen nib; fire lines kindle and crumble into sparks; '
                   'T8a/T8b in fire on black; the title burns onto the blank page in the render itself and cools to '
-                  'ink.'}
+                  'ink.',
+             'D': 'Consolidated scaffold: caption treatment follows each row\'s set. The current scaffold copies '
+                  'C\'s ink and fire lettering.'}
     for cut, film in films.items():
         L.append(f'## {cut} · {FILM[cut]}')
         L.append('')
@@ -458,10 +461,11 @@ def text_md(films, stamp):
 
 
 def index_md(films, stamp, audio, sheets, alt_sheets, summaries):
+    grid = 'Selected cuts share one grid' if 'D' in films else 'Three short films on one grid'
     L = ['# THE LONG DAWN v3 · H9 critic kit', '',
          f'_Built {stamp} by `bash ~/mishamisha/the-long-dawn/edit/h9_kit.sh` from the current edit decision lists and '
          'whatever has been rendered. Rebuild it the same way; every file here is regenerated._', '',
-         'Three short films on one grid: 24 fps, 72 BPM, a bar is 80 frames (3.33 s). Anything not yet rendered '
+         f'{grid}: 24 fps, 72 BPM, a bar is 80 frames (3.33 s). Anything not yet rendered '
          'appears as a SLATE, a dark card naming the intended shot at its exact length, so each film is complete '
          'end to end and the story can be told back from the sheets alone.', '']
     for cut, film in films.items():
@@ -503,13 +507,22 @@ def index_md(films, stamp, audio, sheets, alt_sheets, summaries):
 
 
 # ----------------------------------------------------------------------------------------------- main
-def main():
+def cut_selection(value):
+    """Validate an explicit cut selection; existing batch defaults remain unchanged."""
+    cuts = ''.join(value.split()).upper().replace(',', '')
+    if not cuts or any(c not in FILM for c in cuts):
+        raise argparse.ArgumentTypeError('cuts must contain A, B, C or D')
+    return ''.join(dict.fromkeys(cuts))
+
+
+def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument('--cuts', default='ABC')
+    ap.add_argument('--cuts', default='ABC', type=cut_selection,
+                    help='cut letters (default ABC; opt in to D with --cuts D)')
     ap.add_argument('--workers', type=int, default=3)
     ap.add_argument('--out', default=OUT)
-    a = ap.parse_args()
-    cuts = [c for c in a.cuts.upper() if c in 'ABC']
+    a = ap.parse_args(argv)
+    cuts = list(a.cuts)
     out = a.out
     EDL.check(os.path.join(ROOT, 'music', 'v3'))
     os.makedirs(out, exist_ok=True)
@@ -555,7 +568,7 @@ def main():
                 print(f'  {i}/{len(jobs)}  {time.time() - t0:4.0f}s', flush=True)
 
     for old in os.listdir(out):                        # the sheets are rebuilt from scratch
-        if old.endswith('.jpg') and re.match(r'([ABC]_(bars|overview)|A_ALT_codedtowers)', old):
+        if old.endswith('.jpg') and re.match(r'([ABCD]_(bars|overview)|A_ALT_codedtowers)', old):
             if old[0] in cuts:
                 os.remove(os.path.join(out, old))
     sheets, alt_sheets, summaries, audio = [], [], {}, {}
