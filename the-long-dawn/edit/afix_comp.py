@@ -254,10 +254,11 @@ def _ell(xx, yy, cx, cy, rx, ry):
 
 
 def watchfires(o, i, f, t):
-    """A19-A20 over the reversed dusk (dawnrev): the lantern and the watch-fires as tiny warm points that pale, one
+    """A19-A20 over the reversed dusk (dawnrev): the lantern and the watch-fires as warm points that pale, one
     by one, as the light comes (t['fires'] = [(x, y, size, pale_frame)]); a few tiny, still, seated figures by the
     lantern (t['figures'] = [(x, y_base, h)]); and, if t['destreak'], a soft vertical blur over the band where the
-    massif's strata and the cloud sea's streaks read as terraces and water."""
+    massif's strata and the cloud sea's streaks read as terraces and water. Optional arrival gives the lantern
+    its own luminous body and a bloom that settles at a fixed ground position (all sizes in master pixels)."""
     img = i if f >= t['cut'] else o
     H, W = img.shape[:2]
     k = W / REF_W
@@ -271,21 +272,46 @@ def watchfires(o, i, f, t):
         L = L * (1 - m) + bl * m
     xx, yy = _grid(H, W)
     lx, ly = [v * k for v in t.get('lantern', (1265.0, 640.0))]
+    arrival = t.get('arrival')
+    if arrival:
+        plate = L.copy()
+        settle = 1.0 - _ss(t['cut'], t['cut'] + arrival['settle'], f)
+        radius = (arrival['halo'] + arrival['bloom'] * settle) * k
+        d2 = (xx - lx) ** 2 + (yy - ly) ** 2
+        # Light falls on the snow before the seated figures are drawn, so it cannot turn their cloaks transparent.
+        L += (np.exp(-d2 / (2 * radius ** 2)) * (0.035 + 0.085 * settle))[..., None] \
+            * np.float32([1.0, 0.46, 0.12])
+        pool = np.exp(-((xx - lx) / (42 * k)) ** 2 - ((yy - ly - 7 * k) / (9 * k)) ** 2)
+        L += pool[..., None] * np.float32([0.09, 0.043, 0.012])
     for (fx, fy, fh) in t.get('figures', ()):                           # tiny seated silhouettes, still
-        cx, cy, h = fx * k, fy * k, fh * k
+        cx, cy, h = fx * k, fy * k, fh * k * t.get('figure_scale', 1.0)
         body = _ell(xx, yy, cx, cy, 0.40 * h, 0.72 * h) * np.clip(cy - yy + 0.5, 0.0, 1.0)   # a cloak on the ground
         a = np.maximum(body, _ell(xx, yy, cx + 0.04 * h, cy - 0.78 * h, 0.17 * h, 0.21 * h))  # the hooded head
         side = np.clip((xx - cx) * np.sign(lx - cx) / max(0.3 * h, 1.0), 0.0, 1.0)  # the lantern's side
         col = np.float32([0.012, 0.012, 0.016])[None, None, :] + (side * 0.035)[..., None] * np.float32([1.0, 0.55, 0.25])
         L = L * (1 - a[..., None]) + col * a[..., None]
     for (fx, fy, sz, pale) in t.get('fires', ()):
+        if arrival and (fx, fy) == tuple(t['lantern']):                 # one lantern emitter, not two stacked fires
+            continue
         cx, cy = fx * k, fy * k
         e = 1.0 - 0.85 * _ss(pale - 20, pale, f)                       # paled ON its frame (its horn falls silent)
         e *= 1.0 + 0.12 * math.sin(f * 0.53 + fx) + 0.07 * math.sin(f * 1.71 + fy)
         d2 = (xx - cx) ** 2 + (yy - cy) ** 2
-        s_ = sz * k
+        s_ = sz * k * t.get('fire_scale', 1.0)
         L += (np.exp(-d2 / (2 * (0.6 * s_) ** 2))[..., None] * np.float32([1.0, 0.62, 0.28]) * 0.9
               + np.exp(-d2 / (2 * (3.2 * s_) ** 2))[..., None] * np.float32([0.7, 0.28, 0.07]) * 0.05) * e
+    if arrival:
+        # The carried light's peak at 5839 is (1534,516), measured on the finished half-size crossing (Y=248.85/255).
+        # Its set-down position (1745,640) stays on this ridge; the broad landing bloom contracts over 36 frames.
+        # A cream heart retains the carried lantern's colour, with a gold surround wider than the watch-fires.
+        dx, dy = (xx - lx) / k, (yy - ly) / k
+        body = np.exp(-0.5 * ((dx / arrival['core']) ** 2 + (dy / (arrival['core'] * 1.25)) ** 2))
+        flicker = 1.0 + 0.025 * math.sin(f * 0.31) + 0.015 * math.sin(f * 0.79)
+        L += body[..., None] * np.float32([1.0, 0.83, 0.51]) * arrival['gain'] * flicker
+        # assemble.Ctx.picture already fades the plate at 6456-6479, before this comp runs. Fade only our
+        # additions/removals against that plate; otherwise the lantern survives the final black (or the
+        # landscape is faded twice). The watch-fires and seated silhouettes leave with it.
+        L = plate + (L - plate) * (1.0 - _ss(*arrival['fade'], f))
     return np.clip(_srgb(L), 0.0, 1.0)
 
 
@@ -309,9 +335,12 @@ _EMBER_TRACK = [(2836, 1030, 160), (2846, 1021, 215), (2850, 1009, 269), (2856, 
 # A19-A20 over dawnrev_A (dusk_B2 reversed): four watch-fires pale, near to farthest, ON COMPOSER-A2's horn frames
 # (final_A.wav: the near, far, farther and farthest horns fall silent at 6240, 6290, 6340, 6390); the lantern stays
 # lit among them (the fade to black is 6456)
+# 5840-5900, finished at half size: lantern peak Y 175.47-205.31 -> 250.10-252.11 (0..255); bright warm area
+# 2-6 -> 102-116 actual half-size pixels. See tools/lantern_review.py for the fixed colour/area mask and baseline.
 WATCHFIRES = dict(f0=5840, f1=6480, cut=5840, kind='watchfires', lantern=(1745, 640),
-                  # (EDIT-3: the group sat level with T14 at y 648, 40 px from its last word; it now sits on the
-                  # ridge's small summit at the right, ~520 px clear of the caption)
+                  arrival=dict(settle=36, core=5.5, gain=1.18, halo=18, bloom=26, fade=(6456, 6479)),
+                  fire_scale=1.65, figure_scale=1.35,
+                  # The group stays on the ridge's small summit; T14 is placed to its left in titles.A_PLACEMENT.
                   fires=[(430, 752, 2.0, 6240), (1330, 452, 1.6, 6290), (180, 470, 1.5, 6340), (1560, 350, 1.2, 6390),
                          (1745, 640, 2.6, 99999)],
                   figures=[(1716, 644, 16), (1730, 646, 14), (1762, 643, 17), (1777, 645, 15)],

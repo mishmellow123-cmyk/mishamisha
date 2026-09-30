@@ -1259,7 +1259,9 @@
    "f_in": 6080,
    "f_out": 6200,
    "set": "lower",
-   "locked": "No one got there first."
+   "locked": "No one got there first.",
+   "x": 1420,
+   "y": 570
   },
   {
    "id": "title",
@@ -1571,6 +1573,19 @@
     1745,
     640
    ],
+   "arrival": {
+    "settle": 36,
+    "core": 5.5,
+    "gain": 1.18,
+    "halo": 18,
+    "bloom": 26,
+    "fade": [
+     6456,
+     6479
+    ]
+   },
+   "fire_scale": 1.65,
+   "figure_scale": 1.35,
    "fires": [
     [
      430,

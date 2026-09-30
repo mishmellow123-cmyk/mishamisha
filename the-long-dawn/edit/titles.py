@@ -389,6 +389,11 @@ BAKED_TEXT = [
 ]
 DEFAULT_SET = {'A': 'lower', 'B': 'lower', 'C': 'fire'}
 Y_LOWER, Y_TOP, Y_BOTTOM, Y_MID = 648, 372, 440, 402          # 1920x804 picture coordinates
+# A19: T14 sits just left of the set-down lantern (1745,640), above the foreground ridge.
+# Keep the bar map's words/timing; placement belongs to EDIT and must survive text_table() for film A too.
+# Finished 1920x804, every steady frame 6092-6187: worst glyph/ring slice 10.67:1 (centre: 9.44:1),
+# measured by tools/lantern_review.py.
+A_PLACEMENT = {'T14': dict(x=1420, y=570)}
 PARCH = np.array([0.925, 0.875, 0.765], np.float32)            # ink lines on a dark ground
 IRON = np.array([0.155, 0.105, 0.070], np.float32)             # iron-gall ink on the page
 FIRE_RAMP = np.array([[0.00, 0.00, 0.00], [0.40, 0.035, 0.0], [1.00, 0.34, 0.05], [1.00, 0.70, 0.30],
@@ -412,7 +417,8 @@ def text_table(cut):
     rows = []
     for t in bm['text']:
         rows.append(dict(id=t['id'], line=H5_WORDS.get(cut, {}).get(t['id'], t['line']), f_in=t['f_in'],
-                         f_out=t['f_out'], set=SET_AS[cut].get(t['id'], DEFAULT_SET[cut]), locked=t['line']))
+                         f_out=t['f_out'], set=SET_AS[cut].get(t['id'], DEFAULT_SET[cut]), locked=t['line'],
+                         **(A_PLACEMENT.get(t['id'], {}) if cut == 'A' else {})))
     return rows
 
 
