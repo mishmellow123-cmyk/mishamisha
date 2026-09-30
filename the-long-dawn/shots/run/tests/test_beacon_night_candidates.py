@@ -13,7 +13,8 @@ import beacon_night_candidates as night
 
 class NightCandidates(unittest.TestCase):
     def test_accepted_delegates_to_each_original_driver(self):
-        for kind, frame, driver in (('reveal', 2880, night.reveal), ('watch', 4480, night.watch)):
+        for kind, frame, driver in (('reveal', 2880, night.reveal), ('watch', 4480, night.watch),
+                                    ('scroll', 199, night.scroll)):
             with self.subTest(kind=kind), mock.patch.object(driver, 'render', return_value='original') as render:
                 with mock.patch.dict(sys.modules, {'inkpass': None}):
                     shot = object()
@@ -30,9 +31,10 @@ class NightCandidates(unittest.TestCase):
         # Noninteger shrink ratios expose AREA -> LINEAR drift (2x can hide it).
         self.assertFalse(np.array_equal(cv2.resize(composed, (19, 8), interpolation=cv2.INTER_AREA),
                                         cv2.resize(composed, (19, 8), interpolation=cv2.INTER_LINEAR)))
-        shot = types.SimpleNamespace(B=object(), CR=object())
+        shot = types.SimpleNamespace(name='scroll', B=object(), CR=object())
         for kind, frame, driver, source in (('reveal', 2881, night.reveal, 1),
-                                            ('watch', 4481, night.watch, 81)):
+                                            ('watch', 4481, night.watch, 81),
+                                            ('scroll', 199, night.scroll, 199)):
             with self.subTest(kind=kind):
                 ri = types.SimpleNamespace(render_aov=mock.Mock(side_effect=lambda *a: {}))
                 ip = types.SimpleNamespace(compose=mock.Mock(side_effect=lambda *a, **k: (composed.copy(), {})))
@@ -44,14 +46,22 @@ class NightCandidates(unittest.TestCase):
                 self.assertEqual(ri.render_aov.call_args_list,
                                  [mock.call(shot, source, .01, 1.75)]*2)
                 self.assertEqual(ip.compose.call_args_list,
-                                 [mock.call({'kpx': .0175}, B=shot.B, CR=shot.CR)]*2)
+                                 [mock.call({'kpx': .0175}, B=shot.B, CR=shot.CR,
+                                            **({'plate': None} if kind == 'scroll' else {})),
+                                  mock.call({'kpx': .0175}, B=shot.B, CR=shot.CR)])
 
     def test_source_clocks_and_bad_inputs(self):
         self.assertEqual(night._source(2880, 'reveal'), 0)
         self.assertEqual(night._source(3119, 'reveal'), 239)
         self.assertEqual(night._source(4480, 'watch'), 80)
         self.assertEqual(night._source(4719, 'watch'), 319)
+        self.assertEqual(night._source(0, 'scroll'), 0)
+        self.assertEqual(night._source(319, 'scroll'), 319)
         for args in ((2879, 'reveal', 'accepted', .5, 2.), (4720, 'watch', 'accepted', .5, 2.),
+                     (-1, 'scroll', 'accepted', .5, 2.), (320, 'scroll', 'accepted', .5, 2.),
+                     (199.5, 'scroll', 'accepted', .5, 2.),
+                     (float('nan'), 'scroll', 'accepted', .5, 2.),
+                     (float('inf'), 'scroll', 'accepted', .5, 2.),
                      (2880, 'bad', 'accepted', .5, 2.), (2880, 'reveal', 'bad', .5, 2.),
                      (2880, 'reveal', 'accepted', float('nan'), 2.),
                      (2880, 'reveal', 'accepted', .5, 0.)):
@@ -183,18 +193,39 @@ class NightCandidates(unittest.TestCase):
                 night.render(2880, object())
 
     def test_variants_share_one_aov_and_return_geometric_review_masks(self):
-        ip, _ = self.fake_ip()
-        ri = types.SimpleNamespace(render_aov=mock.Mock(return_value={'kpx': .02}))
-        shot = types.SimpleNamespace(B=np.zeros((2, 7)), CR=object())
-        with mock.patch.dict(sys.modules, {'inkpass': ip, 'render_ink': ri}):
-            images, masks = night.render_variants(4480, shot, kind='watch', scale=.01, return_layers=True)
-        ri.render_aov.assert_called_once_with(shot, 80, .01, 2.)
-        self.assertEqual(set(images), set(night.VARIANTS))
-        self.assertEqual(masks['accepted'], {})
-        for variant in ('night-fire', 'night-wisp'):
-            self.assertEqual(images[variant].shape, (8, 19, 3))
-            self.assertEqual(masks[variant]['core_alpha'].shape, (8, 19))
-            self.assertTrue(np.isfinite(images[variant]).all())
+        for kind, frame, source in (('watch', 4480, 80), ('scroll', 199, 199)):
+            with self.subTest(kind=kind):
+                ip, _ = self.fake_ip()
+                ri = types.SimpleNamespace(render_aov=mock.Mock(return_value={'kpx': .02}))
+                shot = types.SimpleNamespace(B=np.zeros((2, 7)), CR=object())
+                with mock.patch.dict(sys.modules, {'inkpass': ip, 'render_ink': ri}):
+                    images, masks = night.render_variants(frame, shot, kind=kind, scale=.01, return_layers=True)
+                ri.render_aov.assert_called_once_with(shot, source, .01, 2.)
+                self.assertEqual(set(images), set(night.VARIANTS))
+                self.assertEqual(masks['accepted'], {})
+                for variant in ('night-fire', 'night-wisp'):
+                    self.assertEqual(images[variant].shape, (8, 19, 3))
+                    self.assertEqual(masks[variant]['core_alpha'].shape, (8, 19))
+                    self.assertTrue(np.isfinite(images[variant]).all())
+
+    def test_production_crop_preserves_pen_scale_and_dawn_plate(self):
+        """The extracted frame path keeps crop and illumination's old semantics."""
+        import cv2
+
+        composed = np.linspace(0., 1., 23*41*3, dtype=np.float32).reshape(23, 41, 3)
+        shot = types.SimpleNamespace(name='illum', B=object(), CR=object(), cam=object())
+        aov = {'A': np.zeros((23, 41, 1))}
+        ri = types.SimpleNamespace(render_aov=mock.Mock(return_value=aov))
+        ip = types.SimpleNamespace(compose=mock.Mock(return_value=(composed, {})))
+        plate = object()
+        with (mock.patch.dict(sys.modules, {'inkpass': ip, 'render_ink': ri}),
+              mock.patch.object(night.scroll, 'illum_plate', return_value=plate) as dawn):
+            image = night.scroll.render(2398, shot, scale=.02, ss=1.75, crop=.5)
+        ri.render_aov.assert_called_once_with(shot, 2398, .01, 1.75)
+        self.assertEqual(aov['kpx'], .035)
+        dawn.assert_called_once_with(2398, .01, 1.75, 41, 23, shot.cam)
+        ip.compose.assert_called_once_with(aov, B=shot.B, plate=plate, CR=shot.CR)
+        np.testing.assert_array_equal(image, cv2.resize(composed, (19, 8), interpolation=cv2.INTER_AREA))
 
 
 if __name__ == '__main__':

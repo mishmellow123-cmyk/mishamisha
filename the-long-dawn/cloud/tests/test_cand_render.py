@@ -225,6 +225,87 @@ class CandidateAdapterTests(unittest.TestCase):
     def setUp(self):
         self.wrapper = load_module(WRAPPER, 'cand_render_contract_target')
 
+    def test_scroll_source_range_and_run_family(self):
+        self.assertEqual(self.wrapper.RANGES['scroll'], (0, 319))
+        self.assertEqual(self.wrapper.OPTIONS['scroll'], 'night-fire')
+        self.assertEqual(self.wrapper.ASSETS['scroll'], ('shots/run/summits.npy',))
+        self.wrapper.validate_frames('scroll', 0, 319)
+        for first, last in ((-1, 0), (0, 320), (3120, 3439)):
+            with self.subTest(first=first, last=last), self.assertRaises(ValueError):
+                self.wrapper.validate_frames('scroll', first, last)
+        with mock.patch.object(sys, 'path', []):
+            self.wrapper.imports('scroll')
+            self.assertEqual(sys.path[0], str(ROOT / 'shots/run'))
+            self.assertEqual(self.wrapper._FAMILY, 'run')
+
+    def test_scroll_routes_preserve_source_frame_and_default_is_accepted(self):
+        module, source = mock.Mock(), mock.Mock()
+        shot = source.Shot.return_value
+        module.scroll.render.return_value = 'original'
+        module.render.return_value = 'render'
+        module.render_variants.return_value = {'accepted': 'shared'}
+        with mock.patch.object(self.wrapper, 'imports'), \
+             mock.patch.dict(sys.modules, beacon_night_candidates=module, render_ink=source):
+            for route, result in (('original', 'original'), ('default', 'render'),
+                                  ('shared', 'shared'), ('candidate', 'render')):
+                with self.subTest(route=route):
+                    module.reset_mock()
+                    source.reset_mock()
+                    option = 'night-fire' if route == 'candidate' else None
+                    render = self.wrapper.build('scroll', route, option, scale=.5)
+                    self.assertEqual(render(152), {'rgb': result})
+                    source.Shot.assert_called_once_with('scroll')
+                    module.scroll.make_shot.assert_not_called()
+                    if route == 'original':
+                        module.scroll.render.assert_called_once_with(152, shot, scale=.5, ss=2.)
+                        module.render.assert_not_called()
+                    elif route == 'shared':
+                        module.render_variants.assert_called_once_with(
+                            152, shot, kind='scroll', scale=.5, ss=2., variants=('accepted',))
+                    else:
+                        kwargs = dict(kind='scroll', scale=.5, ss=2.)
+                        if route == 'candidate':
+                            kwargs['variant'] = 'night-fire'
+                        module.render.assert_called_once_with(152, shot, **kwargs)
+            with self.assertRaisesRegex(ValueError, 'Unsupported candidate'):
+                self.wrapper.build('scroll', 'candidate', 'night-wisp')
+
+    def test_scroll_cli_routes_source_frames_and_picture_before_build(self):
+        class StopBeforeRendering(Exception):
+            pass
+
+        with tempfile.TemporaryDirectory(prefix='cand-scroll-cli-') as temporary:
+            fixture = Path(temporary)
+            picture = fixture / 'renders/cand_scroll_night-fire'
+            with mock.patch.object(self.wrapper, 'ROOT', fixture), \
+                 mock.patch.object(self.wrapper, 'build', side_effect=StopBeforeRendering) as build:
+                with self.assertRaises(StopBeforeRendering):
+                    self.wrapper.main([
+                        'scroll', 'night-fire', '--range', '0-319',
+                        '--out', 'renders/cand_scroll_night-fire'])
+                build.assert_called_once_with('scroll', 'candidate', 'night-fire')
+            self.assertEqual(list((fixture / 'renders').iterdir()), [picture])
+            self.assertEqual(list(picture.iterdir()), [])
+
+    def test_scroll_equality_checks_default_and_shared_routes(self):
+        import numpy as np
+        accepted = dict(rgb=np.zeros((2, 3, 3), dtype=np.float32))
+        with mock.patch.object(self.wrapper, 'build') as build, \
+             mock.patch.object(self.wrapper, 'checked', return_value=accepted), \
+             contextlib.redirect_stdout(io.StringIO()):
+            receipt = self.wrapper.equal('scroll', 152, scale=.5)
+        self.assertEqual(build.call_args_list, [
+            mock.call('scroll', 'original', scale=.5),
+            mock.call('scroll', 'default', scale=.5),
+            mock.call('scroll', 'shared', scale=.5)])
+        self.assertEqual(set(receipt['proofs']), {'default', 'shared'})
+        changed = dict(rgb=accepted['rgb'].copy())
+        changed['rgb'].flat[0] = 1
+        with mock.patch.object(self.wrapper, 'build'), \
+             mock.patch.object(self.wrapper, 'checked', side_effect=[accepted, accepted, changed]):
+            with self.assertRaisesRegex(RuntimeError, 'scroll shared rgb frame 152'):
+                self.wrapper.equal('scroll', 152, scale=.5)
+
     def test_t1_held_camera_requires_explicit_candidate_option(self):
         self.assertEqual(self.wrapper.OPTIONS['t1'], 'current-words')
         renderer = mock.Mock()
@@ -384,10 +465,13 @@ class CandidateAdapterTests(unittest.TestCase):
         farm = load_module(ROOT / 'cloud/farm.py', 'cand_farm_contract_target')
         options = list({**recipe_options(), 'crossing': 'both'}.items())
         options.append(('t1', 'current-words-held'))
+        options.append(('scroll', 'night-fire'))
         ranges = recipe_literal('ranges')
+        ranges['scroll'] = (0, 319)
         probes = dict(re.findall(r'`ld_candidate equal (\w+) (\d+)`',
                                  (ROOT / 'ADOPTION.md').read_text()))
-        self.assertEqual(len(options), 10)
+        probes['scroll'] = '152'
+        self.assertEqual(len(options), 11)
         self.assertEqual(set(probes), {kind for kind, _ in options})
         for kind, option in options:
             with self.subTest(kind=kind, option=option):
@@ -396,6 +480,11 @@ class CandidateAdapterTests(unittest.TestCase):
                 job = farm.Job(str(path), args)
                 self.assertFalse(job.whole)
                 self.assertEqual(job.skipped_setup, [])
+                if kind == 'scroll':
+                    self.assertEqual(job.name, 'cand_scroll_night-fire')
+                    self.assertEqual(job.shape, (804, 1920))
+                    self.assertEqual(job.spec['ship'], 'jpg')
+                    self.assertEqual(job.spec['branch'], 'claude/owner-night-20260929')
                 setup_args = []
                 for command in job.setup:
                     tokens = shlex.split(command)
@@ -423,6 +512,8 @@ class CandidateAdapterTests(unittest.TestCase):
                 self.assertEqual(len(units), 3)
                 by_output = {o['key']: [] for o in job.outputs}
                 for unit in units:
+                    if kind == 'scroll':
+                        self.assertEqual(unit['branch'], 'claude/owner-night-20260929')
                     unit_frames = sorted({f for output in unit['outputs'] for f in output['frames']})
                     rendered_frames = [f for item in unit['items']
                                        for f in farm.LaneCmd(item['cmd']).seq]

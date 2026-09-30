@@ -1,4 +1,4 @@
-"""Default-off, shared Reveal/Watch night-fire illustration studies.
+"""Default-off, shared Reveal/Watch/Scroll night-fire illustration studies.
 
 The accepted ``render`` call delegates to its driver. Candidates retain its camera,
 terrain, catalogue and fire clocks. Three unequal curved tongues replace the
@@ -30,10 +30,11 @@ import numpy as np
 
 import reveal_pair_c_v5 as reveal
 import watch_c_v5 as watch
+import ink_final as scroll
 
 
 VARIANTS = ('accepted', 'night-fire', 'night-wisp')
-KINDS = ('reveal', 'watch')
+KINDS = ('reveal', 'watch', 'scroll')
 ORANGE = np.array([1.0, .47, .085], np.float32)
 CORE = np.array([1.0, .965, .875], np.float32)
 WISP = np.array([.66, .68, .70], np.float32)
@@ -56,11 +57,17 @@ def _srgb(rgb):
 def _driver(kind):
     if kind not in KINDS:
         raise ValueError(f'Unknown beacon shot {kind!r}; choose {KINDS}')
-    return reveal if kind == 'reveal' else watch
+    return {'reveal': reveal, 'watch': watch, 'scroll': scroll}[kind]
 
 
 def _source(frame, kind):
     driver = _driver(kind)
+    if kind == 'scroll':
+        # C14 retains runC_scroll's source numbering and seven catch clocks;
+        # the EDL's -3120 offset maps C3120..3439 onto these 320 frames.
+        if not np.isfinite(frame) or not 0 <= frame <= 319 or frame != int(frame):
+            raise ValueError(f'Scroll frame {frame} must be an integer in 0..319')
+        return int(frame)
     return driver.local_frame(frame) if kind == 'reveal' else driver.source_frame(frame)
 
 

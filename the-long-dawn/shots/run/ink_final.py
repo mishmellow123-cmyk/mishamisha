@@ -54,6 +54,36 @@ def crop_camera(base, crop):
     return cam
 
 
+def render(frame, shot, scale=0.5, ss=2.0, crop=1.0, timings=None):
+    """The production frame path, also used by default-off scroll studies.
+
+    Keep crop's pen scale independent of its smaller camera raster, as work()
+    did before this extraction. The dawn plate still shares that camera.
+    """
+    import cv2
+    import render_ink as RI
+    import inkpass as IP
+
+    started = time.time()
+    R = RI.render_aov(shot, frame, scale * crop, ss)
+    R['kpx'] = scale * ss
+    aov_done = time.time()
+    plate = None
+    if shot.name == 'illum':
+        Ht, Wt = R['A'].shape[:2]
+        plate = illum_plate(frame, scale * crop, ss, Wt, Ht, shot.cam)
+    plate_done = time.time()
+    img, _ = IP.compose(R, B=shot.B, plate=plate, CR=shot.CR)
+    del R, plate
+    W, H = int(round(1920 * scale * crop)), int(round(804 * scale * crop))
+    if img.shape[:2] != (H, W):
+        img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
+    if timings is not None:
+        timings.update(aov=aov_done - started, plate=plate_done - aov_done,
+                       ink=time.time() - plate_done)
+    return img
+
+
 def work(args):
     shot_name, frames, scale, ss, out, threads = args[:6]
     crop = args[6] if len(args) > 6 else 1.0
@@ -67,23 +97,13 @@ def work(args):
     shot = RI.Shot(shot_name)
     if crop < 1.0:
         shot.cam = crop_camera(shot.cam, crop)
-    W, H = int(round(1920 * scale * crop)), int(round(804 * scale * crop))
     for f in frames:
         t0 = time.time()
-        R = RI.render_aov(shot, f, scale * crop, ss)
-        R['kpx'] = scale * ss
-        t1 = time.time()
-        plate = None
-        if shot_name == 'illum':
-            Ht, Wt = R['A'].shape[:2]
-            plate = illum_plate(f, scale * crop, ss, Wt, Ht, shot.cam)
-        t2 = time.time()
-        img, _ = IP.compose(R, B=shot.B, plate=plate, CR=shot.CR)
-        del R, plate
-        if img.shape[:2] != (H, W):
-            img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
+        timings = {}
+        img = render(f, shot, scale, ss, crop, timings)
         look.save_png(look.frame_path(out, f), img)
-        print(f'{shot_name} {f} {time.time() - t0:.1f}s (aov {t1 - t0:.0f} plate {t2 - t1:.0f} ink {time.time() - t2:.0f})',
+        print(f'{shot_name} {f} {time.time() - t0:.1f}s (aov {timings["aov"]:.0f} '
+              f'plate {timings["plate"]:.0f} ink {timings["ink"]:.0f})',
               flush=True)
 
 

@@ -26,12 +26,12 @@ for _name in ('NUMBA_NUM_THREADS', 'OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS',
     os.environ[_name] = '1'
 
 ROOT = Path(__file__).resolve().parents[1]
-RANGES = {'reveal': (2880, 3119), 'watch': (4480, 4719),
+RANGES = {'reveal': (2880, 3119), 'watch': (4480, 4719), 'scroll': (0, 319),
           'beaconrun': (3920, 4239), 'watchers': (4240, 4399),
           'trap': (2320, 2639), 'map': (3440, 3839),
           'deep': (4240, 4479), 'cold': (3816, 3999),
           'pen': (5440, 5679), 't1': (320, 559), 'crossing': (4880, 5839)}
-OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire',
+OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire', 'scroll': 'night-fire',
            'beaconrun': 'linked-fires', 'watchers': 'linked-fires',
            'trap': 'front_smoke_near', 'map': 'beacon-falloff',
            'deep': 'leaned_ladders', 'cold': 'lead24',
@@ -44,7 +44,7 @@ _FAMILY = None
 
 def imports(kind):
     global _FAMILY
-    family = ('run' if kind in ('reveal', 'watch', 'crossing', 'beaconrun', 'watchers') else
+    family = ('run' if kind in ('reveal', 'watch', 'scroll', 'crossing', 'beaconrun', 'watchers') else
               'embers' if kind in ('trap', 'cold') else 'map')
     if _FAMILY is not None and _FAMILY != family:
         raise RuntimeError('Use a fresh process for each renderer family')
@@ -116,10 +116,16 @@ def build(kind, route, option=None, scale=1.0):
                 choice = 'accepted' if route == 'shared' else option
                 call = lambda f: X.render(f, kind=kind, candidate=choice, scale=scale, ss=1.5)
         return lambda f: dict(rgb=call(f))
-    if kind in ('reveal', 'watch'):
+    if kind in ('reveal', 'watch', 'scroll'):
         import beacon_night_candidates as X
-        driver = X.reveal if kind == 'reveal' else X.watch
-        shot = driver.make_shot()
+        driver = getattr(X, kind)
+        if kind == 'scroll':
+            import render_ink as RI
+            # The accepted scroll uses local 0-319 (C5 3120-3439), including
+            # its seven timed catches and the already-lit horizon beacon.
+            shot = RI.Shot('scroll')
+        else:
+            shot = driver.make_shot()
         if route == 'original':
             call = lambda f: driver.render(f, shot, scale=scale, ss=2.)
         elif route == 'shared':
@@ -211,7 +217,7 @@ def equal(kind, frame, scale=1.0):
     del original
     gc.collect()
     proofs = {}
-    routes = ('default', 'shared') if kind in ('reveal', 'watch', 'map', 'beaconrun', 'watchers') else ('default',)
+    routes = ('default', 'shared') if kind in ('reveal', 'watch', 'scroll', 'map', 'beaconrun', 'watchers') else ('default',)
     for route in routes:
         render = build(kind, route, scale=scale)
         actual = checked(render, frame, scale)
@@ -280,6 +286,7 @@ STACK = {'numpy': '2.5.3', 'numba': '0.67.0', 'llvmlite': '0.49.0',
 ASSETS = {
     'reveal': ('shots/run/summits.npy',),
     'watch': ('shots/run/summits.npy',),
+    'scroll': ('shots/run/summits.npy',),
     'beaconrun': ('shots/run/summits.npy', 'shots/run/beaconrun_a_chain.npy',
                   'shots/run/reveal_a_fires.npy', 'shots/run/watchers_a_extra.npy',
                   'shots/run/watchers_a_figs.npy'),
