@@ -2029,6 +2029,27 @@
    "note": "D15 refusal -> D16 trap: C burn source2310-2345; requires NEW trap under-plate D3760"
   },
   {
+   "f0": 4068,
+   "f1": 4092,
+   "cut": 4080,
+   "kind": "dissolve",
+   "note": "D16 trap -> D17 glow at the brink: bridge ember black and the grey dawn"
+  },
+  {
+   "f0": 4234,
+   "f1": 4246,
+   "cut": 4240,
+   "kind": "dissolve",
+   "note": "D17 glow -> D18 two crowns: short dissolve across the glow-to-Ring match"
+  },
+  {
+   "f0": 4554,
+   "f1": 4566,
+   "cut": 4560,
+   "kind": "dissolve",
+   "note": "D18 two crowns -> D19 two fires: short dissolve across the fire match"
+  },
+  {
    "f0": 5180,
    "f1": 5220,
    "cut": 5180,
@@ -2043,18 +2064,32 @@
    "note": "Nearest ridge flame on held reveal_A A3799 (D5179); x1burn v2 opens onto map C3440 at D5180"
   },
   {
+   "f0": 5828,
+   "f1": 5852,
+   "cut": 5840,
+   "kind": "dissolve",
+   "note": "D22 in step -> D23 old fire: settle onto the page before the fall at D5854"
+  },
+  {
+   "f0": 6080,
+   "f1": 6120,
+   "cut": 6080,
+   "kind": "ring_burn",
+   "center": [
+    1013.0,
+    187.0
+   ],
+   "t_open": 6082.0,
+   "speed": 10.0,
+   "seed": 12,
+   "note": "Drawn fire on held D6079; caption first scorches at6094, clears by6104; frame clear at6109"
+  },
+  {
    "f0": 6388,
    "f1": 6412,
    "cut": 6400,
    "kind": "dissolve",
    "note": "D24 unfinished Ring -> D25 abandoned Deep; suppressed while unfinished is a slate"
-  },
-  {
-   "f0": 6636,
-   "f1": 6644,
-   "cut": 6640,
-   "kind": "dissolve",
-   "note": "D25 abandoned Deep -> D26 crossing: eight-frame dissolve, original framing; lantern positions differ"
   },
   {
    "f0": 8628,

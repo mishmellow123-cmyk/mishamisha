@@ -212,8 +212,10 @@ def assert_transition_clocks(windows):
     retained = [t for t in windows if t['f0'] >= 1440 and not (t['f0'] == 1680 and t['f1'] == 1760)]
     assert [(t['f0'], t['f1'], t['kind']) for t in retained] == [
         (1520, 1660, 'caption_grade'), (2945, 2981, 'deep_reveal'), (3750, 3786, 'burn'),
-        (5180, 5220, 'ring_burn'), (6388, 6412, 'dissolve'),
-        (6636, 6644, 'dissolve'), (8628, 8652, 'dissolve'), (8868, 8892, 'dissolve'),
+        (4068, 4092, 'dissolve'), (4234, 4246, 'dissolve'), (4554, 4566, 'dissolve'),
+        (5180, 5220, 'ring_burn'), (5828, 5852, 'dissolve'), (6080, 6120, 'ring_burn'),
+        (6388, 6412, 'dissolve'),
+        (8628, 8652, 'dissolve'), (8868, 8892, 'dissolve'),
         (8948, 9080, 'caption_grade'), (9084, 9120, 'floor')]
     assert next(t for t in windows if t['f0'] == 8628)['cut'] == 8640
     burn = next(t for t in windows if t.get('cut') == 3760)

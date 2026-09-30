@@ -71,9 +71,9 @@ def test_twenty_exact_treatment_captions_and_reading_windows():
 def test_caption_entrances_follow_shots_and_measured_catches():
     rows = {row['row']: row for row in narration()}
     # Settles: opening128, glyph white-fall672, point1016, vision1318, Deep2758,
-    # refusal burn3786, crown ignition4320, map catch5600, crossing dissolve6644, last-leaf dissolve8652.
+    # refusal burn3786, crown ignition4320, map catch5600, crossing cut6640, last-leaf dissolve8652.
     settled = {1: 128, 2: 672, 3: 1016, 4: 1318, 6: 2080, 7: 2758, 8: 3200, 9: 3520,
-               10: 3786, 11: 4320, 12: 4560, 13: 5600, 14: 5840, 15: 6080, 16: 6644,
+               10: 3786, 11: 4320, 12: 4560, 13: 5600, 14: 5840, 15: 6080, 16: 6640,
                17: 7040, 18: 7360, 19: 8320, 20: 8652}
     assert all(12 <= rows[number]['f_in'] - frame <= 24 for number, frame in settled.items())
     assert rows[13]['f_in'] < 5680 < rows[13]['f_out'] <= 5840
