@@ -169,9 +169,18 @@ def refresh_gate(args):
     if args.out.resolve().is_relative_to(args.reuse_from.resolve()):
         raise ValueError('Refresh output must be separate from the immutable reused asset root')
     contract=json.loads(args.contract.read_text())
-    if (contract.get('schema'),contract.get('frame'),contract.get('farm_plate'),contract.get('native_dimensions')) != (
-            'openring.race-ending.r5',2719,'renders/embers_D_race/f_02719.jpg',[1920,804]):
-        raise ValueError('Expected the R5 native race-ending contract for farm D2719')
+    schema=contract.get('schema')
+    if schema=='openring.race-ending.r5':
+        render_hash_key='render_sha256'
+    elif schema=='openring.race-ending.r6':
+        render_hash_key='float_rgb_sha256'
+    else:
+        raise ValueError(f'Unsupported race-ending contract schema: {schema!r}')
+    if render_hash_key not in contract:
+        raise ValueError(f'{schema} requires {render_hash_key}; no alternate hash key is accepted')
+    if (contract.get('frame'),contract.get('farm_plate'),contract.get('native_dimensions')) != (
+            2719,'renders/embers_D_race/f_02719.jpg',[1920,804]):
+        raise ValueError('Expected a native race-ending contract for farm D2719')
     native=args.contract.parent/contract['native_plate']
     if native.parent.resolve()!=args.contract.parent.resolve():
         raise ValueError('Native race contract path mismatch')
@@ -214,7 +223,7 @@ def refresh_gate(args):
                 race_after=args.race_after,farm_path=str(farm),farm_mtime_ns=mtime_ns,
                 farm_sha256=digest(farm) if not reasons else None,farm_dimensions=farm_dimensions,
                 native_path=str(native),native_pixel_sha256=native_pixels,native_file_sha256=digest(native),
-                declared_render_buffer_sha256=contract['render_sha256'],
+                declared_render_buffer_sha256=contract[render_hash_key],
                 contract_sha256=digest(args.contract),delivery_receipt_sha256=digest(receipt_path),
                 owner_edl_sha256=expected)
 
@@ -334,7 +343,7 @@ def main():
     p.add_argument('--brink',type=Path)
     p.add_argument('--report',required=True,type=Path)
     p.add_argument('--reuse-from',type=Path,help='immutable previous Deep local-render root')
-    p.add_argument('--contract',type=Path,help='R5 race-ending contract JSON beside its native plate')
+    p.add_argument('--contract',type=Path,help='R5 or R6 race-ending contract JSON beside its native plate')
     p.add_argument('--owner-state',type=Path,help='initial-state JSON pinning owner_edl_sha256')
     p.add_argument('--race-after',help='strict farm D2719 modification-time floor, ISO8601 with UTC offset')
     args=p.parse_args()

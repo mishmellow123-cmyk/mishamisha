@@ -1,4 +1,4 @@
-"""R5 refresh gates and byte reuse; tiny isolated fixtures, no farm or native rendering."""
+"""Versioned refresh gates and byte reuse; tiny isolated fixtures, no farm or native rendering."""
 from datetime import datetime
 import hashlib
 import json
@@ -49,6 +49,86 @@ def refresh(monkeypatch,tmp_path):
     monkeypatch.setattr(B.cv2,'imread',lambda *args:native_rgb[...,::-1] if native.read_bytes()==b'contract-native-fixture'
                         else np.zeros_like(native_rgb))
     return args,root,farm,floor
+
+
+CONTRACT_VERSIONS=(('openring.race-ending.r5','render_sha256','float_rgb_sha256'),
+                   ('openring.race-ending.r6','float_rgb_sha256','render_sha256'))
+
+
+def write_contract(args,contract):
+    """A fixture producer attests the exact contract file, independent of its schema validity."""
+    args.contract.write_text(json.dumps(contract))
+    receipt_path=args.contract.parent/'delivery_consistency.json'
+    receipt=json.loads(receipt_path.read_text())
+    receipt['artifact_sha256'][args.contract.name]=B.digest(args.contract)
+    receipt_path.write_text(json.dumps(receipt))
+
+
+@pytest.mark.parametrize('schema,required,other',CONTRACT_VERSIONS)
+def test_each_contract_version_uses_its_required_hash_and_preserves_owner_pin(refresh,schema,required,other):
+    args,root,farm,floor=refresh
+    contract=json.loads(args.contract.read_text())
+    contract.update(schema=schema,**{required:'a'*64,other:'b'*64})
+    write_contract(args,contract)
+    result=B.refresh_gate(args)
+    assert result['status']=='ready' and result['declared_render_buffer_sha256']=='a'*64
+    assert result['farm_sha256']==B.digest(farm) and not args.out.exists()
+    owner=root/'edit/edl_v3.py'
+    owner.write_text(owner.read_text()+'unauthorized owner change\n')
+    with pytest.raises(ValueError,match='Owner EDL'):
+        B.refresh_race(args)
+    assert not args.out.exists()
+
+
+@pytest.mark.parametrize('schema',['openring.race-ending.r4','openring.race-ending.r6.extra',None])
+def test_unknown_contract_schema_is_rejected_before_asset_copy(refresh,monkeypatch,schema):
+    args,root,farm,floor=refresh
+    contract=json.loads(args.contract.read_text())
+    contract.update(schema=schema,float_rgb_sha256='c'*64)
+    write_contract(args,contract)
+    monkeypatch.setattr(B,'reuse_assets',lambda *a:pytest.fail('Assets copied for an unsupported schema'))
+    with pytest.raises(ValueError,match='race-ending contract schema'):
+        B.refresh_race(args)
+    assert not args.out.exists()
+
+
+@pytest.mark.parametrize('schema,required,other',CONTRACT_VERSIONS)
+@pytest.mark.parametrize('wrong_key_only',[False,True],ids=['missing_key','wrong_key_only'])
+def test_version_specific_hash_is_required_without_fallback(refresh,monkeypatch,schema,required,other,wrong_key_only):
+    args,root,farm,floor=refresh
+    contract=json.loads(args.contract.read_text())
+    contract['schema']=schema
+    contract.pop('render_sha256',None)
+    contract.pop('float_rgb_sha256',None)
+    if wrong_key_only:
+        contract[other]='d'*64
+    write_contract(args,contract)
+    monkeypatch.setattr(B,'reuse_assets',lambda *a:pytest.fail('Assets copied without the required hash'))
+    with pytest.raises(ValueError,match=required):
+        B.refresh_race(args)
+    assert not args.out.exists()
+
+
+@pytest.mark.parametrize('schema,required,other',CONTRACT_VERSIONS)
+@pytest.mark.parametrize('mismatch',['native','contract','pass_all'])
+def test_both_contract_versions_require_matching_delivery_receipt(refresh,monkeypatch,schema,required,other,mismatch):
+    args,root,farm,floor=refresh
+    contract=json.loads(args.contract.read_text())
+    value=contract.pop('render_sha256')
+    contract.update(schema=schema,**{required:value})
+    write_contract(args,contract)
+    receipt_path=args.contract.parent/'delivery_consistency.json'
+    receipt=json.loads(receipt_path.read_text())
+    if mismatch=='pass_all':
+        receipt['pass_all']=False
+    else:
+        name=contract['native_plate'] if mismatch=='native' else args.contract.name
+        receipt['artifact_sha256'][name]='0'*64
+    receipt_path.write_text(json.dumps(receipt))
+    monkeypatch.setattr(B,'reuse_assets',lambda *a:pytest.fail('Assets copied with an invalid delivery receipt'))
+    with pytest.raises(ValueError,match='contract file hashes'):
+        B.refresh_race(args)
+    assert not args.out.exists()
 
 
 def test_complete_fresh_selected_delivery_passes_but_one_missing_frame_does_not(refresh):
