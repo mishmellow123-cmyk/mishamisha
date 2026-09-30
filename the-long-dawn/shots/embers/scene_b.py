@@ -968,6 +968,36 @@ def surge_ease(d):
     return 1.0 + SURGE_OVER * (1.0 - u * u * (3.0 - 2.0 * u))
 
 
+# LD_TOWER_PULSE_EASE=1 (A7 re-render; owner, 30 Sep): LD_SURGE_EASE's eased height measured no better on A7's plates
+# (per-beat peak one-frame MAD 12.38 -> 11.97): the one-frame lurch is each tower's LIGHT. On its onset frame a tower's
+# brightness steps to (1 + 0.9 beat_pulse) x (1 + 2.5 heat band), up to 6.65x, both at full strength at once. With the
+# flag both rise over PULSE_ATTACK frames (smoothstep, half-way one frame in) and then decay exactly as before, so the
+# flash keeps its brightness and lands PULSE_ATTACK frames after its onset. Read once, here; off (the default) takes the
+# accepted expressions unchanged.
+TOWER_PULSE_EASE = os.environ.get('LD_TOWER_PULSE_EASE', '0') == '1'
+PULSE_ATTACK = 2.0
+
+
+def pulse_attack(x):
+    """share of a tower's beat flash reached x frames after its onset (LD_TOWER_PULSE_EASE)"""
+    if x <= 0.0:
+        return 0.0
+    if x >= PULSE_ATTACK:
+        return 1.0
+    u = x / PULSE_ATTACK
+    return u * u * (3.0 - 2.0 * u)
+
+
+def tower_pulse(t):
+    """beat_pulse for a tower's light under LD_TOWER_PULSE_EASE: the same 1 -> exp(-x/3) decay, reached over
+    PULSE_ATTACK frames and decaying from there (BEATS is the schedule's beats once a3.install() has run)"""
+    for tb in BEATS:
+        x = t - tb
+        if 0.0 <= x < 20.0 + PULSE_ATTACK:
+            return pulse_attack(x) * math.exp(-max(x - PULSE_ATTACK, 0.0) / 3.0)
+    return 0.0
+
+
 class Towers:
     """v2: eight towers MADE OF EMBERS (geometry: towers2.py). Solid masses: their crust feeds an occluder that
     hides whatever stands behind them. Ember crust with slow heat patches, seams of fire, burning edges and
@@ -1102,7 +1132,7 @@ class Towers:
             x = t - tb - self.dly[i]
             if 0.0 <= x < 26.0:
                 yw = -2.0 + 7.5 * x
-                w += math.exp(-x / 11.0) * np.exp(-((yl - yw) / 3.2) ** 2)
+                w += (pulse_attack(x) if TOWER_PULSE_EASE else 1.0) * math.exp(-x / 11.0) * np.exp(-((yl - yw) / 3.2) ** 2)
         return w
 
     # ------------------------------------------------------------- per frame
@@ -1202,7 +1232,7 @@ class Towers:
             if c is None:
                 continue
             G = self.G[i]
-            bp = beat_pulse(t - self.dly[i])
+            bp = tower_pulse(t - self.dly[i]) if TOWER_PULSE_EASE else beat_pulse(t - self.dly[i])
             surge = (1 + 0.9 * bp) * grow
             for kind in (0, 4, 1, 2, 3):
                 pt = c['parts'][kind]

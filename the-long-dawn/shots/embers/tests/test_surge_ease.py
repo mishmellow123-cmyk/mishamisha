@@ -29,6 +29,7 @@ def _load(src, names):
 
 
 EASE = _load(SCENE_B, {'surge_ease', 'SURGE_PEAK', 'SURGE_OVER', 'SURGE_SETTLE'})
+PULSE = _load(SCENE_B, {'pulse_attack', 'tower_pulse', 'PULSE_ATTACK', 'BEATS'})
 CORE_NS = _load(CORE, {'clamp01', 'ease_out_back'})
 
 
@@ -103,6 +104,46 @@ class SurgeEase(unittest.TestCase):
         self.assertIn("(surge_ease(t - tb - self.dly[i]) if SURGE_EASE else float(ease_out_back(x, 1.6)))",
                       SCENE_B)
         self.assertEqual(SCENE_B.count('surge_ease('), 2)    # its definition and the one call in Towers.height
+
+
+def accepted_pulse(x):
+    """a3.A3Sched.beat_pulse relative to a beat: 1 on the onset frame, exp(-x/3) for 0 <= x < 20"""
+    return math.exp(-x / 3.0) if 0 <= x < 20 else 0.0
+
+
+class TowerPulse(unittest.TestCase):
+    """LD_TOWER_PULSE_EASE: a tower's flash and heat band rise over PULSE_ATTACK frames, then decay as accepted"""
+    tb = 640.0                                                # the first of scene_b's own BEATS
+
+    def eased(self, x):
+        return PULSE['tower_pulse'](self.tb + x)
+
+    def check_soft_onset(self, f):
+        self.assertEqual(f(-0.5), 0.0)
+        self.assertLessEqual(f(1.0), 0.5)                     # at most half the flash one frame in (accepted: all)
+        self.assertLess(f(0.01), 0.01)
+
+    def test_eased_flash(self):
+        A = PULSE['PULSE_ATTACK']
+        self.check_soft_onset(self.eased)
+        self.assertAlmostEqual(self.eased(A), 1.0, places=12)          # the same brightness, A frames on
+        for x in (3.0, 5.0, 9.5, 19.0):
+            self.assertAlmostEqual(self.eased(x), math.exp(-(x - A) / 3.0), places=12)   # the accepted decay
+        self.assertEqual(PULSE['pulse_attack'](0.0), 0.0)
+        self.assertEqual(PULSE['pulse_attack'](A), 1.0)
+        self.assertAlmostEqual(PULSE['pulse_attack'](A / 2), 0.5, places=12)
+
+    def test_accepted_flash_is_the_one_frame_step(self):
+        self.assertEqual(accepted_pulse(0.0), 1.0)
+        with self.assertRaises(AssertionError):
+            self.check_soft_onset(accepted_pulse)
+
+    def test_off_is_the_accepted_expression(self):
+        self.assertIn("TOWER_PULSE_EASE = os.environ.get('LD_TOWER_PULSE_EASE', '0') == '1'", SCENE_B)
+        self.assertIn("bp = tower_pulse(t - self.dly[i]) if TOWER_PULSE_EASE else beat_pulse(t - self.dly[i])",
+                      SCENE_B)
+        self.assertIn("w += (pulse_attack(x) if TOWER_PULSE_EASE else 1.0) * math.exp(-x / 11.0)", SCENE_B)
+        self.assertEqual(SCENE_B.count('tower_pulse('), 2)   # its definition and the one call in the tower light
 
 
 if __name__ == '__main__':
