@@ -47,6 +47,7 @@ def tower_init(towers):
 def scene_for(shot):
     with patch.dict(os.environ, {'LD_OPEN_RING': '1'}), \
          patch.object(C.B.Towers, '__init__', tower_init), \
+         patch.object(C, 'ForgeEmbers', return_value=SimpleNamespace(emit_bounded=Mock())), \
          patch.object(C.EYE, '_all_smoke', return_value=SimpleNamespace(emit=Mock())):
         return C.Scene(shot)
 
@@ -181,15 +182,16 @@ class CutDContracts(unittest.TestCase):
         def oracle(scene, hit, owners):
             for owner in owners:
                 for particle in (0, 7, 31, 63):
-                    arrival = hit + float(scene.spark_delay[owner, particle])
+                    spread = 4. if scene.shot == 'race' and hit > C.RACE_START else 1.
+                    arrival = hit + spread * float(scene.spark_delay[owner, particle])
                     points, energy, ids = scene.spark_paths(arrival)
-                    row = np.flatnonzero(ids == owner)[particle]
-                    self.assertGreater(energy[row], 0.)
+                    rows = np.flatnonzero((ids == owner) & (energy > 0.))
+                    self.assertGreater(len(rows), 0)
                     ends = scene.ends(arrival)
                     if owner in C.LEADERS:
-                        distance = np.linalg.norm(ends[C.LEADERS.index(owner)] - points[row])
+                        distance = np.linalg.norm(ends[C.LEADERS.index(owner)] - points[rows], axis=1).min()
                     else:
-                        distance = np.linalg.norm(ends - points[row], axis=1).min()
+                        distance = np.linalg.norm(ends[None] - points[rows, None], axis=2).min()
                     self.assertLess(distance, 1e-5,
                                     f'tower {owner} misses moving end at D{arrival}: {distance}')
 

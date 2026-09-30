@@ -39,6 +39,7 @@ def scene_for(shot='forging'):
                                   scene.camera(reference).pos, C.RING_C, reference)
     scene.towers = SimpleNamespace(k_all=0, prepare=Mock(), emit=Mock())
     scene.smoke = SimpleNamespace(emit=Mock())
+    scene.surface_embers = SimpleNamespace(emit_bounded=Mock())
     return scene
 
 

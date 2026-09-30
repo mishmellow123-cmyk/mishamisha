@@ -34,6 +34,7 @@ import ringsolid as RS
 import openring_d as D
 import d_glare
 from d_lamplight import ReadingLights, GOLD_WHITE
+from d_race_embers import ForgeEmbers
 from d_output import output_dir, publish
 from core import Camera, Frame, rng
 
@@ -102,6 +103,24 @@ def stroke_frames(shot):
     return tuple(range(a, b, 80 if shot in ('instep', 'unfinished') else 20))
 
 
+@lru_cache(maxsize=1)
+def race_work_beats():
+    """Work on every beat, then twice per beat in the final bar.
+
+    The final impact is under the Deep: its approaching grains remain in D2719.
+    Work strokes do not all close the band; D owns that separate angular score.
+    """
+    a, b = D.shot_range('race')
+    return tuple(range(a, b - 80, 20)) + tuple(range(b - 80, b + 1, 10))
+
+
+@lru_cache(maxsize=65536)
+def race_lift(i, t):
+    """Cumulative smooth surges, retaining the two giants' height advantage."""
+    return (.50 if i in LEADERS else .75) * sum(
+        float(ease(hit, hit + 6., t)) for hit in race_work_beats())
+
+
 def spark_reach(i, t):
     """Fraction of forge-to-end distance attained; work sparks retreat at pause."""
     if t >= D.PAUSE_START:
@@ -110,10 +129,12 @@ def spark_reach(i, t):
         return 1.
     if i == HOLDOUT and D.HOLDOUT_STRIKE <= t < D.SHOTS['holdout'].d_end:
         return 1.
-    # Followers gain ground on each completed closure stroke, never on a hold.
+    # Closure strokes advance followers; race work beats also raise their
+    # frontier when the angular score holds. Trap adds its own inherited surges.
     trap_start, trap_end = D.shot_range('trap')
     trap_surges = max(0, min((trap_end - trap_start) // 20, int((t - trap_start) // 20) + 1))
-    return .30 + .46 * float(np.clip((120. - D.gap_deg(t)) / 65., 0., 1.)) + .005 * trap_surges
+    work = sum(hit < t for hit in race_work_beats()) if RACE_START < t <= D.SHOTS['race'].d_end else 0
+    return .30 + .46 * float(np.clip((120. - D.gap_deg(t)) / 65., 0., 1.)) + .005 * trap_surges + .006 * work
 
 
 class Schedule(c3.C3Sched):
@@ -122,6 +143,7 @@ class Schedule(c3.C3Sched):
     tower_rise = FORGING_START
     end = D.SHOTS['unfinished'].d_end + 1.
     smoke_gain = .42
+    race_restage = False  # Vision inherits this schedule for its frozen world.
 
     def __init__(self, shot):
         self.shot = shot
@@ -210,7 +232,7 @@ class Forges(B.Towers):
             h += 6. * float(ease(2480., 2538., c))
             if i in LEADERS:
                 h += (55. - h) * float(ease(2580., 2636., c))
-        return h
+        return h + (race_lift(i, t) if self.schedule.race_restage else 0.)
 
     def top(self, i, t):
         p = super().top(i, t)
@@ -238,18 +260,28 @@ class Scene:
         self.shot = shot
         D.shot_range(shot)
         self.schedule = Schedule(shot)
+        if shot == 'race':
+            # Explicit scene opt-in: d_forges inherits Schedule/Forges for
+            # vision's frozen world and must retain its accepted architecture.
+            self.schedule.race_restage = True
+            self.schedule.beats = sorted(set(self.schedule.beats) | set(race_work_beats()))
+            self.schedule.pulses = self.schedule.beats
         with world(self.schedule):
             self.towers = Forges(self.schedule)
             self.smoke = EYE._all_smoke(self.towers)
+            self.surface_embers = ForgeEmbers(self.towers) if shot == 'race' else None
         self._windows = None
         r = rng(903030)
         self.spark_jitter = r.normal(0., 1., (self.towers.k_all, 64, 3))
         self.spark_delay = r.uniform(0., 2.5, (self.towers.k_all, 64))
-        # The first grain makes contact on the scored frame; the rest arrive
-        # over the following 2.5 frames. In particular the insert lands D5496.
+        # The first grain contacts on the scored frame (the insert at D5496).
+        # Later race packets spread these delays over ten frames; other shots
+        # retain the original 2.5-frame dispersion.
         self.spark_delay[:, 0] = 0.
         # Every shot uses one fixed camera-derived orientation, shared late.
-        reference = RACE_START + 120. if shot in ('forging', 'race') else INSTEP_START + 80.
+        # The race camera now moves. Its opening is the old shared reference,
+        # so placement stays identical to the already-rendering forging.
+        reference = RACE_START if shot in ('forging', 'race') else INSTEP_START + 80.
         base_rot = c3._closed_ring_frame(1580.)[0]
         self.rotation = D.placement(base_rot, self.camera(reference).pos, RING_C, reference)
 
@@ -258,6 +290,14 @@ class Scene:
             u = float(ease(FORGING_START, RACE_START, t))
             radius, y, target, hfov = 150. - 71. * u, 32. + 16. * u, 27. + 27. * u, 62. - 10. * u
             az = c3.AZ0 + .06 + .08 * u
+            if self.shot == 'race':
+                reveal = float(ease(RACE_START, RACE_START + 40., t))
+                push = float(ease(RACE_START + 40., D.SHOTS['race'].d_end - 1., t))
+                radius += (102. - 34. * push - radius) * reveal
+                y += (32. - y) * reveal
+                target += (46. + 2. * push - target) * reveal
+                hfov += (62. + 2. * push - hfov) * reveal
+                az -= (.14 * push) * reveal
         elif self.shot == 'holdout':
             # Put the holdout's throat directly beneath the end it first reaches.
             radius, y, target, hfov, az = 80., 36., 50., 48., c3.AZ0 + .36
@@ -343,7 +383,12 @@ class Scene:
         """Actual rendered trajectories with tower identity and frontier reach."""
         points, energy, owners = [], [], []
         for hit in self.schedule.beats:
-            if not hit - 15. <= t < hit + 4.:
+            stream = self.shot == 'race' and hit > RACE_START
+            if stream and t <= RACE_START:
+                continue
+            flight = 18. if stream else 12.
+            spread = 4. if stream else 1.
+            if not hit - flight - 3. <= t < hit + 2.5 * spread + 1.5:
                 continue
             ends = self.ends(hit)
             for i in range(self.towers.k_all):
@@ -353,10 +398,11 @@ class Scene:
                 side = LEADERS.index(i) if i in LEADERS else np.argmin(np.linalg.norm(ends - base, axis=1))
                 # Each particle meets the end at its own arrival time, including
                 # movement during the stroke; its launch stays at its own birth.
-                end = self.ends(hit + self.spark_delay[i])[:, side]
-                base = np.array([self.towers.top(i, hit - 12. + delay) for delay in self.spark_delay[i]]) - [0., .5, 0.]
+                delay = self.spark_delay[i] * spread
+                end = self.ends(hit + delay)[:, side]
+                base = np.array([self.towers.top(i, hit - flight + d) for d in delay]) - [0., .5, 0.]
                 reach = spark_reach(i, hit)
-                u = (t - hit + 12. - self.spark_delay[i]) / 12.
+                u = (t - hit + flight - delay) / flight
                 alive = (u >= -1e-10) & (u <= 1. + 1e-10)
                 u = np.clip(u, 0., 1.)
                 travel = u if reach == 1. else np.sin(np.pi * u)
@@ -502,6 +548,9 @@ class Scene:
             ring = self.ring_layer(ctx)
             self.towers.emit(ctx, RING_C, np.array([1., .65, .31]), 90.)
             self.smoke.emit(ctx, RING_C, np.array([1., .60, .28]), 55.)
+            if self.shot == 'race':
+                self.surface_embers.emit_bounded(ctx, self.ends(ctx.t0), self.ends(ctx.t1),
+                                                 float(ease(RACE_START, RACE_START + 20., f)))
             self.sparks(ctx)
             self.drops(ctx)
             self.lamps(ctx)
