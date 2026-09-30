@@ -245,7 +245,10 @@ def build(pulse_cut="C5P2", edl_path=None):
     # Pass 1's historical C16: the forge from the cut that shows them lit (EDIT's COLD_CUT: 3840, or 3816 with the
     # adopted lit lead-in), a hammer 8 frames before the measured shutdown, cut mid-stroke on it; then nothing
     off = M("cold.forges_off", "frame")
-    lit = [r["f0"] for r in (edl or {}).get("shots", []) if r.get("name", "").startswith("THE FORGES GO COLD")]
+    # the forge rows by their shot code (#16); names are kept as a fallback because 37e724b renamed them "THE FORGES
+    # FALL INTO STEP" and a name-only match silently lost the 3816 lead-in (the table fell back to 3840)
+    lit = [r["f0"] for r in (edl or {}).get("shots", [])
+           if r.get("code") == "#16" or r.get("name", "").startswith(("THE FORGES GO COLD", "THE FORGES FALL INTO STEP"))]
     cold_cut = min(lit) if lit else 3840
     if pulse_cut == "C5P2":
         # Timings below are the owner's replacement-picture brief, not a remeasurement
