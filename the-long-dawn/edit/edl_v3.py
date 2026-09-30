@@ -186,14 +186,23 @@ A = [
       # Codex PR #8 (merged d6ef556): job beaconrun_a_catches3 -> renders/beaconrun_A_catches3. The farm landed
       # 4027-4239 only; 3920-4026 is rendered on the M4 from the same shots/run code (unchanged d6ef556 -> 6059baf ->
       # this branch). need: it plays only once all 320 frames are there (the delivered A master had A14 as a SLATE).
-      [T('beaconrun_A_catches3', 0, 'exact', 'PR #8 catches (farm: 4027-4239, then 3920-4026 on 29 Sep; the joins 3955|3956, 3990|3991 and 4026|4027 differ from their neighbours by 0.93/0.92/1.00 vs 0.92/0.92/1.00 mean |diff|)', need=(3920, 4239)),
+      # ADOPTED 29 Sep (plays once all 320 frames land): linked-fires (Codex lane beaconrun; farm from fb685a1). The
+      # first link catches at 3936 where A13's desert beacon sat (upper centre-right), the rest on the score's run_1..7
+      # (4000-4200), every link drawn as a fire: on the farm test frames three fires burn at 4040 and four along the
+      # ridge at 4200, where catches3 showed 1-2 px specks until 4148. ALTERNATIVES['A14'] is catches3
+      [T('cand_beaconrun_linked-fires', 0, 'exact', 'linked-fires (Codex lane beaconrun, farm 29 Sep)', need=(3920, 4239)),
+       T('beaconrun_A_catches3', 0, 'exact', 'PR #8 catches (farm: 4027-4239, then 3920-4026 on 29 Sep; the joins 3955|3956, 3990|3991 and 4026|4027 differ from their neighbours by 0.93/0.92/1.00 vs 0.92/0.92/1.00 mean |diff|)', need=(3920, 4239)),
        T('beaconrun'), T('run')]),
     S('A15', 4240, 4400, 'R16', 'THE WATCHERS', 'RUN-A + HILLS',
       'Behind a backlit watcher at the seventh fire, looking to the cold glow; small figures on far ridges, eyelines only.',
       # PR #8's companion job watchers_a_catches3 (160/160) carries A14 catches3's fire sizes across the cut: the
       # right-hand ridge fire measures 117 px at A14 4239, 128 px at catches3 4240, but 52 px at hearth3 4240 (the
       # contraction PR #8 warned of; warm-pixel blobs, 29 Sep). Codex PR #7's restaged hearth (hearth3) stays next.
-      [T('watchers_A_catches3', 0, 'exact', 'PR #8 companion: A14 catches3 fire sizes', need=(4240, 4399)),
+      # ADOPTED 29 Sep with A14 (same lane, same turned camera and fire table across 4239|4240): the watcher reads as
+      # a silhouette in front of the near fire, whose light falls off on the rock; ALTERNATIVES['A15'] is catches3
+      [T('cand_watchers_linked-fires', 0, 'exact', 'linked-fires companion (Codex lane beaconrun, farm 29 Sep)',
+         need=(4240, 4399)),
+       T('watchers_A_catches3', 0, 'exact', 'PR #8 companion: A14 catches3 fire sizes', need=(4240, 4399)),
        T('watchers_A_hearth3', 0, 'exact', 'Codex restaged hearth (PR #7)'), T('watchers'), T('run')]),
     S('A16', 4400, 4720, 'E10', 'TOWERS IN THE LIGHT', 'EMBERS',
       "Far ridge fires light the towers' backs; the surges stop; the two giants open their shutters to each other first.",
@@ -207,7 +216,13 @@ A = [
     # 960 frames have landed; ALTERNATIVES['A18'] is the accepted crossing.
     S('A18', 4880, 5840, 'R6', 'THE CROSSING', 'RUN-A',
       'One take: the great lantern on poles; forty roped bearers on a knife-edge above the cloud; the sky wheels.',
-      [T('cand_crossing_both_decal', 0, 'exact', 'RUN-A4 restage + low_shoulders rock + rope decal (farm 29 Sep)',
+      # both_decal_cap (Codex lane dash; plays once all 960 frames land) is both_decal with crossing ridge CR0[3]'s
+      # endpoint cap made continuous: its 15 m / 13 m flanks switched by side beyond the segment end, a 0.156 m height
+      # step that shaded as a dashed line on the snow (lower left, ~5011-5113 and later); the farm test frames 5043,
+      # 5071 and 5113 show no line (changed pixels confined to the terrain below y 537)
+      [T('cand_crossing_both_decal_cap', 0, 'exact', 'both_decal + ridge row 3 round cap (Codex lane dash, farm 29 Sep)',
+         need=(4880, 5839)),
+       T('cand_crossing_both_decal', 0, 'exact', 'RUN-A4 restage + low_shoulders rock + rope decal (farm 29 Sep)',
          need=(4880, 5839)), T('crossing'), T('run')]),
     S('A19', 5840, 6240, 'R7', 'THE BLUE HOUR', 'RUN-A',
       'The lantern set down among the watch-fires; they sit and unrope; the east pales to rose; hearth smoke below.',
@@ -305,6 +320,9 @@ ALTERNATIVES = {
     'C18': ("c5('book_C5_deep_abandoned', PR12, matte='book_C5_deep_abandoned_matte')", 'upright ladders, box lamp'),
     'C19': ("c5('runC_watch_v5', PR14)", 'the parchment Watch'),
     'C22': ("c5('book_C5_pen', PR12, matte='book_C5_pen_matte')", 'pale nib, hard black gutter'),
+    'A14': ("T('beaconrun_A_catches3', 0, 'exact', need=(3920, 4239))", 'PR #8 catches3: the run as 1-2 px specks '
+            'until 4148, the camera on the left-hand ranges'),
+    'A15': ("T('watchers_A_catches3', 0, 'exact', need=(4240, 4399))", "catches3's watcher: the near fire on a hard-edged rock"),
     'A18': ("T('crossing')", 'the accepted crossing (renders/crossing_A, 27 Sep): the walking line the user found '
             'glitchy at ~5050'),
 }

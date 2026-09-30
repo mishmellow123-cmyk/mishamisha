@@ -718,6 +718,26 @@
    "desc": "Following her look, fires link across the ranges every two beats, seven of them; the red under-glow pulses.",
    "takes": [
     {
+     "stem": "cand_beaconrun_linked-fires",
+     "off": 0,
+     "mode": "exact",
+     "note": "linked-fires (Codex lane beaconrun, farm 29 Sep)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      3920,
+      4239
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_beaconrun_linked-fires"
+     ]
+    },
+    {
      "stem": "beaconrun_A_catches3",
      "off": 0,
      "mode": "exact",
@@ -789,6 +809,26 @@
    "owner": "RUN-A + HILLS",
    "desc": "Behind a backlit watcher at the seventh fire, looking to the cold glow; small figures on far ridges, eyelines only.",
    "takes": [
+    {
+     "stem": "cand_watchers_linked-fires",
+     "off": 0,
+     "mode": "exact",
+     "note": "linked-fires companion (Codex lane beaconrun, farm 29 Sep)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      4240,
+      4399
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_watchers_linked-fires"
+     ]
+    },
     {
      "stem": "watchers_A_catches3",
      "off": 0,
@@ -944,6 +984,26 @@
    "owner": "RUN-A",
    "desc": "One take: the great lantern on poles; forty roped bearers on a knife-edge above the cloud; the sky wheels.",
    "takes": [
+    {
+     "stem": "cand_crossing_both_decal_cap",
+     "off": 0,
+     "mode": "exact",
+     "note": "both_decal + ridge row 3 round cap (Codex lane dash, farm 29 Sep)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      4880,
+      5839
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_crossing_both_decal_cap"
+     ]
+    },
     {
      "stem": "cand_crossing_both_decal",
      "off": 0,
