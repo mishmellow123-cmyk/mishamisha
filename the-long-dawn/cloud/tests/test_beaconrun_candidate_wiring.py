@@ -70,6 +70,45 @@ class BeaconrunCandidateWiringTests(unittest.TestCase):
                     candidate.render.assert_called_once_with(first, kind=kind, scale=.5, ss=1.5, **keywords)
                     candidate.render.reset_mock()
 
+    def test_renderers_import_before_the_first_frame(self):
+        """lib/look.py sets OpenCV's pool on import; a renderer first imported inside render() changes the limit
+        after checked() reset it, and the farm refused every unit (29 Sep 20:52). build() must import both."""
+        import importlib.abc
+        import types
+        log = []
+
+        class Recorder(importlib.abc.MetaPathFinder, importlib.abc.Loader):
+            def find_spec(self, name, path, target=None):
+                if name in ('beaconrun_a', 'watchers_a', 'beaconrun_candidates'):
+                    return importlib.util.spec_from_loader(name, self)
+                return None
+
+            def create_module(self, spec):
+                return None
+
+            def exec_module(self, module):
+                log.append(module.__name__)
+                module.render = mock.Mock(return_value='candidate-rgb')
+
+        for kind, (first, _) in KINDS.items():
+            for route, option in (('original', None), ('candidate', 'linked-fires')):
+                log.clear()
+                saved = {n: sys.modules.pop(n) for n in ('beaconrun_a', 'watchers_a', 'beaconrun_candidates')
+                         if n in sys.modules}
+                finder = Recorder()
+                sys.meta_path.insert(0, finder)
+                try:
+                    with mock.patch.object(self.wrapper, 'imports'):
+                        self.wrapper.build(kind, route, option, scale=.5)
+                    self.assertIn('beaconrun_a', log, (kind, route))
+                    self.assertIn('watchers_a', log, (kind, route))
+                finally:
+                    sys.meta_path.remove(finder)
+                    for n in ('beaconrun_a', 'watchers_a', 'beaconrun_candidates'):
+                        sys.modules.pop(n, None)
+                    sys.modules.update(saved)
+                    self.assertIsInstance(types.ModuleType('x'), types.ModuleType)
+
     def test_equality_checks_default_and_shared(self):
         import numpy as np
         for kind, (first, _) in KINDS.items():

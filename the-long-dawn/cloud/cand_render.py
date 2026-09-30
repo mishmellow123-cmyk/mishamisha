@@ -96,6 +96,11 @@ def build(kind, route, option=None, scale=1.0):
     page_kind = kind in PAGES
     # route distinguishes direct original, omitted default, shared accepted and candidate.
     if kind in ('beaconrun', 'watchers'):
+        # Import both renderers HERE, before checked() resets the pools: lib/look.py sets cv2.setNumThreads(2) when it
+        # is imported, and beaconrun_candidates imports these modules lazily inside its first render, so the first
+        # frame changed the limit after the reset and checked() refused it (farm 29 Sep 20:52, every unit).
+        import beaconrun_a  # noqa: F401
+        import watchers_a  # noqa: F401
         if route == 'original':
             if kind == 'beaconrun':
                 import beaconrun_a as BR
