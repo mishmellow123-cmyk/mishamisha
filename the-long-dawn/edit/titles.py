@@ -18,6 +18,7 @@ settle, blur-to-sharp, and a slow fade out. Composited over the picture with a
 soft dark halo for legibility and a faint warm glow so the words feel lit.
 """
 import functools
+from numbers import Real
 import os
 import zlib
 
@@ -315,19 +316,22 @@ SET_AS = {
 C5_TEXT = [
     dict(id='R02', row=2, line='In the old story, a Dark Lord forges a Ring to rule the world.', f_in=400, f_out=540,
          set='in_picture'),       # PAGES-C writes it into the Mountain's caption band (shots/map/inkline.py T1)
-    dict(id='R03', row=3, line='Our Ring was kindled from every tale we had ever told.', f_in=580, f_out=716, set='fire'),
+    dict(id='R03', row=3, line='Our Ring was kindled from every tale we had ever told.', f_in=580, f_out=716,
+         set='fire', backing=0.35),  # local shade: 3.592:1 at C592 -> 4.917:1 at C595, all 112 steady frames
     dict(id='R04', row=4, line='It read every word we had ever written, and learned to answer.', f_in=728, f_out=856,
-         set='fire'),             # new slot: the letters lift (720) into the flame; e15 has no text dim here
-    dict(id='R05', row=5, line='In our story, there was no Dark Lord.', f_in=920, f_out=1030, set='fire'),
+         set='fire', backing=0.35),  # e15 has no text dim: 3.637:1 -> 4.962:1 at C837 across 104 steady frames
+    dict(id='R05', row=5, line='In our story, there was no Dark Lord.', f_in=920, f_out=1030, set='fire', y=600),
+                                  # 48 px above the flame's bright base: 3.118:1 -> 6.922:1 at C942, all 86 frames
     dict(id='R06', row=6, line='Only smiths in every kingdom, each racing to finish it first.', f_in=1056, f_out=1190,
-         set='fire'),             # embers_C3 dims (1056, 1190) under this slot (shots/embers/render.py TEXT['C3'])
+         set='fire', backing=0.40),  # strengthen the existing source dim: 3.227:1 -> 4.859:1 at C1074, all 110 frames
     dict(id='R07', row=7, line='Each said: better us than them.', f_in=1446, f_out=1550, set='fire'),   # dim (1446, 1550)
     dict(id='R08', row=8, line='They dug deeper every year, for the gold ran deeper still.', f_in=1710, f_out=1850,
-         set='ink'),
+         set='ink', y=720, backing=0.30),  # below the plate's baseline, which struck through the line at y648;
+                                          # 3.378:1 at C1813 -> 5.026:1 at C1806 across all 102 steady frames
     dict(id='R09', row=9, line='But whoever won the race, the Ring would rule us all.', f_in=1972, f_out=2076,
          set='fire'),             # new slot: after the burn-through (1921-1965), over the slit onto nothing (2000)
     dict(id='R10', row=10, line='In the old story, the wise refused the Ring.', f_in=2168, f_out=2306, set='ink',
-         x=1065),                 # on the right-hand page below the drawing (v5_inkpages keeps page y > 18 cm clear)
+         x=1065, backing=0.35),   # below the right-page drawing: 3.071:1 -> 4.932:1 at C2293, all 100 steady frames
     dict(id='R11', row=11, line='In ours, no smith could refuse it alone.', f_in=2452, f_out=2572, set='fire',
          y=330),                  # between the Ring and the forge crowns. At y 372 the crowns' flare (2555-2559)
                                   # rose behind 'In ours' (worst slice 2.32:1); here the worst frame is 4.28:1
@@ -364,12 +368,13 @@ C5_TEXT = [
                                   # 232-244): iron-gall on that grey measured 2.27:1, worst slice 2.21:1 (low in 16 of
                                   # 16 frames); the fire letters 4.98:1, worst slice 4.92:1 (c5_caption_backdrop)
     dict(id='R20', row=20, line='Without the Ring, the dawn came slowly. But it came.', f_in=4860, f_out=5020,
-         set='ink', y=150),       # UNVERIFIED: runC_illum is not on the EDIT-C5 Mac
+         set='ink', y=150, backing=0.30),  # keep the dawn's colour front: neutral exposure, 3.151:1 -> 4.774:1
+                                         # at C4887, all 122 steady frames, finished runC_illum + dawn_sweep
     dict(id='R22', row=22, line='The last pages were left for us.', f_in=5462, f_out=5602, set='ink',
-         x=440, y=520),           # EDIT's, on the blank verso: the pen frames bake no text and the gutter runs
+         x=440, y=520, backing=0.40),  # EDIT's, on the blank verso: the pen frames bake no text and the gutter runs
                                   # through the centre (~870-960); 5460-5540 is the score's window for a voice line.
-                                  # Raised from the lower third (y 648), where the verso darkens: worst slice
-                                  # 2.93:1 -> 3.33:1
+                                  # A soft exposure wash preserves the paper's hue: 2.936:1 -> 4.943:1 at C5530,
+                                  # all 102 steady frames on cand_pen_soft_spine_metal (captionsC audit, 29 Sep).
     dict(id='title', row=23, line='THE LONG DAWN', f_in=5700, f_out=5880, set='in_picture'),   # book_C 6980-7160
 ]
 
@@ -427,7 +432,8 @@ def text_table(cut):
     cut = cut.upper()
     if cut == 'C':
         return [dict(id=r['id'], line=r['line'], f_in=r['f_in'], f_out=r['f_out'], set=r['set'], locked=None,
-                     row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines', 'across', 'parts') if r.get(k) is not None})
+                     row=r['row'], **{k: r[k] for k in ('x', 'y', 'lines', 'across', 'parts', 'backing')
+                                     if r.get(k) is not None})
                 for r in C5_TEXT]
     with open(os.path.join(ROOT, 'music', 'v3', f'barmap_{cut}.json')) as fh:
         bm = json.load(fh)
@@ -469,6 +475,10 @@ class TextV3:
     def __init__(self, cut, row, scale=1.0, x=None):
         self.cut, self.id, self.text = cut, row['id'], row['line']
         self.f_in, self.f_out, self.kind, self.s = row['f_in'], row['f_out'], row['set'], scale
+        self.backing = row.get('backing', 0.0) if cut == 'C' else 0.0
+        if (isinstance(self.backing, bool) or not isinstance(self.backing, Real)
+                or not np.isfinite(self.backing) or not 0 <= self.backing <= 1):
+            raise ValueError(f'{self.id}: backing must be a finite number in [0, 1]')
         s = scale
         k = self.kind
         if k == 'title':
@@ -607,6 +617,28 @@ class TextV3:
         region = img[HY0:HY1, HX0:HX1]
         big = np.zeros(region.shape[:2], np.float32)
         big[Y0 - HY0:Y1 - HY0, X0 - HX0:X1 - HX0] = sub_a
+        if self.backing > 0:
+            # Follow the written/kindled alpha so the paper or shade arrives with the letters and leaves with
+            # them. Keep it inside the existing apron; an omitted/zero backing retains the original pixels.
+            # An ink backing spreads into the paper; the narrower fire shade would leave a bright outline
+            # around each ink stroke (seen on R22 at C5530). A wider, softer wash joins the spaces between words.
+            paper = k.startswith('ink') and not dark_ground
+            radius = max(1, int(round((24 if paper else 12) * s)))
+            spread = cv2.dilate(big, cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                                              (2 * radius + 1, 2 * radius + 1)))
+            backing = cv2.GaussianBlur(spread, (0, 0), max(0.1, (16 if paper else 8) * s)) * self.backing
+            if paper:
+                # R22 C5530's wider paper wash can reach the apron; end it smoothly before that hard crop.
+                taper = max(1, int(round(8 * s)))
+                by, bx = np.indices(backing.shape, dtype=np.float32)
+                edge_x = np.minimum(bx, backing.shape[1] - 1 - bx)
+                edge_y = np.minimum(by, backing.shape[0] - 1 - by)
+                backing *= smooth(edge_x / taper) * smooth(edge_y / taper)
+                # R20 must not gain warm colour ahead of the dawn sweep; exposure preserves RGB ratios below
+                # clipping.
+                region[:] = np.minimum(region * (1 + backing[..., None]), 1.0)
+            else:
+                region *= 1 - backing[..., None]
         bg = float(region.mean())
         if self.cut == 'C' and k.startswith('ink'):
             col = PARCH if dark_ground else IRON   # every C ink line is written on paper (book pages, the ink world):

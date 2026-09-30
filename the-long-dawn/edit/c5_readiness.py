@@ -60,7 +60,7 @@ COLD_LEAD_STEM = 'cand_cold_lead24'          # Cold's lit lead-in, COLD_CUT-3839
 # The one movable picture cut, edl_v3.COLD_CUT (the last beacon -> the forges): anywhere from 3792 to the section line
 # 3840. Measured 29 Sep from the delivered frames, stated here independently: map_last_beacon_C's last kingdom catches
 # 3785-3791, so an earlier cut loses the catch; embers_C5_cold goes dark at 3848 whatever the cut.
-QUIET_KINDS = ('floor', 'dawn_sweep')  # Grades move no geometry under captions; dawn/R20 contrast is measured
+QUIET_KINDS = ('floor', 'dawn_sweep', 'caption_grade')  # Photometric grades; caption contrast is audited separately
 COLD_HOLD = (3792, 3840)
 # The Pages mattes delivered with C5 are opaque (255 in every pixel of all 240 frames of each, decoded 29 Sep): a
 # transition that took its hole from one would reveal nothing.

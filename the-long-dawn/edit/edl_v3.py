@@ -575,7 +575,22 @@ EDL = {'A': A, 'B': B, 'C': C}
 C_DAWN = dict(start=4728, done=5160, width=0.85, prelight=0.20,
               night_rgb=(0.532361384, 0.538582617, 0.533364320))
 
+# Native projected caption-band geometry, exported without a book render (captionsC, 29 Sep). Bind these
+# windows to those exact bytes and source offsets: a different camera/plate needs a new audit and export.
+C_CAPTION_BAND_SHA = '9089b1f9e46ef507c80c1fc91b7e3f5173889691b6c0a5f1d9bf9bbe0f021e0c'
+
 TRANS = {'A': [], 'B': [], 'C': [
+    # Baked ink cannot be moved independently of the page. The current dry holds measure 2.422:1 at C528
+    # and 2.782:1 at C5808 with projected glyph masks. Broad feathering avoids a bright caption-shaped strip;
+    # both grades return to the original picture at their endpoints and leave the words/cameras untouched.
+    dict(f0=400, f1=540, kind='caption_grade', id='R02', full0=430, full1=528,
+         source_stem='cand_t1_current-words-held', source_off=0, band_sha256=C_CAPTION_BAND_SHA,
+         curve=dict(kind='shadow_shoulder', low=0.04, high=0.14, gain=1.30),
+         note='C3: deepen the dry ink and lift its paper gently, using the held-camera caption band'),
+    dict(f0=5748, f1=5880, kind='caption_grade', id='title', full0=5808, full1=5847,
+         source_stem='book_C', source_off=1280, band_sha256=C_CAPTION_BAND_SHA,
+         curve=dict(kind='blackpoint_gain', blackpoint=0.0, gain=2.50),
+         note='C23: a broad paper exposure lift as the fire cools to ink; fade with the sinking title'),
     # the ember README (PR11) leaves "the page burn" to EDIT: the book's grammar for page -> ember world is the
     # burn-through (C4-C5, C8-C9). DESIGNED, NOT BUILT: it needs burn layers for the Refusal page (ftburn/x1burn,
     # BURN/PAGES), because the page's delivered matte is opaque on all 240 frames and holds no hole; the three folder
@@ -614,9 +629,10 @@ TRANS = {'A': [], 'B': [], 'C': [
               "5264 (the 7,200-frame cut's #21, 6160-6224, same sources)"),
     # PR12: the Pen "starts on the blank spread, so EDIT must join it to the preceding page turn"; centred on bar 69 b1,
     # done before the score's voice-line window opens at 5460. The curl is EDIT's own comp (the Pen's delivered matte
-    # is opaque, with no turn in it). UNRENDERED: Plenty (book_C) is not on the EDIT-C5 Mac.
+    # is opaque, with no turn in it). REVIEW (29 Sep): C5440's straight bottom was the camera crop treated as a leaf
+    # edge. The comp now carries book_C 6399's measured fore-edge and paper through the same cylinder and timing.
     dict(f0=5430, f1=5452, cut=5440, kind='page_turn', tilt=8.0, radius=0.11,
-         note='C21 Plenty -> C22 the Pen: the page turns onto the blank spread (EDIT 2D curl; UNRENDERED here)'),
+         note='C21 Plenty -> C22 the Pen: EDIT curl with the outgoing leaf\'s sampled edge, fibres and light'),
     dict(f0=5668, f1=5692, cut=5680, kind='dissolve',
          note='C22 the pen insert -> C23 the blank recto the title burns onto (UNSEEN: book_C not here)'),
     # REVIEW (29 Sep, all four picture reviewers; measured on the finished frames): a rendered black carries the film

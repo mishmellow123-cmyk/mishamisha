@@ -39,6 +39,7 @@ import edl_v3 as EDL  # noqa: E402
 import look  # noqa: E402
 import title_scene as TS  # noqa: E402
 import titles  # noqa: E402
+import caption_grade as CG  # noqa: E402
 
 cv2.setNumThreads(1)
 RENDERS = os.path.join(ROOT, 'renders')
@@ -781,14 +782,57 @@ def _tk_swell(o, i, f, t, ctx, lay, first):
 def page_turn(o, i, p, tilt=8.0, radius=0.11):
     """The outgoing page o turns over, right to left, onto the incoming i at progress p (0: o exactly; 1: i exactly).
 
-    Screen space (it bridges two cameras; the book's own leaves are book_c's 3D renders). A cylinder of radius R rolls
-    along a fold tilted `tilt` degrees, so the lower corner leads as a lifting hand would. Left of the fold the page lies
-    flat (o). The near half of the cylinder shows o's front bending away, foreshortened by the geometry and shaded for
-    a hearth low on the left; the far half and the leaf laid back over the flat page show the paper's back: the
-    incoming's own paper colour (its brightest 40%) under the light the leaf carried on its front, with its fibres and
-    ink showing through, mirrored by the geometry itself. The incoming lies bare right of the curl under the soft
-    shadow the lifted leaf casts right and down (shifted, never wrapped round the frame)."""
+    Screen space (it bridges two cameras; the book's own leaves are book_c's 3D renders). The cylinder and its
+    timing are unchanged. Its support follows the outgoing paper's visible silhouette; the bottom of the camera
+    crop is not a paper edge. The reverse carries that same paper's colour, broad light and fibres, with the drawing
+    softened into show-through. No procedural edge noise or synthetic grain is added.
+    """
     H, W = o.shape[:2]
+    if p <= 0:
+        return o.copy()
+    if p >= 1:
+        return i.copy()
+    scale = W / 1920.0
+    o_lum = o @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    _, binary = cv2.threshold((np.clip(o_lum, 0, 1) * 255).astype(np.uint8), 0, 255,
+                              cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    support = np.ones((H, W), np.uint8)
+    if contours:
+        contour = max(contours, key=cv2.contourArea)
+        # C5439's recto is separated from the room. Full-frame paper (including the synthetic test plates) has
+        # no observed outer edge; do not turn its dark ink rows into holes or select one stripe as a whole leaf.
+        paper_level = float(np.median(o_lum[binary > 0]))
+        room_level = float(np.median(o_lum[:, -max(1, W // 32):]))
+        if cv2.contourArea(contour) > 0.2 * H * W and room_level < 0.25 * paper_level:
+            support[:] = 0
+            cv2.drawContours(support, [contour], -1, 1, -1)
+    rows = np.arange(H, dtype=np.float32)
+    valid = support.any(axis=1)
+    left = np.argmax(support, axis=1).astype(np.float32)
+    right = (W - 1 - np.argmax(support[:, ::-1], axis=1)).astype(np.float32)
+    left = np.interp(rows, rows[valid], left[valid]).astype(np.float32)
+    right = np.interp(rows, rows[valid], right[valid]).astype(np.float32)
+    # Fill open ink outlines as well as enclosed marks: only the two outside boundaries define the leaf.
+    support = ((np.arange(W)[None, :] >= left[:, None]) &
+               (np.arange(W)[None, :] <= right[:, None])).astype(np.float32)
+    # The delivered C5439 fore-edge has 2.41 px RMS deviation from its quadratic fit at 960x402 (rows 20:382).
+    # Extend its measured slope beyond the camera crop, reflecting the measured deckle; never expose a crop edge.
+    slopes = [float(np.polyfit(rows, v, 1)[0]) if H > 1 else 0.0 for v in (left, right)]
+
+    def edge_at(profile, slope, sy):
+        yy = np.abs((sy + H - 1) % max(1, 2 * (H - 1)) - (H - 1))
+        return np.interp(yy, rows, profile).astype(np.float32) + slope * (sy - yy)
+
+    # Normalised convolution excludes the room from the carried illumination. The finer residual retains the
+    # actual paper tooth; its amplitude is bounded by the clean lower recto, not by the drawing's dark strokes.
+    weight = cv2.GaussianBlur(support, (0, 0), max(1.0, 0.025 * W))
+    base = cv2.GaussianBlur(o * support[..., None], (0, 0), max(1.0, 0.025 * W))
+    base /= np.maximum(weight[..., None], 1e-5)
+    grain = o - cv2.GaussianBlur(o, (0, 0), max(0.5, 8 * scale))
+    patch = grain[int(.875 * H):max(int(.98 * H), int(.875 * H) + 1), int(.245 * W):max(int(.755 * W), int(.245 * W) + 1)]
+    limit = np.quantile(np.abs(patch), .99, axis=(0, 1)).astype(np.float32)
+    material = np.clip(base + np.clip(grain, -limit, limit), 0, 1).astype(np.float32)
     R = max(2.0, radius * W)
     a = math.radians(tilt)
     ca, sa = math.cos(a), math.sin(a)
@@ -801,21 +845,25 @@ def page_turn(o, i, p, tilt=8.0, radius=0.11):
         """Source coordinates of the page point with across-coordinate us on each pixel's own line, and coverage."""
         d = us - u
         sx, sy = xs + d * ca, ys + d * sa
-        cov = np.clip(np.minimum(np.minimum(sx, W - 1 - sx), np.minimum(sy, H - 1 - sy)) + 0.5, 0.0, 1.0)
+        le, re = edge_at(left, slopes[0], sy), edge_at(right, slopes[1], sy)
+        cov = np.clip(np.minimum(sx - le, re - sx) + 0.5, 0.0, 1.0)
+        # Support and texture must extend together: reflecting y alone on a sloping fore-edge samples the room
+        # where the extrapolated leaf says paper. Keep the same position between the two measured boundaries.
+        yy = np.abs((sy + H - 1) % max(1, 2 * (H - 1)) - (H - 1))
+        ll = np.interp(yy, rows, left).astype(np.float32)
+        rr = np.interp(yy, rows, right).astype(np.float32)
+        xx = ll + (sx - le) / np.maximum(re - le, 1.0) * (rr - ll)
+        outside = (sy < 0) | (sy > H - 1)
+        sx, sy = np.where(outside, xx, sx), np.where(outside, yy, sy)
         return sx, sy, cov
 
     def at(img, sx, sy):
         return cv2.remap(img, sx, sy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
 
-    lum = i @ np.array([0.2126, 0.7152, 0.0722], np.float32)
-    paper = np.median(i[lum >= np.quantile(lum, 0.6)], axis=0).astype(np.float32)
-    o_lum = o @ np.array([0.2126, 0.7152, 0.0722], np.float32)
-    light = cv2.GaussianBlur(o_lum, (0, 0), 0.05 * W)                 # the page's own light, carried by the leaf
-    light = np.clip(light / max(1e-4, float(light.mean())), 0.75, 1.15).astype(np.float32)
-    grain = (o - cv2.GaussianBlur(o, (0, 0), 1.5)).astype(np.float32)   # fibres and ink, seen through from behind
-
-    def back(sx, sy, shade):                                         # the leaf's back: paper, lit where it is
-        return np.clip(paper * (shade * at(light, sx, sy))[..., None] + 0.3 * at(grain, sx, sy), 0.0, 1.0)
+    def back(sx, sy, shade):
+        # Reflect at a camera crop to continue the sampled fibres, rather than stretch its final pixel row.
+        tex = cv2.remap(material, sx, sy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT_101)
+        return np.clip(tex * shade[..., None], 0.0, 1.0)
 
     out = np.where((u < uc)[..., None], o, i)
     d = u - uc
@@ -836,7 +884,9 @@ def page_turn(o, i, p, tilt=8.0, radius=0.11):
         moved = np.zeros_like(leaf)                                  # shifted, never wrapped round the frame
         moved[k // 3:, k:] = leaf[:H - k // 3, :W - k]
         sh = cv2.GaussianBlur(moved, (0, 0), 0.35 * R)
-        out = out * (1.0 - 0.45 * np.clip(sh - leaf, 0.0, 1.0))[..., None]
+        contact = cv2.GaussianBlur(leaf, (0, 0), max(0.6, 3.0 * scale))
+        sh = 0.45 * np.clip(sh - leaf, 0.0, 1.0) + 0.2 * np.clip(contact - leaf, 0.0, 1.0)
+        out = out * (1.0 - sh)[..., None]
     out = out * (1 - m1) + np.clip(at(o, sx1, sy1) * shade1[..., None], 0.0, 1.0) * m1
     out = out * (1 - m2) + back(sx2, sy2, shade2) * m2
     out = out * (1 - m3) + back(sx3, sy3, np.full_like(u, 0.97)) * m3
@@ -908,6 +958,13 @@ def _tk_dawn_sweep(img, src, f, t, fin, cut):
     return dawn_sweep(fin(img, src, cut, f) if fin else img, f, t)
 
 
+def _tk_caption_grade(img, src, f, t, fin, cut):
+    # The words are already photographed onto the page. Grade those finished pixels once; no second text layer.
+    if cut != 'C':
+        raise ValueError('Baked-caption grades belong to cut C')
+    return CG.apply(fin(img, src, cut, f) if fin else img, f, t, src)
+
+
 def _tk_dawn_dissolve(o, i, f, t, ctx, lay, first):
     # Both sides are already finished. Neutralise only the incoming dawn, so C19's fires keep their own fade.
     i = dawn_sweep(i, f, t)
@@ -918,7 +975,8 @@ def _tk_dawn_dissolve(o, i, f, t, ctx, lay, first):
 
 TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell, page_turn=_tk_page_turn)
 TKINDS_PAIR['dawn_dissolve'] = _tk_dawn_dissolve
-TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor, dawn_sweep=_tk_dawn_sweep)
+TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor, dawn_sweep=_tk_dawn_sweep,
+                  caption_grade=_tk_caption_grade)
 KIND_HELPERS = dict(swell=_swell, page_turn=page_turn, dawn_dissolve=dawn_sweep, dawn_sweep=dawn_sweep)
 
 
@@ -926,6 +984,8 @@ def transition_code(kind):
     """The source that decides a window of this kind (for deliver's segment keys)."""
     if kind in AFIX.KINDS:
         return inspect.getsource(AFIX)
+    if kind == 'caption_grade':
+        return inspect.getsource(_tk_caption_grade) + CG.source()
     fn = TKINDS_PAIR.get(kind) or TKINDS_SHOT.get(kind)
     src = inspect.getsource(fn) if fn else ''
     return src + (inspect.getsource(KIND_HELPERS[kind]) if kind in KIND_HELPERS else '')
