@@ -1,0 +1,19 @@
+{
+ "name": "embers_A3_edge_eased",
+ "branch": "claude/owner-night-20260929",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow fonttools || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools",
+  "cd shots/embers && LD_SURGE_EASE=1 python3 render.py 1840 --cut A3 --scale 0.1 --out /tmp/embers_warm"
+ ],
+ "render": [
+  "cd shots/embers && LD_SURGE_EASE=1 NUMBA_NUM_THREADS=2 python3 render.py 1840-1859:4,1920-2399:4 --cut A3 --out ../../renders/embers_A3_eased",
+  "cd shots/embers && LD_SURGE_EASE=1 NUMBA_NUM_THREADS=2 python3 render.py 1841-1859:4,1921-2399:4 --cut A3 --out ../../renders/embers_A3_eased",
+  "cd shots/embers && LD_SURGE_EASE=1 NUMBA_NUM_THREADS=2 python3 render.py 1842-1859:4,1922-2399:4 --cut A3 --out ../../renders/embers_A3_eased",
+  "cd shots/embers && LD_SURGE_EASE=1 NUMBA_NUM_THREADS=2 python3 render.py 1843-1859:4,1923-2399:4 --cut A3 --out ../../renders/embers_A3_eased"
+ ],
+ "out_dir": "renders/embers_A3_eased",
+ "frames": "1840-1859,1920-2399",
+ "push_every": 300,
+ "ship": "jpg",
+ "note": "A7 THE EDGE with eased tower surges (LD_SURGE_EASE=1, scene_b.surge_ease); embers_A3_edge's frames 1840-2399 less the gilding insert (1860-1919, embers_A3_gild_eased), same shot boundaries as the accepted EDGE (no LD_GILD). The accepted jobs and renders/embers_A3 are untouched; the owner adopts through the EDL. The branch must contain the scene_b.py change before submission."
+}

@@ -1,0 +1,19 @@
+{
+ "name": "embers_A3_gild_eased",
+ "branch": "claude/owner-night-20260929",
+ "setup": [
+  "python3 -m pip install -q numba==0.67.0 scipy opencv-python-headless==4.10.0.84 numpy pillow fonttools || python3 -m pip install -q numba numpy scipy opencv-python-headless pillow fonttools",
+  "cd shots/embers && LD_GILD=1 LD_SURGE_EASE=1 python3 render.py 1860 --cut A3 --scale 0.1 --out /tmp/embers_warm"
+ ],
+ "render": [
+  "cd shots/embers && LD_GILD=1 LD_SURGE_EASE=1 NUMBA_NUM_THREADS=2 python3 render.py 1860-1919:4 --cut A3 --out ../../renders/embers_A3_eased",
+  "cd shots/embers && LD_GILD=1 LD_SURGE_EASE=1 NUMBA_NUM_THREADS=2 python3 render.py 1861-1919:4 --cut A3 --out ../../renders/embers_A3_eased",
+  "cd shots/embers && LD_GILD=1 LD_SURGE_EASE=1 NUMBA_NUM_THREADS=2 python3 render.py 1862-1919:4 --cut A3 --out ../../renders/embers_A3_eased",
+  "cd shots/embers && LD_GILD=1 LD_SURGE_EASE=1 NUMBA_NUM_THREADS=2 python3 render.py 1863-1919:4 --cut A3 --out ../../renders/embers_A3_eased"
+ ],
+ "out_dir": "renders/embers_A3_eased",
+ "frames": "1860-1919",
+ "push_every": 300,
+ "ship": "jpg",
+ "note": "A7's gilding insert (EMBERS-C4, LD_GILD=1) with eased tower surges (LD_SURGE_EASE=1): embers_A3_gild's frames into the new stem beside embers_A3_edge_eased. The accepted jobs and renders/embers_A3 are untouched; the owner adopts through the EDL. The branch must contain the scene_b.py change before submission."
+}

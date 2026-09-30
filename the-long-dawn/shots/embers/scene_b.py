@@ -1,5 +1,6 @@
 """EMBERS part B (480-880): ignition, the thinking fire, towers, crown, the race, the vortex."""
 import math
+import os
 
 import numpy as np
 
@@ -942,6 +943,30 @@ def _tower_cache(TW2, giants, alt):
 GIANT_SURGE = 2.0          # v3: extra height per beat for the two giants (from 660) ...
 GIANT_LEAD = 1.8           # ... and a lead on alternate beats (they leap-frog each other)
 
+# LD_SURGE_EASE=1 (A7 THE EDGE re-render; the owner: A's sequence is "jumpy and unpolished"): each beat's jump J in
+# Towers.height gets a soft attack. The accepted curve, ease_out_back((t - beat - delay) / 5, 1.6), puts 69% of J
+# into the first frame after the onset and sweeps 40% of J inside one half-frame shutter. The eased one starts at zero
+# slope, reaches 21% of J one frame in, peaks at 1.05 J 3.5 frames after the onset (was 1.09 J at 2.95, so the
+# highest frame is the same one or the next at every onset phase) and holds exactly J from 7 frames (was 5); its
+# largest one-frame step is 44% of J, its largest half-frame sweep 22%. Read once, here; off (the default) takes the
+# accepted expression unchanged, so a render made without the flag is the render made before it existed.
+SURGE_EASE = os.environ.get('LD_SURGE_EASE', '0') == '1'
+SURGE_PEAK, SURGE_OVER, SURGE_SETTLE = 3.5, 0.05, 7.0     # frames after the onset; the overshoot as a share of J
+
+
+def surge_ease(d):
+    """share of a surge's jump reached d frames after its onset (LD_SURGE_EASE): a smoothstep rise to 1 + SURGE_OVER
+    at SURGE_PEAK, a smoothstep settle to exactly 1.0 at SURGE_SETTLE; zero slope at the onset, C1 throughout"""
+    if d <= 0.0:
+        return 0.0
+    if d >= SURGE_SETTLE:
+        return 1.0
+    if d < SURGE_PEAK:
+        u = d / SURGE_PEAK
+        return (1.0 + SURGE_OVER) * u * u * (3.0 - 2.0 * u)
+    u = (d - SURGE_PEAK) / (SURGE_SETTLE - SURGE_PEAK)
+    return 1.0 + SURGE_OVER * (1.0 - u * u * (3.0 - 2.0 * u))
+
 
 class Towers:
     """v2: eight towers MADE OF EMBERS (geometry: towers2.py). Solid masses: their crust feeds an occluder that
@@ -1041,7 +1066,7 @@ class Towers:
         for b, tb in enumerate(BEATS):
             x = (t - tb - self.dly[i]) / 5.0
             if x > 0:
-                h += self.J[i, b] * float(ease_out_back(x, 1.6))
+                h += self.J[i, b] * (surge_ease(t - tb - self.dly[i]) if SURGE_EASE else float(ease_out_back(x, 1.6)))
         if SCHED is not None:
             h += SCHED.tower_extra(self, i, t)
         return h
