@@ -354,7 +354,10 @@ C5_TEXT = [
                             dict(line='every forge fell into step.', f_in=3850, f_out=3922, x=1400, y=132)),
          across=(3816, 'the first part names the catch on the map and carries over the forges lit for 32 frames '
                        'before they go out at 3848, where the second part begins')),
-    dict(id='R17', row=17, line='The Ring hung there, unfinished, where all of them could study it.', f_in=4040, f_out=4180, set='fire'),
+    dict(id='R17', row=17, line='The Ring hung there, unfinished, where all of them could study it.', f_in=4040, f_out=4180, set='fire',
+         x=960, y=132),           # 30 Sep: over the in-step forges the lower third crossed lit crowns and flames (edge
+                                  # 0.065, texture 0.025, worst frame 4.33:1); the top band, above the Ring and where R15
+                                  # just stood, is clean: edge 0.000, texture 0.003, worst slice 7.56:1, worst frame 5.45:1
     dict(id='R18', row=18, line='They dug no deeper than they could see.', f_in=4276, f_out=4416, set='ink',
          x=310, y=300, lines=('They dug no deeper', 'than they could see.'), backing=0.30),
                                   # 29 Sep (pace, not prohibition): the new second line reaches further across the
