@@ -136,7 +136,14 @@ A = [
     S('A1', 0, 80, 'A1', 'BLACK', 'EDIT', 'Black. Wind rises from silence.', kind='black'),
     S('A2', 80, 560, 'R1', 'FALSE DAWN', 'RUN-A',
       'Midnight ridge: a cold white glow swells under the far horizon, silvers the cloud, puts out the nearest stars.',
-      [T('falsedawn'), T('run')]),
+      # clear_high_deck (Codex lane sky; plays once all 480 frames land): the dark horizontal dashes across the Milky
+      # Way in A's first image (the naive viewer read them as a digital smear) are falsedawn.py's high 'mackerel' deck
+      # compressing into streaks towards the horizon (3x supersampling leaves them: A212 99th-percentile vertical step
+      # 12.36 at 1.5x, 13.43 at 3x). The candidate drops that deck only: A212 source 99th-percentile step 12.36 -> 1.00,
+      # Milky Way, stars, glow, camera and terrain unchanged (0 of 151,138 protected terrain pixels changed); the deck's
+      # late silvering is lost. ALTERNATIVES['A2'] is the accepted sky
+      [T('cand_falsedawn_clear_high_deck', 0, 'exact', 'clear_high_deck (Codex lane sky, farm 29 Sep)', need=(80, 559)),
+       T('falsedawn'), T('run')]),
     S('A3', 560, 960, 'E1', 'INTO THE LIGHT · GLYPHS', 'EMBERS',
       'The push goes into the glow to white; letters of every script drift in, then spiral and compress.', EMB_A),
     S('A4', 960, 1040, 'E1', 'THE POINT', 'EMBERS', 'The spiral collapses to a blinding point; a held breath.', EMB_A),
@@ -320,6 +327,7 @@ ALTERNATIVES = {
     'C18': ("c5('book_C5_deep_abandoned', PR12, matte='book_C5_deep_abandoned_matte')", 'upright ladders, box lamp'),
     'C19': ("c5('runC_watch_v5', PR14)", 'the parchment Watch'),
     'C22': ("c5('book_C5_pen', PR12, matte='book_C5_pen_matte')", 'pale nib, hard black gutter'),
+    'A2': ("T('falsedawn')", 'the accepted sky: the high mackerel deck, silvering late, drawn as dark dashes over the Milky Way'),
     'A14': ("T('beaconrun_A_catches3', 0, 'exact', need=(3920, 4239))", 'PR #8 catches3: the run as 1-2 px specks '
             'until 4148, the camera on the left-hand ranges'),
     'A15': ("T('watchers_A_catches3', 0, 'exact', need=(4240, 4399))", "catches3's watcher: the near fire on a hard-edged rock"),

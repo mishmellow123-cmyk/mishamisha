@@ -1,0 +1,16 @@
+{
+  "name": "cand_falsedawn_clear_high_deck",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py falsedawn --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py falsedawn --equal 212 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py falsedawn clear_high_deck --range 80-559 --out renders/cand_falsedawn_clear_high_deck"
+  ],
+  "out_dir": "renders/cand_falsedawn_clear_high_deck",
+  "frames": "80-559",
+  "shape": [804, 1920],
+  "ship": "jpg",
+  "note": "Review candidate: explicitly disable the false-dawn high cloud deck. The accepted sky remains the renderer default. For the owner to render after review and incorporation into claude/owner-night-20260929. Setup checks same-renderer repeatability through the adapter at A212. The separate local sky_probe half receipt compares the omitted default against the literal pre-change render function; the farm check neither pins that earlier source nor compares the intentionally changed candidate against accepted."
+}

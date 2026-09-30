@@ -561,13 +561,31 @@ def lenses():
 _STARS = None
 
 
-def render(frame, design='arc', scale=1.0, ss=1.5):
+def sky_parameters(GP, candidate='accepted'):
+    """Default-off A2 study; the accepted parameter array is never mutated.
+
+    At cut 212, isolating GP[16] removes the dark horizontal cloudlets while
+    GP[26] alone carries the pale diagonal Milky Way (sky_probe.py). Clear the
+    high deck for this candidate; keep the cloud sea, glow and galactic dust.
+    Do not smooth the finished plate: it would also smear stars and ridge edges.
+    """
+    if candidate == 'accepted':
+        return GP
+    if candidate != 'clear_high_deck':
+        raise ValueError(f'Unknown false-dawn sky candidate: {candidate}')
+    clear = GP.copy()
+    clear[16] = 0.0
+    return clear
+
+
+def render(frame, design='arc', scale=1.0, ss=1.5, sky_candidate='accepted'):
     global _STARS
     import run as RN
     W, H = int(round(1920 * scale)), int(round(804 * scale))
     tcam = camera(frame, W, H)
     fr = PI.Frame(tcam, ss)
     lt, GP = light(frame, design)
+    GP = sky_parameters(GP, sky_candidate)
     PI.render_terrain(fr, frame, terrain_rows(), lt, np.zeros((0, 8)), hmax=terrain_hmax())
     scam = fr.src
     C = scam.params()

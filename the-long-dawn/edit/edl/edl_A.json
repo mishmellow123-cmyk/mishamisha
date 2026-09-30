@@ -28,6 +28,26 @@
    "desc": "Midnight ridge: a cold white glow swells under the far horizon, silvers the cloud, puts out the nearest stars.",
    "takes": [
     {
+     "stem": "cand_falsedawn_clear_high_deck",
+     "off": 0,
+     "mode": "exact",
+     "note": "clear_high_deck (Codex lane sky, farm 29 Sep)",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      80,
+      559
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/cand_falsedawn_clear_high_deck"
+     ]
+    },
+    {
      "stem": "falsedawn",
      "off": 0,
      "mode": "v3",

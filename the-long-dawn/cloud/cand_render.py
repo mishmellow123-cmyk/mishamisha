@@ -30,12 +30,14 @@ RANGES = {'reveal': (2880, 3119), 'watch': (4480, 4719), 'scroll': (0, 319),
           'beaconrun': (3920, 4239), 'watchers': (4240, 4399),
           'trap': (2320, 2639), 'map': (3440, 3839),
           'deep': (4240, 4479), 'cold': (3816, 3999),
-          'pen': (5440, 5679), 't1': (320, 559), 'crossing': (4880, 5839)}
+          'pen': (5440, 5679), 't1': (320, 559), 'crossing': (4880, 5839),
+          'falsedawn': (80, 559)}
 OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire', 'scroll': 'night-fire',
            'beaconrun': 'linked-fires', 'watchers': 'linked-fires',
            'trap': 'front_smoke_near', 'map': 'beacon-falloff',
            'deep': 'leaned_ladders', 'cold': 'lead24',
-           'pen': 'soft_spine_metal', 't1': 'current-words', 'crossing': 'both'}
+           'pen': 'soft_spine_metal', 't1': 'current-words', 'crossing': 'both',
+           'falsedawn': 'clear_high_deck'}
 # Explicit review alternatives leave OPTIONS and omitted renderer defaults unchanged.
 MORE = {'crossing': ('both_decal', 'both_decal_cap'), 't1': ('current-words-held',)}
 PAGES = ('deep', 'pen', 't1')
@@ -44,7 +46,7 @@ _FAMILY = None
 
 def imports(kind):
     global _FAMILY
-    family = ('run' if kind in ('reveal', 'watch', 'scroll', 'crossing', 'beaconrun', 'watchers') else
+    family = ('run' if kind in ('reveal', 'watch', 'scroll', 'crossing', 'beaconrun', 'watchers', 'falsedawn') else
               'embers' if kind in ('trap', 'cold') else 'map')
     if _FAMILY is not None and _FAMILY != family:
         raise RuntimeError('Use a fresh process for each renderer family')
@@ -116,6 +118,17 @@ def build(kind, route, option=None, scale=1.0):
                 choice = 'accepted' if route == 'shared' else option
                 call = lambda f: X.render(f, kind=kind, candidate=choice, scale=scale, ss=1.5)
         return lambda f: dict(rgb=call(f))
+    if kind == 'falsedawn':
+        import falsedawn as FD
+
+        def call(f):
+            kwargs = dict(design='arc', scale=scale, ss=1.5)
+            if route == 'candidate':
+                kwargs['sky_candidate'] = option
+            hdr = FD.render(f - FD.CUT0, **kwargs)
+            return dict(hdr=hdr, rgb=FD.PI.look.finish(hdr, **FD.FINISH))
+
+        return call
     if kind in ('reveal', 'watch', 'scroll'):
         import beacon_night_candidates as X
         driver = getattr(X, kind)
