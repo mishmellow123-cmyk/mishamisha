@@ -1,23 +1,3553 @@
 {
- "_doc": "SOUND-C: A's picture events measured from the frames (music/src/sync_audit_v3.py): A-FIX's NEW first fire measured straight from renders/h1_A (src 1236-1495 = A 3360-3619, 21:57 local), the dead-valley vision from A-FIX's exact frames; 'f' = the frame the effect's hit is placed on.",
- "t": {
-  "A.blow": {
-   "f": 3448,
-   "cue": 3444,
-   "heard": "final_A: one steady blow 3446-3528, then silence to 3597",
-   "what": "h1_A: the ember brightens on three blows 3448-3470, 3481-3505 (flaring 3502-3504), 3515-3541 and dims on each in-breath (3471-3480, 3506-3514, 3542-3553); no puff"
+  "_doc": "syncA 2026-09-29/30: t.f remains an effect HIT placement, never an onset measurement. Current pre-3600 observations and fail-closed whole-film audit registry follow under audit. No >=3600 effect timing is changed; asound owns that region. Numeric mix onsets are masking proxies, not listening judgments. Unknowns are null and block certification. Historical prose is retained under historical_previous_record only; it is not current evidence.",
+  "t": {
+    "A.blow": {
+      "f": 3448,
+      "cue": 3444,
+      "heard": "Current sound_A aggregate onset is not cue-isolated; adjacent control fails 10 dB separation.",
+      "what": "First basket brightening threshold at3447 (warm pixels >=10, prior3440-3446 max6); placement3448 retained. Later breaths not isolated by this detector."
+    },
+    "A.x.catch": {
+      "f": 3556,
+      "cue": 3556,
+      "heard": "Current sound_A contains the recorded catch design; overlap with blow/take/roar prevents a validated individual onset.",
+      "what": "First catch-core R>180,Y>140 pixel at3555, one pixel through3556, seven at3557; control3540-3554 zero. Placement3556 retained."
+    }
   },
-  "A.x.catch": {
-   "f": 3556,
-   "cue": 3556,
-   "heard": "final_A: nothing (no catch cue)",
-   "what": "h1_A: the tinder flares 3555-3559 (the first flame) and takes 3561 onward, growing to the roar; the scarf warms from 3564"
+  "historical_previous_record": {
+    "on_frame": "h1_A: strike1 3360 (the first frame's spark), strike2 3389 (sparks 3388-3390), strike3 3418 (3417-3419); the roar 3600 (the flames leap 3598-3608, L 38 -> 74, then the 12-frame lean-back); HER FIRE 3612-3660 (reveal_B 1372-1419): the fire's footprint shrinks ~2.7x as the camera pulls back -> the roar settles and recedes under it (-9 dB by 3660); karst 3815, desert 3880; watch-fire 1 4990-5040",
+    "offsets_not_moved": {
+      "A.impact": "DIRECTOR 01:25Z: the hit stays ON THE BAR (2640, bar 34 b1, A9's first frame); A-FIX moves the PICTURE's whiteout onto 2640 (measured before: plunge 2600, white 2606-2622). Effect + score hit stay; SOUND-C re-measures when A-FIX's frames land."
+    },
+    "not_measurable": "A14 3920-4240 (the beacon run: run_1..7) and A15, A19 are slates in the master; watch-fires 2-4 are too small in the wide frames to time",
+    "pending": "EVERY RIDGE (reveal_a re-render, 3660-3800) not landed: the ridges' fires catching get measured then; A19+A20 = dawnrev_A (B's dusk reversed, 5840-6479): L rises 46 -> 83, alpenglow from ~6080; the fire and wind ambience get shaped on A-FIX's final pale frames"
+  },
+  "audit": {
+    "schema_version": 1,
+    "cut": "A",
+    "frames": 6480,
+    "fps": 24,
+    "evidence_note": "Operational thresholds on delivered finished halfscale picture (before captions). Each rule and adjacent negative control are in picture_observations. Never substitute the authored frame for an unknown observation.",
+    "picture_observations": [
+      {
+        "id": "opening_visible",
+        "first_frame": 80,
+        "signal": "luma",
+        "threshold": 1,
+        "control_frames": [
+          0,
+          80
+        ],
+        "control_max": 0.0,
+        "search_frames": [
+          80,
+          128
+        ],
+        "value_at_first": 10.34453296661377,
+        "meaning": "Mean finished-picture luminance >=1/255; black negative control. Floor transition also changes luminance.",
+        "negative_event_assertion": "FAILED as required: opening_visible: no event in negative control"
+      },
+      {
+        "id": "white",
+        "first_frame": 556,
+        "signal": "bright200_pct",
+        "threshold": 99,
+        "control_frames": [
+          536,
+          556
+        ],
+        "control_max": 87.24424751243781,
+        "search_frames": [
+          556,
+          561
+        ],
+        "value_at_first": 100.0,
+        "meaning": "At least 99% of pixels Y>200; first full-frame whitening, not the start of the glow.",
+        "negative_event_assertion": "FAILED as required: white: no event in negative control"
+      },
+      {
+        "id": "letters_chromatic",
+        "first_frame": 664,
+        "signal": "warm_pixels",
+        "threshold": 10,
+        "control_frames": [
+          640,
+          664
+        ],
+        "control_max": 1.0,
+        "search_frames": [
+          664,
+          680
+        ],
+        "value_at_first": 10.0,
+        "meaning": "R>140, R>1.35B+10, Y>70 in >=10 pixels; glyph chroma only, not first faint letter.",
+        "negative_event_assertion": "FAILED as required: letters_chromatic: no event in negative control"
+      },
+      {
+        "id": "ignition_warm_edge",
+        "first_frame": 1047,
+        "signal": "warm_pixels",
+        "threshold": 10,
+        "control_frames": [
+          1006,
+          1047
+        ],
+        "control_max": 0.0,
+        "search_frames": [
+          1047,
+          1055
+        ],
+        "value_at_first": 83.0,
+        "meaning": "Same warm-pixel rule; the white swell already peaks at1040, so this is a later chromatic feature.",
+        "negative_event_assertion": "FAILED as required: ignition_warm_edge: no event in negative control"
+      },
+      {
+        "id": "white_impact",
+        "first_frame": 2638,
+        "signal": "bright200_pct",
+        "threshold": 99,
+        "control_frames": [
+          2630,
+          2638
+        ],
+        "control_max": 80.38583126036484,
+        "search_frames": [
+          2638,
+          2641
+        ],
+        "value_at_first": 100.0,
+        "meaning": "At least99% of pixels Y>200; full white at2638/2639, aperture visible on2640.",
+        "negative_event_assertion": "FAILED as required: white_impact: no event in negative control"
+      },
+      {
+        "id": "stars_threshold",
+        "first_frame": 3124,
+        "signal": "upper_stars",
+        "threshold": 1,
+        "control_frames": [
+          3100,
+          3124
+        ],
+        "control_max": 0.0,
+        "search_frames": [
+          3124,
+          3140
+        ],
+        "value_at_first": 1.0,
+        "meaning": "At least one pixel Y>90 in top100 rows at halfscale; not a perceptual visibility claim.",
+        "negative_event_assertion": "FAILED as required: stars_threshold: no event in negative control"
+      },
+      {
+        "id": "strike2",
+        "first_frame": 3388,
+        "signal": "spark_pixels",
+        "threshold": 10,
+        "control_frames": [
+          3376,
+          3388
+        ],
+        "control_max": 0.0,
+        "search_frames": [
+          3388,
+          3395
+        ],
+        "value_at_first": 44.0,
+        "meaning": "Warm-pixel count >=10 inside x280:540,y170:340; inspected spark stills corroborate the region.",
+        "negative_event_assertion": "FAILED as required: strike2: no event in negative control"
+      },
+      {
+        "id": "strike3",
+        "first_frame": 3417,
+        "signal": "spark_pixels",
+        "threshold": 10,
+        "control_frames": [
+          3405,
+          3417
+        ],
+        "control_max": 0.0,
+        "search_frames": [
+          3417,
+          3425
+        ],
+        "value_at_first": 79.0,
+        "meaning": "Same local warm-pixel rule; inspected spark still corroborates the region.",
+        "negative_event_assertion": "FAILED as required: strike3: no event in negative control"
+      },
+      {
+        "id": "blow_brightening",
+        "first_frame": 3447,
+        "signal": "basket_warm",
+        "threshold": 10,
+        "control_frames": [
+          3440,
+          3447
+        ],
+        "control_max": 6.0,
+        "search_frames": [
+          3447,
+          3470
+        ],
+        "value_at_first": 25.0,
+        "meaning": "Warm pixels >=10 in x300:540,y110:330; first ember brightening, not measured exhalation contact.",
+        "negative_event_assertion": "FAILED as required: blow_brightening: no event in negative control"
+      },
+      {
+        "id": "catch_core",
+        "first_frame": 3555,
+        "signal": "catch_core",
+        "threshold": 1,
+        "control_frames": [
+          3540,
+          3555
+        ],
+        "control_max": 0.0,
+        "search_frames": [
+          3555,
+          3570
+        ],
+        "value_at_first": 1.0,
+        "meaning": "First R>180,Y>140 pixel in x330:440,y110:210; one pixel at3555/3556, seven at3557.",
+        "negative_event_assertion": "FAILED as required: catch_core: no event in negative control"
+      },
+      {
+        "id": "strike1",
+        "first_frame": 3360,
+        "signal": "resolved source transition plus visible spark ROI",
+        "control_frames": [
+          3348,
+          3360
+        ],
+        "control": "no h1_A in any control frame",
+        "meaning": "First visible hands/spark on hard cut; warm threshold alone is invalid on prior ember shot."
+      }
+    ],
+    "audio_snapshot": {
+      "final_A.wav": {
+        "sample_rate": 48000,
+        "samples": 12960000,
+        "channels": 2,
+        "subtype": "PCM_24",
+        "sha256": "09b2bc6eef5ce703bb80f0f34e7b0cc0276fb9ffca2ed782585e43c5d0af99a7",
+        "size": 77760044,
+        "mtime_ns": 1790560071000000000
+      },
+      "final_A_score.wav": {
+        "sample_rate": 48000,
+        "samples": 12960000,
+        "channels": 2,
+        "subtype": "PCM_24",
+        "sha256": "75352c74f712a7b07cfedc34725138f5c60f0f99cb1d6d0ac2a337338082f10d",
+        "size": 77760044,
+        "mtime_ns": 1790560069000000000
+      },
+      "final_A_sfx.wav": {
+        "sample_rate": 48000,
+        "samples": 12960000,
+        "channels": 2,
+        "subtype": "PCM_24",
+        "sha256": "76d4e88c94ae1148af843b049aa2601ef287b2b33253abf29aa752ea2bf25fff",
+        "size": 77760044,
+        "mtime_ns": 1790560070000000000
+      },
+      "final_A_v1.wav": {
+        "sample_rate": 48000,
+        "samples": 12960000,
+        "channels": 2,
+        "subtype": "PCM_24",
+        "sha256": "48ff95626e1f31dbe57645ba51bce9dcafb390687c0f57b3999edc48f5c826cc",
+        "size": 77760044,
+        "mtime_ns": 1790555878000000000
+      },
+      "final_A_v1_score.wav": {
+        "sample_rate": 48000,
+        "samples": 12960000,
+        "channels": 2,
+        "subtype": "PCM_24",
+        "sha256": "0d8d7a2aaa1c482340b19f21a050d3be2ab9cbc0c8b9b1bd3c35197c945891a5",
+        "size": 77760044,
+        "mtime_ns": 1790555878000000000
+      },
+      "sound_A.wav": {
+        "sample_rate": 48000,
+        "samples": 12960000,
+        "channels": 2,
+        "subtype": "PCM_24",
+        "sha256": "83a91142f4f6dfa5da5d7fa232fd8d2de549af761ac2b530add4bbd9895bdb2e",
+        "size": 77760044,
+        "mtime_ns": 1790561131000000000
+      },
+      "sound_A_score.wav": {
+        "sample_rate": 48000,
+        "samples": 12960000,
+        "channels": 2,
+        "subtype": "PCM_24",
+        "sha256": "d7c89a11ad277c9e15f9d721d188871c3c45c54dc908a8ca77ee820c135e0976",
+        "size": 77760044,
+        "mtime_ns": 1790561129000000000
+      },
+      "sound_A_sfx.wav": {
+        "sample_rate": 48000,
+        "samples": 12960000,
+        "channels": 2,
+        "subtype": "PCM_24",
+        "sha256": "4da31e74fba0470417ab6f685e8cb1c80e35de9370cf898e9851805b6588aed9",
+        "size": 77760044,
+        "mtime_ns": 1790561130000000000
+      },
+      "measurement": {
+        "samples_examined": 12960000,
+        "max_abs_mix_minus_stems": 4.76837158203125e-07,
+        "window_samples": 240,
+        "hop_samples": 240,
+        "bands_hz": {
+          "low": [
+            40,
+            250
+          ],
+          "mid": [
+            250,
+            1500
+          ],
+          "high": [
+            1500,
+            8000
+          ],
+          "high4": [
+            4000,
+            12000
+          ],
+          "high8": [
+            8000,
+            16000
+          ]
+        },
+        "filter": "third order causal Butterworth bandpass; states carried between 1s blocks",
+        "level": "RMS of stereo samples in each nonoverlapping 5ms block, dBFS"
+      }
+    },
+    "events": [
+      {
+        "id": "A.wind.open",
+        "kind": "bed",
+        "picture_frame": 80,
+        "search_frames": [
+          4,
+          160
+        ],
+        "control_frames": [
+          0,
+          4
+        ],
+        "band_hz": [
+          40,
+          16000
+        ],
+        "detector_validated": false,
+        "detector_evidence": "syncA_solo_extra.json: opening in-film control, unchanged broad-band threshold and all-earlier-windows check; use matched AP2 solo bank for attribution.",
+        "unresolved_reason": "Requires a reconciling solo bank. Current AP2 wind crosses15.912, after a measured quiet in-film0\u20134 control (peak\u221265.575046dBFS, threshold\u221243.019059, margin22.555987dB). Exhaustive0\u2013160 scan confirms no earlier crossing; nominal0 placement does not require a pre-film control for this later crossing.",
+        "timing_exception": "Authored opening ambience starts under black and rises over60frames before scene80; no physical contact is implied."
+      },
+      {
+        "id": "A.fire.edge",
+        "kind": "bed",
+        "picture_frame": null,
+        "search_frames": [
+          1430,
+          1580
+        ],
+        "control_frames": [
+          1400,
+          1430
+        ],
+        "band_hz": [
+          40,
+          16000
+        ],
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "Per-cue waveform is measurable from reconciled solos; unknown picture causes remain null. See current executable result for timing/masking.",
+        "solo_measurement_note": "Use --solo-dir only after its complete decomposition and mastered-sum checks pass. Window alone does not validate aggregate attribution."
+      },
+      {
+        "id": "A.storm.brink",
+        "kind": "bed",
+        "picture_frame": null,
+        "search_frames": [
+          2390,
+          2460
+        ],
+        "control_frames": [
+          2360,
+          2390
+        ],
+        "band_hz": [
+          40,
+          16000
+        ],
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "Per-cue waveform is measurable from reconciled solos; unknown picture causes remain null. See current executable result for timing/masking.",
+        "solo_measurement_note": "Use --solo-dir only after its complete decomposition and mastered-sum checks pass. Window alone does not validate aggregate attribution."
+      },
+      {
+        "id": "A.wind.ash",
+        "kind": "bed",
+        "picture_frame": 2640,
+        "search_frames": [
+          2638,
+          2760
+        ],
+        "control_frames": [
+          2637.75,
+          2638
+        ],
+        "band_hz": [
+          40,
+          16000
+        ],
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "Current AP2 solo: stem2659.056, mix2669.280 versus aperture2640 (+29.280f). Existing envelope holds -20dB through0.667s then rises to unity at2s; impact masks it further. Outside soft tolerance; resolve with impact/breath redesign and remeasure.",
+        "solo_measurement_note": "Use --solo-dir only after its complete decomposition and mastered-sum checks pass. Window alone does not validate aggregate attribution."
+      },
+      {
+        "id": "A.wind.night",
+        "kind": "bed",
+        "picture_frame": null,
+        "search_frames": [
+          2840,
+          2960
+        ],
+        "control_frames": [
+          2805,
+          2840
+        ],
+        "band_hz": [
+          40,
+          16000
+        ],
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "Per-cue waveform is measurable from reconciled solos; unknown picture causes remain null. See current executable result for timing/masking.",
+        "solo_measurement_note": "Use --solo-dir only after its complete decomposition and mastered-sum checks pass. Window alone does not validate aggregate attribution."
+      },
+      {
+        "id": "A.wind.watch",
+        "kind": "bed",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.wind.crossing",
+        "kind": "bed",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.air.blue",
+        "kind": "bed",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.fire.blue",
+        "kind": "bed",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.x.take",
+        "kind": "bed",
+        "picture_frame": 3555,
+        "search_frames": [
+          3552,
+          3600
+        ],
+        "control_frames": [
+          3540,
+          3552
+        ],
+        "band_hz": [
+          40,
+          16000
+        ],
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "Per-cue waveform is measurable from reconciled solos; unknown picture causes remain null. See current executable result for timing/masking.",
+        "solo_measurement_note": "Use --solo-dir only after its complete decomposition and mastered-sum checks pass. Window alone does not validate aggregate attribution.",
+        "timing_exception": "This sustained bed follows the separately scored first catch; its authored3561 start and six-frame fade describe growing fire, rather than a second hard catch."
+      },
+      {
+        "id": "A.impact",
+        "kind": "hard",
+        "picture_frame": 2638,
+        "search_frames": [
+          2638,
+          2645
+        ],
+        "control_frames": [
+          2637.75,
+          2638
+        ],
+        "band_hz": [
+          1500,
+          8000
+        ],
+        "detector_validated": true,
+        "detector_evidence": "Isolated post-breath SFX attack: adjoining control is inside the measured silent gap; same onset in three high bands. The picture cause is full white at2638, not aperture-cut2640. See syncA_audio_analysis.md and picture measurements.",
+        "detector_audio_sha256": {
+          "contribution": "4da31e74fba0470417ab6f685e8cb1c80e35de9370cf898e9851805b6588aed9",
+          "mix": "83a91142f4f6dfa5da5d7fa232fd8d2de549af761ac2b530add4bbd9895bdb2e"
+        }
+      },
+      {
+        "id": "A.strike1",
+        "kind": "hard",
+        "picture_frame": 3360,
+        "search_frames": [
+          3356,
+          3365
+        ],
+        "control_frames": [
+          3348,
+          3356
+        ],
+        "band_hz": [
+          4000,
+          12000
+        ],
+        "detector_validated": true,
+        "detector_evidence": "Single flint scrape/click above quiet night bed; same onset in independent high-band probes. First visible hands/spark is the h1_A cut3360. Adjacent control3348-3356. See syncA_audio_analysis.md.",
+        "detector_audio_sha256": {
+          "contribution": "4da31e74fba0470417ab6f685e8cb1c80e35de9370cf898e9851805b6588aed9",
+          "mix": "83a91142f4f6dfa5da5d7fa232fd8d2de549af761ac2b530add4bbd9895bdb2e"
+        }
+      },
+      {
+        "id": "A.strike2",
+        "kind": "hard",
+        "picture_frame": 3388,
+        "search_frames": [
+          3385,
+          3395
+        ],
+        "control_frames": [
+          3376,
+          3385
+        ],
+        "band_hz": [
+          4000,
+          12000
+        ],
+        "detector_validated": true,
+        "detector_evidence": "Single flint scrape/click separated from preceding strike; high-band control below threshold and picture spark threshold at3388. Same crossing in multiple bands; see syncA_audio_analysis.md.",
+        "detector_audio_sha256": {
+          "contribution": "4da31e74fba0470417ab6f685e8cb1c80e35de9370cf898e9851805b6588aed9",
+          "mix": "83a91142f4f6dfa5da5d7fa232fd8d2de549af761ac2b530add4bbd9895bdb2e"
+        }
+      },
+      {
+        "id": "A.strike3",
+        "kind": "hard",
+        "picture_frame": 3417,
+        "search_frames": [
+          3414,
+          3424
+        ],
+        "control_frames": [
+          3405,
+          3414
+        ],
+        "band_hz": [
+          4000,
+          12000
+        ],
+        "detector_validated": true,
+        "detector_evidence": "Single flint scrape/click separated from preceding strike; high-band control below threshold and picture spark threshold at3417. Same crossing in multiple bands; see syncA_audio_analysis.md.",
+        "detector_audio_sha256": {
+          "contribution": "4da31e74fba0470417ab6f685e8cb1c80e35de9370cf898e9851805b6588aed9",
+          "mix": "83a91142f4f6dfa5da5d7fa232fd8d2de549af761ac2b530add4bbd9895bdb2e"
+        }
+      },
+      {
+        "id": "A.blow",
+        "kind": "soft",
+        "picture_frame": 3447,
+        "search_frames": [
+          3444,
+          3470
+        ],
+        "control_frames": [
+          3430,
+          3444
+        ],
+        "band_hz": [
+          4000,
+          12000
+        ],
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "Per-cue waveform is measurable from reconciled solos; unknown picture causes remain null. See current executable result for timing/masking.",
+        "solo_measurement_note": "Use --solo-dir only after its complete decomposition and mastered-sum checks pass. Window alone does not validate aggregate attribution."
+      },
+      {
+        "id": "A.roar",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.karst_flare",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.desert_fire",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.run_1",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.run_2",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.run_3",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.run_4",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.run_5",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.run_6",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.run_7",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.watchfire1",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.watchfire2",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.watchfire3",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.watchfire4",
+        "kind": "hard",
+        "picture_frame": null,
+        "search_frames": null,
+        "control_frames": null,
+        "band_hz": null,
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "asound owns effects >=3600; import its measured evidence after integration. No table-time fallback."
+      },
+      {
+        "id": "A.x.catch",
+        "kind": "hard",
+        "picture_frame": 3555,
+        "search_frames": [
+          3539,
+          3575
+        ],
+        "control_frames": [
+          3520,
+          3539
+        ],
+        "band_hz": [
+          4000,
+          12000
+        ],
+        "detector_validated": false,
+        "detector_evidence": "",
+        "unresolved_reason": "With reconciled AP2 solos this row is measurable and passes at3554.856 against3555. A new master requires a newly reconciling bank; old A bank fails in this region.",
+        "solo_measurement_note": "Use --solo-dir only after its complete decomposition and mastered-sum checks pass. Window alone does not validate aggregate attribution."
+      }
+    ],
+    "score_sync": [
+      {
+        "id": "wind",
+        "frame": 0,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "false_dawn",
+        "frame": 80,
+        "status": "measured",
+        "measured_picture_frame": 80,
+        "kind": "soft",
+        "picture_evidence": {
+          "id": "opening_visible",
+          "first_frame": 80,
+          "signal": "luma",
+          "threshold": 1,
+          "control_frames": [
+            0,
+            80
+          ],
+          "control_max": 0.0,
+          "search_frames": [
+            80,
+            128
+          ],
+          "value_at_first": 10.34453296661377,
+          "meaning": "Mean finished-picture luminance >=1/255; black negative control. Floor transition also changes luminance.",
+          "negative_event_assertion": "FAILED as required: opening_visible: no event in negative control"
+        },
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "glow",
+        "frame": 160,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "stars_out",
+        "frame": 320,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "white",
+        "frame": 560,
+        "status": "measured",
+        "measured_picture_frame": 556,
+        "kind": "soft",
+        "picture_evidence": {
+          "id": "white",
+          "first_frame": 556,
+          "signal": "bright200_pct",
+          "threshold": 99,
+          "control_frames": [
+            536,
+            556
+          ],
+          "control_max": 87.24424751243781,
+          "search_frames": [
+            556,
+            561
+          ],
+          "value_at_first": 100.0,
+          "meaning": "At least 99% of pixels Y>200; first full-frame whitening, not the start of the glow.",
+          "negative_event_assertion": "FAILED as required: white: no event in negative control"
+        },
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "letters",
+        "frame": 640,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "spiral",
+        "frame": 880,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "point",
+        "frame": 960,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "breath_ign",
+        "frame": 1020,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "ignition",
+        "frame": 1040,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "promise",
+        "frame": 1280,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "promise_cut",
+        "frame": 1400,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "promise_gone",
+        "frame": 1420,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "towers",
+        "frame": 1440,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "giants",
+        "frame": 1730,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "behind_giant",
+        "frame": 1760,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "breath_race",
+        "frame": 1835,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "edge",
+        "frame": 1840,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "eighths",
+        "frame": 2000,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "sixteenths",
+        "frame": 2160,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "roll",
+        "frame": 2320,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "vortex",
+        "frame": 2400,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "rim_gives",
+        "frame": 2440,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "crown_falls",
+        "frame": 2480,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "over_rim",
+        "frame": 2520,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "loudest",
+        "frame": 2560,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "suck",
+        "frame": 2600,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "white_impact",
+        "frame": 2640,
+        "status": "measured",
+        "measured_picture_frame": 2638,
+        "kind": "hard",
+        "picture_evidence": {
+          "id": "white_impact",
+          "first_frame": 2638,
+          "signal": "bright200_pct",
+          "threshold": 99,
+          "control_frames": [
+            2630,
+            2638
+          ],
+          "control_max": 80.38583126036484,
+          "search_frames": [
+            2638,
+            2641
+          ],
+          "value_at_first": 100.0,
+          "meaning": "At least99% of pixels Y>200; full white at2638/2639, aperture visible on2640.",
+          "negative_event_assertion": "FAILED as required: white_impact: no event in negative control"
+        },
+        "audio": {
+          "search_frames": [
+            2638,
+            2645
+          ],
+          "control_frames": [
+            2637.75,
+            2638
+          ],
+          "band_hz": [
+            250,
+            1500
+          ],
+          "detector_validated": true,
+          "detector_evidence": "Timpani/drum attack is the score entry after the shared impact breath; inspect measured control and mixed retention independently.",
+          "detector_audio_sha256": {
+            "contribution": "d7c89a11ad277c9e15f9d721d188871c3c45c54dc908a8ca77ee820c135e0976",
+            "mix": "83a91142f4f6dfa5da5d7fa232fd8d2de549af761ac2b530add4bbd9895bdb2e"
+          }
+        },
+        "verification_note": "Waveform detector supplied; current result and any timing failure are in the executable audit. Post-correction rendering remains pending."
+      },
+      {
+        "id": "dead_valley",
+        "frame": 2660,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "silence",
+        "frame": 2800,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "stars",
+        "frame": 3120,
+        "status": "measured",
+        "measured_picture_frame": 3124,
+        "kind": "soft",
+        "picture_evidence": {
+          "id": "stars_threshold",
+          "first_frame": 3124,
+          "signal": "upper_stars",
+          "threshold": 1,
+          "control_frames": [
+            3100,
+            3124
+          ],
+          "control_max": 0.0,
+          "search_frames": [
+            3124,
+            3140
+          ],
+          "value_at_first": 1.0,
+          "meaning": "At least one pixel Y>90 in top100 rows at halfscale; not a perceptual visibility claim.",
+          "negative_event_assertion": "FAILED as required: stars_threshold: no event in negative control"
+        },
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "milky_way",
+        "frame": 3280,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "strike1",
+        "frame": 3360,
+        "status": "measured",
+        "measured_picture_frame": 3360,
+        "kind": "hard",
+        "picture_evidence": {
+          "id": "strike1",
+          "first_frame": 3360,
+          "signal": "resolved source transition plus visible spark ROI",
+          "control_frames": [
+            3348,
+            3360
+          ],
+          "control": "no h1_A in any control frame",
+          "meaning": "First visible hands/spark on hard cut; warm threshold alone is invalid on prior ember shot."
+        },
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "strike2",
+        "frame": 3389,
+        "status": "measured",
+        "measured_picture_frame": 3388,
+        "kind": "hard",
+        "picture_evidence": {
+          "id": "strike2",
+          "first_frame": 3388,
+          "signal": "spark_pixels",
+          "threshold": 10,
+          "control_frames": [
+            3376,
+            3388
+          ],
+          "control_max": 0.0,
+          "search_frames": [
+            3388,
+            3395
+          ],
+          "value_at_first": 44.0,
+          "meaning": "Warm-pixel count >=10 inside x280:540,y170:340; inspected spark stills corroborate the region.",
+          "negative_event_assertion": "FAILED as required: strike2: no event in negative control"
+        },
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "strike3",
+        "frame": 3418,
+        "status": "measured",
+        "measured_picture_frame": 3417,
+        "kind": "hard",
+        "picture_evidence": {
+          "id": "strike3",
+          "first_frame": 3417,
+          "signal": "spark_pixels",
+          "threshold": 10,
+          "control_frames": [
+            3405,
+            3417
+          ],
+          "control_max": 0.0,
+          "search_frames": [
+            3417,
+            3425
+          ],
+          "value_at_first": 79.0,
+          "meaning": "Same local warm-pixel rule; inspected spark still corroborates the region.",
+          "negative_event_assertion": "FAILED as required: strike3: no event in negative control"
+        },
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "blow",
+        "frame": 3444,
+        "status": "measured",
+        "measured_picture_frame": 3447,
+        "kind": "soft",
+        "picture_evidence": {
+          "id": "blow_brightening",
+          "first_frame": 3447,
+          "signal": "basket_warm",
+          "threshold": 10,
+          "control_frames": [
+            3440,
+            3447
+          ],
+          "control_max": 6.0,
+          "search_frames": [
+            3447,
+            3470
+          ],
+          "value_at_first": 25.0,
+          "meaning": "Warm pixels >=10 in x300:540,y110:330; first ember brightening, not measured exhalation contact.",
+          "negative_event_assertion": "FAILED as required: blow_brightening: no event in negative control"
+        },
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "catch",
+        "frame": 3556,
+        "status": "measured",
+        "measured_picture_frame": 3555,
+        "kind": "hard",
+        "picture_evidence": {
+          "id": "catch_core",
+          "first_frame": 3555,
+          "signal": "catch_core",
+          "threshold": 1,
+          "control_frames": [
+            3540,
+            3555
+          ],
+          "control_max": 0.0,
+          "search_frames": [
+            3555,
+            3570
+          ],
+          "value_at_first": 1.0,
+          "meaning": "First R>180,Y>140 pixel in x330:440,y110:210; one pixel at3555/3556, seven at3557.",
+          "negative_event_assertion": "FAILED as required: catch_core: no event in negative control"
+        },
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "roar",
+        "frame": 3600,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "ridges",
+        "frame": 3610,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "karst",
+        "frame": 3800,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "karst_flare",
+        "frame": 3815,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "desert",
+        "frame": 3860,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "desert_fire",
+        "frame": 3880,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "run",
+        "frame": 3920,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "run_1",
+        "frame": 3960,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "run_2",
+        "frame": 4000,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "run_3",
+        "frame": 4040,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "run_4",
+        "frame": 4080,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "run_5",
+        "frame": 4120,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "run_6",
+        "frame": 4160,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "run_7",
+        "frame": 4200,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "watchers",
+        "frame": 4240,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "backs_lit",
+        "frame": 4400,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "surges_stop",
+        "frame": 4440,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "giants_open",
+        "frame": 4480,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "others_open",
+        "frame": 4560,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "cycle_locks",
+        "frame": 4640,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "rim_holds",
+        "frame": 4680,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "fire_seen",
+        "frame": 4720,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "heart",
+        "frame": 4800,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "lantern",
+        "frame": 4880,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "draw_back",
+        "frame": 4960,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "watchfire_1",
+        "frame": 5040,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "sky_wheels",
+        "frame": 5200,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "watchfire_2",
+        "frame": 5280,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "narrowest",
+        "frame": 5360,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "watchfire_3",
+        "frame": 5520,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "watchfire_4",
+        "frame": 5760,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "breath_dawn",
+        "frame": 5833,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "set_down",
+        "frame": 5840,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "rose",
+        "frame": 5920,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "valley",
+        "frame": 6000,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "cadence",
+        "frame": 6160,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "title",
+        "frame": 6240,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      },
+      {
+        "id": "end_fade",
+        "frame": 6456,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "kind": "soft",
+        "picture_evidence": null,
+        "audio": null,
+        "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+      }
+    ],
+    "score_steps": [
+      {
+        "id": "feet.4880",
+        "frame": 4880,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.4920",
+        "frame": 4920,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.4960",
+        "frame": 4960,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5000",
+        "frame": 5000,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5040",
+        "frame": 5040,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5080",
+        "frame": 5080,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5120",
+        "frame": 5120,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5160",
+        "frame": 5160,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5200",
+        "frame": 5200,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5240",
+        "frame": 5240,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5280",
+        "frame": 5280,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5320",
+        "frame": 5320,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5520",
+        "frame": 5520,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5560",
+        "frame": 5560,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5600",
+        "frame": 5600,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5640",
+        "frame": 5640,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5680",
+        "frame": 5680,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5720",
+        "frame": 5720,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5760",
+        "frame": 5760,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      },
+      {
+        "id": "feet.5800",
+        "frame": 5800,
+        "status": "unresolved",
+        "measured_picture_frame": null,
+        "visible_contact": null,
+        "contact_evidence": "",
+        "audio": null,
+        "unresolved_reason": "Source schedules a musical step here; visible planted contact and isolated rendered note are not measured."
+      }
+    ],
+    "unresolved_scope": [
+      "Semantic first frames for gradual early-film transformations are still threshold-dependent.",
+      "Sound_A old master differs from current solo bank in the later blow; AP2 reconstructs and is the current per-cue measurement target.",
+      "Most score endpoints/dynamic waypoints still lack feature-specific waveform measurements.",
+      "Individual planted foot contacts remain unresolved; AP2 corrects the source schedule only.",
+      "Post3600 effects evidence awaits integration from asound.",
+      "New A2/terrain-cap candidates were incomplete at initial resumed probe; current plans explicitly record fallback takes."
+    ],
+    "score_sync_by_cut": {
+      "AP2": [
+        {
+          "id": "wind",
+          "frame": 0,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "false_dawn",
+          "frame": 80,
+          "status": "measured",
+          "measured_picture_frame": 80,
+          "kind": "soft",
+          "picture_evidence": {
+            "id": "opening_visible",
+            "first_frame": 80,
+            "signal": "luma",
+            "threshold": 1,
+            "control_frames": [
+              0,
+              80
+            ],
+            "control_max": 0.0,
+            "search_frames": [
+              80,
+              128
+            ],
+            "value_at_first": 10.34453296661377,
+            "meaning": "Mean finished-picture luminance >=1/255; black negative control. Floor transition also changes luminance.",
+            "negative_event_assertion": "FAILED as required: opening_visible: no event in negative control"
+          },
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change.",
+          "evidence": "syncA_candidates.json: current clear-high-deck candidate frame80 first nonblack (mean encoded Y10.80808735), exact black controls0/79. All delivered80\u2013199 decoded; late take still incomplete. This verifies scene arrival only; score ride arrival remains unmeasured."
+        },
+        {
+          "id": "glow",
+          "frame": 160,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "stars_out",
+          "frame": 320,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "white",
+          "frame": 560,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": {
+            "id": "white",
+            "first_frame": 556,
+            "signal": "bright200_pct",
+            "threshold": 99,
+            "control_frames": [
+              536,
+              556
+            ],
+            "control_max": 87.24424751243781,
+            "search_frames": [
+              556,
+              561
+            ],
+            "value_at_first": 100.0,
+            "meaning": "At least 99% of pixels Y>200; first full-frame whitening, not the start of the glow.",
+            "negative_event_assertion": "FAILED as required: white: no event in negative control"
+          },
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change.",
+          "historical_picture_measurement": {
+            "frame": 556,
+            "take": "old falsedawn fallback",
+            "meaning": "Earlier full-white threshold; not evidence for the incomplete clear-high-deck candidate."
+          },
+          "evidence": "Current A2 clear-high-deck frames around the whitening are not delivered in the measured candidate inventory; old fallback frame556 cannot certify this take."
+        },
+        {
+          "id": "letters",
+          "frame": 640,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "spiral",
+          "frame": 880,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "point",
+          "frame": 960,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "breath_ign",
+          "frame": 1020,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "ignition",
+          "frame": 1040,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "promise",
+          "frame": 1280,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "promise_cut",
+          "frame": 1400,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "promise_gone",
+          "frame": 1420,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "towers",
+          "frame": 1440,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "giants",
+          "frame": 1730,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "behind_giant",
+          "frame": 1760,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "breath_race",
+          "frame": 1835,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "edge",
+          "frame": 1840,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "eighths",
+          "frame": 2000,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "sixteenths",
+          "frame": 2160,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "roll",
+          "frame": 2320,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "vortex",
+          "frame": 2400,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "rim_gives",
+          "frame": 2440,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "crown_falls",
+          "frame": 2480,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "over_rim",
+          "frame": 2520,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "loudest",
+          "frame": 2560,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "suck",
+          "frame": 2600,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "white_impact",
+          "frame": 2640,
+          "status": "measured",
+          "measured_picture_frame": 2638,
+          "kind": "hard",
+          "picture_evidence": {
+            "id": "white_impact",
+            "first_frame": 2638,
+            "signal": "bright200_pct",
+            "threshold": 99,
+            "control_frames": [
+              2630,
+              2638
+            ],
+            "control_max": 80.38583126036484,
+            "search_frames": [
+              2638,
+              2641
+            ],
+            "value_at_first": 100.0,
+            "meaning": "At least99% of pixels Y>200; full white at2638/2639, aperture visible on2640.",
+            "negative_event_assertion": "FAILED as required: white_impact: no event in negative control"
+          },
+          "audio": {
+            "search_frames": [
+              2638,
+              2645
+            ],
+            "control_frames": [
+              2637.75,
+              2638
+            ],
+            "band_hz": [
+              250,
+              1500
+            ],
+            "detector_validated": true,
+            "detector_evidence": "Timpani/drum attack is the score entry after the shared impact breath; inspect measured control and mixed retention independently.",
+            "detector_audio_sha256": {
+              "contribution": "9aca73d4fa7970342bafb48bb17d98e82cae7108127d11237dfd0659cc9c83cf",
+              "mix": "d6b588d0cc93922cbf3495be0659423003f43490a531113d87abb2f6eaa3d0de"
+            }
+          },
+          "verification_note": "Waveform detector supplied; current result and any timing failure are in the executable audit. Post-correction rendering remains pending."
+        },
+        {
+          "id": "dead_valley",
+          "frame": 2660,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "silence",
+          "frame": 2800,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "stars",
+          "frame": 3120,
+          "status": "measured",
+          "measured_picture_frame": 3124,
+          "kind": "soft",
+          "picture_evidence": {
+            "id": "stars_threshold",
+            "first_frame": 3124,
+            "signal": "upper_stars",
+            "threshold": 1,
+            "control_frames": [
+              3100,
+              3124
+            ],
+            "control_max": 0.0,
+            "search_frames": [
+              3124,
+              3140
+            ],
+            "value_at_first": 1.0,
+            "meaning": "At least one pixel Y>90 in top100 rows at halfscale; not a perceptual visibility claim.",
+            "negative_event_assertion": "FAILED as required: stars_threshold: no event in negative control"
+          },
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "milky_way",
+          "frame": 3280,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "strike1",
+          "frame": 3360,
+          "status": "measured",
+          "measured_picture_frame": 3360,
+          "kind": "hard",
+          "picture_evidence": {
+            "id": "strike1",
+            "first_frame": 3360,
+            "signal": "resolved source transition plus visible spark ROI",
+            "control_frames": [
+              3348,
+              3360
+            ],
+            "control": "no h1_A in any control frame",
+            "meaning": "First visible hands/spark on hard cut; warm threshold alone is invalid on prior ember shot."
+          },
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "strike2",
+          "frame": 3389,
+          "status": "measured",
+          "measured_picture_frame": 3388,
+          "kind": "hard",
+          "picture_evidence": {
+            "id": "strike2",
+            "first_frame": 3388,
+            "signal": "spark_pixels",
+            "threshold": 10,
+            "control_frames": [
+              3376,
+              3388
+            ],
+            "control_max": 0.0,
+            "search_frames": [
+              3388,
+              3395
+            ],
+            "value_at_first": 44.0,
+            "meaning": "Warm-pixel count >=10 inside x280:540,y170:340; inspected spark stills corroborate the region.",
+            "negative_event_assertion": "FAILED as required: strike2: no event in negative control"
+          },
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "strike3",
+          "frame": 3418,
+          "status": "measured",
+          "measured_picture_frame": 3417,
+          "kind": "hard",
+          "picture_evidence": {
+            "id": "strike3",
+            "first_frame": 3417,
+            "signal": "spark_pixels",
+            "threshold": 10,
+            "control_frames": [
+              3405,
+              3417
+            ],
+            "control_max": 0.0,
+            "search_frames": [
+              3417,
+              3425
+            ],
+            "value_at_first": 79.0,
+            "meaning": "Same local warm-pixel rule; inspected spark still corroborates the region.",
+            "negative_event_assertion": "FAILED as required: strike3: no event in negative control"
+          },
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "blow",
+          "frame": 3444,
+          "status": "measured",
+          "measured_picture_frame": 3447,
+          "kind": "soft",
+          "picture_evidence": {
+            "id": "blow_brightening",
+            "first_frame": 3447,
+            "signal": "basket_warm",
+            "threshold": 10,
+            "control_frames": [
+              3440,
+              3447
+            ],
+            "control_max": 6.0,
+            "search_frames": [
+              3447,
+              3470
+            ],
+            "value_at_first": 25.0,
+            "meaning": "Warm pixels >=10 in x300:540,y110:330; first ember brightening, not measured exhalation contact.",
+            "negative_event_assertion": "FAILED as required: blow_brightening: no event in negative control"
+          },
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "catch",
+          "frame": 3556,
+          "status": "measured",
+          "measured_picture_frame": 3555,
+          "kind": "hard",
+          "picture_evidence": {
+            "id": "catch_core",
+            "first_frame": 3555,
+            "signal": "catch_core",
+            "threshold": 1,
+            "control_frames": [
+              3540,
+              3555
+            ],
+            "control_max": 0.0,
+            "search_frames": [
+              3555,
+              3570
+            ],
+            "value_at_first": 1.0,
+            "meaning": "First R>180,Y>140 pixel in x330:440,y110:210; one pixel at3555/3556, seven at3557.",
+            "negative_event_assertion": "FAILED as required: catch_core: no event in negative control"
+          },
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "roar",
+          "frame": 3600,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "ridges",
+          "frame": 3610,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "karst",
+          "frame": 3800,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "karst_flare",
+          "frame": 3815,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "desert",
+          "frame": 3860,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "desert_fire",
+          "frame": 3880,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "run",
+          "frame": 3920,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "run_1",
+          "frame": 3960,
+          "status": "measured",
+          "measured_picture_frame": 3936,
+          "kind": "hard",
+          "picture_evidence": {
+            "frame": 3936,
+            "signal": "global warm-pixel count R>140,R>1.35B+10,Y>70 at960x402",
+            "threshold": 100,
+            "control_frames": [
+              3920,
+              3936
+            ],
+            "control_max": 4.0,
+            "value_at_first": 716.0,
+            "meaning": "First large linked-fire catch; the prior frame has only4warm pixels. Single-flame identity was visually checked in current3936/3960stills.",
+            "negative_control_event_assertion": "fails: max preceding warm count4 <100",
+            "score_authored_run_1_frame": 3960,
+            "metadata_offset_frames": 24,
+            "audio_offset_frames": null,
+            "source_csv_sha256": "da5cab523671be11ef6574e98c3a2104c5e3996501c508b2a23cacb1fccb2fbf"
+          },
+          "audio": null,
+          "unresolved_reason": "The first new linked fire is3936; score anchor3960 is24frames later. Individual score arrival remains unmeasured here."
+        },
+        {
+          "id": "run_2",
+          "frame": 4000,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "run_3",
+          "frame": 4040,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "run_4",
+          "frame": 4080,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "run_5",
+          "frame": 4120,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "run_6",
+          "frame": 4160,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "run_7",
+          "frame": 4200,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "watchers",
+          "frame": 4240,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "backs_lit",
+          "frame": 4400,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "surges_stop",
+          "frame": 4440,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "giants_open",
+          "frame": 4480,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "others_open",
+          "frame": 4560,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "cycle_locks",
+          "frame": 4640,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "rim_holds",
+          "frame": 4680,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "fire_seen",
+          "frame": 4720,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "heart",
+          "frame": 4800,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "lantern",
+          "frame": 4880,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "draw_back",
+          "frame": 4960,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "watchfire_1",
+          "frame": 5040,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "walk_setoff",
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "audio": null,
+          "frame": 5180,
+          "unresolved_reason": "Owner a18_setoff.json supplies model instant5180/fullpace5276; its frame-tracking limitations do not establish a planted foot-contact frame."
+        },
+        {
+          "id": "sky_wheels",
+          "frame": 5200,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "walk_full",
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "audio": null,
+          "frame": 5276,
+          "unresolved_reason": "Owner a18_setoff.json supplies model instant5180/fullpace5276; its frame-tracking limitations do not establish a planted foot-contact frame."
+        },
+        {
+          "id": "watchfire_2",
+          "frame": 5280,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "narrowest",
+          "frame": 5360,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "watchfire_3",
+          "frame": 5520,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "watchfire_4",
+          "frame": 5760,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "breath_dawn",
+          "frame": 5833,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "set_down",
+          "frame": 5840,
+          "status": "measured",
+          "measured_picture_frame": 5840,
+          "kind": "hard",
+          "picture_evidence": "Owner d322b61 finished5840/5841 show the new bright lantern at ground position; previous5839 is the carried lantern. Cut boundary, not simulated collision timing.",
+          "audio": null,
+          "unresolved_reason": "New lantern arrival is observed; individual score bloom attack remains unmeasured."
+        },
+        {
+          "id": "rose",
+          "frame": 5920,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "valley",
+          "frame": 6000,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "cadence",
+          "frame": 6160,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "title",
+          "frame": 6240,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        },
+        {
+          "id": "end_fade",
+          "frame": 6456,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "kind": "soft",
+          "picture_evidence": null,
+          "audio": null,
+          "unresolved_reason": "Rendered score contribution not isolated; map time alone cannot certify an audible change."
+        }
+      ]
+    },
+    "score_steps_by_cut": {
+      "AP2": [
+        {
+          "id": "feet.5180",
+          "frame": 5180,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5240",
+          "frame": 5240,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5280",
+          "frame": 5280,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5320",
+          "frame": 5320,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5520",
+          "frame": 5520,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5560",
+          "frame": 5560,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5600",
+          "frame": 5600,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5640",
+          "frame": 5640,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5680",
+          "frame": 5680,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5720",
+          "frame": 5720,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5760",
+          "frame": 5760,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        },
+        {
+          "id": "feet.5800",
+          "frame": 5800,
+          "status": "unresolved",
+          "measured_picture_frame": null,
+          "visible_contact": null,
+          "contact_evidence": "",
+          "audio": null,
+          "unresolved_reason": "AP2 sounding-note schedule, independently derived by audit from current source; model set-off does not establish this individual foot plant."
+        }
+      ]
+    },
+    "resume_provenance": {
+      "current_picture_plans": "syncA_current_plans.json",
+      "current_owner_stills": "syncA_current_still_signals.csv",
+      "new_linked_fire_scan": "syncA_linked_signals_3920_4241.csv",
+      "solo_reconstruction": "syncA_solo_reconcile_AP2.json",
+      "audio_ap2_sha256": {
+        "mix": "d6b588d0cc93922cbf3495be0659423003f43490a531113d87abb2f6eaa3d0de",
+        "sfx": "209fbe35e9b4b0aa38f3bb4c221c2c0d178ff4f8bffbd40e7453997b0342bb55",
+        "score": "9aca73d4fa7970342bafb48bb17d98e82cae7108127d11237dfd0659cc9c83cf"
+      },
+      "a18_model_measurement": "a18_setoff.json (owner-provided, projection plus delivered-frame confirmation; frames alone do not resolve first movement to one frame)",
+      "scope": "Only pre3600 effects/evidence changed. AP2 score and later effects remain owned by their Claude lanes.",
+      "measured_AP2_snapshot": {
+        "result_file": "owner-night report folder: syncA_audit_AP2_solo.json",
+        "meaning": "Existing delivered AP2 before this lane recipe patch; not a repaired-render certificate.",
+        "ok": false,
+        "audio_sha256": {
+          "mix": "d6b588d0cc93922cbf3495be0659423003f43490a531113d87abb2f6eaa3d0de",
+          "sfx": "209fbe35e9b4b0aa38f3bb4c221c2c0d178ff4f8bffbd40e7453997b0342bb55",
+          "score": "9aca73d4fa7970342bafb48bb17d98e82cae7108127d11237dfd0659cc9c83cf"
+        },
+        "mastered_full_maximum_error": 2.3702159523963928e-07,
+        "processed_30_solo_sum_maximum_error": 9.685754776000977e-07,
+        "samples_checked": 12960000,
+        "early_events": [
+          {
+            "id": "A.wind.open",
+            "kind": "bed",
+            "table_frame": 0.0,
+            "picture_frame": 80,
+            "stem_onset_frame": 15.912,
+            "mix_onset_frame": 15.912,
+            "offset_frames": -64.088,
+            "stem_offset_frames": -64.088,
+            "status": "EXPLAINED_PROXY",
+            "ok": true,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              40,
+              16000
+            ],
+            "search_frames": [
+              4,
+              160
+            ],
+            "control_frames": [
+              0,
+              4
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -23.01905919762936,
+            "control_peak_dbfs": -65.575046474776,
+            "threshold_dbfs": -43.01905919762936,
+            "control_margin_db": 22.55598727714664,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -42.0769059627837,
+            "contribution_dbfs_at_proxy_onset": -42.68564280614907,
+            "tolerance_frames": [
+              -3.0,
+              3.0
+            ],
+            "ideal": false,
+            "timing_exception": "Authored opening ambience starts under black and rises over60frames before scene80; no physical contact is implied."
+          },
+          {
+            "id": "A.fire.edge",
+            "kind": "bed",
+            "table_frame": 1440.0,
+            "picture_frame": null,
+            "stem_onset_frame": 1492.848,
+            "mix_onset_frame": null,
+            "offset_frames": null,
+            "stem_offset_frames": null,
+            "status": "MASKED_PROXY",
+            "ok": false,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              40,
+              16000
+            ],
+            "search_frames": [
+              1430,
+              1580
+            ],
+            "control_frames": [
+              1400,
+              1430
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -52.51180071688439,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -60.0,
+            "control_margin_db": 240.0,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "reason": "no window meets the numerical mix masking proxy"
+          },
+          {
+            "id": "A.storm.brink",
+            "kind": "bed",
+            "table_frame": 2400.0,
+            "picture_frame": null,
+            "stem_onset_frame": 2408.352,
+            "mix_onset_frame": 2435.184,
+            "offset_frames": null,
+            "stem_offset_frames": null,
+            "status": "UNRESOLVED",
+            "ok": false,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              40,
+              16000
+            ],
+            "search_frames": [
+              2390,
+              2460
+            ],
+            "control_frames": [
+              2360,
+              2390
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -25.099097533649267,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -45.09909753364927,
+            "control_margin_db": 254.90090246635071,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -15.55189152561142,
+            "contribution_dbfs_at_proxy_onset": -27.62041816479485,
+            "reason": "audio onset measured; picture_frame remains unresolved so timing cannot pass"
+          },
+          {
+            "id": "A.wind.ash",
+            "kind": "bed",
+            "table_frame": 2640.0,
+            "picture_frame": 2640,
+            "stem_onset_frame": 2659.056,
+            "mix_onset_frame": 2669.28,
+            "offset_frames": 29.2800000000002,
+            "stem_offset_frames": 19.05600000000004,
+            "status": "OFF",
+            "ok": false,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              40,
+              16000
+            ],
+            "search_frames": [
+              2638,
+              2760
+            ],
+            "control_frames": [
+              2637.75,
+              2638
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -25.221723348499125,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -45.221723348499125,
+            "control_margin_db": 254.77827665150087,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -27.965534965502027,
+            "contribution_dbfs_at_proxy_onset": -38.74363513434106,
+            "tolerance_frames": [
+              -3.0,
+              3.0
+            ],
+            "ideal": false,
+            "timing_exception": null
+          },
+          {
+            "id": "A.wind.night",
+            "kind": "bed",
+            "table_frame": 2848.008,
+            "picture_frame": null,
+            "stem_onset_frame": 2868.312,
+            "mix_onset_frame": 2883.144,
+            "offset_frames": null,
+            "stem_offset_frames": null,
+            "status": "UNRESOLVED",
+            "ok": false,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              40,
+              16000
+            ],
+            "search_frames": [
+              2840,
+              2960
+            ],
+            "control_frames": [
+              2805,
+              2840
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -27.1093812007567,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -47.1093812007567,
+            "control_margin_db": 252.8906187992433,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -24.628913844568704,
+            "contribution_dbfs_at_proxy_onset": -37.12030141959052,
+            "reason": "audio onset measured; picture_frame remains unresolved so timing cannot pass"
+          },
+          {
+            "id": "A.x.take",
+            "kind": "bed",
+            "table_frame": 3561.0,
+            "picture_frame": 3555,
+            "stem_onset_frame": 3563.328,
+            "mix_onset_frame": 3563.328,
+            "offset_frames": 8.327999999999975,
+            "stem_offset_frames": 8.327999999999975,
+            "status": "EXPLAINED_PROXY",
+            "ok": true,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              40,
+              16000
+            ],
+            "search_frames": [
+              3552,
+              3600
+            ],
+            "control_frames": [
+              3540,
+              3552
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -24.475367099876433,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -44.475367099876436,
+            "control_margin_db": 255.52463290012355,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -38.824040807224215,
+            "contribution_dbfs_at_proxy_onset": -43.69081279059694,
+            "tolerance_frames": [
+              -3.0,
+              3.0
+            ],
+            "ideal": false,
+            "timing_exception": "This sustained bed follows the separately scored first catch; its authored3561 start and six-frame fade describe growing fire, rather than a second hard catch."
+          },
+          {
+            "id": "A.impact",
+            "kind": "hard",
+            "table_frame": 2640.0,
+            "picture_frame": 2638,
+            "stem_onset_frame": 2639.976,
+            "mix_onset_frame": 2639.976,
+            "offset_frames": 1.9760000000001128,
+            "stem_offset_frames": 1.9760000000001128,
+            "status": "OFF",
+            "ok": false,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              1500,
+              8000
+            ],
+            "search_frames": [
+              2638,
+              2645
+            ],
+            "control_frames": [
+              2637.75,
+              2638
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -23.30455137243968,
+            "control_peak_dbfs": -89.63988263181139,
+            "threshold_dbfs": -43.304551372439676,
+            "control_margin_db": 46.33533125937171,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -39.5407747403734,
+            "contribution_dbfs_at_proxy_onset": -39.536863219691824,
+            "tolerance_frames": [
+              -0.5,
+              1.0
+            ],
+            "ideal": false,
+            "timing_exception": null
+          },
+          {
+            "id": "A.strike1",
+            "kind": "hard",
+            "table_frame": 3360.0,
+            "picture_frame": 3360,
+            "stem_onset_frame": 3358.752,
+            "mix_onset_frame": 3358.752,
+            "offset_frames": -1.2480000000000473,
+            "stem_offset_frames": -1.2480000000000473,
+            "status": "OFF",
+            "ok": false,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              4000,
+              12000
+            ],
+            "search_frames": [
+              3356,
+              3365
+            ],
+            "control_frames": [
+              3348,
+              3356
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -24.08318121005053,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -44.083181210050526,
+            "control_margin_db": 255.91681878994947,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -43.897403986176265,
+            "contribution_dbfs_at_proxy_onset": -43.88285753375064,
+            "tolerance_frames": [
+              -0.5,
+              1.0
+            ],
+            "ideal": false,
+            "timing_exception": null
+          },
+          {
+            "id": "A.strike2",
+            "kind": "hard",
+            "table_frame": 3388.9992,
+            "picture_frame": 3388,
+            "stem_onset_frame": 3387.912,
+            "mix_onset_frame": 3387.912,
+            "offset_frames": -0.08800000000019281,
+            "stem_offset_frames": -0.08800000000019281,
+            "status": "PASS_PROXY",
+            "ok": true,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              4000,
+              12000
+            ],
+            "search_frames": [
+              3385,
+              3395
+            ],
+            "control_frames": [
+              3376,
+              3385
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -24.743510033835353,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -44.74351003383535,
+            "control_margin_db": 255.25648996616465,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -44.492074852614,
+            "contribution_dbfs_at_proxy_onset": -44.50259583975317,
+            "tolerance_frames": [
+              -0.5,
+              1.0
+            ],
+            "ideal": false,
+            "timing_exception": null
+          },
+          {
+            "id": "A.strike3",
+            "kind": "hard",
+            "table_frame": 3418.0008,
+            "picture_frame": 3417,
+            "stem_onset_frame": 3417.312,
+            "mix_onset_frame": 3417.312,
+            "offset_frames": 0.31199999999989814,
+            "stem_offset_frames": 0.31199999999989814,
+            "status": "PASS_PROXY",
+            "ok": true,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              4000,
+              12000
+            ],
+            "search_frames": [
+              3414,
+              3424
+            ],
+            "control_frames": [
+              3405,
+              3414
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -19.923073871295852,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -39.923073871295855,
+            "control_margin_db": 260.07692612870414,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -39.73269977900579,
+            "contribution_dbfs_at_proxy_onset": -39.69440781295361,
+            "tolerance_frames": [
+              -0.5,
+              1.0
+            ],
+            "ideal": true,
+            "timing_exception": null
+          },
+          {
+            "id": "A.blow",
+            "kind": "soft",
+            "table_frame": 3448.0008,
+            "picture_frame": 3447,
+            "stem_onset_frame": 3448.008,
+            "mix_onset_frame": 3448.008,
+            "offset_frames": 1.0079999999998108,
+            "stem_offset_frames": 1.0079999999998108,
+            "status": "PASS_PROXY",
+            "ok": true,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              4000,
+              12000
+            ],
+            "search_frames": [
+              3444,
+              3470
+            ],
+            "control_frames": [
+              3430,
+              3444
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -32.30376811624164,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -52.30376811624164,
+            "control_margin_db": 247.69623188375834,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -44.40779790584803,
+            "contribution_dbfs_at_proxy_onset": -44.478459610637856,
+            "tolerance_frames": [
+              -3.0,
+              3.0
+            ],
+            "ideal": true,
+            "timing_exception": null
+          },
+          {
+            "id": "A.x.catch",
+            "kind": "hard",
+            "table_frame": 3556.0008,
+            "picture_frame": 3555,
+            "stem_onset_frame": 3554.856,
+            "mix_onset_frame": 3554.856,
+            "offset_frames": -0.14399999999977808,
+            "stem_offset_frames": -0.14399999999977808,
+            "status": "PASS_PROXY",
+            "ok": true,
+            "method": "causal Butterworth order 4; trailing 5 ms stereo energy; 1 ms hop",
+            "table_time_role": "metadata only; never a measured onset",
+            "band_hz": [
+              4000,
+              12000
+            ],
+            "search_frames": [
+              3539,
+              3575
+            ],
+            "control_frames": [
+              3520,
+              3539
+            ],
+            "attribution": "postmaster cue supplied by manifest",
+            "limitation": "Numerical masking proxy, not listening. Cue provenance is supplied, not independently certified.",
+            "search_peak_dbfs": -27.361807044977184,
+            "control_peak_dbfs": -300.0,
+            "threshold_dbfs": -47.36180704497718,
+            "control_margin_db": 252.63819295502282,
+            "floor_dbfs": -60.0,
+            "mix_retention_db": 6.0,
+            "masker": "actual mix minus reconciled cue",
+            "mix_proxy": "contribution >= threshold, > -60 dBFS, > masker - 12 dB; actual mix >= threshold, > -60 dBFS, >= contribution - 6 dB",
+            "actual_mix_dbfs_at_proxy_onset": -40.96071152197104,
+            "contribution_dbfs_at_proxy_onset": -41.00056024123045,
+            "tolerance_frames": [
+              -0.5,
+              1.0
+            ],
+            "ideal": false,
+            "timing_exception": null
+          }
+        ],
+        "result_sha256": "c61d49160614db507a8ba4beb17eba57c200e9534fd747d14cac57ea0cebae4c"
+      },
+      "supplemental_opening_and_blow": "syncA_solo_extra.json / .md; opening threshold15.912 has a valid quiet0\u20134 in-film control. Later blow phases fail inter-phase controls. Roar pre-roll measured separately without assigning a picture cause.",
+      "current_A2_partial_candidate": {
+        "receipt": "owner-night report folder: syncA_candidates.json",
+        "frames_decoded": 120,
+        "first_nonblack_frame": 80,
+        "black_controls": [
+          0,
+          79
+        ],
+        "frame80_mean_encoded_luma": 10.808087348937988,
+        "scope": "Direct candidate-only partial probe with owner finish/transitions; ordinary EDL still falls back. Late A2 white remains unmeasured."
+      }
+    }
   }
- },
- "on_frame": "h1_A: strike1 3360 (the first frame's spark), strike2 3389 (sparks 3388-3390), strike3 3418 (3417-3419); the roar 3600 (the flames leap 3598-3608, L 38 -> 74, then the 12-frame lean-back); HER FIRE 3612-3660 (reveal_B 1372-1419): the fire's footprint shrinks ~2.7x as the camera pulls back -> the roar settles and recedes under it (-9 dB by 3660); karst 3815, desert 3880; watch-fire 1 4990-5040",
- "offsets_not_moved": {
-  "A.impact": "DIRECTOR 01:25Z: the hit stays ON THE BAR (2640, bar 34 b1, A9's first frame); A-FIX moves the PICTURE's whiteout onto 2640 (measured before: plunge 2600, white 2606-2622). Effect + score hit stay; SOUND-C re-measures when A-FIX's frames land."
- },
- "not_measurable": "A14 3920-4240 (the beacon run: run_1..7) and A15, A19 are slates in the master; watch-fires 2-4 are too small in the wide frames to time",
- "pending": "EVERY RIDGE (reveal_a re-render, 3660-3800) not landed: the ridges' fires catching get measured then; A19+A20 = dawnrev_A (B's dusk reversed, 5840-6479): L rises 46 -> 83, alpenglow from ~6080; the fire and wind ambience get shaped on A-FIX's final pale frames"
 }

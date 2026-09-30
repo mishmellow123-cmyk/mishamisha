@@ -52,8 +52,9 @@ RECIPES = {
         dict(src=("fs:172630", 44.0), pre=0.0, post=5.0, hp=30, fi=0.02, fo=3.0, g=-6.0, dt=0.0),
     ]),
     # ---------------------------------------------------------------- the dead valley, the night
-    # A-FIX's dead-valley vision (exact frames): the white holds 2640-2656 under the impact's ring; the vision opens
-    # 2656-2688, holds 2688-2762, closes 2762-2796 into black on 2800: the ash wind opens and closes with it (t from 2640)
+    # Historical ash envelope, t from 2640. syncA's finished-frame scan now finds full white at 2638-2639,
+    # then the valley aperture on 2640 (mean Y 255 -> 151.65): the old white-hold claim is stale.
+    # Do not move this bed independently of the impact, score and their shared 2637-2640 breath.
     "A.wind.ash": dict(layers=[dict(src=WIND, seg=(8, 14), xf=2.0, g=0.0),
                                dict(src=STORM, seg=(6, 10), xf=1.5, g=-10.0)], hp=60, lp=7000,
                        env=[(0.0, -20.0), (0.667, -20.0), (2.0, 0.0), (5.083, 0.0), (6.5, -24.0), (6.667, -40.0)]),
@@ -82,12 +83,23 @@ RECIPES = {
 }
 RECIPES.pop("A.catch", None)                                  # A's sheet has no catch cue: A.x.catch is it
 
+# syncA (29 Sep): reconciled sound_AP2's strike1 rises at A3358.752 (4-12 kHz, causal order-4
+# bandpass, trailing 5 ms RMS / 1 ms hop, peak -20 dB; adjacent 3348-3356 solo control is silent), while
+# the hands and first spark enter on A3360. Keep the click's hit and the approved loudness target;
+# suppress its pre-cut scrape until the last half-frame, with a quarter-frame fade to the click.
+# Strikes 2/3 arrive at 3387.912/3417.312 against first sparks 3388/3417: leave those alone.
+# env_after is applied before match_gain by sound_v3.build; the owner must remeasure the new master.
+RECIPES["A.strike1"] = dict(RECIPES["A.strike1"],
+                            env_after=[(-0.09, -120.0), (-0.5 / 24.0, -120.0),
+                                       (-0.25 / 24.0, 0.0), (0.55, 0.0)])
+
 EXTRA_BEDS = []
 EXTRA_EVENTS = [
     dict(id="A.x.catch", t={"at": "catch"}),                  # the flint take's catch (+196), on every cut
 ]
-# the kindling takes on 3563 (measured): the catch must be HEARD (final_A had none: the flames grew in silence), then
-# the fire it lit grows under the picture's flames into the roar (3600)
+# syncA: the finished catch ROI first has a pixel above R180/Y140 at 3555 (none on 3540-3554),
+# then seven at 3557. The reconciled AP2 catch's mix proxy starts at 3554.856 (-0.144 f, within the
+# hard tolerance): retain its 3556 hit. The growing-fire bed follows that authored hit by five frames.
 RECIPES["A.x.catch"] = dict(FL.CATCH, level_from="A.blow", trim=6.0)
 EXTRA_BEDS.append(dict(id="A.x.take", t0={"at": "catch", "frames": 5}, t1={"at": "roar", "frames": 2},
                        fade_in=0.25, fade_out=0.12))
