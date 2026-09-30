@@ -641,10 +641,11 @@ TRANS['A'] = list(afix_comp.A_TRANS) + [afix_comp.WATCHFIRES] + [      # + A-FIX
     dict(f0=3612, f1=3660, kind='grade', gain=(1.18, 0.99, 0.94),
          note="HER FIRE (reveal_B, cropped) matched to reveal_A's sky: top-third means (.101 .142 .263) -> (.119 .140 "
               ".246) (reveal_A 3680; re-check on 3660 when reveal_a_1 lands)"),
-    # REVIEW (29 Sep): the film base eases in after A's two true blacks (see C's floor windows); the second ends at
-    # 2836, where A-FIX's ember window begins, so no two windows share a frame
-    dict(f0=80, f1=128, kind='floor', k0=1.0, k1=0.0,
-         note='A black (0) -> A1, whose sky opens at the film base: the base eases in over two seconds'),
+    # joinsA (29 Sep): removing only the film base left A79|80 at mean Y 0 -> 10.808/255 with clear_high_deck
+    # (finished 960x402 frames). Dissolve from A79's true black over the same 48 frames so the sky itself enters.
+    dict(f0=80, f1=128, cut=80, kind='dissolve',
+         note='A black -> FALSE DAWN: the finished sky and its film base ease in together over two seconds'),
+    # The second floor window ends where A-FIX's ember window begins; no two windows share a frame.
     dict(f0=2800, f1=2836, kind='floor', k0=1.0, k1=0.0,
          note="A9's true black -> A10's void (film base): the base eases in before the ember's window"),
 ]

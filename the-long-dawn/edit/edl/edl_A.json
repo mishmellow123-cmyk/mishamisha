@@ -1363,6 +1363,10 @@
     464
    ],
    "zoom": 1.14,
+   "land": [
+    552,
+    559
+   ],
    "note": "A-FIX TR560: the push into the false dawn arrives at white"
   },
   {
@@ -1771,10 +1775,9 @@
   {
    "f0": 80,
    "f1": 128,
-   "kind": "floor",
-   "k0": 1.0,
-   "k1": 0.0,
-   "note": "A black (0) -> A1, whose sky opens at the film base: the base eases in over two seconds"
+   "cut": 80,
+   "kind": "dissolve",
+   "note": "A black -> FALSE DAWN: the finished sky and its film base ease in together over two seconds"
   },
   {
    "f0": 2800,

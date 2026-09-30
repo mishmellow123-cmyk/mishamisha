@@ -60,7 +60,8 @@ def _grid(H, W):
 # ------------------------------------------------------------------------------------------------ bloom (TR 560)
 def bloom(o, i, f, t):
     """t: f0, cut, center=(x, y) in 1920 px, zoom=1.14. Before the cut: the outgoing plate pushed in on the glow and
-    screened to white by a bloom from the glow; from the cut on: the incoming frame (EMBERS' white)."""
+    screened to white by a bloom from the glow; from the cut on: the incoming frame (EMBERS' white).
+    Optional land=(a, b) settles into that finished incoming plate in linear light, complete at b before the cut."""
     if f >= t['cut']:
         return i
     H, W = o.shape[:2]
@@ -77,6 +78,11 @@ def bloom(o, i, f, t):
     B = I * np.exp(-d2) + _ss(0.78, 1.0, a) * 1.02
     B = np.clip(B, 0.0, 1.0)[..., None]
     out = 1.0 - (1.0 - _lin(p)) * (1.0 - B * np.float32([0.98, 0.99, 1.0]))   # cold white, like the glow
+    if t.get('land'):
+        # A559's synthetic white measured Y253.864, but finished A560 was Y244.714 (960x402, 0..255).
+        # Let the flood become the incoming finished white before the cut; its grain is already seeded at f.
+        land = _ss(*t['land'], f)
+        out = out * (1.0 - land) + _lin(i) * land
     return np.clip(_srgb(out), 0.0, 1.0)
 
 
@@ -347,7 +353,7 @@ WATCHFIRES = dict(f0=5840, f1=6480, cut=5840, kind='watchfires', lantern=(1745, 
                   destreak=(520, 690, 2.2), note='A-FIX ENDING: the watch-fires pale as the long dawn comes')
 A_TRANS = [
     # A2 -> A3: the push INTO the glow, which floods to white on bar 8 (was a one-frame slam at 560)
-    dict(f0=536, f1=560, cut=560, kind='bloom', center=(1124, 464), zoom=1.14,
+    dict(f0=536, f1=560, cut=560, kind='bloom', center=(1124, 464), zoom=1.14, land=(552, 559),
          note='A-FIX TR560: the push into the false dawn arrives at white'),
     # A3: the white falls evenly to the first letters (was a shrinking disc, a spotlight iris, 600-672)
     dict(f0=596, f1=672, cut=596, kind='dissolve', note='A-FIX TR600: held white -> the live frames, evenly'),
