@@ -374,6 +374,10 @@ C5_TEXT = [
 # [a, b), the words, and the code that baked them. A caption set 'in_picture' needs a record with its words on every
 # frame; any other caption must not sit on baked words; baked words the cut shows must belong to an in_picture line.
 BAKED_TEXT = [
+    dict(stem='cand_t1_current-words-held', src=(400, 540),
+         line='In the old story, a Dark Lord forges a Ring to rule the world.',
+         by="shots/map/book_c_t1_candidates.py current-words-held (Codex lane r02; farm 29 Sep at ea7cdf3): the same "
+            "baked words as current-words under the held camera; seen whole on the delivered frames 470, 515, 530"),
     dict(stem='cand_t1_current-words', src=(400, 540), line='In the old story, a Dark Lord forges a Ring to rule the world.',
          by="shots/map/book_c_t1_candidates.py current-words (Codex PR #15; farm 29 Sep at 5bc5fe9); read off the "
             "delivered frames 430-538"),

@@ -351,7 +351,7 @@ class C5ReadinessTests(unittest.TestCase):
         self.assertIn('silently vanish', text)
 
     def test_old_baked_words_need_a_rerender_and_edit_text_on_them_is_double(self):
-        """The accepted mountain page (edl_v3.ALTERNATIVES['C3']: book_C with the old T1 words) played again."""
+        """The accepted mountain page (book_C with the old T1 words; edl_v3.ALTERNATIVES['C3']'s note) played again."""
         self.green()
         rows = copy.deepcopy(EDL.EDL['C'])
         k = next(i for i, r in enumerate(rows) if r['sec'] == 'C3')

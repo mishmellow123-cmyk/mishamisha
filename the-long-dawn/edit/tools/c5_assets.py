@@ -43,6 +43,7 @@ DELIVERED = {
     'book_C5_pen': (5440, 5679), 'book_C5_pen_matte': (5440, 5679),
     # Codex PR #15's candidates, farm-rendered 29 Sep (5bc5fe9); adopted in edl_v3 but for the Reveal's (an alternative)
     'cand_t1_current-words': (320, 559), 'cand_t1_current-words_matte': (320, 559),
+    'cand_t1_current-words-held': (320, 559), 'cand_t1_current-words-held_matte': (320, 559),
     'cand_trap_front_smoke_near': (2320, 2639),
     'cand_reveal_night-fire': (2880, 3119),
     'cand_map_beacon-falloff': (3440, 3839),

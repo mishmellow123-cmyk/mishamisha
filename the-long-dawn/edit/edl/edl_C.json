@@ -61,20 +61,20 @@
    "desc": "The leaves riffle back; a pen draws a mountain with a fire in its throat and in it a small gold ring.",
    "takes": [
     {
-     "stem": "cand_t1_current-words",
+     "stem": "cand_t1_current-words-held",
      "off": 0,
      "mode": "exact",
-     "note": "current-words: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
+     "note": "current-words-held: Codex lane r02, farm 29 Sep (ea7cdf3)",
      "crop": null,
      "grade": null,
-     "matte": "cand_t1_current-words_matte",
+     "matte": "cand_t1_current-words-held_matte",
      "under": null,
      "video": null,
      "need": null,
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/cand_t1_current-words"
+      "renders/cand_t1_current-words-held"
      ]
     }
    ],
@@ -1564,6 +1564,15 @@
   }
  ],
  "baked_text": [
+  {
+   "stem": "cand_t1_current-words-held",
+   "src": [
+    400,
+    540
+   ],
+   "line": "In the old story, a Dark Lord forges a Ring to rule the world.",
+   "by": "shots/map/book_c_t1_candidates.py current-words-held (Codex lane r02; farm 29 Sep at ea7cdf3): the same baked words as current-words under the held camera; seen whole on the delivered frames 470, 515, 530"
+  },
   {
    "stem": "cand_t1_current-words",
    "src": [

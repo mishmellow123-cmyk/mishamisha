@@ -294,7 +294,9 @@ CAND = 'Codex PR #15 candidate, farm 29 Sep (5bc5fe9)'
 # accepted takes they replaced stay delivered and untouched; restoring one is swapping its take back into the row (and
 # its stem back into c5_readiness.SHOT_MAP), or COLD_CUT = 3840 for the Cold lead-in. Section -> the accepted take.
 ALTERNATIVES = {
-    'C3': ("book()", 'book_C 320-559: the old wording "...forges the Ring in secret." baked at 400-539'),
+    'C3': ("c5('cand_t1_current-words', f'current-words: {CAND}', matte='cand_t1_current-words_matte')",
+           'the unheld current-words camera (R02 cut by the frame bottom ~515-538); further back, book(): book_C '
+           '320-559 with the old wording "...forges the Ring in secret." baked at 400-539'),
     'C11': ("c5('embers_C5_trap', PR11)", 'no smoke: the sunk forge simply goes dark, then relights'),
     'C13': ("c5('cand_reveal_night-fire', CAND)", 'NOT adopted (the accepted runC_reveal_pair_v5 plays): the night '
             'grade of the Reveal, rendered and kept'),
@@ -414,9 +416,15 @@ C = [
       [book()]),
     S('C3', 320, 560, 'P2', 'INK PAGE · THE MOUNTAIN', 'MAP',
       'The leaves riffle back; a pen draws a mountain with a fire in its throat and in it a small gold ring.',
-      # ADOPTED 29 Sep: current-words. The book engine re-run with R02's current line baked into the handwriting
-      # (400-539); elsewhere it matches book_C (mean |diff| ~1, no pixel over 20); the accepted page (old wording) second
-      [c5('cand_t1_current-words', f'current-words: {CAND}', matte='cand_t1_current-words_matte')]),
+      # ADOPTED 29 Sep: current-words-held (Codex lane r02; farm 29 Sep 19:43 from ea7cdf3). The current-words page
+      # (R02's current line baked into the handwriting 400-539) with the Mountain camera tilted down 1.43 deg while the
+      # line is read: eased in from the arrival (t 2.1 s, 370) to 450, held to 512, eased out by 557, so the whole
+      # inscription stays in frame (bottom ink row 709-736 in the hold, measured on the landed frames; the unheld page
+      # ran 780-803 and the frame edge cut it ~515-538). Identical to current-words at 320-370 and 557-559 (MAD 0.00),
+      # so C4's opening is untouched; the return peaks at a frame-to-frame MAD of 6.7 (half size) at 530, eased both
+      # ways. ALTERNATIVES['C3'] is the unheld current-words
+      [c5('cand_t1_current-words-held', 'current-words-held: Codex lane r02, farm 29 Sep (ea7cdf3)',
+          matte='cand_t1_current-words-held_matte')]),
     S('C4', 560, 700, 'E15 · X1', 'LETTERS TO FIRE', 'MAP',
       'A dense leaf darkens; its letters glow, lift as sparks and pour into one point.',
       [book(), X1_TEST]),
