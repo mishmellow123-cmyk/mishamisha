@@ -158,11 +158,13 @@ def test_master_windows_cover_every_adopted_premaster_edit():
     """bound_master restores the effects outside MASTER_WINDOWS to the pinned reference, so an adopted lane's edit
     that falls outside the union would be silently undone (its sound restored to the delivered mix)."""
     import sound_polish_edge as EDGE
+    import sound_polishdoom as DOOM
 
     def covered(first, last, windows):
         return any(a <= first and last <= b for a, b in windows)
 
-    lanes = dict(ignition=(P.START, P.END), edge=EDGE.SCOPE)
+    lanes = dict(ignition=(P.START, P.END), edge=EDGE.SCOPE, doom=(DOOM.START, DOOM.END))
     for name, (first, last) in lanes.items():
         assert covered(first, last, P.MASTER_WINDOWS), name
     assert not covered(*EDGE.SCOPE, ((960, 1440),))  # the ignition-only windows would drop the edge lane
+    assert not covered(DOOM.START, DOOM.END, ((960, 2400),))  # ... and ignition + edge would drop the doom lane

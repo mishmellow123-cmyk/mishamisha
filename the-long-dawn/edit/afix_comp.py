@@ -18,6 +18,10 @@ builds them: o holds its last frame after t['cut'], i holds its first frame befo
              own ice-white (cool, desaturated, lifted), so it reads as falling into the fire, not an explosion.
   ember      E4: the drifting ember of A10/A11 made a story object (a 3-5 px point -> a flickering 12-20 px coal with
              a soft glow), found in each frame (the warmest point near its known track).
+
+Two A8 treatments live here but are wired by assemble.py under their own kinds (polishdoom, 30 Sep):
+  exposure      a one-shot kind: the finished frame's own light times a per-frame gain field (gain_field()).
+  impact_white  the fall's last detailed exposure floods to white on the impact frame.
 """
 import math
 
@@ -207,16 +211,43 @@ def vision(o, i, f, t):
     if t.get('land'):
         w = _ss(*t['land'], f)
         out = out * (1 - w) + _lin(i) * w
+    if t.get('veil'):
+        out = veil(out, cx, cy, veil_progress(t['veil'], f), t['veil'])
     return np.clip(_srgb(out), 0.0, 1.0)
+
+
+def veil_progress(v, f):
+    """The white veil's progress at cut frame f: 0 = the impact's full white, 1 = the live vision (no veil).
+    Linear between the window's tabled keys [(frame, q), ...]; the first key's value before it, the last's after."""
+    keys = v['q']
+    return float(np.interp(f, [k[0] for k in keys], [k[1] for k in keys]))
+
+
+def veil(out, cx, cy, q, v):
+    """A9 comes out of the impact's white (polishdoom). `out` is the vision in linear light; the white lifts from the
+    window's centre outward (v['delay']: how far the centre leads the corners), and each pixel's veil falls as
+    (1 - its progress) ** gamma, which is close to an even step in display (sRGB) terms per frame. q comes from the
+    window's table, solved on the veil-free vision so the frame's mean luma falls smoothly from 255 into the valley.
+    No other frame's pixels are involved: the veil is white, not a second picture."""
+    if q >= 1.0:
+        return out
+    H, W = out.shape[:2]
+    xx, yy = _grid(H, W)
+    dd = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2)
+    dd /= max(float(dd.max()), 1e-6)
+    qx = np.clip(q * (1.0 + v['delay']) - v['delay'] * dd, 0.0, 1.0)
+    a = ((1.0 - qx) ** v.get('gamma', 2.4)).astype(np.float32)
+    return out + (1.0 - out) * a[..., None]
 
 
 # -------------------------------------------------------------------------------------------------- iceheart
 def iceheart(o, i, f, t):
-    """t: ramp=(a, b) cut frames over which the fall's warm light becomes the fire's ice-white; lift, sat."""
+    """t: ramp=(a, b) cut frames over which the fall's warm light becomes the fire's ice-white; lift, sat.
+    Optional exposure={frame: (gain, protect)}: the graded frame's own light times a gain field (exposure())."""
     img = i if f >= t['cut'] else o
     w = _ss(t['ramp'][0], t['ramp'][1], f)
     if w <= 0.0:
-        return img
+        return exposure(img, f, t)
     L = _lin(img)
     Y = (0.2126 * L[..., 0] + 0.7152 * L[..., 1] + 0.0722 * L[..., 2])[..., None]
     ice = np.float32([0.86, 0.94, 1.0]) * Y * t.get('gain', 1.35)          # the thinking fire: ice-white
@@ -224,7 +255,62 @@ def iceheart(o, i, f, t):
     tgt = ice * 0.85 + gold * 0.15
     tgt = 1.0 - (1.0 - tgt) * (1.0 - t.get('lift', 0.25) * w)                # and it lifts toward white
     out = L * (1.0 - w) + tgt * w
-    return np.clip(_srgb(out), 0.0, 1.0)
+    return exposure(np.clip(_srgb(out), 0.0, 1.0), f, t)
+
+
+# ---------------------------------------------------------------------------------------------- exposure
+_Y = np.float32([0.2126, 0.7152, 0.0722])
+
+
+def gain_field(img, gain, protect=0.0, sigma=24.0, knee=(0.18, 0.85)):
+    """The frame's own light times a smooth gain field, in linear light; no other frame's pixels are read.
+
+    protect 0: one gain for the whole frame (an exposure change). protect 1: the gain fades out over the frame's own
+    bright areas (blurred linear luminance from knee[0] to knee[1]), as a beat's fill light lifts shadows and mid-tones
+    and barely moves the fire's cores; so a shaped attack does not dim, nor a held release clip, the highlights.
+    sigma is in 1920-wide pixels. gain 1 returns the input unchanged (no colour-space round trip)."""
+    if gain == 1.0:
+        return img
+    L = _lin(img)
+    if protect > 0.0:
+        H, W = img.shape[:2]
+        Yb = cv2.GaussianBlur(L @ _Y, (0, 0), sigma * W / REF_W)
+        u = np.clip((Yb - knee[0]) / (knee[1] - knee[0]), 0.0, 1.0)
+        g = 1.0 + (gain - 1.0) * (1.0 - protect * u * u * (3.0 - 2.0 * u))
+        L = L * g[..., None].astype(np.float32)
+    else:
+        L = L * np.float32(gain)
+    return np.clip(_srgb(L), 0.0, 1.0)
+
+
+def exposure(img, f, t):
+    """t['exposure'] = {frame: (gain, protect)}: a per-frame gain field on this frame alone (A8, polishdoom). Frames
+    without an entry pass through untouched. The gains were solved on the delivered, finished frames so that each
+    beat's light rises over three frames instead of one, releases over eight, and the camera cuts at 2460 and 2520
+    stay hard while their exposure eases from the outgoing view's level to the incoming view's own."""
+    g = t.get('exposure', {}).get(f)
+    return img if g is None else gain_field(img, g[0], g[1])
+
+
+def impact_white(o, i, f, t):
+    """The fall floods into white, reaching full white on the impact frame (A9's first frame, the window's f1).
+
+    The source clips to white two frames early (A2638-2639), so the window's cut is 2638: by the o/i convention above,
+    o holds its last frame before the cut (2637, the last with detail) from the cut on, and the delivery keys already
+    follow that hold. The held frames continue the push (t['push'] = [(frame, zoom), ...]), and t['flood'] =
+    {frame: a} lifts each toward white in linear light, solved so the mean luma rises by even steps into the impact.
+    Only o is read: the white is the fall's own exposure, not a second picture."""
+    img = iceheart(o, o, f, t)
+    H, W = img.shape[:2]
+    z = float(_key(t.get('push', [(t['f0'], 1.0)]), f)[0])
+    if z != 1.0:
+        cx, cy = np.asarray(t['center'], np.float32) * (W / REF_W)
+        M = np.float32([[z, 0, cx * (1 - z)], [0, z, cy * (1 - z)]])
+        img = cv2.warpAffine(img, M, (W, H), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    a = float(t['flood'].get(f, 0.0))
+    if a <= 0.0:
+        return img
+    return np.clip(_srgb(_lin(img) * (1.0 - a) + a), 0.0, 1.0)
 
 
 # ----------------------------------------------------------------------------------------------------- ember
@@ -370,12 +456,58 @@ A_TRANS = [
          rim=(1.0, 0.75, 0.42), rim_gain=0.5, inside_glow=0.35, shimmer=1.6, outside='glow', glow_floor=1.0,
          glow_keys=[(1280, 0.004, 0.0036, 0.0032), (1440, 0.004, 0.0036, 0.0032)],
          note="A-FIX V1: THE PROMISE seen in the fire's light"),
-    # A8 over the rim: the fall ends in the thinking fire's ice-white, not a warm blast
-    # (the render's own white now lands ON 2640, the IMPACT: edge.py A-FIX; so no lift here, only the colour)
-    dict(f0=2520, f1=2640, cut=2520, kind='iceheart', ramp=(2528, 2620), gain=1.35, lift=0.0,
-         note='A-FIX E3: the fall into the ice-white fire'),
-    # A9 THE DEAD VALLEY, bars 34-35: the fire's second vision, in the same window, closing to a point
-    dict(f0=2640, f1=2800, cut=2684, kind='vision', track=[(2640, 958, 440), (2800, 958, 440)], open=(2656, 2688),
+    # A8 THE BRINK (polishdoom, 30 Sep): the baked beats hit in one frame (A2400 mean luma 44.9 -> 51.7, 2480
+    # 33.9 -> 41.3) and the cameras change on 2460 and 2520 (27.1 -> 86.5 into the updraft). Every frame here is its
+    # own plate times a gain field (exposure(); no other frame's pixels): each beat rises over three frames, the fall's
+    # beats release over eight, and the two cuts stay hard on their beats while the exposure eases from the outgoing
+    # view's level (2460 halfway, over six frames; 2520 from 27 up in equal steps to its own level at 2525).
+    # {frame: (gain, protect)}, solved on the delivered finished frames (0.25 scale, mean display luma).
+    dict(f0=2400, f1=2520, kind='exposure', exposure={
+        2400: (0.8369, 1), 2401: (0.9668, 1), 2402: (0.9896, 1), 2420: (0.9097, 1), 2421: (0.9005, 1),
+        2422: (0.9451, 1), 2440: (0.8844, 1), 2441: (0.9798, 1), 2442: (0.9916, 1), 2460: (1.1629, 1),
+        2461: (1.1479, 1), 2462: (1.118, 1), 2463: (1.076, 1), 2464: (1.037, 1), 2465: (1.0098, 1),
+        2480: (0.7576, 1), 2481: (1.0035, 1), 2482: (1.1421, 1), 2483: (1.1114, 1), 2484: (1.0677, 1),
+        2485: (1.0225, 1), 2486: (1.049, 1), 2487: (1.0406, 1), 2488: (1.0191, 1), 2489: (1.0048, 1),
+        2500: (0.9203, 1)},
+         note='A8 polishdoom: beat attacks over three frames; the 2460 cut hard, its exposure matched over six'),
+    # A8 over the rim: the fall ends in the thinking fire's ice-white, not a warm blast (A-FIX E3), with the same
+    # per-frame gain fields on the graded frames: the 2520 cut blooms up over six frames, every beat after it rises
+    # over three and releases over eight.
+    dict(f0=2520, f1=2635, cut=2520, kind='iceheart', ramp=(2528, 2620), gain=1.35, lift=0.0, exposure={
+        2520: (0.1752, 0), 2521: (0.2809, 0), 2522: (0.4213, 0), 2523: (0.6025, 0), 2524: (0.7813, 0),
+        2540: (0.5881, 1), 2541: (0.7704, 1), 2542: (1.0989, 1), 2543: (1.0924, 1), 2544: (1.0794, 1),
+        2545: (1.0633, 1), 2546: (1.0452, 1), 2547: (1.0275, 1), 2548: (1.0129, 1), 2549: (1.0033, 1),
+        2560: (0.6728, 1), 2561: (0.8931, 1), 2562: (1.1242, 1), 2563: (1.1164, 1), 2564: (1.1015, 1),
+        2565: (1.0812, 1), 2566: (1.0582, 1), 2567: (1.0356, 1), 2568: (1.0167, 1), 2569: (1.0043, 1),
+        2580: (0.6692, 1), 2581: (0.9269, 1), 2582: (1.1839, 1), 2583: (1.1727, 1), 2584: (1.1501, 1),
+        2585: (1.1194, 1), 2586: (1.0851, 1), 2587: (1.052, 1), 2588: (1.0245, 1), 2589: (1.0064, 1),
+        2600: (0.6398, 1), 2601: (0.9245, 1), 2602: (1.2214, 1), 2603: (1.2071, 1), 2604: (1.1798, 1),
+        2605: (1.143, 1), 2606: (1.1019, 1), 2607: (1.0622, 1), 2608: (1.0292, 1), 2609: (1.0076, 1),
+        2620: (0.5811, 1), 2621: (0.8932, 1), 2622: (1.1959, 1), 2623: (1.1849, 1), 2624: (1.1624, 1),
+        2625: (1.1305, 1), 2626: (1.0943, 1), 2627: (1.0587, 1), 2628: (1.0283, 1), 2629: (1.0075, 1)},
+         note='A-FIX E3 + polishdoom: the fall into the ice-white fire, its beats shaped by gain fields'),
+    # The source is white from 2638; the impact (and A.impact's hit) is 2640, where A9's window begins. Its own frames
+    # play to 2637 (the last with detail); cut=2638 makes the assembler hold 2637 on 2638-2639 (o after the cut), with
+    # a continuing push, and the flood lifts each frame so the mean luma rises
+    # 196 -> 204 -> 215 -> 227 -> 239 -> 249 -> 255 (A9's veil opens on full white at 2640).
+    dict(f0=2635, f1=2640, cut=2638, kind='impact_white',
+         center=(958, 440), ramp=(2528, 2620), gain=1.35, lift=0.0, push=[(2637, 1.0), (2639, 1.024)],
+         flood={2635: 0.0827, 2636: 0.2048, 2637: 0.0014, 2638: 0.3793, 2639: 0.7505},
+         note='A8 polishdoom: the fall floods into white, full white on the 2640 impact'),
+    # A9 THE DEAD VALLEY, bars 34-35: the fire's second vision, in the same window, closing to a point. polishdoom: it
+    # opens under the impact's white and comes out of it (veil(): a white veil lifting from the window's centre).
+    # q was solved per frame on the veil-free vision (0.25 scale, uncaptioned) for a mean display luma of
+    # U + (255 - U) (1 - (f - 2640) / 44) ** 2, U the veil-free level: 255 at 2640, steps of at most 6.0, clear at 2684.
+    dict(f0=2640, f1=2800, cut=2684, kind='vision', track=[(2640, 958, 440), (2800, 958, 440)], open=(2640, 2672),
+         veil=dict(delay=0.4, gamma=2.4, q=[
+             (2640, 0.0), (2641, 0.1694), (2642, 0.2081), (2643, 0.2358), (2644, 0.2582), (2645, 0.2777),
+             (2646, 0.2966), (2647, 0.3152), (2648, 0.3336), (2649, 0.3519), (2650, 0.3702), (2651, 0.388),
+             (2652, 0.4054), (2653, 0.4228), (2654, 0.4402), (2655, 0.4575), (2656, 0.4749), (2657, 0.492),
+             (2658, 0.5091), (2659, 0.5261), (2660, 0.5429), (2661, 0.5596), (2662, 0.5759), (2663, 0.592),
+             (2664, 0.6077), (2665, 0.6234), (2666, 0.6389), (2667, 0.654), (2668, 0.6689), (2669, 0.6835),
+             (2670, 0.698), (2671, 0.7125), (2672, 0.7271), (2673, 0.742), (2674, 0.7574), (2675, 0.7735),
+             (2676, 0.7904), (2677, 0.8081), (2678, 0.8266), (2679, 0.8461), (2680, 0.8664), (2681, 0.8878),
+             (2682, 0.9106), (2683, 0.937), (2684, 1.0)]),
          close=(2762, 2796), r0=(46, 105), r1=(620, 250), lift=120, shift_y=-120, teardrop=0.85, breath=0.035, bar0=2640,
          feather=0.07,
          rim=(1.0, 0.9, 0.8), rim_gain=0.7, inside_glow=0.25, shimmer=1.2, outside='glow', glow_r=520,

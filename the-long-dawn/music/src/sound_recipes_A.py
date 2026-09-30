@@ -131,6 +131,12 @@ SPACE = dict(distance="forest20", outdoor="forest20", event_send=0.08, bed_send=
 # AP2 forwards this hook at lookup time, as it does every other A effects attribute.
 from polish_ignition_A import prepare_master, bound_master, refresh_breath_probes  # noqa: E402
 
+# A 2400-3360 (polishdoom): the updraft rises into the white and carries through the old breath, the ash wind is up
+# on the white, recorded air holds the black and the ember arrives on its first light. AP2 forwards these hooks as it
+# does every other A recipe attribute; their frames lie inside polish_ignition_A.MASTER_WINDOWS.
+from sound_polishdoom import BED_TIMING, install as _install_doom, polish_score  # noqa: E402
+_install_doom(RECIPES, EXTRA_BEDS, EXTRA_EVENTS, WIND)
+
 # ---------------------------------------------------------------- A 3600-6479 on the delivered picture (29 Sep night)
 # The second half's effects were laid on the bar grid while its shots were slates. sound_a_table.py builds them from the
 # MEASURED picture (music/v3/events_A_measured.json; snapshot sound/a_sound_events.json): a far flare on each of the 45

@@ -982,12 +982,24 @@ def _tk_dawn_dissolve(o, i, f, t, ctx, lay, first):
     return _to_srgb(_to_lin(o) * (1 - a) + _to_lin(i) * a)
 
 
+def _tk_impact_white(o, i, f, t, ctx, lay, first):
+    return AFIX.impact_white(o, i, f, t)
+
+
+def _tk_exposure(img, src, f, t, fin, cut):
+    # polishdoom (A8): the finished frame's own light times a per-frame gain field; frames without a gain are untouched
+    return AFIX.exposure(fin(img, src, cut, f) if fin else img, f, t)
+
+
 TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell, page_turn=_tk_page_turn)
 TKINDS_PAIR['collapse'] = _tk_collapse
 TKINDS_PAIR['dawn_dissolve'] = _tk_dawn_dissolve
+TKINDS_PAIR['impact_white'] = _tk_impact_white
 TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor, dawn_sweep=_tk_dawn_sweep,
                   caption_grade=_tk_caption_grade)
+TKINDS_SHOT['exposure'] = _tk_exposure
 KIND_HELPERS = dict(swell=_swell, page_turn=page_turn, dawn_dissolve=dawn_sweep, dawn_sweep=dawn_sweep)
+AFIX_WRAPPED = dict(impact_white=_tk_impact_white, exposure=_tk_exposure)   # kinds whose comp lives in afix_comp
 
 
 # lane polishedge (A6/A7, second pass): exposure matches at the camera changes and the beat surges reshaped by a
@@ -1037,6 +1049,8 @@ def transition_code(kind):
     """The source that decides a window of this kind (for deliver's segment keys)."""
     if kind == 'edge_polish':
         return ''.join(inspect.getsource(o) for o in (_edge_plate, _tk_edge_polish, EP))
+    if kind in AFIX_WRAPPED:
+        return inspect.getsource(AFIX_WRAPPED[kind]) + inspect.getsource(AFIX)
     if kind in AFIX.KINDS:
         return inspect.getsource(AFIX)
     if kind == 'caption_grade':

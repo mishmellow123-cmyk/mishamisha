@@ -519,6 +519,9 @@ def build(cut, only=None, verbose=True):
             meta.append(dict(id=rid, kind="bed", status="SKIP" if rc else "NO RECIPE", why=(rc or {}).get("why", "")))
             continue
         rng = rng_for(rid)
+        # A polish (polishdoom): timing is applied after reference lookup, so the design's measured
+        # loudness stays the reference when a bed is given a longer release.
+        b.update(getattr(R, "BED_TIMING", {}).get(rid, {}))
         dur = b["t1"] - b["t0"]
         y = limit_crest(bed(rc, dur, rng), rc.get("crest", R.SPACE.get("bed_crest", 18.0)))
         ref = ref_of(b, rc)
@@ -680,6 +683,9 @@ def write(cut, stem, meta, bm, allow_unverified=False):
     polish = getattr(recipe, "PREMASTER_POLISH", None)
     if polish is not None:
         score, pre = polish(score, pre, bm)
+    # polishdoom: bounded fader rides on the score (the piano's first note near 2860); the saved note render is untouched
+    if hasattr(recipe, "polish_score"):
+        recipe.polish_score(score)
     G = db(-16.0 - RV.lufs(score[:n] + pre)) * db(1.2)          # the master's gain, a little on the safe side
     pre = peak_guard(score[:n], pre, G)
     master_options = {}
