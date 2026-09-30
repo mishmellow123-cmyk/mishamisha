@@ -543,7 +543,7 @@ def build(cut, only=None, verbose=True):
         i0 = int(round(b["t0"] * SR))
         e = min(total, i0 + len(y))
         y = y[: e - i0]
-        if wins:
+        if wins and not rc.get("no_breath"):
             y = y * R2.breath_env(len(y), wins, offset=i0)[:, None]
         stem[i0:e] += y
         send[i0:e] += y * np.float32(rc.get("send", R.SPACE.get("bed_send", 0.0)))

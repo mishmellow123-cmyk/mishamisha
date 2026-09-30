@@ -3,9 +3,32 @@
  "cut": "C5 (the picture; hammers on barmap_C5P2's pulse)",
  "fps": 24,
  "frames": 5920,
- "hard_silence": {
+ "hard_silence": null,
+ "instep": {
   "from_f": 3848,
-  "to_f": 3999
+  "settled_f": 3872,
+  "through_f": 4239,
+  "beat_frames": [
+   3860.0,
+   3880.0,
+   3900.0,
+   3920.0,
+   3940.0,
+   3960.0,
+   3980.0,
+   4000.0,
+   4020.0,
+   4040.0,
+   4060.0,
+   4080.0,
+   4100.0,
+   4120.0,
+   4140.0,
+   4160.0,
+   4180.0,
+   4200.0,
+   4220.0
+  ]
  },
  "dropped": [
   {
@@ -674,47 +697,389 @@
    "note": "faint; the last stroke ends before the catch at 3786"
   },
   {
-   "id": "C5.forge.cold",
+   "id": "C5.forge.race",
    "kind": "bed",
    "f0": 3816,
-   "f1": 3848,
-   "sync": "edl:the forges' first lit frame (3816) .. measured:cold.forges_off.frame (the bed is cut on it)",
+   "f1": 3872,
+   "sync": "edl:lit lead-in 3816; owner:convergence 3848..3872",
    "recipe": "C.fire.forge",
    "level": -66.1,
    "level_from": "sound/events_C.json C.fire.forge",
-   "status": "ready",
+   "status": "ready (design: listen)",
    "fade_in": 0.01,
-   "fade_out": 0.005,
-   "design": false
+   "fade_out": 1.0,
+   "no_breath": true,
+   "send": 0.0,
+   "trim_db": 24.0,
+   "design": true
   },
   {
-   "id": "C5.hammer.cut",
+   "id": "C5.forge.instep",
+   "kind": "bed",
+   "f0": 3848,
+   "f1": 4264,
+   "sync": "owner:3848..3872 shared glow; C17 4000..4239; crossfade into C18 hearth to 4264",
+   "recipe": "C5.forge.steady",
+   "level": -66.1,
+   "level_from": "sound/events_C.json C.fire.forge",
+   "status": "ready (design: listen)",
+   "fade_in": 1.0,
+   "fade_out": 1.0,
+   "trim_db": 21.0,
+   "env_f": [
+    [
+     3848,
+     0.0
+    ],
+    [
+     4000,
+     0.0
+    ],
+    [
+     4184,
+     -4.0
+    ],
+    [
+     4216,
+     -6.0
+    ],
+    [
+     4264,
+     -6.0
+    ]
+   ],
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.gather_1",
    "kind": "event",
-   "hit_f": 3840,
-   "sync": "measured:shot cold (3840) .. cold.forges_off.frame: cut mid-stroke",
-   "recipe": "C5.hammer",
-   "level": -33.0,
+   "hit_f": 3818,
+   "sync": "owner:scattered race strikes before 3848",
+   "recipe": "C5.hammer.cached",
+   "level": -35.0,
    "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
    "status": "ready (design: listen)",
-   "design": true,
-   "post_max_f": 8
+   "pan": -0.55,
+   "dist": 0.0,
+   "send": 0.0,
+   "no_breath": true,
+   "env_after": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     2.25,
+     -40.0
+    ]
+   ],
+   "design": true
   },
   {
-   "id": "C5.silence",
-   "kind": "silence",
-   "f0": 3848,
-   "f1": 4000,
-   "sync": "measured:cold.forges_off.frame .. the Ring's cut",
-   "status": "ready",
-   "note": "no effect sounds here; the renderer mutes it besides",
-   "design": false
+   "id": "C5.hammer.gather_2",
+   "kind": "event",
+   "hit_f": 3831,
+   "sync": "owner:scattered race strikes before 3848",
+   "recipe": "C5.hammer.cached",
+   "level": -35.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "pan": 0.5,
+   "dist": 0.0,
+   "send": 0.0,
+   "no_breath": true,
+   "env_after": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     1.7083333333333333,
+     -40.0
+    ]
+   ],
+   "design": true
+  },
+  {
+   "id": "C5.hammer.gather_3",
+   "kind": "event",
+   "hit_f": 3843,
+   "sync": "owner:scattered race strikes before 3848",
+   "recipe": "C5.hammer.cached",
+   "level": -35.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "pan": -0.2,
+   "dist": 0.0,
+   "send": 0.0,
+   "no_breath": true,
+   "env_after": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     1.2083333333333333,
+     -40.0
+    ]
+   ],
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_1",
+   "kind": "event",
+   "hit_f": 3860.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_2",
+   "kind": "event",
+   "hit_f": 3880.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_3",
+   "kind": "event",
+   "hit_f": 3900.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_4",
+   "kind": "event",
+   "hit_f": 3920.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_5",
+   "kind": "event",
+   "hit_f": 3940.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_6",
+   "kind": "event",
+   "hit_f": 3960.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_7",
+   "kind": "event",
+   "hit_f": 3980.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_8",
+   "kind": "event",
+   "hit_f": 4000.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_9",
+   "kind": "event",
+   "hit_f": 4020.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -37.55555555555556,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_10",
+   "kind": "event",
+   "hit_f": 4040.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -38.111111111111114,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_11",
+   "kind": "event",
+   "hit_f": 4060.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -38.666666666666664,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_12",
+   "kind": "event",
+   "hit_f": 4080.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -39.22222222222222,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_13",
+   "kind": "event",
+   "hit_f": 4100.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -39.77777777777778,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_14",
+   "kind": "event",
+   "hit_f": 4120.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -40.333333333333336,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_15",
+   "kind": "event",
+   "hit_f": 4140.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -40.888888888888886,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_16",
+   "kind": "event",
+   "hit_f": 4160.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -41.44444444444444,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_17",
+   "kind": "event",
+   "hit_f": 4180.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -42.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_18",
+   "kind": "event",
+   "hit_f": 4200.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -42.55555555555556,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
+  },
+  {
+   "id": "C5.hammer.instep_19",
+   "kind": "event",
+   "hit_f": 4220.0,
+   "sync": "score:barmap_C5P2 global quarter-note grid; owner:shared pulse",
+   "recipe": "C5.hammer.instep",
+   "level": -43.0,
+   "level_from": "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and C.strike1..3 -39.0..-36.6",
+   "status": "ready (design: listen)",
+   "no_breath": true,
+   "send": 0.0,
+   "design": true
   },
   {
    "id": "C5.storm.unfinished",
    "kind": "bed",
-   "f0": 4025,
-   "f1": 4181,
-   "sync": "measured:unfinished.ring_drains.first .. storm_thins (first/half/full)",
+   "f0": 4000,
+   "f1": 4216,
+   "sync": "owner:Ring drains 4000..4184; storm thins through 4216",
    "recipe": "C.storm.eye",
    "level": -34.2,
    "level_from": "sound/events_C.json C.storm.eye",
@@ -725,19 +1090,15 @@
    "design": true,
    "env_f": [
     [
-     4025,
+     4000,
      0.0
     ],
     [
-     4087,
-     0.0
+     4184,
+     -12.0
     ],
     [
-     4138,
-     -6.0
-    ],
-    [
-     4181,
+     4216,
      -30.0
     ]
    ]

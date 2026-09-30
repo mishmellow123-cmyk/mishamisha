@@ -9,11 +9,28 @@ import sound_c5_table as T
 import sound_recipes_C as RC
 
 
+# C5P2's new effects use recordings already in cache/sound. These two Lokomo anvil takes start
+# on their attack (2 ms energy-envelope onset at sample 0); the four-hit take is cropped
+# before its second blow. The pair strikes together, with no delay or breathing wet send.
+INSTEP_RECIPES = {
+    "C5.hammer.cached": dict(src=("fs:386116", 0.0), pre=0.0, post=1.4, hp=90,
+                             fi=0.001, fo=0.4, width=0.4, dist=0.5),
+    "C5.hammer.instep": dict(layers=[
+        dict(src=("fs:386116", 0.0), pre=0.0, post=0.65, fi=0.001, fo=0.20,
+             hp=90, lp=6000, width=0.55, g=0.0),
+        dict(src=("fs:386115", 0.0), pre=0.0, post=0.65, fi=0.001, fo=0.20,
+             hp=90, lp=6000, width=0.9, g=-4.0)], send=0.0, no_breath=True),
+    "C5.forge.steady": dict(layers=[dict(src=RC.FIRE, seg=(10, 18), xf=2.5, g=0.0),
+                                    dict(src=RC.LAVA, seg=(8, 14), xf=2.0, g=-12.0)],
+                            hp=50, lp=6000, width=0.65, crest=10.0, send=0.0, no_breath=True),
+}
+
+
 def _recipe(r):
     if r["recipe"] == "pen":
         rc = RC.pen(r["src_start"], r["dur_f"] / T.FPS)
     else:
-        rc = copy.deepcopy(RC.RECIPES[r["recipe"]])
+        rc = copy.deepcopy((INSTEP_RECIPES if r["recipe"] in INSTEP_RECIPES else RC.RECIPES)[r["recipe"]])
     for k in ("trim", "level_from", "skip", "why"):          # the level below already includes SOUND-C's trim
         rc.pop(k, None)
     rc["level"] = r["level"] + r.get("trim_db", 0.0)
@@ -26,6 +43,9 @@ def _recipe(r):
         rc["env_after"] = r["env_after"]
     if r.get("no_breath"):                                    # heard through the score's breath (sound_v3, 29 Sep)
         rc["no_breath"] = True
+    for k in ("send", "dist", "width"):
+        if k in r:
+            rc[k] = r[k]
     return rc
 
 

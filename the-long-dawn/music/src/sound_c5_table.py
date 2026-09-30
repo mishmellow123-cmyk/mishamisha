@@ -24,12 +24,13 @@ trim, the hammers' placement): they render, and are listed for a listening check
 has a status other than "ready...": sound_recipes_C5P2 refuses to render while any exists, unless told to skip them
 (LD_SOUND_ALLOW_UNRESOLVED=1, which prints every skipped row).
 
-THE HARD SILENCE is a contract, not an absence: every effect ends by the shutdown (3848) and none begins before the
-Ring's cut (4000); build() refuses a table that breaks it, and sound_recipes_C5P2 mutes 3848..3999 besides.
+C5P2's owner revision (29 Sep) keeps the fire: over 3848..3872 the race resolves into a
+steady forge and beat-aligned hammers, continuing through C17. Pass 1 retains its old silence.
 """
 import argparse
 import hashlib
 import json
+import math
 import os
 import sys
 
@@ -41,6 +42,7 @@ OUT = os.path.join(MUSIC, "sound", "c5_sound_events.json")
 FPS = 24
 FRAMES = 5920
 SHUTDOWN, RING_CUT = 3848, 4000             # the hard silence: [3848, 4000)
+INSTEP, SETTLED, RING_GREY, STORM_THIN, C17_END = 3848, 3872, 4184, 4216, 4240
 FLINT_SOURCE = {                            # SOUND-C's frames of the flint take in the ring stem (v1 EDL: stem `ring`,
     "strike1": 2980, "strike3": 3178,       # off 0; EDIT-C5 names it `ring_C`), measured on the v1 master
     "blow": 3204, "catch": 3316}            # (sound/picture_sync_C.json `on_frame`)
@@ -60,6 +62,12 @@ def _load(p):
 
 def sha(p):
     return hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def beat_frames(bm, first, stop):
+    """Exact global quarter-note grid from this cut's BPM/fps; stop is exclusive."""
+    step = 60 * bm["fps"] / bm["bpm"]
+    return [round(k * step, 9) for k in range(math.ceil(first / step), math.ceil(stop / step))]
 
 
 def c5_edl(path=None):
@@ -98,7 +106,7 @@ def flint_frame(edl, key):
 def build(pulse_cut="C5P2", edl_path=None):
     """the table. `pulse_cut` names the bar map whose score pulse places the hammers (the music's, no strike is drawn):
     C5P2 for score pass 2 (the committed snapshot), C5 for pass 1, whose ostinato sits on the retired frames. Every
-    other row comes from the picture and is the same under both passes."""
+    C5P2 additionally carries the owner's in-step forge revision; pass 1 stays historical."""
     ms = _load(os.path.join(V3, "events_C5_measured.json"))
     bm = _load(os.path.join(V3, f"barmap_{pulse_cut}.json"))
     lv = {e["id"]: e for e in _load(os.path.join(MUSIC, "sound", "events_C.json")) if "level" in e}
@@ -234,27 +242,61 @@ def build(pulse_cut="C5P2", edl_path=None):
         event(f"C5.hammer.alone_{k + 1}", f, f"score:barmap_{pulse_cut} hammer_alone (C5P2: one beat into the measured "
               "pause) + one beat", "C5.hammer.faint", None, status="ready (design: listen)", level_db=HAMMER_FAINT_DB,
               level_note=HAMMER_NOTE, design=True, note="faint; the last stroke ends before the catch at 3786")
-    # C16 THE FORGES GO COLD: the forge from the cut that shows them lit (EDIT's COLD_CUT: 3840, or 3816 with the
+    # Pass 1's historical C16: the forge from the cut that shows them lit (EDIT's COLD_CUT: 3840, or 3816 with the
     # adopted lit lead-in), a hammer 8 frames before the measured shutdown, cut mid-stroke on it; then nothing
     off = M("cold.forges_off", "frame")
     lit = [r["f0"] for r in (edl or {}).get("shots", []) if r.get("name", "").startswith("THE FORGES GO COLD")]
     cold_cut = min(lit) if lit else 3840
-    bed("C5.forge.cold", cold_cut, off, f"edl:the forges' first lit frame ({cold_cut}) .. measured:cold.forges_off"
-        ".frame (the bed is cut on it)", "C.fire.forge", "C.fire.forge", fade_in=0.01, fade_out=0.005)
-    event("C5.hammer.cut", 3840, "measured:shot cold (3840) .. cold.forges_off.frame: cut mid-stroke", "C5.hammer", None,
-          status="ready (design: listen)", level_db=HAMMER_DB, level_note=HAMMER_NOTE, design=True,
-          post_max_f=off - 3840)
-    rows.append(dict(id="C5.silence", kind="silence", f0=off, f1=RING_CUT, sync="measured:cold.forges_off.frame .. "
-                     "the Ring's cut", status="ready", note="no effect sounds here; the renderer mutes it besides"))
+    if pulse_cut == "C5P2":
+        # Timings below are the owner's replacement-picture brief, not a remeasurement
+        # of events_C5_measured.json (which records the retired dark-forge picture).
+        bed("C5.forge.race", cold_cut, SETTLED, f"edl:lit lead-in {cold_cut}; owner:convergence 3848..3872",
+            "C.fire.forge", "C.fire.forge", fade_in=0.01, fade_out=1.0, no_breath=True, send=0.0,
+            trim_db=24.0, design=True, status="ready (design: listen)")
+        bed("C5.forge.instep", INSTEP, C17_END + 24,
+            "owner:3848..3872 shared glow; C17 4000..4239; crossfade into C18 hearth to 4264",
+            "C5.forge.steady", "C.fire.forge", fade_in=1.0, fade_out=1.0, trim_db=21.0,
+            env_f=[[INSTEP, 0.0], [RING_CUT, 0.0], [RING_GREY, -4.0], [STORM_THIN, -6.0],
+                   [C17_END + 24, -6.0]], no_breath=True, send=0.0, design=True,
+            status="ready (design: listen)")
+        # Uneven, spatially scattered blows gather into one attack on each score beat.
+        for k, (f, pan) in enumerate(((3818, -0.55), (3831, 0.5), (3843, -0.2)), 1):
+            if f < cold_cut:
+                continue
+            event(f"C5.hammer.gather_{k}", f, "owner:scattered race strikes before 3848",
+                  "C5.hammer.cached", None, level_db=HAMMER_DB - 2.0, level_note=HAMMER_NOTE,
+                  pan=pan, dist=0.0, send=0.0, no_breath=True,
+                  env_after=[[0.0, 0.0], [(SETTLED - f) / FPS, -40.0]],
+                  design=True, status="ready (design: listen)")
+        for k, f in enumerate(beat_frames(bm, INSTEP, C17_END), 1):
+            ease = 0.0 if f <= RING_CUT else min(1.0, (f - RING_CUT) / (STORM_THIN - RING_CUT))
+            event(f"C5.hammer.instep_{k}", f, f"score:barmap_{pulse_cut} global quarter-note grid; owner:shared pulse",
+                  "C5.hammer.instep", None, level_db=HAMMER_DB - 4.0 - 6.0 * ease,
+                  level_note=HAMMER_NOTE, no_breath=True, send=0.0, design=True,
+                  status="ready (design: listen)")
+    else:
+        bed("C5.forge.cold", cold_cut, off, f"edl:the forges' first lit frame ({cold_cut}) .. measured:cold.forges_off"
+            ".frame (the bed is cut on it)", "C.fire.forge", "C.fire.forge", fade_in=0.01, fade_out=0.005)
+        event("C5.hammer.cut", 3840, "measured:shot cold (3840) .. cold.forges_off.frame: cut mid-stroke", "C5.hammer", None,
+              status="ready (design: listen)", level_db=HAMMER_DB, level_note=HAMMER_NOTE, design=True,
+              post_max_f=off - 3840)
+        rows.append(dict(id="C5.silence", kind="silence", f0=off, f1=RING_CUT, sync="measured:cold.forges_off.frame .. "
+                         "the Ring's cut", status="ready", note="no effect sounds here; the renderer mutes it besides"))
     # C17 THE RING, UNFINISHED: the storm's wind thins with the measured storm
     s0, sh, s1 = (M("unfinished.storm_thins", k) for k in ("first", "half", "full"))
     # REVIEW (29 Sep): the storm came back at RING_CUT from digital zero to -33 dBFS in 15 ms, on a join with no visible
     # change (a dropout recovering); the score's return (4000) now breaks the silence and the storm fades in under the
     # Ring's measured drain over 2.5 s, then thins with the measured storm
     drain = M("unfinished.ring_drains", "first")
-    bed("C5.storm.unfinished", drain, s1, "measured:unfinished.ring_drains.first .. storm_thins (first/half/full)",
-        "C.storm.eye", "C.storm.eye", fade_in=2.5, fade_out=0.5, trim_db=-9.0, design=True,
-        status="ready (design trim: listen)", env_f=[[drain, 0.0], [s0, 0.0], [sh, -6.0], [s1, -30.0]])
+    if pulse_cut == "C5P2":
+        bed("C5.storm.unfinished", RING_CUT, STORM_THIN,
+            "owner:Ring drains 4000..4184; storm thins through 4216", "C.storm.eye", "C.storm.eye",
+            fade_in=2.5, fade_out=0.5, trim_db=-9.0, design=True, status="ready (design trim: listen)",
+            env_f=[[RING_CUT, 0.0], [RING_GREY, -12.0], [STORM_THIN, -30.0]])
+    else:
+        bed("C5.storm.unfinished", drain, s1, "measured:unfinished.ring_drains.first .. storm_thins (first/half/full)",
+            "C.storm.eye", "C.storm.eye", fade_in=2.5, fade_out=0.5, trim_db=-9.0, design=True,
+            status="ready (design trim: listen)", env_f=[[drain, 0.0], [s0, 0.0], [sh, -6.0], [s1, -30.0]])
     # C18 THE DEEP (still), C19 THE WATCH (every beacon burns on: no hit), the second half (not on this Mac)
     bed("C5.hearth.deep", 4240, 4480, "measured:deep.no_discrete_event (a still page)", "C.hearth.open",
         "C.hearth.open", fade_in=0.5, fade_out=0.5)
@@ -278,15 +320,20 @@ def build(pulse_cut="C5P2", edl_path=None):
     for r in rows:
         r.setdefault("design", False)
     return dict(schema="long-dawn/c5-sound-events/1", cut=f"C5 (the picture; hammers on barmap_{pulse_cut}'s pulse)",
-                fps=FPS, frames=FRAMES, hard_silence=dict(from_f=SHUTDOWN, to_f=RING_CUT - 1), dropped=DROPPED,
+                fps=FPS, frames=FRAMES, hard_silence=None if pulse_cut == "C5P2" else dict(from_f=SHUTDOWN, to_f=RING_CUT - 1),
+                instep=(dict(from_f=INSTEP, settled_f=SETTLED, through_f=C17_END - 1,
+                             beat_frames=beat_frames(bm, INSTEP, C17_END)) if pulse_cut == "C5P2" else None), dropped=DROPPED,
                 sources={"music/v3/events_C5_measured.json": sha(os.path.join(V3, "events_C5_measured.json")),
                          f"music/v3/barmap_{pulse_cut}.json": sha(os.path.join(V3, f"barmap_{pulse_cut}.json")),
                          "music/sound/events_C.json": sha(os.path.join(MUSIC, "sound", "events_C.json"))},
                 edl=edl_note, events=rows)
 
 
-# The forge hammers had no approved recording or level (SOUND-C's library has no anvil). Recording: VSCO-2-CE's anvil
-# (sound_recipes_C "C5.hammer"), the score's own forging anvil. Level, a design choice between SOUND-C's approved
+# Approved trap/lone hammers retain the VSCO anvil. New C5P2 gathering/unison hammers
+# use cached Lokomo hot-steel recordings (sound_c5_recipes).
+# The in-step beds raise the inherited -66.1 LUFS forge reference to -42.1 (race) and -45.1 (steady),
+# so the body remains present between the hammer attacks. These are design targets, not listening verdicts.
+# Hammer level, a design choice between SOUND-C's approved
 # neighbours: the Trap's strikes 0.4 dB under the x1burn (C+.burn.map -32.6) and 3.6 dB over the loudest flint strike
 # (C.strike3 -36.6); the lone hammer under the map's pause at the quietest strike (C.strike1 -39.0), as its note asks.
 HAMMER_DB, HAMMER_FAINT_DB = -33.0, -48.0     # REVIEW (29 Sep): the lone hammers 9 dB under C.strike1, a pause's pulse
@@ -294,7 +341,7 @@ HAMMER_NOTE = "design (29 Sep): between SOUND-C's approved C+.burn.map -32.6 and
 
 
 def problems(t):
-    """the table's own contract: frames inside the film, recipes and levels where ready, and the hard silence"""
+    """Frames, ready recipes, and each pass's sound contract (C5P2 keeps the forge lit)."""
     out = []
     for r in t["events"]:
         ready = r["status"].startswith("ready")
@@ -304,12 +351,12 @@ def problems(t):
                 out.append(f"{r['id']}: ready without a frame, recipe or level")
             if f is not None and not 0 <= f < t["frames"]:
                 out.append(f"{r['id']}: frame {f} outside the film")
-            if f is not None and SHUTDOWN <= f < RING_CUT:
+            if t.get("hard_silence") and f is not None and SHUTDOWN <= f < RING_CUT:
                 out.append(f"{r['id']}: a hit inside the hard silence ({f})")
-            if f is not None and f < SHUTDOWN and r.get("post_max_f") is not None and f + r["post_max_f"] > SHUTDOWN:
+            if t.get("hard_silence") and f is not None and f < SHUTDOWN and r.get("post_max_f") is not None and f + r["post_max_f"] > SHUTDOWN:
                 out.append(f"{r['id']}: rings past the shutdown")
         elif r["kind"] == "bed":
-            if r["f0"] < RING_CUT and r["f1"] > SHUTDOWN:
+            if t.get("hard_silence") and r["f0"] < RING_CUT and r["f1"] > SHUTDOWN:
                 out.append(f"{r['id']}: bed {r['f0']}-{r['f1']} crosses the hard silence")
             if not 0 <= r["f0"] < r["f1"] <= t["frames"]:
                 out.append(f"{r['id']}: bed {r['f0']}-{r['f1']} outside the film or empty")
@@ -318,6 +365,21 @@ def problems(t):
     ids = [r["id"] for r in t["events"]]
     if len(ids) != len(set(ids)):
         out.append("duplicate ids")
+    if t.get("instep"):
+        by_id = {r["id"]: r for r in t["events"]}
+        steady, race = by_id.get("C5.forge.instep", {}), by_id.get("C5.forge.race", {})
+        if (steady.get("f0") != INSTEP or steady.get("f1", 0) <= C17_END or
+                race.get("f0", INSTEP) >= INSTEP or race.get("f1", 0) < SETTLED or
+                not all(r.get("no_breath") and r.get("send") == 0.0 for r in (steady, race))):
+            out.append("instep: continuous breath-exempt forge beds required across 3848 through C17")
+        if t.get("hard_silence") or any(r["kind"] == "silence" and r["f0"] < C17_END and r["f1"] > INSTEP
+                                      for r in t["events"]):
+            out.append("instep: silence contradicts the continuous forge")
+        hammers = [r for r in t["events"] if r["id"].startswith("C5.hammer.instep_")]
+        if [r["hit_f"] for r in hammers] != t["instep"]["beat_frames"]:
+            out.append("instep: hammer onsets must cover every score beat")
+        if not all(r.get("no_breath") and r.get("send") == 0.0 for r in hammers):
+            out.append("instep: hammers must bypass the score breath")
     return out
 
 

@@ -92,12 +92,24 @@
   ]
  },
  {
-  "id": "C5.forge.cold",
+  "id": "C5.forge.race",
   "kind": "bed",
   "t0": 159.0,
-  "t1": 160.333,
-  "level": -66.1,
-  "gain": -36.2,
+  "t1": 161.333,
+  "level": -42.1,
+  "gain": -12.0,
+  "src": [
+   "fs:172630",
+   "fs:595483"
+  ]
+ },
+ {
+  "id": "C5.forge.instep",
+  "kind": "bed",
+  "t0": 160.333,
+  "t1": 177.667,
+  "level": -45.1,
+  "gain": -14.9,
   "src": [
    "fs:172630",
    "fs:595483"
@@ -106,8 +118,8 @@
  {
   "id": "C5.storm.unfinished",
   "kind": "bed",
-  "t0": 167.708,
-  "t1": 174.208,
+  "t0": 166.667,
+  "t1": 175.667,
   "level": -43.2,
   "gain": -17.9,
   "src": [
@@ -704,15 +716,286 @@
   ]
  },
  {
-  "id": "C5.hammer.cut",
+  "id": "C5.hammer.gather_1",
   "kind": "event",
-  "t": 160.0,
-  "level": -33.0,
-  "gain": 6.1,
-  "clip_start_s": 159.998,
-  "hit_offset_s": 0.002,
+  "t": 159.0833,
+  "level": -35.0,
+  "gain": -16.6,
+  "clip_start_s": 159.0833,
+  "hit_offset_s": 0.0,
   "src": [
-   "vsco:Percussion/Anvil_Hit1_v3_Sum.wav"
+   "fs:386116"
+  ]
+ },
+ {
+  "id": "C5.hammer.gather_2",
+  "kind": "event",
+  "t": 159.625,
+  "level": -35.0,
+  "gain": -16.5,
+  "clip_start_s": 159.625,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116"
+  ]
+ },
+ {
+  "id": "C5.hammer.gather_3",
+  "kind": "event",
+  "t": 160.125,
+  "level": -35.0,
+  "gain": -16.3,
+  "clip_start_s": 160.125,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_1",
+  "kind": "event",
+  "t": 160.8333,
+  "level": -37.0,
+  "gain": -19.1,
+  "clip_start_s": 160.8333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_2",
+  "kind": "event",
+  "t": 161.6667,
+  "level": -37.0,
+  "gain": -19.1,
+  "clip_start_s": 161.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_3",
+  "kind": "event",
+  "t": 162.5,
+  "level": -37.0,
+  "gain": -19.1,
+  "clip_start_s": 162.5,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_4",
+  "kind": "event",
+  "t": 163.3333,
+  "level": -37.0,
+  "gain": -19.1,
+  "clip_start_s": 163.3333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_5",
+  "kind": "event",
+  "t": 164.1667,
+  "level": -37.0,
+  "gain": -19.1,
+  "clip_start_s": 164.1667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_6",
+  "kind": "event",
+  "t": 165.0,
+  "level": -37.0,
+  "gain": -19.1,
+  "clip_start_s": 165.0,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_7",
+  "kind": "event",
+  "t": 165.8333,
+  "level": -37.0,
+  "gain": -19.1,
+  "clip_start_s": 165.8333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_8",
+  "kind": "event",
+  "t": 166.6667,
+  "level": -37.0,
+  "gain": -19.1,
+  "clip_start_s": 166.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_9",
+  "kind": "event",
+  "t": 167.5,
+  "level": -37.6,
+  "gain": -19.6,
+  "clip_start_s": 167.5,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_10",
+  "kind": "event",
+  "t": 168.3333,
+  "level": -38.1,
+  "gain": -20.2,
+  "clip_start_s": 168.3333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_11",
+  "kind": "event",
+  "t": 169.1667,
+  "level": -38.7,
+  "gain": -20.8,
+  "clip_start_s": 169.1667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_12",
+  "kind": "event",
+  "t": 170.0,
+  "level": -39.2,
+  "gain": -21.3,
+  "clip_start_s": 170.0,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_13",
+  "kind": "event",
+  "t": 170.8333,
+  "level": -39.8,
+  "gain": -21.9,
+  "clip_start_s": 170.8333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_14",
+  "kind": "event",
+  "t": 171.6667,
+  "level": -40.3,
+  "gain": -22.4,
+  "clip_start_s": 171.6667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_15",
+  "kind": "event",
+  "t": 172.5,
+  "level": -40.9,
+  "gain": -23.0,
+  "clip_start_s": 172.5,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_16",
+  "kind": "event",
+  "t": 173.3333,
+  "level": -41.4,
+  "gain": -23.5,
+  "clip_start_s": 173.3333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_17",
+  "kind": "event",
+  "t": 174.1667,
+  "level": -42.0,
+  "gain": -24.1,
+  "clip_start_s": 174.1667,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_18",
+  "kind": "event",
+  "t": 175.0,
+  "level": -42.6,
+  "gain": -24.6,
+  "clip_start_s": 175.0,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
+  ]
+ },
+ {
+  "id": "C5.hammer.instep_19",
+  "kind": "event",
+  "t": 175.8333,
+  "level": -43.0,
+  "gain": -25.1,
+  "clip_start_s": 175.8333,
+  "hit_offset_s": 0.0,
+  "src": [
+   "fs:386116",
+   "fs:386115"
   ]
  },
  {

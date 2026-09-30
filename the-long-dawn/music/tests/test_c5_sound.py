@@ -176,35 +176,110 @@ def test_table_rows_sit_on_the_measured_frames(table):
     assert R["C5.forge.low_returns"]["hit_f"] == E["trap.low_forge_returns"]["first"]
     for k in range(2, 9):
         assert R[f"C5.map.beacon{k}"]["hit_f"] == E[f"map.beacon_{k}"]["first"]
-    assert R["C5.forge.cold"]["f1"] == E["cold.forges_off"]["frame"] == 3848
+    assert R["C5.forge.race"]["f1"] == 3872
+    assert R["C5.forge.instep"]["f0"] == 3848 and R["C5.forge.instep"]["f1"] > 4240
     assert R["C5.pen.refusal_offer"]["hit_f"] == E["refusal.ink_begins"]["first"]
     assert R["C5.pen.refusal_figure"]["hit_f"] == E["refusal.figure_begins"]["first"]
-    assert R["C5.storm.unfinished"]["f1"] == E["unfinished.storm_thins"]["full"]
-    sil = R["C5.silence"]
-    assert (sil["f0"], sil["f1"]) == (3848, 4000)
+    assert (R["C5.storm.unfinished"]["f0"], R["C5.storm.unfinished"]["f1"]) == (4000, 4216)
+    assert "C5.silence" not in R and table["hard_silence"] is None
 
 
 def test_table_hammers_follow_each_pass_pulse(table):
     p1 = {r["id"]: r for r in T.build("C5")["events"]}
-    diff = sorted(r["id"] for r in table["events"] if r != p1[r["id"]])
-    assert diff == sorted([f"C5.hammer.trap_{k}" for k in range(1, 8)] + ["C5.hammer.alone_1", "C5.hammer.alone_2"])
     assert [p1[f"C5.hammer.trap_{k}"]["hit_f"] for k in range(1, 8)] == [2320, 2360, 2440, 2480, 2520, 2560, 2600]
     p2 = {r["id"]: r for r in table["events"]}
     assert [p2[f"C5.hammer.trap_{k}"]["hit_f"] for k in range(1, 8)] == [2320, 2360, 2400, 2483, 2523, 2563, 2603]
+    bm = json.load(open(os.path.join(T.V3, "barmap_C5P2.json")))
+    beat = 60 * bm["fps"] / bm["bpm"]
+    strikes = [r["hit_f"] for r in table["events"] if r["id"].startswith("C5.hammer.instep_")]
+    assert strikes == list(range(3860, 4240, 20))
+    assert all(f / beat == int(f / beat) for f in strikes)
+    assert p1["C5.forge.cold"]["f1"] == p1["C5.silence"]["f0"] == 3848
 
 
 @pytest.mark.parametrize("mutate, expect", [
-    (lambda t: t["events"].append(dict(id="x", kind="event", hit_f=3900, status="needs source")), "hard silence"),
-    (lambda t: t["events"].append(dict(id="y", kind="bed", f0=3800, f1=3900, status="needs source")), "crosses"),
+    (lambda t: next(r for r in t["events"] if r["id"] == "C5.forge.instep").update(f1=3999), "continuous"),
+    (lambda t: next(r for r in t["events"] if r["id"] == "C5.forge.race").update(no_breath=False), "continuous"),
     (lambda t: next(r for r in t["events"] if r["id"] == "C5.forge.surge").update(level=None), "ready without"),
     (lambda t: t["events"].append(copy.deepcopy(t["events"][0])), "duplicate"),
     (lambda t: next(r for r in t["events"] if r["id"] == "C5.burn.title").update(hit_f=6000), "outside the film"),
-    (lambda t: next(r for r in t["events"] if r["id"] == "C5.hammer.cut").update(post_max_f=20), "rings past"),
+    (lambda t: next(r for r in t["events"] if r["id"] == "C5.hammer.instep_1").update(hit_f=3861), "every score beat"),
+    (lambda t: next(r for r in t["events"] if r["id"] == "C5.hammer.instep_1").update(no_breath=False), "bypass"),
+    (lambda t: t["events"].append(dict(id="old.silence", kind="silence", f0=3848, f1=4000, status="ready")), "silence contradicts"),
 ])
 def test_table_contract_catches(table, mutate, expect):
     t = copy.deepcopy(table)
     mutate(t)
     assert any(expect in p for p in T.problems(t)), T.problems(t)
+
+
+def test_instep_bed_bypasses_real_renderer_breath(monkeypatch):
+    """Exercise build's bed path across a real breath envelope; removing the bypass makes this fail."""
+    import types
+    import sound_v3 as SV
+    import sound_c5_recipes as CR
+    r = next(r for r in T.build()["events"] if r["id"] == "C5.forge.instep")
+    recipe = CR._recipe(r)
+    module = types.SimpleNamespace(RECIPES={"test.bed": recipe}, SPACE={}, EXTRA_EVENTS=[], SILENCE=[],
+                                   EXTRA_BEDS=[dict(id="test.bed", t0=0.0, t1=1.0, fade_in=0, fade_out=0)])
+    bm = types.SimpleNamespace(n=SV.SR, d={}, breath_beats=lambda: [(0.24, 0.96, [])])
+    monkeypatch.setitem(sys.modules, "sound_recipes_INSTEP_TEST", module)
+    monkeypatch.setattr(SV, "BarMap", lambda cut: bm)
+    monkeypatch.setattr(SV, "sync_table", lambda cut: {})
+    monkeypatch.setattr(SV, "space_irs", lambda name: None)
+    monkeypatch.setattr(SV, "ref_levels", lambda *a: {})
+    monkeypatch.setattr(SV, "bed", lambda *a: np.full((SV.SR, 2), 0.1, np.float32))
+    monkeypatch.setattr(SV, "limit_crest", lambda y, *a: y)
+    monkeypatch.setattr(SV, "match_gain", lambda *a: 0.0)
+    monkeypatch.setattr(SV, "proc", lambda y, **kw: y)
+    _, continuous, _ = SV.build("INSTEP_TEST", verbose=False)
+    recipe["no_breath"] = False
+    _, ducked, _ = SV.build("INSTEP_TEST", verbose=False)
+    assert np.max(np.abs(continuous[SV.SR // 2])) > 0.09
+    assert np.max(np.abs(ducked[SV.SR // 2])) < 0.001
+
+
+def test_new_c5p2_samples_resolve_inside_existing_sound_cache():
+    import sound_c5_recipes as CR
+    import sound_v3 as SV
+    recipes, _, _, _, _ = CR.assemble(T.build(), "test")
+
+    def refs(spec):
+        if "layers" in spec:
+            return [ref for layer in spec["layers"] for ref in refs(layer)]
+        src = spec["src"]
+        return [s[0] for s in src] if isinstance(src, list) else [src[0]]
+
+    for eid, recipe in recipes.items():
+        if not (eid.startswith(("C5.forge.race", "C5.forge.instep", "C5.hammer.gather_", "C5.hammer.instep_"))):
+            continue
+        for ref in refs(recipe):
+            path = os.path.realpath(SV.src_path(ref))
+            assert os.path.commonpath([path, os.path.realpath(SV.LIB)]) == os.path.realpath(SV.LIB), ref
+
+
+def test_approved_hammers_keep_original_recipes_and_sources():
+    import sound_c5_recipes as CR
+    import sound_recipes_C as RC
+    import sound_v3 as SV
+    rows = {r["id"]: r for r in T.build()["events"]}
+    for prefix, count, recipe, filename in (("trap", 7, "C5.hammer", "Anvil_Hit1_v3_Sum.wav"),
+                                            ("alone", 2, "C5.hammer.faint", "Anvil_Hit1_v2_Sum.wav")):
+        for k in range(1, count + 1):
+            row = rows[f"C5.hammer.{prefix}_{k}"]
+            assert row["recipe"] == recipe
+            expected = dict(RC.RECIPES[recipe], level=row["level"])
+            assert CR._recipe(row) == expected
+            assert expected["src"] == (f"vsco:Percussion/{filename}", 0.002)
+            assert os.path.isfile(SV.src_path(expected["src"][0]))
+
+
+def test_instep_pair_has_no_scattered_layer_delays():
+    from sound_c5_recipes import INSTEP_RECIPES
+    rc = INSTEP_RECIPES["C5.hammer.instep"]
+    assert len(rc["layers"]) == 2
+    assert all(layer.get("dt", 0.0) == 0.0 and layer["pre"] == 0.0 for layer in rc["layers"])
+    assert rc["send"] == 0.0 and rc["no_breath"]
 
 
 def test_edl_of_the_retired_cut_is_refused(tmp_path):
@@ -278,7 +353,7 @@ def test_every_c5_row_is_resolved(mod):
     assert r.returncode == 0, r.stderr[-400:]
     n_recipes, n_skipped, silence = r.stdout.strip().splitlines()[-1].split(" ", 2)
     assert int(n_recipes) > 0 and int(n_skipped) == 0
-    assert silence == str([(3848 / 24, 4000 / 24)])
+    assert silence == str([] if mod.endswith("C5P2") else [(3848 / 24, 4000 / 24)])
 
 
 def test_an_unresolved_row_is_refused_unless_told(monkeypatch):

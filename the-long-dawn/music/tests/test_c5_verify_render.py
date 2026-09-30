@@ -91,6 +91,63 @@ def test_silence_check_both_ways():
     assert not r["ok"] and r["frames_missing"]
 
 
+def forge_window():
+    return np.full(((V.FORGE_END - V.SHUTDOWN) * FR, 2), 1e-3, np.float32)
+
+
+def test_continuity_checks_every_frame_including_transition_and_c17_end():
+    y = forge_window()
+    r = V.check_continuity(y, "sfx", first_frame=V.SHUTDOWN)
+    assert r["ok"] and r["expected_frames"] == r["measured_frames"] == 392
+    assert r["worst_rms_dbfs"] == pytest.approx(-60.0)
+    for f in (3848, 3900, 4239):
+        muted = y.copy()
+        muted[(f - V.SHUTDOWN) * FR:(f - V.SHUTDOWN + 1) * FR] = 0
+        r = V.check_continuity(muted, "sfx", first_frame=V.SHUTDOWN)
+        assert not r["ok"] and list(r["at_or_below_floor"]) == [f]
+
+
+def test_continuity_rejects_silence_and_dither_floor():
+    y = forge_window()
+    for value in (0.0, 1e-6):
+        y[:] = value
+        r = V.check_continuity(y, "sfx", first_frame=V.SHUTDOWN)
+        assert not r["ok"] and len(r["at_or_below_floor"]) == 392
+
+
+def test_continuity_rejects_missing_partial_and_nonfinite_frames():
+    y = forge_window()
+    r = V.check_continuity(y[:-1], "sfx", first_frame=V.SHUTDOWN)
+    assert not r["ok"] and r["frames_missing"] == [4239] and r["measured_frames"] == 391
+    r = V.check_continuity(y[FR:], "sfx", first_frame=V.SHUTDOWN + 1)
+    assert not r["ok"] and r["frames_missing"] == [3848]
+    r = V.check_continuity(y[:0], "sfx", first_frame=V.SHUTDOWN)
+    assert not r["ok"] and len(r["frames_missing"]) == 392 and r["worst_rms_dbfs"] is None
+    y[4 * FR, 0] = np.nan
+    r = V.check_continuity(y, "sfx", first_frame=V.SHUTDOWN)
+    assert not r["ok"] and r["frames_nonfinite"] == [3852]
+
+
+def test_loudness_measures_short_exports_and_rejects_wrong_gain_or_peak(tmp_path):
+    import render_v3 as RV
+    import soundfile as sf
+    t = np.arange(2 * SR) / SR
+    y = np.repeat((0.1 * np.sin(2 * np.pi * 440 * t))[:, None], 2, axis=1).astype(np.float32)
+    y *= 10 ** ((RV.TARGET_LUFS - RV.lufs(y)) / 20)
+    p = tmp_path / "sound_C5P2.wav"
+    sf.write(p, y, SR, subtype="FLOAT")
+    r = V.check_loudness(p)
+    assert r["ok"] and r["lufs_integrated"] == pytest.approx(RV.TARGET_LUFS, abs=1e-5)
+    sf.write(p, y * 10 ** (0.2 / 20), SR, subtype="FLOAT")
+    r = V.check_loudness(p)
+    assert not r["ok"] and abs(r["lufs_integrated"] - RV.TARGET_LUFS) > 0.1
+    y[SR] = 0.99
+    sf.write(p, y, SR, subtype="FLOAT")
+    r = V.check_loudness(p)
+    assert abs(r["lufs_integrated"] - RV.TARGET_LUFS) < 0.1
+    assert not r["ok"] and r["true_peak_dbtp"] > -1.2
+
+
 def test_not_before_both_ways():
     r = V.check_not_before(*stem_arriving_at([3990])[::-1], 4000, -90.0)
     assert not r["ok"] and 3980 <= r["first_sound_frame"] < 3990
@@ -139,6 +196,72 @@ def test_run_on_a_fake_render(fake_render):
     bl = [r for r in rep if r["check"] == "bloom onset"]
     assert len(bl) == len(V.BLOOMS) and all(r["status"] == "ON" for r in bl), bl
     assert all(r["ok"] for r in rep if r["check"] in ("length", "silence", "not before"))
+
+
+def sparse_export(path, continuous=False):
+    """Write sparse silence and, if requested, only the forge window; never allocate full-cut audio."""
+    import soundfile as sf
+    with sf.SoundFile(path, "w", samplerate=SR, channels=2, subtype="FLOAT") as f:
+        f.seek(5920 * FR - 1)
+        f.write(np.zeros((1, 2), np.float32))
+        if continuous:
+            f.seek(V.SHUTDOWN * FR)
+            f.write(forge_window())
+
+
+def test_run_keeps_score_silence_and_checks_master_and_effects_continuity(fake_render, monkeypatch):
+    from pathlib import Path
+    kw, _ = fake_render
+    out = Path(kw["out_dir"])
+    sparse_export(out / "final_C5P2.wav")
+    sparse_export(out / "sound_C5P2.wav", continuous=True)
+    sparse_export(out / "sfx_C5P2.wav", continuous=True)
+    measured = []
+
+    def loudness(path):
+        measured.append(Path(path).name)
+        return dict(check="loudness", what=Path(path).name, ok=True)
+
+    monkeypatch.setattr(V, "check_loudness", loudness)
+    rep = V.run("C5P2", **kw)
+    assert all(r["ok"] for r in rep), [r for r in rep if not r["ok"]]
+    assert {r["what"] for r in rep if r["check"] == "silence"} == {
+        "premaster_score_final_C5P2.npy", "final_C5P2.wav"}
+    assert {r["what"] for r in rep if r["check"] == "continuity"} == {"sound_C5P2.wav", "sfx_C5P2.wav"}
+    assert measured == ["sound_C5P2.wav"]
+    sparse_export(out / "sfx_C5P2.wav")
+    rep = V.run("C5P2", **kw)
+    bad = [r for r in rep if not r["ok"]]
+    assert [(r["check"], r["what"]) for r in bad] == [("continuity", "sfx_C5P2.wav")]
+
+
+def test_sound_is_optional_but_its_effects_export_is_required(tmp_path, monkeypatch):
+    import soundfile as sf
+    sparse_export(tmp_path / "final_C5P2.wav")
+    rep = V.check_exports("C5P2", 5920, -90, str(tmp_path))
+    assert all(r["ok"] for r in rep) and not any(r["what"] == "sfx_C5P2.wav" for r in rep)
+    sparse_export(tmp_path / "sound_C5P2.wav", continuous=True)
+    monkeypatch.setattr(V, "check_loudness", lambda p: dict(check="loudness", what="sound_C5P2.wav", ok=True))
+    rep = V.check_exports("C5P2", 5920, -90, str(tmp_path))
+    assert [(r["check"], r["what"]) for r in rep if not r["ok"]] == [("inputs", "sfx_C5P2.wav")]
+    sf.write(tmp_path / "sfx_C5P2.wav", np.zeros((SR, 2), np.float32), SR, subtype="FLOAT")
+    rep = V.check_exports("C5P2", 5920, -90, str(tmp_path))
+    bad = [r for r in rep if not r["ok"]]
+    assert [(r["check"], r["what"]) for r in bad] == [("length", "sfx_C5P2.wav"),
+                                                    ("continuity", "sfx_C5P2.wav")]
+    assert len(bad[1]["frames_missing"]) == 392
+
+
+def test_pass1_sound_keeps_its_silence_contract(tmp_path):
+    sparse_export(tmp_path / "final_C5.wav")
+    sparse_export(tmp_path / "sound_C5.wav")
+    rep = V.check_exports("C5", 5920, -90, str(tmp_path))
+    assert all(r["ok"] for r in rep)
+    assert [r["what"] for r in rep if r["check"] == "silence"] == ["final_C5.wav", "sound_C5.wav"]
+    assert not any(r["check"] in ("continuity", "loudness") for r in rep)
+    sparse_export(tmp_path / "sound_C5.wav", continuous=True)
+    rep = V.check_exports("C5", 5920, -90, str(tmp_path))
+    assert [(r["check"], r["what"]) for r in rep if not r["ok"]] == [("silence", "sound_C5.wav")]
 
 
 def test_run_catches_a_late_voice(fake_render):

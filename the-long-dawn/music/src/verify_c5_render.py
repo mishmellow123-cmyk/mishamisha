@@ -11,9 +11,13 @@ has been run on a real render. It is the numerical half of the morning's check, 
 Each check is MEASURED on the rendered arrays; none of them is listening.
 
   length      the premaster and every master are exactly the cut's length (5,920 frames = 11,840,000 samples)
-  silence     the peak of every frame 3848..3999 of the premaster and the masters: frames 3849..3999 must stay
+  silence     the peak of every frame 3848..3999 of the premaster and score master: frames 3849..3999 must stay
               under --floor-db (default -90 dBFS; the masters' 24-bit dither sits near -138 dBFS). Frame 3848 is
               reported, not judged: the cut lands inside it
+  continuity  C5P2's sound master and effects stem keep all 392 frames 3848..4239 above -90 dBFS RMS; the forges
+              stay lit while the score keeps its original rest. A missing or partial frame fails
+  loudness    C5P2's sound master stays within 0.1 LU of render_v3.TARGET_LUFS (-16), true peak <= -1.2 dBTP.
+              This check reads the full master: run the CLI through the owner's onepy memory guard
   arrivals    each part that enters FROM SILENCE on a re-timed event (the two first fires, the trap's measured forges,
               the far beacons' answers, the resolution on all_lit): its ARRIVAL, the first point within -0.7..+0.5 s
               of the event where the part's 5 ms energy envelope comes within 6 dB of the entry's early peak (the
@@ -50,6 +54,9 @@ V3 = os.path.join(MUSIC, "v3")
 SR, FPS = 48000, 24
 FR = SR // FPS
 SHUTDOWN, RING_CUT = 3848, 4000
+FORGE_END = 4240
+CONTINUITY_FLOOR_DB = -90.0
+LOUDNESS_TOLERANCE_LU, TRUE_PEAK_LIMIT_DBTP = 0.1, -1.2
 ARRIVALS = [("reveal", "hn3"), ("reveal", "hn_far"), ("low_fire", "hn3"), ("surge", "tbn"), ("flares_back", "hn3"),
             ("map_beacon_3", "hn_far"), ("map_beacon_4", "hn_farther"), ("one_dark", "vln1")]
 SWELLS = [("pulls_ahead", "vln1"), ("pulls_ahead", "vln2")]
@@ -90,6 +97,74 @@ def check_silence(y, what, floor_db, first_frame=0):
                 first_frame_peak_db=None if first is None else round(first, 1),
                 worst_db=None if worst is None else round(worst, 1), over_floor=loud, frames_missing=missing,
                 ok=not loud and not missing)
+
+
+def check_continuity(y, what, first_frame=0):
+    """Every complete frame of [3848, 4240) must contain energy above the fixed effects floor.
+
+    RMS is over the frame's samples and channels; a partial frame is missing, not a shorter successful probe.
+    This establishes continuous energy, not the identity or perceptual balance of the forge sound.
+    """
+    rms, missing, invalid = {}, [], []
+    for f in range(SHUTDOWN, FORGE_END):
+        a, b = (f - first_frame) * FR, (f - first_frame + 1) * FR
+        if a < 0 or b > len(y):
+            missing.append(f)
+            continue
+        seg = np.asarray(y[a:b], np.float64)
+        if not np.isfinite(seg).all():
+            invalid.append(f)
+            continue
+        rms[f] = db(np.sqrt(np.mean(seg ** 2)))
+    quiet = {f: round(v, 2) for f, v in rms.items() if v <= CONTINUITY_FLOOR_DB}
+    worst = min(rms.values(), default=None)
+    return dict(check="continuity", what=what, from_frame=SHUTDOWN, to_frame=FORGE_END - 1,
+                expected_frames=FORGE_END - SHUTDOWN, measured_frames=len(rms), floor_db=CONTINUITY_FLOOR_DB,
+                worst_rms_dbfs=None if worst is None else round(worst, 2), at_or_below_floor=quiet,
+                frames_missing=missing, frames_nonfinite=invalid, ok=not quiet and not missing and not invalid)
+
+
+def check_loudness(path):
+    """Measure the exported master through the same LUFS and 4x true-peak helpers used by its master chain."""
+    import soundfile as sf
+    import render_v3 as RV
+    y, rate = sf.read(path, dtype="float32", always_2d=True)
+    what = os.path.basename(path)
+    if rate != SR:
+        return dict(check="loudness", what=what, ok=False, note=f"{rate} Hz; expected {SR}")
+    loudness, tp = float(RV.lufs(y)), float(RV.true_peak_db(y))
+    return dict(check="loudness", what=what, lufs_integrated=loudness, true_peak_dbtp=tp,
+                target_lufs=RV.TARGET_LUFS, tolerance_lu=LOUDNESS_TOLERANCE_LU,
+                true_peak_limit_dbtp=TRUE_PEAK_LIMIT_DBTP,
+                ok=bool(np.isfinite(loudness) and np.isfinite(tp)
+                        and abs(loudness - RV.TARGET_LUFS) <= LOUDNESS_TOLERANCE_LU
+                        and tp <= TRUE_PEAK_LIMIT_DBTP))
+
+
+def check_exports(cut, frames, floor_db, out_dir):
+    """Score silence is unchanged; C5P2's optional sound master requires a continuous effects stem beside it."""
+    import soundfile as sf
+    rep = []
+    names = [f"final_{cut}.wav", f"sound_{cut}.wav"]
+    sound_exists = os.path.exists(os.path.join(out_dir, names[1]))
+    if cut == "C5P2" and sound_exists:
+        names.append(f"sfx_{cut}.wav")
+    for nm in names:
+        p = os.path.join(out_dir, nm)
+        if not os.path.exists(p):
+            rep.append(dict(check="inputs", what=nm, ok=nm.startswith("sound_"), note="absent"))
+            continue
+        info = sf.info(p)
+        rep.append(check_length(info.frames, frames, nm) if info.samplerate == SR else
+                   dict(check="length", what=nm, ok=False, note=f"{info.samplerate} Hz"))
+        continuous = cut == "C5P2" and nm.startswith(("sound_", "sfx_"))
+        stop = (FORGE_END if continuous else RING_CUT) * FR
+        seg, _ = sf.read(p, start=min(SHUTDOWN * FR, info.frames), stop=stop, dtype="float32", always_2d=True)
+        rep.append(check_continuity(seg, nm, first_frame=SHUTDOWN) if continuous else
+                   check_silence(seg, nm, floor_db, first_frame=SHUTDOWN))
+        if cut == "C5P2" and nm == f"sound_{cut}.wav":
+            rep.append(check_loudness(p))
+    return rep
 
 
 def envelope_db(x):
@@ -162,7 +237,6 @@ def barmap_frames(cut):
 
 
 def run(cut="C5P2", floor_db=-90.0, cache=CACHE, out_dir=OUT, parts_dir=PARTS):
-    import soundfile as sf
     ev, bmj = barmap_frames(cut)
     frames = int(bmj["frames"])
     rep = []
@@ -172,16 +246,7 @@ def run(cut="C5P2", floor_db=-90.0, cache=CACHE, out_dir=OUT, parts_dir=PARTS):
     y = np.load(pm, mmap_mode="r")
     rep.append(check_length(len(y), frames, os.path.basename(pm)))
     rep.append(check_silence(y, os.path.basename(pm), floor_db))
-    for nm in (f"final_{cut}.wav", f"sound_{cut}.wav"):
-        p = os.path.join(out_dir, nm)
-        if not os.path.exists(p):
-            rep.append(dict(check="inputs", what=nm, ok=nm.startswith("sound_"), note="absent"))
-            continue
-        info = sf.info(p)
-        rep.append(check_length(info.frames, frames, nm) if info.samplerate == SR else
-                   dict(check="length", what=nm, ok=False, note=f"{info.samplerate} Hz"))
-        seg, _ = sf.read(p, start=SHUTDOWN * FR, stop=RING_CUT * FR, dtype="float32", always_2d=True)
-        rep.append(check_silence(seg, nm, floor_db, first_frame=SHUTDOWN))
+    rep += check_exports(cut, frames, floor_db, out_dir)
     man = os.path.join(cache, f"manifest_final_{cut}.json")
     with open(man) as fh:
         manifest = json.load(fh)
