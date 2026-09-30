@@ -525,9 +525,13 @@ ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master'),
                  # 24/24, render sync 49/49, level map 23/23 with its effects, rules 3/3, notes 0, clicks 0.
                  # Alternative: pass 1 (music/out/v3/final_C5.wav, score only, pass 1's estimated timings).
                  'C': ('music/out/v3/sound_C5P2.wav', 'SOUND master (C5 pass 2)'),
-                 # A (director, 28 Sep ~02:20Z): COMPOSER-A2's v2 score + SOUND-C's real effects re-synced to the
-                 # measured picture (incl. A-FIX's h1_A fire); sync 59/59. Re-renders are picked up by name.
-                 'A': ('music/out/v3/sound_A.wav', 'SOUND master')}
+                 # A (owner, 29 Sep, under the standing delegation): score PASS 2 (cut id AP2) on the restaged
+                 # crossing: the walk enters at the measured set-off 5180 instead of 4880 (the line stands until then),
+                 # everything else note-for-note pass 1; A's effects with strike 1's pre-cut scrape muted (syncA).
+                 # -16.07 LUFS, TP -1.30 dBTP, 12,960,000 samples; verify_ap2_render 0 failures.
+                 # Alternative: the 28 Sep master music/out/v3/sound_A.wav (director, ~02:20Z; COMPOSER-A2's v2 score +
+                 # SOUND-C's real effects, sync 59/59), whose walk starts at 4880.
+                 'A': ('music/out/v3/sound_AP2.wav', 'SOUND master (A pass 2)')}
 # Every C sound file on record (sound_C, final_C, fallback_C, the MASTERS table's C rows) was made for the 7,200-frame
 # cut: C takes a file only when its length is the cut's, so a stale file is never picked by its name (EDIT-C5).
 LENGTH_GUARD = {'C'}
