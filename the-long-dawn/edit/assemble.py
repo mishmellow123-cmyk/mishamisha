@@ -709,6 +709,7 @@ def _to_srgb(x):
 
 
 import afix_comp as AFIX  # noqa: E402  (lane A-FIX's transition kinds, dispatched by _transitions)
+import ignition_comp as IGN  # noqa: E402  (A4/A5 opt-in; no other transition changes)
 
 
 def _swell(o, i, d, f, t, k):
@@ -776,7 +777,14 @@ def _tk_dissolve(o, i, f, t, ctx, lay, first):
 
 
 def _tk_swell(o, i, f, t, ctx, lay, first):
+    if t.get('breathing'):
+        return IGN.swell(o, i, first(), f, t, ctx.W / 1920.0)
     return _swell(o, i, first(), f, t, ctx.W / 1920.0)
+
+
+def _tk_collapse(o, i, f, t, ctx, lay, first):
+    result = IGN.collapse(f, t, first)
+    return (o if f < t['cut'] else i) if result is None else result
 
 
 def page_turn(o, i, p, tilt=8.0, radius=0.11):
@@ -974,6 +982,7 @@ def _tk_dawn_dissolve(o, i, f, t, ctx, lay, first):
 
 
 TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell, page_turn=_tk_page_turn)
+TKINDS_PAIR['collapse'] = _tk_collapse
 TKINDS_PAIR['dawn_dissolve'] = _tk_dawn_dissolve
 TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor, dawn_sweep=_tk_dawn_sweep,
                   caption_grade=_tk_caption_grade)
@@ -988,6 +997,8 @@ def transition_code(kind):
         return inspect.getsource(_tk_caption_grade) + CG.source()
     fn = TKINDS_PAIR.get(kind) or TKINDS_SHOT.get(kind)
     src = inspect.getsource(fn) if fn else ''
+    if kind in ('collapse', 'swell'):
+        src += inspect.getsource(IGN)
     return src + (inspect.getsource(KIND_HELPERS[kind]) if kind in KIND_HELPERS else '')
 
 
@@ -1034,7 +1045,7 @@ def _transitions(ctx, finish=None):
         if kind in AFIX.KINDS:                                # lane A-FIX's comps (edit/afix_comp.py)
             img = AFIX.apply(kind, o, i, f, t)
         else:
-            img = TKINDS_PAIR[kind](o, i, f, t, ctx, lay, lambda: side(t['cut'], f)[0])
+            img = TKINDS_PAIR[kind](o, i, f, t, ctx, lay, lambda g=t['cut']: side(g, f)[0])
         return np.clip(img, 0, 1).astype(np.float32), shot, f'{status} + {kind}', src
     return pic
 

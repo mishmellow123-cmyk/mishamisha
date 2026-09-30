@@ -671,14 +671,26 @@ def write(cut, stem, meta, bm, allow_unverified=False):
         raise SystemExit(f"REFUSED: {e}")
     import render_v3 as RV
     score = np.load(sp)
+    import importlib
+    recipe = importlib.import_module(f"sound_recipes_{cut}")
+    if hasattr(recipe, "prepare_master"):
+        score, pre = recipe.prepare_master(cut, score, pre)
     G = db(-16.0 - RV.lufs(score[:n] + pre)) * db(1.2)          # the master's gain, a little on the safe side
     pre = peak_guard(score[:n], pre, G)
+    master_options = {}
+    if hasattr(recipe, "bound_master"):
+        pre, master_options = recipe.bound_master(cut, pre)
     sf.write(os.path.join(OUT, f"sfxpre_{cut}.wav"), pre, SR, subtype="FLOAT")
-    RV.master(score, pre, n, f"sound_{cut}")
+    RV.master(score, pre, n, f"sound_{cut}", **master_options)
     for f in (f"manifest_final_{cut}.json", f"breath_probe_final_{cut}.json"):
         src = os.path.join(CACHE, f)
         if os.path.exists(src):
-            shutil.copyfile(src, os.path.join(CACHE, f.replace("final_", "sound_")))
+            dst = os.path.join(CACHE, f.replace("final_", "sound_"))
+            if f.startswith("breath_probe_") and hasattr(recipe, "refresh_breath_probes"):
+                probes = recipe.refresh_breath_probes(cut, score, json.load(open(src)))
+                json.dump(probes, open(dst, "w"), indent=1)
+            else:
+                shutil.copyfile(src, dst)
     del score
     shutil.copyfile(os.path.join(OUT, f"sound_{cut}_sfx.wav"), os.path.join(OUT, f"sfx_{cut}.wav"))
     post, _ = sf.read(os.path.join(OUT, f"sfx_{cut}.wav"), dtype="float32", always_2d=True)

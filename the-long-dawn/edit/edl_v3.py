@@ -671,10 +671,12 @@ TRANS = {'A': [], 'B': [], 'C': [
 # grade-match of the harvested B reveal (B's sky is a touch darker and cooler than reveal_A's at the 3680 cut)
 import afix_comp  # noqa: E402
 TRANS['A'] = list(afix_comp.A_TRANS) + [afix_comp.WATCHFIRES] + [      # + A-FIX's ENDING (approved 28 Sep)
-    dict(f0=1026, f1=1048, cut=1040, kind='swell', p0=(966, 238), c1=(964, 238), disc=(962, 235), flame=(959, 245),
+    dict(f0=960, f1=1026, cut=1012, kind='collapse', source_end=1012, land=1016, shutter=2.0,
+         note='A4: a five-tap shutter and eased arrival settle the glyphs for the breath at1020'),
+    dict(f0=1026, f1=1073, cut=1040, kind='swell', breathing=True,
+         p0=(966, 238), c1=(964, 238), disc=(962, 235), flame=(959, 245),
          s0=0.2, s1=0.4, blend=(1038, 1042), R=330,
-         note='A4 -> A5 (user 28 Sep: the point jumped to the ignition disc in one frame): the point swells, '
-              'catches and becomes the flame'),
+         note='A4 -> A5: inhale1026, full disc1040, moving light hands over to the flame through1072'),
     dict(f0=3612, f1=3660, kind='grade', gain=(1.18, 0.99, 0.94),
          note="HER FIRE (reveal_B, cropped) matched to reveal_A's sky: top-third means (.101 .142 .263) -> (.119 .140 "
               ".246) (reveal_A 3680; re-check on 3660 when reveal_a_1 lands)"),

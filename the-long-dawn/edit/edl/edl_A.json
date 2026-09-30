@@ -1462,6 +1462,14 @@
     1396,
     1436
    ],
+   "enter": [
+    1280,
+    1296
+   ],
+   "land": [
+    1412,
+    1439
+   ],
    "r0": [
     40,
     90
@@ -1758,10 +1766,21 @@
    "note": "A-FIX ENDING: the watch-fires pale as the long dawn comes"
   },
   {
+   "f0": 960,
+   "f1": 1026,
+   "cut": 1012,
+   "kind": "collapse",
+   "source_end": 1012,
+   "land": 1016,
+   "shutter": 2.0,
+   "note": "A4: a five-tap shutter and eased arrival settle the glyphs for the breath at1020"
+  },
+  {
    "f0": 1026,
-   "f1": 1048,
+   "f1": 1073,
    "cut": 1040,
    "kind": "swell",
+   "breathing": true,
    "p0": [
     966,
     238
@@ -1785,7 +1804,7 @@
     1042
    ],
    "R": 330,
-   "note": "A4 -> A5 (user 28 Sep: the point jumped to the ignition disc in one frame): the point swells, catches and becomes the flame"
+   "note": "A4 -> A5: inhale1026, full disc1040, moving light hands over to the flame through1072"
   },
   {
    "f0": 3612,

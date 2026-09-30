@@ -201,6 +201,12 @@ def vision(o, i, f, t):
     out = out_l * (1.0 - a[..., None]) + vis_l * a[..., None] + rim[..., None] * rim_c
     if fm is not None:
         out = out * (1.0 - fm[..., None]) + _lin(i) * fm[..., None]
+    if t.get('enter'):
+        w = _ss(*t['enter'], f)
+        out = _lin(i) * (1 - w) + out * w
+    if t.get('land'):
+        w = _ss(*t['land'], f)
+        out = out * (1 - w) + _lin(i) * w
     return np.clip(_srgb(out), 0.0, 1.0)
 
 
@@ -359,6 +365,7 @@ A_TRANS = [
     dict(f0=596, f1=672, cut=596, kind='dissolve', note='A-FIX TR600: held white -> the live frames, evenly'),
     # A5 THE PROMISE, bars 17-18: a vision in the fire's light (was the fire set down in a real valley)
     dict(f0=1280, f1=1440, cut=1280, kind='vision', track=_PROMISE_TRACK, open=(1280, 1318), close=(1396, 1436),
+         enter=(1280, 1296), land=(1412, 1439),
          r0=(40, 90), r1=(600, 300), lift=60, breath=0.035, bar0=1280, feather=0.07, flame_key=True,
          rim=(1.0, 0.75, 0.42), rim_gain=0.5, inside_glow=0.35, shimmer=1.6, outside='glow', glow_floor=1.0,
          glow_keys=[(1280, 0.004, 0.0036, 0.0032), (1440, 0.004, 0.0036, 0.0032)],

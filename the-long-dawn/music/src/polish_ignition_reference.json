@@ -1,0 +1,16 @@
+{
+  "schema": "long-dawn/ignition-polish-reference/1",
+  "cut": "AP2",
+  "frames": 6480,
+  "samples": 12960000,
+  "files": {
+    "envelope": {
+      "filename": "polishign_reference_master_AP2.npy",
+      "sha256": "bf80af94704aee3670712238dedacdc05a401fb8fc283ba90217274808c6db48"
+    },
+    "sfx": {
+      "filename": "polishign_reference_sfx_AP2.wav",
+      "sha256": "ddf1977691f921c768360c632d079305035e6823a9304f8db90ef5e7a4c0882f"
+    }
+  }
+}

@@ -127,6 +127,10 @@ RECIPES["A.roar"] = dict(layers=[dict(ly, post=3.0, fo=1.6, env=[(0.0, 0.0), (0.
 SPACE = dict(distance="forest20", outdoor="forest20", event_send=0.08, bed_send=0.0, wet_hp=150, wet_lp=9000,
              stem_hp=25)
 
+# A4/A5: keep the old note/performance cache and reshape its local premaster only.
+# AP2 forwards this hook at lookup time, as it does every other A effects attribute.
+from polish_ignition_A import prepare_master, bound_master, refresh_breath_probes  # noqa: E402
+
 # ---------------------------------------------------------------- A 3600-6479 on the delivered picture (29 Sep night)
 # The second half's effects were laid on the bar grid while its shots were slates. sound_a_table.py builds them from the
 # MEASURED picture (music/v3/events_A_measured.json; snapshot sound/a_sound_events.json): a far flare on each of the 45

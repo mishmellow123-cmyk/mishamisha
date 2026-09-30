@@ -212,7 +212,8 @@ def mix_score(parts, manifest, irs, breaths, render_n, eq=None, groups=None):
 # ---------------------------------------------------------------------------
 # the master (stem-linked: one gain curve on score and effects)
 # ---------------------------------------------------------------------------
-def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_out=0.35):
+def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_out=0.35,
+           reference_env=None, edit_windows=()):
     score = MX.highpass(score[:total_n].astype(np.float32), 8.0, order=1)
     sfx = None if sfx is None else MX.highpass(sfx[:total_n].astype(np.float32), 8.0, order=1)
     pre = score if sfx is None else score + sfx
@@ -234,6 +235,13 @@ def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_
         G *= 10 ** ((target - L) / 20)
     env = (np.float32(G) * comp * lim).astype(np.float32)[:, None]
     del comp, lim
+    if reference_env is not None:
+        # A bounded polish keeps the reference compressor/limiter outside its edit.
+        # Re-solving the global loudness target changes one scalar only there.
+        env = bounded_master_env(env[:, 0], reference_env, edit_windows)[:, None]
+        correction = np.float32(10 ** ((target - lufs(pre * env)) / 20))
+        env *= correction
+        print(f"  bounded master: normalization scalar {20*np.log10(correction):+.6f} dB", flush=True)
     s_out = score * env
     x_out = None if sfx is None else sfx * env
     fi, fo = int(0.010 * SR), int(fade_out * SR)
@@ -244,11 +252,16 @@ def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_
         y[-fo:] *= (np.cos(np.linspace(0, np.pi / 2, fo)) ** 2).astype(np.float32)[:, None]
     m_out = s_out if x_out is None else s_out + x_out
     tp = max(true_peak_db(m_out), true_peak_db(s_out))
-    if tp > -1.2:
-        k = np.float32(10 ** ((-1.25 - tp) / 20))
+    # A reference-constrained master can spend the original chain's 0.3 dB headroom
+    # on its single normalization scalar while retaining the deliverable's -1 dBTP.
+    tp_limit = -1.0 if reference_env is not None else -1.2
+    if tp > tp_limit:
+        k = np.float32(10 ** ((tp_limit - 0.05 - tp) / 20))
         s_out *= k
         if x_out is not None:
             x_out *= k
+        if reference_env is not None:
+            env *= k
         m_out = s_out if x_out is None else s_out + x_out
     rng = np.random.default_rng(0)
     paths = {}
@@ -262,6 +275,31 @@ def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_
     print(f"  wrote {name}: {lufs(m_out):.2f} LUFS, TP {true_peak_db(m_out):.2f} dBTP, master gain "
           f"{20 * np.log10(G):+.2f} dB", flush=True)
     return paths
+
+
+def bounded_master_env(current, reference, windows, fade_frames=16):
+    """Same-length master envelopes; quintic joins lie wholly inside frame windows.
+
+    Outside the union, the returned envelope is bit-identical to the reference. This
+    is opt-in; existing cuts retain the normal master chain when no reference is set.
+    """
+    reference = np.asarray(reference, np.float32)
+    if reference.shape != current.shape or not np.isfinite(reference).all() or np.any(reference < 0):
+        raise ValueError('invalid reference master envelope')
+    if not windows:
+        raise ValueError('a reference master needs explicit edit windows')
+    weight = np.zeros(len(current), np.float32)
+    for first, last in windows:
+        a, b = int(first*SR/24), int(last*SR/24)
+        if a < 0 or b > len(current) or b <= a:
+            raise ValueError('master edit window outside audio')
+        f = np.arange(b-a, dtype=np.float64)/(SR/24)
+        def ramp(u):
+            u = np.clip(u, 0, 1)
+            return u*u*u*(u*(u*6-15)+10)
+        w = ramp(f/fade_frames)*ramp((last-first-f)/fade_frames)
+        weight[a:b] = np.maximum(weight[a:b], w.astype(np.float32))
+    return (reference+(current-reference)*weight).astype(np.float32)
 
 
 def fader_curve(n, pts):
