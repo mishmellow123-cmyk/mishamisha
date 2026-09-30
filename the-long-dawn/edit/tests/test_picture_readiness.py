@@ -135,23 +135,74 @@ class PictureReadinessTests(unittest.TestCase):
                        if not EDL.is_final_take(t)}
         self.assertEqual(provisional, {'h1_v3', 'montage', 'run_b_tests/dusk_motion',
                                        'x1_letters_C_test', 'embers_C3_half'})
-        expected_d = {'D07': {'embers_A3'}, 'D10': {'cutd_deep_race'},
-                      'D11a': {'cutd_deep_clean','cand_sweep_soft-entry'},
-                      'D11b': {'cutd_deep_clean','book_C_ft'}, 'D11c': {'book_C'},
-                      'D11d': {'cutd_deep_exit','book_C_ft'}, 'D12': {'cutd_deep_brink'}}
+        # Eight candidate declarations remain provisional across the four Deep rows. Adoption removes
+        # the D07/D10/D12 stand-ins; it does not grant final eligibility to the local re-bake or C fallback.
+        expected_d = {'D11a': [(0,'cutd_deep_clean'),(1,'cand_sweep_soft-entry')],
+                      'D11b': [(0,'cutd_deep_clean'),(1,'book_C_ft')],
+                      'D11c': [(0,'book_C'),(1,'book_C')],
+                      'D11d': [(0,'cutd_deep_exit'),(1,'book_C_ft')]}
         def pending(rows):
-            return {s['code']: {t['stem'] for t in s['takes'] if not EDL.is_final_take(t)}
+            return {s['code']: [(i,t['stem']) for i,t in enumerate(s['takes']) if not EDL.is_final_take(t)]
                     for s in rows if any(not EDL.is_final_take(t) for t in s['takes'])}
         self.assertEqual(pending(EDL.D), expected_d)
-        for code in ('D07', 'D11a'):
+        for code in expected_d:
             broken = [dict(s, takes=[dict(t, final_eligible=True) for t in s['takes']])
                       if s['code'] == code else s for s in EDL.D]
             with self.assertRaises(AssertionError):
                 self.assertEqual(pending(broken), expected_d)
+        for code in ('D07','D10','D12'):
+            self.assertTrue(all(EDL.is_final_take(t) for s in EDL.D if s['code']==code for t in s['takes']))
         self.assertTrue(EDL.is_final_take(EDL.T('accepted_v2', mode='layered', note='approved fire test')))
         self.assertTrue(EDL.is_final_take({'stem': 'legacy_approved_take'}))
         self.assertFalse(EDL.is_final_take(None))
         self.assertTrue(EDL.check(str(EDIT.parent / 'music' / 'v3')))
+
+    def test_complete_adopted_sources_select_four_provisional_deep_takes_for_240_frames(self):
+        """A full synthetic local namespace pins eventual selection independently of farm arrival timing."""
+        local=self.root/'local'
+        self.enterContext(mock.patch.dict(os.environ,CUTD_LOCAL_RENDERS=str(local)))
+        rows=[s for s in EDL.D if s['code'].startswith('D11')]
+        self.enterContext(mock.patch.dict(EDL.EDL,D=rows))
+        def catalogue(stem,frames):
+            directory=AS.render_dir(stem)
+            self.index[directory]={f:os.path.join(directory,f'f_{f:05d}.png') for f in frames}
+        for row in rows:
+            take=row['takes'][0]
+            first,last=take.get('need') or (EDL.source_frame(take,row['f0']),EDL.source_frame(take,row['f1']-1))
+            catalogue(take['stem'],range(first,last+1))
+            if take.get('matte'):
+                catalogue(take['matte'],range(first,last+1))
+            under,frame,cut=AS.under_take(take['under'])
+            catalogue(under['stem'],range(under['need'][0],under['need'][1]+1))
+            if take.get('linear_mix'):
+                directory=Path(AS.render_dir(take['linear_mix']))
+                directory.mkdir(parents=True,exist_ok=True)
+                for f in range(first,last+1):
+                    Path(AS.DEEP.coeff_path(directory,f)).write_bytes(b'synthetic-presence-only-fixture')
+        expected={row['code']:row['takes'][0] for row in rows}
+        self.assertEqual({code:take['stem'] for code,take in expected.items()},
+                         {'D11a':'cutd_deep_clean','D11b':'cutd_deep_clean','D11c':'book_C','D11d':'cutd_deep_exit'})
+        def selected():
+            return {row['code']:AS.plan_shot(row,'D',None)['take'] for row in rows}
+        self.assertEqual(selected(),expected)
+        self.assertEqual(D.provisional_frames('D',None)[0],240)
+        for row in rows:
+            take=AS.plan_shot(row,'D',None)['take']
+            self.assertEqual(AS.provisional_sources(take,'D',None,row['f0']),(take['stem'],))
+        # Promoting only the selected eight-frame entry must change readiness despite the same pixels.
+        with mock.patch.dict(rows[0]['takes'][0],final_eligible=True):
+            with self.assertRaises(AssertionError):
+                self.assertEqual(D.provisional_frames('D',None)[0],240)
+            self.assertEqual(D.provisional_frames('D',None)[0],232)
+        # A missing required race frame must reject all three race-backed local choices.
+        race=self.index[AS.render_dir('embers_D_race')]
+        del race[2719]
+        with self.assertRaises(AssertionError):
+            self.assertEqual(selected(),expected)
+        after=selected()
+        for code in ('D11a','D11b','D11c'):
+            self.assertNotEqual(after[code],expected[code])
+        self.assertEqual(after['D11d'],expected['D11d'])
 
     def test_full_provisional_c6_stays_visible_but_cannot_notify_complete(self):
         self.decided()

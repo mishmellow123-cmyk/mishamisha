@@ -155,7 +155,17 @@ def test_map_holds_insert_and_caption_catch_order_match_the_committed_edit():
 
 def test_d_captions_are_the_live_table_and_retired_story_text_is_absent():
     disk = load('barmap_D')
-    assert disk['text'] == json.loads(json.dumps(titles.text_table('D')))
+    expected = copy.deepcopy(disk['text'])
+    assert by_id(expected)['D14']['set'] == 'lower'  # authored fallback is still available to a missing plate
+    by_id(expected)['D14']['set'] = 'in_picture'  # owner's complete D23 adoption supplies the same words
+    live = json.loads(json.dumps(titles.text_table('D')))
+    assert expected == live
+    for ident, field, value in [('D14', 'set', 'lower'), ('D13', 'set', 'in_picture'),
+                                ('D14', 'f_in', 5865), ('D14', 'line', 'Changed words.')]:
+        wrong = copy.deepcopy(expected)
+        by_id(wrong)[ident][field] = value
+        with pytest.raises(AssertionError):
+            assert wrong == live  # no extra placement, timing or wording difference is permitted
     assert len(disk['text']) == 21
     assert by_id(disk['text'])['D07']['f_in'] == 2772
     assert (by_id(disk['text'])['D02']['f_in'], by_id(disk['text'])['D02']['f_out']) == (684, 932)

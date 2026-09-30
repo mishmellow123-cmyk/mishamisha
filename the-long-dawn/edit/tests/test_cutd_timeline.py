@@ -10,6 +10,7 @@ EDIT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(EDIT))
 import assemble as AS  # noqa: E402
 import edl_v3 as EDL  # noqa: E402
+from cutd_test_fixtures import edl_namespace
 
 
 # The34 half-open beat ranges from the approved treatment v2, not inferred from the EDL under test.
@@ -87,7 +88,7 @@ def test_new_stems_cannot_auto_promote_when_a_folder_arrives(monkeypatch):
     # Every filesystem lookup claims all frames exist. Unadopted NEW picture still remains an explicit slate.
     monkeypatch.setattr(AS, 'complete', lambda *args: True)
     monkeypatch.setattr(AS, 'locate', lambda *args: ('synthetic-available-frame', False))
-    by_code = {row['code']: row for row in EDL.D}
+    by_code = {row['code']: row for row in edl_namespace()['D']}
     source = (EDIT / 'edl_v3.py').read_text()
     for code, expected in NEW.items():
         row = by_code[code]
@@ -144,9 +145,35 @@ def test_reuse_source_clocks_and_holds_match_the_treatment():
     assert by_code['D26']['takes'][0]['need'] == (5180, 5579)
     map_rows = [r for r in EDL.D if r['code'].startswith('D21')]
     assert sum(r['f1'] - r['f0'] for r in map_rows) == 500
-    moving = [r for r in map_rows if r['takes'] and 'hold' not in r['takes'][0]]
+    moving = [r for r in map_rows if r['takes'] and 'hold' not in r['takes'][0]
+              and r['takes'][0]['stem'] == 'cand_map_beacon-falloff']
     assert sum(r['f1'] - r['f0'] for r in moving) == 376
     assert sum(r['f1'] - r['f0'] for r in map_rows if r['takes'] and 'hold' in r['takes'][0]) == 84
+
+
+def assert_holdout_adoption(rows):
+    by_code = {row['code']: row for row in rows}
+    holdout = by_code['D21b']
+    assert (holdout['f0'],holdout['f1']) == (5480,5520)
+    assert holdout['takes'] and holdout['takes'][0]['stem'] == 'embers_D_holdout'
+    take = holdout['takes'][0]
+    assert take['need'] == (5480,5519) and 'hold' not in take
+    assert [EDL.source_frame(take,f) for f in range(5480,5520)] == list(range(5480,5520))
+    advancing = [row for row in rows if row['code'].startswith('D21') and row['takes']
+                 and 'hold' not in row['takes'][0]]
+    assert sum(row['f1']-row['f0'] for row in advancing) == 416
+    assert {row['code'] for row in advancing} == {'D21a','D21b','D21d'}
+
+
+def test_holdout_adopts_40_new_picture_frames_without_retiming_the_376_map_frames():
+    assert_holdout_adoption(EDL.D)
+    for change in ({'takes':[]},
+                   {'takes':[EDL.T('embers_D_holdout',0,'exact',hold=5480,need=(5480,5519))]},
+                   {'takes':[EDL.T('embers_D_holdout',1,'exact',need=(5480,5519))]},
+                   {'takes':[EDL.T('embers_D_holdout',0,'exact',need=(5480,5518))]}):
+        bad=[dict(row,**change) if row['code']=='D21b' else row for row in EDL.D]
+        with pytest.raises(AssertionError):
+            assert_holdout_adoption(bad)
 
 
 def assert_rebake_required(row):

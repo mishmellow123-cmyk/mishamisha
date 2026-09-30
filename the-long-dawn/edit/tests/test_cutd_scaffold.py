@@ -90,7 +90,11 @@ def test_d_has_its_own_barmap_sections_and_caption_table():
     assert titles.text_table('D') != titles.text_table('C')
     disk = json.loads((ROOT / 'music/v3/barmap_D.json').read_text())
     assert disk['status'] == 'treatment; new picture pending'
-    assert disk['text'] == json.loads(encoded(titles.text_table('D')))
+    expected = deepcopy(disk['text'])
+    old_fire = next(row for row in expected if row['id'] == 'D14')
+    assert old_fire['set'] == 'lower'  # the authored table retains the missing-plate fallback
+    old_fire['set'] = 'in_picture'  # complete adopted D23 is the only runtime caption-table change
+    assert expected == json.loads(encoded(titles.text_table('D')))
     assert EDL.check(ROOT / 'music/v3')
 
 

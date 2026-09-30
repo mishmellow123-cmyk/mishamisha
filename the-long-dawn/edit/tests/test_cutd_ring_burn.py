@@ -12,6 +12,7 @@ import assemble as AS
 import deliver as DV
 import edl_v3 as EDL
 import ring_burn as RB
+from cutd_test_fixtures import adoption_lines, edl_namespace
 
 
 def burn():
@@ -25,35 +26,42 @@ def assert_source_contract(take):
 
 
 def test_explicit_standin_and_future_one_line_adoption():
-    row = next(s for s in EDL.D if s['code'] == 'D07')
+    unadopted = edl_namespace()
+    row = next(s for s in unadopted['D'] if s['code'] == 'D07')
     assert row['takes'] == [EDL.D_BURN_PLATE]
     assert_source_contract(row['takes'][0])
     for key, value in [('clamp',(1400,1440)), ('need',(1400,1438)), ('final_eligible',True)]:
         rejected = dict(row['takes'][0], **{key:value})
         with pytest.raises(AssertionError):
             assert_source_contract(rejected)
-    future = EDL.T('embers_D_inscription',0,'exact',need=(1680,1759))
+    future = adoption_lines()['D08'][0]
     assert EDL.source_frame(future,1759) == 1759
     assert 'screen_transform' not in future
     assert EDL.is_final_take(future)
-    assert next(s for s in EDL.D if s['code']=='D08')['takes'] == []
+    assert future['need'] == (1680,2079)
+    assert next(s for s in unadopted['D'] if s['code']=='D08')['takes'] == []
     assert all(row['takes'][0][k] is None for k in ('matte','under','add'))
-    opted=[(cut,s['code']) for cut,rows in EDL.EDL.items() for s in rows for t in s['takes']
+    opted=[(cut,s['code']) for cut,rows in unadopted['EDL'].items() for s in rows for t in s['takes']
            if 'clamp' in t or 'screen_transform' in t]
     assert opted==[('D','D07')]
+    live = {s['code']:s for s in EDL.D}
+    assert live['D07']['takes'] == live['D08']['takes'] == [future]
+    assert not any('clamp' in t or 'screen_transform' in t for s in EDL.D for t in s['takes'])
 
 
-def test_future_arrival_alone_does_not_adopt_and_explicit_swap_requires_all_frames(monkeypatch):
-    current=next(s for s in EDL.D if s['code']=='D07')
-    future=EDL.T('embers_D_inscription',0,'exact',need=(1680,1759))
+@pytest.mark.parametrize('missing_frame',(1680,1700,2079))
+def test_future_arrival_alone_does_not_adopt_and_explicit_swap_requires_all_frames(monkeypatch,missing_frame):
+    current=next(s for s in edl_namespace()['D'] if s['code']=='D07')
+    adopted_rows={s['code']:s for s in edl_namespace(adopt=('D08',))['D']}
     sources={'embers_A3':{f:f'A/{f}' for f in range(1400,1440)},
-             'embers_D_inscription':{f:f'D/{f}' for f in range(1680,1760)}}
+             'embers_D_inscription':{f:f'D/{f}' for f in range(1680,2080)}}
     monkeypatch.setattr(AS,'index',lambda p:sources.get(Path(p).name,{}))
     assert AS.plan_shot(current,'D',None)['take']['stem']=='embers_A3'
-    adopted=dict(current,takes=[future])
-    assert AS.plan_shot(adopted,'D',None)['take']['stem']=='embers_D_inscription'
-    del sources['embers_D_inscription'][1700]
-    assert AS.plan_shot(adopted,'D',None)['kind']=='slate'
+    for code in ('D07','D08'):
+        assert AS.plan_shot(adopted_rows[code],'D',None)['take']['stem']=='embers_D_inscription'
+    del sources['embers_D_inscription'][missing_frame]
+    for code in ('D07','D08'):
+        assert AS.plan_shot(adopted_rows[code],'D',None)['kind']=='slate'
 
 
 def test_layers_call_original_v2_kernel_in_native_screen_units(monkeypatch):

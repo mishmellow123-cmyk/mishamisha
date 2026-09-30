@@ -1,5 +1,4 @@
 """Explicit D adoption, complete source gates, baked-caption routing and filename-only inventory."""
-import ast
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -15,14 +14,7 @@ import cutd_adoption as A
 import deliver as DV
 import edl_v3 as EDL
 import titles
-
-
-def adoption_lines():
-    source = (EDIT / 'edl_v3.py').read_text()
-    block = source.split('D_NEW_TAKES = {', 1)[1].split('\n}', 1)[0]
-    lines = [line.strip()[2:] for line in block.splitlines() if line.strip().startswith("# 'D")]
-    return eval(compile(ast.parse('{\n' + '\n'.join(lines) + '\n}', mode='eval'), '<adoption>', 'eval'),
-                {'__builtins__': {}, 'T': EDL.T})
+from cutd_test_fixtures import adoption_lines, commented_source, edl_namespace
 
 
 def assert_catalogue(catalog):
@@ -42,7 +34,12 @@ def test_every_new_plate_has_one_literal_explicit_adoption_line():
         assert (take['stem'], take['off'], take['mode'], take['need']) == (stem, 0, 'exact', (first, last))
     assert calls['D23'][0]['baked_text'] == ('D14',)
     assert 'baked_text' not in EDL.T('legacy')
-    assert not EDL.D_NEW_TAKES
+    expected = {'D08', 'D09', 'D10', 'D12', 'D13', 'D14', 'D16', 'D17', 'D18',
+                'D19', 'D21b', 'D22', 'D23', 'D24', 'D27', 'D28', 'D31'}
+    assert set(EDL.D_NEW_TAKES) == expected
+    assert EDL.D_NEW_TAKES == {code: calls[code] for code in expected}
+    title = next(s for s in EDL.D if s['code'] == 'D33')
+    assert title['takes'] == [EDL.book('C title source6960-7199; caption source6980-7159', off=-1920)]
     for bad_span in ((1760, 2079), (1680, 1759)):
         broken = list(A.NEW_PLATES)
         broken[0] = (*broken[0][:2], *bad_span)
@@ -51,11 +48,15 @@ def test_every_new_plate_has_one_literal_explicit_adoption_line():
 
 
 def test_uncommenting_one_inscription_line_routes_both_rows_without_changing_the_standin():
-    source = (EDIT / 'edl_v3.py').read_text()
+    live = (EDIT / 'edl_v3.py').read_bytes()
+    source = commented_source()
     before = "    # 'D08': [T('embers_D_inscription', 0, 'exact', need=(1680, 2079))],"
     assert source.count(before) == 1
-    namespace = {'__file__': str(EDIT / 'edl_v3.py'), '__name__': 'cutd_adoption_fixture'}
-    exec(compile(source.replace(before, before.replace('# ', '', 1)), '<adoption fixture>', 'exec'), namespace)
+    unadopted = edl_namespace()
+    assert not unadopted['D_NEW_TAKES']
+    assert next(s for s in unadopted['D'] if s['code'] == 'D07')['takes'] == [EDL.D_BURN_PLATE]
+    assert next(s for s in unadopted['D'] if s['code'] == 'D08')['takes'] == []
+    namespace = edl_namespace(adopt=('D08',))
     rows = {s['code']: s for s in namespace['D']}
     assert rows['D07']['takes'] == rows['D08']['takes'] == namespace['D_NEW_TAKES']['D08']
     assert rows['D07']['takes'][0]['need'] == (1680, 2079)
@@ -65,6 +66,7 @@ def test_uncommenting_one_inscription_line_routes_both_rows_without_changing_the
     with pytest.raises(ValueError, match='exactly one explicit take'):
         exec(compile(source.replace(before, broken), '<invalid adoption>', 'exec'),
              {'__file__': str(EDIT / 'edl_v3.py'), '__name__': 'cutd_invalid_adoption'})
+    assert (EDIT / 'edl_v3.py').read_bytes() == live
 
 
 def test_inscription_gate_requires_burn_preroll_and_body_together(monkeypatch):
@@ -90,7 +92,7 @@ def test_inscription_gate_requires_burn_preroll_and_body_together(monkeypatch):
 
 
 def test_book_adoption_changes_caption_set_only_after_complete_selection(monkeypatch):
-    row = deepcopy(next(s for s in EDL.D if s['code'] == 'D23'))
+    row = deepcopy(next(s for s in edl_namespace()['D'] if s['code'] == 'D23'))
     monkeypatch.setattr(EDL, 'D', [row])
     present = set(range(5840, 6080))
     monkeypatch.setattr(AS, 'chain', lambda *args: ['fixture'])
@@ -153,6 +155,8 @@ def test_abc_tables_do_not_consult_d_adoption(monkeypatch):
 
 
 def test_inventory_counts_unique_accepted_in_range_frames_without_adopting(tmp_path, monkeypatch):
+    unadopted = edl_namespace()
+    monkeypatch.setattr(EDL, 'D', unadopted['D'])
     folder = tmp_path / 'embers_D_holdout'
     folder.mkdir()
     for f in range(5480, 5520):

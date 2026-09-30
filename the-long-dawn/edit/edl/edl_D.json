@@ -232,56 +232,23 @@
    "desc": "A burn born at the drawn gold Ring opens the page onto ours; incoming fire is an explicit A stand-in.",
    "takes": [
     {
-     "stem": "embers_A3",
-     "off": -280,
+     "stem": "embers_D_inscription",
+     "off": 0,
      "mode": "exact",
-     "note": "STAND-IN A1400-1439 thinking fire; source1439 held thereafter",
+     "note": "",
      "crop": null,
      "grade": null,
      "matte": null,
      "under": null,
      "video": null,
      "need": [
-      1400,
-      1439
+      1680,
+      2079
      ],
      "add": null,
-     "final_eligible": false,
-     "clamp": [
-      1400,
-      1439
-     ],
-     "screen_transform": {
-      "f0": 1680,
-      "f1": 1760,
-      "source_f0": 1680,
-      "source_f1": 1719,
-      "anchor0": [
-       960.293,
-       460.242
-      ],
-      "anchor1": [
-       959.523,
-       515.664
-      ],
-      "target0": [
-       998.0,
-       92.0
-      ],
-      "target1": [
-       960.0,
-       402.0
-      ],
-      "scale0": 0.1,
-      "scale1": 1.0,
-      "border": [
-       0.054901960784313725,
-       0.054901960784313725,
-       0.054901960784313725
-      ]
-     },
+     "final_eligible": true,
      "folders": [
-      "renders/embers_A3"
+      "renders/embers_D_inscription"
      ]
     }
    ],
@@ -299,7 +266,28 @@
    "name": "THE FORGING FRONT",
    "owner": "VISION",
    "desc": "NEW embers_D_inscription: A5's ice-white thinking fire, edged in gold, draws out into a band; the camera rides the front as it writes every script, stops mid-letter, and leaves the band hanging open.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_inscription",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      1680,
+      2079
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_inscription"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     23,
@@ -314,7 +302,28 @@
    "name": "THE FORGING",
    "owner": "OPENRING",
    "desc": "NEW embers_D_forging: towers rise under the open band; only the two tallest towers send sparks to its ends; each hammer stroke pays gold into the striker's windows.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_forging",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      2080,
+      2399
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_forging"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     27,
@@ -331,24 +340,23 @@
    "desc": "NEW embers_D_race: surges on every beat; glare hides the narrowing gap, gold reaches the nearest windows, and two giants pull ahead.",
    "takes": [
     {
-     "stem": "cutd_deep_race",
+     "stem": "embers_D_race",
      "off": 0,
      "mode": "exact",
-     "note": "STAND-IN native open-Ring race held at D2719",
+     "note": "",
      "crop": null,
      "grade": null,
      "matte": null,
      "under": null,
      "video": null,
      "need": [
-      2719,
+      2400,
       2719
      ],
      "add": null,
-     "final_eligible": false,
-     "hold": 2719,
+     "final_eligible": true,
      "folders": [
-      "renders/cutd_deep_race"
+      "renders/embers_D_race"
      ]
     }
    ],
@@ -378,22 +386,21 @@
      "under": [
       "take",
       {
-       "stem": "cutd_deep_race",
+       "stem": "embers_D_race",
        "off": 0,
        "mode": "exact",
-       "note": "STAND-IN native open-Ring race held at D2719",
+       "note": "",
        "crop": null,
        "grade": null,
        "matte": null,
        "under": null,
        "video": null,
        "need": [
-        2719,
+        2400,
         2719
        ],
        "add": null,
-       "final_eligible": false,
-       "hold": 2719
+       "final_eligible": true
       },
       2719,
       "D"
@@ -454,22 +461,21 @@
      "under": [
       "take",
       {
-       "stem": "cutd_deep_race",
+       "stem": "embers_D_race",
        "off": 0,
        "mode": "exact",
-       "note": "STAND-IN native open-Ring race held at D2719",
+       "note": "",
        "crop": null,
        "grade": null,
        "matte": null,
        "under": null,
        "video": null,
        "need": [
-        2719,
+        2400,
         2719
        ],
        "add": null,
-       "final_eligible": false,
-       "hold": 2719
+       "final_eligible": true
       },
       2719,
       "D"
@@ -530,22 +536,21 @@
      "under": [
       "take",
       {
-       "stem": "cutd_deep_race",
+       "stem": "embers_D_race",
        "off": 0,
        "mode": "exact",
-       "note": "STAND-IN native open-Ring race held at D2719",
+       "note": "",
        "crop": null,
        "grade": null,
        "matte": null,
        "under": null,
        "video": null,
        "need": [
-        2719,
+        2400,
         2719
        ],
        "add": null,
-       "final_eligible": false,
-       "hold": 2719
+       "final_eligible": true
       },
       2719,
       "D"
@@ -606,10 +611,10 @@
      "under": [
       "take",
       {
-       "stem": "cutd_deep_brink",
+       "stem": "embers_D_brink",
        "off": 0,
        "mode": "exact",
-       "note": "STAND-IN native brink held at D2960",
+       "note": "",
        "crop": null,
        "grade": null,
        "matte": null,
@@ -617,11 +622,10 @@
        "video": null,
        "need": [
         2960,
-        2960
+        3199
        ],
        "add": null,
-       "final_eligible": false,
-       "hold": 2960
+       "final_eligible": true
       },
       2960,
       "D"
@@ -675,10 +679,10 @@
    "desc": "NEW embers_D_brink: the red glow burns through onto the Ring, its gap at the narrowest yet; towers lean in.",
    "takes": [
     {
-     "stem": "cutd_deep_brink",
+     "stem": "embers_D_brink",
      "off": 0,
      "mode": "exact",
-     "note": "STAND-IN native brink held at D2960",
+     "note": "",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -686,13 +690,12 @@
      "video": null,
      "need": [
       2960,
-      2960
+      3199
      ],
      "add": null,
-     "final_eligible": false,
-     "hold": 2960,
+     "final_eligible": true,
      "folders": [
-      "renders/cutd_deep_brink"
+      "renders/embers_D_brink"
      ]
     }
    ],
@@ -710,7 +713,28 @@
    "name": "IF IT CLOSED",
    "owner": "VISION",
    "desc": "NEW embers_D_vision: the ends touch; a white seam and missing letters kindle; the circle becomes an ice-white Eye; the two giants bow first, then every tower; push into the slit.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_vision",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      3200,
+      3439
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_vision"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     41,
@@ -725,7 +749,28 @@
    "name": "THE GAP",
    "owner": "VISION",
    "desc": "NEW embers_D_gap: hard cut on the downbeat from slit to open gap as the next hammer stroke lands.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_gap",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      3440,
+      3519
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_gap"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     44,
@@ -773,7 +818,28 @@
    "name": "THE TRAP",
    "owner": "OPENRING",
    "desc": "NEW embers_D_trap: the page burns onto ours; one forge slows, loses gold to its neighbours and is passed; it flares back into the race; two giants run neck and neck.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_trap",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      3760,
+      4079
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_trap"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     48,
@@ -788,7 +854,28 @@
    "name": "THE GLOW AT THE BRINK",
    "owner": "GLOWVARS",
    "desc": "NEW falsedawn_brink: the opening ridge again; the glow pulses on the race's beat over red cloud.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "falsedawn_brink",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      4080,
+      4239
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/falsedawn_brink"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     52,
@@ -803,7 +890,28 @@
    "name": "THE TWO CROWNS",
    "owner": "VISION",
    "desc": "NEW embers_D_crowns: a locked frame; two orange beacons kindle together at D4320 on the giants' crowns, each lighting the other's face while both forges keep hammering.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_crowns",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      4240,
+      4559
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_crowns"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     54,
@@ -818,7 +926,28 @@
    "name": "THE TWO FIRES",
    "owner": "GLOWVARS",
    "desc": "NEW falsedawn_twofires: match the crowns to two beacons either side of the glow; fires answer toward us.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "falsedawn_twofires",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      4560,
+      5039
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/falsedawn_twofires"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     58,
@@ -899,7 +1028,28 @@
    "name": "THE HOLDOUT",
    "owner": "OPENRING",
    "desc": "NEW embers_D_holdout: the dark kingdom's hammer rings; planned first contact D5496; its sparks reach the band and narrow the gap a notch.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_holdout",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      5480,
+      5519
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_holdout"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     69,
@@ -1015,7 +1165,28 @@
    "name": "IN STEP",
    "owner": "OPENRING",
    "desc": "NEW embers_D_instep: every forge eases into a shared working glow; hammers land together, the ends cool from white to gold, and the glare clears.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_instep",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      5680,
+      5839
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_instep"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     72,
@@ -1030,7 +1201,31 @@
    "name": "THE OLD FIRE",
    "owner": "LASTPAGE",
    "desc": "NEW book_D_oldfire: in the book, the drawn Ring drops into the Mountain's drawn fire.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "book_D_oldfire",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      5840,
+      6079
+     ],
+     "add": null,
+     "final_eligible": true,
+     "baked_text": [
+      "D14"
+     ],
+     "folders": [
+      "renders/book_D_oldfire"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     74,
@@ -1045,7 +1240,28 @@
    "name": "THE RING, UNFINISHED",
    "owner": "OPENRING",
    "desc": "NEW embers_D_unfinished: the gap stands sharp over working towers; lamps rise around the band to light its letters, and gold falls into every window.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "embers_D_unfinished",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      6080,
+      6399
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/embers_D_unfinished"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     77,
@@ -1129,7 +1345,28 @@
    "name": "THE WATCH",
    "owner": "GLOWVARS",
    "desc": "NEW falsedawn_watch: hours later, fires surround the warm steady glow, which breathes once a bar.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "falsedawn_watch",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      7040,
+      7359
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/falsedawn_watch"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     89,
@@ -1144,7 +1381,28 @@
    "name": "THE LONG DAWN",
    "owner": "GLOWVARS",
    "desc": "NEW falsedawn_truedawn: the same ridge; rose light rises where the false dawn stood; the beacons still burn.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "falsedawn_truedawn",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      7360,
+      7839
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/falsedawn_truedawn"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     93,
@@ -1225,7 +1483,28 @@
    "name": "THE LAST WRITTEN LEAF",
    "owner": "LASTPAGE",
    "desc": "NEW book_lastleaf_open: the storyteller's last written line breaks off mid-word beside the drawn open Ring; the facing page is blank and the pen rests.",
-   "takes": [],
+   "takes": [
+    {
+     "stem": "book_lastleaf_open",
+     "off": 0,
+     "mode": "exact",
+     "note": "",
+     "crop": null,
+     "grade": null,
+     "matte": null,
+     "under": null,
+     "video": null,
+     "need": [
+      8320,
+      8639
+     ],
+     "add": null,
+     "final_eligible": true,
+     "folders": [
+      "renders/book_lastleaf_open"
+     ]
+    }
+   ],
    "kind": "takes",
    "bars": [
     105,
@@ -1441,7 +1720,7 @@
    "line": "In the old story, the Ring is unmade in the fire that forged it.",
    "f_in": 5864,
    "f_out": 6056,
-   "set": "lower",
+   "set": "in_picture",
    "locked": null,
    "row": 14
   },

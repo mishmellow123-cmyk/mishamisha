@@ -14,6 +14,7 @@ sys.path.insert(0, str(EDIT))
 import assemble as AS
 import edl_v3 as EDL
 import titles as T
+from cutd_test_fixtures import edl_namespace
 
 
 WORDS = [
@@ -89,8 +90,12 @@ def test_old_story_baked_caption_maps_to_the_existing_source_window():
     assert row['line'] == baked['line']
     drawn = {line.id for line in T.lines_v3('D', .125)}
     assert row['id'] not in drawn
-    assert 'D14' in drawn  # old-fire text is pending a new bake and must remain readable on its slate
-    assert next(row for row in narration() if row['row'] == 14)['set'] == 'lower'
+    old_fire = next(shot for shot in EDL.D if shot['code'] == 'D23')
+    plan = AS.plan_shot(old_fire, 'D', None)
+    assert plan['kind'] == 'take' and plan['have'] == 240
+    assert plan['take']['stem'] == 'book_D_oldfire' and plan['take']['baked_text'] == ('D14',)
+    assert 'D14' not in drawn  # the owner's complete D23 adoption now supplies these words in the page
+    assert next(row for row in narration() if row['row'] == 14)['set'] == 'in_picture'
 
 
 def test_multiline_rows_preserve_exact_case_and_punctuation():
@@ -122,7 +127,10 @@ def test_all_d_narration_glyphs_fit_in_the_lower_third():
 
 @pytest.mark.parametrize('number', [1, 6, 14, 19])
 def test_d_lower_rows_use_twelve_frame_fades_and_not_fire(number, monkeypatch):
+    # D14 still needs this lower-third fallback whenever its complete baked plate is not adopted.
+    monkeypatch.setattr(EDL, 'D', edl_namespace()['D'])
     row = narration()[number - 1]
+    assert row['set'] == 'lower'
     d, a = T.TextV3('D', row, .25), T.TextV3('A', row, .25)
     monkeypatch.setattr(d, '_fire', lambda *args: pytest.fail('D narration kindled as fire'))
     monkeypatch.setattr(d, '_ink', lambda *args: pytest.fail('D narration used a pen wipe'))
@@ -140,10 +148,13 @@ def test_d_lower_rows_use_twelve_frame_fades_and_not_fire(number, monkeypatch):
         np.testing.assert_array_equal(wrong, d.draw(plate.copy(), row['f_in'] + 6))
 
 
-def test_d_caption_is_composited_over_a_new_shot_slate():
+def test_d_caption_is_composited_over_a_new_shot_slate(monkeypatch):
+    monkeypatch.setattr(EDL, 'D', edl_namespace()['D'])
     row = narration()[13]
+    assert row['set'] == 'lower'
     ctx = AS.Ctx.__new__(AS.Ctx)
-    ctx.lines = [T.TextV3('D', row, .125)]
+    ctx.lines = T.lines_v3('D', .125)
+    assert 'D14' in {line.id for line in ctx.lines}
     ctx._ember_on, ctx.clean = False, True
     plate = np.zeros((100, 240, 3), np.float32)
     ctx.picture = lambda frame: (plate.copy(), {}, 'SLATE · NEW old fire', None)
