@@ -675,6 +675,11 @@ def write(cut, stem, meta, bm, allow_unverified=False):
     recipe = importlib.import_module(f"sound_recipes_{cut}")
     if hasattr(recipe, "prepare_master"):
         score, pre = recipe.prepare_master(cut, score, pre)
+    # polishedge: AP2's A6/A7 breath recovery and dynamics (sound_polish_edge), after the ignition's premaster edit
+    # (the two touch disjoint frames); the source caches stay intact, and both enter before peak guard and mastering
+    polish = getattr(recipe, "PREMASTER_POLISH", None)
+    if polish is not None:
+        score, pre = polish(score, pre, bm)
     G = db(-16.0 - RV.lufs(score[:n] + pre)) * db(1.2)          # the master's gain, a little on the safe side
     pre = peak_guard(score[:n], pre, G)
     master_options = {}

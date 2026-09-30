@@ -40,6 +40,7 @@ import look  # noqa: E402
 import title_scene as TS  # noqa: E402
 import titles  # noqa: E402
 import caption_grade as CG  # noqa: E402
+import edge_polish as EP  # noqa: E402
 
 cv2.setNumThreads(1)
 RENDERS = os.path.join(ROOT, 'renders')
@@ -989,8 +990,53 @@ TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor
 KIND_HELPERS = dict(swell=_swell, page_turn=page_turn, dawn_dissolve=dawn_sweep, dawn_sweep=dawn_sweep)
 
 
+# lane polishedge (A6/A7, second pass): exposure matches at the camera changes and the beat surges reshaped by a
+# gain on the current plate only (edit/edge_polish.py). Its statistics come from each plate's file decoded at one
+# fixed low resolution, so every output scale gets the same gains; frames it leaves alone play the plain frame.
+_EDGE_PLATES, _EDGE_PLANS, _EDGE_MEMO = {}, {}, {}
+
+
+def _edge_plate(cut, variant, g):
+    """edge_polish.Plate of cut frame g (None where the frame has no plain still file of its own)."""
+    shot = next((s for s in EDL.EDL[cut] if s['f0'] <= g < s['f1']), None)
+    if shot is None:
+        return None
+    key = (cut, variant, shot['f0'])
+    if key not in _EDGE_PLANS:
+        _EDGE_PLANS[key] = plan_shot(shot, cut, variant)
+    take = _EDGE_PLANS[key]['take']
+    if take is None or any(take.get(k) for k in ('crop', 'grade', 'matte', 'add', 'under')):
+        return None
+    p, _ = locate(take, cut, variant, g)
+    if not isinstance(p, str):
+        return None
+    if p not in _EDGE_PLATES:
+        bgr = cv2.imread(p, cv2.IMREAD_REDUCED_COLOR_4 if p.endswith('.jpg') else cv2.IMREAD_COLOR)
+        if bgr is not None and p.endswith('.png'):
+            bgr = cv2.resize(bgr, (bgr.shape[1] // 4, bgr.shape[0] // 4), interpolation=cv2.INTER_AREA)
+        _EDGE_PLATES[p] = None if bgr is None else EP.Plate(bgr)
+        while len(_EDGE_PLATES) > 64:
+            _EDGE_PLATES.pop(next(iter(_EDGE_PLATES)))
+    return _EDGE_PLATES[p]
+
+
+def _tk_edge_polish(img, src, f, t, fin, cut):
+    variant = _CTX.variant if _CTX is not None and _CTX.cut == cut else None
+    memo = _EDGE_MEMO.setdefault((cut, variant, json.dumps({k: t[k] for k in sorted(t) if k != 'note'})), {})
+    g = EP.gain(f, t, lambda h: _edge_plate(cut, variant, h), memo)
+    if g is None:
+        return None
+    img = EP.apply(img, g)
+    return fin(img, src, cut, f) if fin else img
+
+
+TKINDS_SHOT['edge_polish'] = _tk_edge_polish
+
+
 def transition_code(kind):
     """The source that decides a window of this kind (for deliver's segment keys)."""
+    if kind == 'edge_polish':
+        return ''.join(inspect.getsource(o) for o in (_edge_plate, _tk_edge_polish, EP))
     if kind in AFIX.KINDS:
         return inspect.getsource(AFIX)
     if kind == 'caption_grade':
@@ -1000,6 +1046,13 @@ def transition_code(kind):
     if kind in ('collapse', 'swell'):
         src += inspect.getsource(IGN)
     return src + (inspect.getsource(KIND_HELPERS[kind]) if kind in KIND_HELPERS else '')
+
+
+def transition_source_frames(t, f):
+    """The cut frames whose source files decide frame f of window t (deliver fingerprints each one's files)."""
+    if t['kind'] == 'edge_polish':
+        return EP.source_frames(f, t)
+    return (min(f, t['cut'] - 1), max(f, t['cut'])) if 'cut' in t else ()
 
 
 def _transitions(ctx, finish=None):

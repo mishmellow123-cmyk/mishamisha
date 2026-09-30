@@ -670,7 +670,8 @@ TRANS = {'A': [], 'B': [], 'C': [
 # A (28 Sep, approved): A-FIX's six windows (edit/afix_comp.py: bloom, dissolve, vision x2, iceheart, ember) + EDIT's
 # grade-match of the harvested B reveal (B's sky is a touch darker and cooler than reveal_A's at the 3680 cut)
 import afix_comp  # noqa: E402
-TRANS['A'] = list(afix_comp.A_TRANS) + [afix_comp.WATCHFIRES] + [      # + A-FIX's ENDING (approved 28 Sep)
+import edge_polish  # noqa: E402
+TRANS['A'] = list(afix_comp.A_TRANS) + [afix_comp.WATCHFIRES, edge_polish.WINDOW] + [   # + A-FIX's ENDING (28 Sep)
     dict(f0=960, f1=1026, cut=1012, kind='collapse', source_end=1012, land=1016, shutter=2.0,
          note='A4: a five-tap shutter and eased arrival settle the glyphs for the breath at1020'),
     dict(f0=1026, f1=1073, cut=1040, kind='swell', breathing=True,

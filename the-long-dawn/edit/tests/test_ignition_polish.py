@@ -284,13 +284,17 @@ def test_dispatcher_reads_arbitrary_source_frames_and_finishes_on_output_clock()
 
 
 def test_dispatcher_outside_owned_windows_is_bit_identical_to_outer():
+    # 1441-2399 is the edge lane's window (edge_polish): it reads the plain frame to decide its gain and plays that
+    # frame where it has none (1441, 1839), so there only the picture is pinned here; test_edge_polish owns the rest
+    edge = next(t for t in EDL.TRANS['A'] if t['kind'] == 'edge_polish')
     with synthetic_dispatch() as (picture, reads, finishes, outer):
         for f in (959, 1073, 1279, 1440, 1441, 1839):
             expected = outer(f)[0]
             reads.clear()
             finishes.clear()
             np.testing.assert_array_equal(picture(f)[0], expected)
-            assert reads == [f] and finishes == [(f, 'A', f)]
+            if not edge['f0'] <= f < edge['f1']:
+                assert reads == [f] and finishes == [(f, 'A', f)]
 
     # An accidentally extended collapse window would hold A4 over the A6 cut.
     extended = [dict(t, f1=1441) if t['kind'] == 'collapse' else t for t in EDL.TRANS['A']]

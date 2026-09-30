@@ -16,7 +16,7 @@ from scipy import signal
 from timeline_v3 import FR, SR, BarMap
 
 START, END = 960, 1120
-MASTER_WINDOWS = ((960, 1440),)  # Owner integration must use the UNION of every adopted polish lane.
+MASTER_WINDOWS = ((960, 2400),)  # the UNION of every adopted polish lane: ignition 960-1440 + edge 1441-2400
 GAIN_POINTS = ((960, 0), (984, -1.5), (1000, -5), (1020, -18),
                (1026, -18), (1034, -10), (1040, -3), (1052, 0), (1120, 0))
 

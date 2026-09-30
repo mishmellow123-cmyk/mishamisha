@@ -117,7 +117,8 @@ def test_guarded_sfx_restores_exterior_and_references_are_hash_checked(tmp_path,
     import render_v3 as RV
     monkeypatch.setattr(RV,'CACHE',str(tmp_path))
     monkeypatch.setattr(P,'__file__',str(tmp_path/'polish_ignition_A.py'))
-    n=1448*P.FR
+    lo,hi=min(a for a,_ in P.MASTER_WINDOWS),max(b for _,b in P.MASTER_WINDOWS)
+    n=(hi+8)*P.FR
     sf.write(tmp_path/'reference.wav',np.full((n,2),0.125,np.float32),P.SR,subtype='FLOAT')
     np.save(tmp_path/'reference.npy',np.ones(n,np.float32))
     files={kind:dict(filename=name,sha256=hashlib.sha256((tmp_path/name).read_bytes()).hexdigest())
@@ -125,10 +126,10 @@ def test_guarded_sfx_restores_exterior_and_references_are_hash_checked(tmp_path,
     (tmp_path/'polish_ignition_reference.json').write_text(json.dumps(dict(files=files)))
     candidate=np.full((n,2),0.5,np.float32)
     result,options=P.bound_master('AP2',candidate)
-    assert np.all(result[:960*P.FR]==0.125)
-    assert np.all(result[1440*P.FR:]==0.125)
-    assert np.all(result[960*P.FR:1440*P.FR]==0.5)
-    assert options['edit_windows']==((960,1440),)
+    assert np.all(result[:lo*P.FR]==0.125)
+    assert np.all(result[hi*P.FR:]==0.125)
+    assert np.all(result[lo*P.FR:hi*P.FR]==0.5)
+    assert options['edit_windows']==P.MASTER_WINDOWS
     assert np.all(options['reference_env']==1)
     untouched=np.zeros((1,2),np.float32)
     assert P.bound_master('B',untouched)==(untouched,{})
@@ -151,3 +152,17 @@ def test_breath_report_describes_polished_score_and_preserves_other_breaths():
     assert P.refresh_breath_probes('B',score,probes) is probes
     with pytest.raises(ValueError,match='missing or ambiguous'):
         P.refresh_breath_probes('AP2',score,probes[1:])
+
+
+def test_master_windows_cover_every_adopted_premaster_edit():
+    """bound_master restores the effects outside MASTER_WINDOWS to the pinned reference, so an adopted lane's edit
+    that falls outside the union would be silently undone (its sound restored to the delivered mix)."""
+    import sound_polish_edge as EDGE
+
+    def covered(first, last, windows):
+        return any(a <= first and last <= b for a, b in windows)
+
+    lanes = dict(ignition=(P.START, P.END), edge=EDGE.SCOPE)
+    for name, (first, last) in lanes.items():
+        assert covered(first, last, P.MASTER_WINDOWS), name
+    assert not covered(*EDGE.SCOPE, ((960, 1440),))  # the ignition-only windows would drop the edge lane
