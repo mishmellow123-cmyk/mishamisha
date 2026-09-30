@@ -331,6 +331,10 @@ ALTERNATIVES = {
            '320-559 with the old wording "...forges the Ring in secret." baked at 400-539'),
     'C8 sweep': ("one row S('C8', 1680, 1718, ...) with [ft_sweep()]", 'the hard entry: the filmed sweep pops on at '
                  '1680 (RGB MAD 13.33 against ~3 either side)'),
+    'C16/C17': ("C15 lead-in c5('cand_cold_lead24', ...), C16 c5('embers_C5_cold', PR11), C17 "
+                "c5('embers_C5_unfinished', PR11); restore the three together",
+                'the forges go cold: every forge dark at 3848, smoke over cold masonry, the Ring draining to grey '
+                'over dead towers (the owner, 29 Sep: it read as AI stopping)'),
     'C11': ("c5('embers_C5_trap', PR11)", 'no smoke: the sunk forge simply goes dark, then relights'),
     'C13': ("c5('runC_reveal_pair_v5', PR14)", 'the parchment Reveal (day page, gold beacon marks); restore together '
             "with C14's parchment scroll, or the 3112-3127 dissolve goes night into day"),
@@ -426,10 +430,10 @@ def last_beacon_rows(cold_cut):
               # candidate) lights a region, not a point; line art aligned at zero shift with the delivered map
               [c5('cand_map_beacon-falloff', f'beacon-falloff: {CAND}')])]
     if cold_cut < 3840:
-        rows.append(S('C15', cold_cut, 3840, '#16', 'THE FORGES GO COLD · LIT LEAD-IN', 'EMBERS',
-                      f'Every forge still burning, {3848 - cold_cut} frames before 3848 puts them all out.',
-                      [c5('cand_cold_lead24', f'lead24: {CAND}; its 3840-3999 equal embers_C5_cold '
-                           '(mean |diff| 0.0 at every 8th frame, JPEG max 2)')]))
+        rows.append(S('C15', cold_cut, 3840, '#16', 'THE FORGES FALL INTO STEP · LIT LEAD-IN', 'EMBERS',
+                      f'Every forge still racing, {3848 - cold_cut} frames before 3848 brings them into step.',
+                      [c5('cand_cold_in-step', f'in-step: {CAND}; before 3848 it equals the accepted lead24 '
+                           '(proved at 3816, 3840, 3847)')]))
     return rows
 
 
@@ -523,12 +527,15 @@ C = [
       # fires on the grey night page, as in C13 and C19. Source numbering 0-319 as runC_scroll's; ALTERNATIVES['C14']
       [T('cand_scroll_night-fire', -3120, 'exact', 'night-fire scroll (Codex lane beacons, farm 29 Sep)')]),
 ] + last_beacon_rows(COLD_CUT) + [
-    S('C16', 3840, 4000, '#16', 'THE FORGES GO COLD', 'EMBERS',
-      'Every forge goes dark at the same instant (3848); smoke over cold masonry; the Ring still gold.',
-      [c5('embers_C5_cold', PR11)]),
+    # ADOPTED 30 Sep (owner's pace-not-prohibition note): no forge goes dark. ALTERNATIVES['C16/C17'] keeps the cold.
+    S('C16', 3840, 4000, '#16', 'THE FORGES FALL INTO STEP', 'EMBERS',
+      'At the last beacon no forge goes dark: from 3848 every forge eases to one shared working glow (by 3872) and '
+      'breathes on the beat; faint warm chimney smoke; the Ring still gold.',
+      [c5('cand_cold_in-step', f'in-step: {CAND}')]),
     S('C17', 4000, 4240, '#17', 'THE RING, UNFINISHED', 'EMBERS',
-      'The Ring hangs over the dark towers; its glow drains to grey; the storm thins; a held final frame (4217-4239).',
-      [c5('embers_C5_unfinished', PR11)]),
+      'The Ring hangs, unfinished and gold, over working towers; its gold falls into every tower\'s windows; the storm '
+      'thins; a held final frame (4217-4239).',
+      [c5('cand_unfinished_in-step', f'in-step: {CAND}')]),
     S('C18', 4240, 4480, '#18', 'THE DEEP, ABANDONED', 'PAGES',
       'The mine page again, still: empty ladders, a lantern set down, the gold vein still glinting.',
       # ADOPTED 29 Sep: leaned_ladders. The ladders lean askew in a firmer line (left where they stood, not fixtures)

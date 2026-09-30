@@ -846,15 +846,15 @@
    "f0": 3816,
    "f1": 3840,
    "code": "#16",
-   "name": "THE FORGES GO COLD \u00b7 LIT LEAD-IN",
+   "name": "THE FORGES FALL INTO STEP \u00b7 LIT LEAD-IN",
    "owner": "EMBERS",
-   "desc": "Every forge still burning, 32 frames before 3848 puts them all out.",
+   "desc": "Every forge still racing, 32 frames before 3848 brings them into step.",
    "takes": [
     {
-     "stem": "cand_cold_lead24",
+     "stem": "cand_cold_in-step",
      "off": 0,
      "mode": "exact",
-     "note": "lead24: Codex PR #15 candidate, farm 29 Sep (5bc5fe9); its 3840-3999 equal embers_C5_cold (mean |diff| 0.0 at every 8th frame, JPEG max 2)",
+     "note": "in-step: Codex PR #15 candidate, farm 29 Sep (5bc5fe9); before 3848 it equals the accepted lead24 (proved at 3816, 3840, 3847)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -864,7 +864,7 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/cand_cold_lead24"
+      "renders/cand_cold_in-step"
      ]
     }
    ],
@@ -879,15 +879,15 @@
    "f0": 3840,
    "f1": 4000,
    "code": "#16",
-   "name": "THE FORGES GO COLD",
+   "name": "THE FORGES FALL INTO STEP",
    "owner": "EMBERS",
-   "desc": "Every forge goes dark at the same instant (3848); smoke over cold masonry; the Ring still gold.",
+   "desc": "At the last beacon no forge goes dark: from 3848 every forge eases to one shared working glow (by 3872) and breathes on the beat; faint warm chimney smoke; the Ring still gold.",
    "takes": [
     {
-     "stem": "embers_C5_cold",
+     "stem": "cand_cold_in-step",
      "off": 0,
      "mode": "exact",
-     "note": "Codex PR11 (embers, 9fa0822)",
+     "note": "in-step: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -897,7 +897,7 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/embers_C5_cold"
+      "renders/cand_cold_in-step"
      ]
     }
    ],
@@ -914,13 +914,13 @@
    "code": "#17",
    "name": "THE RING, UNFINISHED",
    "owner": "EMBERS",
-   "desc": "The Ring hangs over the dark towers; its glow drains to grey; the storm thins; a held final frame (4217-4239).",
+   "desc": "The Ring hangs, unfinished and gold, over working towers; its gold falls into every tower's windows; the storm thins; a held final frame (4217-4239).",
    "takes": [
     {
-     "stem": "embers_C5_unfinished",
+     "stem": "cand_unfinished_in-step",
      "off": 0,
      "mode": "exact",
-     "note": "Codex PR11 (embers, 9fa0822)",
+     "note": "in-step: Codex PR #15 candidate, farm 29 Sep (5bc5fe9)",
      "crop": null,
      "grade": null,
      "matte": null,
@@ -930,7 +930,7 @@
      "add": null,
      "final_eligible": true,
      "folders": [
-      "renders/embers_C5_unfinished"
+      "renders/cand_unfinished_in-step"
      ]
     }
    ],

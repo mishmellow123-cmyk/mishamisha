@@ -185,13 +185,13 @@ class C5ReadinessTests(unittest.TestCase):
 
     # ------------------------------------------------ the movable map -> Cold cut (edl_v3.COLD_CUT, one number)
     def test_committed_cold_cut_is_the_adopted_lead_in(self):
-        """29 Sep: COLD_CUT 3816 plays Codex's lead24 (cand_cold_lead24) after the adopted map; R15 crosses that cut on
+        """29 Sep: COLD_CUT 3816 plays the in-step forges' lit lead-in (cand_cold_in-step; 30 Sep, was lead24) after the adopted map; R15 crosses that cut on
         purpose (titles.C5_TEXT R15 across=3816), which the gate reports as INFO, never as a WARN."""
         self.assertEqual(EDL.COLD_CUT, 3816)
         self.assertEqual([(r['f0'], r['f1'], r['takes'][0]['stem']) for r in _ORIGINAL_C if r['sec'] in ('C15', 'C16')],
-                         [(3440, 3816, 'cand_map_beacon-falloff'), (3816, 3840, 'cand_cold_lead24'),
-                          (3840, 4000, 'embers_C5_cold')])
-        self.assertEqual(RD.hard_cuts().get(3816), ('cand_map_beacon-falloff', 'cand_cold_lead24'))
+                         [(3440, 3816, 'cand_map_beacon-falloff'), (3816, 3840, 'cand_cold_in-step'),
+                          (3840, 4000, 'cand_cold_in-step')])
+        self.assertEqual(RD.hard_cuts().get(3816), ('cand_map_beacon-falloff', 'cand_cold_in-step'))
         items = RD.run(True).items
         self.assertFalse([i for i in items if 'runs across the hard cut' in i['msg']])
         self.assertTrue([i for i in items if i['level'] == 'INFO' and 'runs across the cut at 3816 on purpose' in i['msg']])
@@ -222,24 +222,24 @@ class C5ReadinessTests(unittest.TestCase):
         is WARNed by name (a crossing nobody reviewed). Since the review (29 Sep) R15 is staged in parts and the part
         that crosses is named: R15a, the catch."""
         self.green(cold_cut=3800)
-        self.enterContext(mock.patch.dict(CA.DELIVERED, {'cand_cold_lead24': (3800, 3999)}))   # a longer delivery
+        self.enterContext(mock.patch.dict(CA.DELIVERED, {'cand_cold_in-step': (3800, 3999)}))   # a longer delivery
         rep, _, text = self.run_gate()
         self.assertGreen(rep, text)
         self.assertEqual([(r['f0'], r['f1'], r['takes'][0]['stem'], r['takes'][0]['off']) for r in RD.rows_of('C15')],
-                         [(3440, 3800, 'cand_map_beacon-falloff', 0), (3800, 3840, 'cand_cold_lead24', 0)])
+                         [(3440, 3800, 'cand_map_beacon-falloff', 0), (3800, 3840, 'cand_cold_in-step', 0)])
         warns = [i['msg'] for i in rep.items if i['level'] == 'WARN']
-        self.assertIn('R15a 3776-3839 runs across the hard cut at 3800 (cand_map_beacon-falloff -> cand_cold_lead24): '
+        self.assertIn('R15a 3776-3839 runs across the hard cut at 3800 (cand_map_beacon-falloff -> cand_cold_in-step): '
                       'its words change picture mid-line; end it by 3800, or keep it across on purpose', warns)
-        self.assertEqual(CA.needed_frames()['cand_cold_lead24'], set(range(3800, 3840)))
+        self.assertEqual(CA.needed_frames()['cand_cold_in-step'], set(range(3800, 4000)))   # the lead-in and C16 (30 Sep)
 
     def test_moved_cold_cut_before_its_delivery_is_owed_not_broken(self):
         self.green(cold_cut=3800)
         for f in range(3800, 3816):
-            self.drop('cand_cold_lead24', f)                      # the delivered lead-in starts at 3816
+            self.drop('cand_cold_in-step', f)                      # the delivered lead-in starts at 3816
         rep, keys, text = self.run_gate()
         self.assertTrue(rep.failed())
         self.assertEqual(rep.count('FAIL'), 0, text)
-        self.assertIn('16 of 40 frames not resolvable from cand_cold_lead24 3800-3839', text)
+        self.assertIn('16 of 40 frames not resolvable from cand_cold_in-step 3800-3839', text)
         self.assertIn('the EDL reads 3800-3815 (16 frames) beyond the recorded delivery 3816-3999', text)
         self.assertFalse(self.run_gate(partial=True)[0].failed())
 

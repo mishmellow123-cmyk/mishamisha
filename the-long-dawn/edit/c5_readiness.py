@@ -51,13 +51,13 @@ ROW_SECTIONS = {1: ('C1', 'C2'), 2: ('C3',), 3: ('C4',), 4: ('C4',), 5: ('C5',),
 SHOT_MAP = {
     'C10': (2080, 2320, 'book_C5_refusal', 0), 'C11': (2320, 2640, 'cand_trap_front_smoke_near', 0),
     'C13': (2880, 3120, 'cand_reveal_night-fire', 0), 'C14': (3120, 3440, 'cand_scroll_night-fire', -3120),
-    'C15': (3440, 3840, 'cand_map_beacon-falloff', 0), 'C16': (3840, 4000, 'embers_C5_cold', 0),
-    'C17': (4000, 4240, 'embers_C5_unfinished', 0), 'C18': (4240, 4480, 'cand_deep_leaned_ladders', 0),
+    'C15': (3440, 3840, 'cand_map_beacon-falloff', 0), 'C16': (3840, 4000, 'cand_cold_in-step', 0),
+    'C17': (4000, 4240, 'cand_unfinished_in-step', 0), 'C18': (4240, 4480, 'cand_deep_leaned_ladders', 0),
     'C19': (4480, 4720, 'cand_watch_night-fire', 0), 'C20': (4720, 5200, 'runC_illum', 2398 - 4720),
     'C21': (5200, 5440, 'book_C', 960), 'C22': (5440, 5680, 'cand_pen_soft_spine_metal', 0),
     'C23': (5680, 5920, 'book_C', 1280),
 }
-COLD_LEAD_STEM = 'cand_cold_lead24'          # Cold's lit lead-in, COLD_CUT-3839, when COLD_CUT < 3840
+COLD_LEAD_STEM = 'cand_cold_in-step'         # Cold's lit lead-in, COLD_CUT-3839, when COLD_CUT < 3840
 # The one movable picture cut, edl_v3.COLD_CUT (the last beacon -> the forges): anywhere from 3792 to the section line
 # 3840. Measured 29 Sep from the delivered frames, stated here independently: map_last_beacon_C's last kingdom catches
 # 3785-3791, so an earlier cut loses the catch; embers_C5_cold goes dark at 3848 whatever the cut.

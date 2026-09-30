@@ -96,32 +96,32 @@ class AssetMapTests(unittest.TestCase):
         self.map.write_text(json.dumps(dict(version=1, stems={s: str(self.out / s) for s in stems})))
 
     def test_exact_delivery_links_and_nothing_else_is_discovered(self):
-        self.deliver('embers_C5_cold')
+        self.deliver('cand_cold_in-step')
         self.deliver('embers_C5_trap')
-        (self.out / 'embers_C5_cold_v2').mkdir()                              # a lookalike: must never be used
-        self.write_map(['embers_C5_cold'])
+        (self.out / 'cand_cold_in-step_v2').mkdir()                              # a lookalike: must never be used
+        self.write_map(['cand_cold_in-step'])
         self.assertEqual(CA.run('link'), 0)
-        self.assertTrue((self.renders / 'embers_C5_cold').is_symlink())
-        self.assertEqual(os.path.realpath(self.renders / 'embers_C5_cold'), os.path.realpath(self.out / 'embers_C5_cold'))
+        self.assertTrue((self.renders / 'cand_cold_in-step').is_symlink())
+        self.assertEqual(os.path.realpath(self.renders / 'cand_cold_in-step'), os.path.realpath(self.out / 'cand_cold_in-step'))
         self.assertFalse((self.renders / 'embers_C5_trap').exists())        # delivered but unmapped: not linked
-        self.assertEqual(sorted(p.name for p in self.renders.iterdir()), ['embers_C5_cold'])
+        self.assertEqual(sorted(p.name for p in self.renders.iterdir()), ['cand_cold_in-step'])
         self.assertEqual(CA.run('link'), 0)                                   # idempotent
 
     def test_a_missing_or_stray_frame_refuses_the_link(self):
-        self.deliver('embers_C5_cold', missing=(3900,))
-        self.deliver('embers_C5_unfinished', extra=(4240,))
-        self.write_map(['embers_C5_cold', 'embers_C5_unfinished'])
+        self.deliver('cand_cold_in-step', missing=(3900,))
+        self.deliver('cand_unfinished_in-step', extra=(4240,))
+        self.write_map(['cand_cold_in-step', 'cand_unfinished_in-step'])
         self.assertEqual(CA.run('link'), 1)
-        self.assertFalse((self.renders / 'embers_C5_cold').exists())
-        self.assertFalse((self.renders / 'embers_C5_unfinished').exists())
+        self.assertFalse((self.renders / 'cand_cold_in-step').exists())
+        self.assertFalse((self.renders / 'cand_unfinished_in-step').exists())
 
     def test_existing_folder_or_other_link_is_never_replaced(self):
-        self.deliver('embers_C5_cold')
+        self.deliver('cand_cold_in-step')
         self.renders.mkdir()
-        (self.renders / 'embers_C5_cold').mkdir()                             # a real production folder
-        self.write_map(['embers_C5_cold'])
+        (self.renders / 'cand_cold_in-step').mkdir()                             # a real production folder
+        self.write_map(['cand_cold_in-step'])
         self.assertEqual(CA.run('link'), 1)
-        self.assertFalse((self.renders / 'embers_C5_cold').is_symlink())
+        self.assertFalse((self.renders / 'cand_cold_in-step').is_symlink())
 
     def test_receipts_beside_run_frames_are_allowed_other_files_are_not(self):
         d = self.deliver('cand_reveal_night-fire')     # a run delivery the EDL plays (C13 since 29 Sep's night pair)
@@ -135,15 +135,15 @@ class AssetMapTests(unittest.TestCase):
         cut = [r for r in EDL.EDL['C'] if r['sec'] != 'C15']
         j = next(k for k, r in enumerate(cut) if r['f0'] == 3840)
         self.enterContext(mock.patch.dict(EDL.EDL, {'C': cut[:j] + EDL.last_beacon_rows(3800) + cut[j:]}))
-        self.deliver('cand_cold_lead24')                                      # the farm's lead24: 3816-3999
-        self.write_map(['cand_cold_lead24'])
+        self.deliver('cand_cold_in-step')                                      # the farm's in-step: 3816-3999
+        self.write_map(['cand_cold_in-step'])
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             self.assertEqual(CA.run('link'), 0)
-        self.assertIn('OWED cand_cold_lead24: the EDL reads 3800-3815 (16 frames) beyond the recorded delivery '
+        self.assertIn('OWED cand_cold_in-step: the EDL reads 3800-3815 (16 frames) beyond the recorded delivery '
                       '3816-3999', out.getvalue())
-        self.assertTrue((self.renders / 'cand_cold_lead24').is_symlink())
-        self.assertEqual(CA.split_need('cand_cold_lead24', set(range(3800, 3840))),
+        self.assertTrue((self.renders / 'cand_cold_in-step').is_symlink())
+        self.assertEqual(CA.split_need('cand_cold_in-step', set(range(3800, 3840))),
                          (set(range(3816, 3840)), set(range(3800, 3816))))
 
     def test_needed_frames_come_from_the_edl(self):

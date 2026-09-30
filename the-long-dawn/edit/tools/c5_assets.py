@@ -53,6 +53,8 @@ DELIVERED = {
     'cand_pen_soft_spine_metal': (5440, 5679), 'cand_pen_soft_spine_metal_matte': (5440, 5679),
     # sweepC's soft entry, rendered on the owner Mac 29 Sep (its inputs are footage and stay out of git)
     'cand_sweep_soft-entry': (1680, 1687), 'cand_sweep_soft-entry_matte': (1680, 1687),
+    # the in-step forges (owner's pace-not-prohibition note, 30 Sep; farm-rendered)
+    'cand_cold_in-step': (3816, 3999), 'cand_unfinished_in-step': (4000, 4239),
 }
 
 
