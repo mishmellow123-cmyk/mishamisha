@@ -1,0 +1,6906 @@
+{
+ "schema": "long-dawn/a-events-measured/1",
+ "cut": "A",
+ "fps": 24,
+ "frames": "absolute A cut frame numbers; first/last inclusive; positions in 960x402 finished pixels",
+ "generated_by": "music/src/measure_a_analysis.py",
+ "generator_sha256": "c564430f6a151ac86853ac2521aeab1b89dc58668f557956148c684792be1f35",
+ "collector": "music/src/measure_a_points.py",
+ "collector_sha256": "6c838b1a13ba74704900e5c1257a7aa8e6d21e515719eddfac0e4625346194e6",
+ "basis_labels": {
+  "MEASURED": "a pixel statistic decided the frame(s) (see method)",
+  "OBSERVED": "checked by eye on half-size stills of the same finished frames (never in motion): asound-evidence/claude/crops_*.png and sheet_*.jpg",
+  "SOURCE": "a renderer parameter, kept as evidence beside the measurement; never the measured frame"
+ },
+ "sync_definitions": {
+  "catch": "first = the first frame its flame is visible (a sound burst arrives on first..fastest); fastest = its largest one-frame growth",
+  "burning": "already alight when the shot opens: first/last are the frames it is in view, catch null",
+  "recede": "a burning fire the camera draws away from: its footprint in dB re its close-shot size",
+  "pale": "EDIT dims a watch-fire to 15% of its light over [pale-20, pale]: pale_start/pale_end = the frames its 9-frame median top-hat crosses 10% / 90% of its measured fall"
+ },
+ "shots": {
+  "ridges": {
+   "stem": "reveal_A",
+   "first": 3660,
+   "last": 3799,
+   "frames_examined": 140,
+   "sources": [
+    "renders/reveal_A"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_ridges_03660_03739.json",
+     "sha256": "81fe0eb928c2d166c4cf4758d8ae501a72bf499c29882dd37e87be972aa72d6f",
+     "first": 3660,
+     "last": 3739,
+     "frames_examined": 80,
+     "frame_set_sha256": "3e537d5a7bb6ef75e8cfeb226332c4f4f8356529e81f590601f3602e125b4d6b",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_ridges_03740_03799.json",
+     "sha256": "ce2b7370a4d52db9ee8ec48983be15f9ea6e24c85d42d3f36e2dec1dca466520",
+     "first": 3740,
+     "last": 3799,
+     "frames_examined": 60,
+     "frame_set_sha256": "96a531bc8f1700c64fded58c5fd59c1416b629f49db22af509e13e3d90cbf195",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    }
+   ],
+   "geometry": {
+    "file": "asound-evidence/ridge_geometry.json",
+    "sha256": "53219825ec1d2f56a9ceea6d3e6cee35f9e160d56127b9a1fec6bde4ed884c18",
+    "note": "source-derived ROI aids; not measured pixels or visibility"
+   }
+  },
+  "karst": {
+   "stem": "montage3d_v3/karst_slow",
+   "first": 3800,
+   "last": 3859,
+   "frames_examined": 60,
+   "sources": [
+    "renders/montage3d_v3/karst_slow"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_inserts_03800_03879.json",
+     "sha256": "bf20311ee6ab7b7ca2eb1442fb5a2aed27cb907e51caaf98f678debf8eaff1b4",
+     "first": 3800,
+     "last": 3879,
+     "frames_examined": 80,
+     "frame_set_sha256": "8e789218795d248a79c5730e0a21c8f1f48a315937e8b63764688ff506f9b7d5",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_inserts_03880_03919.json",
+     "sha256": "6ebddb4768d8f8a81161e7289983556830dbd586213672198ecd33ab7c5d439f",
+     "first": 3880,
+     "last": 3919,
+     "frames_examined": 40,
+     "frame_set_sha256": "5f9f66057eff6078a4f33efecead2c5edca139e5521a4f3ef1c0b5ecc30bea4f",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    }
+   ]
+  },
+  "desert": {
+   "stem": "montage3d_v3/desert",
+   "first": 3860,
+   "last": 3919,
+   "frames_examined": 60,
+   "sources": [
+    "renders/montage3d_v3/desert"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_inserts_03800_03879.json",
+     "sha256": "bf20311ee6ab7b7ca2eb1442fb5a2aed27cb907e51caaf98f678debf8eaff1b4",
+     "first": 3800,
+     "last": 3879,
+     "frames_examined": 80,
+     "frame_set_sha256": "8e789218795d248a79c5730e0a21c8f1f48a315937e8b63764688ff506f9b7d5",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_inserts_03880_03919.json",
+     "sha256": "6ebddb4768d8f8a81161e7289983556830dbd586213672198ecd33ab7c5d439f",
+     "first": 3880,
+     "last": 3919,
+     "frames_examined": 40,
+     "frame_set_sha256": "5f9f66057eff6078a4f33efecead2c5edca139e5521a4f3ef1c0b5ecc30bea4f",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    }
+   ]
+  },
+  "run": {
+   "stem": "cand_beaconrun_linked-fires",
+   "first": 3920,
+   "last": 4239,
+   "frames_examined": 320,
+   "sources": [
+    "renders/cand_beaconrun_linked-fires"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_run_linked_03920_03999.json",
+     "sha256": "f285feede5c9d525aa70bf42b0fa79196adb48020a5f428e2e7bfce17f808d5d",
+     "first": 3920,
+     "last": 3999,
+     "frames_examined": 80,
+     "frame_set_sha256": "5aaa4cf7b5fd3e5cea13d97a1c200706e7c9871c9a8d6270676ddd5bcd3fd44a",
+     "take_override": "cand_beaconrun_linked-fires",
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+      "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+      "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+      "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_run_linked_04000_04079.json",
+     "sha256": "9acf4ea47858a9c5aeac3e20f6ee261ca02584244ffa0a5129fdd2c21ef88352",
+     "first": 4000,
+     "last": 4079,
+     "frames_examined": 80,
+     "frame_set_sha256": "d83af2a3bf0b5636eca6878cbb7d5e475c81de42c8c170e03b3748b1c9508ff6",
+     "take_override": "cand_beaconrun_linked-fires",
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+      "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+      "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+      "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_run_linked_04080_04159.json",
+     "sha256": "2deabf33d8759867db8421317b5004577f97faa71e6bf4c15cc736e2d197b717",
+     "first": 4080,
+     "last": 4159,
+     "frames_examined": 80,
+     "frame_set_sha256": "49202b7fc4b477adc37d053202395d875358e7127482c2ca1f5e8ef6467471ca",
+     "take_override": "cand_beaconrun_linked-fires",
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+      "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+      "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+      "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_run_linked_04160_04239.json",
+     "sha256": "4ebaaafe339cfac09e84f52c2d7f170e3eb4c931ce3895ba64550a2dce770bcf",
+     "first": 4160,
+     "last": 4239,
+     "frames_examined": 80,
+     "frame_set_sha256": "ff5bf903a4df1ad2a4a25385b09c058216c1ec35e2ffbd7d33dc9fc4ed0db13b",
+     "take_override": "cand_beaconrun_linked-fires",
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+      "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+      "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+      "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+     },
+     "frames_skipped_not_landed": []
+    }
+   ]
+  },
+  "watchers": {
+   "stem": "cand_watchers_linked-fires",
+   "first": 4240,
+   "last": 4399,
+   "frames_examined": 160,
+   "sources": [
+    "renders/cand_watchers_linked-fires"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_watchers_linked_04240_04319.json",
+     "sha256": "2313a5f567306ec0597be65f5f9694813ea1a9038e3186d5e7480510fdd32231",
+     "first": 4240,
+     "last": 4319,
+     "frames_examined": 80,
+     "frame_set_sha256": "aa0bc9235b7ebee79d16af198eed92bb8174827f4e9137416fae2581cb95b62f",
+     "take_override": "cand_watchers_linked-fires",
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+      "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+      "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+      "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_watchers_linked_04320_04399.json",
+     "sha256": "d01de6103229f1422413faafc53cdad144cde2ecf0d24711a305644272a686bf",
+     "first": 4320,
+     "last": 4399,
+     "frames_examined": 80,
+     "frame_set_sha256": "d4e0731097e300b40eec67b45488bf22110d92ec744162793f053773b01a94fd",
+     "take_override": "cand_watchers_linked-fires",
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+      "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+      "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+      "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+     },
+     "frames_skipped_not_landed": []
+    }
+   ]
+  },
+  "crossing": {
+   "stem": "cand_crossing_both_decal",
+   "first": 4880,
+   "last": 5839,
+   "frames_examined": 960,
+   "sources": [
+    "renders/cand_crossing_both_decal"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_crossing_04880_04959.json",
+     "sha256": "dd8b03a98759f5bcf8008d5bed7c3eef1ff82e45a2ef2c49d5346298a96f9110",
+     "first": 4880,
+     "last": 4959,
+     "frames_examined": 80,
+     "frame_set_sha256": "0c5f5c9b76257b38ef789928034048da1b4ec0580a2fa96a31e02ec79af7a165",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_04960_05039.json",
+     "sha256": "afebb601f5ba5e5f70a70e691cdb68fbb04164a5a774aa41184cfa57e4d490d2",
+     "first": 4960,
+     "last": 5039,
+     "frames_examined": 80,
+     "frame_set_sha256": "44a21b4cc6eaa26f153d586b6778edd5ac2e8e0d0fad596767b20e2d2d135944",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05040_05119.json",
+     "sha256": "99ddced6d4fe4aac61b87bc1403fef59df2a24feecfc3f8dce107e195e6f8b86",
+     "first": 5040,
+     "last": 5119,
+     "frames_examined": 80,
+     "frame_set_sha256": "9b7b4398c71c974f418ad859082d4e47d42dfc0ebb8583d0066895d794530f3f",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05120_05199.json",
+     "sha256": "8df5e1d979097d457a683badb2698ae2d64bc5fefa5a57efdfd44e5a8eb8aea6",
+     "first": 5120,
+     "last": 5199,
+     "frames_examined": 80,
+     "frame_set_sha256": "ada5d46d68a4067ce60cadd419d69a6e7cd1eefb9dbf308449170606cefeb012",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05200_05279.json",
+     "sha256": "a478a4ebef82a858655c6442e6c2431b7751a600ead7d3c96f0cb9caa2b173ec",
+     "first": 5200,
+     "last": 5279,
+     "frames_examined": 80,
+     "frame_set_sha256": "182820fad13eca45aa8bb0801cf10ec146ea49309653a4ba170b5d3be1b528d4",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05280_05359.json",
+     "sha256": "6468e1694dd8b682b1ff85752d51acb27d2a1ae2e8316770995b715556673f80",
+     "first": 5280,
+     "last": 5359,
+     "frames_examined": 80,
+     "frame_set_sha256": "a57d81aa506175bef233dbdb49c5996422f29e7e1ece1edcf33bf203eea694cd",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05360_05439.json",
+     "sha256": "4a0f94877d09043fdb97a2dab3efdf28f91f29c5b7cf6e5eb4dc753c023cfc87",
+     "first": 5360,
+     "last": 5439,
+     "frames_examined": 80,
+     "frame_set_sha256": "45504e393a15b68511d96451fb0edad2e498ef65115979c1da99f9fbeb020945",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05440_05519.json",
+     "sha256": "ba727193d0a8e8e4a6201112cf8e728f61dd9beeb67e880a0ec5d5459b13b26e",
+     "first": 5440,
+     "last": 5519,
+     "frames_examined": 80,
+     "frame_set_sha256": "637422439fca40b86e1a372f5b41b8ff7e69e50ab006926e0f5f60c7eb1b7c00",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05520_05599.json",
+     "sha256": "4666eaa30dfd714c098fdb35f64072863aaa73409c011672700b078f4ee1048c",
+     "first": 5520,
+     "last": 5599,
+     "frames_examined": 80,
+     "frame_set_sha256": "c504f244c04f1a946d0f0082ede25f2c3c336dff1cc6755c85f7a9c3d022689e",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05600_05679.json",
+     "sha256": "6eaffd093309decf4e5664e8a7ac61e36310d055ab9e01e936ee36f2f73ba2f2",
+     "first": 5600,
+     "last": 5679,
+     "frames_examined": 80,
+     "frame_set_sha256": "daf0361a1d2826c08466e78ecb6ae0d57ee9fa6904ea8cc4bbb7af00dfcedc71",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05680_05759.json",
+     "sha256": "e149e99b8e0d9d5798ccb33a3e31dcc62d3f22ee828dc5123e702363834b991f",
+     "first": 5680,
+     "last": 5759,
+     "frames_examined": 80,
+     "frame_set_sha256": "77271953f6d1024264df0956b6e82f2b2ee9cfe03a525978564f9145a5915abc",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_crossing_05760_05839.json",
+     "sha256": "d58d41f3679531677cbba7737e23ac3713aadb7117c3c308e5c5c2e0045a13bc",
+     "first": 5760,
+     "last": 5839,
+     "frames_examined": 80,
+     "frame_set_sha256": "fd7df9b877023c90f73f28300b652eaf2a617ea147c8288f95844bf3bc65f69d",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    }
+   ],
+   "geometry": {
+    "file": "asound-evidence/crossing_geometry.json",
+    "sha256": "cf7c44bff5e134152de0d8d353cf81c7ad9853a6fe33686455d58dc89933f225"
+   },
+   "both_decal_cap": {
+    "doc": "owner bea534d stages cand_crossing_both_decal_cap first for A18 (plays once all 960 frames land): both_decal with ridge row 3 given a round cap. The measurements above are of both_decal; this is how far they carry to the cap on the frames that had landed",
+    "raw_source_frames": {
+     "file": "asound-evidence/claude/crossing_cap_vs_decal.txt",
+     "sha256": "8af1bcaa7931363d1ea54a31a2303c306d155c62f1721078d814928f7d74b142",
+     "method": "native source JPEGs, |diff| per pixel (max over RGB) inside each watch-fire box projected by crossing_geometry.json",
+     "summary": "compared=960 landed=960/960 last_landed=5839 wf1_max=4 wf2_4_max=24 (wf2 (24, 5125), wf3 (13, 5102), wf4 (17, 5120)) changed_y_min=417 (at 5329)"
+    },
+    "through_edit": {
+     "measured": true,
+     "receipts": [
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_04880_04959.json",
+       "sha256": "70e237e5029b023315ce4a1213d4f09fc2d2f4eefb7d31ac9f5a814119b20bb3",
+       "first": 4880,
+       "last": 4959,
+       "frames_examined": 80,
+       "frame_set_sha256": "64b94ab52eab1ade3b311b2780bf5105c60fda24b002ea6e5742562dafe437cc",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_04960_05039.json",
+       "sha256": "15a1f697e85bb81ede3a254f6a403202ac8e0cf4fff219cd831e59bd896bcf7c",
+       "first": 4960,
+       "last": 5039,
+       "frames_examined": 80,
+       "frame_set_sha256": "37ff4135e73113585964420940a35de8097fa5794a73c1104a658d7767af32c2",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05040_05119.json",
+       "sha256": "f61c46cf672d5b11aefea31cbb9f7ea3ad26c55fee2585addd618e98d4359ace",
+       "first": 5040,
+       "last": 5119,
+       "frames_examined": 80,
+       "frame_set_sha256": "7d7a1e6793521a38f8d10060499847caee082f6c786ced80d6ffa046fb3b6b16",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05120_05199.json",
+       "sha256": "70c32293654023f78dba38f1423d4cc7f63feca80ca9a7a7d5c4bcba455aa9ef",
+       "first": 5120,
+       "last": 5199,
+       "frames_examined": 80,
+       "frame_set_sha256": "6b1cc1c8e2029ee675df8c3723376af70c4bdaa77ccc9dd28197df103ccceddc",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05200_05279.json",
+       "sha256": "29e4433d6ab46d12ceb28fdeb663cb56771ef3fa00999ffd32b26d1e3ad81d1a",
+       "first": 5200,
+       "last": 5279,
+       "frames_examined": 80,
+       "frame_set_sha256": "6de04b8dab4a6f50880b8deeeda269ff1adcd18e8cb4da57bc7b711102f37f58",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05280_05359.json",
+       "sha256": "69f4f94153653698901e67792ac5d42a158cb4ebf2dbb3d64b179d394240e5c6",
+       "first": 5280,
+       "last": 5359,
+       "frames_examined": 80,
+       "frame_set_sha256": "ec9221da8df2938c48bc09a5926302ba71bda9fa64671f77893519c825c30957",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05360_05439.json",
+       "sha256": "95604b51fc7678014e8b730f6645e9c9433ef59c7d414df4f0fd3917a65050ad",
+       "first": 5360,
+       "last": 5439,
+       "frames_examined": 80,
+       "frame_set_sha256": "e0fbbb876f337ba5cccaae2be4d9f9b9ce5528560ddabf8f8337246a72024658",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05440_05519.json",
+       "sha256": "fdac0d6485f8e3d30e7a9fc81d9bc150ca93c4e0edbe6a8ce39c3e748f8df0aa",
+       "first": 5440,
+       "last": 5519,
+       "frames_examined": 80,
+       "frame_set_sha256": "c513579f6efe1e9a1e22e2a0f694cc31e93f2b3fe6f0170fab9844d3f4a0f3c5",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05520_05599.json",
+       "sha256": "f0b08e89644cda1c897842c1303a9ca5013c1d0122af376606decf2eae2f89ee",
+       "first": 5520,
+       "last": 5599,
+       "frames_examined": 80,
+       "frame_set_sha256": "50aef1dbc32b1c34158bc4a7da0757213d809ce305b96424ab666cf3092ef007",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05600_05679.json",
+       "sha256": "fa50ec52e2d5a65de6fc54c71655766e22abf1f998b5170c173cb728b0aa173a",
+       "first": 5600,
+       "last": 5679,
+       "frames_examined": 80,
+       "frame_set_sha256": "9a96d89a619248ae47e8d959cada58c3ee0f17a1aaae6ce7209cbb6e31597324",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05680_05759.json",
+       "sha256": "951f7610cd3da3217dc362b1f3d9a377c496bc73fb51199a10e01158ac02b8fd",
+       "first": 5680,
+       "last": 5759,
+       "frames_examined": 80,
+       "frame_set_sha256": "2f79671491de916472fe4942d1ef6384aa0863415260e6130206664f0a11d3c4",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      },
+      {
+       "file": "asound-evidence/claude/points_crossing-cap_05760_05839.json",
+       "sha256": "c500ac17308cff073ff0f0118565f7c8c130d947013599441dfe8abd6d9d1bd4",
+       "first": 5760,
+       "last": 5839,
+       "frames_examined": 80,
+       "frame_set_sha256": "e0fc384af91b707ebd68fe61de24adb5554d147c430a16062613924089ee92b3",
+       "take_override": "cand_crossing_both_decal_cap",
+       "edit": {
+        "root": ".",
+        "assemble_sha256": "7075ce6fabd33d7ee188a1a61ca0d4cf313888f27f7f25978aa5e87c97fa94ba",
+        "afix_comp_sha256": "fd5339c928061834ce02a0509494d6c2e32230c250639863386e26d4b50a9f59",
+        "edl_v3_sha256": "698ecac2ac00b5039f04e6bac7a770f22bd9360d93aa4ee125a650328b9d9e7a",
+        "commit": "ea7cdf385a4751b8be4ae596b11cc05af9d907b1"
+       },
+       "frames_skipped_not_landed": []
+      }
+     ],
+     "landed_measured": 960,
+     "compared": 960,
+     "complete": true,
+     "watchfire_1": {
+      "frames": 960,
+      "identical": 960,
+      "max_abs_diff_px": 0,
+      "at": 4880,
+      "area_px_there": [
+       6330,
+       6330
+      ],
+      "max_abs_db": 0.0,
+      "presence_differs": []
+     },
+     "watchfire_far": {
+      "frames": 286,
+      "identical": 275,
+      "max_abs_diff_px": 1,
+      "at": 4891,
+      "area_px_there": [
+       45,
+       46
+      ],
+      "max_abs_db": 0.23,
+      "presence_differs": [],
+      "half_threshold_side_differs": []
+     },
+     "derived": {
+      "both_decal_vs_cap": {
+       "recede_6db": [
+        5173,
+        5173
+       ],
+       "recede_20db": [
+        5399,
+        5399
+       ],
+       "feeds": [
+        [
+         5422,
+         5572,
+         5728
+        ],
+        [
+         5422,
+         5572,
+         5728
+        ]
+       ],
+       "far_last": [
+        5160,
+        5160
+       ]
+      },
+      "every_frame_equal": true,
+      "envelope_max_abs_db": 0.0,
+      "far_to_wf1_db": [
+       -21.3,
+       -21.3
+      ]
+     }
+    }
+   }
+  },
+  "ending": {
+   "stem": "dawnrev_A",
+   "first": 5840,
+   "last": 6479,
+   "frames_examined": 640,
+   "sources": [
+    "renders/dawnrev_A"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_ending_05840_05919.json",
+     "sha256": "7b848b82a87b9abac11cdc967ada1f94e11775c188ce0cf1220432bb5751f292",
+     "first": 5840,
+     "last": 5919,
+     "frames_examined": 80,
+     "frame_set_sha256": "b26073e8bbc7cbc3739cd2bc0000747b4fbe3b5ff46e79572a72d65f88883e85",
+     "take_override": null,
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "f711e0de7065f04447a4cf8a6921d2242dc0a05181ff5be9c1263f8f2330abf9",
+      "afix_comp_sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+      "edl_v3_sha256": "a7eb422d54d24e4ee275ea82829eb8044f8768d9d26ff4cb1fbe686a2f0019ab",
+      "commit": "bea534da35553e6812434ff025029e4ab378dd3e"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_ending_05920_05999.json",
+     "sha256": "f2453de065c7886480f9992ad7a55c919aa02437708e3fdf04b7ce2836ce2bd5",
+     "first": 5920,
+     "last": 5999,
+     "frames_examined": 80,
+     "frame_set_sha256": "f10e7a528585116613ef81224f2c53c926dc6b67c7c5d309fd601998667211bd",
+     "take_override": null,
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "f711e0de7065f04447a4cf8a6921d2242dc0a05181ff5be9c1263f8f2330abf9",
+      "afix_comp_sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+      "edl_v3_sha256": "a7eb422d54d24e4ee275ea82829eb8044f8768d9d26ff4cb1fbe686a2f0019ab",
+      "commit": "bea534da35553e6812434ff025029e4ab378dd3e"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_ending_06000_06079.json",
+     "sha256": "bbf15ce1a2115c5521b26596e2ffb9d9dcc8450b3af1bcf79ad4c519e5c8c7ef",
+     "first": 6000,
+     "last": 6079,
+     "frames_examined": 80,
+     "frame_set_sha256": "6163ef69bb20958bdbb49cbedaae4938880baf25c9a9a54b93a7d9f4050bd252",
+     "take_override": null,
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "f711e0de7065f04447a4cf8a6921d2242dc0a05181ff5be9c1263f8f2330abf9",
+      "afix_comp_sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+      "edl_v3_sha256": "a7eb422d54d24e4ee275ea82829eb8044f8768d9d26ff4cb1fbe686a2f0019ab",
+      "commit": "bea534da35553e6812434ff025029e4ab378dd3e"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_ending_06080_06159.json",
+     "sha256": "70cc4bd376b157a077b76fd22a02a59d0643d3dc12a622902b061b6f1bb767c0",
+     "first": 6080,
+     "last": 6159,
+     "frames_examined": 80,
+     "frame_set_sha256": "27a60c30f06973fb3b6fd56a6bf6a67cb92023de5e22c983b54f206d31f9ca22",
+     "take_override": null,
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "f711e0de7065f04447a4cf8a6921d2242dc0a05181ff5be9c1263f8f2330abf9",
+      "afix_comp_sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+      "edl_v3_sha256": "0603b45a77c4f3677f2e3eef8171d73a81d08813552b2a3f3c276873f28e98f6",
+      "commit": "bea534da35553e6812434ff025029e4ab378dd3e"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_ending_06160_06239.json",
+     "sha256": "771882454e21d2e018eb59ac0d830af1cf921730c9b9048ad043c44d8685b5b7",
+     "first": 6160,
+     "last": 6239,
+     "frames_examined": 80,
+     "frame_set_sha256": "6e72d1128343739de6ff65243ab78441e97291460e9e59aba97067fe475080ab",
+     "take_override": null,
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "f711e0de7065f04447a4cf8a6921d2242dc0a05181ff5be9c1263f8f2330abf9",
+      "afix_comp_sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+      "edl_v3_sha256": "0603b45a77c4f3677f2e3eef8171d73a81d08813552b2a3f3c276873f28e98f6",
+      "commit": "d322b61d80d9c016fb1bba508e2e9bb1f1a785ea"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_ending_06240_06319.json",
+     "sha256": "8c161655a785b7075b5cc4febda6ea7972ed07fd2a609d316fc6c715425e3b0c",
+     "first": 6240,
+     "last": 6319,
+     "frames_examined": 80,
+     "frame_set_sha256": "ba84824e4826e5f686cded000f4b243129c5689098079475f855684d0d10d3cc",
+     "take_override": null,
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "f711e0de7065f04447a4cf8a6921d2242dc0a05181ff5be9c1263f8f2330abf9",
+      "afix_comp_sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+      "edl_v3_sha256": "a7eb422d54d24e4ee275ea82829eb8044f8768d9d26ff4cb1fbe686a2f0019ab",
+      "commit": "bea534da35553e6812434ff025029e4ab378dd3e"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_ending_06320_06399.json",
+     "sha256": "253590dd6c9194f0c49d3228c307ff9cc693d048ff4498883eff4820115071f0",
+     "first": 6320,
+     "last": 6399,
+     "frames_examined": 80,
+     "frame_set_sha256": "8b975daea9eecce317e7cac1046179c4600ea1729dc5588fe9f826d895fbe338",
+     "take_override": null,
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "f711e0de7065f04447a4cf8a6921d2242dc0a05181ff5be9c1263f8f2330abf9",
+      "afix_comp_sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+      "edl_v3_sha256": "a7eb422d54d24e4ee275ea82829eb8044f8768d9d26ff4cb1fbe686a2f0019ab",
+      "commit": "bea534da35553e6812434ff025029e4ab378dd3e"
+     },
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_ending_06400_06479.json",
+     "sha256": "c101c610cc18cfea8d75c5f05e655ff829ae9e59ed9d41eb6d46680186f29d00",
+     "first": 6400,
+     "last": 6479,
+     "frames_examined": 80,
+     "frame_set_sha256": "5476cd66220fd213bea35d802f4164da63dccfc27ab928b34a159271c7cdc3f5",
+     "take_override": null,
+     "edit": {
+      "root": ".",
+      "assemble_sha256": "f711e0de7065f04447a4cf8a6921d2242dc0a05181ff5be9c1263f8f2330abf9",
+      "afix_comp_sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+      "edl_v3_sha256": "a7eb422d54d24e4ee275ea82829eb8044f8768d9d26ff4cb1fbe686a2f0019ab",
+      "commit": "bea534da35553e6812434ff025029e4ab378dd3e"
+     },
+     "frames_skipped_not_landed": []
+    }
+   ],
+   "comp": {
+    "file": "edit/afix_comp.py",
+    "sha256": "5214745937c4fdc583a606addea85a7bc5c566c2630bff91797cb9fc46cc9bbc",
+    "commits": {
+     "bea534d": 7,
+     "d322b61": 1
+    },
+    "watchfire_path_sha256": "fd5767c3fc3cf15a572defb4594ac0d088f1b4404268bc1d53adc8a8be439007",
+    "watchfire_path": "13 top-level nodes of afix_comp: its imports, REF_W, _lin, _srgb, _ss, _grid, _ell, watchfires, KINDS, apply, WATCHFIRES"
+   }
+  },
+  "run_accepted": {
+   "stem": "beaconrun_A_catches3",
+   "first": 3920,
+   "last": 4239,
+   "frames_examined": 320,
+   "sources": [
+    "renders/beaconrun_A_catches3"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_run-accepted_03920_03999.json",
+     "sha256": "35d461fb3b3ba9b480756df8cb3aee5ebb26437ccbc343afa78eadabd421c35b",
+     "first": 3920,
+     "last": 3999,
+     "frames_examined": 80,
+     "frame_set_sha256": "b6e9cfe031adc9aaec7be40e119ee0b44c7e26c2d95b1821016c093e57d3231c",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_run-accepted_04000_04079.json",
+     "sha256": "e9c58d74f643d48f69e2e9239aef007fa92e4c1fd82e3f755a5ee9be2066171b",
+     "first": 4000,
+     "last": 4079,
+     "frames_examined": 80,
+     "frame_set_sha256": "4568f8f1026d54c9621d13fc29854b4dd4a67d11509573045a8e6063506c4da3",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_run-accepted_04080_04159.json",
+     "sha256": "dbacc128d0999eac1268ddeca203de0adda657472d17f031a8128f2ba04543a1",
+     "first": 4080,
+     "last": 4159,
+     "frames_examined": 80,
+     "frame_set_sha256": "103c557f9a8d34dbfb60e7bca18ea8609f1a567f14b8c90463ce296c32e87bda",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_run-accepted_04160_04239.json",
+     "sha256": "04b1bf1f0e202e3d0b5cb9bc44753594f03d03c4544b7d9c0b768966bf5a5669",
+     "first": 4160,
+     "last": 4239,
+     "frames_examined": 80,
+     "frame_set_sha256": "1199d19009b424ea6ed4d38e7ff93080ba341420e4788ad136b17bec8877c057",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    }
+   ],
+   "geometry": {
+    "file": "asound-evidence/beacon_geometry.json",
+    "sha256": "9d1ca992fe01e4cd489b365d02943a379ced93ba8d3ae6f4aef5c039b302372d"
+   }
+  },
+  "watchers_accepted": {
+   "stem": "watchers_A_catches3",
+   "first": 4240,
+   "last": 4399,
+   "frames_examined": 160,
+   "sources": [
+    "renders/watchers_A_catches3"
+   ],
+   "receipts": [
+    {
+     "file": "asound-evidence/claude/points_watchers-accepted_04240_04319.json",
+     "sha256": "6a8427c56b839977bd9bc4e2a75355629515705e679f2960442ac90b8b42154a",
+     "first": 4240,
+     "last": 4319,
+     "frames_examined": 80,
+     "frame_set_sha256": "ebd8e09b9a3795d5d067a2bf1574da239fba32e65a98b1e2cddc1c389cc62e63",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    },
+    {
+     "file": "asound-evidence/claude/points_watchers-accepted_04320_04399.json",
+     "sha256": "5bba9238f515a257d40e66e22897b16a83ed7d1f469c039f882db673de65758b",
+     "first": 4320,
+     "last": 4399,
+     "frames_examined": 80,
+     "frame_set_sha256": "581e54fba43205b624868b89b7a1a5a01f747429b614aacb3e9a2ad5d47f1c12",
+     "take_override": null,
+     "edit": null,
+     "frames_skipped_not_landed": []
+    }
+   ]
+  }
+ },
+ "not_measured": {
+  "first": "3600-3659 (the roar, HER FIRE): SOUND-C measured them (picture_sync_A: roar 3600); unchanged here",
+  "towers_heart": "4400-4879 (A16-A17, EMBERS): no fire effect of the table plays there",
+  "setoff": "A18's set-off is the AP2 lane's measurement (codex/a18_setoff.json reports 5180, first displaced 5181: theirs, not re-measured here); no effect in this table depends on it (the walking is the score's), so it is not read"
+ },
+ "alternatives": "run_accepted.* and watchers_accepted.* measure the takes the cut played before tonight's adoption (beaconrun_A_catches3, watchers_A_catches3): EDL ALTERNATIVES[A14/A15]",
+ "events": [
+  {
+   "id": "ridges.catches",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "kind": "summary",
+   "event": "fires catch on the ridges: every measured catch, in order",
+   "frames": {
+    "first": 3686,
+    "last": 3738,
+    "catches": [
+     3686,
+     3686,
+     3688,
+     3688,
+     3688,
+     3689,
+     3689,
+     3691,
+     3691,
+     3692,
+     3692,
+     3693,
+     3694,
+     3695,
+     3696,
+     3696,
+     3698,
+     3700,
+     3701,
+     3702,
+     3703,
+     3704,
+     3708,
+     3708,
+     3710,
+     3710,
+     3711,
+     3711,
+     3712,
+     3713,
+     3713,
+     3714,
+     3714,
+     3716,
+     3716,
+     3719,
+     3719,
+     3726,
+     3728,
+     3729,
+     3731,
+     3732,
+     3733,
+     3734,
+     3738
+    ]
+   },
+   "method": "the catches above",
+   "evidence": {
+    "catch_ids": [
+     "ridges.fire_38",
+     "ridges.fire_34",
+     "ridges.fire_40",
+     "ridges.fire_52",
+     "ridges.fire_45",
+     "ridges.fire_43",
+     "ridges.fire_13",
+     "ridges.fire_49",
+     "ridges.fire_23",
+     "ridges.fire_57",
+     "ridges.fire_63",
+     "ridges.fire_62",
+     "ridges.fire_61",
+     "ridges.fire_27",
+     "ridges.fire_7",
+     "ridges.fire_17",
+     "ridges.fire_53",
+     "ridges.fire_3",
+     "ridges.fire_9",
+     "ridges.fire_56",
+     "ridges.fire_5",
+     "ridges.fire_46",
+     "ridges.fire_31",
+     "ridges.fire_42",
+     "ridges.fire_37",
+     "ridges.fire_2",
+     "ridges.fire_18",
+     "ridges.fire_39",
+     "ridges.fire_0",
+     "ridges.fire_11",
+     "ridges.fire_55",
+     "ridges.fire_33",
+     "ridges.fire_41",
+     "ridges.fire_54",
+     "ridges.fire_67",
+     "ridges.fire_30",
+     "ridges.fire_21",
+     "ridges.fire_47",
+     "ridges.fire_32",
+     "ridges.fire_29",
+     "ridges.fire_60",
+     "ridges.fire_44",
+     "ridges.fire_36",
+     "ridges.fire_64",
+     "ridges.fire_20"
+    ],
+    "lit_but_no_catch": [
+     "ridges.fire_24",
+     "ridges.fire_8",
+     "ridges.fire_12",
+     "ridges.fire_58",
+     "ridges.fire_6",
+     "ridges.fire_15",
+     "ridges.fire_28",
+     "ridges.fire_59",
+     "ridges.fire_4",
+     "ridges.fire_51",
+     "ridges.fire_10",
+     "ridges.fire_26"
+    ],
+    "not_visible": [
+     {
+      "source_index": 73,
+      "reason": "never inside the frame (6 px margin)"
+     },
+     {
+      "source_index": 80,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3741,
+       3799
+      ]
+     },
+     {
+      "source_index": 35,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3749,
+       3799
+      ]
+     },
+     {
+      "source_index": 65,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3733,
+       3799
+      ]
+     },
+     {
+      "source_index": 1,
+      "reason": "never inside the frame (6 px margin)"
+     },
+     {
+      "source_index": 75,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3761,
+       3799
+      ]
+     },
+     {
+      "source_index": 22,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3693
+      ]
+     },
+     {
+      "source_index": 71,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3773,
+       3799
+      ]
+     },
+     {
+      "source_index": 70,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 25,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 72,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 74,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 14,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 48,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 69,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 19,
+      "reason": "never inside the frame (6 px margin)"
+     },
+     {
+      "source_index": 76,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 50,
+      "reason": "never inside the frame (6 px margin)"
+     },
+     {
+      "source_index": 79,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 82,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 16,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3703
+      ]
+     },
+     {
+      "source_index": 66,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 77,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 78,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 68,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     },
+     {
+      "source_index": 81,
+      "reason": "no sustained point at its projected spot (behind terrain, under her fire's glow, or below the top-hat floor)",
+      "on_screen": [
+       3660,
+       3799
+      ]
+     }
+    ]
+   },
+   "negative_controls": [
+    {
+     "detector": "catch",
+     "kind": "temporal",
+     "selection_reason": "the same spot 20-26 frames before its source ignition (nothing drawn there yet)",
+     "windows": 64,
+     "frames_examined": 445,
+     "triggers": 0,
+     "trigger_frames": []
+    },
+    {
+     "detector": "catch (without the chroma test)",
+     "kind": "spatial",
+     "selection_reason": "12 px left and right of each spot, inside its ignition window",
+     "windows": 128,
+     "frames_examined": 896,
+     "triggers": 1,
+     "trigger_frames": [
+      [
+       29,
+       "ctl_l",
+       3727
+      ]
+     ]
+    }
+   ],
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "confidence": "high",
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_ridge_catches_1.png",
+    "saw": "ridge.34: faint glow 3686, full flash 3687; ridge.7 3695/3696; ridge.13 3689/3690; ridge.0 3711/3712; ridge.21 3718-3719 faint, 3720 full; ridge.12 and ridge.10 rise from behind terrain at 3717-3719 and 3712-3715 (no catch); ridge.47 faint at 3726; ridge.29 flashes at 3729 inside the red under-glow band"
+   }
+  },
+  {
+   "id": "ridges.fire_24",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, comes into view",
+   "kind": "enters_lit",
+   "frames": {
+    "first": 3734,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3734,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 22,
+    "y": 193,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 77,
+    "area_tophat8_px": 81,
+    "rgb": [
+     161,
+     136,
+     116
+    ],
+    "tophat_median_after": 83.0,
+    "frame": 3740
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3611.417,
+    "source_ignition_minus_first": -122.58,
+    "tophat": {
+     "3734": 87,
+     "3735": 87,
+     "3736": 95,
+     "3737": 97,
+     "3738": 73,
+     "3739": 82,
+     "3740": 77
+    },
+    "chroma_tophat": {
+     "3734": 80,
+     "3735": 65,
+     "3736": 76,
+     "3737": 77,
+     "3738": 68,
+     "3739": 64,
+     "3740": 66
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.763
+  },
+  {
+   "id": "ridges.fire_8",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, is uncovered as the crane rises",
+   "kind": "uncovered_lit",
+   "frames": {
+    "first": 3768,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 691,
+    "y": 394,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 94,
+    "area_tophat8_px": 75,
+    "rgb": [
+     151,
+     118,
+     84
+    ],
+    "tophat_median_after": 98.5,
+    "frame": 3774
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3649.099,
+    "source_ignition_minus_first": -118.9,
+    "tophat": {
+     "3765": 2,
+     "3766": 2,
+     "3767": 18,
+     "3768": 37,
+     "3769": 56,
+     "3770": 96,
+     "3771": 110,
+     "3772": 108,
+     "3773": 101,
+     "3774": 94
+    },
+    "chroma_tophat": {
+     "3765": 2,
+     "3766": 1,
+     "3767": 3,
+     "3768": 33,
+     "3769": 45,
+     "3770": 55,
+     "3771": 66,
+     "3772": 65,
+     "3773": 58,
+     "3774": 61
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.352
+  },
+  {
+   "id": "ridges.fire_12",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, is uncovered as the crane rises",
+   "kind": "uncovered_lit",
+   "frames": {
+    "first": 3717,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 519,
+    "y": 273,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 104,
+    "area_tophat8_px": 67,
+    "rgb": [
+     177,
+     139,
+     97
+    ],
+    "tophat_median_after": 113,
+    "frame": 3723
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3662.216,
+    "source_ignition_minus_first": -54.78,
+    "tophat": {
+     "3714": 19,
+     "3715": 18,
+     "3716": 22,
+     "3717": 36,
+     "3718": 83,
+     "3719": 116,
+     "3720": 112,
+     "3721": 109,
+     "3722": 106,
+     "3723": 104
+    },
+    "chroma_tophat": {
+     "3714": 0,
+     "3715": 2,
+     "3716": 2,
+     "3717": 33,
+     "3718": 67,
+     "3719": 70,
+     "3720": 69,
+     "3721": 67,
+     "3722": 66,
+     "3723": 69
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.065
+  },
+  {
+   "id": "ridges.fire_58",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, comes into view",
+   "kind": "enters_lit",
+   "frames": {
+    "first": 3758,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3758,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 23,
+    "y": 189,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 36,
+    "area_tophat8_px": 37,
+    "rgb": [
+     91,
+     88,
+     108
+    ],
+    "tophat_median_after": 39.0,
+    "frame": 3764
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3664.727,
+    "source_ignition_minus_first": -93.27,
+    "tophat": {
+     "3758": 38,
+     "3759": 35,
+     "3760": 38,
+     "3761": 38,
+     "3762": 35,
+     "3763": 41,
+     "3764": 36
+    },
+    "chroma_tophat": {
+     "3758": 30,
+     "3759": 25,
+     "3760": 33,
+     "3761": 30,
+     "3762": 29,
+     "3763": 32,
+     "3764": 30
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.762
+  },
+  {
+   "id": "ridges.fire_6",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, comes into view",
+   "kind": "enters_lit",
+   "frames": {
+    "first": 3789,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3789,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 10,
+    "y": 177,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 91,
+    "area_tophat8_px": 72,
+    "rgb": [
+     171,
+     153,
+     140
+    ],
+    "tophat_median_after": 94,
+    "frame": 3795
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3666.586,
+    "source_ignition_minus_first": -122.41,
+    "tophat": {
+     "3789": 94,
+     "3790": 90,
+     "3791": 95,
+     "3792": 88,
+     "3793": 96,
+     "3794": 95,
+     "3795": 91
+    },
+    "chroma_tophat": {
+     "3789": 54,
+     "3790": 61,
+     "3791": 59,
+     "3792": 62,
+     "3793": 59,
+     "3794": 59,
+     "3795": 59
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.783
+  },
+  {
+   "id": "ridges.fire_15",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, is uncovered as the crane rises",
+   "kind": "uncovered_lit",
+   "frames": {
+    "first": 3728,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 508,
+    "y": 282,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 52,
+    "area_tophat8_px": 57,
+    "rgb": [
+     109,
+     86,
+     78
+    ],
+    "tophat_median_after": 117.0,
+    "frame": 3734
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3677.411,
+    "source_ignition_minus_first": -50.59,
+    "tophat": {
+     "3725": 23,
+     "3726": 33,
+     "3727": 36,
+     "3728": 32,
+     "3729": 39,
+     "3730": 58,
+     "3731": 102,
+     "3732": 72,
+     "3733": 46,
+     "3734": 52
+    },
+    "chroma_tophat": {
+     "3725": 4,
+     "3726": 3,
+     "3727": 4,
+     "3728": 8,
+     "3729": 12,
+     "3730": 32,
+     "3731": 44,
+     "3732": 17,
+     "3733": 3,
+     "3734": 26
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.047
+  },
+  {
+   "id": "ridges.fire_28",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, comes into view",
+   "kind": "enters_lit",
+   "frames": {
+    "first": 3747,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3747,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 25,
+    "y": 200,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 93,
+    "area_tophat8_px": 55,
+    "rgb": [
+     176,
+     157,
+     141
+    ],
+    "tophat_median_after": 92,
+    "frame": 3753
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3680.633,
+    "source_ignition_minus_first": -66.37,
+    "tophat": {
+     "3747": 88,
+     "3748": 93,
+     "3749": 87,
+     "3750": 96,
+     "3751": 84,
+     "3752": 93,
+     "3753": 93
+    },
+    "chroma_tophat": {
+     "3747": 52,
+     "3748": 55,
+     "3749": 56,
+     "3750": 64,
+     "3751": 56,
+     "3752": 64,
+     "3753": 56
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.758
+  },
+  {
+   "id": "ridges.fire_38",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3686,
+    "fastest": 3686,
+    "catch": 3686,
+    "lit_through": 3757,
+    "on_screen": [
+     3660,
+     3757
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 775,
+    "y": 199,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 33,
+    "area_tophat8_px": 45,
+    "rgb": [
+     88,
+     75,
+     84
+    ],
+    "tophat_median_after": 24.0,
+    "frame": 3692
+   },
+   "evidence": {
+    "base": 14,
+    "source_ignition": 3685.565,
+    "source_ignition_minus_first": -0.44,
+    "tophat": {
+     "3683": 15,
+     "3684": 15,
+     "3685": 14,
+     "3686": 50,
+     "3687": 52,
+     "3688": 45,
+     "3689": 44,
+     "3690": 49,
+     "3691": 36,
+     "3692": 33
+    },
+    "chroma_tophat": {
+     "3683": 0,
+     "3684": 9,
+     "3685": 15,
+     "3686": 52,
+     "3687": 46,
+     "3688": 47,
+     "3689": 45,
+     "3690": 46,
+     "3691": 41,
+     "3692": 36
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.492
+  },
+  {
+   "id": "ridges.fire_34",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3686,
+    "fastest": 3687,
+    "catch": 3686,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 694,
+    "y": 211,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 125,
+    "area_tophat8_px": 67,
+    "rgb": [
+     234,
+     209,
+     172
+    ],
+    "tophat_median_after": 117.0,
+    "frame": 3692
+   },
+   "evidence": {
+    "base": 7,
+    "source_ignition": 3686.68,
+    "source_ignition_minus_first": 0.68,
+    "tophat": {
+     "3683": 8,
+     "3684": 6,
+     "3685": 4,
+     "3686": 34,
+     "3687": 120,
+     "3688": 122,
+     "3689": 126,
+     "3690": 124,
+     "3691": 129,
+     "3692": 125
+    },
+    "chroma_tophat": {
+     "3683": 0,
+     "3684": 1,
+     "3685": 0,
+     "3686": 23,
+     "3687": 28,
+     "3688": 36,
+     "3689": 37,
+     "3690": 37,
+     "3691": 34,
+     "3692": 36
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.357
+  },
+  {
+   "id": "ridges.fire_59",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, comes into view",
+   "kind": "enters_lit",
+   "frames": {
+    "first": 3722,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3722,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 20,
+    "y": 185,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 33,
+    "area_tophat8_px": 29,
+    "rgb": [
+     90,
+     92,
+     118
+    ],
+    "tophat_median_after": 30.0,
+    "frame": 3728
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3687.136,
+    "source_ignition_minus_first": -34.86,
+    "tophat": {
+     "3722": 23,
+     "3723": 30,
+     "3724": 28,
+     "3725": 28,
+     "3726": 31,
+     "3727": 31,
+     "3728": 33
+    },
+    "chroma_tophat": {
+     "3722": 20,
+     "3723": 21,
+     "3724": 22,
+     "3725": 28,
+     "3726": 25,
+     "3727": 25,
+     "3728": 24
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.767
+  },
+  {
+   "id": "ridges.fire_40",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3688,
+    "fastest": 3688,
+    "catch": 3688,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 209,
+    "y": 173,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 40,
+    "area_tophat8_px": 40,
+    "rgb": [
+     96,
+     109,
+     136
+    ],
+    "tophat_median_after": 41.0,
+    "frame": 3694
+   },
+   "evidence": {
+    "base": 18,
+    "source_ignition": 3687.402,
+    "source_ignition_minus_first": -0.6,
+    "tophat": {
+     "3685": 23,
+     "3686": 21,
+     "3687": 29,
+     "3688": 47,
+     "3689": 47,
+     "3690": 44,
+     "3691": 41,
+     "3692": 39,
+     "3693": 39,
+     "3694": 40
+    },
+    "chroma_tophat": {
+     "3685": 1,
+     "3686": 2,
+     "3687": 4,
+     "3688": 46,
+     "3689": 17,
+     "3690": 13,
+     "3691": 10,
+     "3692": 11,
+     "3693": 9,
+     "3694": 9
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.452
+  },
+  {
+   "id": "ridges.fire_4",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, is uncovered as the crane rises",
+   "kind": "uncovered_lit",
+   "frames": {
+    "first": 3754,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 594,
+    "y": 320,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 105,
+    "area_tophat8_px": 67,
+    "rgb": [
+     177,
+     140,
+     98
+    ],
+    "tophat_median_after": 115.0,
+    "frame": 3760
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3687.726,
+    "source_ignition_minus_first": -66.27,
+    "tophat": {
+     "3751": 49,
+     "3752": 61,
+     "3753": 70,
+     "3754": 104,
+     "3755": 124,
+     "3756": 108,
+     "3757": 118,
+     "3758": 112,
+     "3759": 104,
+     "3760": 105
+    },
+    "chroma_tophat": {
+     "3751": 0,
+     "3752": 0,
+     "3753": 2,
+     "3754": 73,
+     "3755": 51,
+     "3756": 48,
+     "3757": 75,
+     "3758": 47,
+     "3759": 58,
+     "3760": 81
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.19
+  },
+  {
+   "id": "ridges.fire_52",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3688,
+    "fastest": 3688,
+    "catch": 3688,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 493,
+    "y": 188,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 51,
+    "area_tophat8_px": 57,
+    "rgb": [
+     122,
+     106,
+     104
+    ],
+    "tophat_median_after": 41.0,
+    "frame": 3694
+   },
+   "evidence": {
+    "base": 11,
+    "source_ignition": 3687.741,
+    "source_ignition_minus_first": -0.26,
+    "tophat": {
+     "3685": 11,
+     "3686": 12,
+     "3687": 17,
+     "3688": 76,
+     "3689": 60,
+     "3690": 62,
+     "3691": 58,
+     "3692": 53,
+     "3693": 51,
+     "3694": 51
+    },
+    "chroma_tophat": {
+     "3685": 5,
+     "3686": 7,
+     "3687": 7,
+     "3688": 50,
+     "3689": 45,
+     "3690": 47,
+     "3691": 43,
+     "3692": 48,
+     "3693": 41,
+     "3694": 43
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.022
+  },
+  {
+   "id": "ridges.fire_45",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3688,
+    "fastest": 3688,
+    "catch": 3688,
+    "lit_through": 3734,
+    "on_screen": [
+     3660,
+     3734
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 861,
+    "y": 178,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 44,
+    "area_tophat8_px": 38,
+    "rgb": [
+     94,
+     82,
+     88
+    ],
+    "tophat_median_after": 30,
+    "frame": 3694
+   },
+   "evidence": {
+    "base": 7,
+    "source_ignition": 3687.875,
+    "source_ignition_minus_first": -0.12,
+    "tophat": {
+     "3685": 6,
+     "3686": 7,
+     "3687": 9,
+     "3688": 65,
+     "3689": 53,
+     "3690": 54,
+     "3691": 47,
+     "3692": 47,
+     "3693": 49,
+     "3694": 44
+    },
+    "chroma_tophat": {
+     "3685": 2,
+     "3686": 1,
+     "3687": 1,
+     "3688": 52,
+     "3689": 47,
+     "3690": 44,
+     "3691": 45,
+     "3692": 43,
+     "3693": 40,
+     "3694": 38
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.635
+  },
+  {
+   "id": "ridges.fire_51",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, comes into view",
+   "kind": "enters_lit",
+   "frames": {
+    "first": 3716,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3716,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 19,
+    "y": 171,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 33,
+    "area_tophat8_px": 31,
+    "rgb": [
+     96,
+     107,
+     128
+    ],
+    "tophat_median_after": 34.0,
+    "frame": 3722
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3688.57,
+    "source_ignition_minus_first": -27.43,
+    "tophat": {
+     "3716": 41,
+     "3717": 32,
+     "3718": 31,
+     "3719": 36,
+     "3720": 35,
+     "3721": 28,
+     "3722": 33
+    },
+    "chroma_tophat": {
+     "3716": 17,
+     "3717": 15,
+     "3718": 14,
+     "3719": 13,
+     "3720": 16,
+     "3721": 17,
+     "3722": 16
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.768
+  },
+  {
+   "id": "ridges.fire_43",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3689,
+    "fastest": 3689,
+    "catch": 3689,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 169,
+    "y": 196,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 35,
+    "area_tophat8_px": 32,
+    "rgb": [
+     88,
+     92,
+     110
+    ],
+    "tophat_median_after": 26,
+    "frame": 3695
+   },
+   "evidence": {
+    "base": 10,
+    "source_ignition": 3688.953,
+    "source_ignition_minus_first": -0.05,
+    "tophat": {
+     "3686": 9,
+     "3687": 10,
+     "3688": 10,
+     "3689": 53,
+     "3690": 47,
+     "3691": 44,
+     "3692": 45,
+     "3693": 40,
+     "3694": 39,
+     "3695": 35
+    },
+    "chroma_tophat": {
+     "3686": 2,
+     "3687": 0,
+     "3688": 0,
+     "3689": 44,
+     "3690": 44,
+     "3691": 33,
+     "3692": 36,
+     "3693": 40,
+     "3694": 37,
+     "3695": 27
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.518
+  },
+  {
+   "id": "ridges.fire_13",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3689,
+    "fastest": 3690,
+    "catch": 3689,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 49,
+    "y": 195,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 116,
+    "area_tophat8_px": 71,
+    "rgb": [
+     201,
+     178,
+     150
+    ],
+    "tophat_median_after": 97,
+    "frame": 3695
+   },
+   "evidence": {
+    "base": 5,
+    "source_ignition": 3689.275,
+    "source_ignition_minus_first": 0.27,
+    "tophat": {
+     "3686": 6,
+     "3687": 4,
+     "3688": 11,
+     "3689": 29,
+     "3690": 108,
+     "3691": 106,
+     "3692": 115,
+     "3693": 120,
+     "3694": 122,
+     "3695": 116
+    },
+    "chroma_tophat": {
+     "3686": 1,
+     "3687": 1,
+     "3688": 2,
+     "3689": 27,
+     "3690": 63,
+     "3691": 58,
+     "3692": 62,
+     "3693": 61,
+     "3694": 62,
+     "3695": 61
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.718
+  },
+  {
+   "id": "ridges.fire_49",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3691,
+    "fastest": 3691,
+    "catch": 3691,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 428,
+    "y": 205,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 65,
+    "area_tophat8_px": 54,
+    "rgb": [
+     140,
+     121,
+     113
+    ],
+    "tophat_median_after": 54,
+    "frame": 3697
+   },
+   "evidence": {
+    "base": 13,
+    "source_ignition": 3690.954,
+    "source_ignition_minus_first": -0.05,
+    "tophat": {
+     "3688": 12,
+     "3689": 12,
+     "3690": 15,
+     "3691": 87,
+     "3692": 78,
+     "3693": 80,
+     "3694": 77,
+     "3695": 74,
+     "3696": 67,
+     "3697": 65
+    },
+    "chroma_tophat": {
+     "3688": 6,
+     "3689": 5,
+     "3690": 8,
+     "3691": 65,
+     "3692": 62,
+     "3693": 62,
+     "3694": 52,
+     "3695": 55,
+     "3696": 60,
+     "3697": 52
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.087
+  },
+  {
+   "id": "ridges.fire_23",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3691,
+    "fastest": 3692,
+    "catch": 3691,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 590,
+    "y": 214,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 79,
+    "area_tophat8_px": 71,
+    "rgb": [
+     142,
+     120,
+     109
+    ],
+    "tophat_median_after": 61,
+    "frame": 3697
+   },
+   "evidence": {
+    "base": 17,
+    "source_ignition": 3691.011,
+    "source_ignition_minus_first": 0.01,
+    "tophat": {
+     "3688": 16,
+     "3689": 15,
+     "3690": 23,
+     "3691": 32,
+     "3692": 90,
+     "3693": 90,
+     "3694": 89,
+     "3695": 87,
+     "3696": 79,
+     "3697": 79
+    },
+    "chroma_tophat": {
+     "3688": 4,
+     "3689": 3,
+     "3690": 7,
+     "3691": 26,
+     "3692": 61,
+     "3693": 65,
+     "3694": 62,
+     "3695": 58,
+     "3696": 55,
+     "3697": 57
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.183
+  },
+  {
+   "id": "ridges.fire_57",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3692,
+    "fastest": 3692,
+    "catch": 3692,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 368,
+    "y": 189,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 44,
+    "area_tophat8_px": 52,
+    "rgb": [
+     108,
+     97,
+     100
+    ],
+    "tophat_median_after": 37.0,
+    "frame": 3698
+   },
+   "evidence": {
+    "base": 13,
+    "source_ignition": 3691.148,
+    "source_ignition_minus_first": -0.85,
+    "tophat": {
+     "3689": 12,
+     "3690": 14,
+     "3691": 15,
+     "3692": 67,
+     "3693": 65,
+     "3694": 60,
+     "3695": 58,
+     "3696": 48,
+     "3697": 58,
+     "3698": 44
+    },
+    "chroma_tophat": {
+     "3689": 0,
+     "3690": 2,
+     "3691": 11,
+     "3692": 49,
+     "3693": 52,
+     "3694": 52,
+     "3695": 42,
+     "3696": 40,
+     "3697": 42,
+     "3698": 43
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.187
+  },
+  {
+   "id": "ridges.fire_63",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3692,
+    "fastest": 3692,
+    "catch": 3692,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 383,
+    "y": 178,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 31,
+    "area_tophat8_px": 29,
+    "rgb": [
+     94,
+     93,
+     114
+    ],
+    "tophat_median_after": 19.0,
+    "frame": 3698
+   },
+   "evidence": {
+    "base": 8,
+    "source_ignition": 3691.387,
+    "source_ignition_minus_first": -0.61,
+    "tophat": {
+     "3689": 8,
+     "3690": 9,
+     "3691": 15,
+     "3692": 42,
+     "3693": 37,
+     "3694": 34,
+     "3695": 29,
+     "3696": 30,
+     "3697": 29,
+     "3698": 31
+    },
+    "chroma_tophat": {
+     "3689": 5,
+     "3690": 0,
+     "3691": 2,
+     "3692": 37,
+     "3693": 36,
+     "3694": 31,
+     "3695": 26,
+     "3696": 23,
+     "3697": 22,
+     "3698": 27
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.162
+  },
+  {
+   "id": "ridges.fire_62",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3693,
+    "fastest": 3693,
+    "catch": 3693,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 176,
+    "y": 176,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 30,
+    "area_tophat8_px": 33,
+    "rgb": [
+     99,
+     100,
+     118
+    ],
+    "tophat_median_after": 30,
+    "frame": 3699
+   },
+   "evidence": {
+    "base": 13,
+    "source_ignition": 3692.244,
+    "source_ignition_minus_first": -0.76,
+    "tophat": {
+     "3690": 9,
+     "3691": 9,
+     "3692": 24,
+     "3693": 52,
+     "3694": 47,
+     "3695": 41,
+     "3696": 41,
+     "3697": 40,
+     "3698": 33,
+     "3699": 30
+    },
+    "chroma_tophat": {
+     "3690": 3,
+     "3691": 1,
+     "3692": 6,
+     "3693": 43,
+     "3694": 39,
+     "3695": 36,
+     "3696": 34,
+     "3697": 36,
+     "3698": 11,
+     "3699": 27
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.507
+  },
+  {
+   "id": "ridges.fire_61",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3694,
+    "fastest": 3694,
+    "catch": 3694,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 124,
+    "y": 187,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 40,
+    "area_tophat8_px": 27,
+    "rgb": [
+     108,
+     104,
+     122
+    ],
+    "tophat_median_after": 30.0,
+    "frame": 3700
+   },
+   "evidence": {
+    "base": 9,
+    "source_ignition": 3693.522,
+    "source_ignition_minus_first": -0.48,
+    "tophat": {
+     "3691": 9,
+     "3692": 10,
+     "3693": 11,
+     "3694": 51,
+     "3695": 53,
+     "3696": 41,
+     "3697": 47,
+     "3698": 40,
+     "3699": 40,
+     "3700": 40
+    },
+    "chroma_tophat": {
+     "3691": 1,
+     "3692": 2,
+     "3693": 4,
+     "3694": 43,
+     "3695": 42,
+     "3696": 38,
+     "3697": 32,
+     "3698": 33,
+     "3699": 33,
+     "3700": 34
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.593
+  },
+  {
+   "id": "ridges.fire_10",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, is uncovered as the crane rises",
+   "kind": "uncovered_lit",
+   "frames": {
+    "first": 3713,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 428,
+    "y": 276,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 108,
+    "area_tophat8_px": 74,
+    "rgb": [
+     190,
+     157,
+     123
+    ],
+    "tophat_median_after": 109,
+    "frame": 3719
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3694.616,
+    "source_ignition_minus_first": -18.38,
+    "tophat": {
+     "3710": 44,
+     "3711": 45,
+     "3712": 69,
+     "3713": 70,
+     "3714": 103,
+     "3715": 104,
+     "3716": 110,
+     "3717": 110,
+     "3718": 118,
+     "3719": 108
+    },
+    "chroma_tophat": {
+     "3710": 3,
+     "3711": 1,
+     "3712": 0,
+     "3713": 62,
+     "3714": 72,
+     "3715": 61,
+     "3716": 65,
+     "3717": 69,
+     "3718": 61,
+     "3719": 63
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.087
+  },
+  {
+   "id": "ridges.fire_27",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3695,
+    "fastest": 3696,
+    "catch": 3695,
+    "lit_through": 3777,
+    "on_screen": [
+     3660,
+     3777
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 727,
+    "y": 218,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 115,
+    "area_tophat8_px": 75,
+    "rgb": [
+     208,
+     178,
+     145
+    ],
+    "tophat_median_after": 96,
+    "frame": 3701
+   },
+   "evidence": {
+    "base": 35,
+    "source_ignition": 3695.078,
+    "source_ignition_minus_first": 0.08,
+    "tophat": {
+     "3692": 32,
+     "3693": 36,
+     "3694": 33,
+     "3695": 53,
+     "3696": 127,
+     "3697": 117,
+     "3698": 121,
+     "3699": 114,
+     "3700": 114,
+     "3701": 115
+    },
+    "chroma_tophat": {
+     "3692": 0,
+     "3693": 0,
+     "3694": 0,
+     "3695": 5,
+     "3696": 44,
+     "3697": 49,
+     "3698": 51,
+     "3699": 52,
+     "3700": 53,
+     "3701": 53
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.412
+  },
+  {
+   "id": "ridges.fire_7",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3696,
+    "fastest": 3696,
+    "catch": 3696,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 675,
+    "y": 304,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 148,
+    "area_tophat8_px": 101,
+    "rgb": [
+     207,
+     186,
+     165
+    ],
+    "tophat_median_after": 132.0,
+    "frame": 3702
+   },
+   "evidence": {
+    "base": 54,
+    "source_ignition": 3695.773,
+    "source_ignition_minus_first": -0.23,
+    "tophat": {
+     "3693": 56,
+     "3694": 53,
+     "3695": 58,
+     "3696": 146,
+     "3697": 143,
+     "3698": 150,
+     "3699": 143,
+     "3700": 145,
+     "3701": 150,
+     "3702": 148
+    },
+    "chroma_tophat": {
+     "3693": 0,
+     "3694": 1,
+     "3695": 14,
+     "3696": 55,
+     "3697": 49,
+     "3698": 51,
+     "3699": 54,
+     "3700": 54,
+     "3701": 60,
+     "3702": 53
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.325
+  },
+  {
+   "id": "ridges.fire_17",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3696,
+    "fastest": 3696,
+    "catch": 3696,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 198,
+    "y": 219,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 82,
+    "area_tophat8_px": 78,
+    "rgb": [
+     177,
+     146,
+     119
+    ],
+    "tophat_median_after": 72.0,
+    "frame": 3702
+   },
+   "evidence": {
+    "base": 27,
+    "source_ignition": 3695.853,
+    "source_ignition_minus_first": -0.15,
+    "tophat": {
+     "3693": 23,
+     "3694": 25,
+     "3695": 31,
+     "3696": 106,
+     "3697": 102,
+     "3698": 104,
+     "3699": 86,
+     "3700": 95,
+     "3701": 80,
+     "3702": 82
+    },
+    "chroma_tophat": {
+     "3693": 7,
+     "3694": 2,
+     "3695": 8,
+     "3696": 64,
+     "3697": 56,
+     "3698": 70,
+     "3699": 53,
+     "3700": 59,
+     "3701": 52,
+     "3702": 62
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.47
+  },
+  {
+   "id": "ridges.fire_26",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire, already burning, comes into view",
+   "kind": "enters_lit",
+   "frames": {
+    "first": 3703,
+    "fastest": null,
+    "catch": null,
+    "lit_through": 3799,
+    "on_screen": [
+     3703,
+     3799
+    ]
+   },
+   "method": "first frame from which the point (luma top-hat >= 20, chroma top-hat >= 8 at the projected spot) is present in >= 90% of its remaining on-screen frames; no catch-like jump in its ignition window",
+   "region": {
+    "x": 11,
+    "y": 165,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 73,
+    "area_tophat8_px": 63,
+    "rgb": [
+     190,
+     175,
+     157
+    ],
+    "tophat_median_after": 68,
+    "frame": 3709
+   },
+   "evidence": {
+    "base": null,
+    "source_ignition": 3696.098,
+    "source_ignition_minus_first": -6.9,
+    "tophat": {
+     "3703": 71,
+     "3704": 78,
+     "3705": 81,
+     "3706": 80,
+     "3707": 81,
+     "3708": 77,
+     "3709": 73
+    },
+    "chroma_tophat": {
+     "3703": 45,
+     "3704": 47,
+     "3705": 48,
+     "3706": 44,
+     "3707": 49,
+     "3708": 49,
+     "3709": 48
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.782
+  },
+  {
+   "id": "ridges.fire_53",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3698,
+    "fastest": 3698,
+    "catch": 3698,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 696,
+    "y": 196,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 48,
+    "area_tophat8_px": 56,
+    "rgb": [
+     108,
+     92,
+     99
+    ],
+    "tophat_median_after": 33.0,
+    "frame": 3704
+   },
+   "evidence": {
+    "base": 9,
+    "source_ignition": 3697.891,
+    "source_ignition_minus_first": -0.11,
+    "tophat": {
+     "3695": 8,
+     "3696": 9,
+     "3697": 10,
+     "3698": 60,
+     "3699": 56,
+     "3700": 50,
+     "3701": 49,
+     "3702": 44,
+     "3703": 45,
+     "3704": 48
+    },
+    "chroma_tophat": {
+     "3695": 0,
+     "3696": 0,
+     "3697": 2,
+     "3698": 52,
+     "3699": 41,
+     "3700": 41,
+     "3701": 40,
+     "3702": 36,
+     "3703": 34,
+     "3704": 37
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.36
+  },
+  {
+   "id": "ridges.fire_3",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3700,
+    "fastest": 3701,
+    "catch": 3700,
+    "lit_through": 3731,
+    "on_screen": [
+     3660,
+     3731
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 887,
+    "y": 256,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 139,
+    "area_tophat8_px": 78,
+    "rgb": [
+     208,
+     179,
+     142
+    ],
+    "tophat_median_after": 117.0,
+    "frame": 3706
+   },
+   "evidence": {
+    "base": 15,
+    "source_ignition": 3700.25,
+    "source_ignition_minus_first": 0.25,
+    "tophat": {
+     "3697": 14,
+     "3698": 15,
+     "3699": 16,
+     "3700": 40,
+     "3701": 144,
+     "3702": 142,
+     "3703": 139,
+     "3704": 136,
+     "3705": 133,
+     "3706": 139
+    },
+    "chroma_tophat": {
+     "3697": 4,
+     "3698": 0,
+     "3699": 0,
+     "3700": 39,
+     "3701": 55,
+     "3702": 57,
+     "3703": 65,
+     "3704": 65,
+     "3705": 63,
+     "3706": 68
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.678
+  },
+  {
+   "id": "ridges.fire_9",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3701,
+    "fastest": 3702,
+    "catch": 3701,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 291,
+    "y": 314,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 95,
+    "area_tophat8_px": 81,
+    "rgb": [
+     157,
+     124,
+     91
+    ],
+    "tophat_median_after": 80,
+    "frame": 3707
+   },
+   "evidence": {
+    "base": 4,
+    "source_ignition": 3701.211,
+    "source_ignition_minus_first": 0.21,
+    "tophat": {
+     "3698": 3,
+     "3699": 3,
+     "3700": 5,
+     "3701": 20,
+     "3702": 120,
+     "3703": 103,
+     "3704": 112,
+     "3705": 114,
+     "3706": 100,
+     "3707": 95
+    },
+    "chroma_tophat": {
+     "3698": 3,
+     "3699": 2,
+     "3700": 4,
+     "3701": 19,
+     "3702": 65,
+     "3703": 67,
+     "3704": 61,
+     "3705": 69,
+     "3706": 58,
+     "3707": 60
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.315
+  },
+  {
+   "id": "ridges.fire_56",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3702,
+    "fastest": 3702,
+    "catch": 3702,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 355,
+    "y": 181,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 41,
+    "area_tophat8_px": 34,
+    "rgb": [
+     112,
+     102,
+     117
+    ],
+    "tophat_median_after": 36.0,
+    "frame": 3708
+   },
+   "evidence": {
+    "base": 7,
+    "source_ignition": 3701.85,
+    "source_ignition_minus_first": -0.15,
+    "tophat": {
+     "3699": 8,
+     "3700": 9,
+     "3701": 8,
+     "3702": 58,
+     "3703": 63,
+     "3704": 60,
+     "3705": 51,
+     "3706": 50,
+     "3707": 45,
+     "3708": 41
+    },
+    "chroma_tophat": {
+     "3699": 0,
+     "3700": 0,
+     "3701": 6,
+     "3702": 49,
+     "3703": 49,
+     "3704": 50,
+     "3705": 49,
+     "3706": 46,
+     "3707": 47,
+     "3708": 39
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.208
+  },
+  {
+   "id": "ridges.fire_5",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3703,
+    "fastest": 3703,
+    "catch": 3703,
+    "lit_through": 3775,
+    "on_screen": [
+     3660,
+     3775
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 743,
+    "y": 320,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 136,
+    "area_tophat8_px": 83,
+    "rgb": [
+     195,
+     162,
+     121
+    ],
+    "tophat_median_after": 117,
+    "frame": 3709
+   },
+   "evidence": {
+    "base": 20,
+    "source_ignition": 3702.283,
+    "source_ignition_minus_first": -0.72,
+    "tophat": {
+     "3700": 20,
+     "3701": 8,
+     "3702": 33,
+     "3703": 140,
+     "3704": 139,
+     "3705": 142,
+     "3706": 146,
+     "3707": 159,
+     "3708": 155,
+     "3709": 136
+    },
+    "chroma_tophat": {
+     "3700": 0,
+     "3701": 0,
+     "3702": 29,
+     "3703": 56,
+     "3704": 57,
+     "3705": 54,
+     "3706": 50,
+     "3707": 55,
+     "3708": 52,
+     "3709": 57
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.438
+  },
+  {
+   "id": "ridges.fire_46",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3704,
+    "fastest": 3704,
+    "catch": 3704,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 532,
+    "y": 188,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 43,
+    "area_tophat8_px": 48,
+    "rgb": [
+     106,
+     91,
+     100
+    ],
+    "tophat_median_after": 41.0,
+    "frame": 3710
+   },
+   "evidence": {
+    "base": 15,
+    "source_ignition": 3703.399,
+    "source_ignition_minus_first": -0.6,
+    "tophat": {
+     "3701": 15,
+     "3702": 22,
+     "3703": 25,
+     "3704": 69,
+     "3705": 60,
+     "3706": 57,
+     "3707": 49,
+     "3708": 45,
+     "3709": 50,
+     "3710": 43
+    },
+    "chroma_tophat": {
+     "3701": 17,
+     "3702": 22,
+     "3703": 29,
+     "3704": 47,
+     "3705": 47,
+     "3706": 47,
+     "3707": 43,
+     "3708": 40,
+     "3709": 41,
+     "3710": 41
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.087
+  },
+  {
+   "id": "ridges.fire_31",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3708,
+    "fastest": 3708,
+    "catch": 3708,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 358,
+    "y": 231,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 78,
+    "area_tophat8_px": 47,
+    "rgb": [
+     167,
+     149,
+     130
+    ],
+    "tophat_median_after": 65.0,
+    "frame": 3714
+   },
+   "evidence": {
+    "base": 11,
+    "source_ignition": 3707.03,
+    "source_ignition_minus_first": -0.97,
+    "tophat": {
+     "3705": 12,
+     "3706": 9,
+     "3707": 26,
+     "3708": 93,
+     "3709": 94,
+     "3710": 84,
+     "3711": 76,
+     "3712": 80,
+     "3713": 86,
+     "3714": 78
+    },
+    "chroma_tophat": {
+     "3705": 0,
+     "3706": 5,
+     "3707": 17,
+     "3708": 50,
+     "3709": 52,
+     "3710": 53,
+     "3711": 50,
+     "3712": 54,
+     "3713": 56,
+     "3714": 51
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.203
+  },
+  {
+   "id": "ridges.fire_42",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3708,
+    "fastest": 3708,
+    "catch": 3708,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 108,
+    "y": 178,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 39,
+    "area_tophat8_px": 43,
+    "rgb": [
+     116,
+     107,
+     122
+    ],
+    "tophat_median_after": 33.0,
+    "frame": 3714
+   },
+   "evidence": {
+    "base": 10,
+    "source_ignition": 3707.515,
+    "source_ignition_minus_first": -0.49,
+    "tophat": {
+     "3705": 10,
+     "3706": 9,
+     "3707": 9,
+     "3708": 51,
+     "3709": 49,
+     "3710": 50,
+     "3711": 45,
+     "3712": 48,
+     "3713": 42,
+     "3714": 39
+    },
+    "chroma_tophat": {
+     "3705": 1,
+     "3706": 0,
+     "3707": 2,
+     "3708": 51,
+     "3709": 43,
+     "3710": 41,
+     "3711": 40,
+     "3712": 41,
+     "3713": 37,
+     "3714": 40
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.62
+  },
+  {
+   "id": "ridges.fire_37",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3710,
+    "fastest": 3710,
+    "catch": 3710,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 41,
+    "y": 185,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 37,
+    "area_tophat8_px": 39,
+    "rgb": [
+     104,
+     100,
+     115
+    ],
+    "tophat_median_after": 31.0,
+    "frame": 3716
+   },
+   "evidence": {
+    "base": 6,
+    "source_ignition": 3709.897,
+    "source_ignition_minus_first": -0.1,
+    "tophat": {
+     "3707": 8,
+     "3708": 6,
+     "3709": 9,
+     "3710": 52,
+     "3711": 46,
+     "3712": 42,
+     "3713": 40,
+     "3714": 43,
+     "3715": 40,
+     "3716": 37
+    },
+    "chroma_tophat": {
+     "3707": 0,
+     "3708": 0,
+     "3709": 0,
+     "3710": 46,
+     "3711": 41,
+     "3712": 34,
+     "3713": 36,
+     "3714": 34,
+     "3715": 34,
+     "3716": 36
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.732
+  },
+  {
+   "id": "ridges.fire_2",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3710,
+    "fastest": 3711,
+    "catch": 3710,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 239,
+    "y": 362,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 132,
+    "area_tophat8_px": 59,
+    "rgb": [
+     200,
+     171,
+     126
+    ],
+    "tophat_median_after": 110.0,
+    "frame": 3716
+   },
+   "evidence": {
+    "base": 5,
+    "source_ignition": 3710.029,
+    "source_ignition_minus_first": 0.03,
+    "tophat": {
+     "3707": 5,
+     "3708": 4,
+     "3709": 11,
+     "3710": 44,
+     "3711": 137,
+     "3712": 137,
+     "3713": 133,
+     "3714": 129,
+     "3715": 134,
+     "3716": 132
+    },
+    "chroma_tophat": {
+     "3707": 0,
+     "3708": 1,
+     "3709": 6,
+     "3710": 42,
+     "3711": 50,
+     "3712": 53,
+     "3713": 55,
+     "3714": 48,
+     "3715": 61,
+     "3716": 60
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.402
+  },
+  {
+   "id": "ridges.fire_18",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3711,
+    "fastest": 3711,
+    "catch": 3711,
+    "lit_through": 3754,
+    "on_screen": [
+     3660,
+     3754
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 820,
+    "y": 263,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 74,
+    "area_tophat8_px": 87,
+    "rgb": [
+     141,
+     122,
+     109
+    ],
+    "tophat_median_after": 61.0,
+    "frame": 3717
+   },
+   "evidence": {
+    "base": 20,
+    "source_ignition": 3710.46,
+    "source_ignition_minus_first": -0.54,
+    "tophat": {
+     "3708": 20,
+     "3709": 18,
+     "3710": 23,
+     "3711": 95,
+     "3712": 95,
+     "3713": 90,
+     "3714": 85,
+     "3715": 84,
+     "3716": 73,
+     "3717": 74
+    },
+    "chroma_tophat": {
+     "3708": 0,
+     "3709": 1,
+     "3710": 0,
+     "3711": 69,
+     "3712": 71,
+     "3713": 64,
+     "3714": 62,
+     "3715": 56,
+     "3716": 54,
+     "3717": 59
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.567
+  },
+  {
+   "id": "ridges.fire_39",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3711,
+    "fastest": 3711,
+    "catch": 3711,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 453,
+    "y": 189,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 40,
+    "area_tophat8_px": 38,
+    "rgb": [
+     103,
+     96,
+     109
+    ],
+    "tophat_median_after": 30,
+    "frame": 3717
+   },
+   "evidence": {
+    "base": 5,
+    "source_ignition": 3710.888,
+    "source_ignition_minus_first": -0.11,
+    "tophat": {
+     "3708": 7,
+     "3709": 5,
+     "3710": 9,
+     "3711": 48,
+     "3712": 40,
+     "3713": 39,
+     "3714": 43,
+     "3715": 37,
+     "3716": 45,
+     "3717": 40
+    },
+    "chroma_tophat": {
+     "3708": 0,
+     "3709": 0,
+     "3710": 4,
+     "3711": 36,
+     "3712": 34,
+     "3713": 40,
+     "3714": 38,
+     "3715": 37,
+     "3716": 32,
+     "3717": 34
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.045
+  },
+  {
+   "id": "ridges.fire_0",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3712,
+    "fastest": 3712,
+    "catch": 3712,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 652,
+    "y": 341,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 141,
+    "area_tophat8_px": 76,
+    "rgb": [
+     205,
+     175,
+     133
+    ],
+    "tophat_median_after": 129.0,
+    "frame": 3718
+   },
+   "evidence": {
+    "base": 31,
+    "source_ignition": 3711.207,
+    "source_ignition_minus_first": -0.79,
+    "tophat": {
+     "3709": 35,
+     "3710": 37,
+     "3711": 42,
+     "3712": 153,
+     "3713": 147,
+     "3714": 163,
+     "3715": 159,
+     "3716": 142,
+     "3717": 153,
+     "3718": 141
+    },
+    "chroma_tophat": {
+     "3709": 0,
+     "3710": 2,
+     "3711": 0,
+     "3712": 51,
+     "3713": 56,
+     "3714": 46,
+     "3715": 42,
+     "3716": 55,
+     "3717": 49,
+     "3718": 50
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.287
+  },
+  {
+   "id": "ridges.fire_11",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3713,
+    "fastest": 3713,
+    "catch": 3713,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 638,
+    "y": 211,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 61,
+    "area_tophat8_px": 51,
+    "rgb": [
+     145,
+     123,
+     112
+    ],
+    "tophat_median_after": 48,
+    "frame": 3719
+   },
+   "evidence": {
+    "base": 22,
+    "source_ignition": 3712.619,
+    "source_ignition_minus_first": -0.38,
+    "tophat": {
+     "3710": 28,
+     "3711": 26,
+     "3712": 34,
+     "3713": 70,
+     "3714": 64,
+     "3715": 65,
+     "3716": 62,
+     "3717": 64,
+     "3718": 64,
+     "3719": 61
+    },
+    "chroma_tophat": {
+     "3710": 0,
+     "3711": 0,
+     "3712": 0,
+     "3713": 38,
+     "3714": 48,
+     "3715": 44,
+     "3716": 45,
+     "3717": 39,
+     "3718": 44,
+     "3719": 41
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.263
+  },
+  {
+   "id": "ridges.fire_55",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3714,
+    "fastest": 3714,
+    "catch": 3714,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 678,
+    "y": 188,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 58,
+    "area_tophat8_px": 44,
+    "rgb": [
+     116,
+     101,
+     102
+    ],
+    "tophat_median_after": 41.0,
+    "frame": 3720
+   },
+   "evidence": {
+    "base": 7,
+    "source_ignition": 3713.366,
+    "source_ignition_minus_first": -0.63,
+    "tophat": {
+     "3711": 6,
+     "3712": 5,
+     "3713": 11,
+     "3714": 73,
+     "3715": 57,
+     "3716": 51,
+     "3717": 57,
+     "3718": 55,
+     "3719": 58,
+     "3720": 58
+    },
+    "chroma_tophat": {
+     "3711": 0,
+     "3712": 0,
+     "3713": 6,
+     "3714": 52,
+     "3715": 50,
+     "3716": 47,
+     "3717": 43,
+     "3718": 48,
+     "3719": 46,
+     "3720": 45
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.33
+  },
+  {
+   "id": "ridges.fire_33",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3713,
+    "fastest": 3714,
+    "catch": 3713,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 579,
+    "y": 237,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 141,
+    "area_tophat8_px": 72,
+    "rgb": [
+     208,
+     180,
+     137
+    ],
+    "tophat_median_after": 110,
+    "frame": 3719
+   },
+   "evidence": {
+    "base": 8,
+    "source_ignition": 3713.389,
+    "source_ignition_minus_first": 0.39,
+    "tophat": {
+     "3710": 9,
+     "3711": 7,
+     "3712": 10,
+     "3713": 34,
+     "3714": 135,
+     "3715": 135,
+     "3716": 136,
+     "3717": 130,
+     "3718": 137,
+     "3719": 141
+    },
+    "chroma_tophat": {
+     "3710": 0,
+     "3711": 0,
+     "3712": 0,
+     "3713": 35,
+     "3714": 46,
+     "3715": 45,
+     "3716": 49,
+     "3717": 50,
+     "3718": 63,
+     "3719": 50
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.165
+  },
+  {
+   "id": "ridges.fire_41",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3714,
+    "fastest": 3714,
+    "catch": 3714,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 616,
+    "y": 183,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 48,
+    "area_tophat8_px": 43,
+    "rgb": [
+     110,
+     95,
+     94
+    ],
+    "tophat_median_after": 41.0,
+    "frame": 3720
+   },
+   "evidence": {
+    "base": 6,
+    "source_ignition": 3713.484,
+    "source_ignition_minus_first": -0.52,
+    "tophat": {
+     "3711": 6,
+     "3712": 4,
+     "3713": 13,
+     "3714": 71,
+     "3715": 57,
+     "3716": 58,
+     "3717": 50,
+     "3718": 47,
+     "3719": 53,
+     "3720": 48
+    },
+    "chroma_tophat": {
+     "3711": 0,
+     "3712": 2,
+     "3713": 9,
+     "3714": 52,
+     "3715": 50,
+     "3716": 44,
+     "3717": 42,
+     "3718": 40,
+     "3719": 41,
+     "3720": 45
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.227
+  },
+  {
+   "id": "ridges.fire_54",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3716,
+    "fastest": 3716,
+    "catch": 3716,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 482,
+    "y": 187,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 61,
+    "area_tophat8_px": 47,
+    "rgb": [
+     131,
+     114,
+     114
+    ],
+    "tophat_median_after": 51.5,
+    "frame": 3722
+   },
+   "evidence": {
+    "base": 7,
+    "source_ignition": 3715.889,
+    "source_ignition_minus_first": -0.11,
+    "tophat": {
+     "3713": 6,
+     "3714": 7,
+     "3715": 13,
+     "3716": 77,
+     "3717": 72,
+     "3718": 75,
+     "3719": 66,
+     "3720": 63,
+     "3721": 65,
+     "3722": 61
+    },
+    "chroma_tophat": {
+     "3713": 0,
+     "3714": 0,
+     "3715": 7,
+     "3716": 59,
+     "3717": 54,
+     "3718": 50,
+     "3719": 49,
+     "3720": 46,
+     "3721": 49,
+     "3722": 47
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.003
+  },
+  {
+   "id": "ridges.fire_67",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3716,
+    "fastest": 3716,
+    "catch": 3716,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 609,
+    "y": 163,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 18,
+    "area_tophat8_px": 37,
+    "rgb": [
+     82,
+     88,
+     113
+    ],
+    "tophat_median_after": 15.0,
+    "frame": 3722
+   },
+   "evidence": {
+    "base": 7,
+    "source_ignition": 3715.897,
+    "source_ignition_minus_first": -0.1,
+    "tophat": {
+     "3713": 5,
+     "3714": 8,
+     "3715": 7,
+     "3716": 25,
+     "3717": 26,
+     "3718": 25,
+     "3719": 21,
+     "3720": 20,
+     "3721": 21,
+     "3722": 18
+    },
+    "chroma_tophat": {
+     "3713": 2,
+     "3714": 0,
+     "3715": 0,
+     "3716": 30,
+     "3717": 21,
+     "3718": 16,
+     "3719": 18,
+     "3720": 20,
+     "3721": 21,
+     "3722": 19
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.215
+  },
+  {
+   "id": "ridges.fire_30",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3719,
+    "fastest": 3719,
+    "catch": 3719,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 440,
+    "y": 197,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 78,
+    "area_tophat8_px": 60,
+    "rgb": [
+     125,
+     110,
+     106
+    ],
+    "tophat_median_after": 75,
+    "frame": 3725
+   },
+   "evidence": {
+    "base": 33,
+    "source_ignition": 3718.294,
+    "source_ignition_minus_first": -0.71,
+    "tophat": {
+     "3716": 29,
+     "3717": 33,
+     "3718": 44,
+     "3719": 106,
+     "3720": 116,
+     "3721": 77,
+     "3722": 77,
+     "3723": 90,
+     "3724": 88,
+     "3725": 78
+    },
+    "chroma_tophat": {
+     "3716": 0,
+     "3717": 0,
+     "3718": 7,
+     "3719": 58,
+     "3720": 63,
+     "3721": 51,
+     "3722": 54,
+     "3723": 44,
+     "3724": 46,
+     "3725": 47
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.067
+  },
+  {
+   "id": "ridges.fire_21",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3719,
+    "fastest": 3720,
+    "catch": 3719,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 212,
+    "y": 320,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 126,
+    "area_tophat8_px": 61,
+    "rgb": [
+     199,
+     168,
+     127
+    ],
+    "tophat_median_after": 112,
+    "frame": 3725
+   },
+   "evidence": {
+    "base": 5,
+    "source_ignition": 3719.037,
+    "source_ignition_minus_first": 0.04,
+    "tophat": {
+     "3716": 4,
+     "3717": 4,
+     "3718": 14,
+     "3719": 44,
+     "3720": 134,
+     "3721": 128,
+     "3722": 136,
+     "3723": 142,
+     "3724": 137,
+     "3725": 126
+    },
+    "chroma_tophat": {
+     "3716": 1,
+     "3717": 1,
+     "3718": 8,
+     "3719": 35,
+     "3720": 48,
+     "3721": 49,
+     "3722": 51,
+     "3723": 52,
+     "3724": 55,
+     "3725": 53
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.447
+  },
+  {
+   "id": "ridges.fire_47",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3726,
+    "fastest": 3726,
+    "catch": 3726,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 700,
+    "y": 196,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 77,
+    "area_tophat8_px": 59,
+    "rgb": [
+     143,
+     115,
+     109
+    ],
+    "tophat_median_after": 62.0,
+    "frame": 3732
+   },
+   "evidence": {
+    "base": 39,
+    "source_ignition": 3725.628,
+    "source_ignition_minus_first": -0.37,
+    "tophat": {
+     "3723": 45,
+     "3724": 45,
+     "3725": 45,
+     "3726": 83,
+     "3727": 86,
+     "3728": 77,
+     "3729": 81,
+     "3730": 81,
+     "3731": 78,
+     "3732": 77
+    },
+    "chroma_tophat": {
+     "3723": 51,
+     "3724": 44,
+     "3725": 41,
+     "3726": 59,
+     "3727": 50,
+     "3728": 50,
+     "3729": 55,
+     "3730": 54,
+     "3731": 51,
+     "3732": 47
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.367
+  },
+  {
+   "id": "ridges.fire_32",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3728,
+    "fastest": 3728,
+    "catch": 3728,
+    "lit_through": 3745,
+    "on_screen": [
+     3660,
+     3745
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 904,
+    "y": 246,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 71,
+    "area_tophat8_px": 54,
+    "rgb": [
+     139,
+     115,
+     99
+    ],
+    "tophat_median_after": 73.5,
+    "frame": 3734
+   },
+   "evidence": {
+    "base": 13,
+    "source_ignition": 3727.141,
+    "source_ignition_minus_first": -0.86,
+    "tophat": {
+     "3725": 13,
+     "3726": 14,
+     "3727": 24,
+     "3728": 98,
+     "3729": 102,
+     "3730": 93,
+     "3731": 77,
+     "3732": 79,
+     "3733": 78,
+     "3734": 71
+    },
+    "chroma_tophat": {
+     "3725": 1,
+     "3726": 0,
+     "3727": 28,
+     "3728": 65,
+     "3729": 67,
+     "3730": 65,
+     "3731": 65,
+     "3732": 59,
+     "3733": 58,
+     "3734": 57
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.707
+  },
+  {
+   "id": "ridges.fire_29",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3729,
+    "fastest": 3729,
+    "catch": 3729,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 730,
+    "y": 201,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 112,
+    "area_tophat8_px": 89,
+    "rgb": [
+     216,
+     186,
+     150
+    ],
+    "tophat_median_after": 86,
+    "frame": 3735
+   },
+   "evidence": {
+    "base": 21,
+    "source_ignition": 3728.483,
+    "source_ignition_minus_first": -0.52,
+    "tophat": {
+     "3726": 13,
+     "3727": 15,
+     "3728": 33,
+     "3729": 114,
+     "3730": 113,
+     "3731": 118,
+     "3732": 119,
+     "3733": 112,
+     "3734": 114,
+     "3735": 112
+    },
+    "chroma_tophat": {
+     "3726": 15,
+     "3727": 21,
+     "3728": 32,
+     "3729": 39,
+     "3730": 26,
+     "3731": 35,
+     "3732": 36,
+     "3733": 42,
+     "3734": 33,
+     "3735": 35
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.417
+  },
+  {
+   "id": "ridges.fire_60",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3731,
+    "fastest": 3731,
+    "catch": 3731,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 682,
+    "y": 184,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 32,
+    "area_tophat8_px": 26,
+    "rgb": [
+     78,
+     76,
+     93
+    ],
+    "tophat_median_after": 22,
+    "frame": 3737
+   },
+   "evidence": {
+    "base": 7,
+    "source_ignition": 3730.939,
+    "source_ignition_minus_first": -0.06,
+    "tophat": {
+     "3728": 9,
+     "3729": 6,
+     "3730": 9,
+     "3731": 42,
+     "3732": 39,
+     "3733": 36,
+     "3734": 31,
+     "3735": 32,
+     "3736": 25,
+     "3737": 32
+    },
+    "chroma_tophat": {
+     "3728": 0,
+     "3729": 4,
+     "3730": 4,
+     "3731": 41,
+     "3732": 33,
+     "3733": 29,
+     "3734": 29,
+     "3735": 23,
+     "3736": 19,
+     "3737": 25
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.337
+  },
+  {
+   "id": "ridges.fire_44",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3732,
+    "fastest": 3732,
+    "catch": 3732,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 536,
+    "y": 180,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 55,
+    "area_tophat8_px": 45,
+    "rgb": [
+     118,
+     106,
+     109
+    ],
+    "tophat_median_after": 43.0,
+    "frame": 3738
+   },
+   "evidence": {
+    "base": 6,
+    "source_ignition": 3731.011,
+    "source_ignition_minus_first": -0.99,
+    "tophat": {
+     "3729": 7,
+     "3730": 8,
+     "3731": 17,
+     "3732": 63,
+     "3733": 58,
+     "3734": 61,
+     "3735": 58,
+     "3736": 56,
+     "3737": 55,
+     "3738": 55
+    },
+    "chroma_tophat": {
+     "3729": 2,
+     "3730": 3,
+     "3731": 8,
+     "3732": 48,
+     "3733": 52,
+     "3734": 49,
+     "3735": 47,
+     "3736": 41,
+     "3737": 43,
+     "3738": 41
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.093
+  },
+  {
+   "id": "ridges.fire_36",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3733,
+    "fastest": 3733,
+    "catch": 3733,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 202,
+    "y": 166,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 62,
+    "area_tophat8_px": 44,
+    "rgb": [
+     140,
+     133,
+     143
+    ],
+    "tophat_median_after": 55,
+    "frame": 3739
+   },
+   "evidence": {
+    "base": 40,
+    "source_ignition": 3732.646,
+    "source_ignition_minus_first": -0.35,
+    "tophat": {
+     "3730": 40,
+     "3731": 40,
+     "3732": 36,
+     "3733": 70,
+     "3734": 72,
+     "3735": 64,
+     "3736": 63,
+     "3737": 66,
+     "3738": 63,
+     "3739": 62
+    },
+    "chroma_tophat": {
+     "3730": 8,
+     "3731": 10,
+     "3732": 14,
+     "3733": 41,
+     "3734": 39,
+     "3735": 35,
+     "3736": 39,
+     "3737": 38,
+     "3738": 37,
+     "3739": 34
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": -0.463
+  },
+  {
+   "id": "ridges.fire_64",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3734,
+    "fastest": 3734,
+    "catch": 3734,
+    "lit_through": 3756,
+    "on_screen": [
+     3660,
+     3756
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 881,
+    "y": 167,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 30,
+    "area_tophat8_px": 17,
+    "rgb": [
+     73,
+     69,
+     84
+    ],
+    "tophat_median_after": 21,
+    "frame": 3740
+   },
+   "evidence": {
+    "base": 3,
+    "source_ignition": 3733.627,
+    "source_ignition_minus_first": -0.37,
+    "tophat": {
+     "3731": 5,
+     "3732": 4,
+     "3733": 4,
+     "3734": 41,
+     "3735": 34,
+     "3736": 28,
+     "3737": 29,
+     "3738": 29,
+     "3739": 29,
+     "3740": 30
+    },
+    "chroma_tophat": {
+     "3731": 1,
+     "3732": 1,
+     "3733": 3,
+     "3734": 32,
+     "3735": 29,
+     "3736": 26,
+     "3737": 22,
+     "3738": 27,
+     "3739": 27,
+     "3740": 26
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.668
+  },
+  {
+   "id": "ridges.fire_20",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "event": "a far fire catches",
+   "kind": "catch",
+   "frames": {
+    "first": 3738,
+    "fastest": 3738,
+    "catch": 3738,
+    "lit_through": 3799,
+    "on_screen": [
+     3660,
+     3799
+    ]
+   },
+   "method": "luma top-hat (9x9) at the source-projected hot point, r 3 px, 960x402: catch = a jump >= 15 over the median of the 7 frames 8..2 before, held >= 10 for 5 frames, chroma top-hat >= 8 two frames on, searched -2..+4 frames around the source ignition (the source says WHERE and roughly WHEN to look; the pixels decide the frame); fastest = its largest one-frame rise in the next 4 frames",
+   "region": {
+    "x": 558,
+    "y": 209,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the peak pixel 6 frames after first"
+   },
+   "size": {
+    "tophat": 54,
+    "area_tophat8_px": 57,
+    "rgb": [
+     111,
+     95,
+     96
+    ],
+    "tophat_median_after": 41.5,
+    "frame": 3744
+   },
+   "evidence": {
+    "base": 8,
+    "source_ignition": 3737.453,
+    "source_ignition_minus_first": -0.55,
+    "tophat": {
+     "3735": 8,
+     "3736": 12,
+     "3737": 12,
+     "3738": 51,
+     "3739": 49,
+     "3740": 53,
+     "3741": 46,
+     "3742": 51,
+     "3743": 49,
+     "3744": 54
+    },
+    "chroma_tophat": {
+     "3735": 5,
+     "3736": 6,
+     "3737": 8,
+     "3738": 45,
+     "3739": 38,
+     "3740": 42,
+     "3741": 43,
+     "3742": 41,
+     "3743": 39,
+     "3744": 40
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ],
+   "pan": 0.13
+  },
+  {
+   "id": "ridges.her_fire",
+   "shot": "ridges",
+   "stem": "reveal_A",
+   "kind": "already_burning",
+   "event": "her fire, already burning, pulled away from as the crane rises",
+   "frames": {
+    "first": 3660,
+    "last": 3799,
+    "catch": null
+   },
+   "method": "largest warm component (R>=100, R-G>=15, R-B>=35; 960x402) with centroid x 380-620",
+   "region": {
+    "x": 462.19,
+    "y": 226.46,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) at 3660"
+   },
+   "size": {
+    "area_px": {
+     "3660": 229,
+     "3680": 287,
+     "3700": 280,
+     "3720": 351,
+     "3740": 255,
+     "3760": 333,
+     "3780": 266
+    }
+   },
+   "evidence": {
+    "frames_under_60px": []
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "note": "the roar (3600) is SOUND-C's; this fire has no catch in 3660-3799"
+  },
+  {
+   "id": "karst.flare",
+   "shot": "karst",
+   "stem": "montage3d_v3/karst_slow",
+   "kind": "catch",
+   "event": "the karst beacon flares and floods the rock with light",
+   "frames": {
+    "first": 3815,
+    "fastest": 3822,
+    "catch": 3815
+   },
+   "method": "whole-frame warm area (R>=100, R-G>=15, R-B>=35; 960x402): first frame >= 100 px and >= 10x the median of the 7 frames 8..2 before; fastest = largest one-frame rise in the next 10",
+   "region": {
+    "x": 692,
+    "y": 220,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), largest warm component 6 frames after first"
+   },
+   "evidence": {
+    "warm_area": {
+     "3812": 4,
+     "3813": 6,
+     "3814": 3,
+     "3815": 253,
+     "3816": 349,
+     "3817": 555,
+     "3818": 822,
+     "3819": 1232,
+     "3820": 1814,
+     "3821": 2490,
+     "3822": 3303
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_inserts.png",
+    "saw": "3814 a small ember-lit figure; 3815 the whole rock floods warm"
+   },
+   "sync": "A.karst_flare (barmap karst_flare 3815)"
+  },
+  {
+   "id": "desert.catch",
+   "shot": "desert",
+   "stem": "montage3d_v3/desert",
+   "kind": "catch",
+   "event": "the robed figure's stone beacon catches; its light runs out over the sand",
+   "frames": {
+    "first": 3880,
+    "fastest": 3885,
+    "catch": 3880
+   },
+   "method": "dim-warm area (R>=60, R-G>=10, R-B>=20; 960x402) of components centred in x 540-720, y 150-260: first frame >= 100 px and >= 5x the median of the 7 frames 8..2 before; fastest = largest one-frame rise in the next 10",
+   "region": {
+    "x": 625,
+    "y": 198,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), the lit sand strip (dim component centroid 3881-3886)"
+   },
+   "evidence": {
+    "dim_area": {
+     "3877": 12,
+     "3878": 0,
+     "3879": 5,
+     "3880": 194,
+     "3881": 330,
+     "3882": 647,
+     "3883": 1161,
+     "3884": 1731,
+     "3885": 2324,
+     "3886": 2670,
+     "3887": 3091
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_inserts.png",
+    "saw": "3879 grey sand; 3880 a faint warm strip on the sand; brighter each frame to 3888"
+   },
+   "sync": "A.desert_fire (barmap desert_fire 3880)"
+  },
+  {
+   "id": "run.link_1",
+   "shot": "run",
+   "stem": "cand_beaconrun_linked-fires",
+   "kind": "catch",
+   "event": "beacon-run link 1 catches",
+   "frames": {
+    "first": 3936,
+    "fastest": 3936,
+    "catch": 3936,
+    "lit_through": 4053,
+    "spark": 3935
+   },
+   "method": "a new warm fire: a component (R>=100, R-G>=15, R-B>=35; 960x402, >= 150 px) whose centroid lies in no box (+20 px) of a component of the frame before at least a quarter its size, holding 8 frames (tongues within 60 px are one fire); fastest = its largest one-frame growth in 6 frames; spark = a warm component of <= 50 px within 30 px of it 1-2 frames before (the ignition envelope's first quarter-size frame); flare = the first frame >= 12 after the catch whose area doubles the median of the 8 before",
+   "region": {
+    "x": 595.7,
+    "y": 108.9,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), 6 frames after first"
+   },
+   "size": {
+    "area_px": 2245,
+    "box": [
+     570,
+     46,
+     622,
+     146
+    ],
+    "area_series": {
+     "3936": 1335,
+     "3937": 1273,
+     "3938": 1808,
+     "3939": 2337,
+     "3940": 2326,
+     "3941": 2288,
+     "3942": 2245,
+     "3943": 2158,
+     "3944": 2100,
+     "3945": 1674,
+     "3946": 1534,
+     "3947": 1468,
+     "3948": 1434,
+     "3949": 1335,
+     "3950": 1293,
+     "3951": 1230
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_run_links.png",
+    "saw": "links 1-6 each: dark two frames before, a warm spark on the frame before, the whole flame on the catch frame; link 7: the rock below the watcher floods warm on 4200 (its hearth)",
+    "sheet2": "asound-evidence/claude/sheet_linked_farmtest.jpg (whole frames 3920-4399)",
+    "sheet3": "asound-evidence/claude/crops_link1.png: 3956-3964, a steady flame"
+   },
+   "evidence": {
+    "score_beat": {
+     "id": "run_1",
+     "f": 3960,
+     "area_px": {
+      "3956": 1163,
+      "3957": 1167,
+      "3958": 1174,
+      "3959": 1236,
+      "3960": 1245,
+      "3961": 1202,
+      "3962": 1057,
+      "3963": 1124,
+      "3964": 1188
+     },
+     "ratio_to_median_of_8_before": 1.06,
+     "reading": "it burns on through the beat: no flare (a flare doubles its area)"
+    }
+   }
+  },
+  {
+   "id": "run.link_2",
+   "shot": "run",
+   "stem": "cand_beaconrun_linked-fires",
+   "kind": "catch",
+   "event": "beacon-run link 2 catches",
+   "frames": {
+    "first": 4000,
+    "fastest": 4000,
+    "catch": 4000,
+    "lit_through": 4067,
+    "spark": 3999
+   },
+   "method": "a new warm fire: a component (R>=100, R-G>=15, R-B>=35; 960x402, >= 150 px) whose centroid lies in no box (+20 px) of a component of the frame before at least a quarter its size, holding 8 frames (tongues within 60 px are one fire); fastest = its largest one-frame growth in 6 frames; spark = a warm component of <= 50 px within 30 px of it 1-2 frames before (the ignition envelope's first quarter-size frame); flare = the first frame >= 12 after the catch whose area doubles the median of the 8 before",
+   "region": {
+    "x": 505.8,
+    "y": 153.4,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), 6 frames after first"
+   },
+   "size": {
+    "area_px": 1690,
+    "box": [
+     483,
+     110,
+     527,
+     187
+    ],
+    "area_series": {
+     "4000": 1129,
+     "4001": 1064,
+     "4002": 1677,
+     "4003": 1832,
+     "4004": 1812,
+     "4005": 1840,
+     "4006": 1690,
+     "4007": 1604,
+     "4008": 1641,
+     "4009": 1506,
+     "4010": 1498,
+     "4011": 1549,
+     "4012": 1499,
+     "4013": 1329,
+     "4014": 1335,
+     "4015": 1147
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_run_links.png",
+    "saw": "links 1-6 each: dark two frames before, a warm spark on the frame before, the whole flame on the catch frame; link 7: the rock below the watcher floods warm on 4200 (its hearth)",
+    "sheet2": "asound-evidence/claude/sheet_linked_farmtest.jpg (whole frames 3920-4399)"
+   }
+  },
+  {
+   "id": "run.link_3",
+   "shot": "run",
+   "stem": "cand_beaconrun_linked-fires",
+   "kind": "catch",
+   "event": "beacon-run link 3 catches",
+   "frames": {
+    "first": 4040,
+    "fastest": 4040,
+    "catch": 4040,
+    "lit_through": 4239,
+    "spark": 4039
+   },
+   "method": "a new warm fire: a component (R>=100, R-G>=15, R-B>=35; 960x402, >= 150 px) whose centroid lies in no box (+20 px) of a component of the frame before at least a quarter its size, holding 8 frames (tongues within 60 px are one fire); fastest = its largest one-frame growth in 6 frames; spark = a warm component of <= 50 px within 30 px of it 1-2 frames before (the ignition envelope's first quarter-size frame); flare = the first frame >= 12 after the catch whose area doubles the median of the 8 before",
+   "region": {
+    "x": 436.7,
+    "y": 178.4,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), 6 frames after first"
+   },
+   "size": {
+    "area_px": 2898,
+    "box": [
+     405,
+     115,
+     468,
+     223
+    ],
+    "area_series": {
+     "4040": 2046,
+     "4041": 1625,
+     "4042": 2088,
+     "4043": 2272,
+     "4044": 2620,
+     "4045": 2871,
+     "4046": 2898,
+     "4047": 2524,
+     "4048": 2178,
+     "4049": 2153,
+     "4050": 1820,
+     "4051": 1635,
+     "4052": 1792,
+     "4053": 1717,
+     "4054": 1447,
+     "4055": 1341
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_run_links.png",
+    "saw": "links 1-6 each: dark two frames before, a warm spark on the frame before, the whole flame on the catch frame; link 7: the rock below the watcher floods warm on 4200 (its hearth)",
+    "sheet2": "asound-evidence/claude/sheet_linked_farmtest.jpg (whole frames 3920-4399)"
+   }
+  },
+  {
+   "id": "run.link_4",
+   "shot": "run",
+   "stem": "cand_beaconrun_linked-fires",
+   "kind": "catch",
+   "event": "beacon-run link 4 catches",
+   "frames": {
+    "first": 4080,
+    "fastest": 4080,
+    "catch": 4080,
+    "lit_through": 4239,
+    "spark": 4079
+   },
+   "method": "a new warm fire: a component (R>=100, R-G>=15, R-B>=35; 960x402, >= 150 px) whose centroid lies in no box (+20 px) of a component of the frame before at least a quarter its size, holding 8 frames (tongues within 60 px are one fire); fastest = its largest one-frame growth in 6 frames; spark = a warm component of <= 50 px within 30 px of it 1-2 frames before (the ignition envelope's first quarter-size frame); flare = the first frame >= 12 after the catch whose area doubles the median of the 8 before",
+   "region": {
+    "x": 355.9,
+    "y": 216.4,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), 6 frames after first"
+   },
+   "size": {
+    "area_px": 2710,
+    "box": [
+     323,
+     158,
+     389,
+     254
+    ],
+    "area_series": {
+     "4080": 2361,
+     "4081": 2143,
+     "4082": 2183,
+     "4083": 2628,
+     "4084": 2552,
+     "4085": 2611,
+     "4086": 2710,
+     "4087": 2623,
+     "4088": 2210,
+     "4089": 2137,
+     "4090": 2203,
+     "4091": 2023,
+     "4092": 2096,
+     "4093": 2072,
+     "4094": 1963,
+     "4095": 1974
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_run_links.png",
+    "saw": "links 1-6 each: dark two frames before, a warm spark on the frame before, the whole flame on the catch frame; link 7: the rock below the watcher floods warm on 4200 (its hearth)",
+    "sheet2": "asound-evidence/claude/sheet_linked_farmtest.jpg (whole frames 3920-4399)"
+   }
+  },
+  {
+   "id": "run.link_5",
+   "shot": "run",
+   "stem": "cand_beaconrun_linked-fires",
+   "kind": "catch",
+   "event": "beacon-run link 5 catches",
+   "frames": {
+    "first": 4120,
+    "fastest": 4120,
+    "catch": 4120,
+    "lit_through": 4239,
+    "spark": 4119
+   },
+   "method": "a new warm fire: a component (R>=100, R-G>=15, R-B>=35; 960x402, >= 150 px) whose centroid lies in no box (+20 px) of a component of the frame before at least a quarter its size, holding 8 frames (tongues within 60 px are one fire); fastest = its largest one-frame growth in 6 frames; spark = a warm component of <= 50 px within 30 px of it 1-2 frames before (the ignition envelope's first quarter-size frame); flare = the first frame >= 12 after the catch whose area doubles the median of the 8 before",
+   "region": {
+    "x": 272.6,
+    "y": 245.6,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), 6 frames after first"
+   },
+   "size": {
+    "area_px": 2503,
+    "box": [
+     246,
+     171,
+     303,
+     285
+    ],
+    "area_series": {
+     "4120": 1855,
+     "4121": 1782,
+     "4122": 2335,
+     "4123": 2594,
+     "4124": 2889,
+     "4125": 2776,
+     "4126": 2503,
+     "4127": 2465,
+     "4128": 2149,
+     "4129": 1896,
+     "4130": 1710,
+     "4131": 1625,
+     "4132": 1676,
+     "4133": 1623,
+     "4134": 1608,
+     "4135": 1526
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_run_links.png",
+    "saw": "links 1-6 each: dark two frames before, a warm spark on the frame before, the whole flame on the catch frame; link 7: the rock below the watcher floods warm on 4200 (its hearth)",
+    "sheet2": "asound-evidence/claude/sheet_linked_farmtest.jpg (whole frames 3920-4399)"
+   }
+  },
+  {
+   "id": "run.link_6",
+   "shot": "run",
+   "stem": "cand_beaconrun_linked-fires",
+   "kind": "catch",
+   "event": "beacon-run link 6 catches",
+   "frames": {
+    "first": 4160,
+    "fastest": 4160,
+    "catch": 4160,
+    "lit_through": 4239,
+    "spark": 4159
+   },
+   "method": "a new warm fire: a component (R>=100, R-G>=15, R-B>=35; 960x402, >= 150 px) whose centroid lies in no box (+20 px) of a component of the frame before at least a quarter its size, holding 8 frames (tongues within 60 px are one fire); fastest = its largest one-frame growth in 6 frames; spark = a warm component of <= 50 px within 30 px of it 1-2 frames before (the ignition envelope's first quarter-size frame); flare = the first frame >= 12 after the catch whose area doubles the median of the 8 before",
+   "region": {
+    "x": 198.8,
+    "y": 272.2,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), 6 frames after first"
+   },
+   "size": {
+    "area_px": 3242,
+    "box": [
+     167,
+     222,
+     232,
+     314
+    ],
+    "area_series": {
+     "4160": 2240,
+     "4161": 2105,
+     "4162": 2626,
+     "4163": 2838,
+     "4164": 3089,
+     "4165": 3157,
+     "4166": 3242,
+     "4167": 2755,
+     "4168": 2392,
+     "4169": 2014,
+     "4170": 1906,
+     "4171": 1792,
+     "4172": 1818,
+     "4173": 1813,
+     "4174": 1695,
+     "4175": 1641
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_run_links.png",
+    "saw": "links 1-6 each: dark two frames before, a warm spark on the frame before, the whole flame on the catch frame; link 7: the rock below the watcher floods warm on 4200 (its hearth)",
+    "sheet2": "asound-evidence/claude/sheet_linked_farmtest.jpg (whole frames 3920-4399)"
+   }
+  },
+  {
+   "id": "run.link_7",
+   "shot": "run",
+   "stem": "cand_beaconrun_linked-fires",
+   "kind": "catch",
+   "event": "beacon-run link 7 catches",
+   "frames": {
+    "first": 4200,
+    "fastest": 4200,
+    "catch": 4200,
+    "lit_through": 4239,
+    "spark": null
+   },
+   "method": "a new warm fire: a component (R>=100, R-G>=15, R-B>=35; 960x402, >= 150 px) whose centroid lies in no box (+20 px) of a component of the frame before at least a quarter its size, holding 8 frames (tongues within 60 px are one fire); fastest = its largest one-frame growth in 6 frames; spark = a warm component of <= 50 px within 30 px of it 1-2 frames before (the ignition envelope's first quarter-size frame); flare = the first frame >= 12 after the catch whose area doubles the median of the 8 before",
+   "region": {
+    "x": 160.1,
+    "y": 307.6,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), 6 frames after first"
+   },
+   "size": {
+    "area_px": 12861,
+    "box": [
+     78,
+     201,
+     231,
+     381
+    ],
+    "area_series": {
+     "4200": 12691,
+     "4201": 13317,
+     "4202": 15424,
+     "4203": 14457,
+     "4204": 15071,
+     "4205": 12444,
+     "4206": 12861,
+     "4207": 12683,
+     "4208": 14184,
+     "4209": 12011,
+     "4210": 10964,
+     "4211": 10469,
+     "4212": 7772,
+     "4213": 8650,
+     "4214": 7406,
+     "4215": 7524
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_run_links.png",
+    "saw": "links 1-6 each: dark two frames before, a warm spark on the frame before, the whole flame on the catch frame; link 7: the rock below the watcher floods warm on 4200 (its hearth)",
+    "sheet2": "asound-evidence/claude/sheet_linked_farmtest.jpg (whole frames 3920-4399)"
+   }
+  },
+  {
+   "id": "watchers.near_fire",
+   "shot": "watchers",
+   "stem": "cand_watchers_linked-fires",
+   "kind": "burning",
+   "event": "the watcher's near fire burns through the shot (link 7's hearth, lit at 4200 in the run)",
+   "frames": {
+    "first": 4240,
+    "last": 4399,
+    "catch": null
+   },
+   "method": "the largest warm component (R>=100, R-G>=15, R-B>=35; 960x402) in every frame",
+   "region": {
+    "x": 176.1,
+    "y": 248.1,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), median centroid"
+   },
+   "size": {
+    "area_px_median": 7827.0,
+    "area_px_min": 5655,
+    "area_px_max": 15542,
+    "area_px": {
+     "4240": 5665,
+     "4260": 6682,
+     "4280": 7328,
+     "4300": 6873,
+     "4320": 8606,
+     "4340": 8191,
+     "4360": 14726,
+     "4380": 10632
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/sheet_linked_farmtest.jpg",
+    "saw": "4240, 4241, 4320, 4399: the watcher a silhouette before the near fire at the lower left, the links burning along the ridge behind"
+   }
+  },
+  {
+   "id": "crossing.watchfire_1",
+   "shot": "crossing",
+   "stem": "cand_crossing_both_decal",
+   "kind": "burning",
+   "event": "watch-fire 1 burns large beside the standing line from the cut, then recedes as the camera draws back; it never leaves the frame",
+   "frames": {
+    "first": 4880,
+    "last": 5839,
+    "catch": null,
+    "in_frame": [
+     4880,
+     5839
+    ],
+    "leaves_frame": null,
+    "recede_6db": 5173,
+    "recede_20db": 5399
+   },
+   "method": "largest warm component (R>=100, R-G>=15, R-B>=35; 960x402) holding the source-projected flame axis (crossing_geometry.json watch-fire 1, base..top +-3 px); relative size = 10 log10 of its 9-frame median area over the median of 4880-4919 (area goes as 1/distance^2 on screen, as sound power does in the air: the dB are comparable, not identical)",
+   "region": {
+    "x": 868,
+    "y": 171,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) at 4880"
+   },
+   "size": {
+    "reference_area_px": 5762.5,
+    "area_px_and_db": {
+     "4880": [
+      6330,
+      0.5
+     ],
+     "4890": [
+      5027,
+      -0.09
+     ],
+     "4900": [
+      5418,
+      -0.09
+     ],
+     "4910": [
+      4745,
+      -0.33
+     ],
+     "4920": [
+      5639,
+      -0.09
+     ],
+     "4930": [
+      6935,
+      0.45
+     ],
+     "4940": [
+      6067,
+      0.24
+     ],
+     "4950": [
+      5041,
+      -0.31
+     ],
+     "4960": [
+      5540,
+      -0.02
+     ],
+     "4970": [
+      6290,
+      0.28
+     ],
+     "4980": [
+      6125,
+      0.26
+     ],
+     "4990": [
+      5781,
+      0.05
+     ],
+     "5000": [
+      5053,
+      -0.07
+     ],
+     "5010": [
+      4962,
+      -0.48
+     ],
+     "5020": [
+      5990,
+      -0.35
+     ],
+     "5030": [
+      5127,
+      -0.52
+     ],
+     "5040": [
+      5093,
+      -0.62
+     ],
+     "5050": [
+      4838,
+      -0.69
+     ],
+     "5060": [
+      4704,
+      -1.12
+     ],
+     "5070": [
+      3677,
+      -1.75
+     ],
+     "5080": [
+      3826,
+      -2.17
+     ],
+     "5090": [
+      3303,
+      -2.33
+     ],
+     "5100": [
+      2757,
+      -2.89
+     ],
+     "5110": [
+      3122,
+      -2.7
+     ],
+     "5120": [
+      2647,
+      -3.48
+     ],
+     "5130": [
+      1924,
+      -4.42
+     ],
+     "5140": [
+      1971,
+      -4.66
+     ],
+     "5150": [
+      1844,
+      -4.95
+     ],
+     "5160": [
+      1607,
+      -5.55
+     ],
+     "5170": [
+      1543,
+      -5.81
+     ],
+     "5180": [
+      1220,
+      -6.39
+     ],
+     "5190": [
+      990,
+      -7.44
+     ],
+     "5200": [
+      1027,
+      -7.33
+     ],
+     "5210": [
+      1001,
+      -7.95
+     ],
+     "5220": [
+      836,
+      -8.25
+     ],
+     "5230": [
+      740,
+      -8.91
+     ],
+     "5240": [
+      644,
+      -9.42
+     ],
+     "5250": [
+      655,
+      -9.74
+     ],
+     "5260": [
+      612,
+      -10.14
+     ],
+     "5270": [
+      442,
+      -10.94
+     ],
+     "5280": [
+      406,
+      -11.54
+     ],
+     "5290": [
+      345,
+      -12.23
+     ],
+     "5300": [
+      324,
+      -12.53
+     ],
+     "5310": [
+      212,
+      -14.14
+     ],
+     "5320": [
+      180,
+      -15.05
+     ],
+     "5330": [
+      161,
+      -15.76
+     ],
+     "5340": [
+      140,
+      -16.24
+     ],
+     "5350": [
+      129,
+      -16.5
+     ],
+     "5360": [
+      81,
+      -18.69
+     ],
+     "5370": [
+      66,
+      -19.28
+     ],
+     "5380": [
+      66,
+      -19.16
+     ],
+     "5390": [
+      62,
+      -19.61
+     ],
+     "5400": [
+      51,
+      -20.53
+     ],
+     "5410": [
+      51,
+      -20.53
+     ],
+     "5420": [
+      51,
+      -20.2
+     ],
+     "5430": [
+      184,
+      -14.91
+     ],
+     "5440": [
+      174,
+      -15.2
+     ],
+     "5450": [
+      149,
+      -16.27
+     ],
+     "5460": [
+      96,
+      -17.52
+     ],
+     "5470": [
+      73,
+      -18.52
+     ],
+     "5480": [
+      72,
+      -18.97
+     ],
+     "5490": [
+      74,
+      -19.16
+     ],
+     "5500": [
+      67,
+      -19.61
+     ],
+     "5510": [
+      62,
+      -19.97
+     ],
+     "5520": [
+      49,
+      -20.62
+     ],
+     "5530": [
+      53,
+      -20.36
+     ],
+     "5540": [
+      61,
+      -19.9
+     ],
+     "5550": [
+      77,
+      -18.58
+     ],
+     "5560": [
+      81,
+      -18.26
+     ],
+     "5570": [
+      85,
+      -18.11
+     ],
+     "5580": [
+      320,
+      -12.86
+     ],
+     "5590": [
+      262,
+      -12.43
+     ],
+     "5600": [
+      303,
+      -13.07
+     ],
+     "5610": [
+      166,
+      -14.45
+     ],
+     "5620": [
+      168,
+      -15.35
+     ],
+     "5630": [
+      78,
+      -18.21
+     ],
+     "5640": [
+      63,
+      -19.41
+     ],
+     "5650": [
+      63,
+      -19.68
+     ],
+     "5660": [
+      56,
+      -20.12
+     ],
+     "5670": [
+      50,
+      -20.12
+     ],
+     "5680": [
+      50,
+      -20.53
+     ],
+     "5690": [
+      45,
+      -21.07
+     ],
+     "5700": [
+      40,
+      -21.07
+     ],
+     "5710": [
+      48,
+      -20.89
+     ],
+     "5720": [
+      46,
+      -21.07
+     ],
+     "5730": [
+      196,
+      -15.13
+     ],
+     "5740": [
+      166,
+      -15.67
+     ],
+     "5750": [
+      134,
+      -16.34
+     ],
+     "5760": [
+      116,
+      -16.53
+     ],
+     "5770": [
+      106,
+      -16.92
+     ],
+     "5780": [
+      105,
+      -17.78
+     ],
+     "5790": [
+      91,
+      -18.21
+     ],
+     "5800": [
+      74,
+      -18.69
+     ],
+     "5810": [
+      72,
+      -19.22
+     ],
+     "5820": [
+      73,
+      -19.28
+     ],
+     "5830": [
+      67,
+      -19.35
+     ],
+     "5839": [
+      64,
+      -19.54
+     ]
+    }
+   },
+   "evidence": {
+    "frames_without_component": [],
+    "feeding_flares": [
+     {
+      "first": 5422,
+      "peak": 5425,
+      "base_px": 51.0,
+      "peak_px": 211,
+      "rise_db": 6.17
+     },
+     {
+      "first": 5572,
+      "peak": 5572,
+      "base_px": 86.0,
+      "peak_px": 362,
+      "rise_db": 6.24
+     },
+     {
+      "first": 5728,
+      "peak": 5729,
+      "base_px": 46.0,
+      "peak_px": 202,
+      "rise_db": 6.43
+     }
+    ]
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_watchfire_1.png",
+    "frames": "4880, 5040, 5200, 5300, 5520",
+    "saw": "4880/5040 a 1.3 m flame fills the right third behind the hooded bearers; 5200 a small fire beside the great lantern; 5300/5520 a warm point right of the lantern group, the size of a hand lantern",
+    "not_seen": "the feeds (second row, 5420-5729): too small at this scale to tell by eye"
+   }
+  },
+  {
+   "id": "crossing.watchfire_1.fed_5422",
+   "shot": "crossing",
+   "stem": "cand_crossing_both_decal",
+   "kind": "flare",
+   "event": "watch-fire 1 is fed and flares (seen small, in the wide)",
+   "frames": {
+    "first": 5422,
+    "fastest": null,
+    "full": 5425
+   },
+   "method": "watch-fire 1 footprint (above): a rise >= 4 dB over the median of the 20 frames before, from a settled footprint (< -12 dB re the close shot)",
+   "region": {
+    "x": 750,
+    "y": 265,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) at full"
+   },
+   "evidence": {
+    "first": 5422,
+    "peak": 5425,
+    "base_px": 51.0,
+    "peak_px": 211,
+    "rise_db": 6.17
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "note": "crossing.wf_burn feeds every watch-fire every ~13 degrees of sky; a hand lantern passing in front would read the same way: the owner checks these by eye"
+  },
+  {
+   "id": "crossing.watchfire_1.fed_5572",
+   "shot": "crossing",
+   "stem": "cand_crossing_both_decal",
+   "kind": "flare",
+   "event": "watch-fire 1 is fed and flares (seen small, in the wide)",
+   "frames": {
+    "first": 5572,
+    "fastest": null,
+    "full": 5572
+   },
+   "method": "watch-fire 1 footprint (above): a rise >= 4 dB over the median of the 20 frames before, from a settled footprint (< -12 dB re the close shot)",
+   "region": {
+    "x": 707,
+    "y": 269,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) at full"
+   },
+   "evidence": {
+    "first": 5572,
+    "peak": 5572,
+    "base_px": 86.0,
+    "peak_px": 362,
+    "rise_db": 6.24
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "note": "crossing.wf_burn feeds every watch-fire every ~13 degrees of sky; a hand lantern passing in front would read the same way: the owner checks these by eye"
+  },
+  {
+   "id": "crossing.watchfire_1.fed_5728",
+   "shot": "crossing",
+   "stem": "cand_crossing_both_decal",
+   "kind": "flare",
+   "event": "watch-fire 1 is fed and flares (seen small, in the wide)",
+   "frames": {
+    "first": 5728,
+    "fastest": null,
+    "full": 5729
+   },
+   "method": "watch-fire 1 footprint (above): a rise >= 4 dB over the median of the 20 frames before, from a settled footprint (< -12 dB re the close shot)",
+   "region": {
+    "x": 651,
+    "y": 273,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) at full"
+   },
+   "evidence": {
+    "first": 5728,
+    "peak": 5729,
+    "base_px": 46.0,
+    "peak_px": 202,
+    "rise_db": 6.43
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "note": "crossing.wf_burn feeds every watch-fire every ~13 degrees of sky; a hand lantern passing in front would read the same way: the owner checks these by eye"
+  },
+  {
+   "id": "crossing.watchfire_far",
+   "shot": "crossing",
+   "stem": "cand_crossing_both_decal",
+   "kind": "burning",
+   "event": "a far watch-fire (2, 3 or 4) burns small beside its keeper at the end of the ridge until the great lantern passes in front of it",
+   "frames": {
+    "first": 4880,
+    "last": 5160,
+    "catch": null,
+    "in_frame": [
+     4880,
+     5160
+    ]
+   },
+   "method": "largest warm component (<= 400 px) centred within 8 px of any of watch-fires 2-4's projections (crossing_geometry.json); the run from 4880 with gaps <= 3 frames",
+   "region": {
+    "x": 435,
+    "y": 306,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) at 4880"
+   },
+   "size": {
+    "area_px": {
+     "4880": 43,
+     "4900": 53,
+     "4920": 44,
+     "4940": 40,
+     "4960": 45,
+     "4980": 45,
+     "5000": 41,
+     "5020": 38,
+     "5040": 40,
+     "5060": 33,
+     "5080": 32,
+     "5100": 36,
+     "5120": 31,
+     "5140": 31,
+     "5160": 24
+    },
+    "ratio_to_watchfire_1_db": -21.3
+   },
+   "evidence": {
+    "identity": "watch-fires 2/3/4 project to (430,295), (437,303), (431,306) at 4880; the component sits at (435,306)",
+    "median_area_4880_4919_px": 43.0,
+    "area_px_around_last": {
+     "5157": 30,
+     "5158": 25,
+     "5159": 23,
+     "5160": 24,
+     "5161": 19,
+     "5162": 19,
+     "5163": 20,
+     "5164": 19,
+     "5165": 17
+    }
+   },
+   "confidence": "medium",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_watchfires_2to4.png",
+    "saw": "4880-5040 one small fire on a rock beside a standing hooded keeper; 5120 the great lantern enters the crop above it; 5148-5160 the fire under the lantern; 5166-5178 not seen; 5184-5196 glimpsed beneath the lantern; 5208 on the lantern and then a bearer cover the spot; from 5280 it holds the lantern, its bearers and their hand lanterns, and no fire can be told apart",
+    "sheet2": "asound-evidence/claude/crops_far_watchfire.png"
+   },
+   "note": "After this no warm pixel near watch-fires 2-4 can be separated from the great lantern, the bearers and their hand lanterns (5200-5839): they have no measured interval of their own."
+  },
+  {
+   "id": "ending.fire_1",
+   "shot": "ending",
+   "stem": "dawnrev_A + EDIT",
+   "kind": "burning",
+   "event": "watch-fire 1 (near) burns and pales",
+   "frames": {
+    "first": 5840,
+    "last": 6479,
+    "catch": null,
+    "pale_start": 6225,
+    "pale_end": 6237
+   },
+   "method": "EDIT draws it (afix_comp.WATCHFIRES, measured through the owner's EDIT at bea534d (7 of 8 batches), d322b61 (1 of 8 batches); afix_comp 5214745937c4): luma top-hat (9x9) at its draw point, r 3 px, 960x402",
+   "region": {
+    "x": 215.0,
+    "y": 376.0,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) (EDIT's draw point / 2)"
+   },
+   "size": {
+    "tophat": {
+     "5840": 157,
+     "5880": 156,
+     "5920": 139,
+     "5960": 156,
+     "6000": 145,
+     "6040": 147,
+     "6080": 161,
+     "6120": 147,
+     "6160": 156,
+     "6200": 154,
+     "6240": 41,
+     "6280": 47,
+     "6320": 58,
+     "6360": 41,
+     "6400": 50,
+     "6440": 45
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_ending_owner_comp.png",
+    "saw": "full 6210-6220, dimmer 6230, pale from 6240"
+   },
+   "evidence": {
+    "tophat_pre": 149.0,
+    "tophat_post": 47.0,
+    "pale_fraction": 0.315,
+    "comp_pale_frame": 6240
+   }
+  },
+  {
+   "id": "ending.fire_2",
+   "shot": "ending",
+   "stem": "dawnrev_A + EDIT",
+   "kind": "burning",
+   "event": "watch-fire 2 (far) burns and pales",
+   "frames": {
+    "first": 5840,
+    "last": 6479,
+    "catch": null,
+    "pale_start": 6274,
+    "pale_end": 6288
+   },
+   "method": "EDIT draws it (afix_comp.WATCHFIRES, measured through the owner's EDIT at bea534d (7 of 8 batches), d322b61 (1 of 8 batches); afix_comp 5214745937c4): luma top-hat (9x9) at its draw point, r 3 px, 960x402",
+   "region": {
+    "x": 665.0,
+    "y": 226.0,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) (EDIT's draw point / 2)"
+   },
+   "size": {
+    "tophat": {
+     "5840": 170,
+     "5880": 155,
+     "5920": 162,
+     "5960": 161,
+     "6000": 140,
+     "6040": 152,
+     "6080": 138,
+     "6120": 137,
+     "6160": 150,
+     "6200": 140,
+     "6240": 143,
+     "6280": 108,
+     "6320": 36,
+     "6360": 45,
+     "6400": 39,
+     "6440": 45
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_ending_owner_comp.png",
+    "saw": "full to 6280, pale 6290"
+   },
+   "evidence": {
+    "tophat_pre": 138.0,
+    "tophat_post": 41.5,
+    "pale_fraction": 0.301,
+    "comp_pale_frame": 6290
+   }
+  },
+  {
+   "id": "ending.fire_3",
+   "shot": "ending",
+   "stem": "dawnrev_A + EDIT",
+   "kind": "burning",
+   "event": "watch-fire 3 (farther) burns and pales",
+   "frames": {
+    "first": 5840,
+    "last": 6479,
+    "catch": null,
+    "pale_start": 6327,
+    "pale_end": 6338
+   },
+   "method": "EDIT draws it (afix_comp.WATCHFIRES, measured through the owner's EDIT at bea534d (7 of 8 batches), d322b61 (1 of 8 batches); afix_comp 5214745937c4): luma top-hat (9x9) at its draw point, r 3 px, 960x402",
+   "region": {
+    "x": 90.0,
+    "y": 235.0,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) (EDIT's draw point / 2)"
+   },
+   "size": {
+    "tophat": {
+     "5840": 176,
+     "5880": 158,
+     "5920": 162,
+     "5960": 163,
+     "6000": 144,
+     "6040": 163,
+     "6080": 157,
+     "6120": 152,
+     "6160": 167,
+     "6200": 152,
+     "6240": 155,
+     "6280": 155,
+     "6320": 136,
+     "6360": 46,
+     "6400": 45,
+     "6440": 42
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_ending_owner_comp.png",
+    "saw": "full to 6330, pale 6340"
+   },
+   "evidence": {
+    "tophat_pre": 150.0,
+    "tophat_post": 46.0,
+    "pale_fraction": 0.307,
+    "comp_pale_frame": 6340
+   }
+  },
+  {
+   "id": "ending.fire_4",
+   "shot": "ending",
+   "stem": "dawnrev_A + EDIT",
+   "kind": "burning",
+   "event": "watch-fire 4 (farthest) burns and pales",
+   "frames": {
+    "first": 5840,
+    "last": 6479,
+    "catch": null,
+    "pale_start": 6374,
+    "pale_end": 6387
+   },
+   "method": "EDIT draws it (afix_comp.WATCHFIRES, measured through the owner's EDIT at bea534d (7 of 8 batches), d322b61 (1 of 8 batches); afix_comp 5214745937c4): luma top-hat (9x9) at its draw point, r 3 px, 960x402",
+   "region": {
+    "x": 780.0,
+    "y": 175.0,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) (EDIT's draw point / 2)"
+   },
+   "size": {
+    "tophat": {
+     "5840": 167,
+     "5880": 178,
+     "5920": 154,
+     "5960": 160,
+     "6000": 165,
+     "6040": 150,
+     "6080": 167,
+     "6120": 159,
+     "6160": 151,
+     "6200": 158,
+     "6240": 134,
+     "6280": 136,
+     "6320": 138,
+     "6360": 119,
+     "6400": 39,
+     "6440": 35
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_ending_owner_comp.png",
+    "saw": "full to 6380, pale 6390"
+   },
+   "evidence": {
+    "tophat_pre": 135.0,
+    "tophat_post": 35.0,
+    "pale_fraction": 0.259,
+    "comp_pale_frame": 6390
+   }
+  },
+  {
+   "id": "ending.lantern",
+   "shot": "ending",
+   "stem": "dawnrev_A + EDIT",
+   "kind": "burning",
+   "event": "the set-down lantern burns among them to the fade",
+   "frames": {
+    "first": 5840,
+    "last": 6479,
+    "catch": null
+   },
+   "method": "EDIT draws it (afix_comp.WATCHFIRES, measured through the owner's EDIT at bea534d (7 of 8 batches), d322b61 (1 of 8 batches); afix_comp 5214745937c4): luma top-hat (9x9) at its draw point, r 3 px, 960x402",
+   "region": {
+    "x": 872.5,
+    "y": 320.0,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size) (EDIT's draw point / 2)"
+   },
+   "size": {
+    "tophat": {
+     "5840": 122,
+     "5880": 135,
+     "5920": 134,
+     "5960": 134,
+     "6000": 135,
+     "6040": 134,
+     "6080": 134,
+     "6120": 134,
+     "6160": 132,
+     "6200": 132,
+     "6240": 132,
+     "6280": 131,
+     "6320": 130,
+     "6360": 128,
+     "6400": 127,
+     "6440": 123
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED",
+    "OBSERVED"
+   ],
+   "observed": {
+    "sheet": "asound-evidence/claude/crops_ending_owner_comp.png",
+    "saw": "bright 5840-6456, going with the fade by 6470"
+   }
+  },
+  {
+   "id": "ending.final_fade",
+   "shot": "ending",
+   "stem": "dawnrev_A + EDIT",
+   "kind": "fade",
+   "event": "the last fade to black",
+   "frames": {
+    "first": 6456,
+    "last": 6479
+   },
+   "method": "assemble.Ctx.picture fades the plate from 6456 (A: bar 81 b3.8); the comp fades its own light with it (afix_comp arrival fade 6456-6479)",
+   "evidence": {
+    "mean_point_tophat": {
+     "6440": 58,
+     "6444": 59.8,
+     "6448": 56.6,
+     "6452": 54.8,
+     "6456": 59,
+     "6460": 56.6,
+     "6464": 52.4,
+     "6468": 51.4,
+     "6472": 38.8,
+     "6476": 18.4
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ]
+  },
+  {
+   "id": "run_accepted.link_1",
+   "shot": "run_accepted",
+   "stem": "beaconrun_A_catches3",
+   "event": "beacon-run link 1 catches (the accepted take, now the alternative)",
+   "method": "as ridges.*: luma top-hat jump at the source-projected spot (beacon_geometry.json) searched -2..+4 frames around the source ignition",
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "kind": "catch",
+   "frames": {
+    "first": 3959,
+    "catch": 3959
+   },
+   "region": {
+    "x": 375,
+    "y": 249,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size)"
+   },
+   "size": {
+    "tophat": 196,
+    "rgb": [
+     253,
+     233,
+     185
+    ]
+   },
+   "evidence": {
+    "source_ignition": 3960,
+    "tophat": {
+     "3956": 17,
+     "3957": 22,
+     "3958": 20,
+     "3959": 38,
+     "3960": 177,
+     "3961": 188,
+     "3962": 198,
+     "3963": 182,
+     "3964": 198,
+     "3965": 196
+    }
+   }
+  },
+  {
+   "id": "run_accepted.link_2",
+   "shot": "run_accepted",
+   "stem": "beaconrun_A_catches3",
+   "event": "beacon-run link 2 catches (the accepted take, now the alternative)",
+   "method": "as ridges.*: luma top-hat jump at the source-projected spot (beacon_geometry.json) searched -2..+4 frames around the source ignition",
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "kind": "catch",
+   "frames": {
+    "first": 4000,
+    "catch": 4000
+   },
+   "region": {
+    "x": 499,
+    "y": 141,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size)"
+   },
+   "size": {
+    "tophat": 44,
+    "rgb": [
+     107,
+     105,
+     127
+    ]
+   },
+   "evidence": {
+    "source_ignition": 4000,
+    "tophat": {
+     "3997": 13,
+     "3998": 8,
+     "3999": 9,
+     "4000": 45,
+     "4001": 47,
+     "4002": 60,
+     "4003": 54,
+     "4004": 44,
+     "4005": 51,
+     "4006": 44
+    }
+   }
+  },
+  {
+   "id": "run_accepted.link_3",
+   "shot": "run_accepted",
+   "stem": "beaconrun_A_catches3",
+   "event": "beacon-run link 3 catches (the accepted take, now the alternative)",
+   "method": "as ridges.*: luma top-hat jump at the source-projected spot (beacon_geometry.json) searched -2..+4 frames around the source ignition",
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "kind": "catch",
+   "frames": {
+    "first": 4039,
+    "catch": 4039
+   },
+   "region": {
+    "x": 314,
+    "y": 243,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size)"
+   },
+   "size": {
+    "tophat": 200,
+    "rgb": [
+     255,
+     243,
+     221
+    ]
+   },
+   "evidence": {
+    "source_ignition": 4040,
+    "tophat": {
+     "4036": 2,
+     "4037": 3,
+     "4038": 3,
+     "4039": 41,
+     "4040": 204,
+     "4041": 197,
+     "4042": 198,
+     "4043": 192,
+     "4044": 200,
+     "4045": 200
+    }
+   }
+  },
+  {
+   "id": "run_accepted.link_4",
+   "shot": "run_accepted",
+   "stem": "beaconrun_A_catches3",
+   "event": "beacon-run link 4 catches (the accepted take, now the alternative)",
+   "method": "as ridges.*: luma top-hat jump at the source-projected spot (beacon_geometry.json) searched -2..+4 frames around the source ignition",
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "kind": "not_measured",
+   "frames": {
+    "first": null,
+    "catch": null
+   },
+   "note": "no catch-like jump at the projected spot (the spot leaves the frame or is hidden)"
+  },
+  {
+   "id": "run_accepted.link_5",
+   "shot": "run_accepted",
+   "stem": "beaconrun_A_catches3",
+   "event": "beacon-run link 5 catches (the accepted take, now the alternative)",
+   "method": "as ridges.*: luma top-hat jump at the source-projected spot (beacon_geometry.json) searched -2..+4 frames around the source ignition",
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "kind": "catch",
+   "frames": {
+    "first": 4120,
+    "catch": 4120
+   },
+   "region": {
+    "x": 872,
+    "y": 213,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size)"
+   },
+   "size": {
+    "tophat": 132,
+    "rgb": [
+     255,
+     244,
+     231
+    ]
+   },
+   "evidence": {
+    "source_ignition": 4120,
+    "tophat": {
+     "4117": 53,
+     "4118": 53,
+     "4119": 95,
+     "4120": 148,
+     "4121": 134,
+     "4122": 121,
+     "4123": 126,
+     "4124": 127,
+     "4125": 125,
+     "4126": 132
+    }
+   }
+  },
+  {
+   "id": "run_accepted.link_6",
+   "shot": "run_accepted",
+   "stem": "beaconrun_A_catches3",
+   "event": "beacon-run link 6 catches (the accepted take, now the alternative)",
+   "method": "as ridges.*: luma top-hat jump at the source-projected spot (beacon_geometry.json) searched -2..+4 frames around the source ignition",
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "kind": "not_measured",
+   "frames": {
+    "first": null,
+    "catch": null
+   },
+   "note": "no catch-like jump at the projected spot (the spot leaves the frame or is hidden)"
+  },
+  {
+   "id": "run_accepted.link_7",
+   "shot": "run_accepted",
+   "stem": "beaconrun_A_catches3",
+   "event": "beacon-run link 7 catches (the accepted take, now the alternative)",
+   "method": "as ridges.*: luma top-hat jump at the source-projected spot (beacon_geometry.json) searched -2..+4 frames around the source ignition",
+   "confidence": "medium",
+   "basis": [
+    "MEASURED"
+   ],
+   "kind": "catch",
+   "frames": {
+    "first": 4200,
+    "catch": 4200
+   },
+   "region": {
+    "x": 587,
+    "y": 316,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size)"
+   },
+   "size": {
+    "tophat": 19,
+    "rgb": [
+     131,
+     71,
+     27
+    ]
+   },
+   "evidence": {
+    "source_ignition": 4200,
+    "tophat": {
+     "4197": 1,
+     "4198": 1,
+     "4199": 0,
+     "4200": 23,
+     "4201": 18,
+     "4202": 42,
+     "4203": 17,
+     "4204": 18,
+     "4205": 17,
+     "4206": 19
+    }
+   }
+  },
+  {
+   "id": "watchers_accepted.near_fire",
+   "shot": "watchers",
+   "stem": "watchers_A_catches3",
+   "kind": "burning",
+   "event": "the watcher's near fire burns through the shot (link 7's hearth, lit at 4200 in the run)",
+   "frames": {
+    "first": 4240,
+    "last": 4399,
+    "catch": null
+   },
+   "method": "the largest warm component (R>=100, R-G>=15, R-B>=35; 960x402) in every frame",
+   "region": {
+    "x": 608.1,
+    "y": 292.3,
+    "space": "960x402 finished picture before captions (AS._CTX.picture at half size), median centroid"
+   },
+   "size": {
+    "area_px_median": 1491.5,
+    "area_px_min": 505,
+    "area_px_max": 2312,
+    "area_px": {
+     "4240": 1288,
+     "4260": 1472,
+     "4280": 1053,
+     "4300": 1203,
+     "4320": 764,
+     "4340": 1840,
+     "4360": 1789,
+     "4380": 1542
+    }
+   },
+   "confidence": "high",
+   "basis": [
+    "MEASURED"
+   ]
+  }
+ ]
+}

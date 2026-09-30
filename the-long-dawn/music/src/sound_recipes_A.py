@@ -126,3 +126,46 @@ RECIPES["A.roar"] = dict(layers=[dict(ly, post=3.0, fo=1.6, env=[(0.0, 0.0), (0.
 
 SPACE = dict(distance="forest20", outdoor="forest20", event_send=0.08, bed_send=0.0, wet_hp=150, wet_lp=9000,
              stem_hp=25)
+
+# ---------------------------------------------------------------- A 3600-6479 on the delivered picture (29 Sep night)
+# The second half's effects were laid on the bar grid while its shots were slates. sound_a_table.py builds them from the
+# MEASURED picture (music/v3/events_A_measured.json; snapshot sound/a_sound_events.json): a far flare on each of the 45
+# ridge catches (3686-3738), the beacon run's links far to near on their measured catches, the watchers' hearth from its
+# catch to the cut, watch-fire 1 from the crossing's first frame on its measured footprint, the far watch-fire until the
+# great lantern covers it, and the blue hour's fire bed paling with EDIT's watch-fires. The bar-grid cues they replace
+# keep their recipes above and are retired here with the reason (sound_v3 prints them as SKIP); every other cue is
+# untouched. AP2 (score pass 2) forwards to this module, so it plays these rows too.
+import sound_a_table as _T  # noqa: E402
+
+A_TABLE = _T.build()
+_BAD = _T.problems(A_TABLE)
+if _BAD:
+    raise SystemExit("REFUSED: A's second-half sound table breaks its contract:\n  " + "\n  ".join(_BAD))
+
+
+def _measured_recipe(r):
+    """a table row -> a sound_v3 recipe: flares are SOUND's real flare-ups (flare() above), with no pre-roll before the
+    measured first light; fire beds are A.fire.blue's recordings (an established wood fire and its crackle)"""
+    if r["recipe"] == "flare":
+        rc = flare(r["flare_index"], r["dist"], r.get("stretch", 1.0))
+        rc.update(pre=r["pre"], fi=r["fi"], post=r["post"], fo=r["fo"])
+    else:
+        rc = dict(layers=[dict(src=FIRE, seg=(10, 18), xf=2.5, g=-2.0), dict(src=CRACKLE, seg=(10, 18), xf=2.5, g=0.0)],
+                  hp=90, lp=r["lp"], width=r["width"])
+    rc["level"] = r["level"]                  # an absolute target (sound_v3.match_gain), from an approved level
+    if r.get("pan") is not None:
+        rc["pan"] = r["pan"]
+    return rc
+
+
+for _rid, _why in A_TABLE["replaced"].items():
+    RECIPES[_rid] = dict(skip=True, why=_why)
+for _r in A_TABLE["events"]:
+    RECIPES[_r["id"]] = _measured_recipe(_r)
+    if _r["kind"] == "event":
+        EXTRA_EVENTS.append(dict(id=_r["id"], t=_r["hit_f"] / 24.0))
+    else:
+        _b = dict(id=_r["id"], t0=_r["f0"] / 24.0, t1=_r["f1"] / 24.0, fade_in=_r["fade_in"], fade_out=_r["fade_out"])
+        if _r.get("env_f"):
+            _b["env"] = [[(f - _r["f0"]) / 24.0, db] for f, db in _r["env_f"]]
+        EXTRA_BEDS.append(_b)
