@@ -186,8 +186,8 @@
   "id": "C5.riffle",
   "kind": "event",
   "t": 13.5833,
-  "level": -33.7,
-  "gain": 6.3,
+  "level": -36.7,
+  "gain": 12.1,
   "clip_start_s": 13.4833,
   "hit_offset_s": 0.1,
   "src": [

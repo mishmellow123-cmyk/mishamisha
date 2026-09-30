@@ -43,7 +43,7 @@ def _recipe(r):
         rc["env_after"] = r["env_after"]
     if r.get("no_breath"):                                    # heard through the score's breath (sound_v3, 29 Sep)
         rc["no_breath"] = True
-    for k in ("send", "dist", "width"):
+    for k in ("send", "dist", "width", "crest"):              # crest: C5P2's riffle (polishcsound, 30 Sep)
         if k in r:
             rc[k] = r[k]
     return rc

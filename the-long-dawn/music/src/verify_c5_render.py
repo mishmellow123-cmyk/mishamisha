@@ -15,7 +15,8 @@ Each check is MEASURED on the rendered arrays; none of them is listening.
               under --floor-db (default -90 dBFS; the masters' 24-bit dither sits near -138 dBFS). Frame 3848 is
               reported, not judged: the cut lands inside it
   continuity  C5P2's sound master and effects stem keep all 392 frames 3848..4239 above -90 dBFS RMS; the forges
-              stay lit while the score keeps its original rest. A missing or partial frame fails
+              stay lit while the score premaster keeps its original rest (the sound master's score releases over
+              3848..~3900 and is silent again before the Ring: polish_c5_sound). A missing or partial frame fails
   loudness    C5P2's sound master stays within 0.1 LU of render_v3.TARGET_LUFS (-16), true peak <= -1.2 dBTP.
               This check reads the full master: run the CLI through the owner's onepy memory guard
   arrivals    each part that enters FROM SILENCE on a re-timed event (the two first fires, the trap's measured forges,

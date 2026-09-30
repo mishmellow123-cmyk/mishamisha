@@ -146,8 +146,18 @@ def build(pulse_cut="C5P2", edl_path=None):
         "C.hearth.open", "C.hearth.open", env_f=[[0, 12.0], [80, 12.0], [140, 0.0]])
     event("C5.page.turn_0", 40, first_half("C.page_turn_0", 40, ": over EDIT black, heard, not seen"),
           "C.page_turn_0", "C.page_turn_0")
+    # POLISH (30 Sep, polishcsound): in the delivered C5P2 master the riffle's first flaps were the prologue's
+    # loudest transients (5 ms peaks -13.2 dBFS near f329 and -12.1 at f335.5, over a pad near -40, before the harp
+    # enters at 337) and slammed in (+12.8 dB in 50 ms); the flap at f329.3 decaying into the take's own gap read
+    # as a -12.8 dB stop at 13.745 s. C5P2's riffle keeps the take and its
+    # sync and becomes one gesture: it rises with the blur (-16 dB before 326 to -10 at 329), flutters under the
+    # sweep (-9 at 337) and swells into the page's landing (0 dB at 349, 3 dB under SOUND-C's level), its flaps
+    # held within 8 dB of its loudest 400 ms (was 13)
     event("C5.riffle", M("opening.riffle", "first"), "measured:opening.riffle.first (SOUND-C had 320, the camera's "
-          "first move; the leaves sweep from 326)", "C.riffle", "C.riffle")
+          "first move; the leaves sweep from 326)", "C.riffle", "C.riffle",
+          **(dict(crest=8.0, trim_db=-3.0, env_after=[[-0.10, -16.0], [0.13, -10.0], [0.45, -9.0], [0.80, -3.0],
+                                                       [0.95, 0.0]], design=True,
+                  status="ready (design: listen)") if pulse_cut == "C5P2" else {}))
     event("C5.pen.mountain", 355, first_half("C+.pen.mountain", 355, ""), "C+.pen.mountain", "C+.pen.mountain")
     event("C5.pen.T1", 400, first_half("C+.pen.T1", 400, ": R02's write-on, in_picture from 400"), "C+.pen.T1",
           "C+.pen.T1")
@@ -303,8 +313,11 @@ def build(pulse_cut="C5P2", edl_path=None):
     # C18 THE DEEP (still), C19 THE WATCH (every beacon burns on: no hit), the second half (not on this Mac)
     bed("C5.hearth.deep", 4240, 4480, "measured:deep.no_discrete_event (a still page)", "C.hearth.open",
         "C.hearth.open", fade_in=0.5, fade_out=0.5)
+    # POLISH (30 Sep, polishcsound): the breath 275 ms before the sunrise gated this bed's last fade to -45 dB in
+    # the middle of the C19-C20 dissolve (4712-4728); in C5P2 it fades through it (the score's half of that breath
+    # is polish_c5_sound's)
     bed("C5.wind.watch", 4480, 4720, "measured:watch.beacons_burn_on (no catch in shot)", "C.wind.fall",
-        "C.wind.fall", fade_in=1.0, fade_out=2.0)
+        "C.wind.fall", fade_in=1.0, fade_out=2.0, **({"no_breath": True} if pulse_cut == "C5P2" else {}))
     bed("C5.air.dawn", 4720, 5200, "inherited:C.air.dawn (v1 236.667-256.667 s) - 960 frames", "C.air.dawn",
         "C.air.dawn", fade_in=1.5, fade_out=1.5, verify="the ILLUMINATION is not on this Mac")
     bed("C5.hearth.end", 5200, FRAMES, "inherited:C.hearth.end (from PLENTY to the end)", "C.hearth.end",

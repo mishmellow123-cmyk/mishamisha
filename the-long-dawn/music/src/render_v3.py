@@ -213,7 +213,7 @@ def mix_score(parts, manifest, irs, breaths, render_n, eq=None, groups=None):
 # the master (stem-linked: one gain curve on score and effects)
 # ---------------------------------------------------------------------------
 def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_out=0.35,
-           reference_env=None, edit_windows=()):
+           reference_env=None, edit_windows=(), renormalize=True, tp_limit=None):
     score = MX.highpass(score[:total_n].astype(np.float32), 8.0, order=1)
     sfx = None if sfx is None else MX.highpass(sfx[:total_n].astype(np.float32), 8.0, order=1)
     pre = score if sfx is None else score + sfx
@@ -239,9 +239,14 @@ def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_
         # A bounded polish keeps the reference compressor/limiter outside its edit.
         # Re-solving the global loudness target changes one scalar only there.
         env = bounded_master_env(env[:, 0], reference_env, edit_windows)[:, None]
-        correction = np.float32(10 ** ((target - lufs(pre * env)) / 20))
-        env *= correction
-        print(f"  bounded master: normalization scalar {20*np.log10(correction):+.6f} dB", flush=True)
+        if renormalize:
+            correction = np.float32(10 ** ((target - lufs(pre * env)) / 20))
+            env *= correction
+            print(f"  bounded master: normalization scalar {20*np.log10(correction):+.6f} dB", flush=True)
+        else:
+            # EXACT EXTERIOR (opt-in, C5P2 polish 30 Sep): no scalar, so outside the windows the envelope IS the
+            # reference and the master there is the reference master; the loudness is whatever the edit makes it
+            print(f"  bounded master: exact exterior, no normalization scalar ({lufs(pre * env):.3f} LUFS)", flush=True)
     s_out = score * env
     x_out = None if sfx is None else sfx * env
     fi, fo = int(0.010 * SR), int(fade_out * SR)
@@ -254,8 +259,12 @@ def master(score, sfx, total_n, name, target=TARGET_LUFS, ceil_db=CEIL_DB, fade_
     tp = max(true_peak_db(m_out), true_peak_db(s_out))
     # A reference-constrained master can spend the original chain's 0.3 dB headroom
     # on its single normalization scalar while retaining the deliverable's -1 dBTP.
-    tp_limit = -1.0 if reference_env is not None else -1.2
+    if tp_limit is None:
+        tp_limit = -1.0 if reference_env is not None else -1.2
     if tp > tp_limit:
+        if reference_env is not None and not renormalize:
+            raise ValueError(f"bounded master: true peak {tp:.2f} dBTP over {tp_limit} dBTP; a whole-film safety "
+                             "gain would move the exact exterior")
         k = np.float32(10 ** ((tp_limit - 0.05 - tp) / 20))
         s_out *= k
         if x_out is not None:

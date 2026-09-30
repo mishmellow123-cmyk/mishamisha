@@ -9,6 +9,11 @@ approved for the same kind of event (sound_recipes_C), at SOUND-C's approved lev
 It refuses to import while any row lacks a recording or a frame, unless told to skip them.
 The owner's in-step revision keeps the forge sounding across 3848 and through C17; its
 bed and synchronized hammers bypass the unchanged score's shutdown breath.
+
+The sound master's three edges (lane polishcsound, 30 Sep: the riffle 13.7 s, the shutdown 160.3 s, the sunrise's
+breath 196.4 s) are polish_c5_sound's: the score releases on 3848 and through the dawn's dissolve, re-mixed only
+inside its windows, and the master outside them is the delivered one, sample for sample (pinned references in
+music/cache/v3, polish_c5_reference.json).
 """
 import sound_c5_table as T
 import sound_recipes_C as RC
@@ -18,3 +23,6 @@ TABLE = T.build("C5P2")
 RECIPES, EXTRA_EVENTS, EXTRA_BEDS, SKIPPED, DESIGN = assemble(TABLE, "C5P2")
 SPACE = dict(RC.SPACE)
 SILENCE = []
+
+# the bounded premaster polish and the exact-exterior master (sound_v3.write's optional hooks; C5P2 only)
+from polish_c5_sound import prepare_master, bound_master, refresh_breath_probes  # noqa: E402,F401

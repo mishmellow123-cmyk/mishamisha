@@ -89,8 +89,32 @@
    "recipe": "C.riffle",
    "level": -33.7,
    "level_from": "sound/events_C.json C.riffle",
-   "status": "ready",
-   "design": false
+   "status": "ready (design: listen)",
+   "crest": 8.0,
+   "trim_db": -3.0,
+   "env_after": [
+    [
+     -0.1,
+     -16.0
+    ],
+    [
+     0.13,
+     -10.0
+    ],
+    [
+     0.45,
+     -9.0
+    ],
+    [
+     0.8,
+     -3.0
+    ],
+    [
+     0.95,
+     0.0
+    ]
+   ],
+   "design": true
   },
   {
    "id": "C5.pen.mountain",
@@ -1129,6 +1153,7 @@
    "status": "ready",
    "fade_in": 1.0,
    "fade_out": 2.0,
+   "no_breath": true,
    "design": false
   },
   {

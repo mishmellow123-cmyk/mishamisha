@@ -1,0 +1,19 @@
+{
+  "schema": "long-dawn/c5-polish-reference/1",
+  "cut": "C5P2",
+  "frames": 5920,
+  "samples": 11840000,
+  "delivered": "sound_C5P2.wav of 30 Sep 00:13 (sha256 4a5754b10210398186df3f22b84df9d5afcae98134f622cb76a5e384e500d06f), the C master's sound; with the saved premaster these two reproduce it sample for sample",
+  "files": {
+    "envelope": {
+      "filename": "polishcsound_reference_master_C5P2.npy",
+      "was": "cache/v3/master_env_sound_C5P2.npy",
+      "sha256": "278a78134658899455e0beca250a85652bb5c5d755063be9079581f20ccbeb0c"
+    },
+    "sfx": {
+      "filename": "polishcsound_reference_sfx_C5P2.wav",
+      "was": "out/v3/sfxpre_C5P2.wav",
+      "sha256": "6305547ca85163c5650bb2f7e9852079b07103f23664bc7918338bcd1fb4708c"
+    }
+  }
+}
