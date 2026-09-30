@@ -1259,23 +1259,33 @@
    "f_in": 1460,
    "f_out": 1610,
    "set": "lower",
-   "locked": "Whoever held it first, they said, would hold the world."
+   "locked": "Whoever held it first, they said, would hold the world.",
+   "x": 440,
+   "y": 600,
+   "lines": [
+    "Whoever held it first, they said,",
+    "would hold the world."
+   ]
   },
   {
    "id": "T6a",
    "line": "First the smiths raced for it.",
    "f_in": 1640,
    "f_out": 1800,
-   "set": "row",
-   "locked": "First the forges raced for it."
+   "set": "lower",
+   "locked": "First the forges raced for it.",
+   "x": 440,
+   "y": 600
   },
   {
    "id": "T6b",
    "line": "Then the kingdoms.",
    "f_in": 1720,
    "f_out": 1800,
-   "set": "row",
-   "locked": "Then the kingdoms."
+   "set": "lower",
+   "locked": "Then the kingdoms.",
+   "x": 440,
+   "y": 680
   },
   {
    "id": "T7",
@@ -1283,7 +1293,13 @@
    "f_in": 1848,
    "f_out": 1944,
    "set": "lower",
-   "locked": "Every step closer paid."
+   "locked": "Every step closer paid.",
+   "x": 1600,
+   "y": 648,
+   "lines": [
+    "Every step closer",
+    "made them richer."
+   ]
   },
   {
    "id": "T8",
@@ -1291,7 +1307,13 @@
    "f_in": 1960,
    "f_out": 2060,
    "set": "lower",
-   "locked": "No one dared to be second."
+   "locked": "No one dared to be second.",
+   "x": 1600,
+   "y": 648,
+   "lines": [
+    "No one dared",
+    "to be second."
+   ]
   },
   {
    "id": "T9",
@@ -1299,7 +1321,9 @@
    "f_in": 2670,
    "f_out": 2790,
    "set": "lower",
-   "locked": "There would have been no morning after it."
+   "locked": "There would have been no morning after it.",
+   "x": 960,
+   "y": 724
   },
   {
    "id": "T10a",
@@ -1331,7 +1355,9 @@
    "f_in": 5200,
    "f_out": 5320,
    "set": "lower",
-   "locked": "It took longer than anyone wanted."
+   "locked": "It took longer than anyone wanted.",
+   "x": 960,
+   "y": 160
   },
   {
    "id": "T14",

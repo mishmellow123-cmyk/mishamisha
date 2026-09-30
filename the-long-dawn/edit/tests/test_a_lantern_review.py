@@ -3,6 +3,7 @@ from pathlib import Path
 import sys
 
 import numpy as np
+import pytest
 
 EDIT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(EDIT), str(EDIT / 'tools')]
@@ -11,18 +12,21 @@ import c5_caption_backdrop as BD
 import lantern_review as LR
 
 
-def test_a_t14_placement_reaches_the_renderer_and_only_t14_moves():
+def test_a_t14_placement_reaches_the_renderer():
     table = titles.text_table('A')
     row = next(r for r in table if r['id'] == 'T14')
     placed = titles.TextV3('A', row, 0.5)
     legacy = titles.TextV3('A', {k: v for k, v in row.items() if k not in ('x', 'y')}, 0.5)
     assert (row['f_in'], row['f_out'], row['line']) == (6080, 6200, 'No one got there first.')
-    assert abs(placed.x0 + placed.w / 2 - 710) <= 0.5
-    assert abs(placed.y0 + placed.h / 2 - 285) <= 0.5
+    def assert_lantern_placement(line):
+        assert abs(line.x0 + line.w / 2 - 710) <= 0.5
+        assert abs(line.y0 + line.h / 2 - 285) <= 0.5
+
+    assert_lantern_placement(placed)
     assert placed.x0 - legacy.x0 > 200
-    assert all('x' not in r and 'y' not in r for r in table if r['id'] != 'T14')
     # The old table path (silently dropping coordinates) must fail the same placement criterion.
-    assert abs(legacy.x0 + legacy.w / 2 - 710) > 200
+    with pytest.raises(AssertionError):
+        assert_lantern_placement(legacy)
 
 
 def test_light_metric_distinguishes_lantern_from_competing_fire_and_cold_sky():

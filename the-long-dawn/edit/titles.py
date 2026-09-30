@@ -4,7 +4,7 @@ v3 (BIBLE_V3 locked sheets as amended by the DIRECTOR'S H5 CALLS): `lines_v3(cut
 scale)`. A's and B's words come from music/v3/barmap_<cut>.json with the H5 wording applied on top (in/out frames
 unchanged); C's are C5's own table (C5_TEXT: HANDOVER.md script v5.2, provisional), with BAKED_TEXT recording the
 words already inside the renders.
-A: Cormorant italic, lower third, 12-frame fades inside the in/out frames; T10a/b centred on black.
+A: Cormorant italic, per-caption placement, 12-frame fades inside the in/out frames; T10a/b centred on black.
 B: the title only.  C: ink write-ons (a pen-shaped wipe over 24 frames, dissolve out over 12) and fire lines
 (kindle over 12, crumble over 12); T8a/b stacked on black.  Titles (X3) kindle in place: A crumbles into rising
 sparks, B fades into the light, C cools from fire to ink.  Everything scales (0.5 for the half-res animatic).
@@ -299,7 +299,7 @@ H5_WORDS = {
 }
 # how each line is set (BIBLE_V3 "the complete text" tables); C5's settings live in C5_TEXT below
 SET_AS = {
-    'A': dict(T10a='black_top', T10b='black_bottom', T6a='row', T6b='row', title='title'),
+    'A': dict(T10a='black_top', T10b='black_bottom', title='title'),
     'B': dict(title='title'),
 }
 
@@ -396,7 +396,24 @@ Y_LOWER, Y_TOP, Y_BOTTOM, Y_MID = 648, 372, 440, 402          # 1920x804 picture
 # Keep the bar map's words/timing; placement belongs to EDIT and must survive text_table() for film A too.
 # Finished 1920x804, every steady frame 6092-6187: worst glyph/ring slice 10.67:1 (centre: 9.44:1),
 # measured by tools/lantern_review.py.
-A_PLACEMENT = {'T14': dict(x=1420, y=570)}
+# A6's shafts crossed the old lower row: T5 median edge 0.0643, T6a 0.0516,
+# T6b 0.0698; T6a's worst slice was 3.5105:1 at 1725 (finished 1920x804).
+# Keep the two phrases' staggered entrances, now stacked in the same left reading area.
+# Every steady frame after placement: edge medians 0.0145 / 0.0196 / 0.0175;
+# T6a's minimum is 8.4317:1 at 1773. T9 stays below the aperture: y724 lifts
+# the last of the white wash at 2682 from 3.9060:1 to 4.5388:1 without retiming.
+# A7's hot centre and A18's textured snow also need clear ground beneath their words.
+# tools/a_caption_review.py measures every steady frame; the bar map still owns words and timing.
+A_PLACEMENT = {
+    'T5': dict(x=440, y=600, lines=('Whoever held it first, they said,', 'would hold the world.')),
+    'T6a': dict(x=440, y=600),
+    'T6b': dict(x=440, y=680),
+    'T7': dict(x=1600, y=648, lines=('Every step closer', 'made them richer.')),
+    'T8': dict(x=1600, y=648, lines=('No one dared', 'to be second.')),
+    'T9': dict(x=960, y=724),
+    'T13': dict(x=960, y=160),
+    'T14': dict(x=1420, y=570),
+}
 PARCH = np.array([0.925, 0.875, 0.765], np.float32)            # ink lines on a dark ground
 IRON = np.array([0.155, 0.105, 0.070], np.float32)             # iron-gall ink on the page
 FIRE_RAMP = np.array([[0.00, 0.00, 0.00], [0.40, 0.035, 0.0], [1.00, 0.34, 0.05], [1.00, 0.70, 0.30],
