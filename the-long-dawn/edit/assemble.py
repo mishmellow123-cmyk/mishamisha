@@ -876,9 +876,46 @@ def _tk_floor(img, src, f, t, fin, cut):
     return look.linear_to_srgb(lin).astype(np.float32)
 
 
+def dawn_sweep(img, f, t):
+    """C20's finished ink fills with daylight from the sun's side (left); no geometry or added light source.
+
+    night_rgb scales sRGB luma into C19's measured neutral balance. The broad front restores the delivered
+    luminance together with its colour. A small neutral prelight precedes it (R20's dark-side slice otherwise
+    measured 2.91:1 at full size); it adds no highlight beyond the delivered luma. Absolute start/done frames let the
+    incoming dissolve plate and the following one-shot window share the same grade. At done the input is returned
+    exactly, preserving C20's last picture and C21's existing ink-to-film hand-off.
+    """
+    if f >= t['done']:
+        return img
+    lum = (img @ np.array([0.2126, 0.7152, 0.0722], np.float32))[..., None]
+    p = np.clip((f - t['start']) / (t['done'] - t['start']), 0.0, 1.0)
+    p = p * p * (3 - 2 * p)
+    balance = np.asarray(t['night_rgb'], np.float32)
+    night = lum * (balance + (1 - balance) * t['prelight'] * p)
+    width = t['width']                                        # full soft-front width, fraction of picture width
+    front = -width / 2 + (1 + width) * p
+    x = np.linspace(0.0, 1.0, img.shape[1], dtype=np.float32)[None, :, None]
+    a = np.clip((front - x) / width + 0.5, 0.0, 1.0)
+    a = a * a * (3 - 2 * a)
+    return (night * (1 - a) + img * a).astype(np.float32)
+
+
+def _tk_dawn_sweep(img, src, f, t, fin, cut):
+    return dawn_sweep(fin(img, src, cut, f) if fin else img, f, t)
+
+
+def _tk_dawn_dissolve(o, i, f, t, ctx, lay, first):
+    # Both sides are already finished. Neutralise only the incoming dawn, so C19's fires keep their own fade.
+    i = dawn_sweep(i, f, t)
+    a = (f - t['f0'] + 0.5) / (t['f1'] - t['f0'])
+    a = a * a * (3 - 2 * a)
+    return _to_srgb(_to_lin(o) * (1 - a) + _to_lin(i) * a)
+
+
 TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell, page_turn=_tk_page_turn)
-TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor)
-KIND_HELPERS = dict(swell=_swell, page_turn=page_turn)             # a kind's own helper keys its windows too
+TKINDS_PAIR['dawn_dissolve'] = _tk_dawn_dissolve
+TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor, dawn_sweep=_tk_dawn_sweep)
+KIND_HELPERS = dict(swell=_swell, page_turn=page_turn, dawn_dissolve=dawn_sweep, dawn_sweep=dawn_sweep)
 
 
 def transition_code(kind):

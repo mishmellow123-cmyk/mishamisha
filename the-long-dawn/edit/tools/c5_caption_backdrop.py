@@ -1,7 +1,8 @@
 """C5 caption backdrops: how busy, and how legible, is the picture under each caption EDIT draws?
 
 For every ink or fire caption whose frames are all present on this machine, over its STEADY frames (written or
-kindled, not yet leaving), at the master's 1920x804, reading the picture exactly as assemble.Ctx does:
+kindled, not yet leaving), at the master's 1920x804, reading the picture through assemble._init with FINISH and
+EDIT transitions enabled, then drawing the caption over that finished picture as the master does:
 
   box       the glyphs' extent plus half the type size on every side: the backdrop the eye crosses
   edge      fraction of box pixels whose luma gradient exceeds EDGE_T per pixel (Sobel / 4 on sRGB luma after a
@@ -200,8 +201,14 @@ def placed(rows, place=None, breaks=None):
     return out
 
 
+def _picture_context():
+    """The master's finished picture before captions; bare Ctx omits FINISH and EDIT transitions."""
+    AS._init(CUT, None, 1.0, True, True)
+    return AS._CTX
+
+
 def measure(ids=None, place=None, step=1, breaks=None):
-    ctx = AS.Ctx(CUT, None, 1.0, True)
+    ctx = _picture_context()
     return [measure_row(ctx, r, step) for r in placed(delivered_rows(ids), place, breaks)]
 
 
@@ -236,7 +243,7 @@ def search(rid, step=4, top=12, grid=16, keep=80, breaks=None):
     worst_edge = np.zeros(len(CX))
     worst_tex = np.zeros(len(CX))
     worst_cr = np.full(len(CX), np.inf)
-    ctx = AS.Ctx(CUT, None, 1.0, True)
+    ctx = _picture_context()
     frames = list(range(*steady(row)))[::step]
     for f in frames:
         img = ctx.picture(f)[0]

@@ -522,12 +522,24 @@ EDL = {'A': A, 'B': B, 'C': C}
 #                tint and the char band), cover = 1 - hole, glow is display sRGB
 #   x1           MAP-L2's first formula (fallback): out = O * keep + I * (1 - keep) + glow (shows the map through the char)
 #   dissolve     linear light, smoothstep over the window
+#   dawn_dissolve  C19 -> C20 dissolve with the incoming plate at the sweep's neutral starting grade
+#   dawn_sweep   one shot, no cut: a broad left-to-right front restores delivered colour and luminance
 #   finish_ramp  one shot, no cut: the finish goes from the ink look to the film look, lerp(ink, film, smoothstep)
 #   page_turn    EDIT-C5: the outgoing page curls over right to left onto the incoming (assemble.page_turn)
 # Kept as hard cuts on purpose: 2080 (the Eye -> the Refusal: the hearth flare that brings us back to the book is in
 # the render), 2640 (the Trap's roar -> the dark of the flint), 2880 (the catch -> the Reveal's simultaneous ignition,
 # which must land on the cut), COLD_CUT (3840 as briefed: the last beacon -> the forges, lit for 8 frames before 3848
 # puts them all out; movable, see COLD_CUT), 4000 (Cold -> Unfinished: one renderer, one camera, continuous).
+# REVIEW (29 Sep): finished 960x402 C4711 mean RGB (.385976,.390486,.386703), luma .389254; C4728 luma
+# .725026 and saturation .331380. Divide C4711's RGB by C4728's luma for the neutral incoming grade: the old
+# dissolve spent the dawn's colour immediately. C5P2 sunrise 4720 / home 5040 / plenty 5200: hold grey through
+# the dissolve, cross the centre at 4944 (inside R20, 4860-5019), ease across the home cadence, finish at 5160
+# (bar 65 beat 3), leaving 40 unchanged frames before Plenty. Same absolute grade on both adjacent windows.
+# A neutral prelight rises ahead of the colour: without it R20's full-size worst slice was 2.907:1 across
+# 122 steady frames (4886-5007). It eases from zero, so the measured night match at the dissolve stays intact.
+C_DAWN = dict(start=4728, done=5160, width=0.85, prelight=0.20,
+              night_rgb=(0.532361384, 0.538582617, 0.533364320))
+
 TRANS = {'A': [], 'B': [], 'C': [
     # the ember README (PR11) leaves "the page burn" to EDIT: the book's grammar for page -> ember world is the
     # burn-through (C4-C5, C8-C9). DESIGNED, NOT BUILT: it needs burn layers for the Refusal page (ftburn/x1burn,
@@ -557,9 +569,11 @@ TRANS = {'A': [], 'B': [], 'C': [
          note='C17 the Ring, unfinished -> C18 the Deep, abandoned: the page dissolve PR11 leaves to EDIT'),
     dict(f0=4468, f1=4492, cut=4480, kind='dissolve',
          note='C18 the mine page -> C19 the watch: ink drawing into ink range, through the paper'),
-    # runC_watch_v5 ends on the run's pose 319; runC_illum 2398 is another view: unseen here (illum not on this Mac)
-    dict(f0=4712, f1=4728, cut=4720, kind='dissolve',
-         note='C19 the watch -> C20 the illumination: two ink views of the range (UNSEEN: runC_illum not here)'),
+    dict(f0=4712, f1=4728, cut=4720, kind='dawn_dissolve', **C_DAWN,
+         note='C19 the watch -> C20 the illumination: grey into grey; preserve the outgoing beacon fade'),
+    dict(f0=4728, f1=5161, kind='dawn_sweep', **C_DAWN,
+         note='C20: daylight fills the ink from frame left, centre at 4944 under R20, unchanged from 5160; '
+              'C5P2 sunrise 4720, home 5040, plenty 5200'),
     dict(f0=5200, f1=5264, kind='finish_ramp',
          note="C21 opens pixel for pixel on C20's last frame (runC_illum 2877, ink look) and takes the film look by "
               "5264 (the 7,200-frame cut's #21, 6160-6224, same sources)"),

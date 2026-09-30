@@ -1359,8 +1359,32 @@
    "f0": 4712,
    "f1": 4728,
    "cut": 4720,
-   "kind": "dissolve",
-   "note": "C19 the watch -> C20 the illumination: two ink views of the range (UNSEEN: runC_illum not here)"
+   "kind": "dawn_dissolve",
+   "start": 4728,
+   "done": 5160,
+   "width": 0.85,
+   "prelight": 0.2,
+   "night_rgb": [
+    0.532361384,
+    0.538582617,
+    0.53336432
+   ],
+   "note": "C19 the watch -> C20 the illumination: grey into grey; preserve the outgoing beacon fade"
+  },
+  {
+   "f0": 4728,
+   "f1": 5161,
+   "kind": "dawn_sweep",
+   "start": 4728,
+   "done": 5160,
+   "width": 0.85,
+   "prelight": 0.2,
+   "night_rgb": [
+    0.532361384,
+    0.538582617,
+    0.53336432
+   ],
+   "note": "C20: daylight fills the ink from frame left, centre at 4944 under R20, unchanged from 5160; C5P2 sunrise 4720, home 5040, plenty 5200"
   },
   {
    "f0": 5200,
