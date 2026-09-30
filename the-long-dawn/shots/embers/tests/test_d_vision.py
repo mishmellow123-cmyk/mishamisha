@@ -334,7 +334,14 @@ class BrinkGlare(unittest.TestCase):
             peak = np.unravel_index(np.argmax(high[..., 0]), high.shape[:2])
             self.assertLess(abs(float(peak[1]) - float(xx.mean())), 2.)
             self.assertLess(abs(float(peak[0]) - float(yy.mean())), 2.)
-            for f in (3200., 3320., 3439., 3440., 3519.):
+            # Owner review (30 Sep): the brink's steady glare carries over the vision's opening, unpulsed and
+            # fading as the gap closes, so the open Ring is never seen face-on before the weld; then it is gone.
+            opening = [float(glare(float(f), D.camera(float(f)), 480, 201).max()) for f in range(3200, 3234)]
+            self.assertGreater(opening[0], 0.)
+            for a, b in zip(opening, opening[1:]):
+                self.assertLessEqual(b, a + 1e-6 * opening[0])
+            self.assertLess(opening[-1], .05 * opening[0])
+            for f in (3234., 3320., 3439., 3440., 3519.):
                 np.testing.assert_array_equal(glare(f, camera, 480, 201), 0.)
         oracle(D.glare_layer)
         with self.assertRaises(AssertionError):
@@ -344,9 +351,108 @@ class BrinkGlare(unittest.TestCase):
         with self.assertRaises(AssertionError):
             oracle(shifted)
         def leaking(f, cam, w, h):
-            return D.glare_layer(f, cam, w, h) + (.1 if f >= 3200 else 0.)
+            return D.glare_layer(f, cam, w, h) + (.1 if f >= 3234 else 0.)
         with self.assertRaises(AssertionError):
             oracle(leaking)
+        def pulsed(f, cam, w, h):
+            beat = np.exp(-((f - 2960.) % 20.) / 4.) if 3200 <= f < 3234 else 0.
+            return D.glare_layer(f, cam, w, h) * (1. + 2. * beat)
+        with self.assertRaises(AssertionError):
+            oracle(pulsed)
+        def cut_short(f, cam, w, h):
+            return np.zeros_like(D.glare_layer(f, cam, w, h)) if f >= 3200 else D.glare_layer(f, cam, w, h)
+        with self.assertRaises(AssertionError):
+            oracle(cut_short)
+
+
+class NoLetterC(unittest.TestCase):
+    """A face-on open Ring with its gap at three o'clock reads as the letter C (owner review, 30 Sep). No frame of
+    the vision or the gap shot may show most of the open Ring within 45 degrees of face-on with a legible gap
+    uncovered. A gap is legible as a letter's aperture only while its chord is wider than the band's stroke (a C's
+    opening is always wider than its stroke); narrower, it renders as a closing seam (owner render check of
+    D3222-3230: bead, slit, hairline)."""
+
+    @staticmethod
+    def c_frames(camera_at, rotation_at, glare_at=D.glare_layer):
+        th = np.linspace(0., 2. * np.pi, 360, endpoint=False)
+        pts = np.stack((D.RS.R_MID * np.cos(th), np.zeros_like(th), D.RS.R_MID * np.sin(th)), 1)
+        found = []
+        for f in range(3200, 3520):
+            if 2. * D.RS.R_MID * np.sin(np.radians(D.state(f)['gap']) / 2.) <= D.RS.THICK:
+                continue
+            cam, rot = camera_at(float(f)), rotation_at(float(f))
+            u, v, z = cam.project(D.RING_C + D.RING_SIZE * pts @ rot.T, 1920, 804)
+            inside = float(np.mean((u >= 0) & (u < 1920) & (v >= 0) & (v < 804) & (z > 0)))
+            tilt = np.degrees(np.arccos(min(1., abs(float(rot[:, 1] @ cam.R[2])))))
+            gx, gy, _ = cam.project(D.endpoints(f).mean(axis=0)[None], 480, 201)
+            glare = glare_at(float(f), cam, 480, 201)
+            covered = (0 <= gx[0] < 480 and 0 <= gy[0] < 201
+                       and float(glare[int(gy[0]), int(gx[0]), 0]) > .5)
+            if inside > .5 and tilt < 45. and not covered:
+                found.append(f)
+        return found
+
+    def test_no_frame_shows_a_face_on_open_ring(self):
+        self.assertEqual(self.c_frames(D.camera, D.ring_rotation), [])
+        # Negative controls: the reviewed design (face-on pull-back from the macro, Ring held in ROT), and the
+        # vision opening without the carried glare, both produce C frames.
+        def old_camera(f):
+            if f >= D.FIRST_GAP:
+                pull = float(D.smootherstep(D.FIRST_GAP, 3520., f))
+                close, wide = D.gap_camera(), D._camera(115., D.RING_C - 13. * D.UP)
+                pos = close.pos * (1 - pull) + wide.pos * pull
+                tgt = close.target * (1 - pull) + wide.target * pull
+                return Camera(pos, tgt, hfov=46.)
+            return D.camera(f)
+        def held_rotation(f):
+            return D.ROT if f >= D.FIRST_GAP else D.ring_rotation(f)
+        self.assertTrue(any(f >= D.FIRST_GAP for f in self.c_frames(old_camera, held_rotation)))
+        def no_carry(f, cam, w, h):
+            return np.zeros((h, w, 3), np.float32) if f >= 3200 else D.glare_layer(f, cam, w, h)
+        self.assertTrue(any(3200 <= f < 3234 for f in self.c_frames(D.camera, D.ring_rotation, no_carry)))
+        # The Eye's slit match is untouched: the gap shot's first frame is the old pose from the old macro camera.
+        np.testing.assert_allclose(D.ring_rotation(float(D.FIRST_GAP)), D.ROT, atol=1e-12)
+        np.testing.assert_allclose(D.camera(float(D.FIRST_GAP)).pos, D.gap_camera().pos, atol=1e-9)
+
+
+class GapShotMotion(unittest.TestCase):
+    """No whip: the band's 90th-percentile screen motion stays within what the reviewed pull-back used (43 px/frame
+    at 1920x804) plus margin. The owner's push-and-turn draft, which turned the Ring 151 degrees in a second at
+    close range, peaked at 378 px/frame and strobed."""
+
+    @staticmethod
+    def worst_flow(camera_at, rotation_at):
+        th = np.linspace(0., 2. * np.pi, 720, endpoint=False)
+        worst, prev = 0., None
+        for f in range(3440, 3520):
+            half = np.radians(D.state(f)['gap']) / 2.
+            t = th[(th > half) & (th < 2. * np.pi - half)]
+            local = np.concatenate([np.stack((r * np.cos(t), np.full_like(t, y), r * np.sin(t)), 1)
+                                    for r in (D.RS.R_IN, D.RS.R_OUT) for y in (-.5 * D.RS.WIDTH, .5 * D.RS.WIDTH)])
+            u, v, z = camera_at(float(f)).project(D.RING_C + D.RING_SIZE * local @ rotation_at(float(f)).T, 1920, 804)
+            seen = (u >= 0) & (u < 1920) & (v >= 0) & (v < 804) & (z > 0)
+            if prev is not None:
+                both = seen & prev[2]
+                if both.sum() > 20:
+                    worst = max(worst, float(np.percentile(np.hypot(u - prev[0], v - prev[1])[both], 90)))
+            prev = (u, v, seen)
+        return worst
+
+    def test_the_gap_shot_never_whips_the_band_across_the_frame(self):
+        self.assertLess(self.worst_flow(D.camera, D.ring_rotation), 60.)
+        def draft_camera(f):
+            close = D.gap_camera()
+            u = min(max((f - 3440.) / 36., 0.), 1.)
+            near = close.pos + (close.target - close.pos) * .35 * np.sin(np.pi * u) ** 2
+            pull = float(D.smootherstep(3466., 3520., f))
+            wide = D._camera(115., D.RING_C - 13. * D.UP)
+            pos, tgt = near * (1 - pull) + wide.pos * pull, close.target * (1 - pull) + wide.target * pull
+            return Camera(pos, tgt, hfov=46.)
+        def draft_rotation(f):
+            q = float(D.smootherstep(3442., 3466., f))
+            u, _, vt = np.linalg.svd((1. - q) * D.ROT + q * D.race_rotation())
+            return u @ vt
+        self.assertGreater(self.worst_flow(draft_camera, draft_rotation), 60.)
 
 
 class RoundTwoContracts(unittest.TestCase):

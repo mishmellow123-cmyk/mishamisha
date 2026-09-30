@@ -39,6 +39,15 @@ FORMED = 3296
 PUSH = 3344
 LAST_EYE = 3439
 FIRST_GAP = 3440
+# A face-on open Ring whose gap sits at three o'clock reads as the letter C (owner review, 30 Sep). The Eye's slit
+# match at 3439/3440 needs that pose, so the letter is kept out of every other frame instead. The brink's steady
+# glare carries over the vision's opening until the ends weld (the Ring closes behind the flare). The gap shot no
+# longer pulls back to the wide: from the slit match any withdrawal shows most of the face-on Ring within 13 frames,
+# and turning it away first is the brink's 151-degree turn, which at this range whips the band across the frame
+# (owner draft: 378 px/frame). Instead the camera keeps pushing, as the vision's push into the Eye did, from rest on
+# the match into the gap, and is still moving at the cut.
+VISION_GLARE_END = 3234
+GAP_PUSH = .2
 
 
 class CircularInscription:
@@ -160,12 +169,10 @@ def match_geometry():
 
 def camera(f):
     if f >= FIRST_GAP:
-        pull = float(smootherstep(FIRST_GAP, 3520., f))
         close = gap_camera()
-        wide = _camera(115., RING_C - 13. * UP)
-        pos = close.pos * (1 - pull) + wide.pos * pull
-        tgt = close.target * (1 - pull) + wide.target * pull
-        return Camera(pos, tgt, hfov=46., focus=np.linalg.norm(pos - tgt), aperture=.012)
+        t = (f - FIRST_GAP) / (3520. - FIRST_GAP)
+        pos = close.pos + (close.target - close.pos) * GAP_PUSH * t * t
+        return Camera(pos, close.target, hfov=46., focus=np.linalg.norm(pos - close.target), aperture=.012)
     if f < 3200:
         q = float(smootherstep(2960., 3199., f))
         return _camera(135. - 20. * q, RING_C - (15. - 2. * q) * UP)
@@ -254,8 +261,9 @@ def ring_layer(f, cam, W, H):
 
 
 def glare_layer(f, cam, W, H, frame=None):
-    """The adjacent race's aperture-confined glare, pulsing only on the brink."""
-    if not 2960 <= f < 3200:
+    """The adjacent race's aperture-confined glare, pulsing only on the brink. Its steady base carries over the
+    vision's opening, fading as the gap closes, so the open Ring never shows face-on before the weld."""
+    if not 2960 <= f < VISION_GLARE_END:
         return np.zeros((H, W, 3), np.float32)
     caps = np.concatenate([RS.cap_points(theta, 24)[0][1] for theta in theta_range(f)])
     caps = RING_C + RING_SIZE * caps @ ring_rotation(f).T
@@ -264,8 +272,13 @@ def glare_layer(f, cam, W, H, frame=None):
     if frame is not None:
         depth = float(np.min((ends - cam.pos) @ cam.R[2]))
         visibility = c3.occ_vis(frame, depth - .65, H, W)
-    return d_glare.render(cam, W, H, ends, caps, openring_d.glare(f),
-                          math.exp(-((f - 2960.) % 20.) / 4.), visibility)
+    score = openring_d.glare(f)
+    if f >= 3200:
+        # The brink ends between beats (pulse ~0.009 at 3199), so the vision inherits the steady base, unpulsed.
+        k = 1. - float(smootherstep(3200., VISION_GLARE_END, f))
+        return d_glare.render(cam, W, H, ends, caps, type(score)(score.radius_px * k, score.gain * k), 0.,
+                              visibility)
+    return d_glare.render(cam, W, H, ends, caps, score, math.exp(-((f - 2960.) % 20.) / 4.), visibility)
 
 
 @lru_cache(maxsize=1)
