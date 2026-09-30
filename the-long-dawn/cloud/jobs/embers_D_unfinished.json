@@ -1,0 +1,19 @@
+{
+  "name": "embers_D_unfinished",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py trap --prepare"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/c_d.py unfinished --range 6080-6399 --out renders/embers_D_unfinished --format jpg --scale 1"
+  ],
+  "out_dir": "renders/embers_D_unfinished",
+  "frames": "6080-6399",
+  "shape": [
+    804,
+    1920
+  ],
+  "push_every": 300,
+  "ship": "jpg",
+  "note": "Cut D v2, Round 3; locally measured native 1920x804: D6160: 1.300278 s/frame, 696827904 bytes peak RSS; D6240: 0.997788 s/frame, 776077312 bytes peak RSS. Seconds time Scene.frame only, excluding scene initialization and PNG encoding. RSS is cumulative process high-water within a fresh process for this shot, including scene construction. These local samples are not farm throughput estimates. Draft only; not submitted. Render file frame numbers equal D v2 frames."
+}

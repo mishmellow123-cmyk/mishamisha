@@ -1,0 +1,23 @@
+{
+  "name": "embers_D_brink",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 -c \"import numba, scipy, cv2, numpy, PIL, fontTools\"",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 2960 --shot brink --scale 0.1 --out /tmp/embers_D_brink_warm"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 2960-3199:4 --shot brink --out renders/embers_D_brink",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 2961-3199:4 --shot brink --out renders/embers_D_brink",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 2962-3199:4 --shot brink --out renders/embers_D_brink",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 2963-3199:4 --shot brink --out renders/embers_D_brink"
+  ],
+  "out_dir": "renders/embers_D_brink",
+  "frames": "2960-3199",
+  "shape": [
+    804,
+    1920
+  ],
+  "push_every": 300,
+  "ship": "jpg",
+  "note": "D v2 DRAFT; NOT SUBMITTED. Native1920x804 render-only measurements: D3080 12.722300583s including scene initialization. Process peak RSS753369088bytes (cumulative high-water mark); PNG save excluded. These are selected local frame observations, not farm throughput. Source-pinned evidence: vision/r2/central/measurements.json and native_sources.json. Fresh isolated native process: D3080 9.572691250s including scene initialization; peak RSS751304704bytes."
+}

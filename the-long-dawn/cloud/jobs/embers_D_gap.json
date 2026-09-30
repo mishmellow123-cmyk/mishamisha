@@ -1,0 +1,23 @@
+{
+  "name": "embers_D_gap",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 -c \"import numba, scipy, cv2, numpy, PIL, fontTools\"",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3440 --shot gap --scale 0.1 --out /tmp/embers_D_gap_warm"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3440-3519:4 --shot gap --out renders/embers_D_gap",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3441-3519:4 --shot gap --out renders/embers_D_gap",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3442-3519:4 --shot gap --out renders/embers_D_gap",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3443-3519:4 --shot gap --out renders/embers_D_gap"
+  ],
+  "out_dir": "renders/embers_D_gap",
+  "frames": "3440-3519",
+  "shape": [
+    804,
+    1920
+  ],
+  "push_every": 300,
+  "ship": "jpg",
+  "note": "D v2 DRAFT; NOT SUBMITTED. Native1920x804 render-only measurements: D3440 1.767807291s. Process peak RSS790413312bytes (cumulative high-water mark); PNG save excluded. These are selected local frame observations, not farm throughput. Source-pinned evidence: vision/r2/central/measurements.json and native_sources.json. Slit/gap aperture140.9664x433.8361px at centre(959.5,401.5); centre/extent/axis match, not identical full silhouettes. Fresh isolated native process: D3440 8.697955625s including scene initialization; peak RSS1001816064bytes."
+}

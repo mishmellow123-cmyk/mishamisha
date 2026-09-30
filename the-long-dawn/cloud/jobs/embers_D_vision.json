@@ -1,0 +1,23 @@
+{
+  "name": "embers_D_vision",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 -c \"import numba, scipy, cv2, numpy, PIL, fontTools\"",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3200 --shot vision --scale 0.1 --out /tmp/embers_D_vision_warm"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3200-3439:4 --shot vision --out renders/embers_D_vision",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3201-3439:4 --shot vision --out renders/embers_D_vision",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3202-3439:4 --shot vision --out renders/embers_D_vision",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 3203-3439:4 --shot vision --out renders/embers_D_vision"
+  ],
+  "out_dir": "renders/embers_D_vision",
+  "frames": "3200-3439",
+  "shape": [
+    804,
+    1920
+  ],
+  "push_every": 300,
+  "ship": "jpg",
+  "note": "D v2 DRAFT; NOT SUBMITTED. Native1920x804 render-only measurements: D3240 0.743246917s; D3320 1.223708708s; D3439 1.401260459s. Process peak RSS776896512bytes (cumulative high-water mark); PNG save excluded. These are selected local frame observations, not farm throughput. Source-pinned evidence: vision/r2/central/measurements.json and native_sources.json. Eye fully formed3296; reading interval3296-3343; push3344-3439. Fresh isolated native process: D3320 10.554585792s including scene initialization; peak RSS758513664bytes."
+}

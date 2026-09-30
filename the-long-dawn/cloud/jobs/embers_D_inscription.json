@@ -1,0 +1,23 @@
+{
+  "name": "embers_D_inscription",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 -c \"import numba, scipy, cv2, numpy, PIL, fontTools\"",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 1680 --shot inscription --scale 0.1 --out /tmp/embers_D_inscription_warm"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 1680-2079:4 --shot inscription --out renders/embers_D_inscription",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 1681-2079:4 --shot inscription --out renders/embers_D_inscription",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 1682-2079:4 --shot inscription --out renders/embers_D_inscription",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 1683-2079:4 --shot inscription --out renders/embers_D_inscription"
+  ],
+  "out_dir": "renders/embers_D_inscription",
+  "frames": "1680-2079",
+  "shape": [
+    804,
+    1920
+  ],
+  "push_every": 300,
+  "ship": "jpg",
+  "note": "D v2 DRAFT; NOT SUBMITTED. 400 absolute frames: fire pre-roll1680-1759, inscription1760-2079. Native1920x804 measured render-only: D1880 5.627248125s; D1952 4.671027291s; D2079 0.503549084s. Highest measured process RSS729956352bytes across the selected native batch (cumulative high-water mark; warmed imports/JIT). Geometry follows published D2080 contract; owner staging decision and shared-fire/material integration remain pending. Local evidence: vision/r2/inscription/measurements_candidate2.jsonl and motion_measurements.json."
+}

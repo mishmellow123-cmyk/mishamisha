@@ -1,0 +1,23 @@
+{
+  "name": "embers_D_crowns",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 -c \"import numba, scipy, cv2, numpy, PIL, fontTools\"",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 4240 --shot crowns --scale 0.1 --out /tmp/embers_D_crowns_warm"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 4240-4559:4 --shot crowns --out renders/embers_D_crowns",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 4241-4559:4 --shot crowns --out renders/embers_D_crowns",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 4242-4559:4 --shot crowns --out renders/embers_D_crowns",
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/embers/render_d.py --frames 4243-4559:4 --shot crowns --out renders/embers_D_crowns"
+  ],
+  "out_dir": "renders/embers_D_crowns",
+  "frames": "4240-4559",
+  "shape": [
+    804,
+    1920
+  ],
+  "push_every": 300,
+  "ship": "jpg",
+  "note": "D v2 DRAFT; NOT SUBMITTED. 320 absolute frames4240-4559; synchronized catch starts4320, full by4336. Native1920x804 measured render-only: D4319 0.610645125s; D4500 1.876696583s; D4559 1.977847250s. Process peak RSS837337088bytes (cumulative high-water mark; warmed imports/JIT). Ridge roots(733.4482,463.0646)/(1386.8712,455.1342); Ring centre x1060. Evidence: vision/r2/crowns/measurements.json. Times exclude scene construction and PNG save; peak RSS includes the constructed scene."
+}

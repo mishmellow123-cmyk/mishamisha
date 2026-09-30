@@ -37,8 +37,14 @@ R_OUT = R_IN + THICK
 SQ = 2.8
 F0_GOLD = np.array([1.0, 0.766, 0.336])          # gold's specular colour (linear)
 C_LETTER = np.array([1.0, 0.3, 0.045])            # the letters in fire: deep orange-red, never white
+# D study lamps scatter weakly from worked gold and more strongly from its cut lettering.
+READING_BODY_GAIN = .10
+READING_GROOVE_GAIN = .90
+READING_GROOVE_TINT = np.array([1., .92, .72])
 # Fixed planar hammer facets: material position and two normal slopes, independent of frame and camera.
 _CAP_FACETS = np.random.default_rng(7401).uniform(size=(192, 4))
+# D's shallow overlapping hammer strokes; isolated RNG leaves all existing scene randomness untouched.
+_WORKED_CAP_STROKES = np.random.default_rng(8605).uniform(size=(32, 6))
 
 
 def sgnpow(x, p):
@@ -272,6 +278,10 @@ class RingState:
         self.hammer = 0.0           # hammer marks in the hot metal (0..1)
         self.end_caps = False      # close an incomplete arc with beaten-metal section faces
         self.leading_glyph = False  # a canonical glyph bisected by the leading cut; settled letters stay fixed
+        self.inscription = None     # optional texture provider; None preserves canonical strips
+        self.cap_heat_gain = 1.0     # additional exposed-section emission; default retains original arithmetic
+        self.worked_caps = False    # D-only continuous shallow hammer relief; never changes cap geometry
+        self.reading_light = None   # optional fn(world positions, world normals) -> local irradiance RGB
 
 
 def cap_points(theta, npp, sec=(1.0, 1.0)):
@@ -422,8 +432,18 @@ def shade(th, ps, cam, f, ss, Rot, C, scale, st, env, leading_theta=None):
                    + np.array([1.0, 0.42, 0.08])[None, :] * (_ss(0.18, 0.42, hk) * (1 - _ss(0.42, 0.72, hk)))[:, None]
                    + np.array([0.55, 0.1, 0.02])[None, :] * (_ss(0.0, 0.18, hk) * (1 - _ss(0.18, 0.42, hk)))[:, None])
             col = col * (1.0 - 0.8 * _ss(0.15, 0.6, hk))[:, None] + hot * (hk ** 2.6 * 3.4 + 0.12 * hk)[:, None]
-    # the letters: emission through the canonical strips
-    if st.letters > 0:
+    # Reading lamps are direct local light, separate from the reflected environment.
+    # Leave every old arithmetic path intact when absent, including a zero-power callback.
+    reading = None
+    if st.reading_light is not None:
+        illumination = np.asarray(st.reading_light(Pw, Nw), np.float64)
+        if illumination.shape != Pw.shape or not np.isfinite(illumination).all() or np.any(illumination < 0):
+            raise ValueError('reading_light must return finite nonnegative irradiance with shape (n, 3)')
+        if illumination.any():
+            reading = illumination
+            col = col + READING_BODY_GAIN * F0_GOLD[None, :] * reading
+    # The same canonical strips carry both the forge's emission and the lamps' reflected light.
+    if st.letters > 0 or reading is not None:
         outer = np.cos(ps) >= 0.0
         vv = (0.5 * WIDTH - scale_free_y(ps)) / WIDTH
         uo = (-th / (2 * np.pi)) % 1.0
@@ -431,7 +451,7 @@ def shade(th, ps, cam, f, ss, Rot, C, scale, st, env, leading_theta=None):
         # footprint: world length of one sample, in texels of the strip
         zs = np.maximum((Pw - cam.pos) @ cam.R[2], 1e-6)
         wlen = zs / (f * ss)
-        ins = inscription()
+        ins = st.inscription if st.inscription is not None else inscription()
         tex = np.zeros(len(th), np.float32)
         edge_ink = np.zeros(len(th), np.float32) if leading_theta is not None else None
         for face, m, uu, Rf in (('outer', outer, uo, R_OUT), ('inner', ~outer, ui, R_IN)):
@@ -456,7 +476,45 @@ def shade(th, ps, cam, f, ss, Rot, C, scale, st, env, leading_theta=None):
             # The groove stays orange against the white-hot section, rather than vanishing into its heat.
             col = col * (1 - 0.93 * edge_ink * np.clip(2 * wr, 0, 1))[:, None]
         col = col + st.letters_col[None, :] * (st.letters * tex * wr)[:, None]
+        if reading is not None:
+            col = col + reading * READING_GROOVE_TINT[None, :] * (READING_GROOVE_GAIN * tex * wr)[:, None]
     return col.astype(np.float32)
+
+
+def _worked_cap_gradients(r, y, sec=(1., 1.), footprint=0.):
+    """Normal slopes from one continuous shallow height field, in material coordinates.
+
+    Shallow strikes and finer directional tool marks share a smooth height field. Neither changes
+    albedo or temperature. Gaussian footprint filtering removes unresolved normal variation.
+    """
+    rr, yy = np.asarray(r) / sec[0], np.asarray(y) / sec[1]
+    gr, gy = np.zeros_like(rr), np.zeros_like(yy)
+    deform = min(sec)
+    blur2 = (np.asarray(footprint) / deform) ** 2
+    for ux, uy, ua, ub, up, ud in _WORKED_CAP_STROKES:
+        cx, cy = (ux - .5) * THICK, (uy - .5) * WIDTH
+        a, b = (.035 + .030 * ua) * WIDTH, (.022 + .025 * ub) * WIDTH
+        angle = np.pi * up
+        ca, sa = np.cos(angle), np.sin(angle)
+        xr, yr = rr - cx, yy - cy
+        qr, qy = ca * xr + sa * yr, -sa * xr + ca * yr
+        aa, bb = a * a + blur2, b * b + blur2
+        depth = (.00008 + .00012 * ud) * WIDTH
+        h = depth * a * b / np.sqrt(aa * bb) * np.exp(-.5 * (qr * qr / aa + qy * qy / bb))
+        gr -= h * (qr * ca / aa - qy * sa / bb) * deform / sec[0]
+        gy -= h * (qr * sa / aa + qy * ca / bb) * deform / sec[1]
+    # Fine, intersecting tool passes dominate the relief: broad blurred depressions read as wax.
+    # Each term is the exact derivative of a height wave, with a fixed material-space phase.
+    # Irregular wavelengths prevent a repeated grating; all contrast comes from reflected light.
+    for u, v, w, _, phase, _ in _WORKED_CAP_STROKES[:12]:
+        angle = .32 + .55 * u if v < .5 else 2.35 + .42 * u
+        ca, sa = np.cos(angle), np.sin(angle)
+        frequency = (190. + 670. * w) / WIDTH
+        slope = .0045 * np.exp(-.5 * frequency * frequency * blur2)
+        wave = slope * np.cos(frequency * (ca * rr + sa * yy) + 2 * np.pi * phase)
+        gr += wave * ca * deform / sec[0]
+        gy += wave * sa * deform / sec[1]
+    return gr, gy
 
 
 def shade_cap(r, y, theta, side, cam, Rot, C, scale, st, env, footprint=0.):
@@ -470,28 +528,29 @@ def shade_cap(r, y, theta, side, cam, Rot, C, scale, st, env, footprint=0.):
     radial = np.array([c, 0., s])
     axial = np.array([0., 1., 0.])
     tangent = side * np.array([-s, 0., c])
-    # Small planar hammer facets break reflections. Temperature does not follow the facets: circular
-    # thermal depressions in the previous version made the cut read as a porous material in a cold read.
-    rr, yy = r / st.sec[0], y / st.sec[1]
-    nearest, second = np.full(len(r), np.inf), np.full(len(r), np.inf)
-    g1, g2 = np.zeros((len(r), 2)), np.zeros((len(r), 2))
-    for ux, uy, ur, ua in _CAP_FACETS:
-        cx, cy = (ux - 0.5) * THICK, (uy - 0.5) * WIDTH
-        dist = (rr - cx) ** 2 + (yy - cy) ** 2
-        closer = dist < nearest
-        runner_up = (~closer) & (dist < second)
-        second[closer], g2[closer] = nearest[closer], g1[closer]
-        second[runner_up] = dist[runner_up]
-        slope = np.array([ur - .5, ua - .5]) * .04
-        g2[runner_up] = slope
-        nearest[closer], g1[closer] = dist[closer], slope
-    # Low slopes and broad blending retain the band's smooth metal response across the cut.
-    blend = .5 + .5 * _ss(0., .018, np.sqrt(second) - np.sqrt(nearest))
-    gradients = g1 * blend[:, None] + g2 * (1 - blend[:, None])
-    gr, gy = gradients[:, 0], gradients[:, 1]
-    # Fine directional tool marks affect reflection only; fade them when subpixel to avoid shimmer.
-    scratch = np.sin(620. * yy + 1.5 * np.sin(39. * rr))
-    gr = gr + .0006 * scratch * (1 - _ss(.002, .007, footprint))
+    worked = getattr(st, 'worked_caps', False)
+    if worked:
+        gr, gy = _worked_cap_gradients(r, y, st.sec, footprint)
+    else:
+        # Round 1 path retained verbatim: the D material is an explicit, independent opt-in.
+        rr, yy = r / st.sec[0], y / st.sec[1]
+        nearest, second = np.full(len(r), np.inf), np.full(len(r), np.inf)
+        g1, g2 = np.zeros((len(r), 2)), np.zeros((len(r), 2))
+        for ux, uy, ur, ua in _CAP_FACETS:
+            cx, cy = (ux - 0.5) * THICK, (uy - 0.5) * WIDTH
+            dist = (rr - cx) ** 2 + (yy - cy) ** 2
+            closer = dist < nearest
+            runner_up = (~closer) & (dist < second)
+            second[closer], g2[closer] = nearest[closer], g1[closer]
+            second[runner_up] = dist[runner_up]
+            slope = np.array([ur - .5, ua - .5]) * .04
+            g2[runner_up] = slope
+            nearest[closer], g1[closer] = dist[closer], slope
+        blend = .5 + .5 * _ss(0., .018, np.sqrt(second) - np.sqrt(nearest))
+        gradients = g1 * blend[:, None] + g2 * (1 - blend[:, None])
+        gr, gy = gradients[:, 0], gradients[:, 1]
+        scratch = np.sin(620. * yy + 1.5 * np.sin(39. * rr))
+        gr = gr + .0006 * scratch * (1 - _ss(.002, .007, footprint))
     nl = tangent[None, :] + gr[:, None] * radial + gy[:, None] * axial
     nl /= np.linalg.norm(nl, axis=1)[:, None]
     pw = C[None, :] + scale * pl @ Rot.T
@@ -507,14 +566,17 @@ def shade_cap(r, y, theta, side, cam, Rot, C, scale, st, env, footprint=0.):
         col += st.glow_col[None, :] * (st.glow * (0.35 + 0.65 * (1 - ndv) ** 2))[:, None]
     if st.heat is not None:
         hk = np.clip(st.heat(np.full(len(r), theta)), 0., 1.)
-        hk = hk * .80
+        hk = hk if worked else hk * .80
         hot = (np.array([1., .96, .86])[None, :] * _ss(.72, 1., hk)[:, None]
                + np.array([1., .78, .34])[None, :] * (_ss(.42, .72, hk) * (1 - _ss(.72, 1., hk)))[:, None]
                + np.array([1., .42, .08])[None, :] * (_ss(.18, .42, hk) * (1 - _ss(.42, .72, hk)))[:, None]
                + np.array([.55, .1, .02])[None, :] * (_ss(0., .18, hk) * (1 - _ss(.18, .42, hk)))[:, None])
-        # Uniform face heat; the preceding hot band supplies the edge glare. A separate white perimeter
-        # made the section look like an inserted plate, so no cap-only hot rim is emitted here.
-        col = col * (1 - .45 * _ss(.15, .6, hk))[:, None] + hot * (hk ** 2.6 * .80 + .05 * hk)[:, None]
+        # The cut face itself incandesces at forging heat. Heat is uniform across the whole section;
+        # there is no emitted perimeter or spatial temperature pattern to mimic relief.
+        gain = .80 + 1.80 * _ss(.84, .97, hk) if worked else .80
+        col = col * (1 - .45 * _ss(.15, .6, hk))[:, None] + hot * (hk ** 2.6 * gain + .05 * hk)[:, None]
+        if st.cap_heat_gain != 1.0:
+            col += hot * ((hk ** 2.6 * gain + .05 * hk) * (st.cap_heat_gain - 1.0))[:, None]
     return col.astype(np.float32)
 
 
