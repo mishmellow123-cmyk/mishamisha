@@ -8,6 +8,8 @@ A: Cormorant italic, per-caption placement, 12-frame fades inside the in/out fra
 B: the title only.  C: ink write-ons (a pen-shaped wipe over 24 frames, dissolve out over 12) and fire lines
 (kindle over 12, crumble over 12); T8a/b stacked on black.  Titles (X3) kindle in place: A crumbles into rising
 sparks, B fades into the light, C cools from fire to ink.  Everything scales (0.5 for the half-res animatic).
+D: the consolidated treatment's own D_TEXT; Cormorant lower-third narration with 12-frame fades, plus text
+already baked into the reused old-story and title plates. New old-fire text remains an overlay until baked.
 
 v2 (kept for edit/assemble_v2.py): `story_lines(cut)` + `composite(img, lines, f)`, as below.
 
@@ -17,7 +19,6 @@ frame: staggered letter fade-in (a soft left-to-right breath), a small upward
 settle, blur-to-sharp, and a slow fade out. Composited over the picture with a
 soft dark halo for legibility and a faint warm glow so the words feel lit.
 """
-from copy import deepcopy
 import functools
 from numbers import Real
 import os
@@ -384,9 +385,40 @@ C5_TEXT = [
     dict(id='title', row=23, line='THE LONG DAWN', f_in=5700, f_out=5880, set='in_picture'),   # book_C 6980-7160
 ]
 
-# Cut D is an explicitly selected scaffold until the owner supplies the consolidated film's words and timing.
-# It owns nested part/placement settings as well as its row list; changing D must not change the C alternative.
-D_TEXT = deepcopy(C5_TEXT)
+# Cut D v2: 115 bars (30 Sep). Each caption has one editable string on one D_TEXT line.
+# A newline in that single string supplies the two-row layout; the exported prose derives from it.
+# Timing is D's own. The existing page's source-numbered BAKED_TEXT inventory remains unchanged.
+def _d_caption(number, f_in, f_out, text, style='lower'):
+    row = dict(id=f'D{number:02d}', row=number, line=text.replace('\n', ' '),
+               f_in=f_in, f_out=f_out, set=style)
+    if '\n' in text:
+        row['lines'] = tuple(text.split('\n'))
+    return row
+
+
+D_TEXT = [
+    _d_caption(1, 152, 320, 'At first it looked like morning.'),
+    _d_caption(2, 684, 932, 'Our Ring was kindled from every tale we had ever told.'),
+    _d_caption(3, 1028, 1256, 'It read every word we had ever written, and learned to answer.'),
+    _d_caption(4, 1330, 1438, 'It could show us anything, except itself.'),
+    _d_caption(5, 1520, 1660, 'In the old story, a Dark Lord forges a Ring to rule the world.', 'in_picture'),  # C400-539, off=-1120
+    _d_caption(6, 2104, 2376, 'In our story, there was no Dark Lord,\nonly smiths in every kingdom, each racing to finish it first.'),
+    _d_caption(7, 2772, 2948, 'They dug deeper every year, for the gold ran deeper still.'),
+    _d_caption(8, 3224, 3416, 'But whoever won the race, the Ring would rule us all.'),
+    _d_caption(9, 3544, 3740, 'In the old story, the wise refuse the Ring.'),
+    _d_caption(10, 3798, 4040, 'In ours, no smith could refuse it alone.'),
+    _d_caption(11, 4332, 4536, 'So the two furthest ahead lit the first beacons, together.'),
+    _d_caption(12, 4584, 4824, 'Each fire said: I will wait, if you will.'),
+    _d_caption(13, 5612, 5816, 'When the last beacon caught, every forge fell into step.'),
+    _d_caption(14, 5864, 6056, 'In the old story, the Ring is unmade in the fire that forged it.'),  # PENDING BAKE: book_D_oldfire
+    _d_caption(15, 6104, 6376, 'Ours was left unfinished, and they lit lamps to read it by.'),
+    _d_caption(16, 6664, 6880, 'It took longer than anyone wanted.'),
+    _d_caption(17, 7064, 7336, 'And the beacons burned on, so no forge could be lit in secret.'),
+    _d_caption(18, 7384, 7656, 'Even unfinished, the Ring brought the dawn.'),
+    _d_caption(19, 8344, 8616, 'Perhaps one day they would read it well enough to finish it.\nPerhaps never.'),
+    _d_caption(20, 8664, 8840, 'The last pages were left for us.'),
+    dict(id='title', row=33, line='THE LONG DAWN', f_in=8900, f_out=9080, set='in_picture'),
+]
 
 # Text BAKED into delivered pixels (what the renders show, not what their source says today): stem, source frames
 # [a, b), the words, and the code that baked them. A caption set 'in_picture' needs a record with its words on every
@@ -405,7 +437,7 @@ BAKED_TEXT = [
          by="shots/map/inkline.py LINES['T14'] (PAGES-C, 28 Sep; the old C27 verso, not in C5)"),
     dict(stem='book_C', src=(6980, 7160), line='THE LONG DAWN', by='shots/map/titleburn.py via book_c.py TITLE'),
 ]
-DEFAULT_SET = {'A': 'lower', 'B': 'lower', 'C': 'fire', 'D': 'fire'}
+DEFAULT_SET = {'A': 'lower', 'B': 'lower', 'C': 'fire', 'D': 'lower'}
 Y_LOWER, Y_TOP, Y_BOTTOM, Y_MID = 648, 372, 440, 402          # 1920x804 picture coordinates
 # A19: T14 sits just left of the set-down lantern (1745,640), above the foreground ridge.
 # Keep the bar map's words/timing; placement belongs to EDIT and must survive text_table() for film A too.
@@ -494,6 +526,9 @@ class TextV3:
         if k == 'title':
             self.font, size, weight, track = CINZEL, 92, 500, 0.28
             self.y = (360 if cut in 'AB' else Y_MID) * s               # A, B: in the sky; C: the blank page
+        elif cut == 'D' and k == 'lower':
+            self.font, size, weight, track = ITALIC, 56, 560, 0.02
+            self.y = Y_LOWER * s
         elif cut in ('C', 'D') and k.startswith('ink'):
             self.font, size, weight, track = EBG_ITALIC, 54, 500, 0.015
             self.y = (Y_MID if k == 'ink_page' else Y_LOWER) * s
@@ -608,6 +643,8 @@ class TextV3:
         ink = 0.0
         if k == 'title':
             a, heat, sparks, glow_k, ink = self._title(f)
+        elif self.cut == 'D' and k == 'lower':
+            a, rise = self._fade(f)
         elif self.cut in ('C', 'D') and k.startswith('ink'):
             a = self._ink(f)
         elif self.cut in ('C', 'D'):

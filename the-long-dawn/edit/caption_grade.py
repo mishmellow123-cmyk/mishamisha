@@ -137,12 +137,19 @@ def apply(image, frame, spec, source):
     if (source is None or source.get('stem') != spec['source_stem']
             or band['source_stem'] != spec['source_stem']):
         raise ValueError('Caption-band source stem mismatch')
-    if (source.get('off') != spec['source_off'] or band['source_off'] != spec['source_off']
-            or source.get('mode') != 'exact' or source.get('crop') is not None or source.get('video') is not None):
+    # Harvested plates retain the registered geometry's timeline. This explicit offset maps the new cut's
+    # frame to that timeline; its source mapping must still name the same physical source frame.
+    band_off = spec.get('band_frame_off', 0)
+    if isinstance(band_off, bool) or not isinstance(band_off, int):
+        raise ValueError('Caption-band frame offset must be an integer')
+    if (source.get('off') != spec['source_off'] or band['source_off'] != spec['source_off'] - band_off
+            or source.get('mode') != 'exact' or source.get('crop') is not None or source.get('video') is not None
+            or source.get('hold') is not None or source.get('clamp') is not None
+            or source.get('screen_transform') is not None):
         raise ValueError('Caption-band source offset or geometry mapping mismatch')
-    if (band['frame_start'], band['frame_end_exclusive']) != (spec['f0'], spec['f1']):
+    if (band['frame_start'], band['frame_end_exclusive']) != (spec['f0'] + band_off, spec['f1'] + band_off):
         raise ValueError('Caption-band frame coverage differs from grade window')
-    box, alpha = _band(band['outlines'][str(frame)], image.shape)
+    box, alpha = _band(band['outlines'][str(frame + band_off)], image.shape)
     x0, y0, x1, y1 = box
     out = image.copy()
     out[y0:y1, x0:x1] = _grade(image[y0:y1, x0:x1], alpha * amount, spec['curve'])

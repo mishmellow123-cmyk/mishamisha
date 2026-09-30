@@ -1,4 +1,4 @@
-"""THE LONG DAWN v3: the EDLs on the bar grid (edit X4), including cut D's scaffold.
+"""THE LONG DAWN v3: the EDLs on the bar grid (edit X4), including the consolidated cut D.
 
 Source of truth: BIBLE_V3.md "REVISION 1 · LOCKED BEAT SHEETS" as amended by the DIRECTOR'S H5 CALLS, and
 music/v3/barmap_{A,B}.json and barmap_C5.json (BARMAP; section boundaries are checked by check()). C is C5: the
@@ -23,7 +23,7 @@ from copy import deepcopy
 BAR, BEAT = 80, 20
 # C is C5 (29 Sep, EDIT-C5): THE LAST PAGES on script v5.2, 5,920 f = 74 bars. The 7,200-frame C is retired; it
 # lives in git history (edl_C.json before this change), never beside C5.
-TOTAL = {'A': 6480, 'B': 5440, 'C': 5920, 'D': 5920}
+TOTAL = {'A': 6480, 'B': 5440, 'C': 5920, 'D': 9200}
 BARMAP = {'A': 'barmap_A.json', 'B': 'barmap_B.json', 'C': 'barmap_C5.json', 'D': 'barmap_D.json'}
 # C5: sections and grid only; its
 # text block and several sync notes carry retired single-leader wording (titles.C5_TEXT holds C's words)
@@ -35,7 +35,7 @@ def bf(bar, beat=1.0):
 
 
 def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=None, video=None, need=None,
-      add=None, final_eligible=True):
+      add=None, final_eligible=True, hold=None, clamp=None, screen_transform=None):
     """need=(a, b): the take is used only once its folder holds every src frame a..b (a shared take such as H1
     switches over in one piece, never frame by frame while a render is still landing).
     add='<folder>': an additive layer in the same src numbering (renders/<folder>/), added after the matte comp;
@@ -43,10 +43,32 @@ def T(stem, off=0, mode='v3', note='', crop=None, grade=None, matte=None, under=
     under=('same', stem) reads the cut frame, independent of the take's off; ('hold', stem, frame) holds one frame.
     For a harvested composite, under=('offset', stem, offset) reads cut frame + offset (set explicitly for that
     under-layer; matching the foreground's off is appropriate only when both sources share frame numbering).
+    hold=<integer source frame>: repeat that frame for RGB, matte and add; omit it for the legacy offset clock.
+    clamp=(first,last): clamp the offset source clock to this inclusive range; mutually exclusive with hold.
+    screen_transform=<dict>: explicit screen camera applied after the take's composition and grade.
     final_eligible=False: an explicitly provisional take may still play in partial masters and previews,
     but cannot establish picture-source completeness. Approved reuse remains eligible."""
-    return dict(stem=stem, off=off, mode=mode, note=note, crop=crop, grade=grade, matte=matte, under=under,
+    take = dict(stem=stem, off=off, mode=mode, note=note, crop=crop, grade=grade, matte=matte, under=under,
                 video=video, need=need, add=add, final_eligible=final_eligible)
+    if hold is not None:
+        if type(hold) is not int or hold < 0:
+            raise ValueError('hold must be a nonnegative integer source frame')
+        take['hold'] = hold
+    if clamp is not None:
+        if hold is not None or len(clamp) != 2 or any(type(n) is not int or n < 0 for n in clamp) or clamp[0] > clamp[1]:
+            raise ValueError('clamp needs an ordered nonnegative integer pair and no hold')
+        take['clamp'] = tuple(clamp)
+    if screen_transform is not None:
+        take['screen_transform'] = deepcopy(screen_transform)
+    return take
+
+
+def source_frame(take, frame):
+    """Source numbering: explicit hold, or offset clock with an optional declared end-frame clamp."""
+    source = take.get('hold', frame + take['off'])
+    if 'clamp' in take:
+        source = min(take['clamp'][1], max(take['clamp'][0], source))
+    return source
 
 
 def is_final_take(take):
@@ -583,11 +605,155 @@ C = [
       [book(off=1280)]),
 ]
 
-# D is an opt-in plumbing scaffold (30 Sep), copied from the current C edit. The owner replaces this list with
-# D's consolidated shot rows; 5,920 frames is this scaffold's length, not a constraint on the final film. TOTAL['D']
-# and music/v3/barmap_D.json are independent declarations and must move with D's own sections when it grows.
-# Deep copying matters: takes and their nested settings must never mutate the preserved C alternative.
-D = deepcopy(C)
+# ------------------------------------------------------------------------------------------------------- D
+# THE LONG DAWN, treatment v2 (30 Sep): 34 beats, 115 bars, 9,200 frames. A and C remain alternatives.
+# NEW picture has NO takes until explicitly adopted; expected stems, off=0 and complete source needs below
+# document D numbering without making folder arrival an adoption. D07's separately approved burn is integrated
+# by the burn lane. Reused source clocks and holds are explicit, and A's entire opening is copied independently.
+D_CROSSING_SOURCE_START = 5180  # Reviewed A5180-5579: walk set-off; excludes the A4960 silhouette openings.
+# D07: explicit stand-in adoption. C559's gilt Ring component is 59x29 px, centred at approximately (998,92).
+# The measured white-core centroids of A1400 and A1439 anchor the flame, never the whole valley's bounding box.
+# ONE-LINE future adoption (camera already aligned at D1680; D08 remains a separate NEW slate):
+# D_BURN_PLATE = T('embers_D_inscription', 0, 'exact', need=(1680, 1759))
+D_BURN_PLATE = T('embers_A3', -280, 'exact', 'STAND-IN A1400-1439 thinking fire; source1439 held thereafter',
+                 need=(1400, 1439), clamp=(1400, 1439), final_eligible=False,
+                 screen_transform=dict(f0=1680, f1=1760, source_f0=1680, source_f1=1719,
+                                       anchor0=(960.293, 460.242), anchor1=(959.523, 515.664),
+                                       target0=(998., 92.), target1=(960., 402.), scale0=.10, scale1=1.,
+                                       border=(14/255., 14/255., 14/255.)))
+D = [dict(deepcopy(row), sec='D0', code=f'D{number:02d}') for number, row in enumerate(A[:5], 1)] + [
+    S('D1', 1440, 1680, 'D06', 'THE OLD STORY', 'PAGES-C reuse',
+      'The red book: a pen draws a mountain with fire in its throat and a small closed gold ring.',
+      [T('cand_t1_current-words-held', -1120, 'exact', 'C3 source320-559; old-story words baked on the page',
+         matte='cand_t1_current-words-held_matte')]),
+    # x1burn_D_drawnring: generated x1burn v2 transition at D1680-1759; no shared layer-folder writes.
+    S('D1', 1680, 1760, 'D07', 'THE BURN', 'EDIT',
+      'A burn born at the drawn gold Ring opens the page onto ours; incoming fire is an explicit A stand-in.',
+      [D_BURN_PLATE]),
+    # NEW: expected stem embers_D_inscription, off=0, need=(1760, 2079); no take until explicitly adopted.
+    S('D1', 1760, 2080, 'D08', 'THE FORGING FRONT', 'VISION',
+      'NEW embers_D_inscription: A5\'s ice-white thinking fire, edged in gold, draws out into a band; the camera '
+      'rides the front as it writes every script, stops mid-letter, and leaves the band hanging open.'),
+    # NEW: expected stem embers_D_forging, off=0, need=(2080, 2399); no take until explicitly adopted.
+    S('D1', 2080, 2400, 'D09', 'THE FORGING', 'OPENRING',
+      'NEW embers_D_forging: towers rise under the open band; only the two tallest towers send sparks to its ends; '
+      'each hammer stroke pays gold into the striker\'s windows.'),
+    # NEW: expected stem embers_D_race, off=0, need=(2400, 2719); no take until explicitly adopted.
+    S('D2', 2400, 2720, 'D10', 'THE RACE', 'OPENRING',
+      'NEW embers_D_race: surges on every beat; glare hides the narrowing gap, gold reaches the nearest windows, '
+      'and two giants pull ahead.'),
+    S('D2', 2720, 2728, 'D11a', 'THE DEEP · THE SWEEP ENTRY', 'BURN-C reuse',
+      'C sweep soft entry; needs re-bake over embers_D_race D2719: the baked held race shows C\'s closed Ring.',
+      [dict(ft_sweep_entry(), off=-1040, final_eligible=False,
+            note='C1680-1687 reused; needs re-bake over embers_D_race D2719 (baked C closed-Ring race)')]),
+    S('D2', 2728, 2758, 'D11b', 'THE DEEP · THE SWEEP', 'BURN-C reuse',
+      'The ember edge sweeps to parchment; needs re-bake over embers_D_race D2719: C\'s closed-Ring race is baked in.',
+      [dict(ft_sweep(), off=-1040, final_eligible=False,
+            note='C1688-1717 reused; needs re-bake over embers_D_race D2719 (baked C closed-Ring race)')]),
+    S('D2', 2758, 2945, 'D11c', 'THE DEEP', 'MAP-C reuse',
+      'The pen follows a gilt vein down pillared halls; needs re-bake over embers_D_race D2719: the current '
+      'under-layer holds C\'s closed-Ring race at source1679.',
+      [book('C1718-1904 reused; holds embers_C3 source1679; needs re-bake over embers_D_race D2719',
+            off=-1040, under=('hold', 'embers_C3', 1679), final_eligible=False)]),
+    S('D2', 2945, 2960, 'D11d', 'THE DEEP · THE GLOW', 'BURN-C reuse',
+      'The red glow wakes below; C\'s opaque filmed page holds storm source1920. Needs re-bake over '
+      'embers_D_race D2719 and future embers_D_brink D2960 when those plates are available.',
+      [dict(ft_eye(('hold', 'embers_C3', 1920)), off=-1040, final_eligible=False,
+            note='C1905-1919 reused; holds source1920; needs re-bake over embers_D_race D2719 / embers_D_brink D2960')]),
+    # NEW: expected stem embers_D_brink, off=0, need=(2960, 3199); no take until explicitly adopted.
+    S('D2', 2960, 3200, 'D12', 'THE BRINK', 'VISION',
+      'NEW embers_D_brink: the red glow burns through onto the Ring, its gap at the narrowest yet; towers lean in.'),
+    # NEW: expected stem embers_D_vision, off=0, need=(3200, 3439); no take until explicitly adopted.
+    S('D2', 3200, 3440, 'D13', 'IF IT CLOSED', 'VISION',
+      'NEW embers_D_vision: the ends touch; a white seam and missing letters kindle; the circle becomes an '
+      'ice-white Eye; the two giants bow first, then every tower; push into the slit.'),
+    # NEW: expected stem embers_D_gap, off=0, need=(3440, 3519); no take until explicitly adopted.
+    S('D2', 3440, 3520, 'D14', 'THE GAP', 'VISION',
+      'NEW embers_D_gap: hard cut on the downbeat from slit to open gap as the next hammer stroke lands.'),
+    S('D3', 3520, 3760, 'D15', 'THE REFUSAL', 'PAGES-C reuse',
+      'A gloved palm offers a closed ring; a hooded figure turns away.',
+      [T('book_C5_refusal', -1440, 'exact', 'C10 whole source2080-2319', matte='book_C5_refusal_matte')]),
+    # NEW: expected stem embers_D_trap, off=0, need=(3760, 4079); no take until explicitly adopted.
+    S('D3', 3760, 4080, 'D16', 'THE TRAP', 'OPENRING',
+      'NEW embers_D_trap: the page burns onto ours; one forge slows, loses gold to its neighbours and is passed; '
+      'it flares back into the race; two giants run neck and neck.'),
+    # NEW: expected stem falsedawn_brink, off=0, need=(4080, 4239); no take until explicitly adopted.
+    S('D4', 4080, 4240, 'D17', 'THE GLOW AT THE BRINK', 'GLOWVARS',
+      'NEW falsedawn_brink: the opening ridge again; the glow pulses on the race\'s beat over red cloud.'),
+    # NEW: expected stem embers_D_crowns, off=0, need=(4240, 4559); no take until explicitly adopted.
+    S('D4', 4240, 4560, 'D18', 'THE TWO CROWNS', 'VISION',
+      'NEW embers_D_crowns: a locked frame; two orange beacons kindle together at D4320 on the giants\' crowns, '
+      'each lighting the other\'s face while both forges keep hammering.'),
+    # NEW: expected stem falsedawn_twofires, off=0, need=(4560, 5039); no take until explicitly adopted.
+    S('D4', 4560, 5040, 'D19', 'THE TWO FIRES', 'GLOWVARS',
+      'NEW falsedawn_twofires: match the crowns to two beacons either side of the glow; fires answer toward us.'),
+    S('D4', 5040, 5180, 'D20', 'EVERY RIDGE', 'RUN-A reuse',
+      'Fires to the horizon over a cloud sea lit warm from beneath.',
+      [T('reveal_A', -1380, 'exact', 'A13 source3660-3799')]),
+    # The NEW reveal-to-map burn needs an exact under-plate at D5180. No active window or layer stem is invented.
+    S('D4', 5180, 5480, 'D21a', 'THE LAST KINGDOM', 'MAP-C reuse',
+      'Kingdoms light in no order until one stays dark. NEW map burn pending; its under-plate must match D5180.',
+      [T('cand_map_beacon-falloff', -1740, 'exact', 'C15 source3440-3739; pause in the dark holdout stretch')]),
+    # NEW: expected stem embers_D_holdout, off=0, need=(5480, 5519); no take until explicitly adopted.
+    S('D4', 5480, 5520, 'D21b', 'THE HOLDOUT', 'OPENRING',
+      'NEW embers_D_holdout: the dark kingdom\'s hammer rings; planned first contact D5496; its sparks reach '
+      'the band and narrow the gap a notch.'),
+    S('D4', 5520, 5554, 'D21c', 'THE LAST KINGDOM · WAIT', 'MAP-C reuse',
+      'Return to the map and hold source3739, the frame just before the holdout insert.',
+      [T('cand_map_beacon-falloff', 0, 'exact', 'Hold C15 source3739 for34 frames', hold=3739)]),
+    S('D4', 5554, 5630, 'D21d', 'THE LAST KINGDOM · THE CATCH', 'MAP-C reuse',
+      'The holdout\'s beacon catches on the downbeat at D5600 (measured C3786) and joins the others.',
+      [T('cand_map_beacon-falloff', -1814, 'exact', 'C15 source3740-3815; source3786 maps exactly to D5600')]),
+    S('D4', 5630, 5680, 'D21e', 'THE LAST KINGDOM · ALL LIT', 'MAP-C reuse',
+      'Hold the last delivered all-lit map frame to the in-step downbeat.',
+      [T('cand_map_beacon-falloff', 0, 'exact', 'Hold C15 source3815; never request source3816+', hold=3815)]),
+    # NEW: expected stem embers_D_instep, off=0, need=(5680, 5839); no take until explicitly adopted.
+    S('D4', 5680, 5840, 'D22', 'IN STEP', 'OPENRING',
+      'NEW embers_D_instep: every forge eases into a shared working glow; hammers land together, the ends cool '
+      'from white to gold, and the glare clears.'),
+    # NEW: expected stem book_D_oldfire, off=0, need=(5840, 6079); no take until explicitly adopted.
+    S('D5', 5840, 6080, 'D23', 'THE OLD FIRE', 'LASTPAGE',
+      'NEW book_D_oldfire: in the book, the drawn Ring drops into the Mountain\'s drawn fire.'),
+    # NEW: expected stem embers_D_unfinished, off=0, need=(6080, 6399); no take until explicitly adopted.
+    S('D5', 6080, 6400, 'D24', 'THE RING, UNFINISHED', 'OPENRING',
+      'NEW embers_D_unfinished: the gap stands sharp over working towers; lamps rise around the band to light its '
+      'letters, and gold falls into every window.'),
+    S('D5', 6400, 6640, 'D25', 'THE DEEP, ABANDONED', 'PAGES-C reuse',
+      'Falling gold becomes the vein; empty ladders and a lantern set down where its light ends.',
+      [T('cand_deep_leaned_ladders', -2160, 'exact', 'C18 source4240-4479',
+         matte='cand_deep_leaned_ladders_matte')]),
+    S('D5', 6640, 7040, 'D26', 'THE CROSSING', 'RUN-A reuse',
+      'Forty bearers carry the great lantern forward, no faster than its light shows the path; original framing '
+      'is retained, so the preceding Deep lantern does not align with it on screen.',
+      [T('cand_crossing_both_decal_cap', D_CROSSING_SOURCE_START - 6640, 'exact',
+         'A5180-5579: reviewed walk set-off; original framing, without a screen-position match to the Deep lantern',
+         need=(D_CROSSING_SOURCE_START, D_CROSSING_SOURCE_START + 399))]),
+    # NEW: expected stem falsedawn_watch, off=0, need=(7040, 7359); no take until explicitly adopted.
+    S('D6', 7040, 7360, 'D27', 'THE WATCH', 'GLOWVARS',
+      'NEW falsedawn_watch: hours later, fires surround the warm steady glow, which breathes once a bar.'),
+    # NEW: expected stem falsedawn_truedawn, off=0, need=(7360, 7839); no take until explicitly adopted.
+    S('D7', 7360, 7840, 'D28', 'THE LONG DAWN', 'GLOWVARS',
+      'NEW falsedawn_truedawn: the same ridge; rose light rises where the false dawn stood; the beacons still burn.'),
+    S('D7', 7840, 8080, 'D29', 'THE TERRACES', 'RUN-A reuse',
+      'The first light reaches the terraced summits across the cloud sea.',
+      [T('dawnrev_A', -1840, 'exact', 'A19 source6000-6239')]),
+    S('D7', 8080, 8320, 'D30', 'THE YEAR OF PLENTY', 'MAP-C reuse',
+      'The book\'s plenty tree in the light of dawn; the preceding terraces already use the film finish.',
+      [book('C21 source6160-6399; no inherited ink-to-film finish ramp', off=-1920)]),
+    # NEW: expected stem book_lastleaf_open, off=0, need=(8320, 8639); no take until explicitly adopted.
+    S('D7', 8320, 8640, 'D31', 'THE LAST WRITTEN LEAF', 'LASTPAGE',
+      'NEW book_lastleaf_open: the storyteller\'s last written line breaks off mid-word beside the drawn open Ring; '
+      'the facing page is blank and the pen rests.'),
+    S('D7', 8640, 8880, 'D32', 'THE LAST PAGES', 'PAGES-C reuse',
+      'The blank spread with the pen resting across it.',
+      [T('cand_pen_soft_spine_metal', -3200, 'exact', 'C22 source5440-5679',
+         matte='cand_pen_soft_spine_metal_matte')]),
+    # Optional NEW book_D_title, off=0, need=(8880, 9119), is not adopted; retain the accepted C title.
+    S('D7', 8880, 9120, 'D33', 'TITLE', 'MAP-C reuse',
+      'THE LONG DAWN burns onto the blank recto and cools to ink; C\'s title remains until a replacement is adopted.',
+      [book('C title source6960-7199; caption source6980-7159', off=-1920)]),
+    S('D7', 9120, 9200, 'D34', 'THE HEARTH GOES OUT', 'EDIT', 'Black; the hearth goes out.', kind='black'),
+]
 EDL = {'A': A, 'B': B, 'C': C, 'D': D}
 
 # EDIT transitions (assemble._transitions; the comp, not a cut). A's are A-FIX's; C5's are EDIT-C5's (29 Sep), designed
@@ -688,9 +854,6 @@ TRANS = {'A': [], 'B': [], 'C': [
          note="C's last 36 frames take the film base out, so C ends on a true black like A"),
 ]}
 
-# D's windows start as C's scaffold and are edited independently with D's rows.
-TRANS['D'] = deepcopy(TRANS['C'])
-
 # A (28 Sep, approved): A-FIX's six windows (edit/afix_comp.py: bloom, dissolve, vision x2, iceheart, ember) + EDIT's
 # grade-match of the harvested B reveal (B's sky is a touch darker and cooler than reveal_A's at the 3680 cut)
 import afix_comp  # noqa: E402
@@ -712,6 +875,35 @@ TRANS['A'] = list(afix_comp.A_TRANS) + [afix_comp.WATCHFIRES, edge_polish.WINDOW
     # The second floor window ends where A-FIX's ember window begins; no two windows share a frame.
     dict(f0=2800, f1=2836, kind='floor', k0=1.0, k1=0.0,
          note="A9's true black -> A10's void (film base): the base eases in before the ember's window"),
+]
+
+
+# Restore A's delivered opening windows only after TRANS['A'] is fully initialized; the nested tracks are D-owned.
+# New pair windows remain plain cuts while either side is a slate. The map burn is pending its exact D5180 under.
+TRANS['D'] = [deepcopy(t) for t in TRANS['A'] if 0 <= t['f0'] and t['f1'] <= 1440] + [
+    dict(f0=1520, f1=1660, kind='caption_grade', id='R02', full0=1550, full1=1648,
+         source_stem='cand_t1_current-words-held', source_off=-1120, band_frame_off=-1120,
+         band_sha256=C_CAPTION_BAND_SHA, curve=dict(kind='shadow_shoulder', low=0.04, high=0.14, gain=1.30),
+         note='D06 old-story inscription: C caption geometry400-539 on the same source pixels'),
+    dict(f0=1680, f1=1760, cut=1680, kind='ring_burn', center=(998., 92.), t_open=1682., speed=2.8, seed=12,
+         note='x1burn v2 at the measured gilt Ring on held C559; real burn with explicit stand-in incoming fire'),
+    dict(f0=3750, f1=3786, cut=3760, kind='burn', glow='x1_refusal_C5', keep='x1_refusal_C5_matte',
+         cover='x1_refusal_C5_cover', layer_off=-1440,
+         note='D15 refusal -> D16 trap: C burn source2310-2345; requires NEW trap under-plate D3760'),
+    dict(f0=6388, f1=6412, cut=6400, kind='dissolve',
+         note='D24 unfinished Ring -> D25 abandoned Deep; suppressed while unfinished is a slate'),
+    dict(f0=6636, f1=6644, cut=6640, kind='dissolve',
+         note='D25 abandoned Deep -> D26 crossing: eight-frame dissolve, original framing; lantern positions differ'),
+    dict(f0=8630, f1=8652, cut=8640, kind='page_turn', tilt=8.0, radius=0.11,
+         note='D31 last written leaf -> D32 blank spread and pen; suppressed while the last leaf is a slate'),
+    dict(f0=8868, f1=8892, cut=8880, kind='dissolve',
+         note='D32 pen insert -> D33 title on the blank recto'),
+    dict(f0=8948, f1=9080, kind='caption_grade', id='title', full0=9008, full1=9047,
+         source_stem='book_C', source_off=-1920, band_frame_off=-3200, band_sha256=C_CAPTION_BAND_SHA,
+         curve=dict(kind='blackpoint_gain', blackpoint=0.0, gain=2.50),
+         note='D33 title: C caption geometry5748-5879 on book_C source7028-7159'),
+    dict(f0=9084, f1=9120, kind='floor', k0=0.0, k1=1.0,
+         note='D33 title takes out the film base before D34 ends in black'),
 ]
 
 
@@ -763,8 +955,11 @@ def c5_export_extra():
 
 
 def d_export_extra():
-    """Label the temporary C-derived scaffold; no D story lock or score is implied."""
-    return dict(version='D', status='scaffold', scaffold_from='C (C5 current edit, 30 Sep 2026)',
-                script='C scaffold only; replace D rows, transitions and D_TEXT with the consolidated film',
-                barmap='music/v3/' + BARMAP['D'], bars=TOTAL['D'] // BAR,
+    """D's treatment timeline is real; unadopted new picture remains visible as slates."""
+    return dict(version='D', status='treatment; new picture pending',
+                script='THE LONG DAWN cut D treatment v2 (30 Sep 2026): 34 beats, 115 bars',
+                barmap='music/v3/' + BARMAP['D'], bars=TOTAL['D'] // BAR, beats=34,
+                pending_picture='NEW rows have no takes until explicitly adopted, even if expected folders exist',
+                rebake='D11 C sweep/held race need re-bake over embers_D_race D2719; glow onto embers_D_brink D2960',
+                pending_map_burn='Requires exact under-plate D5180; no new map burn adopted',
                 score_status='stand-in required until D score exists')

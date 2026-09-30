@@ -1,0 +1,451 @@
+{
+ "schema": "long-dawn/d-events-measured/1",
+ "cut": "D",
+ "fps": 24,
+ "source_basename": "D_burn_coverage_all80.json",
+ "source_sha256": "91fa7dd5d839347dd79ed46e1ac4b0cdc311d586060f82b5bdd186f337e75f24",
+ "collector_basename": "probe_ring_coverage.py",
+ "collector_sha256": "233844be620291e47f97886b9e0e55316bd13e9163fdebe6b645e1f3772c4fac",
+ "implementation": "edit/ring_burn.py:layers; edit/edl_v3.py TRANS[D] ring_burn",
+ "implementation_sha256": {
+  "edit/ring_burn.py": "cdf2e1f78eb00eb4e720295ededc6fe719b81e51b263d430ed5e90f1f8ca7b37",
+  "shots/map/x1burn.py": "5a4b900f5a77fdd013c81380dd3af521fd5a32d5b104ef58a87b64d6c0716bb7",
+  "shots/map/burn.py": "afa6b0cbffa97aae8a533ad3b6d49b5ff09cd55906532af3ee24703330c04ffc",
+  "shots/map/noise.py": "fb50160a7dc071a2f2c29a6d50b31794612f163f9ef7ccf368ab4e8976161e29",
+  "lib/look.py": "1a311e38a231ee9fda65aa8037759ded7b19ae215bd184afb0327dd4cdd70614"
+ },
+ "parameters": {
+  "f0": 1680,
+  "f1": 1760,
+  "cut": 1680,
+  "center": [
+   998.0,
+   92.0
+  ],
+  "t_open": 1682.0,
+  "speed": 2.8,
+  "seed": 12
+ },
+ "definitions": {
+  "first_open": "First scanned frame with mean(1-cover)>0 on the 480x201 sample grid.",
+  "first_fully_gone": "First scanned frame with max(cover)==0 on the 480x201 sample grid; all subsequent scanned frames remain zero.",
+  "t_open": "Renderer parameter from TRANS[D], not a measured visible onset."
+ },
+ "limitations": "This records generated transition-cover samples at quarter resolution, not a native-resolution or finished-picture onset. The incoming A fire remains a stand-in; future inscription plate motion and centering remain unmeasured.",
+ "burn": {
+  "sample_grid": [
+   480,
+   201
+  ],
+  "native_frame": [
+   1920,
+   804
+  ],
+  "method": "x1burn v2 generated cover sampled at every D1680–1759; no finish",
+  "first_open_on_sample_grid": 1683,
+  "first_fully_gone_on_sample_grid": 1748,
+  "remains_gone_through": 1759,
+  "frames": [
+   {
+    "frame": 1680,
+    "hole_fraction": 0.0,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1681,
+    "hole_fraction": 0.0,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1682,
+    "hole_fraction": 0.0,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1683,
+    "hole_fraction": 0.00016172112373169512,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1684,
+    "hole_fraction": 0.000281937827821821,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1685,
+    "hole_fraction": 0.0004423819191288203,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1686,
+    "hole_fraction": 0.0006883108871988952,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1687,
+    "hole_fraction": 0.0011863787658512592,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1688,
+    "hole_fraction": 0.0018671578727662563,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1689,
+    "hole_fraction": 0.002965617459267378,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1690,
+    "hole_fraction": 0.004556872416287661,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1691,
+    "hole_fraction": 0.006470285821706057,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1692,
+    "hole_fraction": 0.00939587689936161,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1693,
+    "hole_fraction": 0.013144808821380138,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1694,
+    "hole_fraction": 0.016890116035938263,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1695,
+    "hole_fraction": 0.02021731063723564,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1696,
+    "hole_fraction": 0.02424204722046852,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1697,
+    "hole_fraction": 0.030646178871393204,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1698,
+    "hole_fraction": 0.03753179684281349,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1699,
+    "hole_fraction": 0.045521415770053864,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1700,
+    "hole_fraction": 0.05354221910238266,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1701,
+    "hole_fraction": 0.06059825420379639,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1702,
+    "hole_fraction": 0.06975015252828598,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1703,
+    "hole_fraction": 0.0790601298213005,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1704,
+    "hole_fraction": 0.09525708109140396,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1705,
+    "hole_fraction": 0.11281777918338776,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1706,
+    "hole_fraction": 0.1287367194890976,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1707,
+    "hole_fraction": 0.14519861340522766,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1708,
+    "hole_fraction": 0.15944921970367432,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1709,
+    "hole_fraction": 0.1737881898880005,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1710,
+    "hole_fraction": 0.1876332014799118,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1711,
+    "hole_fraction": 0.20288021862506866,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1712,
+    "hole_fraction": 0.22201472520828247,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1713,
+    "hole_fraction": 0.23823100328445435,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1714,
+    "hole_fraction": 0.2548404037952423,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1715,
+    "hole_fraction": 0.274540513753891,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1716,
+    "hole_fraction": 0.29598939418792725,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1717,
+    "hole_fraction": 0.3180158734321594,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1718,
+    "hole_fraction": 0.3404540717601776,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1719,
+    "hole_fraction": 0.3616190254688263,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1720,
+    "hole_fraction": 0.38267961144447327,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1721,
+    "hole_fraction": 0.4052053391933441,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1722,
+    "hole_fraction": 0.43093937635421753,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1723,
+    "hole_fraction": 0.4650227427482605,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1724,
+    "hole_fraction": 0.4997035562992096,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1725,
+    "hole_fraction": 0.5297679305076599,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1726,
+    "hole_fraction": 0.562690794467926,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1727,
+    "hole_fraction": 0.5974649786949158,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1728,
+    "hole_fraction": 0.634445309638977,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1729,
+    "hole_fraction": 0.6637395024299622,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1730,
+    "hole_fraction": 0.6983275413513184,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1731,
+    "hole_fraction": 0.7330378293991089,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1732,
+    "hole_fraction": 0.7764076590538025,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1733,
+    "hole_fraction": 0.8139587640762329,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1734,
+    "hole_fraction": 0.8430623412132263,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1735,
+    "hole_fraction": 0.869388222694397,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1736,
+    "hole_fraction": 0.8944059014320374,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1737,
+    "hole_fraction": 0.9162882566452026,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1738,
+    "hole_fraction": 0.9380203485488892,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1739,
+    "hole_fraction": 0.9561628103256226,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1740,
+    "hole_fraction": 0.9678652882575989,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1741,
+    "hole_fraction": 0.9781420230865479,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1742,
+    "hole_fraction": 0.9867981672286987,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1743,
+    "hole_fraction": 0.9944248199462891,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1744,
+    "hole_fraction": 0.9959852695465088,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1745,
+    "hole_fraction": 0.9971733689308167,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1746,
+    "hole_fraction": 0.9984491467475891,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1747,
+    "hole_fraction": 0.9997917413711548,
+    "page_remaining_max": 1.0
+   },
+   {
+    "frame": 1748,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1749,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1750,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1751,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1752,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1753,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1754,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1755,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1756,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1757,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1758,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   },
+   {
+    "frame": 1759,
+    "hole_fraction": 1.0,
+    "page_remaining_max": 0.0
+   }
+  ]
+ }
+}

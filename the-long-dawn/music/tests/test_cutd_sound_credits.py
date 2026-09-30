@@ -64,6 +64,8 @@ def test_d_credits_without_recipes_need_no_source_lookup(monkeypatch, tmp_path):
     C.main('D', str(out))
     text = out.read_text()
     assert '**STAND-IN**' in text
+    assert '115-bar consolidated animatic (6:23.3)' in text and 'score is pending' in text
+    assert 'scaffold' not in text.lower()
     assert 'D recipe references: 0.' in text
     assert 'No D sound recipes are installed.' in text
     assert 'requires its own source credits' in text

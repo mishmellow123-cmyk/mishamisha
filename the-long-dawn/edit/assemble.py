@@ -6,7 +6,7 @@ by the DIRECTOR'S H5 CALLS; bar maps music/v3/barmap_{A,B,C}.json; EDLs in edit/
     python3 edit/assemble.py --cut C --stills 1200,2600       # half-res review stills -> edit/cache/stills/
     python3 edit/assemble.py --coverage [--notes]             # coverage of all three cuts (and write it into NOTES_v3)
     python3 edit/assemble.py --edl                            # edit/edl/edl_{A,B,C}.json for the departments
-    python3 edit/assemble.py --cut D --edl                    # D scaffold only; keeps the ABC exports untouched
+    python3 edit/assemble.py --cut D --edl                    # D only; keeps the ABC exports untouched
     python3 edit/assemble.py --cut D --animatic --audio silence   # or a mix path / LD_D_AUDIO
 
 Picture: per shot, the first take that covers every frame (else the take covering most; its gaps are slates).
@@ -44,6 +44,7 @@ import title_scene as TS  # noqa: E402
 import titles  # noqa: E402
 import caption_grade as CG  # noqa: E402
 import edge_polish as EP  # noqa: E402
+import ring_burn as RB  # noqa: E402
 
 cv2.setNumThreads(1)
 RENDERS = os.path.join(ROOT, 'renders')
@@ -114,7 +115,7 @@ def video_frames(take):
 
 def locate(take, cut, variant, f):
     """(path or ('video', path, index), from_alt) for cut frame f in this take, or (None, False)."""
-    src = f + take['off']
+    src = EDL.source_frame(take, f)
     if take['mode'] == 'video':
         n = video_frames(take)
         return ((('video', os.path.join(ROOT, take['video']), src), False) if 0 <= src < n else (None, False))
@@ -158,7 +159,7 @@ def provisional_sources(take, cut, variant, f):
     if not p:
         return ()
     sources = [] if EDL.is_final_take(take) else [take['stem']]
-    if take.get('matte') and index(os.path.join(RENDERS, take['matte'])).get(f + take['off']):
+    if take.get('matte') and index(os.path.join(RENDERS, take['matte'])).get(EDL.source_frame(take, f)):
         up, stem = locate_under(take.get('under'), f)
         if up and not EDL.UNDER_FINAL_ELIGIBILITY.get(stem, True):
             sources.append('under:' + stem)
@@ -266,19 +267,21 @@ class Ctx:
         if img is None:
             return None
         if take.get('matte'):                                     # MAP's book layer: rgb + (1 - matte) * under
-            mp = index(os.path.join(RENDERS, take['matte'])).get(f + take['off'])
+            mp = index(os.path.join(RENDERS, take['matte'])).get(EDL.source_frame(take, f))
             if mp:
                 m = self.read(mp, gray=True)
                 under = self.under(take.get('under'), f)
                 if m is not None and under is not None:
                     img = np.clip(img + (1 - m)[..., None] * under, 0, 1)
         if take.get('add'):                                       # e.g. EMBERS' fire added over MAP's page
-            ap = index(os.path.join(RENDERS, take['add'])).get(f + take['off'])
+            ap = index(os.path.join(RENDERS, take['add'])).get(EDL.source_frame(take, f))
             layer = self.read(ap) if ap else None
             if layer is not None:
                 img = np.clip(img + layer, 0, 1)
         if take.get('grade'):
             img = grade(img, take['grade'])
+        if take.get('screen_transform'):
+            img = RB.screen_transform(img, f, take['screen_transform'])
         return img
 
     # Source selection is mirrored by locate_under for metadata; test_picture_readiness pins parity.
@@ -459,13 +462,31 @@ def make_slate(shot, cut, status, W, H):
     d.text((cx, 0.085 * H), top, font=f1, fill=(120, 124, 136), anchor='mm')
     f2 = _fit(d, shot['name'], 'Cinzel.ttf', 64 * s, W * 0.9)
     d.text((cx, 0.165 * H), shot['name'], font=f2, fill=(222, 222, 228), anchor='mm')
-    f3 = _fit(d, shot['desc'], 'CormorantGaramond-Italic.ttf', 38 * s, W * 0.92)
-    d.text((cx, 0.245 * H), shot['desc'], font=f3, fill=(170, 172, 182), anchor='mm')
+    meta_y = 0.31 * H
+    if cut == 'D':
+        # Treatment cards carry full descriptions; wrap instead of shrinking a paragraph to one tiny line.
+        f3 = _pil_font('CormorantGaramond-Italic.ttf', 36 * s)
+        lines, line = [], ''
+        for word in shot['desc'].split():
+            candidate = (line + ' ' + word).strip()
+            if line and d.textlength(candidate, font=f3) > W * 0.9:
+                lines.append(line)
+                line = word
+            else:
+                line = candidate
+        if line:
+            lines.append(line)
+        for j, line in enumerate(lines):
+            d.text((cx, 0.275 * H + j * 43 * s), line, font=f3, fill=(170, 172, 182), anchor='mm')
+        meta_y = max(0.45 * H, 0.275 * H + len(lines) * 43 * s)
+    else:
+        f3 = _fit(d, shot['desc'], 'CormorantGaramond-Italic.ttf', 38 * s, W * 0.92)
+        d.text((cx, 0.245 * H), shot['desc'], font=f3, fill=(170, 172, 182), anchor='mm')
     what = 'SLATE · not yet rendered' if status == 'slate' else 'SLATE · this frame not yet rendered'
     meta = (f"{what}   ·   bars {b0}–{b1}   ·   f {shot['f0']}–{shot['f1']}   ·   "
             f"{(shot['f1'] - shot['f0']) / FPS:.2f} s")
     f4 = _fit(d, meta, 'CormorantGaramond.ttf', 28 * s, W * 0.9)
-    d.text((cx, 0.31 * H), meta, font=f4, fill=(118, 106, 88), anchor='mm')
+    d.text((cx, meta_y), meta, font=f4, fill=(118, 106, 88), anchor='mm')
     return np.asarray(im, np.uint8).copy()
 
 
@@ -496,7 +517,7 @@ def burn_in(out, f, shot, status, src, scale):
     fs = 0.34 * scale / 0.5
     left = f"{shot['sec']} {shot['name']}  |  {status}"
     if src is not None:
-        left += f"  {f + src['off']}"
+        left += f"  {EDL.source_frame(src, f)}"
     left = left.replace('·', '/').replace('–', '-').encode('ascii', 'replace').decode()
     right = f"bar {bar} b{beat:.2f}   f {f}   {f / FPS:6.2f}s"
     out[:int(18 * scale / 0.5)] = (out[:int(18 * scale / 0.5)] * 0.5).astype(np.uint8)   # keeps the labels legible
@@ -766,11 +787,12 @@ def transition_at(cut, f):
 
 
 def transition_layers(t, f):
-    """{'glow': path, 'keep': path} of a window's layer frames at f; None if one is missing (then: a hard cut)."""
+    """Layer paths at f + optional layer_off; missing layers keep the plain cut."""
     out = {}
+    layer_frame = f + t.get('layer_off', 0)
     for k in ('glow', 'keep', 'cover'):
         if t.get(k):
-            p = index(os.path.join(RENDERS, t[k])).get(f)
+            p = index(os.path.join(RENDERS, t[k])).get(layer_frame)
             if not p:
                 return None
             out[k] = p
@@ -841,6 +863,10 @@ def _swell(o, i, d, f, t, k):
 # Two-sided kinds take (o, i, f, t, ctx, lay, first): first() returns the incoming's first frame, finished.
 def _tk_burn(o, i, f, t, ctx, lay, first):
     return o * ctx.read(lay['keep']) + i * (1 - ctx.read(lay['cover'], gray=True)[..., None]) + ctx.read(lay['glow'])
+
+
+def _tk_ring_burn(o, i, f, t, ctx, lay, first):
+    return RB.composite(o, i, f, t)
 
 
 def _tk_x1(o, i, f, t, ctx, lay, first):
@@ -1047,7 +1073,7 @@ def _tk_dawn_sweep(img, src, f, t, fin, cut):
 def _tk_caption_grade(img, src, f, t, fin, cut):
     # The words are already photographed onto the page. Grade those finished pixels once; no second text layer.
     if cut not in ('C', 'D'):
-        raise ValueError('Baked-caption grades belong to cut C or its cut D scaffold')
+        raise ValueError('Baked-caption grades belong to cut C or its cut D reuse')
     return CG.apply(fin(img, src, cut, f) if fin else img, f, t, src)
 
 
@@ -1070,6 +1096,7 @@ def _tk_exposure(img, src, f, t, fin, cut):
 
 TKINDS_PAIR = dict(burn=_tk_burn, x1=_tk_x1, dissolve=_tk_dissolve, swell=_tk_swell, page_turn=_tk_page_turn)
 TKINDS_PAIR['collapse'] = _tk_collapse
+TKINDS_PAIR['ring_burn'] = _tk_ring_burn
 TKINDS_PAIR['dawn_dissolve'] = _tk_dawn_dissolve
 TKINDS_PAIR['impact_white'] = _tk_impact_white
 TKINDS_SHOT = dict(grade=_tk_grade, finish_ramp=_tk_finish_ramp, floor=_tk_floor, dawn_sweep=_tk_dawn_sweep,
@@ -1124,6 +1151,8 @@ TKINDS_SHOT['edge_polish'] = _tk_edge_polish
 
 def transition_code(kind):
     """The source that decides a window of this kind (for deliver's segment keys)."""
+    if kind == 'ring_burn':
+        return inspect.getsource(_tk_ring_burn) + RB.source()
     if kind == 'edge_polish':
         return ''.join(inspect.getsource(o) for o in (_edge_plate, _tk_edge_polish, EP))
     if kind in AFIX_WRAPPED:
@@ -1281,7 +1310,7 @@ def coverage(cut, variant=None):
             else:
                 dirs = [d for d in chain(take, cut, variant) if index(d)]
                 srcdir = ', '.join(os.path.relpath(d, RENDERS) for d in dirs[:2])
-            src = f"{srcdir} {shot['f0'] + take['off']}-{shot['f1'] - 1 + take['off']}"
+            src = f"{srcdir} {EDL.source_frame(take, shot['f0'])}-{EDL.source_frame(take, shot['f1'] - 1)}"
             if take.get('note'):
                 src += f" ({take['note']})"
         b0, _ = bar_beat(shot['f0'])
@@ -1363,6 +1392,7 @@ def edl_doc(cut):
         doc.update(EDL.c5_export_extra())
     elif cut == 'D':
         doc.update(EDL.d_export_extra())
+        doc['lookup'] += '; optional hold fixes the source frame for colour/matte/add; under keeps its own spec'
     return json.loads(json.dumps(doc))                        # the JSON form (tuples as lists), as written
 
 

@@ -1,4 +1,4 @@
-"""Cut D starts from C without granting D's future edits ownership of A/B/C.
+"""Cut D's consolidated edit owns its timeline without changing the A/B/C alternatives.
 
 The accepted hashes were captured before D was added (30 Sep 2026). Intentional edits to those alternative cuts
 must revise their baselines explicitly; adding or replacing D's story must not.
@@ -71,11 +71,11 @@ def assert_independent(left, right):
     assert not mutable_ids(left) & mutable_ids(right)
 
 
-@pytest.mark.parametrize('original,scaffold', [(EDL.C, EDL.D), (EDL.TRANS['C'], EDL.TRANS['D']),
-                                               (titles.C5_TEXT, titles.D_TEXT)])
-def test_scaffold_is_equal_and_deeply_independent(original, scaffold):
-    assert scaffold == original
-    assert_independent(original, scaffold)
+@pytest.mark.parametrize('original,consolidated', [(EDL.C, EDL.D), (EDL.TRANS['C'], EDL.TRANS['D']),
+                                                   (titles.C5_TEXT, titles.D_TEXT)])
+def test_d_is_distinct_and_deeply_independent(original, consolidated):
+    assert consolidated != original
+    assert_independent(original, consolidated)
     with pytest.raises(AssertionError):
         assert_independent(original, list(original))  # a shallow list copy leaks ownership through its rows
 
@@ -87,62 +87,41 @@ def test_d_has_its_own_barmap_sections_and_caption_table():
     assert EDL.BARMAP['D'] != EDL.BARMAP['C']
     assert [s['id'] for s in d.sections] == list(dict.fromkeys(s['sec'] for s in EDL.D))
     assert_independent(d.sections, c.sections)
-    assert titles.text_table('D') == titles.text_table('C')
+    assert titles.text_table('D') != titles.text_table('C')
     disk = json.loads((ROOT / 'music/v3/barmap_D.json').read_text())
-    assert disk['status'] == 'scaffold'
+    assert disk['status'] == 'treatment; new picture pending'
     assert disk['text'] == json.loads(encoded(titles.text_table('D')))
     assert EDL.check(ROOT / 'music/v3')
 
 
-def assert_scaffold_status(bm):
-    assert bm.d['status'] == 'scaffold + cues'
+def assert_d_status(bm):
+    assert bm.d['status'] == 'treatment; new picture pending + cues'
 
 
-def test_scaffold_status_survives_barmap_loading_and_c_keeps_historical_status():
-    assert_scaffold_status(BarMap('D'))
+def test_d_status_survives_barmap_loading_and_c_keeps_historical_status():
+    assert_d_status(BarMap('D'))
     c = BarMap('C5')
     assert c.d['status'] == 'locked (SHOWRUNNER-REV) + cues'
     with pytest.raises(AssertionError):
-        assert_scaffold_status(c)
+        assert_d_status(c)
 
 
-def assert_same_source_folders(d_rows, c_rows):
-    assert len(d_rows) == len(c_rows)
-    for d, c in zip(d_rows, c_rows):
-        assert len(d['takes']) == len(c['takes'])
-        for dt, ct in zip(d['takes'], c['takes']):
-            if dt['mode'] == 'video':
-                assert dt['video'] == ct['video']
-            else:
-                assert AS.chain(dt, 'D') == AS.chain(ct, 'C')
-            assert dt['off'] == ct['off']
-
-
-def test_scaffold_keeps_c_source_folders_and_offsets():
-    assert_same_source_folders(EDL.D, EDL.C)
-    broken = deepcopy(EDL.D)
-    row = next(r for r in broken if r['takes'])
-    row['takes'][0]['mode'] = 'v3'  # generic modes would resolve a D folder instead of the C source
-    with pytest.raises(AssertionError):
-        assert_same_source_folders(broken, EDL.C)
-
-
-def test_d_can_extend_to_96_bars_without_extending_c(tmp_path, monkeypatch):
+def test_d_can_extend_to120_bars_without_extending_c(tmp_path, monkeypatch):
     # This synthetic extension tests the timeline contract; it is not a proposed D story edit.
     for name in EDL.BARMAP.values():
         (tmp_path / name).write_bytes((ROOT / 'music/v3' / name).read_bytes())
     path = tmp_path / EDL.BARMAP['D']
     bm = json.loads(path.read_text())
-    bm.update(frames=7680, bars=96)
-    bm['sections'][-1].update(f1=7680, bar_end=96, t1=320.0)
+    bm.update(frames=9600, bars=120)
+    bm['sections'][-1].update(f1=9600, bar_end=120, t1=400.0)
     path.write_text(json.dumps(bm))
     rows = deepcopy(EDL.D)
-    rows[-1]['f1'] = 7680
+    rows[-1]['f1'] = 9600
     monkeypatch.setitem(EDL.EDL, 'D', rows)
-    monkeypatch.setitem(EDL.TOTAL, 'D', 7680)
+    monkeypatch.setitem(EDL.TOTAL, 'D', 9600)
     assert EDL.check(tmp_path)
-    assert EDL.d_export_extra()['bars'] == 96
-    assert BarMap('D', path=path).frames == 7680
+    assert EDL.d_export_extra()['bars'] == 120
+    assert BarMap('D', path=path).frames == 9600
     assert EDL.TOTAL['C'] == EDL.C[-1]['f1'] == 5920
     # A hidden assumption that D still has C's length must fail against D's own map.
     monkeypatch.setitem(EDL.TOTAL, 'D', EDL.TOTAL['C'])

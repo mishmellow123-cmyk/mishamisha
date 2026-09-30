@@ -71,10 +71,10 @@ def used_refs(cuts='ABC'):
 
 def d_status(per_cut):
     return ["## Cut D sound status", "",
-            "Cut D is a scaffold. This inventory covers installed D effects recipes; delivery can use a "
-            "**STAND-IN** mix selected with `--audio` or `LD_D_AUDIO` before D's score exists. A supplied mix "
-            "requires its own source credits; its filename does not establish attribution. Stand-in silence "
-            "contains no borrowed recordings. An empty D inventory does not certify a supplied mix.", "",
+            "Cut D is the 115-bar consolidated animatic (6:23.3). Its score is pending; the current delivery uses "
+            "**STAND-IN** silence, which contains no borrowed recordings. This inventory covers installed D "
+            "effects recipes. A future supplied mix requires its own source credits; an empty recipe inventory "
+            "does not establish that mix's attribution.", "",
             f"D recipe references: {len(per_cut.get('D', set()))}.", ""]
 
 
@@ -85,7 +85,7 @@ def main(cuts='ABC', out=OUT):
         lines = ["# THE LONG DAWN v3: sound-effects credits (SOUND lane)", ""] + d_status(per_cut)
         lines += ["No D sound recipes are installed. No recording attribution has been inferred for a stand-in."]
         open(out, 'w').write('\n'.join(lines) + '\n')
-        print(f'wrote {out}: D scaffold, no installed sound recipes')
+        print(f'wrote {out}: D animatic, score pending, no installed sound recipes')
         return
     allfs = sorted({r for s in per_cut.values() for r in s if r.startswith("fs:")}, key=lambda r: int(r[3:]))
     L = ["# THE LONG DAWN v3: sound-effects credits (SOUND lane)", "",

@@ -11,7 +11,7 @@ minutes. The same engine makes the half-res animatics (--profile animatic).
     python3 edit/deliver.py --cut A --variant codedtowers  # A's ALT master
     python3 edit/deliver.py --cut C --qc-only              # QC the existing master again
     python3 edit/deliver.py --cut A --profile animatic     # the half-res animatic, incrementally
-    python3 edit/deliver.py --cut D --audio silence       # D scaffold, explicit STAND-IN audio in QC
+    python3 edit/deliver.py --cut D --audio silence       # D animatic, explicit STAND-IN audio in QC
 
 Outputs in $LD_DELIVERY, else ~/mishamisha/_local_logs/delivery/ (animatics in _local_logs/animatic/ as before):
     <cut>_master[_codedtowers].mov     H.264 High (x264 CRF 14, slow, BT.709 limited, 1920x804, 24 fps) + the
@@ -50,7 +50,7 @@ PROFILES = {
 }
 # the segments' SPS carries only the matrix; this stamps full BT.709 (primaries, transfer, matrix, limited range)
 VUI = 'h264_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1:video_full_range_flag=0'
-FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES', 'D': 'CONSOLIDATED FILM (SCAFFOLD)'}
+FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES', 'D': 'THE LONG DAWN (CONSOLIDATED EDIT)'}
 
 
 def _code_hash():
@@ -60,7 +60,7 @@ def _code_hash():
     ctx = {n: inspect.getsource(o) for n, o in inspect.getmembers(AS.Ctx, inspect.isfunction)}
     frame = [ctx[n] for n in sorted(ctx) if n not in ('x2', 'slate', 'ember')] + [
         inspect.getsource(o) for o in (AS.grade, AS.burn_in, AS.smooth, AS.bar_beat, AS.locate, AS.chain,
-                                       AS.plan_shot)]
+                                       AS.plan_shot, EDL.source_frame)]
     slate = [ctx['slate'], inspect.getsource(AS.make_slate), inspect.getsource(AS.draw_slate_clock)]
     title = [ctx['ember'], open(os.path.join(ROOT, 'edit', 'title_scene.py')).read()]
     text = [inspect.getsource(o) for o in (titles.TextV3, titles.render_line, titles.render_block, titles.lines_v3,
@@ -97,13 +97,17 @@ def frame_sources(cut, variant, plan, f):
     p, _ = AS.locate(take, cut, variant, f)
     if p is None:
         return ['none']
-    if isinstance(p, tuple):                              # a video take: the file and the index in it
-        return [f'{_stat(p[1])}#{p[2]}']
-    out = [_stat(p)]
+    video = isinstance(p, tuple)
+    out = [f'{_stat(p[1])}#{p[2]}'] if video else [_stat(p)]  # video identity includes its source frame
+    if take.get('screen_transform'):
+        out.append(json.dumps(take['screen_transform'], sort_keys=True))
+        out.append(hashlib.sha256(inspect.getsource(AS.RB.screen_transform).encode()).hexdigest())
+    if video:
+        return out
     if take.get('add'):
-        out.append(_stat(AS.index(os.path.join(AS.RENDERS, take['add']))[f + take['off']]))
+        out.append(_stat(AS.index(os.path.join(AS.RENDERS, take['add']))[EDL.source_frame(take, f)]))
     if take.get('matte'):
-        mp = AS.index(os.path.join(AS.RENDERS, take['matte'])).get(f + take['off'])
+        mp = AS.index(os.path.join(AS.RENDERS, take['matte'])).get(EDL.source_frame(take, f))
         out.append(_stat(mp) if mp else 'matte:none')
         spec = take.get('under')
         if spec:
@@ -147,6 +151,10 @@ def segment_key(cut, variant, prof, i, shot, plan, code, table, fin=None):
     take = plan['take']
     tdesc = None if take is None else {k: take.get(k) for k in ('stem', 'off', 'mode', 'crop', 'grade', 'matte',
                                                                   'under', 'video', 'note', 'add')}
+    if take is not None:
+        for key in ('hold', 'clamp', 'screen_transform'):
+            if key in take:
+                tdesc[key] = take[key]
     rows = [(r['id'], r['line'], r['f_in'], r['f_out'], r['set'])
             + tuple((k, r[k]) for k in ('x', 'y', 'lines', 'parts', 'backing') if k in r)
             for r in table if r['f_in'] < shot['f1'] and r['f_out'] > shot['f0']]   # C5 placement and local backing

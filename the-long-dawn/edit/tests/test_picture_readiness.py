@@ -129,10 +129,22 @@ class PictureReadinessTests(unittest.TestCase):
         return out.getvalue()
 
     def test_explicit_provisional_families_only_and_approved_reuse(self):
-        provisional = {t['stem'] for shots in EDL.EDL.values() for s in shots for t in s['takes']
+        # A/B/C keep their accepted source eligibility. D may reuse those same bytes provisionally
+        # when the consolidated story requires a re-bake, so eligibility is keyed by cut and row.
+        provisional = {t['stem'] for cut in 'ABC' for s in EDL.EDL[cut] for t in s['takes']
                        if not EDL.is_final_take(t)}
         self.assertEqual(provisional, {'h1_v3', 'montage', 'run_b_tests/dusk_motion',
                                        'x1_letters_C_test', 'embers_C3_half'})
+        expected_d = {'D07': 'embers_A3', 'D11a': 'cand_sweep_soft-entry', 'D11b': 'book_C_ft',
+                      'D11c': 'book_C', 'D11d': 'book_C_ft'}
+        def pending(rows):
+            return {s['code']: t['stem'] for s in rows for t in s['takes'] if not EDL.is_final_take(t)}
+        self.assertEqual(pending(EDL.D), expected_d)
+        for code in ('D07', 'D11a'):
+            broken = [dict(s, takes=[dict(t, final_eligible=True) for t in s['takes']])
+                      if s['code'] == code else s for s in EDL.D]
+            with self.assertRaises(AssertionError):
+                self.assertEqual(pending(broken), expected_d)
         self.assertTrue(EDL.is_final_take(EDL.T('accepted_v2', mode='layered', note='approved fire test')))
         self.assertTrue(EDL.is_final_take({'stem': 'legacy_approved_take'}))
         self.assertFalse(EDL.is_final_take(None))

@@ -137,11 +137,13 @@ class BakedGradeIntegrationTests(unittest.TestCase):
                                                             plan, code, [])
                 return out
 
+            windows = {cut: [deepcopy(t) for t in AS.EDL.TRANS[cut] if t['kind'] == 'caption_grade']
+                       for cut in ('C', 'D')}
             expected = {(cut, index) for cut in ('C', 'D') for index, shot in enumerate(AS.EDL.EDL[cut])
-                        if shot['sec'] in ('C3', 'C23')}
+                        if any(t['f0'] < shot['f1'] and t['f1'] > shot['f0'] for t in windows[cut])}
             self.assertEqual(len(expected), 4, 'Both C and D must cover both baked-caption shots')
             with mock.patch.object(CG, '__file__', str(helper)), mock.patch.object(CG, 'DATA_PATH', geometry), \
-                    mock.patch.dict(AS.EDL.TRANS, {'A': [], 'B': [], 'C': deepcopy(WINDOWS), 'D': deepcopy(WINDOWS)}), \
+                    mock.patch.dict(AS.EDL.TRANS, {'A': [], 'B': [], **windows}), \
                     mock.patch.object(D, 'frame_sources', side_effect=lambda *args: []), \
                     mock.patch.object(D, '_stat', return_value='synthetic-source-stat'):
                 before = keys()
@@ -149,7 +151,7 @@ class BakedGradeIntegrationTests(unittest.TestCase):
                 changed_file.write_bytes(changed_file.read_bytes() + b'\n')
                 after = keys()
             self.assertEqual({key for key in before if before[key] != after[key]}, expected,
-                             'Helper and geometry contents must rekey C3/C23 in C and D only; other shots retain keys')
+                             "Helper and geometry contents must rekey the baked shots at each cut's own times only")
 
     def test_helper_source_changes_rekey_only_c3_and_c23(self):
         self.assert_only_baked_shots_rekey('helper')

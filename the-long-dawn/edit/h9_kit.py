@@ -39,7 +39,7 @@ OUT = os.path.expanduser('~/mishamisha/_local_logs/review/h9')
 FPS, BAR = 24, 80
 TW, TH = 480, 201                                   # sheet thumbnail: a quarter of the 1920x804 picture
 FILM = {'A': 'EVERY STEP CLOSER', 'B': 'THE VIGIL', 'C': 'THE LAST PAGES',
-        'D': 'THE LONG DAWN (consolidated scaffold)'}
+        'D': 'THE LONG DAWN (consolidated edit)'}
 AVENIR = '/System/Library/Fonts/Avenir Next Condensed.ttc'
 FACE = {'bold': 0, 'demi': 2, 'medium': 5, 'italic': 6, 'regular': 7}
 PER_PAGE, COLS = 12, 3
@@ -158,7 +158,7 @@ class Film:
         if plan['kind'] != 'take':
             return ''
         t = plan['take']
-        return f"{t['stem']} {f + t['off']}"
+        return f"{t['stem']} {EDL.source_frame(t, f)}"
 
     def words(self, f):
         """[(id, line, fully drawn)] of the lines on screen at f."""
@@ -428,9 +428,12 @@ def coverage_md(films, alt, stamp, audio):
 
 
 def text_md(films, stamp):
+    source = (f'_Built {stamp} from the current caption tables (`edit/titles.py`); D follows the consolidated '
+              '115-bar treatment (6:23.3)._' if 'D' in films else
+              f'_Built {stamp} from the bar maps (`music/v3/barmap_*.json`) with the director\'s H5 wording, exactly as '
+              'the films draw it (`edit/titles.py`)._')
     L = ['# H9 kit · the text', '',
-         f'_Built {stamp} from the bar maps (`music/v3/barmap_*.json`) with the director\'s H5 wording, exactly as '
-         'the films draw it (`edit/titles.py`)._', '',
+         source, '',
          'Frames are the film\'s own (24 fps; 1 bar = 80 f = 3.33 s). **Over** is the shot under the line at its '
          'midpoint, with its status (a line over a SLATE is drawn over the dark card in the sheets).', '']
     style = {'A': 'Cormorant Garamond italic, lower third; T10a/T10b centred on black; the title kindles in the sky.',
@@ -438,8 +441,9 @@ def text_md(films, stamp):
              'C': 'Ink lines (EB Garamond italic) write on with a pen nib; fire lines kindle and crumble into sparks; '
                   'T8a/T8b in fire on black; the title burns onto the blank page in the render itself and cools to '
                   'ink.',
-             'D': 'Consolidated scaffold: caption treatment follows each row\'s set. The current scaffold copies '
-                  'C\'s ink and fire lettering.'}
+             'D': 'The 115-bar consolidated edit: Cormorant italic narration in the lower third. Caption 5 and the '
+                  'title are photographed onto their pages; caption 14 remains a lower-third line until its '
+                  'book plate arrives. New picture remains visibly slated; the score is pending.'}
     for cut, film in films.items():
         L.append(f'## {cut} · {FILM[cut]}')
         L.append('')

@@ -89,13 +89,23 @@ def test_d_text_and_index_use_real_caption_rows(monkeypatch):
     monkeypatch.setattr(H9.AS, '_INDEX', {})
     film = H9.Film('D')
     text = H9.text_md({'D': film}, 'fixture')
-    assert '## D · THE LONG DAWN (consolidated scaffold)' in text
-    assert 'Consolidated scaffold: caption treatment follows' in text
+    assert '## D · THE LONG DAWN (consolidated edit)' in text
+    assert 'The 115-bar consolidated edit: Cormorant italic narration' in text
+    assert 'scaffold' not in text.lower()
     for row in film.table:
         assert f"| {row['id']} |" in text
     index = H9.index_md({'D': film}, 'fixture', {'D': 'STAND-IN silence'}, [], [], {'D': 'fixture'})
     assert 'Selected cuts share one grid' in index
     assert 'Three short films' not in index
+
+
+def test_h9_held_source_provenance_names_the_fixed_frame():
+    film = H9.Film.__new__(H9.Film)
+    film.shot_i = lambda frame: 0
+    film.plans = [dict(kind='take', take=dict(stem='reveal_A', off=-340, hold=3799))]
+    assert film.src(4140) == film.src(4159) == 'reveal_A 3799'
+    film.plans[0]['take'].pop('hold')
+    assert film.src(4159) == 'reveal_A 3819'  # moving-source control must be distinguishable
 
 
 def preview_metadata_only(monkeypatch, tmp_path):

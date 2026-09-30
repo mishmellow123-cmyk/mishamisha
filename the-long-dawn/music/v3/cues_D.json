@@ -1,336 +1,2311 @@
 {
  "cut": "D",
  "sections": {
-  "C1": {
+  "D0": {
    "tags": [
+    "night",
+    "gift"
+   ],
+   "note": "Retain A opening cue as delivered in AP2; source opening section annotations and cue references are preserved below. Actual D mix is pending."
+  },
+  "D1": {
+   "tags": [
+    "ring",
     "book"
    ],
-   "level": "pp",
-   "rel": [
-    -40,
-    -12
-   ]
+   "note": "The Ring motif completes over the old story; ours remains one note short. The new forging front opens from the drawn-ring burn."
   },
-  "C2": {
-   "tags": [
-    "book"
-   ],
-   "level": "pp",
-   "rel": [
-    -24,
-    -8
-   ]
-  },
-  "C3": {
-   "tags": [
-    "book"
-   ],
-   "level": "pp",
-   "rel": [
-    -24,
-    -8
-   ]
-  },
-  "C4": {
-   "tags": [
-    "book"
-   ],
-   "level": "p",
-   "rel": [
-    -22,
-    -6
-   ]
-  },
-  "C5": {
-   "tags": [
-    "lydian"
-   ],
-   "level": "p",
-   "rel": [
-    -18,
-    -4
-   ]
-  },
-  "C6": {
-   "tags": [
-    "race"
-   ],
-   "level": "p",
-   "rel": [
-    -16,
-    -3
-   ]
-  },
-  "C7": {
-   "tags": [
-    "race"
-   ],
-   "level": "mp",
-   "rel": [
-    -14,
-    -1
-   ]
-  },
-  "C8": {
-   "tags": [
-    "race"
-   ],
-   "level": "p",
-   "rel": [
-    -16,
-    -2
-   ]
-  },
-  "C9": {
+  "D2": {
    "tags": [
     "race",
-    "brink"
+    "vision"
    ],
-   "level": "mf",
-   "rel": [
-    -12,
-    0
-   ]
+   "note": "Climbing Ring motif, beatwise taiko and gap ticks; the Deep tick divides faster. The withheld note sounds once in stopped brass inside the conditional vision."
   },
-  "C10": {
-   "tags": [
-    "book"
-   ],
-   "level": "pp",
-   "rel": [
-    -26,
-    -8
-   ]
-  },
-  "C11": {
+  "D3": {
    "tags": [
     "race"
    ],
-   "level": "mf",
-   "rel": [
-    -14,
-    -1
-   ]
+   "note": "A slowing forge is overtaken and rejoins; the race continues."
   },
-  "C12": {
+  "D4": {
    "tags": [
-    "night"
-   ],
-   "level": "ppp",
-   "rel": [
-    -44,
-    -1
-   ]
-  },
-  "C13": {
-   "tags": [
-    "night"
-   ],
-   "level": "pp",
-   "rel": [
-    -24,
-    -6
-   ]
-  },
-  "C14": {
-   "tags": [
-    "run"
-   ],
-   "level": "mf",
-   "rel": [
-    -16,
-    -2
-   ]
-  },
-  "C15": {
-   "tags": [
+    "promise",
+    "beacons",
     "map"
    ],
-   "level": "mp",
-   "rel": [
-    -20,
-    -2
-   ]
+   "note": "Two horns, left and right, at the crowns and two fires; nearer answers. Adapt to the explicit holdout insert and map holds. Low D watch tone begins."
   },
-  "C16": {
+  "D5": {
    "tags": [
-    "silence"
+    "open_ring",
+    "crossing"
    ],
-   "level": "-",
-   "rel": [
-    -99,
-    -1
-   ]
+   "note": "Working forges continue; real cadence at the abandoned Deep. The great lantern carries the light forward at the speed of the visible path; keep the Ring motif incomplete."
   },
-  "C17": {
+  "D6": {
    "tags": [
-    "night"
+    "watch"
    ],
-   "level": "pp",
-   "rel": [
-    -34,
-    -10
-   ]
+   "note": "The ridge fires keep watch; warm glow breathes once per bar."
   },
-  "C18": {
+  "D7": {
    "tags": [
+    "dawn",
     "book"
    ],
-   "level": "pp",
-   "rel": [
-    -34,
-    -10
-   ]
-  },
-  "C19": {
-   "tags": [
-    "night"
-   ],
-   "level": "pp",
-   "rel": [
-    -28,
-    -8
-   ]
-  },
-  "C20": {
-   "tags": [
-    "dawn"
-   ],
-   "level": "mf",
-   "rel": [
-    -16,
-    -2
-   ]
-  },
-  "C21": {
-   "tags": [
-    "book"
-   ],
-   "level": "p",
-   "rel": [
-    -24,
-    -6
-   ]
-  },
-  "C22": {
-   "tags": [
-    "book"
-   ],
-   "level": "pp",
-   "rel": [
-    -40,
-    -8
-   ]
-  },
-  "C23": {
-   "tags": [
-    "book"
-   ],
-   "level": "pp",
-   "rel": [
-    -30,
-    -8
-   ]
+   "note": "First full Beacon-theme cadence at dawn; restored terraces and plenty lead into the unfinished written leaf, blank pages and plagal title close. Optional private voice slot unassigned."
   }
  },
  "events": {
-  "book": {
+  "ap2_wind": {
+   "source": "music/v3/barmap_AP2.json sync.wind; inherited pass 1 timing, A edit frame 0 + 0 = D0; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "wind",
+   "source_frame": 0,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "wind rises from silence; sub drone on D",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "black": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #1; D range [0, 80); A1 EDIT black; unchanged A opening.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 1,
+   "picture_name": "BLACK",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_false_dawn": {
+   "source": "music/v3/barmap_AP2.json sync.false_dawn; inherited pass 1 timing, A edit frame 80 + 0 = D80; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "false_dawn",
+   "source_frame": 80,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "FALSE DAWN fades up out of the black",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "false_dawn": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #2; D range [80, 560); A2 cand_falsedawn_clear_high_deck A80-559, off0.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 2,
+   "picture_name": "THE FALSE DAWN",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_glow": {
+   "source": "music/v3/barmap_AP2.json sync.glow; inherited pass 1 timing, A edit frame 160 + 0 = D160; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "glow",
+   "source_frame": 160,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the cold glow first shows under the far horizon; glass tone enters, pp",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_stars_out": {
+   "source": "music/v3/barmap_AP2.json sync.stars_out; inherited pass 1 timing, A edit frame 320 + 0 = D320; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "stars_out",
+   "source_frame": 320,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the stars nearest the glow begin to go out",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_white": {
+   "source": "music/v3/barmap_AP2.json sync.white; inherited pass 1 timing, A edit frame 560 + 0 = D560; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "white",
+   "source_frame": 560,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the push enters the glow; the frame whitens",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "into_the_light": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #3; D range [560, 960); A3 embers_A3 A560-959, off0.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 3,
+   "picture_name": "INTO THE LIGHT · GLYPHS",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_letters": {
+   "source": "music/v3/barmap_AP2.json sync.letters; inherited pass 1 timing, A edit frame 640 + 0 = D640; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "letters",
+   "source_frame": 640,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the first letters appear as the white recedes to black",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_spiral": {
+   "source": "music/v3/barmap_AP2.json sync.spiral; inherited pass 1 timing, A edit frame 880 + 0 = D880; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "spiral",
+   "source_frame": 880,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the spiral tightens; the kindling cue accelerates",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_point": {
+   "source": "music/v3/barmap_AP2.json sync.point; inherited pass 1 timing, A edit frame 960 + 0 = D960; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "point",
+   "source_frame": 960,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the spiral collapses to a blinding point",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "the_point": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #4; D range [960, 1040); A4 embers_A3 A960-1039, off0.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 4,
+   "picture_name": "THE POINT",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_breath_ign": {
+   "source": "music/v3/barmap_AP2.json sync.breath_ign; inherited pass 1 timing, A edit frame 1020 + 0 = D1020; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "breath_ign",
+   "source_frame": 1020,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "one beat of breath (silence) before the ignition",
+   "lock": "soft",
    "kind": "music",
-   "tags": [
-    "call"
+   "tags": []
+  },
+  "ap2_ignition": {
+   "source": "music/v3/barmap_AP2.json sync.ignition; inherited pass 1 timing, A edit frame 1040 + 0 = D1040; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "ignition",
+   "source_frame": 1040,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "IGNITION: the Lydian bloom; no musical stroke",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "ignition_promise": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #5; D range [1040, 1440); A5 embers_A3 A1040-1439, off0.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 5,
+   "picture_name": "IGNITION · THE PROMISE",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_promise": {
+   "source": "music/v3/barmap_AP2.json sync.promise; inherited pass 1 timing, A edit frame 1280 + 0 = D1280; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "promise",
+   "source_frame": 1280,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "THE PROMISE: the light rolls out; ember forms to the horizon",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_promise_cut": {
+   "source": "music/v3/barmap_AP2.json sync.promise_cut; inherited pass 1 timing, A edit frame 1400 + 0 = D1400; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "promise_cut",
+   "source_frame": 1400,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the warm string line is cut off",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "ap2_promise_gone": {
+   "source": "music/v3/barmap_AP2.json sync.promise_gone; inherited pass 1 timing, A edit frame 1420 + 0 = D1420; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "promise_gone",
+   "source_frame": 1420,
+   "source_to_d": 0,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the promise's forms are gone",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "old_story": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #6; D range [1440, 1680); C P2 cand_t1_current-words-held C320-559, off-1120.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 6,
+   "picture_name": "THE OLD STORY",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "old_story_riffle": {
+   "source": "music/v3/barmap_C5P2.json sync.riffle; inherited measured timing, C5 edit frame 326 + 1120 = D1446; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "riffle",
+   "source_frame": 326,
+   "source_to_d": 1120,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "rapid page riffle begins (measured)",
+   "measured_ref": "opening.riffle.first",
+   "confidence": "medium",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "old_story_mountain": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #6 (THE OLD STORY); provisional musical placement within [1440, 1680), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 6,
+   "timing_window": [
+    1440,
+    1680
    ],
-   "desc": "the storyteller's CALL (in the finished score: the cor anglais)"
-  },
-  "beacon_1": {
-   "kind": "fire",
+   "lock": "soft",
+   "kind": "picture",
    "tags": [
-    "call"
+    "provisional"
    ]
   },
-  "beacon_3": {
-   "kind": "fire",
-   "tags": [
-    "call"
-   ]
+  "old_story_ring_motif": {
+   "source": "music/v3/barmap_C5P2.json sync.ring_motif; inherited pass 1 timing, C5 edit frame 360 + 1120 = D1480; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "ring_motif",
+   "source_frame": 360,
+   "source_to_d": 1120,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "the pen draws the ring; the RING motif enters on stopped horns",
+   "why": "Musical motif entry over a mountain illustration; no separate small Ring stroke isolated.",
+   "lock": "soft",
+   "kind": "music",
+   "tags": []
   },
-  "beacon_5": {
-   "kind": "fire",
-   "tags": [
-    "call"
-   ]
-  },
-  "beacon_7": {
-   "kind": "fire",
-   "tags": [
-    "call"
-   ]
-  },
-  "beacon_2": {
-   "kind": "fire",
-   "tags": [
-    "answer"
+  "old_story_closed_ring": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #6 (THE OLD STORY); provisional musical placement within [1440, 1680), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 6,
+   "timing_window": [
+    1440,
+    1680
    ],
-   "desc": "the ANSWER first heard"
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
   },
-  "beacon_4": {
-   "kind": "fire"
+  "drawn_ring_burn": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #7; D range [1680, 1760). edit/edl_v3.py D_BURN_PLATE: ring-centred burn over held C559; A1400-1439 thinking fire advances through D1719 and holds A1439 afterward, with an explicit screen transform. STAND-IN incoming picture, not final.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 7,
+   "picture_name": "THE BURN",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
   },
-  "beacon_6": {
-   "kind": "fire"
+  "drawn_ring_burn_opens": {
+   "source": "music/v3/events_D_measured.json burn.first_open_on_sample_grid; all 80 generated cover frames D1680-1759 were scanned at 480×201. This is a cover-grid measurement, not a finished-picture or future-plate measurement.",
+   "timing_status": "measured_D_cover",
+   "picture_frame": null,
+   "shot": 7,
+   "measurement_file": "music/v3/events_D_measured.json",
+   "measured_ref": "burn.first_open_on_sample_grid",
+   "measurement_scope": "generated cover at 480×201; not native-resolution finished picture",
+   "mask_frame": 1683,
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "inscription": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #8; D range [1760, 2080); NEW embers_D_inscription; full incoming asset span D1680-2079, including the preceding burn.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 8,
+   "picture_name": "THE FORGING FRONT",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "inscription_front": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #8 (THE FORGING FRONT); provisional musical placement within [1760, 2080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 8,
+   "timing_window": [
+    1760,
+    2080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "inscription_scripts": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #8 (THE FORGING FRONT); provisional musical placement within [1760, 2080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 8,
+   "timing_window": [
+    1760,
+    2080
+   ],
+   "repeat": {
+    "from": 1824,
+    "to": 1984,
+    "spacing_frames": null,
+    "count": null
+   },
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "inscription_stops_midletter": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #8 (THE FORGING FRONT); provisional musical placement within [1760, 2080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 8,
+   "timing_window": [
+    1760,
+    2080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "inscription_pullback": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #8 (THE FORGING FRONT); provisional musical placement within [1760, 2080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 8,
+   "timing_window": [
+    1760,
+    2080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "forging": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #9; D range [2080, 2400); NEW embers_D_forging.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 9,
+   "picture_name": "THE FORGING",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "forging_towers_rise": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #9 (THE FORGING); provisional musical placement within [2080, 2400), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 9,
+   "timing_window": [
+    2080,
+    2400
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "forging_hammer_strokes": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #9 (THE FORGING); provisional musical placement within [2080, 2400), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 9,
+   "timing_window": [
+    2080,
+    2400
+   ],
+   "repeat": {
+    "from": 2120,
+    "to": 2400,
+    "spacing_frames": 20,
+    "count": null,
+    "note": "Beat-grid planning; strike contact is unmeasured."
+   },
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "forging_gold_pays_striker": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #9 (THE FORGING); provisional musical placement within [2080, 2400), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 9,
+   "timing_window": [
+    2080,
+    2400
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "forging_ends_advance": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #9 (THE FORGING); provisional musical placement within [2080, 2400), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 9,
+   "timing_window": [
+    2080,
+    2400
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "race": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #10; D range [2400, 2720); NEW embers_D_race.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 10,
+   "picture_name": "THE RACE",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "race_beat_surges": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #10 (THE RACE); provisional musical placement within [2400, 2720), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 10,
+   "timing_window": [
+    2400,
+    2720
+   ],
+   "repeat": {
+    "from": 2400,
+    "to": 2720,
+    "spacing_frames": 20,
+    "count": null
+   },
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "race_glare_blooms": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #10 (THE RACE); provisional musical placement within [2400, 2720), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 10,
+   "timing_window": [
+    2400,
+    2720
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "race_nearest_gold": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #10 (THE RACE); provisional musical placement within [2400, 2720), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 10,
+   "timing_window": [
+    2400,
+    2720
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "race_giants_ahead": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #10 (THE RACE); provisional musical placement within [2400, 2720), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 10,
+   "timing_window": [
+    2400,
+    2720
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "deep": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #11; D range [2720, 2960); C8 C1680-1919, off-1040; sweep backing requires the new race.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 11,
+   "picture_name": "THE DEEP",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "deep_cue": {
+   "source": "music/v3/barmap_C5P2.json sync.deep; inherited pass 1 timing, C5 edit frame 1680 + 1040 = D2720; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "deep",
+   "source_frame": 1680,
+   "source_to_d": 1040,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "swept to parchment: THE DEEP; the anvil tick in quarters",
+   "why": "Section boundary within a continuing transition onto parchment.",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "deep_ember_sweep": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #11 (THE DEEP); provisional musical placement within [2720, 2960), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 11,
+   "timing_window": [
+    2720,
+    2758
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "deep_pen_descends": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #11 (THE DEEP); provisional musical placement within [2720, 2960), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 11,
+   "timing_window": [
+    2720,
+    2960
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "deep_tick_eighths": {
+   "source": "music/v3/barmap_C5P2.json sync.tick_8; inherited pass 1 timing, C5 edit frame 1760 + 1040 = D2800; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "tick_8",
+   "source_frame": 1760,
+   "source_to_d": 1040,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "the tick divides to eighths",
+   "why": "Musical subdivision, not a picture event.",
+   "lock": "soft",
+   "kind": "music",
+   "tags": []
+  },
+  "deep_tick_sixteenths": {
+   "source": "music/v3/barmap_C5P2.json sync.tick_16; inherited pass 1 timing, C5 edit frame 1840 + 1040 = D2880; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "tick_16",
+   "source_frame": 1840,
+   "source_to_d": 1040,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "the tick divides to sixteenths",
+   "why": "Musical subdivision, not a picture event.",
+   "lock": "soft",
+   "kind": "music",
+   "tags": []
+  },
+  "deep_red_glow": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #11 (THE DEEP); provisional musical placement within [2720, 2960), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 11,
+   "timing_window": [
+    2720,
+    2960
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "brink": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #12; D range [2960, 3200); NEW embers_D_brink.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 12,
+   "picture_name": "THE BRINK",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "brink_burnthrough": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #12 (THE BRINK); provisional musical placement within [2960, 3200), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 12,
+   "timing_window": [
+    2960,
+    3200
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "brink_gap_narrowest": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #12 (THE BRINK); provisional musical placement within [2960, 3200), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 12,
+   "timing_window": [
+    2960,
+    3200
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "brink_towers_lean": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #12 (THE BRINK); provisional musical placement within [2960, 3200), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 12,
+   "timing_window": [
+    2960,
+    3200
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "if_it_closed": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #13; D range [3200, 3440); NEW embers_D_vision.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 13,
+   "picture_name": "IF IT CLOSED",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "vision_ends_touch": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #13 (IF IT CLOSED); provisional musical placement within [3200, 3440), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 13,
+   "timing_window": [
+    3200,
+    3440
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "vision_white_seam": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #13 (IF IT CLOSED); provisional musical placement within [3200, 3440), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 13,
+   "timing_window": [
+    3200,
+    3440
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "vision_missing_letters": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #13 (IF IT CLOSED); provisional musical placement within [3200, 3440), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 13,
+   "timing_window": [
+    3200,
+    3440
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "vision_ice_eye": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #13 (IF IT CLOSED); provisional musical placement within [3200, 3440), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 13,
+   "timing_window": [
+    3200,
+    3440
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "vision_giants_bend": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #13 (IF IT CLOSED); provisional musical placement within [3200, 3440), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 13,
+   "timing_window": [
+    3200,
+    3440
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "vision_all_towers_bend": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #13 (IF IT CLOSED); provisional musical placement within [3200, 3440), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 13,
+   "timing_window": [
+    3200,
+    3440
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "vision_slit_push": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #13 (IF IT CLOSED); provisional musical placement within [3200, 3440), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 13,
+   "timing_window": [
+    3200,
+    3440
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "gap": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #14; D range [3440, 3520); NEW embers_D_gap.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 14,
+   "picture_name": "THE GAP",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "gap_hammer_lands": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #14 (THE GAP); provisional musical placement within [3440, 3520), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 14,
+   "timing_window": [
+    3440,
+    3520
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "refusal": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #15; D range [3520, 3760); C10 book_C5_refusal C2080-2319, off-1440.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 15,
+   "picture_name": "THE REFUSAL",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "refusal_cue": {
+   "source": "music/v3/barmap_C5P2.json sync.refusal; inherited pass 1 timing, C5 edit frame 2080 + 1440 = D3520; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "refusal",
+   "source_frame": 2080,
+   "source_to_d": 1440,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "THE REFUSAL: the hearth flares, back at the book; the chamber music returns",
+   "why": "Section cut into the Refusal page; no new within-shot event.",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "refusal_offering_hand": {
+   "source": "music/v3/barmap_C5P2.json sync.old_story; inherited verified timing, C5 edit frame 2120 + 1440 = D3560; not remeasured for D.",
+   "timing_status": "inherited_verified",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "old_story",
+   "source_frame": 2120,
+   "source_to_d": 1440,
+   "source_clock": "C5 edit",
+   "source_original": "verified",
+   "source_what": "the pen draws the old story: a ring held out on an open palm (est.)",
+   "verified_by": "refusal.offering_hand 2114-2135",
+   "why": "the offering hand is being drawn when the clarinet's Ring enters (the Ring itself appears on the palm 2138-2150, under the motif's Ab-D)",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "refusal_raised_hand": {
+   "source": "music/v3/barmap_C5P2.json sync.turns_away; inherited verified timing, C5 edit frame 2200 + 1440 = D3640; not remeasured for D.",
+   "timing_status": "inherited_verified",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "turns_away",
+   "source_frame": 2200,
+   "source_to_d": 1440,
+   "source_clock": "C5 edit",
+   "source_original": "verified",
+   "source_what": "the cloaked figure turns away from it, one hand raised (est.)",
+   "verified_by": "refusal.raised_hand 2195-2202",
+   "why": "the refusal gesture, the raised hand, is drawn 2195-2202; pass 1's 2200 lies inside it and keeps the cor anglais' V-i landing on 2280",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "refusal_burn_start": {
+   "source": "edit/edl_v3.py TRANS['C'] Refusal burn specification and cover-measurement note; C5 edit frame 2310 + 1440 = D3750; not remeasured for D.",
+   "timing_status": "inherited_transition",
+   "picture_frame": null,
+   "source_file": "edit/edl_v3.py",
+   "source_frame": 2310,
+   "source_to_d": 1440,
+   "source_clock": "C5 edit",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "refusal_burn_hole_first": {
+   "source": "edit/edl_v3.py TRANS['C'] Refusal burn specification and cover-measurement note; C5 edit frame 2316 + 1440 = D3756; not remeasured for D.",
+   "timing_status": "inherited_cover_measurement",
+   "picture_frame": null,
+   "source_file": "edit/edl_v3.py",
+   "source_frame": 2316,
+   "source_to_d": 1440,
+   "source_clock": "C5 edit",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "trap": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #16; D range [3760, 4080); NEW embers_D_trap with C2310-2345 Refusal burn remapped to D3750-3785.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 16,
+   "picture_name": "THE TRAP",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "refusal_burn_fastest": {
+   "source": "edit/edl_v3.py TRANS['C'] Refusal burn specification and cover-measurement note; C5 edit frame 2331 + 1440 = D3771; not remeasured for D.",
+   "timing_status": "inherited_cover_measurement",
+   "picture_frame": null,
+   "source_file": "edit/edl_v3.py",
+   "source_frame": 2331,
+   "source_to_d": 1440,
+   "source_clock": "C5 edit",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "refusal_burn_open": {
+   "source": "edit/edl_v3.py TRANS['C'] Refusal burn specification and cover-measurement note; C5 edit frame 2340 + 1440 = D3780; not remeasured for D.",
+   "timing_status": "inherited_cover_measurement",
+   "picture_frame": null,
+   "source_file": "edit/edl_v3.py",
+   "source_frame": 2340,
+   "source_to_d": 1440,
+   "source_clock": "C5 edit",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "refusal_burn_end": {
+   "source": "edit/edl_v3.py TRANS['C'] Refusal burn specification and cover-measurement note; C5 edit frame 2346 + 1440 = D3786; not remeasured for D.",
+   "timing_status": "inherited_transition",
+   "picture_frame": null,
+   "source_file": "edit/edl_v3.py",
+   "source_frame": 2346,
+   "source_to_d": 1440,
+   "source_clock": "C5 edit",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "trap_forge_slows": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #16 (THE TRAP); provisional musical placement within [3760, 4080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 16,
+   "timing_window": [
+    3760,
+    4080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "trap_gold_passes": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #16 (THE TRAP); provisional musical placement within [3760, 4080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 16,
+   "timing_window": [
+    3760,
+    4080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "trap_forge_overtaken": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #16 (THE TRAP); provisional musical placement within [3760, 4080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 16,
+   "timing_window": [
+    3760,
+    4080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "trap_forge_rejoins": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #16 (THE TRAP); provisional musical placement within [3760, 4080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 16,
+   "timing_window": [
+    3760,
+    4080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "trap_giants_neck_and_neck": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #16 (THE TRAP); provisional musical placement within [3760, 4080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 16,
+   "timing_window": [
+    3760,
+    4080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "glow_at_brink": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #17; D range [4080, 4240); NEW falsedawn_brink.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 17,
+   "picture_name": "THE GLOW AT THE BRINK",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "glow_race_pulse": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #17 (THE GLOW AT THE BRINK); provisional musical placement within [4080, 4240), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 17,
+   "timing_window": [
+    4080,
+    4240
+   ],
+   "repeat": {
+    "from": 4080,
+    "to": 4240,
+    "spacing_frames": 20,
+    "count": null
+   },
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "two_crowns": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #18; D range [4240, 4560); NEW embers_D_crowns; kindle planned at D4320.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 18,
+   "picture_name": "THE TWO CROWNS",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "crown_beacons": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #18 (THE TWO CROWNS); provisional musical placement within [4240, 4560), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 18,
+   "timing_window": [
+    4240,
+    4560
+   ],
+   "lock": "soft",
+   "kind": "fire",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "crown_faces_lit": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #18 (THE TWO CROWNS); provisional musical placement within [4240, 4560), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 18,
+   "timing_window": [
+    4240,
+    4560
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "ridge_pair_match": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #19 (THE TWO FIRES); provisional musical placement within [4560, 5040), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 19,
+   "timing_window": [
+    4560,
+    5040
+   ],
+   "lock": "soft",
+   "kind": "fire",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "two_fires": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #19; D range [4560, 5040); NEW falsedawn_twofires.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 19,
+   "picture_name": "THE TWO FIRES",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "ridge_answers": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #19 (THE TWO FIRES); provisional musical placement within [4560, 5040), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 19,
+   "timing_window": [
+    4560,
+    5040
+   ],
+   "repeat": {
+    "from": 4640,
+    "to": 5040,
+    "spacing_frames": null,
+    "count": null,
+    "note": "Catch count and onset frames await the new night render."
+   },
+   "lock": "soft",
+   "kind": "fire",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "every_ridge": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #20; D range [5040, 5180); A13 reveal_A A3660-3799, off-1380.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 20,
+   "picture_name": "EVERY RIDGE",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "last_kingdom": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #21; D range [5180, 5680); C15 cand_map_beacon-falloff C3440-3815, with NEW holdout insert and explicit holds.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 21,
+   "picture_name": "THE LAST KINGDOM",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "last_kingdom_burn": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #21 (THE LAST KINGDOM); provisional musical placement within [5180, 5680), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5180,
+    5263
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "map_cue": {
+   "source": "music/v3/barmap_C5P2.json sync.map; inherited pass 1 timing, C5 edit frame 3440 + 1740 = D5180; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "map",
+   "source_frame": 3440,
+   "source_to_d": 1740,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "THE LAST BEACON: the map of all the kingdoms; beacons flare near and far",
+   "why": "Section cut to map; separate catches already measured.",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "map_beacon_2": {
+   "source": "music/v3/barmap_C5P2.json sync.map_beacon_2; inherited measured timing, C5 edit frame 3468 + 1740 = D5208; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "map_beacon_2",
+   "source_frame": 3468,
+   "source_to_d": 1740,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "a beacon catches on the map (2 of 8) (measured)",
+   "measured_ref": "map.beacon_2.first",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "fire",
+   "tags": []
+  },
+  "map_beacon_3": {
+   "source": "music/v3/barmap_C5P2.json sync.map_beacon_3; inherited measured timing, C5 edit frame 3523 + 1740 = D5263; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "map_beacon_3",
+   "source_frame": 3523,
+   "source_to_d": 1740,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "a beacon catches on the map (3 of 8) (measured)",
+   "measured_ref": "map.beacon_3.first",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "fire",
+   "tags": []
+  },
+  "map_beacon_4": {
+   "source": "music/v3/barmap_C5P2.json sync.map_beacon_4; inherited measured timing, C5 edit frame 3584 + 1740 = D5324; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "map_beacon_4",
+   "source_frame": 3584,
+   "source_to_d": 1740,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "a beacon catches on the map (4 of 8) (measured)",
+   "measured_ref": "map.beacon_4.first",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "fire",
+   "tags": []
+  },
+  "map_beacon_5": {
+   "source": "music/v3/barmap_C5P2.json sync.map_beacon_5; inherited measured timing, C5 edit frame 3647 + 1740 = D5387; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "map_beacon_5",
+   "source_frame": 3647,
+   "source_to_d": 1740,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "a beacon catches on the map (5 of 8) (measured)",
+   "measured_ref": "map.beacon_5.first",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "fire",
+   "tags": []
+  },
+  "map_beacon_6": {
+   "source": "music/v3/barmap_C5P2.json sync.map_beacon_6; inherited measured timing, C5 edit frame 3680 + 1740 = D5420; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "map_beacon_6",
+   "source_frame": 3680,
+   "source_to_d": 1740,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "a beacon catches on the map (6 of 8) (measured)",
+   "measured_ref": "map.beacon_6.first",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "fire",
+   "tags": []
+  },
+  "map_beacon_7": {
+   "source": "music/v3/barmap_C5P2.json sync.map_beacon_7; inherited measured timing, C5 edit frame 3718 + 1740 = D5458; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "map_beacon_7",
+   "source_frame": 3718,
+   "source_to_d": 1740,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "a beacon catches on the map (7 of 8: then one kingdom is dark) (measured)",
+   "measured_ref": "map.beacon_7.first",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "fire",
+   "tags": []
+  },
+  "one_dark": {
+   "source": "music/v3/barmap_C5P2.json sync.one_dark; inherited measured timing, C5 edit frame 3722 + 1740 = D5462; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "one_dark",
+   "source_frame": 3722,
+   "source_to_d": 1740,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "every beacon lit but one: the long pause begins (the 7th flame full) (measured)",
+   "measured_ref": "map.one_dark.first",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "holdout_insert": {
+   "source": "edit/edl_v3.py D rows (cutd Round 3, 30 Sep 2026): explicit implementation of the treatment reuse ranges and holdout insert.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "holdout_sparks": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #21 (THE LAST KINGDOM); provisional musical placement within [5180, 5680), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5480,
+    5520
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "holdout_first_contact": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #21 (THE LAST KINGDOM); provisional musical placement within [5180, 5680), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5480,
+    5520
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "holdout_gap_notch": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #21 (THE LAST KINGDOM); provisional musical placement within [5180, 5680), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 21,
+   "timing_window": [
+    5480,
+    5520
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "map_dark_hold": {
+   "source": "edit/edl_v3.py D rows (cutd Round 3, 30 Sep 2026): explicit implementation of the treatment reuse ranges and holdout insert.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "map_resumes": {
+   "source": "edit/edl_v3.py D rows (cutd Round 3, 30 Sep 2026): explicit implementation of the treatment reuse ranges and holdout insert.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "hammer_alone": {
+   "source": "music/v3/barmap_C5P2.json sync.hammer_alone; inherited derived timing, C5 edit frame 3742 + 1814 = D5556; not remeasured for D.",
+   "timing_status": "inherited_derived",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "hammer_alone",
+   "source_frame": 3742,
+   "source_to_d": 1814,
+   "source_clock": "C5 edit",
+   "source_original": "derived",
+   "source_what": "one beat into the measured pause: the orchestra's thinnest point, under the lone hammer (no hammer is drawn: SOUND places it)",
+   "derived_from": "one_dark + 20 frames",
+   "why": "C SOUND derived this cue as one_dark + 20 frames. The D insert and hold separate those anchors: the inherited C3742 position becomes D5556, 94 frames after D one_dark. This is inherited musical planning, not a photographed hammer contact; the new insert has its own planned contact at D5496.",
+   "lock": "soft",
+   "kind": "music",
+   "tags": []
+  },
+  "last_beacon": {
+   "source": "music/v3/barmap_C5P2.json sync.last_beacon; inherited measured timing, C5 edit frame 3786 + 1814 = D5600; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "last_beacon",
+   "source_frame": 3786,
+   "source_to_d": 1814,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "the holdout's beacon catches (first visible; full on all_lit) (measured)",
+   "measured_ref": "map.last_catch.first",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "fire",
+   "tags": []
+  },
+  "all_lit": {
+   "source": "music/v3/barmap_C5P2.json sync.all_lit; inherited measured timing, C5 edit frame 3791 + 1814 = D5605; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "all_lit",
+   "source_frame": 3791,
+   "source_to_d": 1814,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "every beacon lit: the holdout's flame is full (measured)",
+   "measured_ref": "map.last_catch.full",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "lock": "hard",
+   "kind": "fire",
+   "tags": []
+  },
+  "map_all_lit_hold": {
+   "source": "edit/edl_v3.py D rows (cutd Round 3, 30 Sep 2026): explicit implementation of the treatment reuse ranges and holdout insert.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "in_step": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #22; D range [5680, 5840); NEW embers_D_instep.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 22,
+   "picture_name": "IN STEP",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "in_step_shared_work": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #22 (IN STEP); provisional musical placement within [5680, 5840), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 22,
+   "timing_window": [
+    5680,
+    5840
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "in_step_ends_cool": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #22 (IN STEP); provisional musical placement within [5680, 5840), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 22,
+   "timing_window": [
+    5680,
+    5840
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "in_step_glare_clears": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #22 (IN STEP); provisional musical placement within [5680, 5840), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 22,
+   "timing_window": [
+    5680,
+    5840
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "old_fire": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #23; D range [5840, 6080); NEW book_D_oldfire.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 23,
+   "picture_name": "THE OLD FIRE",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "old_fire_ring_falls": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #23 (THE OLD FIRE); provisional musical placement within [5840, 6080), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 23,
+   "timing_window": [
+    5840,
+    6080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "ring_unfinished": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #24; D range [6080, 6400); NEW embers_D_unfinished.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 24,
+   "picture_name": "THE RING, UNFINISHED",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "unfinished_gap_sharp": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #24 (THE RING, UNFINISHED); provisional musical placement within [6080, 6400), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 24,
+   "timing_window": [
+    6080,
+    6400
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "unfinished_lamps_rise": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #24 (THE RING, UNFINISHED); provisional musical placement within [6080, 6400), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 24,
+   "timing_window": [
+    6080,
+    6400
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "unfinished_letters_lit": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #24 (THE RING, UNFINISHED); provisional musical placement within [6080, 6400), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 24,
+   "timing_window": [
+    6080,
+    6400
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "unfinished_gold_all_windows": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #24 (THE RING, UNFINISHED); provisional musical placement within [6080, 6400), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 24,
+   "timing_window": [
+    6080,
+    6400
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "deep_abandoned": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #25; D range [6400, 6640); C18 cand_deep_leaned_ladders C4240-4479, off-2160.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 25,
+   "picture_name": "THE DEEP, ABANDONED",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "deep_gold_to_vein": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #25 (THE DEEP, ABANDONED); provisional musical placement within [6400, 6640), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 25,
+   "timing_window": [
+    6400,
+    6640
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "deep_still": {
+   "source": "music/v3/barmap_C5P2.json sync.deep_still; inherited pass 1 timing, C5 edit frame 4240 + 2160 = D6400; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "deep_still",
+   "source_frame": 4240,
+   "source_to_d": 2160,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "THE DEEP, ABANDONED: the still mine, a lantern, empty ladders",
+   "why": "Section cut to held mine drawing; no discrete within-shot event.",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "deep_lantern_limit": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #25 (THE DEEP, ABANDONED); provisional musical placement within [6400, 6640), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 25,
+   "timing_window": [
+    6400,
+    6640
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "crossing": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #26; D range [6640, 7040). edit/edl_v3.py D26 selects cand_crossing_both_decal_cap A5180-5579, off-1460 after the source-frame review. Original framing retained with an eight-frame dissolve; the Deep and crossing lanterns do not spatially match.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 26,
+   "picture_name": "THE CROSSING",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "crossing_lantern_handover": {
+   "source": "D_TREATMENT_v2.md beat sheet #26; edit/edl_v3.py D26 and TRANS[D] implement the selected A5180-5579 interval and eight-frame dissolve.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 26,
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "crossing_walk_setoff": {
+   "source": "music/v3/barmap_AP2.json sync.walk_setoff; inherited measured timing, A edit frame 5180 + 1460 = D6640; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "walk_setoff",
+   "source_frame": 5180,
+   "source_to_d": 1460,
+   "source_clock": "A edit",
+   "source_original": "measured",
+   "source_what": "the line sets off, front first: the front bearer's arc along its path is constant through the image at 5180 and rises from that instant (speed 0, then linear); first displaced image 5181, a foot 1 px (full size) at 5185, the body 1 px at 5190 (measured)",
+   "measured_ref": "events_AP2_measured.json:new_sync.walk_setoff",
+   "measurement_file": "music/v3/events_AP2_measured.json",
+   "measurement_scope": "Inherited AP2 camera-projection timing for cand_crossing_both_decal; D uses its ridge-cap variant. AP2 set-off was also checked on delivered frames, whose pixels do not alone resolve an onset frame. Not remeasured for D.",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "crossing_sky_wheels": {
+   "source": "music/v3/barmap_AP2.json sync.sky_wheels; inherited pass 1 timing, A edit frame 5200 + 1460 = D6660; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "sky_wheels",
+   "source_frame": 5200,
+   "source_to_d": 1460,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the sky begins to wheel",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "crossing_walk_full": {
+   "source": "music/v3/barmap_AP2.json sync.walk_full; inherited measured timing, A edit frame 5276 + 1460 = D6736; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "walk_full",
+   "source_frame": 5276,
+   "source_to_d": 1460,
+   "source_clock": "A edit",
+   "source_original": "measured",
+   "source_what": "the front of the line reaches walking pace (0.45 m/s): its speed has risen linearly from 0 at 5180 (half pace 5228, 0.9 at 5267) (measured)",
+   "measured_ref": "events_AP2_measured.json:new_sync.walk_full",
+   "measurement_file": "music/v3/events_AP2_measured.json",
+   "measurement_scope": "Inherited AP2 camera-projection timing for cand_crossing_both_decal; D uses its ridge-cap variant. AP2 set-off was also checked on delivered frames, whose pixels do not alone resolve an onset frame. Not remeasured for D.",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "crossing_watchfire_2": {
+   "source": "music/v3/barmap_AP2.json sync.watchfire_2; inherited pass 1 timing, A edit frame 5280 + 1460 = D6740; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "watchfire_2",
+   "source_frame": 5280,
+   "source_to_d": 1460,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "watch-fire 2: harmony change",
+   "measured": "fire 2 sits within 15 px (full size) of the lantern heart over 5242-5358; 11.53 px at 5280; closest 10.71 px at 5309",
+   "why_kept": "confirmed: the lantern passes in front of it (the fire is 69 m farther from the camera at 5280 and 5309)",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "crossing_narrowest": {
+   "source": "music/v3/barmap_AP2.json sync.narrowest; inherited pass 1 timing, A edit frame 5360 + 1460 = D6820; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "narrowest",
+   "source_frame": 5360,
+   "source_to_d": 1460,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the narrowest stretch: one viola and the wind (to 5520)",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "crossing_watchfire_3": {
+   "source": "music/v3/barmap_AP2.json sync.watchfire_3; inherited pass 1 timing, A edit frame 5520 + 1460 = D6980; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "watchfire_3",
+   "source_frame": 5520,
+   "source_to_d": 1460,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "watch-fire 3: harmony change; the red under the cloud begins to go out",
+   "measured": "within 15 px over 5484-5616; 11.74 px at 5520; closest 7.05 px at 5559",
+   "why_kept": "confirmed",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "watch": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #27; D range [7040, 7360); NEW falsedawn_watch.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 27,
+   "picture_name": "THE WATCH",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "watch_bar_breath": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #27 (THE WATCH); provisional musical placement within [7040, 7360), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 27,
+   "timing_window": [
+    7040,
+    7360
+   ],
+   "repeat": {
+    "from": 7040,
+    "to": 7360,
+    "spacing_frames": 80,
+    "count": null
+   },
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "long_dawn": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #28; D range [7360, 7840); NEW falsedawn_truedawn.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 28,
+   "picture_name": "THE LONG DAWN",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "dawn_rose": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #28 (THE LONG DAWN); provisional musical placement within [7360, 7840), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 28,
+   "timing_window": [
+    7360,
+    7840
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "dawn_sunlight": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #28 (THE LONG DAWN); provisional musical placement within [7360, 7840), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 28,
+   "timing_window": [
+    7360,
+    7840
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "terraces": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #29; D range [7840, 8080); A19 dawnrev_A A6000-6239, off-1840.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 29,
+   "picture_name": "THE TERRACES",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "terraces_valley": {
+   "source": "music/v3/barmap_AP2.json sync.valley; inherited pass 1 timing, A edit frame 6000 + 1840 = D7840; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "valley",
+   "source_frame": 6000,
+   "source_to_d": 1840,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the camera drifts to the edge: the valley under thinning cloud",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "terraces_cadence": {
+   "source": "music/v3/barmap_AP2.json sync.cadence; inherited pass 1 timing, A edit frame 6160 + 1840 = D8000; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_AP2.json",
+   "source_event": "cadence",
+   "source_frame": 6160,
+   "source_to_d": 1840,
+   "source_clock": "A edit",
+   "source_original": "pass 1",
+   "source_what": "the first real cadence, into D major",
+   "lock": "soft",
+   "kind": "music",
+   "tags": []
+  },
+  "plenty": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #30; D range [8080, 8320); C21 C5 edit5200-5439; book_C render6160-6399, off-1920.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 30,
+   "picture_name": "THE YEAR OF PLENTY",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "plenty_cue": {
+   "source": "music/v3/barmap_C5P2.json sync.plenty; inherited pass 1 timing, C5 edit frame 5200 + 2880 = D8080; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "plenty",
+   "source_frame": 5200,
+   "source_to_d": 2880,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "THE YEAR OF PLENTY: the hymn (v1 6160 - 960)",
+   "why": "Section/hymn entry; camera pulls from landscape to illustrated book page continuously.",
+   "render_source": {
+    "stem": "book_C",
+    "frame": 6160
+   },
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "last_leaf_rose_light": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #31 (THE LAST WRITTEN LEAF); provisional musical placement within [8320, 8640), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 31,
+   "timing_window": [
+    8320,
+    8640
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "last_written_leaf": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #31; D range [8320, 8640); NEW book_lastleaf_open; last written line breaks off mid-word beside the open Ring.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 31,
+   "picture_name": "THE LAST WRITTEN LEAF",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "last_leaf_open_ring": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #31 (THE LAST WRITTEN LEAF); provisional musical placement within [8320, 8640), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 31,
+   "timing_window": [
+    8320,
+    8640
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "last_leaf_line_breaks": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #31 (THE LAST WRITTEN LEAF); provisional musical placement within [8320, 8640), awaiting picture timing.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 31,
+   "timing_window": [
+    8320,
+    8640
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "last_pages": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #32; D range [8640, 8880); C22 cand_pen_soft_spine_metal C5440-5679, off-3200.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 32,
+   "picture_name": "THE LAST PAGES",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "last_pages_cue": {
+   "source": "music/v3/barmap_C5P2.json sync.havens; inherited pass 1 timing, C5 edit frame 5440 + 3200 = D8640; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "havens",
+   "source_frame": 5440,
+   "source_to_d": 3200,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "(v5: no Havens) the hymn's end: the page turns to blank pages",
+   "why": "Section cut; incoming page-turn transition absent from delivered PEN frames.",
+   "lock": "soft",
+   "kind": "picture",
+   "tags": []
+  },
+  "title": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #33; D range [8880, 9120); C X3 C5 edit5680-5919; book_C render6960-7199, off-1920.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 33,
+   "picture_name": "TITLE",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "title_first_light": {
+   "source": "music/v3/barmap_C5P2.json sync.title; inherited measured timing, C5 edit frame 5702 + 3200 = D8902; not remeasured for D.",
+   "timing_status": "inherited_measured",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "title",
+   "source_frame": 5702,
+   "source_to_d": 3200,
+   "source_clock": "C5 edit",
+   "source_original": "measured",
+   "source_what": "the first title lettering glows on the blank page (measured)",
+   "measured_ref": "title.first_light.first",
+   "confidence": "medium",
+   "measurement_file": "music/v3/events_C5_measured.json",
+   "render_source": {
+    "stem": "book_C",
+    "frame": 6982
+   },
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "title_plagal_cue": {
+   "source": "music/v3/barmap_C5P2.json sync.plagal; inherited pass 1 timing, C5 edit frame 5840 + 3200 = D9040; not remeasured for D.",
+   "timing_status": "inherited_pass 1",
+   "picture_frame": null,
+   "source_file": "music/v3/barmap_C5P2.json",
+   "source_event": "plagal",
+   "source_frame": 5840,
+   "source_to_d": 3200,
+   "source_clock": "C5 edit",
+   "source_original": "pass 1",
+   "source_what": "the plagal close, G/D to D (v1 7120 - 1280)",
+   "why": "Musical cadence, not a picture event.",
+   "lock": "soft",
+   "kind": "music",
+   "tags": []
+  },
+  "hearth_out": {
+   "source": "D_TREATMENT_v2.md (30 Sep 2026), beat sheet #34; D range [9120, 9200); EDIT.",
+   "timing_status": "planned_edit_boundary",
+   "picture_frame": null,
+   "shot": 34,
+   "picture_name": "THE HEARTH GOES OUT",
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "inscription_fire_centered": {
+   "source": "D_TREATMENT_v2.md beat sheet #8 and latest inscription continuity instruction; provisional musical placement at D1760. The current A stand-in transform does not measure the future plate.",
+   "timing_status": "estimated",
+   "picture_frame": null,
+   "shot": 8,
+   "timing_window": [
+    1760,
+    2080
+   ],
+   "lock": "soft",
+   "kind": "picture",
+   "tags": [
+    "provisional"
+   ]
+  },
+  "drawn_ring_burn_page_gone": {
+   "source": "music/v3/events_D_measured.json burn.first_fully_gone_on_sample_grid and burn.frames; all 80 generated cover frames D1680-1759 were scanned at 480×201.",
+   "timing_status": "measured_D_cover",
+   "picture_frame": null,
+   "shot": 7,
+   "measurement_file": "music/v3/events_D_measured.json",
+   "measured_ref": "burn.first_fully_gone_on_sample_grid",
+   "measurement_scope": "generated cover at 480×201; not native-resolution finished picture",
+   "mask_frame": 1748,
+   "lock": "hard",
+   "kind": "picture",
+   "tags": []
+  },
+  "drawn_ring_burn_t_open": {
+   "source": "edit/edl_v3.py TRANS[D] ring_burn t_open=1682.0; recorded as a renderer parameter in music/v3/events_D_measured.json parameters.t_open, not as a measured picture event.",
+   "timing_status": "renderer_parameter",
+   "picture_frame": null,
+   "shot": 7,
+   "lock": "hard",
+   "kind": "parameter",
+   "tags": []
   }
  },
  "extra_events": [],
  "breaths": [
   {
    "t0": {
-    "at": "race",
-    "s": -0.2
+    "at": "ap2_ignition",
+    "s": -0.833333
    },
    "t1": {
-    "at": "race"
+    "at": "ap2_ignition"
    },
    "exempt": [],
-   "why": "200 ms before the race"
-  },
-  {
-   "t0": {
-    "at": "flint_black",
-    "s": -0.03
-   },
-   "t1": {
-    "at": "flint_black",
-    "s": 0.8
-   },
-   "exempt": [],
-   "why": "the trap cuts to black"
-  },
-  {
-   "t0": {
-    "at": "forges_cold",
-    "s": -0.03
-   },
-   "t1": {
-    "at": "forges_cold",
-    "s": 1.2
-   },
-   "exempt": [],
-   "why": "every forge goes dark: hard silence"
-  },
-  {
-   "t0": {
-    "at": "sunrise",
-    "s": -0.275
-   },
-   "t1": {
-    "at": "sunrise"
-   },
-   "exempt": [],
-   "why": "275 ms before the sunrise"
+   "why": "one beat of breath before the ignition",
+   "source": "music/v3/cues_AP2.json breaths[0]; unchanged opening reference, not newly composed or rendered for D.",
+   "source_file": "music/v3/cues_AP2.json",
+   "source_index": 0
   }
  ],
- "ambience": [],
+ "ambience": [
+  {
+   "id": "A.wind.open",
+   "fx": "wind",
+   "t0": 0.0,
+   "t1": {
+    "at": "ap2_white",
+    "beats": 1
+   },
+   "gain_db": -20,
+   "fade_in": 2.5,
+   "fade_out": 2.0,
+   "params": {
+    "strength": 0.45,
+    "howl": 0.14,
+    "hiss": 0.08,
+    "cut": 560,
+    "gust_rate": 0.14
+   },
+   "env": [
+    [
+     0,
+     0
+    ],
+    [
+     8,
+     -2
+    ],
+    [
+     20,
+     -8
+    ]
+   ],
+   "source": "music/v3/cues_AP2.json ambience[0]; unchanged opening reference, not newly composed or rendered for D.",
+   "source_file": "music/v3/cues_AP2.json",
+   "source_index": 0
+  }
+ ],
  "sfx": [],
- "note": "Inherited C5 cue annotations only; D has no approved score. Delivery must identify a stand-in mix explicitly.",
- "status": "scaffold",
- "scaffold_from": "music/v3/cues_C5.json (30 Sep 2026)"
+ "inherited_opening_sections": {
+  "A1": {
+   "tags": [
+    "black"
+   ],
+   "level": "niente",
+   "rel": [
+    -40,
+    -14
+   ],
+   "source": "music/v3/cues_AP2.json sections.A1; unchanged A opening section reference within D0"
+  },
+  "A2": {
+   "tags": [
+    "night"
+   ],
+   "level": "pp",
+   "rel": [
+    -24,
+    -8
+   ],
+   "source": "music/v3/cues_AP2.json sections.A2; unchanged A opening section reference within D0"
+  },
+  "A3": {
+   "tags": [
+    "glow"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -5
+   ],
+   "source": "music/v3/cues_AP2.json sections.A3; unchanged A opening section reference within D0"
+  },
+  "A4": {
+   "tags": [
+    "glow"
+   ],
+   "level": "p",
+   "rel": [
+    -20,
+    -4
+   ],
+   "source": "music/v3/cues_AP2.json sections.A4; unchanged A opening section reference within D0"
+  },
+  "A5": {
+   "tags": [
+    "lydian"
+   ],
+   "level": "mp",
+   "rel": [
+    -16,
+    -3
+   ],
+   "source": "music/v3/cues_AP2.json sections.A5; unchanged A opening section reference within D0"
+  }
+ },
+ "note": "D follows D_TREATMENT_v2.md: 115 bars, 9200 frames, 6:23.3. Score and effects are pending; the animatic uses STAND-IN silence. Opening breath, wind and section references are copied from cues_AP2, with provenance; these authored values are not new measurements or a rendered D score. No new target dB levels or effect recipes are inferred. C5 inherited timings are cited per event. The optional private voice stem has no approved D frame slot. Musical reuse must adapt to the split map, inserted holdout and explicit holds.",
+ "status": "treatment; score pending",
+ "score_status": "pending",
+ "audio": "STAND-IN silence"
 }
