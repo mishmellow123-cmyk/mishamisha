@@ -37,7 +37,7 @@ OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire', 'scroll': 'night-fire'
            'deep': 'leaned_ladders', 'cold': 'lead24',
            'pen': 'soft_spine_metal', 't1': 'current-words', 'crossing': 'both'}
 # Explicit review alternatives leave OPTIONS and omitted renderer defaults unchanged.
-MORE = {'crossing': ('both_decal',), 't1': ('current-words-held',)}
+MORE = {'crossing': ('both_decal', 'both_decal_cap'), 't1': ('current-words-held',)}
 PAGES = ('deep', 'pen', 't1')
 _FAMILY = None
 
@@ -189,11 +189,15 @@ def build(kind, route, option=None, scale=1.0):
             hdr = X.render_cut(f, renderer=cr, scale=scale, ss=1.5, variant='main', trail=True)
         else:
             modifier = (lambda scene, renderer, cfg: rock.apply_to_scene(
-                scene, renderer, cfg, candidate='low_shoulders')) if option in ('rock', 'both', 'both_decal') else None
+                scene, renderer, cfg, candidate='low_shoulders')) if option in ('rock', 'both', 'both_decal', 'both_decal_cap') else None
+            # Only the cap candidate changes terrain; preserve every existing
+            # route's keyword arguments for the accepted/default equality gate.
+            terrain = {'terrain': 'round_cap'} if option == 'both_decal_cap' else {}
             hdr = X.render_cut(f, renderer=cr, scale=scale, ss=1.5, variant='main', trail=True,
-                               rope=('snow_decal' if option == 'both_decal' else
+                               rope=('snow_decal' if option in ('both_decal', 'both_decal_cap') else
                                      'snow_clearance' if option in ('rope', 'both') else 'accepted'),
-                               rock='low_shoulders' if modifier else 'accepted', rock_modifier=modifier)
+                               rock='low_shoulders' if modifier else 'accepted', rock_modifier=modifier,
+                               **terrain)
         return dict(hdr=hdr, rgb=cr.PI.look.finish(hdr, **cr.FINISH))
     return call
 

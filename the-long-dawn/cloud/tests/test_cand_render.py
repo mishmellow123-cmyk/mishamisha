@@ -306,6 +306,74 @@ class CandidateAdapterTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'scroll shared rgb frame 152'):
                 self.wrapper.equal('scroll', 152, scale=.5)
 
+    def test_crossing_cap_preserves_existing_routes_and_candidate_layers(self):
+        self.assertEqual(self.wrapper.OPTIONS['crossing'], 'both')
+        crossing, rock, renderer = mock.Mock(), mock.Mock(), mock.Mock()
+        crossing.load_renderer.return_value = renderer
+        crossing.render_cut.return_value = renderer.render.return_value = mock.sentinel.hdr
+        renderer.FINISH = {'exposure': 1.0}
+        renderer.PI.look.finish.return_value = mock.sentinel.rgb
+        cases = [('original', None), ('default', None), ('shared', None),
+                 ('candidate', 'both'), ('candidate', 'both_decal'),
+                 ('candidate', 'both_decal_cap')]
+        with mock.patch.object(self.wrapper, 'imports'), \
+             mock.patch.dict(sys.modules, crossing_candidates=crossing,
+                             crossing_rock_candidates=rock):
+            for route, option in cases:
+                with self.subTest(route=route, option=option):
+                    crossing.reset_mock()
+                    rock.reset_mock()
+                    renderer.reset_mock()
+                    result = self.wrapper.build('crossing', route, option, scale=.5)(5043)
+                    self.assertEqual(result, dict(hdr=mock.sentinel.hdr, rgb=mock.sentinel.rgb))
+                    common = dict(scale=.5, ss=1.5, variant='main', trail=True)
+                    if route == 'original':
+                        renderer.render.assert_called_once_with(163, **common)
+                        crossing.render_cut.assert_not_called()
+                    else:
+                        expected = dict(renderer=renderer, **common)
+                        if route != 'default':
+                            modifier = crossing.render_cut.call_args.kwargs['rock_modifier']
+                            expected.update(
+                                rope=('snow_clearance' if option == 'both' else
+                                      'snow_decal' if option else 'accepted'),
+                                rock='low_shoulders' if option else 'accepted',
+                                rock_modifier=modifier if option else None)
+                            if option:
+                                modifier(mock.sentinel.scene, renderer, mock.sentinel.cfg)
+                                rock.apply_to_scene.assert_called_once_with(
+                                    mock.sentinel.scene, renderer, mock.sentinel.cfg,
+                                    candidate='low_shoulders')
+                        if option == 'both_decal_cap':
+                            expected['terrain'] = 'round_cap'
+                        crossing.render_cut.assert_called_once_with(5043, **expected)
+                        renderer.render.assert_not_called()
+                    renderer.PI.look.finish.assert_called_once_with(
+                        mock.sentinel.hdr, **renderer.FINISH)
+
+    def test_crossing_cap_cli_uses_separate_output_before_build(self):
+        class StopBeforeRendering(Exception):
+            pass
+
+        with tempfile.TemporaryDirectory(prefix='cand-crossing-cap-cli-') as temporary:
+            fixture = Path(temporary)
+            picture = fixture / 'renders/cand_crossing_both_decal_cap'
+            with mock.patch.object(self.wrapper, 'ROOT', fixture), \
+                 mock.patch.object(self.wrapper, 'build', side_effect=StopBeforeRendering) as build:
+                with self.assertRaises(StopBeforeRendering):
+                    self.wrapper.main([
+                        'crossing', 'both_decal_cap', '--range', '4880-5839',
+                        '--out', 'renders/cand_crossing_both_decal_cap'])
+                build.assert_called_once_with('crossing', 'candidate', 'both_decal_cap')
+                build.reset_mock()
+                with self.assertRaisesRegex(ValueError, 'Use renders/cand_'):
+                    self.wrapper.main([
+                        'crossing', 'both_decal_cap', '--range', '4880-5839',
+                        '--out', 'renders/cand_crossing_both_decal'])
+                build.assert_not_called()
+            self.assertEqual(list((fixture / 'renders').iterdir()), [picture])
+            self.assertEqual(list(picture.iterdir()), [])
+
     def test_t1_held_camera_requires_explicit_candidate_option(self):
         self.assertEqual(self.wrapper.OPTIONS['t1'], 'current-words')
         renderer = mock.Mock()
@@ -466,18 +534,24 @@ class CandidateAdapterTests(unittest.TestCase):
         options = list({**recipe_options(), 'crossing': 'both'}.items())
         options.append(('t1', 'current-words-held'))
         options.append(('scroll', 'night-fire'))
+        options.append(('crossing', 'both_decal_cap'))
         ranges = recipe_literal('ranges')
         ranges['scroll'] = (0, 319)
         probes = dict(re.findall(r'`ld_candidate equal (\w+) (\d+)`',
                                  (ROOT / 'ADOPTION.md').read_text()))
         probes['scroll'] = '152'
-        self.assertEqual(len(options), 11)
+        self.assertEqual(len(options), 12)
         self.assertEqual(set(probes), {kind for kind, _ in options})
         for kind, option in options:
             with self.subTest(kind=kind, option=option):
                 path = ROOT / 'cloud/jobs' / f'cand_{kind}_{option}.json'
                 args = farm.parse_run_args([str(path), '--nodes', '3', '--dry-run'])
                 job = farm.Job(str(path), args)
+                if option == 'both_decal_cap':
+                    self.assertEqual(job.spec['branch'], 'claude/owner-night-20260929')
+                    self.assertEqual(job.spec['shape'], [804, 1920])
+                    self.assertEqual(job.spec['ship'], 'jpg')
+                    self.assertEqual(job.spec['name'], 'cand_crossing_both_decal_cap')
                 self.assertFalse(job.whole)
                 self.assertEqual(job.skipped_setup, [])
                 if kind == 'scroll':
@@ -490,8 +564,9 @@ class CandidateAdapterTests(unittest.TestCase):
                     tokens = shlex.split(command)
                     self.assertIn('cloud/cand_render.py', tokens)
                     setup_args.append(tokens[tokens.index('cloud/cand_render.py') + 1:])
+                probe = '5043' if option == 'both_decal_cap' else probes[kind]
                 self.assertEqual(setup_args, [[kind, '--prepare'],
-                                             [kind, '--equal', probes[kind], '--scale', '1']])
+                                             [kind, '--equal', probe, '--scale', '1']])
                 first, last = ranges[kind]
                 expected_frames = list(range(first, last + 1))
                 picture = f'renders/cand_{kind}_{option}'

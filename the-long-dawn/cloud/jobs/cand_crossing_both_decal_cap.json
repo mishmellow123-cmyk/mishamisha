@@ -1,0 +1,19 @@
+{
+  "name": "cand_crossing_both_decal_cap",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py crossing --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py crossing --equal 5043 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py crossing both_decal_cap --range 4880-5839 --out renders/cand_crossing_both_decal_cap"
+  ],
+  "out_dir": "renders/cand_crossing_both_decal_cap",
+  "frames": "4880-5839",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Review candidate only: preserve low_shoulders rock and snow_decal rope, opt into round_cap terrain for ridge row 3's unequal-width endpoint. Cover the full crossing because projection alone cannot bound the changed terrain's occlusion interval. Repeat original/default equality at native frame 5043 after the terrain kernel change. Candidate appearance and inert-region pixel equality still require farm evidence."
+}

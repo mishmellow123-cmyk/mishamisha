@@ -43,7 +43,7 @@ def ridge_row(a, b, wl=40.0, wr=40.0, seed=31, k=8.0, detail=0.30, slope=1.35, p
     """A knife-edge ridge segment from a=(x, y, z) to b=(x, y, z) (crest heights at the ends), flanks falling
     at `slope` at distance w (left / right of a->b), steepening with exponent p. Row type flag: col 12 = -1.
     Layout: 0 ax | 1 az | 2 ay | 3 bx | 4 bz | 5 by | 6 wl | 7 wr | 8 seed | 9 k | 10 detail | 11 slope
-    | 12 -1 | 13 reach."""
+    | 12 -1 | 13 reach | 16 continuous endpoint caps (opt-in; zero keeps original)."""
     r = np.zeros(NCR)
     r[:12] = [a[0], a[2], a[1], b[0], b[2], b[1], wl, wr, seed, k, detail, slope]
     r[12] = -1.0
@@ -227,8 +227,17 @@ def ridge(x, z, fp, CR, k, hcur):
     bf = 0.6 if CR[k, 14] <= 0.0 else CR[k, 14]
     ub = yc - slope * db * (db / w0) ** (p - 1.0) + bf * det * min(slope * db + 6.0, 90.0) + 4.0 \
         + (0.0 if CR[k, 14] <= 0.0 else 0.5 * CR[k, 9])
+    # RIDGE_CAP_BOUND: only an active cap may escape the original rejection.
+    # Its interpolated width needs the wider envelope; retain ub so a warped
+    # interior/zero-radius query below still returns the original sentinel.
     if ub < hcur - CR[k, 9]:
-        return -1e5
+        if CR[k, 16] <= 0.0 or CR[k, 6] == CR[k, 7]:
+            return -1e5
+        wb = max(CR[k, 6], CR[k, 7])
+        cap_ub = yc - slope * db * (db / wb) ** (p - 1.0) + bf * det * min(slope * db + 6.0, 90.0) + 4.0 \
+            + (0.0 if CR[k, 14] <= 0.0 else 0.5 * CR[k, 9])
+        if cap_ub < hcur - CR[k, 9]:
+            return -1e5
     # wandering crest: warp the query point
     ow = _lod(60.0, fp, 1.0, 4.0)
     wx = x + 9.0 * fbm2(x / 70.0 + 1.3, z / 70.0, ow, seed)
@@ -239,6 +248,18 @@ def ridge(x, z, fp, CR, k, hcur):
     ez = wz - (az + t * dz)
     d = math.sqrt(ex * ex + ez * ez)
     w = CR[k, 6] if (dx * ez - dz * ex) > 0.0 else CR[k, 7]
+    # RIDGE_CAP_WIDTH: outside a segment, a signed-side switch jumps at nonzero
+    # radius. At A5043 row 3 this jumps the ridge 0.156272 m / 0.151711 m near
+    # pixels (100.518, 784.924) / (200.523, 755.560); dash_terrain_seam.json
+    # measures the corresponding ground jumps as 0.016730 m / 0.009227 m.
+    # Interpolate only the endpoint caps; side/d reaches +/-1 where they join
+    # the original flanks. Keep the old arithmetic for interior/equal-width/
+    # zero-radius queries, and for every row whose col 16 remains zero.
+    if CR[k, 16] > 0.0 and (t == 0.0 or t == 1.0) and d > 0.0 and CR[k, 6] != CR[k, 7]:
+        side = (dx * ez - dz * ex) / math.sqrt(L2)
+        w = 0.5 * (CR[k, 6] + CR[k, 7]) + 0.5 * (CR[k, 6] - CR[k, 7]) * side / d
+    elif ub < hcur - CR[k, 9]:
+        return -1e5
     yc = CR[k, 2] + t * (CR[k, 5] - CR[k, 2])
     drop = slope * d * (d / w) ** (p - 1.0)
     h = yc - drop

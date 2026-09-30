@@ -171,6 +171,7 @@ class RenderHookTests(unittest.TestCase):
         with mock.patch.object(CC, 'load_renderer') as loader:
             for kwargs in ({'frame':4879}, {'frame':5840}, {'frame':5040.5},
                            {'frame':5040,'rope':'unknown'}, {'frame':5040,'rock':'missing'},
+                           {'frame':5040,'terrain':'unknown'},
                            {'frame':5040,'rock_modifier':lambda *a:None}):
                 with self.assertRaises(ValueError):
                     CC.render_cut(**kwargs)
@@ -182,6 +183,109 @@ class RenderHookTests(unittest.TestCase):
             with self.assertRaisesRegex(FileNotFoundError, 'regeneration'):
                 CC.load_renderer()
             importer.assert_not_called()
+
+
+class TerrainCapHookTests(unittest.TestCase):
+    """Table routing only; no renderer import, frame load or JIT."""
+
+    def renderer(self):
+        import numpy as np
+        base = np.arange(5 * 22, dtype=np.float64).reshape(5, 22)
+        base[3, 12], base[3, 16] = -1., 0.
+        rows = np.vstack([base, np.zeros((2, 22))])
+        world = SimpleNamespace(march=mock.Mock(), shade=mock.Mock(),
+                                cloud_glow=mock.Mock(), heights=mock.Mock())
+        return SimpleNamespace(np=np, CR0=base, CR=rows, WD=world,
+                               render=mock.Mock(), build_scene=mock.Mock(),
+                               draw_rope=mock.Mock(), render_figures=mock.Mock(),
+                               _PATH=object(), _KEEP={'accepted': object()})
+
+    def test_only_owned_flag_changes_without_mutating_source(self):
+        cr = self.renderer()
+        before = cr.CR.copy()
+        actual = CC.round_cap_rows(cr, cr.CR)
+        expected = before.copy()
+        expected[3, 16] = 1.
+        cr.np.testing.assert_array_equal(actual, expected)
+        cr.np.testing.assert_array_equal(cr.CR, before)
+        self.assertFalse(cr.np.shares_memory(actual, cr.CR))
+
+    def test_rejects_mismatched_or_already_modified_row(self):
+        cr = self.renderer()
+        for column in (0, 6, 12, 16):
+            rows = cr.CR.copy()
+            rows[3, column] += 1.
+            with self.subTest(column=column), self.assertRaisesRegex(ValueError, 'ridge 3'):
+                CC.round_cap_rows(cr, rows)
+        for rows in (cr.CR[:3], cr.CR[:, :16], cr.CR.ravel()):
+            with self.assertRaises(ValueError):
+                CC.round_cap_rows(cr, rows)
+
+    def test_all_draw_passes_compose_with_rope_and_rock_and_preserve_placement(self):
+        for rope in CC.ROPE_OPTIONS:
+            for rock in ('accepted', 'study'):
+                cr = self.renderer()
+                world = vars(cr.WD).copy()
+                old = {name: getattr(cr, name) for name in
+                       ('CR', 'CR0', '_PATH', '_KEEP', 'draw_rope', 'build_scene', 'render_figures')}
+                scene, cfg, replacement = object(), object(), object()
+                rest = tuple(object() for _ in range(4))
+                cr.build_scene.return_value = (scene, *rest)
+                modifier = mock.Mock(return_value=replacement) if rock != 'accepted' else None
+
+                def render(*args, **kwargs):
+                    for name, index in (('march', 1), ('shade', 3), ('cloud_glow', 3)):
+                        argv = [object() for _ in range(index + 3)]
+                        argv[index] = cr.CR
+                        value = getattr(cr.WD, name)(*argv)
+                        self.assertIs(value, world[name].return_value)
+                        forwarded = world[name].call_args.args
+                        for k, item in enumerate(argv):
+                            if k != index:
+                                self.assertIs(forwarded[k], item)
+                        expected = cr.CR.copy()
+                        expected[3, 16] = 1.
+                        cr.np.testing.assert_array_equal(forwarded[index], expected)
+                    self.assertIs(cr.WD.heights, world['heights'])
+                    result = cr.build_scene(1., cfg)
+                    self.assertIs(result[0], replacement if modifier else scene)
+                    self.assertEqual(result[1:], rest)
+                    if rope == 'snow_decal':
+                        fr = SimpleNamespace(zb=cr.np.ones((2, 2)))
+                        cr.render_figures(fr)
+                        old['render_figures'].assert_called_once_with(fr)
+                        with mock.patch.object(CC, 'draw_decal_rope') as decal:
+                            cr.draw_rope('rope-arguments')
+                            cr.np.testing.assert_array_equal(decal.call_args.args[1]['zt'], fr.zb)
+                    return scene
+
+                cr.render.side_effect = render
+                result = CC.render_cut(5043, renderer=cr, terrain='round_cap', rope=rope,
+                                       rock=rock, rock_modifier=modifier)
+                self.assertIs(result, scene)
+                for name, value in old.items():
+                    self.assertIs(getattr(cr, name), value)
+                for name, value in world.items():
+                    self.assertIs(getattr(cr.WD, name), value)
+                self.assertEqual(cr.CR[3, 16], 0.)
+
+    def test_world_hooks_restore_after_render_and_installation_failures(self):
+        for failure in ('render', 'installation', 'row'):
+            cr = self.renderer()
+            if failure == 'installation':
+                del cr.WD.cloud_glow
+            world = vars(cr.WD).copy()
+            old_rope, old_scene = cr.draw_rope, cr.build_scene
+            if failure == 'render':
+                cr.render.side_effect = RuntimeError('controlled failure')
+            elif failure == 'row':
+                cr.render.side_effect = lambda *a, **k: cr.WD.march(None, cr.CR[:3])
+            with self.assertRaises((RuntimeError, AttributeError, ValueError)):
+                CC.render_cut(5043, renderer=cr, terrain='round_cap', rope='snow_decal')
+            for name, value in world.items():
+                self.assertIs(getattr(cr.WD, name), value)
+            self.assertIs(cr.draw_rope, old_rope)
+            self.assertIs(cr.build_scene, old_scene)
 
 
 class RopeDecalTests(unittest.TestCase):

@@ -4,7 +4,7 @@ render_cut() uses absolute A frames. It returns the original linear HDR image;
 the caller applies crossing.PI.look.finish(..., **crossing.FINISH) once.
 Importing this module loads no renderer, NumPy, OpenCV, or Numba and sets no
 thread/cache options. Render calls belong in an isolated, single-render process:
-candidate hooks temporarily replace two globals of the original renderer.
+candidate hooks temporarily replace renderer functions and restore them on exit.
 
 The rope study changes geometry only. It retains the original lighting, width,
 opacity, segment-depth test and rasterizer. Snow clearance is verified at every
@@ -30,6 +30,7 @@ CUT_END = 5839
 BASELINE_COMMIT = '76aec6c60d59a72388fca44c88984f9817ecb8bc'
 BASELINE_SHA256 = '67c2ee812fd4f6e30436c7ec53dbcc1b21806ee70a0b18125d7045a348238ac3'
 ROPE_OPTIONS = ('accepted', 'snow_clearance', 'snow_decal')
+TERRAIN_OPTIONS = ('accepted', 'round_cap')
 _RENDER_LOCK = RLock()
 
 
@@ -148,10 +149,10 @@ def draw_clear_rope(renderer, img, zb, scam, waists, lights, md, mf, diagnostics
                                zz, wpx, c, alpha * 0.85)
 
 
-# snow_decal (owner night, 29 Sep): snow_clearance alone still rendered the slack rope on the snow as a row of dashes
-# (farm frames 5011-5113+: cand_crossing_both). The rope was clear of the sampled snow, but the original rasterizer
-# tests every pixel of a sub-segment against that sub-segment's MEAN depth with a 5 cm margin, so along a receding
-# rope the far half of each sub-segment, and every ripple of the displaced snow in front of it, cut it. Here each
+# snow_decal (owner night, 29 Sep): this study replaced the original rasterizer's sub-segment MEAN depth and 5 cm
+# margin with per-pixel depth and a terrain margin. Its rippled-depth unit test exercises the rope-cutting case.
+# The lower-left dashes in farm A5043 were subsequently traced to ridge 3's unequal-width endcap (round_cap_rows
+# below); they were initially attributed to the rope. Here each
 # pixel is tested at its own interpolated depth, and where the front surface is the terrain (the depth captured just
 # before the figures are drawn) the margin grows with distance, so the rope lies ON the snow as a line; where a
 # figure is in front the original 5 cm margin still hides it. Geometry, width, colour and opacity are snow_clearance's.
@@ -224,7 +225,35 @@ def load_renderer():
     return renderer
 
 
-def render_cut(frame, *, rope='accepted', rock='accepted', scale=0.5, ss=1.5,
+def round_cap_rows(renderer, rows):
+    """Copy the terrain table and opt in only the measured offending ridge.
+
+    A5043: CR0[3]'s endcap projects to (100.52, 784.92) and (200.52, 755.56).
+    Across 20 micrometres its unequal flank widths jump the combined ground by
+    0.016730 and 0.009227 m (dash_terrain_seam.json, scalar height/projection
+    probes). world.ridge column 16 joins those widths continuously on the cap.
+    Match the complete pinned row so another scene cannot silently opt in.
+    """
+    np = renderer.np
+    expected = renderer.CR0[3]
+    if (rows.ndim != 2 or len(rows) <= 3 or rows.shape[1] <= 16
+            or expected[12] != -1.0 or expected[16] != 0.0
+            or not np.array_equal(rows[3], expected)):
+        raise ValueError('round_cap requires the original crossing ridge 3')
+    result = rows.copy()
+    result[3, 16] = 1.0
+    return result
+
+
+def _round_cap_pass(renderer, original, table_index):
+    def call(*args):
+        args = list(args)
+        args[table_index] = round_cap_rows(renderer, args[table_index])
+        return original(*args)
+    return call
+
+
+def render_cut(frame, *, rope='accepted', rock='accepted', terrain='accepted', scale=0.5, ss=1.5,
                variant='main', trail=True, renderer=None, diagnostics=None,
                rock_modifier=None):
     """Return linear HDR at absolute A frame; options act independently.
@@ -233,11 +262,18 @@ def render_cut(frame, *, rope='accepted', rock='accepted', scale=0.5, ss=1.5,
     Until a rock study is supplied, non-accepted rock options fail. It receives
     the freshly built scene and must return the replacement scene. This function
     does not finish/write the image, reset caches, or adjust thread settings.
+
+    round_cap supplies a private terrain table to the march, shade (including
+    shadows), and cloud-glow passes. Camera, path, lights, and figure construction
+    keep the accepted terrain and caches; this repairs the drawn cap without
+    restaging the crossing. Rendered foot contact still needs farm review.
     """
     if isinstance(frame, bool) or int(frame) != frame or not CUT0 <= frame <= CUT_END:
         raise ValueError('absolute A frame must be an integer in 4880..5839')
     if rope not in ROPE_OPTIONS:
         raise ValueError('unknown rope option')
+    if terrain not in TERRAIN_OPTIONS:
+        raise ValueError('unknown terrain option')
     if rock != 'accepted' and rock_modifier is None:
         raise ValueError('rock candidate requires an explicit rock_modifier')
     if rock == 'accepted' and rock_modifier is not None:
@@ -245,11 +281,19 @@ def render_cut(frame, *, rope='accepted', rock='accepted', scale=0.5, ss=1.5,
     cr = load_renderer() if renderer is None else renderer
     kwargs = dict(scale=scale, ss=ss, variant=variant, trail=trail)
     with _RENDER_LOCK:
-        if rope == 'accepted' and rock == 'accepted':
+        if rope == 'accepted' and rock == 'accepted' and terrain == 'accepted':
             return cr.render(int(frame) - CUT0, **kwargs)
         original_rope, original_scene = cr.draw_rope, cr.build_scene
         original_figures = getattr(cr, 'render_figures', None)     # only the decal replaces it
+        terrain_hooks = []
         try:
+            if terrain == 'round_cap':
+                # Patch only draw passes. In particular, ground_many/heights
+                # must not change cached placement or move a camera between calls.
+                for name, index in (('march', 1), ('shade', 3), ('cloud_glow', 3)):
+                    original = getattr(cr.WD, name)
+                    terrain_hooks.append((name, original))
+                    setattr(cr.WD, name, _round_cap_pass(cr, original, index))
             if rope == 'snow_clearance':
                 def candidate_rope(*args):
                     return draw_clear_rope(cr, *args, diagnostics=diagnostics)
@@ -269,6 +313,8 @@ def render_cut(frame, *, rope='accepted', rock='accepted', scale=0.5, ss=1.5,
                 cr.build_scene = candidate_scene
             return cr.render(int(frame) - CUT0, **kwargs)
         finally:
+            for name, original in terrain_hooks:
+                setattr(cr.WD, name, original)
             cr.draw_rope, cr.build_scene = original_rope, original_scene
             if rope == 'snow_decal':
                 cr.render_figures = original_figures
