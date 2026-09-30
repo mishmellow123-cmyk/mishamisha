@@ -1,0 +1,51 @@
+{
+ "about": "A score pass 2 (AP2): what A18 THE CROSSING's delivered picture measures, for barmap_ap2.py. Frames are A cut frames. Every frame here was projected through the delivered candidate's own camera (music/src/measure_ap2_crossing.py); the set-off was also checked on the delivered frames 5100-5260, which reproduce the projected lantern path and show the terrain sliding as the set-off predicts but do not resolve its frame alone; the watch-fire passes are projection only. Full record and evidence images in the file named by measured_by.output; the depths quoted for the watch-fires in claude-owner-night/codex/ascore_claude_projection_probe.json (projection only).",
+ "measured_by": {
+  "tool": "music/src/measure_ap2_crossing.py",
+  "tool_sha256": "8d4de06e9b440e28a82995db38e5c5c89fee84ac37081259814577ebeded480c",
+  "crossing_py_sha256": "67c2ee812fd4f6e30436c7ec53dbcc1b21806ee70a0b18125d7045a348238ac3",
+  "frames": "renders/cand_crossing_both_decal (EDL A18, 'exact')",
+  "output": "claude-owner-night/codex/a18_setoff.json",
+  "output_sha256": "1aec94893a0478b08960f3b53909c978a462e9b33e4f33cbfa5f49901e37739a"
+ },
+ "new_sync": [
+  {
+   "id": "walk_setoff",
+   "frame": 5180,
+   "what": "the line sets off, front first: the front bearer's arc along its path is constant through the image at 5180 and rises from that instant (speed 0, then linear); first displaced image 5181, a foot 1 px (full size) at 5185, the body 1 px at 5190",
+   "evidence": "a18_setoff.json summary.set_off_frame / first_displaced_frame / first_visible_full_size_px; frames: after 5180 every tracked terrain patch slides past the line as the set-off predicts (at 5260, zeroed at 5180, on the five patches whose trackers held, phase-correlation peak >= 0.5 in every frame, a standing line misses the tracked terrain by 20.2-37.9 half-size px and the set-off by 1.0-16.5; on all nine, by 9.0-37.9 and 0.3-16.5); the frames alone do not resolve the onset to a frame (per-patch fits 5174.5-5207.75)"
+  },
+  {
+   "id": "walk_full",
+   "frame": 5276,
+   "what": "the front of the line reaches walking pace (0.45 m/s): its speed has risen linearly from 0 at 5180 (half pace 5228, 0.9 at 5267)",
+   "evidence": "a18_setoff.json summary.acceleration.front (96 frames to full pace); the rest of the line follows front first: of its 42 figures the first moves at 5184, half by 5330 and the last at 5367; half reach 0.9 of walking pace by 5414 and the last at 5549 (the line's mean speed is 0.833 of pace at 5400 and 1.009 at 5440: its groups breathe +-0.3 m, so single figures run above and below pace) (summary.acceleration.whole_line)"
+  }
+ ],
+ "kept": [
+  {
+   "id": "watchfire_1",
+   "frame": 5040,
+   "measured": "the line does NOT pass watch-fire 1 at 5040: it has stood beside it since 4880 and the lantern is 638 px (full size) from the fire there; the front bearer crosses the fire's screen x at 5304.4 and the lantern at 5368.4 (projected), passing just BEHIND it: 0.45 m (front bearer, 5304) and 0.47 m (lantern, 5368) farther from the camera than the fire (camera-space depth)",
+   "why_kept": "pass 1's harmony change and violas' CALL at 5040 belong to the standing stretch, which the brief keeps as pass 1 plays it; the real pass (5304-5368) falls after watch-fire 2's F (5280) and ends inside the narrowest stretch (from 5360), so pass 1's harmonic order cannot follow it; A's effects are anchored on this frame (A.watchfire1) and AP2 plays A's effects. Relabelled, not moved."
+  },
+  {
+   "id": "watchfire_2",
+   "frame": 5280,
+   "measured": "fire 2 sits within 15 px (full size) of the lantern heart over 5242-5358; 11.53 px at 5280; closest 10.71 px at 5309",
+   "why_kept": "confirmed: the lantern passes in front of it (the fire is 69 m farther from the camera at 5280 and 5309)"
+  },
+  {
+   "id": "watchfire_3",
+   "frame": 5520,
+   "measured": "within 15 px over 5484-5616; 11.74 px at 5520; closest 7.05 px at 5559",
+   "why_kept": "confirmed"
+  },
+  {
+   "id": "watchfire_4",
+   "frame": 5760,
+   "measured": "within 15 px over 5207-5839; 5.78 px at 5760; closest 5.17 px at 5736",
+   "why_kept": "confirmed"
+  }
+ ]
+}

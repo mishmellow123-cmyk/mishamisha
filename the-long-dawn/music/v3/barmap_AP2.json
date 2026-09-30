@@ -1,0 +1,1022 @@
+{
+ "cut": "AP2",
+ "title": "EVERY STEP CLOSER, score pass 2 on the delivered crossing (the walk waits for the set-off)",
+ "bpm": 72,
+ "bars": 81,
+ "fps": 24,
+ "frames": 6480,
+ "sections": [
+  {
+   "id": "A1",
+   "name": "BLACK",
+   "bar_start": 1,
+   "bar_end": 1,
+   "t0": 0.0,
+   "t1": 3.333,
+   "f0": 0,
+   "f1": 80
+  },
+  {
+   "id": "A2",
+   "name": "FALSE DAWN",
+   "bar_start": 2,
+   "bar_end": 7,
+   "t0": 3.333,
+   "t1": 23.333,
+   "f0": 80,
+   "f1": 560
+  },
+  {
+   "id": "A3",
+   "name": "INTO THE LIGHT \u00b7 GLYPHS",
+   "bar_start": 8,
+   "bar_end": 12,
+   "t0": 23.333,
+   "t1": 40.0,
+   "f0": 560,
+   "f1": 960
+  },
+  {
+   "id": "A4",
+   "name": "THE POINT",
+   "bar_start": 13,
+   "bar_end": 13,
+   "t0": 40.0,
+   "t1": 43.333,
+   "f0": 960,
+   "f1": 1040
+  },
+  {
+   "id": "A5",
+   "name": "IGNITION \u00b7 THE PROMISE",
+   "bar_start": 14,
+   "bar_end": 18,
+   "t0": 43.333,
+   "t1": 60.0,
+   "f0": 1040,
+   "f1": 1440
+  },
+  {
+   "id": "A6",
+   "name": "THE TOWERS \u00b7 TWO GIANTS",
+   "bar_start": 19,
+   "bar_end": 23,
+   "t0": 60.0,
+   "t1": 76.667,
+   "f0": 1440,
+   "f1": 1840
+  },
+  {
+   "id": "A7",
+   "name": "THE EDGE",
+   "bar_start": 24,
+   "bar_end": 30,
+   "t0": 76.667,
+   "t1": 100.0,
+   "f0": 1840,
+   "f1": 2400
+  },
+  {
+   "id": "A8",
+   "name": "THE BRINK \u00b7 OVER THE RIM",
+   "bar_start": 31,
+   "bar_end": 33,
+   "t0": 100.0,
+   "t1": 110.0,
+   "f0": 2400,
+   "f1": 2640
+  },
+  {
+   "id": "A9",
+   "name": "THE DEAD VALLEY",
+   "bar_start": 34,
+   "bar_end": 35,
+   "t0": 110.0,
+   "t1": 116.667,
+   "f0": 2640,
+   "f1": 2800
+  },
+  {
+   "id": "A10",
+   "name": "BLACK \u00b7 THE EMBER",
+   "bar_start": 36,
+   "bar_end": 39,
+   "t0": 116.667,
+   "t1": 130.0,
+   "f0": 2800,
+   "f1": 3120
+  },
+  {
+   "id": "A11",
+   "name": "DARK ADAPTATION",
+   "bar_start": 40,
+   "bar_end": 42,
+   "t0": 130.0,
+   "t1": 140.0,
+   "f0": 3120,
+   "f1": 3360
+  },
+  {
+   "id": "A12",
+   "name": "THE FIRST FIRE",
+   "bar_start": 43,
+   "bar_end": 45,
+   "t0": 140.0,
+   "t1": 150.0,
+   "f0": 3360,
+   "f1": 3600
+  },
+  {
+   "id": "A13",
+   "name": "EVERY RIDGE \u00b7 FAR PLACES",
+   "bar_start": 46,
+   "bar_end": 49,
+   "t0": 150.0,
+   "t1": 163.333,
+   "f0": 3600,
+   "f1": 3920
+  },
+  {
+   "id": "A14",
+   "name": "THE BEACON RUN",
+   "bar_start": 50,
+   "bar_end": 53,
+   "t0": 163.333,
+   "t1": 176.667,
+   "f0": 3920,
+   "f1": 4240
+  },
+  {
+   "id": "A15",
+   "name": "THE WATCHERS",
+   "bar_start": 54,
+   "bar_end": 55,
+   "t0": 176.667,
+   "t1": 183.333,
+   "f0": 4240,
+   "f1": 4400
+  },
+  {
+   "id": "A16",
+   "name": "TOWERS IN THE LIGHT",
+   "bar_start": 56,
+   "bar_end": 59,
+   "t0": 183.333,
+   "t1": 196.667,
+   "f0": 4400,
+   "f1": 4720
+  },
+  {
+   "id": "A17",
+   "name": "THE FIRE, SEEN",
+   "bar_start": 60,
+   "bar_end": 61,
+   "t0": 196.667,
+   "t1": 203.333,
+   "f0": 4720,
+   "f1": 4880
+  },
+  {
+   "id": "A18",
+   "name": "THE CROSSING",
+   "bar_start": 62,
+   "bar_end": 73,
+   "t0": 203.333,
+   "t1": 243.333,
+   "f0": 4880,
+   "f1": 5840
+  },
+  {
+   "id": "A19",
+   "name": "THE BLUE HOUR",
+   "bar_start": 74,
+   "bar_end": 78,
+   "t0": 243.333,
+   "t1": 260.0,
+   "f0": 5840,
+   "f1": 6240
+  },
+  {
+   "id": "A20",
+   "name": "TITLE",
+   "bar_start": 79,
+   "bar_end": 81,
+   "t0": 260.0,
+   "t1": 270.0,
+   "f0": 6240,
+   "f1": 6480
+  }
+ ],
+ "sync": [
+  {
+   "id": "wind",
+   "bar": 1,
+   "beat": 1.0,
+   "t": 0.0,
+   "f": 0,
+   "what": "wind rises from silence; sub drone on D",
+   "source": "pass 1"
+  },
+  {
+   "id": "false_dawn",
+   "bar": 2,
+   "beat": 1.0,
+   "t": 3.333,
+   "f": 80,
+   "what": "FALSE DAWN fades up out of the black",
+   "source": "pass 1"
+  },
+  {
+   "id": "glow",
+   "bar": 3,
+   "beat": 1.0,
+   "t": 6.667,
+   "f": 160,
+   "what": "the cold glow first shows under the far horizon; glass tone enters, pp",
+   "source": "pass 1"
+  },
+  {
+   "id": "stars_out",
+   "bar": 5,
+   "beat": 1.0,
+   "t": 13.333,
+   "f": 320,
+   "what": "the stars nearest the glow begin to go out",
+   "source": "pass 1"
+  },
+  {
+   "id": "white",
+   "bar": 8,
+   "beat": 1.0,
+   "t": 23.333,
+   "f": 560,
+   "what": "the push enters the glow; the frame whitens",
+   "source": "pass 1"
+  },
+  {
+   "id": "letters",
+   "bar": 9,
+   "beat": 1.0,
+   "t": 26.667,
+   "f": 640,
+   "what": "the first letters appear as the white recedes to black",
+   "source": "pass 1"
+  },
+  {
+   "id": "spiral",
+   "bar": 12,
+   "beat": 1.0,
+   "t": 36.667,
+   "f": 880,
+   "what": "the spiral tightens; the kindling cue accelerates",
+   "source": "pass 1"
+  },
+  {
+   "id": "point",
+   "bar": 13,
+   "beat": 1.0,
+   "t": 40.0,
+   "f": 960,
+   "what": "the spiral collapses to a blinding point",
+   "source": "pass 1"
+  },
+  {
+   "id": "breath_ign",
+   "bar": 13,
+   "beat": 4.0,
+   "t": 42.5,
+   "f": 1020,
+   "what": "one beat of breath (silence) before the ignition",
+   "source": "pass 1"
+  },
+  {
+   "id": "ignition",
+   "bar": 14,
+   "beat": 1.0,
+   "t": 43.333,
+   "f": 1040,
+   "what": "IGNITION: the Lydian bloom; no musical stroke",
+   "source": "pass 1"
+  },
+  {
+   "id": "promise",
+   "bar": 17,
+   "beat": 1.0,
+   "t": 53.333,
+   "f": 1280,
+   "what": "THE PROMISE: the light rolls out; ember forms to the horizon",
+   "source": "pass 1"
+  },
+  {
+   "id": "promise_cut",
+   "bar": 18,
+   "beat": 3.0,
+   "t": 58.333,
+   "f": 1400,
+   "what": "the warm string line is cut off",
+   "source": "pass 1"
+  },
+  {
+   "id": "promise_gone",
+   "bar": 18,
+   "beat": 4.0,
+   "t": 59.167,
+   "f": 1420,
+   "what": "the promise's forms are gone",
+   "source": "pass 1"
+  },
+  {
+   "id": "towers",
+   "bar": 19,
+   "beat": 1.0,
+   "t": 60.0,
+   "f": 1440,
+   "what": "the forge-towers rise; A7(b9); low drums prepare",
+   "source": "pass 1"
+  },
+  {
+   "id": "giants",
+   "bar": 22,
+   "beat": 3.5,
+   "t": 72.083,
+   "f": 1730,
+   "what": "the two giants begin to grow, opposite across the fire",
+   "source": "pass 1"
+  },
+  {
+   "id": "behind_giant",
+   "bar": 23,
+   "beat": 1.0,
+   "t": 73.333,
+   "f": 1760,
+   "what": "the camera slips behind one giant",
+   "source": "pass 1"
+  },
+  {
+   "id": "breath_race",
+   "bar": 23,
+   "beat": 4.75,
+   "t": 76.458,
+   "f": 1835,
+   "what": "200 ms breath before the race",
+   "source": "pass 1"
+  },
+  {
+   "id": "edge",
+   "bar": 24,
+   "beat": 1.0,
+   "t": 76.667,
+   "f": 1840,
+   "what": "THE EDGE: taiko on every beat (quarters); first surge, first gilding",
+   "source": "pass 1"
+  },
+  {
+   "id": "eighths",
+   "bar": 26,
+   "beat": 1.0,
+   "t": 83.333,
+   "f": 2000,
+   "what": "the rhythm doubles to eighths; the rim begins to crumble",
+   "source": "pass 1"
+  },
+  {
+   "id": "sixteenths",
+   "bar": 28,
+   "beat": 1.0,
+   "t": 90.0,
+   "f": 2160,
+   "what": "sixteenths; molten gold runs (optional KEEPER insert 2160-2240)",
+   "source": "pass 1"
+  },
+  {
+   "id": "roll",
+   "bar": 30,
+   "beat": 1.0,
+   "t": 96.667,
+   "f": 2320,
+   "what": "the roll (never 32nds)",
+   "source": "pass 1"
+  },
+  {
+   "id": "vortex",
+   "bar": 31,
+   "beat": 1.0,
+   "t": 100.0,
+   "f": 2400,
+   "what": "THE BRINK: the vortex; storm; the Shepard rise begins",
+   "source": "pass 1"
+  },
+  {
+   "id": "rim_gives",
+   "bar": 31,
+   "beat": 3.0,
+   "t": 101.667,
+   "f": 2440,
+   "what": "the rim gives way under the gilded towers",
+   "source": "pass 1"
+  },
+  {
+   "id": "crown_falls",
+   "bar": 32,
+   "beat": 1.0,
+   "t": 103.333,
+   "f": 2480,
+   "what": "a gilded tower's crown breaks off and falls (never a giant's)",
+   "source": "pass 1"
+  },
+  {
+   "id": "over_rim",
+   "bar": 32,
+   "beat": 3.0,
+   "t": 105.0,
+   "f": 2520,
+   "what": "the camera tips over the rim and falls toward the fire",
+   "source": "pass 1"
+  },
+  {
+   "id": "loudest",
+   "bar": 33,
+   "beat": 1.0,
+   "t": 106.667,
+   "f": 2560,
+   "what": "A's loudest moment: brass clusters",
+   "source": "pass 1"
+  },
+  {
+   "id": "suck",
+   "bar": 33,
+   "beat": 3.0,
+   "t": 108.333,
+   "f": 2600,
+   "what": "the suck",
+   "source": "pass 1"
+  },
+  {
+   "id": "white_impact",
+   "bar": 34,
+   "beat": 1.0,
+   "t": 110.0,
+   "f": 2640,
+   "what": "IMPACT: the frame is white",
+   "source": "pass 1"
+  },
+  {
+   "id": "dead_valley",
+   "bar": 34,
+   "beat": 2.0,
+   "t": 110.833,
+   "f": 2660,
+   "what": "the grey ember valley resolves out of the white",
+   "source": "pass 1"
+  },
+  {
+   "id": "silence",
+   "bar": 36,
+   "beat": 1.0,
+   "t": 116.667,
+   "f": 2800,
+   "what": "black: two seconds of true silence (to 2848)",
+   "source": "pass 1"
+  },
+  {
+   "id": "stars",
+   "bar": 40,
+   "beat": 1.0,
+   "t": 130.0,
+   "f": 3120,
+   "what": "the stars begin to return",
+   "source": "pass 1"
+  },
+  {
+   "id": "milky_way",
+   "bar": 42,
+   "beat": 1.0,
+   "t": 136.667,
+   "f": 3280,
+   "what": "the Milky Way is back",
+   "source": "pass 1"
+  },
+  {
+   "id": "strike1",
+   "bar": 43,
+   "beat": 1.0,
+   "t": 140.0,
+   "f": 3360,
+   "what": "flint strike 1 (H1 master +0)",
+   "source": "pass 1"
+  },
+  {
+   "id": "strike2",
+   "bar": 43,
+   "beat": 2.45,
+   "t": 141.208,
+   "f": 3389,
+   "what": "flint strike 2 (+29)",
+   "source": "pass 1"
+  },
+  {
+   "id": "strike3",
+   "bar": 43,
+   "beat": 3.9,
+   "t": 142.417,
+   "f": 3418,
+   "what": "flint strike 3: the tinder takes the spark (+58)",
+   "source": "pass 1"
+  },
+  {
+   "id": "blow",
+   "bar": 44,
+   "beat": 1.2,
+   "t": 143.5,
+   "f": 3444,
+   "what": "the long blow (+84 to +180)",
+   "source": "pass 1"
+  },
+  {
+   "id": "catch",
+   "bar": 45,
+   "beat": 2.8,
+   "t": 148.167,
+   "f": 3556,
+   "what": "the kindling catches (+196)",
+   "source": "pass 1"
+  },
+  {
+   "id": "roar",
+   "bar": 46,
+   "beat": 1.0,
+   "t": 150.0,
+   "f": 3600,
+   "what": "the ROAR (+240); pull-back; the watch tone starts; the call in the violas",
+   "source": "pass 1"
+  },
+  {
+   "id": "ridges",
+   "bar": 46,
+   "beat": 1.5,
+   "t": 150.417,
+   "f": 3610,
+   "what": "fires catch on every ridge in the same breath",
+   "source": "pass 1"
+  },
+  {
+   "id": "karst",
+   "bar": 48,
+   "beat": 3.0,
+   "t": 158.333,
+   "f": 3800,
+   "what": "cut on her look: KARST",
+   "source": "pass 1"
+  },
+  {
+   "id": "karst_flare",
+   "bar": 48,
+   "beat": 3.75,
+   "t": 158.958,
+   "f": 3815,
+   "what": "the karst beacon flares; the call on a horn",
+   "source": "pass 1"
+  },
+  {
+   "id": "desert",
+   "bar": 49,
+   "beat": 2.0,
+   "t": 160.833,
+   "f": 3860,
+   "what": "cut: DESERT",
+   "source": "pass 1"
+  },
+  {
+   "id": "desert_fire",
+   "bar": 49,
+   "beat": 3.0,
+   "t": 161.667,
+   "f": 3880,
+   "what": "the robed figure's stone beacon catches; the call in low strings",
+   "source": "pass 1"
+  },
+  {
+   "id": "run",
+   "bar": 50,
+   "beat": 1.0,
+   "t": 163.333,
+   "f": 3920,
+   "what": "THE BEACON RUN; D pedal",
+   "source": "pass 1"
+  },
+  {
+   "id": "run_1",
+   "bar": 50,
+   "beat": 3.0,
+   "t": 165.0,
+   "f": 3960,
+   "what": "run fire 1 (chord change)",
+   "source": "pass 1"
+  },
+  {
+   "id": "run_2",
+   "bar": 51,
+   "beat": 1.0,
+   "t": 166.667,
+   "f": 4000,
+   "what": "run fire 2; the ANSWER heard for the first time",
+   "source": "pass 1"
+  },
+  {
+   "id": "run_3",
+   "bar": 51,
+   "beat": 3.0,
+   "t": 168.333,
+   "f": 4040,
+   "what": "run fire 3",
+   "source": "pass 1"
+  },
+  {
+   "id": "run_4",
+   "bar": 52,
+   "beat": 1.0,
+   "t": 170.0,
+   "f": 4080,
+   "what": "run fire 4",
+   "source": "pass 1"
+  },
+  {
+   "id": "run_5",
+   "bar": 52,
+   "beat": 3.0,
+   "t": 171.667,
+   "f": 4120,
+   "what": "run fire 5",
+   "source": "pass 1"
+  },
+  {
+   "id": "run_6",
+   "bar": 53,
+   "beat": 1.0,
+   "t": 173.333,
+   "f": 4160,
+   "what": "run fire 6",
+   "source": "pass 1"
+  },
+  {
+   "id": "run_7",
+   "bar": 53,
+   "beat": 3.0,
+   "t": 175.0,
+   "f": 4200,
+   "what": "run fire 7; the camera settles behind it",
+   "source": "pass 1"
+  },
+  {
+   "id": "watchers",
+   "bar": 54,
+   "beat": 1.0,
+   "t": 176.667,
+   "f": 4240,
+   "what": "THE WATCHERS: the corrupted call, softened, answered by the call",
+   "source": "pass 1"
+  },
+  {
+   "id": "backs_lit",
+   "bar": 56,
+   "beat": 1.0,
+   "t": 183.333,
+   "f": 4400,
+   "what": "TOWERS IN THE LIGHT: the towers' backs lit warm by the far fires",
+   "source": "pass 1"
+  },
+  {
+   "id": "surges_stop",
+   "bar": 56,
+   "beat": 3.0,
+   "t": 185.0,
+   "f": 4440,
+   "what": "the surges stop",
+   "source": "pass 1"
+  },
+  {
+   "id": "giants_open",
+   "bar": 57,
+   "beat": 1.0,
+   "t": 186.667,
+   "f": 4480,
+   "what": "the two giants' shutters open toward each other; the tritone heals into the fifth",
+   "source": "pass 1"
+  },
+  {
+   "id": "others_open",
+   "bar": 58,
+   "beat": 1.0,
+   "t": 190.0,
+   "f": 4560,
+   "what": "the smaller towers open, one by one, on the beat",
+   "source": "pass 1"
+  },
+  {
+   "id": "cycle_locks",
+   "bar": 59,
+   "beat": 1.0,
+   "t": 193.333,
+   "f": 4640,
+   "what": "the thinking cycle locks to the bar in quarter notes",
+   "source": "pass 1"
+  },
+  {
+   "id": "rim_holds",
+   "bar": 59,
+   "beat": 3.0,
+   "t": 195.0,
+   "f": 4680,
+   "what": "the gilding has cooled; the rim holds",
+   "source": "pass 1"
+  },
+  {
+   "id": "fire_seen",
+   "bar": 60,
+   "beat": 1.0,
+   "t": 196.667,
+   "f": 4720,
+   "what": "THE FIRE, SEEN: the camera walks down",
+   "source": "pass 1"
+  },
+  {
+   "id": "heart",
+   "bar": 61,
+   "beat": 1.0,
+   "t": 200.0,
+   "f": 4800,
+   "what": "the fire gathers into one small heart",
+   "source": "pass 1"
+  },
+  {
+   "id": "lantern",
+   "bar": 62,
+   "beat": 1.0,
+   "t": 203.333,
+   "f": 4880,
+   "what": "match cut to the lantern: THE CROSSING; the line stands at the first watch-fire (the walk waits for walk_setoff)",
+   "source": "pass 1",
+   "was_what": "match cut to the lantern: THE CROSSING; the walking ostinato"
+  },
+  {
+   "id": "draw_back",
+   "bar": 63,
+   "beat": 1.0,
+   "t": 206.667,
+   "f": 4960,
+   "what": "the camera draws back to the ridge and the roped line",
+   "source": "pass 1"
+  },
+  {
+   "id": "watchfire_1",
+   "bar": 64,
+   "beat": 1.0,
+   "t": 210.0,
+   "f": 5040,
+   "what": "the line STANDS at watch-fire 1 (it has since 4880; the bearers pass just behind it only after setting off: front bearer 5304, lantern 5368, measured): harmony change, the violas' CALL",
+   "source": "pass 1",
+   "was_what": "the line passes watch-fire 1: harmony change",
+   "measured": "the line does NOT pass watch-fire 1 at 5040: it has stood beside it since 4880 and the lantern is 638 px (full size) from the fire there; the front bearer crosses the fire's screen x at 5304.4 and the lantern at 5368.4 (projected), passing just BEHIND it: 0.45 m (front bearer, 5304) and 0.47 m (lantern, 5368) farther from the camera than the fire (camera-space depth)",
+   "why_kept": "pass 1's harmony change and violas' CALL at 5040 belong to the standing stretch, which the brief keeps as pass 1 plays it; the real pass (5304-5368) falls after watch-fire 2's F (5280) and ends inside the narrowest stretch (from 5360), so pass 1's harmonic order cannot follow it; A's effects are anchored on this frame (A.watchfire1) and AP2 plays A's effects. Relabelled, not moved."
+  },
+  {
+   "id": "walk_setoff",
+   "bar": 65,
+   "beat": 4.0,
+   "t": 215.833,
+   "f": 5180,
+   "what": "the line sets off, front first: the front bearer's arc along its path is constant through the image at 5180 and rises from that instant (speed 0, then linear); first displaced image 5181, a foot 1 px (full size) at 5185, the body 1 px at 5190 (measured)",
+   "source": "measured",
+   "measured_ref": "events_AP2_measured.json:new_sync.walk_setoff"
+  },
+  {
+   "id": "sky_wheels",
+   "bar": 66,
+   "beat": 1.0,
+   "t": 216.667,
+   "f": 5200,
+   "what": "the sky begins to wheel",
+   "source": "pass 1"
+  },
+  {
+   "id": "walk_full",
+   "bar": 66,
+   "beat": 4.8,
+   "t": 219.833,
+   "f": 5276,
+   "what": "the front of the line reaches walking pace (0.45 m/s): its speed has risen linearly from 0 at 5180 (half pace 5228, 0.9 at 5267) (measured)",
+   "source": "measured",
+   "measured_ref": "events_AP2_measured.json:new_sync.walk_full"
+  },
+  {
+   "id": "watchfire_2",
+   "bar": 67,
+   "beat": 1.0,
+   "t": 220.0,
+   "f": 5280,
+   "what": "watch-fire 2: harmony change",
+   "source": "pass 1",
+   "measured": "fire 2 sits within 15 px (full size) of the lantern heart over 5242-5358; 11.53 px at 5280; closest 10.71 px at 5309",
+   "why_kept": "confirmed: the lantern passes in front of it (the fire is 69 m farther from the camera at 5280 and 5309)"
+  },
+  {
+   "id": "narrowest",
+   "bar": 68,
+   "beat": 1.0,
+   "t": 223.333,
+   "f": 5360,
+   "what": "the narrowest stretch: one viola and the wind (to 5520)",
+   "source": "pass 1"
+  },
+  {
+   "id": "watchfire_3",
+   "bar": 70,
+   "beat": 1.0,
+   "t": 230.0,
+   "f": 5520,
+   "what": "watch-fire 3: harmony change; the red under the cloud begins to go out",
+   "source": "pass 1",
+   "measured": "within 15 px over 5484-5616; 11.74 px at 5520; closest 7.05 px at 5559",
+   "why_kept": "confirmed"
+  },
+  {
+   "id": "watchfire_4",
+   "bar": 73,
+   "beat": 1.0,
+   "t": 240.0,
+   "f": 5760,
+   "what": "watch-fire 4: harmony change",
+   "source": "pass 1",
+   "measured": "within 15 px over 5207-5839; 5.78 px at 5760; closest 5.17 px at 5736",
+   "why_kept": "confirmed"
+  },
+  {
+   "id": "breath_dawn",
+   "bar": 73,
+   "beat": 4.65,
+   "t": 243.042,
+   "f": 5833,
+   "what": "275 ms breath",
+   "source": "pass 1"
+  },
+  {
+   "id": "set_down",
+   "bar": 74,
+   "beat": 1.0,
+   "t": 243.333,
+   "f": 5840,
+   "what": "THE BLUE HOUR: the lantern set down among the watch-fires; bloom on D add9",
+   "source": "pass 1"
+  },
+  {
+   "id": "rose",
+   "bar": 75,
+   "beat": 1.0,
+   "t": 246.667,
+   "f": 5920,
+   "what": "the east begins to pale to rose",
+   "source": "pass 1"
+  },
+  {
+   "id": "valley",
+   "bar": 76,
+   "beat": 1.0,
+   "t": 250.0,
+   "f": 6000,
+   "what": "the camera drifts to the edge: the valley under thinning cloud",
+   "source": "pass 1"
+  },
+  {
+   "id": "cadence",
+   "bar": 78,
+   "beat": 1.0,
+   "t": 256.667,
+   "f": 6160,
+   "what": "the first real cadence, into D major",
+   "source": "pass 1"
+  },
+  {
+   "id": "title",
+   "bar": 79,
+   "beat": 1.0,
+   "t": 260.0,
+   "f": 6240,
+   "what": "TITLE",
+   "source": "pass 1"
+  },
+  {
+   "id": "end_fade",
+   "bar": 81,
+   "beat": 3.8,
+   "t": 269.0,
+   "f": 6456,
+   "what": "the last fade to black (to 6480)",
+   "source": "pass 1"
+  }
+ ],
+ "text": [
+  {
+   "id": "T1",
+   "line": "At first it looked like morning.",
+   "f_in": 200,
+   "f_out": 320
+  },
+  {
+   "id": "T2",
+   "line": "We fed it everything we had ever written.",
+   "f_in": 700,
+   "f_out": 840
+  },
+  {
+   "id": "T4",
+   "line": "It could show us anything, except itself.",
+   "f_in": 1140,
+   "f_out": 1270
+  },
+  {
+   "id": "T5",
+   "line": "Whoever held it first, they said, would hold the world.",
+   "f_in": 1460,
+   "f_out": 1610
+  },
+  {
+   "id": "T6a",
+   "line": "First the forges raced for it.",
+   "f_in": 1640,
+   "f_out": 1800
+  },
+  {
+   "id": "T6b",
+   "line": "Then the kingdoms.",
+   "f_in": 1720,
+   "f_out": 1800
+  },
+  {
+   "id": "T7",
+   "line": "Every step closer paid.",
+   "f_in": 1848,
+   "f_out": 1944
+  },
+  {
+   "id": "T8",
+   "line": "No one dared to be second.",
+   "f_in": 1960,
+   "f_out": 2060
+  },
+  {
+   "id": "T9",
+   "line": "There would have been no morning after it.",
+   "f_in": 2670,
+   "f_out": 2790
+  },
+  {
+   "id": "T10a",
+   "line": "Many who raced said it should slow.",
+   "f_in": 2880,
+   "f_out": 3060
+  },
+  {
+   "id": "T10b",
+   "line": "None would slow alone.",
+   "f_in": 2950,
+   "f_out": 3060
+  },
+  {
+   "id": "T11",
+   "line": "So the rest of us lit fires, to see by.",
+   "f_in": 3210,
+   "f_out": 3340
+  },
+  {
+   "id": "T13",
+   "line": "It took longer than anyone wanted.",
+   "f_in": 5200,
+   "f_out": 5320
+  },
+  {
+   "id": "T14",
+   "line": "No one got there first.",
+   "f_in": 6080,
+   "f_out": 6200
+  },
+  {
+   "id": "title",
+   "line": "THE LONG DAWN",
+   "f_in": 6260,
+   "f_out": 6440
+  }
+ ],
+ "conventions": "24 fps, 72 BPM, 4/4: beat = 20 frames, bar = 80 frames. Frames count from 0 on this cut's own timeline. Sections are half-open [f0, f1): f1 is the next section's f0; t = f / 24. bar and beat are 1-based; a fractional beat is a frame between beats (beat = 1 + (f mod 80) / 20). Text f_in is the first frame of the fade-in or write-on, f_out the first frame after the fade-out. Generated from the same source as BIBLE_V3.md '# REVISION 1 \u00b7 LOCKED BEAT SHEETS'; change both or neither. | AP2: barmap_A plus the measured entries of events_AP2_measured.json (music/src/barmap_ap2.py); no entry of A is moved (A's effects are anchored on them); each entry's `source` says measured or pass 1.",
+ "measured_table": {
+  "file": "music/v3/events_AP2_measured.json",
+  "sha256": "9d91bce8e45f3d8d3c41e8f914ddfbe99c34255174ab9c05528ad6c54a116de1",
+  "measured_by": {
+   "tool": "music/src/measure_ap2_crossing.py",
+   "tool_sha256": "8d4de06e9b440e28a82995db38e5c5c89fee84ac37081259814577ebeded480c",
+   "crossing_py_sha256": "67c2ee812fd4f6e30436c7ec53dbcc1b21806ee70a0b18125d7045a348238ac3",
+   "frames": "renders/cand_crossing_both_decal (EDL A18, 'exact')",
+   "output": "claude-owner-night/codex/a18_setoff.json",
+   "output_sha256": "1aec94893a0478b08960f3b53909c978a462e9b33e4f33cbfa5f49901e37739a"
+  }
+ }
+}

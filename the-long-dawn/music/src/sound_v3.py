@@ -234,6 +234,11 @@ _SRC_L = {}
 _SRC_L_PATH = os.path.join(LIB, "src_loudness.json")
 
 
+# ADDITIVE (AP2, 29 Sep): a cut whose recipes set CACHE_READ_ONLY computes a cache miss in memory and never writes
+# the shared caches in LIB (src_loudness.json, ref_levels_v2.json); every other cut caches as before
+_CACHE_READ_ONLY = False
+
+
 def src_loudness(ref, a, b):
     """integrated loudness of a source's usable range (cached): beds stitch sources at one common level"""
     global _SRC_L
@@ -245,7 +250,10 @@ def src_loudness(ref, a, b):
     k = f"{ref}:{a:.2f}:{b:.2f}"
     if k not in _SRC_L:
         _SRC_L[k] = loud_int(load(ref, a, b))
-        json.dump(_SRC_L, open(_SRC_L_PATH, "w"))
+        if _CACHE_READ_ONLY:
+            print(f"  src loudness {k}: computed, not cached (read-only caches)")
+        else:
+            json.dump(_SRC_L, open(_SRC_L_PATH, "w"))
     return _SRC_L[k]
 
 
@@ -399,22 +407,27 @@ def ref_level(item, kind):
 _REF_CACHE = os.path.join(LIB, "ref_levels_v2.json")
 
 
-def ref_levels(bm, items):
+def ref_levels(bm, items, ref_cut=None):
+    """ref_cut (ADDITIVE, AP2): the cut whose designs these cues are (a pass 2 that plays another cut's effects table
+    matches them to that cut's own cached reference levels: the same cue, the same design, the same numbers)"""
     try:
         cache = json.load(open(_REF_CACHE))
     except Exception:
         cache = {}
     out = {}
-    changed = False
+    changed = 0
     for it, kind in items:
-        key = f"{bm.cut}:{it['id']}:" + json.dumps({k: it.get(k) for k in ("fx", "params", "gain_db", "pan", "dist",
-                                                                              "t0", "t1")}, sort_keys=True)
+        key = f"{ref_cut or bm.cut}:{it['id']}:" + json.dumps({k: it.get(k) for k in ("fx", "params", "gain_db", "pan",
+                                                                                        "dist", "t0", "t1")},
+                                                                 sort_keys=True)
         h = str(zlib.crc32(key.encode()))
         if h not in cache:
             cache[h] = ref_level(it, kind)
-            changed = True
+            changed += 1
         out[it["id"]] = cache[h]
-    if changed:
+    if changed and _CACHE_READ_ONLY:
+        print(f"  ref levels: {changed} of {len(out)} cues computed, not cached (read-only caches)")
+    elif changed:
         json.dump(cache, open(_REF_CACHE, "w"))
     return out
 
@@ -453,8 +466,11 @@ def apply_silence(stem, windows, fade=0.005):
 
 def build(cut, only=None, verbose=True):
     import importlib
+    global _CACHE_READ_ONLY
     R = importlib.import_module(f"sound_recipes_{cut}")
     bm = BarMap(cut)
+    ref_cut = getattr(R, "REF_LEVEL_CUT", None)         # ADDITIVE (AP2): see ref_levels
+    _CACHE_READ_ONLY = bool(getattr(R, "CACHE_READ_ONLY", False))
     sync = sync_table(cut)
     total = bm.n + SR
     stem = np.zeros((total, 2), np.float32)            # near: events + beds
@@ -481,14 +497,14 @@ def build(cut, only=None, verbose=True):
     live =lambda it: (not it.get("extra") and it["id"] in R.RECIPES and not R.RECIPES[it["id"]].get("skip")
                        and (not only or it["id"] in only or any(
                            R.RECIPES.get(o, {}).get("level_from") == it["id"] for o in only)))
-    refs = ref_levels(bm, [(b, "bed") for b in beds if live(b)] + [(e, "event") for e in evs if live(e)])
+    refs = ref_levels(bm, [(b, "bed") for b in beds if live(b)] + [(e, "event") for e in evs if live(e)], ref_cut)
 
     def ref_of(it, rc):
         if rc.get("level_from"):
             base = refs.get(rc["level_from"])
             if base is None:
                 src = next(x for x in evs + beds if x["id"] == rc["level_from"])
-                base = ref_levels(bm, [(src, "bed" if "t0" in src else "event")])[rc["level_from"]]
+                base = ref_levels(bm, [(src, "bed" if "t0" in src else "event")], ref_cut)[rc["level_from"]]
             return base
         if it.get("extra"):
             return rc["level"]
@@ -596,7 +612,10 @@ def levels_report(cut, only=None):
         evs += [dict(e) for e in fx if e["id"] not in have]
         beds += [dict(b) for b in amb if b["id"] not in have]
     live = lambda x: x["id"] in R.RECIPES and not R.RECIPES[x["id"]].get("skip") and (not only or x["id"] in only)
-    refs = ref_levels(bm, [(b, "bed") for b in beds if live(b)] + [(e, "event") for e in evs if live(e)])
+    global _CACHE_READ_ONLY
+    _CACHE_READ_ONLY = bool(getattr(R, "CACHE_READ_ONLY", False))
+    refs = ref_levels(bm, [(b, "bed") for b in beds if live(b)] + [(e, "event") for e in evs if live(e)],
+                      getattr(R, "REF_LEVEL_CUT", None))
     irs_dist = space_irs(R.SPACE.get("distance", "forest20"))
     print(f"{'cue':20s} {'kind':5s} | synth I / S3 / M / pk       | real, after gain: I / S3 / M / pk | gain  bound")
     for it, kind in [(b, "bed") for b in beds] + [(e, "event") for e in evs]:
