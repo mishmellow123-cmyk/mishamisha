@@ -1,0 +1,29 @@
+{
+  "name": "book_D_title",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py pen --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/map/book_d_v2.py --shot title --ppc 90 --gap-degrees 50 --frames 8880 --scale 0.1 --out /tmp/book_D_title_warm"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/map/book_d_v2.py --shot title --ppc 90 --gap-degrees 50 --frames 8880-9119 --out renders/book_D_title"
+  ],
+  "out_dir": "renders/book_D_title",
+  "frames": "8880-9119",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "outputs": [
+    {
+      "out_dir": "renders/book_D_title",
+      "frames": "8880-9119"
+    },
+    {
+      "out_dir": "renders/book_D_title_matte",
+      "frames": "8880-9119"
+    }
+  ],
+  "note": "Unsubmitted. D-v2 optional beat 33; absolute D8880-9119. Renumbered only: RetainedTitle delegates to the unchanged R3 title at frame-2000. The edit retains C X3 as an alternative. No new title look-development render; the existing R3 native source frames 6880/6940/7040/7119 (now mapped to 8880/8940/9040/9119) measured 33.2596/21.4716/21.5566/19.2577 seconds, maximum process peak RSS 1017331712 bytes. R3 title rendering is preserved; beat 34 owns the final fade. Native 1920x804 at 90 px/cm. Times include native RGB/matte PNG writes under shared workstation load and exclude onepy admission waits. RSS is the process high-water mark. Farm throughput and monetary cost are unmeasured. One computational thread; branch claude/owner-night-20260929. R2 accepted defaults and R3 entry points remain unchanged; prior jobs are archived in the lane report. Stills and numerical tests were reviewed; no full shot playback or assembled cut was rendered. Owner must take and push the lane diff before submission. Final validation: 181 map tests passed; R2 and retained R3 source hashes match the earlier deliveries; native RGB/matte dimensions and real farm-parser frame rewrites passed."
+}

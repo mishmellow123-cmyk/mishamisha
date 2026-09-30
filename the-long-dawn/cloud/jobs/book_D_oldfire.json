@@ -1,0 +1,29 @@
+{
+  "name": "book_D_oldfire",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py pen --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/map/book_d_v2.py --shot oldfire --ppc 110 --frames 5840 --scale 0.1 --out /tmp/book_D_oldfire_warm"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/map/book_d_v2.py --shot oldfire --ppc 110 --frames 5840-6079 --out renders/book_D_oldfire"
+  ],
+  "out_dir": "renders/book_D_oldfire",
+  "frames": "5840-6079",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "outputs": [
+    {
+      "out_dir": "renders/book_D_oldfire",
+      "frames": "5840-6079"
+    },
+    {
+      "out_dir": "renders/book_D_oldfire_matte",
+      "frames": "5840-6079"
+    }
+  ],
+  "note": "Unsubmitted. D-v2 beat 23; holds a close view of the actual Mountain throat through local frame 140 while the canonical closed Ring falls, flares its letters, slumps and becomes a bead; then pulls back/down for the complete plate and caption. Absolute D5840-6079. Caption 14 is baked in the accepted italic wet-ink write-on, complete at D6040: In the old story, the Ring is unmade in the fire that forged it. No moving nib is rendered; do not add a lower-third duplicate. Original Mountain strokes and procedural paper remain; cropped 320 px/cm throat detail makes the close drawing legible, with separated coal marks and curved flame bases. Native 1920x804, base 110 px/cm plus detail 320 px/cm. Final native D5840/5900/5980/6079 measured 10.242699/7.653723/8.298405/6.902785 seconds; maximum process peak RSS 1702838272 bytes. Times include native RGB/matte PNG writes under shared workstation load and exclude onepy admission waits. RSS is the process high-water mark. Farm throughput and monetary cost are unmeasured. One computational thread; branch claude/owner-night-20260929. R2 accepted defaults and R3 entry points remain unchanged; prior jobs are archived in the lane report. Stills and numerical tests were reviewed; no full shot playback or assembled cut was rendered. Owner must take and push the lane diff before submission. Final validation: 181 map tests passed; R2 and retained R3 source hashes match the earlier deliveries; native RGB/matte dimensions and real farm-parser frame rewrites passed."
+}

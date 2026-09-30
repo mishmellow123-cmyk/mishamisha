@@ -1,0 +1,16 @@
+{
+  "name": "falsedawn_brink",
+  "branch": "claude/owner-night-20260929",
+  "setup": [],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/glowvars_render.py --variant brink --range 4080-4239 --out renders/falsedawn_brink --scale 1 --ss 1.5"
+  ],
+  "out_dir": "renders/falsedawn_brink",
+  "frames": "4080-4239",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Round 3 cut D v2; output frame f equals absolute v2 D frame f, native 1920x804, ss1.5, all CPU thread limits 1. The cold glow and red-orange under-cloud forge light keep the race beat. Camera fixed at accepted A2 shot frame 420. Final Round 3 local native render/finish/PNG-save measurements: D4080 28.525274 s, peak RSS 676249600 bytes; D4090 28.686252 s, peak RSS 676249600 bytes. RSS is the process high-water mark; shared-slot waits excluded. These samples are not farm throughput. Not submitted. Owner incorporates and reviews this diff before using the specified branch."
+}

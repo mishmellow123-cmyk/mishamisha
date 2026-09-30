@@ -1,0 +1,29 @@
+{
+  "name": "book_lastleaf_open",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py pen --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/map/book_d_v2.py --shot lastleaf --ppc 90 --gap-degrees 50 --frames 8320 --scale 0.1 --out /tmp/book_lastleaf_open_warm"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 shots/map/book_d_v2.py --shot lastleaf --ppc 90 --gap-degrees 50 --frames 8320-8639 --out renders/book_lastleaf_open"
+  ],
+  "out_dir": "renders/book_lastleaf_open",
+  "frames": "8320-8639",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "outputs": [
+    {
+      "out_dir": "renders/book_lastleaf_open",
+      "frames": "8320-8639"
+    },
+    {
+      "out_dir": "renders/book_lastleaf_open_matte",
+      "frames": "8320-8639"
+    }
+  ],
+  "note": "Unsubmitted. D-v2 beat 31; absolute D8320-8639. Accepted Ring plate, gap 50, a full-width pseudo-script line stopped inside its last glyph, and the actual rigidly reposed C22 soft_spine_metal pen with nib and rear-barrel support. Warm paper calibrated to accepted Plenty C6399 at entry and C22 C5440 at exit; no v1 rose-dawn rise. Native clear-paper comparisons differ by +0.014836 and -0.028749 display stops respectively (declared paper masks, not whole-image or scene-exposure claims). A fixed warm gilt-only reflector flashes under the moving camera. Camera moves toward break/nib then blank recto; lower 20% remains calm for editorial caption 19 in two rows. The caption is not baked. Dense 65-source pen shadows. Native 1920x804 at 90 px/cm. D8320/8480/8639 measured 54.055015/136.872610/68.529737 seconds; maximum process peak RSS 812171264 bytes. Times include native RGB/matte PNG writes under shared workstation load and exclude onepy admission waits. RSS is the process high-water mark. Farm throughput and monetary cost are unmeasured. One computational thread; branch claude/owner-night-20260929. R2 accepted defaults and R3 entry points remain unchanged; prior jobs are archived in the lane report. Stills and numerical tests were reviewed; no full shot playback or assembled cut was rendered. Owner must take and push the lane diff before submission. Final validation: 181 map tests passed; R2 and retained R3 source hashes match the earlier deliveries; native RGB/matte dimensions and real farm-parser frame rewrites passed."
+}

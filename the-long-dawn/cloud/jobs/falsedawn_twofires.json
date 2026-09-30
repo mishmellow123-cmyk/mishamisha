@@ -1,0 +1,16 @@
+{
+  "name": "falsedawn_twofires",
+  "branch": "claude/owner-night-20260929",
+  "setup": [],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/glowvars_render.py --variant twofires --range 4560-5039 --out renders/falsedawn_twofires --scale 1 --ss 1.5"
+  ],
+  "out_dir": "renders/falsedawn_twofires",
+  "frames": "4560-5039",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Round 3 cut D v2; output frame f equals absolute v2 D frame f, native 1920x804, ss1.5, all CPU thread limits 1. Both crown beacons ignite at D4320 and are already burning at D4560; five approaching catches run D4760 through D4920 every 40 frames, with the near fire fully burning by D4980. The low ridge fire is deferred to the watch, preserving the caption band during new ignitions. The glow keeps racing throughout this shot. Camera fixed at accepted A2 shot frame 420; crown match positions are final. Final Round 3 local native render/finish/PNG-save measurements: D4560 41.111195 s, peak RSS 702185472 bytes; D4980 47.836641 s, peak RSS 702185472 bytes. RSS is the process high-water mark; shared-slot waits excluded. These samples are not farm throughput. Not submitted. Owner incorporates and reviews this diff before using the specified branch."
+}

@@ -14,6 +14,10 @@ C22 THE UNMAKING on its beats (5360-5519 -> renders/book_C, via book_c.py):
     ...   it runs into a bead (the hole closes; never a glowing donut)
     5490  the hearth flares; white by 5519 (bar 70 opens in white)
 Stills (the find / the fire test fallbacks): `python ringpage.py stills --out DIR`.
+
+The last written leaf opts into `RingLeaf(gap_degrees=30)`: a static, open Ring at the page head,
+with two cut ends and the canonical inscription unfinished at its leading end. `RingPage(open_band=True)`
+also exposes the open geometry to the existing page scene. All default RingPage output remains unchanged.
 """
 import argparse
 import math
@@ -135,10 +139,16 @@ def _sample(S, u, v):
 
 
 @njit(cache=True)
-def draw_ring(ch, ox, oy, ppc, P, SO, SI, glow, engr, heat, nth=360, ns=4):
+def draw_ring(ch, ox, oy, ppc, P, SO, SI, glow, engr, heat, nth=360, ns=4, gap_degrees=0.0):
     """Paint the ring into the channel window ch (H x W x 6 over page cm [ox, ..] x [oy, ..]) back to front,
     overwriting: gilt with form hatching, the inscription cut in it (engr) or awake in fire (glow), heat in the gold.
-    P: cx, cy, R, k, h, tr, wob, wph, pool, uo, ui."""
+    P: cx, cy, R, k, h, tr, wob, wph, pool, uo, ui.
+    gap_degrees=0 takes the original closed-band path without changing its arithmetic."""
+    if not math.isfinite(gap_degrees) or gap_degrees < 0.0 or gap_degrees >= 180.0:
+        raise ValueError('gap_degrees must be finite and in [0, 180)')
+    if gap_degrees > 0.0:
+        _draw_open_ring(ch, ox, oy, ppc, P, SO, SI, glow, engr, heat, gap_degrees, nth, ns)
+        return
     H, W = ch.shape[0], ch.shape[1]
     uo, ui = P[9], P[10]
     for part in range(4):
@@ -230,9 +240,13 @@ def draw_bead(ch, ox, oy, ppc, cx, cy, rx, ry, heat):
             ch[i, j, 5] = 0.0
 
 
-def ring_outline(S, P, seed, width=0.02):
+def ring_outline(S, P, seed, width=0.02, gap_degrees=0.0):
     """The pen's outline of the ring: both edges of the rim, the front face's foot and its two sides, and the foot
     of the inner face where the hole shows it."""
+    validate_gap(gap_degrees)
+    if gap_degrees > 0.0:
+        _open_outline(S, P, seed, width, gap_degrees)
+        return
     cx, cy, R, k, h, tr, wob, wph, pool = P[:9]
     th = np.linspace(0, 2 * np.pi, 241)
     Ro = R * (1 + wob * (0.6 * np.sin(3 * th + wph) + 0.4 * np.sin(5 * th - 1.3 * wph)))
@@ -271,6 +285,265 @@ def ring_outline(S, P, seed, width=0.02):
                 run = []
         if len(run) > 3:
             pen.line(S, np.array(run), width * 0.7, seed + 9, smooth=0)
+
+
+# =========================================================== open gold band ===
+
+def validate_gap(gap_degrees):
+    """Return a finite opening in degrees; 0 selects the exact legacy closed band."""
+    if not math.isfinite(gap_degrees) or not 0.0 <= gap_degrees < 180.0:
+        raise ValueError('gap_degrees must be finite and in [0, 180)')
+    return float(gap_degrees)
+
+
+@njit(cache=True)
+def _half_glyph_u(S):
+    """Mid-column of the first substantial ink run in the canonical strip, with ink on both sides.
+
+    This aligns the leading metal end through an existing glyph rather than inventing another letter.
+    The strip's empty inter-letter columns define the run; no asset pixel is changed.
+    """
+    start = -1
+    for j in range(S.shape[1]):
+        ink = np.max(S[:, j]) > 0.1
+        if ink and start < 0:
+            start = j
+        if not ink and start >= 0:
+            if j - start >= 4:
+                return (0.5 * (start + j - 1) + 0.5) / S.shape[1]
+            start = -1
+    return 0.0
+
+
+@njit(cache=True)
+def _open_vertex(P, part, th, s):
+    """Projected x/y and viewer depth. The top is z=0; the band's foot is z=-h.
+
+    Both sides of each cut use these same corners, so the cut cannot float off the rim or the foot.
+    """
+    x, y = _corner(P, part, th, s)
+    r = _radius(P, th)
+    if part == 0:
+        depth = (r - P[5]) * math.sin(th) - P[3] * s * P[4] * P[13]
+    elif part == 3:
+        _, top = _corner(P, 3, th, 0.0)
+        depth = r * math.sin(th) - P[3] * (y - top)
+    else:
+        depth = (r - P[5] * (1.0 - s)) * math.sin(th)
+    return x, y, depth
+
+
+@njit(cache=True)
+def _open_quad(ch, depth, ox, oy, ppc, Q, part, ta, tb, sa, sb, P, SO, SI, uo, glow, engr, heat, plate=False):
+    """Depth-tested bilinear surface, including the inner wall revealed through the gap."""
+    H, W = ch.shape[:2]
+    x0 = max(int(math.floor((np.min(Q[:, 0]) - ox) * ppc)), 0)
+    x1 = min(int(math.ceil((np.max(Q[:, 0]) - ox) * ppc)) + 1, W)
+    y0 = max(int(math.floor((np.min(Q[:, 1]) - oy) * ppc)), 0)
+    y1 = min(int(math.ceil((np.max(Q[:, 1]) - oy) * ppc)) + 1, H)
+    for i in range(y0, y1):
+        py = oy + (i + 0.5) / ppc
+        for j in range(x0, x1):
+            px = ox + (j + 0.5) / ppc
+            u, v = _inv_bilinear(px, py, Q[0, 0], Q[0, 1], Q[1, 0], Q[1, 1],
+                                 Q[2, 0], Q[2, 1], Q[3, 0], Q[3, 1])
+            if not (-1e-6 <= u <= 1.0 + 1e-6 and -1e-6 <= v <= 1.0 + 1e-6):
+                continue
+            d = ((1-u)*Q[0, 2] + u*Q[1, 2])*(1-v) + ((1-u)*Q[3, 2] + u*Q[2, 2])*v
+            if d < depth[i, j]:
+                continue
+            depth[i, j] = d
+            th = ta + (tb-ta)*u
+            s = sa + (sb-sa)*v
+            st = math.sin(th)
+            let = 0.0
+            if part == 3:
+                tone = 0.5*(1.0-abs(st))**1.5 + 0.12*s
+                let = _sample(SO, uo + (math.pi-th)/(2*math.pi), s)
+            elif part == 0:
+                tone = 0.55 + 0.15*s
+                let = _sample(SI, P[10] + (th-math.pi)/(2*math.pi), s)
+            elif part == 4:
+                # Fine diagonal tool marks across a flat cut, darker than the rolled rim.
+                tone = 0.33 + 0.14*v
+            else:
+                tone = 0.08 + 0.1*(1.0-abs(st))
+            arc = _radius(P, th)*th
+            fr = (px + 0.32*py)/0.105 if part == 4 else arc/0.15 + 0.1*math.sin(s*5.0+th*17.0)
+            fr -= math.floor(fr)
+            duty = 0.11 if part == 4 else (min(max(tone-0.22, 0.0)*1.1, 0.42) if part == 3
+                                                   else min(max(tone-0.35, 0.0)*0.9, 0.2))
+            aa = 0.7/(ppc*(0.105 if part == 4 else 0.15))
+            hat = min(max((0.5*duty-abs(fr-0.5))/aa+0.5, 0.0), 1.0) if part != 1 and duty > .02 else 0.0
+            dark = max(let*engr, 0.85*hat)
+            ch[i, j, 0] = max(dark, 0.18*tone)
+            ch[i, j, 1] = 0.0
+            ch[i, j, 2] = (1.0-0.92*dark)*(1.0-0.3*tone)
+            if plate:
+                # Gold leaf belongs chiefly to the narrow rolled rim. A small wash on the
+                # upper-left shoulder leaves the inscription, inner hatching and cut faces in ink.
+                gilt = .72 if part == 1 else 0.0
+                if part == 3:
+                    gilt = .38*math.exp(-((th-2.55)/.50)**4)*max(1.0-s/.68, 0.0)**1.4
+                ch[i, j, 2] *= gilt
+            ch[i, j, 3] = 0.0
+            ch[i, j, 4] = let*glow + heat*(0.35+0.65*s if part == 3 else 0.5)*(1.0-dark)
+            ch[i, j, 5] = 0.0
+
+
+@njit(cache=True)
+def _draw_open_ring(ch, ox, oy, ppc, P, SO, SI, glow, engr, heat, gap_degrees, nth=360, ns=4, plate=False):
+    half = gap_degrees*math.pi/360.0
+    lo, hi = math.pi/2-half, math.pi/2+half
+    uo = _half_glyph_u(SO) - (math.pi-lo)/(2*math.pi)
+    depth = np.full(ch.shape[:2], -1e30)
+    # The visible inner back wall, all remaining top rim, and the two front shoulders.
+    # Intervals end exactly on the cut, independently of the angular mesh resolution.
+    for part, a0, a1 in ((0, math.pi, 2*math.pi), (1, hi, 2*math.pi), (1, 0.0, lo),
+                        (3, 0.0, lo), (3, hi, math.pi)):
+        n = max(1, int(math.ceil((a1-a0)*nth/(2*math.pi))))
+        for a in range(n):
+            ta, tb = a0+(a1-a0)*a/n, a0+(a1-a0)*(a+1)/n
+            for b in range(ns):
+                sa, sb = b/ns, (b+1)/ns
+                Q = np.array((_open_vertex(P, part, ta, sa), _open_vertex(P, part, tb, sa),
+                              _open_vertex(P, part, tb, sb), _open_vertex(P, part, ta, sb)))
+                _open_quad(ch, depth, ox, oy, ppc, Q, part, ta, tb, sa, sb, P, SO, SI, uo, glow, engr, heat, plate)
+    for end in range(2 if gap_degrees > 0.0 else 0):
+        th = lo if end == 0 else hi
+        it = _open_vertex(P, 0, th, 0.0)
+        ot = _open_vertex(P, 3, th, 0.0)
+        ib = _open_vertex(P, 0, th, 1.0)
+        ob = _open_vertex(P, 3, th, 1.0)
+        Q = np.array((it, ot, ob, ib))
+        _open_quad(ch, depth, ox, oy, ppc, Q, 4, th, th, 0.0, 1.0, P, SO, SI, uo, glow, engr, heat, plate)
+
+
+def _open_outline(S, P, seed, width, gap_degrees):
+    half = math.radians(gap_degrees)*0.5
+    lo, hi = math.pi/2-half, math.pi/2+half
+    th = np.linspace(hi, 2*math.pi+lo, 241)
+    for part, s, w in ((3, 0., width), (0, 0., width*.8)):
+        pts = np.array([_corner(P, part, a, s) for a in th])
+        pen.line(S, pts, w, seed+part, smooth=0, lift=(3., 6.))
+    for idx, (a0, a1) in enumerate(((0., lo), (hi, math.pi))):
+        aa = np.linspace(a0, a1, 81)
+        pen.line(S, np.array([_corner(P, 3, a, 1.) for a in aa]), width*1.15,
+                 seed+10+idx, smooth=0, lift=(3., 6.))
+    for idx, a in enumerate((0., math.pi)):
+        pen.line(S, np.array([_corner(P, 3, a, s) for s in (0., 1.)]), width, seed+12+idx, smooth=0)
+    for idx, a in enumerate((lo, hi)):
+        # Separate closed pen contours make both flat metal ends legible at small sizes.
+        pts = np.array([_corner(P, part, a, s) for part, s in ((0, 0.), (3, 0.), (3, 1.), (0, 1.), (0, 0.))])
+        pen.line(S, pts, width, seed+15+idx, smooth=0, lift=(2., 5.))
+    # Back inner foot: hide it wherever a surviving front rim/wall lies closer to the viewer.
+    run = []
+    for a in np.linspace(math.pi, 2*math.pi, 181):
+        x, y = _corner(P, 0, a, 1.)
+        r = max(_radius(P, a)-P[5], 1e-6)
+        front = math.acos(np.clip((x-P[0])/(r*P[12]), -1., 1.))
+        _, front_top = _corner(P, 0, front, 0.)
+        visible = y < front_top-.02 or lo < front < hi
+        if visible:
+            run.append((x, y))
+        else:
+            if len(run) > 3:
+                pen.line(S, np.array(run), width*.7, seed+20, smooth=0)
+            run = []
+    if len(run) > 3:
+        pen.line(S, np.array(run), width*.7, seed+20, smooth=0)
+
+
+class RingLeaf:
+    """A static drawing alone on a blank leaf; an explicit opt-in to the last-page artwork.
+
+    `texture(t)` is compatible with redbook.Page. Placement and radius are page centimetres.
+    There is no fire, wet ink or write-on; the facing leaf can remain entirely blank.
+    """
+
+    def __init__(self, ppc=70, seed=77, gap_degrees=30.0, center=(10.2, 7.2), radius=3.3):
+        validate_gap(gap_degrees)
+        if not math.isfinite(ppc) or ppc <= 0 or not math.isfinite(radius) or radius <= 0:
+            raise ValueError('ppc and radius must be finite and positive')
+        if len(center) != 2 or not np.isfinite(center).all():
+            raise ValueError('center must be two finite page coordinates')
+        self.ppc, self.gap_degrees = ppc, gap_degrees
+        q = radius/3.3
+        self.params = np.array([*center, radius, .4, 1.32*q, .46*q, 0., 1.3, 0., .12, .61, 0., 1., 1., 0.])
+        self.tex = B.PageTex(PG.PW, PG.PH, ppc)
+        # Raster only the drawing window; the rest of the leaf is exactly blank.
+        j0 = max(0, int((center[0]-radius-.12)*ppc))
+        j1 = min(self.tex.W, int(math.ceil((center[0]+radius+.12)*ppc)))
+        i0 = max(0, int((center[1]-.4*radius-.12)*ppc))
+        i1 = min(self.tex.H, int(math.ceil((center[1]+.4*radius+1.32*q+.12)*ppc)))
+        if i1 <= i0 or j1 <= j0:
+            raise ValueError('the Ring drawing must intersect the page')
+        ch = np.zeros((i1-i0, j1-j0, B.NCH), np.float32)
+        ox, oy = j0/ppc, i0/ppc
+        draw_ring(ch, ox, oy, float(ppc), self.params, strip('outer'), strip('inner'), 0., 1., 0.,
+                  gap_degrees=float(gap_degrees))
+        S = Strokes()
+        ring_outline(S, self.params, seed, gap_degrees=gap_degrees)
+        ink, _ = pen.raster(S.pack(), 1e9, ppc, ch.shape[0], ch.shape[1], pen.INK, ox=ox, oy=oy)
+        np.maximum(ch[..., 0], ink, out=ch[..., 0])
+        ch[..., 2] *= 1.-.9*np.clip(ink, 0., 1.)
+        self.tex.chan[i0:i1, j0:j1] = ch
+        self.tex.build()
+
+    def texture(self, t=0.0):
+        return self.tex
+
+
+class RingPlate:
+    """The opt-in final-page plate, with the book's double rules and three lines of its hand.
+
+    The 8 cm Ring occupies 40% of a 20 cm leaf. Its top ellipse has a .75 minor/major
+    ratio before the book camera adds perspective. Gold is confined to the top rim and
+    a small shoulder wash; canonical letters and form hatching use the normal ink channel.
+    The untouched lower half of the leaf continues onto the facing blank page.
+    """
+
+    BOX = (3.3, 4.7, 16.7, 13.3)
+    BLANK_FROM = 13.5
+
+    def __init__(self, ppc=70, seed=77, gap_degrees=30.0, center=(10., 8.3), radius=4., aspect=.75):
+        self.gap_degrees = validate_gap(gap_degrees)
+        if not math.isfinite(ppc) or ppc <= 0.0:
+            raise ValueError('ppc must be finite and positive')
+        if not math.isfinite(radius) or radius <= 0.0:
+            raise ValueError('radius must be finite and positive')
+        if not math.isfinite(aspect) or not .6 <= aspect <= 1.0:
+            raise ValueError('the plate ellipse aspect must be in [.6, 1]')
+        if len(center) != 2 or not np.isfinite(center).all():
+            raise ValueError('center must be two finite page coordinates')
+        self.ppc = ppc
+        self.params = np.array([*center, radius, aspect, 1.25*radius/4., .44*radius/4.,
+                                0., 1.3, 0., .12, .61, 0., 1., 1., 0.])
+        x0, y0, x1, y1 = self.BOX
+        if (center[0]-radius < x0+.3 or center[0]+radius > x1-.3
+                or center[1]-radius*aspect < y0+.3
+                or center[1]+radius*aspect+self.params[4] > y1-.3):
+            raise ValueError('the Ring must fit inside the plate rules with a .3 cm margin')
+        self.tex = B.PageTex(PG.PW, PG.PH, ppc)
+        # The plate window is the only substantial temporary raster; the lower page stays zero.
+        i1 = min(self.tex.H, int(math.ceil(self.BLANK_FROM*ppc)))
+        ch = np.zeros((i1, self.tex.W, B.NCH), np.float32)
+        _draw_open_ring(ch, 0., 0., float(ppc), self.params, strip('outer'), strip('inner'),
+                        0., 1., 0., self.gap_degrees, plate=True)
+        S = Strokes()
+        ring_outline(S, self.params, seed, width=.023, gap_degrees=self.gap_degrees)
+        PG.frame_rules(S, self.BOX, seed+31)
+        hand = pen.Hand(seed=seed+41, xh=.20, nib=.20, thin=.03, dens=.88)
+        hand.write_block(S, x0, 2.9, x1-x0, 3, .62, last_frac=.78)
+        self.strokes = S
+        ink, _ = pen.raster(S.pack(), 1e9, ppc, ch.shape[0], ch.shape[1], pen.INK)
+        np.maximum(ch[..., 0], ink, out=ch[..., 0])
+        ch[..., 2] *= 1.-.9*np.clip(ink, 0., 1.)
+        self.tex.chan[:i1] = ch
+        self.tex.build()
+
+    def texture(self, t=0.0):
+        return self.tex
 
 
 # ================================================================ the fire ===
@@ -321,7 +594,8 @@ class RingPage:
     FIRE = (10.2, 18.4)                   # the ember bed's centre
     BED = (10.2, 17.3)                    # where the ring lies in the fire
 
-    def __init__(self, seed=7, ppc=130):
+    def __init__(self, seed=7, ppc=130, *, open_band=False, gap_degrees=30.0):
+        self.gap_degrees = validate_gap(gap_degrees) if open_band else 0.0
         self.ppc = ppc
         S = Strokes()
 
@@ -414,9 +688,9 @@ class RingPage:
             win[..., 2] *= 1.0 - 0.9 * np.clip(C, 0, 1)
         elif P[1] > y0 - 3.0:
             draw_ring(win, ox, oy, float(ppc), P, strip('outer'), strip('inner'), float(glow), float(engr),
-                      float(heat))
+                      float(heat), gap_degrees=self.gap_degrees)
             S = Strokes()
-            ring_outline(S, P, 77)
+            ring_outline(S, P, 77, gap_degrees=self.gap_degrees)
             C, _ = pen.raster(S.pack(), 1e9, ppc, Hh, Ww, pen.INK, ox=ox, oy=oy)
             np.maximum(win[..., 0], C, out=win[..., 0])
             win[..., 2] *= 1.0 - 0.9 * np.clip(C, 0, 1)

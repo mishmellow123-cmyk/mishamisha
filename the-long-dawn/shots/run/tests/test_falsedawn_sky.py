@@ -93,17 +93,19 @@ class FalseDawnSkyTests(unittest.TestCase):
         np.testing.assert_array_equal(after, repeated)
         np.testing.assert_array_equal(at, rt)
 
-    def test_opening_cut_and_floor_ramp_stay_locked(self):
+    def test_opening_cut_and_accepted_dissolve_stay_locked(self):
         sys.path.insert(0, str(ROOT/'edit'))
         import edl_v3 as EDL
         first, second = EDL.EDL['A'][:2]
         self.assertEqual((first['f0'],first['f1'],first['kind']), (0,80,'black'))
         self.assertEqual((second['f0'],second['f1']), (80,560))
-        self.assertEqual(second['takes'][0]['stem'], 'falsedawn')
-        floor = [t for t in EDL.TRANS['A'] if t['kind']=='floor' and t['f0']==80]
-        self.assertEqual(len(floor),1)
-        self.assertEqual({k:floor[0][k] for k in ('f0','f1','kind','k0','k1')},
-                         dict(f0=80,f1=128,kind='floor',k0=1.,k1=0.))
+        # The owner adopted this candidate before the glowvars lane. Pin the
+        # accepted A2 plate, while the default renderer itself remains unchanged.
+        self.assertEqual(second['takes'][0]['stem'], 'cand_falsedawn_clear_high_deck')
+        opening = [t for t in EDL.TRANS['A'] if t['f0']==80]
+        self.assertEqual(len(opening),1)
+        self.assertEqual({k:opening[0][k] for k in ('f0','f1','cut','kind')},
+                         dict(f0=80,f1=128,cut=80,kind='dissolve'))
 
 
 if __name__ == '__main__':

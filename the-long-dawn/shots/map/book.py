@@ -563,7 +563,8 @@ def paper(u, v, fp, PW, PH, seed, age, fore_right):
 @njit(cache=True, parallel=True)
 def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_col, amb_col, env_col,
                  texL, metaL, ppcL, texR, metaR, ppcR, seedL, seedR, age, burnL, burnR, xl, t,
-                 texF, metaF, ppcF, texB, metaB, ppcB, texS, metaS, ppcS, st_amt, fire_k, tooth_k):
+                 texF, metaF, ppcF, texB, metaB, ppcB, texS, metaS, ppcS, st_amt, fire_k, tooth_k,
+                 burnished_gilt=False, burnished_reflection=None):
     """Colour (linear HDR) and coverage of the book layer. burnL/burnR: burn fields per page (burn.py);
     xl: extra point lights (n x 6: position, colour) without shadows (a fire on the page).
     PAGES-C: texS/st_amt: the reverse's writing showing through the leaf (mirrored, blurred; 0 = off); fire_k: the
@@ -598,6 +599,7 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
             rough = 0.6
             spec = 0.02
             metal = 0.0
+            reflection_mask = 0.0
             mr, mg, mb = 1.0, 0.77, 0.34
             er, eg, eb = 0.0, 0.0, 0.0          # emission
             cov = 1.0
@@ -628,6 +630,9 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                 # the paper's tooth: fibre-scale relief a raking light catches
                 if tooth_k > 0.0 and fp < 0.04:
                     kt = tooth_k * _ss(0.04, 0.012, fp)
+                    if burnished_gilt:
+                        # A burnished metal layer bridges the paper's coarse tooth.
+                        kt *= 1.0 - 0.9 * min(max(tv[2], 0.0), 1.0)
                     tu_ = gnoise(u * 55.0, v * 55.0, 49) + 0.6 * gnoise(u * 140.0, v * 140.0, 53)
                     tw_ = gnoise(u * 55.0 + 5.3, v * 55.0, 51) + 0.6 * gnoise(u * 140.0 + 2.1, v * 140.0, 55)
                     nx = nx + kt * tu_
@@ -694,22 +699,33 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     ar *= 1.0 - 0.3 * wet * d
                     ag *= 1.0 - 0.3 * wet * d
                     ab *= 1.0 - 0.3 * wet * d
-                # gold leaf: crinkled, burnished metal whose facets catch the hearth (PAGES-C: a deeper crinkle at
-                # three scales so some facet always glints as the fire breathes and the camera moves; the gold lies
-                # over the ink, as the initial's letter and the Deep's seam are laid)
+                # Existing shots use crinkled gilt over ink. The opt-in material
+                # gives the last leaf a smoother finish with its inscription above.
                 if gilt > 0.0:
-                    # hammered leaf: few, large facets (~1-2 mm) that flash as broad sheens, the glint travelling as
-                    # the camera and the fire move (director, 28 Sep: finer facets read as glitter ribbon)
-                    cr = gnoise(u * 4.5, v * 4.5, 91) + 0.5 * gnoise(u * 11.0, v * 11.0, 93)
-                    cr2 = gnoise(u * 4.5 + 7.0, v * 4.5, 95) + 0.5 * gnoise(u * 11.0 + 3.0, v * 11.0, 97)
-                    nx = nx + 0.6 * cr * gilt
-                    ny = ny + 0.6 * cr2 * gilt
+                    if burnished_gilt:
+                        # Smooth leaf with shallow burnishing marks. The page normal
+                        # supplies its broad directional sheen; grain cannot turn it
+                        # into independently lit coarse facets. Ink sits above this
+                        # leaf, so its coverage removes the metallic response.
+                        metal = gilt * (1.0 - k)
+                        reflection_mask = metal * (1.0 - min(max(ink, 0.0), 1.0))
+                        cr = 0.004 * gnoise(u * 0.7, v * 0.7, 91) + 0.008 * gnoise(u * 32.0, v * 32.0, 93)
+                        cr2 = 0.004 * gnoise(u * 0.7 + 7.0, v * 0.7, 95) + 0.008 * gnoise(u * 32.0 + 3.0, v * 32.0, 97)
+                        nx = nx + cr * metal
+                        ny = ny + cr2 * metal
+                        rough = rough * (1 - metal) + 0.30 * metal
+                    else:
+                        # Legacy hammered leaf: retain this arithmetic for accepted shots.
+                        cr = gnoise(u * 4.5, v * 4.5, 91) + 0.5 * gnoise(u * 11.0, v * 11.0, 93)
+                        cr2 = gnoise(u * 4.5 + 7.0, v * 4.5, 95) + 0.5 * gnoise(u * 11.0 + 3.0, v * 11.0, 97)
+                        nx = nx + 0.6 * cr * gilt
+                        ny = ny + 0.6 * cr2 * gilt
+                        metal = gilt
+                        rough = rough * (1 - gilt) + 0.24 * gilt
                     nn = math.sqrt(nx * nx + ny * ny + nz * nz)
                     nx /= nn
                     ny /= nn
                     nz /= nn
-                    metal = gilt
-                    rough = rough * (1 - gilt) + 0.24 * gilt
                 # burn fields: browning, char, the hole, the glowing edge
                 bf = burnR if (m == M_PAGE_R or m == M_LEAF_F) else burnL
                 if bf[0] > 0.0 and BURN.is_v2(bf):
@@ -850,6 +866,30 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
             ry = 2.0 * (nx * vx + ny * vy + nz * vz) * ny - vy
             rz = 2.0 * (nx * vx + ny * vy + nz * vz) * nz - vz
             envk = 0.04 + 0.5 * max(rx * lx + ry * ly + rz * lz, 0.0) ** 6 + 0.06 * max(rz, 0.0)
+            reflected_sheen = 0.0
+            if (burnished_gilt and reflection_mask > 0.0 and burnished_reflection is not None
+                    and (burnished_reflection[3] > 0.0 or burnished_reflection[4] > 0.0
+                         or burnished_reflection[5] > 0.0)):
+                # A finite rose room/window reflection. Its mirror direction follows
+                # the real page normal and view; the source radius broadens the lobe.
+                # It is an environment reflection, occluded by the existing AO, with
+                # no diffuse contribution or extra shadow cast onto the paper.
+                qx = burnished_reflection[0] - px
+                qy = burnished_reflection[1] - py
+                qz = burnished_reflection[2] - pz
+                qd2 = qx*qx + qy*qy + qz*qz + 1e-12
+                qd = math.sqrt(qd2)
+                qx /= qd
+                qy /= qd
+                qz /= qd
+                qnl = max(nx*qx + ny*qy + nz*qz, 0.0)
+                qhx, qhy, qhz = qx+vx, qy+vy, qz+vz
+                qhn = math.sqrt(qhx*qhx + qhy*qhy + qhz*qhz) + 1e-12
+                qnh = max((nx*qhx + ny*qhy + nz*qhz)/qhn, 0.0)
+                angular_radius = 0.5 * burnished_reflection[6] / qd
+                qa2 = 0.18**4 + angular_radius*angular_radius
+                reflected_sheen = (reflection_mask * ao * 3600.0/qd2 * qnl
+                                   * _ggx(qnh, qa2) * 0.25/max(ndv, 0.2))
             for c in range(3):
                 alb = (ar, ag, ab)[c]
                 mc = (mr, mg, mb)[c]
@@ -859,6 +899,8 @@ def shade_kernel(out, alpha, G, P, cam_pos, L_pos, L_col, L_rad, fill_dir, fill_
                     # light through the thin leaf from behind: a warm glow in the paper
                     d_ += trans * alb * L_col[c] * fall * (-ndl) * (0.6 + 0.4 * alb)
                 s_ = (spec * (1.0 - metal) + mc * metal) * Lc * spd
+                if burnished_reflection is not None and reflected_sheen > 0.0:
+                    s_ += mc * burnished_reflection[3+c] * reflected_sheen
                 # gold leaf: a mirror of the warm room plus the broad scatter of crinkled, burnished leaf
                 e_ = metal * mc * (env_col[c] * envk * ao * 2.2 + 0.55 * Lc * max(ndl, 0.0) + 0.9 * amb_col[c] * ao)
                 # extra lights (a fire on the page): diffuse only
@@ -903,10 +945,18 @@ def hearth(t, seed=0, amt=0.16):
 
 def render(book, cam, light, texL, texR, t, fill=None, amb=(0.012, 0.009, 0.007), env=(0.9, 0.5, 0.22),
            burnL=None, burnR=None, xlights=None, age=1.0, table_far=40.0, leaf=None, texS=None, st_amt=0.0,
-           fire_k=0.0, tooth_k=0.03):
+           fire_k=0.0, tooth_k=0.03, burnished_gilt=False, burnished_reflection=None):
     """One frame of the book: returns (hdr HxWx3, alpha HxW, G-buffer). leaf = (phi, texF, texB) turns the
     right-hand leaf over: phi 0 (lying on the right) .. 1 (lying on the left); texR is then the page beneath it.
-    phi may be a list (a riffle: several leaves in flight, all with the faces texF/texB)."""
+    phi may be a list (a riffle: several leaves in flight, all with the faces texF/texB).
+    burnished_gilt opts into smooth metal leaf with ink above it; the default retains accepted materials.
+    burnished_reflection is an optional (x, y, z, r, g, b, radius) room/window source,
+    with HDR RGB power and radius in cm. It contributes specular light to uncovered gilt only."""
+    if burnished_reflection is not None:
+        burnished_reflection = np.asarray(burnished_reflection, np.float64)
+        if (burnished_reflection.shape != (7,) or not np.isfinite(burnished_reflection).all()
+                or np.any(burnished_reflection[3:] < 0.0)):
+            raise ValueError('burnished_reflection needs finite xyz, nonnegative RGB power and radius')
     W, H = cam.W, cam.H
     G = np.zeros((H, W, NG), np.float64)
     phis = []
@@ -941,7 +991,7 @@ def render(book, cam, light, texL, texR, t, fill=None, amb=(0.012, 0.009, 0.007)
                  float(book.seed), float(book.seed + 17), float(age), bL, bR, xl, float(t),
                  texF.data, texF.meta, float(texF.ppc), texB.data, texB.meta, float(texB.ppc),
                  texS_.data, texS_.meta, float(texS_.ppc), float(st_amt if texS is not None else 0.0), float(fire_k),
-                 float(tooth_k))
+                 float(tooth_k), bool(burnished_gilt), burnished_reflection)
     return out.astype(np.float32), alpha.astype(np.float32), G
 
 
