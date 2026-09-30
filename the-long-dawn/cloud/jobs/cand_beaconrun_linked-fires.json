@@ -1,0 +1,16 @@
+{
+  "name": "cand_beaconrun_linked-fires",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py beaconrun --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py beaconrun --equal 4239 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py beaconrun linked-fires --range 3920-4239 --out renders/cand_beaconrun_linked-fires"
+  ],
+  "out_dir": "renders/cand_beaconrun_linked-fires",
+  "frames": "3920-4239",
+  "shape": [804, 1920],
+  "ship": "jpg",
+  "note": "Default-off A14 review candidate; render with the paired cand_watchers_linked-fires job. No edit decision list adoption."
+}

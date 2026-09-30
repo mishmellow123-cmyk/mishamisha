@@ -27,10 +27,12 @@ for _name in ('NUMBA_NUM_THREADS', 'OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS',
 
 ROOT = Path(__file__).resolve().parents[1]
 RANGES = {'reveal': (2880, 3119), 'watch': (4480, 4719),
+          'beaconrun': (3920, 4239), 'watchers': (4240, 4399),
           'trap': (2320, 2639), 'map': (3440, 3839),
           'deep': (4240, 4479), 'cold': (3816, 3999),
           'pen': (5440, 5679), 't1': (320, 559), 'crossing': (4880, 5839)}
 OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire',
+           'beaconrun': 'linked-fires', 'watchers': 'linked-fires',
            'trap': 'front_smoke_near', 'map': 'beacon-falloff',
            'deep': 'leaned_ladders', 'cold': 'lead24',
            'pen': 'soft_spine_metal', 't1': 'current-words', 'crossing': 'both'}
@@ -42,7 +44,7 @@ _FAMILY = None
 
 def imports(kind):
     global _FAMILY
-    family = ('run' if kind in ('reveal', 'watch', 'crossing') else
+    family = ('run' if kind in ('reveal', 'watch', 'crossing', 'beaconrun', 'watchers') else
               'embers' if kind in ('trap', 'cold') else 'map')
     if _FAMILY is not None and _FAMILY != family:
         raise RuntimeError('Use a fresh process for each renderer family')
@@ -93,6 +95,22 @@ def build(kind, route, option=None, scale=1.0):
     W, H = int(1920 * scale), int(804 * scale)
     page_kind = kind in PAGES
     # route distinguishes direct original, omitted default, shared accepted and candidate.
+    if kind in ('beaconrun', 'watchers'):
+        if route == 'original':
+            if kind == 'beaconrun':
+                import beaconrun_a as BR
+                call = lambda f: BR.PI.look.finish(BR.render(f, scale=scale, ss=1.5)[0], **BR.FINISH)
+            else:
+                import watchers_a as WA
+                call = lambda f: WA.finish(WA.render(f, scale=scale, ss=1.5))
+        else:
+            import beaconrun_candidates as X
+            if route == 'default':
+                call = lambda f: X.render(f, kind=kind, scale=scale, ss=1.5)
+            else:
+                choice = 'accepted' if route == 'shared' else option
+                call = lambda f: X.render(f, kind=kind, candidate=choice, scale=scale, ss=1.5)
+        return lambda f: dict(rgb=call(f))
     if kind in ('reveal', 'watch'):
         import beacon_night_candidates as X
         driver = X.reveal if kind == 'reveal' else X.watch
@@ -188,7 +206,7 @@ def equal(kind, frame, scale=1.0):
     del original
     gc.collect()
     proofs = {}
-    routes = ('default', 'shared') if kind in ('reveal', 'watch', 'map') else ('default',)
+    routes = ('default', 'shared') if kind in ('reveal', 'watch', 'map', 'beaconrun', 'watchers') else ('default',)
     for route in routes:
         render = build(kind, route, scale=scale)
         actual = checked(render, frame, scale)
@@ -257,6 +275,12 @@ STACK = {'numpy': '2.5.3', 'numba': '0.67.0', 'llvmlite': '0.49.0',
 ASSETS = {
     'reveal': ('shots/run/summits.npy',),
     'watch': ('shots/run/summits.npy',),
+    'beaconrun': ('shots/run/summits.npy', 'shots/run/beaconrun_a_chain.npy',
+                  'shots/run/reveal_a_fires.npy', 'shots/run/watchers_a_extra.npy',
+                  'shots/run/watchers_a_figs.npy'),
+    'watchers': ('shots/run/summits.npy', 'shots/run/beaconrun_a_chain.npy',
+                 'shots/run/reveal_a_fires.npy', 'shots/run/watchers_a_extra.npy',
+                 'shots/run/watchers_a_figs.npy'),
     'trap': ('assets/ring/inscription_outer.png', 'assets/ring/inscription_inner.png'),
     'cold': ('assets/ring/inscription_outer.png', 'assets/ring/inscription_inner.png'),
     't1': ('assets/fonts/EBGaramond-Italic.ttf',),
