@@ -9,6 +9,8 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 import time
 import traceback
 
@@ -54,7 +56,12 @@ def render(frame, shot, scale=.5, ss=2.):
     import render_ink as RI
     import inkpass as IP
     local = local_frame(frame)
-    aov = RI.render_aov(shot, local, scale, ss)
+    if os.environ.get('LD_INK_CREST_REFINE') == '1':
+        # compose does not read V. Skip its unused full-frame intermediates
+        # to reduce peak RSS while preserving every input the ink pass reads.
+        aov = RI.render_aov(shot, local, scale, ss, motion_vectors=False)
+    else:
+        aov = RI.render_aov(shot, local, scale, ss)
     aov['kpx'] = scale * ss
     rgb, _ = IP.compose(aov, B=shot.B, CR=shot.CR)
     width, height = int(round(1920*scale)), int(round(804*scale))
@@ -73,6 +80,8 @@ def main():
     ap.add_argument('--scale', type=float, default=1.)
     ap.add_argument('--ss', type=float, default=2.)
     ap.add_argument('--threads', type=int, default=1)
+    ap.add_argument('--fresh-process', action='store_true',
+                    help='Release renderer memory between frames by starting one child per frame')
     ap.add_argument('--format', choices=('png','jpg'), default='jpg')
     ap.add_argument('--out', type=Path, required=True)
     a = ap.parse_args()
@@ -92,10 +101,18 @@ def main():
     a.out.mkdir(parents=True,exist_ok=True)
     paths = [a.out/f'f_{f:05d}.{a.format}' for f in frames]
     if any(p.exists() for p in paths): ap.error('Output frame exists; select a fresh directory')
+    if a.fresh_process and len(frames) > 1:
+        for f in frames:
+            subprocess.run([sys.executable, str(Path(__file__).resolve()), '--frames', str(f),
+                            '--scale', str(a.scale), '--ss', str(a.ss), '--threads', str(a.threads),
+                            '--format', a.format, '--out', str(a.out)], check=True)
+        return
     receipt = dict(status='initializing',scale=a.scale,ss=a.ss,
                    camera_source_frames=[float(camera_frame(local_frame(f))) for f in frames],
                    catch_frame=FIRST,far_summit_row=FAR_SUMMIT,
                    frames=[])
+    if os.environ.get('LD_INK_CREST_REFINE') == '1':
+        receipt['ink_crest_refine'] = True
     rp = a.out/f'receipt_{frames[0]:05d}_{frames[-1]:05d}.json'
     if rp.exists(): ap.error('Receipt exists; select a fresh directory')
     rp.write_text(json.dumps(receipt,indent=2)+'\n')

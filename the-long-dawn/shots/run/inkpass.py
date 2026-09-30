@@ -855,6 +855,31 @@ def _surf_blur(F, D, land, sig, out):
             out[j, i, 2] = acc2 / ws
 
 
+def _crest_hatch_aa(A, hat, kpx):
+    """Soften hatch sampling near a recovered crest, without filtering the page or outlines.
+
+    The C13 march refinement restores the surface but leaves hatch contrast changes
+    above the nearby paper/ink baseline. Limit this appearance correction to land
+    around the nearer-side pixels of depth breaks: full strength within 8 page
+    pixels, fading to zero at 16. The 0.7-page-pixel filter uses the existing
+    surface-depth weights, keeping the two sides separate at a clear depth step.
+    These settings are checked on C2990..3013; they are not a temporal guarantee
+    for every camera. Call only under the explicit crest-refinement opt-in.
+    """
+    D = np.ascontiguousarray(A[..., 1])
+    land = (A[..., 0] < 1.5).astype(np.float32)
+    edge = (land > 0) & (cv2.dilate(D, np.ones((3, 3), np.uint8)) > D * 1.05)
+    distance = cv2.distanceTransform((~edge).astype(np.uint8), cv2.DIST_L2, 5)
+    weight = np.clip((16.0 * kpx - distance) / (8.0 * kpx), 0, 1) * land
+    weight = weight * weight * (3 - 2 * weight)
+    # _surf_blur operates on exactly three channels; the hatch has two.
+    fields = np.zeros((*hat.shape[:2], 3), np.float32)
+    fields[..., :2] = hat
+    smoothed = np.empty_like(fields)
+    _surf_blur(fields, D, land, 0.7 * kpx, smoothed)
+    return hat + (smoothed[..., :2] - hat) * weight[..., None]
+
+
 @njit(parallel=True, cache=True)
 def _deteeth(A, w, near, out):
     """The ray march at a grazing crest hits in some pixel columns and misses in the next, so a far ridge's crest
@@ -963,6 +988,8 @@ def compose(R, prm=None, B=None, plate=None, CR=None):
     xp = np.array([kpx, XSP1, XSP2, math.cos(XB), math.sin(XB), rx, rz, SALT, cam[12], XT2, XKAP, fx, fz, XT1MAX],
                   np.float64)
     xhatch(Ah, T, G, hsb, xp, hat)
+    if os.environ.get('LD_INK_CREST_REFINE') == '1':
+        hat = _crest_hatch_aa(Ah, hat, kpx)
     gs = screen_grad(A[..., 5], np.rint(A[..., 0]))
     cl = np.zeros((H, W, 2), np.float32)
     cloud(A, Tc, gs, cam, p, cl)

@@ -1,0 +1,22 @@
+{
+  "name": "runC_reveal_pair_v5_fix",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "python3 -m pip install -q numpy==2.3.5 numba==0.62.1 scipy==1.16.3 opencv-python-headless==5.0.0.93 Pillow==12.0.0"
+  ],
+  "render": [
+    "LD_INK_CREST_REFINE=1 NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/run/reveal_pair_c_v5.py --range 2880-2939 --scale 1 --ss 2 --threads 2 --fresh-process --format png --out renders/runC_reveal_pair_v5_fix",
+    "LD_INK_CREST_REFINE=1 NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/run/reveal_pair_c_v5.py --range 2940-2999 --scale 1 --ss 2 --threads 2 --fresh-process --format png --out renders/runC_reveal_pair_v5_fix",
+    "LD_INK_CREST_REFINE=1 NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/run/reveal_pair_c_v5.py --range 3000-3059 --scale 1 --ss 2 --threads 2 --fresh-process --format png --out renders/runC_reveal_pair_v5_fix",
+    "LD_INK_CREST_REFINE=1 NUMBA_NUM_THREADS=2 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 python3 shots/run/reveal_pair_c_v5.py --range 3060-3119 --scale 1 --ss 2 --threads 2 --fresh-process --format png --out renders/runC_reveal_pair_v5_fix"
+  ],
+  "out_dir": "renders/runC_reveal_pair_v5_fix",
+  "frames": "2880-3119",
+  "shape": [
+    804,
+    1920
+  ],
+  "push_every": 300,
+  "ship": "jpg",
+  "note": "Opt-in C13 near-crest intersection refinement plus depth-aware hatch antialiasing within 16 page pixels of depth breaks (sigma 0.7). Local final-source full-resolution C3000/C3001 (1920x804, ss=2, two Numba threads): 44.6748/41.6135 seconds, peak RSS 2727755776/2529689600 bytes. Timings include scene creation, render, PNG/JPEG writes and exclude shared-slot wait; they are local measurements, not farm throughput. The flagged paired driver omits unused velocity buffers; --fresh-process releases renderer allocations after every frame. A prior multi-frame diagnostic reached 3415375872 bytes, so process isolation is required for this recipe. Final flag-off C3001 JPEG is byte-identical to delivery; actual legacy-ray negative control reproduces the far/near/far crest failure. Final C2990-3013 JPEG validation: patch mean MAD 17.3663 to 2.2294 (maximum corrected transition 2.4922); outside-patch old/new mean 1.9023. Peak RSS across all 24 final frames is 2727755776 bytes. Detailed controls and coverage limits are in the lane report. New output directory; the EDL remains unchanged. Owner must integrate and push this diff before submission. This is an unsubmitted specification."
+}

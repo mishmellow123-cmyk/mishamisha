@@ -238,7 +238,8 @@ def fire_layer(img, zb, scam, frame, B, pxs):
     BC.draw_source(img, zb, scam, frame, B, pxs)
 
 
-def render_aov(shot, frame, scale=0.5, ss=2.0):
+def render_aov(shot, frame, scale=0.5, ss=2.0, *, motion_vectors=True):
+    """Render the ink inputs; omit unused velocity buffers only when requested."""
     W, H = int(round(1920 * scale)), int(round(804 * scale))
     tcam = shot.cam(frame, W, H)
     fr = PI.Frame(tcam, ss)
@@ -246,7 +247,15 @@ def render_aov(shot, frame, scale=0.5, ss=2.0):
     C = scam.params()
     P = np.array([scam.pos[0], scam.pos[2], frame / FPS, 0.0])
     D = np.zeros((scam.H, scam.W))
-    WD.march(P, shot.CR, C, 0.2, 90000.0, 0.0035, 0.35, 900.0, 9, D)
+    # C13's thin crest falls between the old march samples. A missed crossing
+    # carries the farther hit up the column; inkpass's 5-pixel cleanup then
+    # alternately preserves/erases the resulting 6/5-pixel stalk. Recover the
+    # terrain intersection before shading, rather than erasing its ink later.
+    # Keep the accepted sampling exactly unless explicitly enabled. The real
+    # three-frame ray regression is in tests/test_ink_crest_refine.py.
+    refine_crest = os.environ.get('LD_INK_CREST_REFINE') == '1'
+    rel, kgap = (0.0001, 0.1) if refine_crest else (0.0035, 0.35)
+    WD.march(P, shot.CR, C, 0.2, 90000.0, rel, kgap, 900.0, 9, D)
     Lk, Q, fogp = shot.light(frame)
     LT = shot.lights_steady(frame)
     PL = BC.platforms(shot.B) if len(shot.B) else np.zeros((0, 4))
@@ -278,7 +287,8 @@ def render_aov(shot, frame, scale=0.5, ss=2.0):
         sx, sy, z = tss.project(base)
         bl.append([sx, sy, z, b[3], size, inten, light, b[5], b[4]])
     # camera velocity for an optional ink motion blur (target, supersampled)
-    V = RC.velocity(lambda f: shot.cam(f, tss.W, tss.H), frame, tss, At[..., 1], shutter=0.35)
+    V = (RC.velocity(lambda f: shot.cam(f, tss.W, tss.H), frame, tss, At[..., 1], shutter=0.35)
+         if motion_vectors else None)
     return dict(A=At, E=Et, a=at, cam=cam, bl=np.array(bl, np.float64).reshape(-1, 9), V=V, Lk=Lk,
                 frame=frame, shot=shot.name, scale=scale, ss=ss)
 
