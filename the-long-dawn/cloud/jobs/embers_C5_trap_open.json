@@ -1,0 +1,19 @@
+{
+  "name": "embers_C5_trap_open",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py trap --prepare",
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py trap --equal 2479 --scale 1"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py trap front_smoke_near --range 2320-2639 --out renders/embers_C5_trap_open"
+  ],
+  "out_dir": "renders/embers_C5_trap_open",
+  "frames": "2320-2639",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Final open-ring revision, locally measured native 1920x804: C2482: 3.233851 s/frame, 957710336 bytes process peak RSS. Timed renderer calls; C3 first call includes lazy scene initialization. RSS is cumulative process high-water. These local samples are not farm throughput estimates. Draft only; not submitted. Requires owner adoption through the EDL and regeneration of the baked closed-ring C1679 burn transition."
+}

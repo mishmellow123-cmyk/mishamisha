@@ -196,6 +196,12 @@ class Scene:
     def ring_frame(self, t):
         # Canonical C3 orientation; freeze the slow spin during the final clean hold.
         clock = 1580. + .12 * ((t - 2320) if t < 3000 else 320. + min(t, CLEAN) - 3840.)
+        if c3.OR.enabled():
+            reference = 2480. if t < 3000 else 4000.
+            ref_clock = 1580. + .12 * ((reference - 2320.) if t < 3000 else 320. + reference - 3840.)
+            ref_rot, _, size = c3._closed_ring_frame(ref_clock)
+            rot = c3.OR.placement(ref_rot, self.camera(reference).pos, RING_C, reference)
+            return rot, RING_C, size
         rot, _, size = c3.ring_frame(clock)
         return rot, RING_C, size
 
@@ -209,9 +215,17 @@ class Scene:
         for i in range(self.towers.k_all):
             e.point(self.towers.top(i, ctx.t), np.array([4., 1.7, .5]) * forge_level(i, ctx.t), 2.)
         rot, centre, size = self.ring_frame(ctx.t)
-        rgb, a, d = RS.render(ctx.cam, ctx.fr.W, ctx.fr.H, rot, centre, size, st, e)
-        grey = np.sum(rgb * np.array([.2126, .7152, .0722]), axis=2, keepdims=True)
-        rgb = rgb * warm + grey * (1. - warm)
+        if c3.OR.enabled():
+            st.end_caps = st.leading_glyph = True
+            st.heat = c3.OR.heat(ctx.t)
+            st.letters, st.glow, st.hammer = .6, .09, .18
+            st.write = c3.ring_write(ctx.t)
+            rgb, a, d = RS.render(ctx.cam, ctx.fr.W, ctx.fr.H, rot, centre, size, st, e,
+                                  th_range=c3.OR.theta_range(ctx.t))
+        else:
+            rgb, a, d = RS.render(ctx.cam, ctx.fr.W, ctx.fr.H, rot, centre, size, st, e)
+            grey = np.sum(rgb * np.array([.2126, .7152, .0722]), axis=2, keepdims=True)
+            rgb = rgb * warm + grey * (1. - warm)
         before = RS.merge_occluder(ctx.fr, a, d)
         return rgb * RS.visibility(before, d, ctx.fr.H, ctx.fr.W)[..., None]
 
@@ -223,7 +237,11 @@ class Scene:
         def positions(t):
             u = (self.drop_phase + (t - 2320.) / 52.) % 1.
             rot, centre, size = self.ring_frame(t)
-            p, _ = RS.local_points(self.drop_th, np.zeros(len(u)))
+            theta = self.drop_th
+            if c3.OR.enabled():
+                # Each drop keeps its birth origin while the leading edge advances.
+                theta = c3.OR.arc_theta(t - 52. * u, self.drop_th / (2. * np.pi))
+            p, _ = RS.local_points(theta, np.zeros(len(u)))
             start = centre + size * p @ rot.T
             end = np.array([self.towers.top(int(i), t) for i in self.drop_tower])
             q = start + (end - start) * u[:, None]

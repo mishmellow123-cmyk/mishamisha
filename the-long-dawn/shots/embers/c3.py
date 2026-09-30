@@ -16,6 +16,10 @@ Frames are C's own. Output: render.py FRAMES --cut C3 -> renders/embers_C3.
 
 THE RING is ringsolid's solid canonical band (not tolkien's splat hoop); the fire is cflame's one natural gold flame
 (not the A-style thinking fire); the towers are scene_b's forge family, laid out by C (layout_towers).
+
+LD_OPEN_RING=1 uses openring.GAP_SCHEDULE: both worked ends approach a fixed camera-facing gap, the body keeps one
+pose and a fixed .75 size through C6/C7, and the letters and gold originate only on extant metal. The original
+camera, centre path, section proportions and all flag-off rendering arithmetic remain in place.
 """
 import math
 
@@ -29,6 +33,7 @@ import ringsolid as RS
 import cflame as CF
 import eye3 as EYE
 import grasp3 as GR
+import openring as OR
 
 BAR, BEAT = 80, 20
 
@@ -259,7 +264,7 @@ def layout_towers(tw):
 
 # ================================================================== the ring ===
 
-def ring_frame(t):
+def _closed_ring_frame(t):
     """(Rot, centre, scale) of the Ring. Forged standing on edge above the flame, a three-quarter view to the lens;
     it turns slowly (the letters travel); from 1360 it rises above the towers and tilts to hang over them."""
     cam_az = cam_azimuth(t)
@@ -280,6 +285,19 @@ def ring_frame(t):
     return Rt @ Rs, C, RING_W
 
 
+def ring_frame(t):
+    """The open band keeps one camera-derived orientation across C6/C7's continuous move."""
+    rot, centre, size = _closed_ring_frame(t)
+    if OR.enabled():
+        reference = 1330.
+        ref_rot, ref_centre, _ = _closed_ring_frame(reference)
+        rot = OR.placement(ref_rot, cam_c(reference)[0], ref_centre, reference)
+        # Fixed size throughout the shot: both ends remain inside the existing
+        # camera's closest push and its late-race upper edge, without lens chasing.
+        size *= OR.FORGE_SCALE
+    return rot, centre, size
+
+
 def ring_on(t):
     return T_FORGE <= t < T_RACE_END
 
@@ -292,6 +310,8 @@ RING_Y1 = 36.0                                    # ... and rises to hang over t
 
 def ring_theta_range(t):
     """(th0, th1): how much of the band exists yet (the front runs round from th0)"""
+    if OR.enabled():
+        return OR.theta_range(t)
     k = float(smootherstep(FRONT_T[0], FRONT_T[1], t))
     th0 = -0.6
     return th0, th0 + max(k, 1e-3) * 2 * np.pi
@@ -301,6 +321,8 @@ def ring_heat(t):
     """fn(theta) -> 0..1: the thread is laid white-hot at the running front and glows yellow-orange behind it while
     it is beaten; every stroke re-heats it for a moment; after the last stroke it cools through orange and dull red
     to gold (cold by ~1322, when the letters burn up out of the metal)"""
+    if OR.enabled():
+        return OR.heat(t)
     th0, th1 = ring_theta_range(t)
     strike = 0.0
     for tb in STROKES:
@@ -328,6 +350,8 @@ def ring_sec(t):
 
 def ring_write(t):
     """fn(theta) -> 0..1: the letters burn up out of the metal in a sweep round the band from 1320"""
+    if OR.enabled():
+        return OR.write(t)
     def f(th):
         frac = ((th + 0.6) % (2 * np.pi)) / (2 * np.pi)
         tw = T_WRITE + 26.0 * frac
@@ -337,6 +361,8 @@ def ring_write(t):
 
 def ring_letters(t):
     """the letters' brightness: they flare as they burn up, then settle; faintly awake over the race"""
+    if OR.enabled():
+        return 1.2 if t < T_RISE else .6
     if t < T_WRITE - 2:
         return 0.0
     flare = math.exp(-max(t - (T_WRITE + 14), 0.0) / 16.0)
@@ -376,6 +402,11 @@ def ring_state(t):
     st.glow = 0.05
     st.exposure = 1.0
     st.alpha = 1.0
+    if OR.enabled():
+        st.heat = ring_heat(t)
+        st.end_caps = True
+        st.leading_glyph = True
+        st.hammer = max(st.hammer, .18)
     return st
 
 
@@ -428,13 +459,29 @@ class ForgeFX:
         self.s_E = r.lognormal(0, 0.55, ns)
         # sparks streaming off the front as it runs
         nf = 900
-        self.f_t0 = r.uniform(FRONT_T[0], FRONT_T[1], nf)
+        front_end = OR.FORGE_END if OR.enabled() else FRONT_T[1]
+        self.f_t0 = r.uniform(FRONT_T[0], front_end, nf)
         self.f_v = r.normal(0, 1, (nf, 3))
         self.f_life = r.uniform(6.0, 14.0, nf)
         self.f_E = r.lognormal(0, 0.5, nf)
 
     @staticmethod
-    def band_point(t, th, psi=0.0):
+    def band_point(t, th, psi=0.0, *, pose_time=None):
+        if OR.enabled():
+            # Each particle keeps its own birth section and pose. Stroke sparks
+            # may explicitly ride the current pose while retaining that section.
+            times, angles, sections = np.broadcast_arrays(t, np.atleast_1d(th), psi)
+            times, angles, sections = times.ravel(), angles.ravel(), sections.ravel()
+            points = np.empty((len(times), 3))
+            normals = np.empty_like(points)
+            riding = ring_frame(pose_time) if pose_time is not None else None
+            for birth in np.unique(times):
+                m = times == birth
+                Rot, C, sc = riding if riding is not None else ring_frame(float(birth))
+                Pl, Nl = RS.local_points(angles[m], sections[m], sec=ring_sec(float(birth)))
+                points[m] = C + sc * Pl @ Rot.T
+                normals[m] = Nl @ Rot.T
+            return points, normals
         Rot, C, sc = ring_frame(t)
         Pl, Nl = RS.local_points(np.atleast_1d(th), np.atleast_1d(np.full(np.shape(np.atleast_1d(th)), psi)))
         return C[None, :] + sc * Pl @ Rot.T, Nl @ Rot.T
@@ -443,8 +490,9 @@ class ForgeFX:
         t = ctx.t
         if not (T_FORGE - 2 <= t < T_WRITE + 20):
             return
+        front_end = OR.FORGE_END if OR.enabled() else FRONT_T[1]
         # --- the thread: from the flame's tip up to the white-hot front
-        k = float(smoothstep(FRONT_T[0] - 2, FRONT_T[0] + 4, t)) * (1.0 - float(smoothstep(FRONT_T[1] - 4, FRONT_T[1] + 8, t)))
+        k = float(smoothstep(FRONT_T[0] - 2, FRONT_T[0] + 4, t)) * (1.0 - float(smoothstep(front_end - 4, front_end + 8, t)))
         if k > 0:
             def thread(tq):
                 th0, th1 = ring_theta_range(tq)
@@ -464,12 +512,12 @@ class ForgeFX:
             col = np.array([1.0, 0.8, 0.45])
             ctx.fr.splat(P0, P1, 0.06 * (1.3 - 0.6 * self.th_u), E, col, ctx.cam0, ctx.cam1, profile=1)
         # --- the front: a white glare where the band is being laid
-        if FRONT_T[0] <= t < FRONT_T[1] + 4:
+        if FRONT_T[0] <= t < front_end + 4:
             th0, th1 = ring_theta_range(t)
             F, _ = self.band_point(t, th1, 0.0)
             fpx = ctx.cam.f_px(1920)
             z = max(float((F[0] - ctx.cam.pos) @ ctx.cam.R[2]), 1.0)
-            g = 1.0 - float(smoothstep(FRONT_T[1] - 2, FRONT_T[1] + 4, t))
+            g = 1.0 - float(smoothstep(front_end - 2, front_end + 4, t))
             ctx.fr.splat(F, F, np.array([0.5]), np.array([60.0 * g * (fpx / z) ** 2 * 0.002]),
                          np.array([[1.0, 0.95, 0.85]]), ctx.cam0, ctx.cam1, profile=1)
         # sparks off the running front
@@ -481,9 +529,15 @@ class ForgeFX:
             def fpos(tq):
                 aa = np.maximum(tq - self.f_t0[idx], 0.0)
                 # where the front was when each spark left it
-                frac = (self.f_t0[idx] - FRONT_T[0]) / (FRONT_T[1] - FRONT_T[0])
-                th0 = -0.6
-                P, N = self.band_point(self.f_t0[idx][0], th0 + frac * 2 * np.pi, 0.0)
+                if OR.enabled():
+                    # Sparks detach from the actual stepped front at their birth time.
+                    births = self.f_t0[idx]
+                    theta = OR.theta_range(births)[1]
+                    P, N = self.band_point(births, theta, 0.0)
+                else:
+                    frac = (self.f_t0[idx] - FRONT_T[0]) / (FRONT_T[1] - FRONT_T[0])
+                    th0 = -0.6
+                    P, N = self.band_point(self.f_t0[idx][0], th0 + frac * 2 * np.pi, 0.0)
                 return P + (N * 0.25 + self.f_v[idx] * 0.12) * aa[:, None] + np.array([0.0, -0.006, 0.0]) * (aa ** 2)[:, None]
             S0 = fpos(ctx.t0)
             S1 = fpos(ctx.t1)
@@ -499,11 +553,16 @@ class ForgeFX:
             tb = self.s_t0[idx]
 
             def spos(tq):
-                P, N = self.band_point(T_FORGE + 40.0, self.s_th[idx], 0.0)
-                Rot, C, sc = ring_frame(tq)
-                Rot0, C0, _ = ring_frame(T_FORGE + 40.0)
-                P = C + (P - C0) @ Rot0 @ Rot.T                     # ride with the band
-                N = N @ Rot0 @ Rot.T
+                theta = self.s_th[idx]
+                if OR.enabled():
+                    theta = OR.arc_theta(tb, theta / (2. * np.pi))
+                    P, N = self.band_point(tb, theta, 0.0, pose_time=tq)
+                else:
+                    P, N = self.band_point(T_FORGE + 40.0, theta, 0.0)
+                    Rot, C, sc = ring_frame(tq)
+                    Rot0, C0, _ = ring_frame(T_FORGE + 40.0)
+                    P = C + (P - C0) @ Rot0 @ Rot.T                 # ride with the band
+                    N = N @ Rot0 @ Rot.T
                 aa = np.maximum(tq - tb, 0.0)
                 v = N * self.s_v[idx][:, None] + np.array([0.0, 1.0, 0.0]) * self.s_up[idx][:, None]
                 return P + v * aa[:, None] + np.array([0.0, -0.012, 0.0]) * (aa ** 2)[:, None]
@@ -592,7 +651,10 @@ class GoldRain:
         out = np.zeros((len(self.t0), 3))
         for k_ in range(len(self.t0)):
             Rot, C, sc = ring_frame(t_det[k_])
-            Pl, _ = RS.local_points(np.array([self.th[k_]]), np.array([0.0]))
+            theta = self.th[k_]
+            if OR.enabled():
+                theta = OR.arc_theta(t_det[k_], theta / (2. * np.pi))
+            Pl, _ = RS.local_points(np.array([theta]), np.array([0.0]))
             p = C + sc * Pl[0] @ Rot.T
             out[k_] = p
         return out

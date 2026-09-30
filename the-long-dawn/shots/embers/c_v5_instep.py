@@ -168,6 +168,8 @@ class Scene(lead.Scene):
         self.shared_tower = np.tile(np.arange(n), 2)
         self.shared_phase = (np.arange(2 * n) / (2 * n))
         self.shared_theta = 2. * np.pi * (np.arange(2 * n) / (2 * n))
+        if base.c3.OR.enabled():
+            self.shared_theta = base.c3.OR.arc_theta(4000., self.shared_theta / (2. * np.pi))
         rot, centre, size = self.ring_frame(4000.)
         rim, _ = base.RS.local_points(self.shared_theta, np.zeros(2 * n))
         ceiling = float((centre + size * rim @ rot.T)[:, 1].min()) - .25

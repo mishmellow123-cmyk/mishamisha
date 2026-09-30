@@ -1,0 +1,19 @@
+{
+  "name": "cand_unfinished_instep_open",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py unfinished --prepare",
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py unfinished --equal 4000 --scale 1"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py unfinished in-step --range 4000-4239 --out renders/cand_unfinished_instep_open"
+  ],
+  "out_dir": "renders/cand_unfinished_instep_open",
+  "frames": "4000-4239",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Final open-ring revision, locally measured native 1920x804: C4120: 3.685434 s/frame, 913162240 bytes process peak RSS. Timed renderer calls; C3 first call includes lazy scene initialization. RSS is cumulative process high-water. These local samples are not farm throughput estimates. Draft only; not submitted. Requires owner adoption through the EDL and regeneration of the baked closed-ring C1679 burn transition."
+}

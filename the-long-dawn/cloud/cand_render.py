@@ -298,7 +298,15 @@ def output_dirs(kind, option, out):
     out = Path(out)
     if not out.is_absolute():
         out = ROOT / out
-    if out.parent.resolve() != directory.resolve() or out.name != f'cand_{kind}_{option}':
+    expected = f'cand_{kind}_{option}'
+    if os.environ.get('LD_OPEN_RING') == '1':
+        # The open band must get fresh frames; keep the accepted candidates intact.
+        expected = {('trap', 'front_smoke_near'): 'embers_C5_trap_open',
+                    ('cold', 'in-step'): 'cand_cold_instep_open',
+                    ('unfinished', 'in-step'): 'cand_unfinished_instep_open'}.get((kind, option), expected)
+    if out.parent.resolve() != directory.resolve() or out.name != expected:
+        if os.environ.get('LD_OPEN_RING') == '1':
+            raise ValueError(f'Use renders/{expected} for this candidate')
         raise ValueError('Use renders/cand_<kind>_<option> for this candidate')
     directories = [out] + ([out.with_name(out.name + '_matte')] if kind in PAGES else [])
     if any(p.is_symlink() or (p.exists() and not p.is_dir()) for p in directories):

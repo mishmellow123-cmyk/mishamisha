@@ -1,0 +1,23 @@
+{
+  "name": "embers_C3_forging_open",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py trap --prepare",
+    "cd shots/embers && LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 render.py 1040 --cut C3 --scale 0.1 --out /tmp/openring_warm"
+  ],
+  "render": [
+    "cd shots/embers && LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 render.py 1040-1439:4 --cut C3 --out ../../renders/embers_C3_open",
+    "cd shots/embers && LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 render.py 1041-1439:4 --cut C3 --out ../../renders/embers_C3_open",
+    "cd shots/embers && LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 render.py 1042-1439:4 --cut C3 --out ../../renders/embers_C3_open",
+    "cd shots/embers && LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 render.py 1043-1439:4 --cut C3 --out ../../renders/embers_C3_open"
+  ],
+  "out_dir": "renders/embers_C3_open",
+  "frames": "1040-1439",
+  "shape": [
+    804,
+    1920
+  ],
+  "push_every": 300,
+  "ship": "jpg",
+  "note": "Final open-ring revision, locally measured native 1920x804: C1306: 10.306802 s/frame, 788791296 bytes process peak RSS; C1339: 5.647424 s/frame, 993755136 bytes process peak RSS. Timed renderer calls; C3 first call includes lazy scene initialization. RSS is cumulative process high-water. These local samples are not farm throughput estimates. Draft only; not submitted. Requires owner adoption through the EDL and regeneration of the baked closed-ring C1679 burn transition."
+}

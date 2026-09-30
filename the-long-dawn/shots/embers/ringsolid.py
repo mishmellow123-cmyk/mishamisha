@@ -37,6 +37,8 @@ R_OUT = R_IN + THICK
 SQ = 2.8
 F0_GOLD = np.array([1.0, 0.766, 0.336])          # gold's specular colour (linear)
 C_LETTER = np.array([1.0, 0.3, 0.045])            # the letters in fire: deep orange-red, never white
+# Fixed planar hammer facets: material position and two normal slopes, independent of frame and camera.
+_CAP_FACETS = np.random.default_rng(7401).uniform(size=(192, 4))
 
 
 def sgnpow(x, p):
@@ -73,6 +75,7 @@ class Inscription:
 
     def __init__(self):
         self.lv = {}
+        self.leading = {}
         for face in ('outer', 'inner'):
             im = cv2.imread(os.path.join(ROOT, 'assets', 'ring', f'inscription_{face}.png'), cv2.IMREAD_UNCHANGED)
             m = im.astype(np.float32) / 65535.0
@@ -107,6 +110,26 @@ class Inscription:
             out[m] = a * (1 - fy) + b * fy
         return out
 
+    def leading_glyph(self, face):
+        """Ink-mass midpoint of the first canonical glyph, and its advance in band widths.
+
+        ring_script.py's fixed seeds begin with outer ``mu`` (0.70 em) and inner ``vo`` (0.56 em).
+        Reading the published coverage makes the cut bisect real ink, even for an asymmetric flame glyph.
+        This is evaluated only for the opt-in leading-edge treatment.
+        """
+        if face not in self.leading:
+            img = self.lv[face][0]
+            h, w = img.shape
+            advance = {'outer': 0.70, 'inner': 0.56}[face] * 0.30
+            stop = max(1, int(advance * h))
+            mass = img[:, :stop].sum(axis=0, dtype=np.float64)
+            cumulative = np.cumsum(mass)
+            if cumulative[-1] <= 0:
+                raise ValueError('Canonical leading glyph contains no ink')
+            midpoint = np.searchsorted(cumulative, cumulative[-1] * 0.5)
+            self.leading[face] = ((midpoint + 0.5) / w, advance)
+        return self.leading[face]
+
 
 _INS = [None]
 
@@ -120,9 +143,10 @@ def inscription():
 # ================================================================ rasteriser ===
 
 @njit(cache=True, fastmath=True)
-def _raster(X, Y, Z, TH, PS, ZB, TB, PB):
+def _raster(X, Y, Z, TH, PS, ZB, TB, PB, FB=None, face=0):
     """z-buffered, perspective-correct rasterisation of the (nt+1) x (np+1) parametric grid (two triangles per quad).
-    X, Y: screen coords in buffer pixels (pixel centres at integers); Z: camera depth; TH, PS: parameters."""
+    X, Y: screen coords in buffer pixels (pixel centres at integers); Z: camera depth; TH, PS: parameters.
+    Optional FB records a surface id where a triangle wins depth; caps use r/y instead of theta/psi."""
     H = ZB.shape[0]
     W = ZB.shape[1]
     nt = X.shape[0] - 1
@@ -185,6 +209,8 @@ def _raster(X, Y, Z, TH, PS, ZB, TB, PB):
                             ZB[yy, xx] = z
                             TB[yy, xx] = (w0 * ta * iza + w1 * tb * izb + w2 * tc * izc) * z
                             PB[yy, xx] = (w0 * pa * iza + w1 * pb * izb + w2 * pc * izc) * z
+                            if FB is not None:
+                                FB[yy, xx] = face
 
 
 # =============================================================== environment ===
@@ -244,6 +270,21 @@ class RingState:
         self.alpha = 1.0            # overall opacity (fade in/out)
         self.sec = (1.0, 1.0)       # section scale (radial, axial): the forging beats it out to (1, 1)
         self.hammer = 0.0           # hammer marks in the hot metal (0..1)
+        self.end_caps = False      # close an incomplete arc with beaten-metal section faces
+        self.leading_glyph = False  # a canonical glyph bisected by the leading cut; settled letters stay fixed
+
+
+def cap_points(theta, npp, sec=(1.0, 1.0)):
+    """A triangle fan from the section centre to its exact superellipse boundary.
+
+    The two-row grid deliberately repeats the centre: _raster skips each degenerate second triangle.
+    The returned r/y coordinates interpolate over the face for its world position and hammer texture.
+    """
+    ps = np.linspace(-np.pi, np.pi, npp + 1)
+    r, y, _, _ = section(ps, sec)
+    rr, yy = np.stack([np.zeros_like(r), r]), np.stack([np.zeros_like(y), y])
+    pp = np.stack([(R_MID + rr) * np.cos(theta), yy, (R_MID + rr) * np.sin(theta)], -1)
+    return pp, rr, yy
 
 
 def _frame_samples(cam, W, H, Rot, C, scale, nt, npp, th_range=None, sec=(1.0, 1.0)):
@@ -299,6 +340,21 @@ def render(cam, W, H, Rot, C, scale, st, env, ss=None, nt=None, npp=None, pad=4,
     PB = np.zeros((bh, bw), np.float64)
     _raster(np.ascontiguousarray(X), np.ascontiguousarray(Y), np.ascontiguousarray(np.where(ok, z, -1.0)),
             np.ascontiguousarray(T), np.ascontiguousarray(Pp), ZB, TB, PB)
+    open_arc = th_range is not None and 0 < th_range[1] - th_range[0] < 2 * np.pi - 1e-8
+    FB = None
+    if st.end_caps and open_arc:
+        FB = np.zeros((bh, bw), np.uint8)
+        for face, theta in enumerate(th_range, 1):
+            pl, rr, yy = cap_points(theta, npp, st.sec)
+            pw = C[None, None, :] + scale * np.einsum('ij,abj->abi', Rot, pl)
+            dc = (pw - cam.pos) @ cam.R.T
+            zz = dc[..., 2]
+            ux = (W - 1) / 2.0 + f * dc[..., 0] / np.maximum(zz, 1e-6)
+            vy = (H - 1) / 2.0 - f * dc[..., 1] / np.maximum(zz, 1e-6)
+            xx = (ux - ux0 + 0.5) * ss - 0.5
+            yb = (vy - vy0 + 0.5) * ss - 0.5
+            _raster(np.ascontiguousarray(xx), np.ascontiguousarray(yb),
+                    np.ascontiguousarray(np.where(zz > 0.05, zz, -1.0)), rr, yy, ZB, TB, PB, FB, face)
     cov = np.isfinite(ZB)
     if not cov.any():
         return rgb, alpha, depth
@@ -309,7 +365,23 @@ def render(cam, W, H, Rot, C, scale, st, env, ss=None, nt=None, npp=None, pad=4,
         sl = slice(k0, k0 + CH)
         th = TB[iy[sl], ix[sl]]
         ps = PB[iy[sl], ix[sl]]
-        buf[iy[sl], ix[sl]] = shade(th, ps, cam, f, ss, Rot, C, scale, st, env)
+        if FB is None:
+            buf[iy[sl], ix[sl]] = shade(th, ps, cam, f, ss, Rot, C, scale, st, env,
+                                      th_range[1] if st.leading_glyph and open_arc else None)
+        else:
+            faces = FB[iy[sl], ix[sl]]
+            cols = np.zeros((len(th), 3), np.float32)
+            band = faces == 0
+            if band.any():
+                cols[band] = shade(th[band], ps[band], cam, f, ss, Rot, C, scale, st, env,
+                                   th_range[1] if st.leading_glyph else None)
+            for face, theta in enumerate(th_range, 1):
+                m = faces == face
+                if m.any():
+                    cols[m] = shade_cap(th[m], ps[m], theta, -1.0 if face == 1 else 1.0,
+                                        cam, Rot, C, scale, st, env,
+                                        ZB[iy[sl][m], ix[sl][m]] / (f * ss * scale))
+            buf[iy[sl], ix[sl]] = cols
     cv_ = cov.astype(np.float32)
     zbuf = np.where(cov, ZB, np.inf).astype(np.float32)
     h0, w0 = bh // ss, bw // ss
@@ -323,7 +395,7 @@ def render(cam, W, H, Rot, C, scale, st, env, ss=None, nt=None, npp=None, pad=4,
     return rgb, alpha, depth
 
 
-def shade(th, ps, cam, f, ss, Rot, C, scale, st, env):
+def shade(th, ps, cam, f, ss, Rot, C, scale, st, env, leading_theta=None):
     """HDR colour of band samples (theta, psi): polished gold reflecting env, the forge's heat, the letters"""
     Pl, Nl = local_points(th, ps, st.sec)
     Pw = C[None, :] + scale * Pl @ Rot.T
@@ -361,13 +433,88 @@ def shade(th, ps, cam, f, ss, Rot, C, scale, st, env):
         wlen = zs / (f * ss)
         ins = inscription()
         tex = np.zeros(len(th), np.float32)
+        edge_ink = np.zeros(len(th), np.float32) if leading_theta is not None else None
         for face, m, uu, Rf in (('outer', outer, uo, R_OUT), ('inner', ~outer, ui, R_IN)):
             if m.any():
                 Wt = ins.lv[face][0].shape[1]
                 tps = wlen[m] / (2 * np.pi * Rf * scale) * Wt / np.maximum(ndv[m], 0.25)
                 tex[m] = ins.sample(face, uu[m], vv[m], tps)
+                if leading_theta is not None:
+                    midpoint, advance = ins.leading_glyph(face)
+                    span = advance / Rf
+                    distance = leading_theta - th[m]
+                    mix = (1 - _ss(0.65 * span, span, distance)) * (distance >= 0)
+                    # Keep the existing UV orientation. Only the forming glyph moves with the edge;
+                    # all lettering farther than one glyph advance retains its accepted coordinates.
+                    sign = -1.0 if face == 'outer' else 1.0
+                    uv = midpoint + sign * (th[m] - leading_theta) / (2 * np.pi)
+                    forming = ins.sample(face, uv, vv[m], tps)
+                    tex[m] = tex[m] * (1 - mix) + forming * mix
+                    edge_ink[m] = forming * mix
         wr = st.write(th) if st.write is not None else np.ones(len(th))
+        if edge_ink is not None:
+            # The groove stays orange against the white-hot section, rather than vanishing into its heat.
+            col = col * (1 - 0.93 * edge_ink * np.clip(2 * wr, 0, 1))[:, None]
         col = col + st.letters_col[None, :] * (st.letters * tex * wr)[:, None]
+    return col.astype(np.float32)
+
+
+def shade_cap(r, y, theta, side, cam, Rot, C, scale, st, env, footprint=0.):
+    """Solid cut section: stable small hammer facets, warm gold, and the endpoint's actual heat.
+
+    Cap normals face out of the arc along its tangent; cap positions come from the same perspective-correct
+    r/y interpolation used by the depth buffer. No inscription is projected onto the exposed section itself.
+    """
+    c, s = np.cos(theta), np.sin(theta)
+    pl = np.stack([(R_MID + r) * c, y, (R_MID + r) * s], 1)
+    radial = np.array([c, 0., s])
+    axial = np.array([0., 1., 0.])
+    tangent = side * np.array([-s, 0., c])
+    # Small planar hammer facets break reflections. Temperature does not follow the facets: circular
+    # thermal depressions in the previous version made the cut read as a porous material in a cold read.
+    rr, yy = r / st.sec[0], y / st.sec[1]
+    nearest, second = np.full(len(r), np.inf), np.full(len(r), np.inf)
+    g1, g2 = np.zeros((len(r), 2)), np.zeros((len(r), 2))
+    for ux, uy, ur, ua in _CAP_FACETS:
+        cx, cy = (ux - 0.5) * THICK, (uy - 0.5) * WIDTH
+        dist = (rr - cx) ** 2 + (yy - cy) ** 2
+        closer = dist < nearest
+        runner_up = (~closer) & (dist < second)
+        second[closer], g2[closer] = nearest[closer], g1[closer]
+        second[runner_up] = dist[runner_up]
+        slope = np.array([ur - .5, ua - .5]) * .04
+        g2[runner_up] = slope
+        nearest[closer], g1[closer] = dist[closer], slope
+    # Low slopes and broad blending retain the band's smooth metal response across the cut.
+    blend = .5 + .5 * _ss(0., .018, np.sqrt(second) - np.sqrt(nearest))
+    gradients = g1 * blend[:, None] + g2 * (1 - blend[:, None])
+    gr, gy = gradients[:, 0], gradients[:, 1]
+    # Fine directional tool marks affect reflection only; fade them when subpixel to avoid shimmer.
+    scratch = np.sin(620. * yy + 1.5 * np.sin(39. * rr))
+    gr = gr + .0006 * scratch * (1 - _ss(.002, .007, footprint))
+    nl = tangent[None, :] + gr[:, None] * radial + gy[:, None] * axial
+    nl /= np.linalg.norm(nl, axis=1)[:, None]
+    pw = C[None, :] + scale * pl @ Rot.T
+    nw = nl @ Rot.T
+    v = cam.pos[None, :] - pw
+    v /= np.maximum(np.linalg.norm(v, axis=1), 1e-9)[:, None]
+    ndv = np.clip(np.sum(nw * v, 1), 0., 1.)
+    rv = 2 * ndv[:, None] * nw - v
+    fr = F0_GOLD[None, :] + (1 - F0_GOLD[None, :]) * (1 - ndv[:, None]) ** 5
+    # Same gold/Fresnel/environment response as the band's surface; no matte inlay material.
+    col = fr * env.radiance(rv, pw) * st.exposure
+    if st.glow > 0:
+        col += st.glow_col[None, :] * (st.glow * (0.35 + 0.65 * (1 - ndv) ** 2))[:, None]
+    if st.heat is not None:
+        hk = np.clip(st.heat(np.full(len(r), theta)), 0., 1.)
+        hk = hk * .80
+        hot = (np.array([1., .96, .86])[None, :] * _ss(.72, 1., hk)[:, None]
+               + np.array([1., .78, .34])[None, :] * (_ss(.42, .72, hk) * (1 - _ss(.72, 1., hk)))[:, None]
+               + np.array([1., .42, .08])[None, :] * (_ss(.18, .42, hk) * (1 - _ss(.42, .72, hk)))[:, None]
+               + np.array([.55, .1, .02])[None, :] * (_ss(0., .18, hk) * (1 - _ss(.18, .42, hk)))[:, None])
+        # Uniform face heat; the preceding hot band supplies the edge glare. A separate white perimeter
+        # made the section look like an inserted plate, so no cap-only hot rim is emitted here.
+        col = col * (1 - .45 * _ss(.15, .6, hk))[:, None] + hot * (hk ** 2.6 * .80 + .05 * hk)[:, None]
     return col.astype(np.float32)
 
 

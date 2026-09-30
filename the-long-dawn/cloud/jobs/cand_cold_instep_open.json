@@ -1,0 +1,21 @@
+{
+  "name": "cand_cold_instep_open",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py cold --prepare",
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py cold --equal 3816 --scale 1 --candidate in-step",
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py cold --equal 3840 --scale 1 --candidate in-step",
+    "LD_OPEN_RING=0 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py cold --equal 3847 --scale 1 --candidate in-step"
+  ],
+  "render": [
+    "LD_OPEN_RING=1 NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py cold in-step --range 3816-3999 --out renders/cand_cold_instep_open"
+  ],
+  "out_dir": "renders/cand_cold_instep_open",
+  "frames": "3816-3999",
+  "shape": [
+    804,
+    1920
+  ],
+  "ship": "jpg",
+  "note": "Final open-ring revision, locally measured native 1920x804: C3816: 3.481742 s/frame, 1024950272 bytes process peak RSS; C3900: 3.606109 s/frame, 1024950272 bytes process peak RSS. Timed renderer calls; C3 first call includes lazy scene initialization. RSS is cumulative process high-water. These local samples are not farm throughput estimates. Draft only; not submitted. Requires owner adoption through the EDL and regeneration of the baked closed-ring C1679 burn transition."
+}
