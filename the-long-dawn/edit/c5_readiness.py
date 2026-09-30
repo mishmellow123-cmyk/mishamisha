@@ -34,9 +34,10 @@ HANDOVER = os.path.join(ROOT, 'HANDOVER.md')
 JSON_PATH = os.path.join(EDIT, 'edl', 'edl_C.json')
 BARMAP_DIR = os.path.join(ROOT, 'music', 'v3')
 
-# The paired-rivals amendment (NIGHT_PLAN 29 Sep); HANDOVER's table must already carry it.
+# The paired-rivals amendment (NIGHT_PLAN 29 Sep); HANDOVER's table must already carry it. Row 14 since the owner's
+# pace-not-prohibition note (29 Sep, late): the promise is to stop RACING (the forges are the race), not to stop.
 AMENDMENT = {12: None, 13: 'So the two furthest ahead lit the first beacons, together.',
-             14: 'It was a promise to stop, if all the others would.'}
+             14: 'It was a promise to stop racing, if all the others would.'}
 # script v5.2 row -> the bar-map sections that picture it (row 1 is the black and the red book)
 ROW_SECTIONS = {1: ('C1', 'C2'), 2: ('C3',), 3: ('C4',), 4: ('C4',), 5: ('C5',), 6: ('C6',), 7: ('C7',), 8: ('C8',),
                 9: ('C9',), **{n: (f'C{n}',) for n in range(10, 24)},

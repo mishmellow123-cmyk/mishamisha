@@ -411,6 +411,11 @@ def status_frames(cut, variant):
     # REVIEW (29 Sep): a floor window eases the film base in after a true black (or out at C's end), so the black runs
     # into it; count its frames as planned and merge touching intervals, so one run across both reads as planned
     planned_black += [(t['f0'], t['f1']) for t in EDL.TRANS.get(cut, ()) if t.get('kind') == 'floor']
+    # joinsA (29 Sep) made A's 80-127 a dissolve from A1's true black instead of a floor: a dissolve that starts where
+    # a planned black ends is a fade-up, and its first frames are black by design (A 80-85 measured under the threshold)
+    black_ends = {b for _, b in planned_black}
+    planned_black += [(t['f0'], t['f1']) for t in EDL.TRANS.get(cut, ())
+                      if t.get('kind') == 'dissolve' and t.get('cut', t['f0']) in black_ends]
     merged = []
     for a, b in sorted(planned_black):
         if merged and a <= merged[-1][1]:

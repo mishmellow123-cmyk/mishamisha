@@ -325,8 +325,8 @@ class C5ReadinessTests(unittest.TestCase):
         self.green()
         rows = copy.deepcopy(titles.C5_TEXT)
         k = [r['id'] for r in rows].index('R18')
-        self.assertEqual(rows[k]['lines'], ('They left the gold', 'in the ground.'))     # as committed: verbatim
-        rows[k]['lines'] = ('They left the gold', 'in the ground')                     # the full stop lost
+        self.assertEqual(rows[k]['lines'], ('They dug no deeper', 'than they could see.'))  # as committed: verbatim
+        rows[k]['lines'] = ('They dug no deeper', 'than they could see')                   # the full stop lost
         with mock.patch.object(titles, 'C5_TEXT', rows):
             self.write_json()
             rep, _, text = self.run_gate(partial=True)

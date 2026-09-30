@@ -339,7 +339,7 @@ C5_TEXT = [
          set='fire', y=150),      # the near fire sits at ~(960, 607), the far one at ~(1380, 383): the sky is clear.
                                   # Fire since C13 plays the night-fire Reveal (29 Sep): iron-gall on its grey page
                                   # measured 2.30:1, worst slice 2.22:1 in 102 of 102 steady frames
-    dict(id='R14', row=14, line='It was a promise to stop, if all the others would.', f_in=3160, f_out=3300,
+    dict(id='R14', row=14, line='It was a promise to stop racing, if all the others would.', f_in=3160, f_out=3300,
          set='fire', y=150),      # the Reveal/Watch sky placement. Fire since C14 plays the night-fire scroll (29 Sep):
                                   # iron-gall on its grey page measured 2.29:1, worst slice 2.22:1 in 102 of 102 frames
     # REVIEW (29 Sep; the captions, director, editor and sound reviewers): up at 3740, the line announced a catch that
@@ -349,14 +349,16 @@ C5_TEXT = [
     # the forges go out (3848) and holds into the silence, clearing well before the score returns (4000). Both sit top
     # right, clear of the catch (~692, 448) and the Ring (~960, 190): worst slices 4.72:1 and 8.50:1, edge 0.018 and
     # 0.002 (c5_caption_backdrop measure, 29 Sep). Script beat 16 was bare; its first 3 s now carry the line's end.
-    dict(id='R15', row=15, line='When the last beacon caught, every forge went cold.', f_in=3776, f_out=3922,
+    dict(id='R15', row=15, line='When the last beacon caught, every forge fell into step.', f_in=3776, f_out=3922,
          set='fire', parts=(dict(line='When the last beacon caught,', f_in=3776, f_out=3840, x=1400, y=132),
-                            dict(line='every forge went cold.', f_in=3850, f_out=3922, x=1400, y=132)),
+                            dict(line='every forge fell into step.', f_in=3850, f_out=3922, x=1400, y=132)),
          across=(3816, 'the first part names the catch on the map and carries over the forges lit for 32 frames '
                        'before they go out at 3848, where the second part begins')),
-    dict(id='R17', row=17, line='The Ring hung there, unfinished.', f_in=4040, f_out=4180, set='fire'),
-    dict(id='R18', row=18, line='They left the gold in the ground.', f_in=4276, f_out=4416, set='ink',
-         x=310, y=300, lines=('They left the gold', 'in the ground.')),
+    dict(id='R17', row=17, line='The Ring hung there, unfinished, where all of them could study it.', f_in=4040, f_out=4180, set='fire'),
+    dict(id='R18', row=18, line='They dug no deeper than they could see.', f_in=4276, f_out=4416, set='ink',
+         x=310, y=300, lines=('They dug no deeper', 'than they could see.'), backing=0.30),
+                                  # 29 Sep (pace, not prohibition): the new second line reaches further across the
+                                  # page's faint script; unbacked it measured worst slice 4.38:1 (texture 0.016)
                                   # on the facing page, off the plate: over the plate (y 590) the words crossed the
                                   # arches, a ladder and the vein ('gold' on the gold; edge 0.101, texture 0.042,
                                   # worst slice 2.81:1). One line (694 px of glyphs) cannot fit the left page without
@@ -367,7 +369,7 @@ C5_TEXT = [
                                   # fire, not ink, since C19 plays the night-fire Watch (grey page ~95-101, beacons
                                   # 232-244): iron-gall on that grey measured 2.27:1, worst slice 2.21:1 (low in 16 of
                                   # 16 frames); the fire letters 4.98:1, worst slice 4.92:1 (c5_caption_backdrop)
-    dict(id='R20', row=20, line='Without the Ring, the dawn came slowly. But it came.', f_in=4860, f_out=5020,
+    dict(id='R20', row=20, line='Even unfinished, the Ring brought the dawn.', f_in=4860, f_out=5020,
          set='ink', y=150, backing=0.30),  # keep the dawn's colour front: neutral exposure, 3.151:1 -> 4.774:1
                                          # at C4887, all 122 steady frames, finished runC_illum + dawn_sweep
     dict(id='R22', row=22, line='The last pages were left for us.', f_in=5462, f_out=5602, set='ink',

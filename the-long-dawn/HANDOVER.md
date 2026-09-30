@@ -86,6 +86,7 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
 
 ### Story decisions, in the user's words
 - **The solution is STOP** ("Plan S, not Plan A"). The user later refined it to *"more of a pause-for-as-long-as-it-takes deal"*: keep the film vaguer but directionally the same. Never "destroyed forever".
+- **Pace, not prohibition: AI does not stop** (29 Sep, late, after watching the 22:11 C master): *"why would it stop and go cold?? AI is not stopping, it's just about stopping before superintelligence (while we can't control it - which may be forever) - this isn't a Unabomber pitch...it's a pro-abundance weary-of-misaligned-superintelligence story! The point is they have to pause in time before they can't control it, still benefit from what it can do, learn to understand it, and *maybe* eventually when it can be fully aligned let takeoff happen, or maybe this will be never."* In the approved metaphor the Ring is our AI and finishing it is superintelligence, so: the race stops, the forges (the race) fall into step instead of going cold, the unfinished Ring keeps giving its gold in the open and is studied, the digging goes no deeper than anyone can see, and the unfinished Ring brings the dawn. Captions 14, 15, 17, 18 and 20 changed (script table below); C16-C17 are being re-rendered so no forge goes dark.
 - **The two front-runners go first, together** (the user's idea, 28 Sep ~08:00Z): the two furthest ahead, hardest to reconcile, light the first two beacons at the same moment; then the rest follow. Keep them abstract, with no national coding.
 - **It's a coordination problem.** "Why is it one person... this is a game-theoretic prisoner's dilemma/coordination problem that resists unilateral solutions." So there is **no lone hero**: each smith makes a conditional promise, and the stop happens only when all have joined.
 - **Fire:** "trying to cover too much conceptual ground". So each fire now has one job:
@@ -109,6 +110,7 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
   - "for it could not be used for good" (queried);
   - "She was no smith" (made her a lone hero);
   - "finished the Ring" (the user didn't love it).
+  - "It was a promise to stop, if all the others would.", "When the last beacon caught, every forge went cold.", "They left the gold in the ground.", "Without the Ring, the dawn came slowly. But it came." (29 Sep: they read as AI stopping; see "Pace, not prohibition" above).
 - **The Frodo line.** The user asked whether we can use the film audio of Frodo saying "The last pages are for you".
   - The answer given: it's the user's call. The voice replaces the caption on the blank pages.
   - Build it as a SWAPPABLE stem: a clean version with the caption, and a version with the voice.
@@ -130,13 +132,13 @@ Two short films on one branch, `claude/long-dawn-v2`, in `github.com/mishmellow1
 | 11 | NEW ember world, THE TRAP: one forge sinks, the others surge, it flares back and races; TWO towers pull ahead, neck and neck (the two great rivals; abstract, never coded) | In ours, no smith could refuse it alone. |
 | 12 | Flint in the dark; kindling catches | none |
 | 13 | Her small fire on the vast ink range; at the SAME moment a second fire catches on a far peak across the range | So the two furthest ahead lit the first beacons, together. |
-| 14 | Beacon run: beacons catch along the peaks | It was a promise to stop, if all the others would. |
-| 15 | NEW map: kingdom borders; beacons flare in no order; ONE kingdom stays dark while a hammer rings; a long pause; it catches | When the last beacon caught, every forge went cold. |
+| 14 | Beacon run: beacons catch along the peaks | It was a promise to stop racing, if all the others would. |
+| 15 | NEW map: kingdom borders; beacons flare in no order; ONE kingdom stays dark while a hammer rings; a long pause; it catches | When the last beacon caught, every forge fell into step. |
 | 16 | NEW: every forge goes dark at the same instant; the hammering stops mid-stroke; silence | none |
-| 17 | NEW: the Ring hangs over the dark towers; its glow drains to grey; the storm thins | The Ring hung there, unfinished. |
-| 18 | NEW ink page: the mine abandoned, a lantern set down, empty ladders, the vein still glinting | They left the gold in the ground. |
+| 17 | NEW: the Ring hangs over the dark towers; its glow drains to grey; the storm thins | The Ring hung there, unfinished, where all of them could study it. |
+| 18 | NEW ink page: the mine, still: a lantern set down where its light ends, empty ladders below it, the vein still glinting | They dug no deeper than they could see. |
 | 19 | Beacons burning through the night (the watch) | And the beacons burned on, so no forge could be lit in secret. |
-| 20 | A slow dawn floods the ink world with colour | Without the Ring, the dawn came slowly. But it came. |
+| 20 | A slow dawn floods the ink world with colour | Even unfinished, the Ring brought the dawn. |
 | 21 | The book by the hearth: a tree in flower, fields, a harvest | none |
 | 22 | Blank pages, a pen lying across them | The last pages were left for us. *(or the Frodo voice line: see above)* |
 | 23 | Title | THE LONG DAWN |

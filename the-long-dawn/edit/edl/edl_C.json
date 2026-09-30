@@ -1251,7 +1251,7 @@
   },
   {
    "id": "R14",
-   "line": "It was a promise to stop, if all the others would.",
+   "line": "It was a promise to stop racing, if all the others would.",
    "f_in": 3160,
    "f_out": 3300,
    "set": "fire",
@@ -1261,7 +1261,7 @@
   },
   {
    "id": "R15",
-   "line": "When the last beacon caught, every forge went cold.",
+   "line": "When the last beacon caught, every forge fell into step.",
    "f_in": 3776,
    "f_out": 3922,
    "set": "fire",
@@ -1280,7 +1280,7 @@
      "y": 132
     },
     {
-     "line": "every forge went cold.",
+     "line": "every forge fell into step.",
      "f_in": 3850,
      "f_out": 3922,
      "x": 1400,
@@ -1290,7 +1290,7 @@
   },
   {
    "id": "R17",
-   "line": "The Ring hung there, unfinished.",
+   "line": "The Ring hung there, unfinished, where all of them could study it.",
    "f_in": 4040,
    "f_out": 4180,
    "set": "fire",
@@ -1299,7 +1299,7 @@
   },
   {
    "id": "R18",
-   "line": "They left the gold in the ground.",
+   "line": "They dug no deeper than they could see.",
    "f_in": 4276,
    "f_out": 4416,
    "set": "ink",
@@ -1308,9 +1308,10 @@
    "x": 310,
    "y": 300,
    "lines": [
-    "They left the gold",
-    "in the ground."
-   ]
+    "They dug no deeper",
+    "than they could see."
+   ],
+   "backing": 0.3
   },
   {
    "id": "R19",
@@ -1324,7 +1325,7 @@
   },
   {
    "id": "R20",
-   "line": "Without the Ring, the dawn came slowly. But it came.",
+   "line": "Even unfinished, the Ring brought the dawn.",
    "f_in": 4860,
    "f_out": 5020,
    "set": "ink",
