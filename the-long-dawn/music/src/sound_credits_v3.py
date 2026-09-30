@@ -40,10 +40,11 @@ def selected_cuts(cuts):
     return ''.join(dict.fromkeys(cuts))
 
 
-def used_refs(cuts='ABC'):
+def used_refs(cuts='ABC', *, with_status=False):
     cuts = selected_cuts(cuts)
     per_cut = {}
     installed = set()
+    score_only = set()
     for cut in cuts:
         module = f"sound_recipes_{cut}"
         try:
@@ -58,18 +59,30 @@ def used_refs(cuts='ABC'):
         walk(R.RECIPES, acc)
         per_cut[cut] = acc
         installed.add(cut)
-    if cuts == 'D' and not installed:
-        return per_cut                         # no D effects means no recipe-owned reverb sources either
+        if cut == 'D' and getattr(R, 'SCORE_ONLY', False) is True:
+            # D's installed composition recipe is not an effects recipe. An
+            # explicit opt-in avoids changing the historical ABC inventories.
+            if any(getattr(R, key, None) for key in ('RECIPES', 'EXTRA_EVENTS', 'EXTRA_BEDS', 'SPACE')):
+                raise ValueError('D SCORE_ONLY recipe declares effects or recorded spaces')
+            score_only.add(cut)
+    if cuts == 'D' and (not installed or 'D' in score_only):
+        return (per_cut, score_only) if with_status else per_cut
     import ir_v3
     acc = set()
     for sp in ir_v3.SPACES.values():
         for s in ([sp["src"]] if isinstance(sp["src"], str) else sp["src"]):
             acc.add("fs:" + s)
     per_cut["IR"] = acc
-    return per_cut
+    return (per_cut, score_only) if with_status else per_cut
 
 
-def d_status(per_cut):
+def d_status(per_cut, score_only=False):
+    if score_only:
+        return ["## Cut D sound status", "",
+                "Cut D has an installed **score-only** draft recipe. It declares no sound-effects events, beds "
+                "or recorded impulse responses. This effects inventory does not replace the score's sample "
+                "credits or the provenance of its reused AP2 opening.", "",
+                f"D recipe references: {len(per_cut.get('D', set()))}.", ""]
     return ["## Cut D sound status", "",
             "Cut D is the 115-bar consolidated animatic (6:23.3). Its score is pending; the current delivery uses "
             "**STAND-IN** silence, which contains no borrowed recordings. This inventory covers installed D "
@@ -80,12 +93,16 @@ def d_status(per_cut):
 
 def main(cuts='ABC', out=OUT):
     cuts = selected_cuts(cuts)
-    per_cut = used_refs(cuts)
+    per_cut, score_only = used_refs(cuts, with_status=True)
     if cuts == 'D' and 'IR' not in per_cut:
-        lines = ["# THE LONG DAWN v3: sound-effects credits (SOUND lane)", ""] + d_status(per_cut)
-        lines += ["No D sound recipes are installed. No recording attribution has been inferred for a stand-in."]
+        lines = ["# THE LONG DAWN v3: sound-effects credits (SOUND lane)", ""] + d_status(per_cut, 'D' in score_only)
+        if 'D' in score_only:
+            lines += ["No sound-effects recording or measured-IR attribution is required by this D recipe."]
+        else:
+            lines += ["No D sound recipes are installed. No recording attribution has been inferred for a stand-in."]
         open(out, 'w').write('\n'.join(lines) + '\n')
-        print(f'wrote {out}: D animatic, score pending, no installed sound recipes')
+        print(f'wrote {out}: D score-only draft, no effects references' if 'D' in score_only else
+              f'wrote {out}: D animatic, score pending, no installed sound recipes')
         return
     allfs = sorted({r for s in per_cut.values() for r in s if r.startswith("fs:")}, key=lambda r: int(r[3:]))
     L = ["# THE LONG DAWN v3: sound-effects credits (SOUND lane)", "",
@@ -96,7 +113,7 @@ def main(cuts='ABC', out=OUT):
          "## Freesound recordings", "",
          "| id | used in | licence | author | recording | source file |", "|---|---|---|---|---|---|"]
     if 'D' in cuts:
-        L[5:5] = d_status(per_cut)
+        L[5:5] = d_status(per_cut, 'D' in score_only)
     attrib = []
     for r in allfs:
         sid = int(r[3:])
