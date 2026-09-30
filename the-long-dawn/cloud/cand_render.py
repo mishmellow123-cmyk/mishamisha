@@ -29,17 +29,18 @@ ROOT = Path(__file__).resolve().parents[1]
 RANGES = {'reveal': (2880, 3119), 'watch': (4480, 4719), 'scroll': (0, 319),
           'beaconrun': (3920, 4239), 'watchers': (4240, 4399),
           'trap': (2320, 2639), 'map': (3440, 3839),
-          'deep': (4240, 4479), 'cold': (3816, 3999),
+          'deep': (4240, 4479), 'cold': (3816, 3999), 'unfinished': (4000, 4239),
           'pen': (5440, 5679), 't1': (320, 559), 'crossing': (4880, 5839),
           'falsedawn': (80, 559), 'sweep': (1680, 1687)}
 OPTIONS = {'reveal': 'night-fire', 'watch': 'night-fire', 'scroll': 'night-fire',
            'beaconrun': 'linked-fires', 'watchers': 'linked-fires',
            'trap': 'front_smoke_near', 'map': 'beacon-falloff',
-           'deep': 'leaned_ladders', 'cold': 'lead24',
+           'deep': 'leaned_ladders', 'cold': 'lead24', 'unfinished': 'in-step',
            'pen': 'soft_spine_metal', 't1': 'current-words', 'crossing': 'both',
            'falsedawn': 'clear_high_deck', 'sweep': 'soft-entry'}
 # Explicit review alternatives leave OPTIONS and omitted renderer defaults unchanged.
-MORE = {'crossing': ('both_decal', 'both_decal_cap'), 't1': ('current-words-held',)}
+MORE = {'crossing': ('both_decal', 'both_decal_cap'), 't1': ('current-words-held',),
+        'cold': ('in-step',)}
 PAGES = ('deep', 'pen', 't1', 'sweep')
 _FAMILY = None
 
@@ -47,7 +48,7 @@ _FAMILY = None
 def imports(kind):
     global _FAMILY
     family = ('run' if kind in ('reveal', 'watch', 'scroll', 'crossing', 'beaconrun', 'watchers', 'falsedawn') else
-              'embers' if kind in ('trap', 'cold') else 'map')
+              'embers' if kind in ('trap', 'cold', 'unfinished') else 'map')
     if _FAMILY is not None and _FAMILY != family:
         raise RuntimeError('Use a fresh process for each renderer family')
     _FAMILY = family
@@ -149,10 +150,24 @@ def build(kind, route, option=None, scale=1.0):
         else:
             call = lambda f: X.render(f, shot, kind=kind, variant=option, scale=scale, ss=2.)
         return lambda f: dict(rgb=call(f))
-    if kind in ('trap', 'cold'):
-        name = 'c_v5_trap_candidates' if kind == 'trap' else 'c_v5_cold_leadin'
-        X = importlib.import_module(name)
-        base = X.C if kind == 'trap' else X.base
+    if kind in ('cold', 'unfinished'):
+        import c_v5_cold_leadin as lead
+        import c_v5_instep as X
+        if route == 'original':
+            # The accepted edit includes the lead24 extension at C3816..3839.
+            scene = lead.Scene('lead24') if kind == 'cold' else X.base.Scene()
+        elif route == 'default':
+            scene = X.Scene()
+        elif route == 'shared':
+            scene = X.Scene(variant='accepted')
+        elif option == 'lead24':
+            scene = lead.Scene(variant='lead24')
+        else:
+            scene = X.Scene(variant=option)
+        return lambda f: dict(rgb=scene.frame(f, scale=scale))
+    if kind == 'trap':
+        X = importlib.import_module('c_v5_trap_candidates')
+        base = X.C
         scene = base.Scene() if route == 'original' else (X.Scene() if route == 'default' else X.Scene(variant=option))
         return lambda f: dict(rgb=scene.frame(f, scale=scale))
     if kind == 'map':
@@ -228,7 +243,7 @@ def digest(a):
     return dict(dtype=a.dtype.str, shape=list(a.shape), sha256=hashlib.sha256(a.tobytes()).hexdigest())
 
 
-def equal(kind, frame, scale=1.0):
+def equal(kind, frame, scale=1.0, candidate=None):
     """ADOPTION's original/default/shared proof, including HDR and page alpha.
 
     Explicit exceptions keep the gate active even under python -O. This proves
@@ -236,16 +251,19 @@ def equal(kind, frame, scale=1.0):
     """
     import numpy as np
     validate_frames(kind, frame, frame)
-    if kind == 'cold' and frame < 3840:
-        raise ValueError('Cold equality requires a common accepted frame >= 3840')
+    if candidate is not None and (kind != 'cold' or candidate != 'in-step' or frame >= 3848):
+        raise ValueError('Candidate equality requires cold in-step before C3848')
     original = build(kind, 'original', scale=scale)
     expected = checked(original, frame, scale)
     del original
     gc.collect()
     proofs = {}
-    routes = ('default', 'shared') if kind in ('reveal', 'watch', 'scroll', 'map', 'beaconrun', 'watchers', 'sweep') else ('default',)
+    routes = ('default', 'shared') if kind in ('reveal', 'watch', 'scroll', 'map', 'beaconrun', 'watchers', 'sweep', 'cold', 'unfinished') else ('default',)
+    if candidate is not None:
+        routes += ('candidate',)
     for route in routes:
-        render = build(kind, route, scale=scale)
+        render = (build(kind, route, candidate, scale=scale) if route == 'candidate' else
+                  build(kind, route, scale=scale))
         actual = checked(render, frame, scale)
         if actual.keys() != expected.keys():
             raise RuntimeError(f'Equality failed: {kind} {route} array keys')
@@ -256,6 +274,8 @@ def equal(kind, frame, scale=1.0):
         del render, actual
         gc.collect()
     receipt = dict(kind=kind, frame=frame, scale=scale, exact_equal=True, proofs=proofs)
+    if candidate is not None:
+        receipt['candidate'] = candidate
     print(json.dumps(receipt), flush=True)
     return receipt
 
@@ -320,7 +340,10 @@ ASSETS = {
                  'shots/run/reveal_a_fires.npy', 'shots/run/watchers_a_extra.npy',
                  'shots/run/watchers_a_figs.npy'),
     'trap': ('assets/ring/inscription_outer.png', 'assets/ring/inscription_inner.png'),
-    'cold': ('assets/ring/inscription_outer.png', 'assets/ring/inscription_inner.png'),
+    'cold': ('assets/ring/inscription_outer.png', 'assets/ring/inscription_inner.png',
+             'music/v3/barmap_C5P2.json'),
+    'unfinished': ('assets/ring/inscription_outer.png', 'assets/ring/inscription_inner.png',
+                   'music/v3/barmap_C5P2.json'),
     't1': ('assets/fonts/EBGaramond-Italic.ttf',),
     'crossing': ('shots/run/crossing.py', 'shots/run/crossing_fires.npy'),
 }
@@ -373,18 +396,22 @@ def main(argv=None):
     mode.add_argument('--range', dest='frame_range', metavar='A-B')
     parser.add_argument('--out', type=Path)
     parser.add_argument('--scale', type=float, default=1.0, help='equality only; farm uses 1')
+    parser.add_argument('--candidate', help='also prove this candidate is unchanged at --equal FRAME')
     args = parser.parse_args(argv)
     if args.prepare:
-        if args.option or args.out or args.scale != 1.0:
+        if args.option or args.out or args.scale != 1.0 or args.candidate:
             parser.error('--prepare takes only a kind')
         prepare(args.kind)
     elif args.equal is not None:
         if args.option or args.out or args.scale not in (.5, 1.0):
             parser.error('--equal takes a kind, a frame, and --scale .5 or 1')
         writable_renders()
-        equal(args.kind, args.equal, args.scale)
+        if args.candidate:
+            equal(args.kind, args.equal, args.scale, candidate=args.candidate)
+        else:
+            equal(args.kind, args.equal, args.scale)
     else:
-        if args.option not in (OPTIONS[args.kind],) + MORE.get(args.kind, ()) or not args.frame_range or not args.out or args.scale != 1.0:
+        if args.option not in (OPTIONS[args.kind],) + MORE.get(args.kind, ()) or not args.frame_range or not args.out or args.scale != 1.0 or args.candidate:
             parser.error('render requires this kind\'s candidate, --range A-B, --out DIR, native scale')
         match = re.fullmatch(r'(\d+)-(\d+)', args.frame_range)
         if not match:

@@ -1,0 +1,16 @@
+{
+  "name": "cand_unfinished_in-step",
+  "branch": "claude/owner-night-20260929",
+  "setup": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py unfinished --prepare",
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py unfinished --equal 4000 --scale 1"
+  ],
+  "render": [
+    "NUMBA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 python3 cloud/cand_render.py unfinished in-step --range 4000-4239 --out renders/cand_unfinished_in-step"
+  ],
+  "out_dir": "renders/cand_unfinished_in-step",
+  "frames": "4000-4239",
+  "shape": [804, 1920],
+  "ship": "jpg",
+  "note": "Review candidate only; the owner adopts through the EDL. Branch must contain the candidate code before submission."
+}
