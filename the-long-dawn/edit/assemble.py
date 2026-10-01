@@ -633,7 +633,13 @@ ADOPTED_AUDIO = {'B': ('music/out/v3/sound_B.wav', 'SOUND master'),
                  # -16.07 LUFS, TP -1.30 dBTP, 12,960,000 samples; verify_ap2_render 0 failures.
                  # Alternative: the 28 Sep master music/out/v3/sound_A.wav (director, ~02:20Z; COMPOSER-A2's v2 score +
                  # SOUND-C's real effects, sync 59/59), whose walk starts at 4880.
-                 'A': ('music/out/v3/sound_AP2.wav', 'SOUND master (A pass 2)')}
+                 'A': ('music/out/v3/sound_AP2.wav', 'SOUND master (A pass 2)'),
+                 # D (owner, 30 Sep): soundd phase 6's mix on the adopted picture 1da1aaf (score: scored phase 6,
+                 # fedd5fae…, bindings adopted through the six-join approval): 9,200 frames, -15.997 LUFS,
+                 # TP -1.650 dBTP, sha256 d5dd217f…; 37/37 non-exempt joins within 6 dB in 250 ms; required silences
+                 # 3400-3439 and 8660-8739 exact; AP2's opening minute byte-identical. Stems beside it (_score, _sfx).
+                 # Alternative: soundd phase 5's mix (b0b54200…, before the transition bridges).
+                 'D': ('music/out/v3/sound_D.wav', 'SOUND master (D phase 6)')}
 # Every C sound file on record (sound_C, final_C, fallback_C, the MASTERS table's C rows) was made for the 7,200-frame
 # cut: C takes a file only when its length is the cut's, so a stale file is never picked by its name (EDIT-C5).
 LENGTH_GUARD = {'C', 'D'}
