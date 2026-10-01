@@ -10,7 +10,9 @@ Run through the project's onepy wrapper, for example::
     onepy python music/src/render_D.py --render --output-dir /tmp/d-score
 
 --master-only reuses a matching private premaster after a change to master rides.
-The receipt distinguishes measured audio/memory values from provisional events.
+--bindings supplies the Phase 2 table; --events remains an alias and accepts
+legacy named-event overrides. Omitting both reproduces the Phase 1c draft map.
+The receipt distinguishes measured audio/memory values from picture statuses.
 """
 from __future__ import annotations
 
@@ -322,7 +324,7 @@ def _score_identity(S):
 
 
 def render(output_dir, *, master_only=False, opening_source=None, sample_root=None,
-           event_file=None, rides_file=None, keep_intermediates=False):
+           event_file=None, rides_file=None, keep_intermediates=False, transition_pass=False):
     import mix as MX
     output_dir = Path(output_dir).resolve()
     # Shared legacy caches/outputs must never be accidentally selected.
@@ -335,9 +337,9 @@ def render(output_dir, *, master_only=False, opening_source=None, sample_root=No
         raise OSError("less than 1.5 GiB free before D audio render")
     sampler = _configure_sampler(output_dir, sample_root)
     import score_v3_D
-    from barmap_D_score import DraftMap
-    bm = DraftMap() if event_file is None else DraftMap(json.loads(Path(event_file).read_text()))
-    S = score_v3_D.build(bm)
+    from bindings_D import load_map
+    bm = load_map(event_file)
+    S = score_v3_D.build(bm, transition_pass=True) if transition_pass else score_v3_D.build(bm)
     problems = score_v3_D.check(S, bm)
     if problems:
         raise ValueError("score contract failed: " + "; ".join(problems))
@@ -355,6 +357,13 @@ def render(output_dir, *, master_only=False, opening_source=None, sample_root=No
                                 for p in (Path(__file__), HERE/"score_v3_D.py", HERE/"barmap_D_score.py")},
                    method="serial engine parts; block EQ/summation/overlap-add hall; bounded master controls",
                    measured=False)
+    receipt["transition_pass"] = bool(transition_pass)
+    if transition_pass:
+        receipt["transition_manifest"] = S.transition_manifest
+        receipt["code_sha256"]["transitions_D.py"] = hashlib.sha256((HERE/"transitions_D.py").read_bytes()).hexdigest()
+    if hasattr(bm, "binding_provenance"):
+        receipt["binding_provenance"] = bm.binding_provenance
+        receipt["code_sha256"]["bindings_D.py"] = hashlib.sha256((HERE/"bindings_D.py").read_bytes()).hexdigest()
     t0 = last_stage = time.monotonic()
 
     def stage(name):
@@ -500,6 +509,8 @@ def render(output_dir, *, master_only=False, opening_source=None, sample_root=No
         raise ValueError("protected opening PCM changed")
     receipt["master"] = dict(lufs=lufs(y), true_peak_db=tp, iterations=iterations)
     receipt["output"] = output.name
+    with output.open("rb") as handle:
+        receipt["wav_sha256"] = hashlib.file_digest(handle, "sha256").hexdigest()
     receipt["measured"] = True
     _remove_map(y, temp_path)
     del pre, opening
@@ -518,7 +529,7 @@ def render(output_dir, *, master_only=False, opening_source=None, sample_root=No
     return receipt
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     mode = ap.add_mutually_exclusive_group(required=True)
     mode.add_argument("--render", action="store_true")
@@ -526,13 +537,15 @@ def main():
     ap.add_argument("--output-dir", required=True)
     ap.add_argument("--opening-source")
     ap.add_argument("--sample-root")
-    ap.add_argument("--events", help="explicit named event overrides JSON")
+    ap.add_argument("--bindings", "--events", dest="bindings",
+                    help="Phase 2 binding table or legacy named event overrides JSON")
     ap.add_argument("--rides", help="optional ordered [frame, dB] points for new material")
     ap.add_argument("--keep-intermediates", action="store_true")
-    args = ap.parse_args()
+    ap.add_argument("--transition-pass", action="store_true", help="opt in to the Phase 6 musical joins")
+    args = ap.parse_args(argv)
     render(args.output_dir, master_only=args.master_only, opening_source=args.opening_source,
-           sample_root=args.sample_root, event_file=args.events, rides_file=args.rides,
-           keep_intermediates=args.keep_intermediates)
+           sample_root=args.sample_root, event_file=args.bindings, rides_file=args.rides,
+           keep_intermediates=args.keep_intermediates, transition_pass=args.transition_pass)
 
 
 if __name__ == "__main__":

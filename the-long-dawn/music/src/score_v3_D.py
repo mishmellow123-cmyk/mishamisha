@@ -223,10 +223,16 @@ def _race(S):
                                      sync=True, rel=.12)
     for e in S.bm.events:
         if "giant_stroke" in e.get("tags", []):
+            if e.get("score_action") == "omit":
+                continue  # native absence evidence is checked by BoundMap
             if deep <= S.bm.ev(e["id"]) < brink:
                 continue  # parchment Deep has its tick, no visible giant stroke
-            t = _bind(S, e["id"], "giant_glass", "only a giant narrows the gap", "hit")
-            S.parts["giant_glass"].n("D6" if len(S.parts["giant_glass"].notes) % 2 == 0 else "Ab5",
+            label=("the giants continue striking against the held gap"
+                   if S.bm.ev(e["id"]) >= brink else "a giant's stroke reaches the gap")
+            t = _bind(S, e["id"], "giant_glass", label, "hit")
+            # Preserve each event's pitch if an unsupported earlier hit is
+            # omitted; indexing the surviving notes would flip later pitches.
+            S.parts["giant_glass"].n("D6" if int(e["id"].rsplit("_",1)[1]) % 2 else "Ab5",
                                      t, .25, .19, sync=True, decay=.22)
     K.held(S, "brink_roll", "D2", brink, end, bow=8, vel=.34, sync_first=True, rel=.1)
     S.parts["brink_roll"].d((brink,.16),(end-.8,.52),(end,.08))
@@ -249,7 +255,14 @@ def _vision_gap_refusal(S):
     _bind(S,"vision_complete",pn,"the withheld fifth note, once, inside IF IT CLOSED","soft")
     _chords(S,"vision_floor",[(start,["D2","Ab2","D3","C4"])],finish+.65,.42,quiet=False)
     _part(S,"gap_anvil","C.anvil",gain_db=-4.,send=.2)
-    S.parts["gap_anvil"].n("D4",_bind(S,"gap","gap_anvil"),.3,.74,size=.75,sync=True)
+    # The cut and its preceding silence stay fixed. A measured contact can move
+    # the anvil within the new shot without moving either editorial boundary.
+    try:
+        S.bm.event("gap_hammer_lands")
+        gap_hit="gap_hammer_lands"
+    except KeyError:
+        gap_hit="gap"  # preserve the phase 1c / legacy override map
+    S.parts["gap_anvil"].n("D4",_bind(S,gap_hit,"gap_anvil"),.3,.74,size=.75,sync=True)
     p = _part(S,"refusal_solo","C.ca",gain_db=2.,send=.22,humanize_ms=0)
     S.eq[p.name]=(None,3600.)
     # One exposed line. The C# is the dominant's leading tone; its final D is V-i.
@@ -285,9 +298,16 @@ def _trap_and_glow(S):
                                     maxlen=min(.32,remaining),rel=0.)
     for eid in ("trap_drop","trap_return"):
         _bind(S,eid,TRAP_VOICE,kind="soft")
-    for t,root in ((start,"D3"),(surge,"Eb3"),(back,"E3")):
+    for t,root,next_change in ((start,"D3",surge),(surge,"Eb3",back),(back,"E3",end)):
         if t+3.5<end:
-            _phrase(S,f"trap_{t}","trap_horns",root,t,[1.,1.,1.,.5],level=.41)
+            # Native bindings can bring two changes closer than the original
+            # 70-frame phrase. Fit its same four notes before the next change.
+            scale=min(1.,(next_change-t)/3.5)
+            if scale<=0:
+                raise ValueError("trap changes must remain ordered")
+            _phrase(S,f"trap_{t}","trap_horns",root,t,
+                    [scale,scale,scale,.5*scale],level=.41)
+    _bind(S,"trap_surge","trap_horns","the neighboring forge surges","soft")
     climb_ns=["D5","Eb5","F5","Ab5","A5"]
     step=(end-climb)/5
     _line(S.parts["trap_leaders"],climb_ns,[step]*5,climb,.39,rel=.12)
@@ -320,7 +340,9 @@ def _promise_and_ridges(S):
     for i,e in enumerate(catches):
         pn=f"ridge_answer_{i%3}"
         _part(S,pn,("hn","hn_far","hn_farther")[i%3],gain_db=-2.-i*.35,humanize_ms=0)
-        t=_bind(S,e["id"],pn,"a new fire receives an ANSWER","soft")
+        label=("an authored closing ANSWER follows the five ridge catches"
+               if e.get("role")=="composed_response" else "a new fire receives an ANSWER")
+        t=_bind(S,e["id"],pn,label,"soft")
         # Two-beat answers leave each 40-frame catch its own entry.
         K.answer(S,pn,"D5",t,mode="major",rhythm=(.5,.25,.25,1.),vel=.29,legato=True,sync_first=True,antic=0.)
     p=_part(S,"working_distant","dr_taiko",gain_db=-11.,depth=.9,send=.5,humanize_ms=0)
@@ -400,10 +422,16 @@ def _crossing_and_watch(S,source):
                     5280:"crossing_walk_full1",5320:"crossing_walk_full2",
                     5360:"crossing_narrow_start",5520:"crossing_walk_resume",
                     5560:"crossing_resume_second"})
+    crossing_ids=("crossing_lantern","crossing_walk_setoff","crossing_walk_second",
+                  "crossing_walk_full1","crossing_walk_full2","crossing_narrow_start",
+                  "crossing_walk_resume","crossing_resume_second")
+    destinations=[deepcopy(S.bm.event(eid)) for eid in crossing_ids]
+    statuses={e.get("status","provisional") for e in destinations}
     S.crossing_source=dict(source="AP2",f0=5180,f1=5580,status="selected",
                           selection_source="cutd round 3 delivered D26 EDL",
-                          destination_event_status="provisional",
-                          reason="delivered edit selects A5180–5579; scored destination events await measurement")
+                          destination_event_status=next(iter(statuses)) if len(statuses)==1 else "mixed",
+                          destination_bindings=destinations,
+                          reason="delivered edit selects A5180–5579; destination statuses and provenance follow the supplied event map")
     start,end=ev("watch"),ev("sunrise")
     seq=[(start,["D2","F3","Bb3","D4"]),
          (ev("watch_feed_1"),["D2","A2","F#3","D4"]),
@@ -415,7 +443,7 @@ def _crossing_and_watch(S,source):
     K.call(S,"watch_call","D4",ev("watch_feed_1"),rhythm=(1.,1.,2.),vel=.23,sync_first=True,antic=0.)
     K.answer(S,"watch_answer","D5",ev("watch_feed_2"),rhythm=(1.,.5,.5,2.),vel=.21,sync_first=True,antic=0.)
     for eid,pn in (("watch_feed_1","watch_call"),("watch_feed_2","watch_answer"),("watch_feed_3","watch_chorale_vla_q")):
-        _bind(S,eid,pn,"a tended fire moves the watch's harmony","soft")
+        _bind(S,eid,pn,"a composed phrase moves the watch's harmony","soft")
 
 
 def _dawn_and_after(S,a,c):
@@ -433,7 +461,7 @@ def _dawn_and_after(S,a,c):
     unit=(stop-start-1.)/3.
     _phrase(S,"lastleaf_rest","lastleaf_solo","E3",start+1.,[unit,unit,unit,3.],
             event="last_leaf_break",level=.27)
-    _bind(S,"last_leaf_break","lastleaf_solo","the written line stops; the RING rests one note short","soft")
+    _bind(S,"last_leaf_break","lastleaf_solo","the RING phrase rests one note short over the open leaf","soft")
     _chords(S,"lastleaf",[(start,["D2","A2","F#3","D4"])],ev("last_pages")-1.,.13)
     # No score or hall is allowed in the voice reservation. It is a musical space, not speech audio.
     blank,prep,cad,end=(ev(x) for x in ("blank","plagal_prepare","plagal","score_end"))
@@ -450,7 +478,7 @@ def _dawn_and_after(S,a,c):
                 n.kw["rel"] = .2
 
 
-def build(bm=None):
+def build(bm=None, *, transition_pass=False):
     if bm is None:
         from barmap_D_score import DraftMap
         bm=DraftMap()
@@ -501,6 +529,10 @@ def build(bm=None):
     S.watch_parts=(WATCH_PART,)
     S.watch_pitch=m("D3")
     S.call_parts=CALL_PARTS
+    if transition_pass:
+        from transitions_D import apply
+        S.transition_manifest=apply(S,bm)
+        S.transition_pass=True
     S.sync_bindings=[]
     for binding in S.picture_bindings:
         p=S.parts.get(binding["part"])

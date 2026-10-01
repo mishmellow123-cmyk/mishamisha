@@ -304,6 +304,46 @@ def source_hash_rows(baseline_path, root):
     return rows
 
 
+def render_receipt_rows(receipt, bm, wav_sha256, *, transition_pass=False):
+    """Tie the checked WAV to the render that used these musical bindings.
+
+    A metadata-only promotion may retain the audio: compare score-driving
+    frames/actions, while exposing both table revisions. A moved musical marker
+    or changed implementation requires a fresh render receipt.
+    """
+    from barmap_D_score import EVENT_TABLE
+    names = {e["id"] for e in EVENT_TABLE} | {"gap_hammer_lands"}
+
+    def state(events):
+        return {e["id"]: (e["frame"], e.get("score_action", "play"))
+                for e in events if e["id"] in names}
+
+    expected, rendered = state(bm.events), state(receipt.get("events", []))
+    changed = sorted(name for name in expected.keys() | rendered.keys()
+                     if expected.get(name) != rendered.get(name))
+    here = Path(__file__).resolve().parent
+    files = ["render_D.py", "score_v3_D.py", "barmap_D_score.py"]
+    if hasattr(bm, "binding_provenance"):
+        files.append("bindings_D.py")
+    if transition_pass:
+        files.append("transitions_D.py")
+    code_changed = [name for name in files
+                    if receipt.get("code_sha256", {}).get(name) != file_sha256(here / name)]
+    return [
+        dict(check="render receipt transition option", expected=bool(transition_pass),
+             rendered=receipt.get("transition_pass", False),
+             ok=receipt.get("transition_pass", False) is bool(transition_pass)),
+        dict(check="render receipt WAV identity", expected_sha256=receipt.get("wav_sha256"),
+             actual_sha256=wav_sha256,
+             ok=bool(receipt.get("measured") is True and receipt.get("wav_sha256") == wav_sha256)),
+        dict(check="render receipt musical bindings", changed_events=changed, ok=not changed,
+             table_hash_matches=(receipt.get("binding_provenance", {}).get("table_sha256")
+                                 == getattr(bm, "binding_provenance", {}).get("table_sha256")),
+             scope="Original score markers and separate gap contact: frame and play/omit action; metadata-only promotions may retain audio."),
+        dict(check="render receipt implementation", changed_files=code_changed, ok=not code_changed),
+    ]
+
+
 def verify(path, opening_path, score, bm, *, receipt_path=None):
     import soundfile as sf
     wav_before = file_sha256(path)
@@ -333,17 +373,26 @@ def verify(path, opening_path, score, bm, *, receipt_path=None):
     rows += lev
     if receipt_path:
         receipt = json.loads(Path(receipt_path).read_text())
+        rows += render_receipt_rows(receipt, bm, wav_before,
+                                    transition_pass=getattr(score, "transition_pass", False))
         peak_rss = receipt.get("peak_rss_bytes")
         rows.append(dict(check="render peak RSS", peak_rss_bytes=peak_rss, limit_bytes=3 * 1024**3,
                          ok=isinstance(peak_rss, (int, float)) and 0 < peak_rss < 3 * 1024**3))
+    elif hasattr(bm, "binding_provenance"):
+        rows.append(dict(check="render receipt required for bound score", ok=False))
     wav_after = file_sha256(path)
     unchanged = wav_before == wav_after
     rows.append(dict(check="WAV unchanged during verification", before_sha256=wav_before,
                      after_sha256=wav_after, ok=unchanged))
-    return dict(ok=all(r["ok"] for r in rows), checks=rows, short_term_loudness=track.tolist(),
+    result = dict(ok=all(r["ok"] for r in rows), checks=rows, short_term_loudness=track.tolist(),
                 wav_sha256=wav_before if unchanged else None,
                 events=[dict(e) for e in bm.events],
                 measurement_scope="Audio values measured on this WAV; event picture frames retain their declared status.")
+    if hasattr(bm, "binding_provenance"):
+        result["binding_provenance"] = bm.binding_provenance
+        if receipt_path:
+            result["render_binding_provenance"] = receipt.get("binding_provenance")
+    return result
 
 
 def main(argv=None):
@@ -352,16 +401,18 @@ def main(argv=None):
     ap.add_argument("--opening", required=True)
     ap.add_argument("--json", required=True)
     ap.add_argument("--receipt")
-    ap.add_argument("--bindings", help="Optional measured event binding JSON accepted by DraftMap")
+    ap.add_argument("--bindings", "--events", dest="bindings",
+                    help="Phase 2 binding table or legacy named event overrides JSON")
     ap.add_argument("--source-baseline", help="Pre-D lane source_inventory.json; all supplied hashes are checked")
+    ap.add_argument("--transition-pass", action="store_true", help="verify the Phase 6 musical joins")
     args = ap.parse_args(argv)
-    from barmap_D_score import DraftMap
+    from bindings_D import load_map
     import score_v3_D as D
     # Note analysis does not measure sample attacks or need to load sample audio.
     import kit_v3
     kit_v3.attack_time = lambda *a, **k: 10.0
-    bm = DraftMap() if args.bindings is None else DraftMap(json.loads(Path(args.bindings).read_text()))
-    score = D.build(bm)
+    bm = load_map(args.bindings)
+    score = D.build(bm, transition_pass=True) if args.transition_pass else D.build(bm)
     result = verify(args.wav, args.opening, score, bm, receipt_path=args.receipt)
     problems = D.check(score, bm) + ring_problems(score) + call_problems(score, bm) + watch_problems(score)
     problems += beacon_problems(score)

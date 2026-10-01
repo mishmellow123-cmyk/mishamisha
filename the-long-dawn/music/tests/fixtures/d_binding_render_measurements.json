@@ -1,0 +1,83 @@
+{
+  "schema": "long-dawn/synthetic-render-measurements/1",
+  "synthetic": true,
+  "purpose": "Test one canonical binding-row replacement when a D render is delivered. These one-pixel fixtures are not production measurements.",
+  "measurements": [
+    {
+      "event": "crown_beacons",
+      "patch": {
+        "frame": 4324,
+        "status": "measured",
+        "source": "SYNTHETIC TEST FIXTURE: this pixel is not production picture evidence.",
+        "measured_ref": "fixture://embers_D_crowns/frame_004324.png",
+        "measurement_scope": "Synthetic one-pixel fixture; validates table replacement and asset provenance only. No picture event was measured.",
+        "measurement": {
+          "kind": "render_D",
+          "stem": "embers_D_crowns",
+          "frame": 4324,
+          "frame_file": "frame_004324.png",
+          "sha256": "e430130b6c2e9b65a343182ef54aa71e716e4a03990d9bf755848df1c0ed40cb",
+          "method": "Synthetic fixture frame selected to exercise a changed hit; not a visual onset measurement."
+        }
+      },
+      "asset_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4H8AAAAOhAVB98OhnAAAAAElFTkSuQmCC"
+    },
+    {
+      "event": "gap_hammer_lands",
+      "patch": {
+        "frame": 3443,
+        "status": "measured",
+        "source": "SYNTHETIC TEST FIXTURE: this pixel is not production picture evidence.",
+        "measured_ref": "fixture://embers_D_gap/frame_003443.png",
+        "measurement_scope": "Synthetic one-pixel fixture; validates table replacement and asset provenance only. No picture event was measured.",
+        "measurement": {
+          "kind": "render_D",
+          "stem": "embers_D_gap",
+          "frame": 3443,
+          "frame_file": "frame_003443.png",
+          "sha256": "ea9794261b506a3d05360199834e253ff9b8c5c262f5c6cb34d70c9563d612bb",
+          "method": "Synthetic fixture frame selected to exercise a changed hit; not a visual onset measurement."
+        }
+      },
+      "asset_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGOQk5MDAAC4AFuF/QUSAAAAAElFTkSuQmCC"
+    },
+    {
+      "event": "holdout_first_contact",
+      "patch": {
+        "frame": 5499,
+        "status": "measured",
+        "source": "SYNTHETIC TEST FIXTURE: this pixel is not production picture evidence.",
+        "measured_ref": "fixture://embers_D_holdout/frame_005499.png",
+        "measurement_scope": "Synthetic one-pixel fixture; validates table replacement and asset provenance only. No picture event was measured.",
+        "measurement": {
+          "kind": "render_D",
+          "stem": "embers_D_holdout",
+          "frame": 5499,
+          "frame_file": "frame_005499.png",
+          "sha256": "ad24d887dd7b3c81e2ead60f357fbdc56dd7f4ba53d5c99b3ebe7043faf0167e",
+          "method": "Synthetic fixture frame selected to exercise a changed hit; not a visual onset measurement."
+        }
+      },
+      "asset_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNISUkBAAJcAS1bGyRYAAAAAElFTkSuQmCC"
+    },
+    {
+      "event": "last_beacon",
+      "patch": {
+        "frame": 5602,
+        "status": "measured",
+        "source": "SYNTHETIC TEST FIXTURE: this pixel is not production picture evidence.",
+        "measured_ref": "fixture://cand_map_beacon-falloff/frame_005602.png",
+        "measurement_scope": "Synthetic one-pixel fixture; validates table replacement and asset provenance only. No picture event was measured.",
+        "measurement": {
+          "kind": "render_D",
+          "stem": "cand_map_beacon-falloff",
+          "frame": 5602,
+          "frame_file": "frame_005602.png",
+          "sha256": "98838eda4ea5718c96a0e27bbc0b2b4e7c4544b27cf9bbc99a596c5a101dc753",
+          "method": "Synthetic fixture frame selected to exercise a changed hit; not a visual onset measurement."
+        }
+      },
+      "asset_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4v4ALAARLAaqdu/ycAAAAAElFTkSuQmCC"
+    }
+  ]
+}
